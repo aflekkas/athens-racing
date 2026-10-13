@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+</head><body><script type="module">
+// Offline handling test bench: acceleration, top speed, braking, steady cornering, lift-off, handbrake, keyboard slalom.
+import { loadMap } from '../src/map.js';
+import { CARS } from '../src/cars.js';
+import { Vehicle } from '../src/physics.js';
+const { route } = await loadMap(null, '../');
+const open = Object.create(route); open.edge = () => 900; open.div = () => 0; open.medHalf = () => 0.1; open.urban = () => 1; open.y = () => 0; open.GR = new Float32Array(route.GR.length); open.surfaceY = () => 0;
+const S0 = 1200;
+const out = [];
+const dt = 1 / 60;
+const beta = (c) => Math.atan2(c.vLat, Math.abs(c.vLong)) * 57.3;
+for (const spec of CARS) {
+  const v = new Vehicle(spec, open); v.reset(S0, 5, 0);
+  let t = 0, t100 = null, t200 = null, maxSpin = 0;
+  while (t < 50) { v.update(dt, { throttle: 1, brake: 0, steer: 0 }); t += dt; if (!t100 && v.kmh >= 100) t100 = t; if (!t200 && v.kmh >= 200) t200 = t; if (t < 2) maxSpin = Math.max(maxSpin, v.wheelspin); if (!isFinite(v.x)) { out.push('NaN!'); break; } }
+  const top = v.kmh;
+  const b = new Vehicle(spec, open); b.reset(S0, 5, 100 / 3.6); let bd = 0; const x0 = b.x, z0 = b.z; let absN = 0;
+  for (let i = 0; i < 1200 && b.kmh > 0.5; i++) { b.update(dt, { throttle: 0, brake: 1, steer: 0 }); if (b.absOn) absN++; }
+  bd = Math.hypot(b.x - x0, b.z - z0);
+  const r = {};
+  for (const kmh of [60, 120]) {
+    const c = new Vehicle(spec, open); c.reset(S0, 5, kmh / 3.6);
+    let latG = 0, mb = 0;
+    for (let i = 0; i < 240; i++) { c.update(dt, { throttle: 0.35, brake: 0, steer: Math.min(1, i / 30) }); latG = Math.max(latG, Math.abs(c.ay) / 9.81); mb = Math.max(mb, Math.abs(beta(c))); if (!isFinite(c.x)) break; }
+    r[kmh] = `latG ${latG.toFixed(2)} R ${(Math.abs(c.vLong) / Math.max(0.01, Math.abs(c.w))).toFixed(0)}m b ${mb.toFixed(1)}° v ${c.kmh.toFixed(0)}`;
+  }
+  // lift-off mid-corner at 90 km/h: full-lock-ish corner on 60% throttle, then lift
+  const l = new Vehicle(spec, open); l.reset(S0, 5, 90 / 3.6); let lb = 0;
+  for (let i = 0; i < 180; i++) { const lift = i > 90; l.update(dt, { throttle: lift ? 0 : 0.6, brake: 0, steer: 0.9 }); if (lift) lb = Math.max(lb, Math.abs(beta(l))); }
+  // power-on exit at 50 km/h, full throttle full lock
+  const p = new Vehicle(spec, open); p.reset(S0, 5, 50 / 3.6); let pb = 0;
+  for (let i = 0; i < 150; i++) { p.update(dt, { throttle: 1, brake: 0, steer: 1 }); pb = Math.max(pb, -beta(p) * Math.sign(p.w || 1)); }
+  // handbrake turn at 80
+  const h = new Vehicle(spec, open); h.reset(S0, 5, 80 / 3.6); let hb = 0;
+  for (let i = 0; i < 90; i++) { h.update(dt, { throttle: i > 30 ? 0.7 : 0, brake: 0, steer: 0.9, handbrake: i < 30 }); hb = Math.max(hb, Math.abs(beta(h))); }
+  // keyboard lane change at 130 km/h: tap right 0.35 s, then left 0.35 s, settle; peak yaw / lateral offset / final beta
+  const k = new Vehicle(spec, open); k.reset(S0, 5, 130 / 3.6); let st = 0, kb = 0;
+  for (let i = 0; i < 180; i++) { const tgt = i < 21 ? 1 : i < 42 ? -1 : 0; st += Math.max(-dt * 4, Math.min(dt * 4, tgt - st)) / (1 + 36 / 70); k.update(dt, { throttle: 0.6, brake: 0, steer: st }); kb = Math.max(kb, Math.abs(beta(k))); }
+  out.push(`${spec.short.padEnd(9)} 0-100 ${t100?.toFixed(2)}s 0-200 ${t200?.toFixed(2) ?? '-'}s top ${top.toFixed(0)} launchSpin ${maxSpin.toFixed(2)} | brake100 ${bd.toFixed(1)}m abs ${absN} | 60: ${r[60]} | 120: ${r[120]} | liftoff b ${lb.toFixed(1)}° | power-on b ${pb.toFixed(1)}° | hb ${hb.toFixed(0)}° | lanechange b ${kb.toFixed(1)}° final w ${k.w.toFixed(3)}`);
+}
+console.log(out.join('\n'));
+window.__done = true;
+</script></body></html>

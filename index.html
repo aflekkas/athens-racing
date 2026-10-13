@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PARALIAKI — Athens Riviera Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,600;1,700;1,800;1,900&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M8 52 L28 12 H56 L36 52Z' fill='%23ff3b2f'/%3E%3Cpath d='M30 52 L42 28 H54 L42 52Z' fill='%23fff'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./style.css" />
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <!-- position / time / rival gap -->
+  <div id="posBox">
+    <div class="pos"><span id="posN">2</span><span id="posSuf">ND</span><span class="of">/2</span></div>
+    <div class="rows">
+      <div class="row"><span class="k">TIME</span><b id="tRace">0:00.00</b></div>
+      <div class="row rv"><span class="k" id="rivalName">STAVROS</span><b id="gap">+0.00</b></div>
+      <div class="row pen" id="penRow"><span class="k">PENALTY</span><b id="pen">+0.0 S</b></div>
+    </div>
+  </div>
+  <!-- route progress -->
+  <div id="routeBox">
+    <div class="rt"><span id="rZone">GLYFADA</span><span class="sep"></span><span id="rRoad">POSEIDONOS AVE</span><span id="rToGo">11.3 KM TO FINISH</span></div>
+    <div id="rbar"><div id="rfill"></div><div id="rticks"></div><div id="rRival" class="mk"></div><div id="rMe" class="mk"></div><div class="flag"></div></div>
+  </div>
+  <!-- style / combo -->
+  <div id="styleBox">
+    <div class="k">STYLE</div><b id="style">0</b>
+    <div id="combo"></div>
+  </div>
+  <!-- next traffic light -->
+  <div id="sigBox"><div class="sl"><i class="r"></i><i class="a"></i><i class="g"></i></div><div class="st"><b id="sigTxt">GREEN</b><span id="sigD">SIGNAL</span></div></div>
+  <!-- minimap -->
+  <div id="mapBox"><canvas id="minimap" width="300" height="300"></canvas><div id="mapLabel">GLYFADA</div></div>
+  <!-- speedometer / tachometer -->
+  <div id="dialBox"><canvas id="tacho" width="380" height="380"></canvas></div>
+  <div id="pops"></div>
+  <div id="banner"><div class="b1"></div><div class="b2"></div></div>
+  <div id="count"></div>
+  <div id="msg"></div>
+  <div id="keys">
+    <span><i>W A S D</i> DRIVE</span><span><i>SPACE</i> HANDBRAKE</span><span><i>SHIFT</i> NITRO</span><span><i>C</i> CAMERA</span><span><i>G</i> GARAGE</span><span><i>1–5</i> CARS</span><span><i>R</i> RESTART</span><span><i>M</i> MUSIC</span>
+  </div>
+</div>
+
+<div id="credit">Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Elevation EU-DEM v1.1</div>
+
+<!-- title / loading -->
+<div id="loading">
+  <div class="lgrid">
+    <div class="ltitle">
+      <div class="kick">ATHENS RIVIERA · GLYFADA <span>▶</span> LIMANAKIA</div>
+      <h1>PARALIAKI</h1>
+      <div class="tag">AN 11.3 KM SPRINT ALONG THE SARONIC GULF SHORE</div>
+      <div id="lbar"><div id="lfill"></div></div>
+      <div id="lstat">LOADING MAP DATA</div>
+    </div>
+    <canvas id="overview" width="560" height="640"></canvas>
+  </div>
+</div>
+
+<!-- results / garage -->
+<div id="menu">
+  <div class="mleft">
+    <div id="mKick">RACE RESULT</div>
+    <div id="mTitle">VICTORY</div>
+    <div id="mSub"></div>
+    <div id="mTable"></div>
+  </div>
+  <div class="mright">
+    <div class="ck">SELECT CAR <span id="cIdx">1/5</span></div>
+    <div class="carsel"><span class="arr">◀</span><div id="cName">MINI COOPER S CABRIO</div><span class="arr">▶</span></div>
+    <div id="cTag"></div>
+    <div id="cSpecs"></div>
+    <div id="cStats"></div>
+    <div id="cBest"></div>
+  </div>
+  <div id="mKeys"><span><i>ENTER</i> RACE</span><span><i>← →</i> CHANGE CAR</span><span><i>1–5</i> QUICK PICK</span><span id="mEsc"><i>ESC</i> BACK</span></div>
+</div>
+<div id="fade"></div>
+<div id="camflash"></div>
+<div id="err"></div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
