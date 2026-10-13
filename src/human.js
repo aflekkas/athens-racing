@@ -1,11 +1,10 @@
-// Human figures for the crowd: an articulated body (pelvis, torso, neck, head, upper/lower arms, hands,
-// thighs, shins, shoes) with lathe-turned limbs at real-world proportions, drawn as one InstancedMesh per
-// body part so a whole crowd costs ~25 draw calls. Poses (walk/run cycles, idles, sitting, lying, swimming,
-// cartoon dives) are plain numbers turned into bone matrices each frame.
+// Pedestrians use a single skinned mesh nearby, articulated instanced parts at
+// medium distance, and a four-batch silhouette LOD beyond 58 metres. Appearance
+// is seeded; the 16-bone skeleton shares the pose API used by the people system.
 import * as THREE from 'three';
 import { trimMat } from './cockpit.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { lerp, clamp } from './util.js';
+import { lerp, clamp, RNG } from './util.js';
 
 const V2 = THREE.Vector2;
 // reference body (1.75 m adult), metres
@@ -28,11 +27,11 @@ function clean(g) { const o = g.index ? g.toNonIndexed() : g; for (const k of Ob
 function merge(list) { return mergeGeometries(list.map(clean)); }
 function deform(g, fn) { const p = g.attributes.position, v = new THREE.Vector3(); for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); fn(v); p.setXYZ(i, v.x, v.y, v.z); } g.computeVertexNormals(); return g; }
 
-function torsoGeo(female) {
+function torsoGeo(female, segments = 14) {
   const prof = female
     ? [[0, -0.03], [0.118, -0.005], [0.112, 0.06], [0.122, 0.14], [0.142, 0.22], [0.148, 0.28], [0.14, 0.34], [0.148, 0.4], [0.138, 0.45], [0.1, 0.495], [0.05, 0.515], [0, 0.52]]
     : [[0, -0.03], [0.13, -0.005], [0.13, 0.07], [0.142, 0.16], [0.158, 0.26], [0.166, 0.34], [0.17, 0.4], [0.158, 0.455], [0.11, 0.5], [0.05, 0.52], [0, 0.525]];
-  const g = lathe(prof, 14);
+  const g = lathe(prof, segments);
   g.scale(female ? 1.08 : 1.13, 1, female ? 0.66 : 0.64);
   return deform(g, (v) => {
     // flatter back, chest forward, shoulder slope
@@ -46,20 +45,20 @@ function pelvisGeo() {
   const g = lathe([[0, -0.11], [0.09, -0.1], [0.145, -0.055], [0.16, 0.0], [0.15, 0.05], [0.13, 0.085], [0, 0.095]], 14);
   g.scale(1, 1, 0.7); return g;
 }
-function headGeo() {
+function headGeo(detail = false) {
   const skin = [1, 1, 1], dark = [0.08, 0.07, 0.07], lip = [0.82, 0.55, 0.52], white = [1.6, 1.6, 1.6];
-  const skull = new THREE.SphereGeometry(0.1, 16, 12);
+  const skull = new THREE.SphereGeometry(0.1, detail ? 28 : 16, detail ? 20 : 12);
   deform(skull, (v) => { v.x *= 0.88; v.y *= 1.12; if (v.y < 0) { v.x *= 1 - 0.32 * (-v.y / 0.11); v.z = v.z * (1 - 0.15 * (-v.y / 0.11)) + 0.012 * (-v.y / 0.11); } if (v.z < 0) v.z *= 1.06; });
   skull.translate(0, 0.1, 0);
   const parts = [colorize(skull, skin)];
-  const nose = new THREE.ConeGeometry(0.017, 0.045, 8); nose.rotateX(Math.PI / 2 + 0.5); nose.translate(0, 0.09, 0.098); parts.push(colorize(nose, skin));
+  const nose = new THREE.SphereGeometry(1, 10, 8); nose.scale(0.012,0.029,0.024); nose.rotateX(-0.2); nose.translate(0,0.095,0.093); parts.push(colorize(nose, skin));
   for (const sx of [-1, 1]) {
     const ear = new THREE.SphereGeometry(0.022, 8, 6); ear.scale(0.45, 1.1, 0.8); ear.translate(sx * 0.087, 0.1, -0.005); parts.push(colorize(ear, skin));
-    const eyeW = new THREE.SphereGeometry(0.0125, 8, 6); eyeW.scale(1.3, 0.8, 0.6); eyeW.translate(sx * 0.031, 0.118, 0.083); parts.push(colorize(eyeW, white));
-    const eye = new THREE.SphereGeometry(0.0075, 6, 5); eye.translate(sx * 0.031, 0.118, 0.089); parts.push(colorize(eye, dark));
-    const brow = new THREE.BoxGeometry(0.03, 0.006, 0.008); brow.rotateZ(sx * -0.12); brow.translate(sx * 0.032, 0.137, 0.088); parts.push(colorize(brow, dark));
+    const eyeW = new THREE.SphereGeometry(0.0095, 8, 6); eyeW.scale(1.28, 0.48, 0.34); eyeW.translate(sx * 0.031, 0.118, 0.094); parts.push(colorize(eyeW, white));
+    const eye = new THREE.SphereGeometry(0.0045, 6, 5); eye.scale(1,1,0.45); eye.translate(sx * 0.031, 0.118, 0.098); parts.push(colorize(eye, dark));
+    const brow = new THREE.BoxGeometry(0.027, 0.004, 0.005); brow.rotateZ(sx * -0.12); brow.translate(sx * 0.032, 0.137, 0.095); parts.push(colorize(brow, dark));
   }
-  const lips = new THREE.BoxGeometry(0.034, 0.008, 0.01); lips.translate(0, 0.052, 0.09); parts.push(colorize(lips, lip));
+  const lips = new THREE.BoxGeometry(0.029, 0.004, 0.006); lips.translate(0, 0.052, 0.096); parts.push(colorize(lips, lip));
   return merge(parts);
 }
 function hairGeos() {
@@ -69,12 +68,13 @@ function hairGeos() {
   const long = merge([cap(), back(), (() => { const g = new THREE.CapsuleGeometry(0.08, 0.17, 4, 10); g.scale(1.15, 1, 0.5); g.translate(0, -0.02, -0.065); return g; })()]);
   const bun = merge([cap(), back(), (() => { const g = new THREE.SphereGeometry(0.048, 10, 8); g.translate(0, 0.2, -0.075); return g; })()]);
   const pony = merge([cap(), back(), (() => { const g = new THREE.CapsuleGeometry(0.03, 0.14, 4, 8); g.rotateX(0.35); g.translate(0, 0.07, -0.13); return g; })()]);
-  const curly = (() => { const g = new THREE.SphereGeometry(0.125, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.58); deform(g, (v) => { const n = 1 + 0.06 * Math.sin(v.x * 90) * Math.sin(v.y * 80) * Math.sin(v.z * 85); v.multiplyScalar(n); }); g.scale(1, 1.05, 1.05); g.translate(0, 0.1, -0.012); return g; })();
+  const curly = (() => { const g = new THREE.SphereGeometry(0.125, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.58); deform(g, (v) => { const n = 1 + 0.06 * Math.sin(v.x * 90) * Math.sin(v.y * 80) * Math.sin(v.z * 85); v.multiplyScalar(n); }); g.scale(0.88, 0.9, 0.92); g.translate(0, 0.117, -0.012);
+    deform(g, v => { if (v.z > -0.02 && v.y < 0.161) { const front = clamp((v.z + 0.02) / 0.07, 0, 1); v.y = Math.max(v.y, 0.103 + 0.058 * front); } }); return g; })();
   return [short, long, bun, pony, curly];
 }
 function hatGeos() {
-  const crown = () => { const g = new THREE.SphereGeometry(0.113, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5); g.scale(0.95, 0.9, 1.05); g.translate(0, 0.12, -0.004); return g; };
-  const brim = new THREE.CylinderGeometry(0.09, 0.09, 0.012, 14, 1, false, -Math.PI / 2, Math.PI); brim.scale(1, 1, 1.1); brim.translate(0, 0.13, 0.06);
+  const crown = () => { const g = new THREE.SphereGeometry(0.113, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5); g.scale(0.95, 0.9, 1.05); g.translate(0, 0.148, -0.004); return g; };
+  const brim = new THREE.CylinderGeometry(0.09, 0.09, 0.012, 14, 1, false, -Math.PI / 2, Math.PI); brim.scale(1, 1, 1.1); brim.translate(0, 0.16, 0.06);
   const cap = merge([crown(), brim]);
   const sunBrim = new THREE.CylinderGeometry(0.21, 0.22, 0.012, 22); sunBrim.translate(0, 0.15, 0);
   const sunCrown = new THREE.CylinderGeometry(0.085, 0.105, 0.11, 16); sunCrown.translate(0, 0.2, 0);
@@ -89,10 +89,12 @@ function glassesGeo() {
   for (const sx of [-1, 1]) { const g = new THREE.BoxGeometry(0.004, 0.005, 0.09); g.translate(sx * 0.05, 0.12, 0.055); l.push(g); }
   return merge(l);
 }
-function handGeo() {
-  const palm = new THREE.SphereGeometry(1, 8, 6); palm.scale(0.04, 0.075, 0.021); palm.translate(0, -0.065, 0.004);
-  const thumb = new THREE.CapsuleGeometry(0.011, 0.035, 3, 6); thumb.rotateZ(0.4); thumb.translate(0.03, -0.045, 0.012);
-  return merge([palm, thumb]);
+function handGeo(sign = 1) {
+  const palm = new THREE.SphereGeometry(1, 8, 6); palm.scale(0.032, 0.043, 0.016); palm.translate(0, -0.035, 0.004);
+  const parts=[palm];
+  for(let i=0;i<4;i++) { const finger=new THREE.CapsuleGeometry(0.007,0.03+(i===1?0.009:i===3?-0.008:0),2,5); finger.rotateX(0.12); finger.translate((i-1.5)*0.016,-0.083,0.009); parts.push(finger); }
+  const thumb = new THREE.CapsuleGeometry(0.009, 0.028, 3, 6); thumb.rotateZ(sign * 0.55); thumb.translate(sign * 0.032, -0.042, 0.015); parts.push(thumb);
+  return merge(parts);
 }
 function footGeo() {
   const g = new THREE.SphereGeometry(1, 10, 7); g.scale(0.048, 0.05, 0.135); g.translate(0, -0.035, 0.045);
@@ -116,26 +118,29 @@ const SWIM = ['#e8452c', '#1f6fb4', '#f2c230', '#141414', '#2fae8f', '#e45a9a', 
 const DRESS = ['#f4f2ec', '#e9c46a', '#2a9d8f', '#e76f51', '#264653', '#c8a2c8', '#f4a6a6', '#1d3557', '#fefefe', '#bfd8f2', '#f1d3b3', '#d62828'].map(C);
 const HATS = ['#f1ede2', '#1f2a44', '#b3372f', '#d8c49a', '#2e2e2e', '#f2f2f2', '#3d6a49'].map(C);
 
-/** ctx: 'street' | 'beach' | 'cafe' */
+/** ctx: street, beach, cafe, jogger, cyclist, child or elder. */
 export function makeLook(rng, ctx = 'street') {
   const female = rng.chance(0.5);
-  const kid = ctx === 'beach' ? rng.chance(0.14) : rng.chance(0.04);
-  const old = !kid && rng.chance(ctx === 'cafe' ? 0.22 : 0.12);
+  const active = ctx === 'jogger' || ctx === 'cyclist';
+  const kid = !active && ctx !== 'elder' && (ctx === 'child' || (ctx === 'beach' ? rng.chance(0.14) : rng.chance(0.04)));
+  const old = !kid && !active && (ctx === 'elder' || rng.chance(ctx === 'cafe' ? 0.22 : 0.12));
   const pick = (a) => rng.pick(a).clone();
   const skin = pick(SKIN);
   let h = female ? rng.range(1.56, 1.76) : rng.range(1.67, 1.92); if (kid) h = rng.range(1.05, 1.42); if (old) h -= 0.04;
   const L = {
-    female, kid, old, h, k: h / 1.75, headS: kid ? 1.28 : 1, wT: rng.range(0.92, 1.12) * (old ? 1.05 : 1), dep: rng.range(0.95, old ? 1.3 : 1.18), wH: female ? rng.range(1.04, 1.16) : rng.range(0.94, 1.04), wL: rng.range(0.92, 1.12),
+    female, kid, old, role: ctx, h, k: h / 1.75, headS: kid ? 1.28 : 1, wT: rng.range(0.88, 1.27) * (old ? 1.05 : 1), dep: rng.range(0.95, old ? 1.3 : 1.18), wH: female ? rng.range(1.04, 1.16) : rng.range(0.94, 1.04), wL: rng.range(0.92, 1.12),
     hair: -1, hat: null, glasses: rng.chance(ctx === 'beach' ? 0.45 : 0.3), skirt: false, cup: !kid && rng.chance(ctx === 'cafe' ? 0.35 : 0.16),
     speed: old ? rng.range(0.75, 1.0) : kid ? rng.range(1.1, 1.5) : rng.range(1.15, 1.55), pitch: kid ? rng.range(1.7, 2.1) : female ? rng.range(1.35, 1.7) : rng.range(0.8, 1.1),
-    col: {}, swim: false,
+    col: {}, swim: false, shorts: false, sleeveless: false, longSleeve: false,
+    bag: !active && !kid && rng.chance(0.27), towel: ctx === 'beach' && rng.chance(0.48), umbrella: ctx === 'beach' && rng.chance(0.09), phone: !kid && !active && rng.chance(0.35),
+    face: rng.range(0.94, 1.06),
   };
   const c = L.col;
   c.skin = skin; c.hair = old ? pick(HAIR.slice(7, 9)) : pick(HAIR.slice(0, 7)); if (!old && rng.chance(0.06)) c.hair = HAIR[9].clone();
   c.shoe = pick(SHOES); c.cup = new THREE.Color('#c79a6b'); c.hat = pick(HATS); c.glasses = new THREE.Color('#121212');
   L.hair = female ? rng.pick([1, 1, 2, 3, 0, 4]) : (rng.chance(0.12) && !kid ? -1 : rng.pick([0, 0, 0, 4]));
   if (ctx === 'beach' && !old) {
-    L.swim = true;
+    L.swim = true; L.shorts = true; L.sleeveless = true; L.bag = false; L.phone = false;
     const sw = pick(SWIM);
     c.top = female ? sw : skin.clone(); c.bottom = sw; c.thigh = skin.clone(); c.shin = skin.clone();
     c.sleeve = skin.clone(); c.fore = skin.clone(); c.shoe = rng.chance(0.5) ? skin.clone().multiplyScalar(0.95) : pick(SWIM);
@@ -146,9 +151,10 @@ export function makeLook(rng, ctx = 'street') {
   c.top = pick(TOPS); c.bottom = pick(BOTTOMS);
   const sleeve = rng.next();
   c.sleeve = sleeve < 0.15 ? skin.clone() : c.top.clone(); c.fore = sleeve > 0.84 ? c.top.clone() : skin.clone();
-  const shorts = rng.chance(old ? 0.15 : 0.45);
+  const shorts = active || rng.chance(old ? 0.15 : 0.45);
+  L.shorts = shorts; L.sleeveless = active || sleeve < 0.15; L.longSleeve = !active && sleeve > 0.84;
   c.thigh = c.bottom.clone(); c.shin = shorts ? skin.clone() : c.bottom.clone();
-  if (female) {
+  if (female && !active) {
     const r = rng.next();
     if (r < 0.35) { const d = pick(DRESS); c.top = d; c.bottom = d.clone(); c.skirt = d.clone(); L.skirt = true; c.sleeve = rng.chance(0.5) ? skin.clone() : d.clone(); c.fore = skin.clone(); c.thigh = skin.clone(); c.shin = skin.clone(); }
     else if (r < 0.55) { c.skirt = pick(DRESS); L.skirt = true; c.bottom = c.skirt.clone(); c.thigh = skin.clone(); c.shin = skin.clone(); }
@@ -157,7 +163,12 @@ export function makeLook(rng, ctx = 'street') {
   if (old && female && rng.chance(0.5)) { // the classic yiayia in black
     const blk = new THREE.Color('#1a1a1c'); c.top = blk; c.bottom = blk.clone(); c.skirt = blk.clone(); L.skirt = true; c.sleeve = blk.clone(); c.fore = blk.clone(); c.thigh = skin.clone(); c.shin = new THREE.Color('#2a2622'); c.shoe = blk.clone(); L.hat = 'scarf'; c.hat = blk.clone(); L.hair = 2;
   } else if (old && !female && rng.chance(0.5)) { c.top = new THREE.Color('#f2f0ea'); c.bottom = new THREE.Color('#5d5f63'); c.thigh = c.bottom.clone(); c.shin = c.bottom.clone(); L.hat = 'cap'; c.hat = new THREE.Color('#4b4136'); }
-  if (kid) { c.top = pick(SWIM); c.bottom = pick(BOTTOMS); c.thigh = c.bottom.clone(); c.shin = skin.clone(); L.glasses = false; }
+  if (kid) { L.shorts = true; c.top = pick(SWIM); c.bottom = pick(BOTTOMS); c.thigh = c.bottom.clone(); c.shin = skin.clone(); L.glasses = false; }
+  if (active) {
+    L.cup = false; L.bag = false; L.hat = ctx === 'cyclist' ? 'cap' : (rng.chance(0.4) ? 'cap' : null); L.hair = female ? 3 : 0; L.skirt = false;
+    c.top = pick(SWIM); c.sleeve = skin.clone(); c.fore = skin.clone(); c.bottom = new THREE.Color('#28313d'); c.thigh = c.bottom.clone(); c.shin = skin.clone();
+    L.speed = ctx === 'cyclist' ? rng.range(3.8, 5.2) : rng.range(2.2, 3.1);
+  }
   return L;
 }
 
@@ -203,7 +214,7 @@ export function poseStand(P, t, sd, variant = 'idle') {
   for (let i = 0; i < 2; i++) { P.shA[i] = 0.04 + 0.02 * Math.sin(t * 1.1 + i); P.shR[i] = 0.1; P.elb[i] = 0.14 + 0.04 * Math.sin(t * 0.9 + i * 2); }
   P.hYaw = 0.55 * Math.sin(t * 0.31 + sd * 3) * Math.sin(t * 0.13 + sd); P.hPitch = 0.05 * Math.sin(t * 0.4 + sd);
   if (variant === 'chat') { P.shA[1] = 0.55 + 0.25 * Math.sin(t * 2.9 + sd); P.shR[1] = 0.25; P.elb[1] = 1.25 + 0.45 * Math.sin(t * 4.1 + sd); P.hPitch += 0.08 * Math.sin(t * 5); }
-  else if (variant === 'phone') { P.shA[1] = 0.32; P.shR[1] = 0.42; P.elb[1] = 2.55; P.hYaw *= 0.3; P.hPitch = 0.12; P.tRoll -= 0.04; }
+  else if (variant === 'phone') { P.shA[1] = 0.35; P.shR[1] = 0.12; P.elb[1] = 1.5; P.hYaw *= 0.3; P.hPitch = 0.28; P.tRoll -= 0.04; }
   else if (variant === 'cross') { for (let i = 0; i < 2; i++) { P.shA[i] = 0.42; P.shR[i] = 0.04; P.elb[i] = 1.95; } }
   else if (variant === 'hips') { for (let i = 0; i < 2; i++) { P.shA[i] = -0.15; P.shR[i] = 0.55; P.elb[i] = 1.55; } }
   else if (variant === 'look') { P.hYaw = 0.9 * Math.sin(t * 0.8 + sd); }
@@ -230,12 +241,29 @@ export function poseSwim(P, t) {
   P.hYaw = 0.35 * Math.sin(t * 2.2); P.hPitch = -0.95;
 }
 /** overlays on top of a base pose */
-export function armsPanic(P, t) { for (let i = 0; i < 2; i++) { const w = Math.sin(t * 15 + i * 2.1); P.shR[i] = 2.45 + 0.3 * w; P.shA[i] = 0.35 + 0.2 * w; P.elb[i] = 0.55 + 0.4 * Math.sin(t * 15 + i); } P.hPitch = -0.12; }
-export function armsFist(P, t) { P.shA[1] = 2.2 + 0.25 * Math.sin(t * 13); P.shR[1] = 0.28; P.elb[1] = 1.0 + 0.35 * Math.sin(t * 13); P.shA[0] = -0.15; P.shR[0] = 0.55; P.elb[0] = 1.55; P.tPitch += 0.06; }
-export function armsWave(P, t) { P.shR[1] = 2.65; P.shA[1] = 0.25; P.elb[1] = 0.45 + 0.4 * Math.sin(t * 10); }
+export function armsPanic(P, t) {
+  const flinch = Math.exp(-t * 2.4);
+  for (let i = 0; i < 2; i++) { P.shR[i] = 0.48 + flinch * 0.35; P.shA[i] = 0.72 + flinch * 0.22; P.elb[i] = 1.4 + flinch * 0.4; }
+  P.tPitch += 0.12; P.hPitch = 0.16;
+}
+export function armsFist(P, t) { P.shA[1] = 1.12 + 0.08 * Math.sin(t * 5); P.shR[1] = 0.3; P.elb[1] = 1.65; P.tPitch += 0.04; }
+export function armsWave(P, t) { P.shR[1] = 1.65; P.shA[1] = 0.22; P.elb[1] = 0.9 + 0.17 * Math.sin(t * 6); }
+/** A protective airborne tuck; retained name for existing reaction callers. */
 export function starfish(P, t) {
-  for (let i = 0; i < 2; i++) { P.hipA[i] = 0.25 * Math.sin(t * 9 + i * 3); P.hipR[i] = 0.55; P.knee[i] = 0.35; P.foot[i] = -0.3; P.shR[i] = 2.35 + 0.35 * Math.sin(t * 18 + i); P.shA[i] = 0.2; P.elb[i] = 0.3; }
-  P.pelY = HIP_Y; P.tPitch = -0.1; P.hPitch = -0.2;
+  for (let i = 0; i < 2; i++) { P.hipA[i] = i ? 0.62 : 0.35; P.hipR[i] = 0.12; P.knee[i] = i ? 1.25 : 0.88; P.foot[i] = -0.08; P.shR[i] = 0.4; P.shA[i] = 1.15 + 0.08 * Math.sin(t * 4); P.elb[i] = 0.7; }
+  P.pelY = HIP_Y; P.tPitch = 0.18; P.hPitch = 0.22;
+}
+export function poseCycle(P, ph) {
+  P.pelY = 1.015; P.tPitch = 0.32; P.tRoll = 0; P.tYaw = 0; P.pelYaw = 0; P.pelRoll = 0; P.cyclePh = ph;
+  for (let i = 0; i < 2; i++) {
+    const phase=ph+i*Math.PI, targetY=0.35+0.155*Math.sin(phase)+ANKLE, targetZ=0.155*Math.cos(phase)-0.045;
+    const down=P.pelY-0.02-targetY, d2=down*down+targetZ*targetZ;
+    const knee=Math.acos(clamp((d2-THIGH*THIGH-SHIN*SHIN)/(2*THIGH*SHIN),-1,1));
+    const hip=Math.atan2(targetZ,down)+Math.atan2(SHIN*Math.sin(knee),THIGH+SHIN*Math.cos(knee));
+    P.hipA[i]=hip;P.knee[i]=knee;P.hipR[i]=0;P.foot[i]=knee-hip;
+    P.shA[i] = 0.8; P.shR[i] = 0.06; P.elb[i] = 0.38;
+  }
+  P.hPitch = -0.2; P.hYaw = 0;
 }
 
 // ------------------------------------------------------------------ the crowd renderer
@@ -244,7 +272,8 @@ export function starfish(P, t) {
 const SHADOW = new Set(['pelvis', 'torsoM', 'torsoF', 'head', 'thigh', 'shin', 'skirt', 'uarm', 'hair1']);
 export class Crowd {
   constructor(scene, max) {
-    this.max = max;
+    this.max = max; this.scene = scene; this.near = new Map(); this.nearCount = 0; this.nearBuilt = 0; this.frame = 0;
+    this.nearMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, vertexColors: true });
     // woven fabric (micro-normal + sheen) for clothes, a softer sheen for skin; colours come per instance
     const mat = trimMat('#ffffff', { rough: 0.85, scale: 0.025, nk: 0.55, sheen: 0.22 });
     const skinM = trimMat('#ffffff', { rough: 0.5, scale: 0.02, nk: 0.15, sheen: 0.1 });
@@ -253,6 +282,9 @@ export class Crowd {
     const glassM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.6 });
     const hair = hairGeos(), hats = hatGeos();
     const def = {
+      bicycle: [bicycleGeo(), matV, 1],
+      farBody: [new THREE.CylinderGeometry(0.17, 0.14, 0.5, 5), mat, 1], farHead: [new THREE.IcosahedronGeometry(0.11, 0), mat, 1],
+      farLimb: [limb(0.8,0.055,0.031,0,0.3,4), mat, 2], farArm: [limb(0.52,0.044,0.025,0,0.3,4), mat, 2],
       pelvis: [pelvisGeo(), mat, 1], torsoM: [torsoGeo(false), mat, 1], torsoF: [torsoGeo(true), mat, 1],
       neck: [limb(0.1, 0.05, 0.055, 0, 0.5, 8), skinM, 1], head: [headGeo(), matV, 1],
       hair0: [hair[0], hairM, 1], hair1: [hair[1], hairM, 1], hair2: [hair[2], hairM, 1], hair3: [hair[3], hairM, 1], hair4: [hair[4], hairM, 1],
@@ -273,6 +305,7 @@ export class Crowd {
     this.W0 = new THREE.Matrix4(); this.Wp = new THREE.Matrix4(); this.Wt = new THREE.Matrix4(); this.Ws = new THREE.Matrix4(); this.Wf = new THREE.Matrix4();
     this.Wto = new THREE.Matrix4(); this.Wn = new THREE.Matrix4(); this.Wh = new THREE.Matrix4(); this.Wa = new THREE.Matrix4(); this.Wfa = new THREE.Matrix4(); this.Wha = new THREE.Matrix4();
     this.T = new THREE.Matrix4(); this.O = new THREE.Matrix4(); this.E = new THREE.Euler(); this.S = new THREE.Vector3();
+    warmHumanRig(this.nearMaterial);
   }
   /** which parts a look uses (cached on the look) */
   uses(L) {
@@ -281,7 +314,7 @@ export class Crowd {
     if (L.hat === 'cap' && L.hair === 1) u.hair = 'hair0';
     return (L.u = u);
   }
-  begin() { for (const p of Object.values(this.parts)) p.n = 0; }
+  begin() { this.frame++; this.nearCount = 0; this.nearBuilt = 0; for (const rig of this.near.values()) rig.mesh.visible = false; for (const p of Object.values(this.parts)) p.n = 0; }
   _bone(out, parent, x, y, z, rx, ry, rz, order) { this.E.set(rx, ry, rz, order); this.T.makeRotationFromEuler(this.E); this.T.setPosition(x, y, z); out.multiplyMatrices(parent, this.T); return out; }
   _put(name, i, M, col, sx = 1, sy = 1, sz = 1) {
     const p = this.parts[name], idx = p.n * p.mult + i;
@@ -289,7 +322,22 @@ export class Crowd {
     p.im.setMatrixAt(idx, this.O); p.im.setColorAt(idx, col);
     if (i === p.mult - 1) p.n++;
   }
-  draw(P, L) {
+  draw(P, L, distance = 0) {
+    if (distance < 20 && this.nearCount < 12) {
+      let rig = this.near.get(L);
+      // Spread cold geometry work across frames. Waiting actors remain visible
+      // through the instanced LOD; cached rigs have no construction penalty.
+      if (!rig && this.nearBuilt < 1) {
+        this.nearBuilt++;
+        if (this.near.size >= 64) {
+          let oldest; for (const entry of this.near) if (entry[1].lastFrame !== this.frame && (!oldest || entry[1].lastFrame < oldest[1].lastFrame)) oldest = entry;
+          if (oldest) { this.scene.remove(oldest[1].mesh); oldest[1].mesh.geometry.dispose(); for (const p of oldest[1].pedals) { p.pedal.geometry.dispose(); p.crank.geometry.dispose(); } oldest[1].skeleton.dispose(); this.near.delete(oldest[0]); }
+        }
+        rig = createHumanRig(L, this.nearMaterial); this.near.set(L, rig); this.scene.add(rig.mesh);
+      }
+      if (rig) { this.nearCount++; rig.lastFrame = this.frame; rig.mesh.visible = true; poseHumanRig(rig, P, L); return; }
+    }
+    if (distance > 58) { this._far(P, L); return; }
     const u = this.uses(L), c = L.col;
     const k = L.k, pv = P.pivot * k;
     // root: rotate about the pivot (hips) so lying / flipping bodies turn around their centre
@@ -298,6 +346,7 @@ export class Crowd {
     const e = W0.elements;
     const tx = P.x - e[4] * pv, ty = P.y + pv - e[5] * pv, tz = P.z - e[6] * pv;
     W0.scale(this.S.set(k, k, k)); W0.setPosition(tx, ty, tz);
+    if (L.role === 'cyclist') this._put('bicycle', 0, W0, this.nearMaterial.color);
     const Wp = this._bone(this.Wp, W0, 0, P.pelY, 0, 0, P.pelYaw, P.pelRoll, 'YXZ');
     this._put('pelvis', 0, Wp, c.bottom, L.wH, 1, L.wH);
     if (u.skirt) this._put('skirt', 0, this._bone(this.Wt, Wp, 0, 0.075, 0, 0.04 + (P.hipA[0] + P.hipA[1]) * 0.25, 0, 0, 'XYZ'), c.skirt, L.wH * 0.95, 1, L.wH * 0.95);
@@ -332,10 +381,241 @@ export class Crowd {
       if (i === 1 && u.cup) this._put('cup', 0, Wha, c.cup);
     }
   }
+  _far(P, L) {
+    const c=L.col, k=L.k, pv=P.pivot*k;
+    this.E.set(P.pitch,P.yaw,P.roll,'YZX'); const root=this.W0.makeRotationFromEuler(this.E), e=root.elements;
+    const x=P.x-e[4]*pv,y=P.y+pv-e[5]*pv,z=P.z-e[6]*pv; root.scale(this.S.set(k,k,k));root.setPosition(x,y,z);
+    if(L.role==='cyclist')this._put('bicycle',0,root,this.nearMaterial.color);
+    const pel=this._bone(this.Wp,root,0,P.pelY,0,0,P.pelYaw,P.pelRoll,'YXZ');
+    const torso=this._bone(this.Wto,pel,0,0.30,0,P.tPitch,P.tYaw,P.tRoll,'YXZ'); this._put('farBody',0,torso,c.top,L.wT,1,L.dep*0.7);
+    this._put('farHead',0,this._bone(this.Wh,torso,0,0.38,0,0,P.hYaw,0,'YXZ'),c.skin,L.headS,L.headS*1.1,L.headS);
+    for(let i=0;i<2;i++) {
+      const sign=i===0?1:-1;
+      this._put('farLimb',i,this._bone(this.Wt,pel,sign*HIP_X*L.wH,-0.02,0,-P.hipA[i]*0.55,0,sign*P.hipR[i],'ZXY'),L.shorts?c.skin:c.bottom,L.wL,1,L.wL);
+      this._put('farArm',i,this._bone(this.Wa,torso,sign*SH_X*L.wT,0.19,0,-P.shA[i],0,sign*P.shR[i],'ZXY'),c.skin);
+    }
+  }
   end() {
     for (const p of Object.values(this.parts)) {
-      p.im.count = p.n;
+      p.im.count = p.n * p.mult;
       if (p.n) { p.im.instanceMatrix.needsUpdate = true; p.im.instanceColor.needsUpdate = true; p.im.instanceMatrix.clearUpdateRanges(); p.im.instanceMatrix.addUpdateRange(0, p.n * p.mult * 16); p.im.instanceColor.clearUpdateRanges(); p.im.instanceColor.addUpdateRange(0, p.n * p.mult * 3); }
     }
+  }
+}
+
+// Close LOD. One material and one SkinnedMesh per person; joints have a soft
+// transition between the parent and child bones. Clothing is an outer shell,
+// with hems, collars, straps and cuffs rather than a colour swap on bare skin.
+function box(w, h, d, x = 0, y = 0, z = 0) { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return g; }
+function ball(x, y, z, sx, sy, sz) { const g = new THREE.SphereGeometry(1, 10, 8); g.scale(sx, sy, sz); g.translate(x, y, z); return g; }
+function tubeBetween(a, b, radius = 0.012, segments = 6) {
+  const d = new THREE.Vector3().subVectors(b, a), g = new THREE.CylinderGeometry(radius, radius, d.length(), segments);
+  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
+  g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2); return g;
+}
+function bicycleGeo() {
+  const all = [], V = (y, z) => new THREE.Vector3(0, y, z);
+  for (const z of [-0.51, 0.55]) {
+    const tyre = new THREE.TorusGeometry(0.31, 0.025, 6, 20); tyre.rotateY(Math.PI / 2); tyre.translate(0, 0.34, z); all.push(colorize(tyre, [0.035, 0.04, 0.048]));
+    const rim = new THREE.TorusGeometry(0.278, 0.009, 4, 20); rim.rotateY(Math.PI / 2); rim.translate(0, 0.34, z); all.push(colorize(rim, [0.6, 0.63, 0.66]));
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI; all.push(colorize(tubeBetween(V(0.34 - Math.sin(a) * 0.275, z - Math.cos(a) * 0.275), V(0.34 + Math.sin(a) * 0.275, z + Math.cos(a) * 0.275), 0.003, 3), [0.5, 0.5, 0.5])); }
+  }
+  const pts = [V(0.34, -0.51), V(0.35, 0), V(0.84, -0.14), V(0.87, 0.39), V(0.34, 0.55)];
+  for (const [a, b] of [[0,1],[0,2],[1,2],[2,3],[1,3],[3,4]]) all.push(colorize(tubeBetween(pts[a], pts[b], 0.018), [0.045, 0.24, 0.29]));
+  all.push(colorize(box(0.2, 0.04, 0.22, 0, 0.92, -0.14), [0.03, 0.035, 0.04]));
+  all.push(colorize(tubeBetween(V(0.84,-0.14),V(0.92,-0.14),0.013),[0.5,0.5,0.5]));
+  all.push(colorize(tubeBetween(V(0.87,0.39),V(1.04,0.45),0.014),[0.5,0.5,0.5]));
+  all.push(colorize(box(0.48,0.027,0.045,0,1.04,0.45),[0.04,0.04,0.04]));
+  return merge(all);
+}
+function towelGeo(stripe) {
+  const path = [[0.08,0.125],[0.16,0.139],[0.25,0.145],[0.35,0.133],[0.435,0.105],[0.49,0.063],[0.51,0.008],[0.492,-0.045],[0.455,-0.085],[0.38,-0.109],[0.30,-0.122],[0.20,-0.129]];
+  const positions=[], colors=[], indices=[], cream=new THREE.Color('#f7edda');
+  for(let j=0;j<path.length;j++) for(let side=0;side<2;side++) for(let k=0;k<5;k++) {
+    const u=k/4, [y,z]=path[j], fold=0.004*Math.sin(u*Math.PI*3+j*0.3), col=Math.floor(j/2)%2?cream:stripe;
+    positions.push(0.12+(u-0.5)*0.145,y+fold,z+(side?1:-1)*0.003+fold*0.6); colors.push(col.r,col.g,col.b);
+  }
+  for(let j=0;j<path.length-1;j++) for(let side=0;side<2;side++) for(let k=0;k<4;k++) {
+    const a=j*10+side*5+k,b=a+1,c=a+10,d=c+1;
+    if(side) indices.push(a,b,c,b,d,c); else indices.push(a,c,b,b,c,d);
+  }
+  for(let j=0;j<path.length-1;j++)for(const k of [0,4]) {const a=j*10+k,b=a+5,c=a+10,d=c+5;indices.push(a,b,c,b,d,c);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+let bicycleTemplate;
+// Immutable, appearance-independent source meshes. Each attachment receives a
+// clone because binding bakes scale, colours and skin weights into its vertices.
+// This cache has a fixed set of geometry keys, independent of crowd size.
+const rigTemplates = new Map();
+let rigHairTemplates, rigHatTemplates;
+function rigTemplate(key, build) {
+  let g = rigTemplates.get(key);
+  if (!g) { g = build(); rigTemplates.set(key, g); }
+  return g.clone();
+}
+function rigLimb(...args) { args[5] = Math.max(args[5] || 9, 16); return rigTemplate('limb:' + args.join(','), () => limb(...args)); }
+function rigHair(index) {
+  rigHairTemplates ||= hairGeos().map(clean);
+  return rigHairTemplates[index].clone();
+}
+function rigHat(name) {
+  rigHatTemplates ||= Object.fromEntries(Object.entries(hatGeos()).map(([key, g]) => [key, clean(g)]));
+  return rigHatTemplates[name].clone();
+}
+// A continuous surface crosses each elbow/knee. Skin weights bend the tube;
+// there are no intersecting endcaps or overlapping joint balls at the bend.
+function chainGeo(kind, clothed) {
+  let p;
+  if(kind==='arm') p = clothed
+    ? [[0,0.035],[0.049,0.022],[0.058,0],[0.057,-0.10],[0.048,-0.255],[0.046,-0.29],[0.047,-0.325],[0.043,-0.43],[0.036,-0.54],[0,-0.55]]
+    : [[0,0.03],[0.04,0.02],[0.047,0],[0.052,-0.09],[0.037,-0.255],[0.035,-0.29],[0.036,-0.325],[0.032,-0.43],[0.026,-0.54],[0,-0.55]];
+  else p = clothed
+    ? [[0,0.045],[0.076,0.028],[0.087,0],[0.09,-0.13],[0.065,-0.35],[0.060,-0.405],[0.059,-0.44],[0.061,-0.475],[0.062,-0.59],[0.05,-0.74],[0.044,-0.86],[0,-0.88]]
+    : [[0,0.04],[0.065,0.025],[0.078,0],[0.085,-0.11],[0.058,-0.35],[0.051,-0.405],[0.050,-0.44],[0.052,-0.475],[0.056,-0.59],[0.042,-0.74],[0.032,-0.86],[0,-0.875]];
+  return lathe(p.reverse(),16);
+}
+let rigWarmed = false;
+function warmHumanRig(material) {
+  if (rigWarmed) return;
+  // Build once during level loading, never in the scene. This warms immutable
+  // templates and the binding/merge path before the first nearby person arrives.
+  // An independent seed leaves the actual crowd's random sequence untouched.
+  const look = makeLook(new RNG(137), 'street');
+  Object.assign(look, { female: false, skirt: false, shorts: false, swim: false,
+    sleeveless: false, longSleeve: false, hair: 0, hat: 'cap' });
+  const rig = createHumanRig(look, material);
+  rig.mesh.geometry.dispose(); rig.skeleton.dispose();
+  for (const p of rig.pedals) { p.pedal.geometry.dispose(); p.crank.geometry.dispose(); }
+  rigWarmed = true;
+}
+function createHumanRig(L, material) {
+  const bones = [], bind = [], names = {}, c = L.col, parts = [];
+  function bone(name, parent, x, y, z) {
+    const b = new THREE.Bone(); b.name = name; b.position.set(x,y,z);
+    names[name] = bones.length; bones.push(b); if (parent !== null) bones[parent].add(b); return bones.length - 1;
+  }
+  const pelvis = bone('pelvis',null,0,HIP_Y,0), torso = bone('torso',pelvis,0,0.075,0), neck = bone('neck',torso,0,0.475,0.004), head = bone('head',neck,0,0.045,0.01);
+  const legs = [], arms = [];
+  for (let i=0;i<2;i++) {
+    const sign=i===0?1:-1;
+    const thigh=bone('thigh'+i,pelvis,sign*HIP_X*L.wH,-0.02,0), shin=bone('shin'+i,thigh,0,-THIGH,0), foot=bone('foot'+i,shin,0,-SHIN,0);
+    legs.push([thigh,shin,foot]);
+    const upper=bone('upper'+i,torso,sign*SH_X*L.wT,SH_Y,-0.005), lower=bone('lower'+i,upper,0,-UARM,0), hand=bone('hand'+i,lower,0,-FARM,0);
+    arms.push([upper,lower,hand]);
+  }
+  bones[0].updateMatrixWorld(true);
+  for (const b of bones) bind.push(b.matrixWorld.clone());
+  function add(geometry, bi, color, scale = [1,1,1], blend = false, chain = null) {
+    const g=clean(geometry); g.scale(...scale);
+    const pos=g.attributes.position, indices=new Uint16Array(pos.count*4), weights=new Float32Array(pos.count*4);
+    const colors=g.attributes.color, col=new Float32Array(pos.count*3);
+    const parent=bones[bi].parent?.isBone ? bones.indexOf(bones[bi].parent) : bi;
+    for(let j=0;j<pos.count;j++) {
+      const w=chain ? clamp((chain.joint-pos.getY(j)+0.05)/0.1,0,1) : blend ? 0.38*clamp((pos.getY(j)+0.065)/0.09,0,1) : 0;
+      indices[j*4]=bi; indices[j*4+1]=chain ? chain.child : parent; weights[j*4]=1-w; weights[j*4+1]=w;
+      col[j*3]=(colors?colors.getX(j):1)*color.r; col[j*3+1]=(colors?colors.getY(j):1)*color.g; col[j*3+2]=(colors?colors.getZ(j):1)*color.b;
+      if (bi === head && colors && colors.getX(j) > 1.3) { col[j*3]=0.72;col[j*3+1]=0.72;col[j*3+2]=0.68; }
+    }
+    g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+    g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(indices,4)); g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));
+    g.applyMatrix4(bind[bi]); parts.push(g);
+  }
+  const white=new THREE.Color(1,1,1), dark=new THREE.Color('#24262b');
+  add(rigTemplate('pelvis', pelvisGeo),pelvis,c.skin,[L.wH,1,L.wH]);
+  if (L.swim) add(rigTemplate('torso:' + L.female, () => torsoGeo(L.female, 28)),torso,c.skin,[L.wT,1,L.wT*L.dep]);
+  // Cloth has looser silhouettes, a visible neck opening and its own thickness.
+  if (!L.swim) {
+    const shirt=rigTemplate('torso:' + L.female, () => torsoGeo(L.female, 28));
+    deform(shirt,v=>{ v.x*=1.035; v.z*=1.06; if(v.y<0.08) v.x*=1.06; });
+    add(shirt,torso,c.top,[L.wT,1,L.wT*L.dep]);
+    if (!L.sleeveless) for (const x of [-0.025,0.025]) { const fold=box(0.032,0.09,0.009,x,0.412,0.066); fold.rotateZ(x>0?-0.16:0.16); add(fold,torso,c.top.clone().multiplyScalar(0.86)); }
+    if (L.role!=='jogger' && L.role!=='cyclist') for(let j=0;j<3;j++) add(ball(0,0.14+j*0.09,0.118*L.dep*L.wT,0.003,0.003,0.003),torso,c.top.clone().multiplyScalar(0.6));
+  } else if (L.female) {
+    const swimTop=rigTemplate('torso:true', () => torsoGeo(true, 28)); deform(swimTop,v=>{v.y=clamp(v.y,0.205,0.345);v.x*=1.025;v.z*=1.04;});
+    add(swimTop,torso,c.top,[L.wT,1,L.wT*L.dep]);
+    // Bandeau swim top: no separate shoulder straps intersect the chest.
+  }
+  const waistband=rigTemplate('pelvis', pelvisGeo); waistband.scale(1.025,1.05,1.06); add(waistband,pelvis,c.bottom,[L.wH,1,L.wH]);
+  if (L.skirt) {
+    const skirt=rigTemplate('skirt', skirtGeo); deform(skirt,v=>{const a=Math.atan2(v.z,v.x), f=1+0.025*Math.sin(a*12)*Math.max(0,-v.y/0.5);v.x*=f;v.z*=f;});
+    add(skirt,pelvis,c.skirt||c.bottom,[L.wH,1,L.wH]);
+  }
+  add(rigLimb(0.08,0.047,0.05,0,0.5,8).translate(0,0.075,0),neck,c.skin);
+  add(rigTemplate('head', () => headGeo(true)),head,c.skin,[L.headS*L.face,L.headS,L.headS]);
+  if(L.hair>=0 && L.hat!=='scarf') add(rigHair(L.hat === 'cap' ? 0 : L.hair),head,c.hair,[L.headS*L.face,L.headS,L.headS]);
+  if(L.hat) add(rigHat(L.hat),head,c.hat,[L.headS*L.face,L.headS,L.headS]);
+  if(L.glasses) add(rigTemplate('glasses', glassesGeo),head,c.glasses,[L.headS*L.face,L.headS,L.headS]);
+  if(L.old) for (let i=0;i<2;i++) {
+    add(box(0.045,0.002,0.001,0,0.151+i*0.009,0.084),head,c.skin.clone().multiplyScalar(0.73),[L.headS,L.headS,L.headS]);
+  }
+  for(let i=0;i<2;i++) {
+    const [thigh,shin,foot]=legs[i], [upper,lower,hand]=arms[i];
+    const trousers = !L.skirt && !L.shorts;
+    add(rigTemplate(trousers ? 'leg:trousers' : 'leg:skin', () => chainGeo('leg', trousers)),thigh,trousers?c.bottom:c.skin,[L.wL,1,L.wL],false,{child:shin,joint:-THIGH});
+    if(!L.skirt && L.shorts) {
+      const length=L.swim&&L.female?0.055:0.235;
+      add(rigLimb(length,0.087,0.081,0.005,0.3,10),thigh,c.bottom,[L.wL,1,L.wL],true);
+      if(length>0.1) add(rigLimb(0.018,0.081,0.081,0,0.3,10).translate(0,-length+0.012,0),thigh,c.bottom.clone().multiplyScalar(0.85),[L.wL,1,L.wL]);
+    }
+    add(rigTemplate('foot', footGeo),foot,L.swim?c.skin:c.shoe);
+    if(!L.swim) add(box(0.094,0.014,0.224,0,-0.074,0.045),foot,c.shoe.clone().multiplyScalar(0.75));
+    else add(box(0.089,0.01,0.215,0,-0.074,0.045),foot,c.bottom);
+    const coveredArm = !L.sleeveless && !L.swim && L.longSleeve;
+    add(rigTemplate(coveredArm ? 'arm:sleeve' : 'arm:skin', () => chainGeo('arm', coveredArm)),upper,coveredArm?c.top:c.skin,[L.wL,1,L.wL],false,{child:lower,joint:-UARM});
+    if(!L.sleeveless && !L.swim && !L.longSleeve) add(rigLimb(0.15,0.058,0.05,0,0.3,10),upper,c.top,[L.wL,1,L.wL],true);
+    add(rigTemplate('hand:' + i, () => handGeo(i === 0 ? -1 : 1)),hand,c.skin,[1,1,1],true);
+    if(i===1&&L.cup) add(rigTemplate('cup', cupGeo),hand,c.cup);
+    if(i===1&&L.phone) { add(box(0.054,0.097,0.009,0,-0.04,0.027),hand,dark); add(box(0.045,0.078,0.002,0,-0.039,0.033),hand,new THREE.Color('#49727e')); }
+  }
+  if(L.bag) {
+    add(ball(-0.22,-0.015,-0.005,0.095,0.13,0.047),torso,new THREE.Color('#996c41'));
+    const front=L.wT*L.dep, chest=L.female?0.025:0;
+    const strapPath=new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0.13*L.wT,0.465,0.10*front),
+      new THREE.Vector3(0.06*L.wT,0.335,0.17*front+chest),
+      new THREE.Vector3(-0.085*L.wT,0.19,0.16*front+chest*0.5),
+      new THREE.Vector3(-0.22,0.065,0.045),
+    ]);
+    const strap=new THREE.TubeGeometry(strapPath,16,0.008,5,false);
+    add(strap,torso,new THREE.Color('#795532'));
+  }
+  if(L.towel) add(towelGeo(c.bottom),torso,white,[L.wT,1,L.wT*L.dep]);
+  if(L.umbrella) {
+    add(tubeBetween(new THREE.Vector3(-0.34,-0.27,0),new THREE.Vector3(-0.34,1.05,0),0.008),torso,dark);
+    const canopy=new THREE.ConeGeometry(0.56,0.21,12,1,true); canopy.translate(-0.34,1.05,0); add(canopy,torso,c.bottom);
+  }
+  // The bicycle follows the world root rather than the pedalling hips.
+  let bicycle=null; const pedals=[];
+  if(L.role==='cyclist') {
+    bicycleTemplate ||= bicycleGeo(); bicycle=new THREE.Mesh(bicycleTemplate,material); bicycle.castShadow=true;
+    for(let i=0;i<2;i++) {
+      const pedal=new THREE.Mesh(colorize(box(0.12,0.016,0.075),[0.04,0.04,0.045]),material);
+      const crank=new THREE.Mesh(colorize(new THREE.CylinderGeometry(0.011,0.011,0.155,6),[0.4,0.4,0.4]),material);
+      bicycle.add(pedal,crank);pedals.push({pedal,crank});
+    }
+  }
+  const geometry=mergeGeometries(parts); for(const part of parts)part.dispose();
+  const mesh=new THREE.SkinnedMesh(geometry,material), skeleton=new THREE.Skeleton(bones);
+  mesh.add(bones[0]); mesh.bind(skeleton); mesh.frustumCulled=false; mesh.castShadow=true; mesh.receiveShadow=true;
+  if(bicycle)mesh.add(bicycle);
+  return {mesh,skeleton,bones,names,legs,arms,pedals,pivot:new THREE.Vector3(),lastFrame:0};
+}
+function poseHumanRig(rig,P,L) {
+  const {mesh,bones,names,legs,arms}=rig;
+  mesh.rotation.set(P.pitch,P.yaw,P.roll,'YZX'); mesh.scale.setScalar(L.k);
+  const pivot=rig.pivot.set(0,P.pivot*L.k,0).applyEuler(mesh.rotation);
+  mesh.position.set(P.x-pivot.x,P.y+P.pivot*L.k-pivot.y,P.z-pivot.z);
+  for(let i=0;i<rig.pedals.length;i++) {
+    const phase=(P.cyclePh||0)+i*Math.PI, sign=i===0?1:-1, {pedal,crank}=rig.pedals[i];
+    pedal.position.set(sign*0.105,0.35+0.155*Math.sin(phase),0.155*Math.cos(phase));
+    crank.position.set(sign*0.075,0.35+0.0775*Math.sin(phase),0.0775*Math.cos(phase)); crank.rotation.x=Math.PI/2-phase;
+  }
+  bones[0].position.y=P.pelY; bones[0].rotation.set(0,P.pelYaw,P.pelRoll,'YXZ');
+  bones[names.torso].rotation.set(P.tPitch,P.tYaw,P.tRoll,'YXZ');
+  bones[names.neck].rotation.set(P.hPitch*0.35,P.hYaw*0.3,0,'YXZ'); bones[names.head].rotation.set(P.hPitch*0.65,P.hYaw*0.7,0,'YXZ');
+  for(let i=0;i<2;i++) {
+    const sign=i===0?1:-1, [thigh,shin,foot]=legs[i], [upper,lower]=arms[i];
+    bones[thigh].rotation.set(-P.hipA[i],0,sign*P.hipR[i],'ZXY'); bones[shin].rotation.x=P.knee[i]; bones[foot].rotation.x=-P.foot[i];
+    bones[upper].rotation.set(-P.shA[i],0,sign*P.shR[i],'ZXY'); bones[lower].rotation.x=-P.elb[i];
   }
 }

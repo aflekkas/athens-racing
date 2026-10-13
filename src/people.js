@@ -1,62 +1,14 @@
 // People of the Riviera: pavement walkers who cross at the real zebra crossings and at the green man,
 // café terraces with seated customers, beach-goers, swimmers and sunbathers, people waiting at bus stops.
-// They react to fast cars: jump back and shout from the kerb, or (cartoon-style, nobody ever gets hurt)
-// leap clean over a car that gets too close, landing on their feet and shaking a fist.
+// Reactions use body language only: protective flinches, sideways evasive steps,
+// a braced landing, a raised fist, and a wave when a driver yields.
 import * as THREE from 'three';
 import { ROAD } from './road.js';
-import { RNG, clamp, lerp, damp, wrapAngle, canvasTex, CellInstances, M } from './util.js';
-import { Crowd, makeLook, newPose, poseWalk, poseStand, poseSit, poseLie, poseSwim, armsPanic, armsFist, armsWave, starfish, HIP_Y } from './human.js';
+import { RNG, clamp, damp, wrapAngle, CellInstances } from './util.js';
+import { Crowd, makeLook, newPose, poseWalk, poseCycle, poseStand, poseSit, poseLie, poseSwim, armsPanic, armsFist, armsWave, HIP_Y } from './human.js';
 
 const MAX = 150;
 const TAU = Math.PI * 2;
-const Q_STARTLE = ['HEY!', 'WATCH IT!', 'SLOW DOWN!', "I'M WALKING HERE!", 'WHOA!', 'IS THIS A RACE?!', 'CRAZY DRIVER!', 'MY HAIR!', 'TOO FAST!', 'NOT ON MY PAVEMENT!', 'EASY, SCHUMACHER!'];
-const Q_DIVE = ["I'M OK!", 'PARKOUR!', 'NOT TODAY!', 'MY FRAPPE!', 'ARE YOU CRAZY?!', 'THIS IS A ZEBRA CROSSING!', "I'LL TELL YOUR MOTHER!", 'OLYMPIC JUMP!', 'STILL GOT IT!'];
-const Q_RED = ['IT WAS RED!', 'RED MEANS STOP!', 'I SAW THAT!', 'POLICE!', 'UNBELIEVABLE!'];
-const Q_THANKS = ['THANK YOU!', 'BRAVO!', 'WHAT A GENTLEMAN!', 'NICE DRIVING!'];
-const Q_CAFE = ['MY COFFEE!', 'WE ARE EATING HERE!', 'BRAVO, SCHUMACHER!', 'MY SOUVLAKI!'];
-const Q_BLOCK = ["YOU'RE ON THE ZEBRA!", 'MOVE YOUR CAR!', 'REALLY?!'];
-const Q_BEACH = ['SAND IN MY FRAPPE!', 'THIS IS A BEACH!', 'MY TOWEL!'];
-
-// ------------------------------------------------------------------ speech bubbles
-class Bubbles {
-  constructor(scene) {
-    this.list = [];
-    for (let i = 0; i < 7; i++) {
-      const c = document.createElement('canvas'); c.width = 512; c.height = 176;
-      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
-      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false });
-      const sp = new THREE.Sprite(mat); sp.center.set(0.5, 0); sp.visible = false; sp.renderOrder = 6; scene.add(sp);
-      this.list.push({ sp, c, g: c.getContext('2d'), tex, p: null, t: 0, w: 1 });
-    }
-  }
-  say(p, text) {
-    let b = this.list.find((q) => q.p === p) || this.list.find((q) => !q.p);
-    if (!b) { b = this.list.reduce((a, q) => (q.t > a.t ? q : a)); }
-    const g = b.g, W = 512, H = 176;
-    g.clearRect(0, 0, W, H);
-    g.font = 'italic 900 64px "Barlow Condensed", "Arial Narrow", sans-serif';
-    let fs = 64; while (g.measureText(text).width > 440 && fs > 30) { fs -= 4; g.font = `italic 900 ${fs}px "Barlow Condensed", "Arial Narrow", sans-serif`; }
-    const tw = g.measureText(text).width, bw = Math.min(500, tw + 64), bx = (W - bw) / 2, bh = 112;
-    g.fillStyle = '#ffffff'; g.strokeStyle = '#0b0d10'; g.lineWidth = 7; g.lineJoin = 'round';
-    g.beginPath(); g.roundRect(bx, 6, bw, bh, 40); g.moveTo(W / 2 - 26, 6 + bh - 2); g.lineTo(W / 2 - 34, H - 8); g.lineTo(W / 2 + 6, 6 + bh - 2); g.closePath();
-    g.fill(); g.stroke(); g.fillStyle = '#ffffff'; g.fillRect(W / 2 - 24, bh - 4, 26, 10);
-    g.fillStyle = '#0b0d10'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, W / 2, 6 + bh / 2 + 3);
-    b.tex.needsUpdate = true; b.p = p; b.t = 0; b.sp.visible = true; b.sp.material.opacity = 1;
-  }
-  update(dt) {
-    for (const b of this.list) {
-      if (!b.p) continue;
-      b.t += dt;
-      const p = b.p;
-      if (b.t > 2.1 || !p.active) { b.p = null; b.sp.visible = false; continue; }
-      const pop = Math.min(1, b.t * 7), s = (0.75 + 0.25 * pop) * (1 + 0.08 * Math.sin(b.t * 18) * Math.max(0, 1 - b.t * 2));
-      b.sp.scale.set(3.3 * s, 3.3 * 176 / 512 * s, 1);
-      b.sp.position.set(p.x, p.wy + p.look.h + 0.3, p.z);
-      b.sp.material.opacity = b.t > 1.7 ? (2.1 - b.t) / 0.4 : 1;
-    }
-  }
-}
-
 // ------------------------------------------------------------------ café furniture
 function chairGeo() {
   const parts = [];
@@ -94,7 +46,6 @@ export class People {
     this.peds = Array.from({ length: MAX }, (_, i) => ({ slot: i, active: false, P: newPose() }));
     this.onRoad = []; this.events = []; this.t = 0;
     this.traffic = null;
-    this.bubbles = new Bubbles(scene);
     const J = assets.junctions || [];
     this.zebras = (assets.crossings || []).map((s) => ({ s, j: J.find((j) => Math.abs(j.zF - s) < 0.5 || Math.abs(j.zO - s) < 0.5) || null }));
     this.anchors = [];
@@ -197,7 +148,7 @@ export class People {
   init(p, kind, look) {
     Object.assign(p, {
       active: true, kind, look, rs: false, mode: 'stand', variant: 'idle', sd: this.rng.next(), t: this.rng.range(0, 20), ph: this.rng.range(0, TAU),
-      air: null, react: null, startleCool: 0, sayCool: 0, thanked: false, blockT: 0, wy: 0, home: null, drawn: false, hurry: false, zeb: null,
+      air: null, react: null, startleCool: 0, thanked: false, blockT: 0, wy: 0, home: null, drawn: false, hurry: false, zeb: null,
       yaw: undefined, hd: 0, moving: false, anchor: null, toSide: 0, zebI: -1, target: null, pause: 0,
     });
     return p;
@@ -218,9 +169,12 @@ export class People {
     if (s === null || s < 30 || s > r.length - 30) return;
     const side = rng.chance(r.seaR(s) < 140 ? 0.62 : 0.5) ? 1 : -1;
     const sw = ROAD.sidewalk(r, s, side); if (sw < 1.4) return;
-    this.init(p, 'walker', makeLook(rng, 'street'));
+    // Keep bicycles on broad promenades; runners share the ordinary pavement.
+    const activity = !zeb && sw > 4.5 && rng.chance(0.12) ? 'cyclist' : !zeb && rng.chance(0.13) ? 'jogger' : 'street';
+    this.init(p, 'walker', makeLook(rng, activity));
     Object.assign(p, { rs: true, s, side, u: 0, uo: rng.range(0.9, Math.max(1.0, sw * 0.4)), dirS: rng.chance(0.5) ? 1 : -1, speed: p.look.speed, mode: 'walk' });
     p.uoT = p.uo;
+    if (p.look.role === 'cyclist') { p.uo = Math.min(sw - 0.7, Math.max(1.7, sw * 0.5)); p.uoT = p.uo; }
     if (zeb) { p.mode = 'wait'; p.zeb = zeb; p.waitT = rng.range(0, 4); p.uo = 0.3; }
     this.nextZebra(p);
   }
@@ -230,19 +184,20 @@ export class People {
       const k = p.dirS > 0 ? i : this.zebras.length - 1 - i, z = this.zebras[k];
       if ((z.s - p.s) * p.dirS > 0.6) { p.zebI = k; break; }
     }
-    p.wantCross = this.rng.chance(0.42);
+    p.wantCross = p.look.role !== 'cyclist' && this.rng.chance(0.42);
   }
   spawnAnchor(a) {
     const p = this.free(); if (!p) return;
     const ctx = a.kind === 'cafe' || a.kind === 'stop' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
     const look = makeLook(this.rng, ctx);
-    if (a.kind === 'swim' || a.kind === 'lie') { look.cup = false; look.glasses = a.kind === 'lie' && look.glasses; if (a.kind === 'swim') look.hat = null; }
+    if (a.kind === 'swim' || a.kind === 'lie') { look.cup = false; look.towel = false; look.bag = false; look.umbrella = false; look.phone = false; look.glasses = a.kind === 'lie' && look.glasses; if (a.kind === 'swim') look.hat = null; }
     if (a.kind === 'stop' || a.kind === 'beach' || a.kind === 'wander') look.cup = look.cup && this.rng.chance(0.5);
     this.init(p, a.kind, look);
     a.ped = p; p.anchor = a;
     p.x = a.x; p.z = a.z; p.y = a.y; p.yaw = a.yaw; p.home = { x: a.x, z: a.z, y: a.y, yaw: a.yaw };
     p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand' }[a.kind];
     p.variant = a.kind === 'stop' ? this.rng.pick(['idle', 'phone', 'look', 'cross']) : a.kind === 'beach' ? this.rng.pick(['chat', 'idle', 'hips', 'chat', 'phone']) : 'idle';
+    look.phone = p.variant === 'phone';
     p.target = null; p.speed = p.look.speed * 0.7;
   }
 
@@ -278,8 +233,9 @@ export class People {
     if (walkers < want) this.spawnWalker(ps, false);
     // actors in world space
     const acts = this.acts;
+    for (const a of acts) a.kind = undefined;
     actors.forEach((a, i) => {
-      const v = a.veh, A = acts[i];
+      const v = a.veh, A = acts[i] ||= {};
       A.kind = a.kind; A.x = v.x; A.z = v.z; A.s = v.s; A.u = v.u; A.fx = -Math.sin(v.yaw); A.fz = -Math.cos(v.yaw); A.rx = Math.cos(v.yaw); A.rz = -Math.sin(v.yaw);
       A.v = Math.max(0, v.vLong); A.halfL = v.halfL; A.halfW = v.halfW; A.veh = v;
     });
@@ -287,15 +243,15 @@ export class People {
     const f = this._f;
     for (const p of this.peds) {
       if (!p.active) continue;
-      p.t += dt; p.startleCool -= dt; p.sayCool -= dt;
+      p.t += dt; p.startleCool -= dt;
       if (p.react) { p.react.t += dt; if (p.react.t > p.react.dur) p.react = null; }
       if (p.rs) this.updateStreet(p, dt, actors, f); else this.updateAnchored(p, dt);
-      // airborne (cartoon leaps and startled hops)
+      // Short evasive bounds under ordinary gravity; no aerial flips.
       if (p.air) {
         const a = p.air;
         if (p.rs) { r.frame(p.s, f); p.s += (a.vx * f.tx + a.vz * f.tz) * dt; p.u += (a.vx * f.rx + a.vz * f.rz) * dt; }
         else { p.x += a.vx * dt; p.z += a.vz * dt; }
-        a.vy -= 9.81 * 0.85 * dt; a.y += a.vy * dt; a.spin += a.spinV * dt;
+        a.vy -= 9.81 * dt; a.y += a.vy * dt; a.spin += a.spinV * dt;
         if (a.y <= 0 && a.vy < 0) this.land(p);
       }
       // world position
@@ -321,10 +277,9 @@ export class People {
       const d2 = (p.x - cx) ** 2 + (p.z - cz) ** 2;
       if (d2 > 175 * 175) continue;
       this.pose(p);
-      this.crowd.draw(p.P, p.look);
+      this.crowd.draw(p.P, p.look, Math.sqrt(d2));
     }
     this.crowd.end();
-    this.bubbles.update(dt);
   }
 
   walkY(s, u) {
@@ -345,7 +300,7 @@ export class People {
       p.s += p.dirS * v * dt;
       p.uo = damp(p.uo, p.uoT, 1.2, dt);
       p.u = p.side * (eA + 0.18 + p.uo);
-      p.ph += dt * v * TAU / (0.8 * p.look.h + 0.15);
+      p.ph += dt * v * TAU / (p.look.role === 'cyclist' ? 4.5 : p.look.role === 'jogger' ? 2.0 : 0.8 * p.look.h + 0.15);
       p.hd = p.dirS > 0 ? 0 : Math.PI;
       const z = this.zebras[p.zebI];
       if (z && (z.s - p.s) * p.dirS < 0.4) {
@@ -364,7 +319,7 @@ export class People {
       let block = null;
       for (const a of actors) if (Math.abs(a.veh.s - p.s) < a.veh.halfL + 0.45 && Math.abs(a.veh.u - nu) < a.veh.halfW + 0.3) block = a;
       if (!block && this.traffic) for (const c of this.traffic.cars) if (c.active && Math.abs(c.s - p.s) < c.hs + 0.4 && Math.abs(c.u - nu) < c.hu + 0.3) { block = c; break; }
-      if (block) { p.blockT += dt; if (block.kind === 'player' && p.blockT > 1.0 && !p.react) { p.react = { type: 'fist', t: 0, dur: 2 }; this.say(p, rng.pick(Q_BLOCK), 'block'); } }
+      if (block) { p.blockT += dt; if (block.kind === 'player' && p.blockT > 1.0 && !p.react) { p.react = { type: 'fist', t: 0, dur: 2 }; } }
       if (p.blockT > 7) block = null; // give up waiting and squeeze past
       const j = p.zeb && p.zeb.j;
       // wide divided avenue: if the green man ends, finish the half we're on and wait on the median
@@ -434,54 +389,57 @@ export class People {
     const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz); if (d < 1e-3) return;
     const st = Math.min(d, v * dt); p.x += dx / d * st; p.z += dz / d * st;
     p.yaw += wrapAngle(Math.atan2(dx, dz) - p.yaw) * Math.min(1, dt * 6);
-    p.ph += dt * v * TAU / (0.8 * p.look.h + 0.15); p.moving = true;
+    p.ph += dt * v * TAU / (p.look.role === 'cyclist' ? 4.5 : p.look.role === 'jogger' ? 2.0 : 0.8 * p.look.h + 0.15); p.moving = true;
   }
 
   // ---------------------------------------------------------------- reactions
   react(p, dt) {
     if (p.kind === 'swim') return;
     for (const A of this.acts) {
-      if (A.kind === undefined || A.v < 3) continue;
+      if (A.kind === undefined) continue;
       const dx = p.x - A.x, dz = p.z - A.z;
       if (dx * dx + dz * dz > 4900) continue;
       // pavement / crossing people: measure along the road (the car follows its lane), others along the car's heading
       const al = p.rs ? p.s - A.s : dx * A.fx + dz * A.fz, lat = p.rs ? p.u - A.u : dx * A.rx + dz * A.rz;
       if (al < -A.halfL - 1 || al > 70) continue;
+      // A stopped car must reach the yield/wave check before the moving-car guard.
+      if (A.kind === 'player' && p.mode === 'cross' && !p.thanked && A.v < 0.8 && al > 0 && al < A.halfL + 9 && Math.abs(lat) < 5) {
+        p.thanked = true; p.react = { type: 'wave', t: 0, dur: 1.8 }; this.events.push({ kind: 'thanks', p });
+      }
+      if (A.v < 3) continue;
       const tt = (al - A.halfL) / A.v;
       const gy = Math.abs(p.wy - (A.veh.y ?? p.wy));
       if (gy > 3) continue;
       const inPath = Math.abs(lat) < A.halfW + 0.85 && al > -A.halfL + 0.3;
       if (inPath && (!p.air || p.air.hop) && tt < 0.62) { this.dive(p, A, lat); return; }
       if (!inPath && !p.air && !p.react && p.startleCool <= 0 && A.v > 11 && Math.abs(lat) < A.halfW + 1.5 + A.v * 0.035 && al > -1.5 && al < 3 + A.v * 0.3) { this.startle(p, A, lat); return; }
-      // a polite stop for people on the crossing earns a wave
-      if (A.kind === 'player' && p.mode === 'cross' && !p.thanked && A.v < 0.8 && al > 0 && al < A.halfL + 9 && Math.abs(lat) < 5) { p.thanked = true; if (this.rng.chance(0.55)) { p.react = { type: 'wave', t: 0, dur: 1.8 }; this.say(p, this.rng.pick(Q_THANKS), 'thanks'); this.events.push({ kind: 'thanks', p }); } }
     }
     // slow players can still annoy someone on the zebra; handled in updateStreet
   }
   dive(p, A, lat) {
     const rng = this.rng, side = Math.sign(lat) || (rng.chance(0.5) ? 1 : -1);
-    const out = 5.6 + rng.range(0, 1.4);
-    p.air = { y: p.air ? p.air.y : 0, vy: 6.6 + rng.range(0, 0.9), vx: A.rx * side * out + A.fx * A.v * 0.1, vz: A.rz * side * out + A.fz * A.v * 0.1, spin: 0,
-      spinV: (rng.chance(0.6) ? side : 0) * TAU / 1.4, flip: rng.chance(0.35) ? TAU / 1.45 * (rng.chance(0.5) ? 1 : -1) : 0, hop: false };
-    p.react = { type: 'star', t: 0, dur: 9 };
+    // Push sideways just beyond the vehicle envelope. Keep a low centre of mass,
+    // a stable torso, and enough travel to clear the tyres without a cartoon somersault.
+    const flight = 0.68, clearance = Math.max(0.9, A.halfW + 1.05 - Math.abs(lat));
+    const out = Math.min(5.4, clearance / flight);
+    p.air = { y: p.air ? p.air.y : 0, vy: 3.35, vx: A.rx * side * out, vz: A.rz * side * out,
+      spin: side * 0.18, spinV: 0, flip: 0, hop: false };
+    p.react = { type: 'evade', t: 0, dur: 1.8 };
     p.startleCool = 4;
-    if (p.mode === 'sit' || p.mode === 'lie') p.wasMode = p.mode;
-    this.say(p, rng.pick(['WHOA!', 'AAAH!', 'OPA!', 'NOPE!']), A.kind === 'player' ? 'dive' : 'dive-r');
     this.events.push({ kind: 'dive', who: A.kind, p });
   }
   startle(p, A, lat) {
     const rng = this.rng, side = Math.sign(lat) || 1;
     p.startleCool = 6;
     p.react = { type: rng.chance(0.55) ? 'panic' : 'fist', t: 0, dur: 1.7 };
-    if (p.mode === 'sit') p.air = { y: 0, vy: 1.7, vx: 0, vz: 0, spin: 0, spinV: 0, flip: 0, hop: true };
-    else if (p.mode !== 'lie') p.air = { y: 0, vy: 2.6, vx: A.rx * side * 1.7, vz: A.rz * side * 1.7, spin: 0, spinV: 0, flip: 0, hop: true };
-    const q = p.kind === 'cafe' ? Q_CAFE : (p.kind === 'beach' || p.kind === 'wander' || p.kind === 'lie') ? Q_BEACH.concat(Q_STARTLE) : Q_STARTLE;
-    if (A.kind === 'player') { this.say(p, rng.pick(q), 'startle'); this.events.push({ kind: 'startle', who: A.kind, p }); }
+    if (p.mode === 'sit') p.air = { y: 0, vy: 0.8, vx: 0, vz: 0, spin: 0, spinV: 0, flip: 0, hop: true };
+    else if (p.mode !== 'lie') p.air = { y: 0, vy: 1.5, vx: A.rx * side * 1.7, vz: A.rz * side * 1.7, spin: 0, spinV: 0, flip: 0, hop: true };
+    if (A.kind === 'player') this.events.push({ kind: 'startle', who: A.kind, p });
   }
   land(p) {
     const a = p.air, hop = a.hop;
     p.air = null;
-    if (!hop) { p.react = { type: 'fist', t: 0, dur: 2.0 }; this.say(p, this.rng.pick(Q_DIVE), 'land'); }
+    if (!hop) p.react = { type: 'recover', t: 0, dur: 1.8 };
     if (p.rs) {
       const r = this.route, eA = r.edge(p.s) + ROAD.gutter, au = Math.abs(p.u);
       if (au < eA + 0.1) { p.mode = 'cross'; p.toSide = p.u >= 0 ? 1 : -1; if (!p.zeb) p.zeb = null; p.crossV = p.look.speed * 1.2; p.hurry = true; }
@@ -492,12 +450,6 @@ export class People {
       }
     }
   }
-  say(p, text, why) {
-    if (p.sayCool > 0 && why !== 'land') return;
-    p.sayCool = 1.2; p.lastSay = text;
-    this.bubbles.say(p, text);
-    this.events.push({ kind: 'shout', p, text, why });
-  }
   /** someone just ran the red at junction j: nearby pedestrians are outraged */
   redRun(j) {
     let n = 0;
@@ -505,7 +457,7 @@ export class People {
       if (!p.active || !p.rs || Math.abs(p.s - j.s) > 30 || n >= 3) continue;
       if (p.mode !== 'wait' && p.mode !== 'cross' && this.rng.next() > 0.5) continue;
       if (p.air) continue;
-      n++; p.react = { type: 'fist', t: 0, dur: 2.2 }; if (n === 1 || this.rng.chance(0.4)) this.say(p, this.rng.pick(Q_RED), 'red');
+      n++; p.react = { type: 'fist', t: 0, dur: 2.2 };
     }
   }
 
@@ -515,9 +467,15 @@ export class People {
     P.pitch = 0; P.roll = 0; P.pivot = HIP_Y;
     const m = p.mode;
     if (p.air && !p.air.hop) {
-      starfish(P, t);
-      P.roll = p.air.spin; P.pitch = p.air.flip ? p.air.flip * Math.min(1.45, p.react ? p.react.t : 0) : 0;
-    } else if (p.moving) poseWalk(P, p.ph, 1, p.hurry || (p.mode === 'cross' && p.hurry));
+      poseStand(P, t, p.sd);
+      const progress = Math.min(1, (p.react?.t || 0) / 0.68);
+      P.hipA[0] = 0.35; P.hipA[1] = 0.65; P.hipR[0] = P.hipR[1] = 0.12;
+      P.knee[0] = 0.65 + 0.3 * Math.sin(progress * Math.PI); P.knee[1] = 0.85;
+      P.foot[0] = 0.3; P.foot[1] = 0.2; P.pelY = HIP_Y - 0.1;
+      armsPanic(P, Math.min(0.2, progress)); P.tPitch = 0.2;
+      P.roll = p.air.spin * Math.sin(progress * Math.PI);
+    } else if (L.role === 'cyclist' && p.moving) poseCycle(P, p.ph);
+    else if (p.moving) poseWalk(P, p.ph, L.old ? 0.65 : 1, p.hurry || L.role === 'jogger');
     else if (m === 'sit' && !(p.home && Math.hypot(p.x - p.home.x, p.z - p.home.z) > 0.15)) poseSit(P, t, p.sd * 10, p.sd > 0.3);
     else if (m === 'lie' && !(p.home && Math.hypot(p.x - p.home.x, p.z - p.home.z) > 0.15)) { poseLie(P, t, p.sd); P.pitch = -Math.PI / 2; }
     else if (m === 'swim') { poseSwim(P, t); P.pitch = 1.2; }
@@ -527,7 +485,13 @@ export class People {
       if (p.react.type === 'panic') armsPanic(P, rt);
       else if (p.react.type === 'fist') armsFist(P, rt);
       else if (p.react.type === 'wave') armsWave(P, rt);
+      else if (p.react.type === 'recover') {
+        const brace = Math.max(0, 1 - rt / 0.42);
+        P.pelY -= 0.18 * brace; P.knee[0] += 0.35 * brace; P.knee[1] += 0.35 * brace; P.tPitch += 0.24 * brace;
+        if (rt > 0.55) armsFist(P, rt - 0.55);
+      }
     }
+    if (L.old) { P.tPitch += 0.1; P.hPitch -= 0.06; }
     if (m === 'wait' && !p.react) P.hYaw = 0.75 * Math.sin(t * 0.9 + p.sd * 6);
     let y = p.wy;
     if (m === 'lie' && !p.air) y = p.y + 0.42 + 0.11 - HIP_Y * L.k;

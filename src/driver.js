@@ -7,53 +7,77 @@ import { clamp, RNG } from './util.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const SPHERE = new THREE.SphereGeometry(1, 18, 12);
 const ARM = new THREE.CapsuleGeometry(.5, 1, 5, 12);
-const CURL = new THREE.TorusGeometry(.65, .28, 5, 10, Math.PI * 1.75);
-
-// A loft makes the cheeks, temples, jaw and chin read as a human head from every angle.
-function headGeometry() {
-  const rings = [
-    [-.118,.019,.033,-.028],[-.107,.040,.048,-.022],[-.086,.061,.065,-.010],
-    [-.056,.075,.078,0],[-.025,.084,.087,.004],[0,.087,.092,.006],
-    [.028,.085,.095,.009],[.055,.082,.095,.012],[.082,.071,.084,.015],
-    [.105,.049,.063,.016],[.120,.021,.030,.016],[.124,.001,.001,.016],
-  ];
-  const positions = [], indices = [], n = 32;
-  for (const [y,w,d,z] of rings) for (let i=0;i<=n;i++) {
-    const a=i/n*Math.PI*2, s=Math.sin(a), c=Math.cos(a);
-    // The face is a gently flattened plane, with cheek projection below the eyes.
-    const front=c<0 ? -Math.pow(-c,.62) : c;
-    positions.push(s*w,y,z+front*d);
-  }
-  for(let j=0;j<rings.length-1;j++)for(let i=0;i<n;i++) {
-    const a=j*(n+1)+i,b=a+n+1;
-    indices.push(a,a+1,b,b,a+1,b+1);
-  }
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();return g;
+// Solid, shallow locks provide hair relief without ring-shaped holes.
+const CURL = new THREE.SphereGeometry(1, 10, 7).scale(1, .65, .28);
+const HEAD_RINGS = [
+  [-.118,.019,.033,-.028],[-.107,.040,.048,-.022],[-.086,.061,.065,-.010],
+  [-.056,.075,.078,0],[-.025,.084,.087,.004],[0,.087,.092,.006],
+  [.028,.085,.095,.009],[.055,.082,.095,.012],[.082,.071,.084,.015],
+  [.105,.049,.063,.016],[.120,.021,.030,.016],[.124,.001,.001,.016],
+];
+function headProfile(y) {
+  const k = clamp(y, -.118, .124);
+  let i=0;while(i<HEAD_RINGS.length-2 && HEAD_RINGS[i+1][0]<k)i++;
+  const a=HEAD_RINGS[i],b=HEAD_RINGS[i+1],t=(k-a[0])/(b[0]-a[0]);
+  return [a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t,a[3]+(b[3]-a[3])*t];
 }
-const HEAD = headGeometry();
-
-function scalpGeometry() {
-  const p=[],ix=[],n=32,rows=9;
-  for(let j=0;j<=rows;j++)for(let i=0;i<=n;i++) {
-    const a=i/n*Math.PI*2, front=Math.max(0,-Math.cos(a));
-    const edge=1.86-front*.76, t=.001+(j/rows)*edge;
-    p.push(Math.sin(t)*Math.sin(a)*.089,Math.cos(t)*.124+.005,Math.sin(t)*Math.cos(a)*.100+.013);
+const bell=(x,y,cx,cy,wx,wy)=>Math.exp(-(((x-cx)/wx)**2+((y-cy)/wy)**2));
+function faceZ(x,y) {
+  const [w,d,z]=headProfile(y),c=Math.sqrt(Math.max(0,1-(x/w)**2));
+  const bridge=.012*bell(x,y,0,.001,.010,.030);
+  const nose=.018*bell(x,y,0,-.021,.014,.012);
+  const cheek=.0025*(bell(x,y,-.043,-.012,.026,.022)+bell(x,y,.043,-.012,.026,.022));
+  const socket=.0018*(bell(x,y,-.035,.019,.019,.010)+bell(x,y,.035,.019,.019,.010));
+  const mouth=.0015*bell(x,y,0,-.052,.022,.008);
+  return z-Math.pow(c,.62)*d-bridge-nose-cheek-mouth+socket;
+}
+function headGeometry() {
+  const p=[],ix=[],n=72,rows=72;
+  for(let j=0;j<=rows;j++) {
+    const y=-.118+j/rows*.242,[w,d,z]=headProfile(y);
+    for(let i=0;i<=n;i++) {
+      const a=i/n*Math.PI*2,x=Math.sin(a)*w,c=Math.cos(a);
+      p.push(x,y,c<0?faceZ(x,y):z+c*d);
+    }
   }
-  for(let j=0;j<rows;j++)for(let i=0;i<n;i++){const a=j*(n+1)+i,b=a+n+1;ix.push(a,b,a+1,b,b+1,a+1);}
+  for(let j=0;j<rows;j++)for(let i=0;i<n;i++){const a=j*(n+1)+i,b=a+n+1;ix.push(a,a+1,b,b,a+1,b+1);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+const HEAD=headGeometry();
+function scalpPoint(a,t,helmet=false) {
+  const front=Math.max(0,-Math.cos(a)),edge=(helmet?-.065:-.040)+front*(helmet?.119:.108);
+  const y=edge+(.124-edge)*t,[w,d,z]=headProfile(y),c=Math.cos(a);
+  const relief=helmet?.013:.0022+.0005*Math.sin(a*23+t*13)*Math.sin(t*21);
+  return new THREE.Vector3(Math.sin(a)*(w+relief),y+relief,c<0?z-Math.pow(-c,.62)*(d+relief):z+c*(d+relief));
+}
+function scalpGeometry(helmet=false) {
+  const p=[],ix=[],n=64,rows=24;
+  for(let j=0;j<=rows;j++)for(let i=0;i<=n;i++) {const v=scalpPoint(i/n*Math.PI*2,j/rows,helmet);p.push(v.x,v.y,v.z);}
+  for(let j=0;j<rows;j++)for(let i=0;i<n;i++){const a=j*(n+1)+i,b=a+n+1;ix.push(a,a+1,b,b,a+1,b+1);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(ix);g.computeVertexNormals();return g;
 }
 const SCALP=scalpGeometry();
+// Thin almond patches follow the sculpted face instead of sitting on top as eyeballs/lips.
+function facePatch(x,y,w,h,offset=.0005,arch=0) {
+  const p=[],ix=[],n=24;
+  for(let i=0;i<=n;i++) {
+    const t=i/n,px=x+(t*2-1)*w,shape=Math.sin(t*Math.PI),cy=y+arch*shape;
+    for(const side of [-1,1]) {const py=cy+side*h*shape;p.push(px,py,faceZ(px,py)-offset);}
+    if(i<n){const a=i*2;ix.push(a,a+1,a+2,a+1,a+3,a+2);}
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(ix);g.computeVertexNormals();return g;
+}
 
 export class Driver {
   constructor({hair=true,shirt='#f6f4ee',skin='#c98b62',helmet=false}={}) {
     const root=this.root=new THREE.Group(); root.name='driver';
     const skinM=new THREE.MeshStandardMaterial({color:skin,roughness:.68});
-    const lipM=new THREE.MeshStandardMaterial({color:new THREE.Color(skin).lerp(new THREE.Color('#92534d'),.42),roughness:.78});
+    const lipM=new THREE.MeshStandardMaterial({color:new THREE.Color(skin).lerp(new THREE.Color('#92534d'),.24),roughness:.78});
     const shadowM=new THREE.MeshStandardMaterial({color:new THREE.Color(skin).multiplyScalar(.48),roughness:.88});
     const shirtM=trimMat(shirt,{rough:.9,scale:.025,nk:.18,sheen:.06});
     const hairM=new THREE.MeshStandardMaterial({color:'#30221b',roughness:.94});
     const irisM=new THREE.MeshStandardMaterial({color:'#332b23',roughness:.6});
-    const eyeM=new THREE.MeshStandardMaterial({color:'#c9bbaa',roughness:.6});
+    const eyeM=new THREE.MeshStandardMaterial({color:'#bcb3a4',roughness:.6});
     const add=(geo,mat,x,y,z,sx=1,sy=1,sz=1,parent=root)=>{
       const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
     };
@@ -62,7 +86,6 @@ export class Driver {
     this.torso.rotation.x=-.12;
     // Shoulder yoke, neckline and two turned collar points, separate from the torso fabric.
     ell(shirtM,0,-.095,.034,.196,.08,.095);
-    ell(skinM,0,-.047,-.025,.061,.037,.031);
     for(const sx of [-1,1]) {
       const collar=add(new THREE.BoxGeometry(.052,.012,.086),shirtM,sx*.045,-.051,-.055);
       collar.rotation.set(-.22,sx*.28,sx*.25);
@@ -73,34 +96,27 @@ export class Driver {
     add(new THREE.CylinderGeometry(.047,.057,.12,16),skinM,0,.014,.014,1,1,1,neck);
     const head=this.head=new THREE.Group();head.position.set(0,.17,0);neck.add(head);
     add(HEAD,skinM,0,0,0,1,1,1,head);
-    // Ears have a recessed concha and lobe rather than featureless beads.
+    // Ears are low relief; nose, cheekbones and eye sockets are sculpted into HEAD.
     for(const sx of [-1,1]) {
-      ell(skinM,sx*.089,-.009,.012,.014,.032,.019,head);
-      ell(shadowM,sx*.097,-.007,.003,.004,.017,.010,head);
-      ell(skinM,sx*.094,-.027,.005,.008,.009,.009,head);
-      // Sockets sit within the face. Small off-white surfaces avoid toy-like staring eyes.
-      ell(shadowM,sx*.038,.018,-.082,.023,.010,.006,head);
-      ell(eyeM,sx*.038,.017,-.086,.017,.0055,.005,head);
-      ell(irisM,sx*.037,.017,-.090,.005,.0048,.0017,head);
-      const brow=ell(hairM,sx*.038,.035,-.081,.024,.004,.005,head);brow.rotation.z=sx*-.08;
-      // Lower orbital ridge and cheek volume blend into the main loft.
-      ell(skinM,sx*.048,-.003,-.078,.029,.016,.009,head);
+      ell(skinM,sx*.088,-.010,.014,.010,.026,.014,head);
+      ell(shadowM,sx*.094,-.008,.008,.002,.012,.006,head);
+      ell(skinM,sx*.091,-.026,.011,.005,.006,.006,head);
+      const x=sx*.035;
+      add(facePatch(x,.018,.016,.0040,.00035),shadowM,0,0,0,1,1,1,head);
+      add(facePatch(x,.0177,.0145,.0031,.00065),eyeM,0,0,0,1,1,1,head);
+      add(facePatch(x,.0177,.0034,.0030,.00095),irisM,0,0,0,1,1,1,head);
+      add(facePatch(x,.0177,.0014,.0017,.0011),hairM,0,0,0,1,1,1,head);
+      add(facePatch(x,.034,.019,.0015,.0005,.002),hairM,0,0,0,1,1,1,head);
+      add(facePatch(sx*.008,-.031,.0026,.0010,.0006),shadowM,0,0,0,1,1,1,head);
     }
-    const bridge=ell(skinM,0,.001,-.093,.011,.027,.014,head);bridge.rotation.x=-.12;
-    ell(skinM,0,-.020,-.108,.014,.010,.014,head);
-    for(const sx of [-1,1]) {
-      ell(skinM,sx*.012,-.026,-.098,.009,.007,.008,head);
-      ell(shadowM,sx*.008,-.030,-.104,.003,.0018,.003,head);
-    }
-    ell(lipM,0,-.051,-.079,.021,.0035,.005,head);
-    ell(lipM,0,-.057,-.078,.018,.0045,.004,head);
-    ell(shadowM,0,-.054,-.083,.017,.0008,.0007,head);
-    ell(skinM,0,-.085,-.065,.026,.014,.009,head);
+    add(facePatch(0,-.053,.018,.0018,.0005),lipM,0,0,0,1,1,1,head);
+    add(facePatch(0,-.056,.017,.0020,.0005),lipM,0,0,0,1,1,1,head);
+    add(facePatch(0,-.0545,.017,.0004,.0008),shadowM,0,0,0,1,1,1,head);
 
     this.arms=[];
     for(const sx of [-1,1]) {
       const up=new THREE.Mesh(ARM,skinM),fo=new THREE.Mesh(ARM,skinM);
-      const sleeve=new THREE.Mesh(ARM,shirtM);sleeve.scale.set(1.16,.53,1.16);sleeve.position.y=.44;up.add(sleeve);
+      const sleeve=new THREE.Mesh(ARM,shirtM);sleeve.scale.set(1.16,.53,1.16);sleeve.position.y=-.44;up.add(sleeve);
       const hand=new THREE.Group();
       // A palm and four bent fingers follow the rim tangent; the thumb closes around its inside.
       ell(skinM,0,0,0,.034,.017,.035,hand);
@@ -121,7 +137,7 @@ export class Driver {
     if(helmet) {
       const shellM=new THREE.MeshStandardMaterial({color:'#24282a',roughness:.32,metalness:.08});
       // An open-face shell leaves the facial structure visible and clears the neck.
-      add(new THREE.SphereGeometry(1,24,16,0,Math.PI*2,0,Math.PI*.60),shellM,0,.015,.014,.104,.134,.116,head);
+      add(scalpGeometry(true),shellM,0,0,0,1,1,1,head);
       for(const sx of [-1,1])ell(shellM,sx*.098,-.010,.025,.017,.055,.048,head);
       const strap=add(new THREE.TorusGeometry(.073,.006,6,24,Math.PI),hairM,0,-.052,.007,1,.75,1,head);strap.rotation.x=Math.PI/2;
     } else if(hair) {
@@ -131,18 +147,17 @@ export class Driver {
       this._hairRestY=.085;
       const rng=new RNG(1234);
       for(let i=0;i<64;i++) {
-        const a=i*2.39996323,y=.18+.82*(i+.5)/64,r=Math.sqrt(1-y*y);
-        const dir=new THREE.Vector3(Math.sin(a)*r,y,Math.cos(a)*r);
-        const rest=new THREE.Vector3(dir.x*.091,dir.y*.124+.006,dir.z*.102+.015);
-        if(dir.z<-.3&&dir.y<.5)rest.y+=.019;
+        const a=i*2.39996323,t=.10+.84*(i+.5)/64;
+        const rest=scalpPoint(a,t);rest.y+=.0015;
+        const dir=new THREE.Vector3(rest.x,rest.y-.005,rest.z-.013).normalize();
         const rot=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),dir);
         rot.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),rng.range(0,Math.PI*2)));
-        this.curls.push({rest,off:new THREE.Vector3(),vel:new THREE.Vector3(),dir,rot,s:rng.range(.012,.019),w:rng.range(.65,1),ph:rng.range(0,Math.PI*2),f:rng.range(9,16)});
+        this.curls.push({rest,off:new THREE.Vector3(),vel:new THREE.Vector3(),dir,rot,s:rng.range(.009,.014),w:rng.range(.65,1),ph:rng.range(0,Math.PI*2),f:rng.range(9,16)});
       }
       const curlMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.86});
       this.curlMesh=new THREE.InstancedMesh(CURL,curlMat,this.curls.length);this.curlMesh.castShadow=true;
       this.curlMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.curls.forEach((c,i)=>this.curlMesh.setColorAt(i,new THREE.Color('#39271d').multiplyScalar(rng.range(.8,1.15))));
+      this.curls.forEach((c,i)=>this.curlMesh.setColorAt(i,new THREE.Color('#39271d').multiplyScalar(rng.range(.88,1.06))));
       head.add(this.curlMesh);this._writeHair();
     }
     // Merge rigid facial details and fingers by material; retain the animated public meshes.
