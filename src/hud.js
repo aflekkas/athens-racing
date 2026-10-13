@@ -79,8 +79,12 @@ export class Hud {
     g.font = '800 15px "Barlow Condensed", sans-serif'; g.textBaseline = 'middle';
     const lab = (s, t, dx, col = '#fff') => { const p = route.point(s, 0); const x = ox + (p.x - x0) * sc, y = oz + (p.z - z0) * sc; g.fillStyle = 'rgba(8,10,14,.85)'; const w = g.measureText(t).width + 14; const lx = dx > 0 ? x + dx : x + dx - w; g.fillRect(lx, y - 11, w, 22); g.fillStyle = col; g.fillText(t, lx + 7, y + 1); };
     const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
-    lab(route.start, 'START · ' + route.from.toUpperCase(), -14); lab(mk.lake, 'LAKE', 14); lab(mk.limanakia, 'LIMANAKIA', -14); lab(mk.varkiza, 'VARKIZA', 14); lab(route.finish, 'FINISH · ' + route.to.toUpperCase(), 14, '#ffc21a');
-    g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '700 11px "Barlow Condensed", sans-serif'; g.fillText('SARONIC GULF', 40, H * 0.72);
+    // the district / sea labels belong to the Riviera map only; other maps (Megara, Penteli) just get start and finish
+    const riviera = this.map.id === 'riviera';
+    lab(route.start, 'START · ' + route.from.toUpperCase(), -14);
+    if (riviera) { lab(mk.lake, 'LAKE', 14); lab(mk.limanakia, 'LIMANAKIA', -14); lab(mk.varkiza, 'VARKIZA', 14); }
+    lab(route.finish, 'FINISH · ' + route.to.toUpperCase(), 14, '#ffc21a');
+    g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '700 11px "Barlow Condensed", sans-serif'; if (riviera) g.fillText('SARONIC GULF', 40, H * 0.72);
     g.fillText('MAP DATA © OPENSTREETMAP CONTRIBUTORS', 40, H - 18);
   }
   pathRange(g, i0, i1) { const p = this.rpts; g.beginPath(); g.moveTo(p[i0 * 2], p[i0 * 2 + 1]); for (let i = i0 + 1; i <= i1 && i * 2 < p.length; i++) g.lineTo(p[i * 2], p[i * 2 + 1]); }

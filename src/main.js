@@ -118,7 +118,9 @@ async function boot() {
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
-  setCar(Q.has('car') ? clamp(+Q.get('car') - 1, 0, CARS.length - 1) : savedCar(), false);
+  // ?car= takes a 1-based number or a car id (?car=2, ?car=z4); anything else falls back to the saved car
+  const qCar = Q.get('car'), qIdx = qCar == null ? -1 : /^\d+$/.test(qCar) ? clamp(+qCar - 1, 0, CARS.length - 1) : CARS.findIndex((c) => c.id === qCar);
+  setCar(qIdx >= 0 ? qIdx : savedCar(), false);
   prepareEvent(SKIP_MENU && Q.get('event') || 'quick');
   resetRace();
   updateCamera(0, true);

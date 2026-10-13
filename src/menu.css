@@ -143,7 +143,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
 
 /* the floating MULTIPLAYER button and GRAPHICS select now live in the menus (title -> Multiplayer, Settings -> Graphics):
    keep them off the race HUD and out of the way of the menus */
-body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle,
+body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle, body.replay-active #mp-toggle,
 #graphics-quality { display: none !important; }
 
 /* short / narrow screens: the route bar sits between the (moved) minimap and the right-hand widgets, district
@@ -274,4 +274,13 @@ body.circuit-race #routeBox { display:none; }
   #ui .r-actions .mi.big b { font-size:18px; }
   #ui .r-splits { font-size:15px; }
   #ui .t-head h1 { font-size:68px; }
+}
+/* touch driving (src/input.css lifts the dial above the pedals and moves the minimap up): the lean-HUD #hud rules above
+   are more specific, so restate the touch placement at the same specificity, and keep the route bar clear of the map */
+body.touch-driving #hud #mapBox { top: 105px; bottom: auto; left: 10px; width: 100px; height: 100px; }
+body.touch-driving #hud #dialBox { right: 10px; bottom: 128px; width: 160px; height: 160px; }
+@media (max-width: 700px) { body.touch-driving #hud #routeBox { left: 122px; right: 16px; } }
+@media (max-height: 480px) {
+  body.touch-driving #hud #mapBox { top: 90px; width: 84px; height: 84px; }
+  body.touch-driving #hud #dialBox { width: 125px; height: 125px; bottom: 120px; }
 }
