@@ -280,6 +280,7 @@ const _v = new THREE.Vector3(), _f = new THREE.Vector3(), _c = new THREE.Vector3
 export function disposeWeather() {
   if (!W) return;
   W.offConditions?.();
+  if (W.onRestore) W.renderer.domElement.removeEventListener('webglcontextrestored', W.onRestore);
   const geometries = new Set(), materials = new Set();
   for (const object of [W.lampGlow?.p, W.carGlow?.p, W.rain?.mesh, W.spray?.pts, W.spot, W.spot?.target]) {
     object?.removeFromParent();
@@ -333,6 +334,9 @@ export function initWeather(ctx) {
   W.rain = createRain(low ? 1800 : med ? 3500 : 6000); scene.add(W.rain.mesh);
   W.spray = new Spray(scene, low ? 220 : med ? 400 : 600);
   W.dropMat = dropMaterial();
+  // a lost and restored WebGL context brings the render targets back empty: re-bake the sky / IBL and the car probe seed
+  W.onRestore = () => { ENV.rebakeSky(); if (W.probe && ENV.bakedSky()) W.probe.pmrem.fromCubemap(ENV.bakedSky(), W.probe.envRT); };
+  ctx.renderer.domElement.addEventListener('webglcontextrestored', W.onRestore);
   W.offConditions = ENV.onConditions(apply);
   apply(ENV.COND, ENV.COND_STATE, true);
   return W;

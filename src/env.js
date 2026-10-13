@@ -176,7 +176,7 @@ function writeUniforms() {
   AP.apSun.value.set([sunDir.x, sunDir.y, sunDir.z]);
   // leaf / frond translucency toward the light is scaled to the light actually there (none under a thick deck)
   AP.apP.value.set([D.haze, 1, THREE.MathUtils.clamp(lum(D.sunLight) / Math.max(lum(ATMO0.sunIrr), 1e-6), 0, 1.3)]);
-  AP.apGlowC.value.set(D.glow.map((x) => x * (1 + D.over * 1.5)));
+  AP.apGlowC.value.set(D.glow.map((x) => x * (1 + D.over * 0.5)));
   CU.uSunIrr.value.fromArray(A.sunIrr); CU.uSkyIrr.value.fromArray(D.skyIrr); CU.uSunE.value.fromArray(D.sunLight);
   CU.uOcCol.value.fromArray(D.oc); CU.uOver.value = D.over; CU.uRain.value = D.rain; CU.uNight.value = D.night; CU.uE.value = TIMES[COND.time].E;
   CU.uGlowC.value.fromArray(D.glow);
@@ -439,6 +439,8 @@ export function setConditions(c = {}) {
   return { ...COND };
 }
 export function getConditions() { return { ...COND }; }
+/** re-bake the sky cubes as they are (after a WebGL context restore the render targets come back empty) */
+export function rebakeSky() { if (BAKE.renderer) bakeSky(BAKE.renderer, BAKE.sky); }
 /** the baked sky cube (sky + clouds, no sun disc) for the current conditions */
 export function bakedSky() { return BAKE.envRT ? BAKE.envRT.texture : null; }
 const SHADOW_HALF = 95;
