@@ -998,7 +998,8 @@ function step(dt, draw = true) {
   sunScreen.copy(ENV.sunDir).multiplyScalar(5000).add(camera.position).project(camera);
   const vis = sunScreen.z < 1 && Math.abs(sunScreen.x) < 1.2 && Math.abs(sunScreen.y) < 1.2 ? 1 - Math.max(Math.abs(sunScreen.x), Math.abs(sunScreen.y)) / 1.2 : 0;
   u.uSun.value.set(sunScreen.x * 0.5 + 0.5, sunScreen.y * 0.5 + 0.5, vis * 0.8);
-  if (draw) render();
+  // Headless VPS checks run the same game/network loop without costly software GPU draws.
+  if (draw && !Q.has('norender')) render();
 }
 
 // reflection probe for the cars: one cube face per frame around the player, PMREM-filtered every full turn

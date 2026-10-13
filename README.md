@@ -17,7 +17,7 @@ Click **MULTIPLAYER** to discover public lobbies, create a public or invite-only
 
 Online races use a clear road and ghost opponents. Random traffic, collisions and solo penalties do not affect online races. Vehicle physics run locally; the server validates movement limits and owns the race clock. This is casual multiplayer. Lobbies live in memory and reset when the service restarts. Disconnects are recorded as DNF, ownership transfers to a remaining driver, and joining again requires returning to a waiting lobby. A race lasts at most 15 minutes, with 90 seconds for remaining drivers after the first finish.
 
-`npm test` checks the multiplayer protocol and room lifecycle. `node tools/multiplayer-browser.mjs <url>` runs a real two-browser game smoke test on macOS with Chrome. `/api/health` reports service health and `/api/lobbies` lists public rooms. Forward WebSocket upgrades at `/ws` when using an HTTPS proxy. Static Python hosting supports solo play only.
+`npm test` checks the multiplayer protocol and room lifecycle. `node tools/multiplayer-browser.mjs <url>` runs a real two-browser game smoke test on macOS with Chrome. On a Linux VPS, set `CHROME` to the installed browser path. `SHOTS=0` skips screenshots; `?norender` runs physics, lobby UI and networking without repeated software GPU draws for headless integration checks. Normal play renders the full game. `/api/health` reports service health and `/api/lobbies` lists public rooms. Forward WebSocket upgrades at `/ws` when using an HTTPS proxy. Static Python hosting supports solo play only.
 
 ## Staging
 
