@@ -10,6 +10,7 @@
 
 #graphics-quality{position:fixed;right:190px;top:90px;z-index:30;background:#101721;color:white;border:1px solid #354152;padding:9px;font:700 14px "Barlow Condensed",sans-serif;cursor:pointer}@media(max-width:600px){#graphics-quality{right:165px;top:90px;font-size:12px;padding:10px 5px}}
 .mp-fields label.mp-toggle-field,.mp-create label.mp-toggle-field{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.mp-map-field{display:grid;gap:4px;font-size:11px;letter-spacing:1px}
 #multiplayer .mp-toggle-field input[type=checkbox]{flex:none;width:16px;height:16px;padding:0;margin:0}
 @media(max-width:700px), (max-height:550px) and (max-width:1000px){
   #posBox{left:12px;top:12px;transform:scale(.68);transform-origin:top left}

@@ -137,10 +137,9 @@ async function boot() {
     trackVersion: () => multiplayer.trackVersion });
   if (multiplayer.active) {
     setCar(Math.max(0, CARS.findIndex(c => c.id === multiplayer.me.car)));
-    // a race already under way (reload mid-race): rejoin it through the online start hook; otherwise wait in the lobby
-    if (multiplayer.lobby.raceId && multiplayer.lobby.status !== 'waiting') multiplayer.hooks.start(multiplayer.lobby, multiplayer.id, multiplayer.resumeState);
-    else { onlineWait(); onlineMembers(multiplayer.lobby.players.filter(p => p.id !== multiplayer.id)); }
-    multiplayer.renderRoom();
+    // Hydrate only after the lobby's track is loaded, including a reload into an ongoing race.
+    onlineWait();
+    await multiplayer.syncLobby();
   } else if (SKIP_MENU) startCountdown(); // test / dev URLs go straight to the grid as before
   else showTitle();
   tlog('ready');
@@ -1642,6 +1641,7 @@ function onlineMembers(members) {
 }
 const multiplayer = new Multiplayer(CARS, {
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
+  async mapChanged(id) { await window.__flow.switchMap(id); if (multiplayer.active) onlineWait(); else window.__flow.quit(); },
   panelClosed() { G.countWall = performance.now(); },
   join(car) { graphicsControl.disabled = true; graphicsControl.title = 'Choose graphics before joining a lobby'; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
   carChanged(car) {
@@ -1677,7 +1677,7 @@ const multiplayer = new Multiplayer(CARS, {
       const k = Math.hypot(v.x - p.x, v.z - p.z) > 30 ? 1 : 1 - Math.exp(-18 * dt);
       for (const key of ['x', 'y', 'z', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm']) v[key] += (p[key] - v[key]) * k;
       v.yaw += Math.atan2(Math.sin(p.yaw - v.yaw), Math.cos(p.yaw - v.yaw)) * k; v.gear = p.gear;
-      c.lastBrake = false; c.model.root.visible = performance.now() - peer.at < 3000;
+      c.lastBrake = false; c.model.root.visible = multiplayer.lobby.players.find(p => p.id === id)?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
     }
   },
@@ -1704,7 +1704,7 @@ const multiplayer = new Multiplayer(CARS, {
 window.__multiplayer = multiplayer;
 // Browsers stop rAF in hidden tabs. Keep online cars coasting and broadcasting without drawing.
 const onlineBackgroundTimer = setInterval(() => {
-  if (!document.hidden || !multiplayer.active || !multiplayer.loaded || !multiplayer.connected || multiplayer.lobby.status === 'waiting') return;
+  if (!document.hidden || !multiplayer.active || !multiplayer.worldReady || !multiplayer.connected || multiplayer.lobby.status === 'waiting') return;
   const now = performance.now(), elapsed = Math.min(2, Math.max(0, (now - last) / 1000));
   if (!(elapsed > 0)) return;
   last = now; clearDriveInput();

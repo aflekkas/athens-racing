@@ -1,4 +1,6 @@
 import { driverId, getLeaderboard } from './leaderboard.js';
+import { MAPS } from './map-catalog.js';
+import { StateSender } from './multiplayer-state.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
 // the server owns membership, synchronized starts, and elapsed finish times.
 export class Multiplayer {
@@ -7,17 +9,20 @@ export class Multiplayer {
     this.offset = 0; this.latency = 0; this.peers = new Map(); this.startedRace = null;
     this.token = null; try { this.token = sessionStorage.getItem('paraliaki.session'); } catch {}
     this.connected = false; this.resumeCount = 0; this.events = []; this.resumeState = null; this.spectateIndex = 0; this.spectateAt = 0;
-    this.loaded = false; this.trackVersion = null; this.pendingCode = new URLSearchParams(location.search).get('lobby');
+    this.loaded = false; this.mapId = null; this.preparing = null; this.failedMap = null; this.pendingResume = false;
+    this.maps = []; this.trackVersion = null; this.pendingCode = new URLSearchParams(location.search).get('lobby');
+    this.stateBatching = false; this.finishSent = null;
+    this.stateSender = new StateSender(packet => { if (this.connected && this.worldReady && this.lobby?.raceId === packet.raceId) this.send(packet); });
     this.panel = document.createElement('section'); this.panel.id = 'multiplayer'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Multiplayer lobbies');
     this.panel.setAttribute('role', 'dialog'); this.panel.setAttribute('aria-modal', 'true');
     this.panel.innerHTML = `<div class="mp-card"><div class="mp-heading"><div><small>ATHENS RIVIERA · LIVE RACING</small><h2>MULTIPLAYER</h2></div><button id="mp-close" aria-label="Close multiplayer">×</button></div>
       <p id="mp-status" role="status">Connecting…</p>
       <div id="mp-browser"><div class="mp-fields"><label>DRIVER NAME<input id="mp-name" maxlength="28" placeholder="Your name" autocomplete="nickname"></label><label>YOUR CAR<select id="mp-car"></select></label></div>
-      <div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div>
+      <div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<select id="mp-create-map"></select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div>
       <form id="mp-join-form"><input id="mp-code" maxlength="6" placeholder="6-character code" aria-label="Lobby code"><button>JOIN BY CODE</button></form>
       <div class="mp-section"><h3>DISCOVER LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
-      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>RACE ROUTE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
+      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>TRACK<select id="mp-map"></select></label><label>RACE ROUTE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
       <button id="mp-leaderboard">VIEW BEST TIMES</button><div id="mp-times" hidden></div><p class="mp-note">2–8 drivers · Opponent cars are ghosts · 10-minute race limit · Rejoin within 90 seconds after a disconnect</p></div>`;
     document.body.append(this.panel);
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
@@ -29,40 +34,48 @@ export class Multiplayer {
     $('mp-refresh').onclick = () => this.send({ type: 'discover' });
     $('mp-create').onclick = () => this.action('create', { lobbyName: $('mp-lobby-name').value, private: $('mp-private').checked });
     $('mp-join-form').onsubmit = e => { e.preventDefault(); this.action('join', { code: $('mp-code').value }); };
-    $('mp-ready').onclick = () => { if (!this.loaded) return this.status('The world is loading. Ready becomes available when it finishes.'); const me = this.me; this.send({ type: 'ready', ready: !me?.ready, car: me?.car || $('mp-car').value, version: this.trackVersion }); };
+    $('mp-ready').onclick = () => { if (!this.worldReady) return this.status(this.versionMismatch ? 'The lobby track was updated. Reload the game to update.' : 'The track is loading. Ready becomes available when it finishes.'); const me = this.me; this.send({ type: 'ready', ready: !me?.ready, car: me?.car || $('mp-car').value, mapId: this.mapId, version: this.trackVersion }); };
     $('mp-start').onclick = () => this.send({ type: this.lobby?.status === 'results' ? 'rematch' : 'start' });
     $('mp-leave').onclick = () => this.send({ type: 'leave' });
     $('mp-room-car').onchange = () => this.send({ type: 'ready', ready: false, car: $('mp-room-car').value, version: this.trackVersion });
-    $('mp-event').onchange = $('mp-traffic').onchange = () => this.send({ type: 'options', eventId: $('mp-event').value, traffic: $('mp-traffic').checked });
+    $('mp-event').onchange = $('mp-traffic').onchange = () => this.send({ type: 'options', mapId: this.lobby?.mapId || 'riviera', eventId: $('mp-event').value, traffic: $('mp-traffic').checked });
+    $('mp-map').onchange = () => this.send({ type: 'options', mapId: $('mp-map').value, traffic: $('mp-traffic').checked });
     $('mp-leaderboard').onclick = () => this.showLeaderboard();
-    $('mp-copy').onclick = async () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('lobby', this.lobby.code); try { await navigator.clipboard.writeText(u.href); this.status('Invite link copied.'); } catch { this.status('Invite link: ' + u.href); } };
+    $('mp-copy').onclick = async () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('lobby', this.lobby.code); u.searchParams.set('map', this.lobby.mapId || 'riviera'); try { await navigator.clipboard.writeText(u.href); this.status('Invite link copied.'); } catch { this.status('Invite link: ' + u.href); } };
     this.connect();
-    this.timer = setInterval(() => { if (this.ws?.readyState === WebSocket.OPEN) { this.send({ type: 'ping', sent: Date.now() }); if (!this.lobby) this.send({ type: 'discover' }); } }, 3000);
+    this.timer = setInterval(() => { if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping', sent: Date.now() }); }, 30000);
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }
   }
   get active() { return !!this.lobby; }
+  get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
+  get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
   now() { return Date.now() + this.offset; }
   status(text) { this.$('mp-status').textContent = text; }
-  open() { this.panel.hidden = false; this.hooks.clearInput(); if (!this.lobby) { this.$('mp-car').value = this.cars[this.hooks.carIndex()].id; this.send({ type: 'discover' }); } }
+  open() { this.panel.hidden = false; this.hooks.clearInput(); if (!this.lobby) { this.$('mp-car').value = this.cars[this.hooks.carIndex()].id; if (this.maps.some(m => m.id === this.mapId)) this.$('mp-create-map').value = this.mapId; this.send({ type: 'discover' }); } }
   hidePanel() { if (this.panel.contains(document.activeElement) || document.activeElement === this.button) document.activeElement.blur(); this.panel.hidden = true; this.hooks.clearInput(); this.hooks.panelClosed?.(); }
   close() { this.hidePanel(); }
   send(data) { if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(data)); else this.status('Multiplayer is offline. Reconnecting…'); }
   action(type, extra) {
     const name = this.$('mp-name').value.trim() || 'DRIVER';
     try { localStorage.setItem('paraliaki.driver', name); } catch {}
-    this.send({ type, name, driverId: driverId(), car: this.$('mp-car').value, ...extra });
+    this.send({ type, name, driverId: driverId(), car: this.$('mp-car').value, ...(type === 'create' ? { mapId: this.$('mp-create-map').value || 'riviera' } : {}), ...extra });
   }
   connect() {
     const url = new URL('ws', location.href); url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'; url.pathname = '/ws'; url.search = ''; url.hash = '';
     const ws = this.ws = new WebSocket(url);
     ws.onopen = () => { this.connected = false; this.status('Connecting to your session…'); this.send({ type: 'ping', sent: Date.now() }); };
     ws.onmessage = e => {
+      if (e.data === 'alive') return;
       const m = JSON.parse(e.data);
       if (m.type === 'hello') {
+        this.stateBatching = m.features?.stateBatching === true;
         this.offset = m.now - Date.now(); if (!this.loaded) this.trackVersion = m.track.version;
-        this.events = m.events || []; this.$('mp-event').replaceChildren();
-        for (const e of this.events) { const option = document.createElement('option'); option.value = e.id; option.textContent = `${e.name} · ${(e.len / 1000).toFixed(1)} km${e.dir < 0 ? ' · REVERSE' : ''}`; this.$('mp-event').append(option); }
+        this.maps = m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }];
+        this.events = m.events || this.maps.flatMap(map => (map.events || []).map(e => ({ ...e, mapId: map.id })));
+        for (const id of ['mp-create-map', 'mp-map']) { this.$(id).replaceChildren(); for (const map of this.maps) { const option = document.createElement('option'); option.value = map.id; option.textContent = map.name; this.$(id).append(option); } }
+        if (this.maps.some(map => map.id === this.mapId)) this.$('mp-create-map').value = this.mapId;
+        this.renderEvents(this.lobby?.mapId || 'riviera');
         if (this.token) this.send({ type: 'resume', token: this.token });
         else { this.id = m.id; this.saveToken(m.token); this.connected = true; this.status('Connected · find a lobby or create your own.'); }
       }
@@ -77,25 +90,23 @@ export class Multiplayer {
       else if (m.type === 'error') { this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left') this.left();
       else if (m.type === 'lobby') {
-        const joined = !this.lobby, previousCar = this.me?.car; this.lobby = m.lobby;
-        if (m.resume) { this.resumeState = m.state; this.connected = true; this.resumeCount++; }
+        const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId; this.lobby = m.lobby;
+        if (previousRace !== m.lobby.raceId) this.peers.clear();
+        if (m.resume) { this.resumeState = m.state; this.pendingResume = true; this.connected = true; this.resumeCount++; }
         if (joined) { this.peers.clear(); this.hooks.join(this.me.car); this.panel.hidden = false; }
         else if (previousCar !== this.me?.car) this.hooks.carChanged?.(this.me.car);
-        if (m.lobby.status === 'waiting') { if (this.startedRace) { this.startedRace = null; this.peers.clear(); this.hooks.wait(); } this.panel.hidden = false; }
-        if (m.lobby.raceId && (this.startedRace !== m.lobby.raceId || m.resume)) { this.startedRace = m.lobby.raceId; this.peers.clear(); this.hidePanel(); this.hooks.start(m.lobby, this.id, m.resume ? m.state : null); }
-        this.renderRoom(); this.hooks.members(m.lobby.players.filter(p => p.id !== this.id));
-        if (m.lobby.status === 'results') { this.panel.hidden = false; this.hooks.results(); }
-        else this.advanceClock();
+        this.renderRoom(); this.syncLobby();
       } else if (m.type === 'snapshot' && m.raceId === this.lobby?.raceId) {
         for (const p of m.players) if (p.id !== this.id && p.state) this.peers.set(p.id, { ...p, at: performance.now() });
         // Websocket messages keep race state current even when background tabs stop animation frames.
         this.advanceClock();
-        if (document.hidden && this.loaded) this.hooks.remote(this.peers, 0.05);
+        if (document.hidden && this.worldReady) this.hooks.remote(this.peers, 0.1);
       }
     };
     ws.onclose = e => {
       if (this.ws !== ws) return;
       this.connected = false; this.hooks.clearInput();
+      this.stateSender.reset();
       if (e.reason === 'Session resumed elsewhere') { this.left(); this.saveToken(null); this.status('This session is now open in another tab.'); return; }
       this.status(this.active ? 'Connection lost. Rejoining your race… (90-second reservation)' : 'Multiplayer is offline. Retrying…');
       if (this.active) this.panel.hidden = false;
@@ -103,14 +114,58 @@ export class Multiplayer {
     };
     ws.onerror = () => this.status('Multiplayer unavailable. Run the game with npm start.');
   }
+  renderEvents(mapId) {
+    const select = this.$('mp-event'), previous = select.value;
+    select.replaceChildren();
+    for (const e of this.events.filter(e => (e.mapId || 'riviera') === mapId)) {
+      const option = document.createElement('option'); option.value = e.id;
+      option.textContent = `${e.name} · ${(e.len / 1000).toFixed(1)} km${e.dir < 0 ? ' · REVERSE' : ''}`;
+      select.append(option);
+    }
+    if ([...select.options].some(o => o.value === previous)) select.value = previous;
+  }
+  syncLobby() {
+    if (!this.loaded || !this.lobby) return Promise.resolve();
+    if (this.preparing) return this.preparing;
+    const mapId = this.lobby.mapId || 'riviera';
+    if (this.mapId !== mapId) {
+      if (this.failedMap === mapId) return Promise.resolve();
+      this.panel.hidden = false; this.hooks.clearInput(); this.status('Loading the lobby track…');
+      this.preparing = Promise.resolve().then(() => this.hooks.mapChanged(mapId)).then(() => {
+        this.preparing = null; this.failedMap = null;
+        return this.syncLobby(); // membership or the selected map may have changed during loading
+      }, error => {
+        this.preparing = null; this.failedMap = mapId;
+        this.status('Could not load the lobby track. Choose another track or leave the lobby.');
+        console.warn('Multiplayer track loading failed:', error);
+        if (this.lobby) this.renderRoom();
+      });
+      this.renderRoom();
+      return this.preparing;
+    }
+    if (!this.worldReady) { this.renderRoom(); return Promise.resolve(); }
+    const lobby = this.lobby;
+    if (lobby.status === 'waiting') { if (this.startedRace) { this.startedRace = null; this.peers.clear(); this.stateSender.reset(); this.hooks.wait(); } this.pendingResume = false; this.resumeState = null; this.panel.hidden = false; }
+    if (lobby.raceId && (this.startedRace !== lobby.raceId || this.pendingResume)) {
+      const state = this.pendingResume ? this.resumeState : null;
+      this.pendingResume = false; this.resumeState = null; this.startedRace = lobby.raceId;
+      this.stateSender.reset(); this.finishSent = null;
+      this.hidePanel(); this.hooks.start(lobby, this.id, state);
+    }
+    this.renderRoom(); this.hooks.members(lobby.players.filter(p => p.id !== this.id));
+    if (this.peers.size) this.hooks.remote(this.peers, 0.1);
+    if (lobby.status === 'results') { this.panel.hidden = false; this.hooks.results(); }
+    else this.advanceClock();
+    return Promise.resolve();
+  }
   saveToken(token) { this.token = token; try { if (token) sessionStorage.setItem('paraliaki.session', token); else sessionStorage.removeItem('paraliaki.session'); } catch {} }
-  left() { this.resumeState = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
+  left() { this.stateSender.reset(); this.resumeState = null; this.pendingResume = false; this.failedMap = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
   renderDiscovery(lobbies) {
     const list = this.$('mp-list'); list.replaceChildren();
     if (!lobbies.length) { const p = document.createElement('p'); p.textContent = 'No public lobbies yet. Create one and invite your friends.'; list.append(p); }
     for (const l of lobbies) {
       const row = document.createElement('div'); row.className = 'mp-lobby';
-      const label = document.createElement('span'); label.textContent = `${l.name} · ${l.players.length}/${l.capacity} · ${l.event?.name || 'QUICK RACE'} · ${l.traffic ? 'TRAFFIC' : 'CLEAR ROAD'} · ${l.status.toUpperCase()}`;
+      const label = document.createElement('span'); label.textContent = `${l.name} · ${l.players.length}/${l.capacity} · ${this.maps.find(m => m.id === (l.mapId || 'riviera'))?.name || 'ATHENS RIVIERA'} · ${l.event?.name || 'QUICK RACE'} · ${l.traffic ? 'TRAFFIC' : 'CLEAR ROAD'} · ${l.status.toUpperCase()}`;
       const b = document.createElement('button'); b.textContent = 'JOIN'; b.disabled = l.status !== 'waiting' || l.players.length >= l.capacity; b.onclick = () => this.action('join', { code: l.code }); row.append(label, b); list.append(row);
     }
   }
@@ -118,15 +173,17 @@ export class Multiplayer {
     const l = this.lobby, me = this.me, host = l.host === this.id; this.$('mp-browser').hidden = true; this.$('mp-room').hidden = false;
     this.$('mp-room-name').textContent = l.name; this.$('mp-room-code').textContent = l.code;
     this.$('mp-room-help').textContent = l.status === 'waiting' ? 'Get ready. The host starts when at least two drivers are ready.' : l.status === 'results' ? 'Race complete. The host can prepare a rematch.' : me?.finish !== null ? 'You finished. Waiting for the other drivers; the race ends after ten minutes.' : 'Race in progress. Close this panel to keep driving.';
-    this.status(`Connected · ${Math.round(this.latency)} ms · ${l.players.length}/8 drivers`);
-    this.$('mp-room-car').value = me?.car; this.$('mp-room-car').disabled = !this.loaded || l.status !== 'waiting';
-    this.$('mp-event').value = l.eventId || 'quick'; this.$('mp-event').disabled = !host || l.status !== 'waiting';
+    this.status(this.preparing ? 'Loading the lobby track…' : this.versionMismatch ? 'The lobby track was updated. Reload the game to update.' : this.failedMap === (l.mapId || 'riviera') ? 'Could not load the lobby track. Choose another track or leave the lobby.' : `Connected · ${Math.round(this.latency)} ms · ${l.players.length}/8 drivers`);
+    this.$('mp-room-car').value = me?.car; this.$('mp-room-car').disabled = !this.worldReady || l.status !== 'waiting';
+    this.$('mp-map').value = l.mapId || 'riviera'; this.$('mp-map').disabled = !host || !!this.preparing || l.status !== 'waiting';
+    this.renderEvents(l.mapId || 'riviera');
+    this.$('mp-event').value = l.eventId || 'quick'; this.$('mp-event').disabled = !host || !this.worldReady || l.status !== 'waiting';
     this.$('mp-traffic').checked = l.traffic === true; this.$('mp-traffic').disabled = !host || l.status !== 'waiting';
     const list = this.$('mp-members'); list.replaceChildren();
     for (const p of l.players) { const row = document.createElement('div'); row.className = 'mp-member'; row.textContent = `${p.name}${p.id === this.id ? ' (YOU)' : ''}${p.id === l.host ? ' · HOST' : ''} · ${this.cars.find(c => c.id === p.car)?.short || p.car} · ${p.connected === false ? 'RECONNECTING' : p.ready ? 'READY' : 'NOT READY'}`; list.append(row); }
-    this.$('mp-ready').disabled = !this.loaded || l.status !== 'waiting'; this.$('mp-ready').textContent = me?.ready ? 'NOT READY' : 'READY';
+    this.$('mp-ready').disabled = !this.worldReady || l.status !== 'waiting'; this.$('mp-ready').textContent = me?.ready ? 'NOT READY' : 'READY';
     this.$('mp-start').textContent = l.status === 'results' ? 'REMATCH' : 'START RACE'; this.$('mp-start').hidden = !host;
-    this.$('mp-start').disabled = l.status !== 'results' && (l.status !== 'waiting' || l.players.length < 2 || !l.players.every(p => p.ready && p.connected !== false));
+    this.$('mp-start').disabled = !this.worldReady || (l.status !== 'results' && (l.status !== 'waiting' || l.players.length < 2 || !l.players.every(p => p.ready && p.connected !== false)));
     const results = this.$('mp-results'); results.replaceChildren();
     if (l.status === 'results') { const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title); this.ranking().forEach((p, i) => { const row = document.createElement('p'); row.textContent = `${i + 1}. ${p.name} · ${p.finish !== null ? p.finish.toFixed(2) + ' s' : 'DNF'}`; results.append(row); }); }
     this.board.hidden = l.status === 'waiting';
@@ -138,7 +195,7 @@ export class Multiplayer {
   }); }
   progress(s) { const r = this.lobby?.event; return r ? (s - r.s0) * r.dir : s; }
   advanceClock() {
-    if (this.loaded && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
+    if (this.worldReady && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
   }
   spectating() {
     if (!this.active || this.me?.finish == null || this.lobby.status === 'results') return null;
@@ -150,20 +207,24 @@ export class Multiplayer {
   async showLeaderboard() {
     const box = this.$('mp-times'); box.hidden = false; box.textContent = 'Loading best times…';
     try {
-      const entries = await getLeaderboard({ eventId: this.lobby?.eventId || 'quick', car: this.me?.car || this.$('mp-car').value, traffic: this.lobby?.traffic ?? false });
+      const entries = await getLeaderboard({ mapId: this.lobby?.mapId || this.mapId || 'riviera', eventId: this.lobby?.eventId || 'quick', car: this.me?.car || this.$('mp-car').value, traffic: this.lobby?.traffic ?? false });
       box.replaceChildren(); const title = document.createElement('h3'); title.textContent = 'BEST TIMES · ' + (this.lobby?.event?.name || 'QUICK RACE'); box.append(title);
       if (!entries.length) { const row = document.createElement('p'); row.textContent = 'No recorded times yet.'; box.append(row); }
       entries.forEach((e, i) => { const row = document.createElement('p'); row.textContent = `${i + 1}. ${e.name} · ${e.time.toFixed(2)} s · ${e.car}`; box.append(row); });
     } catch { box.textContent = 'Best times are unavailable. Try again shortly.'; }
   }
   update(dt, state) {
-    if (!this.lobby) return;
+    if (!this.lobby || !this.worldReady) return;
     this.hooks.remote(this.peers, dt);
     const l = this.lobby;
     if (!this.connected) return;
     if (['countdown', 'race'].includes(l.status)) {
       this.advanceClock();
-      if (this.now() >= l.startAt && performance.now() - (this.sentAt || 0) >= 50) { this.sentAt = performance.now(); this.send({ type: 'state', raceId: l.raceId, state }); }
+      if (this.now() >= l.startAt) {
+        const force = this.finishSent !== l.raceId && (state.s - l.event.s1) * l.event.dir >= 0 && Math.abs(state.u) < 30;
+        if (force) this.finishSent = l.raceId;
+        this.stateSender.sample(state, l.raceId, { batching: this.stateBatching, force });
+      }
     }
     if (performance.now() - (this.boardAt || 0) > 250) {
       this.boardAt = performance.now(); this.board.replaceChildren();
