@@ -18,7 +18,8 @@
       "filter": "highpass=f=100,lowpass=f=4500",
       "rms": 0.11,
       "gain": 6.815570274467314,
-      "kind": "texture"
+      "kind": "texture",
+      "playbackNote": "First 24\u201334 s excerpt; subsequent random 10\u201321 s excerpts with 3 s overlap to avoid repeating the original gust envelope."
     },
     {
       "file": "pine-wind.ogg",

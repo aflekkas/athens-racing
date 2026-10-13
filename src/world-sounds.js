@@ -26,7 +26,7 @@ export async function loadWorldSounds(ctx, onLoad) {
   jobs.sort((a, b) => (FIRST.includes(b[0]) ? 1 : 0) - (FIRST.includes(a[0]) ? 1 : 0));
   const one = async ([name, url, m]) => {
     const buffer = await ctx.decodeAudioData(await (await fetch(url)).arrayBuffer());
-    const sound = { buffer, rpm: m.rpm, texture: TEXTURES.has(name) || m.kind === 'texture' };
+    const sound = { buffer, rpm: m.rpm, texture: TEXTURES.has(name) || m.kind === 'texture', textureWindow: m.textureWindow };
     if (m.kind === 'loop' && m.frames) {
       const len = m.frames * ctx.sampleRate / m.sampleRate, guard = 0.3 * ctx.sampleRate;
       let off = 0;
@@ -75,7 +75,11 @@ class TextureLoop {
     const { ctx, sound } = this, at = Math.max(now, this.next);
     const start = sound.loopStart || 0, end = Math.min(sound.loopEnd || sound.buffer.duration, sound.buffer.duration);
     const rate = this.rate * (0.985 + Math.random() * 0.03);
-    const duration = Math.min((end - start) / rate, 24 + Math.random() * 13);
+    // First excerpt establishes the setting; short wind recordings then use varied windows
+    // instead of repeatedly replaying almost their entire gust envelope.
+    const [lo, hi] = (this.hasPlayed && sound.textureWindow) || [24, 37];
+    const duration = Math.min((end - start) / rate, lo + Math.random() * (hi - lo));
+    this.hasPlayed = true;
     const fade = Math.min(3, duration / 4), offset = start + Math.random() * Math.max(0, end - start - duration * rate);
     const src = ctx.createBufferSource(), g = ctx.createGain();
     src.buffer = sound.buffer; src.playbackRate.value = rate; src.connect(g); g.connect(this.dest);

@@ -3,7 +3,11 @@
     "file": "farmland-wind.ogg",
     "kind": "texture",
     "channels": 1,
-    "sampleRate": 32000
+    "sampleRate": 32000,
+    "textureWindow": [
+      10,
+      21
+    ]
   },
   "pine-wind": {
     "file": "pine-wind.ogg",
