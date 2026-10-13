@@ -76,6 +76,8 @@ const G = {
   crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0,
   shake: 0, flash: 0, driftAcc: 0, driftT: 0, markIdx: 0, finishedT: 0, orbitA: 0, autodrive: Q.has('autodrive'),
 };
+canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); G.ctxLost = true; clearDriveInput(); });
+canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; });
 window.__game = G;
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
@@ -435,7 +437,7 @@ addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch'
 
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
-  const blocked = document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
+  const blocked = G.ctxLost || document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked });
   const pad = controls.pad;
   if (controls.keys.size) G.inputDevice = 'keyboard';
@@ -1192,7 +1194,7 @@ function frame(now) {
   G.fps = G.fps ? G.fps * 0.95 + 0.05 / Math.max(1e-3, (now - (G.lastNow || now - 16)) / 1000) : 60; G.lastNow = now;
   const reps = +(Q.get('turbo') || 1);
   const slices = Math.max(1, Math.ceil(dt / (1 / 60)));
-  try { for (let i = 0; i < reps; i++) for (let j = 0; j < slices; j++) step(dt / slices, i === reps - 1 && j === slices - 1); } catch (e) { fail(e); throw e; }
+  try { for (let i = 0; i < reps; i++) for (let j = 0; j < slices; j++) step(dt / slices, i === reps - 1 && j === slices - 1); } catch (e) { if (G.ctxLost || renderer.getContext().isContextLost()) return; fail(e); throw e; }
   if (splash) splash.update(dt);
   // adaptive resolution
   perfAcc += wallDt; perfN++; perfCool -= dt;
@@ -1430,6 +1432,7 @@ function updateProbe() {
 }
 
 function render() {
+  if (G.ctxLost || renderer.getContext().isContextLost()) return;
   renderer.info.autoReset = false; renderer.info.reset();
   updateWeather(G.lastDt || 1 / 60);
   if (!lowGraphics && (quality === 'med' ? frameN % 4 === 0 : (frameN & 1))) updateProbe();
