@@ -126,7 +126,8 @@ export class Police {
   get cops() { return this.traffic.cars.filter((c) => c.active && c.cop); }
 
   reset(enabled = this.enabled) {
-    this.enabled = enabled; this.hm.reset(); this.t = 0;
+    this.enabled = enabled && !this.route.closed && !this.traffic.route?.closed; // no police on a closed circuit
+    this.hm.reset(); this.t = 0;
     for (const c of this.traffic.cars) if (c.police) { c.active = false; c.m.root.visible = false; c.cop = null; c.crash = null; c.m.setStrobe?.(false, 0); }
     for (const b of this.blocks.slice()) this.clearBlock(b);
     this.patrolS = null; this.reinT = 2; this.blockT = 10; this.dispatchN = 0;
@@ -243,7 +244,7 @@ export class Police {
   // ---------------------------------------------------------------- units
   spawnCop(s, dir, opts = {}) {
     const tr = this.traffic, route = this.route;
-    if (s < 30 || s > route.length - 30) return null;
+    if (route.closed || s < 30 || s > route.length - 30) return null;
     let c = tr.cars.find((q) => q.police && !q.active && (opts.moto ? q.type.scooter : !q.type.scooter)) || tr.cars.find((q) => q.police && !q.active);
     // pool empty: recycle the furthest wreck / idle unit you can't see any more
     if (!c && this.P) {

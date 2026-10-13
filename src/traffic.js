@@ -15,6 +15,8 @@ import { ROAD } from './road.js';
 import { LANE_W } from './map.js';
 import { SURF } from './ground.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { bakeParkedFleet } from './traffic-fleet.js';
+import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 
 const POOL = 66;
 const MASS = { city: 980, hatch: 1150, sedan: 1400, taxi: 1460, taxi_superb: 1580, byd_dolphin: 1658, byd_atto3: 1750, suv: 1900, van: 2300, truck: 5500, bus: 12000, scooter: 190, delivery: 210, moto: 260 };
@@ -135,7 +137,7 @@ export class Traffic {
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vCy;').replace('#include <color_fragment>', '#include <color_fragment>\nif (vCy > 0.3 && vCy < 0.42 || vCy > 0.52 && vCy < 0.6) diffuseColor.rgb = vec3(0.92);');
     };
     const sitesS = [];
-    for (let s = route.start + 900; s < route.finish - 400; s += 1100 + this.rng.range(0, 600)) if (route.lanes(s - 150) >= 3 && route.lanes(s + 100) >= 3 && route.urban(s) > 0.6) sitesS.push(s);
+    if (!route.closed) for (let s = route.start + 900; s < route.finish - 400; s += 1100 + this.rng.range(0, 600)) if (route.lanes(s - 150) >= 3 && route.lanes(s + 100) >= 3 && route.urban(s) > 0.6) sitesS.push(s);
     for (const s0 of sitesS) {
       const n = route.lanes(s0);
       const lane = n - 1, uc = route.laneU(s0, lane);
@@ -162,6 +164,10 @@ export class Traffic {
   // 'town' (Varkiza), 'beach' (Vouliagmeni bay, Astir, the lake: summer crowd), 'cliff' (open coast road),
   // 'cove' (Limanakia / Lomvarda: cars parked on the shoulders, swimmers crossing)
   zone(s) { return this.route.district(s); }
+  /** a closed circuit (route.closed) never has civilian traffic, whatever a caller sets: no cars, no parked rows,
+   *  no road works, no cross traffic, no police */
+  get disabled() { return this._disabled || !!this.route.closed; }
+  set disabled(v) { this._disabled = !!v; }
   /** vehicles per km per lane (each direction) */
   density(s) {
     return { town: 0.9, beach: 1.15, cliff: 0.7, cove: 1.0 }[this.zone(s)];
@@ -903,7 +909,7 @@ export class Traffic {
   buildParkedRows(scene, ground) {
     const rng = new RNG(77), spots = this.data.parkSpots || [];
     this.parkedCars = [];
-    if (!spots.length) return;
+    if (!spots.length || this.route.closed) return;
     const types = TRAFFIC_TYPES.filter((t) => !t.scooter && !t.bus && !t.police && t.w > 0 && t.id !== 'van' && t.id !== 'truck');
     const roots = [];
     for (const sp of spots) {
@@ -918,7 +924,10 @@ export class Traffic {
       this.parkedCars.push({ x: sp.x, z: sp.z, yaw: sp.yaw, hl: t.len / 2, hw: t.wid / 2 });
     }
     // bake them into a few static meshes (one per material per 300 m cell) so a whole beach of cars costs ~a dozen draw calls
-    this.parkedGroup = bakeModels(roots, 300); scene.add(this.parkedGroup);
+    // spatial LOD cells (src/traffic-fleet.js: cheap merged shells far, detailed near cells built lazily); models from
+    // before the catalogue routing have no makeNear(): the old static bake for those
+    this.parkedGroup = roots.length && roots.every((m) => typeof m.makeNear === 'function') ? bakeParkedFleet(roots, 40) : bakeModels(roots, 300);
+    scene.add(this.parkedGroup);
   }
 
   // ---- side-street cross traffic: goes on the main road's red, straight over or turning into the avenue
@@ -1025,7 +1034,7 @@ export class Traffic {
     return B;
   }
   /** apply a crash impulse to a traffic car: (re)enter the crash state; a real hit wrecks it */
-  hitCar(c, B, dv, zone, now) {
+  hitCar(c, B, dv, zone, now, impact = {}) {
     const big = dv > (c.type.scooter ? 1.2 : 2.4);
     if (!c.crash) {
       c.crash = { t: 0, vs: 0, vu: 0, w: 0, yaw: c.cross ? c.xyaw : c.yawLC || 0, y: 0, vy: 0, roll: 0, rollV: 0, pitch: 0, pitchV: 0, brake: 0, wreck: false, gy: 0, onSide: false };
@@ -1043,10 +1052,20 @@ export class Traffic {
     // a hard hit lifts the struck end a little; only a scooter really leaves the ground
     if (c.type.scooter) k.vy = Math.max(k.vy, Math.min(3, dv * 0.25));
     else if (dv > 9) k.vy = Math.max(k.vy, Math.min(1.6, (dv - 9) * 0.15));
-    c.dz = c.dz || { front: 0, rear: 0, left: 0, right: 0 };
-    c.dz[zone] = Math.min(1, c.dz[zone] + dv / 10);
-    c.m.setDamage?.(zone, c.dz[zone]);
+    this.damageCar(c, zone, dv, impact);
     void now;
+  }
+
+  /** Cosmetic damage also applies when a police driver rides out an impact without entering crash mode. */
+  damageCar(c, zone, dv, impact = {}) {
+    if (!(dv > 0)) return;
+    const ebs = impact.ebs ?? dv;
+    const inc = damageIncrement(ebs, zone);
+    if (!(inc > 0)) return;
+    c.dz = c.dz || { front: 0, rear: 0, left: 0, right: 0 };
+    if (!(zone in c.dz)) return;
+    c.dz[zone] = Math.min(1, c.dz[zone] + inc);
+    c.m.setDamage?.(zone, c.dz[zone], { ...impact, ebs, cheap: true });
   }
 
   /** collide a physics vehicle against all traffic and cones; returns events */
@@ -1085,6 +1104,8 @@ export class Traffic {
       const ct = obbContact(A, B); if (!ct) continue;
       const vs0 = A.vs, vu0 = A.vu;
       const r = impulse(A, B, ct, c.crash && c.crash.onSide ? 0.05 : 0.15, 0.45);
+      const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
+      impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m);
       // separate them (by inverse mass), then write the bodies back
       const ia = 1 / A.m, ib = 1 / B.m, sh = (ct.ov + 0.01) / (ia + ib);
       pushVeh(veh, rv.f, -ct.ns * sh * ia, -ct.nu * sh * ia);
@@ -1094,12 +1115,12 @@ export class Traffic {
       c.s += ct.ns * sh * ib; c.u += ct.nu * sh * ib;
       if (r.j <= 0) continue; // touching or already separating: no impulse
       const dvA = Math.hypot(A.vs - vs0, A.vu - vu0), dvB = r.dvB;
-      if (c.cop && c.cop.chase && !c.crash && dvB < 3) { c.v = Math.max(0, c.dir * B.vs); c.uv = B.vu; } // a police driver rides out a PIT / ram contact
-      else if (dvB > 0.35 || c.crash) this.hitCar(c, B, dvB, zoneOf(B, ct.ps, ct.pu), now);
+      if (c.cop && c.cop.chase && !c.crash && dvB < 3) { c.v = Math.max(0, c.dir * B.vs); c.uv = B.vu; this.damageCar(c, zoneOf(B, ct.ps, ct.pu), dvB, impactB); } // a police driver rides out a PIT / ram contact
+      else if (dvB > 0.35 || c.crash) this.hitCar(c, B, dvB, zoneOf(B, ct.ps, ct.pu), now, impactB);
       else if (c.mode !== 'parked') { c.v = Math.max(0, c.dir * B.vs); c.shakenT = 2; } // a nudge: brake, glare
       if (actor.kind === 'player') c.pHitT = now;
       const sev = r.vn;
-      if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB });
+      if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB, ...impactA });
     }
     // cones
     for (const k of this.cones) {
@@ -1123,13 +1144,17 @@ export class Traffic {
       const ct = obbContact(A, B); if (!ct) continue;
       const vA0s = A.vs, vA0u = A.vu;
       const r = impulse(A, B, ct, 0.15, 0.45);
+      const zoneA = zoneOf(A, ct.ps, ct.pu), zoneB = zoneOf(B, ct.ps, ct.pu);
+      const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
+      impactA.ebs = equivalentBarrierSpeed(r.vn, A.m, B.m); impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m);
       const ia = 1 / A.m, ib = 1 / B.m, sh = (ct.ov + 0.01) / (ia + ib);
       c.s -= ct.ns * sh * ia; c.u -= ct.nu * sh * ia; A.s = c.s; A.u = c.u;
       q.s += ct.ns * sh * ib; q.u += ct.nu * sh * ib;
       if (r.j <= 0) continue;
       const dvA = Math.hypot(A.vs - vA0s, A.vu - vA0u);
-      if (r.dvB > 0.35 || q.crash) this.hitCar(q, B, r.dvB, zoneOf(B, ct.ps, ct.pu), this.t);
-      if (dvA > 4) { this.hitCar(c, A, dvA, zoneOf(A, ct.ps, ct.pu), this.t); return; }
+      if (r.dvB > 0.35 || q.crash) this.hitCar(q, B, r.dvB, zoneB, this.t, impactB);
+      if (dvA > 4) { this.hitCar(c, A, dvA, zoneA, this.t, impactA); return; }
+      this.damageCar(c, zoneA, dvA, impactA);
       c.v = Math.max(0, A.vs * c.dir); c.uv = A.vu;
       if (r.vn > 3) this.sounds.push({ kind: 'crunch', c: q, sev: r.vn });
     }
@@ -1143,15 +1168,20 @@ export class Traffic {
       if (q === c || !q.active || Math.abs(q.s - c.s) > 10 || Math.abs(q.u - c.u) > 8) continue;
       this.carBody(q, B);
       const ct = obbContact(A, B); if (!ct) continue;
+      const vA0s = A.vs, vA0u = A.vu;
       const r = impulse(A, B, ct, 0.15, 0.45);
+      const zoneA = zoneOf(A, ct.ps, ct.pu), zoneB = zoneOf(B, ct.ps, ct.pu);
+      const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
+      impactA.ebs = equivalentBarrierSpeed(r.vn, A.m, B.m); impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m);
       const ia = 1 / A.m, ib = 1 / B.m, sh = (ct.ov + 0.01) / (ia + ib);
       c.s -= ct.ns * sh * ia; c.u -= ct.nu * sh * ia; A.s = c.s; A.u = c.u;
       q.s += ct.ns * sh * ib; q.u += ct.nu * sh * ib;
       const k = c.crash; k.vs = A.vs; k.vu = A.vu; k.w = A.w;
       if (r.j > 0 && (r.dvB > 0.35 || q.crash)) {
-        this.hitCar(q, B, r.dvB, zoneOf(B, ct.ps, ct.pu), this.t);
+        this.hitCar(q, B, r.dvB, zoneB, this.t, impactB);
         if (r.vn > 3) this.sounds.push({ kind: 'crunch', c: q, sev: r.vn });
       }
+      if (r.j > 0) this.damageCar(c, zoneA, Math.hypot(A.vs - vA0s, A.vu - vA0u), impactA);
     }
   }
 
@@ -1276,6 +1306,10 @@ export class Traffic {
     const ts = -nu, tu = ns, vt = vps * ts + vpu * tu, rt = rs * tu - ru * ts;
     const jt = clamp(-vt / (1 / c.mass + rt * rt / c.I), -0.4 * j, 0.4 * j);
     k.vs += jt * ts / c.mass; k.vu += jt * tu / c.mass; k.w += rt * jt / c.I;
+    // Capsule wall tests report the end-cap centre; place the dent on its contacted skin.
+    const contactRadius = x === null ? 0 : c.wid * 0.5;
+    const B = this.carBody(c, {}), ct = { ps: c.s + rs - ns * contactRadius, pu: c.u + ru - nu * contactRadius, ns, nu };
+    this.damageCar(c, zoneOf(B, ct.ps, ct.pu), -vn, { ...localImpact(B, ct, 1), ebs: -vn });
     if (-vn > 2) { c.dmg += -vn * 0.5; if (-vn > 4) k.wreck = true; this.sounds.push({ kind: 'crunch', c, sev: -vn }); }
   }
 
@@ -1302,9 +1336,9 @@ export class Traffic {
   sync(ps) {
     const route = this.route, f = {};
     for (const c of this.cars) {
-      if (!c.active) continue;
+      if (!c.active) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
       const vis = Math.abs(c.s - ps) < 650;
-      c.m.root.visible = vis; if (!vis) continue;
+      c.m.root.visible = vis; if (!vis) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
       c.m.setLOD?.(Math.abs(c.s - ps)); // detail by distance (src/cars.js)
       route.frame(c.s, f);
       route.point(c.s, c.u, _v);
@@ -1329,6 +1363,7 @@ export class Traffic {
         if (w.front && w.pivot && w.pivot !== w.spin) w.pivot.rotation.y = -(c.steerA || 0);
       }
       c.m.tail.emissiveIntensity = !k && c.braking ? 7 : 1.4;
+      c.m.updateDamage?.(this.dtLast || 0.016);
     }
   }
 }
@@ -1380,6 +1415,15 @@ function bakeModels(models, cell) {
 function wrapPi(a) { if (!Number.isFinite(a)) return 0; a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; }
 
 // ---------------------------------------------------------------- rigid-body contact helpers (road plane: s, u)
+/** Contact in model coordinates (x right, -z forward); sign selects the inward impulse, -1 for A, +1 for B. */
+export function localImpact(B, ct, sign = 1) {
+  const fs = Math.cos(B.phi), fu = Math.sin(B.phi), ds = ct.ps - B.s, du = ct.pu - B.u;
+  return {
+    localPoint: { x: -fu * ds + fs * du, y: 0.55, z: -fs * ds - fu * du },
+    localNormal: { x: sign * (-fu * ct.ns + fs * ct.nu), y: 0, z: -sign * (fs * ct.ns + fu * ct.nu) },
+  };
+}
+
 /** separating-axis contact between two oriented boxes {s,u,phi,hl,hw}: normal (A -> B), overlap, contact point */
 function obbContact(A, B) {
   const ax = [Math.cos(A.phi), Math.sin(A.phi)], ay = [-ax[1], ax[0]], bx = [Math.cos(B.phi), Math.sin(B.phi)], by = [-bx[1], bx[0]];

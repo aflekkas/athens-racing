@@ -189,3 +189,11 @@ test('runtime: a full police pool recycles a distant wreck for the next unit', (
   const c = W.police.spawnCop(4800, 1);
   assert.ok(c && c.active && c.cop && !c.cop.down && !c.crash, 'recycled into a fresh unit');
 });
+
+test('a closed circuit never has police, whatever asks for them', () => {
+  const W = world(); W.route.closed = true; W.player(1000, 1.9, 60);
+  W.police.reset(true);
+  assert.equal(W.police.enabled, false);
+  assert.equal(W.police.spawnCop(1100, -1), null);
+  assert.deepEqual(step(W, 1), []); assert.equal(pursuit.state, 'off');
+});
