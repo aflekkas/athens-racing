@@ -256,10 +256,17 @@ export class Cockpit {
       const camera=new THREE.PerspectiveCamera(THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(hfov/2))/(width/height))),width/height,.08,600);
       this.mirrors.push({name,mesh,camera,width,height,target:null,material:mesh.material,fallback});
     };
-    const desiredMount=new THREE.Vector3(0,model.shape.H-.055,model.shape.header-.025);
+    const desiredMount=new THREE.Vector3(0,model.shape.H-.09,model.shape.header-.10);
     const root=nearestSurface(desiredMount,[model.windscreen],model.body).point;
     const mirror=new THREE.Mesh(new THREE.PlaneGeometry(.25,.07));mirror.name='interior-rearview-face';
-    const mY=Math.min(model.shape.H-.115,root.y-.07),mZ=Math.max(model.shape.header-.035,root.z+.035);
+    // A short forward/downward bracket follows the rake of the windscreen.
+    // Keeping the glass behind the header made it dominate the driver's view.
+    const mY=Math.min(model.shape.H-.135,root.y-.045);
+    model.body.updateWorldMatrix(true,true);
+    const origin=model.body.localToWorld(new THREE.Vector3(0,mY,model.shape.cowl+2));
+    const direction=new THREE.Vector3(0,0,-1).transformDirection(model.body.matrixWorld);
+    const windscreenHit=new THREE.Raycaster(origin,direction,0,4).intersectObject(model.windscreen,false)[0];
+    const mZ=(windscreenHit?model.body.worldToLocal(windscreenHit.point).z:root.z-.14)+.045;
     mirror.position.set(0,mY,mZ);
     mirror.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),eye.clone().sub(mirror.position).normalize().add(new THREE.Vector3(0,0,1)).normalize());
     const mframe=new THREE.Mesh(new RoundedBoxGeometry(.266,.084,.026,1,.008),new THREE.MeshStandardMaterial({color:'#0e0e0f',roughness:.4}));
@@ -376,10 +383,10 @@ export class Cockpit {
       mesh.geometry.computeBoundingBox();const box=mesh.geometry.boundingBox;
       for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y]){
         const p=this.model.body.worldToLocal(mesh.localToWorld(new THREE.Vector3(x,y,box.max.z)));
-        tangent=Math.max(tangent,(Math.abs(p.x-this.eye.x)+.025)/Math.max(.15,this.eye.z-p.z));
+        tangent=Math.max(tangent,(Math.abs(p.x-this.eye.x)+.012)/Math.max(.15,this.eye.z-p.z));
       }
     }
-    return THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.06/aspect));
+    return THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect));
   }
   renderMirrors(renderer,scene,{enabled=true,frame=0}={}){
     if(!enabled){for(const m of this.mirrors)if(m.material.map!==m.fallback){m.material.map=m.fallback;m.material.needsUpdate=true;}return;}

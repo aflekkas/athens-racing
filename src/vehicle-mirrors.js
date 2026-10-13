@@ -30,29 +30,39 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     const face=low?group.getObjectByName('mirror-face'):(side<0?car.mirrorL:car.mirrorR);
     const bounds=new THREE.Box3().setFromObject(housing||group),center=bounds.getCenter(V()).applyMatrix4(inv);
     if(face&&scope===car.body){new THREE.Box3().setFromObject(face).getCenter(center).applyMatrix4(inv);if(!face.name)center.z-=.055;}
-    if(car.spec?.id==='gtv')center.z=car.shape.cowl+(side<0?.05:.18);
-    if(car.spec?.id==='carrera')center.z=Math.max(center.z,car.shape.cowl+.15);
-    const size=bounds.getSize(V());const classic=car.spec?.id==='gtv';
+    if(car.spec?.id==='gtv')center.z=car.shape.cowl-.12;
+    if(car.spec?.mass&&car.spec.id!=='gtv'){
+      // The housing projects forward of the door's sail-panel mounting foot.
+      // This is also the driver's natural sight line, without an ultra-wide lens.
+      center.x=side*(car.dims.W/2+.055);center.z=car.shape.cowl-.20;
+    }
+    if(car.spec?.id==='mini')center.y=car.shape.belt+.065;
+    if(car.spec?.id==='z4'){center.y=car.shape.belt+.185;center.z=car.shape.cowl-.26;}
+    if(car.spec?.id==='taxi')center.z=car.shape.cowl-.14;
+    if(car.spec?.id==='golf')center.y=car.shape.belt+.045;
+    if(car.spec?.id==='gr_yaris')center.y=car.shape.belt+.057;
+    if(car.spec?.id==='carrera'){center.y=car.shape.belt+.137;center.z=car.shape.cowl-.26;}
+    const size=bounds.getSize(V());const classic=car.spec?.id==='gtv',modern=!!car.spec?.mass&&!classic,z4=car.spec?.id==='z4';
     // Commercial mirrors retain their tall bus/truck envelope.
-    const width=classic?.126:bike?.125:Math.min(.245,Math.max(.18,size.x)),height=classic?.126:bike?.075:Math.min(.48,Math.max(.105,size.y)),depth=bike?.045:.13;
+    const width=classic?.126:bike?.125:car.spec?.mass?(z4?.210:car.shape.open?.185:.20):Math.min(.245,Math.max(.18,size.x)),height=classic?.126:bike?.075:z4?.135:Math.min(.48,Math.max(.105,size.y)),depth=bike?.045:z4?.115:.13;
     if(group.isMesh){const old=group,parent=old.parent;group=new THREE.Group();group.name=old.name;parent.add(group);old.removeFromParent();}
     group.clear();group.position.set(0,0,0);group.rotation.set(0,0,0);group.scale.set(1,1,1);
     // Builders put groups directly under scope; attach also supports nested player parts.
     scope.attach(group);group.position.set(0,0,0);group.quaternion.identity();group.scale.set(1,1,1);
     group.userData.damagePart=group.name;group.userData.mirrorAssembly=true;
-    const desired=center.clone();desired.x=side*(bike?car.dims.W*.32:car.dims.W/2-.055);desired.y-=bike?.21:Math.min(.12,height*.7);desired.z+=bike?.11:0;
+    const desired=center.clone();desired.x=side*(bike?car.dims.W*.32:car.dims.W/2-.055);desired.y-=bike?.21:Math.min(.12,height*.7);desired.z+=bike?.11:0;if(car.spec?.mass&&car.spec.id!=='gtv')desired.z=car.shape.cowl+.025;
     const hit=nearestSurface(desired,supports,scope);if(!hit)throw new Error('No body surface for '+group.name);
-    const shell=new THREE.Mesh(classic?new THREE.SphereGeometry(1,12,8):new THREE.SphereGeometry(1,low?6:10,low?4:6),classic?car.materials.chrome:bike?car.materials.black:car.paint);
-    const vertices=shell.geometry.attributes.position;for(let i=0;i<vertices.count;i++)vertices.setZ(i,Math.min(0,vertices.getZ(i)));shell.geometry.computeVertexNormals();
+    const shell=new THREE.Mesh(classic?new THREE.SphereGeometry(1,12,8):new THREE.SphereGeometry(1,low?6:modern?16:10,low?4:modern?10:6),classic?car.materials.chrome:bike?car.materials.black:car.paint);
+    const vertices=shell.geometry.attributes.position;for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i);vertices.setZ(i,Math.min(0,vertices.getZ(i)));if(modern){vertices.setY(i,y*(.88+.12*side*x));}}shell.geometry.computeVertexNormals();
     const orientation=new THREE.Quaternion();if(car.spec?.mass)orientation.setFromUnitVectors(new THREE.Vector3(0,0,1),car.seat.clone().sub(center).normalize());
     shell.quaternion.copy(orientation);
     shell.name='mirror-housing';shell.scale.set(width/2,height/2,depth/2);shell.position.copy(center);group.add(shell);
     const glass=face||new THREE.Mesh(new THREE.CircleGeometry(1,12),car.materials.chrome||car.materials.silver||car.materials.alloy||car.paint);
-    glass.removeFromParent();glass.geometry=new THREE.CircleGeometry(1,16);glass.scale.set(width*.41,height*.37,1);glass.position.copy(center);glass.position.add(new THREE.Vector3(0,0,.002).applyQuaternion(orientation));glass.quaternion.copy(orientation);glass.name='mirror-face';group.add(glass);
+    glass.removeFromParent();glass.geometry=new THREE.CircleGeometry(1,modern&&!low?32:16);if(modern){const a=glass.geometry.attributes.position;for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i);a.setY(i,y*(.88+.12*side*x));}}glass.scale.set(width*(z4?.43:.41),height*(z4?.45:.37),1);glass.position.copy(center);glass.position.add(new THREE.Vector3(0,0,.002).applyQuaternion(orientation));glass.quaternion.copy(orientation);glass.name='mirror-face';group.add(glass);
     if(scope===car.body&&car.spec?.mass)car[side<0?'mirrorL':'mirrorR']=glass;
     const tip=center.clone().add(new THREE.Vector3(-side*width*.28,-height*.2,-depth*.25).applyQuaternion(orientation));
-    const arm=new THREE.Mesh(armGeometry(hit.point,tip,bike||classic?.009:.019),car.materials.black||car.materials.chrome||car.paint);arm.name='mirror-stalk';arm.userData.mirrorArm=true;group.add(arm);
-    group.userData.mirrorRoot=hit.point.toArray();group.userData.mirrorCenter=center.toArray();scope.updateWorldMatrix(true,true);const shellCenter=scope.worldToLocal(new THREE.Box3().setFromObject(shell).getCenter(V()));group.userData.mirrorTipOffset=tip.clone().sub(shellCenter).toArray();group.userData.mirrorRadius=bike||classic?.009:.019;
+    const arm=new THREE.Mesh(armGeometry(hit.point,tip,bike||classic?.009:modern?.011:.019),car.materials.black||car.materials.chrome||car.paint);arm.name='mirror-stalk';arm.userData.mirrorArm=true;group.add(arm);
+    group.userData.mirrorRoot=hit.point.toArray();group.userData.mirrorCenter=center.toArray();scope.updateWorldMatrix(true,true);const shellCenter=scope.worldToLocal(new THREE.Box3().setFromObject(shell).getCenter(V()));group.userData.mirrorTipOffset=tip.clone().sub(shellCenter).toArray();group.userData.mirrorRadius=bike||classic?.009:modern?.011:.019;
   }
 }
 // Mirror stalks remain separate from body batches and are re-seated after each

@@ -12,18 +12,18 @@ import { refineSportsPlayer } from './player-sports-surfaces.js';
 import { isPlayerVehicle, refinePlayerDetails, groupPlayerParts, installPlayerLOD } from './player-vehicle-details.js';
 
 export const MODEL = {
-  carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.08,back:1.57,roofBack:.54,seatZ:.20,eyeY:1.12,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
-  gr_yaris: { profile:'yaris',axleOffset:0, L:3.995,W:1.805,H:1.455,wb:2.56,track:1.554,r:.319,belt:.98,front:.78,rear:1.04,cowl:-.84,header:-.31,back:1.84,roofBack:1.47,seatZ:.12,eyeY:1.21,leather:'#26272a',rim:.229,doors:2,tyreF:.225,tyreR:.225,blackRoof:true },
-  gtv: { profile:'gtv',axleOffset:-.015, L:4.10,W:1.58,H:1.328,wb:2.35,track:1.30,r:.313,belt:.88,front:.77,rear:.87,cowl:-.77,header:-.36,back:1.30,roofBack:.69,seatZ:.15,eyeY:1.12,leather:'#a2764e',rim:.178,doors:2,tyreF:.165,tyreR:.165,classic:true,rearLow:true },
-  mini: { L:3.85,W:1.727,H:1.415,wb:2.495,track:1.485,r:0.316,belt:0.96,front:0.85,rear:0.89,cowl:-0.62,header:-0.23,back:1.12,roofBack:0.68,open:true,seatZ:0.29,eyeY:1.19,leather:'#965d37',rim:0.223 },
-  z4: { L:4.324,W:1.864,H:1.304,wb:2.47,track:1.60,r:0.335,belt:0.87,front:0.65,rear:0.91,cowl:-0.46,header:0.01,back:0.98,roofBack:0.65,open:true,seatZ:0.47,eyeY:1.09,leather:'#ac6335',rim:0.241 },
-  octavia: { L:4.689,W:1.829,H:1.47,wb:2.686,track:1.54,r:0.323,belt:0.98,front:0.77,rear:0.97,cowl:-0.91,header:-0.35,back:1.75,roofBack:0.91,seatZ:0.13,eyeY:1.23,leather:'#363a3b',rim:0.216 },
-  superb: { L:4.869,W:1.864,H:1.469,wb:2.841,track:1.584,r:0.332,belt:0.99,front:0.76,rear:0.96,cowl:-0.93,header:-0.37,back:1.80,roofBack:0.96,seatZ:0.13,eyeY:1.23,leather:'#343432',rim:0.229 },
+  carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.04,back:1.57,roofBack:.54,seatZ:.36,eyeY:1.00,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
+  gr_yaris: { profile:'yaris',axleOffset:0, L:3.995,W:1.805,H:1.455,wb:2.56,track:1.554,r:.319,belt:.98,front:.78,rear:1.04,cowl:-.84,header:-.31,back:1.84,roofBack:1.47,seatZ:.20,eyeY:1.155,leather:'#26272a',rim:.229,doors:2,tyreF:.225,tyreR:.225,blackRoof:true },
+  gtv: { profile:'gtv',axleOffset:-.015, L:4.10,W:1.58,H:1.328,wb:2.35,track:1.30,r:.313,belt:.88,front:.77,rear:.87,cowl:-.77,header:-.27,back:1.30,roofBack:.69,seatZ:.19,eyeY:1.015,leather:'#a2764e',rim:.178,doors:2,tyreF:.165,tyreR:.165,classic:true,rearLow:true },
+  mini: { L:3.85,W:1.727,H:1.415,wb:2.495,track:1.485,r:0.316,belt:0.96,front:0.85,rear:0.89,cowl:-0.62,header:-0.23,back:1.12,roofBack:0.68,open:true,seatZ:0.29,eyeY:1.16,leather:'#965d37',rim:0.223 },
+  z4: { L:4.324,W:1.864,H:1.304,wb:2.47,track:1.60,r:0.335,belt:0.87,front:0.65,rear:0.91,cowl:-0.46,header:0.13,back:0.98,roofBack:0.65,open:true,seatZ:0.47,eyeY:1.04,leather:'#ac6335',rim:0.241 },
+  octavia: { L:4.689,W:1.829,H:1.47,wb:2.686,track:1.54,r:0.323,belt:0.98,front:0.77,rear:0.97,cowl:-0.91,header:-0.35,back:1.75,roofBack:0.91,seatZ:0.20,eyeY:1.16,leather:'#363a3b',rim:0.216 },
+  superb: { L:4.869,W:1.864,H:1.469,wb:2.841,track:1.584,r:0.332,belt:0.99,front:0.76,rear:0.96,cowl:-0.93,header:-0.37,back:1.80,roofBack:0.96,seatZ:0.20,eyeY:1.16,leather:'#343432',rim:0.229 },
   dolphin: { L:4.29,W:1.77,H:1.57,wb:2.70,track:1.53,r:0.326,belt:1.04,front:0.79,rear:1.05,cowl:-1.03,header:-0.57,back:1.91,roofBack:1.27,seatZ:0.02,eyeY:1.32,leather:'#444954',rim:0.216,ev:true },
   atto3: { L:4.455,W:1.875,H:1.615,wb:2.72,track:1.575,r:0.346,belt:1.10,front:0.85,rear:1.08,cowl:-0.91,header:-0.42,back:1.95,roofBack:1.21,seatZ:0.07,eyeY:1.36,leather:'#454955',rim:0.229,ev:true },
 };
 for(const [id,fleet]of Object.entries({golf:'hatch',corolla:'sedan',superb:'taxi_superb',police_octavia:'taxi'})){
-  const d=PASSENGER_MODELS[fleet];MODEL[id]={...d,axleOffset:d.ax,front:d.sections[0][2],rear:d.sections.at(-1)[2],seatZ:.12,eyeY:d.H-.24,leather:'#363a3b',rim:.216,doors:4,tyreF:.205,tyreR:.205};
+  const d=PASSENGER_MODELS[fleet];MODEL[id]={...d,axleOffset:d.ax,front:d.sections[0][2],rear:d.sections.at(-1)[2],seatZ:.20,eyeY:id==='superb'?1.14:id==='golf'?1.15:d.H-.292,leather:'#363a3b',rim:.216,doors:4,tyreF:.205,tyreR:.205};
 }
 const V = (x,y,z) => new THREE.Vector3(x,y,z);
 const mat = (color,roughness=0.45,metalness=0) => new THREE.MeshStandardMaterial({color,roughness,metalness,side:THREE.DoubleSide});
@@ -140,7 +140,7 @@ function shapedCabin(car,d,M,low){
   car.windscreen=surface(p,M.glass,frontPoint,24,10,'windscreen');surface(p,M.glass,rearPoint,22,12,'rear-glass');
   const roofMat=d.blackRoof?M.black:M.paint;
   surface(p,roofMat,(u,v)=>{const x=2*v-1;return[x*rw,roofY(d,u,x),lerp(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'roof');
-  surface(p,M.cloth,(u,v)=>{const x=2*v-1;return[x*(rw-.008),roofY(d,u,x)-.032,lerp(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'headliner');
+  surface(p,M.cloth,(u,v)=>{const x=2*v-1;return[x*(rw-.008),roofY(d,u,x)-.018,lerp(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'headliner');
   for(const s of [-1,1]){
     const end=d.profile==='carrera'?d.back-.29:d.profile==='yaris'?d.back-.27:d.back-.12;
     const roofEnd=d.profile==='carrera'?d.roofBack-.025:d.profile==='yaris'?d.roofBack-.10:d.roofBack-.025;
@@ -175,7 +175,7 @@ function cabin(car,d,M,low) {
   const p=car.body,W=d.W/2;
   const glass=surface(p,M.glass,(u,v)=>{const x=2*u-1;return[x*lerp(W-.115,W-.23,v),lerp(d.belt+.014,d.H-.045,v)+.018*(1-x*x),lerp(d.cowl,d.header,v)-.045*(1-x*x)];},24,10,'windscreen');car.windscreen=glass;
   for(const s of [-1,1])line(p,car.modelKind==='mini'?M.black:M.paint,[[s*(W-.115),d.belt,d.cowl],[s*(W-.17),lerp(d.belt,d.H-.045,.5),lerp(d.cowl,d.header,.5)],[s*(W-.23),d.H-.045,d.header]],.026);
-  line(p,d.open?M.black:M.paint,[[-W+.23,d.H-.045,d.header],[0,d.H-.025,d.header-.04],[W-.23,d.H-.045,d.header]],.028);
+  line(p,d.open?M.black:M.paint,[[-W+.23,d.H-.045,d.header],[0,d.H-.025,d.header-.04],[W-.23,d.H-.045,d.header]],car.modelKind==='z4'?.014:.018);
   for(const s of [-1,1]) {
     line(p,M.black,[[s*.08,d.belt+.047,d.cowl-.02],[s*.22,d.belt+.065,d.cowl-.06],[s*.56,d.belt+.057,d.cowl-.07]],.007); // wipers
     const z=d.cowl+.1;
@@ -397,7 +397,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   const playerModel=isPlayerVehicle(car);car.root.userData.playerDetail=playerModel;
   if(car.spec.fleet){
     const build=car.spec.police?buildPoliceModel:buildPassengerModel;
-    const source=build({id:car.spec.fleet},car.spec.color,null,{low:false,parked:true});
+    const source=build({id:car.spec.fleet},car.spec.color,null,{low:false,parked:true,playerCabin:true});
     const replacements=new Map(Object.keys(source.materials).filter(k=>M[k]).map(k=>[source.materials[k],M[k]]));
     // Mirrored fleet lens polygons have opposite winding; preserve their two-sided optics.
     for(const [original,replacement]of replacements)replacement.side=original.side;

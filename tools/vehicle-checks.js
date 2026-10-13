@@ -24,6 +24,13 @@ export function runVehicleChecks() {
   for(const spec of CARS){
     const car=new CarModel(spec);check(spec.id+' independent four wheel assemblies',car.wheels.length===4&&new Set(car.wheels.map(w=>w.spin)).size===4&&car.wheels.every(w=>w.spin.parent===w.pivot&&w.pivot.parent===car.root));
     roofFits(car);
+    if(spec.id==='z4'){
+      const {top,side,deck}=car.playerSurface,R=car.dims.L/2;
+      check('Z4 low rear deck',deck(0,R)<.98&&deck(0,R-.2)<.97);
+      check('Z4 short ducktail rise',top(R)-top(R-.14)>.015&&top(R)-top(R-.14)<.04);
+      check('Z4 hips taper into tail',side(R,.8)<side(car.shape.wb/2,.8)*.90);
+    }
+
     check(spec.id+' six to eight named factory/fleet paints',PAINTS[spec.id].length>=6&&PAINTS[spec.id].length<=8);
     const originalSpecColor=spec.color,originalGlass=car.materials.glass.color.getHex(),originalLamp=car.materials.head.color.getHex();
     check(spec.id+' custom paint changes body only',setPaint(car,'#123abc')&&car.paint.color.getHexString()==='123abc'&&spec.color===originalSpecColor&&car.materials.glass.color.getHex()===originalGlass&&car.materials.head.color.getHex()===originalLamp);
@@ -216,6 +223,16 @@ export async function runCockpitMirrorChecks(){
     camera.position.copy(cockpit.eye);camera.position.y+=.02;camera.rotation.x=-.045;
     camera.fov=Math.max(66,cockpit.mirrorFov(camera.aspect));camera.updateProjectionMatrix();camera.updateMatrixWorld(true);car.root.updateMatrixWorld(true);
     const visible=[];car.root.traverseVisible(o=>{if(o.isMesh&&(!o.material.transparent||o.material.opacity>.9))visible.push(o);});
+    // A mirror fit must not turn the windscreen into a narrow slit. Measure
+    // actual opaque geometry at the driver's forward centre line, at 16:9.
+    const roadCamera=camera.clone();roadCamera.aspect=16/9;
+    roadCamera.fov=Math.max(66,cockpit.mirrorFov(roadCamera.aspect));roadCamera.updateProjectionMatrix();roadCamera.updateMatrixWorld(true);
+    check(spec.id+' natural widescreen cockpit FOV',roadCamera.fov<=(car.shape.open?75:71));
+    const roadRay=new THREE.Raycaster();roadRay.far=3;let opening=1;
+    for(let i=0;i<=50;i++){roadRay.setFromCamera(new THREE.Vector2(0,1-i*.02),roadCamera);if(!roadRay.intersectObjects(visible,false).length){opening=i/100;break;}}
+    check(spec.id+' header leaves upper forward road view open',opening<=.18);
+    roadRay.setFromCamera(new THREE.Vector2(0,0),roadCamera);
+    check(spec.id+' forward horizon unobstructed',roadRay.intersectObjects(visible,false).length===0);
     check(spec.id+' three optical faces',cockpit.mirrors.length===3);
     const mount=car.body.worldToLocal(cockpit.mirrorMount.getWorldPosition(new THREE.Vector3()));
     check(spec.id+' rearview mount seated on windscreen',nearestSurface(mount,[car.windscreen],car.body).distance<.005);
