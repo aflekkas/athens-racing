@@ -105,8 +105,8 @@ export class Input {
   // Race gestures request lock; denied/unavailable lock falls back to cursor position, without clicks.
   mountMouseLook(canvas, { enabled, move, position, unlock }) {
     this.lookCanvas = canvas; this.lookEnabled = enabled;
-    this.listen('pointermove', e => {
-      if (!enabled() || e.pointerType === 'touch' || editable(e)) return;
+    this.listen('mousemove', e => {
+      if (!enabled() || e.sourceCapabilities?.firesTouchEvents || editable(e)) return;
       if (this.document?.pointerLockElement === canvas) {
         if (e.movementX || e.movementY) move(e.movementX || 0, e.movementY || 0);
       } else {

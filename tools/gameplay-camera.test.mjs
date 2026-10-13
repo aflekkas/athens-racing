@@ -10,7 +10,7 @@ function mouseRig({ lockWorks = true } = {}) {
   const input = new Input({ target, navigator: null, document: null, storage: null }); input.document = document;
   const movements = [], positions = [];
   input.mountMouseLook(canvas, { enabled: () => enabled, move: (...delta) => movements.push(delta), position: (...coords) => positions.push(coords) });
-  const pointer = props => { const e = new Event('pointermove'); Object.assign(e, { pointerType: 'mouse', clientX: 400, clientY: 300, buttons: 0, ...props }); Object.defineProperty(e, 'target', { value: canvas }); target.dispatchEvent(e); };
+  const pointer = props => { const e = new Event('mousemove'); Object.assign(e, { pointerType: 'mouse', clientX: 400, clientY: 300, buttons: 0, ...props }); Object.defineProperty(e, 'target', { value: canvas }); target.dispatchEvent(e); };
   return { input, document, canvas, movements, positions, pointer, setEnabled: x => { enabled = x; }, requests: () => requests };
 }
 test('raw mouse movement looks around without a click, and menus do not react', () => {
