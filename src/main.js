@@ -28,6 +28,7 @@ import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
+import { wetPlanningPace } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
 import { SCENERY_TIERS, updateSceneryLod } from './scenery.js';
 import { initReplay } from './replay-mode.js';
@@ -917,7 +918,7 @@ function aiInput(car, dt, pace, other) {
     ai.controller.profile = ai.controller.line.speedProfile(veh); ai.controller.alternateProfiles?.clear(); ai.wetGrip = grip;
   }
   const result = ai.controller.update(dt, { racers: Array.isArray(other) ? other : other ? [other] : [], traffic: obstacles,
-    signals: route.closed ? null : signals, pace, closeRacing: Q.has('closeracing'), gapToPlayer: (veh.s - player.veh.s) * (car.dir || 1) });
+    signals: route.closed ? null : signals, pace: pace * wetPlanningPace(), closeRacing: Q.has('closeracing'), gapToPlayer: (veh.s - player.veh.s) * (car.dir || 1) });
   ai.dbg = ai.controller.debug; ai.u = ai.dbg.u ?? veh.u; ai.revT = ai.dbg.phase === 'reverse' ? 1 : 0;
   return result;
 }

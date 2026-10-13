@@ -45,3 +45,6 @@ export function wetTyreScale(vehicle, i) {
   const grip = wetGripAt(surf, { x, z, paint });
   return vehicle.wheelMu ? grip / wetBaseGrip(surf) : grip;
 }
+
+// Plain-asphalt capability profiles cannot predict each local paint/puddle contact.
+export const wetPlanningPace = () => 1 - .05 * WEATHER.wet;
