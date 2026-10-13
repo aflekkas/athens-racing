@@ -3,6 +3,7 @@
 // No coastal avenue median, traffic markings, palms or invented spectator grandstands.
 import * as THREE from 'three';
 import { TX, GLSL_HELPERS } from '../tex.js';
+import { createTyreWalls } from '../tyre-walls.js';
 
 const WHITE = 0xe1e0d8, STEEL = 0x9ca5a4, TYRE = 0x242524;
 const flat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: .92, ...extra });
@@ -169,9 +170,11 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   worldPath(pp([[341,903],[426,841],[512,769],[583,738],[658,729],[755,719]]),7,asphalt);
   const runoffs=[[[243,608],[385,616],[580,638],[650,644],[633,667],[460,699],[268,750]],[[728,855],[870,833],[915,847],[908,885],[751,909],[702,936]],[[917,639],[986,653],[1008,719],[1009,773],[757,820],[762,793],[858,777],[896,736]],[[1111,631],[1171,634],[1215,680],[1178,746],[1082,780],[1100,747],[1157,710],[1165,676]],[[450,884],[515,843],[608,825],[656,829],[647,842],[553,864],[518,914],[493,964],[464,979],[437,965]],[[699,742],[768,736],[825,718],[824,704],[783,678],[661,689],[575,714]]];
   runoffs.forEach(p=>pixelPoly(p,gravel,.025));
+  const tyreWalls = createTyreWalls(group, map, yAt, obstacles);
   // Perimeter is low concrete and mesh fence, as in the paddock/clubhouse photographs.
   function barrierPath(pixels,{tyres=false,wall=false}={}) {
     const pts=pp(pixels);
+    if (tyres) { tyreWalls.path(pts); return; }
     for(let i=1;i<pts.length;i++){
       const a=pts[i-1],b=pts[i],len=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.ceil(len/3);
       for(let j=0;j<n;j++){
@@ -180,20 +183,22 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
         if(Math.abs(nearest.u)>route.edge(nearest.s)+2)obstacles.push({x:midX,z:midZ,yaw:Math.atan2(xx-x,zz-z),hl:Math.hypot(xx-x,zz-z)/2,hw:tyres?.55:.18});
         if(wall)batch.beam([x,y+.65,z],[xx,yAt(xx,zz)+.65,zz],.32,1.3,white);
         else {batch.beam([x,y+.62,z],[xx,yAt(xx,zz)+.62,zz],.22,.32,steel);batch.box(x,y+.43,z,.13,.86,.13,steel);}
-        if(tyres)for(let q=0;q<3;q++){const f=(j+q/3)/n;const tx=a[0]+(b[0]-a[0])*f,tz=a[1]+(b[1]-a[1])*f; tyreLocations.push([tx,yAt(tx,tz)+.34,tz]);}
       }
     }
   }
-  const tyreLocations=[];
   barrierPath([[192,874],[158,841],[117,774],[97,708],[153,662],[164,589],[202,549],[1168,610],[1239,664],[1234,731],[1120,803]],{tyres:true});
   barrierPath([[209,1049],[393,1039],[557,1023],[901,1036],[1050,1133]],{wall:true});
   barrierPath([[361,888],[427,827],[504,761],[574,735],[662,721]],{tyres:true});
   barrierPath([[466,858],[564,823],[673,814]],{tyres:true});
   barrierPath([[749,771],[832,754],[860,735]],{tyres:true});
-  if(tyreLocations.length){
-    const g=new THREE.TorusGeometry(.37,.15,5,10),m=new THREE.InstancedMesh(g,black,tyreLocations.length*2),d=new THREE.Object3D();
-    tyreLocations.forEach((p,i)=>{for(let j=0;j<2;j++){d.position.set(p[0],p[1]+j*.28,p[2]);d.rotation.x=Math.PI/2;d.updateMatrix();m.setMatrixAt(i*2+j,d.matrix);}});m.castShadow=true;m.receiveShadow=true;m.computeBoundingSphere();group.add(m);
+  // Three-stack end caps keep the pit-wall tips conspicuous without narrowing the racing line.
+  for (const [x,z] of [[209,1049],[393,1039]]) tyreWalls.path(pp([[x-3,z],[x+3,z]]));
+  // Short tyre islands identify the infield chicane, outside the existing kerbs.
+  for (const k of route.kerbs.slice(-3)) {
+    const points = [k.s0+2,k.s0+4].map(s => { const p=route.point(s,k.side*(route.edge(s)+3)); return [p.x,p.z]; });
+    tyreWalls.path(points,{facing:false});
   }
+  tyreWalls.finish();
   // Galvanized diamond mesh around the timing booth/paddock is visible in
   // RallyDiaries start-straight.jpg and BIKEIT gallery09/gallery25. It is a low
   // access fence, not an invented grandstand or tall racing catch fence.
