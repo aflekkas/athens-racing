@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "paraliaki-racing",
+  "name": "athens-street-racers",
   "main": "worker/index.mjs",
   "account_id": "d6f3d2dc5817687a91d74ccd257bad9e",
   "compatibility_date": "2026-10-13",
@@ -16,11 +16,11 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameArena"] }],
   "env": {
     "staging": {
-      "name": "paraliaki-racing-staging",
+      "name": "athens-street-racers-staging",
       "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
     },
     "production": {
-      "name": "paraliaki-racing",
+      "name": "athens-street-racers",
       "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
     }
   }
