@@ -988,9 +988,6 @@ function onStopLine(j, who, rc = rival) {
     people.redRun(j);
   } else if (j.main !== 'G') { G.style += 50; G.run?.addScore('amber', 50); hud.pop('near', 'AMBER GAMBLER', '+50', 4); }
 }
-const HONK_LINES = {
-  blocking: ['"BEEP BEEP!"', 'IT IS GREEN, FRIEND'], cutoff: ['"HEY! WATCH IT!"', 'YOU CUT HIM UP'], overtaker: ['"GET BACK IN YOUR LANE!"', 'ONCOMING DRIVER IS NOT AMUSED'], angry: ['"MY CAR!"', 'HE WILL TELL HIS COUSIN'], shaken: ['"ARE YOU CRAZY?!"', 'NEARLY TOOK HIM HEAD-ON'],
-};
 function handleHonk(h) {
   const c = h.c;
   const p = traffic.route.point(c.s, c.u, _v1);
@@ -999,23 +996,14 @@ function handleHonk(h) {
   const rx = Math.cos(player.veh.yaw), rz = -Math.sin(player.veh.yaw);
   const pan = clamp((dx * rx + dz * rz) / Math.max(5, dist), -1, 1);
   audio.carHorn(h.kind, h.long ? 1 : 0, 1 / (1 + Math.pow(dist / 22, 1.4)), pan, h.reason === 'stuck' || h.reason === 'fare' ? 0 : Math.random() * 0.15);
-  if (h.player && G.state === 'race' && HONK_LINES[h.reason] && G.t - (G.honkPopT || 0) > 3) { G.honkPopT = G.t; hud.pop('quote', ...HONK_LINES[h.reason]); }
 }
 function handlePeople() {
   for (const e of people.events) {
     const p = e.p;
-    if (e.kind === 'shout') {
-      const dx = p.x - camera.position.x, dz = p.z - camera.position.z, dist = Math.hypot(dx, dz);
-      if (dist < 50 && G.t - (G.shoutT || 0) > 0.3) {
-        G.shoutT = G.t;
-        const rx = Math.cos(player.veh.yaw), rz = -Math.sin(player.veh.yaw);
-        const kind = /^HEY|WATCH/.test(e.text) ? 0 : /WHOA|NOPE/.test(e.text) ? 1 : /AAA/.test(e.text) ? 2 : /OPA/.test(e.text) ? 4 : 3;
-        audio.shout(p.look.pitch * (0.95 + Math.random() * 0.1), kind, (dx * rx + dz * rz) / Math.max(6, dist), 0.3 * (1 - dist / 60));
-      }
-    } else if (G.state !== 'race') continue;
+    if (G.state !== 'race') continue; // pedestrians react with body language only (no speech)
     else if (e.kind === 'dive' && e.who === 'player') { G.scared++; G.style = Math.max(0, G.style - 150); G.run?.addScore('scare', -150); G.combo = 0; G.comboT = 0; hud.pop('info bad', 'PEDESTRIAN PARKOUR!', '−150 · NOBODY HURT, THANKFULLY'); }
-    else if (e.kind === 'startle' && e.who === 'player') { if (G.t - (G.startleT || 0) > 2.2) { G.startleT = G.t; hud.pop('quote', `"${p.lastSay || 'HEY!'}"`, 'STARTLED A LOCAL'); } }
-    else if (e.kind === 'thanks') { G.style += 50; G.polite++; G.run?.addScore('polite', 50); hud.pop('quote good', `"${p.lastSay || 'THANK YOU!'}"`, 'POLITE DRIVER · +50'); }
+    else if (e.kind === 'startle' && e.who === 'player') { if (G.t - (G.startleT || 0) > 2.2) { G.startleT = G.t; hud.pop('info', 'STARTLED A LOCAL', 'EASY ON THE PAVEMENT'); } }
+    else if (e.kind === 'thanks') { G.style += 50; G.polite++; G.run?.addScore('polite', 50); hud.pop('info good', 'POLITE DRIVER', 'A LOCAL WAVES THANKS · +50'); }
   }
   people.events.length = 0;
 }
@@ -1327,8 +1315,8 @@ function step(dt, draw = true) {
     if (G.state === 'countdown') {
       // the countdown runs on wall-clock time so first-frame GPU uploads can't stretch it
       const nowMs = performance.now(); G.countT += Math.min(0.5, Math.max(dt, (nowMs - (G.countWall || nowMs)) / 1000)); G.countWall = nowMs;
-      const n = Math.floor(G.countT / 0.4);
-      if (n !== G.countShown && n <= 3) {
+      const n = Math.min(3, Math.floor(G.countT / 0.4)); // clamped: a long frame can jump past 1.2 s, and GO must still fire
+      if (n !== G.countShown) {
         G.countShown = n;
         if (n < 3) { hud.count(String(3 - n)); audio.beep(false); }
         else { hud.count('GO!', true); audio.beep(true); G.state = 'race'; G.goAt = G.goAt || Math.round(performance.now()); G.raceT = 0; document.body.classList.remove('counting'); document.body.classList.add('racing'); hud.message('HOLD <i>W / ↑</i> TO FLOOR IT · <i>SHIFT</i> FOR NITRO', 3); if (!multiplayer.active) G.run?.start({ field: grid.length + 1, grid: grid.map((c) => ({ name: c.name, car: c.spec.id })) }); }

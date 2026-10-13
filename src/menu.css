@@ -128,7 +128,7 @@ body[data-mode=timetrial] #posBox .pos, body[data-mode=score] #posBox .pos, body
 body[data-mode=timetrial] #rRival, body[data-mode=score] #rRival, body[data-mode=speedtrap] #rRival { display: none; }
 .pop.split { background: rgba(8,10,14,.85); padding: 6px 22px; font-size: 40px; }
 .pop.split.good small { color: #5dff8a; } .pop.split.bad small { color: #ff6b61; }
-#wrongWay { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); text-align: center; font-family: var(--cond); opacity: 0; pointer-events: none; }
+#wrongWay { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-family: var(--cond); opacity: 0; pointer-events: none; }
 #wrongWay.on { opacity: 1; animation: wwBlink .7s steps(2) infinite; }
 #wrongWay b { display: block; font-style: italic; font-weight: 900; font-size: 84px; line-height: 1; color: #fff; background: var(--red); padding: 4px 34px; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
 #wrongWay span { display: block; margin-top: 6px; font-weight: 800; letter-spacing: .3em; font-size: 16px; text-shadow: 0 2px 6px #000; }
@@ -175,4 +175,19 @@ body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.
   .d-facts, .d-best, .d-targets { margin-top: 10px; }
   .d-facts b, .d-best b { font-size: 17px; }
   .ev-detail { padding: 16px 20px 18px; }
+}
+/* event / district banner: at <=1100px wide style.css drops the route bar to top:130px, right where the banner's 17%
+   sits — push the banner below the route bar (and the split box), smaller on short screens */
+@media (max-width: 1100px) {
+  #banner { top: 200px; padding: 8px 56px 10px 36px; }
+  #wrongWay { top: 29%; }
+  #banner .b1 { font-size: 50px; }
+}
+@media (max-height: 480px) {
+  #banner { top: 150px; padding: 5px 34px 6px 22px; border-left-width: 5px; }
+  #wrongWay { top: 140px; white-space: nowrap; }
+  #wrongWay b { font-size: 44px; padding: 2px 22px; }
+  #wrongWay span { font-size: 11px; margin-top: 3px; }
+  #banner .b1 { font-size: 32px; }
+  #banner .b2 { font-size: 11px; letter-spacing: .14em; }
 }
