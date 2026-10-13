@@ -3,6 +3,7 @@ import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 // Keep the course and car geometry intact while reducing expensive per-pixel
 // atmosphere/water work on software rendering and low-end graphics devices.
 export function simplifyScenery(sky, skyCube, water, terrain) {
+  if (!sky.userData.lowScenery) {
   const oldSky = sky.material;
   sky.material = new THREE.ShaderMaterial({
     uniforms: { skyCube: { value: skyCube } }, side: THREE.BackSide, depthWrite: false, fog: false,
@@ -11,6 +12,9 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
   });
   // the full sky material stays alive: env.js bakes the sky cube with it on every change of conditions
   void oldSky;
+  sky.userData.lowScenery = true;
+  }
+  if (water) {
   const oldWater = water.mesh.material;
   const sea = new THREE.ShaderMaterial({
     uniforms: { ...AP_UNIFORMS, skyCube: { value: skyCube }, time: oldWater.uniforms.uTime, uBody: CU.uSeaBody }, // body colour follows the time of day (env.js)
@@ -26,6 +30,7 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
       gl_FragColor=vec4(col,1.);}`,
   });
   water.mesh.material = sea;
+  }
   const ground = new THREE.MeshLambertMaterial({ vertexColors: true });
   terrain.group.traverse(o => { if (o.isMesh) o.material = ground; });
   terrain.material.dispose();

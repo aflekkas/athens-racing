@@ -249,7 +249,7 @@ export function buildRoad(map, scene, heightC, assets) {
     add(skR.build(), vergeMat); add(skL.build(true), vergeMat);
   }
 
-  buildFurniture(map, group, heightC, assets);
+  if (assets.furniture !== false) buildFurniture(map, group, heightC, assets);
   return { group, asphalt };
 }
 

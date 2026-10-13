@@ -3,8 +3,10 @@
 // main.js routes here (up / down / left / right / confirm / back) from keyboard, gamepad and touch.
 // Menu items are not native <button>s on purpose: the input system ignores key events aimed at focused form
 // controls, so focus is drawn with a class and the keys keep flowing through flowAction().
-import { EVENTS, TYPES, getEvent, resolve, loadRecord, medalCount, targetLabels, MEDALS } from './events.js';
+import { getEvents, EVENTS, TYPES, getEvent, resolve, loadRecord, medalCount, targetLabels, MEDALS } from './events.js';
 import { settings, setSetting, speedUnit, fmtDist, speedIn } from './settings.js';
+
+import { renderMapSelect, selectMap } from './map-select.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MEDAL_ICON = (m, cls = '') => `<i class="medal ${m || 'none'} ${cls}" title="${m ? m.toUpperCase() : 'NO MEDAL'}"></i>`;
@@ -101,6 +103,7 @@ export class Menu {
     this.activate(el);
   }
   activate(el) {
+    if (el.dataset.mapId) { selectMap(this, el.dataset.mapId); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
     if (el.dataset.filter) { this.filter = el.dataset.filter; this.show('events', { ...this.data, focus: this.focus }); return; }
@@ -164,6 +167,8 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- screens
+  r_maps() { return renderMapSelect(this.h.ctx?.().mapId); }
+
   r_title() {
     const m = medalCount();
     const item = (act, label, sub) => `<div class="mi big" data-act="${act}"><b>${label}</b><span>${sub}</span></div>`;
@@ -183,7 +188,7 @@ export class Menu {
 
   r_events() {
     const ctx = this.h.ctx(), fmt = this.h.fmtTime;
-    const all = EVENTS.filter((e) => this.filter === 'all' || e.type === this.filter);
+    const all = getEvents(ctx.mapId || 'riviera').filter((e) => this.filter === 'all' || e.type === this.filter);
     const tabs = ['all', ...Object.keys(TYPES)].map((f) => `<div class="tab ${f === this.filter ? 'on' : ''}" data-filter="${f}">${f === 'all' ? 'ALL' : TYPES[f].label}</div>`).join('');
     const rows = all.map((e) => {
       const r = resolve(e, ctx), rec = loadRecord(e.id);

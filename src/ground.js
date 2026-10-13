@@ -39,6 +39,8 @@ export class Ground {
   constructor(map, heightC, assets) {
     const { route, data, terrain } = map;
     this.route = route; this.terrain = terrain; this.heightC = heightC;
+    this.circuit = data.circuit || {};
+    this.pavedAreas = (this.circuit.pavedAreas || []).map(area => ({...area, p: Array.isArray(area.p[0]) ? area.p.flat() : area.p}));
     this.humps = data.humps || [];
     // spatial hashes: humps (5 m), building walls (20 m)
     this.HC = 20; this.hh = new Map();
@@ -67,7 +69,7 @@ export class Ground {
     for (const r of assets.rails || []) for (const q of r.pts) { const i = Math.round(q.s / 2); if (i >= 0 && i < N) (r.side > 0 ? this.railR : this.railL)[i] = q.u; }
     for (const b of data.barriers || []) for (let s = b.s0; s <= b.s1; s += 2) { const i = Math.round(s / 2); if (i >= 0 && i < N) (b.side > 0 ? this.railR : this.railL)[i] = Math.min((b.side > 0 ? this.railR : this.railL)[i], barrierU(route, s) - 0.3); }
     this.out = { y: 0, surf: 'asphalt', water: 0, nx: 0, nz: 0 };
-    this.traps = []; this._placeTraps(map.data);
+    this.traps = []; if (!map.id || map.id === 'riviera') this._placeTraps(map.data);
   }
   _put(map, x, z, r, item) {
     const C = this.HC, x0 = Math.floor((x - r) / C), x1 = Math.floor((x + r) / C), z0 = Math.floor((z - r) / C), z1 = Math.floor((z + r) / C);
@@ -195,7 +197,26 @@ export class Ground {
   /** ground under a world point; s/u its route coordinates */
   at(x, z, s, u, out = this.out) {
     const route = this.route, au = Math.abs(u), side = u >= 0 ? 1 : -1;
-    const sc = clamp(s, 0, route.length);
+    const sc = route.closed ? route.wrap(s) : clamp(s, 0, route.length);
+    if (route.closed) {
+      const edge = route.edge(sc), beyond = au - edge;
+      out.water = 0; out.hump = 0; out.trap = null;
+      if (beyond <= 0) { out.y = route.surfaceY(sc, u); out.surf = 'asphalt'; return out; }
+      const kerb = (route.kerbs || this.circuit.kerbs || []).find(k => k.side === side && sc >= k.s0 && sc <= k.s1);
+      if (kerb && beyond < (kerb.width || .85)) {
+        out.y = route.surfaceY(sc, u) + (kerb.height || .045) * Math.sin(Math.PI * beyond / (kerb.width || .85));
+        out.surf = 'pavement'; return out;
+      }
+      for (const area of this.pavedAreas) {
+        let inside = false; const p = area.p;
+        for (let i = 0, j = p.length - 2; i < p.length; j = i, i += 2) {
+          if ((p[i + 1] > z) !== (p[j + 1] > z) && x < (p[j] - p[i]) * (z - p[i + 1]) / (p[j + 1] - p[i + 1]) + p[i]) inside = !inside;
+        }
+        if (inside) { out.y = area.y ?? this.heightC(x,z); out.surf = 'asphalt'; return out; }
+      }
+      out.y = lerp(route.surfaceY(sc, side * edge), this.heightC(x, z), smoothstep(0, 3, beyond));
+      out.surf = beyond < 18 ? 'gravel' : 'dirt'; return out;
+    }
     const e = route.edge(sc), eA = e + ROAD.gutter;
     out.water = 0; out.hump = 0;
     if (au <= eA) {
@@ -225,7 +246,7 @@ export class Ground {
   }
   /** hard u limits (car centre) from guard rails; elsewhere the edge of the drivable world */
   limits(s, halfW, out) {
-    const i = clamp(Math.round(s / 2), 0, this.railR.length - 1);
+    const i = clamp(Math.round((this.route.closed ? this.route.wrap(s) : s) / 2), 0, this.railR.length - 1);
     out.max = Math.min(this.railR[i] - 0.25 - halfW, 140); out.min = -Math.min(this.railL[i] - 0.25 - halfW, 140);
     return out;
   }
@@ -284,7 +305,8 @@ export class Ground {
    * off a kerb is a drop. Hard hits bend the suspension on that side (side damage -> toe pull).
    */
   _curbs(v) {
-    const route = this.route, sc = clamp(v.s, 0, route.length);
+    if (this.route.closed) return; // low, rounded circuit kerbs are sampled per wheel in at()
+    const route = this.route, sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
     const f = route.frame(sc, v._f || (v._f = {}));
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);
     const fr = fx * f.rx + fz * f.rz, rr = rx * f.rx + rz * f.rz; // the car's axes across the road
@@ -347,7 +369,7 @@ export class Ground {
   resolve(v, dt) {
     const route = this.route;
     let pr = route.project(v.x, v.z, v.s, 6);
-    if (Math.abs(pr.u) > 30) pr = route.project(v.x, v.z, null); // far off the road: re-find the nearest stretch
+    if (Math.abs(pr.u) > 30) { const nearest = route.project(v.x, v.z, null); if (route.closed) nearest.s += Math.round((v.s - nearest.s) / route.length) * route.length; pr = nearest; } // far off the road: re-find the nearest stretch
     v.s = pr.s; v.u = pr.u;
     // guard rails (the only walls the road itself has)
     const lim = this.limits(v.s, v.halfW, v._lim || (v._lim = {}));
@@ -367,8 +389,8 @@ export class Ground {
     let g = this.at(v.x, v.z, v.s, v.u, this.out);
     const px = v._gx ?? v.x, pz = v._gz ?? v.z, py = v._gy ?? g.y, d = Math.hypot(v.x - px, v.z - pz);
     const gy = g.y - g.hump, pgy = v._gt ?? gy;
-    const tooHigh = gy - route.y(clamp(v.s, 0, route.length)) > MAX_ABOVE && gy > pgy;
-    const tooFar = Math.abs(v.u) - route.edge(clamp(v.s, 0, route.length)) > MAX_OFF && Math.abs(v.u) > Math.abs(v._gu ?? 0);
+    const tooHigh = gy - route.y((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length))) > MAX_ABOVE && gy > pgy;
+    const tooFar = Math.abs(v.u) - route.edge((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length))) > MAX_OFF && Math.abs(v.u) > Math.abs(v._gu ?? 0);
     if (d > 1e-4 && (this.blocked(pgy, gy, d) || tooHigh || tooFar)) {
       // wall normal from the terrain gradient
       const e = 0.8, q = this._q || (this._q = {});
@@ -385,7 +407,7 @@ export class Ground {
     // the ground under each wheel: a car astride a kerb sits on all four, tilted
     const q = this._q || (this._q = {}), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw), t2 = v.track / 2;
     const wy = v._wy || (v._wy = [0, 0, 0, 0]), ws = v._wsurf || (v._wsurf = ['', '', '', '']); // per car: fx reads them later
-    const fw = route.frame(clamp(v.s, 0, route.length), v._f || (v._f = {}));
+    const fw = route.frame((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length)), v._f || (v._f = {}));
     const ft = fx * fw.tx + fz * fw.tz, fr = fx * fw.rx + fz * fw.rz, rt = rx * fw.tx + rz * fw.tz, rr = rx * fw.rx + rz * fw.rz;
     for (let i = 0; i < 4; i++) { // each wheel's own road coordinates: it can be on the kerb while the centre isn't
       const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2;
@@ -420,7 +442,7 @@ export class Ground {
     for (let i = 0; i < 4; i++) { const W = SURF[ws[i]] || SURF.dirt; mu += W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5)) / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; bow += (W.bow || 0) / 4; }
     v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;
     if (!paved) { // thick maquis up the hillside / far from the road
-      const sc = clamp(v.s, 0, route.length);
+      const sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
       const ex = Math.max(0, gy - route.y(sc) - (MAX_ABOVE - 4)) + Math.max(0, (Math.abs(v.u) - route.edge(sc) - (MAX_OFF - 12)) / 3);
       if (ex > 0) { v.surfDrag += Math.min(5, ex * 2.2); v.surfMu *= Math.max(0.55, 1 - ex * 0.08); if (g.surf === 'dirt') v.surf = 'scrub'; }
     }
@@ -431,7 +453,7 @@ export class Ground {
     if (g.water > 0) { v.sink = Math.min(1, (v.sink || 0) + dt * 0.45); v.y = Math.max(g.y, WATER_Y - 0.35 - 1.2 * v.sink); v.surfDrag = SURF.water.drag; }
     else v.sink = 0;
     // last place you were safely on the road, for the respawn
-    if (onRoad && Math.abs(v.u) < route.edge(v.s) && v.s > 0 && v.s < route.length) { if (!v.safe) v.safe = {}; v.safe.s = v.s; v.safe.u = v.u; }
+    if (onRoad && Math.abs(v.u) < route.edge(v.s) && (route.closed || (v.s > 0 && v.s < route.length))) { if (!v.safe) v.safe = {}; v.safe.s = v.s; v.safe.u = v.u; }
   }
 }
 

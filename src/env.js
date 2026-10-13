@@ -419,7 +419,7 @@ export function createLights(scene) {
 
 const listeners = [];
 /** called with (COND, COND_STATE) after every change of conditions */
-export function onConditions(fn) { listeners.push(fn); }
+export function onConditions(fn) { listeners.push(fn); return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); }; }
 /**
  * Change the time of day and / or the weather: {time: 'dawn'|'day'|'afternoon'|'sunset'|'night', weather: 'clear'|'overcast'|'rain'}.
  * Re-derives the atmosphere, light and fog, re-bakes the sky cube and image-based light (a few ms on a GPU) and
@@ -646,7 +646,7 @@ export function createWater(skyCube, terrain, depthTex) {
     const lm = new THREE.ShaderMaterial({ uniforms: { ...mat.uniforms, uLake: { value: 1 } }, vertexShader: mat.vertexShader, fragmentShader: mat.fragmentShader });
     const m = new THREE.Mesh(geo, lm); m.position.y = y; lakeMeshes.push(m); return m;
   }
-  return { mesh, renderReflection, setSize, makeLake, material: mat };
+  return { mesh, renderReflection, setSize, makeLake, material: mat, dispose() { reflRT.dispose(); depthTex.dispose(); mat.dispose(); } };
 }
 
 // ---------------------------------------------------------------- islands across the Saronic Gulf + Hymettus

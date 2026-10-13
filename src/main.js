@@ -2,38 +2,29 @@
 // World built from OpenStreetMap data (see tools/). Boots straight into a countdown, no click needed.
 import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
-import { Ground, Splash, buildHumps, buildBarriers, buildSandTraps } from './ground.js';
-import { buildRoadside } from './roadside.js';
-import { Fx } from './fx.js';
 import * as ENV from './env.js';
-import { buildTerrain } from './terrain.js';
-import { buildRoad, ROAD } from './road.js';
-import { buildBuildings, infillBuildings, LabelAtlas } from './buildings.js';
-import { buildNature } from './nature.js';
+import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
 import { Vehicle } from './physics.js';
 import { input as controls } from './input.js';
-import { Traffic, routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
+import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
 import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
 import { Cockpit } from './cockpit.js';
-import { findJunctions, Signals } from './signals.js';
-import { People } from './people.js';
 import { Hud, fmtTime } from './hud.js';
 import { Audio } from './audio.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
-import { batchStatic } from './batch.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import * as EV from './events.js';
 import { Menu } from './menu.js';
+import { updateLapHud } from './lap-hud.js';
 import { settings, onSettings, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
-import { EventMarkers } from './event-markers.js';
 import { trackVersion } from './network-track.js';
-import { simplifyScenery } from './graphics.js';
-import { SCENERY_TIERS, addBuildingImpostors, prepareSceneryLod, updateSceneryLod } from './scenery.js';
-import { initWeather, updateWeather } from './weather.js';
+import { initWeather, updateWeather, disposeWeather } from './weather.js';
+import { buildMapWorld } from './map-world.js';
+import { SCENERY_TIERS, updateSceneryLod } from './scenery.js';
 import { initReplay } from './replay-mode.js';
 
 const Q = new URLSearchParams(location.search);
@@ -90,6 +81,7 @@ window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, near: G.nearMisses, style: G.style, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
+let world = null, mapSwitch = null, lastMapDisposal = null;
 const lodList = [];
 function updateLod() { updateSceneryLod(lodList, camera); }
 
@@ -103,7 +95,7 @@ async function boot() {
   tlog('boot');
   lstat('LOADING MAP DATA', 0.05);
   const texReady = loadTextures(); // decodes in parallel with the world building below
-  map = await loadMap();
+  map = await loadMap(undefined, './', Q.get('map') || 'riviera');
   route = map.route;
   startS = route.start;
   hud = new Hud(map);
@@ -115,60 +107,13 @@ async function boot() {
   const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube;
   scene.environment = baked.env;
   ({ sun } = ENV.createLights(scene));
-  const infill = infillBuildings(map, (x, z) => map.terrain.height(x, z));
-  if (Q.has('debug')) console.log('infill buildings', infill.length);
-  const ter = buildTerrain(map.terrain, route, [], scene);
-  tlog('terrain');
-  water = ENV.createWater(baked.cube, map.terrain, ENV.makeDepthTexture(map.terrain)); scene.add(water.mesh);
-  water.setSize(innerWidth * pixelRatio, innerHeight * pixelRatio);
-  if (lowGraphics) simplifyScenery(sky, baked.cube, water, ter);
-  const labels = new LabelAtlas();
-  assets = { labels, water, makeLabel: (t, w, h, bg, fg) => { const r = labels.add(t, bg, fg); return r ? labels.plane(r, w, h) : new THREE.Group(); } };
-  lstat('PAVING POSEIDONOS AVENUE', 0.4); await frameYield();
-  assets.junctions = findJunctions(map);
-  const road = buildRoad(map, scene, ter.heightC, assets);
-  assets.asphalt = road.asphalt;
-  signals = new Signals(map, scene, road.group, assets.junctions);
-  tlog('road');
-  lstat('RAISING VOULIAGMENI', 0.55); await frameYield();
-  const bld = buildBuildings(map, scene, ter.heightC, labels, infill);
-  tlog('buildings');
-  lstat('PLANTING PALMS AND PINES', 0.7); await frameYield();
-  const nat = buildNature(map, scene, ter.heightC, bld, assets);
-  lstat('WAKING UP THE LOCALS', 0.78); await frameYield();
-  people = new People(map, scene, assets, nat.group);
-  const roadside = buildRoadside(map, scene, ter.heightC, assets); // stairs, retaining walls, bus shelters, canteens, beach bar
-  const bs = [batchStatic(road.group), batchStatic(bld.group), batchStatic(nat.group)];
-  if (Q.has('debug')) console.log('batched', JSON.stringify(bs));
-  tlog('nature');
-  scene.add(ENV.createFarScenery(map.data.proj));
-  lstat('FUELLING THE CARS', 0.85); await frameYield();
-  // distance culling for instanced props (cells carry userData.far)
-  addBuildingImpostors(bld.group, quality);
-  lodList.push(...prepareSceneryLod(scene, quality));
-  traffic = new Traffic(scene, route, map.data);
-  traffic.disabled = Q.has('notraffic');
-  traffic.signals = signals; traffic.people = people; people.traffic = traffic;
-  traffic.busStops = (assets.busStops || []).slice().sort((a, b) => a - b);
-  ground = new Ground(map, ter.heightC, assets);
-  traffic.buildParkedRows(scene, ground);
-  ground.parked = traffic.parkedCars.concat(roadside.obstacles); // parked cars and roadside props are solid
-  traffic.ground = ground; // crashed traffic slides off the road onto what's really there
-  police = new Police(traffic, route); policeHud = new PoliceHud(); window.__police = police; // ΕΛ.ΑΣ. pursuits (src/police.js)
-  buildHumps(map, scene, ter.heightC);
-  buildSandTraps(ground, scene);
-  buildBarriers(map, scene);
-  splash = new Splash(scene);
-  fx = new Fx(scene, route, ground);
-  markers = new EventMarkers(scene, route); // event start / finish arches and speed cameras
-  { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); } // per-event traffic density
-  window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, get player() { return player; } };
-  // ?simhook: headless tests advance the game without rendering (software GL draws ~1 frame/s)
-  if (Q.has('simhook')) Object.assign(window.__sim, { keys, step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
+  world = await buildMapWorld(map, { scene, sky, skyCube: baked.cube, lowGraphics, quality, progress: lstat });
+  bindMapWorld(world);
+  policeHud = new PoliceHud();
   post = createPost(renderer, scene, camera, { quality });
   probe = createProbe();
   setCarEnv(probe.envRT.texture);
-  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality, cars: () => [player, rival], cam: () => G.cam }); // time of day + weather (?tod=&wx=)
+  bindMapWeather(); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
   setCar(Q.has('car') ? clamp(+Q.get('car') - 1, 0, CARS.length - 1) : savedCar(), false);
   prepareEvent(SKIP_MENU && Q.get('event') || 'quick');
@@ -184,6 +129,7 @@ async function boot() {
   document.body.classList.add('loaded');
   lstat('READY', 1);
   multiplayer.loaded = true;
+  multiplayer.mapId = map.id || 'riviera';
   multiplayer.trackVersion = trackVersion(map.data.route);
   initFlow();
   initReplay({ G, scene, camera, renderer, canvas, post, traffic, route, hud, input, controls, render,
@@ -201,6 +147,70 @@ async function boot() {
   last = performance.now();
   requestAnimationFrame(frame);
 }
+
+// Map scene ownership is separate from persistent rendering, input and menu state.
+function bindMapWorld(next) {
+  ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next);
+  route = map.route; startS = route.start;
+  lodList.splice(0, lodList.length, ...next.lod);
+  traffic.disabled = Q.has('notraffic') || route.closed;
+  { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
+  police = new Police(traffic, route); window.__police = police;
+  window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, get player() { return player; } };
+  if (Q.has('simhook')) Object.assign(window.__sim, { keys, step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
+  G.mapId = map.id || 'riviera';
+}
+function bindMapWeather() {
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality, cars: () => [player, rival], cam: () => G.cam });
+}
+/** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
+async function switchMap(id = 'riviera') {
+  if (mapSwitch) { await mapSwitch; return switchMap(id); }
+  if (map?.id === id) return map;
+  mapSwitch = (async () => {
+    const priorState = G.state;
+    if (window.__replay?.active) { window.__replay.close(); if (window.__replay.active) window.__replay.close(); }
+    controls.clear(); G.state = 'loading';
+    let nextMap, nextWorld;
+    try {
+      nextMap = await loadMap(undefined, './', id);
+      nextWorld = await buildMapWorld(nextMap, { scene, sky, skyCube: probeSeed, lowGraphics, quality, progress: lstat });
+    } catch (error) { nextMap?.dispose?.(); G.state = priorState; throw error; }
+    if (G.run && !G.run.done) G.run.abort('map-change');
+    window.__replay?.hideGhost();
+    if (window.__replay?.ghost) window.__replay.disposeGhost();
+    disposeWeather();
+    police?.reset(false); for (const off of police?.offs || []) off();
+    hideGrid();
+    for (const c of remoteCars.values()) if (c !== rival) disposeCar(c);
+    remoteCars.clear();
+    const previous = world;
+    world = nextWorld; bindMapWorld(world);
+    // Cars persist across maps, but their dynamics must project against the new route.
+    for (const c of [player, rival]) { c.veh = new Vehicle(c.spec, route); c.veh.ground = ground; c.ai = { lane: 0, cool: 0 }; delete c.networkName; }
+    applyDriving();
+    hud.paintPanel?.remove(); $('rticks').replaceChildren();
+    hud = new Hud(map); hud.onPaint = (car, color) => { if (player?.spec.id === car) setPaint(player.model, color); };
+    hud.drawOverview($('overview'));
+    if (window.__replay) { Object.assign(window.__replay.ctx, { route, traffic, hud }); window.__replay.last = null; window.__replay.saved = null; window.__replay.recorder = null; }
+    G.ev = null; G.run = null; G.pendingEvent = null; G.gridKey = null;
+    const disposedResources = previous.dispose();
+    lastMapDisposal = { mapId: previous.map.id, detached: !previous.group.parent, children: previous.group.children.length, bundleDisposed: previous.map.disposed, resources: disposedResources };
+    renderer.renderLists.dispose();
+    bindMapWeather();
+    multiplayer.mapId = map.id; multiplayer.trackVersion = trackVersion(map.data.route);
+    prepareEvent('quick'); resetRace();
+    G.state = 'menu'; G.cam = 'orbit'; applyCamMode(); updateCamera(0, true);
+    document.body.classList.remove('racing', 'counting');
+    post.resetHistory?.(); onResize(); updateLod();
+    const url = new URL(location.href); url.searchParams.set('map', map.id); history.replaceState(null, '', url);
+    last = performance.now();
+    return map;
+  })();
+  try { return await mapSwitch; } finally { mapSwitch = null; }
+}
+window.__switchMap = switchMap;
+window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: scene.children.filter(o => o.name.startsWith('map-world:')).map(o => o.name), lastDisposal: lastMapDisposal, memory: { ...renderer.info.memory }, weatherWidgets: document.querySelectorAll('#police-hud, #replay-controls').length });
 
 // ------------------------------------------------------------------ cars
 function makeCar(spec, isPlayer) {
@@ -289,7 +299,7 @@ function resetEvent() {
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
   const base = Q.has('s') ? +Q.get('s') : r.s0;
   const solo = !grid.length;
-  if (solo) { const s = base - dir * 4; placeVeh(player.veh, s, dir * route.laneU(s, Math.min(1, route.lanes(s) - 1)), dir); }
+  if (solo) { const s = base - dir * 4; placeVeh(player.veh, s, route.closed ? 0 : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1)), dir); }
   else { const g = gridSlot(grid.length, base); placeVeh(player.veh, g.s, g.u, dir); }
   player.dir = dir;
   for (const [i, c] of grid.entries()) {
@@ -348,10 +358,10 @@ function seaCheck(pv, dt) {
 // put the car back in a lane where it was last safely on the road
 function backOnRoad(pv) {
   const sf = pv.safe || { s: pv.s, u: route.laneU(pv.s, 1) };
-  const s = clamp(sf.s, 5, route.length - 5), lanes = route.lanes(s);
+  const s = route.closed ? sf.s : clamp(sf.s, 5, route.length - 5), lanes = route.lanes(s);
   const lane = clamp(Math.round((Math.abs(sf.u) - route.medHalf(s)) / LANE_W - 0.5), 0, lanes - 1);
-  pv.reset(s, Math.sign(sf.u || 1) * route.laneU(s, lane), 0);
-  if (sf.u < 0) pv.yaw += Math.PI; // you were on the far side heading back: face the way you came
+  pv.reset(s, route.closed ? clamp(sf.u, -route.edge(s) + 1.2, route.edge(s) - 1.2) : Math.sign(sf.u || 1) * route.laneU(s, lane), 0);
+  if (sf.u < 0 && !route.closed) pv.yaw += Math.PI; // you were on the far side heading back: face the way you came
   pv._curbZ = null; pv._gx = pv._gz = pv._gy = undefined; pv.air = 0; pv.vy = 0;
 }
 
@@ -440,7 +450,7 @@ function readInput(dt) {
 let grid = []; // the offline AI field: [{ spec, veh, model, driver, ai, drv, name, dir, pen, reds, finish, tR, actor }]; grid[0] === rival
 let markers = null, menu = null;
 const MENU_STATES = ['menu', 'paused', 'results', 'garage'];
-const evCtx = () => ({ route, marks: map.data.marks });
+const evCtx = () => ({ map, mapId: map.id || 'riviera', route, marks: map.data.marks, events: map.events });
 const aidSpec = (spec) => (settings.aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0, abs: false });
 function applyDriving() {
   if (!player) return;
@@ -469,14 +479,21 @@ function initFlow() {
   import('./leaderboard.js').then((m) => { if (m?.submitResult) EV.events.on('finish', (r) => { try { m.submitResult(r); } catch (e) { console.warn(e); } }); }).catch(() => {});
 }
 
+function mapEvent(id) {
+  if (id && typeof id === 'object') return id;
+  const list = map.events || [];
+  if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
+  return list.find(e => e.id === id) || EV.getEvent(id);
+}
+
 /** make an event (definition or id) the active one: route segment / direction, HUD range, arches, traffic direction */
 function prepareEvent(e) {
-  const def = (typeof e === 'string' ? EV.getEvent(e) : e) || EV.QUICK_RACE;
+  const def = mapEvent(e) || mapEvent('quick');
   const r = EV.resolve(def, evCtx());
   G.ev = { def, r }; G.dir = r.dir; startS = r.s0;
   traffic.dir = r.dir;
   hud.setRange(r.s0, r.s1);
-  markers.build(r, { start: route.start, finish: route.finish });
+  markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });
   document.body.dataset.mode = def.type;
   // time of day / weather (the conditions system, when it is there)
   const sc = window.__setConditions, gc = window.__conditions;
@@ -490,8 +507,10 @@ function prepareEvent(e) {
 /** grid slot i (0 = pole) of the active event: two abreast, 8 m apart, behind the start line, on its carriageway */
 function gridSlot(i, base = G.ev.r.s0) {
   const r = G.ev.r, dir = r.dir;
-  const s = clamp(base - dir * (4 + Math.floor(i / 2) * 8), 5, route.length - 5);
-  const lane = Math.min(i % 2, route.lanes(s) - 1), u = dir * route.laneU(s, lane);
+  const rawS = base - dir * (4 + Math.floor(i / 2) * 8);
+  const s = route.closed ? rawS : clamp(rawS, 5, route.length - 5);
+  const lane = Math.min(i % 2, route.lanes(s) - 1);
+  const u = route.closed ? (i % 2 ? 1 : -1) * Math.min(2.25, Math.max(.5, route.edge(s) - 1.2)) : dir * route.laneU(s, lane);
   return { s, u, lane, yaw: Math.atan2(-route.lin(route.TX, s), -route.lin(route.TZ, s)) + (dir < 0 ? Math.PI : 0) };
 }
 function placeVeh(veh, s, u, dir) { veh.reset(s, u, 0); if (dir < 0) veh.yaw += Math.PI; }
@@ -541,7 +560,7 @@ function onFlowSettings(s, key) {
 
 function startEvent(id) {
   if (multiplayer.active) { multiplayer.open(); return; }
-  const def = EV.getEvent(id); if (!def) return;
+  const def = mapEvent(id); if (!def) return;
   const idx = def.car ? Math.max(0, CARS.findIndex((c) => c.id === def.car)) : G.carIdx;
   G.pendingEvent = def;
   restart(idx);
@@ -632,6 +651,7 @@ function flowAction(name) {
 }
 const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active; // replay / photo mode take the controls too
 window.__flow = {
+  switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, quickRace: () => startEvent('quick'),
   pause: pauseGame, resume, quit: quitToMenu, hideGrid, setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => restart(), get state() { return G.state; }, get menu() { return menu; }, get grid() { return grid; },
 };
@@ -1302,7 +1322,7 @@ function frame(now) {
 
 function step(dt, draw = true) {
   // A queued first frame can predate boot's clock reset. Integrators require a positive timestep.
-  if (!(dt > 0)) return;
+  if (!(dt > 0) || mapSwitch) return;
   G.t += dt; frameN++;
   const bootFrameLog = text => { if (frameN === 1) tlog(text); };
   bootFrameLog('first-frame');
@@ -1337,7 +1357,7 @@ function step(dt, draw = true) {
         if (multiplayer.active) {
           // Coasting remains simulated after finishing, independently of the spectator camera.
           const r = multiplayer.lobby.event, dir = r?.dir || 1;
-          const ahead = route.point(clamp(pv.s + dir * Math.max(8, Math.abs(pv.vLong)), 0, route.length), pv.u);
+          const ahead = route.point(route.closed ? pv.s + dir * Math.max(8, Math.abs(pv.vLong)) : clamp(pv.s + dir * Math.max(8, Math.abs(pv.vLong)), 0, route.length), pv.u);
           const dx = ahead.x - pv.x, dz = ahead.z - pv.z, lat = dx * Math.cos(pv.yaw) - dz * Math.sin(pv.yaw);
           const lon = Math.max(1, -dx * Math.sin(pv.yaw) - dz * Math.cos(pv.yaw));
           pin = { throttle: 0, brake: Math.abs(pv.vLong) > 1 ? 0.15 : 0, steer: clamp(Math.atan(pv.wb * 2 * lat / (lon * lon + lat * lat)) / pv.lockAt(Math.abs(pv.vLong)), -1, 1), handbrake: Math.abs(pv.vLong) <= 1, nitro: false };
@@ -1476,6 +1496,7 @@ function step(dt, draw = true) {
     document.querySelector('#posBox .of').textContent = '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
   }
   hud.update(st);
+  updateLapHud(G.run, !multiplayer.active && !MENU_STATES.includes(G.state));
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
   bootFrameLog('frame-hud');
   // audio
@@ -1523,7 +1544,7 @@ function render() {
   if ((frameN % 6) === 0) updateLod();
   sky.position.copy(camera.position);
   // planar reflections and the rear-view mirror alternate frames
-  if (!lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
+  if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
   else if (!lowGraphics && G.cam === 'cockpit' && (frameN % 3) === 1) {
     const body = player.model.body, eye = player.cockpit.eye;
     _v1.set(0, eye.y + 0.12, eye.z - 0.1); body.localToWorld(_v1);
