@@ -1571,18 +1571,21 @@ function render() {
   sky.position.copy(camera.position);
   // planar reflections and the rear-view mirror alternate frames
   if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
-  else if (!lowGraphics && G.cam === 'cockpit' && (frameN % 3) === 1) {
+  else if (G.cam === 'cockpit' && (frameN % (lowGraphics ? 9 : 3)) === 1) {
     const body = player.model.body, eye = player.cockpit.eye;
     _v1.set(0, eye.y + 0.12, eye.z - 0.1); body.localToWorld(_v1);
     mirrorCam.position.copy(_v1);
     body.getWorldQuaternion(_q); mirrorCam.quaternion.copy(_q).multiply(_q.clone().setFromAxisAngle(_v2.set(0, 1, 0), Math.PI));
     mirrorCam.rotateX(-0.04);
-    player.cockpit.group.visible = false;
-    const mL = player.model.mirrorL, mR = player.model.mirrorR; if (mL) mL.visible = false; if (mR) mR.visible = false;
+    // Exclude our cabin from the shared rear-facing view: seat backs and the driver
+    // otherwise occlude it. Low quality still needs a populated reflection target.
+    const wasVisible = player.model.root.visible;
+    player.model.root.visible = false;
     const prevA = renderer.shadowMap.autoUpdate; renderer.shadowMap.autoUpdate = false;
     renderer.setRenderTarget(mirrorRT); renderer.render(scene, mirrorCam); renderer.setRenderTarget(null);
     renderer.shadowMap.autoUpdate = prevA;
-    player.cockpit.group.visible = true; if (mL) mL.visible = true; if (mR) mR.visible = true;
+    player.model.root.visible = wasVisible;
+    player.cockpit.setMirrorReady?.();
   }
   // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';

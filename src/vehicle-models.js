@@ -1,8 +1,12 @@
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from 'three';
+import { installDamageSystem } from './damage.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clamp, lerp, canvasTex } from './util.js';
+import { buildOriginalPlayerSkin, refineOriginalPlayer } from './player-original-surfaces.js';
+import { refineSportsPlayer } from './player-sports-surfaces.js';
+import { isPlayerVehicle, refinePlayerDetails, groupPlayerParts, installPlayerLOD } from './player-vehicle-details.js';
 
 export const MODEL = {
   carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.08,back:1.57,roofBack:.54,seatZ:.20,eyeY:1.12,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
@@ -18,9 +22,11 @@ export const MODEL = {
 const V = (x,y,z) => new THREE.Vector3(x,y,z);
 const mat = (color,roughness=0.45,metalness=0) => new THREE.MeshStandardMaterial({color,roughness,metalness,side:THREE.DoubleSide});
 function mesh(parent,geo,m,pos=[0,0,0],rot=[0,0,0],name='') { const o=new THREE.Mesh(geo,m);o.position.set(...pos);o.rotation.set(...rot);o.name=name;parent.add(o);return o; }
-function box(p,m,size,pos,rad=0.02,rot=[0,0,0],name='') {return mesh(p,new RoundedBoxGeometry(...size,2,Math.min(rad,...size.map(v=>v/2))),m,pos,rot,name);}
-function line(p,m,points,r=0.004) {const curve=new THREE.CurvePath();for(let i=1;i<points.length;i++)curve.add(new THREE.LineCurve3(V(...points[i-1]),V(...points[i])));return mesh(p,new THREE.TubeGeometry(curve,Math.max(8,points.length*2),r,5,false),m);}
+function playerDetailParent(p){for(let o=p;o;o=o.parent)if(o.userData.playerDetail)return true;return false;}
+function box(p,m,size,pos,rad=0.02,rot=[0,0,0],name='') {return mesh(p,new RoundedBoxGeometry(...size,playerDetailParent(p)?1:2,Math.min(rad,...size.map(v=>v/2))),m,pos,rot,name);}
+function line(p,m,points,r=0.004) {const curve=new THREE.CurvePath();for(let i=1;i<points.length;i++)curve.add(new THREE.LineCurve3(V(...points[i-1]),V(...points[i])));return mesh(p,new THREE.TubeGeometry(curve,playerDetailParent(p)?Math.min(40,Math.max(8,points.length*2)):Math.max(8,points.length*2),r,5,false),m);}
 function surface(p,m,fn,nu=32,nv=12,name='') {
+  if(playerDetailParent(p)&&!m.transparent){nu=Math.min(nu,96);nv=Math.min(nv,12);}
   const a=[],idx=[],uv=[];for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){a.push(...fn(i/nu,j/nv));uv.push(i/nu,j/nv);}
   for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const k=i*(nv+1)+j;idx.push(k,k+nv+1,k+1,k+1,k+nv+1,k+nv+2);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return mesh(p,g,m,[0,0,0],[0,0,0],name);
@@ -376,29 +382,23 @@ function specialFascia(car,d,M,low,plate){
   mesh(p,new THREE.PlaneGeometry(porsche?.50:.34,.044),textMaterial(porsche?'P O R S C H E':classic?'2000 GTV':'GR YARIS','#15181c'),[0,d.rear-.16,R+.018]);
   if(!low)for(const s of [-1,1])for(const end of [-1,1])disk(p,M.black,.011,[s*W*.60,.42,end<0?F-.01:R+.01],[0,end<0?Math.PI:0,0]);
 }
-export function damageSystem(car) {
-  car.damage={front:0,rear:0,left:0,right:0};car.damageMeshes=[];
-  car.body.traverse(o=>{if(o.isMesh&&!o.name.includes('glass'))car.damageMeshes.push(o);});
-  car.setDamage=(zone,amount)=>{
-    if(!(zone in car.damage))return;const v=clamp(Number(amount)||0,0,1);if(Math.abs(car.damage[zone]-v)<.001)return;car.damage[zone]=v;
-    car.body.updateMatrixWorld(true);const inv=car.body.matrixWorld.clone().invert(),d=car.dims;
-    for(const o of car.damageMeshes){
-      if(!o.userData.undamaged){o.geometry=o.geometry.clone();o.userData.undamaged=o.geometry.attributes.position.array.slice();}
-      const a=o.geometry.attributes.position,rest=o.userData.undamaged,toBody=inv.clone().multiply(o.matrixWorld),toLocal=toBody.clone().invert();
-      for(let i=0;i<a.count;i++){const p=V(rest[i*3],rest[i*3+1],rest[i*3+2]).applyMatrix4(toBody);const f=clamp((-p.z-d.L*.25)/(d.L*.25),0,1)*car.damage.front,r=clamp((p.z-d.L*.25)/(d.L*.25),0,1)*car.damage.rear,l=clamp((-p.x-d.W*.25)/(d.W*.25),0,1)*car.damage.left,rr=clamp((p.x-d.W*.25)/(d.W*.25),0,1)*car.damage.right;const sf=f*f*(3-2*f),sr=r*r*(3-2*r),sl=l*l*(3-2*l),srr=rr*rr*(3-2*rr);const fold=Math.sin(p.y*6+p.x*2)*.012;p.z+=(sf-sr)*(.22+fold);p.x+=(sl-srr)*(.13+fold);p.y+=(sf+sr)*(.024+.008*Math.cos(p.x*4));p.applyMatrix4(toLocal);a.setXYZ(i,p.x,p.y,p.z);}
-      a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();
-    }
-  };
-}
+export function damageSystem(car) { return installDamageSystem(car); }
 export function buildDetailedCar(car,kind,opts={}) {
   car.modelKind=kind in MODEL?kind:'octavia';const d=MODEL[car.modelKind],low=!!opts.low;
   car.dims={L:d.L,W:d.W,H:d.H};car.shape={...d,ws:[-d.header/(d.L/2),-d.cowl/(d.L/2)],roofT:[-d.roofBack/(d.L/2),-d.header/(d.L/2)]};
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
-  skin(car,d,M,low);cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
+  const playerModel=isPlayerVehicle(car);car.root.userData.playerDetail=playerModel;
+  if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
+  cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
+  if(playerModel){refinePlayerDetails(car,d,M);refineOriginalPlayer(car,d,M,low);refineSportsPlayer(car,d,M,low);}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
-  compactMeshes(car.body, new Set([car.windscreen,car.mirrorL,car.mirrorR,...car.exteriorDash.children]));
+  const grouped=groupPlayerParts(car,d);
+  if(grouped){
+    for(const [name,part] of Object.entries(grouped.parts))if(!['doors','mirrors','lights','glass'].includes(name))compactMeshes(part,grouped.keep);
+  }else compactMeshes(car.body, new Set([car.windscreen,car.mirrorL,car.mirrorR,...car.exteriorDash.children]));
   for(const w of car.wheels)compactMeshes(w.spin);
+  installPlayerLOD(car,d);
   damageSystem(car);
   if(!low){
     const cloud=canvasTex(32,32,(g,w,h)=>{const a=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);a.addColorStop(0,'rgba(220,225,225,.6)');a.addColorStop(1,'rgba(220,225,225,0)');g.fillStyle=a;g.fillRect(0,0,w,h);});
@@ -418,7 +418,9 @@ export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawR
     w.angle=(w.angle-v*dt/w.r)%(Math.PI*2);w.spin.rotation.x=w.angle;
   }
   car.tail.emissiveIntensity=brake?2.8:car.lightsOn?1.6:.55;
-  if(car.steam){car.steam.visible=car.damage.front>=.6;car.steamTime+=dt;if(car.steam.visible){const a=car.steam.geometry.attributes.position;for(let i=0;i<a.count;i++){const age=(car.steamTime*.55+i/a.count)%1;a.setXYZ(i,Math.sin(i*2.4+age*3)*(.08+age*.17),d.front+.12+age*.72,-d.L/2+.23+age*.12);}a.needsUpdate=true;}}
+  car.updateSignalLights?.(dt,speed);
+  if(car.steam){car.steam.visible=(car.steamAmount||0)>.01;car.steam.material.opacity=Math.min(.18,car.steamAmount||0);car.steamTime+=dt;if(car.steam.visible){const a=car.steam.geometry.attributes.position;for(let i=0;i<a.count;i++){const age=(car.steamTime*.55+i/a.count)%1;a.setXYZ(i,Math.sin(i*2.4+age*3)*(.08+age*.17),d.front+.12+age*.72,-d.L/2+.23+age*.12);}a.needsUpdate=true;}}
+  car.updateDamage?.(dt);
   if(pose){car.body.position.y=pose.heave;car.body.rotation.set(pose.pitch,0,pose.roll,'YXZ');}
 }
 const TRAFFIC_TEMPLATES=new Map();
