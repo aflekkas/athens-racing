@@ -151,6 +151,18 @@ export const CARS = [
     tyres: ['235/55 R18','235/55 R18'], frontW: .61, hcg: .58, track: 1.605, trackRear: 1.606, rsF: .60, susHz: 1.6, susZ: .56, rollK: 1.15, pitchK: 1.1, alphaPk: .125, mfC: 1.43, loadSens: .16, clA: 0, tc: .75, esc: .60, shiftT: .22, bias: .73, steerRate: 1.05, ebrake: .17, lsd: 0,
     stats: { speed: .46, accel: .45, handling: .69, drift: .31 },
   },
+  // AMG H247: M139 310 kW / 500 Nm, 4MATIC+, eight-speed DCT; 1765 kg EU mass.
+  // https://media.mercedes-benz.fr/le-nouveau-mercedes-amg-gla-45-s-4matic--un-suv-performance-compact-pour-toutes-les-circonstances/
+  // https://www.mercedesonlease.co.uk/wp-content/uploads/2021/12/GLA-Brochure.pdf (manufacturer brochure)
+  // Overall ratios encode the dual final drives. awdDrift is game assistance, not factory torque control.
+  {
+    id: 'gla45', transmission: 'auto', name: 'MERCEDES-AMG GLA 45 S', short: 'GLA 45 S', tag: 'H247 wide · 421 PS. Panamericana grille. 4MATIC+.', color: '#737c83', accent: '#d7bd39', marque: 'mercedes',
+    mass: 1765, power: 310, torque: 500, redline: 7200, idle: 850, gears: [15.94,11.18,7.34,5.15,3.74,2.93,2.29,1.81], final: 1, wheelR: .346,
+    torqueCurve: [[0,120],[850,140],[1800,240],[3000,385],[4000,460],[5000,500],[5250,500],[6000,480],[6750,438.62],[7200,375]], peakTorqueRpm: 5100, peakPowerRpm: 6750,
+    wheelbase: 2.729, length: 4.443, width: 1.849, height: 1.590, cdA: .80, vmax: 270, grip: 1.16, steer: .57, yawI: 1.08, drift: 1, brake: 1.1, cyl: 4, pitch: 1.05, body: 'gla45', drive: 'awd', awdRear: .5, awdDrift: .8, engine: 'turbo4', turbo: 1.2,
+    tyres: ['255/40 ZR20','255/40 ZR20'], frontW: .60, hcg: .55, track: 1.615, trackRear: 1.590, rsF: .59, susHz: 2.0, susZ: .60, rollK: .8, pitchK: .85, alphaPk: .115, mfC: 1.46, loadSens: .15, clA: .03, tc: .55, esc: .40, shiftT: .13, bias: .72, steerRate: 1.12, ebrake: .16, lsd: .35,
+    stats: { speed: .89, accel: .92, handling: .87, drift: .68 },
+  },
   // Huracan EVO AWD: Lamborghini 470 kW / 640 CV, 600 Nm, >325 km/h.
   // 1422 kg is dry; 1542 kg road-ready simulation mass adds estimated fluids/equipment.
   {

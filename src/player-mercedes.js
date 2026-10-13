@@ -7,6 +7,8 @@ import * as THREE from 'three';
 export const MERCEDES_MODELS = {
   // H247 dimensions: Mercedes-Benz Philippines February 2024 brochure (refs/gla.pdf).
   gla: { mercedes:true,suv:true,L:4.410,W:1.834,H:1.611,wb:2.729,track:1.605,axleOffset:-.065,r:.346,rim:.229,tyreF:.235,tyreR:.235,belt:1.065,front:.94,rear:1.08,cowl:-.94,header:-.47,roofBack:1.15,back:1.94,seatZ:.18,eyeY:1.245,doors:4,leather:'#343434' },
+  // H247 AMG-specific width/track; manufacturer 2020 press kit and MY24 drawings.
+  gla45: { mercedes:true,suv:true,amg:true,L:4.443,W:1.849,H:1.590,wb:2.729,track:1.615,axleOffset:-.065,r:.346,rim:.254,tyreF:.255,tyreR:.255,belt:1.065,front:.94,rear:1.08,cowl:-.94,header:-.47,roofBack:1.15,back:1.94,seatZ:.18,eyeY:1.224,doors:4,leather:'#292b2d' },
   cle: { mercedes:true,L:4.850,W:1.861,H:1.428,wb:2.865,track:1.605,axleOffset:-.12,r:.337,rim:.241,tyreF:.245,tyreR:.275,belt:.98,front:.78,rear:.95,cowl:-.76,header:-.12,roofBack:.86,back:1.72,seatZ:.32,eyeY:1.135,doors:2,leather:'#875b43' },
 };
 const mix=THREE.MathUtils.lerp,clamp=THREE.MathUtils.clamp;
@@ -35,7 +37,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     for(const a of [-d.wb/2+ax,d.wb/2+ax]){
       const points=[];for(let i=0;i<=40;i++){const t=i*Math.PI/40,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);points.push([s*(S.side(z,y)+.002),y,z]);}
       line(p,suv&&!amg?M.black:M.paint,points,suv?.027:.012);
-      if(amg)surface(p,M.paint,(u,v)=>{const t=u*Math.PI,z=a+(arch+.040*v)*Math.cos(t),y=d.r+(arch+.040*v)*Math.sin(t);return[s*(S.side(z,y)+.025*Math.sin(v*Math.PI)),y,z];},40,5,'amg-wide-arch');
+      if(amg)surface(p,M.paint,(u,v)=>{const t=u*Math.PI,z=a+(arch+.040*v)*Math.cos(t),y=d.r+(arch+.040*v)*Math.sin(t);return[s*(S.side(z,y)+.025*Math.sin(v*Math.PI)),y,z];},32,3,'amg-wide-arch');
       surface(p,M.black,(u,v)=>{const t=u*Math.PI,z=a+(arch-.006)*Math.cos(t),y=d.r+(arch-.006)*Math.sin(t);return[s*mix(d.track/2-.14,S.side(z,y)-.012,v),y,z];},32,4,'wheel-arch-liner');
     }
     surface(p,M.paint,(u,v)=>{const z=mix(d.cowl,d.back,u);return[s*mix(S.side(z,S.top(z)),W-.135,v),mix(S.top(z),d.belt+.014,v)+.012*Math.sin(v*Math.PI),z];},56,8,'door-shoulder');

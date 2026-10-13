@@ -124,12 +124,12 @@ export function runPoliceChecks(){
 }
 
 // Covers every road and parked model, rather than only the original detailed taxi/BYD subset.
-export function runTrafficFleetChecks(){
+export function runTrafficFleetChecks(carIds=null){
   const results=[],counts=[],plates=new Set(),rng=new RNG(994);
   const check=(label,ok)=>{results.push({label,pass:!!ok});if(!ok)throw new Error(label);};
   const triangles=root=>{let n=0;root.traverseVisible(o=>{if(o.isMesh)n+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});return n;};
   const finite=root=>{let ok=true;root.traverse(o=>{if(o.isMesh)for(const v of o.geometry.attributes.position.array)if(!Number.isFinite(v))ok=false;});return ok;};
-  for(const type of TRAFFIC_TYPES){
+  for(const type of TRAFFIC_TYPES.filter(t=>!carIds||carIds.includes(t.id))){
     const a=trafficModel(type,type.colors[0],rng),b=trafficModel(type,'#3277b1',rng),p=trafficModel(type,type.colors[0],rng,{parked:true});
     for(const m of [a,b,p]){check(type.id+' unique registration',!!m.plate&&!plates.has(m.plate));plates.add(m.plate);}
     check(type.id+' real catalogue dimensions',Math.abs(a.dims.L-type.len)<.002&&Math.abs(a.dims.W-type.wid)<.002);
