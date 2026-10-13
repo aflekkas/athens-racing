@@ -280,12 +280,12 @@ export class Ground {
   /** push a circle (x, z, r) out of building walls; returns the wall normal of the deepest contact or null */
   walls(x, z, r, out) {
     const b = this._cell(this.bh, x, z) || [];
-    let best = 0, nx = 0, nz = 0;
+    let best = 0, nx = 0, nz = 0, collider = null;
     for (const g of b) {
       const dx = g[2] - g[0], dz = g[3] - g[1], L2 = dx * dx + dz * dz || 1e-6;
       const t = clamp(((x - g[0]) * dx + (z - g[1]) * dz) / L2, 0, 1);
       const px = g[0] + dx * t, pz = g[1] + dz * t, d = Math.hypot(x - px, z - pz);
-      if (d < r && r - d > best) { best = r - d; nx = (x - px) / (d || 1); nz = (z - pz) / (d || 1); }
+      if (d < r && r - d > best) { best = r - d; nx = (x - px) / (d || 1); nz = (z - pz) / (d || 1); collider = g; }
     }
     // parked cars: oriented boxes
     if (this.parked && !this._ph) { this._ph = new Map(); for (const c of this.parked) this._put(this._ph, c.x, c.z, c.hl + 1, c); }
@@ -299,10 +299,10 @@ export class Ground {
         if (c.hl - Math.abs(lf) < c.hw - Math.abs(lr)) { ex = Math.sign(lf) || 1; er = 0; pen = c.hl - Math.abs(lf) + r; } else { ex = 0; er = Math.sign(lr) || 1; pen = c.hw - Math.abs(lr) + r; }
         d = 1;
       } else pen = r - d;
-      if (pen > best) { best = pen; nx = (ex * fx - er * fz) / d; nz = (ex * fz + er * fx) / d; }
+      if (pen > best) { best = pen; nx = (ex * fx - er * fz) / d; nz = (ex * fz + er * fx) / d; collider = c; }
     }
     if (!best) return null;
-    out.pen = best; out.nx = nx; out.nz = nz; return out;
+    out.pen = best; out.nx = nx; out.nz = nz; out.collider = collider; return out;
   }
   /** is a step from height y0 to y1 over distance d too steep to drive? (cliff faces, retaining walls) */
   blocked(y0, y1, d) { return y1 - y0 > STEP_UP + MAX_CLIMB * d; }
@@ -312,7 +312,10 @@ export class Ground {
    * the body (m forward of the centre) the contact circle sits, when known; otherwise the body corner facing the wall.
    * The crash dents the body there: addDamage with the contact's closing speed, zone, local point and normal.
    */
-  _hit(v, nx, nz, pen, k) {
+  _hit(v, nx, nz, pen, k, collider = null) {
+    const restitution = clamp(collider?.restitution ?? 0.15, 0, 1);
+    // Soft barriers absorb crush energy; apply the square root to EBS, not a second delta-v.
+    const damageScale = clamp(collider?.damageScale ?? 1, 0, 1);
     v.x += nx * pen; v.z += nz * pen;
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);
     const wvx = fx * v.vLong + rx * v.vLat, wvz = fz * v.vLong + rz * v.vLat;
@@ -327,11 +330,11 @@ export class Ground {
       const vc = Math.max(vn, -((fx * vxp + rx * vyp) * nx + (fz * vxp + rz * vyp) * nz));
       const zone = Math.abs(dF) > Math.abs(dR) * 0.8 ? (dF > 0 ? 'front' : 'rear') : (dR > 0 ? 'right' : 'left'); // a 45° corner hit is the nose / tail
       // local frame for the damage model: x right, y up, z backward (three.js, the car faces -z)
-      v.addDamage(zone, vc, { kind: 'wall', localPoint: { x: py, y: 0.45, z: -px }, localNormal: { x: nx * rx + nz * rz, y: 0, z: -(nx * fx + nz * fz) } });
+      v.addDamage(zone, vc * Math.sqrt(damageScale), { kind: collider?.kind === 'tyre' ? 'tyre' : 'wall', localPoint: { x: py, y: 0.45, z: -px }, localNormal: { x: nx * rx + nz * rz, y: 0, z: -(nx * fx + nz * fz) } });
     }
     const keep = 1 - Math.min(0.45, vn * 0.03);
     const tx = wvx + nx * vn, tz = wvz + nz * vn; // tangential part
-    const nvx = tx * keep + nx * vn * 0.15, nvz = tz * keep + nz * vn * 0.15;
+    const nvx = tx * keep + nx * vn * restitution, nvz = tz * keep + nz * vn * restitution;
     v.vLong = nvx * fx + nvz * fz; v.vLat = nvx * rx + nvz * rz;
     v.w *= 1 - Math.min(0.6, vn * 0.05);
     if (vn > v.wallHit) { v.wallNx = nx; v.wallNz = nz; }
@@ -426,7 +429,7 @@ export class Ground {
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), r = v.halfW + 0.05, w = this._w || (this._w = {});
     for (const k of [v.halfL - r, -(v.halfL - r)]) {
       const c = this.walls(v.x + fx * k, v.z + fz * k, r, w);
-      if (c) this._hit(v, c.nx, c.nz, c.pen, k);
+      if (c) this._hit(v, c.nx, c.nz, c.pen, k, c.collider);
     }
     this._curbs(v);
     // the ground: too steep to climb (cliff face, retaining wall, a building's plinth) acts as a wall
