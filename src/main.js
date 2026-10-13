@@ -7,6 +7,7 @@ import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
 import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
+import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
 import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
 import { Police, pursuit } from './police.js';
@@ -553,7 +554,7 @@ function buildGrid() {
   grid = [];
   const ids = CARS.map((c) => c.id);
   for (const [i, d] of drivers.entries()) {
-    const spec = CARS.find((c) => c.id === EV.driverCar(d, ids, player.spec.id)) || CARS[1];
+    const spec = CARS.find((c) => c.id === (def.car || EV.driverCar(d, ids, player.spec.id))) || CARS[1];
     let c;
     if (i === 0) { // the first one is `rival`, the car the audio, the post blur mask and the online code know about
       disposeCar(rival); const built = makeCar(spec, false);
@@ -667,20 +668,6 @@ window.__flow = {
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !multiplayer.active && (G.state === 'race' || G.state === 'countdown')) pauseGame(); });
 
-/** reverse-aware traffic.laneInfo: nearest thing ahead in travel direction dir within [from, to] metres of s */
-function laneInfoDir(u, from, to, halfW, s, dir) {
-  if (dir > 0) return traffic.laneInfo(u, s + from, s + to, halfW);
-  const s0 = s - from, span = to - from; let best = 1e9, bv = 0;
-  for (const c of traffic.cars) {
-    if (!c.active) continue;
-    const d = s0 - c.s; if (d < -c.hs || d > span) continue;
-    if (Math.abs(c.u - u) > c.hu + halfW + 0.35) continue;
-    const g = d - c.hs; if (g < best) { best = g; bv = c.crash || c.cross || c.mode === 'parked' ? 0 : -c.dir * c.v; }
-  }
-  for (const p of people.onRoad) { const d = s0 - p.s; if (d < -0.6 || d > span || Math.abs(p.u - u) > halfW + 0.9) continue; if (d - 1 < best) { best = Math.max(0, d - 1); bv = 0; } }
-  for (const st of traffic.sites) { const d = s0 - (st.s + st.len / 2); if (d < -st.len || d > span || Math.abs(st.u - u) > st.wid * 0.5 + halfW) continue; if (Math.max(0, d) < best) { best = Math.max(0, d); bv = 0; } }
-  return { gap: best, v: bv };
-}
 /** a stop line crossed between two front-bumper positions, in either direction of travel */
 function crossedDir(prev, now, dir) {
   if (dir > 0) return signals.crossed(prev, now);
@@ -688,31 +675,24 @@ function crossedDir(prev, now, dir) {
   return null;
 }
 
-// ---- the AI field, every step (offline only): rubber band, personalities, red lights, finishing
+// ---- the AI field, every step (offline only): equal physics, personalities, red lights, finishing
 function updateGrid(dt) {
-  const pv = player.veh, pp = prog(pv.s), len = G.ev.r.len;
+  const len = G.ev.r.len;
   for (const c of grid) {
-    const v = c.veh, d = c.drv, lead = prog(v.s) - pp;
-    // rubber band: keeps the race close, but a clean, fast run still wins; each driver has their own pace
-    let pace = d.pace;
-    if (lead > 50) pace -= Math.min(0.3, (lead - 50) / 900);
-    if (lead < -40) pace += Math.min(0.08, (-lead - 40) / 800);
-    c.ai.nitroOk = lead < 40 * d.nitro;
-    c.ai.mistakeT -= dt;
-    if (c.ai.mistakeT < 0) { c.ai.mistakeT = (25 + Math.random() * 30) / d.mistakes; if (lead > -20) c.ai.mistake = 1.2 + Math.random(); }
+    const v = c.veh;
+    let pace = 1; // RivalAI applies each driver's 97–100% limit target; close racing is opt-in.
     if (c.finish !== null) pace = prog(v.s) > len + 120 ? 0 : 0.3;
     const rin = aiInput(c, dt, pace, [player, ...grid.filter((o) => o !== c)]);
     if (pace === 0) { rin.throttle = 0; rin.brake = v.vLong > 1 ? 0.7 : 0; rin.handbrake = v.vLong <= 1; }
     c.lastBrake = rin.brake > 0.2;
     v.dragMul = 1;
     v.update(dt, rin);
-    if (!v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.02);
+    if (!v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
     const f = v.s + G.dir * v.halfL;
     if (G.state === 'race' && c.front !== null && v.vLong > 0 && c.finish === null) { const j = crossedDir(c.front, f, G.dir); if (j) onStopLine(j, 'rival', c); }
     c.front = c.front === null ? f : G.dir > 0 ? Math.max(c.front, f) : Math.min(c.front, f);
-    // out of sight a rival is not held up by traffic (they know these roads); in sight they race for real
-    c.ghost = Math.abs(v.s - pv.s) > 140 || c.ai.passT > 0;
+    c.ghost = false; // Traffic and collision rules apply throughout the race.
   }
 }
 
@@ -866,132 +846,18 @@ function updateEventHud(dt) {
 
 // ------------------------------------------------------------------ rival AI
 function aiInput(car, dt, pace, other) {
-  const veh = car.veh, ai = car.ai, v = Math.max(0, veh.vLong), sp = veh.spec;
-  const dir = car.dir || 1, others = Array.isArray(other) ? other : other ? [other] : []; // reverse events drive -s on the far carriageway
-  ai.passT = Math.max(0, (ai.passT || 0) - dt);
-  const ghost = car.ghost || ai.passT > 0; // deadlocked in a pile-up: squeeze through
-  if (!(ai.lane >= -1)) { ai.lane = Math.max(0, Math.min(route.lanes(veh.s) - 1, Math.round((Math.abs(veh.u) - route.medHalf(veh.s)) / 3.5 - 0.5))); ai.u = veh.u; ai.cool = 0; }
-  const nl = route.lanes(veh.s);
-  const undiv = route.div(veh.s) < 0.3;
-  ai.cool -= dt;
-  const look = 30 + v * 2.4;
-  const laneU = (l) => dir * (l >= 0 ? route.laneU(veh.s + 10 * dir, Math.min(l, nl - 1)) : -route.laneU(veh.s + 10 * dir, -l - 1));
-  const info = (l, from = veh.halfL) => {
-    const u = laneU(l);
-    const r = ghost ? { gap: 1e9, v: 0 } : laneInfoDir(u, from, look, veh.halfW, veh.s, dir);
-    // the other racers are obstacles too
-    for (const other of others) {
-      const d = (other.veh.s - veh.s) * dir;
-      if (d > -2 && d < look && Math.abs(other.veh.u - u) < 2.2) { const g = d - other.veh.halfL - veh.halfL; if (g < r.gap) { r.gap = g; r.v = other.veh.vLong; } }
-    }
-    return r;
-  };
-  if (ai.lane >= nl) ai.lane = nl - 1;
-  if (ai.lane < 0 && !undiv) ai.lane = 0;
-  const cur = info(ai.lane);
-  const closing = v - cur.v;
-  const ttc = closing > 0.5 ? cur.gap / closing : 99;
-  ai.stuck = v < 6 && cur.gap < 14 ? (ai.stuck || 0) + dt : 0;
-  ai.eval = (ai.eval || 0) - dt;
-  if (ai.cool <= 0 && (ttc < 5 || ai.eval <= 0 || ai.stuck > 0.6 || ai.lane < 0)) {
-    ai.eval = 0.5;
-    // how fast could we be going in each lane a few seconds from now
-    const vmax = sp.vmax / 3.6 * pace;
-    const eff = (r, l) => (r.gap > look - 5 ? vmax : Math.min(vmax, Math.sqrt(Math.max(0, r.v) ** 2 + 2 * 5 * Math.max(0, r.gap - 10)))) - Math.abs(l - ai.lane) * 0.8;
-    let best = ai.lane, bestScore = ai.lane < 0 ? -1e9 : eff(cur, ai.lane) + 1.5;
-    const cands = []; for (let l = 0; l < nl; l++) cands.push(l);
-    if (undiv) cands.push(-1);
-    for (const l of cands) {
-      if (l === ai.lane) continue;
-      if (Math.abs(l - Math.max(0, ai.lane)) > 1 && l >= 0) continue; // one lane at a time
-      const side = info(l, -7);
-      if (side.gap < (ai.stuck > 0.6 ? 2 : 4.5)) continue; // somebody alongside
-      let score = eff(side, l);
-      if (l < 0) { // overtaking on the oncoming lane: needs lots of room (closing speeds add up)
-        if (side.gap < (v + Math.abs(Math.min(0, side.v))) * 5 + 40 || ttc > 8) continue; score -= 4;
-      }
-      if (score > bestScore) { bestScore = score; best = l; }
-    }
-    if (best !== ai.lane) { ai.lane = best; ai.cool = 0.9; }
+  const ai = car.ai, veh = car.veh;
+  if (!ai.controller || ai.controller.route !== route || ai.controller.spec !== veh.spec || ai.controller.dir !== (car.dir || 1)) {
+    Object.defineProperty(ai, 'controller', { configurable: true, writable: true, value: new RivalAI(route, veh, { driver: car.drv, dir: car.dir || 1, perfect: car === player, closedRoad: G.ev?.def.traffic === 0 }) });
   }
-  if (ai.lane < 0 && ai.cool < -1.5) { const back = info(0, -10); if (back.gap > 16) { ai.lane = 0; ai.cool = 0.8; } }
-  // steering: pure pursuit on a smoothed lane offset
-  const tu = laneU(ai.lane);
-  ai.u = damp(ai.u ?? veh.u, tu, 1.6, dt);
-  let kAhead = 0; for (let d = 0; d <= 36; d += 6) kAhead = Math.max(kAhead, Math.abs(route.curv(veh.s + d * dir)));
-  const Ld = Math.max(6, Math.min(9 + v * 0.42, 0.24 / Math.max(1e-4, kAhead)));
-  const tp = route.point(veh.s + Ld * dir, ai.u);
-  const dx = tp.x - veh.x, dz = tp.z - veh.z;
-  const fx = -Math.sin(veh.yaw), fz = -Math.cos(veh.yaw), rx = Math.cos(veh.yaw), rz = -Math.sin(veh.yaw);
-  const lat = dx * rx + dz * rz, lon = Math.max(1, dx * fx + dz * fz);
-  const delta = Math.atan(veh.wb * 2 * lat / (lon * lon + lat * lat));
-  const lock = veh.lockAt(v);
-  const steer = clamp(delta / lock - veh.w * 0.04, -1, 1);
-  // speed: top speed x pace, braking for bends ahead, following traffic
-  let vT = sp.vmax / 3.6 * pace;
-  const dec = 7.5 * sp.brake;
-  for (let d = 0; d < v * v / (2 * dec) + 60; d += 6) {
-    const k = Math.abs(route.curv(veh.s + d * dir)); if (k < 1e-4) continue;
-    const vl = Math.sqrt(sp.grip * 9.81 * 0.74 / k);
-    vT = Math.min(vT, Math.sqrt(vl * vl + 2 * dec * Math.max(0, d - 8)));
-  }
-  const now = info(ai.lane);
-  // whatever is physically in front of the bonnet right now (we may still be moving across)
-  const here = ghost ? { gap: 1e9, v: 0 } : laneInfoDir(veh.u, veh.halfL, look, veh.halfW * 0.8, veh.s, dir);
-  if (here.gap < now.gap) { if (here.gap < 9 && ai.lane !== undefined && Math.abs(veh.u - ai.u) > 1) vT = Math.min(vT, 4); else { now.gap = here.gap; now.v = here.v; } }
-  if (now.gap < look) { const lv = Math.max(0, now.v); vT = Math.min(vT, Math.sqrt(lv * lv + 2 * dec * 0.75 * Math.max(0, now.gap - 7 - lv * 0.4))); }
-  // traffic lights: stop at red / amber, unless he decides to risk it
-  let sigHold = -1;
-  if (signals && !(car === player && !G.autodrive)) {
-    const front = veh.s + dir * veh.halfL, j = signals.next(front, dir);
-    if (j) {
-      const d = ((dir > 0 ? j.sF : j.sO) - front) * dir;
-      if (j.main !== 'G' && d < 260) {
-        // commit to stop-or-go only once the stop line is close enough to matter
-        if (ai.sigJ !== j.i && d < v * v / (2 * dec * 0.85) + 30) { ai.sigJ = j.i; ai.sigRun = decideRun(car, j, d, v); }
-        if (!(ai.sigJ === j.i && ai.sigRun)) {
-          // be able to stop at the line, but roll up so as to arrive just as it turns green
-          const vStop = Math.sqrt(2 * dec * 0.7 * Math.max(0, d - 3)), vTime = d > 25 ? (d - 6) / (j.toGreen + 1.5) : 0;
-          vT = Math.min(vT, Math.max(vStop, vTime));
-          // brake for the line directly (the speed controller alone lags too much)
-          const need = v * v / (2 * Math.max(0.3, d - 2.5));
-          if (d < 3.5 || (d < 12 && v < 3)) sigHold = 0.45;
-          else if (need > 2.2 && vTime < v) sigHold = Math.min(1, need / (9.81 * sp.brake * 0.95));
-        }
-      } else if (j.main === 'G' && ai.sigJ === j.i && !ai.sigRun) ai.sigJ = -1;
-    }
-  }
-  ai.dbg = { st: +steer.toFixed(2), dy: +(((veh.yaw - Math.atan2(-route.lin(route.TX, veh.s), -route.lin(route.TZ, veh.s)) + 9.42) % 6.283) - 3.14).toFixed(2), tu: +ai.u.toFixed(1), Ld: Math.round(Ld), vT: Math.round(vT * 3.6), gap: Math.round(now.gap), nv: Math.round(now.v * 3.6), here: Math.round(here.gap), lane: ai.lane, ttc: +ttc.toFixed(1) };
-  if (ai.mistake > 0) { vT *= 0.55; ai.mistake -= dt; }
-  ai.blockT = v < 1.5 && vT < 3 && sigHold < 0 && G.state === 'race' ? (ai.blockT || 0) + dt : 0;
-  if (ai.blockT > 5) { ai.blockT = 0; ai.passT = 3.5; }
-  if (ai.passT > 0) vT = Math.max(vT, 7);
-  const err = vT - v;
-  const thr = clamp(err * 0.35 + 0.1, 0, 1), brk = v < 1.5 ? 0 : clamp(-err * 0.2, 0, 1); // never select reverse by accident
-  // unstick: nose in a wall or a wreck -> back out, and as a last resort hop back onto the lane
-  const av = Math.abs(veh.vLong);
-  ai.goT = Math.max(0, (ai.goT || 0) - dt);
-  ai.slow = av < 2 && vT > 3 && ai.goT <= 0 ? (ai.slow || 0) + dt : 0;
-  ai.slowLong = v < 3 && vT > 3 ? (ai.slowLong || 0) + dt : 0;
-  if (ai.slow > 1.4 && !(ai.revT > 0)) { ai.revT = 1.1; ai.slow = 0; }
-  if (ai.revT > 0) { ai.revT -= dt; if (ai.revT <= 0) ai.goT = 2.5; return { throttle: 0, brake: 1, steer: -clamp(lat * 0.3, -1, 1), handbrake: false, nitro: false }; }
-  if (sigHold >= 0) { ai.slow = 0; ai.slowLong = 0; return { throttle: 0, brake: v < 1.5 ? Math.min(0.45, sigHold) : sigHold, steer, handbrake: false, nitro: false }; } // < 0.5 when slow: never selects reverse
-  if (ai.slowLong > 4) { ai.slowLong = 0; const l = Math.max(0, ai.lane); placeVeh(veh, veh.s + 2 * dir, dir * route.laneU(veh.s + 2 * dir, l), dir); ai.u = veh.u; }
-  return { throttle: brk > 0.05 ? 0 : thr, brake: brk, steer, handbrake: false, nitro: ai.nitroOk && err > 6 && Math.abs(steer) < 0.3 };
+  const obstacles = [...traffic.cars, ...people.onRoad.map((p) => ({ s: p.s, u: p.u, hs: 0.6, hu: 0.5, vs: 0 })),
+    ...traffic.sites.map((s) => ({ s: s.s, u: s.u, hs: s.len / 2, hu: s.wid / 2, vs: 0 }))];
+  const result = ai.controller.update(dt, { racers: Array.isArray(other) ? other : other ? [other] : [], traffic: obstacles,
+    signals: route.closed ? null : signals, pace, closeRacing: Q.has('closeracing'), gapToPlayer: (veh.s - player.veh.s) * (car.dir || 1) });
+  ai.dbg = ai.controller.debug; ai.u = ai.dbg.u ?? veh.u; ai.revT = ai.dbg.phase === 'reverse' ? 1 : 0;
+  return result;
 }
 
-function decideRun(car, j, d, v) {
-  const tArr = d / Math.max(1, v);
-  if (j.main === 'A' && (tArr < j.left + 0.25 || v * v / (2 * Math.max(1, d)) > 6.5)) return true; // clears it on amber, or too late to stop
-  if (car === player) return Q.has('runreds');
-  let p = 0.08;
-  const lead = (car.veh.s - player.veh.s) * (car.dir || 1);
-  if (lead < 0) p += 0.17; if (lead < -80) p += 0.15;
-  if (j.main === 'R' && j.left < tArr + 1) p += 0.3; // it will (probably) be green by the time he gets there
-  p *= car.drv?.risk ?? 1;
-  if (car.ghost) p = 0.04;
-  return Math.random() < p;
-}
 function onStopLine(j, who, rc = rival) {
   const red = j.main === 'R' && j.redT > 0.3 && j.toGreen > 0.3; // a little grace at both ends of the red
   if (red && Q.has('redlog')) { const c = who === 'rival' ? rc : player; (G.redLog = G.redLog || []).push([who, Math.round(j.s), +j.redT.toFixed(1), c.ai && c.ai.sigJ === j.i, c.ai && c.ai.sigRun, Math.round(c.veh.kmh), c.ghost || false]); }
@@ -1402,7 +1268,7 @@ function step(dt, draw = true) {
       if (pv.nitroOn && !G.nitroWas) audio.nitroStart();
       G.nitroWas = pv.nitroOn;
       if (!multiplayer.active) {
-      updateGrid(dt); // the AI field: rubber band, personalities, red lights (offline)
+      updateGrid(dt); // the AI field: racing lines, traffic, red lights (offline)
       }
       // ---- stop lines: running a red costs time
       const D = G.dir || 1, pf = pv.s + D * pv.halfL, rf = rv.s + rv.halfL;
