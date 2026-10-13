@@ -208,7 +208,7 @@ class ReplayMode {
       renderer.setPixelRatio(1); renderer.setSize(w, h, false); post.setSize(w, h, 1); post.resetHistory?.(); camera.updateProjectionMatrix();
       this.updateCamera(0); this.ctx.render();
       const blob = await new Promise((resolve, reject) => renderer.domElement.toBlob(b => b ? resolve(b) : reject(new Error('PNG capture failed')), 'image/png'));
-      this.lastPhoto = { width: w, height: h, bytes: blob.size }; download(blob, `paraliaki-photo-${Date.now()}.png`);
+      this.lastPhoto = { width: w, height: h, bytes: blob.size }; download(blob, `athens-street-racers-${Date.now()}.png`);
       this.ui.querySelector('[data-status]').textContent = `SAVED ${w} × ${h}`; return this.lastPhoto;
     } finally { renderer.setPixelRatio(oldRatio); renderer.setSize(oldSize.x, oldSize.y); post.setSize(oldSize.x, oldSize.y, oldRatio); post.resetHistory?.(); this.capturing = false; }
   }
