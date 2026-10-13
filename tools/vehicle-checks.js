@@ -32,6 +32,15 @@ export function runVehicleChecks() {
     check(spec.id+' calipers do not spin',car.wheels.every((w,i)=>w.caliper.rotation.x===before[i]));
     check(spec.id+' right turn steers right, inner more',car.wheels[0].pivot.rotation.y<0&&car.wheels[1].pivot.rotation.y<car.wheels[0].pivot.rotation.y&&car.wheels[2].pivot.rotation.y===0);
     const v0=car.wheels[0].spin.rotation.x;car.update(.1,-5,0,false,null);check(spec.id+' reversing reverses wheel spin',car.wheels[0].spin.rotation.x>v0);
+    const travel=[.07,-.025,.018,-.042],pose={heave:.09,pitch:.10,roll:-.07};
+    const corners=travel.map(zu=>({zu,vw:0}));
+    car.update(0,0,0,false,pose,corners);car.update(0,0,0,false,pose,corners);
+    check(spec.id+' independent suspension travel does not accumulate or inherit body motion',car.wheels.every((w,i)=>Math.abs(w.pivot.position.y-w.restY-travel[i])<1e-9));
+    const mounted=car.wheels[0];car.body.add(mounted.pivot);car.update(0,0,0,false,pose,corners);
+    car.body.updateMatrix();const centre=mounted.pivot.position.clone().applyMatrix4(car.body.matrix);
+    check(spec.id+' body-mounted suspension removes heave pitch and roll',Math.abs(centre.y-mounted.restY-travel[0])<1e-9);
+    car.root.add(mounted.pivot);car.update(0,0,0,false,{heave:0,pitch:0,roll:0},travel.map(()=>({zu:0,vw:0})));
+    check(spec.id+' suspension reset restores wheel centres',car.wheels.every(w=>Math.abs(w.pivot.position.y-w.restY)<1e-9));
     const originals=car.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());car.setDamage('front',.9);car.setDamage('left',.5);
     check(spec.id+' damage deforms panels',car.damageMeshes.some((m,k)=>m.geometry.attributes.position.array.some((v,i)=>Math.abs(v-originals[k][i])>1e-5)));
     car.setDamage('front',0);car.setDamage('left',0);

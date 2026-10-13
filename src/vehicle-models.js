@@ -262,7 +262,7 @@ function wheels(car,d,M,low) {
     disk(spin,M.darkAlloy,.058,[ox+s*.009,0,0],[0,s*Math.PI/2,0]);
     disk(spin,M.badge,.034,[ox+s*.011,0,0],[0,s*Math.PI/2,0]);
     if(!low)for(let k=0;k<5;k++){const a=k*Math.PI*2/5;disk(spin,M.chrome,.006,[ox+s*.012,Math.cos(a)*.045,Math.sin(a)*.045],[0,s*Math.PI/2,0]);}
-    car.wheels.push({pivot,spin,front,r:R,side:s,angle:0,caliper});
+    car.wheels.push({pivot,spin,front,r:R,restY:pivot.position.y,side:s,angle:0,caliper});
   }
 }
 function exhaust(p,M,x,y,z,wide=false) {
@@ -409,11 +409,24 @@ export function buildDetailedCar(car,kind,opts={}) {
 }
 export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawRate=0) {
   const d=MODEL[car.modelKind];
+  if(pose){car.body.position.y=pose.heave;car.body.rotation.set(pose.pitch,0,pose.roll,'YXZ');}
   for(const w of car.wheels){
     // Physics steer is positive right; Three.js yaw is positive left.
     let angle=0;if(w.front&&Math.abs(steer)>.0001){const radius=d.wb/Math.tan(Math.abs(steer));angle=-Math.sign(steer)*Math.atan(d.wb/Math.max(.1,radius-Math.sign(steer)*w.side*d.track/2));}
     w.pivot.rotation.y=angle;
-    const axleSpeed=axles?.[axles.length===4?(w.front?0:2)+(w.side>0?1:0):(w.front?0:1)]?.vw;
+    const corner=axles?.[axles.length===4?(w.front?0:2)+(w.side>0?1:0):(w.front?0:1)];
+    const axleSpeed=corner?.vw;
+    // Physics owns unsprung wheel-centre travel. Keep the rest position stable
+    // across frames; body-mounted wheels must not count body heave twice.
+    w.restY ??= w.pivot.position.y;
+    const travel=Number.isFinite(corner?.zu)?corner.zu:0;
+    let height=w.restY+travel;
+    if(w.pivot.parent===car.body){
+      // Remove the body's heave AND pitch/roll height at this corner.
+      car.body.updateMatrix();const e=car.body.matrix.elements;
+      height=(height-e[13]-e[1]*w.pivot.position.x-e[9]*w.pivot.position.z)/e[5];
+    }
+    w.pivot.position.y=height;
     const v=(Number.isFinite(axleSpeed)?axleSpeed:speed)+(axles?.length===4?0:-yawRate*w.side*d.track/2);
     w.angle=(w.angle-v*dt/w.r)%(Math.PI*2);w.spin.rotation.x=w.angle;
   }
@@ -421,7 +434,6 @@ export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawR
   car.updateSignalLights?.(dt,speed);
   if(car.steam){car.steam.visible=(car.steamAmount||0)>.01;car.steam.material.opacity=Math.min(.18,car.steamAmount||0);car.steamTime+=dt;if(car.steam.visible){const a=car.steam.geometry.attributes.position;for(let i=0;i<a.count;i++){const age=(car.steamTime*.55+i/a.count)%1;a.setXYZ(i,Math.sin(i*2.4+age*3)*(.08+age*.17),d.front+.12+age*.72,-d.L/2+.23+age*.12);}a.needsUpdate=true;}}
   car.updateDamage?.(dt);
-  if(pose){car.body.position.y=pose.heave;car.body.rotation.set(pose.pitch,0,pose.roll,'YXZ');}
 }
 const TRAFFIC_TEMPLATES=new Map();
 // Night driving (weather.js): headlamp lenses and DRLs light up, tails glow at their running level. Emissive only.
