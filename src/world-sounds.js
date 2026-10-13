@@ -120,7 +120,12 @@ export class WorldAmbience {
         rural: now + 65 + Math.random() * 70, swell: now };
     }
     const coast = map === 'riviera', mountain = map === 'penteli';
-    const v = Math.max(0, p.speed || 0), mask = 0.38 + 0.62 / (1 + (v / 13) ** 2);
+    const v = Math.max(0, p.speed || 0);
+    // Retain a faint bed at road speed; closed windows still apply the shared 2.2 kHz filter.
+    // A small cabin lift keeps low-frequency shore/wind detail from disappearing with that filter.
+    // Map-specific retention keeps the exposed wind and coastal beds behind the engine.
+    const floor = mountain ? 0.60 : 0.72;
+    const mask = (floor + (1 - floor) / (1 + (v / 5) ** 2)) * (p.open === false ? 1.26 : 1);
     const night = weather.night, rain = weather.rain, life = (1 - rain * 0.95) * (1 - night);
     const sea = coast ? Math.max(0, Math.min(1, p.sea || 0)) : 0;
     const city = coast ? Math.max(0, Math.min(1, p.city || 0)) : 0;
@@ -128,8 +133,8 @@ export class WorldAmbience {
     const level = (g, value, tc = 1.5) => g.gain.setTargetAtTime(value, now, tc);
     a.seaPan.pan.setTargetAtTime(pan, now, 0.6);
     a.seaLP.frequency.setTargetAtTime(750 + 9000 * sea * sea, now, 0.8);
-    level(a.sand, 0.34 * sea ** 1.3 * (1 - (p.cliff || 0)) * mask);
-    level(a.rocks, 0.30 * sea ** 1.3 * (p.cliff || 0) * mask);
+    level(a.sand, 0.40 * sea ** 1.3 * (1 - (p.cliff || 0)) * mask);
+    level(a.rocks, 0.35 * sea ** 1.3 * (p.cliff || 0) * mask);
     this.cityPan.pan.setTargetAtTime(-pan * 0.6, now, 0.8);
     level(a.city, 0.13 * city * mask * (1 - night * 0.65));
     // Crowded beach/café loops contained conspicuous voices/bells; keep them out of the quiet bed.
@@ -143,7 +148,7 @@ export class WorldAmbience {
     }
     for (const [name, bed] of Object.entries(this.beds)) {
       const target = name === 'crickets' ? 0.13 * night * (1 - rain * 0.95) * (mountain ? 0.5 : 1) * (1 - city * 0.6) :
-        name === 'pine-wind' ? (mountain ? 0.25 : 0) : map === 'megara' ? 0.30 : coast ? 0.045 : 0;
+        name === 'pine-wind' ? (mountain ? 0.37 : 0) : map === 'megara' ? 0.24 : coast ? 0.045 : 0;
       if (target && !this.srcs[name] && A.S[name]) this.srcs[name] = loopSource(A.ctx, A.S[name], bed.g);
       level(bed.g, target * mask * (name === 'crickets' ? 1 : (1 - night * 0.35) * (1 + rain * 0.4)));
     }

@@ -1,9 +1,9 @@
 # Athens Street Racers — audio mix and ambience
 
-Audit: 2026-10-13. Default settings; 20-second stereo OfflineAudioContext scenes at 32 kHz.
+Audit and lead-review correction: 2026-10-13. Default settings; 20-second stereo OfflineAudioContext scenes at 32 kHz.
 Reference vehicle voice: recorded Z4 turbo-six, steady load 0.5; 2,300 / 3,600 / 5,100 RPM at 50 / 100 / 180 km/h. Cockpit fixtures exercise the closed-cabin `open: false` path; chase uses `open: true`. No radio unless explicitly labelled normal race. Coast proximity 0.7, town 0.3. Maps at idle use 750 RPM. These are reproducible mix fixtures, not driving-physics telemetry or a claim that every car has identical loudness.
 
-The engine/tyre implementation was frozen in the before/after fixtures because a separate sound-design owner was changing it concurrently. No engine, tyre or Doppler synthesis changes belong to this work. The final game smoke test exercises the current shared checkout.
+The engine/tyre implementation was frozen in the before/after fixtures because a separate sound-design owner was changing it concurrently. No engine, tyre or Doppler synthesis changes belong to this work. The original full-game smoke test exercised the then-current shared checkout; the review rerenders isolate this ambience revision.
 
 ## Targets and defaults
 
@@ -12,8 +12,8 @@ The engine/tyre implementation was frozen in the before/after fixtures because a
 | Player engine | Leading continuous layer; reference steady race approximately −18 to −16 LUFS overall without radio |
 | Limit tyres | Clear feedback near the grip limit, several dB below the player engine; tyre synthesis owned separately |
 | Traffic / rivals | Distance-filtered/panned secondary layer; near passes can briefly approach player level |
-| Dry ambience, at speed | Roughly 18–25 dB below engine in open air; extra cabin filtering may make it quieter |
-| Ambience, stopped | More exposed, approximately 12–20 dB below idling engine; Penteli quieter than Riviera |
+| Dry ambience, at speed | 18–25 dB below the stereo player-engine bus in open air, aiming for 22–25 dB; cabin filtering is additional |
+| Ambience, stopped | 12–20 dB below the stereo idling-engine bus in open air, day and night |
 | Night | No daytime cicadas; quieter crickets, reduced wind/town activity and no daytime birds/tractor |
 | Rain | Soft outside rain in open air; quieter low-pass roof/screen drumming and wipers in cabin |
 | Police | Noticeable close pass, attenuated with distance; no 2.4 kHz boost |
@@ -23,51 +23,90 @@ The engine/tyre implementation was frozen in the before/after fixtures because a
 
 Defaults: master 0.80, engine 0.85, tyres 0.80, ambience 0.50, traffic 0.65, UI **0.40**, music 0.55, legacy SFX 1.00. Existing saved user preferences are respected. Ambience balance is fixed at individual source gains while retaining the existing user slider values. Limiter unchanged: threshold −5 dB, knee 6 dB, ratio 8:1, attack 3 ms, release 160 ms; existing calibration gain 2.
 
-## Measured before / after
+## Corrected review measurements
 
-`I` is EBU R128 integrated loudness; `Smax` is maximum 3-second short-term loudness (after the first 3 seconds); peak is oversampled true peak. Bus stems are post-bus-gain, with master/calibration gain and menu attenuation, before the shared dynamics stage. The browser compressor applies its own makeup gain, so bus LUFS must not be directly compared to the limited overall LUFS. Compare bus-to-bus differences. Effects/reverb bypass the six named buses and were captured separately. Music is silent in fixtures except normal race; UI is exercised in the menu fixture.
+**Capture correction:** the first audit split mono buses into two channels without explicitly upmixing them. The engine stem therefore had a silent right channel, understating its loudness by approximately 3 dB relative to its actual stereo contribution. The original engine/ambience gap table was too optimistic. The revised capture explicitly upmixes each tap to stereo, matching the game, and also records the complete pre-limiter mix. Limiter makeup adds approximately 1.4 dB in these steady fixtures—not the full engine-stem/overall difference implied by the earlier report.
 
-| Scene | Overall I before → after (LUFS) | Overall Smax before → after | Peak before → after (dBTP) | Ambience I before → after |
-|---|---:|---:|---:|---:|
-| cockpit-50 | -17.7 → -18.0 | -16.4 → -16.9 | -5.7 → -8.3 | -31.2 → -46.9 |
-| cockpit-100 | -16.6 → -16.7 | -16.1 → -16.2 | -6.4 → -9.8 | -35.6 → -49.6 |
-| cockpit-180 | -16.7 → -16.7 | -16.5 → -16.6 | -8.3 → -8.9 | -35.6 → -50.9 |
-| chase-50 | -17.6 → -18.0 | -16.4 → -16.9 | -6.5 → -8.4 | -29.9 → -43.1 |
-| chase-100 | -16.4 → -16.7 | -15.7 → -16.2 | -5.5 → -9.5 | -30.1 → -45.7 |
-| chase-180 | -16.2 → -16.4 | -15.7 → -16.1 | -6.5 → -6.1 | -30.0 → -47.2 |
-| traffic | -15.9 → -16.1 | -15.5 → -15.7 | -5.6 → -7.4 | -30.4 → -46.2 |
-| rival-pass | -16.4 → -16.6 | -15.7 → -16.1 | -5.5 → -9.1 | -30.0 → -45.7 |
-| police-pass | -16.0 → -16.5 | -14.4 → -15.5 | -4.3 → -5.9 | -31.4 → -45.9 |
-| crash | -16.3 → -16.6 | -15.6 → -15.8 | -2.8 → -3.7 | -30.1 → -45.8 |
-| rain-cockpit | -15.7 → -16.6 | -14.9 → -16.1 | -2.7 → -9.6 | -32.3 → -47.3 |
-| rain-chase | -16.1 → -16.6 | -15.6 → -16.1 | -6.2 → -9.1 | -30.3 → -43.3 |
-| menu | -34.3 → -34.5 | -33.7 → -34.1 | -19.4 → -21.1 | -48.1 → -63.6 |
-| limit | -15.8 → -16.0 | -15.2 → -15.5 | -5.3 → -7.5 | -30.1 → -45.8 |
-| normal-race | -14.9 → -15.1 | -14.3 → -14.5 | -4.5 → -4.9 | -30.5 → -46.2 |
-| riviera-day | -20.7 → -21.3 | -19.5 → -21.1 | -7.9 → -10.5 | -30.2 → -39.5 |
-| riviera-night | -20.9 → -21.3 | -20.6 → -21.2 | -8.7 → -10.7 | -31.9 → -41.9 |
-| megara-day | -21.0 → -21.2 | -20.8 → -21.0 | -10.1 → -10.8 | -32.9 → -37.0 |
-| megara-night | -21.0 → -21.3 | -20.9 → -21.1 | -10.3 → -10.8 | -33.5 → -39.3 |
-| penteli-day | -21.0 → -21.3 | -20.8 → -21.2 | -10.1 → -10.6 | -32.9 → -43.2 |
-| penteli-night | -21.0 → -21.3 | -20.9 → -21.2 | -10.3 → -10.8 | -33.5 → -45.3 |
+The tables below supersede the original measurements. **Before** is the previous ambience implementation (`11990a9`); **after** is the lead-review revision. Both were re-rendered with the corrected stereo taps, identical seeded excerpts and the same frozen engine/tyre synthesis. Decoded assets attach in sorted order so parallel downloads cannot change random excerpt selection. Each fixture is 20 seconds at 32 kHz. I is integrated LUFS; Smax is maximum 3-second loudness after the first three seconds; peak is dBTP.
 
-Full per-bus I/Smedian/Smax/true-peak logs, all 20-second clips and source snapshots: `.scratch/audio-mix/`. `render.mjs`, `measure.py` and the final `reparse.py` pass reproduce the measurements; `serve.py` serves the browser fixture/capture endpoint on port 8027. `long.mjs` renders three-minute stationary ambience per map. `world-audition.mp3` and `audition-index.json` provide a normalized source audition in file order. Audition normalization is for review only, never the game mix.
+Engine, ambience and complete pre-limiter mix share the same measurement point and master/calibration scale. The engine-minus-ambience column is the target comparison. Overall loudness below is post-limiter and is labelled separately. These are representative exposed-map fixtures, not an ambience floor overriding coastline distance or geographic silence.
 
-## Reference bus measurements
+| Scene | Engine I | Ambience I before → after | Engine − ambience before → after (dB) | Complete pre-limiter I after | Ambience Smax after | Ambience peak after |
+|---|---:|---:|---:|---:|---:|---:|
+| cockpit-50 | -19.5 | -48.7 → -44.6 | 29.2 → 25.1 | -19.4 | -41.1 | -20.8 |
+| cockpit-100 | -18.2 | -51.4 → -44.9 | 33.2 → 26.7 | -18.1 | -41.4 | -21.0 |
+| cockpit-180 | -18.3 | -52.7 → -45.0 | 34.4 → 26.7 | -18.2 | -41.4 | -21.1 |
+| chase-50 | -19.5 | -43.7 → -42.3 | 24.2 → 22.8 | -19.4 | -40.7 | -22.4 |
+| chase-100 | -18.2 | -46.4 → -42.6 | 28.2 → 24.4 | -18.1 | -41.0 | -22.7 |
+| chase-180 | -18.3 | -47.8 → -42.7 | 29.5 → 24.4 | -17.8 | -41.0 | -22.7 |
+| riviera-day | -22.8 | -40.2 → -39.8 | 17.4 → 17.0 | -22.7 | -38.2 | -19.9 |
+| riviera-night | -22.8 | -42.9 → -42.3 | 20.1 → 19.5 | -22.8 | -39.6 | -19.7 |
+| megara-day | -22.8 | -38.6 → -40.3 | 15.8 → 17.5 | -22.8 | -37.3 | -27.0 |
+| megara-night | -22.8 | -40.4 → -41.3 | 17.6 → 18.5 | -22.8 | -39.3 | -30.1 |
+| penteli-day | -22.8 | -41.1 → -37.8 | 18.3 → 15.0 | -22.7 | -35.9 | -23.7 |
+| penteli-night | -22.8 | -43.7 → -41.0 | 20.9 → 18.2 | -22.8 | -39.2 | -26.7 |
+| megara-50 | -19.5 | -42.1 → -42.8 | 22.6 → 23.3 | -19.4 | -39.8 | -29.4 |
+| megara-100 | -18.2 | -44.8 → -43.1 | 26.6 → 24.9 | -18.1 | -40.1 | -29.9 |
+| megara-180 | -18.3 | -46.2 → -43.2 | 27.9 → 24.9 | -17.8 | -40.2 | -29.9 |
+| penteli-50 | -19.5 | -44.5 → -41.6 | 25.0 → 22.1 | -19.4 | -39.7 | -27.5 |
+| penteli-100 | -18.2 | -47.3 → -42.0 | 29.1 → 23.8 | -18.1 | -40.1 | -28.2 |
+| penteli-180 | -18.3 | -48.6 → -42.2 | 30.3 → 23.9 | -17.8 | -40.3 | -28.3 |
 
-These are calibrated **pre-limiter stems**, not isolated normalized assets. Silence is excluded from the table; the full report contains all buses in all scenes.
+### Complete post-limiter output
 
-| Bus / fixture | I before → after (LUFS) | Smax before → after (LUFS) | True peak before → after (dBTP) |
+| Scene | Overall I before → after | Overall Smax before → after | True peak before → after |
 |---|---:|---:|---:|
-| Engine, chase 100 | -21.2 → -21.2 | -20.7 → -20.7 | -11.6 → -11.6 |
-| Tyres at limit | -25.6 → -25.7 | -25.1 → -25.3 | -15.2 → -14.7 |
-| Ambience, chase 100 | -30.1 → -45.7 | -25.6 → -44.3 | -12.1 → -26.8 |
-| Traffic, three vehicles | -27.1 → -27.1 | -27.1 → -26.9 | -16.5 → -15.9 |
-| Rival passing | -37.4 → -37.4 | -34.8 → -34.8 | -24.0 → -24.0 |
-| Police pass (traffic + siren) | -25.1 → -29.3 | -20.1 → -24.4 | -9.2 → -12.6 |
-| Rain cockpit, tyre spray | -24.6 → -34.3 | -22.5 → -34.1 | -7.2 → -25.4 |
-| UI click, menu | -38.6 → -43.5 | -47.4 → -52.2 | -22.3 → -27.2 |
-| Music, normal race | -23.2 → -23.2 | -21.9 → -21.9 | -11.3 → -11.3 |
+| cockpit-50 | -18.0 → -18.0 | -16.9 → -16.9 | -8.4 → -8.4 |
+| cockpit-100 | -16.7 → -16.7 | -16.2 → -16.2 | -9.9 → -9.5 |
+| cockpit-180 | -16.7 → -16.7 | -16.6 → -16.6 | -9.2 → -9.2 |
+| chase-50 | -18.0 → -18.0 | -16.9 → -16.9 | -8.3 → -8.3 |
+| chase-100 | -16.7 → -16.6 | -16.1 → -16.1 | -9.6 → -9.4 |
+| chase-180 | -16.4 → -16.4 | -16.2 → -16.2 | -7.1 → -7.1 |
+| traffic | -16.1 → -16.1 | -15.7 → -15.7 | -6.9 → -6.9 |
+| rival-pass | -16.6 → -16.6 | -16.1 → -16.1 | -8.9 → -8.8 |
+| police-pass | -16.5 → -16.5 | -15.5 → -15.5 | -5.9 → -5.9 |
+| crash | -16.6 → -16.6 | -15.7 → -15.7 | -2.4 → -2.3 |
+| rain-cockpit | -16.6 → -16.6 | -16.1 → -16.1 | -9.3 → -9.3 |
+| rain-chase | -16.6 → -16.6 | -16.0 → -16.0 | -9.1 → -9.1 |
+| menu | -34.5 → -34.5 | -34.1 → -34.1 | -21.7 → -21.7 |
+| limit | -16.0 → -16.0 | -15.5 → -15.5 | -7.3 → -7.3 |
+| normal-race | -15.1 → -15.1 | -14.5 → -14.5 | -4.5 → -4.5 |
+| riviera-day | -21.3 → -21.3 | -21.2 → -21.2 | -10.5 → -10.4 |
+| riviera-night | -21.3 → -21.3 | -21.2 → -21.2 | -10.7 → -10.6 |
+| megara-day | -21.3 → -21.3 | -21.1 → -21.1 | -10.7 → -10.8 |
+| megara-night | -21.3 → -21.3 | -21.2 → -21.2 | -10.9 → -10.9 |
+| penteli-day | -21.3 → -21.2 | -21.2 → -21.1 | -11.0 → -10.9 |
+| penteli-night | -21.3 → -21.3 | -21.2 → -21.2 | -11.0 → -11.0 |
+| megara-50 | -18.0 → -18.0 | -16.9 → -16.9 | -8.3 → -8.3 |
+| megara-100 | -16.6 → -16.6 | -16.1 → -16.1 | -9.6 → -9.6 |
+| megara-180 | -16.4 → -16.4 | -16.2 → -16.1 | -7.0 → -7.0 |
+| penteli-50 | -18.0 → -18.0 | -16.9 → -16.9 | -8.3 → -8.3 |
+| penteli-100 | -16.7 → -16.6 | -16.1 → -16.1 | -9.4 → -9.1 |
+| penteli-180 | -16.4 → -16.4 | -16.2 → -16.2 | -7.1 → -7.2 |
+
+### Reference buses, correctly upmixed stereo
+
+| Bus / fixture | I before → after | Smax before → after | True peak before → after |
+|---|---:|---:|---:|
+| Engine, chase 100 | -18.2 → -18.2 | -17.7 → -17.7 | -11.6 → -11.6 |
+| Tyres at limit | -25.7 → -25.7 | -25.2 → -25.2 | -15.3 → -15.3 |
+| Ambience, chase 100 | -46.4 → -42.6 | -45.1 → -41.0 | -27.5 → -22.7 |
+| Three traffic vehicles | -27.1 → -27.1 | -27.0 → -27.0 | -15.4 → -15.4 |
+| Rival pass | -37.4 → -37.4 | -34.8 → -34.8 | -24.0 → -24.0 |
+| Police pass | -29.2 → -29.2 | -24.4 → -24.4 | -11.3 → -11.3 |
+| Rain cockpit tyre spray | -34.4 → -34.4 | -34.1 → -34.1 | -25.2 → -25.2 |
+| Menu UI click | -43.5 → -43.5 | -52.2 → -52.2 | -27.2 → -27.2 |
+| Music | -23.2 → -23.2 | -21.9 → -21.9 | -11.3 → -11.3 |
+
+Full corrected logs and all 54 multibus renders: `.scratch/audio-mix/final-*` and `prior-*`; machine-readable comparison: `revision-loudness.json`. Reproduction uses `final-render.mjs`, `revision-measure.py` and `revision-doc.py`, served by `serve.py` on port 8027. Older `before-*` / `after-*` files remain historical artifacts with the original mono-tap limitation. `review-*` / `revision-*` experiments are superseded by `prior-*` / `final-*`.
+
+## Changes from lead review
+
+- Sea wash gains: sand 0.34 → 0.40, rock 0.30 → 0.35. Coast distance, shore-side pan and inland silence remain intact.
+- Speed attenuation now approaches a 0.72 gain floor on Riviera/Megara and 0.60 on the pine-wind bed. The transition starts at lower speed, retaining environmental detail at 100–180 km/h without lifting the stationary coastal bed indiscriminately.
+- Closed-cabin world layers receive +2 dB before the existing 2.2 kHz low-pass filter. The cabin remains quieter/darker than chase; rain/wiper routing is unchanged.
+- Megara wind 0.30 → 0.24; Penteli pine wind 0.25 → 0.37. These corrections keep the stereo idle/night gaps inside 12–20 dB; the separate Penteli speed-retention setting keeps its moving bed at the quiet end.
+- No bus defaults, limiter settings, engine, tyre or Doppler synthesis changed in this revision.
 
 ## Layer behaviour and provenance
 
@@ -85,7 +124,7 @@ Sirens retain the original distance, pan, sweep and Doppler behaviour. Their 2.4
 
 ## Verification and limitations
 
-- Initial `npm test`: 67 passing tests, no failures. Final shared-checkout rerun: 66 pass / 1 failure in `tools/physics-test/manual.test.mjs:27` (frozen automatic trajectory at frame 59) while another owner had uncommitted `src/physics.js` changes. The same three manual tests pass against an isolated copy of committed HEAD (`committed-manual-test.log`). No physics files were changed by this work.
+- Original audit `npm test`: 67 passing tests, no failures. Final shared-checkout rerun: 66 pass / 1 failure in `tools/physics-test/manual.test.mjs:27` (frozen automatic trajectory at frame 59) while another owner had uncommitted `src/physics.js` changes. The same three manual tests pass against an isolated copy of committed HEAD (`committed-manual-test.log`). No physics files were changed by this work.
 - `node --import ./tools/physics-test/register.mjs --test tools/*.test.mjs tools/events-test.mjs tools/maps-test.mjs tools/maps-resource-test.mjs tools/police-test.mjs tools/rivals-test.mjs tools/traffic-test.mjs`: Initial run: 84 passing tests. Final shared-checkout run: 85 passing tests, no failures (another test was added concurrently).
 - Headless Chromium game smoke: Riviera → Megara → Penteli, all 37 audio assets available, rain/night transitions and **zero console/page errors** on every map (`browser-smoke.json`).
 - `.scratch/audio-mix/checks.mjs`: coastline falloff/direction, inland silence, live map changes, speed masking, night/rain wildlife suppression and sparse-event cadence.
@@ -95,8 +134,14 @@ Sirens retain the original distance, pan, sweep and Doppler behaviour. Their 2.4
 
 ## Spectral findings
 
+Lead-review comparison (`revision-spectrograms.png`): the same wave/gust events remain aligned between versions. The revised 100/180 km/h and cabin beds have more broadband detail, while the cabin still rolls off high frequencies. No new narrow tonal ridges, pulse patterns or abrupt joins appear in these excerpts. Texture scheduling is unchanged from the earlier three-minute review.
+
+Original implementation findings follow:
+
 The source sheets show the original insect band around 5–7 kHz, strong foreground voices in the café/beach recordings, and regular wiper strokes. In the scene comparisons the insect band is reduced, the foreground café/beach events disappear, cabin rain loses its bright hiss, and the siren harmonic ridge around 2–3 kHz is less prominent. Wiper cadence remains deliberately periodic; engine firing/tyre resonances are outside this ambience change.
 
-The first 180-second Megara render exposed repeated whole-gust envelopes at roughly 25-second intervals. The follow-up changes only later farmland-wind excerpts to 10–21 seconds with randomized offsets and 3-second overlaps. Its first excerpt, and therefore the 20-second measurements above, are unchanged. The broad 24.7-second envelope-correlation peak drops from 0.43 to below the strongest remaining long-lag peak (0.22 at 40 seconds); the fixed-looking rise/fall sequence is absent in the refined spectrogram/RMS plot. Original and refined long renders/plots are retained under `.scratch/audio-mix/pre-refinement-*` and `long-*`.
+The first 180-second Megara render exposed repeated whole-gust envelopes at roughly 25-second intervals. The follow-up changes only later farmland-wind excerpts to 10–21 seconds with randomized offsets and 3-second overlaps. Its first excerpt was unchanged by that earlier refinement; the corrected review fixtures above additionally use stable attachment ordering. The broad 24.7-second envelope-correlation peak drops from 0.43 to below the strongest remaining long-lag peak (0.22 at 40 seconds); the fixed-looking rise/fall sequence is absent in the refined spectrogram/RMS plot. Original and refined long renders/plots are retained under `.scratch/audio-mix/pre-refinement-*` and `long-*`.
 
 Implementation commit: `288caf6`; wind refinement `11990a9`. No engine/tyre/Doppler synthesis or unrelated vehicle, camera, UI or gameplay changes were included.
+
+Review verification: 85 tool tests pass; 16 ambience routing/behaviour assertions pass. All 27 paired fixtures were re-rendered, and corrected before/after spectrograms were inspected. The unrelated in-progress physics failure was left to its owner as requested; npm test was not rerun for this gain-only correction. The earlier three-map full-game smoke had zero errors; this gain-only revision adds browser offline renders on all three maps without repeating the full-game smoke. Subjective listening remains unverified because this harness cannot receive audio.
