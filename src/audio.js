@@ -213,14 +213,14 @@ export function tyreParameters(w, speed, surface = 'asphalt', nominalLoad = 3500
   const kerb = /kerb|curb|pavement|rumble/.test(surface);
   const grain = /gravel|rock/.test(surface) ? 1 : /sand|dirt/.test(surface) ? 0.65 : soft ? 0.35 : 0;
   const scrub = clampAudio((slip - 0.65) / 0.3);
-  const squeal = Math.pow(clampAudio((slip - 0.98) / 0.55), 0.7);
+  const squeal = Math.pow(clampAudio((slip - 0.98) / 0.55), 1.15);
   const signedSlip = (w.sx ?? 0) * (w.vgx < 0 ? -1 : 1);
   const lock = signedSlip < -1 && patch > 2;
   return {
     roll: load * clampAudio(patch / 42) * (soft ? 0.055 : 0.024),
     rollHz: (soft ? 480 : 140) + Math.min(1600, patch * (soft ? 26 : 12)),
-    scrub: load * motion * scrub * (soft ? 0.025 : 0.045),
-    howl: soft ? 0 : load * motion * scrub * 0.025 * (1 - squeal * 0.65),
+    scrub: load * motion * scrub * (soft ? 0.025 : 0.42) * (1 - squeal * 0.55),
+    howl: soft ? 0 : load * motion * scrub * 0.34 * (1 - squeal * 0.7),
     squeal: load * motion * squeal * (soft ? 0.008 : 0.11),
     // Stick/slip resonances rise with sliding speed; locked rubber has a lower, rougher howl.
     pitch: clampAudio(800 + Math.max(0, slip - 0.98) * 1050 + patch * 2 + Math.max(0, signedSlip) * 20 - (lock ? 100 : 0), 700, 2400),
@@ -238,29 +238,36 @@ export class TyreVoice {
     const filter = (type, hz, q = 0.7) => { const n = ctx.createBiquadFilter(); n.type = type; n.frequency.value = hz; n.Q.value = q; return n; };
     const chain = (...nodes) => nodes.slice(1).forEach((n, i) => nodes[i].connect(n));
     const osc = (hz, type = 'sine') => { const n = ctx.createOscillator(); n.type = type; n.frequency.value = hz; n.start(); return n; };
-    const n = ctx.sampleRate * 3, noise = ctx.createBuffer(1, n, ctx.sampleRate), data = noise.getChannelData(0), rand = rng32(817 + index * 333);
+    const n = ctx.sampleRate * 19, noise = ctx.createBuffer(1, n, ctx.sampleRate), data = noise.getChannelData(0), rand = rng32(817 + index * 333);
     let brown = 0;
     for (let i = 0; i < n; i++) { brown = 0.96 * brown + (rand() * 2 - 1) * 0.12; data[i] = brown + (rand() * 2 - 1) * 0.4; }
     // Crossfade the seam once, preserving continuous value/slope during repetition.
     const seam = Math.floor(ctx.sampleRate * 0.04);
     for (let i = 0; i < seam; i++) data[n - seam + i] = data[n - seam + i] * (1 - i / seam) + data[i] * (i / seam);
     this.noise = ctx.createBufferSource(); this.noise.buffer = noise; this.noise.loop = true; this.noise.loopStart = seam / ctx.sampleRate;
-    this.noise.start(0, (index * 0.47 + 0.1) % noise.duration);
+    this.noise.start(0, rand() * noise.duration);
     this.pan = ctx.createStereoPanner(); this.pan.pan.value = (index % 2 ? 1 : -1) * (index < 2 ? 0.58 : 0.38);
     // Rear axle is slightly darker and nearer the centre; preserve axle identity in headphones.
     this.axle = filter('lowpass', index < 2 ? 9500 : 6200); chain(this.axle, this.pan, dest);
     this.roll = gain(); this.rollLP = filter('lowpass', 400); chain(this.noise, this.rollLP, this.roll, this.axle);
-    this.scrub = gain(); this.scrubBP = filter('bandpass', 480, 4); chain(this.noise, this.scrubBP, this.scrub, this.axle);
-    this.howl = gain(); this.howlOsc = osc(380); chain(this.howlOsc, this.howl, this.axle);
+    this.scrubLP = filter('lowpass', 1200, 0.7); this.scrubLP.connect(this.axle);
+    this.scrub = gain(); this.scrubBP = filter('bandpass', 580, 1.8); chain(this.noise, this.scrubBP, this.scrub, this.scrubLP);
+    this.howl = gain(); this.howlBP = filter('bandpass', 460, 3); chain(this.noise, this.howlBP, this.howl, this.scrubLP);
     this.waverRandom = rng32(3081 + index * 731); this.nextWaver = 0; this.waver = 0;
     this.grit = gain(); this.gritBP = filter('bandpass', 2500, 0.6); chain(this.noise, this.gritBP, this.grit, this.axle);
     this.rumble = gain(); this.rumbleOsc = osc(40, 'triangle'); chain(this.rumbleOsc, this.rumble, this.axle);
-    this.squeal = gain(); this.sq1 = osc(700); this.sq2 = osc(1400); this.sq2Gain = gain(0.38);
-    this.sq3 = osc(2100); this.sq3Gain = gain(0.12); chain(this.sq3, this.sq3Gain, this.squeal);
-    chain(this.sq1, this.squeal, this.axle); chain(this.sq2, this.sq2Gain, this.squeal);
-    // Noise-modulated stick/slip avoids a sterile pair of stable synthesizer tones.
-    this.flutterLP = filter('lowpass', 48); this.flutter = gain(85);
-    chain(this.noise, this.flutterLP, this.flutter); this.flutter.connect(this.sq1.frequency); this.flutter.connect(this.sq2.frequency);
+    // Rubber is a cluster of noisy stick/slip modes, not three clean sine oscillators.
+    // Each harmonic has two detuned, independently wandering resonances per contact patch.
+    this.squeal = gain(); this.squealFlutter = gain(1); chain(this.squeal, this.squealFlutter, this.axle);
+    this.squealModes = [];
+    for (const [harmonic, level] of [[1, 15.2], [2, 6.4], [3, 1.92]]) {
+      for (const detune of [0.977, 1.026]) {
+        const band = filter('bandpass', 850 * harmonic * detune, 11 + harmonic * 2), amp = gain(level);
+        chain(this.noise, band, amp, this.squeal);
+        this.squealModes.push({ band, harmonic, detune, wander: 0 });
+      }
+    }
+    this.nextFlutter = 0; this.nextChatter = 0; this.chatterUntil = 0;
     this.chirp = gain(); this.chirpOsc = osc(1200); chain(this.chirpOsc, this.chirp, this.axle);
   }
   attachRecording(sound) {
@@ -271,23 +278,32 @@ export class TyreVoice {
   }
   set(w, speed, surface, nominalLoad, now) {
     const p = tyreParameters(w, speed, surface, nominalLoad);
-    for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble', 'squeal']) this[key].gain.setTargetAtTime(p[key], now, key === 'squeal' ? 0.025 : 0.055);
+    for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble', 'squeal']) this[key].gain.setTargetAtTime(p[key], now, key === 'squeal' ? 0.085 : 0.055);
     if (this.recording) {
       this.recordGain.gain.setTargetAtTime(p.squeal * 0.85, now, 0.035);
       this.recording.playbackRate.setTargetAtTime(clampAudio(p.pitch / 850, 0.7, 1.65) * (0.97 + this.index * 0.018), now, 0.07);
     }
     this.rollLP.frequency.setTargetAtTime(p.rollHz, now, 0.09);
-    this.scrubBP.frequency.setTargetAtTime(320 + p.slip * 65 + Math.abs(speed) * 5, now, 0.06);
-    // Aperiodic, slowly interpolated micro-slip: no fixed vibrato LFO or grain cadence.
+    this.scrubBP.frequency.setTargetAtTime(360 + Math.min(1.4, p.slip) * 180 + Math.abs(speed) * 3, now, 0.06);
+    // Renew random targets at 4–12 Hz; no oscillator LFO, repeated grain clock or fixed vibrato.
     if (now >= this.nextWaver) {
-      this.waver = (this.waverRandom() * 2 - 1) * 12;
-      this.nextWaver = now + 0.07 + this.waverRandom() * 0.16;
+      this.waver = (this.waverRandom() * 2 - 1) * 0.038;
+      for (const mode of this.squealModes) mode.wander = (this.waverRandom() * 2 - 1) * 0.012;
+      this.noise.playbackRate.setTargetAtTime(0.96 + this.waverRandom() * 0.08, now, 0.25);
+      this.nextWaver = now + 1 / (4 + this.waverRandom() * 8);
     }
-    const fundamental = p.pitch * (0.985 + this.index * 0.011) + this.waver;
-    this.howlOsc.frequency.setTargetAtTime(270 + Math.min(1.1, p.slip) * 240 + Math.abs(speed) * 1.2 + this.waver * 0.4, now, 0.08);
-    this.sq1.frequency.setTargetAtTime(fundamental, now, 0.045);
-    this.sq2.frequency.setTargetAtTime(fundamental * 2.003, now, 0.045);
-    this.sq3.frequency.setTargetAtTime(fundamental * 3.008, now, 0.045);
+    const fundamental = p.pitch * (0.985 + this.index * 0.011) * (1 + this.waver);
+    this.howlBP.frequency.setTargetAtTime((300 + Math.min(1.1, p.slip) * 240 + Math.abs(speed) * 1.2) * (1 + this.waver * 0.5), now, 0.06);
+    for (const mode of this.squealModes) mode.band.frequency.setTargetAtTime(fundamental * mode.harmonic * mode.detune * (1 + mode.wander), now, 0.018);
+    if (now >= this.nextFlutter) {
+      if (now >= this.nextChatter) {
+        this.chatterUntil = now + 0.015 + this.waverRandom() * 0.025;
+        this.nextChatter = now + 0.07 + this.waverRandom() * 0.3;
+      }
+      const flutter = (0.7 + this.waverRandom() * 0.55) * (now < this.chatterUntil ? 0.35 : 1);
+      this.squealFlutter.gain.setTargetAtTime(flutter, now, 0.008);
+      this.nextFlutter = now + 0.018 + this.waverRandom() * 0.035;
+    }
     this.rumbleOsc.frequency.setTargetAtTime(p.rumbleHz, now, 0.035);
     if (p.lock && !this.locked) {
       this.chirp.gain.cancelScheduledValues(now); this.chirp.gain.setValueAtTime(0, now);

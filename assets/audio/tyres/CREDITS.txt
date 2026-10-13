@@ -19,10 +19,21 @@ Audition renders also contain existing engine/world/music recordings; see
 Reproduce locally: node tools/build_sound_audio.mjs, open http://localhost:8015.
 WAVs, spectrograms and EBU R128 measurements are written to .scratch/sound-v2/.
 
-Grip progression: subdued 450–570 Hz howl at 65–98% of peak combined slip;
-above peak, a rising 0.8–2.4 kHz fundamental and second/third harmonics with
-aperiodic micro-slip wavering. The CC0 recording stays underneath as texture.
+Grip progression: band-limited noise/howl around 450–700 Hz grows through
+65–95% of peak combined slip, receding as squeal builds progressively above peak.
+A 1.2 kHz low-pass keeps the scrub soft and below the squeal modes.
+Squeal uses six detuned narrow noise resonances per wheel, covering a rising
+fundamental and second/third harmonics. Random 4–12 Hz pitch motion (+/-3.8%),
+amplitude flutter and short irregular stick/slip dips roughen the modes; there
+are no sustained sine tones. Each wheel excites these modes from an independent
+19-second noise source with a random starting offset and a drifting playback rate.
+The CC0 rubber recording stays underneath as texture. No new recordings added.
+
 corner-sweep.wav/png sweeps normalized slip 0–150% over eight seconds.
-For signal regression, also renderSoundV2({scenarios:['corner-sweep'], isolate:'tyres'})
-and run python tools/build_sound_audio_analysis.py (numpy/scipy). It checks
-6–9 kHz envelope repetition and the rising fundamental/second harmonic in WAVs.
+Call the exported renderTyreReview() for all sweep/solo pairs, or
+renderSoundV2({scenarios:['corner-sweep'], isolate:layer}) for solo WAV/PNG
+pairs; layer can be tyre-roll, tyre-scrub, tyre-squeal, tyre-recording, wind,
+engine, engine-low or engine-mid. The tyres option includes all wheel/wind layers.
+Use suffix:'before' to retain a diagnostic comparison. Output goes to
+.scratch/sound-v2/. For WAV signal regression, run
+python tools/build_sound_audio_analysis.py (numpy/scipy).

@@ -2,7 +2,15 @@
  * node tools/build_sound_audio.mjs → open http://localhost:8015, then run the button.
  * Uses the production graph in OfflineAudioContext, saves PCM WAVs and ffmpeg spectrograms/LUFS.
  */
-export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-limit', 'handbrake-slide', 'rival-pass-150kmh', 'menu-duck', 'normal-race', 'corner-sweep'], isolate = null } = {}) {
+export async function renderTyreReview({ suffix = '' } = {}) {
+  const report = [];
+  for (const isolate of [null, 'tyres', 'tyre-roll', 'tyre-scrub', 'tyre-squeal', 'tyre-recording', 'wind', 'engine', 'engine-low', 'engine-mid']) {
+    report.push(...await renderSoundV2({ scenarios: ['corner-sweep'], isolate, suffix }));
+  }
+  return report;
+}
+
+export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-limit', 'handbrake-slide', 'rival-pass-150kmh', 'menu-duck', 'normal-race', 'corner-sweep'], isolate = null, suffix = '' } = {}) {
   const { Audio, tyreParameters } = await import('../src/audio.js');
   const { spatialAudio } = await import('../src/world-sounds.js');
   const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
@@ -24,9 +32,27 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
     const seconds = 8, sr = 44100, ctx = new OfflineAudioContext(2, seconds * sr, sr), a = new Audio();
     a.musicOn = false;
     a.start({ context: ctx, recordings: true, radio: false });
-    if (isolate) a.setVolumes({ engine: isolate === 'engine' ? 0.85 : 0, tyres: isolate === 'tyres' ? 0.8 : 0, ambience: isolate === 'ambience' ? 0.5 : 0, traffic: 0, music: 0 });
+    if (isolate) a.setVolumes({ engine: isolate.startsWith('engine') ? 0.85 : 0, tyres: isolate.startsWith('tyre') || isolate === 'wind' ? 0.8 : 0, ambience: isolate === 'ambience' ? 0.5 : 0, traffic: 0, music: 0 });
+    if (isolate) for (const [name, bus] of Object.entries(a.mix.buses)) {
+      // Hard-mute unused buses before rendering: the normal settings fade leaks the first 150 ms.
+      if (a.mix.volumes[name] === 0) { bus.gain.cancelScheduledValues(0); bus.gain.value = 0; }
+    }
     const spec = { id: 'mini', engine: 'turbo4', idle: 850, redline: 6800 };
     a.setEngine(spec); await Promise.all([a.engineReady, a.worldReady]); a.cancelIgnition();
+    // Disconnect only output stages: solo renders retain the exact production synthesis/automation.
+    if (isolate?.startsWith('tyre-') || isolate === 'wind') {
+      const selected = { 'tyre-roll': ['roll'], 'tyre-scrub': ['scrub', 'howl'], 'tyre-squeal': ['squeal', 'chirp'], 'tyre-recording': ['recordGain'] }[isolate] || [];
+      for (const voice of a.tyres) for (const name of ['roll', 'scrub', 'howl', 'squeal', 'chirp', 'recordGain', 'grit', 'rumble']) if (!selected.includes(name)) voice[name]?.disconnect();
+      if (isolate !== 'wind') { a.t.windG.disconnect(); a.t.whistleG.disconnect(); }
+    }
+    if (isolate?.startsWith('engine-')) {
+      if (isolate === 'engine-aux') a.engineVoice.out.disconnect();
+      else {
+        const layer = { 'engine-idle': 0, 'engine-low': 1, 'engine-mid': 2, 'engine-high': 3 }[isolate];
+        a.engineVoice.gains.forEach((gain, i) => { if (i !== layer) gain.disconnect(); });
+        for (const name of ['intakeG', 'turboG', 'whineG', 'nitroG']) a.x[name].disconnect();
+      }
+    }
     if (scenario === 'normal-race') {
       const music = ctx.createBufferSource();
       music.buffer = await ctx.decodeAudioData(await (await fetch('/assets/audio/music/greek-dance.mp3')).arrayBuffer());
@@ -63,7 +89,7 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
     if (duckDb != null) assert(duckDb < -15 && duckDb > -21, `Duck is ${duckDb} dB`);
     if (isPass) assert(dopplerMax > 1.1 && dopplerMin < 0.91, 'Pass has no audible Doppler');
     const row = { scenario, peak, rms: Math.sqrt(energy / buffer.length / 2), duckDb, ...(isPass ? { dopplerMin, dopplerMax } : {}) };
-    const saved = await fetch(`/render/${scenario}${isolate ? '-' + isolate : ''}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav(buffer) });
+    const saved = await fetch(`/render/${scenario}${isolate ? '-' + isolate : ''}${suffix ? '-' + suffix : ''}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav(buffer) });
     assert(saved.ok, `Save failed: ${saved.status}`);
     const measurement = await saved.json();
     if (scenario === 'normal-race') {
