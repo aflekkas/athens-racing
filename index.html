@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,600;1,700;1,800;1,900&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet" />
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" id="ui-kit-css" href="./src/ui/ui.css" />
 <link rel="stylesheet" href="./style.css" />
 <link rel="stylesheet" href="./src/multiplayer.css" />
 <link rel="stylesheet" href="./src/menu.css" />
@@ -56,18 +57,24 @@
 
 <div id="credit">Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Elevation EU-DEM v1.1 · <a href="./assets/audio/engines/CREDITS.txt" target="_blank" rel="noopener">Sound credits</a></div>
 
-<!-- title / loading -->
-<div id="loading">
-  <div class="lgrid">
-    <div class="ltitle">
-      <div class="kick">ATHENS RIVIERA · VOULIAGMENI <span>▶</span> LOMVARDA</div>
-      <h1>PARALIAKI</h1>
-      <div class="tag">A 10.3 KM SPRINT ALONG THE SARONIC GULF SHORE</div>
-      <div id="lbar"><div id="lfill"></div></div>
-      <div id="lstat">LOADING MAP DATA</div>
+<!-- loading screen (first boot and every map switch): src/ui/loading.js -->
+<div id="loading" class="open" role="status" aria-live="polite" aria-busy="true">
+  <div class="ld-art" id="ldArt"></div>
+  <div class="ld-shade"></div>
+  <div class="ld-wrap">
+    <div class="ld-brand"><span class="wordmark wordmark--sm"><b>ATHENS</b><b>STREET RACERS</b></span></div>
+    <div class="ld-map">
+      <div class="kick"><span id="ldKind">POINT TO POINT</span> <span class="ld-dot"></span> <span id="ldLen">10.3 KM</span></div>
+      <h1 id="ldName">ATHENS RIVIERA</h1>
+      <p id="ldSub">Vouliagmeni → Lomvarda</p>
     </div>
-    <canvas id="overview" width="560" height="640"></canvas>
+    <div class="ld-foot">
+      <div class="ld-row"><span id="lstat">LOADING MAP DATA</span><b id="lpct">0%</b></div>
+      <div class="progress ld-bar" id="lbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="--p:0"><i class="progress__fill"></i></div>
+      <p class="ld-tip"><span class="ld-tip__k">TIP</span><span id="ldTip" class="in">Running a red light adds a time penalty.</span></p>
+    </div>
   </div>
+  <canvas id="overview" width="560" height="640" hidden></canvas>
 </div>
 
 <!-- results / garage -->

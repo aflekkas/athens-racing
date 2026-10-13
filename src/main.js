@@ -29,6 +29,7 @@ import { initWeather, updateWeather, disposeWeather } from './weather.js';
 import { buildMapWorld } from './map-world.js';
 import { SCENERY_TIERS, updateSceneryLod } from './scenery.js';
 import { initReplay } from './replay-mode.js';
+import { loading } from './ui/loading.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -37,7 +38,7 @@ const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
 
 function fail(e) { console.error(e); const el = $('err'); el.style.display = 'block'; el.textContent = 'Error: ' + (e && e.message || e); }
 window.addEventListener('error', (e) => fail(e.error || e.message));
-const lstat = (t, f) => { $('lstat').textContent = t; if (f !== undefined) $('lfill').style.width = (f * 100) + '%'; };
+const lstat = (t, f) => loading.progress(t, f); // the loading screen (src/ui/loading.js)
 
 // ------------------------------------------------------------------ renderer
 const canvas = $('c');
@@ -94,6 +95,7 @@ const input = controls.state;
 const T0 = performance.now(); const tlog = (n) => { if (Q.has('debug')) console.log(n, Math.round(performance.now() - T0), 'abs', Math.round(performance.now())); };
 async function boot() {
   tlog('boot');
+  loading.show(Q.get('map') || 'riviera');
   lstat('LOADING MAP DATA', 0.05);
   const texReady = loadTextures(); // decodes in parallel with the world building below
   map = await loadMap(undefined, './', Q.get('map') || 'riviera');
@@ -130,7 +132,7 @@ async function boot() {
   tlog('compiled');
   onResize();
   document.body.classList.add('loaded');
-  lstat('READY', 1);
+  lstat('READY', 1); loading.hide();
   multiplayer.loaded = true;
   multiplayer.mapId = map.id || 'riviera';
   multiplayer.trackVersion = trackVersion(map.data.route);
@@ -169,6 +171,7 @@ function bindMapWeather() {
 async function switchMap(id = 'riviera') {
   if (mapSwitch) { await mapSwitch; return switchMap(id); }
   if (map?.id === id) return map;
+  loading.show(id);
   mapSwitch = (async () => {
     const priorState = G.state;
     if (window.__replay?.active) { window.__replay.close(); if (window.__replay.active) window.__replay.close(); }
@@ -209,7 +212,7 @@ async function switchMap(id = 'riviera') {
     last = performance.now();
     return map;
   })();
-  try { return await mapSwitch; } finally { mapSwitch = null; }
+  try { return await mapSwitch; } finally { mapSwitch = null; loading.hide(); }
 }
 window.__switchMap = switchMap;
 window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: scene.children.filter(o => o.name.startsWith('map-world:')).map(o => o.name), lastDisposal: lastMapDisposal, memory: { ...renderer.info.memory }, weatherWidgets: document.querySelectorAll('#police-hud, #replay-controls').length });
