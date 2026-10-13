@@ -74,7 +74,10 @@ licensed Z4 B58 / Octavia EA288 / MINI B48 ignition recordings, plus sustained
 on-load and off-load dyno RPM takes. Do not use game-ripped mod audio as masters.
 
 Sound v2 runtime playback: MINI layers and other takes shorter than 1.25 seconds
-use three decorrelated grain streams with random source offsets, +/-40% grain
-interval jitter and overlapping equal-power fades. This suppresses
-recurring texture in both the short MINI low take and the longer MINI mid take.
-The shared audio-rate pitch follows RPM and Doppler. No audio asset/licence changed.
+use a cached 24-second granular bed. Random source offsets and +/-40% onset
+jitter retain varied texture. Sine equal-power windows overlap by at least 60%.
+The recorded firing body is phase-aligned and divided by the window sum;
+decorrelated texture is divided by the square root of summed window powers.
+Each summed band receives smooth look-ahead RMS normalization. Circular
+overlap-add keeps the long-bed wrap continuous. Audio-rate pitch follows RPM
+and Doppler. No source audio asset or licence changed.

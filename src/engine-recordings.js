@@ -55,56 +55,100 @@ export function rpmBlend(points, rpm) {
   return points.map((_, k) => k === i ? Math.cos(x * Math.PI / 2) : k === i + 1 ? Math.sin(x * Math.PI / 2) : 0);
 }
 
-/** Decorrelate recorded envelopes with three overlapping grain streams. MINI low's
- * short take and mid's longer take both expose recurring texture when wrapped directly.
- * Every stream uses independent offsets and ±40% timing jitter, with constant-power fades.
- * Scheduling uses audio time from set(), including OfflineAudioContext.
+/** Build a long, phase-coherent granular bed once per decoded take. Random offsets
+ * must not randomize the firing fundamental: equal-power windows alone cannot
+ * prevent destructive interference between correlated engine grains.
  */
-export class GranularEngineLoop {
-  constructor(ctx, buffer, dest, seed = 1) {
-    this.ctx = ctx; this.buffer = buffer; this.nodes = new Set(); this.seed = seed;
-    this.rate = ctx.createConstantSource(); this.rate.offset.value = 1; this.rate.start();
-    this.playbackRate = this.rate.offset; this.out = ctx.createGain(); this.out.connect(dest);
-  }
-  random() { this.seed = (Math.imul(this.seed, 1664525) + 1013904223) >>> 0; return this.seed / 4294967296; }
-  start(now) { this.streams = Array.from({ length: 3 }, () => ({ next: now, fadeIn: 0.008 })); }
-  schedule(now, rate) {
-    if (this.stopped) return;
-    for (const stream of this.streams) {
-      // A stalled frame must not queue expired grains in a burst.
-      if (stream.next < now) { stream.next = now; stream.fadeIn = 0.012; }
-      while (stream.next < now + 0.6) {
-        const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
-        source.buffer = this.buffer; source.loop = true; source.playbackRate.value = 0;
-        this.rate.connect(source.playbackRate); source.connect(gain); gain.connect(this.out);
-        const start = stream.next;
-        const base = Math.max(0.16, Math.min(0.38, this.buffer.duration / Math.max(0.25, rate) * 0.48));
-        const interval = base * (0.6 + this.random() * 0.8); // ±40%, not a regular grain clock
-        const fadeOut = Math.min(0.075, interval * 0.4), end = start + interval + fadeOut;
-        // The incoming fade exactly matches its predecessor, even across the shortest interval.
-        const fadeIn = stream.fadeIn;
-        const rise = new Float32Array(33), fall = new Float32Array(33);
-        for (let i = 0; i < 33; i++) {
-          rise[i] = Math.sin(i / 32 * Math.PI / 2) / Math.sqrt(3);
-          fall[i] = Math.cos(i / 32 * Math.PI / 2) / Math.sqrt(3);
-        }
-        gain.gain.value = 0;
-        gain.gain.setValueCurveAtTime(rise, start, fadeIn);
-        gain.gain.setValueCurveAtTime(fall, end - fadeOut, fadeOut);
-        source.start(start, this.random() * this.buffer.duration); source.stop(end);
-        const node = { source, gain }; this.nodes.add(node);
-        source.onended = () => { this.rate.disconnect(source.playbackRate); source.disconnect(); gain.disconnect(); this.nodes.delete(node); };
-        stream.next = start + interval; stream.fadeIn = fadeOut;
-      }
+const grainBeds = new WeakMap();
+function engineGrainBed(ctx, buffer, rpm, cylinders) {
+  if (grainBeds.has(buffer)) return grainBeds.get(buffer);
+  const sr = buffer.sampleRate, input = buffer.getChannelData(0), size = input.length;
+  const fundamental = rpm * cylinders / 120; // four-stroke firing order
+  // Separate the firing body from the stochastic texture before overlap normalization.
+  const bass = new Float32Array(size), texture = new Float32Array(size);
+  const cutoff = fundamental * 1.6;
+  bass.set(input);
+  // Zero-phase fourth-order crossover: a causal low-pass leaves much of the
+  // fundamental in x-low because of phase delay, defeating body normalization.
+  for (const reverse of [false, true]) for (const q of [.5411961, 1.306563]) {
+    const w = 2 * Math.PI * cutoff / sr, alpha = Math.sin(w) / (2*q);
+    const b0 = (1 - Math.cos(w)) / 2 / (1 + alpha), b1 = 2*b0;
+    const a1 = -2*Math.cos(w)/(1+alpha), a2 = (1-alpha)/(1+alpha);
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (let i = -size*2; i < size; i++) {
+      const wrapped = (i % size + size) % size, index = reverse ? size-1-wrapped : wrapped;
+      const x = bass[index], y = b0*x + b1*x1 + b0*x2 - a1*y1 - a2*y2;
+      x2 = x1; x1 = x; y2 = y1; y1 = y;
+      if (i >= 0) bass[index] = y;
     }
   }
-
-  stop(at) {
-    if (this.stopped) return; this.stopped = true;
-    for (const { source } of this.nodes) source.stop(at);
-    this.rate.stop(at);
+  for (let i = 0; i < size; i++) texture[i] = input[i] - bass[i];
+  let seed = 0x71a5 + Math.round(rpm);
+  const random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+  // An integer number of firing cycles also makes the prepared bed's wrap coherent.
+  const length = Math.round(Math.round(24 * fundamental) * sr / fundamental);
+  const low = new Float32Array(length), high = new Float32Array(length);
+  const weight = new Float32Array(length), power = new Float32Array(length);
+  const grainLength = Math.round(sr * .42), meanHop = sr * .12;
+  const omega = 2 * Math.PI * fundamental / sr;
+  const wrap = i => (i % size + size) % size;
+  // Circular overlap-add carries the final grains across the wrap without a seam.
+  for (let start = 0; start < length; ) {
+    let offset = Math.floor(random() * size);
+    // Measure the local firing phase, then align this random excerpt to audio time.
+    let re = 0, im = 0;
+    const probe = Math.round(sr * .1);
+    for (let j = 0; j < probe; j += 4) {
+      const h = Math.sin(Math.PI * j / probe) ** 2, v = bass[wrap(offset + j)] * h;
+      re += v * Math.cos(omega * j); im -= v * Math.sin(omega * j);
+    }
+    const phase = Math.atan2(im, re), target = omega * start;
+    const correction = Math.atan2(Math.sin(target - phase), Math.cos(target - phase)) / omega;
+    offset += Math.round(correction);
+    for (let j = 0; j < grainLength; j++) {
+      const out = (start + j) % length;
+      const win = Math.sin(Math.PI * j / (grainLength - 1)); // equal-power sine window
+      const source = wrap(offset + j);
+      low[out] += bass[source] * win; high[out] += texture[source] * win;
+      weight[out] += win; power[out] += win * win;
+    }
+    start += Math.round(meanHop * (.6 + .8 * random())); // +/-40%; max hop .168 < half .42
   }
-  disconnect() { this.out.disconnect(); }
+  for (let i = 0; i < length; i++) {
+    low[i] /= Math.max(1e-6, weight[i]); // coherent firing body: normalize amplitude
+    high[i] /= Math.sqrt(Math.max(1e-6, power[i])); // decorrelated texture: normalize power
+  }
+  // Normalize residual source-level changes after summation, not individual grains.
+  // Symmetric look-ahead is possible because preparation precedes playback; no AGC lag.
+  const stabilize = (samples, reference) => {
+    let target = 0; for (const v of reference) target += v*v;
+    target /= reference.length;
+    const radius = Math.round(sr * .04), squared = new Float64Array(length + 2*radius + 1);
+    for (let i = 0; i < length + 2*radius; i++) {
+      const v = samples[(i - radius + length) % length]; squared[i+1] = squared[i] + v*v;
+    }
+    const envelope = new Float32Array(length);
+    for (let i = 0; i < length; i++) envelope[i] = Math.sqrt(target / Math.max(1e-12, (squared[i+2*radius] - squared[i]) / (2*radius)));
+    // Smooth gain itself over 20 ms; retain natural individual combustion pulses.
+    const smooth = Math.round(sr * .01), sums = new Float64Array(length + 2*smooth + 1);
+    for (let i = 0; i < length + 2*smooth; i++) sums[i+1] = sums[i] + envelope[(i-smooth+length)%length];
+    for (let i = 0; i < length; i++) samples[i] *= Math.min(4, (sums[i+2*smooth] - sums[i]) / (2*smooth));
+  };
+  stabilize(low, bass); stabilize(high, texture);
+  const result = ctx.createBuffer(1, length, sr), data = result.getChannelData(0);
+  for (let i = 0; i < length; i++) data[i] = low[i] + high[i];
+  stabilize(data, input); // also account for residual correlation between the two bands
+  grainBeds.set(buffer, result); return result;
+}
+
+export class GranularEngineLoop {
+  constructor(ctx, buffer, dest, rpm = 1800, cylinders = 4) {
+    this.source = ctx.createBufferSource(); this.source.buffer = engineGrainBed(ctx, buffer, rpm, cylinders);
+    this.source.loop = true; this.source.connect(dest); this.playbackRate = this.source.playbackRate;
+  }
+  start(now) { this.source.start(now); }
+  stop(at) { if (!this.stopped) { this.stopped = true; this.source.stop(at); } }
+  disconnect() { this.source.disconnect(); }
 }
 
 export class RecordedEngineVoice {
@@ -117,7 +161,7 @@ export class RecordedEngineVoice {
     for (const sample of bank.loops) {
       const g = ctx.createGain(); g.gain.value = 0; g.connect(this.filter);
       const source = spec.id === 'mini' || sample.buffer.duration < 1.25
-        ? new GranularEngineLoop(ctx, sample.buffer, g, 0x71a5 + this.sources.length * 1337 + Math.floor(Math.random() * 65536))
+        ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, spec.engine === 'turbo6' ? 6 : 4)
         : ctx.createBufferSource();
       if (!(source instanceof GranularEngineLoop)) { source.buffer = sample.buffer; source.loop = true; source.connect(g); }
       source.start(ctx.currentTime, Math.random() * sample.buffer.duration);
@@ -136,7 +180,6 @@ export class RecordedEngineVoice {
       // Clamp only outside the driving envelope (e.g. corrupt telemetry).
       const rate = Math.max(.25, Math.min(4, r / this.bank.loops[i].rpm * dop));
       source.playbackRate.setTargetAtTime(rate, now, tc);
-      if (weights[i] > 0.001) source.schedule?.(now, rate);
       this.gains[i].gain.setTargetAtTime(weights[i], now, .06);
     });
     const rn = Math.min(1, r / this.spec.redline);

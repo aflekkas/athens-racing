@@ -10,7 +10,7 @@ export async function renderTyreReview({ suffix = '' } = {}) {
   return report;
 }
 
-export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-limit', 'handbrake-slide', 'rival-pass-150kmh', 'menu-duck', 'normal-race', 'corner-sweep'], isolate = null, suffix = '' } = {}) {
+export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-limit', 'handbrake-slide', 'rival-pass-150kmh', 'menu-duck', 'normal-race', 'corner-sweep'], isolate = null, suffix = '', durationSeconds = 8, steadyRpm = 3600 } = {}) {
   const { Audio, tyreParameters } = await import('../src/audio.js');
   const { spatialAudio } = await import('../src/world-sounds.js');
   const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
@@ -29,7 +29,7 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
   assert(spatialAudio(slew, { vr: -100 }, 1 / 60).doppler >= initial - 0.031, 'Doppler jumps');
   const report = [];
   for (const scenario of scenarios) {
-    const seconds = 8, sr = 44100, ctx = new OfflineAudioContext(2, seconds * sr, sr), a = new Audio();
+    const seconds = durationSeconds, sr = 44100, ctx = new OfflineAudioContext(2, seconds * sr, sr), a = new Audio();
     a.musicOn = false;
     a.start({ context: ctx, recordings: true, radio: false });
     if (isolate) a.setVolumes({ engine: isolate.startsWith('engine') ? 0.85 : 0, tyres: isolate.startsWith('tyre') || isolate === 'wind' ? 0.8 : 0, ambience: isolate === 'ambience' ? 0.5 : 0, traffic: 0, music: 0 });
@@ -67,7 +67,7 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
       if (scenario === 'corner-limit') for (let j = 0; j < 4; j++) Object.assign(wheels[j], { sy: (j < 2 ? 1.25 : 1.05) * envelope, Fz: j % 2 ? 4800 : 2200 });
       if (scenario === 'handbrake-slide') for (let j = 0; j < 4; j++) Object.assign(wheels[j], { sy: (j < 2 ? 0.85 : 3.2) * envelope, sx: j < 2 ? 0 : -6 * envelope, vw: j < 2 ? 27.78 : 27.78 * (1 - envelope) });
       const x = (time - 4) * (150 / 3.6), distance = Math.hypot(x, 5), closing = -x * (150 / 3.6) / distance;
-      a.update({ audioTime: time, dt: 1 / 60, rpm: isPass ? 850 : 3600, redline: 6800, load: isPass ? 0 : 0.5, speed: isPass ? 0 : 27.78,
+      a.update({ audioTime: time, dt: 1 / 60, rpm: isPass ? 850 : steadyRpm, redline: 6800, load: isPass ? 0 : 0.5, speed: isPass ? 0 : 27.78,
         gear: 3, gearRatio: 1.3, wheels: isPass ? wheels.map(w => ({ ...w, vw: 0, vgx: 0 })) : wheels,
         surfaces: ['asphalt', 'asphalt', 'asphalt', 'asphalt'], nominalLoad: 3500, open: true,
         menuOpen: scenario === 'menu-duck' && time >= 3 && time < 6,
