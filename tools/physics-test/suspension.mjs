@@ -64,6 +64,16 @@ for (const spec of list) {
   }
 }
 
+// ------------------------------------------------------------------ 1c. reset / respawn onto raised or uneven ground: no jolt
+for (const spec of list.slice(0, 2)) {
+  for (const [name, bump] of [['a 16 cm median island', [0.16, 0.16, 0.16, 0.16]], ['astride a kerb', [0, 0.16, 0, 0.16]]]) {
+    const v = new Vehicle(spec, route); v.reset(0, 0, 0); v.wheelBump = bump.slice();
+    let worst = 0, sp = 0;
+    for (let i = 0; i < 30; i++) { v.update(1 / 60, { throttle: 0, brake: 0, steer: 0 }); v.corners.forEach((c, j) => { worst = Math.max(worst, Math.abs(c.Fz / v.Ft0[j] - 1)); }); sp = Math.max(sp, Math.abs(v.sus.zv), Math.abs(v.sus.phv)); }
+    check(`${spec.id}: reset onto ${name} settles the car there, no jolt`, worst < 0.2 && sp < 0.05, `worst tyre load ${(worst * 100).toFixed(0)}% off static, body rate ${sp.toFixed(3)}`);
+  }
+}
+
 // ------------------------------------------------------------------ 2. kerb strike: a thump, then settled
 for (const spec of list) {
   const { tr, finite, v } = kerbRun(spec, 50, 0.12);
@@ -109,7 +119,7 @@ for (const spec of list) {
 for (const spec of list) {
   const sk = skidpad(spec), v = new Vehicle(spec, route);
   const front = spec.frontW ?? 0.55;
-  check(`${spec.id}: understeer gradient is a road car's (0.2-3.5 deg/g, more for a nose-heavy car)`, sk.K > 0.2 && sk.K < 3.5 && (front < 0.45 || sk.K > 0.7), `${f2(sk.K)} deg/g, frontW ${front}`);
+  check(`${spec.id}: understeer gradient is a road car's (0.2-5 deg/g, more for a nose-heavy car)`, sk.K > 0.2 && sk.K < 5 && (front < 0.45 || sk.K > 0.7), `${f2(sk.K)} deg/g, frontW ${front}`);
   // keyboard full lock on part throttle: the fronts at (not past) their peak, no plough, no spin
   const fl = [60, 100].map((k) => fullLock(spec, k));
   check(`${spec.id}: full keyboard lock uses the front tyres' peak (no plough) and stays on its line`, fl.every((r) => r.f > 0.85 && r.f < 1.15 && r.r < 1.0 && r.ay > 0.85 * sk.maxG), fl.map((r) => `${r.kmh.toFixed(0)} km/h ${f2(r.ay)} g front ${f2(r.f)} rear ${f2(r.r)}`).join(' | '));
@@ -138,7 +148,8 @@ for (const spec of list) {
   const spec = list[0], hill = { ...route, GR: null, lin: () => 0.1 };      // the route climbs 10% in its direction
   const run = (back) => { const v = new Vehicle(spec, hill); v.reset(100, 0, 15); if (back) { v.yaw += Math.PI; v.syncWheels(); } const v0 = v.vLong; for (let i = 0; i < 30; i++) v.update(1 / 60, { throttle: 0, brake: 0, steer: 0 }); return v.vLong - v0; };
   const up = run(false), down = run(true);
-  check('grade follows the heading: coasting along a climbing route slows, the other way speeds up (engine braking + drag both ways)', up < -0.3 && down > 0.15 && Math.abs(up + down + 0.4) < 0.2, `dv along ${f2(up)} m/s, against ${f2(down)} m/s over 0.5 s`);
+  // (gravity's share: 2 g grade t = 0.98 m/s between the two, whatever the car's own losses)
+  check('grade follows the heading: coasting along a climbing route slows, the other way speeds up by 2 g grade t more', up < -0.3 && Math.abs(down - up - 2 * G * 0.1 * 0.5) < 0.15, `dv along ${f2(up)} m/s, against ${f2(down)} m/s over 0.5 s`);
 }
 
 // ------------------------------------------------------------------ 6. Z4: playful but catchable

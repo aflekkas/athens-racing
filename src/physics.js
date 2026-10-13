@@ -364,7 +364,16 @@ export class Vehicle {
     this.Ft0 = this.Fs0.map((f) => f + mu * G);
   }
   resetSuspension() {
-    this.sus = { z: 0, zv: 0, th: 0, thv: 0, ph: 0, phv: 0, zu: [0, 0, 0, 0], zuv: [0, 0, 0, 0], r: [0, 0, 0, 0], rv: [0, 0, 0, 0], d: [0, 0, 0, 0], Ft: this.Ft0.slice() };
+    this.sus = { z: 0, zv: 0, th: 0, thv: 0, ph: 0, phv: 0, zu: [0, 0, 0, 0], zuv: [0, 0, 0, 0], r: [0, 0, 0, 0], rv: [0, 0, 0, 0], d: [0, 0, 0, 0], Ft: this.Ft0.slice(), fresh: true };
+  }
+  /** put the suspension at rest on road inputs r[4]: wheels on them, the body on the plane they make */
+  settleSuspension(r) {
+    const S = this.sus, t = this.track;
+    for (let i = 0; i < 4; i++) { S.r[i] = r[i]; S.rv[i] = 0; S.zu[i] = r[i]; S.zuv[i] = 0; S.d[i] = 0; S.Ft[i] = this.Ft0[i]; }
+    S.z = (r[0] + r[1] + r[2] + r[3]) / 4;
+    S.th = ((r[0] + r[1]) - (r[2] + r[3])) / 2 / this.wb;
+    S.ph = ((r[1] + r[3]) - (r[0] + r[2])) / 2 / t;
+    S.zv = S.thv = S.phv = 0; S.fresh = false;
   }
   /** an outside shove to the body (walls, landings): velocity changes in heave (m/s), pitch and roll (rad/s) */
   bodyKick(heave = 0, pitch = 0, roll = 0) {
@@ -560,6 +569,10 @@ export class Vehicle {
     // route's grade projected on the car's heading, so driving the route backwards climbs what the route descends
     let gradeNow = this.gradeG;
     if (gradeNow === undefined) { const fr = route.frame(this.s, this._fg || (this._fg = {})); gradeNow = route.lin(route.GR, this.s) * (-Math.sin(this.yaw) * fr.tx - Math.cos(this.yaw) * fr.tz); }
+    // first step after a reset / respawn / teleport: settle the car on the ground it was put on (wheels on their road
+    // inputs, the body on the plane through them, at rest) instead of dropping it onto a kerb or median from flat.
+    // With ground.js, wait until it has reported the wheels' ground (wheelBump)
+    if (this.sus.fresh && (wb || !this.ground)) this.settleSuspension(rIn);
     this.stepSuspension(dt, clamp(this.axRaw + G * gradeNow, -16, 12), clamp(this.ayRaw, -16, 16), gEff, rIn, vt);
     for (let i = 0; i < 4; i++) C4[i].Fz += DF * (i < 2 ? aeroF : 1 - aeroF) / 2; // downforce straight onto the tyres
     const Fz0 = this.m * G * 0.25; // one nominal tyre load: lightly loaded tyres have the higher friction coefficient
