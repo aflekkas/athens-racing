@@ -28,7 +28,7 @@ export class EventMarkers {
     // fixed gantries face the other way and say the opposite, so we add ours alongside)
     if (r.reverse || !fixedAt(r.s0)) this.arch(r.s0, 'START', '#ff3d2e', r.dir, r.reverse ? 6 : 0);
     if (r.reverse || !fixedAt(r.s1)) this.arch(r.s1, 'FINISH', '#f2f2f2', r.dir, r.reverse ? -6 : 0);
-    for (const [i, t] of r.traps.entries()) this.camera(t.s, i + 1, r.dir);
+    for (const [i, t] of (r.traps || []).entries()) this.camera(t.s, i + 1, r.dir);
   }
   arch(s, text, tint, dir, offset = 0) {
     s += offset * dir;
