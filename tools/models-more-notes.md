@@ -1,0 +1,9 @@
+# Additional selectable Greek-road cars
+
+All geometry is original procedural work in `src/player-road-cars.js`; photographs are reference-only, stored with their URLs in `.scratch/models-more/refs/sources.json`. No reference photograph is used as a game texture. Power is in kW in the catalogue (PS/CV in the display names); torque is Nm, dimensions metres, mass kg. Full torque curves, static axle loads, tyre friction, ride/damping frequencies and shift timing are simulation estimates unless stated otherwise.
+
+## MINI John Cooper Works F56 (`mini_jcw`)
+
+2015 European six-speed manual hatchback, **170 kW / 231 PS, 320 Nm**, 1205 kg DIN, FWD, 246 km/h. Dimensions 3.874 × 1.727 × 1.414 m, wheelbase 2.495 m, 205/45 R17 tyres. BMW's [March 2015 specification sheet](https://www.press.bmwgroup.com/global/article/attachment/T0210262EN/303092) supplies the dimensions, mass, output, 3.824 final drive, all six manual ratios, tyres and 0.71 m² CdA. [Launch press kit](https://www.press.bmwgroup.com/global/article/detail/T0197651EN/the-new-mini-john-cooper-works?language=en) and [interior press image](https://www.press.bmwgroup.com/global/photo/detail/P90182009/mini-john-cooper-works-05/2015?language=en) support the closed roof, round light modules, bigger brake intakes, centre exhaust, spoiler, round centre console and toggles. [F56 JCW reference photograph](https://commons.wikimedia.org/wiki/File:Mini_F56_JCW_IMG_0927.jpg).
+
+The model uses the existing four-corner steering/spin/suspension hierarchy, player cabin and driver integration, seated live mirror cameras, independent lamp materials, Greek plates, per-instance paint, deformable/detachable damage parts and near/medium/far LODs. `playerDetail:true` opts additional catalogue vehicles into this pipeline. Both multiplayer backends derive their accepted IDs from CARS: the server reads the source, the Worker consumes `tools/prepare-deploy.mjs`'s generated `.deploy/catalogue.json`.
