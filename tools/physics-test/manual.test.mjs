@@ -19,7 +19,7 @@ test('manual shifts complete sequentially; reject bounds, cooldown and unsafe do
 
 test('manual holds gear against auto up/down shifts and cuts torque at the limiter', () => {
   const v = new Vehicle(spec, route); v.setManual(true); v.reset(0, 0, 24); v.gear = 1; v.syncWheels();
-  v.update(1 / 240, drive); assert.equal(v.limiter, true); assert.equal(v.engT, 0); assert.equal(v.pendingGear, 0);
+  v.update(1 / 240, drive); assert.equal(v.limiter, true); assert.ok(v.engT <= 0); assert.equal(v.pendingGear, 0);
   run(v, 120); assert.equal(v.gear, 1); assert.equal(v.pendingGear, 0);
   v.reset(0, 0, 8); v.gear = 4; run(v, 60, { throttle: 0, brake: 0.4, steer: 0 }); assert.equal(v.gear, 4);
 });
@@ -35,4 +35,56 @@ test('explicit automatic mode is bit-identical to the default and resumes auto s
   }
   b.reset(0, 0, 30); b.setManual(true); b.syncWheels(); run(b, 30); assert.equal(b.gear, 1);
   b.setManual(false); run(b, 90); assert.ok(b.gear > 1);
+});
+
+test('manual-only player ignores auto preference, holds the limiter and emits shift animation events', () => {
+  const v = new Vehicle({ ...spec, transmission: 'manual' }, route);
+  assert.equal(v.setManual(false), true);
+  v.reset(0, 0, 24); v.syncWheels(); v.update(1 / 240, drive);
+  assert.equal(v.limiter, true); assert.ok(v.engT <= 0);
+  let cuts = 0, firing = 0, low = Infinity, high = 0;
+  for (let i = 0; i < 600; i++) {
+    v.update(1 / 60, drive); cuts += +v.limiter; firing += +!v.limiter;
+    if (i > 120) { low = Math.min(low, v.rpm); high = Math.max(high, v.rpm); }
+    assert.equal(v.gear, 1); assert.equal(v.pendingGear, 0);
+  }
+  assert.ok(cuts > 0 && firing > 0 && high > low + 100, 'fuel-cut limiter cycles rather than upshifting');
+  assert.equal(v.shiftManual(1), true);
+  assert.deepEqual({ ...v.gearChangeEvent, serial: 1 }, { serial: 1, from: 1, to: 2, direction: 1, duration: spec.shiftT, manual: true });
+  const serial = v.gearChangeEvent.serial; v.shiftEvent = 0; run(v, 45);
+  assert.equal(v.gear, 2); assert.equal(v.gearChangeEvent.serial, serial);
+  v.setManual(false); assert.equal(v.manual, true);
+});
+
+test('auto-only rejects the M toggle and manual preference, but accepts safe paddle shifts', async () => {
+  const { toggleTransmission } = await import('../../src/transmission.js');
+  const v = new Vehicle({ ...spec, transmission: 'auto' }, route);
+  assert.equal(v.setManual(true), false);
+  const gear = v.gear; assert.equal(toggleTransmission(v).locked, true);
+  assert.equal(v.manual, false); assert.equal(v.gear, gear);
+  assert.equal(v.shiftManual(1), true); run(v, 45, { throttle: 0, brake: 0, steer: 0 });
+  assert.equal(v.gear, 2); assert.equal(v.manual, false);
+});
+
+test('AI driving a manual-only chassis is identical to the existing automatic box', () => {
+  const ai = new Vehicle({ ...spec, transmission: 'manual' }, route), auto = new Vehicle(spec, route);
+  assert.equal(ai.manual, false); assert.equal(ai.setManual(true, { ai: true }), false);
+  for (let i = 0; i < 360; i++) {
+    ai.update(1 / 60, drive); auto.update(1 / 60, drive);
+    assert.deepEqual([ai.vLong, ai.rpm, ai.gear, ai.pendingGear], [auto.vLong, auto.rpm, auto.gear, auto.pendingGear]);
+  }
+  assert.ok(ai.gear > 1);
+});
+
+test('choice mode toggles; switching chassis reapplies locks; HUD cue respects reverse and top gear', async () => {
+  const { carTransmission, toggleTransmission, gearFeedback } = await import('../../src/transmission.js');
+  const v = new Vehicle(spec, route); v.setManual(false);
+  assert.equal(carTransmission(spec), 'both'); assert.equal(toggleTransmission(v).locked, false); assert.equal(v.manual, true);
+  v.setSpec({ ...spec, transmission: 'auto' }); assert.equal(v.manual, false);
+  v.setSpec({ ...spec, transmission: 'manual' }); assert.equal(v.manual, true);
+  const st = { manual: true, rpm: 6900, redline: 7000, gearLabel: '1', canUpshift: true };
+  assert.equal(gearFeedback(st).band, 'red'); assert.equal(gearFeedback(st).upshift, true);
+  assert.equal(gearFeedback({ ...st, gearLabel: 'R' }).upshift, false);
+  assert.equal(gearFeedback({ ...st, canUpshift: false }).upshift, false);
+  assert.equal(gearFeedback({ ...st, rpm: 5500 }).band, 'green');
 });

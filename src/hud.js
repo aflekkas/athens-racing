@@ -1,6 +1,8 @@
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
+import { GearboxHud } from './gearbox-hud.js';
+import { carTransmission } from './transmission.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 
 const $ = (id) => document.getElementById(id);
@@ -71,6 +73,7 @@ export class Hud {
     this.el.mapLabel.textContent = map.definition?.name || route.from;
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
+    this.gearbox = new GearboxHud(this.tacho.parentElement);
     this.raceLen = route.finish - route.start;
     // ---- land/sea raster from the terrain grid (10 m per pixel)
     const { GX, GZ, H, C } = terrain;
@@ -181,6 +184,7 @@ export class Hud {
     }
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
     this.drawTacho(st);
+    this.gearbox.update(st);
     if ((this.frame & 1) === 0) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, 2.2);
   }
 
@@ -349,7 +353,7 @@ export class Hud {
     el.cIdx.textContent = `${idx + 1}/${cars.length}`;
     el.cName.textContent = c.name; el.cName.classList.remove('flip'); void el.cName.offsetWidth; el.cName.classList.add('flip');
     el.cTag.textContent = c.tag.toUpperCase();
-    el.cSpecs.innerHTML = `<div><span>POWER</span><b>${Math.round(c.power * 1.341)} HP</b></div><div><span>TOP SPEED</span><b>${c.vmax}</b></div><div><span>WEIGHT</span><b>${c.mass} KG</b></div><div class="wide"><span>LAYOUT</span><b>${c.drive.toUpperCase()} · ${{ turbo3: 'TURBO I3', na4: 'TWIN-CAM I4', turbo4: 'TURBO I4', turbo5: 'TURBO I5', turbo6: 'TURBO I6', flat6: 'FLAT-SIX', v12: 'V12', diesel: 'TURBO DIESEL' }[c.engine] || ''} · ${c.gears.length}-SPEED ${c.transmission === 'manual' ? 'MANUAL' : 'AUTO'}</b></div>`;
+    el.cSpecs.innerHTML = `<div><span>POWER</span><b>${Math.round(c.power * 1.341)} HP</b></div><div><span>TOP SPEED</span><b>${c.vmax}</b></div><div><span>WEIGHT</span><b>${c.mass} KG</b></div><div class="wide"><span>LAYOUT</span><b>${c.drive.toUpperCase()} · ${{ turbo3: 'TURBO I3', na4: 'TWIN-CAM I4', turbo4: 'TURBO I4', turbo5: 'TURBO I5', turbo6: 'TURBO I6', flat6: 'FLAT-SIX', v12: 'V12', diesel: 'TURBO DIESEL' }[c.engine] || ''} · ${c.gears.length}-SPEED ${carTransmission(c) === 'both' ? 'MANUAL / AUTO' : carTransmission(c).toUpperCase()}</b></div>`;
     el.cStats.innerHTML = [['SPEED', c.stats.speed], ['ACCEL', c.stats.accel], ['HANDLING', c.stats.handling], ['DRIFT', c.stats.drift]].map(([k, v]) => `<div class="stat">${k}<div class="bar"><i style="width:${Math.round(v * 100)}%"></i></div></div>`).join('');
     el.cBest.textContent = best ? `PERSONAL BEST  ${fmtTime(best)}` : 'NO TIME SET YET';
     this.showPaint(c);

@@ -131,3 +131,14 @@ test('nitrous controls are inactive until the selected car permits them', () => 
   input.setNitrousEnabled(false); input.update(1 / 60); assert.equal(input.state.nitro, false);
   input.destroy();
 });
+
+test('M selects gearbox mode, J selects music, and E/Q remain edge-triggered shifts', () => {
+  const { input, key } = setup();
+  for (const [code, action] of [['KeyM', 'transmission'], ['KeyJ', 'music'], ['KeyE', 'shiftUp'], ['KeyQ', 'shiftDown']]) {
+    key('keydown', code); input.update(1 / 60); assert.equal(input.state[action], true);
+    if (code === 'KeyM') assert.equal(input.state.music, false);
+    input.update(1 / 60); assert.equal(input.state[action], false);
+    key('keyup', code); input.update(1 / 60);
+  }
+  input.destroy();
+});

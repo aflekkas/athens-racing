@@ -9,7 +9,7 @@ const { icon, esc } = C;
 const GROUPS = [
   ['DRIVING', 'steering-wheel', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN' }],
   ['CAMERA', 'camera', { camera: 'CHANGE CAMERA', lookBack: 'LOOK BACK', lookLeft: 'LOOK LEFT', lookRight: 'LOOK RIGHT', lookUp: 'LOOK UP', lookDown: 'LOOK DOWN' }],
-  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE', photo: 'PHOTO MODE', replayPlay: 'REPLAY PLAY / PAUSE', music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
+  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE', photo: 'PHOTO MODE', replayPlay: 'REPLAY PLAY / PAUSE', transmission: 'MANUAL / AUTO (M · CHOICE CARS)', music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
   ['MENUS', 'list', { up: 'UP', down: 'DOWN', menuLeft: 'LEFT', menuRight: 'RIGHT', confirm: 'CONFIRM', back: 'BACK' }],
 ];
 const KEYS = { Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', Backspace: 'BKSP', Tab: 'TAB', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', CapsLock: 'CAPS', Comma: ',', Period: '.', Slash: '/', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', Minus: '-', Equal: '=', Backquote: '`', Backslash: '\\' };

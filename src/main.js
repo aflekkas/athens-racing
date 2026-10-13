@@ -5,7 +5,8 @@ import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
 import * as ENV from './env.js';
 import { ROAD } from './road.js';
-import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
+import { CARS, CarModel, Driver, setCarEnv, setPaint, carTransmission } from './cars.js';
+import { toggleTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
@@ -23,7 +24,7 @@ import { Multiplayer } from './multiplayer.js';
 import * as EV from './events.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
-import { settings, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
+import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { buildMapWorld } from './map-world.js';
@@ -275,6 +276,8 @@ function setCar(idx, keepPose = true) {
   $('rivalName').textContent = RIVAL_NAME;
   }
   applyDriving();
+  if (carTransmission(spec) === 'manual') controls.toast('MANUAL ONLY: E ↑ / Q ↓ to shift · RB / LB on pad');
+  else if (carTransmission(spec) === 'auto') controls.toast('AUTO: E ↑ / Q ↓ paddle override · M locked');
   applyCamMode();
   if (keepPose) { syncCar(player, 0); syncCar(rival, 0); }
 }
@@ -515,7 +518,7 @@ function syncSteeringAssist() {
 function applyDriving() {
   if (!player) return;
   player.veh.setSpec(aidSpec(player.spec));
-  player.veh.setManual?.(settings.transmission === 'manual');
+  player.veh.setManual?.(settings.transmission === 'manual', { ai: G.autodrive });
   syncSteeringAssist();
 }
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
@@ -700,6 +703,11 @@ function flowAction(name) {
     case 'tow': tow(player.veh); return true;
     case 'restart': if (G.state === 'race' || G.state === 'countdown' || G.state === 'finished') openEvent(G.ev.def); return true;
     case 'pause': pauseGame(); return true;
+    case 'transmission': {
+      const result = toggleTransmission(player.veh);
+      if (!result.locked) setSetting('transmission', player.veh.manual ? 'manual' : 'auto');
+      controls.toast(result.message); return true;
+    }
     case 'music': hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2); return true;
     case 'nextTrack': audio.nextTrack(); return true;
     case 'garage': if (multiplayer.active) multiplayer.open(); else pauseGame(); return true; // the garage lives in the menus; mid-race G pauses
@@ -1448,7 +1456,7 @@ function step(dt, draw = true) {
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
   const acc = { x: pv.ay, y: 0, z: -pv.ax };
-  player.cockpit.update(dt, { handbrake: input.handbrake && G.state === 'race', manual: pv.manual, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
+  player.cockpit.update(dt, { handbrake: input.handbrake && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
   player.driver.update(dt, G.t, pv.vLong, acc, player.cockpit.wheelInfo, pv.steer, pv.pose.heaveV);
   for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);
   window.__replay?.visual(dt);
@@ -1476,6 +1484,7 @@ function step(dt, draw = true) {
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
   const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
+    manual: pv.manual, transmission: carTransmission(pv.spec), limiter: pv.limiter, canUpshift: !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars };
   if (multiplayer.active) {

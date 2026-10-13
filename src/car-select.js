@@ -1,7 +1,7 @@
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { CARS, CarModel, setPaint } from './cars.js';
+import { CARS, CarModel, setPaint, carTransmission } from './cars.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 
@@ -25,6 +25,8 @@ export function renderCarSelect({ index = 0, def, garage = false } = {}) {
     body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count tnum">${locked ? `${icon('lock-simple')} EVENT CAR` : `${index + 1} / ${CARS.length}`}</span></div>
     <section class="car-info panel panel--notch">
       <div class="car-browse">${arrowBtn('carPrev', 'caret-left', 'Previous car')}<div class="car-browse__name"><h3>${esc(c.name)}</h3>${c.tag ? `<p>${esc(c.tag)}</p>` : ''}</div>${arrowBtn('carNext', 'caret-right', 'Next car')}</div>
+      <!-- UI owner: restyle .car-transmission; retain data-transmission for grid badges. -->
+      <div class="car-transmission label" data-transmission="${carTransmission(c)}">${carTransmission(c) === 'both' ? 'MANUAL / AUTO · PLAYER CHOICE' : carTransmission(c).toUpperCase() + ' ONLY'} · ${c.gears.length}-SPEED</div>
       <div class="car-dots" aria-hidden="true">${CARS.map((_, i) => `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find((p) => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>

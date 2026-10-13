@@ -19,6 +19,7 @@ import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
 import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 import { ROAD } from './road.js';
+import { carTransmission, manualMode } from './transmission.js';
 import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 
 const G = 9.81, RHO = 1.2;
@@ -60,6 +61,7 @@ export class Vehicle {
   }
   setSpec(spec) {
     this.spec = spec;
+    if (this.playerGearbox) this.manual = manualMode(spec, this.manualPreference);
     if (spec.nitrous !== true) { this.nitro = 0; this.nitroOn = false; }
     this.eng = ENGINES[spec.engine] || ENGINES.turbo4;
     this.m = spec.mass;
@@ -132,7 +134,7 @@ export class Vehicle {
     this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
-    this.shiftEvent = 0; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
+    this.shiftEvent = 0; this.gearChangeEvent = null; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
     this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0; this.powerT = 0; this.burnout = false; this.burnoutPrimed = false; this.handbrakeInput = false;
     this.damage = { front: 0, rear: 0, left: 0, right: 0 }; this.smoke = false; this.lastDamage = null;
     this.damageFx();
@@ -669,7 +671,9 @@ export class Vehicle {
     const thr = thrRaw * (1 - this.tcCut) * (1 - this.escCut);
     let Te = this.torqueMax(this.rpm) * thr;
     // engine braking (pumping + friction) opposes the crank's rotation, whichever way the wheels drive it
-    const Teb = sp.torque * (sp.ebrake ?? 0.15) * (0.25 + 0.75 * e_r) * Math.max(0, 1 - thrRaw * 4) * (wheelRpm < 0 ? -1 : 1);
+    const Teb = sp.torque * (sp.ebrake ?? 0.15) * (0.25 + 0.75 * e_r) * Math.max(0, 1 - (this.manual && this.limiter ? 0 : thrRaw) * 4) * (wheelRpm < 0 ? -1 : 1);
+    // A manual fuel cut closes the throttle for engine braking, letting revs fall
+    // through hysteresis and bounce instead of hanging at the cut indefinitely.
     if (this.limiter) Te = 0;
     if (shifting) Te = 0;
     let Tnet = engaged ? Te - Teb + this.kickT : hbClutch || burnoutClutch ? 0 : Te * (shifting ? 0 : 1) + (burnout ? this.kickT : 0);
@@ -1008,10 +1012,15 @@ export class Vehicle {
     this.bumpHit = Math.max(this.bumpHit, clamp(swing / (this.m * G) * 0.35 - 0.12, 0, 1) * Math.min(1, av / 6));
     this.rough = (this.offroad ? 1 : 0.25 + 0.35 * (1 - urb)) * Math.min(1, av / 25);
   }
-  /** Opt-in sequential manual box; existing clutch, shift time and fuel-cut limiter remain in charge. */
-  setManual(enabled) { this.manual = !!enabled; }
+  /** Player policy is opt-in here; AI vehicles keep the automatic box on every chassis.
+   *  ai=true is also used by the browser's autodrive verification mode. */
+  setManual(enabled, { ai = false } = {}) {
+    this.playerGearbox = !ai; this.manualPreference = !!enabled;
+    this.manual = ai ? false : manualMode(this.spec, enabled);
+    return this.manual;
+  }
   shiftManual(direction) {
-    if (!this.manual || this.reverse || this.shiftT > 0 || this.shiftCool > 0 || !direction) return false;
+    if ((!this.manual && carTransmission(this.spec) !== 'auto') || this.reverse || this.shiftT > 0 || this.shiftCool > 0 || !direction) return false;
     const g = this.gear + Math.sign(direction), sp = this.spec;
     if (g < 1 || g > sp.gears.length) return false;
     // Reject a downshift that would mechanically over-rev the engine, even with the fuel cut active.
@@ -1022,6 +1031,9 @@ export class Vehicle {
   }
   shift(g, t) {
     this.shiftEvent = g > this.gear ? 1 : -1;
+    // Animation hook: persistent event with a monotonic serial (survives shiftEvent's frame reset).
+    this.gearChangeEvent = { serial: this.gearChangeSerial = (this.gearChangeSerial || 0) + 1,
+      from: this.gear, to: g, direction: this.shiftEvent, duration: t, manual: this.manual };
     this.pendingGear = g; this.shiftT = t; this.shiftCool = t + 0.35;
   }
   applyImpulse(jx, jz, yawKick = 0) {

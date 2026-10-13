@@ -8,25 +8,40 @@ import { fleetModel } from './traffic-fleet.js';
 export { Driver } from './driver.js';
 import { savedPaint, setPaint } from './vehicle-paint.js';
 export { setPaint } from './vehicle-paint.js';
+// UI/physics share the same transmission policy; missing metadata means player choice.
+export { carTransmission } from './transmission.js';
 
+// Transmission describes this game car's selected factory variant, not every trim/year.
+// MINI F57 Cooper S: six-speed stick selected (Steptronic was optional).
+// https://www.press.bmwgroup.com/usa/article/detail/T0240122EN_US/open-driving-excitement-introducing-the-new-mini-convertible
+// Octavia taxi: manual fleet variant selected; legacy ratios remain game calibration.
+// https://www.skoda-storyboard.com/de/pressemappe/skoda-octavia-bestseller-nach-intensiver-uberarbeitung-neuer-top-form/
+// Z4: represented 2019 eight-speed Steptronic, rather than the later six-speed edition.
+// https://www.press.bmwgroup.com/global/article/detail/T0284770EN/the-new-bmw-z4
+// Superb 220 PS DSG and Mercedes 9G-TRONIC / DCT: automatic, with paddle override.
+// See each entry's manufacturer technical-sheet URL below. The existing Carrera,
+// GR Yaris, GTV, Golf, Corolla, police Octavia and JCW entries represent stick variants.
+// Aventador ISR is robotized (paddles), not a stick; classify it as auto when it lands.
+// https://www.lamborghini.com/en-en/history/aventador-s
+// New old-car entries should declare transmission: 'manual'; unspecified cars default to 'both'.
 // ------------------------------------------------------------------ catalogue (player-selectable)
 export const CARS = [
   {
-    id: 'mini', trafficWeight: 2, name: 'MINI COOPER S CABRIO', short: 'MINI', tag: 'Open skies. Short wheelbase. Front-wheel drive.', color: '#bd1626', accent: '#f1efe7',
+    id: 'mini', transmission: 'manual', trafficWeight: 2, name: 'MINI COOPER S CABRIO', short: 'MINI', tag: 'Open skies. Short wheelbase. Front-wheel drive.', color: '#bd1626', accent: '#f1efe7',
     mass: 1320, power: 141, torque: 280, redline: 6800, idle: 850, gears: [3.92, 2.43, 1.43, 1.0, 0.81, 0.67], final: 3.59, wheelR: 0.316,
     wheelbase: 2.495, length: 3.85, width: 1.727, cdA: 0.68, vmax: 230, grip: 1.08, steer: 0.6, yawI: 1.0, drift: 1.0, brake: 1.0, cyl: 4, pitch: 1.0, convertible: true, body: 'mini', drive: 'fwd',
     frontW: 0.61, hcg: 0.50, track: 1.485, rsF: 0.59, susHz: 1.85, susZ: 0.55, rollK: 1.0, pitchK: 1.0, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.22, bias: 0.74, steerRate: 1.15, ebrake: 0.16, engine: 'turbo4', turbo: 1,
     stats: { speed: 0.58, accel: 0.56, handling: 0.88, drift: 0.38 },
   },
   {
-    id: 'z4', trafficWeight: 0.4, name: 'BMW Z4 M40i', short: 'Z4 M40i', tag: 'Straight-six roadster. Rear-wheel drive.', color: '#22679d', accent: '#b7bdc5',
+    id: 'z4', transmission: 'auto', trafficWeight: 0.4, name: 'BMW Z4 M40i', short: 'Z4 M40i', tag: 'Straight-six roadster. Rear-wheel drive.', color: '#22679d', accent: '#b7bdc5',
     mass: 1610, power: 250, torque: 500, redline: 7000, idle: 750, gears: [5.25, 3.36, 2.17, 1.72, 1.32, 1.0, 0.82, 0.64], final: 3.154, wheelR: 0.335,
     wheelbase: 2.47, length: 4.324, width: 1.864, cdA: 0.64, vmax: 250, grip: 1.18, gripRear: 1.05, steer: 0.57, yawI: 1.06, drift: 1.0, brake: 1.12, cyl: 6, pitch: 0.94, convertible: true, body: 'z4', drive: 'rwd',
     frontW: 0.50, hcg: 0.46, track: 1.60, rsF: 0.53, susHz: 1.75, susZ: 0.6, rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.15, bias: 0.64, steerRate: 1.15, ebrake: 0.14, engine: 'turbo6', turbo: 1.15, lsd: 0.45,
     stats: { speed: 0.82, accel: 0.93, handling: 0.94, drift: 0.91 },
   },
   {
-    id: 'taxi', trafficWeight: 20, name: 'ŠKODA OCTAVIA TAXI', short: 'OCTAVIA', tag: 'Athens yellow. 2.0 TDI. Front-wheel drive.', color: '#eebd19', accent: '#c7cbd0',
+    id: 'taxi', transmission: 'manual', trafficWeight: 20, name: 'ŠKODA OCTAVIA TAXI', short: 'OCTAVIA', tag: 'Athens yellow. 2.0 TDI. Front-wheel drive.', color: '#eebd19', accent: '#c7cbd0',
     mass: 1460, power: 110, torque: 360, redline: 5000, idle: 800, gears: [14.91, 8.59, 5.24, 3.70, 2.82, 2.26, 1.75], final: 1, wheelR: 0.323,
     wheelbase: 2.686, length: 4.689, width: 1.829, cdA: 0.57, vmax: 227, grip: 1.02, steer: 0.58, yawI: 1.15, drift: 0.8, brake: 1.0, cyl: 4, pitch: 0.72, body: 'octavia', taxi: true, drive: 'fwd',
     frontW: 0.60, hcg: 0.53, track: 1.54, rsF: 0.57, usGrad: 2.5, rollGrad: 4.8, susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.28, bias: 0.72, steerRate: 0.95, ebrake: 0.18, engine: 'diesel', turbo: 0.8, driftAngle: 0.46,
@@ -82,7 +97,7 @@ export const CARS = [
   // representative DIN kerb mass. Ratios expressed as overall ratios for split final drives.
   // https://www.skoda-storyboard.com/en/press-kits/skoda-superb-press-kit/technical-data/
   {
-    id: 'superb', trafficWeight: 5, name: 'ŠKODA SUPERB 2.0 TSI', short: 'SUPERB TSI', tag: 'Long-wheelbase liftback. 220 PS. Six-speed DSG.', color: '#25475b', accent: '#bec7cf',
+    id: 'superb', transmission: 'auto', trafficWeight: 5, name: 'ŠKODA SUPERB 2.0 TSI', short: 'SUPERB TSI', tag: 'Long-wheelbase liftback. 220 PS. Six-speed DSG.', color: '#25475b', accent: '#bec7cf',
     mass: 1505, power: 162, torque: 350, redline: 6500, idle: 800, gears: [13.80, 8.20, 5.79, 4.28, 3.27, 2.65], final: 1, wheelR: .330,
     torqueCurve: [[0,120],[800,145],[1500,350],[4400,350],[5000,309],[6200,249.5],[6500,220]], peakTorqueRpm: 3000, peakPowerRpm: 6200,
     wheelbase: 2.841, length: 4.861, width: 1.864, cdA: .62, vmax: 245, grip: 1.05, steer: .57, yawI: 1.17, drift: 1, brake: 1.04, cyl: 4, pitch: .92, body: 'superb', fleet: 'taxi_superb', drive: 'fwd', engine: 'turbo4', turbo: 1,
@@ -112,7 +127,11 @@ export const CARS = [
   },
 ];
 
-for (const car of CARS) car.trafficWeight ??= defaultTrafficWeight(car);
+// Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
+for (const car of CARS) {
+  car.transmission ??= ['cle', 'gla', 'gla45', 'cla', 'aventador', 'lamborghini'].includes(car.id) ? 'auto' : 'both';
+  car.trafficWeight ??= defaultTrafficWeight(car);
+}
 
 // body shape presets: key stations along the length (t: -1 rear .. +1 front), top heights; cabin from cabin[0]..cabin[1]
 const SHAPES = {

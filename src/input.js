@@ -6,7 +6,7 @@ export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['KeyR', 'Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyT'], music: ['KeyM'], nextTrack: ['KeyN'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyT'], transmission: ['KeyM'], music: ['KeyJ'], nextTrack: ['KeyN'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], photo: ['KeyP'], replayPlay: ['Space'],
     ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => ['car' + (i + 1), ['Digit' + (i + 1)]])),
   },
@@ -17,7 +17,7 @@ export const DEFAULT_BINDINGS = {
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'music', 'nextTrack', 'photo', 'replayPlay',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'transmission', 'music', 'nextTrack', 'photo', 'replayPlay',
   'up', 'down', 'left', 'right', 'confirm', 'back', ...Array.from({ length: 9 }, (_, i) => 'car' + (i + 1))];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
@@ -62,6 +62,8 @@ export class Input {
     for (const kind of ['keyboard', 'gamepad']) {
       try {
         const saved = JSON.parse(this.storage?.getItem('paraliaki.input.' + kind) || 'null');
+        // M now selects gearbox mode; migrate the old default music binding to J.
+        if (kind === 'keyboard' && !saved?.transmission && saved?.music?.length === 1 && saved.music[0] === 'KeyM') saved.music = ['KeyJ'];
         for (const [a, bs] of Object.entries(saved || {})) if (a in this.bindings[kind] && Array.isArray(bs) && bs.every(b => typeof b === 'string' && (kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b)))) this.bindings[kind][a] = bs;
       } catch {}
     }
