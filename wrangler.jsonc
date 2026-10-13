@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "paraliaki-racing",
+  "main": "worker/index.mjs",
+  "account_id": "d6f3d2dc5817687a91d74ccd257bad9e",
+  "compatibility_date": "2026-10-13",
+  "workers_dev": true,
+  "preview_urls": false,
+  "build": { "command": "node tools/prepare-deploy.mjs" },
+  "assets": {
+    "directory": ".deploy/assets",
+    "binding": "ASSETS",
+    "run_worker_first": ["/ws", "/api/*", "/health"]
+  },
+  "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameArena"] }],
+  "env": {
+    "staging": {
+      "name": "paraliaki-racing-staging",
+      "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
+    },
+    "production": {
+      "name": "paraliaki-racing",
+      "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
+    }
+  }
+}
