@@ -838,11 +838,13 @@ function showResults() {
     }
   }
   const T = (t) => (t == null ? '—' : fmtTime(t)), sign = (d) => (d <= 0 ? '−' : '+') + Math.abs(d).toFixed(2);
-  const avg = res.time ? fmtSpeed((G.run?.maxProg || 0) / res.time * 3.6) : '—';
-  const kick = `${def.name} · ${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${fmtDist(r.len)}`;
+  const avgKmh = res.time ? (G.run?.maxProg || 0) / res.time * 3.6 : 0, avg = res.time ? fmtSpeed(avgKmh) : '—';
+  // the vehicle keeps its own top speed too; a teleported test car never moves, so never show a top below the average
+  const topKmh = Math.max(G.topSpeed || 0, player.veh.topSpeed || 0), top = topKmh >= avgKmh && topKmh > 0 ? fmtSpeed(topKmh) : '—';
+  const kick = r.closed ? `${map.definition?.name || def.name} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'} · ${fmtDist(r.len)}` : `${def.name} · ${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${fmtDist(r.len)}`;
   const splits = run.splits.map((t, i) => { const b = prev.bestSplits?.[i]; const cp = r.checkpoints[i]; return { name: cp.name, time: fmtTime(t), delta: b != null ? sign(t - b) : '', cls: b == null ? '' : t <= b ? 'good' : 'bad' }; });
   const best = res.record?.bestTime ?? prev.bestTime;
-  const info = [['TOP SPEED', fmtSpeed(G.topSpeed)], ['AVG SPEED', avg], ['CRASHES', G.crashes], ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0']];
+  const info = [['TOP SPEED', top], ['AVG SPEED', avg], ['CRASHES', G.crashes], ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0']];
   if (res.laps > 1 && res.bestLap != null) info.unshift(['BEST LAP', T(res.bestLap)]);
   let title, sub, rows, field = null;
   if (res.wrecked) {
@@ -856,7 +858,7 @@ function showResults() {
     const winner = grid.filter((c) => c.finish !== null).sort((a, b) => a.finish - b.finish)[0];
     title = pos === 1 ? 'VICTORY' : `P${pos} OF ${res.field}`;
     const gap = pos === 1 ? (winner ? winner.finish - res.time : null) : winner ? res.time - winner.finish : null;
-    sub = pos === 1 ? (gap != null ? `Won by <b>${gap.toFixed(2)} s</b>.` : 'Won.') : `<b>${gap != null ? gap.toFixed(2) : '?'} s</b> behind <b>${esc(winner?.name || '')}</b>.`;
+    sub = pos === 1 ? (gap != null ? `Won by <b>${gap.toFixed(2)} s</b>.` : '') : `<b>${gap != null ? gap.toFixed(2) : '?'} s</b> behind <b>${esc(winner?.name || '')}</b>.`;
     rows = [['POSITION', `P${pos} / ${res.field}`], ['YOUR TIME', T(res.time)], [pos === 1 ? 'MARGIN' : 'GAP TO WINNER', gap != null ? (pos === 1 ? '−' : '+') + gap.toFixed(2) + ' S' : '—'], ['EVENT BEST', T(best), res.newBest], ...info];
   } else {
     const d = prev.bestTime != null && res.time != null ? res.time - prev.bestTime : null;
@@ -866,10 +868,11 @@ function showResults() {
   }
   if (def.type === 'sprint') {
     const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: prog(player.veh.s), me: true, dnf: !!(res.busted || res.wrecked) }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: prog(c.veh.s), dnf: !!(c.dnf || c.retired || EV.isWrecked(c.veh.maxImpactEbs) || c.veh.engineStalled || c.veh.drivetrainBroken) }))];
-    // Finishers are ordered by time; still running shows distance to go, retired cars show DNF.
-    field = EV.rankRacers(all).map((f, i) => ({ pos: i + 1, name: f.name, car: f.car, me: f.me, time: f.finish != null ? fmtTime(f.finish) : f.dnf ? 'DNF' : `+${fmtDist(Math.max(0, r.len - f.prog))}` }));
+    // Finishers are ordered by time; a car a lap or more down on a circuit shows +N LAPS, others still driving RUNNING, retired DNF.
+    const lapsDown = (f) => r.closed && r.lapLength ? Math.floor(Math.max(0, r.len - f.prog) / r.lapLength) : 0;
+    field = EV.rankRacers(all).map((f, i) => ({ pos: i + 1, name: f.name, car: f.car, me: f.me, time: f.finish != null ? fmtTime(f.finish) : f.dnf ? 'DNF' : lapsDown(f) >= 1 ? `+${lapsDown(f)} ${lapsDown(f) === 1 ? 'LAP' : 'LAPS'}` : 'RUNNING', running: f.finish == null && !f.dnf }));
   }
-  menu.show('results', { result: res, def, r, kick, title, sub, win: G.won, rows, splits: def.type === 'pursuit' ? null : splits, field, next: null });
+  menu.show('results', { result: res, def, r, kick, mapName: map.definition?.name, title, sub, win: G.won, rows, splits: def.type === 'pursuit' ? null : splits, field, next: null });
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
