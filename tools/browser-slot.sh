@@ -3,10 +3,10 @@
 # The VPS has ~24 GB RAM and a software-rendered Chrome costs 1.5-3.5 GB, so concurrent agents must share.
 # Waiters are served FIFO (ticket queue), so a re-launching agent cannot starve one that has been waiting.
 #   usage: tools/browser-slot.sh node .scratch/foo/e2e.mjs [args...]
-#   env:   BROWSER_SLOTS (default 4), BROWSER_SLOT_WAIT seconds before giving up (default 1800)
+#   env:   BROWSER_SLOTS (default 4), BROWSER_SLOT_WAIT seconds before giving up (default 5400)
 #   tools/browser-slot.sh --status    show slot holders and the queue
 set -u
-SLOTS=${BROWSER_SLOTS:-4}; WAIT=${BROWSER_SLOT_WAIT:-1800}; start=$(date +%s)
+SLOTS=${BROWSER_SLOTS:-4}; WAIT=${BROWSER_SLOT_WAIT:-5400}; start=$(date +%s)
 Q=/tmp/paraliaki-browser-queue; mkdir -p "$Q"
 if [[ ${1:-} == --status ]]; then
   for i in $(seq 1 "$SLOTS"); do echo "slot $i: $(fuser /tmp/paraliaki-browser-slot-$i.lock 2>/dev/null)"; done
