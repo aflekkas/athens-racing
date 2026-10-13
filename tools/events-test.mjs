@@ -115,6 +115,23 @@ test('pursuit: busted is a DNF, escape is judged on time, survive is pass/fail',
   assert.deepEqual(EV.targetLabels(es, null, (x) => x + 's').map((l) => l[1]), [`LOSE THEM IN ${t.gold}s`, `LOSE THEM IN ${t.silver}s`, `LOSE THEM IN ${t.bronze}s`]);
 });
 
+test('100 km/h impact: wrecked is a DNF with no medal, winning position or best update', () => {
+  assert.equal(EV.isWrecked(100 / 3.6 - 0.0001), false);
+  assert.equal(EV.isWrecked(100 / 3.6), true);
+  assert.equal(EV.isWrecked(120 / 3.6), true);
+  const st = mem(), def = EV.getEvent('astir-varkiza');
+  const completed = new EV.EventRun(def, ctx, { storage: st }); completed.start();
+  completed.finish({ time: 100, position: 2, field: 4 });
+  const run = new EV.EventRun(def, ctx, { storage: st }); run.start();
+  // Even a mistakenly supplied finish time/position cannot turn a wreck into a win.
+  const res = run.finish({ wrecked: true, time: 90, position: 1, field: 4, valid: true });
+  assert.equal(res.time, null); assert.equal(res.position, null); assert.equal(res.valid, false);
+  assert.equal(res.won, false); assert.equal(res.medal, null); assert.equal(res.busted, false);
+  assert.equal(res.newBest, false);
+  assert.equal(EV.loadRecord(def.id, st).bestTime, 100);
+  assert.equal(EV.loadRecord(def.id, st).bestPos, 2);
+});
+
 test('positions, wrong way, hooks', () => {
   const a = { prog: 500, finish: null }, b = { prog: 900, finish: null }, c = { prog: 100, finish: 61.2 }, d = { prog: 100, finish: 60.1 };
   assert.deepEqual(EV.rankRacers([a, b, c, d]), [d, c, b, a]);

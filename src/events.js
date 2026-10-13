@@ -64,6 +64,8 @@ export const DRIVERS = [
 export const driver = (id) => DRIVERS.find((d) => d.id === id) || DRIVERS[0];
 /** single player: every race is you plus exactly this many AI racers */
 export const SP_RIVALS = 3;
+export const WRECK_EBS = 100 / 3.6;
+export const isWrecked = impactEbs => impactEbs >= WRECK_EBS;
 /** the grid for an event: driver records in grid order (explicit ids, or a stable per-event pick); sprints get SP_RIVALS */
 export function gridFor(def) {
   const n = def.type === 'sprint' ? SP_RIVALS : Math.max(0, Math.min(SP_RIVALS, Array.isArray(def.rivals) ? def.rivals.length : def.rivals | 0));
@@ -161,6 +163,7 @@ const rank = (m) => (m ? MEDALS.indexOf(m) + 1 : 0);
 export const betterMedal = (a, b) => (rank(a) >= rank(b) ? a : b);
 /** medal earned by a result for this definition (r = resolve(def)) */
 export function medalFor(def, res, r) {
+  if (res.wrecked) return null;
   const t = def.targets || {};
   if (def.type === 'sprint') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.position <= t[m]) return m; return null; }
   if (def.type === 'timetrial') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.time <= r.targetTimes[m]) return m; return null; }
@@ -191,9 +194,9 @@ export function recordResult(def, res, st = store()) {
   rec.runs = (prev.runs || 0) + 1;
   rec.medal = betterMedal(prev.medal || null, res.medal) || null;
   let newBest = false;
-  const timed = res.time != null && !res.busted && !(def.type === 'pursuit' && def.rules?.goal === 'survive');
+  const timed = res.time != null && !res.wrecked && !res.busted && !(def.type === 'pursuit' && def.rules?.goal === 'survive');
   if (timed && !(res.time >= (prev.bestTime ?? Infinity))) { rec.bestTime = res.time; rec.bestSplits = res.splits.slice(); rec.bestCar = res.car; newBest = true; }
-  if (def.type === 'sprint' && res.time != null) rec.bestPos = Math.min(prev.bestPos ?? 99, res.position);
+  if (def.type === 'sprint' && res.time != null && !res.wrecked && !res.busted) rec.bestPos = Math.min(prev.bestPos ?? 99, res.position);
   rec.last = { time: res.time, position: res.position, medal: res.medal, car: res.car, at: Date.now() };
   saveRecord(def.id, rec, st);
   return { record: rec, newBest, prevMedal: prev.medal || null };
@@ -295,6 +298,7 @@ export class EventRun {
       position: extra.position ?? 1, field: extra.field ?? 1, medal: null, penalties: extra.penalties || 0,
       distance: this.r.len, reverse: this.r.reverse, routeKey: `${Math.round(this.r.s0)}>${Math.round(this.r.s1)}`, valid: true, ...extra,
     };
+    if (res.wrecked) { res.time = null; res.position = null; res.valid = false; res.won = false; res.busted = false; }
     if (res.time == null) res.valid = false;
     res.medal = medalFor(this.def, res, this.r);
     if (!this.def.quick || this.def.save) Object.assign(res, recordResult(this.def, res, this.st));

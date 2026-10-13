@@ -21,7 +21,7 @@ import { Multiplayer } from './multiplayer.js';
 import * as EV from './events.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
-import { settings, onSettings, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
+import { settings, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, disposeWeather } from './weather.js';
 import { buildMapWorld } from './map-world.js';
@@ -395,6 +395,7 @@ function tow(pv) {
 }
 
 function startCountdown() {
+  syncSteeringAssist();
   G.state = 'countdown'; G.countT = 0; G.countShown = -1; G.countWall = 0;
   document.body.classList.remove('racing'); document.body.classList.add('counting');
   hud.hideMenu();
@@ -427,14 +428,20 @@ function restart(idx = G.carIdx) {
 addEventListener('keydown', e => {
   if (e.target.closest?.('input, select, textarea, button, [contenteditable]')) return;
   if (!multiplayer.panel.hidden) { clearDriveInput(); return; }
-  audio.start();
+  G.inputDevice = 'keyboard'; audio.start();
 });
-addEventListener('pointerdown', () => audio.start());
+addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch' ? 'touch' : 'keyboard'; audio.start(); });
 
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
   const blocked = document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked });
+  const pad = controls.pad;
+  if (controls.keys.size) G.inputDevice = 'keyboard';
+  else if (Object.values(controls.touch).some(Boolean)) G.inputDevice = 'touch';
+  else if (pad && (pad.buttons?.some(b => (b.value || 0) > 0.05) || pad.axes?.some(a => Math.abs(a) > controls.settings.deadzone))) G.inputDevice = 'gamepad';
+  else if (!G.inputDevice || G.inputDevice === 'gamepad' && !pad) G.inputDevice = pad ? 'gamepad' : 'keyboard';
+  if (syncSteeringAssist() && menu?.screen === 'settings' && settings.steeringAssist === null) menu.refreshValues();
   for (const name of controls.actions) {
     // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
     if ((inMenu && name === 'restart' && input.confirm) || (inMenu && name === 'pause' && input.back) || (!inMenu && name === 'back')) continue;
@@ -454,10 +461,18 @@ let markers = null, menu = null;
 const MENU_STATES = ['menu', 'paused', 'results', 'garage'];
 const evCtx = () => ({ map, mapId: map.id || 'riviera', route, marks: map.data.marks, events: map.events });
 const aidSpec = (spec) => (settings.aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0, abs: false });
+const activeInputDevice = () => G.inputDevice || (controls.pad ? 'gamepad' : 'keyboard');
+function syncSteeringAssist() {
+  if (!player) return false;
+  const before = player.veh.steerAssist;
+  const value = applyVehicleSteeringAssist(player.veh, activeInputDevice());
+  return value !== before;
+}
 function applyDriving() {
   if (!player) return;
   player.veh.setSpec(aidSpec(player.spec));
   player.veh.setManual?.(settings.transmission === 'manual');
+  syncSteeringAssist();
 }
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
 // dev / test URLs (?simhook, ?autodrive, ?car=, ?s=, ?event=, ?quick) skip the title menu; ?menu forces it
@@ -473,7 +488,7 @@ function initFlow() {
       G.pendingEvent = def; restart(index);
     },
     resume, restart: () => restart(), quit: quitToMenu, next: (id) => openEvent(id),
-    ctx: evCtx, carName: () => player.spec.name, fmtTime, ui: (fwd) => audio.ui?.(fwd),
+    ctx: evCtx, inputDevice: activeInputDevice, carName: () => player.spec.name, fmtTime, ui: (fwd) => audio.ui?.(fwd),
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
@@ -566,6 +581,7 @@ function focusRival() {
 function onFlowSettings(s, key) {
   audio.setVolumes?.({ master: s.master, music: s.music, sfx: s.sfx });
   if (key === 'aids' || key === 'transmission' || !key) applyDriving();
+  if (key === 'steeringAssist') syncSteeringAssist();
   if (key === 'units' && menu?.screen === 'events') menu.render();
 }
 
@@ -708,7 +724,7 @@ function raceTiming(dt) {
   for (const c of grid) {
     const cp = prog(c.veh.s), iR = Math.floor(cp / 10);
     if (iR >= 0 && iR < c.tR.length && isNaN(c.tR[iR])) for (let i = iR; i >= 0 && isNaN(c.tR[i]); i--) c.tR[i] = G.raceT;
-    if (c.finish === null && cp >= r.len) { c.finish = G.raceT + c.pen; if (G.pFinish === null && !G.rivalBanner) { G.rivalBanner = true; hud.pop('info cyan', c.name + ' FINISHED'); } }
+    if (c.finish === null && !EV.isWrecked(c.veh.maxImpactEbs) && cp >= r.len) { c.finish = G.raceT + c.pen; if (G.pFinish === null && !G.rivalBanner) { G.rivalBanner = true; hud.pop('info cyan', c.name + ' FINISHED'); } }
   }
   // positions and overtakes
   if (grid.length) {
@@ -734,7 +750,7 @@ function raceTiming(dt) {
 function racePosition() {
   if (!grid.length) return 1;
   const me = { me: true, prog: prog(player.veh.s), finish: G.pFinish };
-  const ranked = EV.rankRacers([me, ...grid.map((c) => ({ c, prog: prog(c.veh.s), finish: c.finish, dnf: !!(c.dnf || c.retired || c.veh.engineStalled || c.veh.drivetrainBroken) }))]);
+  const ranked = EV.rankRacers([me, ...grid.map((c) => ({ c, prog: prog(c.veh.s), finish: c.finish, dnf: !!(c.dnf || c.retired || EV.isWrecked(c.veh.maxImpactEbs) || c.veh.engineStalled || c.veh.drivetrainBroken) }))]);
   return ranked.indexOf(me) + 1;
 }
 /** HUD gap: to the car ahead (+, behind it) or, leading, to the car behind (−); positions 1..N */
@@ -757,21 +773,22 @@ function raceGap() {
 }
 
 /** how: 'finish' (crossed the line) | 'evaded' (shook the police in a pursuit-escape) | 'timeup' (survived a pursuit's
- *  clock) | 'busted' (caught: a DNF in any race) */
+ *  clock) | 'busted' (caught) | 'wrecked' (100 km/h EBS impact); both are a DNF */
 function finishRace(how = 'finish') {
   if (how === true) how = 'timeup';
+  if (EV.isWrecked(player.veh.maxImpactEbs)) how = 'wrecked';
   G.state = 'finished'; G.finishedT = 0; G.postT = 0;
   const run = G.run, def = G.ev.def, r = G.ev.r;
-  const busted = how === 'busted';
+  const busted = how === 'busted', wrecked = how === 'wrecked', dnf = busted || wrecked;
   if (how === 'timeup') G.pFinish = def.rules?.timeLimit || G.raceT;
   else if (how === 'evaded') G.pFinish = G.raceT + G.pen;
-  if (busted) G.pFinish = null;
+  if (dnf) G.pFinish = null;
   const pos = racePosition();
-  const res = run.finish({ time: G.pFinish, position: busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, how, valid: !G.autodrive && !Q.has('s') && !busted });
+  const res = run.finish({ time: G.pFinish, position: wrecked ? null : busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, wrecked, how, valid: !G.autodrive && !Q.has('s') && !dnf });
   G.result = res;
-  G.won = !busted && (def.type === 'sprint' ? pos === 1 : !!res.medal);
+  G.won = !dnf && (def.type === 'sprint' ? pos === 1 : !!res.medal);
   if (G.won) audio.win(); else audio.lose();
-  hud.pop(G.won ? 'info good' : 'info bad', busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', res.medal ? res.medal.toUpperCase() + ' MEDAL' : '');
+  hud.pop(G.won ? 'info good' : 'info bad', wrecked ? 'WRECKED' : busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', res.medal ? res.medal.toUpperCase() + ' MEDAL' : '');
   // the per-car best of the full route (garage card)
   if (G.pFinish !== null && def.type !== 'pursuit' && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
     const key = 'paraliaki.best.' + player.spec.id; const prev = +localStorage.getItem(key) || 0;
@@ -783,7 +800,7 @@ function showResults() {
   G.state = 'results'; G.cam = 'orbit'; applyCamMode(); G.selIdx = G.carIdx;
   const res = G.result, def = G.ev.def, r = G.ev.r, run = G.run, prev = run.best || {};
   // Rivals may finish during the post-race coast. Their actual penalized times decide the classification.
-  if (def.type === 'sprint' && !res.busted) {
+  if (def.type === 'sprint' && !res.busted && !res.wrecked) {
     const pos = racePosition();
     if (pos !== res.position) {
       res.position = pos; res.medal = EV.medalFor(def, res, r); G.won = pos === 1;
@@ -803,7 +820,10 @@ function showResults() {
   const info = [['TOP SPEED', fmtSpeed(G.topSpeed)], ['AVG SPEED', avg], ['CRASHES', G.crashes], ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0']];
   if (res.laps > 1 && res.bestLap != null) info.unshift(['BEST LAP', T(res.bestLap)]);
   let title, sub, rows, field = null;
-  if (res.busted) {
+  if (res.wrecked) {
+    title = 'WRECKED'; sub = 'Did not finish.';
+    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], ['EVENT BEST', T(best)], ...info];
+  } else if (res.busted) {
     title = 'BUSTED'; sub = 'The ΕΛ.ΑΣ. got you. Did not finish.';
     rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], ['EVENT BEST', T(best)], ...info];
   } else if (def.type === 'sprint') {
@@ -820,7 +840,7 @@ function showResults() {
     rows = [['YOUR TIME', T(res.time)], ['EVENT BEST', T(best), res.newBest], ...info];
   }
   if (def.type === 'sprint') {
-    const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: prog(player.veh.s), me: true, dnf: !!res.busted }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: prog(c.veh.s), dnf: !!(c.dnf || c.retired || c.veh.engineStalled || c.veh.drivetrainBroken) }))];
+    const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: prog(player.veh.s), me: true, dnf: !!(res.busted || res.wrecked) }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: prog(c.veh.s), dnf: !!(c.dnf || c.retired || EV.isWrecked(c.veh.maxImpactEbs) || c.veh.engineStalled || c.veh.drivetrainBroken) }))];
     // Finishers are ordered by time; still running shows distance to go, retired cars show DNF.
     field = EV.rankRacers(all).map((f, i) => ({ pos: i + 1, name: f.name, car: f.car, me: f.me, time: f.finish != null ? fmtTime(f.finish) : f.dnf ? 'DNF' : `+${fmtDist(Math.max(0, r.len - f.prog))}` }));
   }
@@ -1419,20 +1439,22 @@ function step(dt, draw = true) {
       else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { pv.nitro = Math.min(1, pv.nitro + G.driftAcc / 2500); G.driftAcc = 0; /* a drift tops up the bottle; no points */ } else if (G.driftT <= 0) G.driftAcc = 0; }
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
       if (G.state === 'race' && multiplayer.active) multiplayer.wreck(pv.maxImpactEbs);
+      // A fatal impact takes precedence over crossing a checkpoint or the finish line.
+      if (G.state === 'race' && !multiplayer.active && EV.isWrecked(pv.maxImpactEbs)) finishRace('wrecked');
       // ---- timing, positions, finish
       if (G.state === 'race' && !multiplayer.active) {
         window.__replay?.tick(dt);
         raceTiming(dt);
       } else if (G.state === 'finished') {
         G.postT += dt;
-        for (const c of grid) if (c.finish === null && prog(c.veh.s) >= G.ev.r.len) c.finish = G.raceT + G.postT + c.pen - (prog(c.veh.s) - G.ev.r.len) / Math.max(1, c.veh.vLong);
+        for (const c of grid) if (c.finish === null && !EV.isWrecked(c.veh.maxImpactEbs) && prog(c.veh.s) >= G.ev.r.len) c.finish = G.raceT + G.postT + c.pen - (prog(c.veh.s) - G.ev.r.len) / Math.max(1, c.veh.vLong);
         G.finishedT += dt; G.raceT += 0; // clock stopped
         if (G.finishedT > 0.8 && G.cam !== 'orbit') { G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.6; }
         if (G.finishedT > 2.6) showResults();
       } else if (G.state === 'results') {
         G.postT += dt;
         let changed = false;
-        for (const c of grid) if (c.finish === null && prog(c.veh.s) >= G.ev.r.len) { c.finish = G.raceT + G.postT + c.pen; changed = true; }
+        for (const c of grid) if (c.finish === null && !EV.isWrecked(c.veh.maxImpactEbs) && prog(c.veh.s) >= G.ev.r.len) { c.finish = G.raceT + G.postT + c.pen; changed = true; }
         if (changed && menu.screen === 'results') showResults();
       }
     }

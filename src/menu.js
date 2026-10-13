@@ -4,7 +4,7 @@
 // Menu items are not native <button>s on purpose: the input system ignores key events aimed at focused form
 // controls, so focus is drawn with a class and the keys keep flowing through flowAction().
 import { getEvents, QUICK_RACE, TYPES, getEvent, resolve, loadRecord, targetLabels, MEDALS } from './events.js';
-import { settings, setSetting, fmtDist } from './settings.js';
+import { settings, setSetting, steeringAssistChoice, fmtDist } from './settings.js';
 
 import { renderMapSelect, selectMap } from './map-select.js';
 import { CARS } from './cars.js';
@@ -148,12 +148,13 @@ export class Menu {
     this.filter = f[(i + d + f.length) % f.length]; this.h.ui?.(d > 0);
     this.focus = 0; this.render();
   }
+  valueFor(key) { return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
   /** left / right (or click) on a setting row */
   adjust(el, d) {
     const k = el.dataset.set;
     if (el.dataset.kind === 'range') { const v = Math.max(0, Math.min(1, Math.round((settings[k] + d * 0.05) * 20) / 20)); setSetting(k, v); this.h.ui?.(d > 0); this.refreshValues(); return; }
     const opts = [...el.querySelectorAll('.opt')].map((o) => o.dataset.v);
-    const cur = String(settings[k]); const i = opts.indexOf(cur);
+    const cur = String(this.valueFor(k)); const i = opts.indexOf(cur);
     this.choose(el, opts[(i + d + opts.length) % opts.length]);
   }
   choose(el, v) {
@@ -166,7 +167,7 @@ export class Menu {
     for (const el of this.root.querySelectorAll('[data-set]')) {
       const k = el.dataset.set;
       if (el.dataset.kind === 'range') { const r = el.querySelector('input'); if (r && document.activeElement !== r) r.value = Math.round(settings[k] * 100); const o = el.querySelector('.val'); if (o) o.textContent = pct(settings[k]); }
-      else for (const o of el.querySelectorAll('.opt')) o.classList.toggle('on', o.dataset.v === String(settings[k]));
+      else for (const o of el.querySelectorAll('.opt')) o.classList.toggle('on', o.dataset.v === String(this.valueFor(k)));
     }
   }
 
@@ -237,13 +238,13 @@ export class Menu {
 
   r_settings(d) {
     const range = (k, label) => `<div class="mi set" data-set="${k}" data-kind="range"><span class="k">${label}</span><input type="range" min="0" max="100" step="1" value="${Math.round(settings[k] * 100)}" data-set="${k}" tabindex="-1"><b class="val">${pct(settings[k])}</b></div>`;
-    const choice = (k, label, opts, note = '') => `<div class="mi set" data-set="${k}" data-kind="choice"><span class="k">${label}</span><div class="opts">${opts.map(([v, l]) => `<span class="opt ${String(settings[k]) === v ? 'on' : ''}" data-v="${v}">${l}</span>`).join('')}</div>${note ? `<small>${note}</small>` : ''}</div>`;
+    const choice = (k, label, opts, note = '') => `<div class="mi set" data-set="${k}" data-kind="choice"><span class="k">${label}</span><div class="opts">${opts.map(([v, l]) => `<span class="opt ${String(this.valueFor(k)) === v ? 'on' : ''}" data-v="${v}">${l}</span>`).join('')}</div>${note ? `<small>${note}</small>` : ''}</div>`;
     const g = this.h.graphicsControl, locked = g?.disabled;
     return `<div class="set-wrap"><div class="kick">${d.from === 'pause' ? 'PAUSED · ' : ''}SETTINGS</div>
       <div class="set-group"><h3>SOUND</h3>${range('master', 'MASTER VOLUME')}${range('music', 'MUSIC')}${range('sfx', 'EFFECTS')}</div>
       <div class="set-group"><h3>DISPLAY</h3>${choice('units', 'SPEED UNITS', [['kmh', 'KM/H'], ['mph', 'MPH']])}
         ${choice('graphics', 'GRAPHICS', [['auto', 'AUTO'], ['high', 'HIGH'], ['med', 'MED'], ['low', 'LOW']], locked ? 'LOCKED WHILE ONLINE' : 'RELOADS THE GAME')}</div>
-      <div class="set-group"><h3>DRIVING</h3>${choice('aids', 'DRIVER AIDS (TC · ABS · ESC)', [['true', 'ON'], ['false', 'OFF']])}${choice('police', 'POLICE IN QUICK RACE / FREE ROAM', [['false', 'OFF'], ['true', 'ON']])}${choice('transmission', 'GEARBOX', [['auto', 'AUTOMATIC'], ['manual', 'MANUAL']], 'MANUAL: SHIFT WITH E / Q · PAD RB / LB')}</div>
+      <div class="set-group"><h3>DRIVING</h3>${choice('aids', 'DRIVER AIDS (TC · ABS · ESC)', [['true', 'ON'], ['false', 'OFF']])}${choice('steeringAssist', 'STEERING ASSIST', [['off', 'OFF'], ['light', 'LIGHT'], ['full', 'FULL']])}${choice('police', 'POLICE IN QUICK RACE / FREE ROAM', [['false', 'OFF'], ['true', 'ON']])}${choice('transmission', 'GEARBOX', [['auto', 'AUTOMATIC'], ['manual', 'MANUAL']], 'MANUAL: SHIFT WITH E / Q · PAD RB / LB')}</div>
       <div class="set-group"><h3>GHOST</h3>${choice('ghostEnabled', 'RACE YOUR BEST GHOST', [['true', 'ON'], ['false', 'OFF']])}
         ${window.__replay ? `<div class="mi set" data-act="ghostImport"><span class="k">IMPORT A GHOST FILE</span><b>▶</b></div><div class="mi set" data-act="ghostExport"><span class="k">EXPORT LAST GHOST</span><b>▶</b></div>` : ''}</div>
       <div class="set-group"><h3>CONTROLS</h3><div id="bindings" class="bindings"></div></div>

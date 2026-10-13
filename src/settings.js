@@ -4,6 +4,7 @@
 //   settings.units            'kmh' | 'mph'
 //   settings.master/music/sfx 0..1 volumes (audio.setVolumes)
 //   settings.aids             true = traction control, ABS and stability control as the car came; false = all off
+//   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
 //   settings.graphics         'auto' | 'high' | 'med' | 'low' (applied by reloading the page)
 //   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
@@ -11,7 +12,7 @@
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
 const KEY = 'paraliaki.settings';
-export const DEFAULTS = { master: 1, music: 1, sfx: 1, units: 'kmh', aids: true, transmission: 'auto', graphics: 'auto', ghostEnabled: true, police: false };
+export const DEFAULTS = { master: 1, music: 1, sfx: 1, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false };
 const ls = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch { return null; } };
 
 function load() {
@@ -21,6 +22,7 @@ function load() {
   for (const k of ['master', 'music', 'sfx']) out[k] = Math.max(0, Math.min(1, +out[k] || 0));
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
+  if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
   out.aids = out.aids !== false;
   out.ghostEnabled = out.ghostEnabled !== false;
   out.police = out.police === true;
@@ -32,6 +34,7 @@ const subs = new Set();
 export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
   if (!(key in DEFAULTS) || settings[key] === value) return;
+  if (key === 'steeringAssist' && ![null, 'off', 'light', 'full'].includes(value)) return;
   settings[key] = value;
   try {
     const { graphics, ...rest } = settings;
@@ -39,6 +42,16 @@ export function setSetting(key, value) {
     if (key === 'graphics') ls()?.setItem('paraliaki.graphics', value);
   } catch {}
   for (const fn of [...subs]) { try { fn(settings, key); } catch (e) { console.error('[settings]', e); } }
+}
+
+export const STEERING_ASSIST = Object.freeze({ off: 0, light: 0.35, full: 1 });
+export function steeringAssistChoice(preference = settings.steeringAssist, device = 'keyboard') {
+  return Object.hasOwn(STEERING_ASSIST, preference) ? preference : device === 'gamepad' || device === 'wheel' ? 'light' : 'full';
+}
+export function applySteeringAssist(vehicle, device = 'keyboard', preference = settings.steeringAssist) {
+  const value = STEERING_ASSIST[steeringAssistChoice(preference, device)];
+  if (vehicle) vehicle.steerAssist = value;
+  return value;
 }
 
 // ------------------------------------------------------------------ units
