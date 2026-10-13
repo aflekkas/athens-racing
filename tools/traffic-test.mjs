@@ -1,0 +1,133 @@
+// node --import ./tools/physics-test/register.mjs --test tools/traffic-test.mjs
+// Run the actual traffic decisions/contact solver without loading the WebGL model library.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import * as THREE from './physics-test/three-stub.mjs';
+import { RNG, clamp, lerp, smoothstep } from '../src/util.js';
+import { damageIncrement, equivalentBarrierSpeed } from '../src/damage-math.js';
+
+const source = readFileSync(new URL('../src/traffic.js', import.meta.url), 'utf8')
+  .replace(/^import .*;$/gm, '').replace(/^export /gm, '');
+const { Traffic, obbContact, impulse } = new Function(
+  'THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed',
+  source + '\nreturn { Traffic, obbContact, impulse };',
+)(THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed);
+
+function world() {
+  const T = Object.create(Traffic.prototype);
+  Object.assign(T, {
+    route: { lanes: () => 2, laneU: (_, lane) => 1.75 + 3.5 * lane, edge: () => 7,
+      urban: () => 1, district: () => 'town', div: () => 0, medHalf: () => 0,
+      lin: (a) => a === 'TX' ? 0 : -1, TX: 'TX', TZ: 'TZ',
+      frame: () => ({ tx: 0, tz: -1, rx: 1, rz: 0 }) },
+    rng: { chance: (p) => p > 0, range: (a, b) => (a + b) / 2 },
+    t: 0, dir: 1, cars: [], racers: [], wrecks: [], objs: [], sites: [], cones: [], honks: [], sounds: [],
+  });
+  const c = { id: 1, s: 1000, u: 1.75, dir: 1, lane: 0, v: 15, len: 4.4, wid: 1.8,
+    mass: 1500, I: 1500 * (4.4 ** 2 + 1.8 ** 2) / 12, kind: 'sedan', type: {}, active: true, dmg: 0,
+    m: { root: { visible: true }, setDamage() {} }, indL: {}, indR: {}, flash: {},
+    drv: { arch: 'normal', agg: 0.3, rt: 0.5, freeze: 0, horn: 1, mirror: 0.35, indicate: 1 },
+  };
+  T.initDrive(c); T.cars.push(c);
+  return { T, c };
+}
+
+// Match main.js: both the observation and the player's actor wrapper are new each tick.
+const racer = (veh, s, vs = -20, u = 1.75) => ({ a: { veh }, kind: 'player', s, u, vs, vu: 0, hs: 2.2, hu: 0.9 });
+function see(T, c, R, dt = 0.1) { T.racers = R ? [R] : []; return T.watchRacers(c, dt, 2, 1); }
+
+test('head-on response waits for reaction time, then swerves, honks, flashes and brakes', () => {
+  const { T, c } = world(), veh = {};
+  for (let i = 0; i < 4; i++) see(T, c, racer(veh, 1060));
+  assert.equal(c.evade, null); assert.equal(T.honks.length, 0);
+  for (let i = 0; i < 2; i++) see(T, c, racer(veh, 1060));
+  assert.ok(c.evade); assert.ok(c.flashT > 0);
+  assert.ok(Math.abs(c.evade.uT - c.u) > 1);
+  assert.equal(T.honks[0].reason, 'overtaker');
+  assert.ok(see(T, c, racer(veh, 1040)) < -3);
+});
+
+test('evader tracks fresh player snapshots and gives the angry horn when the player passes', () => {
+  const { T, c } = world(), veh = {};
+  c.seeT = 1; see(T, c, racer(veh, 1060));
+  see(T, c, racer(veh, 1030));
+  assert.equal(c.evade.R.s, 1030);
+  see(T, c, racer(veh, 980));
+  assert.equal(c.evade, null); assert.ok(c.shakenT > 0);
+  assert.deepEqual(T.honks.map(h => h.reason), ['overtaker', 'shaken']);
+});
+
+test('a threat leaving observation lets the evader recover instead of following stale coordinates', () => {
+  const { T, c } = world(); c.seeT = 1; see(T, c, racer({}, 1060));
+  for (let i = 0; i < 15; i++) see(T, c, null);
+  assert.equal(c.evade, null);
+  assert.equal(T.honks.filter(h => h.reason === 'shaken').length, 0);
+});
+
+test('head-on tracking also works for reverse-direction traffic and police without actor wrappers', () => {
+  const { T, c } = world(); c.dir = -1; c.u = -1.75; c.seeT = 1;
+  const police = {};
+  const R = s => ({ a: police, kind: 'police', s, u: -1.75, vs: 20, vu: 0, hs: 2.2, hu: 0.9 });
+  see(T, c, R(940)); assert.ok(c.evade);
+  see(T, c, R(1020)); assert.equal(c.evade, null);
+  assert.equal(T.honks.at(-1).reason, 'shaken');
+});
+
+test('ordinary drivers decide whether to yield once per approach, even with fresh actor wrappers', () => {
+  const { T, c } = world(), veh = {}; let choices = 0;
+  T.rng.chance = () => { choices++; return false; };
+  for (let i = 0; i < 120; i++) see(T, c, racer(veh, 960, 35), 1 / 60);
+  assert.equal(choices, 1); assert.equal(c.yieldT, 0); assert.equal(c.lane, 0);
+  see(T, c, racer({}, 960, 35)); assert.equal(choices, 2);
+  see(T, c, null); see(T, c, racer(veh, 960, 35)); assert.equal(choices, 3);
+});
+
+test('courteous drivers indicate and give a closing car the left lane when the right lane is clear', () => {
+  const { T, c } = world(); c.drv.arch = 'courteous'; c.drv.mirror = 1;
+  see(T, c, racer({}, 960, 35));
+  assert.equal(c.lane, 1); assert.equal(c.blinkSide, 1); assert.ok(c.yieldT > 0);
+  assert.ok(c.lcDelay <= 0.5);
+});
+
+test('driver population keeps distracted drivers rare and preserves courteous/normal variety', () => {
+  const { T, c } = world(); T.rng = new RNG(4242);
+  c.beh = { a: 1.6, b: 3, T: 1.2, s0: 2.2, vf: 1, latV: 1.5 };
+  const counts = {};
+  for (let i = 0; i < 10000; i++) { T.personality(c); counts[c.drv.arch] = (counts[c.drv.arch] || 0) + 1; }
+  assert.ok(counts.distracted > 350 && counts.distracted < 650);
+  assert.ok(counts.courteous > 1800 && counts.normal > 3500);
+});
+
+test('off-centre collisions conserve momentum, absorb energy and spin both cars', () => {
+  const body = (s, u, vs) => ({ s, u, vs, vu: 0, w: 0, phi: 0, hl: 2.2, hw: 0.9, m: 1500, I: 2800 });
+  const A = body(0, 0, 20), B = body(4, 1.2, 0);
+  const energy = () => [A, B].reduce((e, b) => e + (b.m * (b.vs ** 2 + b.vu ** 2) + b.I * b.w ** 2) / 2, 0);
+  const before = energy(), result = impulse(A, B, obbContact(A, B), 0.15, 0.45);
+  assert.ok(result.j > 0); assert.ok(Math.abs(A.w) > 0.1 && Math.abs(B.w) > 0.1);
+  assert.ok(Math.abs(A.m * A.vs + B.m * B.vs - 30000) < 1e-8);
+  assert.ok(Math.abs(A.m * A.vu + B.m * B.vu) < 1e-8);
+  assert.ok(energy() < before);
+});
+
+test('reversing into a parked car reports rear damage; separating overlaps add no impulse or damage', () => {
+  const { T, c } = world(); c.s = 996; c.v = 0; c.mode = 'parked';
+  const veh = { s: 1000, u: 1.75, x: 1.75, z: -1000, yaw: 0, vLong: -10, vLat: 0, w: 0,
+    halfL: 2.2, halfW: 0.9, m: 1500, Iz: 2800 };
+  const events = []; T.collide({ veh, kind: 'player' }, events, 0);
+  assert.equal(events[0].zone, 'rear'); assert.ok(c.crash?.wreck);
+  const separate = world(); separate.c.s = 1004; separate.c.mode = 'parked'; separate.c.v = 0;
+  const separating = { ...veh, s: 1000, x: 1.75, z: -1000, vLong: -10 };
+  const noEvents = []; separate.T.collide({ veh: separating, kind: 'player' }, noEvents, 1);
+  assert.equal(noEvents.length, 0); assert.equal(separate.c.crash, null);
+  assert.equal(separating.vLong, -10); assert.equal(separate.c.dmg, 0);
+});
+
+test('a hard-hit car settles as a wreck with hazards instead of resuming its drive', () => {
+  const { T, c } = world();
+  T.hitCar(c, { ...T.carBody(c), vs: 8 }, 5, 'rear', 0);
+  for (let i = 0; i < 1200; i++) { T.t += 1 / 60; T.updateCrashed(c, 1 / 60); }
+  assert.ok(c.crash?.wreck); assert.equal(c.v, 0);
+  assert.ok(Math.hypot(c.crash.vs, c.crash.vu) < 0.1);
+  assert.equal(c.indL.emissiveIntensity, c.indR.emissiveIntensity);
+});

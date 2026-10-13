@@ -38,6 +38,9 @@ const BEHAV = {
 };
 const _v = new THREE.Vector3();
 
+// Racer snapshots and the player's actor wrapper are rebuilt every frame; the vehicle stays the same.
+function racerKey(r) { return r.a.veh || r.a; }
+
 /** route-frame velocity of a physics Vehicle */
 export function routeVel(veh, route) {
   const f = route.frame(veh.s, {});
@@ -551,9 +554,11 @@ export class Traffic {
     if (head) c.seeT += dt; else c.seeT = Math.max(0, c.seeT - dt * 3);
     if (c.evade) {
       const E = c.evade; E.t += dt;
-      const R = E.R, dS = (R.s - c.s) * c.dir;
+      const observed = this.racers.find((r) => racerKey(r) === racerKey(E.R));
+      const R = observed || E.R, dS = (R.s - c.s) * c.dir;
+      E.R = R;
       // still coming at us (even if we're now clear of its line)? keep out of the way until it has gone by
-      const coming = dS > 0 && R.vs * c.dir < -1 && (dS - R.hs - c.len * 0.5) / Math.max(1, c.v - R.vs * c.dir) < 5.5 && Math.abs(R.u - c.u) < hw + R.hu + 3;
+      const coming = observed && dS > 0 && R.vs * c.dir < -1 && (dS - R.hs - c.len * 0.5) / Math.max(1, c.v - R.vs * c.dir) < 5.5 && Math.abs(R.u - c.u) < hw + R.hu + 3;
       if (coming || (head && head.R === R)) E.lost = 0; else E.lost += dt;
       if (dS < -R.hs - c.len * 0.5 || E.lost > 1.2 || E.t > 9) {
         // it went past: shaken, a long blast of the horn after it, then back into the lane
@@ -585,8 +590,8 @@ export class Traffic {
       if (c.yieldU !== undefined && !c.evade && !c.task) { c.uT = c.yieldU; acc = Math.min(acc, 0.2); }
       if (c.yieldT <= 0) { c.yieldU = undefined; c.blinkSide = 0; }
     } else if (rear && !c.evade && !c.task && !c.ovt && c.lcT <= 0 && c.lcDelay <= 0 && c.mode === 'drive' && !c.type.scooter) {
-      if (c.yieldFor !== rear.R) {
-        c.yieldFor = rear.R;
+      if (c.yieldFor !== racerKey(rear.R)) {
+        c.yieldFor = racerKey(rear.R);
         c.yieldWill = rear.R.kind === 'police' ? d.arch !== 'distracted' || rng.chance(0.3) : rng.chance(d.mirror * (d.arch === 'courteous' ? 0.85 : 0.5)); // a siren: everybody (nearly) pulls over
       }
       if (c.yieldWill && rear.dist < 20 + rear.rel * 3) {
