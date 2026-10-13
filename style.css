@@ -209,3 +209,42 @@ body.fading #fade { opacity: 1; }
 .pop.quote { top: 44%; left: auto; right: 7vw; transform: translate(0, -50%); font-size: 30px; color: #fff; text-align: right; animation-name: popR; }
 .pop.quote small { color: #ff8f80; font-size: 16px; letter-spacing: .2em; }
 .pop.quote.good small { color: #6dff9b; }
+
+/* Online lobby and race standings */
+[hidden] { display: none !important; }
+#mp-bar { position: fixed; right: 22px; top: 16px; z-index: 22; display: flex; align-items: center; gap: 12px; font: 600 11px Barlow, sans-serif; color: #cbd9df; }
+#mp-bar button, #multiplayer button { cursor: pointer; font: 700 16px 'Barlow Condensed', sans-serif; letter-spacing: .05em; color: #fff; border: 1px solid #596976; background: #182a37; padding: 10px 16px; border-radius: 4px; }
+#mp-bar button { padding: 8px 14px; }
+#multiplayer { position: fixed; inset: 0; z-index: 30; background: rgba(3, 10, 17, .91); display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; color: #eef7fa; font-family: Barlow, sans-serif; }
+.mp-panel { width: min(760px, 100%); max-height: 90vh; overflow-y: auto; background: #0b1924; border: 1px solid #314d5e; padding: 30px; border-radius: 10px; box-shadow: 0 20px 80px #0009; }
+.mp-kicker { color: #54ced8; font: 700 13px 'Barlow Condensed', sans-serif; letter-spacing: .17em; }
+.mp-heading, .mp-list-title, .mp-room-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.mp-heading h1 { font: italic 800 44px 'Barlow Condensed', sans-serif; margin: 10px 0; }
+.mp-panel h2 { font: 700 22px 'Barlow Condensed', sans-serif; margin: 12px 0; }
+#mp-status { min-height: 22px; color: #a9bdca; line-height: 1.5; font-size: 14px; }
+#mp-status.bad { color: #ff8277; }
+#multiplayer label { display: flex; flex-direction: column; gap: 8px; font: 700 12px Barlow, sans-serif; color: #9cb4c4; letter-spacing: .07em; }
+#multiplayer input:not([type=checkbox]), #multiplayer select { box-sizing: border-box; width: 100%; min-width: 0; border: 1px solid #3b5365; border-radius: 4px; background: #122532; color: #fff; padding: 12px; font: 500 15px Barlow, sans-serif; }
+#multiplayer input:focus, #multiplayer select:focus, #multiplayer button:focus-visible { outline: 2px solid #55d9e3; outline-offset: 2px; }
+.mp-profile { display: grid; grid-template-columns: 1fr 1.4fr; gap: 18px; margin-bottom: 24px; }
+.mp-create, .mp-join { display: flex; align-items: end; gap: 14px; margin: 16px 0; }
+.mp-create > label:first-child, .mp-join label { flex: 1; }
+#multiplayer .mp-private { flex-direction: row; align-items: center; white-space: nowrap; align-self: center; letter-spacing: 0; }
+#mp-code { text-transform: uppercase; letter-spacing: .2em; }
+#multiplayer button:disabled { opacity: .4; cursor: default; }
+#multiplayer #mp-create, #multiplayer #mp-ready, #multiplayer #mp-start, #multiplayer #mp-rematch { background: #c13c32; border-color: #e66652; }
+.mp-list-title { margin-top: 26px; border-top: 1px solid #2b414f; padding-top: 12px; }
+.mp-lobby-row, .mp-driver { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid #233a49; font-size: 14px; }
+.mp-lobby-row b, .mp-driver b { overflow-wrap: anywhere; }
+.mp-lobby-row span, .mp-driver span { color: #9cb2c0; font-size: 12px; }
+.mp-driver strong { font-size: 12px; color: #8297a5; }
+.mp-driver strong.good { color: #73e4b5; }
+#mp-room-code { font: 700 24px 'Barlow Condensed', sans-serif; letter-spacing: .16em; color: #66dbe3; }
+#mp-rules, #mp-hint, .mp-empty { font-size: 13px; color: #9cb2c0; line-height: 1.6; }
+#mp-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+#mp-standings { position: fixed; top: 64px; right: 22px; z-index: 21; padding: 12px 16px; background: #071622dc; border-left: 3px solid #52cad4; font: 600 12px Barlow, sans-serif; color: #c4d3dc; min-width: 160px; }
+#mp-standings > b { display: block; color: #55d9e3; margin-bottom: 8px; letter-spacing: .1em; }
+#mp-standings > div { padding: 4px 0; }
+#mp-standings .you { color: #fff; }
+body:not(.loaded) #mp-bar { display: none; }
+@media (max-width: 650px) { #multiplayer { padding: 12px; } .mp-panel { padding: 20px; } .mp-heading h1 { font-size: 34px; } .mp-profile { grid-template-columns: 1fr; gap: 12px; } .mp-create { flex-wrap: wrap; } .mp-create > label:first-child { flex-basis: 100%; } .mp-lobby-row, .mp-driver { gap: 8px; } #mp-bar { right: 12px; top: 8px; } #mp-connection { display: none; } #mp-standings { right: 12px; top: 52px; } }

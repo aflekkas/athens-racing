@@ -16,13 +16,17 @@ import { People } from './people.js';
 import { Hud, fmtTime } from './hud.js';
 import { Audio } from './audio.js';
 import { createPost } from './post.js';
+import { Multiplayer } from './multiplayer.js';
 import { loadTextures, uploadTextures } from './tex.js';
 import { batchStatic } from './batch.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
-const RIVAL_NAME = 'STAVROS';
+let RIVAL_NAME = 'STAVROS';
+let multiplayer = null, onlineRaceId = null, browseFrom = null;
+const remoteCars = new Map();
+const isOnline = () => !!multiplayer?.room;
 const RIVAL_BODY = { mini: 'kastro', kastro: 'riviera', riviera: 'poseidon', poseidon: 'riviera', taxi: 'mini' };
 const RED_LINES = ['SMILE FOR THE CAMERA', 'SAY CHEESE!', 'THE FINE IS IN THE POST', 'THAT WAS VERY RED', 'YOUR MOTHER WILL HEAR ABOUT THIS', 'THE TRAFFIC COP SAW THAT'];
 const SHOUTS = ['WATCH IT!', 'MY MIRROR!', 'SORRY, BOSS!', 'NOT THE PAINT!', 'WHO TAUGHT YOU TO DRIVE?', 'INSURANCE!', 'MAMA MIA!'];
@@ -139,6 +143,8 @@ async function boot() {
   document.body.classList.add('counting');
   last = performance.now();
   requestAnimationFrame(frame);
+  multiplayer = new Multiplayer(CARS, { onRoom: onlineRoom, onLeave: leaveOnline, onBrowse: browseOnline });
+  window.__multiplayer = multiplayer;
 }
 
 // ------------------------------------------------------------------ cars
@@ -203,6 +209,7 @@ function startCountdown() {
 }
 
 function restart(idx = G.carIdx) {
+  if (isOnline()) return;
   document.body.classList.add('fading');
   setTimeout(() => {
     if (idx !== G.carIdx || player.spec !== CARS[idx]) setCar(idx);
@@ -217,11 +224,13 @@ function restart(idx = G.carIdx) {
 // ------------------------------------------------------------------ input
 const DRIVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight'];
 addEventListener('keydown', (e) => {
+  if (e.target.matches('input, select, textarea, button') || (multiplayer && !multiplayer.root.hidden)) return;
   audio.start();
   if (DRIVE_KEYS.includes(e.code) || e.code === 'Enter') e.preventDefault();
   if (e.repeat) { keys.add(e.code); return; }
   keys.add(e.code);
   if (G.state === 'loading') return;
+  if (isOnline() && (e.code === 'KeyG' || e.code === 'KeyR' || e.code === 'Enter' || /^Digit/.test(e.code))) { multiplayer.show(); return; }
   const menu = G.state === 'results' || G.state === 'garage';
   if (/^Digit[1-9]$/.test(e.code)) { const i = +e.code.slice(5) - 1; if (i < CARS.length) { audio.ui(true); restart(i); } return; }
   if (menu) {
@@ -316,6 +325,94 @@ function showResults() {
     ],
   });
   hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
+}
+
+// ------------------------------------------------------------------ online racing
+function browseOnline(open) {
+  keys.clear();
+  if (open && !isOnline()) { browseFrom = G.state; G.state = 'lobby'; }
+  else if (!open && !isOnline() && browseFrom) { G.state = browseFrom; G.countWall = performance.now(); browseFrom = null; }
+}
+function clearRemoteCars() {
+  for (const car of remoteCars.values()) if (car !== rival) disposeCar(car);
+  remoteCars.clear();
+}
+function leaveOnline() {
+  clearRemoteCars(); onlineRaceId = null; browseFrom = null; RIVAL_NAME = 'STAVROS';
+  traffic.disabled = Q.has('notraffic'); $('posBox').querySelector('.of').textContent = '/2';
+  setCar(G.carIdx); resetRace(); G.cam = G.userCam; applyCamMode(); startCountdown();
+}
+function onlineRoom(room) {
+  hud.hideMenu(); browseFrom = null;
+  traffic.disabled = true;
+  if (room.phase === 'waiting') {
+    keys.clear();
+    G.state = 'lobby'; rival.model.root.visible = false;
+    for (const c of remoteCars.values()) c.model.root.visible = false;
+    traffic.reset(route.start); document.body.classList.remove('racing', 'counting');
+    return;
+  }
+  if (room.raceId !== onlineRaceId && ['countdown', 'racing'].includes(room.phase)) {
+    keys.clear(); document.activeElement?.blur();
+    clearRemoteCars(); onlineRaceId = room.raceId;
+    const me = room.players.find(p => p.id === multiplayer.playerId);
+    setCar(CARS.findIndex(c => c.id === me.car)); resetRace();
+    const grid = p => { const s = route.start - Math.floor(p.slot / 2) * 7; return [s, route.laneU(s, p.slot % 2), 0]; };
+    player.veh.reset(...grid(me)); player.veh.nitro = 0.4;
+    const others = room.players.filter(p => p.id !== me.id);
+    others.forEach((p,i) => {
+      const spec = CARS.find(c => c.id === p.car); const car = { spec, veh: new Vehicle(spec, route), ...makeCar(spec, false), ai: { lane: p.slot % 2 } };
+      car.veh.reset(...grid(p)); car.veh.nitro = 0.4;
+      remoteCars.set(p.id, car);
+      if (i === 0) { disposeCar(rival); rival = car; }
+    });
+    RIVAL_NAME = others[0]?.name || 'OPPONENT'; $('rivalName').textContent = RIVAL_NAME;
+    G.cam = G.userCam; applyCamMode(); G.state = 'countdown'; G.countShown = -1;
+    document.body.classList.remove('racing'); document.body.classList.add('counting');
+    // Signals share the server race clock; traffic and pedestrian collisions are excluded online.
+    signals.reset(); traffic.reset(route.start); people.reset(route.start);
+    updateCamera(0, true);
+  }
+  if (room.phase === 'results') {
+    G.state = 'online-results'; document.body.classList.remove('racing', 'counting');
+    hud.count(''); multiplayer.renderRoom();
+  }
+}
+function stepOnline(dt) {
+  const room = multiplayer.room, me = multiplayer.me, pv = player.veh;
+  if (!room || !me || room.phase === 'waiting' || room.phase === 'results') return;
+  const raceT = Math.max(0, (multiplayer.now - room.startAt) / 1000);
+  G.raceT = raceT;
+  signals.t = raceT - dt; signals.update(dt, pv.s, camera.position);
+  if (multiplayer.now < room.startAt || room.phase === 'countdown') {
+    const n = Math.max(1, Math.ceil((room.startAt - multiplayer.now) / 1000));
+    if (n !== G.countShown) { G.countShown = n; hud.count(String(n)); audio.beep(false); }
+    pv.rpm = damp(pv.rpm, pv.spec.idle + input.throttle * pv.spec.redline * 0.7, 6, dt);
+  } else if (me.finish === null && !me.dnf) {
+    if (G.state === 'countdown') { G.state = 'race'; hud.count('GO!', true); audio.beep(true); document.body.classList.remove('counting'); document.body.classList.add('racing'); }
+    pv.dragMul = 1; pv.update(dt, input);
+    if (!pv.nitroOn) pv.nitro = Math.min(1, pv.nitro + dt * 0.012);
+    G.topSpeed = Math.max(G.topSpeed, pv.kmh);
+    // Hold at the line until the server acknowledges the finish; never estimate opponents' times.
+    if (pv.s >= route.finish) { pv.reset(route.finish, pv.u, 0); }
+    multiplayer.publish(pv, input.brake > 0.3);
+  } else {
+    if (G.state !== 'online-finished') { G.state = 'online-finished'; G.pFinish = me.finish; hud.count(''); hud.message(me.dnf ? 'DNF · WAITING FOR RESULTS' : 'FINISHED · WAITING FOR THE OTHER DRIVERS', 6); }
+  }
+  for (const p of room.players) {
+    const car = remoteCars.get(p.id); if (!car) continue;
+    car.model.root.visible = p.connected && !p.dnf;
+    if (!p.state) continue;
+    const v = car.veh, state = p.state;
+    const blend = 1 - Math.exp(-12 * dt), age = Math.min(0.15, Math.max(0, (performance.now() - (p.receivedAt || performance.now())) / 1000));
+    const targetS = Math.min(route.finish, state.s + (p.finish === null ? state.vLong * age : 0));
+    v.s = lerp(v.s, targetS, blend); v.u = lerp(v.u, state.u, blend);
+    v.yaw += Math.atan2(Math.sin(state.yaw - v.yaw), Math.cos(state.yaw - v.yaw)) * blend;
+    Object.assign(v, { vLong: state.vLong, vLat: state.vLat, steer: state.steer, rpm: state.rpm, gear: state.gear, nitroOn: state.nitroOn });
+    const pos = route.point(v.s, v.u, _v1); v.x = pos.x; v.y = pos.y; v.z = pos.z;
+    car.lastBrake = state.brake;
+  }
+  if (frameN % 8 === 0) multiplayer.standings();
 }
 
 // ------------------------------------------------------------------ rival AI
@@ -704,7 +801,8 @@ function step(dt, draw = true) {
   readInput(dt);
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
-  const simulate = G.state !== 'garage' && G.state !== 'loading';
+  if (isOnline()) stepOnline(dt);
+  const simulate = !isOnline() && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'lobby';
   if (simulate) signals.update(dt, pv.s, camera.position);
   if (simulate) {
     // ---- state machine
@@ -842,7 +940,8 @@ function step(dt, draw = true) {
     hud.signal(info);
   }
   // ---- visuals
-  syncCar(player, simulate ? dt : 0); syncCar(rival, simulate ? dt : 0);
+  syncCar(player, simulate || isOnline() ? dt : 0); syncCar(rival, simulate || isOnline() ? dt : 0);
+  if (isOnline()) for (const car of remoteCars.values()) if (car !== rival) { syncCar(car, dt); car.driver.update(dt, G.t, car.veh.vLong, { x: 0, y: 0, z: 0 }, null, car.veh.steer, 0); }
   traffic.sync(pv.s);
   const acc = { x: pv.ay, y: 0, z: -pv.ax };
   player.cockpit.update(dt, { steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitro: pv.nitro, nitroOn: pv.nitroOn });
@@ -870,7 +969,14 @@ function step(dt, draw = true) {
     else { const t = G.tP[clamp(iR, 0, G.tP.length - 1)]; gap = isNaN(t) ? -(pv.s - rv.s) / Math.max(5, rv.vLong) : -(G.raceT - t); }
     gap += G.pen - G.rPen; // penalties count
   }
-  const pos = G.pFinish !== null ? (G.rFinish !== null && G.rFinish < G.pFinish ? 2 : 1) : (G.rFinish !== null ? 2 : (isFinite(gap) ? (gap <= 0 ? 1 : 2) : (pv.s >= rv.s ? 1 : 2)));
+  let pos = G.pFinish !== null ? (G.rFinish !== null && G.rFinish < G.pFinish ? 2 : 1) : (G.rFinish !== null ? 2 : (isFinite(gap) ? (gap <= 0 ? 1 : 2) : (pv.s >= rv.s ? 1 : 2)));
+  if (isOnline()) {
+    const sorted = multiplayer.sortedPlayers(); pos = sorted.findIndex(p => p.id === multiplayer.playerId) + 1;
+    const leader = sorted.find(p => p.id !== multiplayer.playerId && !p.dnf);
+    gap = leader?.state ? (leader.state.s - pv.s) / Math.max(5, pv.vLong) : NaN;
+    $('posBox').querySelector('.of').textContent = '/' + multiplayer.room.players.length;
+    $('rivalName').textContent = leader?.name || 'OPPONENT';
+  }
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);

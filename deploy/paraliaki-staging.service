@@ -1,0 +1,17 @@
+[Unit]
+Description=Paraliaki Racing multiplayer staging
+After=network.target
+
+[Service]
+WorkingDirectory=/home/dev/projects/paraliaki-multiplayer
+ExecStart=/usr/bin/node /home/dev/projects/paraliaki-multiplayer/server/index.js
+Environment=HOST=0.0.0.0
+Environment=PORT=8010
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0027
+
+[Install]
+WantedBy=default.target
