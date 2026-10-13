@@ -230,6 +230,7 @@ function obstacle(route, record, dir) {
   }
   return { ref: record, racer: false, s: record.s, u: record.u, hs: record.hs ?? (record.len ? record.len / 2 : 2.2), hu: record.hu ?? (record.wid ? record.wid / 2 : 1), vs: (record.vs ?? (record.crash ? record.crash.vs : record.cross ? record.xvs : (record.dir || 1) * (record.v || 0))) * dir, vu: record.vu ?? (record.crash ? record.crash.vu : record.cross ? record.xvu : record.uv) ?? 0 };
 }
+const obstacleKey = (record) => record.veh || record.a?.veh || record.a || record;
 
 export class RivalAI {
   constructor(route, veh, options = {}) {
@@ -238,6 +239,7 @@ export class RivalAI {
     this.line = getLine(route, veh, options); this.profile = this.line.speedProfile(veh);
     this.offset = veh.u - this.line.sample(this.line.u, veh.s);
     this.passOffset = null; this.passT = 0; this.elapsed = 0; this.slow = 0; this.recovery = 'drive';
+    this.pass = null; this.passCountTarget = null; this.evade = null; this.overtakes = 0; this.abortedPasses = 0;
     this.recoveryT = 0; this.integral = 0; this.yawI = 0; this.mistake = 0;
     this.alternateProfiles = new Map();
     let hash = 2166136261; for (const c of options.driver?.id || 'reference') hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
@@ -301,21 +303,59 @@ export class RivalAI {
     const launchHold = (veh.s - this.launchS) * dir < this.launchHoldDistance && this.elapsed < 20;
     const leaderExpected = current.leader ? line.sample(this.profile, current.leader.s + dir * Math.max(3, current.leader.vs * 0.18)) * racePace * pace : 0;
     const genuinelySlower = current.leader && (!current.leader.racer || current.leader.vs < leaderExpected - Math.max(2, leaderExpected * 0.06));
-    if (this.passLeader !== current.leader?.ref) { this.passLeader = current.leader?.ref; this.deficitT = 0; }
+    const leaderKey = current.leader ? obstacleKey(current.leader.ref) : null;
+    if (this.passLeader !== leaderKey) { this.passLeader = leaderKey; this.deficitT = 0; }
     this.deficitT = genuinelySlower ? (this.deficitT || 0) + dt : Math.max(0, (this.deficitT || 0) - dt * 2);
     const passTime = current.leader ? (Math.max(0, current.gap) + 2 * veh.halfL + 2 * current.leader.hs + 10) / Math.max(0.5, targetSpeed - current.leader.vs) : Infinity;
     const passDistance = current.leader ? clamp(v * passTime + 30, 125, 400) : 125;
     let passRoom = !current.leader || passTime < 6;
     for (let d = 0; passRoom && d <= passDistance; d += 25) if (Math.abs(route.curv?.(veh.s + dir * d) || 0) >= 0.006) passRoom = false;
-    if (!launchHold && passRoom && this.deficitT > 1.1 - p.aggression * 0.5 && current.leader && current.gap < horizon && current.leader.vs < targetSpeed - 1.5) {
+    // Check the whole closing horizon, including cars outside the ordinary
+    // following scan. Reserve time to pull out AND return, at achievable speed.
+    const passHorizon = (leader, u) => {
+      const passingSpeed = Math.min(targetSpeed, Math.max(v, leader.vs + 8 + p.aggression * 6));
+      const remaining = Math.max(0, leader.d + veh.halfL + leader.hs + 8);
+      return { speed: passingSpeed, seconds: remaining / Math.max(3, passingSpeed - leader.vs) +
+        (Math.abs(u - veh.u) + Math.abs(u - baseU)) / 2.1 + 1.5 + (1 - p.aggression) * 1.5 };
+    };
+    const twoWayClear = (leader, u) => {
+      const { speed, seconds } = passHorizon(leader, u), distance = speed * seconds + 25;
+      if (route.closed || line.roadEdges) return false;
+      for (let d = 0; d <= distance + 20; d += 20) {
+        const s = veh.s + dir * d;
+        if ((route.div?.(s) ?? 0) >= 0.3 || (route.medHalf?.(s) ?? 0) > 0.15 || Math.abs(route.curv?.(s) || 0) >= 0.006) return false;
+      }
+      return !obs.some((o) => o.vs < -1 && o.d > -veh.halfL - o.hs &&
+        o.d - veh.halfL - o.hs < (speed - o.vs) * seconds + 25);
+    };
+    if (this.passCountTarget) {
+      const leader = obs.find((o) => obstacleKey(o.ref) === this.passCountTarget);
+      if (leader && leader.d < -veh.halfL - leader.hs - 8) { this.overtakes++; this.passCountTarget = null; }
+      else if (!leader) this.passCountTarget = null;
+    }
+    if (this.pass) {
+      const leader = obs.find((o) => obstacleKey(o.ref) === this.pass.key);
+      const b = line.bounds(veh.s, this.pass.oncoming);
+      desiredU = clamp(this.pass.u, b.min, b.max); oncoming = this.pass.oncoming;
+      const cleared = !leader || leader.d < -veh.halfL - leader.hs - 8;
+      const abort = !cleared && oncoming && !twoWayClear(leader, desiredU);
+      if (!cleared) targetSpeed = Math.min(targetSpeed, passHorizon(leader, desiredU).speed);
+      if ((cleared || abort) && corridor(baseU, true).safe) {
+        if (cleared) this.overtakes++; else this.abortedPasses++;
+        this.pass = null; this.passOffset = null; this.passT = 0;
+        desiredU = baseU; oncoming = false;
+      } else if (abort) {
+        // Make room behind the car we were passing before tucking back in.
+        targetSpeed = Math.min(targetSpeed, Math.max(0, leader.vs - 7));
+        plannedBrake = Math.max(plannedBrake, 0.85);
+      }
+    }
+    if (!this.pass && !launchHold && passRoom && this.deficitT > 1.1 - p.aggression * 0.5 && current.leader && current.leader.vs >= 0 && current.gap < horizon && current.leader.vs < targetSpeed - 1.5) {
       const candidates = [bounds.min, bounds.max, baseU];
-      // A two-way road permits a pass only when the complete return corridor
-      // and at least seven seconds of oncoming closing distance are clear.
-      const clearOncoming = !route.closed && !line.roadEdges && (route.div?.(veh.s) ?? 0) < 0.3 &&
-        Math.abs(route.curv?.(veh.s) || 0) < 0.012 &&
-        !obs.some((o) => o.vs < -1 && o.d > -15 && o.d < (v - o.vs) * 7 + 30) &&
-        [20, 50, 100, 160].every((d) => (route.div?.(veh.s + dir * d) ?? 0) < 0.3);
-      if (clearOncoming) { const b = line.bounds(veh.s, true); candidates.push(dir > 0 ? b.min : b.max); }
+      // A two-way road needs enough closing distance for the complete pass
+      // and return; personality changes the reserve, never the road bounds.
+      const b = line.bounds(veh.s, true), oppositeU = dir > 0 ? b.min : b.max;
+      if (twoWayClear(current.leader, oppositeU)) candidates.push(oppositeU);
       let bestScore = Math.min(targetSpeed, current.speed) + 0.4;
       for (const u of candidates) {
         const r = corridor(u, true), crosses = obs.some((o) => Math.abs(o.d) < veh.halfL + o.hs + 3 && o.u > Math.min(veh.u, u) - o.hu - veh.halfW && o.u < Math.max(veh.u, u) + o.hu + veh.halfW);
@@ -323,7 +363,15 @@ export class RivalAI {
         const score = Math.min(targetSpeed, r.speed) - Math.abs(u - veh.u) * 0.12;
         if (score > bestScore) { bestScore = score; desiredU = u; oncoming = u < bounds.min || u > bounds.max; }
       }
-      if (Math.abs(desiredU - baseU) > 0.3) { this.passOffset = desiredU - baseU; this.passT = 2.5; }
+      if (Math.abs(desiredU - baseU) > 0.3) {
+        this.passOffset = desiredU - baseU; this.passT = 2.5;
+        // Ordinary same-carriageway moves remain relative to the racing line
+        // and keep their short hold. Only a two-way pass needs a lane lock
+        // until its original leader is cleared; a fixed u through later bends
+        // would unnecessarily abandon the optimal line.
+        if (oncoming) this.pass = { key: obstacleKey(current.leader.ref), u: desiredU, oncoming };
+        else this.passCountTarget = obstacleKey(current.leader.ref);
+      }
     }
     // One early defensive move toward the inside, with space for the challenger.
     if (!launchHold && passRoom && !current.leader && this.passT === 0 && p.aggression > 0.6 && !this.perfect) {
@@ -336,15 +384,45 @@ export class RivalAI {
     // Preserve space while running side by side, including on the starting grid.
     // Returning to the optimal line is itself a lane change and needs clearance.
     if (launchHold) desiredU = clamp(this.launchU, bounds.min, bounds.max);
-    if (!corridor(desiredU, true).safe) desiredU = clamp(veh.u, bounds.min, bounds.max);
+    const maneuverBounds = line.bounds(veh.s, oncoming);
+    if (!corridor(desiredU, true).safe) desiredU = clamp(veh.u, maneuverBounds.min, maneuverBounds.max);
     const alongside = obs.filter((o) => Math.abs(o.d) < veh.halfL + o.hs + 4);
     for (const o of alongside) {
       const clearance = veh.halfW + o.hu + buffer;
       if (Math.abs(desiredU - o.u) < clearance) {
         const side = veh.u >= o.u ? 1 : -1;
-        desiredU = clamp(o.u + side * clearance, bounds.min, bounds.max);
+        desiredU = clamp(o.u + side * clearance, maneuverBounds.min, maneuverBounds.max);
         if (Math.abs(desiredU - o.u) < clearance && o.d >= 0) targetSpeed = Math.min(targetSpeed, Math.max(0, o.vs - 3));
       }
+    }
+    // A head-on escape is one decision per approach. Fresh actor snapshots or
+    // a small lateral crossing must never flip the chosen side of the car.
+    if (this.evade) {
+      const threat = obs.find((o) => obstacleKey(o.ref) === this.evade.key);
+      this.evade.lost = threat ? 0 : this.evade.lost + dt;
+      if (this.evade.lost > 1.2 || threat && (threat.d < -veh.halfL - threat.hs - 3 || threat.vs >= -1)) this.evade = null;
+    }
+    if (!this.evade) {
+      const threat = obs.filter((o) => o.vs < -1 && o.d > 0 &&
+        (o.d - veh.halfL - o.hs) / Math.max(1, v - o.vs) < 4.5 &&
+        Math.min(Math.abs(o.u - veh.u), Math.abs(o.u + o.vu - veh.u)) < veh.halfW + o.hu + 0.8)
+        .sort((a, b) => a.d / (v - a.vs) - b.d / (v - b.vs))[0];
+      if (threat) {
+        const escape = line.bounds(veh.s, true);
+        const kerb = dir > 0 ? escape.max : escape.min, inner = dir > 0 ? escape.min : escape.max;
+        const clearance = veh.halfW + threat.hu + 0.8;
+        const score = (u) => Math.min(clearance, Math.abs(u - threat.u - clamp(threat.vu, -1.5, 1.5))) +
+          (u === kerb ? 0.8 : 0) - Math.abs(u - veh.u) * 0.1 - (corridor(u, true).safe ? 0 : 10);
+        const u = score(kerb) >= score(inner) ? kerb : inner;
+        this.evade = { key: obstacleKey(threat.ref), u, side: Math.sign(u - veh.u) || dir, lost: 0 };
+        this.pass = null; this.passOffset = null; this.passT = 0;
+      }
+    }
+    if (this.evade) {
+      const escape = line.bounds(veh.s, true);
+      desiredU = clamp(this.evade.u, escape.min, escape.max);
+      oncoming = desiredU < bounds.min || desiredU > bounds.max;
+      targetSpeed = Math.min(targetSpeed, Math.max(3, v - caps.brake(v) * dt * 0.65));
     }
     const goalOffset = desiredU - baseU;
     const lateralRate = Math.min(2.1 + (1 - p.smooth) * 0.5, 0.4 + v * 0.08);
@@ -396,8 +474,8 @@ export class RivalAI {
     }
     const look = Math.max(2.4, Math.min(5 + v * 0.3, 22, 0.45 / Math.max(1e-4, kAhead)));
     const targetS = veh.s + dir * look;
-    const targetBounds = line.bounds(targetS);
-    const holdAlongside = alongside.some((o) => o.racer && Math.abs(o.u - veh.u) < veh.halfW + o.hu + 3);
+    const targetBounds = line.bounds(targetS, oncoming);
+    const holdAlongside = !this.evade && !oncoming && alongside.some((o) => o.racer && Math.abs(o.u - veh.u) < veh.halfW + o.hu + 3);
     const target = launchHold || holdAlongside ? route.point(targetS, clamp(desiredU, targetBounds.min, targetBounds.max), pointOut()) :
       line.point(targetS, this.offset, oncoming || this.offset + baseU < bounds.min || this.offset + baseU > bounds.max);
     const dx = target.x - veh.x, dz = target.z - veh.z;
@@ -468,7 +546,7 @@ export class RivalAI {
     // Ordinary service brake must not accidentally select reverse while queuing.
     const safeBrake = veh.vLong < 1 && brake > 0 ? Math.min(0.45, brake) : brake;
     const nitro = veh.spec.nitrous === true && !this.perfect && !held && error > 3 && v > 15 && Math.abs(steer) < 0.18 && kAhead < 0.0015 && here.gap > v * 3 && veh.nitro > 0.15;
-    return this.result({ throttle: safeBrake > 0.03 ? 0 : throttle, brake: safeBrake, steer, nitro }, { targetSpeed, gap: here.gap, phase: this.recovery, look, u: baseU + this.offset, k: kAhead });
+    return this.result({ throttle: safeBrake > 0.03 ? 0 : throttle, brake: safeBrake, steer, nitro }, { targetSpeed, gap: here.gap, phase: this.recovery, look, u: baseU + this.offset, desiredU, evadeSide: this.evade?.side ?? 0, passing: !!this.pass, oncoming, overtakes: this.overtakes, abortedPasses: this.abortedPasses, k: kAhead });
   }
   result(input, debug) { this.debug = debug; return { throttle: 0, brake: 0, steer: 0, handbrake: false, nitro: false, ...input }; }
 }

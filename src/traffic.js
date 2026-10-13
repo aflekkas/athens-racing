@@ -496,6 +496,12 @@ export class Traffic {
     const uAim = c.uT + (d.wander && !c.task && !ev ? Math.sin(this.t * 0.37 + c.id * 1.7) * Math.sin(this.t * 0.11 + c.id) * d.wander : 0);
     const want = clamp((uAim - c.u) * (ev ? 3.2 : 2.4), -latMax, latMax);
     c.uv += clamp(want - c.uv, -(ev ? 7.5 : 4) * dt, (ev ? 7.5 : 4) * dt);
+    // Stop at the committed escape line; a rate-limited velocity alone can
+    // overshoot it and command a second, opposite swerve before the pass.
+    if (ev && !c.evade.freeze) {
+      const side = c.evade.side;
+      c.uv = side * Math.max(0, Math.min(c.uv * side, (uAim - c.u) * side / dt));
+    }
     c.u += c.uv * dt;
     if (c.lcT > 0) c.lcT -= dt;
     c.yawLC = Math.atan2(c.uv, Math.max(1.5, c.v)) * c.dir;
@@ -566,7 +572,6 @@ export class Traffic {
         if (dS < 0 && Math.abs(R.u - c.u) < hw + R.hu + 4) { c.honkCool = 0; this.honk(c, 'shaken', R.kind === 'player'); }
         c.evade = null; c.shakenT = 1.5 + rng.range(0, 2); c.lcT = 0.5; c.blinkSide = 0;
       } else {
-        if (head && E.t - E.pick > 0.35 && !E.freeze) { E.pick = E.t; E.uT = this.escapeU(c, head); }
         c.uT = E.uT;
         // brake as hard as they dare: harder the closer it is (and the phone driver panics)
         const ttc = head ? head.ttc : 3, clear = head ? clamp((head.lat + 0.2) / 1.2, 0, 1) : 1;
@@ -575,7 +580,9 @@ export class Traffic {
       }
     } else if (head && c.seeT > d.rt && !c.task && !c.type.bus) {
       const freeze = rng.chance(d.freeze);
-      c.evade = { R: head.R, t: 0, pick: 0, lost: 0, freeze, uT: freeze ? c.u : this.escapeU(c, head) };
+      const uT = freeze ? c.u : this.escapeU(c, head);
+      c.evade = { R: head.R, t: 0, lost: 0, freeze, uT, side: Math.sign(uT - c.u) || c.dir };
+      c.uT = uT;
       c.ovt = null; c.split = false; c.lcDelay = 0; c.lcT = 0;
       if (rng.chance(d.horn)) { c.honkCool = 0; this.honk(c, 'overtaker', head.R.kind === 'player'); }
       if (d.arch !== 'distracted') c.flashT = 0.9;
@@ -623,7 +630,7 @@ export class Traffic {
     if (route.div(c.s) > 0.45) for (let i = 0; i < cand.length; i++) { const mh = route.medHalf(c.s) + hw + 0.2; if (cand[i] * c.dir < mh) cand[i] = c.dir * mh; }
     let best = c.u, bs = -1e9;
     for (const u of cand) {
-      let sc = Math.abs(u - H.uR) - Math.abs(u - c.u) * 0.12;
+      let sc = Math.abs(u - H.uR) - Math.abs(u - c.u) * 0.12 + (u === kerb ? 0.8 : 0);
       const A = this.lead(c, u, hw, 30, 0.1); if (A.o && A.o.ref !== H.R.a && A.gap < 10) sc -= 3;
       const B = this.follow(c, u, hw, 12); if (B.o && Math.abs(u - c.u) > 1 && B.gap < 3) sc -= 2;
       if (sc > bs) { bs = sc; best = u; }
