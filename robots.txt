@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://athens-street-racers.aflekkas.workers.dev/sitemap.xml

@@ -16,8 +16,8 @@ async function copy(path) {
   const dest = resolve(out, rel); await mkdir(resolve(dest, '..'), { recursive: true }); await copyFile(path, dest);
   count++; bytes += info.size; if (info.size > largest.size) largest = { path: rel, size: info.size };
 }
-for (const path of ['index.html', 'style.css', 'src', 'assets', 'data']) await copy(resolve(root, path));
-await writeFile(resolve(out, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n');
+for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src', 'assets', 'data']) await copy(resolve(root, path));
+await writeFile(resolve(out, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/assets/share/*\n  Cache-Control: public, max-age=86400, stale-while-revalidate=604800\n  Content-Type: image/jpeg\n');
 const maps = [];
 for (const def of MAPS) {
   let data;

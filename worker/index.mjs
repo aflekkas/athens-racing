@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+import { rewriteShareMetadata } from './share-metadata.mjs';
 import catalogue from '../.deploy/catalogue.json';
 import { createGameCore } from '../server/core.mjs';
 import { createSqlLeaderboard } from './leaderboard.mjs';
@@ -16,7 +17,7 @@ export default {
       // One arena shares discovery and connections. Idle rooms hibernate; games share duration.
       return env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request);
     }
-    return env.ASSETS.fetch(request);
+    return rewriteShareMetadata(request, await env.ASSETS.fetch(request));
   }
 };
 
