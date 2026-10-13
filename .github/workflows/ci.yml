@@ -1,4 +1,4 @@
-name: CI
+name: Athens Street Racers CI
 on:
   pull_request:
   push:
@@ -58,7 +58,7 @@ jobs:
           cache: npm
       - run: npm ci
         if: steps.credentials.outputs.ready == 'true'
-      - name: Deploy Worker and SQLite Durable Object
+      - name: Deploy Athens Street Racers Worker and SQLite Durable Object
         id: deploy
         if: steps.credentials.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@v4
@@ -69,5 +69,5 @@ jobs:
       - name: Smoke test live deployment
         if: steps.credentials.outputs.ready == 'true'
         env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOY_URL: ${{ github.ref_name == 'main' && 'https://athens-street-racers.aflekkas.workers.dev' || 'https://athens-street-racers-staging.aflekkas.workers.dev' }}
         run: node tools/deploy-smoke.mjs "$DEPLOY_URL"
