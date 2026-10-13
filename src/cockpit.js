@@ -169,8 +169,8 @@ export class Cockpit {
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
-    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
-    const nw=isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=isMini?.125:isPorsche?.135:.153;
+    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
+    const nw=spec.id==='huracan'?.15:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMini?.125:isPorsche?.135:.153;
     if(!isClassic){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
@@ -355,6 +355,9 @@ export class Cockpit {
       g.fillStyle='#f3f4ee';g.font='72px Arial';g.fillText(Math.round(st.kmh),529,218);g.font='21px Arial';g.fillText('km/h',529,254);g.fillText(st.gearLabel,375,203);
       g.strokeStyle='#d9d3b8';g.lineWidth=8;g.beginPath();g.arc(788,194,125,-Math.PI*.48,Math.PI*.48);g.stroke();
       g.fillStyle='#d5d5cc';g.font='22px Arial';g.fillText('+23.0°C',690,68);g.fillText('12:41',350,68);g.fillText('0',811,340);g.fillText('1',811,56);
+    }else if(id==='huracan'){
+      g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'RPM ×1000',red:8.5});
+      g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,255);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,273);
     }else if(id==='gtv'){
       // Transparent space between the separate period instrument pods.
       instrumentDial(g,{x:273,y:195,r:173,max:8,value:st.rpm/1000,step:1,label:'GIRI / MIN ×1000',red:5.8,classic:true});

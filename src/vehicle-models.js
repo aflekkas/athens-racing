@@ -223,9 +223,9 @@ function cabinFittings(car,d,M,low){
   const p=car.body;
   box(p,M.cloth,[d.W*.80,.075,d.back-d.cowl],[0,.36,(d.back+d.cowl)/2],.02);
   // Separate sculpted cushions, shoulder bolsters, head restraints and stitching.
-  const rows=car.modelKind==='z4'?[d.seatZ]:[d.seatZ,d.open?.90:.99];
+  const rows=car.modelKind==='z4'||d.seats===2?[d.seatZ]:[d.seatZ,d.open?.90:.99];
   for(const [ri,z]of rows.entries())for(const s of [-1,1]){
-    const x=s*d.W*.215, y=ri?(d.rearLow?.36:.48):.43, backH=ri&&d.rearLow?.32:.48;
+    const x=s*d.W*.215, y=ri?(d.rearLow?.36:.48):(d.seatBase??.43), backH=ri&&d.rearLow?.32:.48;
     box(p,M.seat,[.43,.12,.46],[x,y,z-.05],.06);
     box(p,M.seat,[.43,backH,.115],[x,y+backH/2+.03,z+.17],.055,[.14,0,0]);
     for(const b of [-1,1]){box(p,M.seat,[.08,.14,.43],[x+b*.20,y+.025,z-.04],.037);box(p,M.seat,[.08,backH-.04,.14],[x+b*.20,y+backH/2+.03,z+.12],.035,[.14,0,b*-.1]);}
@@ -426,6 +426,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   // Light automotive tint: preserve the cabin through both side panes. Physical
   // dielectric specular gives the stronger grazing reflections without metallic glass.
   if(playerModel){M.glass.color.set('#c4d4cf');M.glass.opacity=d.open?.12:.18;M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
+  if(ROAD_MODELS[kind]){M.glass.color.set('#829b9c');M.glass.opacity=.38;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
   if(!grouped){

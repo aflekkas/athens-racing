@@ -267,7 +267,7 @@ else {
     const b = new Vehicle(spec, route); b.reset(0, 0, 100 / 3.6); const z0 = b.z;
     for (let i = 0; i < 900 && b.kmh > 0.3; i++) b.update(DT, { throttle: 0, brake: 1, steer: 0 });
     const bd = Math.abs(b.z - z0);
-    check(`catalogue ${spec.id} (${spec.drive}): finite, 0-100 3-14 s, top near vmax, 100-0 28-50 m`, ok && t100 > 3 && t100 < 14 && v.kmh > spec.vmax * 0.85 && v.kmh < spec.vmax * 1.05 && bd > 28 && bd < 50,
+    check(`catalogue ${spec.id} (${spec.drive}): finite, plausible acceleration, top near vmax, 100-0 28-50 m`, ok && t100 > (spec.zeroTo100 ? spec.zeroTo100*.70 : 3) && t100 < (spec.zeroTo100 ? spec.zeroTo100*1.40 : 14) && v.kmh > spec.vmax * 0.85 && v.kmh < spec.vmax * 1.05 && bd > 28 && bd < 50,
       `0-100 ${t100 && f2(t100)} s, top ${f1(v.kmh)} / ${spec.vmax}, 100-0 ${f1(bd)} m, wb ${v.wb} halfL ${v.halfL} halfW ${v.halfW}`);
   }
 }

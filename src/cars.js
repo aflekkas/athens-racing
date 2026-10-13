@@ -126,6 +126,16 @@ export const CARS = [
     tyres: ['205/45 R17','205/45 R17'], frontW: .62, hcg: .48, track: 1.485, rsF: .60, usGrad: 3.0, susHz: 2.0, susZ: .57, rollK: .85, pitchK: .85, alphaPk: .115, mfC: 1.45, loadSens: .16, clA: .02, tc: .6, esc: .4, shiftT: .26, bias: .73, steerRate: 1.18, ebrake: .16, lsd: 0,
     stats: { speed: .70, accel: .71, handling: .90, drift: .38 },
   },
+  // Huracan EVO AWD: Lamborghini 470 kW / 640 CV, 600 Nm, >325 km/h.
+  // 1422 kg is dry; 1542 kg road-ready simulation mass adds estimated fluids/equipment.
+  {
+    id: 'huracan', name: 'LAMBORGHINI HURACÁN EVO', short: 'HURACÁN EVO', tag: '5.2 V10 · 640 CV. Seven-speed dual clutch. AWD.', color: '#ea701d', accent: '#dbb755',
+    zeroTo100: 2.9, mass: 1542, power: 470, torque: 600, redline: 8500, idle: 900, gears: [15.325,10.193,7.712,6.085,4.789,3.844,3.312], final: 1, wheelR: .338,
+    torqueCurve: [[0,170],[900,200],[2000,350],[3500,455],[5000,550],[6500,600],[7500,584],[8000,561.02],[8500,495]], peakTorqueRpm: 6500, peakPowerRpm: 8000,
+    wheelbase: 2.620, length: 4.520, width: 1.933, cdA: .68, vmax: 325, grip: 1.24, gripRear: 1.10, steer: .54, yawI: 1.08, drift: 1, brake: 1.22, cyl: 10, pitch: 1.12, body: 'huracan', cabinWidth: .77, drive: 'awd', awdRear: .70, awdDrift: .80, engine: 'v10', engineZone: 'rear', transmission: 'auto', playerDetail: true, trafficWeight: .10,
+    tyres: ['245/30 ZR20','305/30 ZR20'], frontW: .43, hcg: .40, track: 1.668, rsF: .50, usGrad: 1.8, susHz: 2.2, susZ: .61, rollK: .65, pitchK: .65, alphaPk: .10, mfC: 1.50, loadSens: .14, clA: .12, tc: .60, esc: .40, shiftT: .10, bias: .62, steerRate: 1.15, ebrake: .15, lsd: .40,
+    stats: { speed: 1, accel: 1, handling: .98, drift: .81 },
+  },
 ];
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
