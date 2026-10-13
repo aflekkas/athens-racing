@@ -8,11 +8,13 @@ import assert from 'node:assert/strict';
 const url=process.argv[2] || 'http://localhost:8000';
 const chrome=process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const angle=process.env.ANGLE || (process.platform === 'darwin' ? 'metal' : 'swiftshader');
+const width=Number(process.env.W || 1280),height=Number(process.env.H || 800);
+const shots=process.env.SHOTS !== '0';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const processes=[];
 async function page(name) {
   const port=9500+Math.floor(Math.random()*1000), prof=mkdtempSync(path.join(os.tmpdir(),'mp-cdp-'));
-  const proc=spawn(chrome,['--headless=new',`--remote-debugging-port=${port}`,`--user-data-dir=${prof}`,'--mute-audio','--no-first-run','--enable-webgl','--ignore-gpu-blocklist',`--use-angle=${angle}`,'--enable-unsafe-swiftshader','--no-sandbox','--window-size=1280,800','--autoplay-policy=no-user-gesture-required','about:blank'],{stdio:'ignore'});
+  const proc=spawn(chrome,['--headless=new',`--remote-debugging-port=${port}`,`--user-data-dir=${prof}`,'--mute-audio','--no-first-run','--enable-webgl','--ignore-gpu-blocklist',`--use-angle=${angle}`,'--enable-unsafe-swiftshader','--no-sandbox',`--window-size=${width},${height}`,'--autoplay-policy=no-user-gesture-required','about:blank'],{stdio:'ignore'});
   processes.push({proc,prof}); let tabs;
   for(let i=0;i<50;i++){try{tabs=await(await fetch(`http://127.0.0.1:${port}/json/list`)).json();if(tabs.length)break;}catch{}await sleep(200);}
   const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl); await new Promise(r=>ws.addEventListener('open',r));
@@ -21,8 +23,8 @@ async function page(name) {
   const send=(method,params={})=>new Promise((resolve,reject)=>{const i=++id;pending.set(i,resolve);ws.send(JSON.stringify({id:i,method,params}));setTimeout(()=>{if(pending.has(i)){pending.delete(i);reject(new Error(`${name}: ${method} timed out`));}},30000).unref();});
   const evaluate=async expression=>{const m=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(m.result?.exceptionDetails)throw new Error(JSON.stringify(m.result.exceptionDetails));return m.result?.result?.value;};
   const wait=async expression=>{const end=Date.now()+90000;while(Date.now()<end){if(await evaluate(expression))return;await sleep(500);}throw new Error(name+' waiting for '+expression);};
-  await send('Runtime.enable');await send('Page.enable');await send('Emulation.setDeviceMetricsOverride',{width:1280,height:800,deviceScaleFactor:1,mobile:false});await send('Page.navigate',{url});
-  return {name,send,evaluate,wait,errors,async shot(file){const m=await send('Page.captureScreenshot',{format:'png'});writeFileSync(file,Buffer.from(m.result.data,'base64'));}};
+  await send('Runtime.enable');await send('Page.enable');await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});await send('Page.navigate',{url});
+  return {name,send,evaluate,wait,errors,async shot(file){if(!shots)return;const m=await send('Page.captureScreenshot',{format:'png'});writeFileSync(file,Buffer.from(m.result.data,'base64'));}};
 }
 try {
   const a=await page('Alice'); await a.wait('window.__multiplayer?.connected'); console.log('Alice loaded');
@@ -37,7 +39,7 @@ try {
   await a.evaluate(`document.getElementById('mp-start').click();document.activeElement.blur()`);await b.evaluate('document.activeElement.blur()');
   await a.wait(`window.__multiplayer.room?.phase==='racing'`);await b.wait(`window.__multiplayer.room?.phase==='racing'`);
   const aRace=await a.evaluate('window.__multiplayer.room.raceId'),bRace=await b.evaluate('window.__multiplayer.room.raceId');assert.equal(aRace,bRace);
-  await a.send('Input.dispatchKeyEvent',{type:'keyDown',code:'KeyW',key:'w',windowsVirtualKeyCode:87});await b.send('Input.dispatchKeyEvent',{type:'keyDown',code:'KeyW',key:'w',windowsVirtualKeyCode:87});await sleep(6000);
+  await a.send('Input.dispatchKeyEvent',{type:'keyDown',code:'KeyW',key:'w',windowsVirtualKeyCode:87});await b.send('Input.dispatchKeyEvent',{type:'keyDown',code:'KeyW',key:'w',windowsVirtualKeyCode:87});await a.wait('__dbg().kmh>10 && __multiplayer.room.players.every(p=>p.state?.s>819)');await b.wait('__dbg().kmh>10 && __multiplayer.room.players.every(p=>p.state?.s>819)');await sleep(1000);
   await a.send('Input.dispatchKeyEvent',{type:'keyUp',code:'KeyW',key:'w',windowsVirtualKeyCode:87});await b.send('Input.dispatchKeyEvent',{type:'keyUp',code:'KeyW',key:'w',windowsVirtualKeyCode:87});
   for(const p of [a,b]){
     const result=await p.evaluate(`({game:__dbg(),room:__multiplayer.room.players.map(p=>({name:p.name,s:p.state?.s,car:p.car})),clock:__game.raceT,error:document.getElementById('err').textContent})`);console.log(p.name,JSON.stringify(result));

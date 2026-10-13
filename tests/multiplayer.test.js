@@ -2,9 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WebSocket } from 'ws';
 import { createGameServer } from '../server/index.js';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 async function harness(t, options = {}) {
-  const game = createGameServer({ countdownMs: 80, tickMs: 10, ...options });
+  const {shortTrack, ...settings} = options;
+  if (shortTrack) {
+    const root=mkdtempSync(join(tmpdir(),'paraliaki-test-'));mkdirSync(join(root,'data'));
+    writeFileSync(join(root,'data/map.json'),JSON.stringify({route:{start:819,finish:919}}));
+    settings.root=root;t.after(()=>rmSync(root,{recursive:true,force:true}));
+  }
+  const game = createGameServer({ countdownMs: 80, tickMs: 10, ...settings });
   await new Promise(resolve => game.server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${game.server.address().port}`;
   t.after(() => game.close());
@@ -35,7 +44,7 @@ test('public discovery, private codes, full capacity, safe static serving', asyn
 });
 
 test('host authority, ready gating, shared race ID, state relay, invalid movement, DNF and rematch', async t => {
-  const { game, client } = await harness(t);
+  const { game, client } = await harness(t,{shortTrack:true});
   const a=await client(), b=await client();
   a.send({type:'create',name:'Alice'}); const code=(await a.room('waiting',1)).room.code;
   b.send({type:'join',code,name:'Bob',car:'poseidon'}); await b.room('waiting',2);
@@ -49,9 +58,8 @@ test('host authority, ready gating, shared race ID, state relay, invalid movemen
   assert.equal(snap.players.find(p=>p.id===a.id).state.s,state.s);
   a.send({type:'state',raceId:ar.raceId,state:{...state,s:ar.track.finish}}); await new Promise(r=>setTimeout(r,30)); assert.equal(game.rooms.get(code).players.get(a.id).finish,null);
   a.send({type:'state',raceId:'stale',state:{...state,s:state.s+2}}); a.send({type:'state',raceId:ar.raceId,state:{...state,u:1e99}}); await new Promise(r=>setTimeout(r,30)); assert.equal(game.rooms.get(code).players.get(a.id).state.s,state.s);
-  // Exercise the line crossing without taking a real 11 km race: move the server's track endpoint.
-  game.rooms.get(code).players.get(a.id).lastUpdate=Date.now()-100000;
-  game.rooms.get(code).startAt=Date.now()-100000;
+  // The fixture is a 100 m sprint. Wait for valid travel time before crossing the line.
+  await new Promise(r=>setTimeout(r,1000));
   a.send({type:'state',raceId:ar.raceId,state:{...state,s:ar.track.finish}}); await a.wait(m=>m.type==='room'&&m.room.players.find(p=>p.id===a.id)?.finish!==null&&m.room.players.find(p=>p.id===a.id)?.finish!==undefined);
   b.ws.close(); const result=(await a.room('results')).room; assert.equal(result.players.find(p=>p.id===b.id).dnf,true); assert.ok(result.players.find(p=>p.id===a.id).finish>0);
   a.send({type:'rematch'}); await a.wait(m=>m.type==='room'&&m.room.phase==='waiting'&&m.room.players.length===1&&!m.room.players[0].ready);
@@ -70,4 +78,21 @@ test('race deadline finishes all remaining drivers as DNF', async t=>{
   const { client }=await harness(t,{raceLimitMs:80}); const a=await client(),b=await client(); a.send({type:'create'}); const code=(await a.room('waiting',1)).room.code;
   b.send({type:'join',code}); await b.room('waiting',2); a.send({type:'ready',ready:true}); b.send({type:'ready',ready:true}); await a.wait(m=>m.type==='room'&&m.room.players.length===2&&m.room.players.every(p=>p.ready));
   a.send({type:'start'}); const r=(await a.room('results')).room; assert.ok(r.players.every(p=>p.dnf));
+});
+
+test('a finished driver keeps their result when leaving before the other driver finishes', async t=>{
+  const {game,client}=await harness(t,{shortTrack:true}); const a=await client(),b=await client();
+  a.send({type:'create'});const code=(await a.room('waiting',1)).room.code;b.send({type:'join',code});await b.room('waiting',2);
+  a.send({type:'ready',ready:true});b.send({type:'ready',ready:true});await a.wait(m=>m.type==='room'&&m.room.players.length===2&&m.room.players.every(p=>p.ready));
+  a.send({type:'start'});const r=(await b.room('racing')).room;
+  const room=game.rooms.get(code);
+  await new Promise(r=>setTimeout(r,1000));
+  const state={s:r.track.finish,u:4,yaw:0,vLong:0,vLat:0,steer:0,rpm:850,gear:1};
+  a.send({type:'state',raceId:r.raceId,state});await b.wait(m=>m.type==='room'&&m.room.players.find(p=>p.id===a.id)?.finish!=null);
+  a.ws.close();await b.wait(m=>m.type==='room'&&m.room.hostId===b.id);
+  assert.equal(room.players.get(a.id).dnf,false);
+  room.endAt=Date.now();const results=(await b.room('results')).room;
+  const winner=results.players.find(p=>p.id===a.id);
+  assert.ok(winner.finish!==null&&!winner.dnf);
+  assert.equal(results.players.find(p=>p.id===b.id).dnf,true);
 });

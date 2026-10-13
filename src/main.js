@@ -330,7 +330,7 @@ function showResults() {
 // ------------------------------------------------------------------ online racing
 function browseOnline(open) {
   keys.clear();
-  if (open && !isOnline()) { browseFrom = G.state; G.state = 'lobby'; }
+  if (open && !isOnline()) { if (browseFrom === null) browseFrom = G.state; G.state = 'lobby'; }
   else if (!open && !isOnline() && browseFrom) { G.state = browseFrom; G.countWall = performance.now(); browseFrom = null; }
 }
 function clearRemoteCars() {
@@ -347,6 +347,7 @@ function onlineRoom(room) {
   traffic.disabled = true;
   if (room.phase === 'waiting') {
     keys.clear();
+    hud.count('');
     G.state = 'lobby'; rival.model.root.visible = false;
     for (const c of remoteCars.values()) c.model.root.visible = false;
     traffic.reset(route.start); document.body.classList.remove('racing', 'counting');

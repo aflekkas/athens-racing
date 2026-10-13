@@ -29,7 +29,7 @@ export function createGameServer({ root = ROOT, countdownMs = 5000, raceLimitMs 
     if (!r) return;
     const p = r.players.get(ws.playerId);
     if (r.phase === 'waiting' || r.phase === 'results') r.players.delete(ws.playerId);
-    else if (p) { p.connected = false; p.dnf = true; p.ws = null; }
+    else if (p) { p.connected = false; p.dnf = p.finish === null; p.ws = null; }
     const connected = [...r.players.values()].filter(p => p.connected);
     if (!connected.length) rooms.delete(r.code);
     else {
