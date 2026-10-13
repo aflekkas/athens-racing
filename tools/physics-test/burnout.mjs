@@ -27,6 +27,6 @@ for (const spec of cars) for (const device of ['keyboard', 'gamepad']) for (cons
   for (let i = 0; i < 180; i++) v.update(1/60, input.update(1/60));
   const row = { car: spec.id, drive: spec.drive, device, entry, maxHoldKmh, minSpin, minRpm, redline: spec.redline, maxCut, spinSeconds, holdWheelSpeed, heldDistance, launchKmh: v.kmh, launchDistance: v.s - releaseS };
   rows.push(row); console.log(JSON.stringify(row));
-  if (!baseline) { assert.ok(maxHoldKmh < 3, 'must hold near stationary: '+JSON.stringify(row)); assert.ok(minSpin > 6 && spinSeconds >= 2.99, 'sustained driven tyre slip: '+JSON.stringify(row)); assert.ok(minRpm > spec.redline*0.65); assert.equal(maxCut,0); assert.ok(holdWheelSpeed < 0.5); assert.ok(v.kmh > 25 && row.launchDistance > 10); assert.equal(v.burnout,false); assert.equal(v.handbrakeInput,false); }
+  if (!baseline) { assert.ok(maxHoldKmh < 3, 'must hold near stationary: '+JSON.stringify(row)); assert.ok(minSpin > 6 && spinSeconds >= 2.99, 'sustained driven tyre slip: '+JSON.stringify(row)); assert.ok(minRpm > spec.redline*0.85); assert.equal(maxCut,0); assert.ok(holdWheelSpeed < 0.5); assert.ok(v.kmh > 25 && row.launchDistance > 10); assert.equal(v.burnout,false); assert.equal(v.handbrakeInput,false); }
 }
 const out = process.argv.find(a => a.startsWith('--out='))?.slice(6); if (out) writeFileSync(out, JSON.stringify(rows,null,2)+'\n');

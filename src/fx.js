@@ -13,37 +13,89 @@ const MARK_HW = 0.11;      // half the tread width
 
 // world-sized soft sprites; per particle: size, alpha, colour, gravity, drag
 class Particles {
-  constructor(scene, n, { additive = false, soft = 0.5 } = {}) {
-    this.n = n; this.k = 0; this.live = 0;
+  constructor(scene, n, { additive = false, soft = 0.5, billow = false } = {}) {
+    this.n = n; this.k = 0; this.live = 0; this.billow = billow;
     const g = new THREE.BufferGeometry();
     this.pos = new Float32Array(n * 3); this.vel = new Float32Array(n * 3);
     this.size = new Float32Array(n); this.alpha = new Float32Array(n); this.col = new Float32Array(n * 3);
     this.life = new Float32Array(n); this.age = new Float32Array(n); this.s0 = new Float32Array(n); this.s1 = new Float32Array(n);
     this.a0 = new Float32Array(n); this.grav = new Float32Array(n); this.drag = new Float32Array(n);
+    this.roll = new Float32Array(n); this.seed = new Float32Array(n);
     this.pos.fill(-1e5);
     this.wind = { x: 0, z: 0 }; // the air the particles settle into (drag pulls them towards it)
     g.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aSize', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aAlpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aCol', new THREE.BufferAttribute(this.col, 3).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('aRoll', new THREE.BufferAttribute(this.roll, 1).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(this.seed, 1).setUsage(THREE.DynamicDrawUsage));
     this.mat = new THREE.ShaderMaterial({
-      uniforms: { uScale: { value: 600 }, uSoft: { value: soft }, uLight: { value: 1 } },
-      vertexShader: `attribute float aSize; attribute float aAlpha; attribute vec3 aCol; uniform float uScale;
-        varying float vA; varying vec3 vC;
+      uniforms: { uScale: { value: 600 }, uSoft: { value: soft }, uLight: { value: 1 }, uBillow: { value: billow ? 1 : 0 },
+        tDepth: { value: null }, uDepthOn: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uNear: { value: 0.1 }, uFar: { value: 90000 } },
+      vertexShader: `attribute float aSize; attribute float aAlpha; attribute vec3 aCol;
+        attribute float aRoll; attribute float aSeed; uniform float uScale;
+        varying float vA; varying vec3 vC; varying float vRoll; varying float vSeed; varying float vDepth; varying float vRadius;
         void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
-          gl_PointSize = clamp(aSize * uScale / max(0.1, -mv.z), 0.0, 400.0); vA = aAlpha; vC = aCol; }`,
-      fragmentShader: `uniform float uSoft; uniform float uLight; varying float vA; varying vec3 vC;
-        void main() { vec2 p = gl_PointCoord * 2.0 - 1.0; float r = dot(p, p); if (r > 1.0) discard;
-          float a = vA * pow(1.0 - r, 1.0 + uSoft * 2.0); gl_FragColor = vec4(vC * uLight, a); }`,
+          gl_PointSize = clamp(aSize * uScale / max(0.1, -mv.z), 0.0, 500.0);
+          vA = aAlpha; vC = aCol; vRoll = aRoll; vSeed = aSeed; vDepth = -mv.z; vRadius = aSize * 0.5; }`,
+      fragmentShader: `uniform float uSoft; uniform float uLight; uniform float uBillow;
+        uniform sampler2D tDepth; uniform float uDepthOn; uniform vec2 uRes; uniform float uNear; uniform float uFar;
+        varying float vA; varying vec3 vC; varying float vRoll; varying float vSeed; varying float vDepth; varying float vRadius;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+          return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y); }
+        void main() {
+          vec2 p = gl_PointCoord * 2.0 - 1.0; float r = dot(p,p); if (r > 1.0) discard;
+          float a = vA * pow(1.0-r,1.0+uSoft*2.0); vec3 colour = vC * uLight;
+          if (uBillow > 0.5) {
+            float c=cos(vRoll), s=sin(vRoll); vec2 q=mat2(c,-s,s,c)*p;
+            float n=0.65*noise(q*3.2+vSeed)+0.35*noise(q*7.0-vSeed+vRoll*0.35);
+            float edge=1.0-smoothstep(0.60,1.0,r+(0.5-n)*0.28);
+            float density=smoothstep(0.18,0.78,n)*pow(max(0.0,1.0-r),0.55);
+            vec3 normal=normalize(vec3(q,sqrt(max(0.01,1.0-r))));
+            float lit=0.48+0.9*max(0.0,dot(normal,normalize(vec3(-0.4,0.8,0.6))))+0.35*r;
+            colour *= lit * (0.72+0.55*n); a=vA*edge*density;
+          }
+          // Fade into opaque geometry and the ground, never a hard circular cut.
+          if (uDepthOn > 0.5) {
+            float d=texture2D(tDepth,gl_FragCoord.xy/uRes).r;
+            float sceneZ=uNear*uFar/(uFar-(uFar-uNear)*d);
+            float cloudZ=vDepth-vRadius*sqrt(max(0.0,1.0-r))*0.25;
+            a *= clamp((sceneZ-cloudZ)/max(0.15,min(0.8,vRadius*0.5)),0.0,1.0);
+          }
+          a *= smoothstep(0.25,0.8,vDepth); gl_FragColor=vec4(colour,a);
+        }`,
       transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
     });
     this.pts = new THREE.Points(g, this.mat); this.pts.frustumCulled = false; this.pts.renderOrder = 5;
+    if (billow) {
+      // Snapshot the opaque depth at the transparent pass, without coupling Fx
+      // to post.js. MSAA uses the last resolved depth; a stationary cloud is exact.
+      this.pts.onBeforeRender = (renderer, scene, camera) => {
+        const target = renderer.getRenderTarget(), u = this.mat.uniforms;
+        u.uDepthOn.value = 0;
+        if (this.live <= 0) return;
+        if (!target?.depthTexture || !renderer.copyTextureToTexture) return;
+        if (!this.depthRT) {
+          const depth = new THREE.DepthTexture(target.width, target.height); depth.type = target.depthTexture.type; depth.format = target.depthTexture.format;
+          this.depthRT = new THREE.WebGLRenderTarget(target.width, target.height, { depthTexture: depth });
+        }
+        if (this.depthRT.width !== target.width || this.depthRT.height !== target.height) this.depthRT.setSize(target.width, target.height);
+        renderer.initRenderTarget(this.depthRT);
+        renderer.copyTextureToTexture(target.depthTexture, this.depthRT.depthTexture);
+        renderer.setRenderTarget(target);
+        u.tDepth.value = this.depthRT.depthTexture; u.uDepthOn.value = 1;
+        u.uRes.value.set(target.width, target.height); u.uNear.value = camera.near; u.uFar.value = camera.far;
+      };
+      this.mat.addEventListener('dispose', () => this.depthRT?.dispose());
+    }
     scene.add(this.pts);
   }
   emit(x, y, z, vx, vy, vz, { life = 1.5, s0 = 0.4, s1 = 2, a = 0.4, r = 1, g = 1, b = 1, grav = 0, drag = 1.5 } = {}) {
     const k = this.k; this.k = (k + 1) % this.n;
     this.pos[k * 3] = x; this.pos[k * 3 + 1] = y; this.pos[k * 3 + 2] = z;
     this.vel[k * 3] = vx; this.vel[k * 3 + 1] = vy; this.vel[k * 3 + 2] = vz;
+    this.roll[k] = Math.random() * Math.PI * 2; this.seed[k] = Math.random() * 100;
     this.life[k] = life; this.age[k] = 0; this.s0[k] = s0; this.s1[k] = s1; this.a0[k] = a; this.grav[k] = grav; this.drag[k] = drag;
     this.col[k * 3] = r; this.col[k * 3 + 1] = g; this.col[k * 3 + 2] = b;
     this.live = Math.max(this.live, 3);
@@ -59,26 +111,31 @@ class Particles {
       const d = Math.exp(-this.drag[k] * dt), wx = this.wind.x, wz = this.wind.z;
       this.vel[k * 3] = wx + (this.vel[k * 3] - wx) * d; this.vel[k * 3 + 2] = wz + (this.vel[k * 3 + 2] - wz) * d;
       this.vel[k * 3 + 1] = this.vel[k * 3 + 1] * d - this.grav[k] * 9.81 * dt;
+      if (this.billow) {
+        const phase = this.seed[k] + this.age[k] * 1.4;
+        this.vel[k * 3] += Math.sin(phase) * 0.28 * dt; this.vel[k * 3 + 2] += Math.cos(phase * 0.83) * 0.28 * dt;
+        this.roll[k] += dt * (0.22 + 0.12 * Math.sin(phase));
+      }
       for (let a = 0; a < 3; a++) this.pos[k * 3 + a] += this.vel[k * 3 + a] * dt;
       this.size[k] = this.s0[k] + (this.s1[k] - this.s0[k]) * Math.sqrt(t);
-      this.alpha[k] = this.a0[k] * smoothstep(0, 0.08, t) * (1 - t) * (1 - t);
+      this.alpha[k] = this.a0[k] * smoothstep(0, 0.08, t) * Math.pow(1 - t, this.billow ? 1.35 : 2);
     }
     if (!any) this.live--;
     const at = this.pts.geometry.attributes;
-    at.position.needsUpdate = at.aSize.needsUpdate = at.aAlpha.needsUpdate = at.aCol.needsUpdate = true;
+    at.position.needsUpdate = at.aSize.needsUpdate = at.aAlpha.needsUpdate = at.aCol.needsUpdate = at.aRoll.needsUpdate = at.aSeed.needsUpdate = true;
   }
 }
 
 // mark colours (rgb, alpha): rubber on tarmac, ruts in the soft stuff
 const MARK_COL = { asphalt: [0.04, 0.04, 0.045, 0.6], pavement: [0.07, 0.07, 0.07, 0.45], sand: [0.42, 0.35, 0.25, 0.55], deepsand: [0.45, 0.37, 0.26, 0.65], dirt: [0.24, 0.18, 0.12, 0.5],
-  gravel: [0.3, 0.27, 0.22, 0.45], scrub: [0.22, 0.2, 0.13, 0.45], verge: [0.2, 0.17, 0.1, 0.5] };
+  grass: [0.2, 0.17, 0.1, 0.5], gravel: [0.3, 0.27, 0.22, 0.45], scrub: [0.22, 0.2, 0.13, 0.45], verge: [0.2, 0.17, 0.1, 0.5] };
 // dust colours per surface
-const DUST = { sand: [0.86, 0.78, 0.62], deepsand: [0.88, 0.8, 0.64], dirt: [0.62, 0.52, 0.4], gravel: [0.72, 0.68, 0.6], scrub: [0.6, 0.55, 0.42], verge: [0.5, 0.42, 0.3] };
+const DUST = { grass: [0.5, 0.46, 0.32], sand: [0.86, 0.78, 0.62], deepsand: [0.88, 0.8, 0.64], dirt: [0.62, 0.52, 0.4], gravel: [0.72, 0.68, 0.6], scrub: [0.6, 0.55, 0.42], verge: [0.5, 0.42, 0.3] };
 
 export class Fx {
   constructor(scene, route, ground) {
     this.route = route; this.ground = ground;
-    this.smoke = new Particles(scene, 1800, { soft: 0.8 });
+    this.smoke = new Particles(scene, 1800, { soft: 0.8, billow: true });
     this.grit = new Particles(scene, 900, { soft: 0.2 });
     this.sparkP = new Particles(scene, 300, { additive: true, soft: 0.1 });
     this.smoke.wind.x = 1.1; this.smoke.wind.z = 0.45; // a light sea breeze carries smoke and dust off and thins it out
@@ -97,6 +154,16 @@ export class Fx {
     this.mk = 0; this.dirty0 = Infinity; this.dirty1 = -1;
     this.wheels = new WeakMap(); // veh -> per-wheel trail state
     this._g = {}; this._f = {}; this.acc = new WeakMap();
+    // Small shared pool: only spinning tyres draw the sidewall/rim blur. The
+    // overlay belongs to Fx, so model files and their wheel rigs stay independent.
+    const tyreG = new THREE.TorusGeometry(0.89, 0.11, 8, 32), rimG = new THREE.RingGeometry(0.27, 0.73, 40);
+    const tyreM = new THREE.MeshStandardMaterial({ color: 0x19191a, roughness: 0.95 });
+    const rimM = new THREE.MeshBasicMaterial({ color: 0x92979d, transparent: true, opacity: 0.48, depthWrite: false, side: THREE.DoubleSide });
+    this.blurPool = Array.from({ length: 16 }, () => {
+      const group = new THREE.Group(), tyre = new THREE.Mesh(tyreG, tyreM), rim = new THREE.Mesh(rimG, rimM);
+      group.add(tyre, rim); group.visible = false; scene.add(group); return { group, rim };
+    });
+    this.blurUsed = 0; this._blurAxis = new THREE.Vector3(); this._blurNormal = new THREE.Vector3(0, 0, 1);
   }
   _groundY(veh, x, z, ox, oz) {
     const f = this.route.frame(clamp(veh.s, 0, this.route.length), this._f);
@@ -118,6 +185,18 @@ export class Fx {
     st.on = true; st.x = x; st.z = z; st.y = y; st.a = a;
     st.lx = x + px; st.lz = z + pz; st.rx = x - px; st.rz = z - pz;
   }
+  // A stationary burnout still deposits rubber. Stamp a tyre-sized patch at a
+  // bounded rate; the normal trail resumes as soon as the car moves away.
+  _rubberPatch(x, y, z, fx, fz, col, a) {
+    const i = this.mk; this.mk = (i + 1) % MARKS;
+    for (let v = 0; v < 4; v++) {
+      const along = v < 2 ? -0.18 : 0.18, across = v & 1 ? MARK_HW : -MARK_HW;
+      const o = i * 12 + v * 3, c = i * 16 + v * 4;
+      this.mp[o] = x + fx * along - fz * across; this.mp[o + 1] = y; this.mp[o + 2] = z + fz * along + fx * across;
+      this.mc[c] = col[0]; this.mc[c + 1] = col[1]; this.mc[c + 2] = col[2]; this.mc[c + 3] = col[3] * a;
+    }
+    this.dirty0 = Math.min(this.dirty0, i); this.dirty1 = Math.max(this.dirty1, i);
+  }
   /** a burst of sparks where a car scraped a wall (wall normal nx, nz points back towards the car) */
   sparks(veh, strength) {
     const n = Math.round(clamp(strength, 0, 1) * 40);
@@ -136,7 +215,7 @@ export class Fx {
     this.smoke.mat.uniforms.uScale.value = this.grit.mat.uniforms.uScale.value = this.sparkP.mat.uniforms.uScale.value = viewH / (2 * Math.tan(camera.fov * Math.PI / 360));
     // unlit sprites: dim them with the daylight (sparks glow regardless)
     this.smoke.mat.uniforms.uLight.value = this.grit.mat.uniforms.uLight.value = 0.08 + 0.92 * clamp(WEATHER.ambient, 0, 1);
-    if (dt > 0) for (const veh of cars) if (veh) this._car(veh, dt);
+    if (dt > 0) { this.blurUsed = 0; for (const b of this.blurPool) b.group.visible = false; for (const veh of cars) if (veh) this._car(veh, dt); }
     this.smoke.update(dt); this.grit.update(dt); this.sparkP.update(dt);
     if (this.dirty1 >= 0) {
       const g = this.marks.geometry, P = g.attributes.position, C = g.attributes.color;
@@ -169,12 +248,27 @@ export class Fx {
       const spinV = Wc.vw - vgx, slip = Math.hypot(spinV, vgy);
       const surf = veh.wheelSurf?.[i] ?? (veh.offroad ? 'dirt' : 'asphalt');
       const paved = surf === 'asphalt' || surf === 'pavement';
+      const burnout = !!veh.burnout && spinV > 6 && Wc.sN > 1.5;
       const slideK = clamp((slip - 2.2) / 7, 0, 1) * (Wc.sN > 0.9 ? 1 : 0.4);
       if (air || veh.water > 0) { st.on = false; continue; }
       // marks: rubber when the tyre slides, ruts wherever the ground is soft
       const markA = paved ? slideK : surf === 'rock' ? 0 : Math.max(0.45 * smoothstep(0.5, 3, Math.abs(vgx)), slideK);
       if (markA > 0.04) this._mark(st, x, this._groundY(veh, x, z, ox, oz) + 0.025, z, MARK_COL[surf] || MARK_COL.dirt, Math.min(1, markA * 1.2) * (paved ? 1 - 0.6 * WEATHER.wet : 1));
       else st.on = false;
+      if (paved && burnout && speed < 2) {
+        st.stamp = (st.stamp || 0) + Math.min(dt, 0.1);
+        if (st.stamp >= 0.2) { st.stamp %= 0.2; this._rubberPatch(x, this._groundY(veh, x, z, ox, oz) + 0.026, z, fx * c + rx * s, fz * c + rz * s, MARK_COL[surf], Math.min(1, 0.4 + st.heat) * (1 - 0.6 * WEATHER.wet)); }
+      } else st.stamp = 0;
+      if (burnout && paved && this.blurUsed < this.blurPool.length) {
+        const { group, rim } = this.blurPool[this.blurUsed++], R = veh.spec?.wheelR || 0.31;
+        const load = clamp(Wc.Fz / (veh.m * 9.81 * 0.25), 0, 2), squash = 1 - 0.025 * load;
+        group.visible = true;
+        group.position.set(x, this._groundY(veh, x, z, ox, oz) + R * squash, z);
+        this._blurAxis.set(rx * c - fx * s, 0, rz * c - fz * s);
+        group.quaternion.setFromUnitVectors(this._blurNormal, this._blurAxis);
+        group.scale.set(R * (1 + 0.012 * load), R * squash, R);
+        rim.position.z = cy < 0 ? -0.12 : 0.12;
+      }
       const y = veh.y + 0.15;
       if (paved) {
         // tyre smoke only when the rubber is really being cooked: a big drift with this tyre sliding hard, a burnout /
@@ -189,12 +283,12 @@ export class Fx {
           locked ? smoothstep(14, 22, gvx) : 0) * (1 - 0.85 * WEATHER.wet); // a wet tyre barely smokes
         // it takes sustained abuse to make a cloud: thin and translucent at first, thick only once the tyre is hot
         st.heat = k > 0.05 ? Math.min(1, st.heat + dt * k / 1.2) : Math.max(0, st.heat - dt / 0.6);
-        st.acc += 26 * k * (0.3 + 0.7 * st.heat) * dt;
+        st.acc += (burnout ? 44 : 26) * k * (0.3 + 0.7 * st.heat) * Math.min(dt, 0.1);
         while (st.acc >= 1) {
           st.acc -= 1;
-          const j = Math.random(), h = st.heat;
+          const j = Math.random(), h = st.heat, shade = 0.05 + 0.025 * (1 - h);
           this.smoke.emit(x - vw.x * dt * j, y, z - vw.z * dt * j, vw.x * 0.15 + (Math.random() - 0.5) * 0.8 - fx * spinV * 0.04, 0.35 + Math.random() * 0.5, vw.z * 0.15 + (Math.random() - 0.5) * 0.8 - fz * spinV * 0.04,
-            { life: 1.1 + Math.random() * 0.9 + h * 0.8, s0: 0.35, s1: 1.8 + 2.2 * h + Math.random(), a: 0.05 + 0.2 * h, r: 0.8, g: 0.8, b: 0.82, grav: -0.025, drag: 2.2 });
+            { life: (burnout ? 3.8 : 1.1) + Math.random() * (burnout ? 1.6 : 0.9) + h * (burnout ? 2.2 : 0.8), s0: 0.35, s1: (burnout ? 3.0 : 1.8) + 2.2 * h + Math.random(), a: burnout ? 0.24 + 0.55 * h : 0.05 + 0.2 * h, r: burnout ? shade : 0.8, g: burnout ? shade : 0.8, b: burnout ? shade * 1.05 : 0.82, grav: burnout ? -0.018 : -0.025, drag: burnout ? 0.9 : 2.2 });
         }
       } else if (surf !== 'rock') {
         // dust off the soft stuff, and a roost of sand / grit behind a spinning wheel
