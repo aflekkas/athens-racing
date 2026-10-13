@@ -31,3 +31,9 @@ Tall short body, upright cabin, roof rails, black rub strips, square lamps and t
 1999–2002 five-door **50 kW / 68 PS, 90 Nm**, 850 kg representative base mass, FWD, five-speed manual, 155 km/h. Dimensions 3.615 × 1.660 × 1.500 m, wheelbase 2.370 m. Primary references: [Toyota first-generation press archive](https://media.toyota.co.uk/vehicles/yaris-archive-1999/), [1999 launch](https://media.toyota.co.uk/the-new-toyota-yaris/) and [complete first-generation press pack](https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/Gen1-Yaris-archive-press-pack.pdf). Engine is the original 1SZ-FE; the manual ratios/final drive model that five-speed family. Trim, market and five-door equipment affect actual kerb weight.
 
 Compact rising bonnet, tapered swept lamps, upright hatch and centrally mounted digital speed display. The cockpit keeps the forward view over an empty driver's dash instead of a conventional instrument binnacle.
+
+## BMW E36 325i sedan (`e36`)
+
+Representative 1993 M50TU five-speed sedan, **141 kW / 192 PS, 245 Nm**, 1330 kg, **RWD**, 233 km/h. Dimensions 4.433 × 1.698 × 1.393 m, wheelbase 2.700 m. [BMW Classic's 325i entry](https://www.bmwgroup-classic.com/de/modelle/bmw-klassiker/product-description-page.ad-464-7.bmw-325i-e36.html) confirms the 2494 cc six, output at 5900 rpm and 233 km/h. The road mass, dimensions and gearbox represent common European manual specifications; tyre friction, 25% limited-slip preload, CdA and suspension/aids are simulation choices. The limited-slip differential is an optional/modified-car setup, not standard-equipment attribution.
+
+Long bonnet, short front overhang, four-door three-box body, twin kidneys, four round lamp modules behind rectangular covers, amber corners and period radio. It fills the cheap rear-drive slot and sustains power-oversteer with TC/ESC disabled.

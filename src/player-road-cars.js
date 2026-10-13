@@ -2,6 +2,8 @@
 // Reference photographs/specifications: tools/models-more-notes.md.
 import * as THREE from 'three';
 export const ROAD_MODELS = {
+ e36: {L:4.433,W:1.698,H:1.393,wb:2.700,track:1.408,r:.309,rim:.1905,tyreF:.205,tyreR:.205,belt:.91,front:.77,rear:.88,cowl:-.83,header:-.35,roofBack:.81,back:1.37,seatZ:.18,eyeY:1.10,leather:'#43474c',doors:4,brand:'BMW',stations:[[-2.2165,.74,.77],[-1.75,.82,.81],[-1.35,.849,.88],[-.83,.82,.91],[.5,.82,.91],[1.35,.849,.92],[1.80,.82,.89],[2.2165,.76,.88]]},
+
  yaris: {L:3.615,W:1.660,H:1.500,wb:2.370,track:1.440,r:.282,rim:.165,tyreF:.155,tyreR:.155,belt:.95,front:.76,rear:.98,cowl:-.89,header:-.34,roofBack:1.09,back:1.63,seatZ:.11,eyeY:1.20,leather:'#526779',doors:4,brand:'TOYOTA',stations:[[-1.8075,.66,.76],[-1.40,.80,.85],[-.90,.83,.95],[.4,.80,.97],[1.19,.83,1.0],[1.8075,.72,.98]]},
 
  panda: {L:3.538,W:1.578,H:1.540,wb:2.299,track:1.366,r:.286,rim:.165,tyreF:.155,tyreR:.155,belt:.97,front:.84,rear:1.0,cowl:-.81,header:-.38,roofBack:1.28,back:1.61,seatZ:.10,eyeY:1.24,leather:'#535d70',doors:4,brand:'FIAT',archTrim:true,stations:[[-1.769,.68,.84],[-1.4,.77,.89],[-.81,.789,.97],[.4,.78,.98],[1.14,.789,1.00],[1.769,.71,1.0]]},

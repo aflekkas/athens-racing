@@ -188,6 +188,15 @@ export const CARS = [
     tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.53, track: 1.44, rsF: .58, usGrad: 3.4, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
     stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
   },
+  // Period manufacturer references and estimates: tools/models-more-notes.md.
+  {
+    id: 'e36', name: 'BMW 325i E36', short: '325i E36', tag: 'M50 straight-six · 192 PS. Five-speed manual. RWD.', color: '#455948', accent: '#a7a5a0',
+    zeroTo100: 8.0, mass: 1330, power: 141, torque: 245, redline: 6500, idle: 750, gears: [4.2,2.49,1.66,1.24,1.0], final: 3.15, wheelR: 0.309,
+    torqueCurve: [[0,75],[750,90],[1800,165],[3000,220],[4200,245],[5000,240],[5900,228.21],[6500,192]], peakTorqueRpm: 4200, peakPowerRpm: 5900,
+    wheelbase: 2.7, length: 4.433, width: 1.698, cdA: 0.62, vmax: 233, grip: 1.02, steer: .61, yawI: 1.05, drift: 1, brake: .97, cyl: 6, pitch: 1, body: 'e36', cabinWidth: .80, drive: 'rwd', engine: 'na6', transmission: 'manual', playerDetail: true, trafficWeight: 0.65, oldDash: true, gripRear: 1.04, lsd: .25,
+    tyres: ['205/60 R15','205/60 R15'], frontW: 0.51, hcg: 0.48, track: 1.408, rsF: .58, usGrad: 2.3, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .66, steerRate: 1.05, ebrake: .16,
+    stats: { speed: .55, accel: .59, handling: .65, drift: .77 },
+  },
 ];
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
