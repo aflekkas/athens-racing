@@ -14,16 +14,22 @@ import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 // GR Yaris: https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/241007-GR-Yaris-Press-Pack.pdf
 // GTV: period estimate; the catalogue's net engine output is also approximate (tools/vehicle-model-notes.md).
 export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0 };
-const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+import * as C from './ui/components.js';
+const { esc, icon } = C;
 export function renderCarSelect({ index = 0, def, garage = false } = {}) {
-  const c = CARS[index], locked = !!def?.car;
-  return `<div class="car-wrap"><div class="car-heading"><div class="kick">${garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR')}</div><h2>CHOOSE YOUR CAR</h2></div>
-    <div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"></div>
-    <div class="car-info"><div class="car-browse"><div class="mi car-arrow ${locked ? 'off' : ''}" role="button" aria-label="Previous car" data-act="carPrev">◀</div><span>${locked ? 'EVENT CAR · LOCKED' : `${index + 1} / ${CARS.length}`}</span><div class="mi car-arrow ${locked ? 'off' : ''}" role="button" aria-label="Next car" data-act="carNext">▶</div></div>
-      <h3>${esc(c.name)}</h3><div class="car-specs">${[['POWER',`${Math.round(c.power * 1.341)} HP`],['WEIGHT',`${c.mass} KG`],['DRIVETRAIN',c.drive.toUpperCase()],['0–100 KM/H',`${c.id === 'gtv' ? '≈ ' : ''}${ACCELERATION[c.id]?.toFixed(1) || '—'} S`]].map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
-      <div class="car-paints"><span>PAINT</span>${(PAINTS[c.id] || []).map(([name,color])=>`<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="background:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(PAINTS[c.id]?.find(p=>p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div>
-      <div class="car-actions"><div class="mi big" data-act="carConfirm"><b>${garage ? 'SELECT CAR' : 'RACE'}</b></div><div class="mi small" data-act="back">BACK</div></div>
-    </div></div><div class="ui-keys"><span><i>← →</i> CAR</span><span><i>ENTER / A</i> ${garage ? 'SELECT' : 'RACE'}</span><span><i>ESC / B</i> BACK</span></div>`;
+  const c = CARS[index], locked = !!def?.car, paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id];
+  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', String(c.drive).toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
+  const arrowBtn = (act, ic, label) => `<div class="mi car-arrow btn btn--secondary btn--icon ${locked ? 'off' : ''}" role="button" aria-label="${label}" data-act="${act}">${icon(ic)}</div>`;
+  return C.screen({ cls: 'scr--car', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'CHOOSE YOUR CAR',
+    hints: [['leftright', 'CAR'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'BACK']],
+    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count tnum">${locked ? `${icon('lock-simple')} EVENT CAR` : `${index + 1} / ${CARS.length}`}</span></div>
+    <section class="car-info panel panel--notch">
+      <div class="car-browse">${arrowBtn('carPrev', 'caret-left', 'Previous car')}<div class="car-browse__name"><h3>${esc(c.name)}</h3>${c.tag ? `<p>${esc(c.tag)}</p>` : ''}</div>${arrowBtn('carNext', 'caret-right', 'Next car')}</div>
+      <div class="car-dots" aria-hidden="true">${CARS.map((_, i) => `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>
+      ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
+      <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find((p) => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
+      <div class="car-actions">${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', attrs: { 'data-default': '' } })}</div>
+    </section></div>` });
 }
 export function mountCarSelect(root, index) {
   const container = root.querySelector('#carStage');

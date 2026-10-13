@@ -30,6 +30,7 @@ import { buildMapWorld } from './map-world.js';
 import { SCENERY_TIERS, updateSceneryLod } from './scenery.js';
 import { initReplay } from './replay-mode.js';
 import { loading } from './ui/loading.js';
+import { ui, icon } from './ui/components.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -67,7 +68,7 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 const audio = new Audio();
-audio.onTrack = (t) => hud.message(`♪ <i>${t.title}</i> · ${t.artist}`, 3);
+audio.onTrack = (t) => hud.message(`${icon('music-notes')} <i>${t.title}</i> · ${t.artist}`, 3);
 
 // ------------------------------------------------------------------ game state
 const G = {
@@ -482,6 +483,7 @@ function readInput(dt) {
   else if (Object.values(controls.touch).some(Boolean)) G.inputDevice = 'touch';
   else if (pad && (pad.buttons?.some(b => (b.value || 0) > 0.05) || pad.axes?.some(a => Math.abs(a) > controls.settings.deadzone))) G.inputDevice = 'gamepad';
   else if (!G.inputDevice || G.inputDevice === 'gamepad' && !pad) G.inputDevice = pad ? 'gamepad' : 'keyboard';
+  { const hint = ui.hintDevice(G.inputDevice); if (document.body.dataset.input !== hint) document.body.dataset.input = hint; } // device-aware key hints (ui.css)
   if (syncSteeringAssist() && menu?.screen === 'settings' && settings.steeringAssist === null) menu.refreshValues();
   for (const name of controls.actions) {
     // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
@@ -649,7 +651,7 @@ function pauseGame() {
   G.paused = { state: G.state, cam: G.cam };
   G.state = 'paused'; closeTowOffer(12); controls.clear();
   const d = G.ev.def;
-  menu.show('pause', { kick: `${d.name} · ${G.ev.r.fromName} ${G.ev.r.reverse ? '◀' : '▶'} ${G.ev.r.toName}`, sub: G.paused.state === 'countdown' ? 'ON THE GRID' : `TIME ${fmtTime(G.raceT + G.pen)}` });
+  menu.show('pause', { def: d, r: G.ev.r, mapName: map.definition?.name, sub: G.paused.state === 'countdown' ? 'ON THE GRID' : `TIME ${fmtTime(G.raceT + G.pen)}` });
 }
 function resume() {
   if (G.state !== 'paused') return;
@@ -685,6 +687,7 @@ function openGarage() {
 /** every named input action lands here (src/input.js -> readInput -> window.__flow.action) */
 function flowAction(name) {
   if (G.state === 'loading' || !menu) return false;
+  if (ui.action(name)) return true; // an open prompt / dropdown (src/ui/components.js) takes the input first
   if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
   if (towOffer.element && !menu.open && G.state === 'race' && (name === 'restart' || name === 'camera' && input.camera && (controls.pad?.buttons?.[3]?.value || 0) > 0.55)) { tow(player.veh); return true; }
@@ -702,7 +705,7 @@ function flowAction(name) {
   }
   return false;
 }
-const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active; // replay / photo mode take the controls too
+const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
 window.__flow = {
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),

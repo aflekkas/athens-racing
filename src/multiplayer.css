@@ -1,17 +1,63 @@
-#mp-toggle{position:fixed;right:22px;top:90px;z-index:30;background:#ff3b2f;color:white;border:0;padding:11px 18px;font:800 17px 'Barlow Condensed',sans-serif;cursor:pointer;letter-spacing:1px}
+/* Multiplayer lobby (src/multiplayer.js). Native selects / checkboxes in the panel are swapped for the UI kit's custom
+   Select / Toggle by src/ui/hosts.js; buttons, text fields and layout are styled here with the kit's tokens. */
+#mp-toggle{position:fixed;right:22px;top:90px;z-index:30;display:inline-flex;align-items:center;gap:8px;background:var(--c-accent,#ff3b2f);color:#fff;border:0;border-radius:4px;padding:10px 16px;font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;cursor:pointer}
 #multiplayer[hidden],#multiplayer [hidden],#mp-board[hidden]{display:none!important}
-#multiplayer{position:fixed;inset:0;z-index:100;background:rgba(5,9,16,.86);display:flex;align-items:center;justify-content:center;padding:20px;color:#fff;font-family:'Barlow',sans-serif;overflow:auto}
-.mp-card{width:760px;max-width:100%;max-height:92vh;overflow:auto;background:#101721;border:1px solid #354152;padding:26px;box-shadow:0 20px 100px #0008}
-.mp-heading,.mp-section,.mp-lobby,.mp-actions,.mp-create{display:flex;align-items:center;justify-content:space-between;gap:12px}.mp-heading small{font-size:11px;letter-spacing:2px;color:#8d9bac}.mp-heading h2{font:italic 900 42px 'Barlow Condensed',sans-serif;margin:3px 0 12px}
-#multiplayer button{background:#ff3b2f;color:white;border:0;padding:10px 14px;cursor:pointer;font:800 16px 'Barlow Condensed',sans-serif;white-space:nowrap}#multiplayer button:disabled{opacity:.4;cursor:default}#multiplayer button:focus-visible,#mp-toggle:focus-visible{outline:2px solid #29d8ff;outline-offset:3px}
-#multiplayer input,#multiplayer select{box-sizing:border-box;background:#07101a;border:1px solid #354152;color:#fff;padding:11px;font:500 14px 'Barlow',sans-serif;min-width:0}#multiplayer input:focus,#multiplayer select:focus{outline:2px solid #29d8ff}#multiplayer input[type=checkbox]{accent-color:#ff3b2f}
-.mp-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}.mp-fields label{font-size:11px;letter-spacing:1px;display:grid;gap:8px}.mp-create{flex-wrap:wrap}.mp-create>input{flex:1}.mp-create label{font-size:12px}#mp-join-form{display:flex;gap:10px;margin:16px 0}#mp-code{flex:1;text-transform:uppercase;letter-spacing:3px}.mp-section h3{font:800 20px 'Barlow Condensed',sans-serif;letter-spacing:1px}.mp-lobby,.mp-member{padding:12px 0;border-bottom:1px solid #293444;font-size:14px}.mp-actions{flex-wrap:wrap;justify-content:flex-start;margin:22px 0}.mp-note,#mp-room-help{color:#9eacbd;font-size:12px;line-height:1.6}#mp-status{color:#29d8ff;font-size:14px;overflow-wrap:anywhere}#mp-room-code{color:#29d8ff;letter-spacing:3px}#mp-board{position:fixed;top:145px;right:22px;z-index:25;background:#0a111ddd;border:1px solid #354152;color:white;padding:14px 18px;font:600 14px 'Barlow',sans-serif;min-width:175px;pointer-events:none}#mp-board b{display:block;color:#29d8ff;margin-bottom:8px}#mp-board div{padding:4px 0}
-@media(max-width:600px){.mp-card{padding:16px}.mp-fields{grid-template-columns:1fr}.mp-lobby{font-size:12px}.mp-heading h2{font-size:32px}#mp-toggle{right:10px;top:90px}#mp-board{right:10px;top:135px;font-size:11px;min-width:130px}.mp-create>input{flex-basis:100%}}
+#multiplayer{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top)) max(1rem,env(safe-area-inset-right)) max(1rem,env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left));
+  background:linear-gradient(180deg,rgba(5,6,8,.9),rgba(5,6,8,.84));color:#fff;font-family:var(--f-sans,'Barlow',sans-serif);overflow:auto}
+.mp-card{position:relative;width:48rem;max-width:100%;max-height:100%;overflow:auto;background:#10161c;border:1px solid rgba(255,255,255,.12);border-top:3px solid var(--c-accent,#ff3b2f);border-radius:8px;padding:var(--s-5,1.5rem);box-shadow:0 2rem 5rem rgba(0,0,0,.6);
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+.mp-heading,.mp-section,.mp-lobby,.mp-actions,.mp-create{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3,12px)}
+.mp-heading{align-items:flex-start}
+.mp-heading small{font:800 var(--t-sm,13px) 'Barlow Condensed',sans-serif;letter-spacing:.3em;color:var(--c-text-3,#8d97a3)}
+.mp-heading h2{font:italic 900 var(--t-3xl,48px)/.92 'Barlow Condensed',sans-serif;margin:.15rem 0 var(--s-3,12px)}
+#multiplayer button{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.5rem;padding:0 var(--s-4,16px);background:var(--c-surface-3,#1d252e);color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:4px;cursor:pointer;
+  font:800 var(--t-md,16px)/1 'Barlow Condensed',sans-serif;letter-spacing:.08em;white-space:nowrap;transition:background .15s,box-shadow .15s}
+#multiplayer button:hover{background:var(--c-surface-hi,#26303b)}
+#multiplayer #mp-create,#multiplayer #mp-join-form button,#multiplayer #mp-ready,#multiplayer #mp-start{background:var(--c-accent,#ff3b2f);border-color:transparent}
+#multiplayer #mp-create:hover,#multiplayer #mp-join-form button:hover,#multiplayer #mp-ready:hover,#multiplayer #mp-start:hover{background:var(--c-accent-hi,#ff5a4f)}
+#multiplayer #mp-leave{background:transparent;color:var(--c-text-2,#c7ced6)}
+#multiplayer button:disabled{opacity:.4;cursor:default}
+#multiplayer button:focus-visible,#mp-toggle:focus-visible{outline:none;box-shadow:0 0 0 2px #07090c,0 0 0 4px #fff}
+#multiplayer #mp-close{position:absolute;top:var(--s-4,16px);right:var(--s-4,16px);width:2.5rem;padding:0;font-size:0;background:transparent;border-color:transparent}
+#multiplayer #mp-close::before{content:'';width:20px;height:20px;background:#fff;-webkit-mask:url(../assets/icons/x.svg) center/contain no-repeat;mask:url(../assets/icons/x.svg) center/contain no-repeat}
+#multiplayer #mp-close:hover{background:rgba(255,255,255,.08)}
+#multiplayer #mp-refresh::before,#multiplayer #mp-copy::before,#multiplayer #mp-leaderboard::before,#multiplayer #mp-leave::before{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--glyph) center/contain no-repeat;mask:var(--glyph) center/contain no-repeat}
+#multiplayer #mp-refresh{--glyph:url(../assets/icons/arrows-clockwise.svg)} #multiplayer #mp-copy{--glyph:url(../assets/icons/link.svg)}
+#multiplayer #mp-leaderboard{--glyph:url(../assets/icons/trophy.svg)} #multiplayer #mp-leave{--glyph:url(../assets/icons/sign-out.svg)}
+#multiplayer input:not([type=checkbox]){box-sizing:border-box;min-height:2.6rem;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);border-radius:4px;color:#fff;padding:0 var(--s-3,12px);font:600 var(--t-md,15px) 'Barlow',sans-serif;min-width:0;outline:none;appearance:none}
+#multiplayer input:not([type=checkbox]):focus{border-color:var(--c-accent,#ff3b2f);box-shadow:0 0 0 3px rgba(255,59,47,.25)}
+#multiplayer input::placeholder{color:var(--c-text-4,#5d6773)}
+#multiplayer .select{width:100%;min-height:2.6rem}
+.mp-fields{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4,16px);margin:var(--s-4,16px) 0}
+.mp-fields label,.mp-map-field{display:grid;gap:var(--s-2,8px);font:800 var(--t-xs,12px) 'Barlow Condensed',sans-serif;letter-spacing:.18em;color:var(--c-text-3,#8d97a3)}
+.mp-create{flex-wrap:wrap;align-items:flex-end;padding:var(--s-4,16px);border-radius:6px;background:rgba(255,255,255,.035)}
+.mp-create>input{flex:1 1 12rem}
+.mp-create .mp-map-field{flex:1 1 10rem}
+.mp-fields label.mp-toggle-field,.mp-create label.mp-toggle-field{display:flex;align-items:center;gap:var(--s-2,8px);white-space:nowrap;min-height:2.6rem;cursor:pointer;color:var(--c-text-2,#c7ced6);font-size:var(--t-sm,14px)}
+#multiplayer .mp-toggle-field .switch{order:-1}
+#mp-join-form{display:flex;gap:var(--s-2,10px);margin:var(--s-4,16px) 0}
+#mp-code{flex:1;text-transform:uppercase;letter-spacing:.3em}#mp-code::placeholder{letter-spacing:.04em;text-transform:none}
+.mp-section{margin-top:var(--s-4,16px)}
+.mp-section h3{margin:0;font:800 var(--t-sm,14px) 'Barlow Condensed',sans-serif;letter-spacing:.3em;color:var(--c-accent,#ff3b2f)}
+#mp-list{margin-top:var(--s-2,8px);display:grid;gap:3px}
+#mp-list>p{margin:0;padding:var(--s-4,16px);border-radius:4px;background:rgba(255,255,255,.035);color:var(--c-text-3,#8d97a3);font-size:var(--t-sm,14px)}
+.mp-lobby{padding:var(--s-2,8px) var(--s-2,8px) var(--s-2,8px) var(--s-4,16px);border-radius:4px;background:rgba(255,255,255,.04);font:700 var(--t-sm,14px) 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+.mp-lobby span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.mp-member{padding:var(--s-2,8px) var(--s-3,12px);border-bottom:1px solid rgba(255,255,255,.08);font:700 var(--t-md,15px) 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+#mp-members{margin-top:var(--s-3,12px)}
+.mp-actions{flex-wrap:wrap;justify-content:flex-start;margin:var(--s-5,22px) 0 var(--s-3,12px)}
+.mp-note,#mp-room-help{color:var(--c-text-3,#9eacbd);font-size:var(--t-sm,13px);line-height:1.55}
+#mp-status{margin:0 0 var(--s-2,8px);padding:var(--s-2,8px) var(--s-3,12px);border-radius:4px;background:rgba(41,216,255,.08);color:var(--c-cyan,#29d8ff);font:700 var(--t-sm,14px) 'Barlow',sans-serif;overflow-wrap:anywhere}
+#mp-room-code{color:var(--c-cyan,#29d8ff);font:italic 900 var(--t-xl,26px) 'Barlow Condensed',sans-serif;letter-spacing:.2em}
+#mp-room-name{font:italic 900 var(--t-xl,26px) 'Barlow Condensed',sans-serif!important;letter-spacing:.02em!important;color:#fff!important}
+#mp-results h3,#mp-times h3{font:800 var(--t-sm,14px) 'Barlow Condensed',sans-serif;letter-spacing:.3em;color:var(--c-text-3,#8d97a3)}
+#mp-results p,#mp-times p{margin:0;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);font:700 var(--t-md,15px) 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+#mp-leaderboard{margin-top:var(--s-4,16px)}
+#mp-board{position:fixed;top:145px;right:22px;z-index:25;min-width:175px;padding:12px 16px;border-radius:4px;border-left:3px solid var(--c-cyan,#29d8ff);background:rgba(8,10,14,.82);color:#fff;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;pointer-events:none}
+#mp-board b{display:block;color:var(--c-cyan,#29d8ff);margin-bottom:6px;letter-spacing:.16em;font-size:12px}#mp-board div{padding:3px 0}
+@media(max-width:600px){.mp-card{padding:var(--s-4,16px)}.mp-fields{grid-template-columns:1fr}.mp-lobby{font-size:12px}#mp-toggle{right:10px;top:90px}#mp-board{right:10px;top:135px;font-size:11px;min-width:130px}.mp-create>input{flex-basis:100%}#mp-join-form{flex-wrap:wrap}#mp-join-form button{flex:1}}
 
-#graphics-quality{position:fixed;right:190px;top:90px;z-index:30;background:#101721;color:white;border:1px solid #354152;padding:9px;font:700 14px "Barlow Condensed",sans-serif;cursor:pointer}@media(max-width:600px){#graphics-quality{right:165px;top:90px;font-size:12px;padding:10px 5px}}
-.mp-fields label.mp-toggle-field,.mp-create label.mp-toggle-field{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.mp-map-field{display:grid;gap:4px;font-size:11px;letter-spacing:1px}
-#multiplayer .mp-toggle-field input[type=checkbox]{flex:none;width:16px;height:16px;padding:0;margin:0}
+#graphics-quality{position:fixed;right:190px;top:90px;z-index:30}
 @media(max-width:700px), (max-height:550px) and (max-width:1000px){
   #posBox{left:12px;top:12px;transform:scale(.68);transform-origin:top left}
   #styleBox{display:none}#dialBox{width:170px;height:170px;right:8px;bottom:20px}
@@ -22,4 +68,5 @@
   #graphics-quality{top:46px;right:12px;font-size:12px;padding:7px}
   #mp-board{top:130px;right:12px;min-width:125px;font-size:11px;padding:9px 12px}
   #credit{font-size:8px}#msg{font-size:14px;max-width:80vw}#count{font-size:100px}
+
 }

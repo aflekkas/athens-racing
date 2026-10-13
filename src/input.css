@@ -1,4 +1,6 @@
-#input-toast { position: fixed; z-index: 120; top: 18%; left: 50%; transform: translateX(-50%); background: #101a25ed; color: #fff; padding: 12px 22px; border-left: 3px solid #ffcf2a; font: 600 15px system-ui; pointer-events: none; }
+#input-toast { position: fixed; z-index: 120; top: 18%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; background: rgba(16,22,28,.96); color: #fff; padding: 10px 18px 10px 14px; border: 1px solid rgba(255,255,255,.18); border-left: 3px solid #29d8ff; border-radius: 4px; box-shadow: 0 12px 30px rgba(0,0,0,.5); font: 800 15px/1 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
+#input-toast::before { content: ''; flex: none; width: 18px; height: 18px; background: #29d8ff; -webkit-mask: url(../assets/icons/game-controller.svg) center / contain no-repeat; mask: url(../assets/icons/game-controller.svg) center / contain no-repeat; }
+#input-toast[hidden] { display: none; }
 .input-bindings { color: #fff; font: 14px system-ui; }
 .input-bindings p { line-height: 1.5; }
 .input-bindings table { width: 100%; border-collapse: collapse; margin: 16px 0; }
@@ -21,3 +23,22 @@ body.touch-driving #mapBox { top: 105px; bottom: auto; left: 10px; width: 100px;
 body.touch-driving #dialBox { right: 10px; bottom: 128px; width: 160px; height: 160px; }
 @media (max-width: 500px) { .touch-steer { width: 30vw; } .touch-pedals button { width: 52px; } .touch-buttons { grid-template-columns: repeat(2, 34px); gap: 4px; } .touch-buttons button { font-size: 12px; padding: 0; } body.touch-driving #dialBox { width: 135px; height: 135px; } .input-bindings th, .input-bindings td { padding: 4px 2px; } .input-bindings button { padding: 7px 5px; font-size: 12px; } }
 @media (max-height: 480px) { body.touch-driving #mapBox { top: 90px; width: 84px; height: 84px; } body.touch-driving #dialBox { width: 125px; height: 125px; bottom: 120px; } }
+
+/* UI kit look for the touch controls (labels stay in src/input.js; glyph labels are swapped for icons here) */
+#touch-controls button, .touch-steer { border: 1px solid rgba(255,255,255,.28); background: rgba(10,14,19,.72); border-radius: 10px; font: 800 14px/1 'Barlow Condensed', sans-serif; letter-spacing: .12em; backdrop-filter: blur(2px); }
+.touch-pedals button[data-action=throttle] { border-color: rgba(93,255,138,.7); }
+.touch-pedals button[data-action=brake] { border-color: rgba(255,59,47,.7); }
+#touch-controls button.held { background: rgba(255,59,47,.45); border-color: #ff3b2f; }
+.touch-steer { position: absolute; font-size: 0; }
+.touch-steer::after { content: 'STEER'; font-size: 13px; color: rgba(255,255,255,.75); }
+.touch-steer::before { content: ''; position: absolute; inset: 0; background: #fff; opacity: .8; pointer-events: none;
+  -webkit-mask: url(../assets/icons/caret-left.svg) left 14px center / 20px no-repeat, url(../assets/icons/caret-right.svg) right 14px center / 20px no-repeat;
+  mask: url(../assets/icons/caret-left.svg) left 14px center / 20px no-repeat, url(../assets/icons/caret-right.svg) right 14px center / 20px no-repeat; }
+#touch-controls button[data-action=pause], #touch-controls button[data-action=camera] { font-size: 0; position: relative; }
+#touch-controls button[data-action=pause]::before, #touch-controls button[data-action=camera]::before { content: ''; position: absolute; inset: 0; background: #fff; pointer-events: none;
+  -webkit-mask: var(--glyph) center / 18px no-repeat; mask: var(--glyph) center / 18px no-repeat; }
+#touch-controls button[data-action=pause] { --glyph: url(../assets/icons/pause.svg); }
+#touch-controls button[data-action=camera] { --glyph: url(../assets/icons/camera.svg); }
+/* the legacy rebinding table (input.openBindings) if a tool still mounts it: the menus use src/ui/controls-panel.js */
+.input-bindings { font: 500 14px 'Barlow', sans-serif; }
+.input-bindings button { background: #1d252e; border: 1px solid rgba(255,255,255,.18); border-radius: 4px; font: 800 14px 'Barlow Condensed', sans-serif; letter-spacing: .08em; }

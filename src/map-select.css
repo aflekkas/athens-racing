@@ -1,18 +1,52 @@
-#ui.s-maps { background:rgba(5,6,8,.9); }
-.map-select-wrap { position:absolute;inset:6vh 5vw 70px;overflow-y:auto; }
-.map-select-wrap h2 { font-size:clamp(30px,4vw,60px);font-style:italic;margin:8px 0 24px;line-height:1; }
-.map-cards { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px; }
-#ui .map-card { background:#11171d;border-bottom:4px solid transparent;overflow:hidden; }
-#ui .map-card.focus { border-color:var(--red);background:#271416;transform:translateY(-5px);box-shadow:0 0 0 2px var(--red); }
-.map-card img { width:100%;height:clamp(180px,30vh,340px);object-fit:cover;display:block; }
-.map-card-info { padding:20px; }
-.map-card-info span { color:#a9b4c2;font-weight:800;font-size:12px;letter-spacing:.17em; }
-.map-card-info h3 { font-style:italic;font-size:clamp(24px,2.6vw,38px);line-height:1;margin:10px 0; }
-.map-card-info p { color:#a9b4c2;font-size:16px;margin:8px 0 18px; }
-.map-card-info b { font-size:22px;letter-spacing:.08em;color:var(--gold); }
-.map-loading { min-height:1.3em;color:#c5cdd6; }
-@media(max-width:760px) { .map-cards{grid-template-columns:1fr;} .map-card{display:grid;grid-template-columns:42% 1fr;} .map-card img{height:100%;min-height:170px;} .map-card-info{padding:16px;} }
-#lapTiming { position:fixed;top:116px;left:28px;font-family:var(--cond);font-weight:800;font-variant-numeric:tabular-nums;pointer-events:none;color:#fff;text-shadow:0 2px 6px #000;z-index:4; }
-#lapTiming b { letter-spacing:.12em;font-size:18px; } #lapTiming span { display:block;font-size:25px; }
-#lapTiming small { color:#b8c3ce;display:block;font-size:13px;letter-spacing:.06em; }
-body.ui-open #lapTiming { display:none; }
+/* Map select (src/map-select.js): a card rail that fits, or scrolls sideways with fades, arrows and dots. */
+.scr--maps .scr__body { justify-content: center; }
+.map-rail-wrap { position: relative; min-height: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.map-rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(17rem, 30rem); justify-content: safe center; gap: var(--s-4); padding: var(--s-2) var(--s-1) var(--s-3); scroll-snap-type: x mandatory; scroll-padding: 0 var(--s-1); }
+.map-rail > .card { scroll-snap-align: start; }
+.map-card .card__media img { pointer-events: none; }
+.map-card__len { display: inline-flex; align-items: center; gap: var(--s-2); font-style: italic; font-weight: 800; font-size: var(--t-lg); letter-spacing: .06em; color: var(--c-gold); }
+.map-card__len .ico { color: var(--c-text-3); }
+.map-card .card__title { font-size: var(--t-2xl); }
+.map-nav { display: none; align-items: center; justify-content: center; gap: var(--s-4); }
+.map-rail-wrap.overflow .map-nav { display: flex; }
+.map-nav__btn { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--c-surface-3); border: 1px solid var(--c-line-2); color: #fff; cursor: pointer; }
+.map-nav__btn:hover { background: var(--c-surface-hi); }
+.map-rail-wrap.at-start .map-nav__btn[data-rail="-1"], .map-rail-wrap.at-end .map-nav__btn[data-rail="1"] { opacity: .3; pointer-events: none; }
+.map-dots { display: flex; gap: 6px; }
+.map-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.22); transition: width .2s, background .2s; }
+.map-dots i.on { width: 20px; border-radius: 4px; background: var(--c-accent); }
+/* edge fades show there is more to scroll to */
+.map-rail-wrap::before, .map-rail-wrap::after { content: ""; position: absolute; top: 0; bottom: 3.4rem; width: 3rem; pointer-events: none; z-index: 1; opacity: 0; transition: opacity .2s; }
+.map-rail-wrap::before { left: 0; background: linear-gradient(90deg, rgba(5,6,8,.95), transparent); }
+.map-rail-wrap::after { right: 0; background: linear-gradient(-90deg, rgba(5,6,8,.95), transparent); }
+.map-rail-wrap.overflow:not(.at-start)::before, .map-rail-wrap.overflow:not(.at-end)::after { opacity: 1; }
+/* portrait phones: a vertical list of compact cards */
+@media (max-width: 560px) and (min-height: 501px) {
+  .map-rail { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); overflow-x: hidden; overflow-y: auto; scroll-snap-type: y proximity; gap: var(--s-3); }
+  .map-card { display: grid; grid-template-columns: 42% minmax(0, 1fr); }
+  .map-card .card__media { aspect-ratio: auto; min-height: 7.5rem; }
+  .map-card .card__body { padding: var(--s-3); gap: var(--s-1); }
+  .map-card .card__title { font-size: var(--t-xl); }
+  .map-card .card__badge { top: var(--s-2); right: auto; left: var(--s-2); }
+  .map-card .badge { font-size: .625rem; }
+  .map-rail-wrap::before, .map-rail-wrap::after, .map-rail-wrap.overflow .map-nav { display: none; }
+  .scr--maps .scr__body { justify-content: flex-start; }
+}
+/* short landscape: cards keep their art but shrink to the height */
+@media (max-height: 500px) {
+  .map-rail { grid-auto-columns: minmax(14rem, 1fr); }
+  .map-card .card__media { aspect-ratio: auto; height: 34vh; }
+  .map-card .card__body { padding: var(--s-2) var(--s-3) var(--s-3); gap: var(--s-1); }
+  .map-card .card__title { font-size: var(--t-xl); }
+  .map-card .card__text { display: none; }
+}
+
+/* lap timing (src/lap-hud.js links this sheet): the circuit lap counter under the position box */
+#lapTiming { position: fixed; top: 116px; left: 28px; z-index: 4; min-width: 170px; padding: 8px 14px 8px; background: rgba(8,10,14,.82); border-left: 3px solid var(--red, #ff3b2f); border-radius: 2px;
+  font-family: var(--cond, "Barlow Condensed", sans-serif); font-weight: 800; font-variant-numeric: tabular-nums; pointer-events: none; color: #fff; }
+#lapTiming b { display: block; font-size: 13px; letter-spacing: .2em; color: #8f99a6; }
+#lapTiming span { display: block; font-style: italic; font-size: 26px; line-height: 1.05; }
+#lapTiming small { display: block; margin-top: 2px; font-size: 12px; letter-spacing: .06em; color: #b8c3ce; }
+#lapTiming small:empty { display: none; }
+body.ui-open #lapTiming { display: none; }
+@media (max-width: 700px) { #lapTiming { top: 92px; left: 12px; min-width: 0; padding: 5px 10px; } #lapTiming span { font-size: 20px; } }
