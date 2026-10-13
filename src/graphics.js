@@ -9,7 +9,8 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
     vertexShader: 'varying vec3 vDir; void main(){vDir=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.0); gl_Position=p.xyww;}',
     fragmentShader: 'uniform samplerCube skyCube; varying vec3 vDir; void main(){gl_FragColor=vec4(textureCube(skyCube,normalize(vDir)).rgb,1.0);}',
   });
-  oldSky.dispose();
+  // the full sky material stays alive: env.js bakes the sky cube with it on every change of conditions
+  void oldSky;
   const oldWater = water.mesh.material;
   const sea = new THREE.ShaderMaterial({
     uniforms: { skyCube: { value: skyCube }, time: oldWater.uniforms.uTime, uBody: CU.uSeaBody }, // body colour follows the time of day (env.js)

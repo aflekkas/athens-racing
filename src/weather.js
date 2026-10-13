@@ -102,8 +102,8 @@ function roadHook(sh) {
   sh.vertexShader = replaceOnce(sh.vertexShader, '#include <common>', '#include <common>' + WX_VS_PARS, 'road vs common');
   sh.vertexShader = replaceOnce(sh.vertexShader, '#include <worldpos_vertex>', '#include <worldpos_vertex>' + WX_VS, 'road worldpos');
   const asphalt = sh.fragmentShader.includes('float gut') && sh.fragmentShader.includes('polish');
-  // LOW evaluates fewer lamps / car lights per pixel (compile-time loop counts)
-  const defs = `#define WX_NL ${W && W.low ? 6 : NL}\n#define WX_NC ${W && W.low ? 3 : NC}\n` + (asphalt ? '#define WX_ASPHALT\n' : '');
+  // LOW / MED evaluate fewer lamps / car lights per pixel (compile-time loop counts)
+  const defs = `#define WX_NL ${W ? W.nl : NL}\n#define WX_NC ${W ? W.nc : NC}\n` + (asphalt ? '#define WX_ASPHALT\n' : '');
   sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <common>', defs + '#include <common>' + WX_FS_PARS, 'road fs common');
   sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <lights_physical_fragment>', WX_WET + '\n#include <lights_physical_fragment>', 'road lights_physical');
   sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <lights_fragment_end>', '#include <lights_fragment_end>\n' + WX_LIGHTS, 'road lights_end');
@@ -273,12 +273,30 @@ let W = null;
 const _v = new THREE.Vector3(), _f = new THREE.Vector3(), _c = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion();
 
 /**
- * ctx: { renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, low, cars: () => [player, rival], cam: () => 'cockpit'|'chase'|'orbit' }
+ * ctx: { renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: 'low'|'med'|'high' (or low: bool),
+ *        cars: () => [player, rival], cam: () => 'cockpit'|'chase'|'orbit' }
  * Call once the world is built and before the shaders compile (it extends the road / facade / leaf shaders).
  */
+export function disposeWeather() {
+  if (!W) return;
+  W.offConditions?.();
+  const geometries = new Set(), materials = new Set();
+  for (const object of [W.lampGlow?.p, W.carGlow?.p, W.rain?.mesh, W.spray?.pts, W.spot, W.spot?.target]) {
+    object?.removeFromParent();
+    object?.traverse(o => { if (o.geometry) geometries.add(o.geometry); for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) materials.add(m); });
+  }
+  // Windscreen geometry belongs to the car. Only the weather overlay material is ours.
+  W.drops?.removeFromParent();
+  if (W.dropMat) materials.add(W.dropMat);
+  for (const r of [...geometries, ...materials]) r.dispose();
+  W = null;
+}
+
 export function initWeather(ctx) {
-  const { scene, low } = ctx;
-  W = { ...ctx, nl: low ? 6 : NL, lamps: [], lampMats: [], frame: 0, lastModel: null, drops: null, rainT: 0, prevCam: new THREE.Vector3(), camVel: new THREE.Vector3() };
+  disposeWeather();
+  const { scene } = ctx, q = ctx.quality || (ctx.low ? 'low' : 'high'), low = q === 'low', med = q === 'med';
+  // per tier: analytic lamps / car lights per road pixel, rain streaks, spray particles; the spot light is HIGH only
+  W = { ...ctx, q, low, nl: low ? 6 : med ? 8 : NL, nc: low ? 3 : med ? 4 : NC, lamps: [], lampMats: [], frame: 0, lastModel: null, drops: null, rainT: 0, prevCam: new THREE.Vector3(), camVel: new THREE.Vector3() };
   // -- material hooks
   const seen = new Set();
   scene.traverse((o) => {
@@ -307,15 +325,15 @@ export function initWeather(ctx) {
   W.lampGlow.p.visible = false; scene.add(W.lampGlow.p);
   W.carGlow = pointsOf(4 * 72, W.glowMat); W.carGlow.p.visible = false; scene.add(W.carGlow.p);
   // -- the player's headlights: one real spot light on HIGH (always in the scene so switching never recompiles)
-  if (!low) {
+  if (q === 'high') {
     W.spot = new THREE.SpotLight(0xfff1dc, 0, 0, 0.62, 0.55, 2);
     W.spot.castShadow = false; scene.add(W.spot); scene.add(W.spot.target);
   }
   // -- rain, spray
-  W.rain = createRain(low ? 1800 : 6000); scene.add(W.rain.mesh);
-  W.spray = new Spray(scene, low ? 220 : 600);
+  W.rain = createRain(low ? 1800 : med ? 3500 : 6000); scene.add(W.rain.mesh);
+  W.spray = new Spray(scene, low ? 220 : med ? 400 : 600);
   W.dropMat = dropMaterial();
-  ENV.onConditions(apply);
+  W.offConditions = ENV.onConditions(apply);
   apply(ENV.COND, ENV.COND_STATE, true);
   return W;
 }
@@ -389,7 +407,7 @@ export function updateWeather(dt) {
       _v.set(sx * wid * 0.38, hy + 0.06, len / 2 + 0.1).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.3;
       G.col.set([tb * back, tb * back * 0.04, tb * back * 0.02], n * 3); n++;
     }
-    if (on && poolOK && nc < (W.low ? 3 : NC) && dist < 220) {
+    if (on && poolOK && nc < W.nc && dist < 220) {
       _v.set(0, hy, -len / 2).applyMatrix4(root.matrixWorld);
       cp.set([_v.x, _v.y, _v.z, 70], nc * 4);
       cd.set([_f.x, _f.y - 0.07, _f.z, 0], nc * 4); nc++;

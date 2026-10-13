@@ -327,6 +327,8 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
     resetHistory() { havePrev = false; },
     // ---- photo mode (replay.js): {focus: m, dof: 0..9 blur strength, exposure: EV stops, filter: name}
     photo: null, baseExposure: 1,
+    /** quality tiers scale bloom here (then call setConditions(post.lastConditions)); the conditions own the base value */
+    bloomScale: 1, lastConditions: null,
     setPhoto(p = {}) { post.photo = { ...(post.photo || {}), ...p }; post.applyPhoto(); },
     clearPhoto() { post.photo = null; u.uFilter.value = 0; u.uExposure.value = post.baseExposure; },
     /** re-apply the photo controls over the per-frame camera FX (render() calls it too) */
@@ -343,7 +345,8 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
     setConditions(st) {
       post.baseExposure = st.exposure; u.uExposure.value = st.exposure * (post.photo ? Math.pow(2, post.photo.exposure || 0) : 1);
       u.uWB.value.fromArray(st.wb); u.uGlare.value = st.glare; u.uRainLens.value = st.rain;
-      bloom.strength = 0.1 * st.bloom; bloom.threshold = 3.0 / Math.max(1, st.exposure * 0.8);
+      post.lastConditions = st;
+      bloom.strength = 0.1 * st.bloom * post.bloomScale; bloom.threshold = 3.0 / Math.max(1, st.exposure * 0.8);
     },
   };
   post.setSize(size.x, size.y, pr);

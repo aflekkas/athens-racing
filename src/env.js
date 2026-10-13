@@ -376,7 +376,8 @@ const BAKE = { renderer: null, sky: null, atmoRT: null, envRT: null, pmremRT: nu
 export function bakeSky(renderer, sky) {
   // 1. the clear atmosphere into a cube (expensive shader, done once per change of conditions)
   if (!BAKE.atmoRT) {
-    BAKE.renderer = renderer; BAKE.sky = sky;
+    // keep the full sky material for baking: LOW (graphics.js) swaps the visible dome for a cube lookup
+    BAKE.renderer = renderer; BAKE.sky = sky; BAKE.skyMat = sky.material;
     BAKE.atmoRT = new THREE.WebGLCubeRenderTarget(192, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
     BAKE.atmoMat = new THREE.ShaderMaterial({
       uniforms: { uSun: { value: sunDir }, uE: CU.uE, uSunIrr: CU.uSunIrr, uSkyIrr: CU.uSkyIrr }, side: THREE.BackSide, depthWrite: false,
@@ -386,13 +387,14 @@ export function bakeSky(renderer, sky) {
     BAKE.s1 = new THREE.Scene(); BAKE.s1.add(new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), BAKE.atmoMat));
     // 2. sky + clouds (no sun disc) for image-based lighting and sea reflections
     BAKE.envRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
-    BAKE.s2 = new THREE.Scene(); const s = sky.clone(); s.material = sky.material; s.position.set(0, 0, 0); BAKE.s2.add(s);
+    BAKE.s2 = new THREE.Scene(); const s = sky.clone(); s.material = BAKE.skyMat; s.position.set(0, 0, 0); BAKE.s2.add(s);
   }
   new THREE.CubeCamera(0.1, 100, BAKE.atmoRT).update(renderer, BAKE.s1);
-  sky.material.uniforms.uAtmo.value = BAKE.atmoRT.texture;
-  sky.material.uniforms.uEnv.value = 1;
+  const su = BAKE.skyMat.uniforms;
+  su.uAtmo.value = BAKE.atmoRT.texture;
+  su.uEnv.value = 1;
   new THREE.CubeCamera(1, 20000, BAKE.envRT).update(renderer, BAKE.s2);
-  sky.material.uniforms.uEnv.value = 0;
+  su.uEnv.value = 0;
   const pmrem = new THREE.PMREMGenerator(renderer);
   BAKE.pmremRT = pmrem.fromCubemap(BAKE.envRT.texture, BAKE.pmremRT);
   pmrem.dispose();
