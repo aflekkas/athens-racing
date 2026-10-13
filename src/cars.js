@@ -163,6 +163,20 @@ export const CARS = [
     tyres: ['255/40 ZR20','255/40 ZR20'], frontW: .60, hcg: .55, track: 1.615, trackRear: 1.590, rsF: .59, susHz: 2.0, susZ: .60, rollK: .8, pitchK: .85, alphaPk: .115, mfC: 1.46, loadSens: .15, clA: .03, tc: .55, esc: .40, shiftT: .13, bias: .72, steerRate: 1.12, ebrake: .16, lsd: .35,
     stats: { speed: .89, accel: .92, handling: .87, drift: .68 },
   },
+  // NEW CLA 200 hybrid (C178, same 2025 design family as C174 with EQ Technology).
+  // https://media.mercedes-benz.com/article/2cbb1f31-888b-4912-b201-793d8eb2bb26
+  // https://www.mercedes-benz.co.uk/passengercars/models/saloon/cla/overview.html
+  // 135 kW / 330 Nm SYSTEM output. The single torque curve approximates hybrid assistance;
+  // there is no battery SOC simulation. 8G-eDCT individual ratios/final drive were not published
+  // in the cited sheets: these overall ratios are explicitly estimated, not factory data.
+  {
+    id: 'cla', transmission: 'auto', name: 'MERCEDES-BENZ CLA 200 HYBRID', short: 'NEW CLA', tag: '2025 C178 / C174 family · Star signature. 48V hybrid. FWD.', color: '#111419', accent: '#82bedc', marque: 'mercedes',
+    mass: 1713, power: 135, torque: 330, redline: 6500, idle: 750, gears: [15.0,9.4,6.5,4.85,3.8,3.0,2.4,1.9], final: 1, wheelR: .334,
+    torqueCurve: [[0,100],[750,135],[1750,330],[3500,330],[4000,315],[4800,265],[5500,234.40],[6200,195],[6500,170]], peakTorqueRpm: 2500, peakPowerRpm: 5500,
+    wheelbase: 2.790, length: 4.723, width: 1.855, height: 1.450, cdA: .53, vmax: 232, grip: 1.08, steer: .57, yawI: 1.12, drift: 1, brake: 1.03, cyl: 4, pitch: .96, body: 'cla', drive: 'fwd', engine: 'turbo4', turbo: .7,
+    tyres: ['225/45 R19','255/40 R19'], frontW: .59, hcg: .51, track: 1.605, trackRear: 1.584, rsF: .60, susHz: 1.6, susZ: .56, rollK: 1.05, pitchK: 1.05, alphaPk: .12, mfC: 1.44, loadSens: .16, clA: 0, tc: .75, esc: .6, shiftT: .20, bias: .71, steerRate: 1.07, ebrake: .17, lsd: 0,
+    stats: { speed: .59, accel: .51, handling: .75, drift: .32 },
+  },
   // Huracan EVO AWD: Lamborghini 470 kW / 640 CV, 600 Nm, >325 km/h.
   // 1422 kg is dry; 1542 kg road-ready simulation mass adds estimated fluids/equipment.
   {
