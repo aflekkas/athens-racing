@@ -51,7 +51,7 @@ export function pushVeh(veh, f, ds, du) { veh.x += f.tx * ds + f.rx * du; veh.z 
 /** half extents of a (possibly yawed) vehicle in route (s,u) space */
 export function extents(veh, route) {
   const ry = Math.atan2(-route.lin(route.TX, veh.s), -route.lin(route.TZ, veh.s));
-  let d = veh.yaw - ry; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const d = wrapPi(veh.yaw - ry);
   const c = Math.abs(Math.cos(d)), s = Math.abs(Math.sin(d));
   return { hs: veh.halfL * c + veh.halfW * s, hu: veh.halfL * s + veh.halfW * c };
 }
@@ -1200,6 +1200,7 @@ export class Traffic {
       if (water > 0) { Fs -= k.vs * m * 2; Fu -= k.vu * m * 2; T -= k.w * c.I * 2; }
     }
     k.vs += Fs / m * dt; k.vu += Fu / m * dt; k.w += T / c.I * dt;
+    if (!Number.isFinite(k.vs + k.vu + k.w + k.yaw + c.s + c.u)) { k.vs = k.vu = k.w = 0; if (!Number.isFinite(k.yaw)) k.yaw = 0; if (!Number.isFinite(c.s + c.u)) { c.active = false; c.m.root.visible = false; return; } }
     if (Math.hypot(k.vs, k.vu) < 0.08 && Math.abs(k.w) < 0.08) { k.vs = k.vu = k.w = 0; }
     c.s += k.vs * dt; c.u += k.vu * dt; k.yaw += k.w * dt;
     // ---- vertical, pitch and roll: suspension near level; past ~10 deg the car pivots on its wheels' edge, and past the
@@ -1245,7 +1246,7 @@ export class Traffic {
       if (k.rec > 0.3 && !k.honked) { k.honked = true; c.honkCool = 0; this.honk(c, 'angry', true); }
       const dir = c.u >= 0 ? 1 : -1, n = this.laneCount(c.s);
       let lane = 0, bd = 1e9; for (let l = 0; l < n; l++) { const d = Math.abs(route.laneU(c.s, l) * dir - c.u); if (d < bd) { bd = d; lane = l; } }
-      let yw = k.yaw; while (yw > Math.PI) yw -= Math.PI * 2; while (yw < -Math.PI) yw += Math.PI * 2;
+      let yw = wrapPi(k.yaw);
       if (dir !== c.dir) { c.dir = dir; yw += Math.PI; if (yw > Math.PI) yw -= Math.PI * 2; } // turned around: just drive this way now
       if (Math.abs(yw) > 0.9 || Math.abs(c.u) > route.edge(c.s) + 0.5) { k.wreck = true; return; } // facing the wrong way / off the road: they're not going anywhere
       if (k.rec > 2.5) {
@@ -1372,6 +1373,9 @@ function bakeModels(models, cell) {
   }
   return group;
 }
+
+/** angle into (-pi, pi]; safe for huge / non-finite input (a while loop on Infinity never ends) */
+function wrapPi(a) { if (!Number.isFinite(a)) return 0; a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; }
 
 // ---------------------------------------------------------------- rigid-body contact helpers (road plane: s, u)
 /** separating-axis contact between two oriented boxes {s,u,phi,hl,hw}: normal (A -> B), overlap, contact point */
