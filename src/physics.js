@@ -78,13 +78,14 @@ export class Vehicle {
     this.kPk = this.aPk * 0.9;
     const C = spec.mfC ?? 1.5;
     this.mfC = C; this.mfB = Math.tan(Math.PI / (2 * C));
-    this.slideK = clamp(1 - (C - 1.3) * 0.9, 0.62, 0.95);
+    this.slideLong = clamp(1 - (C - 1.3) * 0.9, 0.62, 0.95);
+    this.slideK = spec.slideGrip ?? clamp(1 - (C - 1.3) * 0.5, 0.78, 0.97);
     this.slope0 = C * this.mfB; // d f / d s at the origin (the steepest point of the curve)
     this.lsd = spec.lsd ?? this.eng.lsd ?? 0;
     // friction ellipse: a tyre's driving / braking peak is ~10% above its cornering peak (longer contact-patch
     // footprint along the rolling direction); sets launch traction and stopping distances
     this.muX = spec.muX ?? 1.1;
-    this.slideV = spec.slideV ?? 0.16; // extra friction lost at high sliding speed (spinning / locked rubber)
+    this.slideV = spec.slideV ?? 0.09; // progressive friction loss at high sliding speed (spinning / locked rubber)
     // suspension natural frequency -> spring / damper per unit mass (kS / cS: legacy, kept for external readers)
     const wn = 2 * Math.PI * (spec.susHz ?? 1.8);
     this.kS = wn * wn; this.cS = 2 * (spec.susZ ?? 0.45) * wn;
@@ -548,7 +549,18 @@ export class Vehicle {
     const assisted = clamp(sIn * into + comp + helper, -(rack + 0.5), rack + 0.5);
     // (mid-drift, latched, the driver wants the wheel more directly: the assist eases to half)
     const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - 0.5 * this.driftLatch);
-    const target = lerp(raw, assisted, A);
+    let target = lerp(raw, assisted, A);
+    // Light assist must still catch gross front-tyre over-driving. At road
+    // speeds the raw rack can ask for twice peak slip, so blending it with
+    // 35% assist alone makes full stick scrub away ~20% of lateral grip.
+    // Leave a small amount of scrub for feedback, and release the guard for
+    // deliberate slides / counter-steer or when the driver disables assist.
+    const guard = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
+    if (guard > 0 && vx > 0 && !counter && target * sIn > 0) {
+      const useful = Math.max(0, thF * Math.sign(sIn) + aOpt * 1.15 + comp * Math.sign(sIn));
+      const excess = Math.max(0, Math.abs(target) - useful);
+      target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
+    }
     const rate = (sp.steerRate ?? 1) * (2.4 + 1.5 / (1 + vt / 10));
     this.steer += clamp(target - this.steer, -rate * dt, rate * dt);
     const delta = this.steer + this.toePull - comp;   // bent steering after a side impact pulls the car
@@ -674,11 +686,17 @@ export class Vehicle {
       let f;
       if (sN < 1) f = Math.sin(this.mfC * Math.atan(this.mfB * sN));
       else {
-        f = 1 - (1 - this.slideK) * (1 - Math.exp(-(sN - 1) * 1.6));
+        // Broaden lateral breakaway without changing locked-wheel stopping
+        // distances or launch traction. Combined slip still shares one force
+        // budget, and reverse keeps its existing parking/tyre behaviour.
+        const lateral = vx > 0 ? sy * sy / (sN * sN) : 0;
+        const slide = lerp(this.slideLong, this.slideK, lateral);
+        f = 1 - (1 - slide) * (1 - Math.exp(-(sN - 1) * 1.6));
         // past the peak the rubber is sliding and friction keeps falling with sliding speed: once a tyre lets go it
         // stays gone until the torque eases (taller gear, more speed), then it hooks up again
         const vs = Math.hypot(vw - Si.vgx, Si.vgy);
-        f *= 1 - this.slideV * (1 - Math.exp(-vs / 7)) * Math.min(1, (sN - 1) * 2);
+        const slideV = lerp(sp.slideV ?? 0.16, this.slideV, lateral);
+        f *= 1 - slideV * (1 - Math.exp(-vs / 7)) * Math.min(1, (sN - 1) * 2);
       }
       const k = sN > 1e-6 ? f / sN : this.slope0;
       out.Fx = cap[i] * this.muX * k * sx; out.Fy = -cap[i] * k * sy; out.sx = sx; out.sy = sy; out.sN = sN;

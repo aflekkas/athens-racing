@@ -25,20 +25,21 @@ test('standard pad analog pedals, steering deadzone/curve and camera axes', () =
   assert.equal(axisValue(0.15), 0); assert.equal(axisValue(1), 1); assert.equal(axisValue(-1), -1); input.destroy();
 });
 
-test('keyboard steering and pedals match legacy ramps at several speeds including countersteer', () => {
+test('keyboard pedals preserve their ramps while steering turns in, reverses and recentres', () => {
   for (const speed of [0, 22, 50]) {
-    const { input, key } = setup(); let raw = 0, throttle = 0, brake = 0;
+    const { input, key } = setup(); let throttle = 0, brake = 0;
     for (let i = 0; i < 120; i++) {
       if (i === 0) { key('keydown', 'KeyD'); key('keydown', 'KeyW'); }
       if (i === 30) { key('keyup', 'KeyD'); key('keydown', 'KeyA'); }
       if (i === 60) { key('keyup', 'KeyA'); key('keyup', 'KeyW'); key('keydown', 'KeyS'); }
       if (i === 90) key('keyup', 'KeyS');
-      const dt = 1 / 60, target = i < 30 ? 1 : i < 60 ? -1 : 0, base = 1 / (1 + speed / 22);
-      const rate = !target ? 6.5 * (0.5 + 0.5 * base) : raw && Math.sign(target) !== Math.sign(raw) ? 8 * (0.45 + 0.55 * base) : 1.6 + 3.4 * base;
-      raw += Math.max(-rate * dt, Math.min(rate * dt, target - raw));
+      const dt = 1 / 60;
       throttle = i < 60 ? Math.min(1, throttle + dt * (throttle < 0.6 ? 6 : 3)) : Math.max(0, throttle - dt * 10);
       brake = i >= 60 && i < 90 ? Math.min(1, brake + dt * (brake < 0.7 ? 7 : 3.5)) : Math.max(0, brake - dt * 12);
-      input.update(dt, { speed }); assert.equal(input.state.steer, Math.sign(raw) * Math.abs(raw) ** 1.4); assert.equal(input.state.throttle, throttle); assert.equal(input.state.brake, brake);
+      input.update(dt, { speed }); assert.equal(input.state.throttle, throttle); assert.equal(input.state.brake, brake);
+      if (i === 11) assert.equal(input.state.steer, 1, 'full lock by 200 ms');
+      if (i === 47) assert.equal(input.state.steer, -1, 'opposite lock within 300 ms');
+      if (i === 68) assert.equal(input.state.steer, 0, 'release centres within 150 ms');
     }
     input.destroy();
   }

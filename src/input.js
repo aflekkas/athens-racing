@@ -133,16 +133,18 @@ export class Input {
       this.previous[a] = down;
     }
     this.pending.clear(); this.actions = EDGE_ACTIONS.filter(a => this.state[a]);
-    // Exact legacy keyboard pedal and steering ramps; analog devices bypass these keyboard-only curves.
+    // Pedal ramps are independent of the steering ramp; analog devices bypass both.
     const s = this.state, up = k('throttle'), dn = k('brake'), lf = k('left'), rt = k('right');
     this.keyThrottle = up ? Math.min(1, (this.keyThrottle || 0) + dt * ((this.keyThrottle || 0) < 0.6 ? 6 : 3)) : Math.max(0, (this.keyThrottle || 0) - dt * 10);
     this.keyBrake = dn ? Math.min(1, (this.keyBrake || 0) + dt * ((this.keyBrake || 0) < 0.7 ? 7 : 3.5)) : Math.max(0, (this.keyBrake || 0) - dt * 12);
     const target = (rt ? 1 : 0) - (lf ? 1 : 0), base = 1 / (1 + Math.abs(speed) / 22);
-    const rate = target === 0 ? 6.5 * (0.5 + 0.5 * base) : s.steerRaw !== 0 && Math.sign(target) !== Math.sign(s.steerRaw) ? 8 * (0.45 + 0.55 * base) : 1.6 + 3.4 * base;
+    // Full keyboard lock should arrive in ~0.18 s at road speeds. The former
+    // slow ramp followed by a 1.4 power curve swallowed short turn-in taps.
+    const rate = target === 0 ? 8 : s.steerRaw !== 0 && Math.sign(target) !== Math.sign(s.steerRaw) ? 10 : 5 + 2 * base;
     s.steerRaw += clamp(target - s.steerRaw, -rate * dt, rate * dt);
     const analog = axisValue(gp('right') - gp('left'), this.settings.deadzone, this.settings.sensitivity, this.settings.linearity);
     const touchSteer = this.settings.touchSteering === 'tilt' && Number.isFinite(this.tilt) ? this.tilt : this.touch.steer || 0;
-    const keyboardSteer = Math.sign(s.steerRaw) * Math.pow(Math.abs(s.steerRaw), 1.4);
+    const keyboardSteer = Math.sign(s.steerRaw) * Math.pow(Math.abs(s.steerRaw), 1.1);
     s.steer = lf || rt || Math.abs(keyboardSteer) > Math.max(Math.abs(analog), Math.abs(touchSteer)) ? keyboardSteer : Math.abs(touchSteer) > Math.abs(analog) ? touchSteer : analog;
     s.throttle = Math.max(this.keyThrottle, gp('throttle'), this.touch.throttle || 0);
     s.brake = Math.max(this.keyBrake, gp('brake'), this.touch.brake || 0);
