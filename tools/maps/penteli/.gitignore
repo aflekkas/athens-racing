@@ -1,0 +1,6 @@
+# Large primary OSM extracts stay local; fetch_osm.py reproduces them.
+raw/osm.json
+raw/osm.json.gz
+raw/*.partial
+raw/profile.json
+raw/route-points.json
