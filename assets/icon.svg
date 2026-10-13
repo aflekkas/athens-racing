@@ -1,14 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Athens Street Racers">
-  <clipPath id="r"><rect width="64" height="64" rx="16"/></clipPath><g clip-path="url(#r)">
-  <rect width="64" height="64" fill="#0B3B5C"/>
-  <circle cx="45" cy="19" r="8" fill="#FFB547"/>
-  <path d="M0 36c8-3 14 3 22 0s14-3 22 0 14 3 20 0v28H0Z" fill="#1A7FC1"/>
-  <path d="M0 44c8-3 14 3 22 0s14-3 22 0 14 3 20 0" fill="none" stroke="#7FC8F0" stroke-width="2" stroke-linecap="round"/>
-  <path d="M0 54h64v10H0Z" fill="#3A4048"/>
-  <path d="M6 59h8m10 0h8m10 0h8m10 0h4" stroke="#F2F2F2" stroke-width="1.6" stroke-linecap="round"/>
-  <path d="M10 49c0-4 2-6 6-7l6-6c2-2 4-3 7-3h8c3 0 5 1 7 3l4 5c4 1 7 3 7 8v3H10Z" fill="#E8352B"/>
-  <path d="M25 37h6v5h-10Zm9 0h4l4 5h-8Z" fill="#CFEAF7"/>
-  <circle cx="20" cy="52" r="5" fill="#111"/><circle cx="20" cy="52" r="2" fill="#bbb"/>
-  <circle cx="44" cy="52" r="5" fill="#111"/><circle cx="44" cy="52" r="2" fill="#bbb"/>
-</g>
+  <!-- the ASR mark: a bold italic A with the wordmark's red crossbar. tools/build-favicons.mjs renders the PNGs -->
+  <rect width="64" height="64" rx="14" fill="#0c1015"/>
+  <path d="M27.5 9H40.5L53 55H41.2L34.4 22.4L20.2 55H8Z" fill="#fff"/>
+  <path d="M17 37.6L46.2 32.4L47.9 40.4L14 46.4Z" fill="#ff3b2f"/>
 </svg>

@@ -89,6 +89,8 @@ export function screen({ cls = '', kick = '', title = '', back = true, head = ''
   return `<div class="scr ${cls}"><header class="scr__head">${back ? button({ icon: 'arrow-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}<div class="scr__titles">${kick ? `<div class="kick">${kick}</div>` : ''}${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
     <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
+/** the ASR mark (assets/icon.svg, also the favicon) */
+export const brandMark = (cls = '') => `<img class="brand-mark ${cls}" src="${new URL('../../assets/icon.svg', import.meta.url).href}" alt="" draggable="false"/>`;
 export const wordmark = (cls = '') => `<span class="wordmark ${cls}"><b>ATHENS</b><b>STREET RACERS</b></span>`;
 
 // ------------------------------------------------------------------ interactive builders (menu rows)

@@ -36,7 +36,10 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 /* ---------------------------------------------------------------- title */
 .scr--title { grid-template-rows: minmax(0, 1fr) auto; }
 .title__col { align-self: center; width: min(32rem, 100%); }
-.title__mark { margin: var(--s-2) 0 0; font-size: min(6.4rem, 19vw, 17vh); line-height: 1; }
+.title__mark { display: flex; align-items: center; gap: .14em; margin: var(--s-2) 0 0; font-size: min(6.4rem, 19vw, 17vh); line-height: 1; }
+.brand-mark { flex: none; display: block; width: 1.18em; height: 1.18em; border-radius: 22%; box-shadow: 0 .06em .2em rgba(0,0,0,.45); }
+.ld-brand { display: flex; align-items: center; gap: .6rem; }
+.ld-brand .brand-mark { width: 2.6rem; height: 2.6rem; }
 .title__tag { margin: var(--s-3) 0 var(--s-5); max-width: 26rem; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-md); line-height: 1.4; color: var(--c-text-2); }
 .title__menu { display: grid; gap: 3px; }
 
@@ -342,10 +345,19 @@ body .tow-actions button { flex: 1 1 auto; min-height: 2.6rem; padding: 0 var(--
 body .tow-actions button:first-child { background: var(--c-gold); border-color: transparent; color: var(--c-bg); }
 body .tow-actions button:hover { filter: brightness(1.12); }
 body .tow-actions button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-/* racer tags (hud.js RacerMarkers): kit type, icon chevrons */
-body .racer-marker { font: 800 13px var(--f-cond); letter-spacing: .08em; }
-body .racer-marker .racer-name { padding: 3px 9px; border-radius: var(--r-2); background: rgba(8,10,14,.82); border-width: 0 0 0 3px; font-size: 14px; }
-body .racer-marker.ai .racer-name { font-size: 12px; padding: 2px 7px; }
-body .racer-marker .racer-chevron { width: 18px; height: 18px; margin: 2px auto 0; font-size: 0; background: var(--racer-color, #fff); filter: drop-shadow(0 1px 2px #000);
+/* racer tags (hud.js RacerMarkers): a readable pill with the player's colour, an icon chevron. hud.js scales the tag with
+   distance (0.7 .. 1.05); the base size keeps the far end at a legible ~13 px */
+body .racer-marker { font: 800 19px var(--f-cond); letter-spacing: .06em; filter: drop-shadow(0 2px 6px rgba(0,0,0,.55)); }
+body .racer-marker .racer-name { display: inline-flex; align-items: center; gap: .4em; max-width: 12em; padding: .22em .75em .22em .55em; border-radius: var(--r-pill);
+  background: rgba(8,10,14,.88); border: 2px solid var(--racer-color, #fff); box-shadow: none; color: #fff; text-transform: uppercase; line-height: 1.1; }
+/* hud.js sizes .ai / .edge names in px at (0,3,0): restate at higher specificity so the tag size follows the marker */
+body .racer-marker .racer-name, body .racer-marker.ai .racer-name, body .racer-marker.edge .racer-name { font-size: inherit; }
+body .racer-marker .racer-name::before { content: ""; flex: none; width: .5em; height: .5em; border-radius: 50%; background: var(--racer-color, #fff); }
+body .racer-marker.ai { font-size: 16px; }
+body .racer-marker.ai .racer-name, body .racer-marker.ai.edge .racer-name { padding: .18em .6em .18em .45em; border-width: 1.5px; }
+body .racer-marker.edge { font-size: 16px; }
+body .racer-marker .racer-chevron { width: 1.2em; height: 1.2em; margin: .05em auto 0; font-size: inherit; color: transparent; background: var(--racer-color, #fff);
   -webkit-mask: url(../assets/icons/caret-down.svg) center / contain no-repeat; mask: url(../assets/icons/caret-down.svg) center / contain no-repeat; }
 body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/caret-right.svg); mask-image: url(../assets/icons/caret-right.svg); }
+/* the floating multiplayer button never shows over the loading or title screens */
+#loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle { display: none !important; }

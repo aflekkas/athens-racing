@@ -228,7 +228,7 @@ export class Menu {
   r_title() {
     return `<div class="scr scr--title"><div class="title__col">
       <div class="kick">GREEK ROADS <span class="acc">/</span> PURE TIME</div>
-      <h1 class="title__mark">${C.wordmark()}</h1>
+      <h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
       <p class="title__tag">Real roads of Attica: the Athens Riviera, the Megara circuit and the Penteli hill climb.</p>
       <div class="title__menu">${C.option({ icon: 'flag-checkered', title: 'RACE', desc: 'Quick race, events, time trials and online', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint and specs`, act: 'garage' })}
