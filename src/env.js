@@ -689,7 +689,7 @@ function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86') {
   m.layers.enable(REFLECT_LAYER);
   return m;
 }
-export function createFarScenery(proj) {
+export function createFarScenery(proj, region = 'riviera') {
   const g = new THREE.Group();
   const P = (lat, lon) => [(lon - proj.lon0) * proj.mlon, -(lat - proj.lat0) * proj.mlat];
   // real islands of the Saronic Gulf, seen from the Riviera
@@ -699,11 +699,20 @@ export function createFarScenery(proj) {
     ['Arsida', 37.786, 23.795, 160, 90, 18],
   ];
   isl.forEach(([n, lat, lon, rx, rz, h], i) => { const [x, z] = P(lat, lon); const mesh = islandMesh(x, z, rx, rz, h, i * 2.3, '#8a8670'); mesh.name = n; g.add(mesh); });
+  // Regional silhouettes use the supplied map projection; these are distant relief, not drivable DEM.
   // Hymettus ridge inland (north-east), Peloponnese hills beyond Aegina
-  const ridge = (lat, lon, len, w, h, rot, seed, color) => {
+  const ridge = (lat, lon, len, w, h, rot, seed, color, name = 'Distant coastal ridge') => {
     const [x, z] = P(lat, lon);
-    const m = islandMesh(x, z, len, w, h, seed, color); m.rotation.y = rot; g.add(m);
+    const m = islandMesh(x, z, len, w, h, seed, color); m.rotation.y = rot; m.name = name; g.add(m);
   };
+  if (region === 'megara') {
+    // Geraneia / Makryplagi west of the circuit; Pateras forms the northern skyline.
+    // https://www.topoguide.gr/mountains/attiki/hiking_on_geraneia_en.php
+    // https://athensattica.com/el/point/oros-pateras/
+    ridge(38.021, 23.1352, 9500, 4200, 1351, 0.12, 11, '#858275', 'Geraneia · west / northwest');
+    ridge(38.13, 23.355, 6800, 3500, 1131, -0.55, 13, '#868571', 'Pateras · north');
+    return g;
+  }
   ridge(37.94, 23.83, 7000, 2600, 1000, -0.95, 1, '#8e8572');
   ridge(37.86, 23.86, 3400, 1800, 480, -0.7, 3, '#8a8270');
   ridge(37.74, 23.95, 4800, 2400, 520, 0.2, 5, '#888270');

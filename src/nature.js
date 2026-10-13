@@ -394,8 +394,8 @@ export function buildNature(map, scene, heightC, bld, assets) {
   const leafMat = leafMaterial(false), flowerMat = leafMaterial(true), frondMat = frondMaterial();
   const extraAtlas = rivieraFoliageAtlas(), extraMat = leafMaterial(false, extraAtlas), extraFlowerMat = leafMaterial(true, extraAtlas);
   const palmT = makePalm(), pineT = [makePine(1), makePine(2), makePine(3)];
-  const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 2400 });
-  const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1600, cell: 400, colors: true });
+  const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 1800 });
+  const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1800, cell: 400, colors: true });
   const fanCrown = new CellInstances(makeFanPalm(), extraMat, { far: 1800, cell: 400, colors: true });
   const palmBoot = new CellInstances(palmT.boot, barkMaterial('palmbark', '#a89880', 1.0), { far: 700, shadow: false });
   const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: 500, far: 2000 });
