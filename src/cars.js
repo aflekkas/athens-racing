@@ -179,6 +179,15 @@ export const CARS = [
     tyres: ['155/80 R13','155/80 R13'], frontW: 0.6, hcg: 0.55, track: 1.366, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
     stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
   },
+  // Period manufacturer references and estimates: tools/models-more-notes.md.
+  {
+    id: 'yaris', name: 'TOYOTA YARIS 1.0 VVT-i', short: 'YARIS XP10', tag: 'XP10 · 68 PS. Centre instruments. Everyday Athens.', color: '#315476', accent: '#a7a5a0',
+    zeroTo100: 13.6, mass: 850, power: 50, torque: 90, redline: 6500, idle: 850, gears: [3.545,1.904,1.31,0.969,0.815], final: 4.294, wheelR: 0.282,
+    torqueCurve: [[0,30],[850,40],[2000,66],[3000,80],[4100,90],[5000,88],[6000,79.58],[6500,65]], peakTorqueRpm: 4100, peakPowerRpm: 6000,
+    wheelbase: 2.37, length: 3.615, width: 1.66, cdA: 0.61, vmax: 155, grip: 0.97, steer: .61, yawI: 1.05, drift: 1, brake: .97, cyl: 4, pitch: 1, body: 'yaris', cabinWidth: .80, drive: 'fwd', engine: 'na4', transmission: 'manual', playerDetail: true, trafficWeight: 1.8, steelWheels: true, rearDrums: true, oldDash: true, centerCluster: true,
+    tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.53, track: 1.44, rsF: .58, usGrad: 3.4, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
+    stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
+  },
 ];
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.

@@ -152,11 +152,12 @@ export class Cockpit {
     box(W*.35,.16,.028,trim,W*.275,topY-.26,faceZ+.037,.015);
     box(.10,.012,.012,alu,W*.29,topY-.215,faceZ+.056,.004);
     // Instrument cover is correctly sized for each dashboard; no universal half-cylinder hood.
+    const clusterX=spec.centerCluster?0:eye.x;
     const cw=isMini?.29:isPorsche?.48:isClassic?.38:isYaris?.42:.43,ch=isMini?.14:isClassic?.165:.17;
     const cy=topY+(isMini?.025:isClassic?-.035:.015),cz=faceZ+(isYaris?.035:.106);
     const ctex=this.clusterCanvas=document.createElement('canvas');ctex.width=1024;ctex.height=384;
     this.clusterTex=new THREE.CanvasTexture(ctex);this.clusterTex.colorSpace=THREE.SRGBColorSpace;this.clusterTex.anisotropy=4;
-    const cluster=part(new THREE.PlaneGeometry(cw,ch),new THREE.MeshBasicMaterial({map:this.clusterTex,toneMapped:false,transparent:true}),eye.x,cy,cz,-.16,'instrument-cluster');
+    const cluster=part(new THREE.PlaneGeometry(cw,ch),new THREE.MeshBasicMaterial({map:this.clusterTex,toneMapped:false,transparent:true}),clusterX,cy,cz,-.16,'instrument-cluster');
     if(isMini){
       const outline=new THREE.Shape(),w=cw+.010,h=ch+.010,rr=h/2;outline.moveTo(-w/2+rr,-h/2);outline.lineTo(w/2-rr,-h/2);outline.absarc(w/2-rr,0,rr,-Math.PI/2,Math.PI/2,false);outline.lineTo(-w/2+rr,h/2);outline.absarc(-w/2+rr,0,rr,Math.PI/2,Math.PI*1.5,false);outline.closePath();
       part(new THREE.ExtrudeGeometry(outline,{depth:.017,bevelEnabled:false,curveSegments:12}),trim,eye.x,cy,cz-.019,-.16);
@@ -164,8 +165,8 @@ export class Cockpit {
       for(const sx of [-1,1]){
         const tube=part(new THREE.CylinderGeometry(ch*.515,ch*.515,.052,32).rotateX(Math.PI/2),trim,eye.x+sx*cw*.233,cy,cz-.036,-.16);tube.scale.x=.99;
       }
-    }else box(cw+.025,ch+.025,.028,trim,eye.x,cy,cz-.018,.012,-.16);
-    if(!isMini&&!isClassic)box(cw+.045,.033,.10,leatherTop,eye.x,cy+ch*.56,cz-.027,.016,-.1);
+    }else box(cw+.025,ch+.025,.028,trim,clusterX,cy,cz-.018,.012,-.16);
+    if(!isMini&&!isClassic)box(cw+.045,.033,.10,leatherTop,clusterX,cy+ch*.56,cz-.027,.016,-.1);
     this.shiftLeds=[];
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
@@ -370,6 +371,8 @@ export class Cockpit {
       g.fillStyle='#f3f4ee';g.font='72px Arial';g.fillText(Math.round(st.kmh),529,218);g.font='21px Arial';g.fillText('km/h',529,254);g.fillText(st.gearLabel,375,203);
       g.strokeStyle='#d9d3b8';g.lineWidth=8;g.beginPath();g.arc(788,194,125,-Math.PI*.48,Math.PI*.48);g.stroke();
       g.fillStyle='#d5d5cc';g.font='22px Arial';g.fillText('+23.0°C',690,68);g.fillText('12:41',350,68);g.fillText('0',811,340);g.fillText('1',811,56);
+    }else if(id==='yaris'){
+      g.fillRect(0,0,W,H);g.fillStyle='#91b7a6';g.font='110px monospace';g.textAlign='center';g.fillText(Math.round(st.kmh),510,215);g.font='28px monospace';g.fillText('km/h     '+st.gearLabel,510,264);g.font='20px monospace';g.fillText('ODO  184205       FUEL ▮▮▮▮',510,335);
     }else if(id==='huracan'){
       g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'RPM ×1000',red:8.5});
       g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,255);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,273);

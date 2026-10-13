@@ -25,3 +25,9 @@ Split grille, upright rectangular lamps, black bumper strips, steel wheels, rear
 2003–2009 five-door **44 kW / 60 PS, 102 Nm**, 860 kg, FWD, five-speed manual, 155 km/h. Dimensions 3.538 × 1.578 × 1.540 m, wheelbase 2.299 m, 155/80 R13 tyres. Primary references: [Fiat owner's handbook, technical specifications](https://aftersales.fiat.com/eLumData/EN/00/169_PANDA/00_169_PANDA_603.81.224_EN_01_07.07_L_LG/00_169_PANDA_603.81.224_EN_01_07.07_L_LG.pdf) and [2003 manufacturer launch](https://www.media.stellantis.com/it-it/fiat/press/nuova-panda). The launch engine is the 60 PS FIRE, not the later 69 PS revision. Five-speed ratios and drag area are simulation approximations.
 
 Tall short body, upright cabin, roof rails, black rub strips, square lamps and tall rear-pillar lamps; pressed wheels and rear drums.
+
+## Toyota Yaris XP10 1.0 (`yaris`)
+
+1999–2002 five-door **50 kW / 68 PS, 90 Nm**, 850 kg representative base mass, FWD, five-speed manual, 155 km/h. Dimensions 3.615 × 1.660 × 1.500 m, wheelbase 2.370 m. Primary references: [Toyota first-generation press archive](https://media.toyota.co.uk/vehicles/yaris-archive-1999/), [1999 launch](https://media.toyota.co.uk/the-new-toyota-yaris/) and [complete first-generation press pack](https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/Gen1-Yaris-archive-press-pack.pdf). Engine is the original 1SZ-FE; the manual ratios/final drive model that five-speed family. Trim, market and five-door equipment affect actual kerb weight.
+
+Compact rising bonnet, tapered swept lamps, upright hatch and centrally mounted digital speed display. The cockpit keeps the forward view over an empty driver's dash instead of a conventional instrument binnacle.
