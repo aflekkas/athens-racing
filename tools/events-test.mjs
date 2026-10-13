@@ -152,3 +152,20 @@ test('positions, wrong way, hooks', () => {
   const orig = console.error; console.error = () => {}; new EV.EventRun(EV.QUICK_RACE, ctx).start(); console.error = orig; off();
   assert.equal(threw, 1, 'a failing listener does not break the emitter');
 });
+
+test('closed circuit: three laps, no early finish, lap clocks and total-time ranking', () => {
+  const loop = {route:{start:0,finish:2000,length:2000,closed:true,from:'START',to:'START'},marks:[]};
+  const def={id:'test-circuit',mapId:'megara',type:'timetrial',from:'start',to:'finish',laps:3,rivals:0,targets:{gold:120,silver:100,bronze:80}};
+  const run=new EV.EventRun(def,loop,{storage:mem()});run.start();
+  assert.equal(run.r.len,6000);assert.equal(run.r.laps,3);assert.equal(run.r.checkpoints.length,12);
+  let emitted=[];
+  for(let s=0;s<=6000;s+=100){const out=run.update(1,{s,t:s/25,kmh:90});emitted.push(...out);if(s<6000)assert.ok(!out.some(e=>e.kind==='finish'));if(s===2100){assert.equal(run.lap,2);assert.equal(run.lapTime,4);}}
+  assert.deepEqual(run.lapTimes,[80,80,80]);assert.equal(run.lap,3);
+  assert.equal(emitted.filter(e=>e.kind==='lap').length,3);
+  const res=run.finish({time:240});assert.equal(res.time,240);assert.equal(res.bestLap,80);assert.equal(res.mapId,'megara');assert.deepEqual(res.lapTimes,[80,80,80]);
+  assert.deepEqual(EV.rankRacers([{id:'a',finish:243,prog:6000},{id:'b',finish:239,prog:6000}]).map(r=>r.id),['b','a']);
+});
+test('map event registration isolates maps without changing Riviera', () => {
+  EV.registerMapEvents('test-map',[{id:'test-map-tt',type:'timetrial'}]);
+  assert.equal(EV.getEvent('test-map-tt').mapId,'test-map');assert.equal(EV.getEvents('test-map').length,1);assert.equal(EV.getEvents('riviera'),EV.EVENTS);assert.equal(EV.getEvent('unknown-event'),null);
+});

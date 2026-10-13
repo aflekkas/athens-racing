@@ -114,7 +114,14 @@ export const EVENTS = [
 ];
 /** Quick Race: the full sprint in whatever car you have, three rivals */
 export const QUICK_RACE = { id: 'quick', name: 'QUICK RACE', blurb: 'Vouliagmeni to Lomvarda against three locals.', type: 'sprint', from: 'start', to: 'finish', rivals: 3, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 }, quick: true };
-export const getEvent = (id) => (id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || null);
+// Bundle-owned events are registered when that map loads; IDs stay global for saved records.
+const mapEvents = new Map();
+export function registerMapEvents(mapId, defs) {
+  if (!Array.isArray(defs)) throw new Error('Invalid events for map ' + mapId);
+  mapEvents.set(mapId, defs.map(def => ({ ...def, mapId })));
+}
+export function getEvents(mapId = 'riviera') { return mapEvents.get(mapId) || (mapId === 'riviera' ? EVENTS : []); }
+export const getEvent = (id) => (id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || [...mapEvents.values()].flat().find(e => e.id === id) || null);
 
 // ------------------------------------------------------------------ resolving a definition onto the route
 /** ctx = { route: {start, finish, length, from, to, curv?}, marks: [{id, name, sub, s}] } */
@@ -130,6 +137,17 @@ function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for
 
 export function resolve(def, ctx) {
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
+  if (ctx.route.closed) {
+    const laps = Math.max(1, Math.min(99, Math.floor(def.laps || 1))), lapLength = ctx.route.length;
+    const dir = def.reverse ? -1 : 1, len = lapLength * laps, checkpoints = [];
+    for (let lap = 1; lap <= laps; lap++) for (let sector = 1; sector <= 4; sector++) {
+      const d = ((lap - 1) + sector / 4) * lapLength, last = lap === laps && sector === 4;
+      checkpoints.push({ id: last ? 'finish' : `lap${lap}-sector${sector}`, name: sector === 4 ? `LAP ${lap}` : `SECTOR ${sector}`, s: a.s + dir * d, d, lapEnd: sector === 4, lap });
+    }
+    return { s0:a.s, s1:a.s + dir*len, dir, len, laps, lapLength, closed:true, fromName:a.name,
+      toName:b.name, checkpoints, traps:[], reverse:dir<0, timeLimit:0,
+      targetTimes:def.type === 'timetrial' ? Object.fromEntries(MEDALS.map(m => [m, len / ((def.targets?.[m] || 100) / 3.6)])) : null };
+  }
   const dir = b.s >= a.s ? 1 : -1, len = Math.abs(b.s - a.s);
   const prog = (s) => (s - a.s) * dir;
   // checkpoints: the district markers strictly inside the segment, then the finish
@@ -248,11 +266,14 @@ export class EventRun {
   }
   reset() {
     this.t = 0; this.started = false; this.done = false; this.result = null;
+    this.lapTimes = []; this.lapStart = 0;
     this.cpIdx = 0; this.splits = []; this.trapIdx = 0; this.trapSpeeds = [];
     this.score = 0; this.breakdown = {}; this.counts = {}; this.lastProg = 0; this.maxProg = 0; this.ww = {};
   }
   get type() { return this.def.type; }
   get id() { return this.def.id; }
+  get lap() { return Math.min(this.r.laps || 1, this.lapTimes.length + 1); }
+  get lapTime() { return Math.max(0, this.t - this.lapStart); }
   progress(s) { return (s - this.r.s0) * this.r.dir; }
   /** 0..1 along the event */
   frac(s) { return Math.max(0, Math.min(1, this.progress(s) / this.r.len)); }
@@ -281,6 +302,11 @@ export class EventRun {
     while (this.cpIdx < this.r.checkpoints.length && prog >= this.r.checkpoints[this.cpIdx].d) {
       const cp = this.r.checkpoints[this.cpIdx], i = this.cpIdx++;
       this.splits.push(p.t);
+      if (cp.lapEnd) {
+        const time = p.t - this.lapStart; this.lapTimes.push(time); this.lapStart = p.t;
+        const lap = { kind:'lap', eventId:this.id, lap:cp.lap, laps:this.r.laps, time, total:p.t };
+        events.emit('lap', lap); out.push(lap);
+      }
       const best = this.best.bestSplits?.[i] ?? null;
       const e = { kind: 'split', eventId: this.id, index: i, id: cp.id, name: cp.name, time: p.t, best, delta: best != null ? p.t - best : null, last: cp.id === 'finish' };
       events.emit('split', e); out.push(e);
@@ -301,7 +327,8 @@ export class EventRun {
     this.done = true;
     const trapTotal = this.trapSpeeds.reduce((a, b) => a + b, 0);
     const res = {
-      eventId: this.id, type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
+      eventId: this.id, mapId: this.def.mapId || 'riviera', type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
+      laps: this.r.laps || 1, lapTimes: this.lapTimes.slice(), bestLap: this.lapTimes.length ? Math.min(...this.lapTimes) : null,
       position: extra.position ?? 1, field: extra.field ?? 1, score: Math.round(this.score), medal: null,
       trapSpeeds: this.trapSpeeds.slice(), trapTotal, breakdown: { ...this.breakdown }, penalties: extra.penalties || 0,
       distance: this.r.len, reverse: this.r.reverse, routeKey: `${Math.round(this.r.s0)}>${Math.round(this.r.s1)}`, valid: true, ...extra,
