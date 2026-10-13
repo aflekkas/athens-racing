@@ -9,7 +9,7 @@ function stationaryUnchanged(a, b) {
 }
 
 export class StateSender {
-  constructor(send, { now = () => performance.now(), schedule = setTimeout, cancel = clearTimeout } = {}) {
+  constructor(send, { now = () => performance.now(), schedule = (fn, delay) => globalThis.setTimeout(fn, delay), cancel = id => globalThis.clearTimeout(id) } = {}) {
     this.send = send; this.now = now; this.schedule = schedule; this.cancel = cancel; this.reset();
   }
   reset() {

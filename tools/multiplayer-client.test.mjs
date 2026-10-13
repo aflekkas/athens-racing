@@ -48,6 +48,14 @@ test('legacy servers receive single states at ten Hz', () => {
   assert.equal(q.packets.length, 10); assert.ok(q.packets.every(p => p.type === 'state'));
 });
 
+test('default timers retain the browser global receiver when called through the sender', () => {
+  const oldSet = globalThis.setTimeout, oldClear = globalThis.clearTimeout; let scheduled = 0, canceled = 0;
+  globalThis.setTimeout = function() { assert.equal(this, globalThis); scheduled++; return 123; };
+  globalThis.clearTimeout = function(id) { assert.equal(this, globalThis); assert.equal(id, 123); canceled++; };
+  try { const sender = new StateSender(() => {}, { now: () => 0 }); sender.sample(state(), 'race', { batching: true }); sender.reset(); assert.equal(scheduled, 1); assert.equal(canceled, 1); }
+  finally { globalThis.setTimeout = oldSet; globalThis.clearTimeout = oldClear; }
+});
+
 function lobbyClient(mapId = 'megara') {
   const m = Object.create(Multiplayer.prototype), starts = [], maps = [], packets = [];
   Object.assign(m, { loaded: true, connected: true, mapId: 'riviera', preparing: null, failedMap: null, id: 'me', offset: 0,
