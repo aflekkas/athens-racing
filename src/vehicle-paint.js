@@ -1,0 +1,31 @@
+// Screen approximations of period factory finishes; references live in tools/vehicle-model-notes.md.
+// Taxicab yellow is an additional fleet finish; GR Yaris grey includes the 2024 Ogier special edition.
+export const PAINTS = {
+  mini: [['Blazing Red','#bd1626'],['Pepper White','#eee9d8'],['Midnight Black','#17191d'],['British Racing Green','#164d38'],['Caribbean Aqua','#329995'],['Melting Silver','#a7a6a1'],['Deep Blue','#244774'],['Volcanic Orange','#e88b13']],
+  z4: [['Misano Blue','#22679d'],['Alpine White','#efefea'],['Black Sapphire','#191c23'],['Glacier Silver','#b9bfc5'],['San Francisco Red','#a52327'],['Frozen Grey II','#777e83']],
+  taxi: [['Athens Taxi Yellow','#eebd19'],['Candy White','#eaece7'],['Brilliant Silver','#b6bec4'],['Race Blue','#245b9d'],['Lava Blue','#245463'],['Velvet Red','#9d1928'],['Quartz Grey','#606566'],['Black Magic','#191b21']],
+  carrera: [['GT Silver','#c6c9cb'],['Guards Red','#c02624'],['Racing Yellow','#eccf24'],['Carrara White','#edede6'],['Basalt Black','#202328'],['Aqua Blue','#276490'],['Agate Grey','#64655f'],['Lime Gold','#aaa875']],
+  gr_yaris: [['Super White','#e7e8e3'],['Platinum White Pearl','#eeeee5'],['Precious Black','#191b21'],['Emotional Red','#b61b28'],['Precious Metal','#777e86'],['Matt Stealth Grey · Ogier','#555c63']],
+  gtv: [['Rosso Alfa','#b52125'],['Bianco Spino','#e8e4d8'],['Giallo Ocra','#c89431'],['Verde Pino','#264c38'],['Blu Olandese','#192e46'],['Prugna','#5a293f'],['Grigio Indaco','#737780'],['Azzurro Le Mans','#548da5']],
+};
+export function validPaint(color) { return typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color); }
+export function savedPaint(spec) {
+  try { const c=localStorage.getItem('paraliaki.paint.'+spec.id);if(validPaint(c))return c.toLowerCase(); } catch {}
+  return spec.color;
+}
+export function savePaint(id,color) {
+  if(!validPaint(color))return false;
+  try { localStorage.setItem('paraliaki.paint.'+id,color.toLowerCase()); } catch { /* Live painting still works when storage is unavailable. */ }
+  return true;
+}
+// Changes this instance only. The catalogue, glass, tyres, lights and other cars keep their own materials.
+export function setPaint(model,color) {
+  if(!model?.paint||!validPaint(color))return false;
+  model.paint.color.set(color);model.paintColor=color.toLowerCase();
+  for(const m of model.paintAccents||[])m.color.set(color);
+  const name=PAINTS[model.spec?.id]?.find(p=>p[1]===model.paintColor)?.[0]||'';
+  const matte=name.startsWith('Frozen')||name.startsWith('Matt ');
+  model.paint.roughness=matte?.62:.26;
+  if('clearcoat' in model.paint)model.paint.clearcoat=matte?.05:1;
+  return true;
+}

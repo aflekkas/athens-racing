@@ -3,6 +3,7 @@
 // radiator steam from a crushed front. Reads the physics state only (corners, cx / cy, steer, wheelSurf, curbHit).
 import * as THREE from 'three';
 import { clamp, smoothstep } from './util.js';
+import { WEATHER } from './ground.js';
 
 const MARKS = 5000;        // skid-mark quads in the ring buffer (~1.2 km of single-wheel mark at 0.25 m spacing)
 const MARK_STEP = 0.25;    // m between mark segments
@@ -23,14 +24,14 @@ class Particles {
     g.setAttribute('aAlpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aCol', new THREE.BufferAttribute(this.col, 3).setUsage(THREE.DynamicDrawUsage));
     this.mat = new THREE.ShaderMaterial({
-      uniforms: { uScale: { value: 600 }, uSoft: { value: soft } },
+      uniforms: { uScale: { value: 600 }, uSoft: { value: soft }, uLight: { value: 1 } },
       vertexShader: `attribute float aSize; attribute float aAlpha; attribute vec3 aCol; uniform float uScale;
         varying float vA; varying vec3 vC;
         void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
           gl_PointSize = clamp(aSize * uScale / max(0.1, -mv.z), 0.0, 400.0); vA = aAlpha; vC = aCol; }`,
-      fragmentShader: `uniform float uSoft; varying float vA; varying vec3 vC;
+      fragmentShader: `uniform float uSoft; uniform float uLight; varying float vA; varying vec3 vC;
         void main() { vec2 p = gl_PointCoord * 2.0 - 1.0; float r = dot(p, p); if (r > 1.0) discard;
-          float a = vA * pow(1.0 - r, 1.0 + uSoft * 2.0); gl_FragColor = vec4(vC, a); }`,
+          float a = vA * pow(1.0 - r, 1.0 + uSoft * 2.0); gl_FragColor = vec4(vC * uLight, a); }`,
       transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
     });
     this.pts = new THREE.Points(g, this.mat); this.pts.frustumCulled = false; this.pts.renderOrder = 5;
@@ -127,6 +128,8 @@ export class Fx {
   /** per frame: cars is a list of physics vehicles */
   update(dt, cars, camera, viewH) {
     this.smoke.mat.uniforms.uScale.value = this.grit.mat.uniforms.uScale.value = this.sparkP.mat.uniforms.uScale.value = viewH / (2 * Math.tan(camera.fov * Math.PI / 360));
+    // unlit sprites: dim them with the daylight (sparks glow regardless)
+    this.smoke.mat.uniforms.uLight.value = this.grit.mat.uniforms.uLight.value = 0.08 + 0.92 * clamp(WEATHER.ambient, 0, 1);
     if (dt > 0) for (const veh of cars) if (veh) this._car(veh, dt);
     this.smoke.update(dt); this.grit.update(dt); this.sparkP.update(dt);
     if (this.dirty1 >= 0) {
@@ -162,12 +165,12 @@ export class Fx {
       if (air || veh.water > 0) { st.on = false; continue; }
       // marks: rubber when the tyre slides, ruts wherever the ground is soft
       const markA = paved ? slideK : surf === 'rock' ? 0 : Math.max(0.45 * smoothstep(0.5, 3, Math.abs(vgx)), slideK);
-      if (markA > 0.04) this._mark(st, x, this._groundY(veh, x, z, ox, oz) + 0.025, z, MARK_COL[surf] || MARK_COL.dirt, Math.min(1, markA * 1.2));
+      if (markA > 0.04) this._mark(st, x, this._groundY(veh, x, z, ox, oz) + 0.025, z, MARK_COL[surf] || MARK_COL.dirt, Math.min(1, markA * 1.2) * (paved ? 1 - 0.6 * WEATHER.wet : 1));
       else st.on = false;
       const y = veh.y + 0.15;
       if (paved) {
         // tyre smoke: grows with sliding speed, thick when a wheel is lit up on the spot
-        const rate = 46 * clamp((slip - 3.5) / 9, 0, 1.2);
+        const rate = 46 * clamp((slip - 3.5) / 9, 0, 1.2) * (1 - 0.8 * WEATHER.wet); // a wet tyre barely smokes
         st.acc += rate * dt;
         while (st.acc >= 1) {
           st.acc -= 1;
@@ -178,7 +181,7 @@ export class Fx {
       } else if (surf !== 'rock') {
         // dust off the soft stuff, and a roost of sand / grit behind a spinning wheel
         const D = DUST[surf] || DUST.dirt;
-        const rate = 18 * clamp(speed / 18, 0, 1.2) + 30 * clamp((slip - 2) / 8, 0, 1);
+        const rate = (18 * clamp(speed / 18, 0, 1.2) + 30 * clamp((slip - 2) / 8, 0, 1)) * (1 - 0.7 * WEATHER.wet); // wet ground doesn't dust
         st.dacc += rate * dt;
         while (st.dacc >= 1) {
           st.dacc -= 1;

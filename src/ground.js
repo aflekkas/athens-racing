@@ -21,6 +21,11 @@ export const SURF = {
   rock: { mu: 0.75, drag: 0.5, rough: 1, res: 0, soft: 0 },
   water: { mu: 0.15, drag: 9, rough: 0, res: 0, soft: 0 },
 };
+// the weather's say in it (weather.js writes these; they stay at clear-day values without it): gripScale scales
+// tarmac grip in the rain (soft ground much less, sand not at all), wet 0..1 (lighter skid marks, little tyre smoke),
+// ambient 0..1 light level (night darkens the unlit smoke / dust sprites in fx.js)
+export const WEATHER = { gripScale: 1, wet: 0, ambient: 1 };
+const WET_K = { asphalt: 1, pavement: 1, rock: 1, verge: 0.4, gravel: 0.4, dirt: 0.5, scrub: 0.4, sand: 0, water: 0 };
 const MAX_CLIMB = 0.5;    // steepest hillside a road car will drive up (~27 deg); steeper is a wall
 const MAX_ABOVE = 9;      // the hillside stops being drivable this far above the road (scrub, boulders, terraces);
                           // the brush gets thicker (drag) for the last few metres so you feel it coming
@@ -198,8 +203,9 @@ export class Ground {
       if (up) {
         const glance = vn < 0.9 * sev && vAlong > 6 && sev > 0.6;
         // climbing takes ~35% (full kerb) of the speed into it at that corner; a glancing tyre bounces back off
-        const J = meff * vn * (glance ? 1.35 : 0.35 * sev);
-        v.vLong += J * jx / v.m; v.vLat += J * jy / v.m; v.w += J * arm / v.Iz;
+        const J = meff * vn * (glance ? 1.35 : 0.3 * sev);
+        // climbing, part of the blow goes up through the spring rather than round the car's centre
+        v.vLong += J * jx / v.m; v.vLat += J * jy / v.m; v.w += J * arm / v.Iz * (glance ? 1 : 0.5);
         if (glance) { // stays on the road: put the wheel back on this side of the kerb line
           const pen = Math.abs(u - kerbU) + 0.02;
           v.x -= nx * pen; v.z -= nz * pen; v.u -= nside * pen; prev[i] = was;
@@ -209,7 +215,7 @@ export class Ground {
           const k = sev * Math.min(1, (vAlong + vn * 2) / 14);
           v.pose.heaveV += 0.5 * k; v.pose.pitchV += (cx > 0 ? -0.35 : 0.25) * k; v.pose.rollV += (cy > 0 ? 0.6 : -0.6) * k;
           if (cx > 0) v.steer += (cy > 0 ? -1 : 1) * 0.04 * k; // the rack kicks against the hit wheel
-          if (vn > 7) v.addDamage?.(cy > 0 ? 'right' : 'left', (vn - 7) * 0.9 + 2.2, { kind: 'wall' });
+          if (vn > 8 && cx > 0) v.addDamage?.(cy > 0 ? 'right' : 'left', (vn - 8) * 0.5 + 2.2, { kind: 'wall' }); // a bent wheel / track rod
         }
         const hit = clamp((glance ? 0.25 : 0.35) * sev + vn * 0.06 + vAlong * 0.008, 0, 1);
         v.bumpHit = Math.max(v.bumpHit, hit); v.curbHit = Math.max(v.curbHit || 0, hit);
@@ -293,7 +299,7 @@ export class Ground {
     // grip / drag (airborne: no grip), water
     // grip and resistance: the average over the four contact patches (a car with two wheels in the sand feels it)
     let mu = 0, dr = 0, res = 0, soft = 0;
-    for (let i = 0; i < 4; i++) { const W = SURF[ws[i]] || SURF.dirt; mu += W.mu / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; }
+    for (let i = 0; i < 4; i++) { const W = SURF[ws[i]] || SURF.dirt; mu += W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5)) / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; }
     v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft;
     if (!paved) { // thick maquis up the hillside / far from the road
       const sc = clamp(v.s, 0, route.length);

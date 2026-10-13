@@ -8,9 +8,9 @@ import { createGameServer } from './index.mjs';
 
 async function setup(t, opts = {}) {
   const root = await mkdtemp(join(tmpdir(), 'paraliaki-test-')); await mkdir(join(root, 'data'));
-  await writeFile(join(root, 'data/map.json'), JSON.stringify({ route: { start: 0, finish: 15, x: [0, 15] } }));
+  await writeFile(join(root, 'data/map.json'), JSON.stringify({ route: { start: 0, finish: 15, x: [0, 15] }, marks: ['astir', 'lake', 'limanakia', 'varkiza', 'coast', 'lomvarda'].map((id, i) => ({ id, name: id, s: i * 2 + 1 })) }));
   await writeFile(join(root, 'index.html'), '<h1>Racing</h1>');
-  const app = await createGameServer({ root, countdownMs: 60, raceLimitMs: 500, ...opts });
+  const app = await createGameServer({ root, countdownMs: 60, raceLimitMs: 500, reconnectGraceMs: 0, ...opts });
   await new Promise(r => app.server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${app.server.address().port}`;
   t.after(async () => { await app.close(); await rm(root, { recursive: true, force: true }); });
@@ -19,7 +19,7 @@ async function setup(t, opts = {}) {
     ws.on('message', data => { const m = JSON.parse(data); const i = waiting.findIndex(w => w.pred(m)); if (i >= 0) waiting.splice(i, 1)[0].resolve(m); else inbox.push(m); });
     const next = pred => new Promise((resolve, reject) => { const i = inbox.findIndex(pred); if (i >= 0) return resolve(inbox.splice(i, 1)[0]); const timer = setTimeout(() => reject(new Error('Message timeout')), 2000); waiting.push({ pred, resolve: m => { clearTimeout(timer); resolve(m); } }); });
     const hello = await next(m => m.type === 'hello');
-    return { ws, id: hello.id, version: hello.track.version, next, send: m => ws.send(JSON.stringify({ name, car: 'mini', ...m })) };
+    return { ws, id: hello.id, token: hello.token, version: hello.track.version, next, send: m => ws.send(JSON.stringify({ name, car: 'mini', ...m })) };
   }
   return { app, base, client };
 }
@@ -123,4 +123,75 @@ test('race results retain a finisher who disconnects before the other driver fin
   assert.equal(winner.finish, finished.finish); assert.equal(winner.dnf, false); assert.equal(winner.disconnected, true);
   b.send({ type: 'rematch' }); const waiting = (await b.next(m => m.type === 'lobby' && m.lobby.status === 'waiting')).lobby;
   assert.equal(waiting.results, null); assert.equal(waiting.players.length, 1);
+});
+
+test('dropped driver rejoins the same live race with token, state, identity and finish intact', async t => {
+  const env = await setup(t, { reconnectGraceMs: 1000, raceLimitMs: 5000 }); const { a, b } = await pair(env);
+  const l = await readyAndStart(a, b); await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
+  a.send({ type: 'state', raceId: l.raceId, state: state(5) });
+  await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === a.id && p.state?.s === 5));
+  a.ws.terminate();
+  const dropped = (await b.next(m => m.type === 'lobby' && m.lobby.players.some(p => p.id === a.id && !p.connected))).lobby;
+  assert.equal(dropped.players.length, 2); assert.equal(dropped.host, b.id);
+  const rejoined = await env.client('Reloaded'); rejoined.send({ type: 'resume', token: a.token });
+  const session = await rejoined.next(m => m.type === 'session'); assert.equal(session.resumed, true); assert.equal(session.id, a.id);
+  const restored = await rejoined.next(m => m.type === 'lobby' && m.resume);
+  assert.equal(restored.lobby.raceId, l.raceId); assert.equal(restored.state.s, 5); assert.equal(restored.lobby.players.find(p => p.id === a.id).name, 'Alice');
+  rejoined.send({ type: 'state', raceId: l.raceId, state: state(15) });
+  const finished = (await b.next(m => m.type === 'lobby' && m.lobby.players.some(p => p.id === a.id && p.finish != null))).lobby.players.find(p => p.id === a.id).finish;
+  rejoined.send({ type: 'state', raceId: l.raceId, state: state(20) });
+  const coast = await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === a.id && p.state?.s === 20));
+  assert.equal(coast.players.find(p => p.id === a.id).finish, finished);
+  rejoined.ws.terminate(); const again = await env.client('Second reload'); again.send({ type: 'resume', token: a.token });
+  const second = await again.next(m => m.type === 'lobby' && m.resume);
+  assert.equal(second.state.s, 20); assert.equal(second.lobby.players.find(p => p.id === a.id).finish, finished);
+});
+
+test('invalid/expired tokens cannot recover a race and explicit leave releases the seat', async t => {
+  const env = await setup(t, { reconnectGraceMs: 100 }); const { a, b, code } = await pair(env);
+  const wrong = await env.client('Wrong'); wrong.send({ type: 'resume', token: 'invalid-token' });
+  assert.equal((await wrong.next(m => m.type === 'session')).resumed, false);
+  a.ws.terminate(); await b.next(m => m.type === 'lobby' && m.lobby.players.length === 1);
+  wrong.send({ type: 'resume', token: a.token }); assert.equal((await wrong.next(m => m.type === 'session')).resumed, false);
+  b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
+  const reload = await env.client('Reload'); reload.send({ type: 'resume', token: b.token });
+  const session = await reload.next(m => m.type === 'session'); assert.equal(session.resumed, true); assert.equal(session.lobby, false);
+  assert.equal(env.app.lobbies.has(code), false);
+});
+
+test('host route/traffic choices clear ready votes; reverse finish follows event direction', async t => {
+  const env = await setup(t, { raceLimitMs: 5000 }); const { a, b } = await pair(env);
+  b.send({ type: 'options', eventId: 'return-leg', traffic: true }); assert.match((await b.next(m => m.type === 'error')).message, /host/);
+  a.send({ type: 'ready', ready: true, version: a.version }); await room(a); await room(b);
+  a.send({ type: 'options', eventId: 'return-leg', traffic: true });
+  const changed = (await room(a)).lobby; await room(b);
+  assert.equal(changed.event.dir, -1); assert.equal(changed.traffic, true); assert.ok(changed.players.every(p => !p.ready));
+  const l = await readyAndStart(a, b); await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
+  a.send({ type: 'state', raceId: l.raceId, state: state(10) });
+  await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === a.id && p.state?.s === 10));
+  assert.equal(env.app.lobbies.get(l.code).players.get(a.id).finish, null);
+  await new Promise(r => setTimeout(r, 120));
+  a.send({ type: 'state', raceId: l.raceId, state: state(0) }); b.send({ type: 'state', raceId: l.raceId, state: state(0) });
+  const completed = (await a.next(m => m.type === 'lobby' && m.lobby.status === 'results')).lobby;
+  assert.ok(completed.players.every(p => p.finish != null));
+  await env.app.leaderboard.flush();
+  const times = await (await fetch(env.base + '/api/leaderboard?eventId=return-leg&car=mini&traffic=true')).json();
+  assert.equal(times.length, 2); assert.ok(times.every(e => e.source === 'online' && e.routeKey === '15>0'));
+});
+
+test('leaderboard HTTP rejects invalid times, aborted runs, unknown cars, cross-origin and oversized requests; rate limits POST', async t => {
+  const env = await setup(t);
+  const result = { driverId: 'browser-driver-1', name: 'Alice', eventId: 'quick', car: 'mini', time: 2, valid: true };
+  const post = (body, headers = {}) => fetch(env.base + '/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) });
+  assert.equal((await post({ ...result, time: 0.001 })).status, 400);
+  assert.equal((await post({ ...result, valid: false })).status, 400);
+  assert.equal((await post({ ...result, car: 'imaginary' })).status, 400);
+  assert.equal((await post(result, { Origin: 'https://another-host.example' })).status, 403);
+  assert.equal((await post(' '.repeat(5000))).status, 413);
+  assert.equal((await post(result)).status, 200);
+  const times = await (await fetch(env.base + '/api/leaderboard?eventId=quick&car=mini')).json();
+  assert.equal(times.length, 1); assert.equal(times[0].time, 2); assert.equal(times[0].driverId, undefined);
+  for (let i = 0; i < 7; i++) await post(result);
+  assert.equal((await post(result)).status, 429);
+  assert.equal((await fetch(env.base + '/.data/leaderboard.json')).status, 404);
 });

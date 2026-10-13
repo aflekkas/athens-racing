@@ -48,11 +48,19 @@ RPM references are harmonic-analysis estimates, except the producer-labelled
 TDI loops. Short sections of revs were pitch-stabilized, seams overlapped, DC
 removed and levels matched. The high MINI loop is short (0.43 s); a longer
 steady full-load recording would improve variation. Load uses filtering and
-gain, not separate measured load/coast recordings. Road/tyre/turbo/shift sounds
-remain procedural. The existing rival shares the player's performance/audio
-bank. Engine synthesis remains as a network/decode fallback, now with an I6.
+gain, not separate measured load/coast recordings. World sounds have their own
+credits; turbo/shift effects are procedural. The existing rival shares the
+player's performance/audio bank. Engine synthesis remains as a decode fallback.
 
-Audition all three: /tools/audio-preview.html (served from the project root).
+ADDITIONAL SYNTHESIZED ENGINES
+Porsche 991.1 Carrera 3.4: flat6, six-cylinder pulse model, 7,800 RPM redline.
+Toyota GR Yaris 1.6: turbo3, three-cylinder pulse model, 7,200 RPM redline.
+Alfa Romeo 2000 GTV: na4, four-cylinder twin-cam character, 6,500 RPM redline.
+These are procedural approximations, not recordings of the named cars. Each
+has four RPM bands with load/coast layers. The Yaris uses turbo spool/lift-off
+effects; Carrera and GTV do not. No recorded startups are assigned to these cars.
+
+Audition all six: /tools/audio-preview.html (served from the project root).
 Rebuild: python tools/build_engine_audio.py --cache /path/to/source-cache
 Requires ffmpeg, numpy and scipy. Masters are cached outside runtime assets.
 To upgrade fidelity further, replace substitute sources with separately

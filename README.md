@@ -29,6 +29,8 @@ For the current VPS, install `deploy/paraliaki-racing.service` in `~/.config/sys
 | Space | Handbrake |
 | Shift | Nitro |
 | C | Cockpit / chase camera |
+| Mouse drag / wheel | Swing the camera round the car (or look around the cockpit) / zoom; double-click resets |
+| T | Tow back onto the road when stuck |
 | 1–3, G | Change car / garage |
 | R / Enter | Restart |
 | M | Radio on / off |

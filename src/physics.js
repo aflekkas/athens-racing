@@ -28,6 +28,8 @@ const ETA = 0.92;       // driveline efficiency
 // torque curves: [rpm / redline, fraction of peak torque]; the power cap in torqueMax() shapes the top end.
 // lsd: locking coefficient of the stock differential, |T_left - T_right| <= lsd * |T_axle| (0 = open diff)
 const ENGINES = {
+  turbo3: { curve: [[0,0.4],[0.25,0.58],[0.46,1],[0.65,1],[1,0.68],[1.1,0.55]], lag: 0.48, boostMin: 0.5, Je: 0.12, lsd: 0.35 },
+  na4: { curve: [[0,0.4],[0.25,0.68],[0.5,0.92],[0.65,1],[0.85,0.92],[1,0.69],[1.1,0.55]], lag: 0, Je: 0.13, lsd: 0.25 },
   turbo4: { curve: [[0, 0.5], [0.2, 0.86], [0.24, 1], [0.7, 1], [1, 0.8], [1.1, 0.7]], lag: 0.55, boostMin: 0.6, Je: 0.13, lsd: 0 },
   turbo5: { curve: [[0, 0.45], [0.22, 0.72], [0.36, 1], [0.82, 0.97], [1, 0.84], [1.1, 0.75]], lag: 0.75, boostMin: 0.52, Je: 0.15, lsd: 0.4 },
   // BMW B58: 500 N m from 1600-4500 rpm, 250 kW 5000-6500 rpm (redline ~7000)
@@ -54,6 +56,7 @@ export class Vehicle {
   constructor(spec, route) {
     this.route = route;
     this.setSpec(spec);
+    this.manual = !!spec.manual;
     this.reset(0, 0);
   }
   setSpec(spec) {
@@ -71,6 +74,7 @@ export class Vehicle {
     this.track = spec.track ?? this.halfW * 2 * 0.86;
     this.awd = spec.drive === 'awd';
     this.shareR = spec.drive === 'fwd' ? 0 : spec.drive === 'awd' ? (spec.awdRear ?? 0.6) : 1;
+    this.shareR0 = this.shareR; // base split; an AWD coupling shifts torque rearwards while drifting (see step)
     // tyre shape: peak slip angle, peak slip ratio, sliding friction as a share of peak (peakier tyres snap more)
     this.aPk = spec.alphaPk ?? 0.11;
     this.kPk = this.aPk * 0.9;
@@ -111,7 +115,7 @@ export class Vehicle {
     this.dig = 0; this.digF = 0; this.digB = 0; this.curbHit = 0;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
     this.shiftEvent = 0; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
-    this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0;
+    this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0;
     this.damage = { front: 0, rear: 0, left: 0, right: 0 }; this.smoke = false; this.lastDamage = null;
     this.damageFx();
   }
@@ -126,7 +130,8 @@ export class Vehicle {
   /** full-throttle engine torque (N m) at rpm, including turbo boost and crash damage */
   torqueMax(rpm) {
     const sp = this.spec, e = this.eng, pm = (sp.powerMul ?? POWER_MUL) * (this.engHealth ?? 1);
-    let shape = curveAt(e.curve, rpm / sp.redline);
+    // Optional absolute rpm/Nm anchors preserve individual engines' torque and power peaks.
+    let shape = sp.torqueCurve ? curveAt(sp.torqueCurve, rpm) / sp.torque : curveAt(e.curve, rpm / sp.redline);
     if (e.lag) shape *= lerp(e.boostMin, 1, this.boost);
     const T = sp.torque * pm * shape;
     const cap = sp.power * 1000 * pm / Math.max(60, rpm * Math.PI / 30) * 1.04;
@@ -181,7 +186,7 @@ export class Vehicle {
    *  towards a damaged side, a little drag from bent panels; radiator steam once the front is badly crushed */
   damageFx() {
     const d = this.damage || { front: 0, rear: 0, left: 0, right: 0 };
-    this.engHealth = 1 - 0.3 * smoothstep(0.35, 1, d.front);
+    this.engHealth = 1 - 0.3 * smoothstep(0.35, 1, d[this.spec.engineZone || 'front']);
     this.toePull = 0.006 * (d.right - d.left);   // rad of steer offset at the road wheels (~0.35 deg, one bent wheel)
     this.dmgDrag = 1 + 0.06 * Math.max(d.front, d.rear) + 0.03 * Math.max(d.left, d.right);
     if (d.front >= 0.6) this.smoke = true;
@@ -256,6 +261,16 @@ export class Vehicle {
     // (tail out and still rotating into the turn: w opposite to beta. Mid-slalom the yaw follows the new steering instead)
     else if (sliding && Math.sign(sIn) === Math.sign(beta) && Math.abs(sIn) > 0.15 && this.w * beta < -0.02) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
     else if (this.flickT <= 0) this.driftLatch = Math.max(0, this.driftLatch - dt * (sliding ? (thrIn > 0.2 ? 0.05 : 0.3) : 1.5));
+    // AWD slide assist: the electronically controlled coupling moves torque rearward once you're drifting (spec.awdDrift,
+    // rear share), approximating the rear-biased end of a variable split such as the 2024 GR Yaris Track mode
+    // (60:40 .. 30:70; Gravel 53:47), so throttle swings the tail instead of the fronts pulling it straight. It eases
+    // back to the base split (spec.awdRear) as the latch releases (coupling response ~0.2-0.3 s)
+    // It also leans rearward on its own when you're hard on the throttle in a loaded corner (no effect in a straight line)
+    if (this.awd) {
+      const rearPull = Math.max(this.driftLatch, smoothstep(0.6, 1, thrIn) * smoothstep(3, 7, Math.abs(this.ay)));
+      const tgt = lerp(this.shareR0, Math.max(this.shareR0, sp.awdDrift ?? 0.7), rearPull);
+      this.shareR += clamp(tgt - this.shareR, -dt * 2.5, dt * 2.5);
+    }
     // a light counter-steer helper when the rear steps out and you aren't steering into it (a steering input aid,
     // the car's yaw still comes only from tyre forces)
     const helper = clamp(beta * 0.55, -0.22, 0.22) * smoothstep(5, 14, vt) * (Math.abs(sIn) < 0.1 ? 1 : 0.35) * (1 - 0.6 * this.driftLatch);
@@ -315,6 +330,7 @@ export class Vehicle {
     // turbo spool
     const e_r = this.rpm / red;
     if (e.lag) { const tgt = thrRaw * smoothstep(0.12, 0.42, e_r); const tau = e.lag * (sp.turbo ?? 1) * (tgt > this.boost ? 1 : 0.35); this.boost += (tgt - this.boost) * Math.min(1, dt / Math.max(0.05, tau)); }
+    if (!this.manual) {
     // automatic sequential box: shift points follow the throttle; kick-down; rev-matched downshifts when braking
     // mid-drift it holds the gear (a locked or spinning axle says nothing about road speed): no shifts on the
     // handbrake, and while latched only an upshift at the limiter or a downshift once the car has really slowed
@@ -331,6 +347,7 @@ export class Vehicle {
         const downAt = brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
         if (dn < red * 0.9 && (rpmIn(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmIn(this.gear) < red * 0.55))) this.shift(this.gear - 1, (sp.shiftT ?? 0.15) * 0.7);
       }
+    }
     }
     // clutch: slips on launch (holds revs up), otherwise locked to the driven wheels
     const launchRpm = sp.idle + (red * (sp.engine === 'diesel' ? 0.38 : 0.5) - sp.idle) * thrRaw;
@@ -484,7 +501,10 @@ export class Vehicle {
     // just past their peak slip, which turns the rear force vector backwards and leaves less of it to resist the
     // slide; the front axle pulls the car through. Once you've committed (latched, sliding, on the power) the car does
     // that brake modulation for you, so throttle + counter-steer sustain the drift. Straighten up and it lets go.
-    const dragWant = sR === 0 && this.driftLatch > 0.5 && ((sliding && thrIn > 0.15) || (this.flickT > 0 && Math.sign(this.w) === Math.sign(inp.steer) && Math.abs(this.w) > 0.2)) && !inp.handbrake && !this.reverse;
+    // (AWD: only the feint's dab, a nose-heavy AWD car understeers through a plain feint; once it's sliding the rear-biased
+    // coupling holds it on the throttle)
+    const flickDab = this.flickT > 0 && Math.sign(this.w) === Math.sign(inp.steer) && Math.abs(this.w) > 0.2;
+    const dragWant = (sR === 0 || this.awd) && this.driftLatch > 0.5 && ((sR === 0 && sliding && thrIn > 0.15) || flickDab) && !inp.handbrake && !this.reverse;
     // like the driver's hand on the lever it feathers to hold the slide angle: more drag below the car's natural drift
     // angle, less above it, damped by how fast the angle is changing (steering + throttle still place the car)
     const ab = Math.abs(beta), dB = (ab - (this.lastAbsBeta ?? ab)) / dt;
@@ -646,6 +666,18 @@ export class Vehicle {
     this.roadFPrev = roadF;
     this.bumpHit = Math.max(this.bumpHit, clamp(dz * 0.06 - 0.02, 0, 1) * Math.min(1, av / 8));
     this.rough = (this.offroad ? 1 : 0.25 + 0.35 * (1 - urb)) * Math.min(1, av / 25);
+  }
+  /** Opt-in sequential manual box; existing clutch, shift time and fuel-cut limiter remain in charge. */
+  setManual(enabled) { this.manual = !!enabled; }
+  shiftManual(direction) {
+    if (!this.manual || this.reverse || this.shiftT > 0 || this.shiftCool > 0 || !direction) return false;
+    const g = this.gear + Math.sign(direction), sp = this.spec;
+    if (g < 1 || g > sp.gears.length) return false;
+    // Reject a downshift that would mechanically over-rev the engine, even with the fuel cut active.
+    const c = this.corners, vw = (c[0].vw + c[1].vw) * 0.5 * (1 - this.shareR) + (c[2].vw + c[3].vw) * 0.5 * this.shareR;
+    if (g < this.gear && Math.abs(vw / sp.wheelR * this.ratio(g) * 60 / (2 * Math.PI)) > sp.redline) return false;
+    this.shift(g, (sp.shiftT ?? 0.15) * (g < this.gear ? 0.7 : 1));
+    return true;
   }
   shift(g, t) {
     this.shiftEvent = g > this.gear ? 1 : -1;

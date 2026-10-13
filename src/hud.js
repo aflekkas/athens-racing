@@ -1,6 +1,7 @@
 // DOM HUD: position / timing / rival gap, route progress, style combos, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
+import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 
 const $ = (id) => document.getElementById(id);
 export const fmtTime = (t) => { if (!isFinite(t)) return '--:--.--'; const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s < 10 ? '0' : ''}${s.toFixed(2)}`; };
@@ -84,6 +85,19 @@ export class Hud {
   }
   pathRange(g, i0, i1) { const p = this.rpts; g.beginPath(); g.moveTo(p[i0 * 2], p[i0 * 2 + 1]); for (let i = i0 + 1; i <= i1 && i * 2 < p.length; i++) g.lineTo(p[i * 2], p[i * 2 + 1]); }
 
+  /** the event's start / finish (s0 > s1 for reverse events): route bar, km to go, minimap finish */
+  setRange(s0, s1) {
+    const { route, data } = this.map;
+    this.r0 = s0; this.r1 = s1; this.raceLen = (s1 - s0) || 1;
+    const ticks = this.el.rticks; ticks.innerHTML = '';
+    for (const m of data.marks) {
+      const f = (m.s - s0) / this.raceLen; if (f < -1e-3 || f > 1 + 1e-3) continue;
+      const t = document.createElement('div'); t.className = 't'; t.style.left = (f * 100) + '%'; ticks.appendChild(t);
+      if (f > 0.02 && f < 0.98 || m.id === 'lomvarda' && s1 > s0) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; ticks.appendChild(l); }
+    }
+    this.lastZone = null;
+  }
+
   // ------------------------------------------------------------------ per-frame
   update(st) {
     const el = this.el, { route } = this.map;
@@ -95,10 +109,12 @@ export class Hud {
     el.gap.textContent = !isFinite(g) ? '--' : (g >= 0 ? '+' : '−') + Math.abs(g).toFixed(2);
     el.gap.className = g < 0 ? 'ahead' : 'behind';
     // route
-    const f = clamp((st.s - route.start) / this.raceLen, 0, 1), fr = clamp((st.rs - route.start) / this.raceLen, 0, 1);
+    const r0 = this.r0 ?? route.start, rl = this.raceLen;
+    const f = clamp((st.s - r0) / rl, 0, 1), fr = clamp((st.rs - r0) / rl, 0, 1); // raceLen is signed for reverse events (setRange)
     el.rfill.style.width = (f * 100) + '%'; el.rMe.style.left = (f * 100) + '%'; el.rRival.style.left = (fr * 100) + '%';
     if ((this.frame & 7) === 0) {
-      el.rToGo.textContent = `${Math.max(0, (route.finish - st.s) / 1000).toFixed(1)} KM TO FINISH`;
+      const toGo = ((this.r1 ?? route.finish) - st.s) * Math.sign(rl) / (st.unit === 'MPH' ? 1609.344 : 1000);
+      el.rToGo.textContent = `${Math.max(0, toGo).toFixed(1)} ${st.unit === 'MPH' ? 'MI' : 'KM'} TO FINISH`;
       const z = route.zone(st.s); if (z && z !== this.lastZone) { this.lastZone = z; el.rZone.textContent = z.name; el.mapLabel.textContent = z.name; }
       let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name; el.rRoad.textContent = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
     }
@@ -145,8 +161,9 @@ export class Hud {
     g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; this.pathRange(g, i0, Math.min(ic, i1)); g.stroke();
     g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; this.pathRange(g, Math.max(i0, ic), Math.min(i1, fi)); g.stroke();
     // finish
-    if (Math.abs(route.finish - st.s) < R) {
-      const p = route.point(route.finish, 0); g.fillStyle = '#ffc21a'; g.beginPath(); g.arc(p.x, p.z, 9 / sc, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3 / sc; g.stroke();
+    const sFin = this.r1 ?? route.finish;
+    if (Math.abs(sFin - st.s) < R) {
+      const p = route.point(sFin, 0); g.fillStyle = '#ffc21a'; g.beginPath(); g.arc(p.x, p.z, 9 / sc, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3 / sc; g.stroke();
     }
     // traffic lights
     if (st.junctions) for (const j of st.junctions) {
@@ -210,7 +227,7 @@ export class Hud {
     // speed
     g.fillStyle = '#fff'; g.font = 'italic 900 116px "Barlow Condensed", sans-serif'; g.textAlign = 'center';
     g.fillText(String(Math.round(st.kmh)), cx - 4, cy + 18);
-    g.fillStyle = '#8f99a6'; g.font = '800 17px "Barlow Condensed", sans-serif'; g.fillText('KM/H', cx, cy + 82);
+    g.fillStyle = '#8f99a6'; g.font = '800 17px "Barlow Condensed", sans-serif'; g.fillText(st.unit || 'KM/H', cx, cy + 82);
     // gear box
     const gx = cx, gy = cy - 86;
     g.fillStyle = st.shiftFlash > 0 ? '#ffc21a' : '#ff3b2f';
@@ -266,8 +283,28 @@ export class Hud {
     el.cIdx.textContent = `${idx + 1}/${cars.length}`;
     el.cName.textContent = c.name; el.cName.classList.remove('flip'); void el.cName.offsetWidth; el.cName.classList.add('flip');
     el.cTag.textContent = c.tag.toUpperCase();
-    el.cSpecs.innerHTML = `<div><span>POWER</span><b>${Math.round(c.power * 1.341)} HP</b></div><div><span>TOP SPEED</span><b>${c.vmax}</b></div><div><span>WEIGHT</span><b>${c.mass} KG</b></div><div class="wide"><span>LAYOUT</span><b>${c.drive.toUpperCase()} · ${{ turbo4: 'TURBO I4', turbo5: 'TURBO I5', flat6: 'FLAT-SIX', v12: 'V12', diesel: 'TURBO DIESEL' }[c.engine] || ''} · ${c.gears.length}-SPEED ${c.shiftT <= 0.12 ? 'SEQUENTIAL' : 'AUTO'}</b></div>`;
+    el.cSpecs.innerHTML = `<div><span>POWER</span><b>${Math.round(c.power * 1.341)} HP</b></div><div><span>TOP SPEED</span><b>${c.vmax}</b></div><div><span>WEIGHT</span><b>${c.mass} KG</b></div><div class="wide"><span>LAYOUT</span><b>${c.drive.toUpperCase()} · ${{ turbo3: 'TURBO I3', na4: 'TWIN-CAM I4', turbo4: 'TURBO I4', turbo5: 'TURBO I5', turbo6: 'TURBO I6', flat6: 'FLAT-SIX', v12: 'V12', diesel: 'TURBO DIESEL' }[c.engine] || ''} · ${c.gears.length}-SPEED ${c.transmission === 'manual' ? 'MANUAL' : 'AUTO'}</b></div>`;
     el.cStats.innerHTML = [['SPEED', c.stats.speed], ['ACCEL', c.stats.accel], ['HANDLING', c.stats.handling], ['DRIFT', c.stats.drift]].map(([k, v]) => `<div class="stat">${k}<div class="bar"><i style="width:${Math.round(v * 100)}%"></i></div></div>`).join('');
     el.cBest.textContent = best ? `PERSONAL BEST  ${fmtTime(best)}` : 'NO TIME SET YET';
+    this.showPaint(c);
+  }
+  showPaint(spec) {
+    if(!this.paintPanel){
+      this.paintPanel=document.createElement('div');this.paintPanel.id='carPaint';
+      this.paintPanel.style.cssText='margin:12px 0;display:flex;gap:7px;align-items:center;flex-wrap:wrap';
+      this.el.cBest.before(this.paintPanel);
+      // Garage hotkeys must not consume arrows/space inside colour controls.
+      this.paintPanel.addEventListener('keydown',e=>e.stopPropagation());
+      this.paintPanel.addEventListener('keyup',e=>e.stopPropagation());
+    }
+    const panel=this.paintPanel;panel.replaceChildren();
+    const caption=document.createElement('span');caption.textContent='PAINT';caption.style.cssText='font-size:11px;letter-spacing:.15em;margin-right:5px';panel.append(caption);
+    const name=document.createElement('span');name.style.cssText='flex-basis:100%;font-size:11px;color:#a6b8c4';
+    const picker=document.createElement('input');picker.type='color';picker.value=savedPaint(spec);picker.setAttribute('aria-label','Custom paint colour');picker.title='Custom paint colour';picker.style.cssText='width:33px;height:28px;padding:0;border:1px solid #78858d;background:transparent;cursor:pointer';
+    const buttons=[];
+    const refresh=color=>{picker.value=color;name.textContent=PAINTS[spec.id]?.find(p=>p[1]===color)?.[0]||'Custom '+color.toUpperCase();for(const [b,hex]of buttons){const on=hex===color;b.setAttribute('aria-pressed',String(on));b.style.outline=on?'2px solid #edf4ff':'none';b.style.outlineOffset='2px';}};
+    const apply=color=>{if(savePaint(spec.id,color)){refresh(color.toLowerCase());this.onPaint?.(spec.id,color);}};
+    for(const [label,color]of PAINTS[spec.id]||[]){const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.style.cssText=`width:26px;height:26px;min-width:26px;padding:0;border:1px solid #87939d;border-radius:50%;background:${color};cursor:pointer`;b.onclick=()=>apply(color);buttons.push([b,color]);panel.append(b);}
+    picker.addEventListener('input',()=>apply(picker.value));panel.append(picker,name);refresh(savedPaint(spec));
   }
 }

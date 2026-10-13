@@ -4,6 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat } from './cockpit.js';
 import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetailedModel } from './vehicle-models.js';
+import { savedPaint, setPaint } from './vehicle-paint.js';
+export { setPaint } from './vehicle-paint.js';
 
 // ------------------------------------------------------------------ catalogue (player-selectable)
 export const CARS = [
@@ -27,6 +29,30 @@ export const CARS = [
     wheelbase: 2.686, length: 4.689, width: 1.829, cdA: 0.57, vmax: 227, grip: 1.0, steer: 0.58, yawI: 1.15, drift: 0.8, brake: 1.0, cyl: 4, pitch: 0.72, body: 'octavia', taxi: true, drive: 'fwd',
     frontW: 0.60, hcg: 0.53, track: 1.54, rsF: 0.6, susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.18, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.28, bias: 0.72, steerRate: 0.95, ebrake: 0.18, engine: 'diesel', turbo: 0.8,
     stats: { speed: 0.5, accel: 0.42, handling: 0.64, drift: 0.25 },
+  },
+  {
+    id: 'carrera', name: 'PORSCHE 911 CARRERA', short: '911 CARRERA', tag: '991.1 · Rear-engine flat-six. Seven-speed manual.', color: '#c6c9cb', accent: '#a7acb2',
+    mass: 1380, power: 257, torque: 390, redline: 7800, idle: 800, gears: [3.91, 2.29, 1.55, 1.30, 1.08, 0.88, 0.71], final: 3.44, wheelR: 0.331,
+    torqueCurve: [[0,170],[800,190],[2000,270],[3500,340],[4500,370],[5600,390],[6500,370],[7400,331.65],[7800,302],[8500,260]], peakTorqueRpm: 5600, peakPowerRpm: 7400,
+    wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, steer: 0.55, yawI: 1.1, drift: 1, brake: 1.08, cyl: 6, pitch: 1, body: 'carrera', drive: 'rwd', engine: 'flat6', engineZone: 'rear', transmission: 'manual',
+    tyres: ['235/40 ZR19','285/30 ZR19'], frontW: 0.39, hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2.0, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11, mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5, esc: 0.4, shiftT: 0.27, bias: 0.60, steerRate: 1.08, ebrake: 0.15, lsd: 0,
+    stats: { speed: 0.96, accel: 0.91, handling: 0.94, drift: 0.78 },
+  },
+  {
+    id: 'gr_yaris', name: 'TOYOTA GR YARIS', short: 'GR YARIS', tag: 'GR-FOUR · Rally-bred AWD. Turbocharged triple.', color: '#e7e8e3', accent: '#be1c27',
+    mass: 1280, power: 206, torque: 390, redline: 7200, idle: 850, gears: [13.943258, 8.820958, 6.050435, 4.580642, 3.62135, 3.0217], final: 1, wheelR: 0.319,
+    torqueCurve: [[0,130],[850,155],[1800,220],[2500,305],[3250,390],[4600,390],[5500,350],[6500,302.64],[7200,260],[7900,210]], peakTorqueRpm: 4000, peakPowerRpm: 6500,
+    wheelbase: 2.56, length: 3.995, width: 1.805, cdA: 0.70, vmax: 230, grip: 1.14, steer: 0.59, yawI: 0.95, drift: 1, brake: 1.08, cyl: 3, pitch: 1, body: 'gr_yaris', drive: 'awd', awdRear: 0.47, engine: 'turbo3', turbo: 1, transmission: 'manual',
+    tyres: ['225/40 ZR18','225/40 ZR18'], frontW: 0.60, hcg: 0.49, track: 1.554, rsF: 0.59, susHz: 2.05, susZ: 0.58, rollK: 0.8, pitchK: 0.85, alphaPk: 0.115, mfC: 1.45, loadSens: 0.15, clA: 0.01, tc: 0.5, esc: 0.4, shiftT: 0.27, bias: 0.72, steerRate: 1.2, ebrake: 0.16, lsd: 0.35,
+    stats: { speed: 0.59, accel: 0.84, handling: 0.93, drift: 0.63 },
+  },
+  {
+    id: 'gtv', name: 'ALFA ROMEO 2000 GTV', short: '2000 GTV', tag: 'Bertone classic · Twin-cam four. Rear-wheel drive.', color: '#b52125', accent: '#bf9160',
+    mass: 1028, power: 97, torque: 182, redline: 6500, idle: 850, gears: [3.304, 1.988, 1.355, 1, 0.791], final: 4.10, wheelR: 0.307,
+    torqueCurve: [[0,72],[850,86],[1800,130],[3000,165],[4000,180],[4200,182],[5000,177],[5500,168.42],[6000,150],[6500,125],[7100,100]], peakTorqueRpm: 4200, peakPowerRpm: 5500,
+    wheelbase: 2.35, length: 4.10, width: 1.58, cdA: 0.70, vmax: 195, grip: 0.91, steer: 0.62, yawI: 1.02, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: 'gtv', drive: 'rwd', engine: 'na4', transmission: 'manual',
+    tyres: ['185/70 HR14','185/70 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.54, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
+    stats: { speed: 0.39, accel: 0.45, handling: 0.69, drift: 0.67 },
   },
 ];
 
@@ -203,9 +229,10 @@ export class CarModel {
     this.root = new THREE.Group();
     this.body = new THREE.Group(); this.root.add(this.body);
     const S = shared();
-    this.paint = paintMaterial(spec.color, spec.id === 'riviera' ? 0.15 : 0.45);
+    this.paint = paintMaterial(savedPaint(spec), spec.id === 'gtv' ? 0.15 : 0.45);
     this.tail = tailMaterial();
-    buildDetailedCar(this, spec.body, { plate: opts.plate || (spec.id === 'mini' ? 'ΙΚΑ 1920' : spec.id === 'z4' ? 'ΙΒΜ 4040' : 'ΤΑΑ 2150') });
+    buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',taxi:'ΤΑΑ 2150',carrera:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
+    setPaint(this, savedPaint(spec));
     this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     this.wheelSpin = 0;
     // contact shadow

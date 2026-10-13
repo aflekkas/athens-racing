@@ -5,14 +5,19 @@ export const specs = [
   { id: 'z4', engine: 'turbo6', idle: 750, redline: 7000 },
   { id: 'taxi', engine: 'diesel', idle: 800, redline: 5000 },
 ];
+export const synthSpecs = [
+  { id: 'carrera', engine: 'flat6', idle: 800, redline: 7800, cylinders: 6 },
+  { id: 'gr_yaris', engine: 'turbo3', idle: 850, redline: 7200, cylinders: 3 },
+  { id: 'gtv', engine: 'na4', idle: 850, redline: 6500, cylinders: 4 },
+];
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function stats(data) {
   let square = 0, peak = 0;
   for (const x of data) { assert(Number.isFinite(x), 'Non-finite audio sample'); square += x*x; peak = Math.max(peak, Math.abs(x)); }
   return { rms: Math.sqrt(square/data.length), peak };
 }
-function manager() {
-  const a = new Audio(), ctx = new OfflineAudioContext(1, 44100, 44100);
+function manager(seconds = 1) {
+  const a = new Audio(), ctx = new OfflineAudioContext(1, 44100*seconds, 44100);
   a.ctx = ctx; a.eng = ctx.createGain(); a.ext = ctx.createGain(); a.musicLP = ctx.createBiquadFilter();
   a.mk = { filt: (type, f, q) => { const n=ctx.createBiquadFilter();n.type=type;n.frequency.value=f;n.Q.value=q;return n; } };
   // Radio is independently owned; this fixture isolates engine restart behavior.
@@ -20,7 +25,7 @@ function manager() {
   return a;
 }
 export async function runAudioTests() {
-  const report = { assets: 0, renders: [], lifecycle: [], fallback: null };
+  const report = { assets: 0, renders: [], synthRenders: [], lifecycle: [], fallback: null };
   assert(ENGINE_SOUND.turbo6.cyl === 6, 'Z4 fallback must be a six-cylinder');
   for (const spec of specs) {
     const ctx = new OfflineAudioContext(1, 44100*5, 44100);
@@ -49,6 +54,22 @@ export async function runAudioTests() {
     const rendered=await ctx.startRendering(), s=stats(rendered.getChannelData(0));
     assert(s.rms>.02 && s.peak<1, `${spec.id}: bad engine output`);
     report.renders.push({ car: spec.id, rms: +s.rms.toFixed(4), peak: +s.peak.toFixed(4), loops: bank.loops.length });
+  }
+  for (const spec of synthSpecs) {
+    const a=manager(5);a.eng.connect(a.ctx.destination);
+    a.setEngine(spec);await a.engineReady;
+    const voice=a.engineVoice, bank=voice.bank;
+    assert(a.recordingState==='procedural' && !a.recordedBank, `${spec.id}: mislabeled as a recording`);
+    assert(bank.type===spec.engine && bank.E.cyl===spec.cylinders, `${spec.id}: wrong engine fallback`);
+    assert(bank.pts.length===4 && voice.src.length===8, `${spec.id}: missing load/RPM layers`);
+    assert(Math.abs(bank.pts[3]/.88-spec.redline)<10, `${spec.id}: incorrect redline calibration`);
+    for (let t=0;t<5;t+=1/60) {
+      const rpm=spec.idle+(spec.redline-spec.idle)*Math.min(1,t/3.8);
+      voice.set(rpm,t<3?.8:-.2,1,t,1,t>4.3);
+    }
+    const s=stats((await a.ctx.startRendering()).getChannelData(0));
+    assert(s.rms>.015 && s.peak<1, `${spec.id}: silent or clipping synthesized voice`);
+    report.synthRenders.push({car:spec.id,engine:bank.type,cylinders:bank.E.cyl,rms:+s.rms.toFixed(4),peak:+s.peak.toFixed(4)});
   }
   const a=manager();
   a.setEngine(specs[0]);const first=a.engineReady;

@@ -36,6 +36,30 @@
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "sha256": "bdd232131b376d6b674e9a4c008eef9e94b1e65d797296b3bd06448b8b3a5944"
     },
+    "156994": {
+      "title": "Rain.wav",
+      "author": "chrscrwfrd18",
+      "pageUrl": "https://freesound.org/people/chrscrwfrd18/sounds/156994/",
+      "downloadUrl": "https://cdn.freesound.org/previews/156/156994_2394175-hq.mp3",
+      "sha256": "6e47550a99a833e60880aae3895989f186ad7f804a801e2da65e82ba76c08c91",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "167034": {
+      "title": "Light Rain",
+      "author": "soundrecorder7",
+      "pageUrl": "https://freesound.org/people/soundrecorder7/sounds/167034/",
+      "downloadUrl": "https://cdn.freesound.org/previews/167/167034_2328971-hq.mp3",
+      "sha256": "e96de7229dd13c42798e8bdad265123d4e1d1377135c9c54c829fe4c7cd3ed55",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "180946": {
+      "title": "windshield wipers.aiff",
+      "author": "jc144940",
+      "pageUrl": "https://freesound.org/people/jc144940/sounds/180946/",
+      "downloadUrl": "https://cdn.freesound.org/previews/180/180946_2596329-hq.mp3",
+      "sha256": "8b5a2df2da7b88b0277e746a51b3a0628eb57e71d75e0256b36f6b8ae3222cb9",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
     "182474": {
       "title": "car horn.wav",
       "author": "keweldog",
@@ -43,6 +67,14 @@
       "downloadUrl": "https://cdn.freesound.org/previews/182/182474_3153523-hq.mp3",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "sha256": "9de748b259d851eb3e3de80df0e7f4f4f99fb9842bf65f7b26f8a5bbe7eae0e0"
+    },
+    "219245": {
+      "title": "Inside Car - Raining Outside",
+      "author": "pulswelle",
+      "pageUrl": "https://freesound.org/people/pulswelle/sounds/219245/",
+      "downloadUrl": "https://cdn.freesound.org/previews/219/219245_2367966-hq.mp3",
+      "sha256": "2ffe693c38e7b6481e73faccfaf8a1767b3fe52cc87346f0304216ee4da6da1b",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
     "235592": {
       "title": "Girl_Scream.wav",
@@ -67,6 +99,14 @@
       "downloadUrl": "https://cdn.freesound.org/previews/332/332056_71257-hq.mp3",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "sha256": "a37fdbadf85c9e47fdcbde82ccccb525f016ac9f20ac4218bbc262c295a26219"
+    },
+    "333221": {
+      "title": "Night Crickets Back Porch.aiff",
+      "author": "hdfreema",
+      "pageUrl": "https://freesound.org/people/hdfreema/sounds/333221/",
+      "downloadUrl": "https://cdn.freesound.org/previews/333/333221_2098408-hq.mp3",
+      "sha256": "7429a4e5b023514f9d9ec313d0ec3d3304e69525b1d3689378d9809d4635128a",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
     "361487": {
       "title": "Wind Whipping By.wav",
@@ -558,6 +598,101 @@
       "frames": 101430,
       "duration": 2.3,
       "sha256": "d5aeb844d4811a4c46eb84e45149910971cafd55ce8707ac2b05b5de9f66d39f"
+    },
+    {
+      "file": "rain-heavy.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.12,
+      "parts": [
+        {
+          "source": "156994",
+          "trim": [
+            20,
+            80
+          ],
+          "filter": "highpass=f=80"
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "8b02552fd12e9bea2b11edaffe965e12bb64beab4523840017899fb9959fe3d9"
+    },
+    {
+      "file": "rain-light.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.1,
+      "parts": [
+        {
+          "source": "167034",
+          "trim": [
+            0.3,
+            26
+          ]
+        }
+      ],
+      "frames": 1067220,
+      "duration": 24.2,
+      "sha256": "e46f8a831de0b78175600001546cc291c7ab5fe3e6c444fbbf926c61a5b4e216"
+    },
+    {
+      "file": "rain-cabin.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.12,
+      "parts": [
+        {
+          "source": "219245",
+          "trim": [
+            60,
+            120
+          ],
+          "filter": "highpass=f=40"
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "a72e9135caf57bb0ca4763a8ab91b89ff3e33f1d507f3828b2aa480fb92f59c1"
+    },
+    {
+      "file": "crickets.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.08,
+      "parts": [
+        {
+          "source": "333221",
+          "trim": [
+            20,
+            80
+          ],
+          "filter": "highpass=f=1200"
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "25e866400a7dafd53bfd40a63beaf329d428e5fe3ee8be22fa69d2a0a78ac092"
+    },
+    {
+      "file": "wipers.mp3",
+      "kind": "loop",
+      "channels": 1,
+      "rms": 0.12,
+      "xfade": 0.1,
+      "parts": [
+        {
+          "source": "180946",
+          "trim": [
+            5.3,
+            16.5
+          ],
+          "filter": "highpass=f=60"
+        }
+      ],
+      "frames": 489510,
+      "duration": 11.1,
+      "sha256": "6ee2df2fd5bed9695eaf10f5d33a7c49d53834ca9d3de00c02785109f0ff0d59"
     }
   ]
 }

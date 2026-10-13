@@ -46,16 +46,18 @@ export class Cockpit {
   constructor(spec, model, mirrorTex) {
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
-    const isMini = spec.id === 'mini', isBMW = spec.id === 'z4', isSkoda = spec.id === 'taxi';
+    const isMini = spec.id === 'mini', isBMW = spec.id === 'z4', isSkoda = spec.id === 'taxi', isClassic = spec.id === 'gtv', isPorsche = spec.id === 'carrera';
     const g = this.group = new THREE.Group();
     model.body.add(g);
     const eye = model.seat.clone();
     this.eye = eye;
     const wheelC = this.wheelC = eye.clone().add(new THREE.Vector3(0, -0.33, -0.43));
-    const accent = new THREE.Color(spec.color);
+    const accent = model.paint.color.clone();
     const trim = TRIM(), soft = trimMat('#252427', { rough: 0.78, scale: 0.2, nk: 0.5, side: THREE.DoubleSide });
     const alu = new THREE.MeshStandardMaterial({ color: '#a7acb2', metalness: 1, roughness: 0.28, envMap: CAR_ENV.tex });
     const paintTrim = new THREE.MeshPhysicalMaterial({ color: accent, roughness: 0.35, clearcoat: 1, metalness: 0.3, envMap: CAR_ENV.tex });
+    (model.paintAccents ||= []).push(paintTrim);
+    const wood = trimMat('#795032', {rough:.45,scale:.2,nk:.15});
     const leatherTop = trimMat('#2a2624', { rough: 0.55, scale: 0.09, nk: 0.8, });
     // ---- windscreen base & dash geometry
     let wsZ, wsY, W;
@@ -76,14 +78,14 @@ export class Cockpit {
     dashGeo.computeVertexNormals();
     const dash = new THREE.Mesh(dashGeo, soft); g.add(dash);
     // stitched accent strip along the dash edge
-    const strip = new THREE.Mesh(new THREE.BoxGeometry(W * 0.96, 0.012, 0.012), paintTrim); strip.position.set(0, topY - 0.02, faceZ + 0.07); g.add(strip);
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(W * 0.96, isClassic ? 0.11 : 0.012, 0.012), isClassic ? wood : paintTrim); strip.position.set(0, topY - 0.02, faceZ + 0.07); g.add(strip);
     // leather-wrapped, stitched dash top pad and a brushed-aluminium inlay across the fascia
     const pad = new THREE.Mesh(new RoundedBoxGeometry(W * 0.9, 0.035, 0.22, 2, 0.015), leatherTop); pad.position.set(0, topY - 0.005, faceZ - 0.06); pad.rotation.x = 0.08; g.add(pad);
     const inlay = new THREE.Mesh(new THREE.BoxGeometry(W * 0.86, 0.022, 0.006), alu); inlay.position.set(0, topY - 0.17, faceZ + 0.075); g.add(inlay);
     // ---- instrument binnacle + cluster
     const ctex = this.clusterCanvas = document.createElement('canvas'); ctex.width = 1024; ctex.height = 384;
     this.clusterTex = new THREE.CanvasTexture(ctex); this.clusterTex.colorSpace = THREE.SRGBColorSpace; this.clusterTex.anisotropy = 4;
-    const cw = isMini ? 0.32 : 0.43, ch = isMini ? 0.14 : 0.17;
+    const cw = isMini ? 0.32 : isPorsche ? 0.49 : 0.43, ch = isMini ? 0.14 : 0.17;
     const cluster = new THREE.Mesh(new THREE.PlaneGeometry(cw, ch), new THREE.MeshBasicMaterial({ map: this.clusterTex, toneMapped: false }));
     cluster.position.set(eye.x, topY + 0.02, faceZ - 0.03); cluster.rotation.x = -0.3; g.add(cluster);
     const cglass = new THREE.Mesh(new THREE.PlaneGeometry(cw * 1.04, ch * 1.08), glassSheen(0.12)); cglass.material.opacity = 0.05; cglass.position.copy(cluster.position).add(new THREE.Vector3(0, 0.004, 0.012)); cglass.rotation.x = -0.36; g.add(cglass);
@@ -103,6 +105,8 @@ export class Cockpit {
     const nav = new THREE.Mesh(new THREE.PlaneGeometry(isMini ? 0.225 : 0.28, isMini ? 0.125 : 0.145), new THREE.MeshBasicMaterial({ map: this.navTex, toneMapped: false }));
     nav.position.set(isBMW ? 0.055 : 0, topY + (isMini ? -0.075 : 0.045), faceZ + (isMini ? 0.13 : 0.08)); nav.rotation.x = -0.32; g.add(nav);
     const navBezel = new THREE.Mesh(new RoundedBoxGeometry(isMini ? 0.24 : 0.305, isMini ? 0.145 : 0.17, 0.02, 2, 0.008), new THREE.MeshStandardMaterial({ color: '#0b0b0c', roughness: 0.3, metalness: 0.5 })); navBezel.position.copy(nav.position).add(new THREE.Vector3(0, 0, -0.012)); navBezel.rotation.x = -0.32; g.add(navBezel);
+    if(isClassic){nav.visible=false;navBezel.visible=false;}
+    if(isPorsche){nav.position.y-=.16;navBezel.position.y-=.16;}
     // The MINI's circular centre display, BMW's raised iDrive screen and Škoda's floating display.
     if (isMini) {
       const surround = new THREE.Mesh(new THREE.CircleGeometry(0.156, 64), trim);
@@ -113,10 +117,17 @@ export class Cockpit {
       }
     }
     const part = (geo, material, x, y, z, rx=0) => { const o=new THREE.Mesh(geo,material);o.position.set(x,y,z);o.rotation.x=rx;g.add(o);return o; };
+    if(isClassic){
+      // Period radio with a tuning scale and two knobs, not a modern navigation screen.
+      part(new RoundedBoxGeometry(.235,.066,.025,2,.006),alu,0,topY-.155,faceZ+.11);
+      part(new THREE.PlaneGeometry(.165,.039),trim,0,topY-.155,faceZ+.124);
+      for(const x of [-.097,.097])part(new THREE.CylinderGeometry(.016,.016,.015,16).rotateX(Math.PI/2),trim,x,topY-.155,faceZ+.135);
+      for(let i=-5;i<=5;i++)part(new THREE.BoxGeometry(.002,.009,.002),alu,i*.012,topY-.15,faceZ+.126);
+    }
     // Model-specific air vents with dark ducts and actual louvres.
     for (const x of (isMini ? [-W/2+.10, -.235, .235, W/2-.10] : [-W/2+.13, -.065, .17, W/2-.13])) {
       const y=topY-(isMini?.085:.105), z=faceZ+.09;
-      if(isMini){
+      if(isMini||isClassic){
         part(new THREE.CircleGeometry(.046,24),trim,x,y,z,-.25);
         part(new THREE.TorusGeometry(.047,.004,8,32),alu,x,y,z+.001,-.25);
         for(let j=-1;j<=1;j++)part(new THREE.BoxGeometry(.065,.004,.009),alu,x,y+j*.017,z+.004);
@@ -136,9 +147,9 @@ export class Cockpit {
     for(let i=-2;i<=2;i++)part(new RoundedBoxGeometry(.016,.035,.02,2,.006),i===0?new THREE.MeshStandardMaterial({color:'#b31e25',roughness:.28}):alu,i*.037,topY-.325,faceZ+.14,-.3);
     // Stitched console, rotary controller, cup holders, seat switches and pedal box.
     part(new RoundedBoxGeometry(.25,.02,.46,2,.018),alu,0,topY-.275,faceZ+.39);
-    for(const z of [faceZ+.43,faceZ+.54]) {const cup=part(new THREE.TorusGeometry(.036,.005,8,28),trim,0,topY-.255,z,Math.PI/2);}
+    if(!isClassic)for(const z of [faceZ+.43,faceZ+.54]) {const cup=part(new THREE.TorusGeometry(.036,.005,8,28),trim,0,topY-.255,z,Math.PI/2);}
     if(isBMW)part(new THREE.CylinderGeometry(.029,.033,.023,32),alu,.064,topY-.243,faceZ+.36);
-    for(const x of [eye.x-.09,eye.x+.08])part(new THREE.BoxGeometry(.07,.014,.11),alu,x,.31,faceZ-.02,-.5);
+    for(const x of (spec.transmission==='manual'?[eye.x-.16,eye.x-.05,eye.x+.08]:[eye.x-.09,eye.x+.08]))part(new THREE.BoxGeometry(.07,.014,.11),alu,x,.31,faceZ-.02,-.5);
     if(isSkoda){
       const meterCanvas=document.createElement('canvas');meterCanvas.width=256;meterCanvas.height=80;const c=meterCanvas.getContext('2d');c.fillStyle='#111';c.fillRect(0,0,256,80);c.fillStyle='#b4df9a';c.font='28px monospace';c.fillText('TAXI  €  4.00',10,48);
       const tm=new THREE.CanvasTexture(meterCanvas);tm.colorSpace=THREE.SRGBColorSpace;
@@ -155,7 +166,7 @@ export class Cockpit {
     this.wheelTilt = -0.36;
     const spin = this.wheelSpin = new THREE.Group(); wheel.add(spin);
     const r = 0.18;
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.018, 16, 64), trimMat('#161514', { rough: 0.5, scale: 0.05, nk: 0.9, }));
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(r, isClassic?.012:.018, 16, 64), isClassic ? wood : trimMat('#161514', { rough: 0.5, scale: 0.05, nk: 0.9, }));
     spin.add(rim);
     const topMark = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.04, 0.038), paintTrim); topMark.position.set(0, r, 0); topMark.visible=false; spin.add(topMark);
     for (const a of (isSkoda ? [0, Math.PI] : [0, Math.PI, -Math.PI / 2])) {
@@ -164,12 +175,12 @@ export class Cockpit {
     const hub = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.1, 0.05, 3, 0.02), trimMat('#141416', { rough: 0.6, scale: 0.1, nk: 0.5 })); hub.position.z = -0.02; spin.add(hub);
     const badge = new THREE.Mesh(new THREE.CircleGeometry(0.027, 32), model.materials?.badge || paintTrim); badge.position.z = 0.007; spin.add(badge);
     const col = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.28, 12), trim); col.rotation.x = Math.PI / 2; col.position.z = -0.15; wheel.add(col);
-    for(const sx of [-1,1]) {
+    if(!isClassic)for(const sx of [-1,1]) {
       const controls = new THREE.Mesh(new RoundedBoxGeometry(.063,.036,.015,2,.006),trim);controls.position.set(sx*.098,0,.007);spin.add(controls);
       for(let j=0;j<3;j++){const key=new THREE.Mesh(new THREE.BoxGeometry(.009,.003,.001),alu);key.position.set(sx*.098+(j-1)*.017,0,.016);spin.add(key);}
     }
     // paddles
-    for (const sx of [-1, 1]) { const pd = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.06, 0.005), trim); pd.position.set(sx * 0.12, 0.03, -0.05); wheel.add(pd); }
+    if(spec.transmission!=='manual')for (const sx of [-1, 1]) { const pd = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.06, 0.005), trim); pd.position.set(sx * 0.12, 0.03, -0.05); wheel.add(pd); }
     wheel.rotation.x = this.wheelTilt;
     g.add(wheel);
     // ---- mirrors (render-target views)
@@ -223,7 +234,8 @@ export class Cockpit {
   /** analogue instruments: the static faces are painted once, needles and the digital centre every other frame */
   drawCluster(st) {
     const c = this.clusterCanvas, g = c.getContext('2d'); const W = c.width, H = c.height;
-    if (this.spec.id !== 'mini') { this.drawDigitalCluster(st, g, W, H); return; }
+    if (this.spec.id === 'carrera') { this.drawFiveDialCluster(st,g,W,H);return; }
+    if (this.spec.id !== 'mini' && this.spec.id !== 'gtv') { this.drawDigitalCluster(st, g, W, H); return; }
     const T0 = Math.PI * 0.75, T1 = Math.PI * 2.25; // 270 degree sweep
     const vmax = Math.max(200, Math.ceil((this.spec.vmax + 20) / 40) * 40);
     const rmax = Math.ceil(st.redline * 1.1 / 1000) * 1000;
@@ -285,10 +297,21 @@ export class Cockpit {
     const rpm=clamp(st.rpm/st.redline,0,1);g.strokeStyle=accent;g.lineWidth=12;g.beginPath();g.moveTo(W/2+190,H-42);g.lineTo(W/2+190+rpm*170,H-42-rpm*235);g.stroke();
     g.textAlign='center';g.fillStyle='#eff7ff';g.font='500 108px Arial';g.fillText(Math.round(st.kmh),W*.255,H*.60);g.font='24px Arial';g.fillStyle='#91a4b3';g.fillText('km/h',W*.255,H*.73);
     g.fillStyle=accent;g.font='600 78px Arial';g.fillText(st.gearLabel,W*.74,H*.59);g.font='23px Arial';g.fillText((st.rpm/1000).toFixed(1)+' × 1000',W*.74,H*.74);
-    g.fillStyle='#c9d9e2';g.font='25px Arial';g.fillText(bmw?'BMW Z4 M40i':'ŠKODA OCTAVIA',W/2,44);
+    g.fillStyle='#c9d9e2';g.font='25px Arial';g.fillText(this.spec.short||this.spec.name,W/2,44);
     g.strokeStyle='#637c8c';g.lineWidth=3;g.beginPath();g.moveTo(W*.43,H*.85);g.lineTo(W*.48,H*.38);g.moveTo(W*.57,H*.85);g.lineTo(W*.52,H*.38);g.stroke();
     g.fillStyle='#becbd3';g.fillRect(W/2-13,H*.59,26,47);g.fillStyle='#7ebeb2';g.font='19px Arial';g.fillText('ATHENS RIVIERA',W/2,H-13);
     this.clusterTex.needsUpdate=true;
+  }
+  drawFiveDialCluster(st,g,W,H) {
+    g.fillStyle='#08090b';g.fillRect(0,0,W,H);
+    const values=[.65,clamp(st.kmh/320,0,1),clamp(st.rpm/9000,0,1),.48,.72];
+    for(let i=0;i<5;i++){
+      const x=100+i*206,r=i===2?142:i===0||i===4?85:117,y=202;
+      g.strokeStyle='#929ba1';g.lineWidth=5;g.fillStyle='#111419';g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();g.stroke();
+      for(let t=0;t<=10;t++){const a=Math.PI*.75+t/10*Math.PI*1.5;g.strokeStyle=i===2&&t>=9?'#e13d34':'#d4d6d5';g.lineWidth=3;g.beginPath();g.moveTo(x+Math.cos(a)*(r-8),y+Math.sin(a)*(r-8));g.lineTo(x+Math.cos(a)*(r-20),y+Math.sin(a)*(r-20));g.stroke();if(i===1||i===2){g.font='18px Arial';g.textAlign='center';g.fillStyle='#e3e5e5';g.fillText(i===2?(t*.9).toFixed(0):String(t*32),x+Math.cos(a)*(r-35),y+Math.sin(a)*(r-35)+6);}}
+      const a=Math.PI*.75+values[i]*Math.PI*1.5;g.strokeStyle='#ff6548';g.lineWidth=5;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*(r-25),y+Math.sin(a)*(r-25));g.stroke();
+    }
+    g.fillStyle='#eceeee';g.textAlign='center';g.font='bold 45px Arial';g.fillText(st.gearLabel,512,294);g.font='20px Arial';g.fillText('Carrera',512,99);this.clusterTex.needsUpdate=true;
   }
   setVisible(v) { this.group.visible = v; }
 }

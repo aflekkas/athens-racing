@@ -115,6 +115,7 @@ export class Traffic {
     this.coneMesh.castShadow = true; this.coneMesh.frustumCulled = false; scene.add(this.coneMesh);
     this._m = new THREE.Matrix4(); this._q = new THREE.Quaternion(); this._e = new THREE.Euler(); this._p = new THREE.Vector3(); this._s = new THREE.Vector3(1, 1, 1);
     this.t = 0;
+    this.dir = 1; // the racers' direction of travel along s (reverse events: -1); spawning / culling follow it
     this.signals = null; this.people = null; this.ground = null; this.racers = []; this.wrecks = []; this.honks = []; this.sounds = []; this.busStops = [];
     this.objs = [];
   }
@@ -209,7 +210,7 @@ export class Traffic {
   spawn(ps, initial = false, behind = false) {
     const rng = this.rng, route = this.route;
     const oncoming = !behind && rng.chance(0.42);
-    const sAhead = behind ? ps - rng.range(160, 230) : initial ? ps + rng.range(oncoming ? 110 : 40, 950) : ps + rng.range(800, 1000);
+    const D = this.dir, sAhead = behind ? ps - D * rng.range(160, 230) : initial ? ps + D * rng.range(oncoming ? 110 : 40, 950) : ps + D * rng.range(800, 1000);
     const s = sAhead;
     if (s > route.length - 30 || s < 20) return;
     const z = this.zone(s), n = this.laneCount(s);
@@ -220,7 +221,7 @@ export class Traffic {
       return true;
     });
     if (!c) return;
-    c.dir = oncoming ? -1 : 1;
+    c.dir = (oncoming ? -1 : 1) * this.dir;
     let lane = rng.int(0, n - 1);
     if (c.kind === 'bus' || c.kind === 'van') lane = n - 1;
     if (c.type.scooter && rng.chance(0.6)) lane = n - 1;
@@ -228,7 +229,7 @@ export class Traffic {
     c.u = this.laneUOf(c, s);
     // keep spawn spacing per lane, and never inside somebody
     for (const q of this.cars) if (q.active && q !== c && Math.abs(q.s - s) < (Math.abs(q.u - c.u) < 2 ? 30 : 6)) return;
-    for (const st of this.sites) if (lane === st.lane && !oncoming && Math.abs(st.s - s) < 60) { c.lane = Math.max(0, lane - 1); c.u = this.laneUOf(c, s); }
+    for (const st of this.sites) if (lane === st.lane && c.dir > 0 && Math.abs(st.s - s) < 60) { c.lane = Math.max(0, lane - 1); c.u = this.laneUOf(c, s); }
     this.personality(c);
     c.active = true; c.crash = null; c.cross = null; this.repair(c);
     this.initDrive(c);
@@ -242,8 +243,8 @@ export class Traffic {
   /** a double-parked car (hazards on) or, at the beaches, a car parked tight to the kerb */
   spawnParked(ps, initial = false) {
     const rng = this.rng, route = this.route;
-    const s = initial ? ps + rng.range(120, 900) : ps + rng.range(820, 1000);
-    if (s > route.length - 40) return;
+    const s = ps + this.dir * (initial ? rng.range(120, 900) : rng.range(820, 1000));
+    if (s > route.length - 40 || s < 40) return;
     const z = this.zone(s), n = this.laneCount(s);
     if (route.urban(s) < 0.5 && z !== 'cove') return;
     const J = this.signals ? this.signals.J : [];
@@ -332,13 +333,14 @@ export class Traffic {
     let same = 0, onc = 0, parked = 0;
     for (const c of this.cars) {
       if (!c.active) continue;
-      if (c.s < ps - 260 || c.s > ps + 1150 || c.s < 5 || c.s > route.length - 5) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
+      const ahead = (c.s - ps) * this.dir;
+      if (ahead < -260 || ahead > 1150 || c.s < 5 || c.s > route.length - 5) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
       if (c.mode === 'parked') parked++; else if (c.dir > 0) same++; else onc++;
     }
     if (!this.disabled) {
-      const n = this.laneCount(ps + 500), dens = this.density(ps + 500);
+      const n = this.laneCount(ps + this.dir * 500), dens = this.density(ps + this.dir * 500);
       const wantSame = Math.round(n * 7 * dens), wantOnc = Math.round(n * 6 * dens);
-      const z = this.zone(ps + 500);
+      const z = this.zone(ps + this.dir * 500);
       const wantParked = { town: 3, beach: 4, cliff: 0, cove: 2 }[z];
       if (same < wantSame || onc < wantOnc) this.spawn(ps);
       if (parked < wantParked && rng.chance(dt * 2)) this.spawnParked(ps);
@@ -1027,7 +1029,7 @@ export class Traffic {
           if (now - c.pHitT > 1.5 && c.pMin > 0 && c.pMin < 1.25) {
             if (!rv) rv = routeVel(veh, route);
             const relV = Math.hypot(rv.vs - cvs, rv.vu - cvu);
-            if (relV > 8) events.push({ kind: 'near', car: c, clearance: c.pMin, oncoming: c.dir < 0, rel: relV, side: Math.sign(du) });
+            if (relV > 8) events.push({ kind: 'near', car: c, clearance: c.pMin, oncoming: c.dir * this.dir < 0, rel: relV, side: Math.sign(du) });
           }
           c.pMin = 99;
         }
@@ -1054,7 +1056,7 @@ export class Traffic {
       else if (c.mode !== 'parked') { c.v = Math.max(0, c.dir * B.vs); c.shakenT = 2; } // a nudge: brake, glare
       if (actor.kind === 'player') c.pHitT = now;
       const sev = r.vn;
-      if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB });
+      if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB });
     }
     // cones
     for (const k of this.cones) {

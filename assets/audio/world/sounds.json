@@ -138,5 +138,40 @@
   "frames": 101430,
   "sampleRate": 44100,
   "channels": 1
+ },
+ "rain-heavy": {
+  "file": "rain-heavy.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "rain-light": {
+  "file": "rain-light.mp3",
+  "kind": "loop",
+  "frames": 1067220,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "rain-cabin": {
+  "file": "rain-cabin.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "crickets": {
+  "file": "crickets.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "wipers": {
+  "file": "wipers.mp3",
+  "kind": "loop",
+  "frames": 489510,
+  "sampleRate": 44100,
+  "channels": 1
  }
 }

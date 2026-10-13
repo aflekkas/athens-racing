@@ -161,11 +161,13 @@ const FinalShader = {
     tHDR: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) },
     uSun: { value: new THREE.Vector3(0.5, 0.5, 0) }, uSpeed: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.56) },
     uShake: { value: 0 }, uFlash: { value: 0 }, uNitro: { value: 0 }, uFade: { value: 0 }, uExposure: { value: 1.0 },
+    uWB: { value: new THREE.Vector3(0.96, 1.0, 1.06) }, uGlare: { value: 1 }, uRainLens: { value: 0 },
   },
   vertexShader: VS,
   fragmentShader: /* glsl */`
     uniform sampler2D tHDR; uniform float uTime; uniform vec2 uRes; uniform vec3 uSun; uniform float uSpeed; uniform vec2 uCenter;
     uniform float uShake; uniform float uFlash; uniform float uNitro; uniform float uFade; uniform float uExposure;
+    uniform vec3 uWB; uniform float uGlare; uniform float uRainLens;
     varying vec2 vUv;
     float hh(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
     const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(vec3(1.6605, -0.1246, -0.0182), vec3(-0.5876, 1.1329, -0.1006), vec3(-0.0728, -0.0083, 1.1187));
@@ -203,7 +205,7 @@ const FinalShader = {
       col.g = texture2D(tHDR, uv).g;
       col.b = texture2D(tHDR, uv + cd).b;
       // sun: veiling glare, streak and lens ghosts (in scene-linear, before the tone curve)
-      if (uSun.z > 0.001) {
+      if (uSun.z * uGlare > 0.001) {
         vec2 sp = uSun.xy;
         float d = length((uv - sp) * asp);
         vec3 glare = vec3(1.0, 0.86, 0.66) * (exp(-d * 9.0) * 0.18 + exp(-d * 2.5) * 0.03);
@@ -218,10 +220,12 @@ const FinalShader = {
           vec3 tint = i == 1 ? vec3(0.3, 0.7, 1.0) : i == 2 ? vec3(1.0, 0.65, 0.3) : i == 3 ? vec3(0.5, 1.0, 0.6) : i == 4 ? vec3(0.8, 0.5, 1.0) : vec3(1.0, 0.9, 0.5);
           glare += tint * ring * 0.035;
         }
-        col += glare * uSun.z;
+        col += glare * uSun.z * uGlare;
       }
-      // exposure + white balance (camera set for daylight: the low sun stays warm, but not orange)
-      col *= uExposure * vec3(0.96, 1.0, 1.06);
+      // exposure + white balance (per time of day: camera set for daylight, cooler at night)
+      col *= uExposure * uWB;
+      // rain: a soft veil of scattered light (contrast drops)
+      col = mix(col, vec3(dot(col, vec3(0.2126, 0.7152, 0.0722))) * 0.9 + 0.008, uRainLens * 0.12);
       col = agx(col);
       // grade: split-tone (cool shadows, warm highlights), gentle S-curve
       float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
@@ -310,6 +314,11 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
       bloom.setSize(ww / 2, hh / 2);
     },
     resetHistory() { havePrev = false; },
+    /** lighting state from env.js COND_STATE: exposure, white balance, sun glare, bloom (night lamps glow more) */
+    setConditions(st) {
+      u.uExposure.value = st.exposure; u.uWB.value.fromArray(st.wb); u.uGlare.value = st.glare; u.uRainLens.value = st.rain;
+      bloom.strength = 0.1 * st.bloom; bloom.threshold = 3.0 / Math.max(1, st.exposure * 0.8);
+    },
   };
   post.setSize(size.x, size.y, pr);
   return post;

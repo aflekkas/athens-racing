@@ -12,6 +12,7 @@ import { buildBuildings, infillBuildings, LabelAtlas } from './buildings.js';
 import { buildNature } from './nature.js';
 import { CARS, CarModel, Driver, setCarEnv } from './cars.js';
 import { Vehicle } from './physics.js';
+import { input as controls } from './input.js';
 import { Traffic, routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
 import { Cockpit } from './cockpit.js';
 import { findJunctions, Signals } from './signals.js';
@@ -25,6 +26,7 @@ import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import { trackVersion } from './network-track.js';
 import { simplifyScenery } from './graphics.js';
+import { initWeather, updateWeather } from './weather.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -45,7 +47,7 @@ try { if (!Q.has('quality')) graphicsPreference = localStorage.getItem('paraliak
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 const lowGraphics = graphicsPreference === 'low' || (graphicsPreference === 'auto' && /SwiftShader|llvmpipe|softpipe|Software/i.test(gpuName));
-window.__renderInfo = () => ({ gpu: gpuName, lowGraphics, pixelRatio });
+window.__renderInfo = () => ({ gpu: gpuName, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps });
 const DPR = Math.min(window.devicePixelRatio || 1, lowGraphics ? 0.8 : 1.5);
 const graphicsControl = document.createElement('select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics quality');
 for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['high', 'GRAPHICS: HIGH'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
@@ -85,8 +87,8 @@ function updateLod() {
   for (const m of lodList) { const c = m.boundingSphere.center, dc = Math.hypot(c.x - cx, c.z - cz), d = dc - m.boundingSphere.radius; m.visible = d < m.userData.far && (!m.userData.near || dc + m.boundingSphere.radius * 0.3 > m.userData.near); }
 }
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
-const keys = new Set();
-const input = { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false };
+const keys = controls.keys; // retained for the simulation test hook
+const input = controls.state;
 
 // ------------------------------------------------------------------ boot
 const T0 = performance.now(); const tlog = (n) => { if (Q.has('debug')) console.log(n, Math.round(performance.now() - T0), 'abs', Math.round(performance.now())); };
@@ -153,6 +155,7 @@ async function boot() {
   post = createPost(renderer, scene, camera, { lowQuality: lowGraphics });
   probe = createProbe();
   setCarEnv(probe.envRT.texture);
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, low: lowGraphics, cars: () => [player, rival], cam: () => G.cam }); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
   setCar(Q.has('car') ? clamp(+Q.get('car') - 1, 0, CARS.length - 1) : 0, false);
   resetRace();
@@ -327,56 +330,44 @@ function restart(idx = G.carIdx) {
 }
 
 // ------------------------------------------------------------------ input
-const DRIVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight'];
-addEventListener('keydown', (e) => {
+addEventListener('keydown', e => {
   if (e.target.closest?.('input, select, textarea, button, [contenteditable]')) return;
   if (!multiplayer.panel.hidden) { clearDriveInput(); return; }
   audio.start();
-  if (DRIVE_KEYS.includes(e.code) || e.code === 'Enter') e.preventDefault();
-  if (e.repeat) { keys.add(e.code); return; }
-  keys.add(e.code);
-  if (G.state === 'loading') return;
-  const menu = G.state === 'results' || G.state === 'garage';
-  if (/^Digit[1-9]$/.test(e.code)) { const i = +e.code.slice(5) - 1; if (i < CARS.length) { audio.ui(true); restart(i); } return; }
-  if (menu) {
-    if (e.code === 'ArrowLeft' || e.code === 'KeyA') pickCar(-1);
-    else if (e.code === 'ArrowRight' || e.code === 'KeyD') pickCar(1);
-    else if (e.code === 'Enter' || e.code === 'KeyR' || e.code === 'Space') { audio.ui(true); restart(G.selIdx); }
-    else if ((e.code === 'Escape' || e.code === 'KeyG') && G.state === 'garage') closeGarage();
-    return;
-  }
-  if (e.code === 'KeyC') { G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); }
-  else if (e.code === 'KeyT') tow(player.veh);
-  else if (e.code === 'KeyR' || (e.code === 'Enter' && G.state === 'finished')) restart();
-  else if (e.code === 'KeyG') openGarage();
-  else if (e.code === 'KeyM') hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2);
-  else if (e.code === 'KeyN') audio.nextTrack();
 });
-addEventListener('keyup', (e) => keys.delete(e.code));
 addEventListener('pointerdown', () => audio.start());
-addEventListener('blur', () => keys.clear());
 
 function readInput(dt) {
-  const k = (c) => keys.has(c);
-  const up = k('KeyW') || k('ArrowUp'), dn = k('KeyS') || k('ArrowDown'), lf = k('KeyA') || k('ArrowLeft'), rt = k('KeyD') || k('ArrowRight');
-  // pedals: keys are on/off, so ramp them like a foot would (quick, but no snap that unsettles the car)
-  input.throttle = up ? Math.min(1, input.throttle + dt * (input.throttle < 0.6 ? 6 : 3)) : Math.max(0, input.throttle - dt * 10);
-  input.brake = dn ? Math.min(1, input.brake + dt * (input.brake < 0.7 ? 7 : 3.5)) : Math.max(0, input.brake - dt * 12);
-  // steering: the ramp slows with speed (precise at 150 km/h, quick when parking), self-centres faster,
-  // flicks the other way faster still; a response curve makes short taps into small corrections.
-  // (the physics then maps full input to the lock the tyres can actually use at this speed)
-  const target = (rt ? 1 : 0) - (lf ? 1 : 0);
-  const v = player ? Math.abs(player.veh.vLong) : 0;
-  const base = 1 / (1 + v / 22);
-  let rate;
-  if (target === 0) rate = 6.5 * (0.5 + 0.5 * base);
-  else if (input.steerRaw !== 0 && Math.sign(target) !== Math.sign(input.steerRaw)) rate = 8 * (0.45 + 0.55 * base);
-  else rate = 1.6 + 3.4 * base;
-  input.steerRaw += clamp(target - input.steerRaw, -rate * dt, rate * dt);
-  input.steer = Math.sign(input.steerRaw) * Math.pow(Math.abs(input.steerRaw), 1.4);
-  input.handbrake = k('Space');
-  input.nitro = k('ShiftLeft') || k('ShiftRight');
-  if (up || dn || lf || rt) document.body.classList.add('started');
+  const inMenu = window.__flow?.inMenu?.() ?? (G.state === 'results' || G.state === 'garage');
+  const blocked = !multiplayer.panel.hidden || G.state === 'loading';
+  controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked });
+  for (const name of controls.actions) {
+    // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
+    if ((inMenu && name === 'restart' && input.confirm) || (inMenu && name === 'pause' && input.back) || (!inMenu && name === 'back')) continue;
+    if (window.__flow?.action) window.__flow.action(name);
+    else legacyInputAction(name, inMenu);
+    if (!inMenu && (name === 'shiftUp' || name === 'shiftDown')) player?.veh.shiftManual(name === 'shiftUp' ? 1 : -1);
+  }
+  // An action can open a menu during this very poll; zero driving immediately.
+  if (window.__flow?.inMenu?.()) Object.assign(input, { throttle: 0, brake: 0, steer: 0, handbrake: false, nitro: false });
+  if (input.throttle || input.brake || input.steer) document.body.classList.add('started');
+}
+// Keeps controls usable while the shared menu implementation is being installed.
+function legacyInputAction(name, menu) {
+  if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length) { audio.ui(true); restart(i); } return; }
+  if (menu) {
+    if (name === 'left') pickCar(-1);
+    else if (name === 'right') pickCar(1);
+    else if (name === 'confirm' || name === 'restart') { audio.ui(true); restart(G.selIdx); }
+    else if ((name === 'back' || name === 'garage') && G.state === 'garage') closeGarage();
+    return;
+  }
+  if (name === 'camera') { G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); }
+  else if (name === 'tow') tow(player.veh);
+  else if (name === 'restart') restart();
+  else if (name === 'garage' || name === 'pause') openGarage();
+  else if (name === 'music') hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2);
+  else if (name === 'nextTrack') audio.nextTrack();
 }
 
 // ------------------------------------------------------------------ garage / results menus
@@ -665,6 +656,7 @@ function handleEvents(events) {
       G.shake = Math.max(G.shake, big ? 1 : 0.5); G.flash = big ? 0.8 : 0.3;
       player.driver.impulse(big ? 1.1 : 0.55, -e.side * 0.5, 0.5);
       audio.crash(e.heavy ? 'heavy' : 'light', Math.min(1, e.sev / 14));
+      controls.rumble(big ? 1 : 0.5, big ? 0.8 : 0.4, big ? 450 : 200);
       if (big) {
         audio.opa(1.1);
         hud.pop('opa', 'OPA!', SHOUTS[Math.floor(Math.random() * SHOUTS.length)], (Math.random() - 0.5) * 10);
@@ -740,7 +732,7 @@ const camState = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 72,
 // free look: drag the mouse (either button) or a finger over the view to swing the chase camera around the car or look
 // around the cockpit; the wheel zooms the chase camera. Once you let go it eases back behind the car while you drive
 // (double-click snaps it back).
-const look = { yaw: 0, pitch: 0, zoom: 1, drag: null, idleT: 9 };
+const look = { yaw: 0, pitch: 0, zoom: 1, drag: null, idleT: 9, back: 0 };
 canvas.addEventListener('pointerdown', (e) => {
   if (G.cam === 'orbit') return;
   look.drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -761,6 +753,14 @@ canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 canvas.addEventListener('dblclick', () => { look.yaw = look.pitch = 0; look.zoom = 1; });
 canvas.addEventListener('wheel', (e) => { if (G.cam !== 'chase') return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
 function updateLook(dt, speed) {
+  look.back = input.lookBack ? Math.PI : 0; // a held look-back (input.js) on top of the free look
+  // a gamepad's right stick (input.cameraLook, -1..1) turns the free look like a mouse drag
+  const cl = controls.cameraLook;
+  if (cl && (Math.abs(cl.x) > 0.12 || Math.abs(cl.y) > 0.12)) {
+    look.yaw -= cl.x * 2.6 * dt; look.pitch = clamp(look.pitch + cl.y * 1.6 * dt, -0.35, 1.0);
+    while (look.yaw > Math.PI) look.yaw -= 2 * Math.PI; while (look.yaw < -Math.PI) look.yaw += 2 * Math.PI;
+    look.idleT = 0; return;
+  }
   if (look.drag) { look.idleT = 0; return; }
   look.idleT += dt;
   // swing back behind the car once you've let go and are driving (stays put while parked, so you can look around)
@@ -776,6 +776,20 @@ function applyCamMode() {
 }
 function noise1(t) { return Math.sin(t * 1.7) * 0.5 + Math.sin(t * 3.1 + 1.3) * 0.3 + Math.sin(t * 7.3 + 0.7) * 0.2; }
 function updateCamera(dt, snap = false) {
+  const watching = multiplayer.spectating();
+  const targetCar = watching && remoteCars.get(watching.id);
+  if (targetCar?.model.root.visible) {
+    const v = targetCar.veh, back = 7, target = _v1.set(v.x + Math.sin(v.yaw) * back, v.y + 2.8, v.z + Math.cos(v.yaw) * back);
+    const changed = G.spectateId !== watching.id; G.spectateId = watching.id;
+    if (snap || changed) camState.pos.copy(target); else camState.pos.lerp(target, 1 - Math.exp(-8 * dt));
+    camera.position.copy(camState.pos); camera.position.y = Math.max(camera.position.y, route.surfaceY(v.s, v.u) + 0.6);
+    camera.lookAt(v.x, v.y + 0.9, v.z); camera.fov = 65; camera.updateProjectionMatrix();
+    // Keep your driver's head and cockpit mirror out of the spectator view.
+    if (G.cam !== 'spectate') { G.cam = 'spectate'; applyCamMode(); }
+    return;
+  }
+  G.spectateId = null;
+  if (G.cam === 'spectate') { G.cam = G.userCam; applyCamMode(); }
   const veh = player.veh, body = player.model.body, root = player.model.root;
   root.updateMatrixWorld(true);
   const kmh = veh.kmh, sk = clamp(kmh / 260, 0, 1.2);
@@ -789,7 +803,7 @@ function updateCamera(dt, snap = false) {
     body.localToWorld(_v1);
     camera.position.copy(_v1);
     body.getWorldQuaternion(_q);
-    const lookYaw = -player.veh.steer * 0.12 - veh.w * 0.04 + clamp(look.yaw, -2.2, 2.2);
+    const lookYaw = -player.veh.steer * 0.12 - veh.w * 0.04 + clamp(look.yaw, -2.2, 2.2) + look.back;
     _e.set(-0.045 - clamp(veh.ax, -12, 12) * 0.0012 - look.pitch * 0.8 + noise1(t * 31 + 5) * 0.004 * rough, lookYaw, noise1(t * 19 + 9) * 0.004 * rough + G.shake * Math.sin(t * 40) * 0.02, 'YXZ');
     camera.quaternion.copy(_q).multiply(_q.clone().setFromEuler(_e));
     const fov = 66 + sk * 10 + (veh.nitroOn ? 5 : 0);
@@ -798,16 +812,16 @@ function updateCamera(dt, snap = false) {
     // behind the car, swung round by the free look: yaw about the car, pitch up / down, wheel zoom
     const back = 5.6 + sk * 1.2, up = 1.75 + sk * 0.15;
     const dist = Math.hypot(back, up) * look.zoom, el = clamp(Math.atan2(up, back) + look.pitch, -0.08, 1.35);
-    const hd = veh.yaw + look.yaw, hx = Math.sin(hd), hz = Math.cos(hd); // forward is (-sin yaw, -cos yaw): behind is +
+    const hd = veh.yaw + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd); // forward is (-sin yaw, -cos yaw): behind is +
     const target = _v1.set(veh.x + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, veh.z + hz * Math.cos(el) * dist);
-    const free = look.drag || Math.abs(look.yaw) > 0.05 || Math.abs(look.pitch) > 0.05;
+    const free = look.drag || look.back || Math.abs(look.yaw) > 0.05 || Math.abs(look.pitch) > 0.05;
     // while dragging the camera follows the mouse closely; the damped lag is for the car's own motion
     const kXZ = free ? 20 : 9, kY = free ? 20 : 6;
     if (snap) camState.pos.copy(target); else { camState.pos.x = damp(camState.pos.x, target.x, kXZ, dt); camState.pos.z = damp(camState.pos.z, target.z, kXZ, dt); camState.pos.y = damp(camState.pos.y, target.y, kY, dt); }
     camera.position.copy(camState.pos);
     camera.position.x += noise1(t * 21) * 0.03 * rough; camera.position.y += noise1(t * 27 + 3) * 0.03 * rough;
     // look ahead of the car when behind it; at the car itself once swung round to the side / front
-    const ahead = 5 * Math.max(0, Math.cos(look.yaw)) * clamp(1 - look.pitch, 0, 1);
+    const ahead = 5 * Math.max(0, Math.cos(look.yaw + look.back)) * clamp(1 - look.pitch, 0, 1);
     const lk = _v2.set(veh.x, veh.y + 1.0, veh.z).addScaledVector(veh.forward(new THREE.Vector3()), ahead);
     camera.lookAt(lk);
     const fov = 60 + sk * 15 + (veh.nitroOn ? 6 : 0);
@@ -885,12 +899,21 @@ function step(dt, draw = true) {
       pv.rpm = damp(pv.rpm, pv.spec.idle + input.throttle * pv.spec.redline * 0.7, 6, dt);
       rv.rpm = damp(rv.rpm, rv.spec.idle + (G.countT > 1.0 ? rv.spec.redline * 0.55 : 600 * (Math.sin(G.t * 5) * 0.5 + 0.5)), 5, dt);
     }
-    if (G.state === 'race' || G.state === 'finished' || G.state === 'results') {
+    if (['race', 'finished', 'results', 'onlineFinished', 'onlineResults'].includes(G.state)) {
       if (G.state === 'race' && !multiplayer.active) G.raceT += dt;
       // ---- player
       let pin = input;
       if (G.autodrive && !multiplayer.active && G.state === 'race') { player.ai = player.ai || { lane: 1, u: pv.u, cool: 0 }; pin = aiInput(player, dt, 0.95, rival); }
-      if (G.state !== 'race') { player.ai = player.ai || { lane: 1, u: pv.u, cool: 0 }; pin = aiInput(player, dt, 0.25, rival); pin.nitro = false; if (pv.s > route.finish + 120) { pin.throttle = 0; pin.brake = pv.vLong > 1 ? 0.6 : 0; pin.handbrake = pv.vLong <= 1; } }
+      if (G.state !== 'race') {
+        if (multiplayer.active) {
+          // Coasting remains simulated after finishing, independently of the spectator camera.
+          const r = multiplayer.lobby.event, dir = r?.dir || 1;
+          const ahead = route.point(clamp(pv.s + dir * Math.max(8, Math.abs(pv.vLong)), 0, route.length), pv.u);
+          const dx = ahead.x - pv.x, dz = ahead.z - pv.z, lat = dx * Math.cos(pv.yaw) - dz * Math.sin(pv.yaw);
+          const lon = Math.max(1, -dx * Math.sin(pv.yaw) - dz * Math.cos(pv.yaw));
+          pin = { throttle: 0, brake: Math.abs(pv.vLong) > 1 ? 0.15 : 0, steer: clamp(Math.atan(pv.wb * 2 * lat / (lon * lon + lat * lat)) / pv.lockAt(Math.abs(pv.vLong)), -1, 1), handbrake: Math.abs(pv.vLong) <= 1, nitro: false };
+        } else { player.ai = player.ai || { lane: 1, u: pv.u, cool: 0 }; pin = aiInput(player, dt, 0.25, rival); pin.nitro = false; if (pv.s > route.finish + 120) { pin.throttle = 0; pin.brake = pv.vLong > 1 ? 0.6 : 0; pin.handbrake = pv.vLong <= 1; } }
+      }
       if (G.autodrive && Q.has('nantrap')) {
         G.pStuck = pv.kmh < 4 && G.state === 'race' ? (G.pStuck || 0) + dt : 0;
         if (G.pStuck > 3 && !G.pStuckLogged) {
@@ -939,7 +962,7 @@ function step(dt, draw = true) {
       const actors = multiplayer.active ? [{ veh: pv, kind: 'player' }] : [{ veh: pv, kind: 'player' }, { veh: rv, kind: 'rival' }];
       traffic.update(dt, pv.s, actors);
       events.length = 0;
-      if (!multiplayer.active && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
+      if ((!multiplayer.active || multiplayer.lobby.traffic) && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
       // out of sight the rival is not held up by traffic (he knows these roads); in sight he races for real
       rival.ghost = Math.abs(rv.s - pv.s) > 140 || rival.ai.passT > 0;
       if (!multiplayer.active && !rival.ghost) traffic.collide(actors[1], events, G.t);
@@ -951,10 +974,10 @@ function step(dt, draw = true) {
       handleTrafficSounds();
       if (pv.bumpHit > 0.1) G.shake = Math.max(G.shake, pv.bumpHit * 0.22);
       if (pv.wallHit > 2.5 && G.state === 'race') { audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.6, pv.wallHit / 12)); if (pv.wallHit > 7) player.driver.impulse(0.4); }
-      if (pv.wallHit > 3) fx.sparks(pv, pv.wallHit / 12);
+      if (pv.wallHit > 3) { fx.sparks(pv, pv.wallHit / 12); controls.rumble(Math.min(1, pv.wallHit / 10), 0.6, 220); }
       if (rv.wallHit > 3 && !multiplayer.active) fx.sparks(rv, rv.wallHit / 12);
       // kerb strikes: a thump (scrape when the tyre rubs along the face), a jolt through the camera
-      if (pv.curbHit > 0.12 && G.t - (G.curbT || 0) > 0.08) { G.curbT = G.t; audio.curb(Math.min(1, pv.curbHit * (pv.curbScrape ? 0.7 : 1.2))); if (pv.curbScrape) audio.scrape(0.25); G.shake = Math.max(G.shake, pv.curbHit * 0.3); if (pv.curbHit > 0.5) player.driver.impulse(0.25); }
+      if (pv.curbHit > 0.12 && G.t - (G.curbT || 0) > 0.08) { G.curbT = G.t; audio.curb(Math.min(1, pv.curbHit * (pv.curbScrape ? 0.7 : 1.2))); if (pv.curbScrape) audio.scrape(0.25); G.shake = Math.max(G.shake, pv.curbHit * 0.3); if (pv.curbHit > 0.5) player.driver.impulse(0.25); controls.rumble(pv.curbScrape ? 0.15 : 0.5 * pv.curbHit, pv.curbScrape ? 0.5 : 0.8 * pv.curbHit, pv.curbScrape ? 140 : 110); }
       pv.wallHit = 0; rv.wallHit = 0;
       // ---- slipstream
       const dd = rv.s - pv.s, du = Math.abs(rv.u - pv.u);
@@ -1054,6 +1077,8 @@ function step(dt, draw = true) {
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars };
   if (multiplayer.active) {
     pos = multiplayer.ranking(pv.s).findIndex(p => p.id === multiplayer.id) + 1; st.pos = pos; st.time = G.pFinish ?? G.raceT; st.gap = remoteCars.size ? (rv.s - pv.s) / Math.max(5, pv.vLong) : NaN; st.pen = 0;
+    const other = multiplayer.lobby.players.find(p => p.id !== multiplayer.id);
+    if (G.pFinish !== null && other?.finish != null) st.gap = G.pFinish - other.finish;
     st.remotes = [...remoteCars.values()].filter(c => c.model.root.visible).map(c => ({ x: c.veh.x, z: c.veh.z }));
     document.querySelector('#posBox .of').textContent = '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
   }
@@ -1100,6 +1125,7 @@ function updateProbe() {
 
 function render() {
   renderer.info.autoReset = false; renderer.info.reset();
+  updateWeather(G.lastDt || 1 / 60);
   if (!lowGraphics && (frameN & 1)) updateProbe();
   if ((frameN % 6) === 0) updateLod();
   sky.position.copy(camera.position);
@@ -1143,11 +1169,11 @@ addEventListener('resize', onResize);
 // Multiplayer owns the online state machine; offline racing retains its AI rival.
 const remoteCars = new Map();
 const networkState = v => Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'].map(k => [k, v[k]]));
-function clearDriveInput() { keys.clear(); Object.assign(input, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false }); }
+function clearDriveInput() { controls.clear(); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
   clearDriveInput(); hud.hideMenu(); hud.count(''); G.state = 'lobby'; G.cam = G.userCam; applyCamMode();
-  traffic.disabled = true; resetRace(); rival.model.root.visible = false;
+  traffic.disabled = !multiplayer.lobby?.traffic; resetRace(); rival.model.root.visible = false;
   document.body.classList.remove('racing', 'counting');
 }
 function onlineMembers(members) {
@@ -1172,23 +1198,28 @@ function onlineMembers(members) {
 const multiplayer = new Multiplayer(CARS, {
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   panelClosed() { G.countWall = performance.now(); },
-  join(car) { if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
+  join(car) { graphicsControl.disabled = true; graphicsControl.title = 'Choose graphics before joining a lobby'; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
   wait: onlineWait,
   leave() {
+    graphicsControl.disabled = false; graphicsControl.title = '';
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
     if (!multiplayer.loaded) return;
     traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); resetRace(); G.cam = G.userCam; applyCamMode(); startCountdown();
     document.querySelector('#posBox .of').textContent = '/2';
   },
   members: onlineMembers,
-  start(lobby, id) {
+  start(lobby, id, resumeState = null) {
     if (!multiplayer.loaded) return;
+    window.__flow?.prepareEvent(lobby.eventId || 'quick');
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));
-    const grid = (v, i) => { const s = startS - Math.floor(i / 2) * 8; v.reset(s, route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); };
+    const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
     grid(player.veh, lobby.players.findIndex(p => p.id === id));
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
+    if (resumeState) { const v = player.veh; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); }
     G.state = 'onlineCountdown'; G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
     document.body.classList.add('counting');
+    multiplayer.resumeState = null;
+    if (lobby.status === 'results') multiplayer.hooks.results();
   },
   remote(peers, dt) {
     for (const [id, c] of remoteCars) {
@@ -1214,7 +1245,11 @@ const multiplayer = new Multiplayer(CARS, {
     }
     G.raceT = elapsed;
   },
-  results() { G.state = 'onlineResults'; hud.count(''); },
+  results() {
+    G.pFinish = multiplayer.me?.finish ?? null;
+    if (G.state !== 'onlineResults') { const won = G.pFinish !== null && multiplayer.ranking()[0]?.id === multiplayer.id; if (won) audio.win(); else audio.lose(); }
+    G.state = 'onlineResults'; hud.count('');
+  },
 });
 window.__multiplayer = multiplayer;
 if (Q.has('debug')) window.__vehicle = () => player?.veh;

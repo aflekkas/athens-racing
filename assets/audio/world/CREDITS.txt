@@ -68,3 +68,18 @@ horn-long.mp3
 scream.mp3
   "Girl_Scream.wav" by tcrocker68
   https://freesound.org/people/tcrocker68/sounds/235592/
+rain-heavy.mp3
+  "Rain.wav" by chrscrwfrd18
+  https://freesound.org/people/chrscrwfrd18/sounds/156994/
+rain-light.mp3
+  "Light Rain" by soundrecorder7
+  https://freesound.org/people/soundrecorder7/sounds/167034/
+rain-cabin.mp3
+  "Inside Car - Raining Outside" by pulswelle
+  https://freesound.org/people/pulswelle/sounds/219245/
+crickets.mp3
+  "Night Crickets Back Porch.aiff" by hdfreema
+  https://freesound.org/people/hdfreema/sounds/333221/
+wipers.mp3
+  "windshield wipers.aiff" by jc144940
+  https://freesound.org/people/jc144940/sounds/180946/

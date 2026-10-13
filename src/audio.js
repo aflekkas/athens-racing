@@ -1,10 +1,11 @@
 import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } from './engine-recordings.js';
 import { loadWorldSounds, loopSource, Radio } from './world-sounds.js';
+import { WeatherAudio } from './weather-audio.js';
 
 // Recorded player/rival engines with procedural fallback; recorded world (WebAudio).
 // Starts on the first key press / click (autoplay policy).
 //  - player engine: local field-recorded RPM loops and ignition one-shots; fallback firing-order pulse models
-//    (turbo inline-four/six, warbly five-cylinder, flat-six, V12, turbo-diesel), four RPM points x on/off
+//    (turbo inline-three/four/six, NA four, warbly five-cylinder, flat-six, V12, turbo-diesel), four RPM points x on/off
 //    load, equal-power crossfaded like a multi-sample engine; intake roar, turbo spool / blow-off / flutter,
 //    transmission whine, rev-limiter stutter, shift clunks, overrun burble and exhaust pops
 //  - tyres: recorded squeal tied to slip (pitched for wheelspin and lock-up), scrub; road roar per surface,
@@ -22,6 +23,10 @@ import { loadWorldSounds, loopSource, Radio } from './world-sounds.js';
 // pat: per-cylinder pulse strength (uneven headers / firing order -> warble); jit: cycle-to-cycle variation;
 // knock: diesel injection clatter; lp: tone filter range; whine: gearbox whine; pops: overrun crackle tendency
 export const ENGINE_SOUND = {
+  // GR Yaris G16E: three evenly spaced firings per 720°, low exhaust body and a muted turbo rasp.
+  turbo3: { cyl: 3, f1: 145, f2: 1050, t1: 0.007, t2: 0.0015, b: 0.32, thump: 1.05, pat: [1, 0.96, 0.93], jit: 0.028, knock: 0, rasp: 0.14, lp: [650, 5400], whine: 0.05, pops: 0.35, idleWobble: 0.035, gain: 1 },
+  // Alfa 2000 twin-cam: open, metallic exhaust/intake character with restrained overrun.
+  na4: { cyl: 4, f1: 205, f2: 1750, t1: 0.0054, t2: 0.0014, b: 0.52, thump: 0.82, pat: [1, 0.94, 0.98, 0.92], jit: 0.04, knock: 0, rasp: 0.23, lp: [900, 7200], whine: 0.09, pops: 0.16, idleWobble: 0.045, gain: 1 },
   turbo4: { cyl: 4, f1: 165, f2: 1150, t1: 0.0062, t2: 0.0013, b: 0.36, thump: 0.95, pat: [1, 0.92, 0.97, 0.9], jit: 0.035, knock: 0, rasp: 0.12, lp: [700, 5200], whine: 0.05, pops: 0.6, idleWobble: 0.03, gain: 1 },
   turbo6: { cyl: 6, f1: 155, f2: 1350, t1: 0.006, t2: 0.0014, b: 0.36, thump: 0.9, pat: [1, 0.97, 0.95, 1, 0.96, 0.98], jit: 0.018, knock: 0, rasp: 0.12, lp: [800, 6800], whine: 0.07, pops: 0.6, idleWobble: 0.02, gain: 1 },
   turbo5: { cyl: 5, f1: 138, f2: 900, t1: 0.0072, t2: 0.0016, b: 0.42, thump: 1.0, pat: [1, 0.74, 0.95, 0.7, 0.88], jit: 0.045, knock: 0, rasp: 0.2, lp: [650, 4800], whine: 0.55, pops: 1, idleWobble: 0.05, gain: 1.05 },
@@ -76,7 +81,7 @@ function renderEngineCycle(ctx, E, refRpm, onLoad, cycles, seed) {
 }
 
 /** multi-sample bank for an engine type: four RPM points, on and off load */
-function buildEngineBank(ctx, type, idle, red) {
+export function buildEngineBank(ctx, type, idle, red) {
   const E = ENGINE_SOUND[type] || ENGINE_SOUND.turbo4;
   const pts = [idle * 1.05, red * 0.34, red * 0.6, red * 0.88];
   const on = [], off = [];
@@ -85,7 +90,7 @@ function buildEngineBank(ctx, type, idle, red) {
 }
 
 /** a playing engine built from a bank: 4 x 2 looping sources, crossfaded by RPM (equal power, log scale) and load */
-class EngineVoice {
+export class EngineVoice {
   constructor(ctx, bank, dest, gain = 1) {
     this.ctx = ctx; this.bank = bank;
     const E = bank.E;
@@ -156,7 +161,7 @@ const TRAFFIC_LOOPS = {
 };
 
 export class Audio {
-  constructor() { this.ctx = null; this.musicOn = true; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; }
+  constructor() { this.ctx = null; this.musicOn = true; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); }
 
   start() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
@@ -412,7 +417,7 @@ export class Audio {
     const on = Math.max(0, load) * startLevel;
     x.intakeBP.frequency.setTargetAtTime(260 + rn * 2600, now, 0.05);
     x.intakeG.gain.setTargetAtTime(mute * on * (0.02 + 0.07 * rn), now, 0.05);
-    const boost = p.boost || 0, tb = (E === ENGINE_SOUND.turbo4 || E === ENGINE_SOUND.turbo6) ? 1 : E === ENGINE_SOUND.turbo5 ? 1.25 : E === ENGINE_SOUND.diesel ? 0.6 : 0;
+    const boost = p.boost || 0, tb = (E === ENGINE_SOUND.turbo3 || E === ENGINE_SOUND.turbo4 || E === ENGINE_SOUND.turbo6) ? 1 : E === ENGINE_SOUND.turbo5 ? 1.25 : E === ENGINE_SOUND.diesel ? 0.6 : 0;
     x.turbo.frequency.setTargetAtTime(1800 + boost * 5200 * (0.6 + 0.4 * rn), now, 0.06);
     x.turbo2.frequency.setTargetAtTime((1800 + boost * 5200 * (0.6 + 0.4 * rn)) * 2.01, now, 0.06);
     x.turboG.gain.setTargetAtTime(mute * tb * boost * boost * 0.011, now, 0.05);
@@ -485,7 +490,8 @@ export class Audio {
     a.city.gain.setTargetAtTime(0.55 * city, now, 1.2);
     a.cafe.gain.setTargetAtTime(0.5 * city * slow * (open ? 1 : 0.6), now, 1.2);
     a.beach.gain.setTargetAtTime(0.55 * beach * slow * (open ? 1 : 0.6), now, 1.2);
-    a.cic.gain.setTargetAtTime(0.32 * Math.min(1.2, p.cicadas || 0), now, 1.5);
+    a.cic.gain.setTargetAtTime(0.32 * Math.min(1.2, p.cicadas || 0) * Math.max(0, this.weather.cicadas), now, 1.5);
+    this.weather.update(p, now);
     if (now > this.nextCic) { this.nextCic = now + 4 + Math.random() * 7; a.cicSwell.gain.setTargetAtTime(0.45 + Math.random() * 0.8, now, 1.8); } // cicadas come in waves
     if (now > this.nextGull) { this.nextGull = now + 5 + Math.random() * 9; if (sea > 0.3 && (open || v < 15)) this.gull(p.seaPan ?? 0.6, sea); }
     if (now > this.nextHorn) { this.nextHorn = now + 6 + Math.random() * 10; if (city > 0.3 && Math.random() < 0.7) this.carHorn(Math.random() < 0.15 ? 'taxi' : Math.random() < 0.3 ? 'scooter' : 'car', Math.random() < 0.3 ? 1 : 0, 0.18, (Math.random() - 0.5) * 1.6); }
@@ -498,6 +504,10 @@ export class Audio {
     this.lastDuck = duck;
   }
   duck(amount = 1) { this.duckEv = Math.max(this.duckEv, amount); }
+  /** weather.js: kind 'clear' | 'overcast' | 'rain', intensity 0..1 */
+  setWeather(kind, intensity = 1) { this.weather.setWeather(kind, intensity); }
+  /** weather.js: 'dawn' | 'day' | 'sunset' | 'night' */
+  setTimeOfDay(time) { this.weather.setTimeOfDay(time); }
 
   updateTraffic(list, now, mute) {
     const V = this.voices;

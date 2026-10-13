@@ -242,6 +242,21 @@ else {
     CARS = new Function('return ' + arr.slice(0, end))();
   } catch (err) { check('catalogue: parse src/cars.js', false, err.message); }
   for (const spec of CARS) {
+    if(spec.torqueCurve){
+      const engine=new Vehicle(spec,route);engine.boost=1;
+      const torque=engine.torqueMax(spec.peakTorqueRpm),power=engine.torqueMax(spec.peakPowerRpm)*spec.peakPowerRpm*Math.PI/30/1000;
+      check(`catalogue ${spec.id}: sourced torque and power anchors`,Math.abs(torque-spec.torque)<.2&&Math.abs(power-spec.power)<.1,`${f1(torque)} Nm, ${f1(power)} kW`);
+      check(`catalogue ${spec.id}: curve rpm strictly ascending`,spec.torqueCurve.every((p,i)=>p[1]>=0&&(!i||p[0]>spec.torqueCurve[i-1][0])));
+    }
+    if(spec.drive==='awd'){
+      const awd=new Vehicle(spec,route);awd.reset(0,0,12);awd.gear=2;
+      for(let i=0;i<90;i++)awd.update(DT,{throttle:1,brake:0,steer:0});
+      check(`catalogue ${spec.id}: both axles transmit drive torque`,awd.shareR===spec.awdRear&&awd.corners[0].Fx+awd.corners[1].Fx>100&&awd.corners[2].Fx+awd.corners[3].Fx>100);
+    }
+    if(spec.engineZone==='rear'){
+      const rear=new Vehicle(spec,route),front=new Vehicle(spec,route);rear.addDamage('rear',16,{kind:'wall'});front.addDamage('front',16,{kind:'wall'});
+      check(`catalogue ${spec.id}: rear engine damage follows engine location`,rear.engHealth<front.engHealth&&front.smoke);
+    }
     const v = new Vehicle(spec, route); v.reset(0, 0, 0); let t = 0, t100 = null, ok = true;
     while (t < 60) { v.update(DT, { throttle: 1, brake: 0, steer: 0 }); t += DT; if (!t100 && v.kmh >= 100) t100 = t; if (!finite(v)) { ok = false; break; } }
     const b = new Vehicle(spec, route); b.reset(0, 0, 100 / 3.6); const z0 = b.z;
