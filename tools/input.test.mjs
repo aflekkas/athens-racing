@@ -60,7 +60,7 @@ test('keyboard and controller action edges fire once, including short key taps a
 });
 
 test('standard face buttons, shoulders, D-pad and held look-back expose the expected actions', () => {
-  const { input, pads } = setup(), pad = gamepad(); pads([pad]);
+  const { input, pads } = setup(), pad = gamepad(); pads([pad]); input.setNitrousEnabled(true);
   for (const [button, action] of [[0, 'handbrake'], [1, 'nitro'], [2, 'nitro'], [3, 'camera'], [4, 'shiftDown'], [5, 'shiftUp'], [8, 'restart'], [9, 'pause'], [11, 'lookBack'], [12, 'up'], [13, 'down'], [14, 'left'], [15, 'right']]) {
     pad.buttons[button].value = 1; input.update(1 / 60); assert.equal(input.state[action], true, action);
     input.update(1 / 60); if (['handbrake', 'nitro', 'lookBack'].includes(action)) assert.equal(input.state[action], true); else assert.equal(input.state[action], false);
@@ -121,4 +121,13 @@ test('rumble clamps dual-rumble impact values and tolerates unavailable devices'
   pad.vibrationActuator = { playEffect: async (kind, opts) => { effect = { kind, ...opts }; } }; pads([pad]); input.update(0);
   assert.equal(await input.rumble(2, -1, 2000), true); assert.deepEqual(effect, { kind: 'dual-rumble', startDelay: 0, duration: 1000, strongMagnitude: 1, weakMagnitude: 0 });
   pad.vibrationActuator.playEffect = async () => { throw Error('unsupported'); }; assert.equal(await input.rumble(1, 1, 100), false); input.destroy();
+});
+
+test('nitrous controls are inactive until the selected car permits them', () => {
+  const { input, pads, key } = setup(), pad = gamepad(); pads([pad]);
+  key('keydown', 'ShiftLeft'); pad.buttons[1].value = 1;
+  input.update(1 / 60); assert.equal(input.state.nitro, false);
+  input.setNitrousEnabled(true); input.update(1 / 60); assert.equal(input.state.nitro, true);
+  input.setNitrousEnabled(false); input.update(1 / 60); assert.equal(input.state.nitro, false);
+  input.destroy();
 });

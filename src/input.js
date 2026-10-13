@@ -40,6 +40,7 @@ export class Input {
     this.state = { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false,
       ...Object.fromEntries(EDGE_ACTIONS.map(a => [a, false])) };
     this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
+    this.nitrousEnabled = false;
     this.load();
     this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => this.keys.delete(e.code));
     this.listen('blur', () => this.clear());
@@ -47,6 +48,13 @@ export class Input {
     this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; });
     this.listen('deviceorientation', e => { if (Number.isFinite(e.gamma)) this.tilt = clamp(e.gamma / 30, -1, 1); });
     if (document) this.mountTouch();
+  }
+  setNitrousEnabled(enabled) {
+    this.nitrousEnabled = enabled === true;
+    if (!this.nitrousEnabled) this.state.nitro = false;
+    const button = this.touchUI?.querySelector('[data-action="nitro"]');
+    if (button) button.hidden = !this.nitrousEnabled;
+    for (const hint of this.document?.querySelectorAll?.('[data-nitrous]') || []) hint.hidden = !this.nitrousEnabled;
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
   destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); clearTimeout(this.toastTimer); this.touchUI?.remove(); this.cancelCapture(); }
@@ -84,7 +92,7 @@ export class Input {
     }
     const menuButton = this.inMenu && e.target?.closest?.('button') && !e.target?.closest?.('.input-bindings');
     if ((editable(e) && !menuButton) || this.capture) return;
-    const matched = Object.entries(this.bindings.keyboard).filter(([, codes]) => codes.includes(e.code));
+    const matched = Object.entries(this.bindings.keyboard).filter(([a, codes]) => (a !== 'nitro' || this.nitrousEnabled) && codes.includes(e.code));
     if (!matched.length) return;
     e.preventDefault?.();
     // A menu/blur may clear a held key; OS repeats must not press it again until a real release/press.
@@ -181,7 +189,7 @@ export class Input {
     s.steer = lf || rt || Math.abs(keyboardSteer) > Math.max(Math.abs(analog), Math.abs(touchSteer)) ? keyboardSteer : Math.abs(touchSteer) > Math.abs(analog) ? touchSteer : analog;
     s.throttle = Math.max(this.keyThrottle, gp('throttle'), this.touch.throttle || 0);
     s.brake = Math.max(this.keyBrake, gp('brake'), this.touch.brake || 0);
-    s.handbrake = held('handbrake'); s.nitro = held('nitro'); s.lookBack = held('lookBack');
+    s.handbrake = held('handbrake'); s.nitro = this.nitrousEnabled && held('nitro'); s.lookBack = held('lookBack');
     this.cameraLook.x = axisValue(gp('lookRight') - gp('lookLeft'), this.settings.deadzone);
     this.cameraLook.y = axisValue(gp('lookDown') - gp('lookUp'), this.settings.deadzone);
     if (blocked || inMenu || capturing) {
@@ -228,7 +236,7 @@ export class Input {
     }); panel.append(tilt);
     const table = doc.createElement('table');
     const head = doc.createElement('tr'); for (const title of ['Action', 'Keyboard', 'Controller']) { const th = doc.createElement('th'); th.textContent = title; head.append(th); } table.append(head);
-    const rows = [...new Set([...Object.keys(this.bindings.keyboard), ...Object.keys(this.bindings.gamepad)])];
+    const rows = [...new Set([...Object.keys(this.bindings.keyboard), ...Object.keys(this.bindings.gamepad)])].filter(a => a !== 'nitro' || this.nitrousEnabled);
     for (const action of rows) {
       const row = doc.createElement('tr'), label = doc.createElement('td'); label.textContent = action.replace(/([A-Z])/g, ' $1'); row.append(label);
       for (const kind of ['keyboard', 'gamepad']) {
@@ -263,7 +271,7 @@ export class Input {
       const pedals = doc.createElement('div'); pedals.className = 'touch-pedals';
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
       for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['pause', 'Ⅱ']]) {
-        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action);
+        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });

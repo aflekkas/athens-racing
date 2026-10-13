@@ -285,7 +285,7 @@ function resetRace() {
   const s0 = Q.has('s') ? +Q.get('s') : startS;
   player.veh.reset(s0, route.laneU(s0, 1), 0);
   rival.veh.reset(s0 + 9, route.laneU(s0 + 9, 0), 0);
-  for (const v of [player.veh, rival.veh]) { v.nitro = 0.4; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
+  for (const v of [player.veh, rival.veh]) { v.nitro = v.spec.nitrous === true ? 0.4 : 0; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
   G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false; resetTowOffer();
   if (fx) fx.clearMarks();
   rival.ai = { lane: 0, u: route.laneU(s0 + 9, 0), cool: 0, mistakeT: 20 + Math.random() * 20, sigJ: -1 };
@@ -319,7 +319,7 @@ function resetEvent() {
     const s = clamp(r.s0 - dir * 700, 5, route.length - 5); rival.veh.reset(s, -dir * route.laneU(s, 0), 0);
     rival.ai = { lane: 0, cool: 0, sigJ: -1 }; rival.model.root.visible = false; rival.finish = null; rival.pen = 0;
   }
-  for (const v of [player.veh, ...grid.map((c) => c.veh)]) { v.nitro = 0.4; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
+  for (const v of [player.veh, ...grid.map((c) => c.veh)]) { v.nitro = v.spec.nitrous === true ? 0.4 : 0; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
   G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false; resetTowOffer();
   if (fx) fx.clearMarks();
   if (player.ai) { player.ai.sigJ = -1; player.ai.lane = undefined; }
@@ -477,6 +477,7 @@ addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch'
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
   const blocked = G.ctxLost || document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
+  controls.setNitrousEnabled(player?.veh.spec.nitrous === true);
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked, retainMouseLock: !!G.cameraStarting });
   const pad = controls.pad;
   if (controls.keys.size) G.inputDevice = 'keyboard';
@@ -732,7 +733,7 @@ function updateGrid(dt) {
     c.lastBrake = rin.brake > 0.2;
     v.dragMul = 1;
     v.update(dt, rin);
-    if (!v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
+    if (v.spec.nitrous === true && !v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
     const f = v.s + G.dir * v.halfL;
     if (G.state === 'race' && c.front !== null && v.vLong > 0 && c.finish === null) { const j = crossedDir(c.front, f, G.dir); if (j) onStopLine(j, 'rival', c); }
@@ -1023,7 +1024,7 @@ function handleEvents(events) {
     }
     if (e.kind === 'near') {
       // straight time: no points or pops for a near miss, just the whoosh and a little nitro
-      player.veh.nitro = Math.min(1, player.veh.nitro + (e.oncoming ? 0.12 : 0.07));
+      if (player.veh.spec.nitrous === true) player.veh.nitro = Math.min(1, player.veh.nitro + (e.oncoming ? 0.12 : 0.07));
       audio.nearMiss(1, e.side * 0.6);
       if (e.car.type.scooter) audio.moped(e.side * 0.7);
     } else if (e.kind === 'crash' || e.kind === 'bump') {
@@ -1355,7 +1356,7 @@ function step(dt, draw = true) {
       if (Q.has('nantrap') && !G.nanP && !isFinite(pv.x + pv.vLong + pv.w + pv.s)) { G.nanP = 1; console.warn('NaN player after update', snapP); }
       seaCheck(pv, dt);
       stuckCheck(pv, dt);
-      if (!pv.nitroOn) pv.nitro = Math.min(1, pv.nitro + dt * 0.012);
+      if (pv.spec.nitrous === true && !pv.nitroOn) pv.nitro = Math.min(1, pv.nitro + dt * 0.012);
       if (pv.nitroOn && !G.nitroWas) audio.nitroStart();
       G.nitroWas = pv.nitroOn;
       if (!multiplayer.active) {
@@ -1390,10 +1391,10 @@ function step(dt, draw = true) {
       const dd = (rv.s - pv.s) * (G.dir || 1), du = Math.abs(rv.u - pv.u);
       const drafting = (!multiplayer.active || (remoteCars.size > 0 && rival.model.root.visible)) && dd > 4 && dd < 32 && du < 1.6 && pv.vLong > 22;
       G.draft = damp(G.draft || 0, drafting ? 1 - dd / 40 : 0, 3, dt);
-      if (drafting) pv.nitro = Math.min(1, pv.nitro + dt * 0.03);
+      if (drafting && pv.spec.nitrous === true) pv.nitro = Math.min(1, pv.nitro + dt * 0.03);
       // ---- drift scoring
       if (pv.drift > 0.12 && pv.vLong > 14 && G.state === 'race') { G.driftAcc += dt * pv.vLong * pv.drift * 14; G.driftT = 0.7; }
-      else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { pv.nitro = Math.min(1, pv.nitro + G.driftAcc / 2500); G.driftAcc = 0; /* a drift tops up the bottle; no points */ } else if (G.driftT <= 0) G.driftAcc = 0; }
+      else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { if (pv.spec.nitrous === true) pv.nitro = Math.min(1, pv.nitro + G.driftAcc / 2500); G.driftAcc = 0; /* a drift tops up the bottle; no points */ } else if (G.driftT <= 0) G.driftAcc = 0; }
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
       if (G.state === 'race' && multiplayer.active) multiplayer.wreck(pv.maxImpactEbs);
       // A fatal impact takes precedence over crossing a checkpoint or the finish line.
@@ -1426,8 +1427,8 @@ function step(dt, draw = true) {
       const d = nj.sF - (pv.s + pv.halfL);
       if (d < 230) {
         const wait = G.state === 'race' && nj.main !== 'G' && d < 40 && pv.kmh < 3;
-        if (wait) { pv.nitro = Math.min(1, pv.nitro + dt * 0.1); if (G.waitJ !== nj.i) { G.waitJ = nj.i; hud.message('RED LIGHT · <i>NITRO CHARGING</i> WHILE YOU WAIT', 2.5); } }
-        info = { main: nj.main, d, wait, close: nj.main === 'R' && d < 80 && pv.kmh > 25 };
+        if (wait && pv.spec.nitrous === true) { pv.nitro = Math.min(1, pv.nitro + dt * 0.1); if (G.waitJ !== nj.i) { G.waitJ = nj.i; hud.message('RED LIGHT · <i>NITRO CHARGING</i> WHILE YOU WAIT', 2.5); } }
+        info = { main: nj.main, d, wait, nitrous: pv.spec.nitrous === true, close: nj.main === 'R' && d < 80 && pv.kmh > 25 };
         if (nj.ped && d < 70) { G.tickT -= dt; if (G.tickT <= 0) { G.tickT = nj.pedLeft < 2.2 ? 0.22 : 0.55; audio.pedTick(nj.pedLeft < 2.2, 0.3); } }
       }
     }
@@ -1440,7 +1441,7 @@ function step(dt, draw = true) {
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
   const acc = { x: pv.ay, y: 0, z: -pv.ax };
-  player.cockpit.update(dt, { steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitro: pv.nitro, nitroOn: pv.nitroOn });
+  player.cockpit.update(dt, { steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
   player.driver.update(dt, G.t, pv.vLong, acc, player.cockpit.wheelInfo, pv.steer, pv.pose.heaveV);
   for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);
   window.__replay?.visual(dt);
@@ -1468,7 +1469,7 @@ function step(dt, draw = true) {
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
   const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
-    gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
+    gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars };
   if (multiplayer.active) {
     pos = multiplayer.ranking(pv.s).findIndex(p => p.id === multiplayer.id) + 1; st.pos = multiplayer.retired ? null : pos; st.time = G.pFinish ?? G.raceT; st.gap = remoteCars.size ? (rv.s - pv.s) * (multiplayer.lobby.event?.dir || 1) / Math.max(5, Math.abs(pv.vLong)) : NaN; st.pen = 0;
@@ -1568,7 +1569,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), damage: { ...v.damage } });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage } });
 function clearDriveInput() { controls.clear(); closeTowOffer(12); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
@@ -1621,7 +1622,7 @@ const multiplayer = new Multiplayer(CARS, {
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
     grid(player.veh, lobby.players.findIndex(p => p.id === id)); resetTowOffer();
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
-    if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
+    if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); if (v.spec.nitrous !== true) { v.nitro = 0; v.nitroOn = false; } v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
     G.state = 'onlineCountdown'; G.cameraStarting = false; controls.requestMouseLock(); G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
     document.body.classList.add('counting');
     multiplayer.resumeState = null;

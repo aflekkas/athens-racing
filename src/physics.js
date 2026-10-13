@@ -59,6 +59,7 @@ export class Vehicle {
   }
   setSpec(spec) {
     this.spec = spec;
+    if (spec.nitrous !== true) { this.nitro = 0; this.nitroOn = false; }
     this.eng = ENGINES[spec.engine] || ENGINES.turbo4;
     this.m = spec.mass;
     this.wb = spec.wheelbase ?? BODY_WB[spec.body] ?? 2.55;
@@ -112,7 +113,7 @@ export class Vehicle {
     this.s = s; this.u = u;
     this.gear = 1; this.rpm = this.spec.idle; this.shiftT = 0; this.shiftCool = 0; this.pendingGear = 0; this.clutch = 1;
     this.steer = 0; this.slipF = 0; this.slipR = 0; this.spin = 0; this.ax = 0; this.ay = 0;
-    this.nitro = 0.35; this.nitroOn = false;
+    this.nitro = this.spec.nitrous === true ? 0.35 : 0; this.nitroOn = false;
     this.pose = { roll: 0, rollV: 0, pitch: 0, pitchV: 0, heave: 0, heaveV: 0 };
     this.resetSuspension(); this.wheelBump = null;
     this.wheelMu = this.wheelPeak = this.wheelSlide = this.wheelSlideV = null;
@@ -673,7 +674,8 @@ export class Vehicle {
     this.engT = Tnet;
     this.load = clamp(Tnet / (sp.torque * (sp.powerMul ?? POWER_MUL)), -1, 1);
     // nitro: extra fuel and a squirt of shove
-    this.nitroOn = !!inp.nitro && this.nitro > 0.01 && thrIn > 0.2 && !this.reverse;
+    if (sp.nitrous !== true) this.nitro = 0;
+    this.nitroOn = sp.nitrous === true && !!inp.nitro && this.nitro > 0.01 && thrIn > 0.2 && !this.reverse;
     let nitroF = 0;
     if (this.nitroOn) { Tnet *= 1.25; nitroF = this.m * 3.0; this.nitro = Math.max(0, this.nitro - dt * 0.2); }
     // speed governor at the car's quoted top speed

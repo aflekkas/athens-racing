@@ -36,7 +36,7 @@ function bindRow(action, label) {
 export function renderControls(menu) {
   const s = input.settings, A = { 'data-scope': 'input' };
   const known = new Set(GROUPS.flatMap(([, , g]) => Object.keys(g)));
-  const all = [...new Set([...Object.keys(input.bindings.keyboard), ...Object.keys(input.bindings.gamepad)])];
+  const all = [...new Set([...Object.keys(input.bindings.keyboard), ...Object.keys(input.bindings.gamepad)])].filter(a => a !== 'nitro' || input.nitrousEnabled);
   const cars = all.filter((a) => /^car\d$/.test(a)), other = all.filter((a) => !known.has(a) && !cars.includes(a));
   const groups = [...GROUPS, ['QUICK CAR PICK', 'car-profile', Object.fromEntries(cars.map((a) => [a, 'CAR ' + a.slice(3)]))], ...(other.length ? [['OTHER', 'wrench', Object.fromEntries(other.map((a) => [a, a.replace(/([A-Z])/g, ' $1').toUpperCase()]))]] : [])];
   menu.bindCol = menu.bindCol || 0; paintCol(menu);

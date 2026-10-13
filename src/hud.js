@@ -283,11 +283,13 @@ export class Hud {
     // numbers
     g.fillStyle = 'rgba(255,255,255,.75)'; g.font = 'italic 800 19px "Barlow Condensed", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     for (let k = 0; k <= max / 1000; k++) { const a = a0 + span * (k * 1000 / max); g.fillText(String(k), cx + Math.cos(a) * (R - 38), cy + Math.sin(a) * (R - 38)); }
+    if (st.nitrous === true) {
     // nitro arc in the bottom gap
     const n0 = Math.PI * 0.32, n1 = Math.PI * 0.68;
     g.lineWidth = 9; g.strokeStyle = 'rgba(41,216,255,.18)'; g.beginPath(); g.arc(cx, cy, R - 10, n1, n0, true); g.stroke();
     g.strokeStyle = st.nitroOn ? '#bff4ff' : '#29d8ff'; g.beginPath(); g.arc(cx, cy, R - 10, n1, n1 - (n1 - n0) * clamp(st.nitro, 0, 1), true); g.stroke();
     g.fillStyle = '#29d8ff'; g.font = '800 13px "Barlow Condensed", sans-serif'; g.fillText('NITRO', cx, cy + R - 30);
+    }
     // speed
     g.fillStyle = '#fff'; g.font = 'italic 900 116px "Barlow Condensed", sans-serif'; g.textAlign = 'center';
     g.fillText(String(Math.round(st.kmh)), cx - 4, cy + 18);
@@ -306,11 +308,11 @@ export class Hud {
   /** next traffic light widget: info = {main, d, wait} or null */
   signal(info) {
     const el = this.el;
-    const key = info ? `${info.main}|${Math.round(info.d / 5)}|${info.wait ? 1 : 0}|${info.close ? 1 : 0}` : '';
+    const key = info ? `${info.main}|${Math.round(info.d / 5)}|${info.wait ? 1 : 0}|${info.close ? 1 : 0}|${info.nitrous ? 1 : 0}` : '';
     if (key === this.sigKey) return; this.sigKey = key;
     if (!info) { el.sigBox.className = ''; return; }
     el.sigBox.className = 'on ' + info.main + (info.close ? ' close' : '');
-    el.sigTxt.textContent = info.wait ? 'WAIT · NITRO CHARGING' : info.main === 'R' ? (info.d < 60 ? 'STOP!' : 'RED LIGHT') : info.main === 'A' ? 'AMBER' : 'GREEN';
+    el.sigTxt.textContent = info.wait ? (info.nitrous ? 'WAIT · NITRO CHARGING' : 'WAIT') : info.main === 'R' ? (info.d < 60 ? 'STOP!' : 'RED LIGHT') : info.main === 'A' ? 'AMBER' : 'GREEN';
     el.sigD.textContent = info.d > 3 ? `SIGNAL ${Math.round(info.d / 5) * 5} M` : 'STOP LINE';
   }
   flashCam() { const f = document.getElementById('camflash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }

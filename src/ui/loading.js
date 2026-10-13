@@ -8,7 +8,7 @@ import { MAPS } from '../map-catalog.js';
 import { setProgress, esc } from './components.js';
 
 const TIPS = [
-  'Running a red light adds a time penalty. Waiting at a red tops up your nitro.',
+  'Running a red light adds a time penalty. The SEAT’s nitrous bottle refills while waiting at a red.',
   'Stuck off the road? Press T to be towed back onto it.',
   'C switches between the cockpit and chase cameras.',
   'Change AI rivals, traffic, time of day and weather in the race setup before every event.',

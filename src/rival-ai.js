@@ -467,7 +467,7 @@ export class RivalAI {
     if (v > 6 && here.gap > 8 && Math.abs(beta) > 0.04 && caps.rearSlip() > 1.15) brake *= clamp(1.15 / caps.rearSlip(), 0.25, 1);
     // Ordinary service brake must not accidentally select reverse while queuing.
     const safeBrake = veh.vLong < 1 && brake > 0 ? Math.min(0.45, brake) : brake;
-    const nitro = !this.perfect && !held && error > 3 && v > 15 && Math.abs(steer) < 0.18 && kAhead < 0.0015 && here.gap > v * 3 && veh.nitro > 0.15;
+    const nitro = veh.spec.nitrous === true && !this.perfect && !held && error > 3 && v > 15 && Math.abs(steer) < 0.18 && kAhead < 0.0015 && here.gap > v * 3 && veh.nitro > 0.15;
     return this.result({ throttle: safeBrake > 0.03 ? 0 : throttle, brake: safeBrake, steer, nitro }, { targetSpeed, gap: here.gap, phase: this.recovery, look, u: baseU + this.offset, k: kAhead });
   }
   result(input, debug) { this.debug = debug; return { throttle: 0, brake: 0, steer: 0, handbrake: false, nitro: false, ...input }; }
