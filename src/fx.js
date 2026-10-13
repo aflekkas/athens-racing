@@ -1,6 +1,8 @@
-// Tyre effects: smoke off sliding / spinning tyres, skid marks and offroad ruts laid per wheel, dust and sand
-// thrown up offroad (a roost of sand behind spinning wheels), a puff off a kerb strike, sparks off walls and rails,
-// radiator steam from a crushed front. Reads the physics state only (corners, cx / cy, steer, wheelSurf, curbHit).
+// Tyre effects: smoke only when a tyre is really being abused (a big drift at speed, a burnout / launch with a wheel
+// lit up on the spot, a locked wheel skidding at speed), skid marks and offroad ruts laid per wheel, dust and sand
+// thrown up offroad (a roost of sand behind spinning wheels), sparks off walls and rails. Radiator steam is an opt-in
+// hook (Fx.steam, off: the crash-damage model draws its own). Reads the physics state only (corners, cx / cy, steer,
+// wheelSurf, curbHit, drift, steamAmount).
 import * as THREE from 'three';
 import { clamp, smoothstep } from './util.js';
 import { WEATHER } from './ground.js';
@@ -19,6 +21,7 @@ class Particles {
     this.life = new Float32Array(n); this.age = new Float32Array(n); this.s0 = new Float32Array(n); this.s1 = new Float32Array(n);
     this.a0 = new Float32Array(n); this.grav = new Float32Array(n); this.drag = new Float32Array(n);
     this.pos.fill(-1e5);
+    this.wind = { x: 0, z: 0 }; // the air the particles settle into (drag pulls them towards it)
     g.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aSize', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aAlpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage));
@@ -53,8 +56,9 @@ class Particles {
       const age = (this.age[k] += dt), t = age / this.life[k];
       if (t >= 1) { this.life[k] = 0; this.alpha[k] = 0; this.pos[k * 3 + 1] = -1e5; continue; }
       any = true;
-      const d = Math.exp(-this.drag[k] * dt);
-      this.vel[k * 3] *= d; this.vel[k * 3 + 2] *= d; this.vel[k * 3 + 1] = this.vel[k * 3 + 1] * d - this.grav[k] * 9.81 * dt;
+      const d = Math.exp(-this.drag[k] * dt), wx = this.wind.x, wz = this.wind.z;
+      this.vel[k * 3] = wx + (this.vel[k * 3] - wx) * d; this.vel[k * 3 + 2] = wz + (this.vel[k * 3 + 2] - wz) * d;
+      this.vel[k * 3 + 1] = this.vel[k * 3 + 1] * d - this.grav[k] * 9.81 * dt;
       for (let a = 0; a < 3; a++) this.pos[k * 3 + a] += this.vel[k * 3 + a] * dt;
       this.size[k] = this.s0[k] + (this.s1[k] - this.s0[k]) * Math.sqrt(t);
       this.alpha[k] = this.a0[k] * smoothstep(0, 0.08, t) * (1 - t) * (1 - t);
@@ -77,6 +81,8 @@ export class Fx {
     this.smoke = new Particles(scene, 1800, { soft: 0.8 });
     this.grit = new Particles(scene, 900, { soft: 0.2 });
     this.sparkP = new Particles(scene, 300, { additive: true, soft: 0.1 });
+    this.smoke.wind.x = 1.1; this.smoke.wind.z = 0.45; // a light sea breeze carries smoke and dust off and thins it out
+    this.steam = false; // opt-in radiator steam from veh.steamAmount (0..1); off: the crash-damage model owns it
     // skid marks: one ring buffer of quads, vertex rgba
     const g = new THREE.BufferGeometry();
     this.mp = new Float32Array(MARKS * 4 * 3).fill(-1e5); this.mc = new Float32Array(MARKS * 4 * 4);
@@ -143,13 +149,15 @@ export class Fx {
   clearMarks() { this.mp.fill(-1e5); this.dirty0 = 0; this.dirty1 = MARKS - 1; }
   _car(veh, dt) {
     let W = this.wheels.get(veh);
-    if (!W) this.wheels.set(veh, W = [0, 1, 2, 3].map(() => ({ on: false, x: 0, z: 0, y: 0, a: 0, lx: 0, lz: 0, rx: 0, rz: 0, acc: 0, dacc: 0 })));
+    if (!W) this.wheels.set(veh, W = [0, 1, 2, 3].map(() => ({ on: false, x: 0, z: 0, y: 0, a: 0, lx: 0, lz: 0, rx: 0, rz: 0, acc: 0, dacc: 0, heat: 0 })));
     const C4 = veh.corners; if (!C4 || C4.length < 4) return;
     const fx = -Math.sin(veh.yaw), fz = -Math.cos(veh.yaw), rx = Math.cos(veh.yaw), rz = -Math.sin(veh.yaw);
     const cs = Math.cos(veh.steer || 0), sn = Math.sin(veh.steer || 0);
     const vw = veh.velocityWorld(this._v || (this._v = new THREE.Vector3()));
     const speed = Math.hypot(vw.x, vw.z), air = veh.air;
     const t2 = (veh.track || 1.5) / 2;
+    // a big drift: the whole car well sideways at speed (normal cornering and ordinary slides stay clean)
+    const bigDrift = smoothstep(0.32, 0.55, veh.drift || 0) * smoothstep(11, 17, speed);
     for (let i = 0; i < 4; i++) {
       const st = W[i], Wc = C4[i];
       const cx = veh.cx ? veh.cx[i] : (i < 2 ? veh.a : -veh.b), cy = veh.cy ? veh.cy[i] : (i & 1 ? t2 : -t2);
@@ -169,24 +177,34 @@ export class Fx {
       else st.on = false;
       const y = veh.y + 0.15;
       if (paved) {
-        // tyre smoke: grows with sliding speed, thick when a wheel is lit up on the spot
-        const rate = 46 * clamp((slip - 3.5) / 9, 0, 1.2) * (1 - 0.8 * WEATHER.wet); // a wet tyre barely smokes
-        st.acc += rate * dt;
+        // tyre smoke only when the rubber is really being cooked: a big drift with this tyre sliding hard, a burnout /
+        // launch (a wheel lit up while the car barely moves), or a wheel locked solid at speed
+        // (a locked wheel means a real lock-up the physics reports, ABS not catching it; not an ABS cycle or a wheel
+        // that spun down in the air touching back down)
+        const gvx = Math.abs(vgx);
+        st.lockT = Math.abs(Wc.vw) < 0.15 * gvx && (veh.lockup || 0) > 0.4 && !veh.absOn ? (st.lockT || 0) + dt : 0;
+        const locked = st.lockT > 0.25;
+        const k = Math.max(bigDrift * smoothstep(7, 12, slip),
+          smoothstep(6, 12, Math.abs(spinV)) * (1 - smoothstep(6, 12, gvx)),
+          locked ? smoothstep(14, 22, gvx) : 0) * (1 - 0.85 * WEATHER.wet); // a wet tyre barely smokes
+        // it takes sustained abuse to make a cloud: thin and translucent at first, thick only once the tyre is hot
+        st.heat = k > 0.05 ? Math.min(1, st.heat + dt * k / 1.2) : Math.max(0, st.heat - dt / 0.6);
+        st.acc += 26 * k * (0.3 + 0.7 * st.heat) * dt;
         while (st.acc >= 1) {
           st.acc -= 1;
-          const j = Math.random();
-          this.smoke.emit(x - vw.x * dt * j, y, z - vw.z * dt * j, vw.x * 0.3 + (Math.random() - 0.5) * 1.5 - fx * spinV * 0.08, 0.4 + Math.random() * 0.7, vw.z * 0.3 + (Math.random() - 0.5) * 1.5 - fz * spinV * 0.08,
-            { life: 1.6 + Math.random() * 1.4, s0: 0.5, s1: 3.6 + Math.random() * 1.5, a: 0.32, r: 0.86, g: 0.86, b: 0.88, drag: 1.1 });
+          const j = Math.random(), h = st.heat;
+          this.smoke.emit(x - vw.x * dt * j, y, z - vw.z * dt * j, vw.x * 0.15 + (Math.random() - 0.5) * 0.8 - fx * spinV * 0.04, 0.35 + Math.random() * 0.5, vw.z * 0.15 + (Math.random() - 0.5) * 0.8 - fz * spinV * 0.04,
+            { life: 1.1 + Math.random() * 0.9 + h * 0.8, s0: 0.35, s1: 1.8 + 2.2 * h + Math.random(), a: 0.05 + 0.2 * h, r: 0.8, g: 0.8, b: 0.82, grav: -0.025, drag: 2.2 });
         }
       } else if (surf !== 'rock') {
         // dust off the soft stuff, and a roost of sand / grit behind a spinning wheel
         const D = DUST[surf] || DUST.dirt;
-        const rate = (18 * clamp(speed / 18, 0, 1.2) + 30 * clamp((slip - 2) / 8, 0, 1)) * (1 - 0.7 * WEATHER.wet); // wet ground doesn't dust
+        const rate = (14 * smoothstep(6, 20, speed) + 26 * smoothstep(3, 10, slip)) * (1 - 0.7 * WEATHER.wet); // wet ground doesn't dust
         st.dacc += rate * dt;
         while (st.dacc >= 1) {
           st.dacc -= 1;
           this.smoke.emit(x, veh.y + 0.2, z, vw.x * 0.25 + (Math.random() - 0.5) * 1.2, 0.5 + Math.random() * 0.8, vw.z * 0.25 + (Math.random() - 0.5) * 1.2,
-            { life: 1.2 + Math.random() * 1.5, s0: 0.6, s1: 3 + Math.random() * 2, a: surf === 'sand' ? 0.22 : 0.3, r: D[0], g: D[1], b: D[2], drag: 1.3 });
+            { life: 0.9 + Math.random() * 1.1, s0: 0.5, s1: 2.4 + Math.random() * 1.5, a: surf === 'sand' || surf === 'deepsand' ? 0.14 : 0.2, r: D[0], g: D[1], b: D[2], drag: 2 });
           if (Math.abs(spinV) > 2.5) {
             const k = Math.min(1, Math.abs(spinV) / 10), dir = -Math.sign(spinV);
             this.grit.emit(x, veh.y + 0.1, z, vw.x + fx * dir * (2 + 4 * k) + (Math.random() - 0.5) * 1.5, 1.5 + Math.random() * 2.5 * k, vw.z + fz * dir * (2 + 4 * k) + (Math.random() - 0.5) * 1.5,
@@ -195,17 +213,12 @@ export class Fx {
         }
       }
     }
-    // a puff off a kerb strike
-    if (veh.curbHit > 0.25 && veh.curbX !== undefined) {
-      for (let i = 0; i < Math.round(veh.curbHit * 8); i++) this.smoke.emit(veh.curbX, veh.y + 0.1, veh.curbZ, vw.x * 0.4 + (Math.random() - 0.5) * 2, 0.6 + Math.random(), vw.z * 0.4 + (Math.random() - 0.5) * 2,
-        { life: 0.8 + Math.random() * 0.6, s0: 0.3, s1: 1.6, a: 0.25, r: 0.75, g: 0.72, b: 0.66, drag: 2 });
-    }
-    veh.curbHit = 0;
-    // radiator steam from a crushed front
-    if (veh.smoke) {
-      const n = (this.acc.get(veh) || 0) + dt * 14; this.acc.set(veh, n % 1);
+    veh.curbHit = 0; // consumed (the kerb strike is sound / rumble / camera only: a kerb doesn't smoke)
+    // radiator steam: opt-in hook, thin and intermittent with steamAmount (0..1) from the damage model
+    if (this.steam && veh.steamAmount > 0) {
+      const n = (this.acc.get(veh) || 0) + dt * 10 * veh.steamAmount; this.acc.set(veh, n % 1);
       for (let i = 0; i < Math.floor(n); i++) this.smoke.emit(veh.x + fx * (veh.halfL - 0.4), veh.y + 0.9, veh.z + fz * (veh.halfL - 0.4), vw.x * 0.6 + (Math.random() - 0.5), 1 + Math.random(), vw.z * 0.6 + (Math.random() - 0.5),
-        { life: 1 + Math.random() * 0.8, s0: 0.3, s1: 1.8, a: 0.3, r: 0.95, g: 0.95, b: 0.95, drag: 1.5 });
+        { life: 0.8 + Math.random() * 0.6, s0: 0.25, s1: 1.4, a: 0.12 * veh.steamAmount, r: 0.9, g: 0.9, b: 0.9, grav: -0.05, drag: 2 });
     }
   }
 }

@@ -14,6 +14,15 @@ export function runPlayerVehicleChecks(){
     for(const end of ['f','r']){const b=new THREE.Box3().setFromObject(car.playerParts['bumper_'+end]);check(b.max.y<.54,id+' bumper '+end+' excludes upper end cap');}
     const left=[],right=[];car.body.traverse(o=>{if(o.userData.damageInterior)(o.userData.damageSide==='left'?left:right).push(o);});
     car.setDamage('left',.5);check(left.length>0&&left.every(o=>!o.visible)&&right.every(o=>o.visible),id+' side intrusion hides only hit-side interior');car.setDamage('left',0);check(left.every(o=>o.visible),id+' repair restores interior upholstery');
+    for(const [side,nodes] of [['left',left],['right',right]]){
+      check(nodes.some(o=>o.material===car.materials.cloth&&new THREE.Box3().setFromObject(o).min.y<.34),id+' '+side+' carpet retracts independently');
+      check(nodes.some(o=>o.material===car.materials.black&&new THREE.Box3().setFromObject(o).min.y<.25),id+' '+side+' underfloor retracts independently');
+    }
+    car.setDamage('left',1,{localPoint:{x:-car.dims.W/2,y:.72,z:-.25},localNormal:{x:1,y:0,z:0},ebs:50/3.6});
+    check(left.every(o=>!o.visible)&&right.every(o=>o.visible),id+' full side50 impact hides only struck furniture and floor');
+    car.setDamage('left',0);check(left.every(o=>o.visible),id+' side50 repair restores floor and furniture');
+    const visible=[];car.root.traverseVisible(o=>{if(o.isMesh)visible.push(o);});
+    for(const mirror of [car.mirrorL,car.mirrorR]){mirror.geometry.computeBoundingBox();const target=mirror.geometry.boundingBox.getCenter(new THREE.Vector3());mirror.localToWorld(target);const ray=new THREE.Raycaster(target.clone().add(new THREE.Vector3(0,0,.4)),new THREE.Vector3(0,0,-1),0,.5);const hit=ray.intersectObjects(visible,false)[0];check(hit?.object===mirror,id+' reflective mirror face clears housing');}
     const m=car.signalMaterials;
     for(const signal of Object.values(m)){let attached=false;car.body.traverse(o=>{if(o.material===signal)attached=true;});check(attached,id+' signal material is on visible geometry');}
     car.setIndicators('left');car.updateSignalLights(.1,0);check(m.left.emissiveIntensity>0&&m.right.emissiveIntensity===0,id+' independent left signal');

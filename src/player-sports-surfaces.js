@@ -203,7 +203,7 @@ function modernMirrors(car,d,M){
   for(const s of [-1,1]){
     for(const o of [...car.body.children])if(o.isMesh&&o!==car.mirrorL&&o!==car.mirrorR&&o.material===M.paint&&Math.abs(o.position.x-s*(W+.08))<.015&&Math.abs(o.position.y-(d.belt+.10))<.015)o.removeFromParent();
     const shell=add(car.body,new THREE.SphereGeometry(1,16,10),car.modelKind==='gr_yaris'?M.black:M.paint,'aerodynamic-mirror-housing',[s*(W+.072),d.belt+.10,d.cowl+.105]);shell.scale.set(.115,.057,.068);shell.rotation.y=s*.18;
-    const face=car[s<0?'mirrorL':'mirrorR'];if(face){face.geometry.dispose();face.geometry=new THREE.CircleGeometry(1,32).scale(.098,.043,1);face.scale.set(1,1,1);face.position.set(s*(W+.075),d.belt+.097,d.cowl+.169);}
+    const face=car[s<0?'mirrorL':'mirrorR'];if(face){face.geometry.dispose();face.geometry=new THREE.CircleGeometry(1,32).scale(.098,.043,1);face.scale.set(1,1,1);face.position.set(s*(W+.075),d.belt+.097,d.cowl+.189);}
   }
 }
 function tagOptics(car){

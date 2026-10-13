@@ -83,7 +83,25 @@ function seatDetails(car,d,M){
     if(k==='gtv'||k==='mini')for(let i=-3;i<=3;i++)box(car.body,M.seam,[.003,.30,.003],[x+i*.034,.69,z+.089],'seat-pleat',.001);
   }
 }
-export function refinePlayerDetails(car,d,M){if(!isPlayerVehicle(car))return;wheelDetails(car,d,M);paintFinish(car);signals(car,d,M);seatDetails(car,d,M);}
+function interiorDamageTags(car,d,M){
+  // Classify furniture before sports surfacing bends its vertices. A curved
+  // liner is wider than the original box, so post-surface width tests miss it.
+  for(const o of [...car.body.children]){
+    if(!o.isMesh)continue;
+    o.updateMatrix();o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone().applyMatrix4(o.matrix),size=b.getSize(v());
+    const p=o.position;
+    if(o.material===M.black&&Math.abs(p.x)>d.W*.29&&size.x<.08&&size.y>.25&&size.z>1&&p.y<d.belt){
+      o.name='interior-door-liner';o.userData.damageInterior=true;o.userData.damageSide=p.x<0?'left':'right';
+    }
+    // Carpet and the coarse underfloor cover bridge a deep dent as rigid bars.
+    // Separate their halves so only the struck footwell/underfloor retracts.
+    if((o.material===M.cloth&&Math.abs(p.y-.36)<.001&&size.y<.08)||o.name==='undertray'){
+      for(const side of [-1,1]){const half=o.clone();half.geometry=o.geometry.clone();half.scale.x*=.5;half.position.x+=side*size.x*.25;half.name=o.name==='undertray'?'interior-underfloor':'interior-floor';half.userData.damageInterior=true;half.userData.damageSide=side<0?'left':'right';car.body.add(half);}
+      o.removeFromParent();o.geometry.dispose();
+    }
+  }
+}
+export function refinePlayerDetails(car,d,M){if(!isPlayerVehicle(car))return;wheelDetails(car,d,M);paintFinish(car);signals(car,d,M);seatDetails(car,d,M);interiorDamageTags(car,d,M);}
 function inferPart(o,car,d){
   if(o.userData.damagePart)return o.userData.damagePart;
   const name=o.name.toLowerCase();if(name.includes('windscreen'))return 'glass_windscreen';
@@ -136,7 +154,7 @@ export function groupPlayerParts(car,d){
   }
   const parts={},keep=new Set([car.windscreen,car.mirrorL,car.mirrorR,...car.exteriorDash.children]);
   car.body.updateMatrixWorld(true);
-  car.body.traverse(o=>{if(!o.isMesh||![car.materials.black,car.materials.seat,car.materials.chrome].includes(o.material))return;o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld),size=b.getSize(v()),p=b.getCenter(v());
+  car.body.traverse(o=>{if(!o.isMesh)return;if(o.userData.damageInterior){keep.add(o);return;}if(![car.materials.black,car.materials.seat,car.materials.chrome].includes(o.material))return;o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld),size=b.getSize(v()),p=b.getCenter(v());
     const doorTrim=Math.abs(p.x)>d.W*.29&&Math.abs(p.x)<d.W*.5&&size.x<.13&&size.z>.10&&p.y>.45&&p.y<d.belt+.04;
     // A heavily dented door can pass the outer seat cushion as well as its liner.
     // Keep upholstered pieces independent so the hit-side interior can retract.

@@ -372,7 +372,8 @@ function backOnRoad(pv) {
 function stuckCheck(pv, dt) {
   if (G.state !== 'race' || G.sinkT || G.towing) { G.stuckT = 0; return; }
   const trying = input.throttle > 0.3 || input.brake > 0.3;
-  const stuck = trying && pv.kmh < 3 && (pv.offroad || pv.dig > 0.15 || pv.wheelspin > 0.3);
+  const burnout = input.throttle > 0.3 && input.brake > 0.3 && !pv.offroad; // brake held on tarmac: on purpose
+  const stuck = trying && !burnout && pv.kmh < 3 && (pv.offroad || pv.dig > 0.15 || pv.wheelspin > 0.3);
   G.stuckT = stuck ? G.stuckT + dt : Math.max(0, G.stuckT - dt * 0.5);
   if (G.stuckT > 2.5 && !G.stuckHint) {
     G.stuckHint = true;

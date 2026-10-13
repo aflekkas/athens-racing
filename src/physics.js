@@ -601,7 +601,9 @@ export class Vehicle {
     const drag = 0.5 * RHO * sp.cdA * (this.dragMul ?? 1) * this.dmgDrag * vx * Math.abs(vx);
     const roll = 0.012 * W * Math.sign(vx) * Math.min(1, av * 4);
     const grade = this.gradeG ?? route.lin(route.GR, this.s);
-    let ax = (FxB - drag - roll) / this.m - G * grade - (this.surfDrag ?? 0) * Math.sign(vx) * Math.min(1, av / 2);
+    // back along your own tracks (marked by the bow wave you pushed up going the other way) the sand is packed
+    const packed = 1 - 0.65 * (vx < 0 ? this.digF : this.digB);
+    let ax = (FxB - drag - roll) / this.m - G * grade - (this.surfDrag ?? 0) * packed * Math.sign(vx) * Math.min(1, av / 2);
     // ---------------- soft ground (sand above all). Wheels spinning in place dig ruts: they sink, lose grip and must
     // climb out of the hole they dug, so flooring it only digs deeper. digF / digB (0..1): the wall of sand piled in
     // front of / behind the wheels by spinning them forwards / in reverse. Rolling without wheelspin fills the ruts in
@@ -610,7 +612,7 @@ export class Vehicle {
     if (soft > 0) {
       let spinV = 0;
       for (let i = 0; i < 4; i++) { if ((i < 2 ? sF : sR) <= 0) continue; const d = C4[i].vw - S[i].vgx; if (Math.abs(d) > Math.abs(spinV)) spinV = d; }
-      const sv = Math.abs(spinV), fill = dt * av * 0.4;
+      const sv = Math.abs(spinV), fill = dt * av * 0.18;
       const dig = dt * soft * 0.55 * clamp((sv - 2) / 5, 0, 1) * (1 - smoothstep(0.5, 3.5, av));
       if (spinV > 0) this.digF = Math.min(1, this.digF + dig * (1 - 0.7 * this.digB)); else this.digB = Math.min(1, this.digB + dig * (1 - 0.7 * this.digF)); // packed tracks dig less
       // deep loose sand (surfBow): crawling through it pushes a bow wave up in front of the tyres until it stops you;
@@ -625,7 +627,7 @@ export class Vehicle {
     // until the tyres push harder than it.
     let held = false;
     const push = av > 0.3 ? Math.sign(vx) : Math.sign(ax);
-    const res = (this.surfRes ?? 0) + DIG_RES * (push >= 0 ? this.digF + 0.1 * this.digB : this.digB + 0.1 * this.digF);
+    const res = (this.surfRes ?? 0) * (push >= 0 ? 1 - 0.65 * this.digB : 1 - 0.65 * this.digF) + DIG_RES * (push >= 0 ? this.digF + 0.1 * this.digB : this.digB + 0.1 * this.digF);
     if (res > 0) {
       if (av > 0.3) ax -= Math.sign(vx) * res;
       else { const hold = res * 2.2; const stop = ax + vx / dt; if (Math.abs(stop) <= hold) { ax = -vx / dt; held = true; } else ax -= Math.sign(stop) * res; } // a car settled in sand takes more to break free

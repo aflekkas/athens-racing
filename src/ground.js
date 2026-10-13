@@ -18,7 +18,7 @@ export const SURF = {
   dirt: { mu: 0.68, drag: 0.8, rough: 0.9, res: 0.25, soft: 0.3 },
   scrub: { mu: 0.6, drag: 1.4, rough: 1, res: 0.4, soft: 0.2 },
   sand: { mu: 0.6, drag: 0.8, rough: 0.6, res: 0.45, soft: 1 },
-  deepsand: { mu: 0.56, drag: 1.1, rough: 0.5, res: 0.8, soft: 1.0, bow: 0.45 }, // the sand traps: loose, dry, deep
+  deepsand: { mu: 0.56, drag: 3.4, rough: 0.5, res: 0.8, soft: 1.0, bow: 0.45 }, // the sand traps: loose, dry, deep (ploughing ~0.35 g)
   rock: { mu: 0.75, drag: 0.5, rough: 1, res: 0, soft: 0 },
   water: { mu: 0.15, drag: 9, rough: 0, res: 0, soft: 0 },
 };
@@ -100,7 +100,7 @@ export class Ground {
     const route = this.route, T = this.traps, L = route.length, lo = Math.max(30, route.start ?? 0), hi = Math.min(L - 30, route.finish ?? L);
     const lim = {}, w = {}, f = {};
     const add = (name, kind, x, z, a, b, yaw, h = 0) => {
-      const t = { name, kind, x, z, a, b, c: Math.cos(yaw), s: Math.sin(yaw), h, seed: (x * 0.37 + z * 0.11) % 6.28, R2: (Math.max(a, b) * 1.2) ** 2 };
+      const t = { name, kind, x, z, a, b, c: Math.cos(yaw), s: Math.sin(yaw), h, seed: (x * 0.37 + z * 0.11) % 6.28, R2: (Math.max(a, b) * 1.2) ** 2, entry };
       t.sAt = route.project(x, z, null).s; T.push(t); return t;
     };
     // a spot is good if it's reachable from the road (no guard rail; not up a cliff, nor down in the sea; no building,
@@ -120,23 +120,37 @@ export class Ground {
     };
     // ... and you can drive to it: a clear run across the pavement from the road (no parked row, post or wall), and
     // inside the drivable world (MAX_OFF)
+    let entry = 0;
     const path = (s, u) => {
       const side = Math.sign(u) || 1, e = route.edge(s) + ROAD.gutter;
       if (Math.abs(u) - route.edge(s) > MAX_OFF - 14) return false;
-      // any car-wide gap within 12 m either side (between the parked cars, round the lamp post)
-      for (let ds = -12; ds <= 12; ds += 2) {
+      for (const ds of [0, -2, 2, -4, 4, -6, 6, -8, 8, -10, 10, -12, 12]) {
+        // a car-wide gap within 12 m either side (between the parked cars, round the lamp post): entry = where
         let ok = true;
         for (let uu = e + 0.5; ok && uu < Math.abs(u) - 2; uu += 1.2) {
           const p = route.point(s + ds, side * uu);
           if (this.walls(p.x, p.z, 1.0, w) || spots.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < 2.4)) ok = false;
         }
-        if (ok) return true;
+        if (ok) { entry = s + ds; return true; }
       }
       return false;
     };
     const near = (s, d) => T.some((t) => Math.abs(t.sAt - s) < d);
     const outer = (s, side) => route.edge(s) + ROAD.gutter + 0.18 + ROAD.sidewalk(route, s, side);
     const mark = (id) => (data.marks || []).find((q) => q.id === id);
+    // the nearest reachable spot beside the road to s0, sea side first (the lower side): {s, uc, entry}
+    const shoulder = (s0, range, gap, half) => {
+      for (let k = 0; k <= range; k += 10) for (const sg of [1, -1]) {
+        const s = s0 + sg * k; if (s < lo + 20 || s > hi - 20 || near(s, 300)) continue;
+        const pl = route.point(s, -outer(s, -1) - 6), pr = route.point(s, outer(s, 1) + 6);
+        const sea = this.heightC(pl.x, pl.z) < this.heightC(pr.x, pr.z) ? -1 : 1;
+        for (const side of [sea, -sea]) {
+          const uc = side * (outer(s, side) + gap);
+          if (reach(s, uc, half) && path(s, uc)) return { s, uc, entry };
+        }
+      }
+      return null;
+    };
     // 1. the dirt beach car parks nearest each stretch of coast: sand drifted in past the parked cars, seaward
     const lots = (data.areas?.parking || []).filter((a) => a.sf === 'dirt' && a.p?.length >= 6).map((a) => {
       let cx = 0, cz = 0; const n = a.p.length / 2; for (let i = 0; i < n; i++) { cx += a.p[i * 2]; cz += a.p[i * 2 + 1]; }
@@ -152,12 +166,19 @@ export class Ground {
         const side = Math.sign(q.u) || 1, o = outer(q.s, side);
         for (const du of [2, 5, 8, 11]) {
           const uc = side * Math.max(Math.abs(q.u) + du, o + 4.5);
-          if (reach(q.s, uc, 4) && path(q.s, uc)) { bd = Math.abs(q.s - m.s); best = { ...q, uc }; break; }
+          if (reach(q.s, uc, 6.5) && path(q.s, uc)) { bd = Math.abs(q.s - m.s); best = { ...q, uc }; break; }
         }
       }
-      if (!best) continue;
-      const fr = route.frame(best.s, f), p = route.point(best.s, best.uc);
-      add((m.name === 'ATHINON-SOUNIOU' ? 'Coast road' : m.name) + ' car park', 'lot', p.x, p.z, clamp(best.ext * 0.4, 7, 12), 4.2, Math.atan2(fr.tz, fr.tx));
+      const nm = m.name === 'ATHINON-SOUNIOU' ? 'Coast road' : m.name;
+      if (best) {
+        path(best.s, best.uc);
+        const fr = route.frame(best.s, f), p = route.point(best.s, best.uc);
+        add(nm + ' car park', 'lot', p.x, p.z, clamp(best.ext * 0.4, 8, 12), 6, Math.atan2(fr.tz, fr.tx));
+        continue;
+      }
+      // no usable car park on this stretch: the sandy beach lay-by on the sea side of the road nearest the mark
+      const sh = shoulder(m.s, 900, 7.5, 6.5);
+      if (sh) { const fr = route.frame(sh.s, f), p = route.point(sh.s, sh.uc); entry = sh.entry; add(nm + ' beach lay-by', 'lot', p.x, p.z, 11, 6, Math.atan2(fr.tz, fr.tx)); }
     }
     // 2. a soft run-off on the outside of the fastest open bend (miss the braking point and you're in it)
     let run = null;
@@ -166,11 +187,11 @@ export class Ground {
       const turn = Math.asin(clamp(t0x * a1.tz - t0z * a1.tx, -1, 1)); // > 0 bends right (u+), < 0 left
       const R = 60 / Math.max(1e-3, Math.abs(turn));
       if (R < 70 || R > 260 || route.urban(s) > 0.5 || near(s, 250)) continue;
-      const side = turn > 0 ? -1 : 1, uc = side * (outer(s, side) + 1.6 + 8);
-      if (!reach(s, uc, 7) || !reach(s - 15, uc, 7) || !path(s - 15, uc)) continue;
+      const side = turn > 0 ? -1 : 1, uc = side * (outer(s, side) + 1.6 + 10);
+      if (!reach(s, uc, 10.5) || !reach(s - 15, uc, 10.5) || !path(s - 15, uc)) continue;
       if (!run || R > run.R) run = { s: s - 8, uc, R }; // the fastest bend that still needs braking
     }
-    if (run) { const fr = route.frame(run.s, f), p = route.point(run.s, run.uc); add('Bend run-off', 'runoff', p.x, p.z, 26, 8, Math.atan2(fr.tz, fr.tx)); }
+    if (run) { const fr = route.frame(run.s, f), p = route.point(run.s, run.uc); add('Bend run-off', 'runoff', p.x, p.z, 26, 10, Math.atan2(fr.tz, fr.tx)); }
     // 3. a dune on the beach below the road, nearest Varkiza: drive down the bank onto it and the loose mound and the
     // climb back up keep you there (the way out is a tow)
     let dune = null; const mv = mark('varkiza') || mark('limanakia');
@@ -185,6 +206,9 @@ export class Ground {
         break;
       }
     }
+    if (dune) path(dune.s, dune.uc);
+    // no open beach by the road: a dune bank blown up against the shoulder of the cove nearest Varkiza instead
+    else { const sh = shoulder(mv ? mv.s + 400 : (lo + hi) / 2, 3000, 8.5, 7); if (sh) { dune = sh; entry = sh.entry; } }
     if (dune) { const fr = route.frame(dune.s, f), p = route.point(dune.s, dune.uc); add('Beach dune', 'dune', p.x, p.z, 9, 7, Math.atan2(fr.tz, fr.tx), 2.1); }
   }
   /** dirt humps: smooth cosine mounds [x, z, radius, height] */
@@ -280,13 +304,28 @@ export class Ground {
   /** is a step from height y0 to y1 over distance d too steep to drive? (cliff faces, retaining walls) */
   blocked(y0, y1, d) { return y1 - y0 > STEP_UP + MAX_CLIMB * d; }
 
-  /** stop the car's centre against a wall with outward normal (nx, nz): slide along it, lose some speed */
-  _hit(v, nx, nz, pen) {
+  /**
+   * stop the car's centre against a wall with outward normal (nx, nz): slide along it, lose some speed. k: where along
+   * the body (m forward of the centre) the contact circle sits, when known; otherwise the body corner facing the wall.
+   * The crash dents the body there: addDamage with the contact's closing speed, zone, local point and normal.
+   */
+  _hit(v, nx, nz, pen, k) {
     v.x += nx * pen; v.z += nz * pen;
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);
     const wvx = fx * v.vLong + rx * v.vLat, wvz = fz * v.vLong + rz * v.vLat;
     const vn = -(wvx * nx + wvz * nz); // speed into the wall
     if (vn <= 0) return;
+    if (v.addDamage) {
+      // the direction from the car into the wall, in the body frame (forward / right)
+      const dF = -(nx * fx + nz * fz), dR = -(nx * rx + nz * rz);
+      const px = k !== undefined ? k + dF * v.halfW : Math.sign(dF) * v.halfL, py = k !== undefined ? dR * v.halfW : Math.sign(dR) * v.halfW;
+      // closing speed at that point (yaw rate adds w x r; w > 0 yaws right)
+      const vxp = v.vLong - v.w * py, vyp = v.vLat + v.w * px;
+      const vc = Math.max(vn, -((fx * vxp + rx * vyp) * nx + (fz * vxp + rz * vyp) * nz));
+      const zone = Math.abs(dF) > Math.abs(dR) * 0.8 ? (dF > 0 ? 'front' : 'rear') : (dR > 0 ? 'right' : 'left'); // a 45° corner hit is the nose / tail
+      // local frame for the damage model: x right, y up, z backward (three.js, the car faces -z)
+      v.addDamage(zone, vc, { kind: 'wall', localPoint: { x: py, y: 0.45, z: -px }, localNormal: { x: nx * rx + nz * rz, y: 0, z: -(nx * fx + nz * fz) } });
+    }
     const keep = 1 - Math.min(0.45, vn * 0.03);
     const tx = wvx + nx * vn, tz = wvz + nz * vn; // tangential part
     const nvx = tx * keep + nx * vn * 0.15, nvz = tz * keep + nz * vn * 0.15;
@@ -382,7 +421,7 @@ export class Ground {
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), r = v.halfW + 0.05, w = this._w || (this._w = {});
     for (const k of [v.halfL - r, -(v.halfL - r)]) {
       const c = this.walls(v.x + fx * k, v.z + fz * k, r, w);
-      if (c) this._hit(v, c.nx, c.nz, c.pen);
+      if (c) this._hit(v, c.nx, c.nz, c.pen, k);
     }
     this._curbs(v);
     // the ground: too steep to climb (cliff face, retaining wall, a building's plinth) acts as a wall
