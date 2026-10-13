@@ -19,6 +19,7 @@ import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
 import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 import { ROAD } from './road.js';
+import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 
 const G = 9.81, RHO = 1.2;
 const POWER_MUL = 1;    // catalogue power / torque as quoted (spec.powerMul can override per car)
@@ -158,7 +159,7 @@ export class Vehicle {
   // load-transfer, brake and engine model the sim runs. m/s^2; the planner adds grade itself. Stable signatures.
   /** steady-state tyre capacity of one axle (N) with lateral transfer dLat across it and an axle load Fz */
   _axleCap(Fz, dLat, front) {
-    const sp = this.spec, ls = sp.loadSens ?? 0.15, Fz0 = this.m * G * 0.25, mu0 = sp.grip * (front ? 1 : this.gripR);
+    const sp = this.spec, ls = sp.loadSens ?? 0.15, Fz0 = this.m * G * 0.25, mu0 = sp.grip * (front ? 1 : this.gripR) * wetBaseGrip('asphalt'); // live wet grip: rivals plan earlier braking / slower bends
     const c = (fz) => { fz = Math.max(0, fz); return mu0 * fz * Math.max(0.4, 1 - ls * (fz / Fz0 - 1)); };
     return c(Fz / 2 + dLat / 2) + c(Fz / 2 - dLat / 2);
   }
@@ -218,7 +219,7 @@ export class Vehicle {
     const comp = this.kComp * ay / G;                                   // compliance the wheels will yield
     const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, v), rack = this.rackLock(v);
     const thF = Math.atan2(this.vLat + this.a * this.w, Math.max(2, Math.abs(this.vLong)));
-    const into = Math.max(1e-3, thF * sg + this.aPk * (sp.steerPk ?? 1));
+    const into = Math.max(1e-3, thF * sg + this.aPk * (sp.steerPk ?? 1) * wetPeakScale(this.surf));
     return clamp((need + comp * (1 - A)) / ((1 - A) * rack + A * into), -1, 1);
   }
   /** understeer gradient this car is set up with (deg / g) */
@@ -551,7 +552,7 @@ export class Vehicle {
     // fronts have, never more (past the peak they only scrub and plough); half input = half of it. Counter-steer maps
     // onto the same peak on the other side of thF, so in a slide full opposite lock catches it. steerAssist: 1 full,
     // ~0.35 light (analog stick / wheel: the driver can still over-drive the fronts), 0 off (raw rack ratio)
-    const thF = Math.atan2(vy + this.a * this.w, Math.max(2, av)), aOpt = this.aPk * (sp.steerPk ?? 1);
+    const thF = Math.atan2(vy + this.a * this.w, Math.max(2, av)), aOpt = this.aPk * (sp.steerPk ?? 1) * wetPeakScale(this.surf);
     const into = Math.max(0, thF * Math.sign(sIn || 1) + aOpt);   // room towards the input side
     // compliance: the front axle's lateral force (as a share of its static load) bends the wheels back out of the turn
     const comp = this.kComp * clamp(this.wheel[0].Fy / (this.m * G * (sp.frontW ?? 0.55)), -1.5, 1.5);
@@ -601,8 +602,9 @@ export class Vehicle {
     // Legacy headless sand grounds have no per-wheel data; retain their trap grip.
     const mu0 = sp.grip * (this.surfMu ?? 1) * (this.surf === 'sand' || this.surf === 'deepsand' ? 0.62 : 1);
     const ls = sp.loadSens ?? 0.15;
+    // Surface owner: wetTyreScale is a separate multiplier after your dry per-wheel surface/traction hook.
     const cap = this._cap || (this._cap = [0, 0, 0, 0]);
-    for (let i = 0; i < 4; i++) { const fz = C4[i].Fz; cap[i] = Math.max(1, (this.wheelMu ? sp.grip * this.wheelMu[i] : mu0) * (i < 2 ? 1 : this.gripR) * fz * Math.max(0.4, 1 - ls * (fz / Fz0 - 1))); }
+    for (let i = 0; i < 4; i++) { const fz = C4[i].Fz; cap[i] = Math.max(1, (this.wheelMu ? sp.grip * this.wheelMu[i] : mu0) * wetTyreScale(this, i) * (i < 2 ? 1 : this.gripR) * fz * Math.max(0.4, 1 - ls * (fz / Fz0 - 1))); }
 
     // ---------------- engine / gearbox
     const R = sp.wheelR, e = this.eng, red = sp.redline;
@@ -700,7 +702,7 @@ export class Vehicle {
     const tyre = (i, vw, out) => {
       const Wc = C4[i], Si = S[i];
       const kap = (vw - Si.vgx) / Si.vref;
-      const peak = this.wheelPeak?.[i] ?? 1;
+      const peak = (this.wheelPeak?.[i] ?? 1) * wetPeakScale(this._wsurf?.[i] || this.surf);
       const sx = kap / (this.kPk * peak), sy = Math.tan(Wc.aDyn) / Math.tan(this.aPk * peak);
       const sN = Math.hypot(sx, sy);
       let f;
@@ -739,7 +741,7 @@ export class Vehicle {
       Wc.aDyn += (aT - Wc.aDyn) * Math.min(1, (Math.hypot(Si.vgx, Si.vgy) + 1.5) * dt / 0.45); // patch speed, so it stays quick sideways
       Si.vref = Math.max(Math.abs(Si.vgx), 3);
       // implicit wheel-speed update linearises the tyre around the current slip with its steepest slope
-      Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * (this.wheelPeak?.[i] ?? 1) * Si.vref);
+      Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * (this.wheelPeak?.[i] ?? 1) * wetPeakScale(this._wsurf?.[i] || this.surf) * Si.vref);
       Si.p = dt / (mw + dt * Si.kx);
       Si.brk = (front ? Fbrake * bias : Fbrake * (1 - bias)) * 0.5;
       Si.Fb = Si.brk * Wc.abs + (front ? lineF : hbF + this.rearDrag * cap[i]) + Wc.esc + Wc.edl;

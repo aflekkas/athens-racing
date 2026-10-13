@@ -25,7 +25,7 @@ import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
 import { settings, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
-import { initWeather, updateWeather, disposeWeather } from './weather.js';
+import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { buildMapWorld } from './map-world.js';
 import { SCENERY_TIERS, updateSceneryLod } from './scenery.js';
 import { initReplay } from './replay-mode.js';
@@ -901,6 +901,12 @@ function aiInput(car, dt, pace, other) {
   }
   const obstacles = [...traffic.cars, ...people.onRoad.map((p) => ({ s: p.s, u: p.u, hs: 0.6, hu: 0.5, vs: 0 })),
     ...traffic.sites.map((s) => ({ s: s.s, u: s.u, hs: s.len / 2, hu: s.wid / 2, vs: 0 }))];
+  // AI owner: capability API now reports live wet grip. Refresh cached braking/corner profiles as it changes.
+  const grip = veh.maxLatAccel(25);
+  if (ai.wetGrip === undefined) ai.wetGrip = grip;
+  if (Math.abs(grip / ai.wetGrip - 1) > .025) {
+    ai.controller.profile = ai.controller.line.speedProfile(veh); ai.controller.alternateProfiles?.clear(); ai.wetGrip = grip;
+  }
   const result = ai.controller.update(dt, { racers: Array.isArray(other) ? other : other ? [other] : [], traffic: obstacles,
     signals: route.closed ? null : signals, pace, closeRacing: Q.has('closeracing'), gapToPlayer: (veh.s - player.veh.s) * (car.dir || 1) });
   ai.dbg = ai.controller.debug; ai.u = ai.dbg.u ?? veh.u; ai.revT = ai.dbg.phase === 'reverse' ? 1 : 0;
@@ -1304,6 +1310,7 @@ function step(dt, draw = true) {
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
   const simulate = !window.__replay?.active && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && (multiplayer.active || multiplayer.panel.hidden);
+  if (simulate) updateRoadWeather(dt);
   if (simulate) signals.update(dt, pv.s, camera.position);
   if (simulate) {
     // ---- state machine

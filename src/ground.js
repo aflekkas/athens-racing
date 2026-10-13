@@ -27,7 +27,8 @@ export const SURF = {
 // the weather's say in it (weather.js writes these; they stay at clear-day values without it): gripScale scales
 // tarmac grip in the rain (soft ground much less, sand not at all), wet 0..1 (lighter skid marks, little tyre smoke),
 // ambient 0..1 light level (night darkens the unlit smoke / dust sprites in fx.js)
-export const WEATHER = { gripScale: 1, wet: 0, ambient: 1 };
+import { WEATHER } from './wet-grip.js';
+export { WEATHER } from './wet-grip.js';
 const WET_K = { asphalt: 1, pavement: 1, rock: 1, verge: 0.4, gravel: 0.4, dirt: 0.5, scrub: 0.4, sand: 0.2, deepsand: 0.2, water: 0 }; // rain packs nothing here: sand only gets (a little) worse
 const MAX_CLIMB = 0.5;    // steepest hillside a road car will drive up (~27 deg); steeper is a wall
 const MAX_ABOVE = 9;      // the hillside stops being drivable this far above the road (scrub, boulders, terraces);

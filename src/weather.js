@@ -8,7 +8,7 @@
 // initWeather(ctx) once the world is built (before the shaders compile), updateWeather(dt) every drawn frame.
 import * as THREE from 'three';
 import * as ENV from './env.js';
-import { WEATHER } from './ground.js';
+import { WEATHER, advanceRoadWetness } from './wet-grip.js';
 import { setCarLights } from './vehicle-models.js';
 
 export const setConditions = (c) => ENV.setConditions(c);
@@ -16,7 +16,7 @@ export const getConditions = () => ENV.getConditions();
 if (typeof window !== 'undefined') { window.__setConditions = setConditions; window.__conditions = getConditions; }
 
 const NL = 12, NC = 6;       // analytic lamps / car lights evaluated per road pixel (LOW: fewer, see init)
-const GRIP_RAIN = 0.78;
+// Wet asphalt reaches 0.76 of dry grip; road water builds and dries in wet-grip.js.
 const lum = (v) => 0.2126 * v.x + 0.7152 * v.y + 0.0722 * v.z;
 
 // ---- uniforms shared by every material the weather touches
@@ -346,8 +346,8 @@ function apply(cond, st, changed) {
   if (!W) return;
   const night = st.night, lamps = st.lamps, rain = st.rain;
   // physics + effects (ground.js owns the object)
-  Object.assign(WEATHER, { gripScale: rain ? GRIP_RAIN : 1, wet: rain, ambient: Math.min(1, st.ambient) });
-  WXU.wxWet.value = rain; WXU.wxRain.value = rain;
+  Object.assign(WEATHER, { rain, ambient: Math.min(1, st.ambient) });
+  WXU.wxWet.value = WEATHER.wet; WXU.wxRain.value = rain;
   WXU.wxNight.value = lamps > 0 || st.headlights ? 1 : 0;
   WXU.wxDay.value = Math.min(1.2, st.daylight); WXU.wxWin.value = night ? 0.5 : lamps * 0.35;
   for (let i = 0; i < W.lampMats.length; i++) W.lampMats[i].emissiveIntensity = W.lampBase[i] + 9 * lamps;
@@ -364,11 +364,15 @@ function apply(cond, st, changed) {
   W.audio?.setTimeOfDay?.(cond.time);
 }
 
+// Called once per simulation frame, independently of rendering / screenshots.
+export function updateRoadWeather(dt) { advanceRoadWetness(dt, ENV.COND_STATE.rain, ENV.COND_STATE.daylight); }
 const carList = [];
 /** per drawn frame: lights follow the cars and the camera, rain follows the camera */
 export function updateWeather(dt) {
   if (!W) return;
   const st = ENV.COND_STATE, cam = W.camera, f = ++W.frame;
+  WXU.wxWet.value = WEATHER.wet;
+  W.spray.pts.visible = WEATHER.wet > .01;
   const cars = W.cars().filter(Boolean), player = cars[0];
   // camera velocity (for the rain streaks' apparent motion)
   if (dt > 0) { W.camVel.subVectors(cam.position, W.prevCam).divideScalar(Math.max(dt, 1e-3)); if (W.camVel.lengthSq() > 4e4) W.camVel.set(0, 0, 0); }
@@ -441,7 +445,7 @@ export function updateWeather(dt) {
     }
   }
   // ---- rain
-  if (st.rain > 0) {
+  if (st.rain > 0 || WEATHER.wet > .01) {
     const ru = W.rain.mat.uniforms;
     ru.uTime.value = (ru.uTime.value + dt) % 1000; ru.uCam.value.copy(cam.position); ru.uCamVel.value.copy(W.camVel);
     const amb = ENV.CU.uSkyIrr.value, k = 0.16 / Math.max(st.exposure, 0.5);
@@ -456,7 +460,7 @@ export function updateWeather(dt) {
       const e = root.matrixWorld.elements; _f.set(-e[8], 0, -e[10]).normalize();
       for (const sx of [-1, 1]) {
         _v.set(sx * wid * 0.4, 0.25, len / 2 - 0.4).applyMatrix4(root.matrixWorld);
-        const a = Math.min(0.35, (v - 7) / 40) * st.rain;
+        const a = Math.min(0.35, (v - 7) / 40) * WEATHER.wet;
         W.spray.emit(_v.x, _v.y, _v.z, _f.x * v * 0.35 + (Math.random() - 0.5) * 2, 0.8 + Math.random() * 1.6, _f.z * v * 0.35 + (Math.random() - 0.5) * 2, a);
       }
     };
