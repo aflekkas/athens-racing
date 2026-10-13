@@ -1,4 +1,5 @@
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
+// TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
 // World built from OpenStreetMap data (see tools/). Boots straight into a countdown, no click needed.
 import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
@@ -13,7 +14,7 @@ import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
 import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
 import { Cockpit } from './cockpit.js';
-import { Hud, fmtTime } from './hud.js';
+import { Hud, RacerMarkers, fmtTime } from './hud.js';
 import { Audio } from './audio.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
@@ -63,7 +64,7 @@ renderer.shadowMap.enabled = !lowGraphics;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
-const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 90000);
+const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 const mirrorCam = new THREE.PerspectiveCamera(42, 3.6, 0.4, 600);
 const mirrorRT = new THREE.WebGLRenderTarget(512, 144, { type: THREE.HalfFloatType });
 let mirrorFrame = 0;
@@ -160,7 +161,7 @@ function bindMapWorld(next) {
   traffic.disabled = Q.has('notraffic') || route.closed;
   { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
   police = new Police(traffic, route); window.__police = police;
-  window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, get player() { return player; } };
+  window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, camera, cameraBlend, towOffer, get player() { return player; } };
   if (Q.has('simhook')) Object.assign(window.__sim, { keys, step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
   G.mapId = map.id || 'riviera';
 }
@@ -283,7 +284,7 @@ function resetRace() {
   player.veh.reset(s0, route.laneU(s0, 1), 0);
   rival.veh.reset(s0 + 9, route.laneU(s0 + 9, 0), 0);
   for (const v of [player.veh, rival.veh]) { v.nitro = 0.4; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
-  G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false;
+  G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false; resetTowOffer();
   if (fx) fx.clearMarks();
   rival.ai = { lane: 0, u: route.laneU(s0 + 9, 0), cool: 0, mistakeT: 20 + Math.random() * 20, sigJ: -1 };
   if (player.ai) player.ai.sigJ = -1;
@@ -317,7 +318,7 @@ function resetEvent() {
     rival.ai = { lane: 0, cool: 0, sigJ: -1 }; rival.model.root.visible = false; rival.finish = null; rival.pen = 0;
   }
   for (const v of [player.veh, ...grid.map((c) => c.veh)]) { v.nitro = 0.4; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
-  G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false;
+  G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false; resetTowOffer();
   if (fx) fx.clearMarks();
   if (player.ai) { player.ai.sigJ = -1; player.ai.lane = undefined; }
   signals.reset();
@@ -338,7 +339,27 @@ function resetEvent() {
 // people spawn / despawn in a window ahead of where they're told the player is; reverse events look the other way
 const peopleS = (s) => (G.dir < 0 && !multiplayer.active ? s - 300 : s);
 
-// ---- into the sea (or the lake): a splash, the car settles and sinks, and you're put back on the road where you left it
+// Recovery always offers a choice. A tow costs five seconds: solo timed events add to G.pen;
+// online races and pursuit-survive hold the car for five seconds while the authoritative clock runs.
+const towOffer = { element: null, cooldown: 0, offT: 0, safe: null, hold: 0 };
+function closeTowOffer(delay = 0) {
+  if (towOffer.element) { towOffer.element.remove(); towOffer.element = null; }
+  towOffer.cooldown = delay;
+}
+function resetTowOffer() {
+  closeTowOffer(); towOffer.offT = 0; towOffer.hold = 0;
+  towOffer.safe = player ? { s: player.veh.s, u: player.veh.u } : null;
+}
+function offerTow() {
+  if (towOffer.element || towOffer.cooldown > 0) return;
+  const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
+  el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>Return to the road in the race direction. Costs 5 seconds.</p><div class="tow-actions"><button type="button" data-tow="accept">TOW TO TRACK · R / Y</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
+  el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
+  el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(12); };
+  towOffer.element = el; document.body.append(el); controls.releaseMouseLook();
+}
+// Water still produces its splash, but recovery waits for the driver to accept the offer.
 function seaCheck(pv, dt) {
   if (!pv.ground) return;
   if (pv.water > 0.2 && !G.sinkT) {
@@ -348,58 +369,62 @@ function seaCheck(pv, dt) {
     audio.noise({ dur: 1.4, f: 500, type: 'lowpass', gain: 0.5 * Math.min(1, 0.4 + sp / 25) });
     audio.noise({ dur: 0.5, f: 2400, type: 'bandpass', q: 0.8, gain: 0.25 });
     G.shake = Math.max(G.shake, Math.min(0.7, sp / 30));
-    hud.message('<i>SPLASH</i> · BACK ON THE ROAD', 2.4);
   }
-  if (G.sinkT) {
-    G.sinkT += dt;
-    if (G.sinkT > 2.4 && !G.sinkFade) { G.sinkFade = true; document.body.classList.add('fading'); }
-    if (G.sinkT > 2.7) {
-      backOnRoad(pv);
-      G.sinkT = 0; G.sinkFade = false; pv.water = 0;
-      setTimeout(() => document.body.classList.remove('fading'), 120);
-    }
-  }
+  if (pv.water <= 0.05) G.sinkT = 0;
 }
-// put the car back in a lane where it was last safely on the road
 function backOnRoad(pv) {
-  const sf = pv.safe || { s: pv.s, u: route.laneU(pv.s, 1) };
-  const s = route.closed ? sf.s : clamp(sf.s, 5, route.length - 5), lanes = route.lanes(s);
-  const lane = clamp(Math.round((Math.abs(sf.u) - route.medHalf(s)) / LANE_W - 0.5), 0, lanes - 1);
-  pv.reset(s, route.closed ? clamp(sf.u, -route.edge(s) + 1.2, route.edge(s) - 1.2) : Math.sign(sf.u || 1) * route.laneU(s, lane), 0);
-  if (sf.u < 0 && !route.closed) pv.yaw += Math.PI; // you were on the far side heading back: face the way you came
-  pv._curbZ = null; pv._gx = pv._gz = pv._gy = undefined; pv.air = 0; pv.vy = 0;
-}
-
-// ---- stuck (dug into the sand, wheels spinning against a bank, wedged in the scrub): after a few seconds of trying,
-// a hint (back out with S, ease the throttle); T calls a tow back onto the road at any time, and after a long
-// fight the tow comes on its own
-function stuckCheck(pv, dt) {
-  if (G.state !== 'race' || G.sinkT || G.towing) { G.stuckT = 0; return; }
-  const trying = input.throttle > 0.3 || input.brake > 0.3;
-  const burnout = input.throttle > 0.3 && input.brake > 0.3 && !pv.offroad; // brake held on tarmac: on purpose
-  const stuck = trying && !burnout && pv.kmh < 3 && (pv.offroad || pv.dig > 0.15 || pv.wheelspin > 0.3);
-  G.stuckT = stuck ? G.stuckT + dt : Math.max(0, G.stuckT - dt * 0.5);
-  if (G.stuckT > 2.5 && !G.stuckHint) {
-    G.stuckHint = true;
-    hud.message(pv.surf === 'sand' ? 'STUCK IN THE SAND · HOLD <i>S</i> TO BACK OUT, THEN EASE ON · <i>T</i> FOR A TOW' : 'STUCK? HOLD <i>S</i> TO BACK OUT · <i>T</i> FOR A TOW', 4.5);
+  const online = multiplayer.active, dir = online ? multiplayer.lobby.event?.dir || 1 : G.dir || 1;
+  const sf = towOffer.safe || pv.safe || { s: G.ev.r.s0, u: 0 };
+  // Road projection gives the nearest point on all maps, including unwrapped circuit laps.
+  // Online recovery uses the last valid road progress, never the off-road projection or a forward jump.
+  let s = online ? sf.s : pv.s + dir * 6;
+  if (!online && G.run) {
+    const next = G.run.r.checkpoints[G.run.cpIdx];
+    if (next) s = G.run.r.s0 + dir * Math.min(G.run.progress(s), next.d - 3);
   }
-  if (G.stuckT <= 0) G.stuckHint = false;
-  if (G.stuckT > 14) tow(pv);
+  if (!route.closed) s = clamp(s, 5, route.length - 5);
+  const u = route.closed ? clamp(sf.u, -route.edge(s) + 1.5, route.edge(s) - 1.5) : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1));
+  const nitro = pv.nitro; beginCameraBlend();
+  pv.reset(s, u, 0); if (dir < 0) pv.yaw += Math.PI;
+  pv.nitro = nitro; pv.safe = { s, u }; towOffer.safe = { s, u };
+  // reset() clears contact history and marks the suspension fresh; the next update settles each wheel.
+  G.sinkT = 0; G.sinkFade = false; look.yaw = look.pitch = look.targetYaw = look.targetPitch = look.yawV = look.pitchV = 0;
+  syncCar(player, 0); updateCamera(0, true);
+}
+function stuckCheck(pv, dt) {
+  if (G.state !== 'race' || G.towing || multiplayer.retired || EV.isWrecked(pv.maxImpactEbs)) {
+    G.stuckT = 0; closeTowOffer(); return;
+  }
+  towOffer.cooldown = Math.max(0, towOffer.cooldown - dt);
+  const beyond = Math.abs(pv.u) - route.edge(pv.s);
+  const offroad = !!pv.offroad || beyond > 0.5 || pv.water > 0.05;
+  const inverted = Math.abs(pv.pose.roll) > Math.PI / 2 || Math.abs(pv.pose.pitch) > Math.PI / 2;
+  const disabled = pv.engineStalled || pv.drivetrainBroken;
+  // Only on-road poses advance the recovery anchor; a circuit excursion cannot skip a checkpoint.
+  if (!offroad && !inverted && !disabled && !G.towing && towOffer.hold <= 0) {
+    towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = G.stuckT = 0; return;
+  }
+  G.stuckT = offroad && pv.speed * 3.6 < 3 ? G.stuckT + dt : 0;
+  towOffer.offT = offroad ? towOffer.offT + dt : 0;
+  if ((beyond > 8 || pv.water > 0.2 || inverted || disabled || G.stuckT > 3 || towOffer.offT > 5) && towOffer.hold <= 0) offerTow();
 }
 function tow(pv) {
-  if (G.state !== 'race' || G.sinkT || G.towing) return;
-  G.towing = true; G.stuckT = 0;
-  document.body.classList.add('fading');
+  if (G.state !== 'race' || G.towing || multiplayer.retired || EV.isWrecked(pv.maxImpactEbs)) return;
+  G.towing = true; G.stuckT = 0; closeTowOffer(12);
+  controls.releaseMouseLook(); document.body.classList.add('fading');
   setTimeout(() => {
     G.towing = false;
-    if (G.state !== 'race') { document.body.classList.remove('fading'); return; }
+    if (G.state !== 'race' || player.veh !== pv || multiplayer.retired) { document.body.classList.remove('fading'); return; }
     backOnRoad(pv);
-    hud.message('<i>TOWED</i> · BACK ON THE ROAD', 2);
+    const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
+    if (hold) towOffer.hold = 5; else G.pen += 5;
+    hud.message('<i>TOWED</i> · +5 s · BACK ON THE ROAD', 3);
     setTimeout(() => document.body.classList.remove('fading'), 120);
   }, 320);
 }
 
 function startCountdown() {
+  G.cameraStarting = false;
   syncSteeringAssist();
   G.state = 'countdown'; G.countT = 0; G.countShown = -1; G.countWall = 0;
   document.body.classList.remove('racing'); document.body.classList.add('counting');
@@ -414,6 +439,7 @@ function startCountdown() {
 
 function restart(idx = G.carIdx) {
   if (multiplayer.active) return;
+  G.cameraStarting = true; controls.requestMouseLock(); beginCameraBlend();
   document.body.classList.add('fading');
   setTimeout(() => {
     if (multiplayer.active) { document.body.classList.remove('fading'); return; }
@@ -430,6 +456,15 @@ function restart(idx = G.carIdx) {
 }
 
 // ------------------------------------------------------------------ input
+function requestRaceLook(action) {
+  if ((menu?.screen === 'car' && action === 'carConfirm' && !menu.data.garage) || (G.state === 'paused' && action === 'resume')) {
+    G.cameraStarting = true; controls.requestMouseLock();
+  }
+}
+document.addEventListener('click', e => requestRaceLook(e.target.closest?.('[data-act]')?.dataset.act), true);
+addEventListener('keydown', e => {
+  if (!e.repeat && e.code === 'Enter' && !e.target.closest?.('input, select, textarea, [contenteditable]')) requestRaceLook(menu?.items?.()[menu.focus]?.dataset.act);
+});
 addEventListener('keydown', e => {
   if (e.target.closest?.('input, select, textarea, button, [contenteditable]')) return;
   if (!multiplayer.panel.hidden) { clearDriveInput(); return; }
@@ -440,7 +475,7 @@ addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch'
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
   const blocked = G.ctxLost || document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
-  controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked });
+  controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked, retainMouseLock: !!G.cameraStarting });
   const pad = controls.pad;
   if (controls.keys.size) G.inputDevice = 'keyboard';
   else if (Object.values(controls.touch).some(Boolean)) G.inputDevice = 'touch';
@@ -611,13 +646,13 @@ function pauseGame() {
   if (multiplayer.active) { multiplayer.open(); return; }
   if (!['race', 'countdown', 'finished'].includes(G.state)) return;
   G.paused = { state: G.state, cam: G.cam };
-  G.state = 'paused'; controls.clear();
+  G.state = 'paused'; closeTowOffer(12); controls.clear();
   const d = G.ev.def;
   menu.show('pause', { kick: `${d.name} · ${G.ev.r.fromName} ${G.ev.r.reverse ? '◀' : '▶'} ${G.ev.r.toName}`, sub: G.paused.state === 'countdown' ? 'ON THE GRID' : `TIME ${fmtTime(G.raceT + G.pen)}` });
 }
 function resume() {
   if (G.state !== 'paused') return;
-  menu.hide(); G.state = G.paused.state; G.countWall = performance.now(); G.paused = null;
+  menu.hide(); G.state = G.paused.state; G.countWall = performance.now(); G.paused = null; G.cameraStarting = false; controls.requestMouseLock();
 }
 function quitToMenu(screen = 'title') {
   if (multiplayer.active) return;
@@ -651,6 +686,7 @@ function flowAction(name) {
   if (G.state === 'loading' || !menu) return false;
   if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
+  if (towOffer.element && !menu.open && G.state === 'race' && (name === 'restart' || name === 'camera' && input.camera && (controls.pad?.buttons?.[3]?.value || 0) > 0.55)) { tow(player.veh); return true; }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
   if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length && !multiplayer.active) { audio.ui(true); openEvent(G.ev.def, i); } return true; }
@@ -1074,47 +1110,68 @@ function updateAudio(dt) {
 }
 
 // ------------------------------------------------------------------ cameras
-const camState = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 72, vel: new THREE.Vector3() };
-// free look: drag the mouse (either button) or a finger over the view to swing the chase camera around the car or look
-// around the cockpit; the wheel zooms the chase camera. Once you let go it eases back behind the car while you drive
-// (double-click snaps it back).
-const look = { yaw: 0, pitch: 0, zoom: 1, drag: null, idleT: 9, back: 0 };
-canvas.addEventListener('pointerdown', (e) => {
-  if (G.cam === 'orbit') return;
-  look.drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
-  canvas.setPointerCapture?.(e.pointerId);
-});
-canvas.addEventListener('pointermove', (e) => {
-  const d = look.drag; if (!d || d.id !== e.pointerId) return;
-  const dx = e.clientX - d.x, dy = e.clientY - d.y; d.x = e.clientX; d.y = e.clientY;
-  const k = 4.2 / Math.max(400, innerHeight);
-  look.yaw -= dx * k; look.pitch += dy * k * 0.8;
-  while (look.yaw > Math.PI) look.yaw -= 2 * Math.PI; while (look.yaw < -Math.PI) look.yaw += 2 * Math.PI;
-  look.pitch = clamp(look.pitch, -0.35, 1.0);
+const camState = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: settings.cockpitFov, vel: new THREE.Vector3() };
+// Raw mouse movement works without a click. Race/resume gestures request lock; cursor offset is the fallback.
+const look = { yaw: 0, pitch: 0, targetYaw: 0, targetPitch: 0, yawV: 0, pitchV: 0, zoom: 1, idleT: 9, back: 0, backV: 0 };
+const canLook = () => G.state === 'race' && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active;
+function moveLook(dx, dy, k = 0.0028) {
+  look.targetYaw = clamp(look.targetYaw - dx * k * settings.mouseSensitivity, -Math.PI * 2 / 3, Math.PI * 2 / 3);
+  look.targetPitch = clamp(look.targetPitch + dy * k * settings.mouseSensitivity * (settings.invertLookY ? -1 : 1), -0.55, 0.8);
   look.idleT = 0;
-});
-const endLook = (e) => { if (look.drag && look.drag.id === e.pointerId) look.drag = null; };
-canvas.addEventListener('pointerup', endLook); canvas.addEventListener('pointercancel', endLook);
-canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-canvas.addEventListener('dblclick', () => { look.yaw = look.pitch = 0; look.zoom = 1; });
-canvas.addEventListener('wheel', (e) => { if (G.cam !== 'chase') return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
-function updateLook(dt, speed) {
-  look.back = input.lookBack ? Math.PI : 0; // a held look-back (input.js) on top of the free look
-  // a gamepad's right stick (input.cameraLook, -1..1) turns the free look like a mouse drag
-  const cl = controls.cameraLook;
-  if (cl && (Math.abs(cl.x) > 0.12 || Math.abs(cl.y) > 0.12)) {
-    look.yaw -= cl.x * 2.6 * dt; look.pitch = clamp(look.pitch + cl.y * 1.6 * dt, -0.35, 1.0);
-    while (look.yaw > Math.PI) look.yaw -= 2 * Math.PI; while (look.yaw < -Math.PI) look.yaw += 2 * Math.PI;
-    look.idleT = 0; return;
-  }
-  if (look.drag) { look.idleT = 0; return; }
-  look.idleT += dt;
-  // swing back behind the car once you've let go and are driving (stays put while parked, so you can look around)
-  if (look.idleT > 1.6 && speed > 4) { const k = 1 - Math.exp(-dt * 1.6 * Math.min(1, (speed - 4) / 8)); look.yaw -= look.yaw * k; look.pitch -= look.pitch * k; }
 }
+controls.mountMouseLook(canvas, { enabled: canLook, move: moveLook,
+  position(x, y) { look.targetYaw = clamp(-x * Math.PI * 2 / 3 * settings.mouseSensitivity, -Math.PI * 2 / 3, Math.PI * 2 / 3); look.targetPitch = clamp(y * (y < 0 ? 0.55 : 0.8) * settings.mouseSensitivity * (settings.invertLookY ? -1 : 1), -0.55, 0.8); look.idleT = 0; },
+  unlock() { if (G.state === 'race' && !towOffer.element) pauseGame(); },
+});
+canvas.addEventListener('contextmenu', e => { if (canLook()) e.preventDefault(); });
+canvas.addEventListener('wheel', e => { if (!canLook() || G.cam !== 'chase') return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
+// Exact critically damped spring update: stable across frame rates and shortest-path yaw wrapping.
+function spring(state, key, velocity, target, omega, dt) {
+  const delta = state[key] - target, c = (state[velocity] + omega * delta) * dt, decay = Math.exp(-omega * dt);
+  state[key] = target + (delta + c) * decay; state[velocity] = (state[velocity] - omega * c) * decay;
+}
+function springPosition(target, dt, snap = false, omega = 10) {
+  if (snap) { camState.pos.copy(target); camState.vel.set(0, 0, 0); return; }
+  for (const axis of ['x', 'y', 'z']) {
+    const delta = camState.pos[axis] - target[axis], w = axis === 'y' ? omega * 0.7 : omega;
+    const c = (camState.vel[axis] + w * delta) * dt, decay = Math.exp(-w * dt);
+    camState.pos[axis] = target[axis] + (delta + c) * decay; camState.vel[axis] = (camState.vel[axis] - w * c) * decay;
+  }
+}
+function updateLook(dt) {
+  if (!canLook()) {
+    if (!G.cameraStarting && G.state !== 'countdown' && G.state !== 'onlineCountdown') controls.releaseMouseLook();
+    return;
+  }
+  spring(look, 'back', 'backV', input.lookBack ? Math.PI : 0, 10, dt);
+  const cl = controls.cameraLook;
+  if (cl && (Math.abs(cl.x) > 0.01 || Math.abs(cl.y) > 0.01)) moveLook(cl.x * 2.6 * dt, cl.y * 1.6 * dt, 1);
+  else look.idleT += dt;
+  if (look.idleT > 1.5) { look.targetYaw = damp(look.targetYaw, 0, 5, dt); look.targetPitch = damp(look.targetPitch, 0, 5, dt); }
+  spring(look, 'yaw', 'yawV', look.targetYaw, 14, dt); spring(look, 'pitch', 'pitchV', look.targetPitch, 14, dt);
+}
+const cameraBlend = { active: false, elapsed: 0, duration: 0.45, pos: new THREE.Vector3(), quat: new THREE.Quaternion(), fov: settings.cockpitFov };
+function beginCameraBlend(duration = 0.45) {
+  if (!G.cameraReady) return;
+  Object.assign(cameraBlend, { active: true, elapsed: 0, duration, fov: camera.fov });
+  cameraBlend.pos.copy(camera.position); cameraBlend.quat.copy(camera.quaternion);
+}
+function finishCamera(dt) {
+  if (cameraBlend.active) {
+    cameraBlend.elapsed += dt;
+    const t = clamp(cameraBlend.elapsed / cameraBlend.duration, 0, 1), ease = t * t * (3 - 2 * t);
+    camera.position.lerpVectors(cameraBlend.pos, camera.position.clone(), ease);
+    camera.quaternion.slerpQuaternions(cameraBlend.quat, camera.quaternion.clone(), ease);
+    camera.fov = lerp(cameraBlend.fov, camera.fov, ease);
+    if (t >= 1) cameraBlend.active = false;
+  }
+  camera.updateProjectionMatrix(); G.cameraReady = true;
+}
+const _qForward = new THREE.Vector3();
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4();
 function applyCamMode() {
   if (!player) return;
+  if (camState.mode !== G.cam) { beginCameraBlend(); camState.mode = G.cam; }
   const cock = G.cam === 'cockpit';
   player.cockpit.setVisible(true); // The open cabins keep their dashboard in chase/garage views.
   player.driver.head.visible = !cock;
@@ -1126,14 +1183,15 @@ function updateCamera(dt, snap = false) {
   const watching = multiplayer.spectating();
   const targetCar = watching && remoteCars.get(watching.id);
   if (targetCar?.model.root.visible) {
+    if (G.cam !== 'spectate') { G.cam = 'spectate'; applyCamMode(); }
+    if (G.spectateId && G.spectateId !== watching.id) beginCameraBlend();
     const v = targetCar.veh, back = 7, target = _v1.set(v.x + Math.sin(v.yaw) * back, v.y + 2.8, v.z + Math.cos(v.yaw) * back);
     const changed = G.spectateId !== watching.id; G.spectateId = watching.id;
-    if (snap || changed) camState.pos.copy(target); else camState.pos.lerp(target, 1 - Math.exp(-8 * dt));
-    camera.position.copy(camState.pos); camera.position.y = Math.max(camera.position.y, route.surfaceY(v.s, v.u) + 0.6);
-    camera.lookAt(v.x, v.y + 0.9, v.z); camera.fov = 65; camera.updateProjectionMatrix();
+    target.y = Math.max(target.y, route.surfaceY(v.s, v.u) + 0.6); springPosition(target, dt, snap || changed);
+    camera.position.copy(camState.pos);
+    camera.lookAt(v.x, v.y + 0.9, v.z); camera.fov = settings.chaseFov; camera.updateProjectionMatrix();
     // Keep your driver's head and cockpit mirror out of the spectator view.
-    if (G.cam !== 'spectate') { G.cam = 'spectate'; applyCamMode(); }
-    return;
+    finishCamera(dt); return;
   }
   G.spectateId = null;
   if (G.cam === 'spectate') { G.cam = G.userCam; applyCamMode(); }
@@ -1143,7 +1201,7 @@ function updateCamera(dt, snap = false) {
   G.shake = Math.max(0, G.shake - dt * 1.8);
   const rough = (veh.offroad ? 0.6 : 0.06) * sk + G.shake * 0.9;
   const t = G.t;
-  updateLook(dt, Math.abs(veh.vLong));
+  updateLook(dt);
   if (G.cam === 'cockpit') {
     const eye = player.cockpit.eye;
     _v1.set(eye.x - veh.ay * 0.0025, eye.y + 0.02 + noise1(t * 23) * 0.004 * rough, eye.z + clamp(veh.ax, -12, 12) * 0.0035);
@@ -1153,38 +1211,39 @@ function updateCamera(dt, snap = false) {
     const lookYaw = -player.veh.steer * 0.12 - veh.w * 0.04 + clamp(look.yaw, -2.2, 2.2) + look.back;
     _e.set(-0.045 - clamp(veh.ax, -12, 12) * 0.0012 - look.pitch * 0.8 + noise1(t * 31 + 5) * 0.004 * rough, lookYaw, noise1(t * 19 + 9) * 0.004 * rough + G.shake * Math.sin(t * 40) * 0.02, 'YXZ');
     camera.quaternion.copy(_q).multiply(_q.clone().setFromEuler(_e));
-    const fov = 66 + sk * 10 + (veh.nitroOn ? 5 : 0);
+    const fov = settings.cockpitFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else if (G.cam === 'chase') {
     // behind the car, swung round by the free look: yaw about the car, pitch up / down, wheel zoom
     const back = 5.6 + sk * 1.2, up = 1.75 + sk * 0.15;
     const dist = Math.hypot(back, up) * look.zoom, el = clamp(Math.atan2(up, back) + look.pitch, -0.08, 1.35);
-    const hd = veh.yaw + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd); // forward is (-sin yaw, -cos yaw): behind is +
+    if (snap || camState.followYaw === undefined) { camState.followYaw = veh.yaw; camState.followYawV = 0; }
+    const yawTarget = camState.followYaw + Math.atan2(Math.sin(veh.yaw - camState.followYaw), Math.cos(veh.yaw - camState.followYaw));
+    spring(camState, 'followYaw', 'followYawV', yawTarget, 12, dt);
+    const hd = camState.followYaw + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd); // forward is (-sin yaw, -cos yaw): behind is +
     const target = _v1.set(veh.x + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, veh.z + hz * Math.cos(el) * dist);
-    const free = look.drag || look.back || Math.abs(look.yaw) > 0.05 || Math.abs(look.pitch) > 0.05;
-    // while dragging the camera follows the mouse closely; the damped lag is for the car's own motion
-    const kXZ = free ? 20 : 9, kY = free ? 20 : 6;
-    if (snap) camState.pos.copy(target); else { camState.pos.x = damp(camState.pos.x, target.x, kXZ, dt); camState.pos.z = damp(camState.pos.z, target.z, kXZ, dt); camState.pos.y = damp(camState.pos.y, target.y, kY, dt); }
+    // Follow translation directly; the spring damps the camera offset, keeping its distance natural at speed.
+    if (!snap && camState.carX !== undefined) { camState.pos.x += veh.x - camState.carX; camState.pos.z += veh.z - camState.carZ; }
+    target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6);
+    springPosition(target, dt, snap, look.idleT < 1.5 || look.back > 0.01 ? 16 : 10);
     camera.position.copy(camState.pos);
-    camera.position.x += noise1(t * 21) * 0.03 * rough; camera.position.y += noise1(t * 27 + 3) * 0.03 * rough;
     // look ahead of the car when behind it; at the car itself once swung round to the side / front
     const ahead = 5 * Math.max(0, Math.cos(look.yaw + look.back)) * clamp(1 - look.pitch, 0, 1);
-    const lk = _v2.set(veh.x, veh.y + 1.0, veh.z).addScaledVector(veh.forward(new THREE.Vector3()), ahead);
+    const lk = _v2.set(veh.x, veh.y + 1.0, veh.z).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
     camera.lookAt(lk);
-    const fov = 60 + sk * 15 + (veh.nitroOn ? 6 : 0);
+    const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else { // orbit
     G.orbitA += dt * 0.25;
     const r = 6.8, a = G.orbitA + veh.yaw;
     const target = _v1.set(veh.x + Math.sin(a) * r, veh.y + 1.7, veh.z + Math.cos(a) * r);
-    if (snap) camState.pos.copy(target); else camState.pos.lerp(target, 1 - Math.exp(-3 * dt));
+    target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6); springPosition(target, dt, snap, 8);
     camera.position.copy(camState.pos);
     camera.lookAt(veh.x, veh.y + 0.7, veh.z);
     camState.fov = damp(camState.fov, 50, 3, dt);
   }
-  // keep the camera above the terrain/road
-  if (G.cam !== 'cockpit') { const gy = route.surfaceY(veh.s, veh.u); if (camera.position.y < gy + 0.6) camera.position.y = gy + 0.6; }
-  camera.fov = camState.fov; camera.updateProjectionMatrix();
+  camState.carX = veh.x; camState.carZ = veh.z;
+  camera.fov = camState.fov; finishCamera(dt);
   // debug view relative to the player car: ?view=right,up,back,lookAhead
   if (DBG_VIEW) {
     const f = veh.forward(_v2), rx = Math.cos(veh.yaw), rz = -Math.sin(veh.yaw);
@@ -1276,6 +1335,7 @@ function step(dt, draw = true) {
         }
         if (G.pStuck === 0) G.pStuckLogged = false;
       }
+      if (G.towing || towOffer.hold > 0) { pin = { throttle: 0, brake: 1, steer: 0, handbrake: true, nitro: false }; towOffer.hold = Math.max(0, towOffer.hold - dt); }
       pv.dragMul = 1 - 0.32 * (G.draft || 0);
       const snapP = Q.has('nantrap') ? JSON.stringify({ x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw, vL: pv.vLong, vLat: pv.vLat, w: pv.w, pin, ai: player.ai }) : '';
       pv.update(dt, pin);
@@ -1372,6 +1432,8 @@ function step(dt, draw = true) {
   for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);
   window.__replay?.visual(dt);
   updateCamera(dt);
+  updateRacerMarkers();
+  if (towOffer.element) towOffer.element.hidden = G.state !== 'race' || !!menu?.open || !multiplayer.panel.hidden;
   // sun + shadows follow the action
   const fwd = _v2.set(0, 0, -1).applyQuaternion(player.model.root.quaternion);
   ENV.updateSun(sun, _v1.copy(player.model.root.position).addScaledVector(fwd, 35));
@@ -1496,8 +1558,21 @@ addEventListener('resize', onResize);
 
 // Multiplayer owns the online state machine; offline racing retains its AI rival.
 const remoteCars = new Map();
+const racerMarkers = new RacerMarkers();
+const markerPoint = new THREE.Vector3(), markerView = new THREE.Vector3();
+function updateRacerMarkers() {
+  const visible = ['race', 'countdown', 'onlineCountdown'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active;
+  const cars = !visible ? [] : multiplayer.active ? settings.playerMarkers ? [...remoteCars].map(([id, c]) => ({ id, c, name: c.networkName, player: true })) : [] : settings.rivalMarkers ? grid.map((c, i) => ({ id: 'ai-' + i, c, name: c.name, player: false })) : [];
+  camera.updateMatrixWorld();
+  racerMarkers.update(cars.filter(({ c }) => c.model.root.visible).map(({ id, c, name, player }) => {
+    markerPoint.set(c.veh.x, c.veh.y + 2.4, c.veh.z);
+    const distance = markerPoint.distanceTo(camera.position);
+    markerView.copy(markerPoint).applyMatrix4(camera.matrixWorldInverse); markerPoint.project(camera);
+    return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
+  }));
+}
 const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), damage: { ...v.damage } });
-function clearDriveInput() { controls.clear(); }
+function clearDriveInput() { controls.clear(); closeTowOffer(12); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
   clearDriveInput(); hud.hideMenu(); hud.count(''); G.state = 'lobby'; G.cam = G.userCam; applyCamMode();
@@ -1527,7 +1602,7 @@ function onlineMembers(members) {
 const multiplayer = new Multiplayer(CARS, {
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   async mapChanged(id) { await window.__flow.switchMap(id); if (multiplayer.active) onlineWait(); else window.__flow.quit(); },
-  panelClosed() { G.countWall = performance.now(); },
+  panelClosed() { G.countWall = performance.now(); if (G.state === 'race') controls.requestMouseLock(); },
   join(car) { graphicsControl.disabled = true; graphicsControl.title = 'Choose graphics before joining a lobby'; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
   carChanged(car) {
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
@@ -1543,13 +1618,14 @@ const multiplayer = new Multiplayer(CARS, {
   members: onlineMembers,
   start(lobby, id, resumeState = null) {
     if (!multiplayer.loaded) return;
+    beginCameraBlend();
     window.__flow?.prepareEvent(lobby.eventId || 'quick');
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
-    grid(player.veh, lobby.players.findIndex(p => p.id === id));
+    grid(player.veh, lobby.players.findIndex(p => p.id === id)); resetTowOffer();
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
     if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
-    G.state = 'onlineCountdown'; G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
+    G.state = 'onlineCountdown'; G.cameraStarting = false; controls.requestMouseLock(); G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
     document.body.classList.add('counting');
     multiplayer.resumeState = null;
     if (lobby.status === 'results') multiplayer.hooks.results();

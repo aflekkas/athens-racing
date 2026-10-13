@@ -1,4 +1,5 @@
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
+import { settings as preferences, setSetting } from './settings.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
 const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
@@ -48,7 +49,7 @@ export class Input {
     if (document) this.mountTouch();
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
-  destroy() { for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); clearTimeout(this.toastTimer); this.touchUI?.remove(); this.cancelCapture(); }
+  destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); clearTimeout(this.toastTimer); this.touchUI?.remove(); this.cancelCapture(); }
   load() {
     for (const kind of ['keyboard', 'gamepad']) {
       try {
@@ -99,6 +100,33 @@ export class Input {
     Object.assign(this.state, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false });
     for (const a of EDGE_ACTIONS) this.state[a] = false;
     this.cameraLook.x = this.cameraLook.y = 0;
+    this.releaseMouseLook();
+  }
+  // Race gestures request lock; denied/unavailable lock falls back to cursor position, without clicks.
+  mountMouseLook(canvas, { enabled, move, position, unlock }) {
+    this.lookCanvas = canvas; this.lookEnabled = enabled;
+    this.listen('pointermove', e => {
+      if (!enabled() || e.pointerType === 'touch' || editable(e)) return;
+      if (this.document?.pointerLockElement === canvas) {
+        if (e.movementX || e.movementY) move(e.movementX || 0, e.movementY || 0);
+      } else {
+        const width = this.target?.innerWidth || canvas.clientWidth || 1, height = this.target?.innerHeight || canvas.clientHeight || 1;
+        position?.(clamp((e.clientX - width / 2) / (width / 2), -1, 1), clamp((e.clientY - height / 2) / (height / 2), -1, 1));
+      }
+    });
+    this.lookLockChange = () => {
+      const locked = this.document?.pointerLockElement === canvas;
+      if (this.mouseWasLocked && !locked && !this.lookReleaseExpected) unlock?.();
+      this.mouseWasLocked = locked; this.lookReleaseExpected = false;
+    };
+    this.document?.addEventListener?.('pointerlockchange', this.lookLockChange);
+  }
+  requestMouseLock() {
+    if (!this.lookCanvas || this.document?.pointerLockElement === this.lookCanvas || this.navigator?.userActivation?.isActive === false) return;
+    try { const request = this.lookCanvas.requestPointerLock?.(); request?.catch?.(() => {}); } catch {}
+  }
+  releaseMouseLook() {
+    if (this.lookCanvas && this.document?.pointerLockElement === this.lookCanvas) { this.lookReleaseExpected = true; this.document.exitPointerLock?.(); }
   }
   connect(pad) {
     if (!pad || this.connected.get(pad.index) === pad.id) return;
@@ -110,7 +138,7 @@ export class Input {
     if (!el) { el = this.document.createElement('div'); el.id = 'input-toast'; el.setAttribute('role', 'status'); this.document.body.append(el); }
     el.textContent = message; el.hidden = false; clearTimeout(this.toastTimer); this.toastTimer = setTimeout(() => { el.hidden = true; }, 2800);
   }
-  update(dt, { speed = 0, inMenu = false, blocked = false } = {}) {
+  update(dt, { speed = 0, inMenu = false, blocked = false, retainMouseLock = false } = {}) {
     this.inMenu = inMenu;
     const capturing = !!this.capture;
     dt = clamp(dt, 0, 0.5);
@@ -154,6 +182,7 @@ export class Input {
     if (blocked || inMenu || capturing) {
       s.throttle = s.brake = s.steer = s.steerRaw = this.keyThrottle = this.keyBrake = 0; s.handbrake = s.nitro = s.lookBack = false;
       this.cameraLook.x = this.cameraLook.y = 0;
+      if (!retainMouseLock) this.releaseMouseLook();
     }
     if (this.touchUI) this.touchUI.hidden = inMenu || blocked;
     return s;
@@ -168,6 +197,18 @@ export class Input {
     this.cancelCapture(); this.clear();
     const doc = containerEl.ownerDocument, panel = doc.createElement('div'); panel.className = 'input-bindings';
     const help = doc.createElement('p'); help.textContent = 'Choose a binding, then press a key or controller button / move an axis. Escape cancels. E / Q shift in manual mode.'; panel.append(help);
+    const cameraTitle = doc.createElement('h3'); cameraTitle.textContent = 'CAMERA & PLAYER TAGS'; panel.append(cameraTitle);
+    for (const [key, label, min, max, step] of [['mouseSensitivity', 'Look sensitivity', 0.25, 3, 0.05], ['chaseFov', 'Chase FOV (vertical degrees)', 45, 75, 1], ['cockpitFov', 'Cockpit FOV (vertical degrees)', 45, 90, 1]]) {
+      const row = doc.createElement('label'), slider = doc.createElement('input'), value = doc.createElement('output'); row.textContent = label;
+      slider.type = 'range'; slider.min = min; slider.max = max; slider.step = step; slider.value = preferences[key]; value.textContent = slider.value;
+      slider.dataset.preference = key; slider.setAttribute('aria-label', label);
+      slider.addEventListener('input', () => { setSetting(key, +slider.value); value.textContent = slider.value; }); row.append(slider, value); panel.append(row);
+    }
+    for (const [key, label] of [['invertLookY', 'Invert look Y'], ['speedFov', 'Subtle speed FOV (+3° maximum)'], ['playerMarkers', 'Online player tags & edge arrows'], ['rivalMarkers', 'AI rival tags']]) {
+      const row = doc.createElement('label'), toggle = doc.createElement('input'); row.textContent = label; toggle.type = 'checkbox'; toggle.checked = preferences[key]; toggle.dataset.preference = key;
+      toggle.addEventListener('change', () => setSetting(key, toggle.checked)); row.append(toggle); panel.append(row);
+    }
+    const lookHelp = doc.createElement('p'); lookHelp.textContent = 'Move the mouse to look around while racing. If pointer lock is unavailable, cursor position controls the view. Right stick also looks; the view centres after 1.5 seconds idle.'; panel.append(lookHelp);
     for (const [key, label, min, max, step] of [['deadzone', 'Stick deadzone', 0, 0.45, 0.01], ['sensitivity', 'Steering sensitivity', 0.25, 2, 0.05], ['linearity', 'Steering curve (1 = linear)', 0.25, 3, 0.05]]) {
       const row = doc.createElement('label'), slider = doc.createElement('input'), value = doc.createElement('output'); row.textContent = label;
       slider.type = 'range'; slider.min = min; slider.max = max; slider.step = step; slider.value = this.settings[key]; value.textContent = slider.value;

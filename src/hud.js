@@ -7,6 +7,63 @@ const $ = (id) => document.getElementById(id);
 export const fmtTime = (t) => { if (!isFinite(t)) return '--:--.--'; const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s < 10 ? '0' : ''}${s.toFixed(2)}`; };
 const ord = (n) => (n === 1 ? 'ST' : n === 2 ? 'ND' : n === 3 ? 'RD' : 'TH');
 
+// Floating tags belong only to explicitly supplied racers; traffic never enters this collection.
+// TODO(UI): shared components may restyle .racer-marker and .tow-prompt without changing their behaviour.
+export class RacerMarkers {
+  constructor() {
+    this.items = new Map(); this.root = document.createElement('div'); this.root.id = 'racer-markers';
+    this.root.setAttribute('aria-hidden', 'true'); document.body.append(this.root);
+    const style = document.createElement('style'); style.textContent = `
+      #racer-markers { position:fixed; inset:0; z-index:22; pointer-events:none; overflow:hidden; }
+      .racer-marker { position:absolute; color:var(--racer-color); font:700 13px system-ui; text-align:center; white-space:nowrap; transform-origin:center; }
+      .racer-marker .racer-name { display:block; color:white; background:#09131ee0; padding:5px 10px; border:1px solid var(--racer-color); border-radius:5px; box-shadow:0 2px 10px #0008; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+      .racer-marker .racer-chevron { display:block; font-size:24px; line-height:20px; text-shadow:0 2px 5px #000; }
+      .racer-marker.ai .racer-name { font-size:11px; padding:3px 7px; border-color:#ffffff50; }
+      .racer-marker.edge .racer-name { font-size:11px; padding:3px 6px; }
+      .racer-marker.edge .racer-chevron { font-size:22px; }
+      .tow-prompt { position:fixed; z-index:65; top:24%; left:50%; transform:translateX(-50%); width:min(440px,calc(100vw - 32px)); box-sizing:border-box; padding:16px 18px; border:1px solid #d9ad44; border-radius:8px; background:#0b1421ee; color:#fff; font:14px system-ui; box-shadow:0 8px 30px #0007; }
+      .tow-prompt[hidden] { display:none; }
+      .tow-prompt strong { font-size:16px; letter-spacing:.08em; }
+      .tow-prompt p { margin:8px 0 12px; color:#ced7e0; }
+      .tow-actions { display:flex; gap:8px; flex-wrap:wrap; }
+      .tow-actions button { min-height:42px; padding:9px 12px; cursor:pointer; border:1px solid #ffffff45; border-radius:5px; background:#223349; color:#fff; font:700 12px system-ui; }
+      .tow-actions button:first-child { background:#d9ad44; color:#111; }
+      .tow-actions button:focus-visible { outline:2px solid white; outline-offset:3px; }
+    `; document.head.append(style);
+  }
+  update(racers) {
+    const present = new Set();
+    for (const r of racers) {
+      if (!Number.isFinite(r.x + r.y + r.distance) || r.distance > 350) continue;
+      const offscreen = r.behind || Math.abs(r.x) > 0.92 || Math.abs(r.y) > 0.88;
+      if (offscreen && (!r.player || r.distance > 180)) continue;
+      present.add(r.id);
+      let item = this.items.get(r.id);
+      if (!item) {
+        const el = document.createElement('div'), name = document.createElement('span'), chevron = document.createElement('span');
+        name.className = 'racer-name'; chevron.className = 'racer-chevron'; chevron.textContent = '⌄'; el.append(name, chevron);
+        let hash = 0; for (const char of String(r.id)) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+        el.style.setProperty('--racer-color', ['#65dbff', '#ffc46b', '#d49bff', '#7de5aa', '#ff91b0'][hash % 5]);
+        this.root.append(el); item = { el, name, chevron }; this.items.set(r.id, item);
+      }
+      const { el, name, chevron } = item;
+      name.textContent = r.name || 'DRIVER'; el.dataset.playerId = r.id;
+      el.className = 'racer-marker' + (r.player ? '' : ' ai') + (offscreen ? ' edge' : '');
+      let x = r.x, y = -r.y;
+      if (offscreen) {
+        if (r.behind) { x = r.viewX; y = -r.viewY; if (Math.abs(x) + Math.abs(y) < 0.01) x = 1; }
+        const factor = Math.max(Math.abs(x) / 0.86, Math.abs(y) / 0.76, 0.01); x /= factor; y /= factor;
+        chevron.textContent = '➤'; chevron.style.transform = `rotate(${Math.atan2(y * innerHeight, x * innerWidth)}rad)`;
+      } else { chevron.textContent = '⌄'; chevron.style.transform = ''; }
+      el.style.left = `${(x + 1) * 50}%`; el.style.top = `${(y + 1) * 50}%`;
+      el.style.opacity = String((r.behind ? 0.45 : 1) * clamp((350 - r.distance) / 150, 0, 1));
+      const scale = offscreen ? 0.9 : clamp(1.1 - r.distance / 400, 0.7, 1.05);
+      el.style.transform = `translate(-50%, -100%) scale(${scale})`;
+    }
+    for (const [id, item] of this.items) if (!present.has(id)) { item.el.remove(); this.items.delete(id); }
+  }
+}
+
 export class Hud {
   constructor(map) {
     this.map = map; const { route, data, terrain } = map;
