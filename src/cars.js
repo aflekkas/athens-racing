@@ -28,8 +28,8 @@ export const CARS = [
   {
     id: 'taxi', name: 'ŠKODA OCTAVIA TAXI', short: 'OCTAVIA', tag: 'Athens yellow. 2.0 TDI. Front-wheel drive.', color: '#eebd19', accent: '#c7cbd0',
     mass: 1460, power: 110, torque: 360, redline: 5000, idle: 800, gears: [14.91, 8.59, 5.24, 3.70, 2.82, 2.26, 1.75], final: 1, wheelR: 0.323,
-    wheelbase: 2.686, length: 4.689, width: 1.829, cdA: 0.57, vmax: 227, grip: 1.0, steer: 0.58, yawI: 1.15, drift: 0.8, brake: 1.0, cyl: 4, pitch: 0.72, body: 'octavia', taxi: true, drive: 'fwd',
-    frontW: 0.60, hcg: 0.53, track: 1.54, rsF: 0.57, usGrad: 2.5, rollGrad: 4.8, susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.28, bias: 0.72, steerRate: 0.95, ebrake: 0.18, engine: 'diesel', turbo: 0.8,
+    wheelbase: 2.686, length: 4.689, width: 1.829, cdA: 0.57, vmax: 227, grip: 1.02, steer: 0.58, yawI: 1.15, drift: 0.8, brake: 1.0, cyl: 4, pitch: 0.72, body: 'octavia', taxi: true, drive: 'fwd',
+    frontW: 0.60, hcg: 0.53, track: 1.54, rsF: 0.57, usGrad: 2.5, rollGrad: 4.8, susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.28, bias: 0.72, steerRate: 0.95, ebrake: 0.18, engine: 'diesel', turbo: 0.8, driftAngle: 0.46,
     stats: { speed: 0.5, accel: 0.42, handling: 0.64, drift: 0.25 },
   },
   {
@@ -53,7 +53,8 @@ export const CARS = [
     mass: 1040, power: 97, torque: 182, redline: 6500, idle: 850, gears: [3.304, 1.988, 1.355, 1, 0.791], final: 4.10, wheelR: 0.313,
     torqueCurve: [[0,72],[850,86],[1800,130],[3000,165],[4000,180],[4200,182],[5000,177],[5500,168.42],[6000,150],[6500,125],[7100,100]], peakTorqueRpm: 4200, peakPowerRpm: 5500,
     wheelbase: 2.35, length: 4.10, width: 1.58, cdA: 0.70, vmax: 195, grip: 0.99, gripRear: 1.08, steer: 0.62, yawI: 1.15, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: 'gtv', drive: 'rwd', engine: 'na4', transmission: 'manual',
-    tyres: ['165 HR14','165 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.58, rollGrad: 4.8, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
+    // Optional game aids keep W+steer gripped; disabling aids restores the classic's unassisted response.
+    tyres: ['165 HR14','165 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.58, rollGrad: 4.8, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0.5, esc: 0.3, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
     stats: { speed: 0.39, accel: 0.45, handling: 0.69, drift: 0.67 },
   },
   // VW Golf VII press kit (2012), 1.4 TSI ACT: 103 kW, 250 Nm, 212 km/h.

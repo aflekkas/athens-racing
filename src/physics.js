@@ -507,20 +507,20 @@ export class Vehicle {
       if (Math.sign(sIn) !== this.bigSteerSide && this.bigSteerT < 0.8 && vt > 12 && thrIn < 0.3 && Math.abs(this.ay) > 4) { this.driftLatch = 1; this.flickT = 0.7; }
       this.bigSteerSide = Math.sign(sIn); this.bigSteerT = 0;
     }
-    // power-over on a driven rear: throttle with the rear tyres at their limit means it (before TC can hide the spin)
-    // (only once the tail is really out: at the limit on part throttle the aids still keep a normally driven car tidy)
+    // With aids on, throttle plus steering is a grip request. Power-only drift
+    // entry requires TC off; handbrake and lift-off feints remain explicit entries.
     const rearAtLimit = this.shareR > 0 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.1 && Math.abs(beta) > 0.12 && vt > 6;
-    // ... or held: full lock and full throttle with the rear tyres at their limit for 0.4 s is a deliberate power-over
-    // (a corner-exit wiggle is shorter: the aids keep it tidy)
-    const powerIntent = this.shareR > 0 && thrIn > 0.95 && Math.abs(sIn) > 0.9 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.0 && vt > 6;
+    // With TC off, holding full power/lock for 0.4 s commits to power-over.
+    const powerSlideAllowed = (sp.tc ?? 0.5) <= 0;
+    const powerIntent = powerSlideAllowed && this.shareR > 0 && thrIn > 0.95 && Math.abs(sIn) > 0.9 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.0 && vt > 6;
     this.powerT = powerIntent ? (this.powerT ?? 0) + dt : 0;
     if (inp.handbrake && vt > 6) this.driftLatch = 1;
     else if (this.powerT > 0.4) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
-    else if (rearAtLimit && thrIn > 0.8) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
-    else if (sliding && thrIn > 0.5 && this.shareR > 0 && this.spin > 0.2) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
-    // counter-steering into a slide (feint, lift-off, power-over) is the same statement of intent
-    // (tail out and still rotating into the turn: w opposite to beta. Mid-slalom the yaw follows the new steering instead)
-    else if (sliding && Math.sign(sIn) === Math.sign(beta) && Math.abs(sIn) > 0.15 && this.w * beta < -0.02) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
+    else if (powerSlideAllowed && rearAtLimit && thrIn > 0.8) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
+    else if (this.driftLatch > 0 && sliding && thrIn > 0.5 && this.shareR > 0 && this.spin > 0.2) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
+    // Counter-steer sustains an established deliberate drift; ordinary recovery
+    // must not itself disable grip assists or start rear-brake drift holding.
+    else if (this.driftLatch > 0 && sliding && Math.sign(sIn) === Math.sign(beta) && Math.abs(sIn) > 0.15 && this.w * beta < -0.02) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
     else if (this.flickT <= 0) this.driftLatch = Math.max(0, this.driftLatch - dt * (sliding ? (thrIn > 0.2 ? 0.05 : 0.3) : 1.5));
     // AWD slide assist: the electronically controlled coupling moves torque rearward once you're drifting (spec.awdDrift,
     // rear share), approximating the rear-biased end of a variable split such as the 2024 GR Yaris Track mode
@@ -556,7 +556,8 @@ export class Vehicle {
     // Leave a small amount of scrub for feedback, and release the guard for
     // deliberate slides / counter-steer or when the driver disables assist.
     const guard = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
-    if (guard > 0 && vx > 0 && !counter && target * sIn > 0) {
+    const catchingSlide = counter > 0 && sliding;
+    if (guard > 0 && vx > 0 && !catchingSlide && target * sIn > 0) {
       const useful = Math.max(0, thF * Math.sign(sIn) + aOpt * 1.15 + comp * Math.sign(sIn));
       const excess = Math.max(0, Math.abs(target) - useful);
       target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
@@ -805,8 +806,31 @@ export class Vehicle {
     // latched it becomes a drift mode, not "off": lots of wheelspin allowed, but a runaway (spinning faster and faster
     // as the sliding rubber loses grip) is still reined in, so steady throttle holds an angle instead of spinning
     const tcK = lerp(sp.tc ?? 0.5, 0.5, this.driftLatch);
-    const spinOver = Math.max(0, maxSpin - lerp(1.6, sp.driftSpin ?? 4.5, this.driftLatch));
-    this.tcCut = clamp(this.tcCut + (spinOver > 0 ? spinOver * tcK * 6 : -3) * dt, 0, 0.95 * Math.sqrt(tcK));
+    // A driven tyre shares one budget between steering and drive. Judge its
+    // own combined slip rather than pairing max wheelspin with another tyre's
+    // lateral demand. Applies to FWD, AWD and RWD; straight launches and explicit
+    // handbrake/feint/aids-off drifts retain their existing slip thresholds.
+    let combOver = 0, cornerDemand = 0;
+    for (let i = 0; i < 4; i++) {
+      const Wc = C4[i];
+      if ((i < 2 ? sF : sR) <= 0) continue;
+      const lateral = smoothstep(0.15, 0.6, Math.abs(Wc.sy));
+      cornerDemand = Math.max(cornerDemand, lateral);
+      if (Wc.sx * dirD <= 0.1) continue;
+      // Slip angle is not force-linear: 0.6 of peak angle already asks for
+      // ~0.94 of lateral peak. Reserve that force, not just the angle fraction.
+      const fyDemand = Math.sin(this.mfC * Math.atan(this.mfB * Math.min(1, Math.abs(Wc.sy))));
+      const sxBudget = Math.sqrt(Math.max(0.09, 1.05 ** 2 - fyDemand ** 2));
+      const reserveOver = (Wc.sx * dirD - sxBudget) * smoothstep(0.9, 1.05, Wc.sN);
+      combOver = Math.max(combOver, Math.max(Wc.sN - 1.05, reserveOver) * lateral);
+    }
+    const spinOver = Math.max(0, maxSpin - lerp(1.6, sp.driftSpin ?? 4.5, this.driftLatch), combOver * (1 - this.driftLatch));
+    // Strength controls attack rate. In grip cornering TC must be able to cut
+    // enough torque to keep a high-power rear gripped; the former 64% ceiling
+    // on the Z4 could never reserve its lateral force in a low gear.
+    const tcMax = tcK > 0 ? lerp(0.95 * Math.sqrt(tcK), 0.95, cornerDemand * (1 - this.driftLatch)) : 0;
+    const tcAttack = combOver > 0 && this.driftLatch < 0.1 ? 10 : 6;
+    this.tcCut = clamp(this.tcCut + (spinOver > 0 ? spinOver * tcK * tcAttack : -3) * dt, 0, tcMax);
     // crawling in soft sand the traction control cuts as hard as it can, as real systems do on low grip (it's what
     // lets a car with its wheels spinning claw its way out rather than dig itself in)
     const tcSand = (this.surfSoft ?? 0) * (1 - smoothstep(3, 8, av));

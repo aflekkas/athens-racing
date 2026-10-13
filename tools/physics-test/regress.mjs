@@ -3,6 +3,7 @@
 // PHYS=../../path/to/physics.js swaps the module under test (relative to this file).
 // The handling tests use one controlled chassis and change only spec.drive (and the diff), so any FWD / RWD
 // difference comes from where the torque goes, not from tuning. Assists (TC / ESC / EDL) are off unless stated.
+import './register.mjs';
 import { readFileSync } from 'node:fs';
 const { Vehicle } = await import(process.env.PHYS || '../../src/physics.js');
 

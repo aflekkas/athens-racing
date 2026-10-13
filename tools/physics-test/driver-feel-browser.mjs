@@ -11,6 +11,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const out = resolve(root, '.scratch/handling-feel');
 const phase = process.argv[2] || 'after';
+const mapId = process.env.FEEL_MAP || 'riviera';
+const carIds = process.env.FEEL_CARS?.split(',') || ['z4', 'mini'];
 if (!['before', 'after'].includes(phase)) throw new Error('Expected before or after');
 await mkdir(out, { recursive: true });
 let playwright;
@@ -44,6 +46,7 @@ const port = server.address().port;
 console.log(`Handling ${phase}: private server on ${port}`);
 let browser;
 const errors = [], runs = [];
+const bench = JSON.parse(await readFile(resolve(out, phase + '.json'), 'utf8'));
 try {
   const executablePath = process.env.CHROME_PATH || (existsSync(playwright.chromium.executablePath()) ? undefined : '/home/dev/.t3/tools/chrome-headless-shell/linux64/154.0.8037.92/chrome-headless-shell');
   browser = await playwright.chromium.launch({ headless: true, executablePath, args: ['--no-sandbox', '--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -53,8 +56,9 @@ try {
   page.on('console', m => { if (m.type() === 'error') console.log('Browser console:', m.text()); });
   page.on('requestfailed', r => { if (!r.url().includes('/ws')) console.log('Request failed:', r.url(), r.failure()?.errorText); });
   const cdp = await page.context().newCDPSession(page);
-  for (const car of ['z4', 'mini']) {
-    const response = await page.goto(`http://127.0.0.1:${port}/?car=${car}&simhook&debug&quality=low&notraffic&fixeddt&s=1704`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  for (const car of carIds) {
+    const entryS = bench.results.find(r => r.map === mapId && r.car === car && r.kmh === 90).corner.s;
+    const response = await page.goto(`http://127.0.0.1:${port}/?car=${car}&map=${mapId}&simhook&debug&quality=low&notraffic&fixeddt&s=${entryS}${mapId === 'megara' ? '&event=megara-tt' : ''}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     if (response.status() !== 200) throw new Error(`Game page returned HTTP ${response.status()}`);
     try {
       await page.waitForFunction(() => !!window.__sim?.step && !!window.__vehicle?.() && window.__game.state === 'race', null, { timeout: 120000 });
@@ -71,11 +75,12 @@ try {
       window.__game.state = 'paused';
     });
     await page.waitForTimeout(250);
+    console.log(`${phase}-${car}: boot complete`);
     for (const powered of [false, true]) {
-      const setup = await page.evaluate(() => {
+      const setup = await page.evaluate(({ entryS }) => {
         const { route, keys, G } = window.__sim, v = window.__vehicle();
         keys.clear(); G.state = 'paused'; G.inputDevice = 'keyboard';
-        const s = 1704, u = route.laneU(s, 0), side = Math.sign(route.curv(s));
+        const s = entryS, u = route.closed ? 0 : route.laneU(s, 0), side = Math.sign(route.curv(s));
         v.reset(s, u, 25);
         // A rolling car in a road gear, with settled tyres and engine.
         for (let i = 0; i < 90; i++) { v.update(1 / 60, { throttle: 0.2, brake: 0, steer: 0 }); v.vLong = 25; }
@@ -83,7 +88,7 @@ try {
         v.reset(s, u, 25); v.gear = gear;
         v.rpm = Math.max(v.spec.idle, 25 / v.spec.wheelR * v.ratio() * 30 / Math.PI);
         return { side, car: v.spec.id, assist: v.steerAssist, cornerRadius: 1 / Math.abs(route.curv(s)), gear };
-      });
+      }, { entryS });
       if (setup.car !== car) throw new Error(`Wrong car: expected ${car}, got ${setup.car}`);
       const code = setup.side > 0 ? 'KeyD' : 'KeyA', key = setup.side > 0 ? 'd' : 'a';
       await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: setup.side > 0 ? 68 : 65 });
@@ -97,6 +102,8 @@ try {
           sim.step(1, 1 / 60);
           trace.push({ t: (i + 1) / 60, steerInput: sim.input.steer, throttle: sim.input.throttle,
             rackDeg: v.steer * 180 / Math.PI, kmh: v.speed * 3.6, yawRate: v.w,
+            effectiveRackDeg: Math.atan2(v._S[0].s, v._S[0].c) * 180 / Math.PI,
+            peakSlipDeg: v.aPk * 180 / Math.PI, betaDeg: Math.atan2(v.vLat, v.vLong) * 180 / Math.PI, driftLatch: v.driftLatch,
             lateralG: Math.abs(v.ayRaw) / 9.81, frontDeg: v.slipF * 180 / Math.PI, rearDeg: v.slipR * 180 / Math.PI,
             tcCut: v.tcCut, escCut: v.escCut, offroad: v.offroad, wallHit: v.wallHit,
             x: v.x, z: v.z, s: v.s, u: v.u, assist: v.steerAssist });
@@ -109,7 +116,7 @@ try {
       await page.evaluate(() => { const cb = window.__handlingFrames.pop(); window.__handlingFrames.length = 0; cb?.(performance.now()); });
       const label = `${phase}-${car}-${powered ? 'power' : 'coast'}`;
       await page.screenshot({ path: resolve(out, label + '.png') });
-      const run = { label, ...setup, powered, trace };
+      const run = { label, map: mapId, entryS, ...setup, powered, trace };
       runs.push(run);
       await writeFile(resolve(out, label + '.json'), JSON.stringify(run, null, 2) + '\n');
       if (trace.some(r => !Number.isFinite(r.yawRate) || r.offroad || r.wallHit > 1)) throw new Error(`${label}: invalid drive / left asphalt / hit barrier`);

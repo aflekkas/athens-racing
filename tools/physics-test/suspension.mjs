@@ -232,17 +232,17 @@ for (const spec of list) {
 if (!only || only === 'z4') {
   const spec = CARS.find((c) => c.id === 'z4');
   if (spec) {
-    // corner exit: steady at ~0.7 g on a 50 m radius, then floor it holding the same input: the tail moves, the aids
-    // (and the steering assist) keep it a slide you can drive, not a spin
+    // With aids on, throttle through the exit remains grip driving.
     const v = new Vehicle(spec, route); v.reset(0, 0, 60 / 3.6); let s = 0.3, I = 0.3;
     for (let i = 0; i < 300; i++) { const e = 1 / 50 - v.w / Math.max(1, spd(v)); s = Math.max(-1, Math.min(1, s + e * 0.2)); const ev = 60 / 3.6 - spd(v); I = Math.max(0, Math.min(0.8, I + ev * 0.01)); v.update(1 / 60, { throttle: Math.max(0, Math.min(1, I + ev * 0.5)), brake: 0, steer: s }); }
     let bMax = 0; for (let i = 0; i < 150; i++) { v.update(1 / 60, { throttle: 1, brake: 0, steer: s }); bMax = Math.max(bMax, Math.abs(Math.atan2(v.vLat, Math.abs(v.vLong))) * D); }
-    check('z4: floored corner exit rotates the tail a little, and it stays a catchable slide (1-20 deg)', bMax > 1 && bMax < 20, `peak sideslip ${f2(bMax)} deg`);
-    // deliberate power-over with intent (held full lock + full throttle) still becomes a drift
-    const p = new Vehicle(spec, route); p.reset(0, 0, 45 / 3.6);
+    check('z4: floored corner exit with aids stays gripped (under 8 deg)', bMax < 8 && v.driftLatch === 0, `peak sideslip ${f2(bMax)} deg`);
+    // Disabling aids is explicit power-over intent; handbrake/feint remain the
+    // deliberate drift entries with aids enabled.
+    const p = new Vehicle({ ...spec, tc: 0, esc: 0, edl: 0 }, route); p.reset(0, 0, 45 / 3.6);
     for (let i = 0; i < 60; i++) p.update(1 / 60, { throttle: 0.3, brake: 0, steer: 0.55 });
     let pb = 0; for (let i = 0; i < 90; i++) { p.update(1 / 60, { throttle: 1, brake: 0, steer: 1 }); pb = Math.max(pb, Math.abs(Math.atan2(p.vLat, Math.abs(p.vLong))) * D); }
-    check('z4: deliberate power-over (full lock + full throttle, held) breaks the rear into a slide', pb > 12, `peak sideslip ${f2(pb)} deg, latch ${f2(p.driftLatch)}`);
+    check('z4: deliberate aids-off power-over breaks the rear into a slide', pb > 12, `peak sideslip ${f2(pb)} deg, latch ${f2(p.driftLatch)}`);
   }
 }
 
