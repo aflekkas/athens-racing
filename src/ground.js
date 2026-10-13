@@ -14,12 +14,13 @@ import { TX } from './tex.js';
 export const SURF = {
   asphalt: { mu: 1.0, drag: 0, rough: 0, res: 0, soft: 0 },
   pavement: { mu: 0.92, drag: 0.15, rough: 0.35, res: 0, soft: 0 },
-  verge: { mu: 0.7, drag: 0.6, rough: 0.6, res: 0.15, soft: 0.15 },
-  gravel: { mu: 0.72, drag: 0.6, rough: 0.7, res: 0.2, soft: 0.25 },
-  dirt: { mu: 0.68, drag: 0.8, rough: 0.9, res: 0.25, soft: 0.3 },
-  scrub: { mu: 0.6, drag: 1.4, rough: 1, res: 0.4, soft: 0.2 },
-  sand: { mu: 0.6, drag: 0.8, rough: 0.6, res: 0.45, soft: 1 },
-  deepsand: { mu: 0.56, drag: 3.4, rough: 0.5, res: 0.8, soft: 1.0, bow: 0.45 }, // the sand traps: loose, dry, deep (ploughing ~0.35 g)
+  verge: { mu: 0.65, peak: 1.35, slide: 0.94, slideV: 0.025, drag: 0.6, rough: 0.6, res: 0.15, soft: 0.15 },
+  gravel: { mu: 0.56, peak: 1.5, slide: 0.95, slideV: 0.02, drag: 0.6, rough: 0.7, res: 0.2, soft: 0.25 },
+  dirt: { mu: 0.67, peak: 1.35, slide: 0.94, slideV: 0.025, drag: 0.8, rough: 0.9, res: 0.25, soft: 0.3 },
+  scrub: { mu: 0.5, peak: 1.45, slide: 0.94, slideV: 0.025, drag: 1.4, rough: 1, res: 0.4, soft: 0.2 },
+  sand: { mu: 0.6, traction: 0.62, drag: 0.8, rough: 0.6, res: 0.45, soft: 1 },
+  deepsand: { mu: 0.56, traction: 0.62, drag: 3.4, rough: 0.5, res: 0.8, soft: 1.0, bow: 0.45 }, // the sand traps: loose, dry, deep (ploughing ~0.35 g)
+  grass: { mu: 0.5, peak: 1.45, slide: 0.94, slideV: 0.025, drag: 0.9, rough: 0.7, res: 0.2, soft: 0.15 },
   rock: { mu: 0.75, drag: 0.5, rough: 1, res: 0, soft: 0 },
   water: { mu: 0.15, drag: 9, rough: 0, res: 0, soft: 0 },
 };
@@ -495,14 +496,22 @@ export class Ground {
     if (!v.air) v.vy = vyS;
     v._gx = v.x; v._gz = v.z; v._gy = v.y; v._gt = g.y - g.hump; v._gu = v.u;
     // grip / drag (airborne: no grip), water
-    // grip and resistance: the average over the four contact patches (a car with two wheels in the sand feels it)
+    // Each tyre keeps its own grip and slip curve. Resistance remains a body-level average.
     let mu = 0, dr = 0, res = 0, soft = 0, bow = 0;
-    for (let i = 0; i < 4; i++) { const W = SURF[ws[i]] || SURF.dirt; mu += W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5)) / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; bow += (W.bow || 0) / 4; }
+    v.wheelMu ||= [1, 1, 1, 1]; v.wheelPeak ||= [1, 1, 1, 1];
+    v.wheelSlide ||= [null, null, null, null]; v.wheelSlideV ||= [null, null, null, null];
+    for (let i = 0; i < 4; i++) {
+      const W = SURF[ws[i]] || SURF.dirt;
+      const grip = W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5));
+      mu += grip / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; bow += (W.bow || 0) / 4;
+      v.wheelMu[i] = v.air ? 0.02 : grip * (W.traction ?? 1);
+      v.wheelPeak[i] = W.peak ?? 1; v.wheelSlide[i] = W.slide ?? null; v.wheelSlideV[i] = W.slideV ?? null;
+    }
     v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;
     if (!paved) { // thick maquis up the hillside / far from the road
       const sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
       const ex = Math.max(0, gy - route.y(sc) - (MAX_ABOVE - 4)) + Math.max(0, (Math.abs(v.u) - route.edge(sc) - (MAX_OFF - 12)) / 3);
-      if (ex > 0) { v.surfDrag += Math.min(5, ex * 2.2); v.surfMu *= Math.max(0.55, 1 - ex * 0.08); if (g.surf === 'dirt') v.surf = 'scrub'; }
+      if (ex > 0) { v.surfDrag += Math.min(5, ex * 2.2); v.surfMu *= Math.max(0.55, 1 - ex * 0.08); for (let i = 0; i < 4; i++) v.wheelMu[i] *= Math.max(0.55, 1 - ex * 0.08); if (g.surf === 'dirt') v.surf = 'scrub'; }
     }
     v.offroad = onRoad || g.surf === 'pavement' || g.surf === 'asphalt' ? 0 : 1;
     // dug in: the car settles into its ruts

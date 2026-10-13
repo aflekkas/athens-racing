@@ -115,6 +115,7 @@ export class Vehicle {
     this.nitro = 0.35; this.nitroOn = false;
     this.pose = { roll: 0, rollV: 0, pitch: 0, pitchV: 0, heave: 0, heaveV: 0 };
     this.resetSuspension(); this.wheelBump = null;
+    this.wheelMu = this.wheelPeak = this.wheelSlide = this.wheelSlideV = null;
     this.lt = { ax: 0, axV: 0, ay: 0, ayV: 0 }; // load-transfer accelerations as felt through the springs
     this.axRaw = 0; this.ayRaw = 0;
     // corners: per-wheel state [FL, FR, RL, RR]; wheel: per-axle summary [front, rear] (wheel[i].vw spins the meshes)
@@ -589,10 +590,11 @@ export class Vehicle {
     this.stepSuspension(dt, clamp(this.axRaw + G * gradeNow, -16, 12), clamp(this.ayRaw, -16, 16), gEff, rIn, vt);
     for (let i = 0; i < 4; i++) C4[i].Fz += DF * (i < 2 ? aeroF : 1 - aeroF) / 2; // downforce straight onto the tyres
     const Fz0 = this.m * G * 0.25; // one nominal tyre load: lightly loaded tyres have the higher friction coefficient
-    const mu0 = sp.grip * (this.offroad ? 0.62 : 1) * (this.surfMu ?? 1)
+    // Legacy headless sand grounds have no per-wheel data; retain their trap grip.
+    const mu0 = sp.grip * (this.surfMu ?? 1) * (this.surf === 'sand' || this.surf === 'deepsand' ? 0.62 : 1);
     const ls = sp.loadSens ?? 0.15;
     const cap = this._cap || (this._cap = [0, 0, 0, 0]);
-    for (let i = 0; i < 4; i++) { const fz = C4[i].Fz; cap[i] = Math.max(1, mu0 * (i < 2 ? 1 : this.gripR) * fz * Math.max(0.4, 1 - ls * (fz / Fz0 - 1))); }
+    for (let i = 0; i < 4; i++) { const fz = C4[i].Fz; cap[i] = Math.max(1, (this.wheelMu ? sp.grip * this.wheelMu[i] : mu0) * (i < 2 ? 1 : this.gripR) * fz * Math.max(0.4, 1 - ls * (fz / Fz0 - 1))); }
 
     // ---------------- engine / gearbox
     const R = sp.wheelR, e = this.eng, red = sp.redline;
@@ -682,7 +684,8 @@ export class Vehicle {
     const tyre = (i, vw, out) => {
       const Wc = C4[i], Si = S[i];
       const kap = (vw - Si.vgx) / Si.vref;
-      const sx = kap / this.kPk, sy = Math.tan(Wc.aDyn) / Math.tan(this.aPk);
+      const peak = this.wheelPeak?.[i] ?? 1;
+      const sx = kap / (this.kPk * peak), sy = Math.tan(Wc.aDyn) / Math.tan(this.aPk * peak);
       const sN = Math.hypot(sx, sy);
       let f;
       if (sN < 1) f = Math.sin(this.mfC * Math.atan(this.mfB * sN));
@@ -691,12 +694,12 @@ export class Vehicle {
         // distances or launch traction. Combined slip still shares one force
         // budget, and reverse keeps its existing parking/tyre behaviour.
         const lateral = vx > 0 ? sy * sy / (sN * sN) : 0;
-        const slide = lerp(this.slideLong, this.slideK, lateral);
+        const slide = this.wheelSlide?.[i] ?? lerp(this.slideLong, this.slideK, lateral);
         f = 1 - (1 - slide) * (1 - Math.exp(-(sN - 1) * 1.6));
         // past the peak the rubber is sliding and friction keeps falling with sliding speed: once a tyre lets go it
         // stays gone until the torque eases (taller gear, more speed), then it hooks up again
         const vs = Math.hypot(vw - Si.vgx, Si.vgy);
-        const slideV = lerp(sp.slideV ?? 0.16, this.slideV, lateral);
+        const slideV = this.wheelSlideV?.[i] ?? lerp(sp.slideV ?? 0.16, this.slideV, lateral);
         f *= 1 - slideV * (1 - Math.exp(-vs / 7)) * Math.min(1, (sN - 1) * 2);
       }
       const k = sN > 1e-6 ? f / sN : this.slope0;
@@ -717,7 +720,7 @@ export class Vehicle {
       Wc.aDyn += (aT - Wc.aDyn) * Math.min(1, (Math.hypot(Si.vgx, Si.vgy) + 1.5) * dt / 0.45); // patch speed, so it stays quick sideways
       Si.vref = Math.max(Math.abs(Si.vgx), 3);
       // implicit wheel-speed update linearises the tyre around the current slip with its steepest slope
-      Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * Si.vref);
+      Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * (this.wheelPeak?.[i] ?? 1) * Si.vref);
       Si.p = dt / (mw + dt * Si.kx);
       Si.brk = (front ? Fbrake * bias : Fbrake * (1 - bias)) * 0.5;
       Si.Fb = Si.brk * Wc.abs + (front ? 0 : hbF + this.rearDrag * cap[i]) + Wc.esc + Wc.edl;
