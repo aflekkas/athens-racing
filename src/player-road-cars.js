@@ -2,6 +2,8 @@
 // Reference photographs/specifications: tools/models-more-notes.md.
 import * as THREE from 'three';
 export const ROAD_MODELS = {
+ ibiza: {L:3.813,W:1.640,H:1.414,wb:2.440,track:1.429,r:.289,rim:.165,tyreF:.155,tyreR:.155,belt:.91,front:.76,rear:.95,cowl:-.78,header:-.25,roofBack:1.10,back:1.63,seatZ:.19,eyeY:1.12,leather:'#686665',doors:4,brand:'SEAT',stations:[[-1.9065,.70,.76],[-1.5,.79,.82],[-1.0,.82,.89],[-.78,.80,.91],[.5,.80,.92],[1.23,.82,.96],[1.9065,.73,.95]]},
+
  huracan: {L:4.520,W:1.933,H:1.165,wb:2.620,track:1.668,r:.338,rim:.254,tyreF:.245,tyreR:.305,belt:.79,front:.56,rear:.82,cowl:-.99,header:-.28,roofBack:.53,back:1.04,seatZ:.16,eyeY:.91,leather:'#282b2d',doors:2,seats:2,seatBase:.30,brand:'LAMBORGHINI',stations:[[-2.26,.77,.56],[-1.80,.925,.64],[-1.30,.9665,.79],[-.99,.91,.79],[.3,.86,.79],[1.28,.9665,.87],[1.90,.93,.86],[2.26,.83,.82]]},
 
   mini_jcw: {L:3.874,W:1.727,H:1.414,wb:2.495,track:1.485,r:.316,rim:.216,tyreF:.205,tyreR:.205,belt:.96,front:.82,rear:.98,cowl:-.65,header:-.24,roofBack:1.25,back:1.67,seatZ:.22,eyeY:1.12,leather:'#292a2c',doors:2,blackRoof:true,archTrim:true,brand:'MINI',stations:[[-1.937,.76,.82],[-1.55,.85,.92],[-1.0,.864,.97],[-.65,.85,.96],[.55,.85,.96],[1.28,.864,.98],[1.937,.76,.98]]},
@@ -12,11 +14,11 @@ export function buildRoadCar(car,d,M,low,plate,H){
   const F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0;
   const section=z=>{const a=d.stations;for(let i=1;i<a.length;i++)if(z<=a[i][0]){const t=Math.max(0,Math.min(1,(z-a[i-1][0])/(a[i][0]-a[i-1][0]))),q=t*t*(3-2*t);return [mix(a[i-1][1],a[i][1],q),mix(a[i-1][2],a[i][2],q)];}return a.at(-1).slice(1);};
   const side=(z,y)=>{const [w,h]=section(z),v=Math.max(0,Math.min(1,(y-.18)/(h-.18)));return w-.055*(1-v)**4-.024*v**7;};
-  const deck=(x,z)=>{const [w,h]=section(z);return h+.028*(1-(x/(w-.024))**2);};
+  const deck=(x,z)=>{const [w,h]=section(z),rise={mini_jcw:.20,ibiza:.062,panda:.12,yaris:.23,e36:.045}[id]||0;return h+.028*(1-(x/(w-.024))**2)+rise*(.8+.2*Math.exp(-(((Math.abs(x)-.55)/.36)**4)))*Math.exp(-(((z-F)/.46)**2));};
   car.playerSurface={top:z=>section(z)[1],side,deck};
   for(const s of [-1,1]){
     const arch=d.r+.055;
-    surface(p,M.paint,(u,v)=>{const z=mix(F,R,u);let bottom=.18;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=mix(bottom,section(z)[1],v);return [s*side(z,y),y,z];},low?90:180,12,'body-side');
+    surface(p,M.paint,(u,v)=>{const z=mix(F,R,u);let bottom=.18;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=mix(bottom,deck(s*side(z,section(z)[1]),z),v);return [s*side(z,y),y,z];},low?90:180,12,'body-side');
     for(const a of [-d.wb/2+ax,d.wb/2+ax]){const points=[];for(let j=0;j<=32;j++){const t=j*Math.PI/32,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);points.push([s*(side(z,y)+.003),y,z]);}line(p,d.archTrim?M.black:M.paint,points,d.archTrim?.020:.009);
       surface(p,M.black,(u,v)=>{const t=u*Math.PI,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);return [s*mix(d.track/2-.12,side(z,y),v),y,z];},24,2,'wheelarch-liner');}
     surface(p,M.paint,(u,v)=>{const z=mix(d.cowl,d.back,u),h=section(z)[1];return[s*mix(side(z,h),W-.115,v),mix(h,d.belt+.014,v)+.012*Math.sin(v*Math.PI),z];},48,5,'door-shoulder');
@@ -26,7 +28,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
     box(p,d.archTrim?M.black:M.paint,[.045,.072,d.wb-.70],[s*(W-.035),.23,ax],.012,[0,0,0],'side-sill');
   }
   for(const [a,b,name]of [[F,d.cowl,'bonnet'],[d.back,R,'boot']])surface(p,M.paint,(u,v)=>{const z=mix(a,b,u),x=(2*v-1)*(section(z)[0]-.024);return[x,deck(x,z),z];},40,16,name);
-  for(const z of [F,R])surface(p,M.paint,(u,v)=>{const y=mix(.18,section(z)[1],v),x=(2*u-1)*side(z,y);return[x,y+.028*(1-(2*u-1)**2)*v**8,z];},24,10,z<0?'front-bumper':'rear-bumper');
+  for(const z of [F,R])surface(p,M.paint,(u,v)=>{const y=mix(.18,section(z)[1],v),x=(2*u-1)*side(z,y);return[x,mix(.18,deck(x,z),v),z];},24,10,z<0?'front-bumper':'rear-bumper');
   box(p,M.black,[d.W*.81,.07,d.L*.86],[0,.20,0],.02,[0,0,0],'undertray');
   cabin(car,d,M,low);wheels(car,d,M,low);
   // Cabin liners must stay inside a pinched coupe waist.
@@ -87,6 +89,35 @@ export function buildRoadCar(car,d,M,low,plate,H){
     for(let i=0;i<8;i++){const z=1.09+i*.115;box(p,M.black,[1.13,.025,.055],[0,deck(0,z)+.008,z],.006,[0,0,0],'engine-cover-louvre');}
     box(p,M.paint,[1.67,.045,.17],[0,.925,R-.10],.01,[0,0,0],'evo-tail-spoiler');
     badge('LAMBORGHINI',.33,.027,.855,R+.02);car.exhaust=[new THREE.Vector3(-.25,.62,R+.012),new THREE.Vector3(.25,.62,R+.012)];
+  }
+  if(['ibiza','panda','yaris','e36'].includes(id)){
+    const amber=new THREE.MeshStandardMaterial({color:'#d87a26',roughness:.25,side:THREE.DoubleSide});
+    const optic=M.head;optic.color.set('#c4d1cf');optic.metalness=.35;optic.roughness=.19;
+    if(id==='ibiza'){
+      face(M.black,[[-.34,.77],[.34,.77],[.29,.64],[-.29,.64]],F-.007,'ibiza-split-grille');
+      box(p,M.paint,[.064,.14,.022],[0,.71,F-.014],.004);
+      for(const s of [-1,1]){face(optic,[[s*.34,.79],[s*.70,.81],[s*.72,.63],[s*.35,.63]],F-.006,'front-lamp-housing');face(amber,[[s*.64,.78],[s*.72,.79],[s*.73,.63],[s*.64,.63]],F-.012,'indicator-lens');lamp(s,[[.40,.95],[.72,.96],[.72,.77],[.40,.77]],true);}
+      badge('S',.056,.045,.72,F-.028);badge('IBIZA  1.4',.24,.035,.87,R+.012);
+    }else if(id==='panda'){
+      face(M.black,[[-.32,.82],[.32,.82],[.32,.71],[-.32,.71]],F-.008,'panda-upper-grille');
+      for(let i=0;i<3;i++)box(p,M.chrome,[.60,.012,.012],[0,.73+i*.035,F-.018],.003);
+      for(const s of [-1,1]){face(optic,[[s*.37,.89],[s*.70,.91],[s*.70,.66],[s*.37,.66]],F-.008,'front-lamp-housing');face(amber,[[s*.39,.89],[s*.69,.90],[s*.69,.855],[s*.39,.85]],F-.013,'indicator-lens');
+        const x=s*(W-.16);box(p,M.tail,[.095,.53,.045],[x,1.16,R-.07],.023,[.16,0,0],'rear-lamp-housing');
+        line(p,M.black,[[s*.51,1.555,-.28],[s*.51,1.575,.92],[s*.51,1.54,1.15]],.023);}
+      badge('FIAT',.088,.06,.765,F-.035);badge('PANDA',.20,.037,.92,R+.014);
+    }else if(id==='yaris'){
+      face(M.black,[[-.24,.79],[.24,.79],[.22,.67],[-.22,.67]],F-.008,'yaris-small-grille');
+      for(const s of [-1,1]){face(optic,[[s*.34,.73],[s*.39,.95],[s*.62,.96],[s*.72,.75],[s*.69,.65],[s*.39,.65]],F-.009,'front-lamp-housing');disk(p,M.chrome,.060,[s*.51,.77,F-.014],[0,Math.PI,0]);lamp(s,[[.52,1.06],[.68,1.03],[.70,.79],[.53,.78]],true);}
+      badge('TOYOTA',.11,.026,.79,F-.016);badge('YARIS',.19,.035,.91,R+.014);
+    }else{
+      for(const s of [-1,1]){face(M.chrome,[[s*.025,.79],[s*.17,.79],[s*.17,.61],[s*.025,.61]],F-.009,'e36-kidney-surround');face(M.black,[[s*.04,.775],[s*.152,.775],[s*.152,.625],[s*.04,.625]],F-.014,'e36-kidney-grille');for(let i=0;i<4;i++)box(p,M.chrome,[.006,.135,.006],[s*(.053+i*.028),.70,F-.019],.002);
+        face(optic,[[s*.27,.79],[s*.72,.79],[s*.72,.64],[s*.27,.64]],F-.008,'front-lamp-housing');for(const x of [.37,.53]){disk(p,M.chrome,.060,[s*x,.715,F-.015],[0,Math.PI,0]);disk(p,M.led,.037,[s*x,.715,F-.018],[0,Math.PI,0]);}face(amber,[[s*.63,.79],[s*.73,.79],[s*.73,.64],[s*.63,.64]],F-.015,'indicator-lens');lamp(s,[[.36,.89],[.73,.89],[.73,.72],[.36,.72]],true);face(amber,[[s*.36,.89],[s*.73,.89],[s*.73,.835],[s*.36,.835]],R+.010,'rear-amber-lens');}
+      badge('BMW',.085,.032,.82,F-.010);badge('325i',.17,.033,.87,R+.012);
+    }
+    for(const end of [-1,1]){const z=end<0?F:R;face(M.black,[[-W*.88,.61],[W*.88,.61],[W*.87,.43],[-W*.87,.43]],z+end*.01,end<0?'front-bumper-rub-strip':'rear-bumper-rub-strip');}
+    face(M.black,[[-.50,.36],[.50,.36],[.48,.25],[-.48,.25]],F-.012,'lower-cooling-slot');
+    for(const s of [-1,1])line(p,M.black,[[s*(side(d.cowl+.10,.63)+.006),.63,d.cowl+.10],[s*(side(1.15,.63)+.006),.63,1.15]],.024);
+    if(id==='ibiza'){const rust=new THREE.MeshStandardMaterial({color:'#795844',roughness:1,side:THREE.DoubleSide});for(const s of [-1,1])for(let i=0;i<6;i++){const z=.86+i*.044,y=.28+i%2*.012;box(p,rust,[.004,.008+i%3*.003,.023],[s*(side(z,y)+.003),y,z],.001,[0,0,0],'sill-patina');}const bottle=mesh(p,new THREE.CylinderGeometry(.075,.075,.38,16),new THREE.MeshStandardMaterial({color:'#206b98',metalness:.45,roughness:.25}),[.25,.52,1.14],[Math.PI/2,0,0],'nitrous-bottle');box(p,M.chrome,[.06,.04,.07],[.25,.52,.92],.006,[0,0,0],'nitrous-valve');}
   }
   M.plate=makePlateMaterial(plate);car.plate=plate;
   for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?.465:.53,s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112),M.plate,[0,s<0?.465:.53,s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}

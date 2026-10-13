@@ -172,11 +172,12 @@ export class Cockpit {
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
     const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
     const nw=spec.id==='huracan'?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
-    if(!isClassic){
+    if(!isClassic&&!spec.oldDash){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
       if(isYaris){bezel.rotation.y=-.12;nav.rotation.y=-.12;}
     }
+    if(spec.oldDash){box(.23,.06,.05,trim,0,topY-.12,faceZ+.14,.005);label('FM  101.8     ▷  ▮▮',.19,.025,0,topY-.12,faceZ+.17,'#a7b895');}
     if(isMini){
       part(new THREE.CircleGeometry(.166,40),gloss,nx,ny,nz-.04,-.15);
       for(const [r,t,mat]of [[.166,.0025,alu],[.157,.002,new THREE.MeshBasicMaterial({color:'#86b9c6'})]])part(new THREE.TorusGeometry(r,t,5,40),mat,nx,ny,nz-.01,-.15);
@@ -209,7 +210,7 @@ export class Cockpit {
     // Switch faces are an inexpensive shared canvas atlas; knobs and buttons have real depth.
     const climateY=topY-(isPorsche?.267:isMini?.265:isSkoda?.153:.186);
     box(.255,.047,.025,gloss,0,climateY,faceZ+.144,.004);
-    label(isClassic?'ARIA   CALDO':isSkoda?'MENU  CLIMA   ▵   SET':isMini?'21°     AUTO     21°':'20.0°   AUTO  A/C   20.0°',.22,.026,0,climateY,faceZ+.159,isClassic?'#d5c4a5':'#dddcd1');
+    label(spec.oldDash?'FAN   HEAT   VENT':isClassic?'ARIA   CALDO':isSkoda?'MENU  CLIMA   ▵   SET':isMini?'21°     AUTO     21°':'20.0°   AUTO  A/C   20.0°',.22,.026,0,climateY,faceZ+.159,isClassic?'#d5c4a5':'#dddcd1');
     if(!isSkoda&&!isClassic&&!isMercedes)for(const i of (isMini?[-1,0,1]:[-1,1])){
       const x=i*.084;part(new THREE.CylinderGeometry(.02,.021,.024,20).rotateX(Math.PI/2),alu,x,climateY,faceZ+.169);
       part(new THREE.CircleGeometry(.016,20),trim,x,climateY,faceZ+.182);label(i===0?'AUTO':'21',.02,.012,x,climateY,faceZ+.184,'#e5bdae');

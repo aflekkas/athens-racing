@@ -12,7 +12,7 @@ function ring(p,m,r,t,x){const g=new THREE.TorusGeometry(r,t,4,32);g.rotateY(Mat
 function disc(p,m,r,x){const g=new THREE.CircleGeometry(r,r<.012?8:32);g.rotateY(Math.PI/2);return mesh(p,g,m,'',[x,0,0]);}
 function spoke(p,m,x,r0,r1,a0,a1,width){const a=v(x,Math.cos(a0)*r0,Math.sin(a0)*r0),b=v(x,Math.cos(a1)*r1,Math.sin(a1)*r1);const o=mesh(p,new THREE.BoxGeometry(.022,a.distanceTo(b),width),m,'wheel-spoke',a.clone().add(b).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(v(0,1,0),b.sub(a).normalize());}
 function wheelDetails(car,d,M){
-  const k=car.spec.id,classic=k==='gtv',dark=k==='gr_yaris';
+  const k=car.spec.id,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris';
   const rimMat=dark?M.darkAlloy:new THREE.MeshStandardMaterial({color:'#c1c6ca',metalness:.92,roughness:.25,side:THREE.DoubleSide});
   const rotorMat=new THREE.MeshStandardMaterial({color:'#64676b',metalness:.78,roughness:.48,side:THREE.DoubleSide});
   M.wheelMetal=rimMat;M.brakeSteel=rotorMat;
@@ -45,6 +45,7 @@ function wheelDetails(car,d,M){
     const bolts=classic?4:5;for(let i=0;i<bolts;i++){const a=i*Math.PI*2/bolts;const o=disc(w.spin,M.chrome,.006,x+s*.018);o.position.y=Math.cos(a)*.046;o.position.z=Math.sin(a)*.046;}
     // Rotor drilled holes sit on the outboard rotor face, not on top of the spokes.
     if(k==='carrera'||k==='z4')for(let i=0;i<24;i++){const a=i*Math.PI/12;const o=disc(w.spin,M.darkAlloy,.0028,s*(width*.24+.0064));o.position.y=Math.cos(a)*rim*.69;o.position.z=Math.sin(a)*rim*.69;}
+    if(car.spec.rearDrums&&!w.front){w.caliper.visible=false;const drum=new THREE.CylinderGeometry(rim*.82,rim*.82,.07,24);drum.rotateZ(Math.PI/2);mesh(w.spin,drum,M.darkAlloy,'rear-brake-drum',[s*width*.24,0,0]);}
     const valve=box(w.spin,M.rubber,[.025,.009,.009],[x,rim*.84,.027],'tyre-valve');valve.rotation.z=-.35*s;
   }
 }
@@ -71,6 +72,7 @@ function signals(car,d,M){
     const o=box(car.body,reverse,[.075,.019,.007],[s*(positions[0]-.11),positions[2]-.037,R],`reverse-${side}`);o.userData.damagePart=`light_r${side}`;
   }
   if(car.spec.fleet||d.mercedes){const panels=mirrorSurfaces(car);car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const hit=nearestSurface(o.position,panels,car.body);if(hit){o.position.copy(hit.point);o.position.z+=Math.sign(o.position.z)*.003;}}});}
+  if(car.spec.playerDetail)car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const t=Math.max(0,Math.min(1,(Math.abs(o.position.z)-d.L*.34)/(d.L*.16)));o.position.z-=Math.sign(o.position.z)*(.16*t*t*(Math.abs(o.position.x)/(d.W/2))**2+.027);}});
   car.indicator='off';car.signalTime=0;
   car.setIndicators=value=>{car.indicator=['left','right','hazard'].includes(value)?value:'off';};
   car.updateSignalLights=(dt,speed)=>{car.signalTime+=Math.max(0,dt);const flash=(car.signalTime%0.8)<.4;left.emissiveIntensity=flash&&(car.indicator==='left'||car.indicator==='hazard')?3.5:0;right.emissiveIntensity=flash&&(car.indicator==='right'||car.indicator==='hazard')?3.5:0;reverse.emissiveIntensity=speed<-.05?2.3:0;if(M.optical?.emissive){M.optical.emissive.set('#e4f2ff');M.optical.emissiveIntensity=car.lightsOn?3.2:0;}};
@@ -125,7 +127,7 @@ function inferPart(o,car,d){
   if(o.material===car.materials.head||o.material===car.materials.tail||o.material===car.materials.led||(o.material===car.materials.red&&Math.abs(p.z)>d.L*.36))return `light_${end}${s}`;
   if(Math.abs(p.x)>d.W*.49&&p.z>d.cowl-.05&&p.z<d.cowl+.32&&p.y>d.belt)return `mirror_${s}`;
   if(Math.abs(p.z)>d.L*.44&&p.y<.48&&bounds.max.y<.52)return p.z<0?'bumper_f':'bumper_r';
-  if(name.includes('door')||name.includes('handle'))return `door_${s}${(car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)&&p.z>.4?'r':'f'}`;
+  if(name.includes('door')||name.includes('handle'))return `door_${s}${(car.spec.id==='taxi'||car.spec.fleet||d.doors===4)&&p.z>.4?'r':'f'}`;
   return 'structure';
 }
 export function groupPlayerParts(car,d){
@@ -149,7 +151,7 @@ export function groupPlayerParts(car,d){
   for(const o of [...car.body.children].filter(o=>o.isMesh&&o.name==='body-side')){
     const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry,a=g.attributes.position,buckets=new Map();
     for(let i=0;i<a.count;i+=3){const x=(a.getX(i)+a.getX(i+1)+a.getX(i+2))/3,y=(a.getY(i)+a.getY(i+1)+a.getY(i+2))/3,z=(a.getZ(i)+a.getZ(i+1)+a.getZ(i+2))/3;
-      const rear=(car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)&&z>.38,end=(car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)?1.12:car.spec.id==='carrera'?.72:.67;
+      const rear=(car.spec.id==='taxi'||car.spec.fleet||d.doors===4)&&z>.38,end=(car.spec.id==='taxi'||car.spec.fleet||d.doors===4)?1.12:car.spec.id==='carrera'?.72:.67;
       const id=z>d.cowl+.10&&z<end&&y>.275?`door_${x<0?'l':'r'}${rear?'r':'f'}`:'body-side';
       if(!buckets.has(id))buckets.set(id,[]);buckets.get(id).push(i,i+1,i+2);
     }
@@ -166,7 +168,7 @@ export function groupPlayerParts(car,d){
     if(doorTrim||seatTrim){o.userData.damageInterior=true;o.userData.damageSide=p.x<0?'left':'right';keep.add(o);}
   });
   for(const name of ['structure','bumper_f','bumper_r','bonnet','boot','doors','mirrors','lights','glass']){const g=new THREE.Group();g.name=name;car.body.add(g);parts[name]=g;}
-  for(const name of ['door_lf','door_rf',...((car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
+  for(const name of ['door_lf','door_rf',...((car.spec.id==='taxi'||car.spec.fleet||d.doors===4)?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
   for(const name of ['bumper_f','bumper_r','bonnet','boot'])parts[name].userData.damagePart=name;
   car.body.updateMatrixWorld(true);const all=[];car.body.traverse(o=>{if(o.isMesh&&!car.exteriorDash.children.includes(o))all.push(o);});
   const assignments=all.map(o=>[o,inferPart(o,car,d)]);
@@ -206,7 +208,7 @@ export function installPlayerLOD(car,d){
   for(let i=0;i<stations.length-1;i++)for(let j=0;j<4;j++){const a=i*5+j;idx.push(a,a+5,a+1,a+1,a+5,a+6);}
   idx.push(0,1,2,0,2,4,2,3,4,25,27,26,25,29,27,27,29,28);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();mesh(low,g,car.paint,'distant-body');
-  if(!d.open){const roof=box(low,car.paint,[d.W-.44,.045,d.roofBack-d.header],[0,d.H-.05,(d.roofBack+d.header)/2],'distant-roof');for(const [a,b]of [[d.cowl,d.header],[d.back,d.roofBack]]){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute([-d.W/2+.12,d.belt,a,d.W/2-.12,d.belt,a,-d.W/2+.22,d.H-.07,b,d.W/2-.22,d.H-.07,b],3));geo.setIndex([0,2,1,1,2,3]);geo.computeVertexNormals();mesh(low,geo,car.materials.glass,'distant-glass');}}
+  if(!d.open){const roof=box(low,d.blackRoof?car.materials.black:car.paint,[d.W-.44,.045,d.roofBack-d.header],[0,d.H-.05,(d.roofBack+d.header)/2],'distant-roof');for(const [a,b]of [[d.cowl,d.header],[d.back,d.roofBack]]){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute([-d.W/2+.12,d.belt,a,d.W/2-.12,d.belt,a,-d.W/2+.22,d.H-.07,b,d.W/2-.22,d.H-.07,b],3));geo.setIndex([0,2,1,1,2,3]);geo.computeVertexNormals();mesh(low,geo,car.materials.glass,'distant-glass');}}
   if(car.spec.police){const blue=new THREE.MeshStandardMaterial({color:'#143c75'});for(const side of [-1,1]){box(low,blue,[.008,.18,2.1],[side*(d.W/2+.005),.76,0],'police-stripe');box(low,car.strobeMaterials[side<0?0:1],[.48,.095,.22],[side*.30,d.H+.10,.20],'police-lightbar');}}
   for(const level of [car.mediumDetail,low]){
     for(const side of ['l','r']){const g=car.playerParts['mirror_'+side].clone(true);g.userData.mirrorAssembly=false;level.add(g);}
