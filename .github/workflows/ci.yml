@@ -24,6 +24,7 @@ jobs:
       - run: node tools/events-test.mjs
       - run: node tools/replay.test.mjs
       - run: node tools/check-syntax.mjs
+      - run: node tools/check-browser-imports.mjs
       - name: Validate Cloudflare bundle and asset sizes
         run: npx wrangler deploy --env staging --dry-run
   deploy:

@@ -1,4 +1,5 @@
 // An allowlist keeps server code, tools, credentials and scratch files off the CDN.
+import './check-browser-imports.mjs';
 import { readdir, mkdir, readFile, writeFile, copyFile, rm, stat } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { MAPS } from '../src/map-catalog.js';

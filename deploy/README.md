@@ -8,7 +8,7 @@ Account: **Aflekkas@gmail.com's Account**, `d6f3d2dc5817687a91d74ccd257bad9e`. N
 
 ## Architecture
 
-Workers Static Assets serves the browser game directly from the CDN. Only `/ws`, `/api/*` and `/health` invoke the Worker. `tools/prepare-deploy.mjs` creates a clean `.deploy/assets` allowlist of index.html, style.css, src/, assets/ and data/, excludes hidden files, symlinks, test modules and `.orig` backups, and rejects files above 25 MiB. Tools, server code, node_modules, scratch output, repository metadata and chain.pid are absent. No client bundling is required; three.js retains its existing CDN importmap.
+Workers Static Assets serves the browser game directly from the CDN. Only `/ws`, `/api/*` and `/health` invoke the Worker. `tools/prepare-deploy.mjs` creates a clean `.deploy/assets` allowlist of index.html, style.css, src/, assets/ and data/, excludes hidden files, symlinks, test modules and `.orig` backups, and rejects files above 25 MiB. Tools, server code, node_modules, scratch output, repository metadata and chain.pid are absent. The browser import graph is validated before packaging (without writing a bundle). No client bundling is required; three.js retains its existing CDN importmap.
 
 One SQLite-backed `GameArena` Durable Object per environment owns discovery, lobbies, the clock, bounded state validation, relay and the persistent leaderboard. All lobbies initially share one arena, which shares duration across concurrent races and keeps same-origin `/ws` and public discovery simple. The object uses `acceptWebSocket` and hibernation callbacks. Socket attachments preserve latest telemetry through hibernation; SQLite-backed storage preserves lobby transitions and disconnected sessions. The leaderboard uses indexed SQLite rows, caps each map/version/event/car/traffic board at 200 drivers and shares validation rules with the Node backend. POST rate limits survive hibernation.
 
@@ -25,6 +25,7 @@ node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
 node tools/events-test.mjs
 node tools/replay.test.mjs
 node tools/check-syntax.mjs
+node tools/check-browser-imports.mjs
 npx wrangler deploy --env staging --dry-run
 npx wrangler deploy --env staging
 node tools/deploy-smoke.mjs https://paraliaki-racing-staging.aflekkas.workers.dev
@@ -50,7 +51,7 @@ The existing VPS service on port 8000 is independent. Deploying Workers does not
 
 ## GitHub Actions and the required API token
 
-The CI workflow runs on PRs and pushes to main/staging. It installs from the lockfile, runs all four required test gates, checks syntax and dry-runs the Worker bundle. Pushes deploy staging from `staging` and production from `main`, then fetch HTML/module/asset and complete a `/ws` create-lobby round trip. Deploys require a passing test job. Without an API token the workflow reports a notice and skips deployment; a green test run alone does **not** mean GitHub deployed a Worker. The first staging deployment used the VPS OAuth login.
+The CI workflow runs on PRs and pushes to main/staging. It installs from the lockfile, runs all four required test gates, checks syntax and the full browser import graph, then dry-runs the Worker bundle. Pushes deploy staging from `staging` and production from `main`, then fetch HTML/module/asset and complete a `/ws` create-lobby round trip. Deploys require a passing test job. Without an API token the workflow reports a notice and skips deployment; a green test run alone does **not** mean GitHub deployed a Worker. The first staging deployment used the VPS OAuth login.
 
 Create the CI token yourself; never copy the Wrangler OAuth token into GitHub:
 
