@@ -5,7 +5,6 @@
 // controls, so focus is drawn with a class and the keys keep flowing through flowAction().
 import { EVENTS, TYPES, getEvent, resolve, loadRecord, medalCount, targetLabels, MEDALS } from './events.js';
 import { settings, setSetting, speedUnit, fmtDist, speedIn } from './settings.js';
-import * as PUI from './progression-ui.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MEDAL_ICON = (m, cls = '') => `<i class="medal ${m || 'none'} ${cls}" title="${m ? m.toUpperCase() : 'NO MEDAL'}"></i>`;
@@ -169,7 +168,7 @@ export class Menu {
     const m = medalCount();
     const item = (act, label, sub) => `<div class="mi big" data-act="${act}"><b>${label}</b><span>${sub}</span></div>`;
     return `<div class="t-wrap">
-      <div class="t-head"><div class="kick">ATHENS RIVIERA · EO91 · VOULIAGMENI <em>▶</em> LOMVARDA</div><h1>PARALIAKI</h1>${PUI.titleStrip?.() ?? ''}</div>
+      <div class="t-head"><div class="kick">ATHENS RIVIERA · EO91 · VOULIAGMENI <em>▶</em> LOMVARDA</div><h1>PARALIAKI</h1></div>
       <div class="t-list">
         ${item('quick', 'QUICK RACE', 'Full sprint · 3 rivals')}
         ${item('events', 'EVENTS', `${EVENTS.length} events · sprints, cameras, score attack`)}
@@ -185,12 +184,11 @@ export class Menu {
   r_events() {
     const ctx = this.h.ctx(), fmt = this.h.fmtTime;
     const all = EVENTS.filter((e) => this.filter === 'all' || e.type === this.filter);
-    const list = PUI.sortByTier ? PUI.sortByTier(all) : all; // career ladder order (src/progression-ui.js)
     const tabs = ['all', ...Object.keys(TYPES)].map((f) => `<div class="tab ${f === this.filter ? 'on' : ''}" data-filter="${f}">${f === 'all' ? 'ALL' : TYPES[f].label}</div>`).join('');
-    const rows = list.map((e, i) => {
+    const rows = all.map((e) => {
       const r = resolve(e, ctx), rec = loadRecord(e.id);
       const best = e.type === 'score' ? (rec.bestScore != null ? rec.bestScore.toLocaleString('en-US') + ' PTS' : '') : e.type === 'speedtrap' ? (rec.bestTrap != null ? Math.round(speedIn(rec.bestTrap)) + ' ' + speedUnit() : '') : rec.bestTime != null ? fmt(rec.bestTime) : '';
-      return `${PUI.tierHead?.(list, i) ?? ''}<div class="mi ev ${PUI.rowClass?.(e.id) ?? ''}" data-ev="${e.id}">${MEDAL_ICON(rec.medal)}<div class="ev-main"><b>${esc(e.name)}${PUI.rowBadge?.(e.id) ?? ''}</b><span>${esc(r.fromName)} ${r.reverse ? '◀' : '▶'} ${esc(r.toName)} · ${fmtDist(r.len)}${r.reverse ? ' · REVERSE' : ''}</span></div><div class="ev-type t-${e.type}">${TYPES[e.type].short}</div><div class="ev-best">${best}</div></div>`;
+      return `<div class="mi ev" data-ev="${e.id}">${MEDAL_ICON(rec.medal)}<div class="ev-main"><b>${esc(e.name)}</b><span>${esc(r.fromName)} ${r.reverse ? '◀' : '▶'} ${esc(r.toName)} · ${fmtDist(r.len)}${r.reverse ? ' · REVERSE' : ''}</span></div><div class="ev-type t-${e.type}">${TYPES[e.type].short}</div><div class="ev-best">${best}</div></div>`;
     }).join('');
     return `<div class="ev-wrap"><div class="ev-left"><div class="kick">${this.filter === 'timetrial' ? 'TIME TRIAL' : 'EVENTS'}</div><div class="tabs">${tabs}</div><div class="ev-list">${rows || '<div class="empty">NO EVENTS</div>'}</div>
       <div class="mi small" data-act="back"><b>◀ BACK</b></div></div><div class="ev-detail" id="evDetail"></div></div>
@@ -219,7 +217,6 @@ export class Menu {
       <div class="d-targets">${tg.map(([m, v]) => `<div class="tg ${m} ${rec.medal && MEDALS.indexOf(rec.medal) >= MEDALS.indexOf(m) ? 'got' : ''}">${MEDAL_ICON(m)}<b>${v}</b></div>`).join('')}</div>
       ${best.length ? `<div class="d-best">${best.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>` : '<div class="d-best none">NOT RACED YET</div>'}
       ${this.ghostRow(e)}
-      ${PUI.detail?.(e.id) ?? ''}
       <div class="d-go">ENTER / CLICK TO START · ${esc(this.h.carName?.() || '')}</div>`;
   }
 
@@ -266,6 +263,6 @@ export class Menu {
         <h2>${esc(d.title || '')}</h2><div class="r-sub">${d.sub || ''}</div>
         <div class="r-table">${(d.rows || []).map(([k, v, hi]) => `<div><span>${esc(k)}</span><b class="${hi ? 'nb' : ''}">${v}</b></div>`).join('')}</div>
         <div class="r-actions">${item('retry', 'RETRY')}${window.__replay?.watch ? item('replay', 'WATCH REPLAY') : ''}${d.next ? item('next', 'NEXT EVENT') : ''}${item('list', 'EVENT LIST')}${item('menu', 'MAIN MENU')}</div>
-      </div><div class="r-right">${PUI.resultsBlock?.(res) ?? ''}${field}${splits}${bd}</div></div>`;
+      </div><div class="r-right">${field}${splits}${bd}</div></div>`;
   }
 }

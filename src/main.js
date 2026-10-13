@@ -34,8 +34,6 @@ import { trackVersion } from './network-track.js';
 import { simplifyScenery } from './graphics.js';
 import { initWeather, updateWeather } from './weather.js';
 import { initReplay } from './replay-mode.js';
-import * as PROG from './progression.js';
-import * as PUI from './progression-ui.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -445,9 +443,7 @@ const evCtx = () => ({ route, marks: map.data.marks });
 const aidSpec = (spec) => (settings.aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0, abs: false });
 function applyDriving() {
   if (!player) return;
-  // career upgrades (src/progression.js) on top of the catalogue spec; online races stay stock
-  player.veh.setSpec(aidSpec(multiplayer.active ? player.spec : PROG.tunedSpec(player.spec)));
-  PUI.setCar?.(player.spec);
+  player.veh.setSpec(aidSpec(player.spec));
   player.veh.setManual?.(settings.transmission === 'manual');
 }
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
@@ -546,8 +542,6 @@ function startEvent(id) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = EV.getEvent(id); if (!def) return;
   const idx = def.car ? Math.max(0, CARS.findIndex((c) => c.id === def.car)) : G.carIdx;
-  const gate = PROG.canEnter(def, CARS[idx]); // career: tier / class limit / locked car outside Quick Race
-  if (!gate.ok) { PUI.notice?.(gate.reason); audio.ui?.(false); return; }
   G.pendingEvent = def;
   restart(idx);
 }
@@ -588,7 +582,6 @@ function pickCar(d) {
   G.selIdx = (G.selIdx + d + CARS.length) % CARS.length;
   audio.ui(d > 0);
   hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
-  PUI.garage?.(CARS[G.selIdx], { onChange: () => applyDriving() });
   // live preview: swap the player's model in place
   const veh = player.veh; setCar(G.selIdx); player.veh = veh; G.carIdx = G.selIdx;
   syncCar(player, 0);
@@ -601,7 +594,6 @@ function openGarage() {
   G.state = 'garage'; G.selIdx = G.carIdx; G.cam = 'orbit'; applyCamMode();
   hud.showMenu('garage', { kick: 'GARAGE', title: 'PICK YOUR RIDE', sub: '<b>← →</b> to browse, <b>ENTER</b> to take it, <b>ESC</b> to keep your old car.' });
   hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
-  PUI.garage?.(CARS[G.selIdx], { onChange: () => applyDriving() });
 }
 function closeGarage(keep = true) {
   const f = G.menuFrom; hud.hideMenu();
@@ -1378,7 +1370,6 @@ function step(dt, draw = true) {
       seaCheck(pv, dt);
       stuckCheck(pv, dt);
       if (!pv.nitroOn) pv.nitro = Math.min(1, pv.nitro + dt * 0.012);
-      else pv.nitro = Math.min(1, pv.nitro + dt * PROG.nitroRefund(pv.spec)); // nitro upgrade: a bigger bottle drains slower
       if (pv.nitroOn && !G.nitroWas) audio.nitroStart();
       G.nitroWas = pv.nitroOn;
       if (!multiplayer.active) {
@@ -1667,11 +1658,6 @@ const multiplayer = new Multiplayer(CARS, {
     if (G.state !== 'onlineResults') { const won = G.pFinish !== null && multiplayer.ranking()[0]?.id === multiplayer.id; if (won) audio.win(); else audio.lose(); }
     G.state = 'onlineResults'; hud.count('');
     document.body.classList.remove('racing', 'counting');
-    if (G.pFinish !== null && multiplayer.rewardedRaceId !== multiplayer.lobby.raceId) {
-      const ranking = multiplayer.ranking(), payout = { raceId: multiplayer.lobby.raceId, position: ranking.findIndex(p => p.id === multiplayer.id) + 1, field: ranking.length };
-      multiplayer.rewardedRaceId = payout.raceId;
-      import('./progression.js').then(m => m.awardOnline?.(payout)).catch(() => {});
-    }
   },
 });
 window.__multiplayer = multiplayer;

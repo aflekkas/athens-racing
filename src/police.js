@@ -101,7 +101,7 @@ export class HeatMachine {
   drain() { const o = this.out; this.out = []; return o; }
 }
 
-// ------------------------------------------------------------------ live status for the HUD / events / progression
+// ------------------------------------------------------------------ live status for the HUD / events
 export const pursuit = { enabled: false, state: 'off', heat: 0, level: 0, bounty: 0, fine: 0, takedowns: 0, bustMeter: 0, evadeMeter: 0, time: 0, units: 0 };
 
 const QS = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();

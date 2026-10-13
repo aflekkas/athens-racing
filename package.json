@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.mjs",
-    "test": "node --test server/*.test.mjs tools/input.test.mjs tools/replay.test.mjs tools/progression.test.mjs && node --import ./tools/physics-test/register.mjs --test tools/physics-test/manual.test.mjs tools/physics-test/upgrades.test.mjs"
+    "test": "node --test server/*.test.mjs tools/input.test.mjs tools/replay.test.mjs && node --import ./tools/physics-test/register.mjs --test tools/physics-test/manual.test.mjs"
   },
   "engines": { "node": ">=22" },
   "dependencies": { "ws": "^8.18.3" }
