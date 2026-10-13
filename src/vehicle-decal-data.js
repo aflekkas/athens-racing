@@ -7,8 +7,8 @@ export const DECAL_LIBRARY = Object.freeze([
   {id:'athens',name:'ATHENS STREET RACERS'},
   {id:'greek_flag',name:'Greek flag'},
   {id:'flames',name:'Flames'},
-  {id:'apex',name:'APEX / fictional race engineering'},
-  {id:'ion',name:'ION / fictional performance parts'},
+  {id:'apex',name:'ASR Lab / original team mark'},
+  {id:'ion',name:'Coast Works / original team mark'},
 ].map(d=>Object.freeze(d)));
 export const MAX_DECALS=8;
 export function normalizeDecals(list){

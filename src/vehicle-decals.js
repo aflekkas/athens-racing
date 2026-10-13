@@ -48,8 +48,8 @@ function art(d){
   if(d.id==='flames'){
     for(let i=0;i<5;i++){const y=50+i*92;c.beginPath();c.moveTo(50,y+85);c.bezierCurveTo(290,y-20,470,y+120,720+i*40,y-25);c.bezierCurveTo(590,y+120,340,y+50,235,y+150);c.bezierCurveTo(175,y+130,115,y+110,50,y+85);c.fill();}
   }
-  if(d.id==='apex'){c.beginPath();c.moveTo(80,380);c.lineTo(220,110);c.lineTo(360,380);c.lineTo(260,315);c.lineTo(220,240);c.lineTo(180,315);c.closePath();c.fill();c.font='900 italic 190px Arial';c.fillText('APEX',675,250,600);c.font='40px Arial';c.fillText('RACE ENGINEERING',660,378,560);}
-  if(d.id==='ion'){c.lineWidth=28;c.beginPath();c.ellipse(210,255,125,155,.45,0,Math.PI*2);c.stroke();c.font='900 italic 245px Arial';c.fillText('ION',640,255,580);c.font='40px Arial';c.fillText('PERFORMANCE PARTS',650,395,580);}
+  if(d.id==='apex'){c.beginPath();c.moveTo(80,380);c.lineTo(220,110);c.lineTo(360,380);c.lineTo(260,315);c.lineTo(220,240);c.lineTo(180,315);c.closePath();c.fill();c.font='900 italic 190px Arial';c.fillText('ASR',675,250,600);c.font='40px Arial';c.fillText('RACE WORKSHOP',660,378,560);}
+  if(d.id==='ion'){c.lineWidth=28;c.beginPath();c.ellipse(210,255,125,155,.45,0,Math.PI*2);c.stroke();c.font='900 italic 245px Arial';c.fillText('COAST',640,255,580);c.font='40px Arial';c.fillText('WORKS',650,395,580);}
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;return texture;
 }
 function projectors(model,d){
