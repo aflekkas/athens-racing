@@ -59,3 +59,39 @@ test('SQLite leaderboard persists best records, separates map versions and share
     db.close();
   })();
 });
+
+test('wreck DNF is authoritative, never records a time, ignores fake finish and completes with the other finisher', t => {
+  let now = 200000; t.mock.method(Date, 'now', () => now);
+  const submissions = [], opts = { maps, cars, leaderboard: { submit: async r => submissions.push(r) }, countdownMs: 100 };
+  let core = createGameCore(opts);
+  const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
+  const helloA = a.messages.find(m => m.type === 'hello'), helloB = b.messages.find(m => m.type === 'hello');
+  assert.equal(helloA.features.wreckDnf, true);
+  const send = (ws, m) => core.message(ws, JSON.stringify(m));
+  send(a, { type: 'create' }); const code = a.messages.at(-1).lobby.code;
+  send(b, { type: 'join', code });
+  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
+  send(a, { type: 'start' }); const raceId = a.messages.at(-1).lobby.raceId;
+  // A pre-GO or stale packet cannot declare a wreck for a different race.
+  send(a, { type: 'dnf', raceId, reason: 'wrecked' }); assert.equal(core.lobbies.get(code).players.get(helloA.id).dnf, false);
+  now += 2100; core.tick();
+  send(a, { type: 'dnf', raceId: 'stale-race', reason: 'wrecked' }); assert.equal(core.lobbies.get(code).players.get(helloA.id).dnf, false);
+  send(a, { type: 'dnf', raceId, reason: 'busted' }); assert.match(a.messages.at(-1).message, /Unknown DNF/);
+  send(a, { type: 'dnf', raceId, reason: 'wrecked' });
+  const wreck = a.messages.at(-1).lobby.players.find(p => p.id === helloA.id);
+  assert.equal(wreck.dnf, 'wrecked'); assert.equal(wreck.finish, null); assert.equal(submissions.length, 0);
+  const saved = JSON.parse(JSON.stringify(core.exportState())), sockets = new Map([...core.clients].map(c => [c.token, c.ws]));
+  core = createGameCore(opts); core.restore(saved, sockets);
+  send(a, { type: 'states', raceId, states: [state(14), state(15)] });
+  const wrecked = core.lobbies.get(code).players.get(helloA.id);
+  assert.equal(wrecked.finish, null); assert.equal(wrecked.state, null); assert.equal(submissions.length, 0);
+  send(b, { type: 'state', raceId, state: state(15) });
+  const lobby = b.messages.at(-1).lobby; assert.equal(lobby.status, 'results');
+  const lost = lobby.results.find(p => p.id === helloA.id), won = lobby.results.find(p => p.id === helloB.id);
+  assert.equal(lost.dnf, 'wrecked'); assert.equal(lost.finish, null);
+  assert.equal(won.dnf, false); assert.ok(Number.isFinite(won.finish));
+  assert.equal(submissions.length, 1); assert.equal(submissions[0].driverId, helloB.id);
+  // Later duplicate declarations or fake progress cannot mutate either result.
+  send(a, { type: 'state', raceId, state: state(15) }); assert.equal(submissions.length, 1);
+  send(a, { type: 'rematch' }); assert.ok(a.messages.at(-1).lobby.players.every(p => p.dnf === false && p.finish === null));
+});

@@ -17,24 +17,24 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
   const results = (l) => {
     if (l.status === 'results') return;
     l.status = 'results';
-    for (const p of l.players.values()) if (p.finish === null) p.dnf = true;
-    for (const p of l.racers.values()) if (p.finish === null) p.dnf = true;
+    for (const p of l.players.values()) if (p.finish === null && !p.dnf) p.dnf = true;
+    for (const p of l.racers.values()) if (p.finish === null && !p.dnf) p.dnf = true;
     publish(l);
   };
   const leave = (c) => {
     const l = c.lobby; if (!l) return;
-    const racer = l.racers?.get(c.id); if (racer) { racer.disconnected = true; if (racer.finish === null) racer.dnf = true; }
+    const racer = l.racers?.get(c.id); if (racer) { racer.disconnected = true; if (racer.finish === null && !racer.dnf) racer.dnf = true; }
     l.players.delete(c.id); c.lobby = null; c.ready = false; c.state = null; c.stateAt = null;
     if (!l.players.size) lobbies.delete(l.code);
     else {
       if (l.status === 'countdown' && [...l.players.values()].filter(p => p.connected).length < 2) { l.status = 'waiting'; l.startAt = null; l.raceId = null; l.racers = null; for (const p of l.players.values()) p.ready = false; }
-      if (l.host === c.id) l.host = [...l.players.values()].find(p => p.connected)?.id || l.players.keys().next().value; if (['countdown', 'race'].includes(l.status) && [...l.players.values()].every(p => p.finish !== null)) results(l); publish(l); }
+      if (l.host === c.id) l.host = [...l.players.values()].find(p => p.connected)?.id || l.players.keys().next().value; if (['countdown', 'race'].includes(l.status) && [...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l); publish(l); }
     for (const other of clients) if (!other.lobby) send(other.ws, discover());
   };
   const connect = (ws, ip) => {
     if ([...clients].filter(c => c.ip === ip).length >= 24) { ws.close(1013, 'Too many connections'); return; }
     let c = { ws, ip, token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: 'DRIVER', car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now() };
-    sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', features: { stateBatching: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
+    sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
     bind(c, ws, ip);
   };
   const bind = (initial, ws, ip) => {
@@ -121,7 +121,17 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
           for (const p of l.players.values()) { p.ready = false; p.finish = null; p.dnf = false; p.state = null; p.stateAt = null; }
           publish(l); return;
         }
-        if (m.type === 'state' && ['countdown', 'race'].includes(l.status) && now >= l.startAt && m.raceId === l.raceId ) {
+        if (m.type === 'dnf') {
+          if (!['countdown', 'race'].includes(l.status) || now < l.startAt || m.raceId !== l.raceId || c.finish !== null || c.dnf) return;
+          if (m.reason !== 'wrecked') return error('Unknown DNF reason.');
+          if (l.status === 'countdown') l.status = 'race';
+          c.dnf = 'wrecked'; c.finish = null;
+          const racer = l.racers.get(c.id); racer.dnf = 'wrecked'; racer.finish = null;
+          l.dirty = true; publish(l);
+          if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
+          return;
+        }
+        if (m.type === 'state' && !c.dnf && ['countdown', 'race'].includes(l.status) && now >= l.startAt && m.raceId === l.raceId ) {
           const fields = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'];
           if (!m.state || fields.some(k => !Number.isFinite(m.state[k]))) return;
           const s = m.state, event = lobbyEvent(l);
@@ -137,7 +147,7 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
           if (c.finish === null && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000; l.racers.get(c.id).finish = c.finish; publish(l);
             leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
-            if ([...l.players.values()].every(p => p.finish !== null)) results(l);
+            if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
           }
         }
       } catch { error('Invalid message.'); }
@@ -164,7 +174,7 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
       if (['countdown', 'race'].includes(l.status)) {
         if (now > l.startAt + raceLimitMs) { results(l); continue; }
         if (!l.dirty) continue; l.dirty = false;
-        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, finish: p.finish }));
+        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, finish: p.finish, dnf: p.dnf }));
         for (const p of l.players.values()) send(p.ws, { type: 'snapshot', raceId: l.raceId, now, players });
       }
     }
