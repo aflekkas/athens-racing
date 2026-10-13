@@ -34,6 +34,30 @@ function kerbRun(spec, kmh, h, fdt = 1 / 60, s0 = 30, s1 = 75) {
 const only = process.argv[2];
 const list = CARS.filter((c) => !only || c.id === only);
 
+// ------------------------------------------------------------------ 0. the ground under a wheel: plane + step (ground.js)
+{
+  const { wheelGround } = await import('../../src/wheel-ground.js');
+  const kerbRoute = { edge: () => 3.5, surfaceY: () => 0, length: 1000, closed: false };
+  const road = { gutter: 0.3, curbH: () => 0.16, sidewalk: () => 2 };
+  const eA = 3.8, uo = eA + 0.18 + 2;
+  // at(): road surface on the carriageway, the kerb's top on the pavement, a terrain 0.3 m up beyond it
+  const at = (u) => ({ y: Math.abs(u) <= eA ? 0 : Math.abs(u) <= uo ? 0.16 : 0.3, hump: 0 });
+  const g = (u) => wheelGround(kerbRoute, road, at(u), 100, u, {});
+  const near = (x, y, e = 0.005) => Math.abs(x - y) < e;
+  const cases = [
+    ['flat carriageway, centre', 0, (r) => near(r.input, 0) && near(r.plane, 0)],
+    ['flat carriageway, 2 m out', 2, (r) => near(r.input, 0) && near(r.plane, 0)],
+    ['carriageway just short of the tyre band', eA - 0.2, (r) => near(r.input, 0) && near(r.plane, 0)],
+    ['at the kerb edge: half the kerb, plane on the road', eA, (r) => near(r.input, 0.08) && near(r.plane, 0)],
+    ['on the pavement: the full kerb, plane on the road', eA + 0.5, (r) => near(r.input, 0.16) && near(r.plane, 0)],
+    ['off the pavement edge: the kerb fading into the terrain', uo + 0.5, (r) => near(r.input, 0.08) && near(r.plane, 0.22)],
+    ['well off the edge: terrain only', uo + 2, (r) => near(r.input, 0) && near(r.plane, 0.3)],
+    ['left side mirrors the right', -(eA + 0.5), (r) => near(r.input, 0.16) && near(r.plane, 0)],
+  ];
+  const bad = cases.filter(([, u, ok]) => !ok(g(u))).map(([n, u]) => `${n}: ${JSON.stringify(g(u))}`);
+  check('wheel ground: kerb step 0 on the carriageway, the kerb on the pavement, blended at the edge, faded off it', bad.length === 0, bad.join(' | ') || `${cases.length} cases`);
+}
+
 // ------------------------------------------------------------------ 1. at rest
 for (const spec of list) {
   const v = new Vehicle(spec, route); v.reset(0, 0, 0);

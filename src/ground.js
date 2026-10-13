@@ -4,6 +4,7 @@
 // Heights follow exactly what road.js / terrain.js / buildRoad drew, so the car sits on what you see.
 import * as THREE from 'three';
 import { ROAD } from './road.js';
+import { wheelGround } from './wheel-ground.js';
 import { clamp, lerp, smoothstep } from './util.js';
 import { TX } from './tex.js';
 
@@ -461,18 +462,9 @@ export class Ground {
       const si = v.s + cx * ft + cy * rt, ui = v.u + cx * fr + cy * rr;
       const a = this.at(v.x + fx * cx + rx * cy, v.z + fz * cx + rz * cy, si, ui, q);
       wy[i] = a.y; ws[i] = a.surf;
-      const sc = route.closed ? route.wrap(si) : clamp(si, 0, route.length), au = Math.abs(ui), side = ui >= 0 ? 1 : -1, eA = route.edge(sc) + ROAD.gutter;
-      const uo = eA + 0.18 + ROAD.sidewalk(route, sc, side);
-      let step;
-      if (au <= eA) step = a.y - route.surfaceY(sc, ui);                                   // carriageway (median island)
-      else if (au <= uo) step = clamp(a.y - route.surfaceY(sc, side * eA), 0, 0.4);        // pavement / verge: the kerb
-      // the tyre (~22 cm wide) rolls onto a kerb edge across its width: crossing at a shallow angle the load moves onto
-      // the kerb as the wheel slides sideways, not in one step (head-on, the wheel radius sets the rise: physics.js)
-      const kd = au - eA;
-      if (Math.abs(kd) < 0.11 && au <= uo) step = clamp(ROAD.curbH(route, sc), 0, 0.4) * smoothstep(-0.11, 0.11, kd);
-      else step = a.hump + ROAD.curbH(route, sc) * (1 - smoothstep(uo, uo + 1, au));        // off the edge: fade to terrain
-      if (au <= uo) nPaved++;
-      wb[i] = step; pl[i] = a.y - step;
+      const wg = wheelGround(route, ROAD, a, si, ui, this._wg || (this._wg = {}));
+      if (wg.paved) nPaved++;
+      pl[i] = wg.plane; wb[i] = wg.input;
     }
     v.wheelBump = wb;
     const yF = (pl[0] + pl[1]) / 2, yB = (pl[2] + pl[3]) / 2, yR = (pl[1] + pl[3]) / 2, yL = (pl[0] + pl[2]) / 2;
@@ -486,7 +478,10 @@ export class Ground {
     v.bank = onRoad ? route.bank(v.s) : clamp((yR - yL) / v.track, -0.6, 0.6);
     // crests launch you: off the tarmac, when the ground falls away under the car faster than gravity could follow
     // (vertical speed from the ground slope under the wheelbase, so curbs and steps don't count as ramps)
-    const yG = onRoad ? route.surfaceY(sv, v.u) : astride ? (yF + yB) / 2 : Math.max(g.y - g.hump, (yF + yB) / 2);
+    // The centre sample must use the same plane/step split as the wheels: using its full pavement height here
+    // would add the kerb twice once all four wheels have climbed onto the pavement.
+    const centrePlane = wheelGround(route, ROAD, g, v.s, v.u, this._wg).plane;
+    const yG = onRoad ? route.surfaceY(sv, v.u) : astride ? (yF + yB) / 2 : Math.max(centrePlane, (yF + yB) / 2);
     if (v.air === undefined) { v.air = 0; v.vy = 0; v.yAir = yG; }
     const paved = onRoad || g.surf === 'pavement' || g.surf === 'asphalt' || g.surf === 'verge';
     const vyS = paved ? 0 : clamp((yF - yB) / v.wb * v.vLong, -20, 20);
