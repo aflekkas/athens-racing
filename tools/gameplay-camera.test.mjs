@@ -30,3 +30,10 @@ test('camera preferences clamp FOV/sensitivity and marker/invert choices update 
   setSetting('mouseSensitivity', -10); assert.equal(settings.mouseSensitivity, 0.25); setSetting('playerMarkers', false); assert.equal(settings.playerMarkers, false); setSetting('invertLookY', true); assert.equal(settings.invertLookY, true);
   setSetting('chaseFov', 58); setSetting('cockpitFov', 66); setSetting('mouseSensitivity', 1); setSetting('playerMarkers', true); setSetting('invertLookY', false);
 });
+test('overlapping start handlers make one pointer-lock request while the first is pending', async () => {
+  const r = mouseRig(); let reject, requests = 0;
+  r.canvas.requestPointerLock = () => { requests++; return new Promise((resolve, no) => { reject = no; }); };
+  r.input.requestMouseLock(); r.input.requestMouseLock(); assert.equal(requests, 1);
+  reject(Error('denied')); await Promise.resolve(); r.pointer({clientX:600}); assert.deepEqual(r.positions, [[0.5, 0]]);
+  r.input.requestMouseLock(); assert.equal(requests, 2); reject(Error('denied')); await Promise.resolve(); r.input.destroy();
+});
