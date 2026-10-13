@@ -174,7 +174,7 @@ class Strip {
     for (const q of points) { this.pos.push(q.p.x, q.p.y, q.p.z); this.su.push(q.s, q.u); if (q.em) this.em.push(...q.em); if (q.c) this.col.push(q.c.r, q.c.g, q.c.b); }
     this.rows++;
   }
-  build(flipU = false) {
+  build(flipU = false, enabledRows = null) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
     g.setAttribute('aSU', new THREE.Float32BufferAttribute(this.su, 2));
@@ -182,6 +182,7 @@ class Strip {
     if (this.col.length) g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
     const idx = [], C = this.cols;
     for (let r = 0; r + 1 < this.rows; r++) for (let c = 0; c + 1 < C; c++) {
+      if (enabledRows && (!enabledRows[r] || !enabledRows[r + 1])) continue;
       const a = r * C + c, b = a + 1, d = a + C, e = d + 1;
       if (!flipU) idx.push(a, b, d, b, e, d); else idx.push(a, d, b, b, d, e);
     }
@@ -192,6 +193,7 @@ class Strip {
 
 export function buildRoad(map, scene, heightC, assets) {
   const { route, data } = map;
+  const legacyMedian = !map.id || map.id === 'riviera'; // preserve the original coast mesh
   const group = new THREE.Group(); scene.add(group);
   const asphalt = asphaltMaterial();
   const paving = pavingMaterial();
@@ -204,8 +206,10 @@ export function buildRoad(map, scene, heightC, assets) {
   for (let c0 = sMin; c0 < sMax; c0 += CHUNK) {
     const c1 = Math.min(sMax, c0 + CHUNK);
     const road = new Strip(7), med = new Strip(6), curbR = new Strip(4), curbL = new Strip(4), walkR = new Strip(3), walkL = new Strip(3), skR = new Strip(3), skL = new Strip(3);
+    const medianRows = [];
     for (let s = c0; s <= c1 + 0.001; s += STEP) {
       const e = route.edge(s), mh = route.medHalf(s), nl = route.lanesF(s), dv = route.div(s);
+      medianRows.push(legacyMedian || dv > .01);
       const eA = e + ROAD.gutter;
       const em = [e, mh, nl, dv];
       const us = [-eA, -e, -mh, 0, mh, e, eA];
@@ -243,7 +247,7 @@ export function buildRoad(map, scene, heightC, assets) {
     }
     const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); return m; };
     add(road.build(), asphalt, false, true);
-    add(med.build(), vergeMat, true);
+    if (medianRows.some(Boolean)) add(med.build(false, legacyMedian ? null : medianRows), vergeMat, true);
     add(curbR.build(), curbMat); add(curbL.build(true), curbMat);
     add(walkR.build(), paving, false, true); add(walkL.build(true), paving, false, true);
     add(skR.build(), vergeMat); add(skL.build(true), vergeMat);
