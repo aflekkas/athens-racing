@@ -137,6 +137,7 @@ async function boot() {
   onResize();
   document.body.classList.add('loaded');
   lstat('READY', 1); loading.hide();
+  announceGearbox(player.spec); // Initial load: show the cue after shader warm-up finishes.
   multiplayer.loaded = true;
   multiplayer.mapId = map.id || 'riviera';
   multiplayer.trackVersion = trackVersion(map.data.route);
@@ -251,6 +252,11 @@ function disposeCar(c) {
 }
 
 
+function announceGearbox(spec) {
+  if (carTransmission(spec) === 'manual') controls.toast('MANUAL ONLY: E ↑ / Q ↓ to shift · RB / LB on pad');
+  else if (carTransmission(spec) === 'auto') controls.toast('AUTO: E ↑ / Q ↓ paddle override · M locked');
+}
+
 function setCar(idx, keepPose = true) {
   const old = player;
   const spec = CARS[idx];
@@ -278,8 +284,7 @@ function setCar(idx, keepPose = true) {
   $('rivalName').textContent = RIVAL_NAME;
   }
   applyDriving();
-  if (carTransmission(spec) === 'manual') controls.toast('MANUAL ONLY: E ↑ / Q ↓ to shift · RB / LB on pad');
-  else if (carTransmission(spec) === 'auto') controls.toast('AUTO: E ↑ / Q ↓ paddle override · M locked');
+  if (document.body.classList.contains('loaded')) announceGearbox(spec);
   applyCamMode();
   if (keepPose) { syncCar(player, 0); syncCar(rival, 0); }
 }
