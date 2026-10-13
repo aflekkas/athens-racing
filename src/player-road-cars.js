@@ -2,6 +2,8 @@
 // Reference photographs/specifications: tools/models-more-notes.md.
 import * as THREE from 'three';
 export const ROAD_MODELS = {
+ panda: {L:3.538,W:1.578,H:1.540,wb:2.299,track:1.366,r:.286,rim:.165,tyreF:.155,tyreR:.155,belt:.97,front:.84,rear:1.0,cowl:-.81,header:-.38,roofBack:1.28,back:1.61,seatZ:.10,eyeY:1.24,leather:'#535d70',doors:4,brand:'FIAT',archTrim:true,stations:[[-1.769,.68,.84],[-1.4,.77,.89],[-.81,.789,.97],[.4,.78,.98],[1.14,.789,1.00],[1.769,.71,1.0]]},
+
  ibiza: {L:3.813,W:1.640,H:1.414,wb:2.440,track:1.429,r:.289,rim:.165,tyreF:.155,tyreR:.155,belt:.91,front:.76,rear:.95,cowl:-.78,header:-.25,roofBack:1.10,back:1.63,seatZ:.19,eyeY:1.12,leather:'#686665',doors:4,brand:'SEAT',stations:[[-1.9065,.70,.76],[-1.5,.79,.82],[-1.0,.82,.89],[-.78,.80,.91],[.5,.80,.92],[1.23,.82,.96],[1.9065,.73,.95]]},
 
  huracan: {L:4.520,W:1.933,H:1.165,wb:2.620,track:1.668,r:.338,rim:.254,tyreF:.245,tyreR:.305,belt:.79,front:.56,rear:.82,cowl:-.99,header:-.28,roofBack:.53,back:1.04,seatZ:.16,eyeY:.91,leather:'#282b2d',doors:2,seats:2,seatBase:.30,brand:'LAMBORGHINI',stations:[[-2.26,.77,.56],[-1.80,.925,.64],[-1.30,.9665,.79],[-.99,.91,.79],[.3,.86,.79],[1.28,.9665,.87],[1.90,.93,.86],[2.26,.83,.82]]},
@@ -102,7 +104,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
       face(M.black,[[-.32,.82],[.32,.82],[.32,.71],[-.32,.71]],F-.008,'panda-upper-grille');
       for(let i=0;i<3;i++)box(p,M.chrome,[.60,.012,.012],[0,.73+i*.035,F-.018],.003);
       for(const s of [-1,1]){face(optic,[[s*.37,.89],[s*.70,.91],[s*.70,.66],[s*.37,.66]],F-.008,'front-lamp-housing');face(amber,[[s*.39,.89],[s*.69,.90],[s*.69,.855],[s*.39,.85]],F-.013,'indicator-lens');
-        const x=s*(W-.16);box(p,M.tail,[.095,.53,.045],[x,1.16,R-.07],.023,[.16,0,0],'rear-lamp-housing');
+        const x=s*(W-.16),z=(d.back+d.roofBack)/2;box(p,M.tail,[.095,.49,.045],[x,1.22,z+.015],.023,[-.63,0,0],'rear-lamp-housing');
         line(p,M.black,[[s*.51,1.555,-.28],[s*.51,1.575,.92],[s*.51,1.54,1.15]],.023);}
       badge('FIAT',.088,.06,.765,F-.035);badge('PANDA',.20,.037,.92,R+.014);
     }else if(id==='yaris'){

@@ -210,7 +210,7 @@ test('session switching cannot orphan a joined lobby or retain duplicate live so
 
 test('all ten catalogue cars can switch while waiting; race car changes are locked', async t => {
   const env = await setup(t, { raceLimitMs: 5000 }); const { a, b } = await pair(env);
-  for (const car of ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv', 'golf', 'corolla', 'superb', 'police_octavia', 'mini_jcw', 'huracan', 'ibiza', 'cle', 'gla']) {
+  for (const car of ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv', 'golf', 'corolla', 'superb', 'police_octavia', 'mini_jcw', 'huracan', 'panda', 'ibiza', 'cle', 'gla']) {
     a.send({ type: 'ready', ready: false, version: a.version, car }); const changed = (await room(a)).lobby; await room(b);
     assert.equal(changed.players.find(p => p.id === a.id).car, car);
   }

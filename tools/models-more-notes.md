@@ -19,3 +19,9 @@ Dedicated low two-seat cabin, portrait console screen, central digital tachomete
 Early five-door 1.4i CLX, **44 kW / 60 PS, 107 Nm**, FWD, five-speed manual, 935 kg representative road mass, 157 km/h. The [1994 SEAT Netherlands brochure, p. 8](https://automobilisto.de/nl/archive/seat/ibiza/1994-nl.pdf) supplies 3.813 × 1.640 × 1.414 m dimensions, 2.440 m wheelbase, 157 km/h and 15.7 s to 100 for the 1.4i. Gear ratios, CdA and the full torque curve are approximations. The [SEAT heritage archive](https://www.seatcocheshistoricos.es/SEATHistoricos/en/1990/ibizacopa.php) documents the 6K generation.
 
 Split grille, upright rectangular lamps, black bumper strips, steel wheels, rear drums, period radio, faded paint finishes and small sill rust patches. This is the **only catalogue entry with `nitrous:true`**; the bottle and valve sit behind the seats. Worn colours reduce clearcoat and increase paint roughness. Standard safety aids are gameplay options, not claims that the original car had ESC.
+
+## Fiat Panda 169 1.2 (`panda`)
+
+2003–2009 five-door **44 kW / 60 PS, 102 Nm**, 860 kg, FWD, five-speed manual, 155 km/h. Dimensions 3.538 × 1.578 × 1.540 m, wheelbase 2.299 m, 155/80 R13 tyres. Primary references: [Fiat owner's handbook, technical specifications](https://aftersales.fiat.com/eLumData/EN/00/169_PANDA/00_169_PANDA_603.81.224_EN_01_07.07_L_LG/00_169_PANDA_603.81.224_EN_01_07.07_L_LG.pdf) and [2003 manufacturer launch](https://www.media.stellantis.com/it-it/fiat/press/nuova-panda). The launch engine is the 60 PS FIRE, not the later 69 PS revision. Five-speed ratios and drag area are simulation approximations.
+
+Tall short body, upright cabin, roof rails, black rub strips, square lamps and tall rear-pillar lamps; pressed wheels and rear drums.

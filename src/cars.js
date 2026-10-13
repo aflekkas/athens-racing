@@ -170,6 +170,15 @@ export const CARS = [
     tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.5, track: 1.429, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
     stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
   },
+  // Period manufacturer references and estimates: tools/models-more-notes.md.
+  {
+    id: 'panda', name: 'FIAT PANDA 1.2', short: 'PANDA 169', tag: '169 · 60 PS FIRE. Tall roof, tiny footprint. FWD.', color: '#92b5c8', accent: '#a7a5a0',
+    zeroTo100: 14.0, mass: 860, power: 44, torque: 102, redline: 6200, idle: 850, gears: [3.909,2.158,1.48,1.121,0.897], final: 3.438, wheelR: 0.286,
+    torqueCurve: [[0,38],[850,50],[1500,80],[2500,102],[4000,96],[5000,84.03],[6200,59]], peakTorqueRpm: 2500, peakPowerRpm: 5000,
+    wheelbase: 2.299, length: 3.538, width: 1.578, cdA: 0.69, vmax: 155, grip: 0.96, steer: .61, yawI: 1.05, drift: 1, brake: .97, cyl: 4, pitch: 1, body: 'panda', cabinWidth: .80, drive: 'fwd', engine: 'na4', transmission: 'manual', playerDetail: true, trafficWeight: 1.8, steelWheels: true, rearDrums: true, oldDash: true,
+    tyres: ['155/80 R13','155/80 R13'], frontW: 0.6, hcg: 0.55, track: 1.366, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
+    stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
+  },
 ];
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
