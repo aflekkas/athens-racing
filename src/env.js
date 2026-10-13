@@ -667,7 +667,7 @@ function islandMaterial() {
   };
   return islandMat;
 }
-function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86') {
+function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86', profilePower = h < 200 ? 0.8 : 1.4) {
   const geo = new THREE.SphereGeometry(1, 64, 24, 0, Math.PI * 2, 0, Math.PI / 2);
   const p = geo.attributes.position;
   const col = new Float32Array(p.count * 3), c0 = new THREE.Color(color);
@@ -676,7 +676,7 @@ function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86') {
     const a = Math.atan2(z, x);
     const n = 1 + 0.18 * Math.sin(a * 3 + seed) + 0.1 * Math.sin(a * 7 + seed * 2) + 0.05 * Math.sin(a * 13 + seed * 3) + 0.025 * Math.sin(a * 29 + seed * 5);
     const ridge = 0.06 * Math.sin(a * 11 + seed * 4) * Math.sin(y * 9 + seed);
-    const yy = Math.pow(Math.max(0, y), h < 200 ? 0.8 : 1.4) * (0.75 + 0.35 * Math.sin(a * 2 + seed * 1.7)) * (1 + ridge);
+    const yy = Math.pow(Math.max(0, y), profilePower) * (0.75 + 0.35 * Math.sin(a * 2 + seed * 1.7)) * (1 + ridge);
     p.setXYZ(i, x * rx * n, yy * h - 2, z * rz * n);
     const k = 0.85 + 0.25 * Math.sin(a * 17 + seed + y * 6);
     col[i * 3] = c0.r * k; col[i * 3 + 1] = c0.g * k; col[i * 3 + 2] = c0.b * k;
@@ -703,14 +703,29 @@ export function createFarScenery(proj, region = 'riviera') {
   // Hymettus ridge inland (north-east), Peloponnese hills beyond Aegina
   const ridge = (lat, lon, len, w, h, rot, seed, color, name = 'Distant coastal ridge') => {
     const [x, z] = P(lat, lon);
-    const m = islandMesh(x, z, len, w, h, seed, color); m.rotation.y = rot; m.name = name; g.add(m);
+    const m = islandMesh(x, z, len, w, h, seed, color, region === 'megara' ? 1.05 : undefined);
+    m.rotation.y = rot; m.name = name; g.add(m); return m;
   };
   if (region === 'megara') {
     // Geraneia / Makryplagi west of the circuit; Pateras forms the northern skyline.
     // https://www.topoguide.gr/mountains/attiki/hiking_on_geraneia_en.php
     // https://athensattica.com/el/point/oros-pateras/
-    ridge(38.021, 23.1352, 9500, 4200, 1351, 0.12, 11, '#858275', 'Geraneia · west / northwest');
-    ridge(38.13, 23.355, 6800, 3500, 1131, -0.55, 13, '#868571', 'Pateras · north');
+    // Onboard references show stronger relief than the compressed coastal-island profile.
+    // Exaggerate only the two regional silhouettes vertically; keep every horizontal coordinate/bearing.
+    const mountainMat = islandMaterial().clone();
+    mountainMat.onBeforeCompile = sh => {
+      islandMaterial().onBeforeCompile(sh);
+      // Inland relief needs less of the extra sea-level aerosol layer. Rayleigh/Mie extinction,
+      // weather haze, night glow and the live sky radiance retain their shared AP uniforms.
+      const q = new Float32Array(AP.apQ.value); q[0] *= 0.35;
+      sh.uniforms.apQ = { value: q };
+    };
+    mountainMat.customProgramCacheKey = () => islandMaterial().customProgramCacheKey();
+    const mountains = [
+      ridge(38.021, 23.1352, 9500, 4200, 1351, 0.12, 11, '#858275', 'Geraneia · west / northwest'),
+      ridge(38.13, 23.355, 6800, 3500, 1131, -0.55, 13, '#868571', 'Pateras · north'),
+    ];
+    for (const mountain of mountains) { mountain.scale.y = 1.45; mountain.material = mountainMat; }
     return g;
   }
   ridge(37.94, 23.83, 7000, 2600, 1000, -0.95, 1, '#8e8572');
