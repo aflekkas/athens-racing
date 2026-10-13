@@ -66,6 +66,7 @@ scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only swit
 const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 90000);
 const mirrorCam = new THREE.PerspectiveCamera(42, 3.6, 0.4, 600);
 const mirrorRT = new THREE.WebGLRenderTarget(512, 144, { type: THREE.HalfFloatType });
+let mirrorFrame = 0;
 const audio = new Audio();
 audio.onTrack = (t) => hud.message(`♪ <i>${t.title}</i> · ${t.artist}`, 3);
 
@@ -1571,7 +1572,7 @@ function render() {
   sky.position.copy(camera.position);
   // planar reflections and the rear-view mirror alternate frames
   if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
-  else if (G.cam === 'cockpit' && (frameN % (lowGraphics ? 9 : 3)) === 1) {
+  else if (G.cam === 'cockpit' && (player.cockpit.mirrorMat.map !== mirrorRT.texture || (++mirrorFrame % (lowGraphics ? 9 : 3)) === 1)) {
     const body = player.model.body, eye = player.cockpit.eye;
     _v1.set(0, eye.y + 0.12, eye.z - 0.1); body.localToWorld(_v1);
     mirrorCam.position.copy(_v1);
