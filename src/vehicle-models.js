@@ -419,6 +419,9 @@ export function buildDetailedCar(car,kind,opts={}) {
     cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
   }
   if(playerModel){refinePlayerDetails(car,d,M);refineOriginalPlayer(car,d,M,low);refineSportsPlayer(car,d,M,low);}
+  // Light automotive tint: preserve the cabin through both side panes. Physical
+  // dielectric specular gives the stronger grazing reflections without metallic glass.
+  if(playerModel){M.glass.color.set('#c4d4cf');M.glass.opacity=d.open?.12:.18;M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
   if(!grouped){
