@@ -183,14 +183,14 @@ class ReplayMode {
     this.active = true; this.kind = 'photo'; this.playing = false; this.ctx.G.state = 'photo'; this.ctx.G.cam = 'photo';
     euler.setFromQuaternion(this.ctx.camera.quaternion, 'YXZ');
     this.photoState = { position: this.ctx.camera.position.clone(), yaw: euler.y, pitch: euler.x, roll: 0, fov: this.ctx.camera.fov,
-      focus: this.ctx.camera.position.distanceTo(this.ctx.player().model.root.position), dof: 0, exposure: 0, filter: 'neutral' };
+      focus: this.ctx.camera.position.distanceTo(this.ctx.player().model.root.position), dof: 0, exposure: 0, contrast: 0, saturation: 1, vignette: 0.22, filter: 'neutral' };
     this.flySpeed = 8; this.ctx.controls.clear(); window.__flow.menu.hide(); document.body.classList.add('replay-active'); this.setHud(false);
     this.ctx.post.resetHistory?.(); this.makePhotoUI(); this.ui.hidden = false; this.ctx.post.setPhoto(this.photoState); return true;
   }
   makePhotoUI() {
     const s = this.photoState;
     this.ui.innerHTML = `<div class="replay-title"><b>PHOTO MODE</b><span>DRAG TO LOOK · WASD MOVE · Q/E UP/DOWN · SHIFT FAST · WHEEL SPEED</span><button data-close>CLOSE · P / ESC</button></div>
-      <div class="photo-options">${[['fov', 'FOV', 20, 110, 1], ['roll', 'ROLL', -3.14, 3.14, .01], ['focus', 'FOCUS · M', .5, 200, .5], ['dof', 'DEPTH OF FIELD', 0, 9, .1], ['exposure', 'EXPOSURE · EV', -3, 3, .1]].map(([key, label, min, max, step]) =>
+      <div class="photo-options">${[['fov', 'FOV', 20, 110, 1], ['roll', 'ROLL', -3.14, 3.14, .01], ['focus', 'FOCUS · M', .5, 200, .5], ['dof', 'DEPTH OF FIELD', 0, 9, .1], ['exposure', 'EXPOSURE · EV', -3, 3, .1], ['contrast', 'CONTRAST', -1, 1, .05], ['saturation', 'SATURATION', 0, 2, .05], ['vignette', 'VIGNETTE', 0, 1, .02]].map(([key, label, min, max, step]) =>
         `<label>${label}<input aria-label="Photo ${key}" data-photo-key="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${s[key]}"><output>${s[key].toFixed(1)}</output></label>`).join('')}
       <label>FILTER<select aria-label="Photo filter" data-filter>${PHOTO_FILTERS.map(f => `<option value="${f}">${f.toUpperCase()}</option>`).join('')}</select></label>
       <label>EXPORT<select aria-label="Photo resolution" data-resolution><option value="2">2× SUPERSAMPLED</option><option value="3">3× SUPERSAMPLED</option></select></label><button data-save>SAVE PNG</button><output data-status></output></div>`;
