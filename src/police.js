@@ -6,15 +6,14 @@
 //   1 star  one unit tails you          2 stars  PIT attempts on your rear quarter
 //   3 stars boxing in + roadblocks at junctions ahead (cones and parked patrol cars, one gap left open)
 //   4-5     ramming, reinforcements from ahead that U-turn onto you
-// BUSTED: slow / stopped with a unit right on you for a few seconds (fine; in a pursuit event, a DNF).
-// EVADED: out of every unit's sight long enough to finish the cooldown (heat-based bounty).
-// Wrecking a police car is a TAKEDOWN.
+// BUSTED: slow / stopped with a unit right on you for a few seconds (in a race or a pursuit event: a DNF).
+// EVADED: out of every unit's sight long enough to finish the cooldown (longer the more stars).
+// Wrecking a police car you hit is a TAKEDOWN (a call-out; it raises the heat). No points, no money: time only.
 //
 // Hook API (no DOM, no three.js: node can import this; tools/police-test.mjs tests the state machine):
 //   import { pursuit } from './police.js'   live read-only status:
-//     { enabled, state: 'off'|'idle'|'pursuit'|'cooldown', heat, level, bounty, fine, takedowns, bustMeter, evadeMeter, time, units }
-//   events.emit('pursuit', { phase: 'start'|'heat'|'cooldown'|'resume'|'evaded'|'busted'|'takedown', heat, level, bounty, fine, takedowns, time })
-//   events.emit('score', { eventId, kind: 'takedown'|'evade'|'busted', pts, heat, bounty, fine })
+//     { enabled, state: 'off'|'idle'|'pursuit'|'cooldown', heat, level, bustMeter, evadeMeter, time (s in this pursuit), units }
+//   events.emit('pursuit', { phase: 'start'|'heat'|'cooldown'|'resume'|'evaded'|'busted'|'takedown', heat, level, time })
 // Police turn on at an event's 'start' when def.rules.police (rules.startHeat = initial stars), or with
 // settings.police in Quick Race / free roam, or with ?police in the URL.
 import { events } from './events.js';
@@ -30,7 +29,6 @@ export const HEAT = {
   bustDist: 7.5,       // m centre to centre
   bustSpeed: 3.5,      // m/s (~13 km/h)
   escalate: 0.012,     // heat per second of active pursuit (a long chase climbs a star every ~80 s)
-  bountyRate: 12,      // bounty per second per star in pursuit
 };
 export const levelOf = (h) => (h <= 0.001 ? 0 : Math.min(5, Math.ceil(h - 1e-6))); // heat 2.0 = two stars
 
@@ -38,17 +36,16 @@ export const levelOf = (h) => (h <= 0.001 ? 0 : Math.min(5, Math.ceil(h - 1e-6))
 export class HeatMachine {
   constructor(opts = {}) { this.cfg = { ...HEAT, ...opts }; this.reset(); }
   reset() {
-    this.state = 'idle'; this.heat = 0; this.bounty = 0; this.fine = 0; this.takedowns = 0;
+    this.state = 'idle'; this.heat = 0;
     this.bust = 0; this.evade = 0; this.time = 0; this.lostT = 0; this.out = [];
   }
   get level() { return levelOf(this.heat); }
   get active() { return this.state === 'pursuit' || this.state === 'cooldown'; }
-  push(phase, extra = {}) { this.out.push({ phase, heat: this.heat, level: this.level, bounty: Math.round(this.bounty), fine: this.fine, takedowns: this.takedowns, time: this.time, ...extra }); }
+  push(phase, extra = {}) { this.out.push({ phase, heat: this.heat, level: this.level, time: this.time, ...extra }); }
   /** an offence worth `amt` heat; witnessed by a unit (starts / resumes a pursuit) or only by a camera */
   offence(kind, amt, witnessed) {
     const l0 = this.level;
     this.heat = Math.min(5, this.heat + amt);
-    if (this.active || witnessed) this.bounty += amt * 150;
     if (witnessed && this.state === 'idle') { this.state = 'pursuit'; this.time = 0; this.lostT = 0; this.evade = 0; this.bust = 0; this.push('start', { kind }); }
     else if (witnessed && this.state === 'cooldown') { this.state = 'pursuit'; this.lostT = 0; this.evade *= 0.5; this.push('resume', { kind }); }
     if (this.level > l0) this.push('heat', { kind });
@@ -56,11 +53,8 @@ export class HeatMachine {
   /** start straight into a pursuit at a given heat (pursuit events) */
   begin(heat) { this.reset(); this.heat = Math.min(5, heat); this.state = 'pursuit'; this.push('start', { kind: 'event' }); }
   takedown() {
-    this.takedowns++;
-    const pts = 500 * Math.max(1, this.level);
-    this.bounty += pts; this.heat = Math.min(5, this.heat + 0.6);
-    this.push('takedown', { pts });
-    return pts;
+    this.heat = Math.min(5, this.heat + 0.6); // they don't take it well
+    this.push('takedown');
   }
   /** s: { seen (any unit sees you), copNear (a chasing unit within bustDist), slow (you are below bustSpeed) } */
   update(dt, s) {
@@ -68,7 +62,6 @@ export class HeatMachine {
     if (this.state === 'pursuit') {
       this.time += dt;
       this.heat = Math.min(5, this.heat + dt * C.escalate);
-      this.bounty += dt * C.bountyRate * this.level;
       this.evade = Math.max(0, this.evade - dt * 0.5);
       if (s.seen) this.lostT = 0;
       else if ((this.lostT += dt) > C.lostAfter) { this.state = 'cooldown'; this.push('cooldown'); }
@@ -78,9 +71,8 @@ export class HeatMachine {
       else {
         this.evade += dt / (C.evadeBase + C.evadePerLevel * this.level);
         if (this.evade >= 1) {
-          const bonus = 250 * this.level * this.level + Math.round(this.time * 5);
-          this.bounty += bonus; this.evade = 1;
-          this.push('evaded', { pts: bonus });
+          this.evade = 1;
+          this.push('evaded');
           this.state = 'idle'; this.heat = 0; this.evade = 0; this.bust = 0; this.lostT = 0;
           return this.drain();
         }
@@ -90,9 +82,8 @@ export class HeatMachine {
       if (s.copNear && s.slow) this.bust += dt / C.bustTime;
       else this.bust = Math.max(0, this.bust - dt / C.bustDecay);
       if (this.bust >= 1) {
-        this.fine = 100 + 150 * this.level;
         this.bust = 1;
-        this.push('busted', { pts: -this.fine });
+        this.push('busted');
         this.state = 'idle'; this.heat = 0; this.bust = 0; this.evade = 0; this.lostT = 0;
       }
     } else this.bust = 0;
@@ -102,7 +93,7 @@ export class HeatMachine {
 }
 
 // ------------------------------------------------------------------ live status for the HUD / events
-export const pursuit = { enabled: false, state: 'off', heat: 0, level: 0, bounty: 0, fine: 0, takedowns: 0, bustMeter: 0, evadeMeter: 0, time: 0, units: 0 };
+export const pursuit = { enabled: false, state: 'off', heat: 0, level: 0, bustMeter: 0, evadeMeter: 0, time: 0, units: 0 };
 
 const QS = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
 
@@ -160,7 +151,7 @@ export class Police {
     const lvl = hm.level, range = hm.active ? 190 + 35 * lvl : 140;
     for (const c of this.cops) {
       const k = c.cop;
-      if (c.crash) { k.sees = false; if (c.crash.wreck && !k.down) { k.down = true; k.chase = false; k.siren = false; if ((hm.active || k.wasChasing) && this.t - (k.hitT ?? -99) < 4) out.push(...this.takedown(c)); } continue; }
+      if (c.crash) { k.sees = false; if (c.crash.wreck && !k.down) { k.down = true; k.chase = false; k.siren = false; k.keep = false; /* a wreck: traffic culls it once you're past */ if ((hm.active || k.wasChasing) && this.t - (k.hitT ?? -99) < 4) out.push(...this.takedown(c)); } continue; }
       k.losT = (k.losT || 0) - dt;
       const d = Math.hypot(c.s - P.s, c.u - P.u);
       if (k.losT <= 0) { k.losT = 0.2 + rng.range(0, 0.1); k.sees = d < range && (d < 25 || this.los(c, P)); }
@@ -189,7 +180,7 @@ export class Police {
         if (!(e.car.cop.chase && (t === 'pit' || t === 'ram' || t === 'box'))) hm.offence('hitcop', e.kind === 'crash' ? 1.2 : 0.6, true);
       } else hm.offence(e.kind === 'crash' ? 'crash' : 'bump', (e.kind === 'crash' ? 0.6 : 0.25) * (seen ? 1 : 0.5), seen);
     }
-    for (const p of this.pending) hm.offence(p.kind, p.amt, seen);
+    for (const p of this.pending) hm.offence(p.kind, p.amt * (seen ? 1 : 0.4), seen); // nobody saw it: a complaint, not a chase
     this.pending.length = 0;
     // ---- the state machine
     const tr0 = hm.update(dt, { seen, copNear: near, slow: Math.hypot(P.vs, P.vu) < HEAT.bustSpeed });
@@ -207,7 +198,11 @@ export class Police {
   /** people events (before main.js clears them): pedestrians diving out of your way */
   pedEvents(list) {
     if (!this.enabled) return;
-    for (const e of list) if (e.who === 'player' && (e.kind === 'dive' || e.kind === 'startle')) this.pending.push({ kind: 'pedestrian', amt: e.kind === 'dive' ? 0.6 : 0.15 });
+    for (const e of list) {
+      if (e.who !== 'player' || (e.kind !== 'dive' && e.kind !== 'startle')) continue;
+      if (this.t - (this.pedT ?? -9) < 1.5) continue; // a whole crowd scattering is one offence
+      this.pedT = this.t; this.pending.push({ kind: 'pedestrian', amt: e.kind === 'dive' ? 0.6 : 0.15 });
+    }
   }
   takedown(c) {
     const before = this.hm.out.length;
@@ -217,16 +212,12 @@ export class Police {
     return ev;
   }
   announce(e) {
-    const payload = { phase: e.phase, heat: e.heat, level: e.level, bounty: e.bounty, fine: e.fine, takedowns: e.takedowns, time: e.time, kind: e.kind };
-    events.emit('pursuit', payload);
-    const kind = e.phase === 'takedown' ? 'takedown' : e.phase === 'evaded' ? 'evade' : e.phase === 'busted' ? 'busted' : null;
-    if (kind) events.emit('score', { eventId: this.eventId, kind, pts: e.pts || 0, heat: e.heat, bounty: e.bounty, fine: e.fine });
+    events.emit('pursuit', { phase: e.phase, heat: e.heat, level: e.level, time: e.time, kind: e.kind });
   }
   publish(nearest = 1e9) {
     const hm = this.hm;
     Object.assign(pursuit, {
-      enabled: this.enabled, state: this.enabled ? hm.state : 'off', heat: hm.heat, level: hm.level, bounty: Math.round(hm.bounty), fine: hm.fine,
-      takedowns: hm.takedowns, bustMeter: hm.bust, evadeMeter: hm.evade, time: hm.time, units: this.traffic.cars.filter((c) => c.active && c.cop && c.cop.chase && !c.crash).length, nearest,
+      enabled: this.enabled, state: this.enabled ? hm.state : 'off', heat: hm.heat, level: hm.level, bustMeter: hm.bust, evadeMeter: hm.evade, time: hm.time, units: this.traffic.cars.filter((c) => c.active && c.cop && c.cop.chase && !c.crash).length, nearest,
     });
   }
 
@@ -253,7 +244,13 @@ export class Police {
   spawnCop(s, dir, opts = {}) {
     const tr = this.traffic, route = this.route;
     if (s < 30 || s > route.length - 30) return null;
-    const c = tr.cars.find((q) => q.police && !q.active && (opts.moto ? q.type.scooter : !q.type.scooter)) || tr.cars.find((q) => q.police && !q.active);
+    let c = tr.cars.find((q) => q.police && !q.active && (opts.moto ? q.type.scooter : !q.type.scooter)) || tr.cars.find((q) => q.police && !q.active);
+    // pool empty: recycle the furthest wreck / idle unit you can't see any more
+    if (!c && this.P) {
+      let far = 150;
+      for (const q of tr.cars) if (q.police && q.active && q.cop && !q.cop.chase && !q.cop.block) { const d = Math.abs(q.s - this.P.s); if (d > far) { far = d; c = q; } }
+      if (c) { c.active = false; c.m.root.visible = false; c.cop = null; }
+    }
     if (!c) return null;
     const n = tr.laneCount(s);
     c.dir = dir; c.lane = opts.lane ?? (dir === this.D ? Math.min(n - 1, 0) : this.rng.chance(0.5) ? 0 : n - 1);

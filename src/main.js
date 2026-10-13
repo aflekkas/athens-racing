@@ -1053,13 +1053,12 @@ function racerPair(a, b, mine) {
 
 /** pursuit transitions (src/police.js): call-outs, sounds. In a pursuit event BUSTED ends the run (events flow) */
 function onPolice(e) {
-  if (e.phase === 'start') { hud.pop('info bad', e.kind === 'event' ? 'POLICE PURSUIT!' : 'YOU\'VE BEEN SPOTTED!', '★'.repeat(e.level) + ' · ΕΛ.ΑΣ. IN PURSUIT'); audio.copRadio?.(); }
-  else if (e.phase === 'heat') { hud.pop('info bad', 'HEAT ' + '★'.repeat(e.level), e.level >= 3 ? 'ROADBLOCKS AHEAD' : e.level >= 2 ? 'THEY WILL TRY TO PIT YOU' : ''); audio.copRadio?.(); }
-  else if (e.phase === 'cooldown') hud.message('OUT OF SIGHT · <i>STAY HIDDEN</i> TO SHAKE THEM', 2.5);
-  else if (e.phase === 'resume') hud.pop('info bad', 'SPOTTED AGAIN!');
-  else if (e.phase === 'takedown') { hud.pop('opa', 'TAKEDOWN!', '+' + (e.pts || 0).toLocaleString('en-US')); G.style += e.pts || 0; }
-  else if (e.phase === 'evaded') { policeHud.shout('evaded', 'EVADED', `BOUNTY +${(e.pts || 0).toLocaleString('en-US')}`); audio.copEvaded?.(); }
-  else if (e.phase === 'busted') { policeHud.shout('busted', 'BUSTED', `FINE €${e.fine}`); audio.copBusted?.(); G.shake = Math.max(G.shake, 0.4); }
+  // no points, no money: the stars and these call-outs are all the pursuit says
+  if (e.phase === 'start') { hud.pop('info bad', 'POLICE!'); audio.copRadio?.(); }
+  else if (e.phase === 'heat') audio.copRadio?.();
+  else if (e.phase === 'takedown') hud.pop('opa', 'TAKEDOWN!');
+  else if (e.phase === 'evaded') { policeHud.shout('evaded', 'EVADED'); audio.copEvaded?.(); }
+  else if (e.phase === 'busted') { policeHud.shout('busted', 'BUSTED'); audio.copBusted?.(); G.shake = Math.max(G.shake, 0.4); }
 }
 function handleEvents(events) {
   for (const e of events) {

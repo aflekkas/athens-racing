@@ -17,7 +17,7 @@ import { SURF } from './ground.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const POOL = 66;
-const MASS = { city: 980, hatch: 1150, sedan: 1400, taxi: 1460, taxi_superb: 1580, byd_dolphin: 1658, byd_atto3: 1750, suv: 1900, van: 2300, bus: 12000, scooter: 190, delivery: 210, moto: 260 };
+const MASS = { city: 980, hatch: 1150, sedan: 1400, taxi: 1460, taxi_superb: 1580, byd_dolphin: 1658, byd_atto3: 1750, suv: 1900, van: 2300, truck: 5500, bus: 12000, scooter: 190, delivery: 210, moto: 260 };
 // type behaviour: max accel a, comfortable decel b, time headway T, standstill gap s0, speed factor vf, lateral speed latV
 const BEHAV = {
   city: { a: 1.6, b: 2.8, T: 1.2, s0: 2.2, vf: 0.95, latV: 1.4 },
@@ -28,6 +28,7 @@ const BEHAV = {
   byd_atto3: { a: 1.9, b: 3.0, T: 1.3, s0: 2.5, vf: 1.02, latV: 1.3 },
   suv: { a: 1.7, b: 3.0, T: 1.3, s0: 2.5, vf: 1.03, latV: 1.3 },
   van: { a: 1.2, b: 2.6, T: 1.45, s0: 2.6, vf: 0.9, latV: 1.1 },
+  truck: { a: 0.85, b: 2.2, T: 1.65, s0: 3.0, vf: 0.82, latV: 0.8 }, // Isuzu NPR box truck, loaded
   bus: { a: 0.85, b: 1.9, T: 1.7, s0: 3.0, vf: 0.8, latV: 0.75 },
   delivery: { a: 2.6, b: 4.5, T: 0.7, s0: 1.0, vf: 1.05, latV: 2.6 },
   scooter: { a: 2.1, b: 4.0, T: 0.9, s0: 1.2, vf: 0.95, latV: 2.2 },
@@ -260,7 +261,7 @@ export class Traffic {
     if (!c) return;
     c.dir = (oncoming ? -1 : 1) * this.dir;
     let lane = rng.int(0, n - 1);
-    if (c.kind === 'bus' || c.kind === 'van') lane = n - 1;
+    if (c.kind === 'bus' || c.kind === 'van' || c.kind === 'truck') lane = n - 1;
     if (c.type.scooter && rng.chance(0.6)) lane = n - 1;
     c.lane = lane; c.s = s; c.len = c.type.len; c.wid = c.type.wid;
     c.u = this.laneUOf(c, s);
@@ -645,7 +646,7 @@ export class Traffic {
       let gain = accNew - accCur;
       if (F.o) gain -= d.polite * Math.max(0, -this.idmGeneric(F.fv, F.gap, c.v));
       if (blocked) gain += 3;
-      if (tl > c.lane && (c.kind === 'bus' || c.kind === 'van' || d.cruiser)) gain += 0.4; // slow vehicles keep to the kerb
+      if (tl > c.lane && (c.kind === 'bus' || c.kind === 'van' || c.kind === 'truck' || d.cruiser)) gain += 0.4; // slow vehicles keep to the kerb
       if (tl > c.lane && !blocked) gain -= 0.1; // nobody in Athens volunteers for the kerb lane
       for (const st of this.sites) if (st.lane === tl && c.dir > 0 && st.s - c.s > -20 && st.s - c.s < 200) gain -= 5;
       if (gain > bestGain) { bestGain = gain; best = tl; }
@@ -903,7 +904,7 @@ export class Traffic {
     const rng = new RNG(77), spots = this.data.parkSpots || [];
     this.parkedCars = [];
     if (!spots.length) return;
-    const types = TRAFFIC_TYPES.filter((t) => !t.scooter && !t.bus && t.id !== 'van');
+    const types = TRAFFIC_TYPES.filter((t) => !t.scooter && !t.bus && !t.police && t.w > 0 && t.id !== 'van' && t.id !== 'truck');
     const roots = [];
     for (const sp of spots) {
       const t = types[Math.floor(rng.next() * types.length)];
@@ -1304,6 +1305,7 @@ export class Traffic {
       if (!c.active) continue;
       const vis = Math.abs(c.s - ps) < 650;
       c.m.root.visible = vis; if (!vis) continue;
+      c.m.setLOD?.(Math.abs(c.s - ps)); // detail by distance (src/cars.js)
       route.frame(c.s, f);
       route.point(c.s, c.u, _v);
       const k = c.crash;
