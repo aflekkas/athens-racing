@@ -34,6 +34,7 @@ export const wetPeakScale = surface => ['asphalt', 'pavement', 'rock'].includes(
 /** Separate hook for the surface-friction owner: wheelMu already includes ground's wetBaseGrip; only add local
  * puddles/paint here. Legacy/headless grounds get the full wet factor. Never replace their dry surface curves. */
 export function wetTyreScale(vehicle, i) {
+  if (!WEATHER.wet) return 1; // dry physics stays byte-for-byte in force and avoids contact/noise work
   const surf = vehicle._wsurf?.[i] || vehicle.surf || 'asphalt';
   const f = { x: -Math.sin(vehicle.yaw || 0), z: -Math.cos(vehicle.yaw || 0) };
   const cx = vehicle.cx?.[i] || 0, cy = vehicle.cy?.[i] || 0;
