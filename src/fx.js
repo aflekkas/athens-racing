@@ -156,14 +156,14 @@ export class Fx {
     this._g = {}; this._f = {}; this.acc = new WeakMap();
     // Small shared pool: only spinning tyres draw the sidewall/rim blur. The
     // overlay belongs to Fx, so model files and their wheel rigs stay independent.
-    const tyreG = new THREE.TorusGeometry(0.89, 0.11, 8, 32), rimG = new THREE.RingGeometry(0.27, 0.73, 40);
-    const tyreM = new THREE.MeshStandardMaterial({ color: 0x19191a, roughness: 0.95 });
-    const rimM = new THREE.MeshBasicMaterial({ color: 0x92979d, transparent: true, opacity: 0.48, depthWrite: false, side: THREE.DoubleSide });
+    const rimG = new THREE.RingGeometry(0.27, 0.73, 40);
+    const rimM = new THREE.MeshBasicMaterial({ color: 0x4c5157, transparent: true, opacity: 0.82, depthWrite: false, side: THREE.DoubleSide });
     this.blurPool = Array.from({ length: 16 }, () => {
-      const group = new THREE.Group(), tyre = new THREE.Mesh(tyreG, tyreM), rim = new THREE.Mesh(rimG, rimM);
-      group.add(tyre, rim); group.visible = false; scene.add(group); return { group, rim };
+      const group = new THREE.Group(), rim = new THREE.Mesh(rimG, rimM);
+      group.add(rim); group.visible = false; scene.add(group); return { group, rim };
     });
-    this.blurUsed = 0; this._blurAxis = new THREE.Vector3(); this._blurNormal = new THREE.Vector3(0, 0, 1);
+    this.tyreRest = new WeakMap(); this.deformedRigs = new WeakSet();
+    this.blurUsed = 0; this._blurAxis = new THREE.Vector3(); this._blurNormal = new THREE.Vector3(0, 0, 1); this._blurPosition = new THREE.Vector3();
   }
   _groundY(veh, x, z, ox, oz) {
     const f = this.route.frame(clamp(veh.s, 0, this.route.length), this._f);
@@ -197,6 +197,42 @@ export class Fx {
     }
     this.dirty0 = Math.min(this.dirty0, i); this.dirty1 = Math.max(this.dirty1, i);
   }
+  _deformTyre(veh, i, active) {
+    const rig = veh.fxWheels?.find(w => w.front === (i < 2) && (w.side ?? Math.sign(w.pivot.position.x)) === (i & 1 ? 1 : -1));
+    if (!rig?.spin || (!active && !this.deformedRigs.has(rig))) return;
+    if (active) this.deformedRigs.add(rig); else this.deformedRigs.delete(rig);
+    const load = active ? clamp(veh.corners[i].Fz / (veh.m * 9.81 * 0.25), 0, 2) : 0;
+    const squash = 1 - 0.035 * load, spread = 1 + 0.012 * load;
+    const R = rig.r || veh.spec.wheelR;
+    // Model.update restores suspension travel before Fx each frame; preserve its
+    // body pitch/heave compensation and lower only the compressed tread radius.
+    if (active) rig.pivot.position.y -= R * 0.035 * load / (rig.pivot.parent?.matrix.elements[5] || 1);
+    const angle = rig.spin.rotation.x, c = Math.cos(angle), s = Math.sin(angle);
+    rig.spin.traverse(mesh => {
+      // Rubber/tread only: the metal rim stays circular. Clone before changing
+      // vertices so shared model/traffic templates cannot inherit a deformation.
+      const mat = mesh.material;
+      if (!mesh.isMesh || !mat?.color || (mat.roughness ?? 0) < 0.8 || (mat.metalness ?? 0) > 0.15) return;
+      let rest = this.tyreRest.get(mesh);
+      if (!rest) {
+        if (!active) return;
+        const original = mesh.geometry; mesh.geometry = original.clone();
+        mesh.geometry.addEventListener('dispose', () => original.dispose());
+        rest = { p: mesh.geometry.attributes.position.array.slice(), active: false }; this.tyreRest.set(mesh, rest);
+      }
+      if (!active && !rest.active) return;
+      const a = mesh.geometry.attributes.position;
+      if (!active) a.array.set(rest.p);
+      else for (let k = 0; k < a.count; k++) {
+        const y = rest.p[k * 3 + 1], z = rest.p[k * 3 + 2];
+        // Flatten in the non-spinning wheel frame, then rotate back: no oval
+        // wobble as the rim spins through the compressed contact patch.
+        const yy = (y * c - z * s) * squash, zz = (y * s + z * c) * spread;
+        a.array[k * 3 + 1] = yy * c + zz * s; a.array[k * 3 + 2] = -yy * s + zz * c;
+      }
+      rest.active = active; a.needsUpdate = true;
+    });
+  }
   /** a burst of sparks where a car scraped a wall (wall normal nx, nz points back towards the car) */
   sparks(veh, strength) {
     const n = Math.round(clamp(strength, 0, 1) * 40);
@@ -215,6 +251,10 @@ export class Fx {
     this.smoke.mat.uniforms.uScale.value = this.grit.mat.uniforms.uScale.value = this.sparkP.mat.uniforms.uScale.value = viewH / (2 * Math.tan(camera.fov * Math.PI / 360));
     // unlit sprites: dim them with the daylight (sparks glow regardless)
     this.smoke.mat.uniforms.uLight.value = this.grit.mat.uniforms.uLight.value = 0.08 + 0.92 * clamp(WEATHER.ambient, 0, 1);
+    for (const veh of cars) if (veh?.corners) for (let i = 0; i < 4; i++) {
+      const surf = veh.wheelSurf?.[i] || 'asphalt';
+      this._deformTyre(veh, i, !!veh.burnout && !veh.air && !veh.water && (surf === 'asphalt' || surf === 'pavement') && veh.corners[i].vw - veh.vLong > 6);
+    }
     if (dt > 0) { this.blurUsed = 0; for (const b of this.blurPool) b.group.visible = false; for (const veh of cars) if (veh) this._car(veh, dt); }
     this.smoke.update(dt); this.grit.update(dt); this.sparkP.update(dt);
     if (this.dirty1 >= 0) {
@@ -260,14 +300,19 @@ export class Fx {
         if (st.stamp >= 0.2) { st.stamp %= 0.2; this._rubberPatch(x, this._groundY(veh, x, z, ox, oz) + 0.026, z, fx * c + rx * s, fz * c + rz * s, MARK_COL[surf], Math.min(1, 0.4 + st.heat) * (1 - 0.6 * WEATHER.wet)); }
       } else st.stamp = 0;
       if (burnout && paved && this.blurUsed < this.blurPool.length) {
-        const { group, rim } = this.blurPool[this.blurUsed++], R = veh.spec?.wheelR || 0.31;
+        const { group, rim } = this.blurPool[this.blurUsed++];
+        const rig = veh.fxWheels?.find(w => w.front === (i < 2) && (w.side ?? Math.sign(w.pivot.position.x)) === (i & 1 ? 1 : -1));
+        const R = rig?.r || veh.spec?.wheelR || 0.31;
         const load = clamp(Wc.Fz / (veh.m * 9.81 * 0.25), 0, 2), squash = 1 - 0.025 * load;
         group.visible = true;
         group.position.set(x, this._groundY(veh, x, z, ox, oz) + R * squash, z);
-        this._blurAxis.set(rx * c - fx * s, 0, rz * c - fz * s);
+        if (rig?.pivot) {
+          rig.pivot.getWorldPosition(this._blurPosition); group.position.copy(this._blurPosition);
+          this._blurAxis.setFromMatrixColumn(rig.pivot.matrixWorld, 0).normalize();
+        } else this._blurAxis.set(rx * c - fx * s, 0, rz * c - fz * s);
         group.quaternion.setFromUnitVectors(this._blurNormal, this._blurAxis);
-        group.scale.set(R * (1 + 0.012 * load), R * squash, R);
-        rim.position.z = cy < 0 ? -0.12 : 0.12;
+        group.scale.setScalar(R);
+        rim.position.z = cy < 0 ? -0.46 : 0.46;
       }
       const y = veh.y + 0.15;
       if (paved) {
