@@ -2,10 +2,11 @@
  * MAPS is the lightweight catalog in map-catalog.js. Existing Riviera URLs are unchanged.
  * Add data/maps/<id>/map.json + terrain.bin; register their URLs and menu metadata.
  * JSON: proj {lat0,lon0,mlat,mlon}; route {step,x[],z[],y[],lanes[],div[],start,finish,
- * from,to,closed?,width?[]}; marks [{id,name,s}], zones [{s,urban,zone}], events[];
+ * from,to,closed?,width?[],racingLine?[]}; marks [{id,name,s}], zones [{s,urban,zone}], events[];
  * scenery arrays: buildings, areas, trees, pois, furniture, places, sideRoads, coast,
  * parkSpots, humps, barriers. Events have globally unique id, mapId, type, from/to,
- * rivals, traffic; circuit events additionally laps. A closed route repeats its first
+ * rivals, traffic; circuit events additionally laps and optional targetTimes medal
+ * thresholds in total seconds. A closed route repeats its first
  * sample at its end, samples at equal arc distance, and starts at the timing line.
  * Terrain: 32-byte LE header (int32 GX,GZ; float32 minX,minZ,cellSize), then GX*GZ
  * int16 decimetre heights, then uint8 surface classes, row-major. World +X east,+Z south.
@@ -13,7 +14,12 @@
  * obstacles?,assets?,road?:{group,asphalt},dispose?}; inland maps omit coastal effects.
  * loadMap(progress?,base='./',mapId='riviera') returns an independently owned bundle.
  * Geometry methods wrap on circuits; project(x,z,hint) keeps progress on hint's lap.
+ * width is total tarmac width; route.edge(s) returns its half-width. racingLine is
+ * lateral offset in metres (+right), sampled periodically by route.racingU(s).
  * Call bundle.dispose() after releasing its scene. No cache retains unloaded bundles.
+ * New real-world maps must try Google Street View on the track/public approaches
+ * before modelling. Record coverage or access failures, alternative street photos,
+ * aerial/DEM sources and reconstruction limits in tools/maps/<id>/SOURCES.md.
  */
 // World space: metres, +x = east, +z = south, +y = up, origin at 37.835 N 23.770 E.
 // Route space: s = distance along the route (Vouliagmeni -> Lomvarda), u = lateral offset, + = right.

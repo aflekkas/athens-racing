@@ -5,6 +5,7 @@ import { readFile, readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
 import { MAPS, Route, loadMap } from '../src/map.js';
 import { Vehicle } from '../src/physics.js';
+import { resolve as resolveEvent, targetLabels, medalFor } from '../src/events.js';
 const read = promisify(readFile);
 const root = new URL('../', import.meta.url);
 const originalFetch = globalThis.fetch;
@@ -39,6 +40,12 @@ try {
     assert.ok(terrain.GX>1&&terrain.GZ>1);
     assert.equal(route.closed,definition.type==='circuit');
     assert.equal(map.disposed,false);
+    for (const def of map.events) {
+      const event = resolveEvent(def, {route, marks: map.data.marks});
+      assert.ok(Number.isFinite(event.len) && event.len > 0, `${def.id}: finite distance`);
+      assert.ok(targetLabels(def, event, value => String(value)).every(([, label]) => !/NaN|undefined/.test(label)), `${def.id}: valid medal labels`);
+      if (def.type === 'sprint') assert.equal(medalFor(def, {time:240,position:1}, event), 'gold', `${def.id}: winner gets gold`);
+    }
     for (const key of ['X','Y','Z','K','GR']) assert.ok([...route[key]].every(Number.isFinite),`${map.id} ${key}`);
     let hint=route.start;
     // Traverse a complete centreline lap/run, including the loop seam, with small forward steps.

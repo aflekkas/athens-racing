@@ -9,11 +9,11 @@ const CLASS_COL = [C('#b9a985'), C('#dcc8a0'), C('#b7ab95'), C('#8a7d57'), C('#9
 const ROCK = C('#a9a194'), ROCK2 = C('#c4b9a6'), VERGE = C('#9d8f73'), DRYGRASS = C('#b8a46c'), MAQUIS = C('#5e6336');
 const LIME = C('#c2bdb2'), LIME2 = C('#8a857b'), GARDEN = C('#7d8350');
 
-export function terrainMaterial() {
+export function terrainMaterial({ farmland = false } = {}) {
   // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
   // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
-  mat.customProgramCacheKey = () => 'terrain6';
+  mat.customProgramCacheKey = () => farmland ? 'terrain6-farmland' : 'terrain6';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, {
       tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
@@ -71,7 +71,7 @@ export function terrainMaterial() {
           col = mix(col, uc, wU);
         }
         // wild Attic hillside: grey limestone showing through thin soil, dense dark phrygana / maquis clumps
-        float wWild = (1.0 - smoothstep(0.1, 0.5, vU) * (1.0 - smoothstep(0.1, 0.25, steep))) * (1.0 - wSand * (1.0 - smoothstep(0.15, 0.3, steep))) * smoothstep(2.5, 9.0, vWP.y);
+        float wWild = ${farmland ? '0.0' : '(1.0 - smoothstep(0.1, 0.5, vU) * (1.0 - smoothstep(0.1, 0.25, steep))) * (1.0 - wSand * (1.0 - smoothstep(0.15, 0.3, steep))) * smoothstep(2.5, 9.0, vWP.y)'};
         if (wWild > 0.0) {
           float outc = smoothstep(0.38, 0.62, fbm2(p * 0.045) + steep * 0.45);
           vec3 lime = texNoTile(tRD, p / 5.0).rgb; lime = mix(vec3(dot(lime, vec3(0.333))), lime, 0.3) * vec3(1.25, 1.22, 1.15);
@@ -81,6 +81,7 @@ export function terrainMaterial() {
           wild = mix(wild, vec3(0.055, 0.068, 0.034) * (0.7 + 0.6 * vn2(p * 3.0)), shrub * 0.9);
           col = mix(col, wild, wWild);
         }
+        ${farmland ? 'col = mix(vc * (.74 + .48 * dot(sg, vec3(.333))), col, smoothstep(.22,.55,steep));' : ''}
         col *= 0.82 + 0.36 * macro;
         // wet sand / rock darkening at the waterline
         col *= mix(0.55, 1.0, smoothstep(0.05, 0.6, vWP.y));
@@ -98,9 +99,9 @@ export function terrainMaterial() {
  * Build terrain meshes. `corridorPts` is an array of [x,z,r] stamps marking the detailed area.
  * clampFn(x, z) -> max height allowed (keeps the ground under the road and pavements) or Infinity.
  */
-export function buildTerrain(terrain, route, extraStamps, scene) {
+export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false } = {}) {
   const { GX, GZ, T, minX, minZ, H, C: CL } = terrain;
-  const mat = terrainMaterial();
+  const mat = terrainMaterial({ farmland });
   // ---------------------------------------------------------------- corridor mask (10 m vertices)
   const mask = new Uint8Array(GX * GZ);
   const stamp = (x, z, r) => {
@@ -138,7 +139,7 @@ export function buildTerrain(terrain, route, extraStamps, scene) {
   // the cliff road (Limanakia, Varkiza - Lomvarda) climbs over bare limestone; DEM cells are too coarse for the cliffs and coves,
   // so add ridged rock relief between the road and the sea (and a few rocks breaking the surface in the coves)
   const rug = new Float32Array(GX * GZ), H0 = Hc.slice();
-  {
+  if (coastal) {
     let s0 = 0; for (let s = 0; s < route.length; s += 20) if (route.urban(s) < 0.6) { s0 = s; break; }
     let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
     for (let s = s0 - 200; s <= route.length; s += 20) { const p = route.point(s, 0); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
@@ -175,11 +176,19 @@ export function buildTerrain(terrain, route, extraStamps, scene) {
   if (location.search.includes('debug')) { let n = 0, mx = 0; for (let i = 0; i < rug.length; i++) if (rug[i] > 0) { n++; mx = Math.max(mx, rug[i]); } console.log('rugged cells', n, mx); }
   terrain.Hc = Hc;
 
+  const cropGreen = C('#78864c'), cropDry = C('#b6ae72'), cropVerge = C('#929c5a');
   const colorAt = (i, j, h, n, out) => {
     const id = j * GX + i, x = minX + i * T, z = minZ + j * T;
     const cls = CL[id];
     out.copy(CLASS_COL[cls] || CLASS_COL[8]);
     const nz = vnoise(x * 0.013, z * 0.013), nz2 = vnoise(x * 0.07 + 9, z * 0.07);
+    if (farmland) {
+      // Megara is cultivated, gently rolling coastal plain. The circuit scenery
+      // adds satellite-traced gravel and paved polygons over these grass verges.
+      out.copy(cropGreen).lerp(cropDry, smoothstep(.25, .75, nz));
+      out.lerp(cropVerge, verge[id] * .3).multiplyScalar(.9 + .2 * nz2);
+      return out;
+    }
     if (cls === 8 || cls === 3) out.lerp(nz > 0.5 ? DRYGRASS : MAQUIS, cls === 3 ? 0.45 * nz2 : 0.25 * nz2);
     if (cls === 2) out.lerp(nz > 0.5 ? ROCK2 : ROCK, 0.5);
     const steep = 1 - n.y;

@@ -157,6 +157,7 @@ test('closed circuit: three laps, no early finish, lap clocks and total-time ran
   const loop = {route:{start:0,finish:2000,length:2000,closed:true,from:'START',to:'START'},marks:[]};
   const def={id:'test-circuit',mapId:'megara',type:'timetrial',from:'start',to:'finish',laps:3,rivals:0,targets:{gold:120,silver:100,bronze:80}};
   const run=new EV.EventRun(def,loop,{storage:mem()});run.start();
+  assert.deepEqual(EV.resolve({...def,targetTimes:{gold:240,silver:270,bronze:315}},loop).targetTimes,{gold:240,silver:270,bronze:315},'explicit circuit medals use total elapsed seconds');
   assert.equal(run.r.len,6000);assert.equal(run.r.laps,3);assert.equal(run.r.checkpoints.length,12);
   let emitted=[];
   for(let s=0;s<=6000;s+=100){const out=run.update(1,{s,t:s/25,kmh:90});emitted.push(...out);if(s<6000)assert.ok(!out.some(e=>e.kind==='finish'));if(s===2100){assert.equal(run.lap,2);assert.equal(run.lapTime,4);}}

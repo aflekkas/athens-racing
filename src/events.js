@@ -146,7 +146,7 @@ export function resolve(def, ctx) {
     }
     return { s0:a.s, s1:a.s + dir*len, dir, len, laps, lapLength, closed:true, fromName:a.name,
       toName:b.name, checkpoints, traps:[], reverse:dir<0, timeLimit:0,
-      targetTimes:def.type === 'timetrial' ? Object.fromEntries(MEDALS.map(m => [m, len / ((def.targets?.[m] || 100) / 3.6)])) : null };
+      targetTimes:def.type === 'timetrial' ? Object.fromEntries(MEDALS.map(m => [m, def.targetTimes?.[m] ?? len / ((def.targets?.[m] || 100) / 3.6)])) : null };
   }
   const dir = b.s >= a.s ? 1 : -1, len = Math.abs(b.s - a.s);
   const prog = (s) => (s - a.s) * dir;

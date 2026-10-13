@@ -505,10 +505,11 @@ function prepareEvent(e) {
   }
   return r;
 }
-/** grid slot i (0 = pole) of the active event: two abreast, 8 m apart, behind the start line, on its carriageway */
+/** Grid slot i: 8 m rows; single file on one-lane roads, two abreast otherwise. */
 function gridSlot(i, base = G.ev.r.s0) {
   const r = G.ev.r, dir = r.dir;
-  const rawS = base - dir * (4 + Math.floor(i / 2) * 8);
+  const columns = route.closed || route.lanes(base) > 1 ? 2 : 1;
+  const rawS = base - dir * (4 + Math.floor(i / columns) * 8);
   const s = route.closed ? rawS : clamp(rawS, 5, route.length - 5);
   const lane = Math.min(i % 2, route.lanes(s) - 1);
   const u = route.closed ? (i % 2 ? 1 : -1) * Math.min(2.25, Math.max(.5, route.edge(s) - 1.2)) : dir * route.laneU(s, lane);

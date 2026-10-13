@@ -45,6 +45,9 @@ export function disposeMapGroup(root, liveScene) {
     if (live[kind].has(value) || (kind === 'geometries' && value.userData.shared) || (kind === 'textures' && value.isRenderTargetTexture)) continue;
     value.dispose(); counts[kind]++;
   }
+  // Instanced attributes belong to the mesh, rather than its shared geometry.
+  // Three releases instanceMatrix/instanceColor buffers on this separate event.
+  root.traverse(object => { if (object.isInstancedMesh) object.dispose(); });
   root.clear();
   return counts;
 }
@@ -58,7 +61,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
   try {
     progress('BUILDING TERRAIN', .25); await frameYield();
     const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
-    const ter = buildTerrain(map.terrain, route, [], group);
+    const ter = buildTerrain(map.terrain, route, [], group, { coastal, farmland: map.id === 'megara' });
     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
     if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
     const labels = new LabelAtlas();
@@ -110,6 +113,8 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod,
       dispose() {
         if (disposed) return; disposed = true;
+        // Damage fragments are parented directly to scene, outside this map root.
+        for (const car of traffic.cars) car.m?.disposeDamage?.();
         const counts = disposeMapGroup(group, scene);
         // LabelAtlas can be empty on an inland map, hence not reachable through a mesh.
         labels.tex.dispose(); labels.mat.dispose();
