@@ -6,12 +6,35 @@ import { buildPassengerModel } from './traffic-passenger-models.js';
 import { buildCommercialModel } from './traffic-commercial-models.js';
 import { buildBikeModel } from './traffic-bike-models.js';
 import { buildPoliceModel } from './police-models.js';
-import { damageSystem, makePlateMaterial, nextRegistration } from './vehicle-models.js';
+import { damageSystem, makePlateMaterial, nextRegistration, buildDetailedCar } from './vehicle-models.js';
 import { RNG } from './util.js';
 
 const templates=new Map();
 const trimMaterial=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.65,metalness:.12,side:THREE.DoubleSide});
-function builder(type){return type.police?buildPoliceModel:type.scooter?buildBikeModel:type.bus||type.id==='van'||type.id==='truck'?buildCommercialModel:buildPassengerModel;}
+function buildCatalogueModel(type,color,rng,opts) {
+  const entry=type.catalogueCar;
+  // Everyday catalogue cars use exactly the same authored fleet shell. Sports
+  // cars use the playable body's traffic detail, without player-only furniture.
+  if(entry.fleet)return buildPassengerModel({...type,id:entry.fleet},color,rng,opts);
+  const car={spec:{...entry,id:undefined,color,playerDetail:true},root:new THREE.Group(),body:new THREE.Group(),wheels:[]};
+  car.root.add(car.body);buildDetailedCar(car,entry.body,{low:true,plate:'TEMPLATE'});
+  // Reuse the playable car's authored medium/far LODs, then flatten the
+  // selected level for the fleet cache. No full player cabin in traffic.
+  const selectLevel=lod=>{
+    const selected=lod.levels[opts.low?lod.levels.length-1:Math.min(1,lod.levels.length-1)].object;
+    const parent=lod.parent;selected.removeFromParent();lod.removeFromParent();
+    selected.visible=true;parent.add(selected);
+  };
+  if(car.visualLOD)selectLevel(car.visualLOD);
+  if(opts.low)for(const front of [true,false])for(const side of [-1,1]){
+    const lamp=new THREE.Mesh(new THREE.BoxGeometry(.24,.08,.025),front?car.materials.head:car.tail);
+    lamp.position.set(side*car.dims.W*.34,(car.shape.belt||.9)*.78,(front?-1:1)*(car.dims.L*.5-.025));
+    lamp.userData.damagePart=front?'light_front':'light_rear';car.body.add(lamp);
+  }
+  for(const w of car.wheels)for(const child of [...w.spin.children])if(child.isLOD)selectLevel(child);
+  return car;
+}
+function builder(type){return type.catalogueCar?buildCatalogueModel:type.police?buildPoliceModel:type.scooter?buildBikeModel:type.bus||type.id==='van'||type.id==='truck'?buildCommercialModel:buildPassengerModel;}
 function geometryOf(o,matrix,colored=false){
   let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(matrix);
   for(const key of Object.keys(g.attributes))if(!['position','normal','uv',...(colored?['color']:[])].includes(key))g.deleteAttribute(key);
@@ -95,7 +118,7 @@ function attachLevels(near,far){
 }
 export function fleetModel(type,color,rng,opts={}){
   const parked=!!opts.parked,plate=nextRegistration(!!type.taxi),p=parked?parkedPlate(plate):{material:makePlateMaterial(plate)};
-  const lowOnly=parked||!!opts.low,t=template(type,lowOnly,parked),car=cloneTemplate(t,color,p.material,p.uv);car.plate=plate;car.spec.id=type.id;car.spec.engineZone=type.bus?'rear':'front';
+  const lowOnly=parked||!!opts.low,t=template(type,lowOnly,parked),car=cloneTemplate(t,color,p.material,p.uv);car.plate=plate;car.spec.id=type.id;car.spec.engineZone=type.catalogueCar?.engineZone||(type.bus?'rear':'front');
   if(!lowOnly){const far=cloneTemplate(template(type,true,false),color,p.material);attachLevels(car,far);}
   else{car.lodLevel=1;car.setLOD=()=>{};}
   car.setLights=on=>{car.lightsOn=!!on;car.root.traverse(o=>{if(!o.isMesh||!o.userData.damagePart?.startsWith('light_f'))return;const m=o.material;if(m.userData.damageBroken)return;if(m.emissive){m.emissive.set(on?'#fff1df':'#182129');m.emissiveIntensity=on?5:0;}});};

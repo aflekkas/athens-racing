@@ -12,28 +12,28 @@ export { setPaint } from './vehicle-paint.js';
 // ------------------------------------------------------------------ catalogue (player-selectable)
 export const CARS = [
   {
-    id: 'mini', name: 'MINI COOPER S CABRIO', short: 'MINI', tag: 'Open skies. Short wheelbase. Front-wheel drive.', color: '#bd1626', accent: '#f1efe7',
+    id: 'mini', trafficWeight: 2, name: 'MINI COOPER S CABRIO', short: 'MINI', tag: 'Open skies. Short wheelbase. Front-wheel drive.', color: '#bd1626', accent: '#f1efe7',
     mass: 1320, power: 141, torque: 280, redline: 6800, idle: 850, gears: [3.92, 2.43, 1.43, 1.0, 0.81, 0.67], final: 3.59, wheelR: 0.316,
     wheelbase: 2.495, length: 3.85, width: 1.727, cdA: 0.68, vmax: 230, grip: 1.08, steer: 0.6, yawI: 1.0, drift: 1.0, brake: 1.0, cyl: 4, pitch: 1.0, convertible: true, body: 'mini', drive: 'fwd',
     frontW: 0.61, hcg: 0.50, track: 1.485, rsF: 0.59, susHz: 1.85, susZ: 0.55, rollK: 1.0, pitchK: 1.0, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.22, bias: 0.74, steerRate: 1.15, ebrake: 0.16, engine: 'turbo4', turbo: 1,
     stats: { speed: 0.58, accel: 0.56, handling: 0.88, drift: 0.38 },
   },
   {
-    id: 'z4', name: 'BMW Z4 M40i', short: 'Z4 M40i', tag: 'Straight-six roadster. Rear-wheel drive.', color: '#22679d', accent: '#b7bdc5',
+    id: 'z4', trafficWeight: 0.4, name: 'BMW Z4 M40i', short: 'Z4 M40i', tag: 'Straight-six roadster. Rear-wheel drive.', color: '#22679d', accent: '#b7bdc5',
     mass: 1610, power: 250, torque: 500, redline: 7000, idle: 750, gears: [5.25, 3.36, 2.17, 1.72, 1.32, 1.0, 0.82, 0.64], final: 3.154, wheelR: 0.335,
     wheelbase: 2.47, length: 4.324, width: 1.864, cdA: 0.64, vmax: 250, grip: 1.18, gripRear: 1.05, steer: 0.57, yawI: 1.06, drift: 1.0, brake: 1.12, cyl: 6, pitch: 0.94, convertible: true, body: 'z4', drive: 'rwd',
     frontW: 0.50, hcg: 0.46, track: 1.60, rsF: 0.53, susHz: 1.75, susZ: 0.6, rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.15, bias: 0.64, steerRate: 1.15, ebrake: 0.14, engine: 'turbo6', turbo: 1.15, lsd: 0.45,
     stats: { speed: 0.82, accel: 0.93, handling: 0.94, drift: 0.91 },
   },
   {
-    id: 'taxi', name: 'ŠKODA OCTAVIA TAXI', short: 'OCTAVIA', tag: 'Athens yellow. 2.0 TDI. Front-wheel drive.', color: '#eebd19', accent: '#c7cbd0',
+    id: 'taxi', trafficWeight: 20, name: 'ŠKODA OCTAVIA TAXI', short: 'OCTAVIA', tag: 'Athens yellow. 2.0 TDI. Front-wheel drive.', color: '#eebd19', accent: '#c7cbd0',
     mass: 1460, power: 110, torque: 360, redline: 5000, idle: 800, gears: [14.91, 8.59, 5.24, 3.70, 2.82, 2.26, 1.75], final: 1, wheelR: 0.323,
     wheelbase: 2.686, length: 4.689, width: 1.829, cdA: 0.57, vmax: 227, grip: 1.02, steer: 0.58, yawI: 1.15, drift: 0.8, brake: 1.0, cyl: 4, pitch: 0.72, body: 'octavia', taxi: true, drive: 'fwd',
     frontW: 0.60, hcg: 0.53, track: 1.54, rsF: 0.57, usGrad: 2.5, rollGrad: 4.8, susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.28, bias: 0.72, steerRate: 0.95, ebrake: 0.18, engine: 'diesel', turbo: 0.8, driftAngle: 0.46,
     stats: { speed: 0.5, accel: 0.42, handling: 0.64, drift: 0.25 },
   },
   {
-    id: 'carrera', name: 'PORSCHE 911 CARRERA', short: '911 CARRERA', tag: '991.1 · Rear-engine flat-six. Seven-speed manual.', color: '#c6c9cb', accent: '#a7acb2',
+    id: 'carrera', trafficWeight: 0.15, name: 'PORSCHE 911 CARRERA', short: '911 CARRERA', tag: '991.1 · Rear-engine flat-six. Seven-speed manual.', color: '#c6c9cb', accent: '#a7acb2',
     mass: 1380, power: 257, torque: 390, redline: 7800, idle: 800, gears: [3.91, 2.29, 1.55, 1.30, 1.08, 0.88, 0.71], final: 3.44, wheelR: 0.331,
     torqueCurve: [[0,170],[800,190],[2000,270],[3500,340],[4500,370],[5600,390],[6500,370],[7400,331.65],[7800,302],[8500,260]], peakTorqueRpm: 5600, peakPowerRpm: 7400,
     wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, gripRear: 1.08, steer: 0.55, yawI: 1.1, drift: 1, brake: 1.08, cyl: 6, pitch: 1, body: 'carrera', drive: 'rwd', engine: 'flat6', engineZone: 'rear', transmission: 'manual',
@@ -41,7 +41,7 @@ export const CARS = [
     stats: { speed: 0.96, accel: 0.91, handling: 0.94, drift: 0.78 },
   },
   {
-    id: 'gr_yaris', name: 'TOYOTA GR YARIS', short: 'GR YARIS', tag: 'GR-FOUR · Rally-bred AWD. Turbocharged triple.', color: '#e7e8e3', accent: '#be1c27',
+    id: 'gr_yaris', trafficWeight: 2, name: 'TOYOTA GR YARIS', short: 'GR YARIS', tag: 'GR-FOUR · Rally-bred AWD. Turbocharged triple.', color: '#e7e8e3', accent: '#be1c27',
     mass: 1280, power: 206, torque: 390, redline: 7200, idle: 850, gears: [13.943258, 8.820958, 6.050435, 4.580642, 3.62135, 3.0217], final: 1, wheelR: 0.319,
     torqueCurve: [[0,130],[850,155],[1800,220],[2500,305],[3250,390],[4600,390],[5500,350],[6500,302.64],[7200,260],[7900,210]], peakTorqueRpm: 4000, peakPowerRpm: 6500,
     wheelbase: 2.56, length: 3.995, width: 1.805, cdA: 0.70, vmax: 230, grip: 1.14, steer: 0.59, yawI: 0.95, drift: 1, brake: 1.08, cyl: 3, pitch: 1, body: 'gr_yaris', drive: 'awd', awdRear: 0.47, engine: 'turbo3', turbo: 1, transmission: 'manual',
@@ -49,7 +49,7 @@ export const CARS = [
     stats: { speed: 0.59, accel: 0.84, handling: 0.93, drift: 0.63 },
   },
   {
-    id: 'gtv', name: 'ALFA ROMEO 2000 GTV', short: '2000 GTV', tag: 'Bertone classic · Twin-cam four. Rear-wheel drive.', color: '#b52125', accent: '#bf9160',
+    id: 'gtv', trafficWeight: 2, name: 'ALFA ROMEO 2000 GTV', short: '2000 GTV', tag: 'Bertone classic · Twin-cam four. Rear-wheel drive.', color: '#b52125', accent: '#bf9160',
     mass: 1040, power: 97, torque: 182, redline: 6500, idle: 850, gears: [3.304, 1.988, 1.355, 1, 0.791], final: 4.10, wheelR: 0.313,
     torqueCurve: [[0,72],[850,86],[1800,130],[3000,165],[4000,180],[4200,182],[5000,177],[5500,168.42],[6000,150],[6500,125],[7100,100]], peakTorqueRpm: 4200, peakPowerRpm: 5500,
     wheelbase: 2.35, length: 4.10, width: 1.58, cdA: 0.70, vmax: 195, grip: 0.99, gripRear: 1.08, steer: 0.62, yawI: 1.15, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: 'gtv', drive: 'rwd', engine: 'na4', transmission: 'manual',
@@ -60,7 +60,7 @@ export const CARS = [
   // VW Golf VII press kit (2012), 1.4 TSI ACT: 103 kW, 250 Nm, 212 km/h.
   // https://www.volkswagen-newsroom.com/en/the-new-golf-powertrain-structure-engines-and-gearboxes-2835
   {
-    id: 'golf', name: 'VOLKSWAGEN GOLF 1.4 TSI', short: 'GOLF TSI', tag: 'Athens everyday. Turbo four. Six-speed manual.', color: '#526a83', accent: '#bdc5ca',
+    id: 'golf', trafficWeight: 26, name: 'VOLKSWAGEN GOLF 1.4 TSI', short: 'GOLF TSI', tag: 'Athens everyday. Turbo four. Six-speed manual.', color: '#526a83', accent: '#bdc5ca',
     mass: 1270, power: 103, torque: 250, redline: 6500, idle: 800, gears: [3.615, 1.955, 1.281, .973, .778, .646], final: 3.647, wheelR: .315,
     torqueCurve: [[0,95],[800,110],[1500,250],[3500,250],[4500,215],[5000,196.7],[6000,164],[6500,140]], peakTorqueRpm: 2500, peakPowerRpm: 5000,
     wheelbase: 2.637, length: 4.255, width: 1.799, cdA: .62, vmax: 212, grip: 1.02, steer: .60, yawI: 1.02, drift: 1, brake: 1, cyl: 4, pitch: 1, body: 'golf', fleet: 'hatch', drive: 'fwd', engine: 'turbo4', turbo: .8, transmission: 'manual',
@@ -71,7 +71,7 @@ export const CARS = [
   // 159 Nm at 4400 rpm; six-speed manual, 200 km/h. Kerb mass varies by trim.
   // https://media.toyota.co.uk/toyota-reveals-the-all-new-corolla-saloon/
   {
-    id: 'corolla', name: 'TOYOTA COROLLA 1.6', short: 'COROLLA', tag: 'Naturally aspirated. Six-speed manual. Athens saloon.', color: '#d2d5d3', accent: '#ae3c35',
+    id: 'corolla', trafficWeight: 20, name: 'TOYOTA COROLLA 1.6', short: 'COROLLA', tag: 'Naturally aspirated. Six-speed manual. Athens saloon.', color: '#d2d5d3', accent: '#ae3c35',
     mass: 1280, power: 97, torque: 159, redline: 6800, idle: 800, gears: [3.538, 1.913, 1.31, .971, .818, .7], final: 4.214, wheelR: .318,
     torqueCurve: [[0,60],[800,70],[1800,111],[3000,140],[4400,159],[5500,153],[6400,144.73],[6800,124]], peakTorqueRpm: 4400, peakPowerRpm: 6400,
     wheelbase: 2.70, length: 4.630, width: 1.780, cdA: .60, vmax: 200, grip: 1.0, steer: .60, yawI: 1.08, drift: 1, brake: 1, cyl: 4, pitch: 1.05, body: 'corolla', fleet: 'sedan', drive: 'fwd', engine: 'na4', transmission: 'manual',
@@ -82,7 +82,7 @@ export const CARS = [
   // representative DIN kerb mass. Ratios expressed as overall ratios for split final drives.
   // https://www.skoda-storyboard.com/en/press-kits/skoda-superb-press-kit/technical-data/
   {
-    id: 'superb', name: 'ŠKODA SUPERB 2.0 TSI', short: 'SUPERB TSI', tag: 'Long-wheelbase liftback. 220 PS. Six-speed DSG.', color: '#25475b', accent: '#bec7cf',
+    id: 'superb', trafficWeight: 5, name: 'ŠKODA SUPERB 2.0 TSI', short: 'SUPERB TSI', tag: 'Long-wheelbase liftback. 220 PS. Six-speed DSG.', color: '#25475b', accent: '#bec7cf',
     mass: 1505, power: 162, torque: 350, redline: 6500, idle: 800, gears: [13.80, 8.20, 5.79, 4.28, 3.27, 2.65], final: 1, wheelR: .330,
     torqueCurve: [[0,120],[800,145],[1500,350],[4400,350],[5000,309],[6200,249.5],[6500,220]], peakTorqueRpm: 3000, peakPowerRpm: 6200,
     wheelbase: 2.841, length: 4.861, width: 1.864, cdA: .62, vmax: 245, grip: 1.05, steer: .57, yawI: 1.17, drift: 1, brake: 1.04, cyl: 4, pitch: .92, body: 'superb', fleet: 'taxi_superb', drive: 'fwd', engine: 'turbo4', turbo: 1,
@@ -93,7 +93,7 @@ export const CARS = [
   // equipment adds 70 kg to a representative 1338 kg DIN kerb mass.
   // https://cdn.skoda-storyboard.com/2019/12/Nova-Skoda_Octavia_technickeudaje.pdf
   {
-    id: 'police_octavia', name: 'ŠKODA OCTAVIA POLICE', short: 'OCTAVIA POLICE', tag: 'Ελληνική Αστυνομία livery. 1.5 TSI. Six-speed manual.', color: '#eceee9', accent: '#194c87',
+    id: 'police_octavia', trafficWeight: 0, name: 'ŠKODA OCTAVIA POLICE', short: 'OCTAVIA POLICE', tag: 'Ελληνική Αστυνομία livery. 1.5 TSI. Six-speed manual.', color: '#eceee9', accent: '#194c87',
     mass: 1408, power: 110, torque: 250, redline: 6500, idle: 800, gears: [3.615, 1.955, 1.281, .973, .778, .646], final: 3.647, wheelR: .323,
     torqueCurve: [[0,95],[800,115],[1500,250],[3500,250],[4500,230],[5000,210.1],[6000,175],[6500,150]], peakTorqueRpm: 2500, peakPowerRpm: 5000,
     wheelbase: 2.686, length: 4.689, width: 1.829, cdA: .58, vmax: 230, grip: 1.04, steer: .58, yawI: 1.12, drift: 1, brake: 1.04, cyl: 4, pitch: .96, body: 'police_octavia', fleet: 'taxi', police: true, drive: 'fwd', engine: 'turbo4', turbo: .9, transmission: 'manual',
@@ -102,6 +102,8 @@ export const CARS = [
   },
 
 ];
+
+for (const car of CARS) car.trafficWeight ??= defaultTrafficWeight(car);
 
 // body shape presets: key stations along the length (t: -1 rear .. +1 front), top heights; cabin from cabin[0]..cabin[1]
 const SHAPES = {
@@ -305,24 +307,35 @@ function blobMaterial() {
 }
 
 // ------------------------------------------------------------------ traffic models (shared geometry per type)
+export function defaultTrafficWeight(car) {
+  const category = String(car.trafficClass || car.class || '').toLowerCase();
+  if (car.police) return 0;
+  if (car.taxi) return 20;
+  if (/shitbox|economy|normal|city|compact/.test(category)) return 18;
+  if (/supercar|exotic/.test(category) || car.power >= 350) return .15;
+  if (/sport|performance/.test(category) || car.power >= 200) return 1;
+  return car.power <= 110 ? 18 : car.power <= 165 ? 8 : 3;
+}
+export function catalogueTrafficTypes(cars) {
+  return cars.filter(car => !car.police).map(car => ({
+    id: car.id, name: car.name, model: car.body, catalogueCar: car,
+    w: Math.max(0, car.trafficWeight ?? defaultTrafficWeight(car)),
+    shape: car.trafficShape || (car.length < 4.4 ? 'hatch' : 'sedan'),
+    len: car.length, wid: car.width, taxi: !!car.taxi,
+    colors: car.taxi ? [car.color] : ['#f2f2f0', '#c9ccd1', '#1d1f24', '#7d8288', car.color],
+  }));
+}
 export const TRAFFIC_TYPES = [
   { id:'police', name:'Škoda Octavia · ΕΛ.ΑΣ.', police:true, w:0, model:'octavia', shape:'sedan', len:4.689, wid:1.829, colors:['#f0f1ed'] },
   { id:'police_moto', name:'BMW R 1250 RT · ΔΙ.ΑΣ.', police:true, scooter:true, moto:true, w:0, len:2.222, wid:.990, colors:['#f0f1ed'] },
   // w = share of the mix; colours lean on what you actually see in Athens: white, silver, grey, black, a few blues and reds
-  { id: 'city', name: 'Toyota Aygo II', model: 'aygo', w: 16, shape: 'hatch', len: 3.455, wid: 1.615, colors: ['#f2f2f0', '#c9ccd1', '#b8282a', '#e9e2c9', '#2f6db0', '#9fb3a0', '#f4b9c0', '#7d8288'] },
-  { id: 'hatch', name: 'Volkswagen Golf VII', model: 'golf', w: 26, shape: 'hatch', len: 4.255, wid: 1.799, colors: ['#f2f2f0', '#c9ccd1', '#1d1f24', '#2e4c6a', '#8fa3b8', '#a33a2c', '#e8d9a8', '#3f5e4a', '#7d8288', '#5d6b78'] },
-  { id: 'sedan', name: 'Toyota Corolla E210', model: 'corolla', w: 15, shape: 'sedan', len: 4.630, wid: 1.780, colors: ['#f2f2f0', '#26292e', '#7d8288', '#c9ccd1', '#41505e', '#6b1f24'] },
-  { id: 'taxi', name: 'Škoda Octavia IV taxi', w: 10, model: 'octavia', shape: 'sedan', len: 4.689, wid: 1.829, colors: ['#efc31f', '#e3ae12', '#f4cc34'], taxi: true },
-  { id: 'taxi_superb', name: 'Škoda Superb III taxi', w: 5, model: 'superb', shape: 'sedan', len: 4.861, wid: 1.864, colors: ['#e8b716', '#f5cd32', '#dbab18'], taxi: true },
-  { id: 'byd_dolphin', name: 'BYD Dolphin', w: 8, model: 'dolphin', shape: 'hatch', len: 4.29, wid: 1.77, colors: ['#81b9b9', '#eae9e3', '#597aab', '#9d9eaa', '#da9584'], electric: true },
-  { id: 'byd_atto3', name: 'BYD Atto 3', w: 7, model: 'atto3', shape: 'suv', len: 4.455, wid: 1.875, colors: ['#dce0df', '#356c9d', '#666d71', '#a94a49', '#192c39'], electric: true },
-  { id: 'suv', name: 'Nissan Qashqai J11', model: 'qashqai', w: 13, shape: 'suv', len: 4.377, wid: 1.806, colors: ['#f2f2f0', '#1d1f24', '#7d8288', '#5b2a2a', '#c9ccd1', '#2c3b4d', '#8a7a5c'] },
   { id: 'van', name: 'Fiat Ducato L2H2', model: 'ducato', w: 6, shape: 'van', len: 5.413, wid: 2.05, colors: ['#f4f4f2', '#f4f4f2', '#d8d4c8', '#c9ccd1'] },
   { id: 'truck', name: 'Isuzu NPR delivery truck', model: 'npr', w: 3, shape: 'van', len: 6.40, wid: 2.30, colors: ['#f2f2ec', '#d9dce0', '#477ca0'] },
   { id: 'bus', name: 'Mercedes-Benz Citaro · ΟΣΥ', model: 'citaro', w: 3, shape: 'bus', len: 12, wid: 2.55, colors: ['#f4f4f2'], bus: true },
   { id: 'delivery', name: 'Honda SH150i delivery', model: 'sh150', w: 11, scooter: true, box: true, len: 2.030, wid: .740, colors: ['#f2f2f0', '#c3121c', '#1d1f24', '#2a6fb8', '#e8c33a'] },
   { id: 'scooter', name: 'Piaggio Beverly 300', model: 'beverly', w: 6, scooter: true, len: 2.125, wid: .800, colors: ['#f2f2f0', '#c3121c', '#1d1f24', '#2a6fb8', '#9ad0c2', '#f0a0b0'] },
   { id: 'moto', name: 'Yamaha Tracer 900', model: 'tracer', w: 3, scooter: true, moto: true, len: 2.160, wid: .850, colors: ['#1d1f24', '#c3121c', '#f2f2f0', '#e86a10'] },
+  ...catalogueTrafficTypes(CARS),
 ];
 export function trafficModel(type, color, rng, opts = {}) {
   return fleetModel(type, color, rng, opts);

@@ -96,6 +96,7 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
       frontWheels: vehicle.corners.slice(0, 2).map(c => ({ sx: c.sx, sy: c.sy, Fz: c.Fz, Fx: c.Fx, Fy: c.Fy, edl: c.edl })),
       drivenCombined: Math.max(...vehicle.corners.map((c, j) => (j < 2 ? 1 - vehicle.shareR : vehicle.shareR) > 0 ? c.sN : 0)),
       drivenSy: Math.max(...vehicle.corners.map((c, j) => (j < 2 ? 1 - vehicle.shareR : vehicle.shareR) > 0 ? Math.abs(c.sy) : 0)),
+      wheelspin: vehicle.wheelspin, rearWheels: vehicle.corners.slice(2).map(c => ({ sx: c.sx, sy: c.sy })),
       betaDeg: beta * DEG, tcCut: vehicle.tcCut, escCut: vehicle.escCut,
       driftLatch: vehicle.driftLatch, x: vehicle.x, z: vehicle.z, s: vehicle.s, u: vehicle.u });
   }

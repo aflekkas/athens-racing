@@ -150,7 +150,7 @@ export function runTrafficFleetChecks(){
     check(type.id+' parked detail available',typeof p.makeNear==='function'&&typeof p.setDamage==='function');
     counts.push({id:type.id,near,far,parked:triangles(p.root),parts:a.damageParts.length});
   }
-  const type=TRAFFIC_TYPES.find(t=>t.id==='hatch'),parked=[trafficModel(type,'#bbbbbb',rng,{parked:true}),trafficModel(type,'#224477',rng,{parked:true})];parked[1].root.position.x=5;
+  const type=TRAFFIC_TYPES.find(t=>t.id==='golf'),parked=[trafficModel(type,'#bbbbbb',rng,{parked:true}),trafficModel(type,'#224477',rng,{parked:true})];parked[1].root.position.x=5;
   const hidden=new THREE.Group();hidden.visible=false;const sentinel=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),parked[0].paint);sentinel.position.y=50;hidden.add(sentinel);parked[0].root.add(hidden);
   const cells=bakeParkedFleet(parked,40),camera=new THREE.PerspectiveCamera();camera.position.set(0,3,10);
   check('Parked bake excludes children of hidden damage groups',new THREE.Box3().setFromObject(cells).max.y<5);sentinel.geometry.dispose();hidden.removeFromParent();

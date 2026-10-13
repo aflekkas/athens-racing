@@ -92,14 +92,15 @@ export class Traffic {
     this.scene = scene; this.route = route; this.data = data;
     this.rng = new RNG(4242);
     this.cars = [];
-    const totalW = TRAFFIC_TYPES.reduce((a, t) => a + t.w, 0);
+    const spawnTypes = TRAFFIC_TYPES.filter(t => t.w > 0);
+    const totalW = spawnTypes.reduce((a, t) => a + t.w, 0);
     const indGeo = new THREE.BoxGeometry(0.12, 0.07, 0.05);
     const byId = Object.fromEntries(TRAFFIC_TYPES.map((t) => [t.id, t]));
     for (let i = 0; i < POOL; i++) {
-      let r = this.rng.next() * totalW, type = TRAFFIC_TYPES[0];
-      for (const t of TRAFFIC_TYPES) { r -= t.w; if (r <= 0) { type = t; break; } }
+      let r = this.rng.next() * totalW, type = spawnTypes[0];
+      for (const t of spawnTypes) { r -= t.w; if (r <= 0) { type = t; break; } }
       // a guaranteed share of the special vehicles (types the model library may or may not provide)
-      const fixed = ['bus', 'bus', 'bus', 'taxi', 'taxi', 'taxi', 'taxi', 'taxi_superb', 'taxi_superb', 'byd_dolphin', 'byd_dolphin', 'byd_atto3', 'byd_atto3', 'delivery', 'delivery', 'delivery', 'delivery'][i];
+      const fixed = ['bus', 'bus', 'bus', 'taxi', 'taxi', 'taxi', 'taxi', 'golf', 'corolla', 'golf', 'corolla', 'delivery', 'delivery', 'delivery', 'delivery'][i];
       if (fixed && byId[fixed]) type = byId[fixed];
       const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
       const indL = indicatorMat(), indR = indicatorMat();
@@ -115,7 +116,7 @@ export class Traffic {
       scene.add(m.root);
       // kind is the driving role (every taxi model drives like a taxi); type.id picks mass and manners
       const kind = type.taxi ? 'taxi' : type.id;
-      const mass = MASS[type.id] || (type.bus ? 12000 : type.scooter ? 220 : 1400);
+      const mass = type.catalogueCar?.mass || MASS[type.id] || (type.bus ? 12000 : type.scooter ? 220 : 1400);
       this.cars.push({ id: i, type, kind, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV[type.id] || BEHAV[kind] || BEHAV.hatch, dmg: 0 });
     }
     // the police (src/police.js): a reserved pool the ordinary spawner never uses. Until the model library has the
@@ -916,9 +917,11 @@ export class Traffic {
     this.parkedCars = [];
     if (!spots.length || this.route.closed) return;
     const types = TRAFFIC_TYPES.filter((t) => !t.scooter && !t.bus && !t.police && t.w > 0 && t.id !== 'van' && t.id !== 'truck');
+    const totalWeight = types.reduce((sum, t) => sum + t.w, 0);
     const roots = [];
     for (const sp of spots) {
-      const t = types[Math.floor(rng.next() * types.length)];
+      let draw = rng.next() * totalWeight, t = types[0];
+      for (const candidate of types) { draw -= candidate.w; if (draw <= 0) { t = candidate; break; } }
       const m = trafficModel(t, rng.pick(t.colors), rng, { parked: true });
       const fx = -Math.sin(sp.yaw), fz = -Math.cos(sp.yaw), hl = t.len * 0.38;
       const q = this.route.project(sp.x, sp.z, null);
