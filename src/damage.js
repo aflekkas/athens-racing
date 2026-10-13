@@ -97,6 +97,7 @@ function crashInternals(car){
   const dark=new THREE.MeshStandardMaterial({color:'#22282a',roughness:.92}),metal=new THREE.MeshStandardMaterial({color:'#515859',metalness:.5,roughness:.8});resources.push(dark,metal);
   for(const [zone,sign]of [['front',-1],['rear',1]]){
     const g=new THREE.Group();g.name='damage-internal-'+zone;g.visible=false;car.body.add(g);ends[zone]=g;
+    if(car.wheels?.length===2)continue; // bikes expose their authored frame, never a car-sized firewall
     const box=(size,pos,mat=dark)=>{const geo=new THREE.BoxGeometry(...size,car.damageCheap?1:6,car.damageCheap?1:3,car.damageCheap?1:4),m=new THREE.Mesh(geo,mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;g.add(m);resources.push(geo);return m;};
     const end=sign*(d.L/2-.38),engine=(car.spec?.engineZone||'front')===zone;
     // Filled structural volume / firewall: cap the hull so missing plastic never reveals the far wheels.
