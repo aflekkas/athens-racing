@@ -333,7 +333,7 @@ export class Ground {
     v.w *= 1 - Math.min(0.6, vn * 0.05);
     if (vn > v.wallHit) { v.wallNx = nx; v.wallNz = nz; }
     v.wallHit = Math.max(v.wallHit, vn);
-    v.pose.rollV += vn * 0.2 * Math.sign(nx * rx + nz * rz); v.pose.heaveV += vn * 0.04;
+    if (v.bodyKick) v.bodyKick(vn * 0.04, 0, -vn * 0.2 * Math.sign(nx * rx + nz * rz)); else { v.pose.rollV += vn * 0.2 * Math.sign(nx * rx + nz * rz); v.pose.heaveV += vn * 0.04; }
     if (v.syncWheels) v.syncWheels(); else for (const W of v.corners || v.wheel) W.vw = v.vLong;
   }
   /**
@@ -377,7 +377,8 @@ export class Ground {
       const arm = cx * jy - cy * jx;
       const meff = 1 / (1 / v.m + arm * arm / v.Iz);
       if (up) {
-        const glance = vn < 0.9 * sev && vAlong > 6 && sev > 0.6;
+        // (a shallow rub: the closing speed scales with road speed, so the limit does too: ~7-8 deg at any speed)
+        const glance = vn < (0.3 + 0.12 * vAlong) * sev && vAlong > 6 && sev > 0.6;
         // climbing takes ~35% (full kerb) of the speed into it at that corner; a glancing tyre bounces back off
         const J = meff * vn * (glance ? 1.35 : 0.3 * sev);
         // climbing, part of the blow goes up through the spring rather than round the car's centre
@@ -389,7 +390,8 @@ export class Ground {
           // rolling up the step costs some of the forward speed too (the wheel has to lift the corner)
           v.vLong *= 1 - 0.012 * sev * Math.min(1, vAlong / 8);
           const k = sev * Math.min(1, (vAlong + vn * 2) / 14);
-          v.pose.heaveV += 0.5 * k; v.pose.pitchV += (cx > 0 ? -0.35 : 0.25) * k; v.pose.rollV += (cy > 0 ? 0.6 : -0.6) * k;
+          // (the body's bounce comes from that wheel riding up the step through its tyre and spring: see resolve)
+          if (!v.sus) { v.pose.heaveV += 0.5 * k; v.pose.pitchV += (cx > 0 ? -0.35 : 0.25) * k; v.pose.rollV += (cy > 0 ? 0.6 : -0.6) * k; }
           if (cx > 0) v.steer += (cy > 0 ? -1 : 1) * 0.04 * k; // the rack kicks against the hit wheel
           if (vn > 8 && cx > 0) v.addDamage?.(cy > 0 ? 'right' : 'left', (vn - 8) * 0.5 + 2.2, { kind: 'wall' }); // a bent wheel / track rod
         }
@@ -399,7 +401,7 @@ export class Ground {
       } else {
         // dropping off: the wheel falls the kerb's height, a thump through the spring
         const k = sev * Math.min(1, vAlong / 10);
-        v.pose.heaveV -= 0.3 * k; v.pose.rollV += (cy > 0 ? -0.35 : 0.35) * k;
+        if (!v.sus) { v.pose.heaveV -= 0.3 * k; v.pose.rollV += (cy > 0 ? -0.35 : 0.35) * k; }
         v.bumpHit = Math.max(v.bumpHit, 0.3 * k); v.curbHit = Math.max(v.curbHit || 0, 0.25 * k);
       }
     }
@@ -448,27 +450,49 @@ export class Ground {
     const wy = v._wy || (v._wy = [0, 0, 0, 0]), ws = v._wsurf || (v._wsurf = ['', '', '', '']); // per car: fx reads them later
     const fw = route.frame((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length)), v._f || (v._f = {}));
     const ft = fx * fw.tx + fz * fw.tz, fr = fx * fw.rx + fz * fw.rz, rt = rx * fw.tx + rz * fw.tz, rr = rx * fw.rx + rz * fw.rz;
+    // Each wheel's ground splits into a smooth plane (the road surface carried on under a kerb, or the terrain) and a
+    // step on top of it (kerb, median island, dirt hump, sand pile): the car is placed on the plane, and each step is
+    // fed to that wheel's tyre and spring (v.wheelBump), so a kerb lifts that corner through its suspension instead
+    // of tilting the whole car rigidly
+    const wb = v._wb || (v._wb = [0, 0, 0, 0]), pl = v._wpl || (v._wpl = [0, 0, 0, 0]);
+    let nPaved = 0;
     for (let i = 0; i < 4; i++) { // each wheel's own road coordinates: it can be on the kerb while the centre isn't
       const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2;
-      const a = this.at(v.x + fx * cx + rx * cy, v.z + fz * cx + rz * cy, v.s + cx * ft + cy * rt, v.u + cx * fr + cy * rr, q);
+      const si = v.s + cx * ft + cy * rt, ui = v.u + cx * fr + cy * rr;
+      const a = this.at(v.x + fx * cx + rx * cy, v.z + fz * cx + rz * cy, si, ui, q);
       wy[i] = a.y; ws[i] = a.surf;
+      const sc = route.closed ? route.wrap(si) : clamp(si, 0, route.length), au = Math.abs(ui), side = ui >= 0 ? 1 : -1, eA = route.edge(sc) + ROAD.gutter;
+      const uo = eA + 0.18 + ROAD.sidewalk(route, sc, side);
+      let step;
+      if (au <= eA) step = a.y - route.surfaceY(sc, ui);                                   // carriageway (median island)
+      else if (au <= uo) step = clamp(a.y - route.surfaceY(sc, side * eA), 0, 0.4);        // pavement / verge: the kerb
+      // the tyre (~22 cm wide) rolls onto a kerb edge across its width: crossing at a shallow angle the load moves onto
+      // the kerb as the wheel slides sideways, not in one step (head-on, the wheel radius sets the rise: physics.js)
+      const kd = au - eA;
+      if (Math.abs(kd) < 0.11 && au <= uo) step = clamp(ROAD.curbH(route, sc), 0, 0.4) * smoothstep(-0.11, 0.11, kd);
+      else step = a.hump + ROAD.curbH(route, sc) * (1 - smoothstep(uo, uo + 1, au));        // off the edge: fade to terrain
+      if (au <= uo) nPaved++;
+      wb[i] = step; pl[i] = a.y - step;
     }
-    const yF = (wy[0] + wy[1]) / 2, yB = (wy[2] + wy[3]) / 2, yR = (wy[1] + wy[3]) / 2, yL = (wy[0] + wy[2]) / 2;
+    v.wheelBump = wb;
+    const yF = (pl[0] + pl[1]) / 2, yB = (pl[2] + pl[3]) / 2, yR = (pl[1] + pl[3]) / 2, yL = (pl[0] + pl[2]) / 2;
     const astride = ws[0] !== ws[1] || ws[2] !== ws[3] || ws[0] !== ws[2] || ws[0] !== g.surf;
-    const onRoad = g.surf === 'asphalt' && !astride;
+    // on the road's plane (kerbs and the median are steps under single wheels now, not a reason to leave it)
+    const sv = route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length);
+    const onRoad = nPaved === 4 && Math.abs(v.u) <= route.edge(sv) + ROAD.gutter;
     v.wheelSurf = ws;
     v.gradeG = onRoad ? undefined : clamp((yF - yB) / v.wb, -0.8, 0.8);
     v.grade = onRoad ? route.frame(v.s, v._f || (v._f = {})).grade : v.gradeG;
     v.bank = onRoad ? route.bank(v.s) : clamp((yR - yL) / v.track, -0.6, 0.6);
     // crests launch you: off the tarmac, when the ground falls away under the car faster than gravity could follow
     // (vertical speed from the ground slope under the wheelbase, so curbs and steps don't count as ramps)
-    const yG = onRoad ? g.y : astride ? (yF + yB) / 2 : Math.max(g.y, (yF + yB) / 2);
+    const yG = onRoad ? route.surfaceY(sv, v.u) : astride ? (yF + yB) / 2 : Math.max(g.y - g.hump, (yF + yB) / 2);
     if (v.air === undefined) { v.air = 0; v.vy = 0; v.yAir = yG; }
     const paved = onRoad || g.surf === 'pavement' || g.surf === 'asphalt' || g.surf === 'verge';
     const vyS = paved ? 0 : clamp((yF - yB) / v.wb * v.vLong, -20, 20);
     if (v.air) {
       v.vy -= 9.81 * dt; v.yAir += v.vy * dt;
-      if (v.yAir <= yG) { v.bumpHit = Math.max(v.bumpHit, clamp((vyS - v.vy) * 0.12, 0, 1)); v.pose.heaveV += Math.min(0, v.vy - vyS) * 0.05; v.air = 0; v.yAir = yG; }
+      if (v.yAir <= yG) { v.bumpHit = Math.max(v.bumpHit, clamp((vyS - v.vy) * 0.12, 0, 1)); if (v.bodyKick) v.bodyKick(Math.min(0, v.vy - vyS) * 0.5); else v.pose.heaveV += Math.min(0, v.vy - vyS) * 0.05; v.air = 0; v.yAir = yG; }
       v.y = Math.max(v.yAir, yG);
     } else if (!paved && v.vy > vyS + 9.81 * dt * 1.3 && v.vy > 1.2) {
       v.air = 1; v.yAir = v._gy ?? yG; v.y = yG;

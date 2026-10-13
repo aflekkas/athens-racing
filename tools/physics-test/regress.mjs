@@ -37,6 +37,8 @@ const f3 = (x) => (+x).toFixed(3), f2 = (x) => (+x).toFixed(2), f1 = (x) => (+x)
 /** settle into a steady corner on constant steer and part throttle, then apply phase 2 inputs */
 function corner(drive, phase2, o = {}) {
   const v = mk({ drive, ...o }); v.reset(0, 0, o.v0 ?? 60 / 3.6); v.gear = o.gear ?? 2;
+  // a fixed steering-wheel angle (raw rack, no keyboard steering assist): these check the chassis, not the driver aid
+  v.steerAssist = 0;
   const st = o.steer ?? 0.3;
   for (let i = 0; i < 240; i++) v.update(DT, { throttle: o.thr0 ?? 0.25, brake: 0, steer: st });
   const before = { k: kappa(v), b: overAng(v), w: v.w, ay: v.ay };
