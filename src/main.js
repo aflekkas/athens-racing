@@ -1209,7 +1209,9 @@ function updateCamera(dt, snap = false) {
     const lookYaw = -player.veh.steer * 0.12 - veh.w * 0.04 + clamp(look.yaw, -2.2, 2.2) + look.back;
     _e.set(-0.045 - clamp(veh.ax, -12, 12) * 0.0012 - look.pitch * 0.8 + noise1(t * 31 + 5) * 0.004 * rough, lookYaw, noise1(t * 19 + 9) * 0.004 * rough + G.shake * Math.sin(t * 40) * 0.02, 'YXZ');
     camera.quaternion.copy(_q).multiply(_q.clone().setFromEuler(_e));
-    const fov = Math.max(settings.cockpitFov, player.cockpit.mirrorFov(camera.aspect)) + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
+    // Mirror-fit is a model-inspection view; racing keeps the player's chosen vertical FOV.
+    const baseFov = Q.has('mirrorfit') ? Math.max(settings.cockpitFov, player.cockpit.mirrorFov(camera.aspect)) : settings.cockpitFov;
+    const fov = baseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else if (G.cam === 'chase') {
     // behind the car, swung round by the free look: yaw about the car, pitch up / down, wheel zoom
@@ -1333,10 +1335,14 @@ function step(dt, draw = true) {
         }
         if (G.pStuck === 0) G.pStuckLogged = false;
       }
-      if (G.towing || towOffer.hold > 0) { pin = { throttle: 0, brake: 1, steer: 0, handbrake: true, nitro: false }; towOffer.hold = Math.max(0, towOffer.hold - dt); }
+      const recoveryHeld = G.towing || towOffer.hold > 0;
+      const recoveryPose = recoveryHeld ? { x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw } : null;
+      if (recoveryHeld) { pin = { throttle: 0, brake: 1, steer: 0, handbrake: true, nitro: false }; towOffer.hold = Math.max(0, towOffer.hold - dt); }
       pv.dragMul = 1 - 0.32 * (G.draft || 0);
       const snapP = Q.has('nantrap') ? JSON.stringify({ x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw, vL: pv.vLong, vLat: pv.vLat, w: pv.w, pin, ai: player.ai }) : '';
       pv.update(dt, pin);
+      // A recovery hold is a time cost even on a slope or with a held throttle; suspension still settles.
+      if (recoveryPose) Object.assign(pv, recoveryPose, { vLong: 0, vLat: 0, w: 0, lastV: 0 });
       if (Q.has('nantrap') && !G.nanP && !isFinite(pv.x + pv.vLong + pv.w + pv.s)) { G.nanP = 1; console.warn('NaN player after update', snapP); }
       seaCheck(pv, dt);
       stuckCheck(pv, dt);
