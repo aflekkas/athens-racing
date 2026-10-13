@@ -492,7 +492,7 @@ function initFlow() {
       if (!def) return;
       G.pendingEvent = def; restart(index);
     },
-    resume, restart: () => restart(), quit: quitToMenu, next: (id) => openEvent(id),
+    resume, restart: () => openEvent(G.ev.def), quit: quitToMenu, next: (id) => openEvent(id),
     ctx: evCtx, inputDevice: activeInputDevice, carName: () => player.spec.name, fmtTime, ui: (fwd) => audio.ui?.(fwd),
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
@@ -598,11 +598,12 @@ function startEvent(id, opts = {}) {
   const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === car));
   G.pendingEvent = def; restart(idx);
 }
-function openEvent(id) {
+function openEvent(id, index = G.carIdx) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = mapEvent(id); if (!def) return;
-  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === def.car)) : G.carIdx;
-  G.state = 'menu'; controls.clear();
+  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === def.car)) : index;
+  // Keep the paused/result state so BACK from the picker restores a working menu.
+  if (!['paused', 'results'].includes(G.state)) G.state = 'menu'; controls.clear();
   menu.show('car', { def, index: idx }, true);
 }
 
@@ -652,11 +653,11 @@ function flowAction(name) {
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
-  if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length && !multiplayer.active) { audio.ui(true); restart(i); } return true; }
+  if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length && !multiplayer.active) { audio.ui(true); openEvent(G.ev.def, i); } return true; }
   switch (name) {
     case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
-    case 'restart': if (G.state === 'race' || G.state === 'countdown' || G.state === 'finished') restart(); return true;
+    case 'restart': if (G.state === 'race' || G.state === 'countdown' || G.state === 'finished') openEvent(G.ev.def); return true;
     case 'pause': pauseGame(); return true;
     case 'music': hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2); return true;
     case 'nextTrack': audio.nextTrack(); return true;
@@ -668,7 +669,7 @@ const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active;
 window.__flow = {
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
-  pause: pauseGame, resume, quit: quitToMenu, hideGrid, setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => restart(), get state() { return G.state; }, get menu() { return menu; }, get grid() { return grid; },
+  pause: pauseGame, resume, quit: quitToMenu, hideGrid, setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, get grid() { return grid; },
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !multiplayer.active && (G.state === 'race' || G.state === 'countdown')) pauseGame(); });
 
@@ -1524,8 +1525,7 @@ const multiplayer = new Multiplayer(CARS, {
     graphicsControl.disabled = false; graphicsControl.title = '';
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
     if (!multiplayer.loaded) return;
-    traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); resetRace(); G.cam = G.userCam; applyCamMode(); startCountdown();
-    document.querySelector('#posBox .of').textContent = '/2';
+    traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); quitToMenu();
   },
   members: onlineMembers,
   start(lobby, id, resumeState = null) {
