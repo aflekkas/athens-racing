@@ -773,5 +773,8 @@
       "duration": 0.65,
       "sha256": "47af73aa60b78bdeb71c37f627c2e1cae22933e2049ef4895073277f78656743"
     }
+  ],
+  "additionalManifests": [
+    "ambience/sources.json"
   ]
 }

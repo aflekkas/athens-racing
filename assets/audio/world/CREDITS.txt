@@ -1,6 +1,9 @@
 PARALIAKI RACING — WORLD SOUNDS
 
-Edited field recordings from Freesound (public HQ previews). All are CC0 1.0
+Additional rural/pine ambience: ambience/CREDITS.txt (CC0 and CC-BY 4.0).
+The credits below cover the original files in this directory only.
+
+Edited field recordings from Freesound (public HQ previews). These are CC0 1.0
 (public domain): https://creativecommons.org/publicdomain/zero/1.0/
 Changes: trimmed, filtered, mixed, level matched, looped with crossfades.
 Rebuild with tools/build_world_audio.mjs; sources.json lists trims and checksums.

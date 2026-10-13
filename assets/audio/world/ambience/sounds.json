@@ -1,0 +1,32 @@
+{
+  "farmland-wind": {
+    "file": "farmland-wind.ogg",
+    "kind": "texture",
+    "channels": 1,
+    "sampleRate": 32000
+  },
+  "pine-wind": {
+    "file": "pine-wind.ogg",
+    "kind": "texture",
+    "channels": 1,
+    "sampleRate": 32000
+  },
+  "birds": {
+    "file": "birds.ogg",
+    "kind": "bed",
+    "channels": 1,
+    "sampleRate": 32000
+  },
+  "distant-dog": {
+    "file": "distant-dog.ogg",
+    "kind": "shot",
+    "channels": 1,
+    "sampleRate": 32000
+  },
+  "distant-tractor": {
+    "file": "distant-tractor.ogg",
+    "kind": "bed",
+    "channels": 1,
+    "sampleRate": 32000
+  }
+}

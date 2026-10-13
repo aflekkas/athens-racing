@@ -25,7 +25,7 @@ export class Sirens {
       v.o1 = osc('square', 0); v.o2 = osc('sawtooth', 0); v.o2.detune.value = 7;
       v.dop.connect(v.o1.frequency); v.dop.connect(v.o2.frequency);
       v.g1 = gain(0.5); v.g2 = gain(0.35); v.drive = ctx.createWaveShaper(); v.drive.curve = curve;
-      v.horn = filt('bandpass', 1150, 0.6); v.bite = filt('peaking', 2400, 1); v.bite.gain.value = 4;
+      v.horn = filt('bandpass', 1150, 0.6); v.bite = filt('peaking', 2400, 1); v.bite.gain.value = -2;
       v.air = filt('lowpass', 9000, 0.5); v.out = gain(0); v.pan = ctx.createStereoPanner();
       v.o1.connect(v.g1); v.o2.connect(v.g2); v.g1.connect(v.drive); v.g2.connect(v.drive);
       A.mk.chain(v.drive, v.horn, v.bite, v.air, v.out, v.pan, A.trafficBus);
@@ -61,7 +61,7 @@ export class Sirens {
       v.dop.gain.setTargetAtTime(dop, now, 0.05);
       v.lfo.frequency.setTargetAtTime(MODES[v.mode].rate * dop, now, 0.05);
       const att = 1 / (1 + Math.pow(o.d / 30, 1.25));
-      v.out.gain.setTargetAtTime(0.32 * att * mute, now, 0.08);
+      v.out.gain.setTargetAtTime(0.23 * att * mute, now, 0.08);
       v.air.frequency.setTargetAtTime(spatial.cutoff, now, 0.1);
       v.pan.pan.setTargetAtTime(Math.max(-0.95, Math.min(0.95, o.pan)), now, 0.05);
     }
@@ -72,6 +72,6 @@ export class Sirens {
     const att = 1 / (1 + Math.pow(o.d / 30, 1.25));
     if (att < 0.03) return;
     const spatial = spatialAudio({}, o, now, 30), lp = spatial.cutoff;
-    for (const [type, g] of [['square', 0.07], ['sawtooth', 0.05]]) this.A.tone({ f: 420 * spatial.doppler, slide: 1500 * spatial.doppler, dur: 0.42, gain: g * att, type, attack: 0.02, lp, pan: o.pan, bus: this.A.trafficBus });
+    for (const [type, g] of [['square', 0.035], ['sawtooth', 0.025]]) this.A.tone({ f: 420 * spatial.doppler, slide: 1500 * spatial.doppler, dur: 0.42, gain: g * att, type, attack: 0.02, lp, pan: o.pan, bus: this.A.trafficBus });
   }
 }

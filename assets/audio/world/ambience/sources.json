@@ -1,0 +1,96 @@
+{
+  "acquired": "2026-10-13",
+  "note": "Public HQ previews. Geographic substitutes, not recordings at the game maps. Attribution 4.0 for pine wind and dog; CC0 for wind, birds and tractor. Runtime random excerpts with crossfades; sparse animal/machinery events.",
+  "sources": [
+    {
+      "file": "farmland-wind.ogg",
+      "title": "Soft Wind",
+      "author": "florianreichelt",
+      "pageUrl": "https://freesound.org/people/florianreichelt/sounds/459977/",
+      "downloadUrl": "https://cdn.freesound.org/previews/459/459977_6253486-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceSha256": "e1cf29f5305a79edb5e57fb658c35e307078c392fb6bb6e8e8941e1ea7f67423",
+      "sha256": "3abe8de44f042626c480e409cddf87a4b09ea1caa899c271d00ff25efbc0b243",
+      "trim": [
+        0,
+        34
+      ],
+      "filter": "highpass=f=100,lowpass=f=4500",
+      "rms": 0.11,
+      "gain": 6.815570274467314,
+      "kind": "texture"
+    },
+    {
+      "file": "pine-wind.ogg",
+      "title": "Wind in Pine Trees",
+      "author": "kangaroovindaloo",
+      "pageUrl": "https://freesound.org/people/kangaroovindaloo/sounds/147638/",
+      "downloadUrl": "https://cdn.freesound.org/previews/147/147638_1728127-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "f13960b0a2848965883970eb4d75f9fad0444ca65e3288a7098a41769adf7a97",
+      "sha256": "dfede56169f45fd91865a25c412c53c56f7357c014b7ae6a0c6bee12ff6f1d4d",
+      "trim": [
+        5,
+        65
+      ],
+      "filter": "highpass=f=150,lowpass=f=5500",
+      "rms": 0.11,
+      "gain": 6.017382648591039,
+      "kind": "texture"
+    },
+    {
+      "file": "birds.ogg",
+      "title": "Sparrows.wav",
+      "author": "JKata",
+      "pageUrl": "https://freesound.org/people/JKata/sounds/626174/",
+      "downloadUrl": "https://cdn.freesound.org/previews/626/626174_966329-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceSha256": "8878eaee84423e4176a47acec8e5e9fc702dd50fc80949f44ba89b45c02d21a0",
+      "sha256": "305e1c29eba075e50ea41a9ce478baf5f27fec68875f6949541ca9c11186ee4c",
+      "trim": [
+        0,
+        21
+      ],
+      "filter": "highpass=f=650,lowpass=f=7000",
+      "rms": 0.12,
+      "gain": 10.307633358447937,
+      "kind": "bed"
+    },
+    {
+      "file": "distant-dog.ogg",
+      "title": "Distant Dog Barks",
+      "author": "andersmmg",
+      "pageUrl": "https://freesound.org/people/andersmmg/sounds/518976/",
+      "downloadUrl": "https://cdn.freesound.org/previews/518/518976_5408716-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "b692a00d74d28059bda69d8004e2c9d65b9d00b5fcfe1cecb971ca2aed947704",
+      "sha256": "fc67fa3756793d7d1f044ccce4bf5bf7d6f05acf776687d396a8fe36927bacd5",
+      "trim": [
+        0,
+        3.114
+      ],
+      "filter": "highpass=f=220,lowpass=f=2000",
+      "rms": 0.16,
+      "gain": 5.36859802581152,
+      "kind": "shot"
+    },
+    {
+      "file": "distant-tractor.ogg",
+      "title": "Tractor",
+      "author": "Lentusss",
+      "pageUrl": "https://freesound.org/people/Lentusss/sounds/459153/",
+      "downloadUrl": "https://cdn.freesound.org/previews/459/459153_4927685-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceSha256": "9f6467e8490d98d3aaea82a08d133f373b9007fce57a83f4685aa27a10ec312f",
+      "sha256": "a2dab191ea0317ebbe6f3c36de8993ca3a0792ed9f0e103c8032dfcc4c86ca44",
+      "trim": [
+        3,
+        23
+      ],
+      "filter": "highpass=f=90,lowpass=f=650",
+      "rms": 0.12,
+      "gain": 8.180213806353711,
+      "kind": "bed"
+    }
+  ]
+}

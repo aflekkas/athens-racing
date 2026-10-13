@@ -167,7 +167,7 @@ const TRAFFIC_LOOPS = {
 };
 
 // Mix controls are independent of legacy sfx (which still scales every non-music bus).
-export const AUDIO_DEFAULTS = Object.freeze({ master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.7 });
+export const AUDIO_DEFAULTS = Object.freeze({ master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
 export class AudioMix {
@@ -619,22 +619,8 @@ export class Audio {
     this.updateTraffic(p.traffic || [], now, mute);
     this.sirens.update(p.traffic || [], now, mute);
 
-    // ---- ambience along the route
-    const sea = p.sea || 0, city = p.city || 0, beach = p.beach || 0, cliff = p.cliff || 0;
-    const slow = 0.4 + 0.6 * Math.max(0, 1 - v / 30); // voices and cafés drown once you are moving
-    a.seaPan.pan.setTargetAtTime(Math.max(-0.85, Math.min(0.85, p.seaPan ?? 0.6)), now, 0.6);
-    a.seaLP.frequency.setTargetAtTime(900 + 11000 * sea * sea, now, 0.8); // distant surf loses its hiss first
-    a.sand.gain.setTargetAtTime(0.6 * Math.sqrt(sea) * (1 - cliff), now, 1.5);
-    a.rocks.gain.setTargetAtTime(0.65 * Math.sqrt(sea) * cliff, now, 1.5);
-    a.city.gain.setTargetAtTime(0.55 * city, now, 1.2);
-    a.cafe.gain.setTargetAtTime(0.5 * city * slow * (open ? 1 : 0.6), now, 1.2);
-    a.beach.gain.setTargetAtTime(0.55 * beach * slow * (open ? 1 : 0.6), now, 1.2);
-    a.cic.gain.setTargetAtTime(0.32 * Math.min(1.2, p.cicadas || 0) * Math.max(0, this.weather.cicadas), now, 1.5);
+    // ---- map ambience / weather (owns bed levels and sparse natural events)
     this.weather.update(p, now);
-    if (now > this.nextCic) { this.nextCic = now + 4 + Math.random() * 7; a.cicSwell.gain.setTargetAtTime(0.45 + Math.random() * 0.8, now, 1.8); } // cicadas come in waves
-    if (now > this.nextGull) { this.nextGull = now + 5 + Math.random() * 9; if (sea > 0.3 && (open || v < 15)) this.gull(p.seaPan ?? 0.6, sea); }
-    if (now > this.nextHorn) { this.nextHorn = now + 6 + Math.random() * 10; if (city > 0.3 && Math.random() < 0.7) this.carHorn(Math.random() < 0.15 ? 'taxi' : Math.random() < 0.3 ? 'scooter' : 'car', Math.random() < 0.3 ? 1 : 0, 0.18, (Math.random() - 0.5) * 1.6); }
-    if (now > this.nextScoot) { this.nextScoot = now + 5 + Math.random() * 8; if (city > 0.4) this.moped((Math.random() - 0.5) * 1.6, 0.3); }
 
     // ---- music ducks under the action (crashes, horns, slides, speed)
     this.duckEv = Math.max(0, this.duckEv - p.dt * 0.7);

@@ -13,7 +13,7 @@
 
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'ui'];
 const KEY = 'paraliaki.settings';
-export const DEFAULTS = { master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.7, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false,
+export const DEFAULTS = { master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: false };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];

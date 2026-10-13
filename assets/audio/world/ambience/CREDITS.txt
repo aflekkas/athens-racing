@@ -1,0 +1,34 @@
+ATHENS STREET RACERS — ADDITIONAL AMBIENCE
+
+Field recordings from Freesound. Geographic substitutes; not site-specific surveys.
+CC0 and CC-BY 4.0 as listed individually below. No endorsement implied.
+
+farmland-wind.ogg
+  "Soft Wind" by florianreichelt
+  https://freesound.org/people/florianreichelt/sounds/459977/
+  Licence: https://creativecommons.org/publicdomain/zero/1.0/
+  Changes: excerpt 0–34 s; mono, filtered (highpass=f=100,lowpass=f=4500), DC removed, RMS matched, OGG Vorbis.
+
+pine-wind.ogg
+  "Wind in Pine Trees" by kangaroovindaloo
+  https://freesound.org/people/kangaroovindaloo/sounds/147638/
+  Licence: https://creativecommons.org/licenses/by/4.0/
+  Changes: excerpt 5–65 s; mono, filtered (highpass=f=150,lowpass=f=5500), DC removed, RMS matched, OGG Vorbis.
+
+birds.ogg
+  "Sparrows.wav" by JKata
+  https://freesound.org/people/JKata/sounds/626174/
+  Licence: https://creativecommons.org/publicdomain/zero/1.0/
+  Changes: excerpt 0–21 s; mono, filtered (highpass=f=650,lowpass=f=7000), DC removed, RMS matched, OGG Vorbis.
+
+distant-dog.ogg
+  "Distant Dog Barks" by andersmmg
+  https://freesound.org/people/andersmmg/sounds/518976/
+  Licence: https://creativecommons.org/licenses/by/4.0/
+  Changes: excerpt 0–3.114 s; mono, filtered (highpass=f=220,lowpass=f=2000), DC removed, RMS matched, OGG Vorbis.
+
+distant-tractor.ogg
+  "Tractor" by Lentusss
+  https://freesound.org/people/Lentusss/sounds/459153/
+  Licence: https://creativecommons.org/publicdomain/zero/1.0/
+  Changes: excerpt 3–23 s; mono, filtered (highpass=f=90,lowpass=f=650), DC removed, RMS matched, OGG Vorbis.
