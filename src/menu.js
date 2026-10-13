@@ -3,10 +3,12 @@
 // main.js routes here (up / down / left / right / confirm / back) from keyboard, gamepad and touch.
 // Menu items are not native <button>s on purpose: the input system ignores key events aimed at focused form
 // controls, so focus is drawn with a class and the keys keep flowing through flowAction().
-import { getEvents, EVENTS, TYPES, getEvent, resolve, loadRecord, medalCount, targetLabels, MEDALS } from './events.js';
-import { settings, setSetting, speedUnit, fmtDist, speedIn } from './settings.js';
+import { getEvents, QUICK_RACE, TYPES, getEvent, resolve, loadRecord, targetLabels, MEDALS } from './events.js';
+import { settings, setSetting, fmtDist } from './settings.js';
 
 import { renderMapSelect, selectMap } from './map-select.js';
+import { CARS } from './cars.js';
+import { renderCarSelect, mountCarSelect } from './car-select.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MEDAL_ICON = (m, cls = '') => `<i class="medal ${m || 'none'} ${cls}" title="${m ? m.toUpperCase() : 'NO MEDAL'}"></i>`;
@@ -16,7 +18,7 @@ const TRAFFIC = (d) => (d <= 0 ? 'CLOSED ROAD' : d < 0.6 ? 'LIGHT TRAFFIC' : d <
 export class Menu {
   /**
    * root: the #ui element. h: handlers from main.js
-   *   quickRace(), startEvent(id), multiplayer(), garage(), resume(), restart(), quit(), next(id)
+   *   quickRace(), openEvent(id), chooseCar(index, def, garage), multiplayer(), garage(), resume(), restart(), quit(), next(id)
    *   ctx() -> resolve context { route, marks }, carName() -> string, fmtTime(t), ui(forward) (click sound)
    *   bindings(containerEl) (mount the input agent's rebinding table), graphicsControl (the existing <select>)
    */
@@ -32,6 +34,7 @@ export class Menu {
 
   // ---------------------------------------------------------------- show / hide
   show(screen, data = {}, push = false) {
+    if (screen === 'events' && this.screen === 'maps') data = { ...data, mode: this.data.mode };
     this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });
     if (!push) this.stack.length = 0;
@@ -52,10 +55,12 @@ export class Menu {
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
   }
   render() {
+    this.carView?.dispose(); this.carView = null;
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
     this.root.className = 's-' + this.screen;
     if (this.screen === 'settings') this.mountSettings();
-    this.setFocus(Math.min(this.focus, Math.max(0, this.items().length - 1)), false);
+    if (this.screen === 'car') this.carView = mountCarSelect(this.root, this.data.index || 0);
+    this.setFocus(this.screen === 'car' ? this.items().findIndex(el => el.dataset.act === 'carConfirm') : Math.min(this.focus, Math.max(0, this.items().length - 1)), false);
   }
   items() { return [...this.root.querySelectorAll('.mi:not(.off)')]; }
   setFocus(i, scroll = true) {
@@ -76,6 +81,8 @@ export class Menu {
       // the event list is a grid of tabs on top + rows: up/down walk the rows
       this.setFocus(this.focus + (name === 'down' ? 1 : -1)); this.h.ui?.(name === 'down'); return true;
     }
+    if (this.screen === 'car' && (name === 'left' || name === 'right')) { this.browseCar(name === 'right' ? 1 : -1); return true; }
+    if (this.screen === 'car' && name === 'confirm' && !cur?.classList.contains('paint') && cur?.dataset.act !== 'back') { this.confirmCar(); return true; }
     if (name === 'left' || name === 'right') {
       const d = name === 'right' ? 1 : -1;
       if (cur?.dataset.kind) { this.adjust(cur, d); return true; }
@@ -106,13 +113,18 @@ export class Menu {
     if (el.dataset.mapId) { selectMap(this, el.dataset.mapId); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
-    if (el.dataset.filter) { this.filter = el.dataset.filter; this.show('events', { ...this.data, focus: this.focus }); return; }
-    if (el.dataset.ev) { this.h.startEvent(el.dataset.ev); return; }
+    if (el.dataset.filter) { this.filter = el.dataset.filter; this.render(); return; }
+    if (el.dataset.ev) { this.h.openEvent(el.dataset.ev); return; }
     if (el.dataset.kind) { this.adjust(el, 1); return; }
     switch (a) {
-      case 'quick': this.h.quickRace(); break;
-      case 'events': this.filter = 'all'; this.show('events', {}, true); break;
-      case 'tt': this.filter = 'timetrial'; this.show('events', {}, true); break;
+      case 'play': this.show('mode', {}, true); break;
+      case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
+      case 'events': this.filter = 'all'; this.show('maps', { filter: 'all' }, true); break;
+      case 'tt': this.filter = 'timetrial'; this.show('maps', { filter: 'timetrial' }, true); break;
+      case 'carPrev': this.browseCar(-1); break;
+      case 'carNext': this.browseCar(1); break;
+      case 'carConfirm': this.confirmCar(); break;
+      case 'paint': this.carView?.paint(el.dataset.color); for (const paint of this.root.querySelectorAll('.paint')) paint.classList.toggle('selected', paint === el); this.root.querySelector('.car-paint-name').textContent = el.title; break;
       case 'mp': this.h.multiplayer(); break;
       case 'garage': this.h.garage(); break;
       case 'settings': this.show('settings', {}, true); break;
@@ -131,9 +143,10 @@ export class Menu {
     }
   }
   cycleFilter(d) {
+    if (this.data.mode === 'quick') return;
     const f = ['all', ...Object.keys(TYPES)]; const i = f.indexOf(this.filter);
     this.filter = f[(i + d + f.length) % f.length]; this.h.ui?.(d > 0);
-    this.show('events', { ...this.data, focus: 0 }, false);
+    this.focus = 0; this.render();
   }
   /** left / right (or click) on a setting row */
   adjust(el, d) {
@@ -170,32 +183,32 @@ export class Menu {
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId); }
 
   r_title() {
-    const m = medalCount();
-    const item = (act, label, sub) => `<div class="mi big" data-act="${act}"><b>${label}</b><span>${sub}</span></div>`;
-    return `<div class="t-wrap">
-      <div class="t-head"><div class="kick">ATHENS RIVIERA · EO91 · VOULIAGMENI <em>▶</em> LOMVARDA</div><h1>PARALIAKI</h1></div>
-      <div class="t-list">
-        ${item('quick', 'QUICK RACE', 'Full sprint · 3 rivals')}
-        ${item('events', 'EVENTS', `${EVENTS.length} events · sprints, cameras, score attack`)}
-        ${item('tt', 'TIME TRIAL', 'Splits at every district')}
-        ${item('mp', 'MULTIPLAYER', 'Race friends online')}
-        ${item('garage', 'GARAGE', this.h.carName ? esc(this.h.carName()) : 'Pick your car')}
-        ${item('settings', 'SETTINGS', 'Sound · units · aids · controls')}
-      </div>
-      <div class="t-foot">${MEDALS.slice().reverse().map((k) => `${MEDAL_ICON(k)}<b>${m[k]}</b>`).join('')}<span>MEDALS · ${EVENTS.length * 1} EVENTS</span></div>
-    </div>`;
+    return `<div class="t-wrap"><div class="t-head"><div class="kick">GREEK ROADS · PURE TIME</div><h1>PARALIAKI</h1></div><div class="t-list"><div class="mi big" data-act="play"><b>RACE</b></div><div class="mi small" data-act="settings">SETTINGS</div></div></div>`;
   }
+  r_mode() {
+    const item = (act,label) => `<div class="mi big" data-act="${act}"><b>${label}</b></div>`;
+    return `<div class="p-wrap"><div class="kick">CHOOSE YOUR MODE</div><h2>RACE</h2><div class="p-list">${item('quick','QUICK RACE')}${item('events','EVENTS')}${item('tt','TIME TRIAL')}${item('mp','MULTIPLAYER')}<div class="mi small" data-act="back">BACK</div></div></div>`;
+  }
+  r_car(d) { return renderCarSelect(d); }
+  browseCar(delta) {
+    if (this.data.def?.car) return;
+    this.h.ui?.(delta > 0);
+    const data = { ...this.data, index: ((this.data.index || 0) + delta + CARS.length) % CARS.length };
+    this.leaving(); this.data = data; this.focus = 0; this.render();
+  }
+  confirmCar() { this.h.chooseCar?.(this.data.index || 0, this.data.def, this.data.garage); }
 
   r_events() {
     const ctx = this.h.ctx(), fmt = this.h.fmtTime;
-    const all = getEvents(ctx.mapId || 'riviera').filter((e) => this.filter === 'all' || e.type === this.filter);
-    const tabs = ['all', ...Object.keys(TYPES)].map((f) => `<div class="tab ${f === this.filter ? 'on' : ''}" data-filter="${f}">${f === 'all' ? 'ALL' : TYPES[f].label}</div>`).join('');
+    const available = this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : getEvents(ctx.mapId).find(e => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
+    const all = available.filter((e) => this.filter === 'all' || e.type === this.filter);
+    const tabs = (this.data.mode === 'quick' ? [] : ['all', ...Object.keys(TYPES)]).map((f) => `<div class="tab ${f === this.filter ? 'on' : ''}" data-filter="${f}">${f === 'all' ? 'ALL' : TYPES[f].label}</div>`).join('');
     const rows = all.map((e) => {
       const r = resolve(e, ctx), rec = loadRecord(e.id);
-      const best = e.type === 'score' ? (rec.bestScore != null ? rec.bestScore.toLocaleString('en-US') + ' PTS' : '') : e.type === 'speedtrap' ? (rec.bestTrap != null ? Math.round(speedIn(rec.bestTrap)) + ' ' + speedUnit() : '') : rec.bestTime != null ? fmt(rec.bestTime) : '';
+      const best = rec.bestTime != null ? fmt(rec.bestTime) : '';
       return `<div class="mi ev" data-ev="${e.id}">${MEDAL_ICON(rec.medal)}<div class="ev-main"><b>${esc(e.name)}</b><span>${esc(r.fromName)} ${r.reverse ? '◀' : '▶'} ${esc(r.toName)} · ${fmtDist(r.len)}${r.reverse ? ' · REVERSE' : ''}</span></div><div class="ev-type t-${e.type}">${TYPES[e.type].short}</div><div class="ev-best">${best}</div></div>`;
     }).join('');
-    return `<div class="ev-wrap"><div class="ev-left"><div class="kick">${this.filter === 'timetrial' ? 'TIME TRIAL' : 'EVENTS'}</div><div class="tabs">${tabs}</div><div class="ev-list">${rows || '<div class="empty">NO EVENTS</div>'}</div>
+    return `<div class="ev-wrap"><div class="ev-left"><div class="kick">${this.data.mode === 'quick' ? 'QUICK RACE' : this.filter === 'timetrial' ? 'TIME TRIAL' : 'EVENTS'}</div><div class="tabs">${tabs}</div><div class="ev-list">${rows || '<div class="empty">NO EVENTS</div>'}</div>
       <div class="mi small" data-act="back"><b>◀ BACK</b></div></div><div class="ev-detail" id="evDetail"></div></div>
       <div class="ui-keys"><span><i>↑ ↓</i> SELECT</span><span><i>← →</i> FILTER</span><span><i>ENTER</i> START</span><span><i>ESC</i> BACK</span></div>`;
   }
@@ -208,21 +221,18 @@ export class Menu {
       ['ROUTE', `${esc(r.fromName)} ${r.reverse ? '◀' : '▶'} ${esc(r.toName)}`], ['DISTANCE', fmtDist(r.len)],
       ['FIELD', e.type === 'sprint' ? `${(Array.isArray(e.rivals) ? e.rivals.length : e.rivals) + 1} CARS` : 'SOLO'], ['ROAD', TRAFFIC(e.traffic ?? 1)],
     ];
-    if (e.type === 'score') facts.push(['CLOCK', r.timeLimit + ' S']);
-    if (e.type === 'speedtrap') facts.push(['CAMERAS', r.traps.length]);
-    if (e.type === 'timetrial' || e.type === 'sprint') facts.push(['SPLITS', r.checkpoints.length]);
+    if (r.closed) facts.push(['LAPS', r.laps]);
     if (e.conditions?.time) facts.push(['TIME', String(e.conditions.time).toUpperCase()]);
     const best = [];
-    if (rec.bestTime != null && e.type !== 'score') best.push(['BEST TIME', fmt(rec.bestTime)]);
+    if (rec.bestTime != null) best.push(['BEST TIME', fmt(rec.bestTime)]);
     if (rec.bestPos != null) best.push(['BEST FINISH', 'P' + rec.bestPos]);
-    if (rec.bestScore != null) best.push(['BEST SCORE', rec.bestScore.toLocaleString('en-US')]);
-    if (rec.bestTrap != null) best.push(['BEST TOTAL', Math.round(speedIn(rec.bestTrap)) + ' ' + speedUnit()]);
+
     el.innerHTML = `<div class="d-type t-${e.type}">${TYPES[e.type].label}${r.reverse ? ' · REVERSE' : ''}</div><div class="d-name">${esc(e.name)}</div><div class="d-blurb">${esc(e.blurb)}</div>
       <div class="d-facts">${facts.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
       <div class="d-targets">${tg.map(([m, v]) => `<div class="tg ${m} ${rec.medal && MEDALS.indexOf(rec.medal) >= MEDALS.indexOf(m) ? 'got' : ''}">${MEDAL_ICON(m)}<b>${v}</b></div>`).join('')}</div>
       ${best.length ? `<div class="d-best">${best.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>` : '<div class="d-best none">NOT RACED YET</div>'}
       ${this.ghostRow(e)}
-      <div class="d-go">ENTER / CLICK TO START · ${esc(this.h.carName?.() || '')}</div>`;
+      <div class="d-go">CHOOSE EVENT → CHOOSE CAR</div>`;
   }
 
   r_settings(d) {
@@ -246,7 +256,7 @@ export class Menu {
     if (b && this.h.bindings) { try { this.h.bindings(b); } catch (e) { b.textContent = 'Controls unavailable'; console.warn(e); } }
   }
   /** leaving the settings screen: drop any half-done key capture in the bindings table */
-  leaving() { if (this.screen === 'settings') this.h.cancelBindings?.(); }
+  leaving() { if (this.screen === 'settings') this.h.cancelBindings?.(); this.carView?.dispose(); this.carView = null; }
 
   r_pause(d) {
     const item = (act, label) => `<div class="mi big" data-act="${act}"><b>${label}</b></div>`;
@@ -260,14 +270,14 @@ export class Menu {
     const res = d.result || {}, m = res.medal;
     const item = (act, label) => `<div class="mi big" data-act="${act}"><b>${label}</b></div>`;
     const splits = d.splits?.length ? `<div class="r-block"><h3>SPLITS</h3><table class="r-splits">${d.splits.map((s) => `<tr><td>${esc(s.name)}</td><td>${s.time}</td><td class="${s.cls || ''}">${s.delta || ''}</td></tr>`).join('')}</table></div>` : '';
-    const bd = d.breakdown?.length ? `<div class="r-block"><h3>${esc(d.breakdownTitle || 'POINTS')}</h3><table class="r-splits">${d.breakdown.map(([k, v, c]) => `<tr><td>${esc(k)}</td><td></td><td class="${c || ''}">${v}</td></tr>`).join('')}</table></div>` : '';
+
     const field = d.field?.length ? `<div class="r-block"><h3>CLASSIFICATION</h3><table class="r-splits">${d.field.map((f) => `<tr class="${f.me ? 'me' : ''}"><td>P${f.pos} · ${esc(f.name)}</td><td>${esc(f.car || '')}</td><td>${f.time}</td></tr>`).join('')}</table></div>` : '';
     return `<div class="r-wrap ${d.win ? 'win' : 'lose'}"><div class="r-left">
         <div class="kick">${esc(d.kick || '')}</div>
         <div class="r-medal">${MEDAL_ICON(m, 'big')}<span>${m ? m.toUpperCase() + ' MEDAL' : 'NO MEDAL'}${res.newBest ? ' · <em>NEW BEST</em>' : ''}</span></div>
         <h2>${esc(d.title || '')}</h2><div class="r-sub">${d.sub || ''}</div>
         <div class="r-table">${(d.rows || []).map(([k, v, hi]) => `<div><span>${esc(k)}</span><b class="${hi ? 'nb' : ''}">${v}</b></div>`).join('')}</div>
-        <div class="r-actions">${item('retry', 'RETRY')}${window.__replay?.watch ? item('replay', 'WATCH REPLAY') : ''}${d.next ? item('next', 'NEXT EVENT') : ''}${item('list', 'EVENT LIST')}${item('menu', 'MAIN MENU')}</div>
-      </div><div class="r-right">${field}${splits}${bd}</div></div>`;
+        <div class="r-actions">${item('retry', 'RETRY')}${window.__replay?.watch ? item('replay', 'WATCH REPLAY') : ''}${item('list', 'EVENT LIST')}</div>
+      </div><div class="r-right">${field}${splits}</div></div>`;
   }
 }

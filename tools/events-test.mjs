@@ -1,5 +1,5 @@
 // Headless tests of the event framework (src/events.js): route resolution (segments, reverse), checkpoints and
-// splits, speed cameras, score attack, medals, saved records, positions, wrong-way and the hook API.
+// splits, medals (positions / times only: no points), saved records, pursuit, positions, wrong-way and the hook API.
 //   node tools/events-test.mjs
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
@@ -19,7 +19,6 @@ function drive(def, v, st, opts = {}) {
   let t = 0, s = run.r.s0;
   for (let i = 0; i < 60 * 60 * 30 && !run.done; i++) {
     t += dt; s += run.r.dir * v * dt;
-    if (opts.score) run.addScore('near', opts.score * dt);
     for (const e of run.update(dt, { t, s, kmh: v * 3.6 })) {
       out.push(e);
       if (e.kind === 'finish') return { run, out, res: run.finish({ time: t, position: opts.position ?? 1, field: 4 }) };
@@ -38,10 +37,14 @@ test('every event resolves inside the route with sane checkpoints', () => {
     assert.equal(r.checkpoints.at(-1).d, r.len);
     for (let i = 1; i < r.checkpoints.length; i++) assert.ok(r.checkpoints[i].d > r.checkpoints[i - 1].d, e.id + ' checkpoints ascend');
     assert.ok(EV.TYPES[e.type], e.id + ' type');
-    assert.ok(e.targets.gold && e.targets.silver && e.targets.bronze, e.id + ' targets');
-    if (e.type === 'sprint') { const g = EV.gridFor(e); assert.ok(g.length >= 3 && g.length <= 7, e.id + ' grid 3..7'); assert.equal(new Set(g.map((d) => d.id)).size, g.length, 'no duplicate drivers'); }
+    if (!(e.type === 'pursuit' && e.rules?.goal === 'survive')) assert.ok(e.targets.gold && e.targets.silver && e.targets.bronze, e.id + ' targets');
+    assert.ok(['sprint', 'timetrial', 'pursuit'].includes(e.type), e.id + ': no points modes');
+    if (e.type === 'sprint') { const g = EV.gridFor(e); assert.equal(g.length, EV.SP_RIVALS, e.id + ' grid of 3'); assert.equal(new Set(g.map((d) => d.id)).size, g.length, 'no duplicate drivers'); }
   }
   assert.equal(new Set(EV.EVENTS.map((e) => e.id)).size, EV.EVENTS.length, 'unique ids');
+  assert.deepEqual(Object.keys(EV.TYPES).sort(), ['pursuit', 'sprint', 'timetrial']);
+  for (const id of ['score-beach', 'score-varkiza', 'cameras-coast', 'cameras-riviera']) assert.equal(EV.getEvent(id), null, id + ' removed');
+  assert.ok(!('traps' in EV.resolve(EV.QUICK_RACE, ctx)), 'no speed cameras');
 });
 
 test('reverse and segment routes', () => {
@@ -88,50 +91,35 @@ test('sprint medals by position', () => {
   assert.equal(drive(def, 40, st, { position: 3 }).res.medal, 'bronze');
   assert.equal(drive(def, 40, st, { position: 4 }).res.medal, null);
   assert.equal(EV.loadRecord(def.id, st).bestPos, 1);
+  assert.equal(EV.gridFor(EV.QUICK_RACE).length, 3); assert.equal(EV.gridFor({ ...def, rivals: 7 }).length, 3, 'single player is always 3 rivals');
+  const r = drive(def, 40, st, { position: 2 }).res;
+  assert.ok(!('score' in r) && !('breakdown' in r) && !('trapTotal' in r), 'no points in the result');
 });
 
-test('score attack: clock runs out, score decides the medal', () => {
-  const st = mem(), def = EV.getEvent('score-beach');
-  const perSec = (def.targets.silver + 200) / def.rules.timeLimit;
-  const a = drive(def, 8, st, { score: perSec }); // too slow to reach the end: the clock stops it
-  assert.equal(a.out.at(-1).kind, 'timeup');
-  assert.equal(a.res.time, null); assert.equal(a.res.valid, true);
-  assert.equal(a.res.medal, 'silver');
-  assert.equal(EV.loadRecord(def.id, st).bestScore, a.res.score);
-  assert.ok(a.res.breakdown.near > 0); assert.ok(a.run.counts.near > 0);
-});
-
-test('speed cameras: speeds summed, medal by total', () => {
-  const st = mem(), def = EV.getEvent('cameras-coast'), r = EV.resolve(def, ctx);
-  assert.equal(r.traps.length, 4);
-  const kmh = def.targets.gold / 4 + 1;
-  const a = drive(def, kmh / 3.6, st);
-  assert.equal(a.res.trapSpeeds.length, 4);
-  assert.ok(Math.abs(a.res.trapTotal - kmh * 4) < 1e-6);
-  assert.equal(a.res.medal, 'gold');
-});
-
-test('speed cameras are placed on straights', () => {
-  // a fake road: bends every 500 m, straight in between; cameras must land where |k| is small
-  const curv = (s) => (Math.floor(s / 500) % 2 ? 0.01 : 0);
-  const traps = EV.placeTraps(4, 0, 1, 8000, { curv });
-  assert.equal(traps.length, 4);
-  for (const t of traps) assert.ok(curv(t.s) === 0, 'trap at ' + t.s + ' is on a straight');
-});
-
-test('pursuit: busted is a DNF, survival scores the bounty', () => {
-  const st = mem(), def = EV.getEvent('pursuit-survive'), r = EV.resolve(def, ctx);
-  const run = new EV.EventRun(def, ctx, { storage: st }); run.start();
-  const res = run.finish({ time: null, busted: true, score: 20000 });
+test('pursuit: busted is a DNF, escape is judged on time, survive is pass/fail', () => {
+  const st = mem(), sv = EV.getEvent('pursuit-survive'), r = EV.resolve(sv, ctx);
+  const run = new EV.EventRun(sv, ctx, { storage: st }); run.start();
+  const res = run.finish({ time: null, busted: true });
   assert.equal(res.medal, null); assert.equal(res.valid, false);
-  const run2 = new EV.EventRun(def, ctx, { storage: st }); run2.start();
+  const run2 = new EV.EventRun(sv, ctx, { storage: st }); run2.start();
+  assert.ok(!run2.update(1, { t: 50, s: r.s1 + 1, kmh: 200 }).some(e => e.kind === 'finish' || e.kind === 'timeup'), 'survival requires the full clock even after reaching the route end');
+  assert.equal(EV.medalFor(sv, { time: 50 }, r), null, 'early survival completion earns no medal');
   assert.equal(run2.update(1, { t: r.timeLimit + 0.1, s: r.s0 + 100, kmh: 50 }).at(-1).kind, 'timeup');
-  assert.equal(run2.finish({ time: r.timeLimit, score: def.targets.silver }).medal, 'silver');
+  assert.equal(run2.finish({ time: r.timeLimit }).medal, 'gold');
+  const es = EV.getEvent('pursuit-escape'), t = es.targets;
+  const fin = (time, busted) => { const x = new EV.EventRun(es, ctx, { storage: st }); x.start(); return x.finish({ time, busted }); };
+  assert.equal(fin(t.gold - 1).medal, 'gold'); assert.equal(fin(t.silver - 1).medal, 'silver');
+  assert.equal(fin(t.bronze - 1).medal, 'bronze'); assert.equal(fin(t.bronze + 1).medal, null);
+  assert.equal(fin(null, true).medal, null);
+  assert.equal(EV.loadRecord(es.id, st).bestTime, t.gold - 1);
+  assert.deepEqual(EV.targetLabels(es, null, (x) => x + 's').map((l) => l[1]), [`LOSE THEM IN ${t.gold}s`, `LOSE THEM IN ${t.silver}s`, `LOSE THEM IN ${t.bronze}s`]);
 });
 
 test('positions, wrong way, hooks', () => {
   const a = { prog: 500, finish: null }, b = { prog: 900, finish: null }, c = { prog: 100, finish: 61.2 }, d = { prog: 100, finish: 60.1 };
   assert.deepEqual(EV.rankRacers([a, b, c, d]), [d, c, b, a]);
+  const retired = { prog: 2000, finish: null, dnf: true };
+  assert.deepEqual(EV.rankRacers([retired, a, c]), [c, a, retired], 'retired cars trail finishers and cars still running');
   const w = {};
   assert.equal(EV.wrongWay(w, 0.05, 1, 0), false, 'a boolean from the first call (the HUD forces its class with it)');
   for (let i = 0; i < 28; i++) EV.wrongWay(w, 0.05, -1, 10);
@@ -143,10 +131,11 @@ test('positions, wrong way, hooks', () => {
   for (let i = 0; i < 60; i++) EV.wrongWay(w, 0.05, -1, 4); // backwards but slow (turning round, reversing): no warning
   assert.equal(!!w.on, false);
   const seen = [];
-  const offs = ['start', 'finish', 'abort', 'score'].map((n) => EV.events.on(n, (p) => seen.push(n + ':' + p.eventId)));
+  const offs = ['start', 'finish', 'abort'].map((n) => EV.events.on(n, (p) => seen.push(n + ':' + p.eventId)));
   const run = new EV.EventRun(EV.QUICK_RACE, ctx, { storage: mem() });
-  run.start(); run.addScore('drift', 120); run.abort('quit');
-  assert.deepEqual(seen, ['start:quick', 'score:quick', 'abort:quick']);
+  run.start(); run.abort('quit');
+  assert.deepEqual(seen, ['start:quick', 'abort:quick']);
+  assert.equal(run.addScore, undefined, 'no scoring API');
   offs.forEach((o) => o());
   let threw = 0; const off = EV.events.on('start', () => { threw++; throw new Error('listener bug'); });
   const orig = console.error; console.error = () => {}; new EV.EventRun(EV.QUICK_RACE, ctx).start(); console.error = orig; off();

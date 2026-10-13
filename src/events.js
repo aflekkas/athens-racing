@@ -1,5 +1,5 @@
-// EVENTS: data-driven race events (sprints against a grid, time trials, score attacks, speed-camera runs), their
-// route segments / direction, medal targets and saved results; plus the event hook API other systems listen to.
+// EVENTS: data-driven race events (sprints against a grid of 3, time trials, police pursuits), their route segments /
+// direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
 // Pure logic, no DOM or three.js: node can import and test it (tools/events-test.mjs).
 //
 // ---------------------------------------------------------------------------------------------- HOOK API
@@ -8,33 +8,30 @@
 //
 //   'start'   { eventId, type, car, def, run }      at GO (after the countdown). run = the live EventRun
 //   'split'   { eventId, index, id, name, time, best, delta }    passing a checkpoint (district markers) / the finish
-//   'trap'    { eventId, index, kmh, total }        through a speed camera
-//   'score'   { eventId, kind, pts, total }         points scored during a score attack (and style in any mode)
-//   'finish'  result                                event complete (finished, or the score-attack clock ran out)
+//   'lap'     { eventId, lap, laps, time, total }   a lap completed (circuits)
+//   'finish'  result                                event complete (finished, busted, or a pursuit survived)
 //   'abort'   { eventId, type, reason }             restart / quit to menu before the finish
 //
-//   result = { eventId, type, car, time, splits, position, score, medal,
-//              field, trapSpeeds, trapTotal, breakdown, penalties, distance, reverse, record, newBest, prevMedal,
+//   result = { eventId, mapId, type, car, time, splits, laps, lapTimes, bestLap, position, medal,
+//              field, penalties, distance, reverse, record, newBest, prevMedal, busted,
 //              valid (a clean, normal finish: not autodrive / online / aborted), routeKey ('<s0>><s1>' in metres) }
-//     time       seconds incl. penalties (null when the score-attack clock ran out before the finish)
+//     time       seconds incl. penalties (null = did not finish, e.g. busted)
 //     splits     [seconds at each checkpoint, last one = finish]
 //     position   1..field (sprints; 1 for solo events), field = number of cars
-//     score      style / attack points (score attack: the result; other modes: the style tally)
 //     medal      'gold' | 'silver' | 'bronze' | null
 //     record     what is now saved in localStorage['paraliaki.events.<id>']
 //
 // ---------------------------------------------------------------------------------------------- DEFINITIONS
-//   { id, name, blurb, type: 'sprint' | 'timetrial' | 'score' | 'speedtrap',
+//   { id, name, blurb, type: 'sprint' | 'timetrial' | 'pursuit',
 //     from, to,              route locations: 'start' | 'finish' | a data/map.json marks id | a route s in metres;
 //                            from > to (in s) means the REVERSE direction (Lomvarda -> Vouliagmeni)
-//     rivals: n | [ids],     sprint grid (DRIVERS ids), 0 for solo events
+//     rivals: n | [ids],     sprint grid (DRIVERS ids; always exactly SP_RIVALS = 3 in single player), 0 for solo events
 //     traffic: 0..1.6,       traffic density multiplier (0 = closed road)
-//     rules: { timeLimit, penalty, signals },   score attack clock (s); red light penalty (s); signals off = all green
-//     traps: n | [s...],     speed cameras (auto-placed at the end of the longest straights when a count)
+//     rules: { timeLimit, penalty, signals },   pursuit survive clock (s); red light penalty (s); signals off = all green
 //     targets: { gold, silver, bronze },  sprint: finishing position; timetrial: average km/h (-> a time);
-//                            score: points; speedtrap: summed km/h through all cameras; pursuit: bounty
-//     rules.police / startHeat / goal: 'escape' (reach the finish unbusted) | 'survive' (rules.timeLimit s unbusted)
-//                            pursuit events: src/police.js drives the cops off events.on('start'); busted = DNF
+//                            pursuit 'escape': seconds until the cops are shaken off (lower is better)
+//     rules.police / startHeat / goal: 'escape' (lose the police, or reach the finish unbusted) | 'survive'
+//                            (rules.timeLimit s unbusted; pass/fail = gold). src/police.js drives the cops; busted = DNF
 //     conditions: { time: 'dawn'|'day'|'afternoon'|'sunset'|'night', weather: 'clear'|'overcast'|'rain' } | null,
 //                            handed to setConditions() (src/weather.js) on top of the session's own conditions
 //     car: id | null }       forced car (otherwise your garage pick)
@@ -65,15 +62,18 @@ export const DRIVERS = [
   { id: 'giorgos', name: 'GIORGOS', pace: 0.87, nitro: 1.0, risk: 1.5, mistakes: 1.3, car: ['gtv', 'taxi'], helmet: '#3d4651', blurb: 'Old school, no aids.' },
 ];
 export const driver = (id) => DRIVERS.find((d) => d.id === id) || DRIVERS[0];
-/** the grid for an event: driver records in grid order (n from a count, or explicit ids) */
+/** single player: every race is you plus exactly this many AI racers */
+export const SP_RIVALS = 3;
+/** the grid for an event: driver records in grid order (explicit ids, or a stable per-event pick); sprints get SP_RIVALS */
 export function gridFor(def) {
-  if (Array.isArray(def.rivals)) return def.rivals.map(driver);
-  const n = Math.max(0, Math.min(DRIVERS.length, def.rivals | 0));
+  const n = def.type === 'sprint' ? SP_RIVALS : Math.max(0, Math.min(SP_RIVALS, Array.isArray(def.rivals) ? def.rivals.length : def.rivals | 0));
+  if (Array.isArray(def.rivals) && def.rivals.length >= n) return def.rivals.slice(0, n).map(driver);
   // a stable but per-event shuffle so the same event always has the same faces
   const h = hash(def.id); const pool = DRIVERS.slice();
   for (let i = pool.length - 1; i > 0; i--) { const j = ((h >>> (i % 16)) + i * 7) % (i + 1); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-  const out = pool.slice(0, n);
-  if (n && !out.some((d) => d.id === 'stavros')) out[0] = DRIVERS[0]; // STAVROS is always there
+  const fixed = Array.isArray(def.rivals) ? def.rivals.map(driver) : [];
+  const out = [...fixed, ...pool.filter((d) => !fixed.includes(d))].slice(0, n);
+  if (n && !fixed.length && !out.some((d) => d.id === 'stavros')) out[0] = DRIVERS[0]; // STAVROS is always there
   return out;
 }
 /** the body a driver brings (first preferred one that exists) */
@@ -84,33 +84,27 @@ export function driverCar(d, carIds, avoid) {
 
 // ------------------------------------------------------------------ the events
 export const TYPES = {
-  sprint: { label: 'SPRINT', short: 'SPRINT', desc: 'Beat the grid to the line. Traffic, lights, the lot.' },
-  timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock. Split times at every district.' },
-  score: { label: 'SCORE ATTACK', short: 'SCORE', desc: 'Near misses and drifts against the clock. Chain them for combos.' },
-  speedtrap: { label: 'SPEED CAMERAS', short: 'CAMERAS', desc: 'Flash every camera as fast as you dare. Your speeds are added up.' },
-  pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Raise hell on the coast road, then shake the ΕΛ.ΑΣ. Get busted and it is over.' },
+  sprint: { label: 'SPRINT', short: 'SPRINT', desc: 'Beat three locals to the line.' },
+  timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock.' },
+  pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [
-  { id: 'riviera-sprint', name: 'RIVIERA SPRINT', blurb: 'The full run, Vouliagmeni to Lomvarda, against five locals who know the road.', type: 'sprint', from: 'start', to: 'finish', rivals: 5, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'astir-varkiza', name: 'BEACH ROAD DASH', blurb: 'Past the lake and the coves of Limanakia, flat out into Varkiza.', type: 'sprint', from: 'astir', to: 'varkiza', rivals: 3, traffic: 0.8, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'cliff-sprint', name: 'CLIFF ROAD SPRINT', blurb: 'Limanakia to Lomvarda: the bends above the Saronic, four rivals, no room for error.', type: 'sprint', from: 'limanakia', to: 'finish', rivals: 4, traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'return-leg', name: 'THE RETURN LEG', blurb: 'Reverse direction. Lomvarda back to Vouliagmeni as the sun drops.', type: 'sprint', from: 'finish', to: 'start', rivals: 4, traffic: 1, conditions: { time: 'sunset' }, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'harbour-run', name: 'HARBOUR RUN', blurb: 'Reverse: from Varkiza harbour back to the lake. Six cars, one lane each way.', type: 'sprint', from: 'varkiza', to: 'lake', rivals: 6, traffic: 0.7, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'tt-riviera', name: 'RIVIERA TIME TRIAL', blurb: 'The whole road closed off. Every district is a split.', type: 'timetrial', from: 'start', to: 'finish', rivals: 0, traffic: 0, targets: { gold: 150, silver: 132, bronze: 115 } },
-  { id: 'tt-coast', name: 'COAST ROAD TT', blurb: 'Varkiza to Lomvarda with the morning traffic still about.', type: 'timetrial', from: 'varkiza', to: 'finish', rivals: 0, traffic: 0.4, targets: { gold: 140, silver: 122, bronze: 105 } },
-  { id: 'tt-reverse', name: 'REVERSE TT', blurb: 'Lomvarda to Limanakia, the wrong way round. Closed road.', type: 'timetrial', from: 'finish', to: 'limanakia', rivals: 0, traffic: 0, targets: { gold: 148, silver: 130, bronze: 112 } },
-  { id: 'score-beach', name: 'BEACH TRAFFIC FRENZY', blurb: 'Two minutes in the summer crawl. Thread the needle for points.', type: 'score', from: 'start', to: 'varkiza', rivals: 0, traffic: 1.5, rules: { timeLimit: 120 }, targets: { gold: 9000, silver: 5500, bronze: 2800 } },
-  { id: 'score-varkiza', name: 'VARKIZA RUSH HOUR', blurb: '90 seconds through Varkiza by night and onto the coast. Drift, dodge, combo.', type: 'score', from: 'limanakia', to: 'finish', rivals: 0, traffic: 1.4, conditions: { time: 'night' }, rules: { timeLimit: 90 }, targets: { gold: 7000, silver: 4200, bronze: 2000 } },
-  { id: 'cameras-coast', name: 'SPEED CAMERAS: COAST', blurb: 'Four cameras on the cliff road, in the rain. Smile.', type: 'speedtrap', from: 'varkiza', to: 'finish', rivals: 0, traffic: 0.5, traps: 4, conditions: { weather: 'rain' }, targets: { gold: 640, silver: 560, bronze: 470 } },
-  { id: 'classic-cup', name: 'CLASSIC CUP', blurb: 'Old iron only: C class or below, Vouliagmeni to the Limanakia cliffs.', type: 'sprint', from: 'start', to: 'limanakia', rivals: ['giorgos', 'dimitra', 'yiannis'], traffic: 0.6, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'hot-hatch', name: 'HOT HATCH SHOOTOUT', blurb: 'B class or below. The lake to the coast road, tyres screaming.', type: 'sprint', from: 'lake', to: 'coast', rivals: ['nikos', 'kostas', 'stavros', 'yiannis'], traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'tt-night-cliffs', name: 'MIDNIGHT CLIFFS TT', blurb: 'Limanakia to Lomvarda after dark. Closed road, headlights and the sea.', type: 'timetrial', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0, conditions: { time: 'night' }, targets: { gold: 138, silver: 120, bronze: 104 } },
-  { id: 'pursuit-escape', name: 'HOT PURSUIT: CLIFF ROAD', blurb: 'Two stars on your tail from Limanakia. Reach Lomvarda without getting busted.', type: 'pursuit', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0.9, rules: { police: true, startHeat: 2, goal: 'escape' }, targets: { gold: 12000, silver: 7000, bronze: 3000 } },
-  { id: 'pursuit-survive', name: 'MOST WANTED: RIVIERA', blurb: 'Survive three minutes with every patrol on the coast after you. Bounty pays.', type: 'pursuit', from: 'start', to: 'finish', rivals: 0, traffic: 1, rules: { police: true, startHeat: 1, goal: 'survive', timeLimit: 180 }, targets: { gold: 15000, silver: 9000, bronze: 4000 } },
-  { id: 'legend-run', name: 'LEGEND OF THE RIVIERA', blurb: 'The full road at night against all seven locals. Only the fastest machinery need apply.', type: 'sprint', from: 'start', to: 'finish', rivals: 7, traffic: 1.2, conditions: { time: 'night' }, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'cameras-riviera', name: 'SPEED CAMERAS: RIVIERA', blurb: 'Five cameras the length of the coast, reverse direction.', type: 'speedtrap', from: 'finish', to: 'start', rivals: 0, traffic: 0.6, traps: 5, targets: { gold: 780, silver: 680, bronze: 570 } },
+  { id: 'riviera-sprint', name: 'RIVIERA SPRINT', blurb: 'The full run, Vouliagmeni to Lomvarda.', type: 'sprint', from: 'start', to: 'finish', rivals: 3, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'astir-varkiza', name: 'BEACH ROAD DASH', blurb: 'Past the lake and the coves of Limanakia into Varkiza.', type: 'sprint', from: 'astir', to: 'varkiza', rivals: 3, traffic: 0.8, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'cliff-sprint', name: 'CLIFF ROAD SPRINT', blurb: 'Limanakia to Lomvarda, the bends above the sea.', type: 'sprint', from: 'limanakia', to: 'finish', rivals: 3, traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'return-leg', name: 'THE RETURN LEG', blurb: 'Reverse: Lomvarda back to Vouliagmeni at sunset.', type: 'sprint', from: 'finish', to: 'start', rivals: 3, traffic: 1, conditions: { time: 'sunset' }, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'harbour-run', name: 'HARBOUR RUN', blurb: 'Reverse: Varkiza harbour back to the lake.', type: 'sprint', from: 'varkiza', to: 'lake', rivals: 3, traffic: 0.7, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'classic-cup', name: 'CLASSIC CUP', blurb: 'Vouliagmeni to the Limanakia cliffs.', type: 'sprint', from: 'start', to: 'limanakia', rivals: ['giorgos', 'dimitra', 'yiannis'], traffic: 0.6, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'hot-hatch', name: 'HOT HATCH SHOOTOUT', blurb: 'The lake to the coast road.', type: 'sprint', from: 'lake', to: 'coast', rivals: ['nikos', 'kostas', 'stavros'], traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'legend-run', name: 'LEGEND OF THE RIVIERA', blurb: 'The full road at night against the three fastest locals.', type: 'sprint', from: 'start', to: 'finish', rivals: ['maria', 'eleni', 'dimitra'], traffic: 1.2, conditions: { time: 'night' }, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'tt-riviera', name: 'RIVIERA TIME TRIAL', blurb: 'The whole road, closed off.', type: 'timetrial', from: 'start', to: 'finish', rivals: 0, traffic: 0, targets: { gold: 150, silver: 132, bronze: 115 } },
+  { id: 'tt-coast', name: 'COAST ROAD TT', blurb: 'Varkiza to Lomvarda in the morning traffic.', type: 'timetrial', from: 'varkiza', to: 'finish', rivals: 0, traffic: 0.4, targets: { gold: 140, silver: 122, bronze: 105 } },
+  { id: 'tt-reverse', name: 'REVERSE TT', blurb: 'Lomvarda to Limanakia, the wrong way round.', type: 'timetrial', from: 'finish', to: 'limanakia', rivals: 0, traffic: 0, targets: { gold: 148, silver: 130, bronze: 112 } },
+  { id: 'tt-night-cliffs', name: 'MIDNIGHT CLIFFS TT', blurb: 'Limanakia to Lomvarda after dark.', type: 'timetrial', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0, conditions: { time: 'night' }, targets: { gold: 138, silver: 120, bronze: 104 } },
+  { id: 'pursuit-escape', name: 'HOT PURSUIT: CLIFF ROAD', blurb: 'Two stars on your tail from Limanakia. Lose them, the faster the better.', type: 'pursuit', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0.9, rules: { police: true, startHeat: 2, goal: 'escape' }, targets: { gold: 60, silver: 95, bronze: 140 } },
+  { id: 'pursuit-survive', name: 'MOST WANTED: RIVIERA', blurb: 'Survive three minutes with every patrol on the coast after you.', type: 'pursuit', from: 'start', to: 'finish', rivals: 0, traffic: 1, rules: { police: true, startHeat: 1, goal: 'survive', timeLimit: 180 }, targets: {} },
 ];
 /** Quick Race: the full sprint in whatever car you have, three rivals */
 export const QUICK_RACE = { id: 'quick', name: 'QUICK RACE', blurb: 'Vouliagmeni to Lomvarda against three locals.', type: 'sprint', from: 'start', to: 'finish', rivals: 3, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 }, quick: true };
@@ -145,7 +139,7 @@ export function resolve(def, ctx) {
       checkpoints.push({ id: last ? 'finish' : `lap${lap}-sector${sector}`, name: sector === 4 ? `LAP ${lap}` : `SECTOR ${sector}`, s: a.s + dir * d, d, lapEnd: sector === 4, lap });
     }
     return { s0:a.s, s1:a.s + dir*len, dir, len, laps, lapLength, closed:true, fromName:a.name,
-      toName:b.name, checkpoints, traps:[], reverse:dir<0, timeLimit:0,
+      toName:b.name, checkpoints, reverse:dir<0, timeLimit:0,
       targetTimes:def.type === 'timetrial' ? Object.fromEntries(MEDALS.map(m => [m, def.targetTimes?.[m] ?? len / ((def.targets?.[m] || 100) / 3.6)])) : null };
   }
   const dir = b.s >= a.s ? 1 : -1, len = Math.abs(b.s - a.s);
@@ -157,29 +151,8 @@ export function resolve(def, ctx) {
     for (let i = 1; i <= n; i++) { const d = len * i / (n + 1); cps.push({ id: 'km' + i, name: `${(d / 1000).toFixed(1)} KM`, s: a.s + dir * d, d }); }
   }
   cps.push({ id: 'finish', name: b.name, s: b.s, d: len });
-  let traps = [];
-  if (def.type === 'speedtrap') traps = Array.isArray(def.traps) ? def.traps.map((s) => ({ s, d: prog(s) })) : placeTraps(def.traps || 4, a.s, dir, len, ctx.route);
-  const out = { s0: a.s, s1: b.s, dir, len, fromName: a.name, toName: b.name, checkpoints: cps, traps, reverse: dir < 0, timeLimit: def.rules?.timeLimit || 0 };
+  const out = { s0: a.s, s1: b.s, dir, len, fromName: a.name, toName: b.name, checkpoints: cps, reverse: dir < 0, timeLimit: def.rules?.timeLimit || 0 };
   out.targetTimes = def.type === 'timetrial' ? Object.fromEntries(MEDALS.map((m) => [m, len / (def.targets[m] / 3.6)])) : null;
-  return out;
-}
-
-/** speed cameras at the end of the longest straights: one per equal share of the segment */
-export function placeTraps(n, s0, dir, len, route) {
-  const curv = route.curv ? (s) => Math.abs(route.curv(s)) : () => 0;
-  const out = [], a = 350, b = len - 120, bin = (b - a) / n;
-  for (let k = 0; k < n; k++) {
-    let best = null, bestScore = -1;
-    for (let d = a + bin * k + 40; d <= a + bin * (k + 1) - 20; d += 20) {
-      const s = s0 + dir * d; if (curv(s) > 0.004) continue;
-      // run-up: distance back (against the travel direction) to the last bend tighter than ~250 m radius
-      let run = 0; while (run < 700 && curv(s - dir * run) < 0.004) run += 20;
-      const score = run + (d - a - bin * k) * 0.05; // ties: later in the bin
-      if (score > bestScore) { bestScore = score; best = d; }
-    }
-    if (best === null) best = a + bin * (k + 0.6);
-    out.push({ s: s0 + dir * best, d: best });
-  }
   return out;
 }
 
@@ -191,16 +164,19 @@ export function medalFor(def, res, r) {
   const t = def.targets || {};
   if (def.type === 'sprint') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.position <= t[m]) return m; return null; }
   if (def.type === 'timetrial') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.time <= r.targetTimes[m]) return m; return null; }
-  if (def.type === 'score') { for (const m of ['gold', 'silver', 'bronze']) if (res.score >= t[m]) return m; return null; }
-  if (def.type === 'pursuit') { if (res.time == null || res.busted) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.score >= t[m]) return m; return null; }
-  if (def.type === 'speedtrap') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.trapTotal >= t[m]) return m; return null; }
+  if (def.type === 'pursuit') {
+    if (res.time == null || res.busted) return null;
+    if (def.rules?.goal === 'survive') return res.time >= (def.rules.timeLimit || 0) ? 'gold' : null; // pass / fail
+    for (const m of ['gold', 'silver', 'bronze']) if (res.time <= t[m]) return m; return null;
+  }
   return null;
 }
-/** human-readable targets: [['gold', 'P1'], ...] */
-export function targetLabels(def, r, fmtTime, unit = 'kmh') {
-  const t = def.targets || {}, sp = (v) => (unit === 'mph' ? Math.round(v * 0.621371) + ' MPH' : Math.round(v) + ' KM/H');
+/** human-readable targets: [['gold', 'WIN'], ...] (all times, or positions for sprints) */
+export function targetLabels(def, r, fmtTime) {
+  const t = def.targets || {};
+  if (def.type === 'pursuit' && def.rules?.goal === 'survive') return [['gold', 'SURVIVE ' + fmtTime(def.rules.timeLimit)]];
   return ['gold', 'silver', 'bronze'].map((m) => [m,
-    def.type === 'sprint' ? (t[m] === 1 ? 'WIN' : 'TOP ' + t[m]) : def.type === 'timetrial' ? fmtTime(r.targetTimes[m]) : def.type === 'score' ? t[m].toLocaleString('en-US') + ' PTS' : def.type === 'pursuit' ? t[m].toLocaleString('en-US') + ' BOUNTY' : sp(t[m]) + ' TOTAL']);
+    def.type === 'sprint' ? (t[m] === 1 ? 'WIN' : 'TOP ' + t[m]) : def.type === 'timetrial' ? fmtTime(r.targetTimes[m]) : 'LOSE THEM IN ' + fmtTime(t[m])]);
 }
 
 // ------------------------------------------------------------------ saved results
@@ -215,13 +191,10 @@ export function recordResult(def, res, st = store()) {
   rec.runs = (prev.runs || 0) + 1;
   rec.medal = betterMedal(prev.medal || null, res.medal) || null;
   let newBest = false;
-  if (def.type === 'score' || (def.type === 'pursuit' && res.time != null && !res.busted)) { if (!(res.score <= (prev.bestScore ?? -1))) { rec.bestScore = res.score; newBest = true; } }
-  else if (def.type === 'speedtrap') { if (res.time != null && !(res.trapTotal <= (prev.bestTrap ?? -1))) { rec.bestTrap = res.trapTotal; rec.trapSpeeds = res.trapSpeeds; newBest = true; } }
-  if (res.time != null && def.type !== 'score') {
-    if (!(res.time >= (prev.bestTime ?? Infinity))) { rec.bestTime = res.time; rec.bestSplits = res.splits.slice(); rec.bestCar = res.car; if (def.type !== 'speedtrap' && def.type !== 'pursuit') newBest = true; }
-  }
+  const timed = res.time != null && !res.busted && !(def.type === 'pursuit' && def.rules?.goal === 'survive');
+  if (timed && !(res.time >= (prev.bestTime ?? Infinity))) { rec.bestTime = res.time; rec.bestSplits = res.splits.slice(); rec.bestCar = res.car; newBest = true; }
   if (def.type === 'sprint' && res.time != null) rec.bestPos = Math.min(prev.bestPos ?? 99, res.position);
-  rec.last = { time: res.time, score: res.score, position: res.position, medal: res.medal, car: res.car, at: Date.now() };
+  rec.last = { time: res.time, position: res.position, medal: res.medal, car: res.car, at: Date.now() };
   saveRecord(def.id, rec, st);
   return { record: rec, newBest, prevMedal: prev.medal || null };
 }
@@ -238,6 +211,7 @@ export function rankRacers(racers) {
     const fa = a.finish != null, fb = b.finish != null;
     if (fa && fb) return a.finish - b.finish;
     if (fa !== fb) return fa ? -1 : 1;
+    if (!!a.dnf !== !!b.dnf) return a.dnf ? 1 : -1;
     return b.prog - a.prog;
   });
 }
@@ -267,8 +241,7 @@ export class EventRun {
   reset() {
     this.t = 0; this.started = false; this.done = false; this.result = null;
     this.lapTimes = []; this.lapStart = 0;
-    this.cpIdx = 0; this.splits = []; this.trapIdx = 0; this.trapSpeeds = [];
-    this.score = 0; this.breakdown = {}; this.counts = {}; this.lastProg = 0; this.maxProg = 0; this.ww = {};
+    this.cpIdx = 0; this.splits = []; this.lastProg = 0; this.maxProg = 0; this.ww = {};
   }
   get type() { return this.def.type; }
   get id() { return this.def.id; }
@@ -282,15 +255,9 @@ export class EventRun {
     this.started = true;
     events.emit('start', { eventId: this.id, type: this.type, car: this.car, def: this.def, run: this, ...payload });
   }
-  /** points scored (kind: 'near' | 'oncoming' | 'drift' | 'overtake' | 'cone' | 'amber' | 'polite' | 'penalty' ...) */
-  addScore(kind, pts) {
-    if (this.done || !this.started) return;
-    this.score = Math.max(0, this.score + pts); this.breakdown[kind] = (this.breakdown[kind] || 0) + pts; this.counts[kind] = (this.counts[kind] || 0) + 1;
-    events.emit('score', { eventId: this.id, kind, pts, total: this.score });
-  }
   /**
    * advance with the player: p = { t (race time incl. penalties), s (route s of the front bumper), kmh }.
-   * returns a list of what happened this step: { kind: 'split' | 'trap' | 'finish' | 'timeup', ... }
+   * returns a list of what happened this step: { kind: 'lap' | 'split' | 'finish' | 'timeup', ... }
    */
   update(dt, p) {
     const out = [];
@@ -311,12 +278,9 @@ export class EventRun {
       const e = { kind: 'split', eventId: this.id, index: i, id: cp.id, name: cp.name, time: p.t, best, delta: best != null ? p.t - best : null, last: cp.id === 'finish' };
       events.emit('split', e); out.push(e);
     }
-    while (this.trapIdx < this.r.traps.length && prog >= this.r.traps[this.trapIdx].d) {
-      const i = this.trapIdx++; this.trapSpeeds.push(p.kmh);
-      const e = { kind: 'trap', eventId: this.id, index: i, kmh: p.kmh, total: this.trapSpeeds.reduce((a, b) => a + b, 0) };
-      events.emit('trap', e); out.push(e);
-    }
-    if (this.cpIdx >= this.r.checkpoints.length) out.push({ kind: 'finish' });
+    const surviving = this.type === 'pursuit' && this.def.rules?.goal === 'survive';
+    if (surviving) { if (this.r.timeLimit && p.t >= this.r.timeLimit) out.push({ kind: 'timeup' }); }
+    else if (this.cpIdx >= this.r.checkpoints.length) out.push({ kind: 'finish' });
     else if (this.r.timeLimit && p.t >= this.r.timeLimit) out.push({ kind: 'timeup' });
     this.lastProg = prog;
     return out;
@@ -325,15 +289,13 @@ export class EventRun {
   finish(extra = {}) {
     if (this.done) return this.result;
     this.done = true;
-    const trapTotal = this.trapSpeeds.reduce((a, b) => a + b, 0);
     const res = {
       eventId: this.id, mapId: this.def.mapId || 'riviera', type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
       laps: this.r.laps || 1, lapTimes: this.lapTimes.slice(), bestLap: this.lapTimes.length ? Math.min(...this.lapTimes) : null,
-      position: extra.position ?? 1, field: extra.field ?? 1, score: Math.round(this.score), medal: null,
-      trapSpeeds: this.trapSpeeds.slice(), trapTotal, breakdown: { ...this.breakdown }, penalties: extra.penalties || 0,
+      position: extra.position ?? 1, field: extra.field ?? 1, medal: null, penalties: extra.penalties || 0,
       distance: this.r.len, reverse: this.r.reverse, routeKey: `${Math.round(this.r.s0)}>${Math.round(this.r.s1)}`, valid: true, ...extra,
     };
-    if (res.time == null && this.type !== 'score') res.valid = false;
+    if (res.time == null) res.valid = false;
     res.medal = medalFor(this.def, res, this.r);
     if (!this.def.quick || this.def.save) Object.assign(res, recordResult(this.def, res, this.st));
     else res.record = null;

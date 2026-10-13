@@ -1,4 +1,4 @@
-// DOM HUD: position / timing / rival gap, route progress, style combos, real-map minimap (OSM coastline,
+// DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
@@ -10,7 +10,8 @@ const ord = (n) => (n === 1 ? 'ST' : n === 2 ? 'ND' : n === 3 ? 'RD' : 'TH');
 export class Hud {
   constructor(map) {
     this.map = map; const { route, data, terrain } = map;
-    this.el = {}; for (const id of ['posBox', 'posN', 'posSuf', 'tRace', 'gap', 'rivalName', 'rZone', 'rRoad', 'rToGo', 'rfill', 'rticks', 'rRival', 'rMe', 'style', 'combo', 'mapLabel', 'pops', 'banner', 'count', 'msg', 'menu', 'penRow', 'pen', 'sigBox', 'sigTxt', 'sigD', 'mKick', 'mTitle', 'mSub', 'mTable', 'cIdx', 'cName', 'cTag', 'cSpecs', 'cStats', 'cBest']) this.el[id] = $(id);
+    this.el = {}; for (const id of ['posBox', 'posN', 'posSuf', 'tRace', 'gap', 'rivalName', 'rZone', 'rRoad', 'rToGo', 'rfill', 'rticks', 'rRival', 'rMe', 'mapLabel', 'pops', 'banner', 'count', 'msg', 'menu', 'penRow', 'pen', 'sigBox', 'sigTxt', 'sigD', 'mKick', 'mTitle', 'mSub', 'mTable', 'cIdx', 'cName', 'cTag', 'cSpecs', 'cStats', 'cBest']) this.el[id] = $(id);
+    this.el.mapLabel.textContent = map.definition?.name || route.from;
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
     this.raceLen = route.finish - route.start;
@@ -46,7 +47,6 @@ export class Hud {
       if (['lake', 'limanakia', 'varkiza', 'lomvarda'].includes(m.id)) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; if (alt++ % 2 && false) l.style.top = '28px'; ticks.appendChild(l); }
     }
     this.frame = 0; this.lastZone = null; this.lastPos = 0;
-    this.styleShown = 0;
   }
 
   // ------------------------------------------------------------------ overview (title screen)
@@ -118,9 +118,6 @@ export class Hud {
       const z = route.zone(st.s); if (z && z !== this.lastZone) { this.lastZone = z; el.rZone.textContent = z.name; el.mapLabel.textContent = z.name; }
       let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name; el.rRoad.textContent = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
     }
-    // style
-    if (Math.abs(st.style - this.styleShown) > 0.5) { this.styleShown += (st.style - this.styleShown) * 0.2; if (Math.abs(st.style - this.styleShown) < 2) this.styleShown = st.style; el.style.textContent = Math.round(this.styleShown).toLocaleString('en-US'); }
-    if (st.combo > 1) { el.combo.textContent = `COMBO ×${st.combo}`; el.combo.classList.add('on'); } else el.combo.classList.remove('on');
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
     this.drawTacho(st);
     if ((this.frame & 1) === 0) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, 2.2);
@@ -243,7 +240,6 @@ export class Hud {
     // driver-aid lamps
     g.font = '800 15px "Barlow Condensed", sans-serif';
     for (const [txt, on, x, y] of [['ESC', st.esc, gx - 58, gy - 10], ['TC', st.tc, gx - 62, gy + 13], ['ABS', st.abs, gx + 62, gy + 2]]) { g.fillStyle = on ? '#ffb000' : 'rgba(255,255,255,.13)'; g.fillText(txt, x, y); }
-    if (st.draft > 0.2) { g.fillStyle = '#29d8ff'; g.font = '800 14px "Barlow Condensed", sans-serif'; g.fillText('SLIPSTREAM', cx, cy + 108); }
   }
 
   /** next traffic light widget: info = {main, d, wait} or null */

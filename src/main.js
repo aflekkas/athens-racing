@@ -5,6 +5,7 @@ import { loadMap, LANE_W } from './map.js';
 import * as ENV from './env.js';
 import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
+import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
 import { input as controls } from './input.js';
 import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
@@ -31,8 +32,6 @@ const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const RIVAL_NAME = 'STAVROS';
 const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
-const RED_LINES = ['SMILE FOR THE CAMERA', 'SAY CHEESE!', 'THE FINE IS IN THE POST', 'THAT WAS VERY RED', 'YOUR MOTHER WILL HEAR ABOUT THIS', 'THE TRAFFIC COP SAW THAT'];
-const SHOUTS = ['WATCH IT!', 'MY MIRROR!', 'SORRY, BOSS!', 'NOT THE PAINT!', 'WHO TAUGHT YOU TO DRIVE?', 'INSURANCE!', 'MAMA MIA!'];
 
 function fail(e) { console.error(e); const el = $('err'); el.style.display = 'block'; el.textContent = 'Error: ' + (e && e.message || e); }
 window.addEventListener('error', (e) => fail(e.error || e.message));
@@ -73,13 +72,13 @@ audio.onTrack = (t) => hud.message(`♪ <i>${t.title}</i> · ${t.artist}`, 3);
 // ------------------------------------------------------------------ game state
 const G = {
   state: 'loading', t: 0, raceT: 0, countT: 0, cam: Q.get('cam') === 'chase' ? 'chase' : 'cockpit', userCam: Q.get('cam') === 'chase' ? 'chase' : 'cockpit', carIdx: 0, selIdx: 0, menuFrom: null,
-  style: 0, combo: 0, comboT: 0, nearMisses: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0,
+  crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0,
   shake: 0, flash: 0, driftAcc: 0, driftT: 0, markIdx: 0, finishedT: 0, orbitA: 0, autodrive: Q.has('autodrive'),
 };
 window.__game = G;
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
-window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, near: G.nearMisses, style: G.style, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
+window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
@@ -286,8 +285,8 @@ function resetRace() {
   signals.reset();
   traffic.reset(s0);
   people.reset(s0);
-  Object.assign(G, { raceT: 0, style: 0, combo: 0, comboT: 0, nearMisses: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
-    pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, polite: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1 });
+  Object.assign(G, { raceT: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
+    pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1 });
   const n = Math.ceil((route.finish - startS) / 10) + 2;
   G.tP = new Float32Array(n).fill(NaN); G.tR = new Float32Array(n).fill(NaN);
   G.markIdx = map.data.marks.findIndex((m) => m.s > s0 + 50); if (G.markIdx < 0) G.markIdx = map.data.marks.length;
@@ -319,8 +318,8 @@ function resetEvent() {
   signals.reset();
   traffic.reset(player.veh.s);
   people.reset(peopleS(player.veh.s));
-  Object.assign(G, { raceT: 0, style: 0, combo: 0, comboT: 0, nearMisses: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
-    pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, polite: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1,
+  Object.assign(G, { raceT: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
+    pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1,
     lastPos: 0, gapWho: null, lastSplit: null, lastTrap: null, wrong: {}, wrongShown: null, evHtml: null, result: null });
   const n = Math.ceil(r.len / 10) + 4;
   G.tP = new Float32Array(n).fill(NaN); G.tR = new Float32Array(n).fill(NaN);
@@ -415,6 +414,7 @@ function restart(idx = G.carIdx) {
     if (G.run && !G.run.done) G.run.abort('restart');
     if (G.pendingEvent) { prepareEvent(G.pendingEvent); G.pendingEvent = null; }
     if (idx !== G.carIdx || player.spec !== CARS[idx]) setCar(idx);
+    setPaint(player.model, savedPaint(player.spec));
     resetRace(); audio.restart();
     G.cam = G.userCam || 'cockpit'; applyCamMode();
     updateCamera(0, true);
@@ -465,16 +465,24 @@ const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event'
 function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 ? i : 0; } catch { return 0; } }
 function initFlow() {
   menu = new Menu($('ui'), {
-    quickRace: () => startEvent('quick'), startEvent, multiplayer: () => multiplayer.open(), garage: openGarage,
-    resume, restart: () => restart(), quit: quitToMenu, next: (id) => startEvent(id),
+    quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, switchMap,
+    chooseCar: (index, def, garage) => {
+      try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}
+      if (garage) { setCar(index); menu.back(); return; }
+      if (!def) return;
+      G.pendingEvent = def; restart(index);
+    },
+    resume, restart: () => restart(), quit: quitToMenu, next: (id) => openEvent(id),
     ctx: evCtx, carName: () => player.spec.name, fmtTime, ui: (fwd) => audio.ui?.(fwd),
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
-  // police pursuits (src/police.js): keep the latest state; busted ends a pursuit event as a DNF
+  // police pursuits (src/police.js): keep the latest state; busted ends any race as a DNF; shaking them off wins an escape
   EV.events.on('pursuit', (p) => {
     G.pursuit = p;
-    if (p.phase === 'busted' && G.state === 'race' && !multiplayer.active && G.ev?.def.type === 'pursuit') finishRace('busted');
+    if (G.state !== 'race' || multiplayer.active || !G.ev) return;
+    if (p.phase === 'busted') finishRace('busted'); // a DNF in any race
+    else if (p.phase === 'evaded' && G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'escape') finishRace('evaded');
   });
   EV.events.on('start', () => { G.pursuit = null; });
   // the leaderboard (multiplayer owner) gets every finished solo event
@@ -561,13 +569,22 @@ function onFlowSettings(s, key) {
   if (key === 'units' && menu?.screen === 'events') menu.render();
 }
 
-function startEvent(id) {
+// Direct simulation API: retained for automation and integrations; the menu calls openEvent.
+function startEvent(id, opts = {}) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = mapEvent(id); if (!def) return;
-  const idx = def.car ? Math.max(0, CARS.findIndex((c) => c.id === def.car)) : G.carIdx;
-  G.pendingEvent = def;
-  restart(idx);
+  const car = def.car || opts.car;
+  const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === car));
+  G.pendingEvent = def; restart(idx);
 }
+function openEvent(id) {
+  if (multiplayer.active) { multiplayer.open(); return; }
+  const def = mapEvent(id); if (!def) return;
+  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === def.car)) : G.carIdx;
+  G.state = 'menu'; controls.clear();
+  menu.show('car', { def, index: idx }, true);
+}
+
 function pauseGame() {
   if (multiplayer.active) { multiplayer.open(); return; }
   if (!['race', 'countdown', 'finished'].includes(G.state)) return;
@@ -600,43 +617,17 @@ function showTitle() {
   menu.show('title');
 }
 
-// ---- garage (from the title menu): pick with left / right, confirm keeps it, back restores the old car
-function pickCar(d) {
-  G.selIdx = (G.selIdx + d + CARS.length) % CARS.length;
-  audio.ui(d > 0);
-  hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
-  // live preview: swap the player's model in place
-  const veh = player.veh; setCar(G.selIdx); player.veh = veh; G.carIdx = G.selIdx;
-  syncCar(player, 0);
-}
+// Garage and pre-race selection share one showroom; only confirm swaps the driven car.
 function openGarage() {
   if (multiplayer.active) { multiplayer.open(); return; }
   if (G.state !== 'menu') return;
-  G.menuFrom = { state: G.state, car: G.carIdx, cam: G.cam, screen: menu.screen };
-  menu.hide();
-  G.state = 'garage'; G.selIdx = G.carIdx; G.cam = 'orbit'; applyCamMode();
-  hud.showMenu('garage', { kick: 'GARAGE', title: 'PICK YOUR RIDE', sub: '<b>← →</b> to browse, <b>ENTER</b> to take it, <b>ESC</b> to keep your old car.' });
-  hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
-}
-function closeGarage(keep = true) {
-  const f = G.menuFrom; hud.hideMenu();
-  if (!keep && G.carIdx !== f.car) { const veh = player.veh; setCar(f.car); player.veh = veh; syncCar(player, 0); }
-  try { localStorage.setItem('paraliaki.car', CARS[G.carIdx].id); } catch {}
-  G.cam = f.cam; applyCamMode(); G.state = 'menu';
-  menu.show(f.screen || 'title');
+  menu.show('car', { index: G.carIdx, garage: true }, true);
 }
 
 /** every named input action lands here (src/input.js -> readInput -> window.__flow.action) */
 function flowAction(name) {
   if (G.state === 'loading' || !menu) return false;
   if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
-  if (G.state === 'garage') {
-    if (name === 'left' || name === 'right') pickCar(name === 'right' ? 1 : -1);
-    else if (name === 'confirm' || name === 'restart') { audio.ui(true); closeGarage(true); }
-    else if (name === 'back' || name === 'pause' || name === 'garage') closeGarage(false);
-    else if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length) { G.selIdx = i - 1; pickCar(1); } }
-    return true;
-  }
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
@@ -655,7 +646,7 @@ function flowAction(name) {
 const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active; // replay / photo mode take the controls too
 window.__flow = {
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
-  action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, quickRace: () => startEvent('quick'),
+  action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
   pause: pauseGame, resume, quit: quitToMenu, hideGrid, setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => restart(), get state() { return G.state; }, get menu() { return menu; }, get grid() { return grid; },
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !multiplayer.active && (G.state === 'race' || G.state === 'countdown')) pauseGame(); });
@@ -711,34 +702,28 @@ function updateGrid(dt) {
 
 // ---- timing, positions, splits, cameras, the finish (offline, state 'race')
 function raceTiming(dt) {
-  const pv = player.veh, run = G.run, r = G.ev.r, pp = prog(pv.s);
+  const pv = player.veh, run = G.run, r = G.ev.r, def = G.ev.def, pp = prog(pv.s);
   const iP = Math.floor(pp / 10);
   if (iP >= 0 && iP < G.tP.length && isNaN(G.tP[iP])) for (let i = iP; i >= 0 && isNaN(G.tP[i]); i--) G.tP[i] = G.raceT;
   for (const c of grid) {
     const cp = prog(c.veh.s), iR = Math.floor(cp / 10);
     if (iR >= 0 && iR < c.tR.length && isNaN(c.tR[iR])) for (let i = iR; i >= 0 && isNaN(c.tR[i]); i--) c.tR[i] = G.raceT;
-    if (c.finish === null && cp >= r.len) { c.finish = G.raceT + c.pen; if (G.pFinish === null && !G.rivalBanner) { G.rivalBanner = true; hud.pop('info cyan', c.name + ' FINISHED', 'GO GO GO!'); } }
+    if (c.finish === null && cp >= r.len) { c.finish = G.raceT + c.pen; if (G.pFinish === null && !G.rivalBanner) { G.rivalBanner = true; hud.pop('info cyan', c.name + ' FINISHED'); } }
   }
   // positions and overtakes
   if (grid.length) {
     const pos = racePosition();
     if (G.raceT > 2 && G.lastPos && pos !== G.lastPos && G.t - G.leadT > 1.2) {
       G.leadT = G.t;
-      if (pos < G.lastPos) { hud.pop('info good', 'OVERTAKE!', 'P' + pos); G.style += 250; run.addScore('overtake', 250); audio.pluck(587, 0, 0.14); audio.pluck(880, 0.08, 0.14); }
-      else { const by = grid.find((c) => Math.abs(prog(c.veh.s) - pp) < 25 && prog(c.veh.s) > pp); hud.pop('info cyan', (by ? by.name : 'RIVAL') + ' PASSES YOU', 'P' + pos); }
+      if (pos < G.lastPos) { audio.pluck(587, 0, 0.14); audio.pluck(880, 0.08, 0.14); } // the position box shows it; no pop
     }
     G.lastPos = pos;
   }
-  // splits, speed cameras, finish, the score-attack clock
-  for (const e of run.update(dt, { t: G.raceT + G.pen, s: pv.s, kmh: pv.kmh })) {
+  // splits (a brief delta pop in time trials only), the finish, the pursuit survive clock
+  for (const e of run.update(dt, { t: def.type === 'pursuit' && def.rules?.goal === 'survive' ? G.raceT : G.raceT + G.pen, s: pv.s, kmh: pv.kmh })) {
     if (e.kind === 'split' && !e.last) {
       const dl = e.delta;
-      hud.pop('split ' + (dl === null ? '' : dl <= 0 ? 'good' : 'bad'), e.name, fmtTime(e.time) + (dl === null ? '' : ` · ${dl <= 0 ? '−' : '+'}${Math.abs(dl).toFixed(2)}`));
-      G.lastSplit = e;
-    } else if (e.kind === 'trap') {
-      hud.flashCam(); audio.shutter();
-      hud.pop('info cyan', 'CAMERA ' + (e.index + 1), fmtSpeed(e.kmh));
-      G.lastTrap = e;
+      if (def.type === 'timetrial') hud.pop('split ' + (dl === null ? '' : dl <= 0 ? 'good' : 'bad'), e.name, fmtTime(e.time) + (dl === null ? '' : ` · ${dl <= 0 ? '−' : '+'}${Math.abs(dl).toFixed(2)}`));
     } else if (e.kind === 'finish') { G.pFinish = G.raceT + G.pen; finishRace(); return; }
     else if (e.kind === 'timeup') { finishRace('timeup'); return; }
   }
@@ -749,13 +734,17 @@ function raceTiming(dt) {
 function racePosition() {
   if (!grid.length) return 1;
   const me = { me: true, prog: prog(player.veh.s), finish: G.pFinish };
-  const ranked = EV.rankRacers([me, ...grid.map((c) => ({ c, prog: prog(c.veh.s), finish: c.finish }))]);
+  const ranked = EV.rankRacers([me, ...grid.map((c) => ({ c, prog: prog(c.veh.s), finish: c.finish, dnf: !!(c.dnf || c.retired || c.veh.engineStalled || c.veh.drivetrainBroken) }))]);
   return ranked.indexOf(me) + 1;
 }
 /** HUD gap: to the car ahead (+, behind it) or, leading, to the car behind (−); positions 1..N */
 function raceGap() {
   const pos = racePosition();
-  if (!grid.length) return { pos: 1, gap: NaN };
+  if (!grid.length) {
+    const i = (G.run?.splits.length || 0) - 1, best = G.run?.best.bestSplits?.[i];
+    $('rivalName').textContent = 'BEST';
+    return { pos: 1, gap: best == null ? NaN : G.run.splits[i] - best };
+  }
   const pp = prog(player.veh.s), pv = player.veh;
   const others = grid.map((c) => ({ c, d: prog(c.veh.s) - pp }));
   const ahead = others.filter((o) => o.d > 0).sort((a, b) => a.d - b.d)[0], behind = others.filter((o) => o.d <= 0).sort((a, b) => b.d - a.d)[0];
@@ -767,77 +756,79 @@ function raceGap() {
   return { pos, gap };
 }
 
-/** how: 'finish' (crossed the line) | 'timeup' (the event clock ran out) | 'busted' (pursuit events) */
+/** how: 'finish' (crossed the line) | 'evaded' (shook the police in a pursuit-escape) | 'timeup' (survived a pursuit's
+ *  clock) | 'busted' (caught: a DNF in any race) */
 function finishRace(how = 'finish') {
   if (how === true) how = 'timeup';
   G.state = 'finished'; G.finishedT = 0; G.postT = 0;
-  const pv = player.veh, run = G.run, def = G.ev.def, r = G.ev.r;
-  const pursuit = def.type === 'pursuit', timeUp = how === 'timeup' && !pursuit; // surviving a pursuit's clock is a finish
-  if (pursuit && how === 'timeup') G.pFinish = G.raceT + G.pen;
-  if (how === 'busted') G.pFinish = null;
-  // penalties can still decide it: estimate where the rivals still running end up
-  for (const c of grid) if (c.finish === null) { const est = G.raceT + c.pen + (r.len - prog(c.veh.s)) / Math.max(15, c.veh.vLong); if (G.pFinish !== null && est < G.pFinish) c.finish = est; }
+  const run = G.run, def = G.ev.def, r = G.ev.r;
+  const busted = how === 'busted';
+  if (how === 'timeup') G.pFinish = def.rules?.timeLimit || G.raceT;
+  else if (how === 'evaded') G.pFinish = G.raceT + G.pen;
+  if (busted) G.pFinish = null;
   const pos = racePosition();
-  const extra = pursuit ? { score: Math.round(G.pursuit?.bounty || 0), busted: how === 'busted', fine: G.pursuit?.fine || 0, takedowns: G.pursuit?.takedowns || 0 } : {};
-  const res = run.finish({ time: timeUp || how === 'busted' ? null : G.pFinish, position: pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, nearMisses: G.nearMisses, reds: G.reds, style: Math.round(G.style), valid: !G.autodrive && !Q.has('s') && how !== 'busted', timeUp, ...extra });
+  const res = run.finish({ time: G.pFinish, position: busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, how, valid: !G.autodrive && !Q.has('s') && !busted });
   G.result = res;
-  G.won = def.type === 'sprint' ? pos === 1 : !!res.medal;
+  G.won = !busted && (def.type === 'sprint' ? pos === 1 : !!res.medal);
   if (G.won) audio.win(); else audio.lose();
-  const sub = res.medal ? res.medal.toUpperCase() + ' MEDAL' : def.type === 'sprint' ? 'P' + pos + ' · ' + r.toName : 'NO MEDAL';
-  hud.pop(G.won ? 'info good' : 'info bad', how === 'busted' ? 'BUSTED!' : timeUp ? 'TIME!' : pursuit && how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', sub);
+  hud.pop(G.won ? 'info good' : 'info bad', busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', res.medal ? res.medal.toUpperCase() + ' MEDAL' : '');
   // the per-car best of the full route (garage card)
-  if (G.pFinish !== null && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
+  if (G.pFinish !== null && def.type !== 'pursuit' && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
     const key = 'paraliaki.best.' + player.spec.id; const prev = +localStorage.getItem(key) || 0;
     if (!prev || G.pFinish < prev) localStorage.setItem(key, G.pFinish.toFixed(3));
   }
 }
+/** results: straight time. Position, time, gap to the winner, event best, the classification and the splits */
 function showResults() {
   G.state = 'results'; G.cam = 'orbit'; applyCamMode(); G.selIdx = G.carIdx;
   const res = G.result, def = G.ev.def, r = G.ev.r, run = G.run, prev = run.best || {};
+  // Rivals may finish during the post-race coast. Their actual penalized times decide the classification.
+  if (def.type === 'sprint' && !res.busted) {
+    const pos = racePosition();
+    if (pos !== res.position) {
+      res.position = pos; res.medal = EV.medalFor(def, res, r); G.won = pos === 1;
+      if (res.record) {
+        res.record.medal = EV.betterMedal(prev.medal, res.medal) || null;
+        res.record.bestPos = Math.min(prev.bestPos ?? 99, pos);
+        res.record.last.position = pos; res.record.last.medal = res.medal;
+        EV.saveRecord(def.id, res.record);
+      }
+    }
+  }
   const T = (t) => (t == null ? '—' : fmtTime(t)), sign = (d) => (d <= 0 ? '−' : '+') + Math.abs(d).toFixed(2);
-  const avg = res.time ? fmtSpeed(r.len / res.time * 3.6) : '—';
+  const avg = res.time ? fmtSpeed((G.run?.maxProg || 0) / res.time * 3.6) : '—';
   const kick = `${def.name} · ${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${fmtDist(r.len)}`;
   const splits = run.splits.map((t, i) => { const b = prev.bestSplits?.[i]; const cp = r.checkpoints[i]; return { name: cp.name, time: fmtTime(t), delta: b != null ? sign(t - b) : '', cls: b == null ? '' : t <= b ? 'good' : 'bad' }; });
-  const reds = ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0 · CLEAN'];
-  let title, sub, rows, breakdown = null, breakdownTitle = 'POINTS', field = null;
-  if (def.type === 'sprint') {
+  const best = res.record?.bestTime ?? prev.bestTime;
+  const info = [['TOP SPEED', fmtSpeed(G.topSpeed)], ['AVG SPEED', avg], ['CRASHES', G.crashes], ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0']];
+  if (res.laps > 1 && res.bestLap != null) info.unshift(['BEST LAP', T(res.bestLap)]);
+  let title, sub, rows, field = null;
+  if (res.busted) {
+    title = 'BUSTED'; sub = 'The ΕΛ.ΑΣ. got you. Did not finish.';
+    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], ['EVENT BEST', T(best)], ...info];
+  } else if (def.type === 'sprint') {
     const pos = res.position;
-    title = pos === 1 ? 'VICTORY' : `P${pos} OF ${res.field}`;
     const winner = grid.filter((c) => c.finish !== null).sort((a, b) => a.finish - b.finish)[0];
-    sub = pos === 1 ? `You beat ${res.field - 1} locals to <b>${esc(r.toName)}</b>${winner ? ` by <b>${(winner.finish - res.time).toFixed(2)} s</b>` : ''}.` : `<b>${esc(winner?.name || '')}</b> took it, <b>${winner ? (res.time - winner.finish).toFixed(2) : '?'} s</b> ahead of you.`;
-    rows = [['YOUR TIME', T(res.time)], ['POSITION', `P${pos} / ${res.field}`], ['EVENT BEST', T(res.record?.bestTime ?? prev.bestTime), res.newBest], ['TOP SPEED', fmtSpeed(G.topSpeed)], ['AVG SPEED', avg], ['NEAR MISSES', G.nearMisses], ['STYLE', Math.round(G.style).toLocaleString('en-US')], ['CRASHES', G.crashes], reds];
-    const all = [{ name: 'YOU', car: player.spec.short, t: res.time, p: 1e9, me: true }, ...grid.map((c) => ({ name: c.name, car: c.spec.short, t: c.finish, p: prog(c.veh.s) }))];
-    all.sort((a, b) => (a.t != null && b.t != null ? a.t - b.t : a.t != null ? -1 : b.t != null ? 1 : b.p - a.p));
-    field = all.map((f, i) => ({ pos: i + 1, name: f.name, car: f.car, me: f.me, time: f.t != null ? fmtTime(f.t) : `+${fmtDist(Math.max(0, r.len - f.p))}` }));
-  } else if (def.type === 'timetrial') {
-    title = T(res.time);
-    const d = prev.bestTime != null && res.time != null ? res.time - prev.bestTime : null;
-    sub = d === null ? 'First run on the board.' : d < 0 ? `New best by <b>${Math.abs(d).toFixed(2)} s</b>.` : `<b>${d.toFixed(2)} s</b> off your best.`;
-    rows = [['YOUR TIME', T(res.time)], ['BEST', T(res.record?.bestTime ?? prev.bestTime), res.newBest], ['GOLD', T(r.targetTimes.gold)], ['TOP SPEED', fmtSpeed(G.topSpeed)], ['AVG SPEED', avg], ['CRASHES', G.crashes], reds];
-  } else if (def.type === 'score') {
-    title = res.score.toLocaleString('en-US') + ' PTS';
-    sub = res.timeUp ? `The clock ran out after <b>${fmtDist(run.maxProg)}</b>.` : `Reached <b>${esc(r.toName)}</b> with <b>${Math.max(0, run.timeLeft()).toFixed(1)} s</b> to spare.`;
-    rows = [['SCORE', res.score.toLocaleString('en-US')], ['BEST', (res.record?.bestScore ?? prev.bestScore ?? 0).toLocaleString('en-US'), res.newBest], ['GOLD', def.targets.gold.toLocaleString('en-US')], ['NEAR MISSES', G.nearMisses], ['CRASHES', G.crashes], ['TOP SPEED', fmtSpeed(G.topSpeed)]];
-    const L = { near: 'NEAR MISSES', oncoming: 'ONCOMING', drift: 'DRIFTS', overtake: 'OVERTAKES', cone: 'CONES', amber: 'AMBER GAMBLES', polite: 'POLITE DRIVING', scare: 'SCARED PEDESTRIANS' };
-    breakdown = Object.entries(res.breakdown).map(([k, v]) => [`${L[k] || k.toUpperCase()} × ${run.counts[k] || 0}`, (v >= 0 ? '+' : '−') + Math.abs(v).toLocaleString('en-US'), v >= 0 ? 'good' : 'bad']);
-    if (!breakdown.length) breakdown = [['NOTHING SCORED', '0']];
-  } else if (def.type === 'pursuit') {
-    title = res.busted ? 'BUSTED' : res.score.toLocaleString('en-US') + ' BOUNTY';
-    sub = res.busted ? `The ΕΛ.ΑΣ. got you. Fine <b>€${Math.round(res.fine || 0).toLocaleString('en-US')}</b>.` : def.rules?.goal === 'survive' ? `Survived <b>${fmtTime(res.time)}</b> with the police on your tail.` : `Reached <b>${esc(r.toName)}</b> without getting caught.`;
-    rows = [['BOUNTY', res.score.toLocaleString('en-US')], ['BEST', (res.record?.bestScore ?? prev.bestScore ?? 0).toLocaleString('en-US'), res.newBest], ['GOLD', def.targets.gold.toLocaleString('en-US')], ['TIME', T(res.time)], ['TAKEDOWNS', res.takedowns || 0], ['TOP SPEED', fmtSpeed(G.topSpeed)], ['CRASHES', G.crashes]];
+    title = pos === 1 ? 'VICTORY' : `P${pos} OF ${res.field}`;
+    const gap = pos === 1 ? (winner ? winner.finish - res.time : null) : winner ? res.time - winner.finish : null;
+    sub = pos === 1 ? (gap != null ? `Won by <b>${gap.toFixed(2)} s</b>.` : 'Won.') : `<b>${gap != null ? gap.toFixed(2) : '?'} s</b> behind <b>${esc(winner?.name || '')}</b>.`;
+    rows = [['POSITION', `P${pos} / ${res.field}`], ['YOUR TIME', T(res.time)], [pos === 1 ? 'MARGIN' : 'GAP TO WINNER', gap != null ? (pos === 1 ? '−' : '+') + gap.toFixed(2) + ' S' : '—'], ['EVENT BEST', T(best), res.newBest], ...info];
   } else {
-    title = fmtSpeed(res.trapTotal);
-    sub = res.time == null ? 'Did not finish.' : `${res.trapSpeeds.length} cameras, summed.`;
-    rows = [['TOTAL', fmtSpeed(res.trapTotal)], ['BEST', prev.bestTrap != null || res.record?.bestTrap != null ? fmtSpeed(res.record?.bestTrap ?? prev.bestTrap) : '—', res.newBest], ['GOLD', fmtSpeed(def.targets.gold)], ['TIME', T(res.time)], ['TOP SPEED', fmtSpeed(G.topSpeed)], reds];
-    breakdownTitle = 'SPEED CAMERAS';
-    breakdown = res.trapSpeeds.map((k, i) => [`CAMERA ${i + 1}`, fmtSpeed(k), k >= def.targets.gold / res.trapSpeeds.length ? 'good' : '']);
+    const d = prev.bestTime != null && res.time != null ? res.time - prev.bestTime : null;
+    title = T(res.time);
+    sub = def.type === 'pursuit' ? (res.how === 'timeup' ? 'Survived with the police on your tail.' : 'Lost the police.') : d === null ? 'First run on the board.' : d < 0 ? `New best by <b>${Math.abs(d).toFixed(2)} s</b>.` : `<b>${d.toFixed(2)} s</b> off your best.`;
+    rows = [['YOUR TIME', T(res.time)], ['EVENT BEST', T(best), res.newBest], ...info];
   }
-  const idx = EV.EVENTS.findIndex((e) => e.id === def.id);
-  menu.show('results', { result: res, def, r, kick, title, sub, win: G.won, rows, splits: def.type === 'score' ? null : splits, breakdown, breakdownTitle, field, next: idx >= 0 ? EV.EVENTS[(idx + 1) % EV.EVENTS.length].id : null });
+  if (def.type === 'sprint') {
+    const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: prog(player.veh.s), me: true, dnf: !!res.busted }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: prog(c.veh.s), dnf: !!(c.dnf || c.retired || c.veh.engineStalled || c.veh.drivetrainBroken) }))];
+    // Finishers are ordered by time; still running shows distance to go, retired cars show DNF.
+    field = EV.rankRacers(all).map((f, i) => ({ pos: i + 1, name: f.name, car: f.car, me: f.me, time: f.finish != null ? fmtTime(f.finish) : f.dnf ? 'DNF' : `+${fmtDist(Math.max(0, r.len - f.prog))}` }));
+  }
+  menu.show('results', { result: res, def, r, kick, title, sub, win: G.won, rows, splits: def.type === 'pursuit' ? null : splits, field, next: null });
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-/** event HUD: split / clock / camera widget and the wrong-way warning (offline) */
+/** event HUD: the wrong-way warning, and the survive clock in pursuit-survive (offline) */
 function updateEventHud(dt) {
   const box = $('evBox'), ww = $('wrongWay');
   if (!box || !G.ev || multiplayer.active) return;
@@ -848,21 +839,8 @@ function updateEventHud(dt) {
   const wrong = G.state === 'race' && G.raceT > 1 && !!EV.wrongWay(G.wrong, dt, Math.cos(pv.yaw - hd), pv.vLong);
   if (wrong !== G.wrongShown) { G.wrongShown = wrong; ww.classList.toggle('on', wrong); }
   if ((frameN & 3) !== 0 || !run) return;
-  let html = '';
-  if (def.type === 'timetrial' || (def.type === 'sprint' && G.lastSplit)) {
-    const s = G.lastSplit, nx = run.r.checkpoints[run.cpIdx];
-    html = (s ? `<div class="e-k">${esc(s.name)}</div><b class="${s.delta == null ? '' : s.delta <= 0 ? 'good' : 'bad'}">${s.delta == null ? fmtTime(s.time) : (s.delta <= 0 ? '−' : '+') + Math.abs(s.delta).toFixed(2)}</b>` : '<div class="e-k">SPLITS</div><b>—</b>')
-      + (nx && G.state === 'race' ? `<small>NEXT · ${esc(nx.name)} · ${fmtDist(Math.max(0, nx.d - prog(pv.s)))}</small>` : '');
-  } else if (def.type === 'score') {
-    const left = run.timeLeft();
-    html = `<div class="e-k">TIME LEFT</div><b class="${left < 10 ? 'bad' : ''}">${Math.max(0, left).toFixed(1)}</b><div class="e-k">SCORE</div><b class="sc">${Math.round(run.score).toLocaleString('en-US')}</b><small>GOLD ${def.targets.gold.toLocaleString('en-US')}</small>`;
-  } else if (def.type === 'pursuit') {
-    const left = run.timeLeft(), P = G.pursuit;
-    html = (isFinite(left) ? `<div class="e-k">SURVIVE</div><b class="${left < 10 ? 'good' : ''}">${Math.max(0, left).toFixed(1)}</b>` : '') + `<div class="e-k">BOUNTY</div><b class="sc">${Math.round(P?.bounty || 0).toLocaleString('en-US')}</b>`;
-  } else if (def.type === 'speedtrap') {
-    const nx = run.r.traps[run.trapIdx], tot = run.trapSpeeds.reduce((a, b) => a + b, 0);
-    html = `<div class="e-k">CAMERAS ${run.trapIdx}/${run.r.traps.length}</div><b>${run.trapSpeeds.length ? fmtSpeed(run.trapSpeeds.at(-1)) : '—'}</b><div class="e-k">TOTAL</div><b class="sc">${fmtSpeed(tot)}</b>` + (nx && G.state === 'race' ? `<small>NEXT CAMERA · ${fmtDist(Math.max(0, nx.d - prog(pv.s)))}</small>` : '');
-  }
+  const left = run.timeLeft();
+  const html = def.type === 'pursuit' && isFinite(left) ? `<div class="e-k">SURVIVE</div><b class="${left < 10 ? 'good' : ''}">${Math.max(0, left).toFixed(1)}</b>` : '';
   if (html !== G.evHtml) { G.evHtml = html; box.innerHTML = html; box.classList.toggle('on', !!html); }
 }
 
@@ -1005,12 +983,12 @@ function onStopLine(j, who, rc = rival) {
     return;
   }
   if (red) {
-    G.pen += 2; G.reds++; G.combo = 0; G.comboT = 0;
-    hud.pop('redlight', 'RED LIGHT!', '+2.0 S · ' + RED_LINES[Math.floor(Math.random() * RED_LINES.length)]);
+    G.pen += 2; G.reds++;
+    hud.pop('redlight', 'RED LIGHT!', '+2.0 S');
     hud.flashCam(); audio.shutter(); setTimeout(() => audio.whistle(), 260);
     for (const c of traffic.cars) if (c.active && c.cross && Math.abs(c.s - j.s) < 40) { audio.horn(false, 0.9, clamp((c.u - player.veh.u) / 12, -1, 1), Math.random() * 0.2); break; }
     people.redRun(j);
-  } else if (j.main !== 'G') { G.style += 50; G.run?.addScore('amber', 50); hud.pop('near', 'AMBER GAMBLER', '+50', 4); }
+  }
 }
 function handleHonk(h) {
   const c = h.c;
@@ -1025,9 +1003,8 @@ function handlePeople() {
   for (const e of people.events) {
     const p = e.p;
     if (G.state !== 'race') continue; // pedestrians react with body language only (no speech)
-    else if (e.kind === 'dive' && e.who === 'player') { G.scared++; G.style = Math.max(0, G.style - 150); G.run?.addScore('scare', -150); G.combo = 0; G.comboT = 0; hud.pop('info bad', 'PEDESTRIAN PARKOUR!', '−150 · NOBODY HURT, THANKFULLY'); }
-    else if (e.kind === 'startle' && e.who === 'player') { if (G.t - (G.startleT || 0) > 2.2) { G.startleT = G.t; hud.pop('info', 'STARTLED A LOCAL', 'EASY ON THE PAVEMENT'); } }
-    else if (e.kind === 'thanks') { G.style += 50; G.polite++; G.run?.addScore('polite', 50); hud.pop('info good', 'POLITE DRIVER', 'A LOCAL WAVES THANKS · +50'); }
+    else if (e.kind === 'dive' && e.who === 'player') { G.scared++; hud.pop('info bad', 'WATCH THE PAVEMENT!'); }
+
   }
   people.events.length = 0;
 }
@@ -1111,32 +1088,26 @@ function handleEvents(events) {
       continue;
     }
     if (e.kind === 'near') {
-      G.nearMisses++;
-      G.combo = G.comboT > 0 ? G.combo + 1 : 1; G.comboT = 4;
-      const close = clamp(1.3 - e.clearance, 0.3, 1.3);
-      const pts = Math.round(100 * close * (e.oncoming ? 2 : 1) * (1 + (G.combo - 1) * 0.5) / 10) * 10;
-      G.style += pts; G.run?.addScore(e.oncoming ? 'oncoming' : 'near', pts);
+      // straight time: no points or pops for a near miss, just the whoosh and a little nitro
       player.veh.nitro = Math.min(1, player.veh.nitro + (e.oncoming ? 0.12 : 0.07));
-      hud.pop('near' + (e.oncoming ? ' onc' : ''), e.oncoming ? 'ONCOMING!' : 'NEAR MISS', `+${pts}${G.combo > 1 ? ' · ×' + G.combo : ''}`, -4);
-      audio.nearMiss(Math.min(12, G.combo), e.side * 0.6);
+      audio.nearMiss(1, e.side * 0.6);
       if (e.car.type.scooter) audio.moped(e.side * 0.7);
     } else if (e.kind === 'crash' || e.kind === 'bump') {
       const big = e.kind === 'crash';
-      G.crashes += big ? 1 : 0; G.combo = 0; G.comboT = 0;
+      G.crashes += big ? 1 : 0;
       G.shake = Math.max(G.shake, big ? 1 : 0.5); G.flash = big ? 0.8 : 0.3;
       player.driver.impulse(big ? 1.1 : 0.55, -e.side * 0.5, 0.5);
       audio.crash(e.heavy ? 'heavy' : 'light', Math.min(1, Math.pow((player.veh.lastDamage?.ebs || e.sev) / 16, 2)), { glass: (player.veh.lastDamage?.ebs || 0) > 7, metal: true });
       controls.rumble(big ? 1 : 0.5, big ? 0.8 : 0.4, big ? 450 : 200);
       if (big) {
         audio.opa(1.1);
-        hud.pop('opa', 'OPA!', SHOUTS[Math.floor(Math.random() * SHOUTS.length)], (Math.random() - 0.5) * 10);
+        hud.pop('opa', 'OPA!', '', (Math.random() - 0.5) * 10);
       } else hud.pop('info bad', e.car.type.bus ? 'BUS BUMP!' : 'BUMP!');
       if (e.car.type.scooter) audio.scream();
       else if (Math.random() < 0.6) audio.horn(e.car.type.bus, 0.9, -e.side * 0.4, 0.25);
     } else if (e.kind === 'scrape') { audio.scrape(Math.min(1, e.sev / 4)); G.shake = Math.max(G.shake, 0.15); }
     else if (e.kind === 'cone') {
-      G.cones++; G.style += 25; G.run?.addScore('cone', 25); audio.tone({ f: 380 + Math.random() * 200, slide: 900, dur: 0.18, gain: 0.08, type: 'triangle' }); audio.noise({ dur: 0.08, f: 1200, type: 'bandpass', gain: 0.12 });
-      if (G.t - (G.coneT || 0) > 1.5) { G.coneT = G.t; hud.pop('info', 'CONE BOWLING!', '+25'); }
+      G.cones++; audio.tone({ f: 380 + Math.random() * 200, slide: 900, dur: 0.18, gain: 0.08, type: 'triangle' }); audio.noise({ dur: 0.08, f: 1200, type: 'bandpass', gain: 0.12 });
     }
   }
 }
@@ -1370,7 +1341,7 @@ function step(dt, draw = true) {
       if (n !== G.countShown) {
         G.countShown = n;
         if (n < 3) { hud.count(String(3 - n)); audio.beep(false); }
-        else { hud.count('GO!', true); audio.beep(true); G.state = 'race'; G.goAt = G.goAt || Math.round(performance.now()); G.raceT = 0; document.body.classList.remove('counting'); document.body.classList.add('racing'); hud.message('HOLD <i>W / ↑</i> TO FLOOR IT · <i>SHIFT</i> FOR NITRO', 3); if (!multiplayer.active) G.run?.start({ field: grid.length + 1, grid: grid.map((c) => ({ name: c.name, car: c.spec.id })) }); }
+        else { hud.count('GO!', true); audio.beep(true); G.state = 'race'; G.goAt = G.goAt || Math.round(performance.now()); G.raceT = 0; document.body.classList.remove('counting'); document.body.classList.add('racing'); if (!multiplayer.active) G.run?.start({ field: grid.length + 1, grid: grid.map((c) => ({ name: c.name, car: c.spec.id })) }); }
       }
       // revving on the grid
       pv.rpm = damp(pv.rpm, pv.spec.idle + input.throttle * pv.spec.redline * 0.7, 6, dt);
@@ -1445,8 +1416,7 @@ function step(dt, draw = true) {
       if (drafting) pv.nitro = Math.min(1, pv.nitro + dt * 0.03);
       // ---- drift scoring
       if (pv.drift > 0.12 && pv.vLong > 14 && G.state === 'race') { G.driftAcc += dt * pv.vLong * pv.drift * 14; G.driftT = 0.7; }
-      else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { const pts = Math.round(G.driftAcc / 10) * 10; G.style += pts; G.run?.addScore('drift', pts); pv.nitro = Math.min(1, pv.nitro + pts / 2500); hud.pop('near', 'DRIFT', '+' + pts, 4); G.driftAcc = 0; } else if (G.driftT <= 0) G.driftAcc = 0; }
-      G.comboT -= dt; if (G.comboT <= 0) G.combo = 0;
+      else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { pv.nitro = Math.min(1, pv.nitro + G.driftAcc / 2500); G.driftAcc = 0; /* a drift tops up the bottle; no points */ } else if (G.driftT <= 0) G.driftAcc = 0; }
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
       // ---- timing, positions, finish
       if (G.state === 'race' && !multiplayer.active) {
@@ -1460,7 +1430,9 @@ function step(dt, draw = true) {
         if (G.finishedT > 2.6) showResults();
       } else if (G.state === 'results') {
         G.postT += dt;
-        for (const c of grid) if (c.finish === null && prog(c.veh.s) >= G.ev.r.len) c.finish = G.raceT + G.postT + c.pen;
+        let changed = false;
+        for (const c of grid) if (c.finish === null && prog(c.veh.s) >= G.ev.r.len) { c.finish = G.raceT + G.postT + c.pen; changed = true; }
+        if (changed && menu.screen === 'results') showResults();
       }
     }
   }
@@ -1513,7 +1485,7 @@ function step(dt, draw = true) {
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
-  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, style: G.style, combo: G.combo, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
+  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars };
   if (multiplayer.active) {
@@ -1523,6 +1495,8 @@ function step(dt, draw = true) {
     st.remotes = [...remoteCars.values()].filter(c => c.model.root.visible).map(c => ({ x: c.veh.x, z: c.veh.z }));
     document.querySelector('#posBox .of').textContent = '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
   }
+  if (G.state === 'race' && G.raceT > 5) document.body.classList.add('started');
+  document.body.classList.toggle('circuit-race', !!G.run?.r.closed && !multiplayer.active);
   hud.update(st);
   updateLapHud(G.run, !multiplayer.active && !MENU_STATES.includes(G.state));
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
