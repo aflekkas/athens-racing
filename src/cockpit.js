@@ -7,6 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
+import { nearestSurface } from './vehicle-mirrors.js';
 
 /**
  * Interior trim: grained soft-touch plastics, perforated / stitched leather and suede-like fabric, sampled
@@ -109,7 +110,7 @@ export class Cockpit {
   constructor(spec, model, mirrorTex) {
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
-    const isMini=spec.id==='mini',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
+    const isMini=spec.id==='mini',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.33,-.43));
     const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
@@ -122,7 +123,7 @@ export class Cockpit {
     const label=(text,w,h,x,y,z,colour='#d7dcdf',rx=0)=>part(new THREE.PlaneGeometry(w,h),labelMaterial(text,colour),x,y,z,rx);
     let wsZ,wsY,W;
     if(spec.body==='mini'){wsZ=model.shape.cowl;wsY=model.shape.belt;W=model.dash.w;}
-    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(isPorsche?.78:isYaris?.84:.92);}
+    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(spec.fleet?.82:isPorsche?.78:isYaris?.84:.92);}
     const topY=Math.min(eye.y-.21,wsY+.06),faceZ=wheelC.z-.15;
     // The padded upper roll and lower knee bolster are separate surfaces, with the actual
     // model's wood, textile or aluminium fascia between them.
@@ -218,8 +219,8 @@ export class Cockpit {
     box(.205,.018,.41,isClassic?wood:alu,0,consoleY+.046,faceZ+.34,.008,isPorsche?.25:.12);
     if(isPorsche)for(const sx of [-1,1])for(let i=0;i<5;i++)box(.033,.012,.031,gloss,sx*.093,consoleY+.07-i*.007,faceZ+.28+i*.042,.003);
     const manual=spec.transmission==='manual';
-    const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
-    const knob=this.knob=isSkoda?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
+    const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda&&!manual?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
+    const knob=this.knob=isSkoda&&!manual?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
     this.selectorX=-.04;
     if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
     else label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
@@ -229,7 +230,7 @@ export class Cockpit {
       const pedal=box(.06,.014,.105,alu,x,.31,faceZ-.02,.003,-.5);
       for(let j=-1;j<=1;j++)box(.052,.002,.005,trim,x,.321+j*.008,faceZ-.02+j*.023,.001,-.5);
     }
-    if(isSkoda){box(.19,.066,.05,trim,.35,topY+.015,faceZ);label('TAXI  € 4.00',.175,.045,.35,topY+.015,faceZ+.027,'#b7d3a3');}
+    if(spec.taxi){box(.19,.066,.05,trim,.35,topY+.015,faceZ);label('TAXI  € 4.00',.175,.045,.35,topY+.015,faceZ+.027,'#b7d3a3');}
     // Wheel dimensions and driver IK hooks stay unchanged. Distinct hub/trim shapes matter at this range.
     const wheel=this.wheel=new THREE.Group();wheel.name='steering-wheel';wheel.position.copy(wheelC);wheel.rotation.order='XYZ';this.wheelTilt=-.36;
     const spin=this.wheelSpin=new THREE.Group();wheel.add(spin);const r=.18;
@@ -244,26 +245,33 @@ export class Cockpit {
     if(!manual)for(const sx of [-1,1]){const paddle=new THREE.Mesh(new RoundedBoxGeometry(.025,.066,.009,1,.003),alu);paddle.position.set(sx*.116,.025,-.04);wheel.add(paddle);}
     for(const sx of [-1,1]){const stalk=new THREE.Mesh(new THREE.CylinderGeometry(.008,.011,.08,8),trim);stalk.rotation.z=Math.PI/2;stalk.position.set(sx*.096,0,-.10);wheel.add(stalk);}
     wheel.rotation.x=this.wheelTilt;g.add(wheel);
-    // ---- mirrors (render-target views)
-    this.mirrorTex = mirrorTex;
-    this.mirrorMat = new THREE.MeshBasicMaterial({ map: mirrorTex?.isRenderTargetTexture ? mirrorFallback() : mirrorTex || mirrorFallback(), toneMapped: true, side: THREE.DoubleSide });
-    const mirrorGeo = new THREE.PlaneGeometry(0.22, 0.062);
-    const uv = mirrorGeo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, 1 - uv.getX(i)); // mirrored
-    let mY, mZ;
-    if (spec.convertible) { mY = model.shape.H - 0.125; mZ = model.shape.header + 0.06; }
-    else { const sh = model.shape; mY = sh.H - 0.1; mZ = -sh.roofT[1] * sh.L / 2 + 0.06; }
-    const mirror = new THREE.Mesh(mirrorGeo, this.mirrorMat); mirror.position.set(0, mY, mZ); mirror.rotation.y = 0.12; mirror.rotation.x = -0.05;
-    const mframe = new THREE.Mesh(new RoundedBoxGeometry(0.236, 0.076, 0.03, 1, 0.012), new THREE.MeshStandardMaterial({ color: '#0e0e0f', roughness: 0.4 }));
-    mframe.position.set(0, mY, mZ - 0.017); mframe.rotation.copy(mirror.rotation);
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.08, 6), mframe.material); stem.position.set(0, mY + 0.05, mZ - 0.02);
-    g.add(mirror, mframe, stem);
-    // door mirrors on the body show the same view (cropped)
-    for (const k of ['mirrorL', 'mirrorR']) {
-      const m = model[k]; if (!m) continue;
-      const mg = m.geometry.clone(); const u2 = mg.attributes.uv;
-      for (let i = 0; i < u2.count; i++) { const x = u2.getX(i); u2.setX(i, k === 'mirrorL' ? 1 - x * 0.4 : 0.4 - x * 0.4); }
-      u2.needsUpdate = true;
-      m.geometry = mg; m.material = this.mirrorMat; // Keep each model's shaped mirror scale.
+    // Three independent rearward views; each optical face has its own target.
+    // Dimensions are metres. The centre unit hangs from the windscreen header.
+    const fallback=mirrorTex&&!mirrorTex.isRenderTargetTexture?mirrorTex:mirrorFallback().clone();
+    this.mirrors=[];this.mirrorUpdates=0;this.mirrorFallback=fallback;this.ownsMirrorFallback=!(mirrorTex&&!mirrorTex.isRenderTargetTexture);
+    const addMirror=(mesh,name,width,height,hfov)=>{
+      const geometry=mesh.geometry.clone(),uv=geometry.attributes.uv;
+      for(let i=0;i<uv.count;i++)uv.setX(i,1-uv.getX(i));uv.needsUpdate=true;
+      mesh.geometry=geometry;mesh.material=new THREE.MeshBasicMaterial({map:fallback,toneMapped:false,side:THREE.DoubleSide});
+      const camera=new THREE.PerspectiveCamera(THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(hfov/2))/(width/height))),width/height,.08,600);
+      this.mirrors.push({name,mesh,camera,width,height,target:null,material:mesh.material,fallback});
+    };
+    const desiredMount=new THREE.Vector3(0,model.shape.H-.055,model.shape.header-.025);
+    const root=nearestSurface(desiredMount,[model.windscreen],model.body).point;
+    const mirror=new THREE.Mesh(new THREE.PlaneGeometry(.25,.07));mirror.name='interior-rearview-face';
+    const mY=Math.min(model.shape.H-.115,root.y-.07),mZ=Math.max(model.shape.header-.035,root.z+.035);
+    mirror.position.set(0,mY,mZ);
+    mirror.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),eye.clone().sub(mirror.position).normalize().add(new THREE.Vector3(0,0,1)).normalize());
+    const mframe=new THREE.Mesh(new RoundedBoxGeometry(.266,.084,.026,1,.008),new THREE.MeshStandardMaterial({color:'#0e0e0f',roughness:.4}));
+    mframe.position.copy(mirror.position).add(new THREE.Vector3(0,0,-.015).applyQuaternion(mirror.quaternion));mframe.quaternion.copy(mirror.quaternion);
+    const tip=mframe.position.clone();
+    const mount=this.mirrorMount=new THREE.Mesh(new THREE.SphereGeometry(.015,8,6),mframe.material);mount.name='rearview-mount';mount.position.copy(root);
+    const stem=this.mirrorStem=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,root.distanceTo(tip),6),mframe.material);stem.name='rearview-stalk';
+    stem.position.copy(root).add(tip).multiplyScalar(.5);stem.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tip.sub(root).normalize());
+    g.add(mirror,mframe,stem,mount);addMirror(mirror,'interior',384,108,28);
+    this.mirrorMat=mirror.material; // Inspector compatibility.
+    for(const [key,name]of [['mirrorL','left'],['mirrorR','right']]){
+      const mesh=model[key];if(mesh)addMirror(mesh,name,256,112,20);
     }
     // ---- door cards / A-pillars / headliner from the loft (closed cars)
     if (model.bodyMesh) {
@@ -291,7 +299,7 @@ export class Cockpit {
     // Door batches stay separate by side so damage can hide one door's lining.
     compactCockpit(spin);
     compactCockpit(wheel);
-    compactCockpit(g,new Set([lever,knob,mirror,this.shell]));
+    compactCockpit(g,new Set([lever,knob,mirror,stem,mount,this.shell]));
     const cockpitLOD=this.lod=new THREE.LOD();cockpitLOD.name='cockpit-lod';
     const nearParent=g.parent;nearParent.add(cockpitLOD);cockpitLOD.addLevel(g,0);
     const distantDash=model.exteriorDash||new THREE.Group();
@@ -346,20 +354,49 @@ export class Cockpit {
       g.fillStyle='#ebedf1';g.font='bold 58px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),180,169);g.font='22px Arial';g.fillText('km/h',180,204);g.font='bold 68px Arial';g.fillText(st.gearLabel,518,241);
       g.fillStyle='#ba2f39';g.fillRect(45,294,192,6);g.font='20px Arial';g.fillStyle='#d7dbe1';g.fillText('GR-FOUR',150,277);g.fillText('53 : 47',150,338);
       g.font='21px monospace';g.fillText('WATER   90°C',838,116);g.fillText('OIL     96°C',838,165);g.fillText('BOOST   0.0',838,214);g.fillStyle='#889398';g.font='17px Arial';g.fillText('GRAVEL',838,308);
-    }else if(id==='taxi'){
+    }else if(id==='taxi'||id==='police_octavia'||id==='superb'){
       g.fillRect(0,0,W,H);instrumentDial(g,{x:228,y:192,r:172,max:6,value:st.rpm/1000,step:1,label:'×1000 rpm',red:4.5});instrumentDial(g,{x:799,y:192,r:172,max:260,value:st.kmh,step:20,label:'km/h'});
-      g.fillStyle='#e0edf0';g.font='49px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),512,186);g.font='20px Arial';g.fillText('km/h',512,221);g.fillText(st.gearLabel,512,269);g.font='19px Arial';g.fillStyle='#9bcac7';g.fillText('23.0°C',512,49);g.fillText('OCTAVIA',512,337);
+      g.fillStyle='#e0edf0';g.font='49px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),512,186);g.font='20px Arial';g.fillText('km/h',512,221);g.fillText(st.gearLabel,512,269);g.font='19px Arial';g.fillStyle='#9bcac7';g.fillText('23.0°C',512,49);g.fillText(id==='superb'?'SUPERB':'OCTAVIA',512,337);
     }else{
       g.fillRect(0,0,W,H);const accent='#dd9a63';g.strokeStyle='#6f8291';g.lineWidth=5;
       for(const sx of [-1,1]){g.beginPath();g.moveTo(512+sx*178,336);g.lineTo(512+sx*373,277);g.lineTo(512+sx*417,87);g.lineTo(512+sx*280,35);g.stroke();}
       g.textAlign='center';g.font='65px Arial';g.fillStyle='#eef2f4';g.fillText(Math.round(st.kmh),242,217);g.font='20px Arial';g.fillText('km/h',242,252);g.fillStyle=accent;g.font='53px Arial';g.fillText(st.gearLabel,785,212);g.font='21px Arial';g.fillText((st.rpm/1000).toFixed(1)+' × 1000',785,252);
       g.strokeStyle=accent;g.lineWidth=9;g.beginPath();g.moveTo(690,335);g.lineTo(872,282);g.lineTo(890,282-clamp(st.rpm/st.redline,0,1)*180);g.stroke();
-      g.strokeStyle='#8299a5';g.lineWidth=4;g.beginPath();g.moveTo(476,299);g.lineTo(514,211);g.lineTo(479,129);g.lineTo(544,86);g.stroke();g.fillStyle='#d0dce0';g.font='20px Arial';g.fillText('M40i',512,39);g.fillText('+23.0°C',512,358);
+      g.strokeStyle='#8299a5';g.lineWidth=4;g.beginPath();g.moveTo(476,299);g.lineTo(514,211);g.lineTo(479,129);g.lineTo(544,86);g.stroke();g.fillStyle='#d0dce0';g.font='20px Arial';g.fillText(id==='z4'?'M40i':this.spec.short,512,39);g.fillText('+23.0°C',512,358);
     }
     this.clusterTex.needsUpdate=true;
   }
-  setMirrorReady() {
-    if(this.mirrorTex && this.mirrorMat.map !== this.mirrorTex){this.mirrorMat.map=this.mirrorTex;this.mirrorMat.needsUpdate=true;}
+  // Fit the real door mirrors in the forward view without moving the driver's
+  // seat or inventing oversized mirror glass. Preserve wider user FOV choices.
+  mirrorFov(aspect){
+    let tangent=0;this.model.root.updateMatrixWorld(true);
+    // Account for the angled glass corners: a centre-only fit cuts off the
+    // passenger edge of the 991 rear-view unit at narrow viewport aspects.
+    for(const {mesh}of this.mirrors){
+      mesh.geometry.computeBoundingBox();const box=mesh.geometry.boundingBox;
+      for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y]){
+        const p=this.model.body.worldToLocal(mesh.localToWorld(new THREE.Vector3(x,y,box.max.z)));
+        tangent=Math.max(tangent,(Math.abs(p.x-this.eye.x)+.025)/Math.max(.15,this.eye.z-p.z));
+      }
+    }
+    return THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.06/aspect));
   }
+  renderMirrors(renderer,scene,{enabled=true,frame=0}={}){
+    if(!enabled){for(const m of this.mirrors)if(m.material.map!==m.fallback){m.material.map=m.fallback;m.material.needsUpdate=true;}return;}
+    if(this.mirrorUpdates&&frame%2)return;
+    const body=this.model.body,root=this.model.root,visible=root.visible,target=renderer.getRenderTarget(),shadow=renderer.shadowMap.autoUpdate;
+    root.updateMatrixWorld(true);
+    // Compute camera poses before hiding our cabin. Opponents and traffic remain
+    // in the scene; each camera is at its own physical mirror, aimed rearward.
+    for(const m of this.mirrors){
+      if(!m.target){m.target=new THREE.WebGLRenderTarget(m.width,m.height,{depthBuffer:true});m.target.texture.name='mirror-'+m.name;m.target.texture.colorSpace=THREE.SRGBColorSpace;}
+      m.mesh.geometry.computeBoundingBox();m.mesh.geometry.boundingBox.getCenter(m.camera.position);m.mesh.localToWorld(m.camera.position);body.getWorldQuaternion(m.camera.quaternion);
+      m.camera.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI));m.camera.updateMatrixWorld(true);
+    }
+    root.visible=false;renderer.shadowMap.autoUpdate=false;
+    try{for(const m of this.mirrors){renderer.setRenderTarget(m.target);renderer.render(scene,m.camera);if(m.material.map!==m.target.texture){m.material.map=m.target.texture;m.material.needsUpdate=true;}}this.mirrorUpdates++;}
+    finally{renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
+  }
+  disposeMirrors(){for(const m of this.mirrors)m.target?.dispose();if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
   setVisible(v) { this.lod.visible = v; }
 }

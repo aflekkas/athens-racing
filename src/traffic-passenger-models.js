@@ -1,6 +1,7 @@
 // Athens passenger fleet. Metres, nose -Z. Each section is [z, half width, shoulder height].
 // Production dimensions from manufacturer press kits; independently drawn body/greenhouse stations.
 import * as THREE from 'three';
+import { seatMirrors } from './vehicle-mirrors.js';
 import { nextRegistration, makePlateMaterial } from './vehicle-models.js';
 export const PASSENGER_MODELS = {
  city:{name:'Toyota Aygo II (2014)',windowRise:.10,roofDrop:.025,L:3.455,W:1.615,H:1.460,wb:2.34,r:.285,track:1.425,ax:-.03,belt:.93,cowl:-.89,header:-.39,roofBack:1.16,back:1.60,rw:.585,b:.25,sections:[[-1.7275,.70,.805],[-1.40,.77,.83],[-.94,.80,.92],[-.4,.795,.93],[.55,.80,.97],[1.16,.80,1.01],[1.7275,.70,.96]]},
@@ -121,4 +122,4 @@ export function buildPassengerModel(type,color,rng,opts={}){const id=type.id in 
  if(!low){const electric=id.startsWith('byd_'),z=(electric?-1:1)*d.wb/2+d.ax+(electric?-.02:.11),y=d.belt-.115;const flap=[[z-.082,y-.071],[z-.082,y+.071],[z+.082,y+.071],[z+.082,y-.071],[z-.082,y-.071]].map(([zz,yy])=>[passengerSideX(d,zz,yy)+.003,yy,zz]);chain(body,M.black,flap,.0025);if(!electric){const rear=d.L/2,x=-d.W*.28;box(body,M.black,[.115,.045,.17],[x,.206,rear-.17],'exhaust-recess','bumper_r');const pipe=mesh(body,new THREE.CylinderGeometry(.035,.035,.22,12,1,true),M.chrome,'exhaust-pipe','bumper_r');pipe.rotation.x=Math.PI/2;pipe.position.set(x,.167,rear-.16);const exit=mesh(body,new THREE.CircleGeometry(.030,12),M.black,'exhaust-outlet','bumper_r');exit.position.set(x,.167,rear-.047);const lip=mesh(body,new THREE.TorusGeometry(.0325,.0035,5,12),M.chrome,'exhaust-lip','bumper_r');lip.position.copy(exit.position);}}
 
  if(type.taxi){box(body,M.black,[.43,.035,.19],[0,d.H+.005,.12],'taxi-sign-mount');box(body,M.led,[.38,.11,.15],[0,d.H+.075,.12],'taxi-sign');if(!low){const canvas=document.createElement('canvas');canvas.width=256;canvas.height=64;const c=canvas.getContext('2d');c.fillStyle='#fff4ba';c.fillRect(0,0,256,64);c.fillStyle='#181812';c.font='bold 48px Arial';c.textAlign='center';c.fillText('TAXI',128,50);const t=new THREE.CanvasTexture(canvas),mat=new THREE.MeshStandardMaterial({map:t});const o=mesh(body,new THREE.PlaneGeometry(.35,.088),mat,'taxi-label');o.position.set(0,d.H+.075,.043);o.rotation.y=Math.PI;}}
- root.traverse(o=>{if(o.isMesh){o.castShadow=!low;o.receiveShadow=true;}});return car;}
+ root.traverse(o=>{if(o.isMesh){o.castShadow=!low;o.receiveShadow=true;}});seatMirrors(car);return car;}

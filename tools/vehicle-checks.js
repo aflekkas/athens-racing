@@ -4,12 +4,13 @@ import { PAINTS, savedPaint, savePaint } from '../src/vehicle-paint.js';
 import { Hud } from '../src/hud.js';
 import { RNG } from '../src/util.js';
 import * as THREE from 'three';
+import { nearestSurface, mirrorSurfaces } from '../src/vehicle-mirrors.js';
 import { bakeParkedFleet } from '../src/traffic-fleet.js';
 export function runVehicleChecks() {
   const results=[];const check=(label,value)=>{results.push({label,pass:!!value});if(!value)throw new Error(label);};
   // Test the actual assembled vertices: both curved glass edges must meet painted roof vertices.
   const roofFits=car=>{
-    const rear=car.body.getObjectByName('rear-glass');if(!rear)return;
+    const rear=car.body.getObjectByName('rear-glass');if(!rear||car.spec.fleet)return;
     const front=car.body.getObjectByName('windscreen'),paint=[];
     car.body.traverse(o=>{if(o.isMesh&&(o.material===car.paint||car.modelKind==='gr_yaris'&&o.material===car.materials.black))paint.push(o.geometry.attributes.position);});
     let gap=0;
@@ -19,7 +20,7 @@ export function runVehicleChecks() {
     }
     check((car.spec.id||car.modelKind)+' roof joins front and rear glass within 0.1 mm',gap<.0001);
   };
-  check('Six unique playable cars including AWD and rear-engine',CARS.length===6&&new Set(CARS.map(s=>s.id)).size===6&&CARS.some(s=>s.drive==='awd')&&CARS.some(s=>s.engineZone==='rear'));
+  check('Ten unique playable cars including AWD and rear-engine',CARS.length===10&&new Set(CARS.map(s=>s.id)).size===10&&CARS.some(s=>s.drive==='awd')&&CARS.some(s=>s.engineZone==='rear'));
   for(const spec of CARS){
     const car=new CarModel(spec);check(spec.id+' independent four wheel assemblies',car.wheels.length===4&&new Set(car.wheels.map(w=>w.spin)).size===4&&car.wheels.every(w=>w.spin.parent===w.pivot&&w.pivot.parent===car.root));
     roofFits(car);
@@ -80,7 +81,7 @@ export function runGaragePaintChecks(){
       const picker=hud.paintPanel.querySelector('input');picker.value='#3498ab';picker.dispatchEvent(new Event('input'));
       assert(model.paint.color.getHexString()==='3498ab'&&savedPaint(spec)==='#3498ab','Picker updates model and saves per-car preference');
       const restored=new CarModel(spec);assert(restored.paint.color.getHexString()==='3498ab','Rebuilt car restores saved custom colour');
-      assert(hud.el.cIdx.textContent===`${i+1}/6`,'Garage index derives from six-car catalogue');
+      assert(hud.el.cIdx.textContent===`${i+1}/${CARS.length}`,'Garage index derives from catalogue');
     }
   }finally{for(const [id,c]of before){const key='paraliaki.paint.'+id;if(c===null)localStorage.removeItem(key);else localStorage.setItem(key,c);}host.remove();}
   return {passed};
@@ -168,4 +169,75 @@ export async function runPlayerBudgetChecks() {
     counts.push({id:spec.id,levels:rows});car.disposeDamage?.();
   }
   return {passed:results.length,counts,results};
+}
+
+
+// Measure actual cylinder cap vertices against body triangles, not bounding boxes
+// or authored metadata. A 20 mm displaced stalk must fail this same test.
+export function measureMirrorGaps(car){
+  car.root.updateMatrixWorld(true);const rows=[];
+  car.body.traverseVisible(group=>{
+    if(!group.userData.mirrorAssembly)return;
+    const arm=group.getObjectByName('mirror-stalk'),housing=group.getObjectByName('mirror-housing'),scope=group.parent;
+    const p=arm.geometry.parameters,n=p.radialSegments,h=p.heightSegments,a=arm.geometry.attributes.position;
+    const inScope=i=>scope.worldToLocal(arm.localToWorld(new THREE.Vector3().fromBufferAttribute(a,i)));
+    const tip=inScope((n+1)*(h+1)),root=inScope((n+1)*(h+1)+2*n+1);
+    const mount=nearestSurface(root,mirrorSurfaces(car,scope),scope);
+    // Tip is embedded in the housing; distance to its bounding volume is zero.
+    const tipWorld=scope.localToWorld(tip.clone()),box=new THREE.Box3().setFromObject(housing);
+    rows.push({side:group.name,rootGap:mount?.distance??Infinity,tipGap:box.distanceToPoint(tipWorld)});
+  });return rows;
+}
+export function runMirrorChecks(){
+  const results=[],rng=new RNG(502),camera=new THREE.PerspectiveCamera();
+  const verify=(car,label)=>{const rows=measureMirrorGaps(car);if(rows.length!==2)throw new Error(label+': expected two visible mirrors, got '+rows.length);for(const row of rows){const pass=row.rootGap<=.005&&row.tipGap<=.005;results.push({label:label+' '+row.side,pass,...row});if(!pass)throw new Error(JSON.stringify(results.at(-1)));}};
+  for(const spec of CARS){const car=new CarModel(spec);
+    for(const distance of [5,20,100]){camera.position.set(0,0,distance);camera.updateMatrixWorld();car.root.updateMatrixWorld(true);car.root.traverse(o=>{if(o.isLOD)o.update(camera);});
+      for(const color of [spec.color,'#2375a9']){setPaint(car,color);verify(car,spec.id+' '+distance+'m '+color);}
+      car.setDamage('left',.12);car.setDamage('front',.3);verify(car,spec.id+' '+distance+'m dented');car.setDamage('left',0);car.setDamage('front',0);verify(car,spec.id+' '+distance+'m repaired');
+    }
+  }
+  for(const type of TRAFFIC_TYPES)for(const parked of [false,true]){
+    const car=trafficModel(type,type.colors[0],rng,{parked});
+    for(const distance of parked?[0]:[0,150]){car.setLOD(distance);verify(car,type.id+' '+(parked?'parked':distance));car.setDamage('right',.12);car.setDamage('front',.3);verify(car,type.id+' damaged '+distance);car.setDamage('right',0);car.setDamage('front',0);verify(car,type.id+' repaired '+distance);setPaint(car,'#4386a1');verify(car,type.id+' repainted '+distance);}
+    if(parked)verify(car.makeNear(),type.id+' parked near');
+  }
+  const probe=new CarModel(CARS[0]),arm=probe.root.getObjectByName('mirror-stalk');arm.position.x-=.03;
+  if(!measureMirrorGaps(probe).some(r=>r.rootGap>.005))throw new Error('Gap check missed deliberately displaced mirror');
+  return {passed:results.length,maxGap:Math.max(...results.map(r=>r.rootGap)),results};
+}
+
+// Driver sightlines, independent optical views, update cadence and low-quality off.
+export async function runCockpitMirrorChecks(){
+  const {Cockpit}=await import('../src/cockpit.js'),results=[];
+  const check=(label,pass)=>{results.push({label,pass:!!pass});if(!pass)throw new Error(label);};
+  for(const spec of CARS){
+    const car=new CarModel(spec),cockpit=new Cockpit(spec,car),camera=new THREE.PerspectiveCamera(66,1.6,.04,600);
+    camera.position.copy(cockpit.eye);camera.position.y+=.02;camera.rotation.x=-.045;
+    camera.fov=Math.max(66,cockpit.mirrorFov(camera.aspect));camera.updateProjectionMatrix();camera.updateMatrixWorld(true);car.root.updateMatrixWorld(true);
+    const visible=[];car.root.traverseVisible(o=>{if(o.isMesh&&(!o.material.transparent||o.material.opacity>.9))visible.push(o);});
+    check(spec.id+' three optical faces',cockpit.mirrors.length===3);
+    const mount=car.body.worldToLocal(cockpit.mirrorMount.getWorldPosition(new THREE.Vector3()));
+    check(spec.id+' rearview mount seated on windscreen',nearestSurface(mount,[car.windscreen],car.body).distance<.005);
+    for(const mirror of cockpit.mirrors){
+      const p=mirror.mesh.getWorldPosition(new THREE.Vector3()),screen=p.clone().project(camera);
+      check(spec.id+' '+mirror.name+' in forward field of view',Math.abs(screen.x)<.94&&Math.abs(screen.y)<.9&&screen.z<1);
+      mirror.mesh.geometry.computeBoundingBox();const edgeBox=mirror.mesh.geometry.boundingBox;
+      for(const x of [edgeBox.min.x,edgeBox.max.x])for(const y of [edgeBox.min.y,edgeBox.max.y]){const edge=mirror.mesh.localToWorld(new THREE.Vector3(x,y,edgeBox.max.z)).project(camera);check(spec.id+' '+mirror.name+' full glass within frame',Math.abs(edge.x)<1&&Math.abs(edge.y)<1);}
+      let clear=0;
+      for(const x of [-.3,0,.3])for(const y of [-.3,0,.3]){
+        mirror.mesh.geometry.computeBoundingBox();const box=mirror.mesh.geometry.boundingBox,point=box.getCenter(new THREE.Vector3());point.x+=box.max.x*x+.00001;point.y+=box.max.y*y+.00001;mirror.mesh.localToWorld(point);
+        const dir=point.clone().sub(camera.position),ray=new THREE.Raycaster(camera.position,dir.clone().normalize(),0,dir.length()+.02),hit=ray.intersectObjects(visible,false)[0];if(hit?.object===mirror.mesh)clear++;
+      }
+      check(spec.id+' '+mirror.name+' glass unobstructed from driver eye',clear>=8);
+    }
+    let renders=0,target=null;const renderer={shadowMap:{autoUpdate:true},getRenderTarget:()=>target,setRenderTarget:t=>target=t,render:()=>renders++};
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false});check(spec.id+' low quality allocates no targets',renders===0&&cockpit.mirrors.every(m=>!m.target));
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{frame:0});check(spec.id+' independent mirror targets',renders===3&&new Set(cockpit.mirrors.map(m=>m.target)).size===3);
+    for(const m of cockpit.mirrors){check(spec.id+' '+m.name+' camera at glass',m.camera.position.distanceTo(m.mesh.getWorldPosition(new THREE.Vector3()))<.001);check(spec.id+' '+m.name+' horizontally reversed UVs',m.name==='interior'?m.mesh.geometry.attributes.uv.getX(0)>.99:m.mesh.geometry.attributes.uv.getX(1)<.01);}
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{frame:1});check(spec.id+' alternate frame skipped',renders===3);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{frame:2});check(spec.id+' next even frame refreshed',renders===6);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false,frame:4});check(spec.id+' low quality stops reflection rendering',renders===6&&cockpit.mirrors.every(m=>m.material.map===m.fallback));
+    check(spec.id+' reflection restores renderer state',target===null&&renderer.shadowMap.autoUpdate&&car.root.visible);cockpit.disposeMirrors();
+  }return {passed:results.length,results};
 }

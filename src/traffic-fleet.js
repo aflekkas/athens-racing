@@ -1,5 +1,6 @@
 // Shared geometry and distance detail for the Athens fleet. Builders author metres, nose -Z.
 import * as THREE from 'three';
+import { seatMirrors } from './vehicle-mirrors.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { buildPassengerModel } from './traffic-passenger-models.js';
 import { buildCommercialModel } from './traffic-commercial-models.js';
@@ -23,7 +24,7 @@ function geometryOf(o,matrix,colored=false){
 function compact(parent,car,preserveParts){
   parent.updateMatrixWorld(true);const inv=parent.matrixWorld.clone().invert(),buckets=new Map(),parts=[];
   const visit=o=>{
-    if(o!==parent&&preserveParts&&o.userData.damagePart){parts.push(o);return;}
+    if(o!==parent&&(o.userData.mirrorAssembly||o.userData.mirrorSupport||preserveParts&&o.userData.damagePart)){parts.push(o);return;}
     if(o.isMesh&&!Array.isArray(o.material)){
       const m=o.material,plain=!m.transparent&&!m.map&&m!==car.paint&&m!==car.tail&&m!==car.materials.head&&m!==car.materials.led&&!car.strobeMaterials?.includes(m);
       const material=plain?trimMaterial:m;
@@ -43,12 +44,13 @@ function compact(parent,car,preserveParts){
     if(damagePart)mesh.userData.damagePart=damagePart;
     for(const o of objects)o.removeFromParent();parent.add(mesh);for(const g of geos)g.dispose();
   }
-  for(const part of parts)if(!part.isMesh)compact(part,car,false);
+  for(const part of parts)if(!part.isMesh&&!part.userData.mirrorAssembly)compact(part,car,false);
 }
 function template(type,low,parked){
   const key=type.id+':'+Number(!!type.taxi)+':'+Number(low)+':'+Number(parked);
   if(templates.has(key))return templates.get(key);
   const car=builder(type)(type,'#ffffff',new RNG(139),{low,parked});
+  seatMirrors(car,car.body,{bike:!!type.scooter});
   compact(car.body,car,!low);
   for(const w of car.wheels){compact(w.spin,car,false);for(const child of [...w.pivot.children])if(child!==w.spin&&child.isGroup)compact(child,car,false);}
   let i=0;car.root.traverse(o=>{o.name=o.name||'fleet-node-'+i;o.userData.fleetNode=i++;if(o.geometry)o.geometry.userData.shared=true;

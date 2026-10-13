@@ -1,6 +1,7 @@
 // Local plastic deformation: a small rest-space lattice is changed only on impacts,
 // then skinned on the CPU. No per-frame vertex work; visual meshes/materials are copy-on-write.
 import * as THREE from 'three';
+import { refreshMirrorAttachments } from './vehicle-mirrors.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const finite=(v,f=0)=>Number.isFinite(v)?v:f;
 const ZONES=['front','rear','left','right'];
@@ -121,7 +122,7 @@ export function installDamageSystem(car){
   car.body.traverse(o=>{
     const id=partId(o);let namedAncestor=false,glassAncestor=false;for(let p=o.parent;p&&p!==car.body;p=p.parent){if(partId(p))namedAncestor=true;if(/^glass/.test(partId(p)||p.name))glassAncestor=true;}
     if(id&&!namedAncestor){const bounds=new THREE.Box3().setFromObject(o);if(bounds.isEmpty())return;const center=bounds.getCenter(new THREE.Vector3()).applyMatrix4(inverse);car.damageParts.push({node:o,id,center,detachable:!/^bumper/.test(id)||bounds.getSize(new THREE.Vector3()).y<.46,damage:0,state:'intact',position:o.position.clone(),rotation:o.rotation.clone(),visible:o.visible,materials:[]});}
-    if(glassAncestor||o.userData.damageInterior||!o.isMesh||!o.geometry?.attributes.position||/glass|windscreen/.test(id)||o===car.windscreen)return;
+    if(o.userData.mirrorArm||glassAncestor||o.userData.damageInterior||!o.isMesh||!o.geometry?.attributes.position||/glass|windscreen/.test(id)||o===car.windscreen)return;
     const toBody=inverse.clone().multiply(o.matrixWorld);o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);records.push({o,toBody,toLocal:toBody.clone().invert(),bounds,rest:null});car.damageMeshes.push(o);
   });
   function deform(hitZone,hit){
@@ -183,6 +184,7 @@ export function installDamageSystem(car){
     else{const hit=impact||{};lattice.impact(zone,value-old,hit);}
     deform(value<old?null:zone,impact);
     if(value>=old)parts(zone,value-old,impact||{},!impact);
+    refreshMirrorAttachments(car);
   };
   car.updateDamage=(dt)=>{
     dt=clamp(finite(dt),0,.1);

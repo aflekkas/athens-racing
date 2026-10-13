@@ -4,6 +4,7 @@
 // Yamaha: cdn2.yamaha-motor.eu/prod/product-assets/2019/MT09TR/Factsheets/2019-MT09TR_bg-BG.pdf
 // BMW: bmw-motorrad.ie/en/models/tour/r1250rt/technicaldata.html
 import * as THREE from 'three';
+import { seatMirrors } from './vehicle-mirrors.js';
 import { makePlateMaterial, nextRegistration } from './vehicle-models.js';
 export const BIKE_SPECS={
  delivery:{name:'Honda SH150i',L:2.030,W:.740,H:1.150,wb:1.340,seat:.799,r:.293},
@@ -59,10 +60,10 @@ export function buildBikeModel(type,color,rng,opts={}){
   const wind=add(new THREE.PlaneGeometry(tour?.48:.32,tour?.43:.34),glass,[0,tour?1.25:1.205,-.67],body,'windscreen-glass');wind.rotation.set(-.27,Math.PI,0);mark(wind,'glass');
  }
  const barY=scoot?1.04:1.065,barZ=scoot?-.55:-.36;
- beam(silver,[-d.W*.36,barY,barZ],[d.W*.36,barY,barZ],.02);
+ const mirrorSupport=beam(silver,[-d.W*.36,barY,barZ],[d.W*.36,barY,barZ],.02);mirrorSupport.userData.mirrorSupport=true;
  for(const s of [-1,1]){
   box(black,[.105,.04,.055],[s*d.W*.36,barY,barZ]);
-  if(!low)beam(silver,[s*d.W*.32,barY,barZ],[s*d.W*.43,barY+.18,barZ-.10],.009);
+
   const mir=mark(box(black,[.125,.075,.045],[s*(d.W/2-.065),barY+.21,barZ-.11]),s<0?'mirror_l':'mirror_r');
   if(!low)box(silver,[.105,.055,.005],[0,0,.025],mir);
   box(black,[.12,.025,.17],[s*.20,.38,.12]);
@@ -80,5 +81,5 @@ export function buildBikeModel(type,color,rng,opts={}){
  }
  root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
  const shape={...d,axleF:-d.wb/2,axleR:d.wb/2,wheelR:d.r};
- return {root,body,paint,tail,wheels,plate,materials,dims:{L:d.L,W:d.W,H:d.H},shape,modelKind:id,spec:{color:color||'#a8adb0',model:d.name},police:tour};
+ const car={root,body,paint,tail,wheels,plate,materials,dims:{L:d.L,W:d.W,H:d.H},shape,modelKind:id,spec:{color:color||'#a8adb0',model:d.name},police:tour};seatMirrors(car,body,{bike:true});return car;
 }

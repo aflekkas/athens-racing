@@ -10,7 +10,7 @@ function label(text){const map=canvasTex(Math.max(192,text.length*48),96,(g,w,h)
 function plane(p,m,w,h,pos,ry=0){const o=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);o.position.set(...pos);o.rotation.y=ry;p.add(o);return o;}
 function strobes(car){
   const left=new THREE.MeshStandardMaterial({color:'#145ac5',emissive:'#1478ff',emissiveIntensity:0,roughness:.18});
-  const right=left.clone();car.strobeMaterials=[left,right];
+  left.userData.fleetLivery=true;const right=left.clone();car.strobeMaterials=[left,right];
   car.setStrobe=(on,t=0)=>{const phase=((Number(t)||0)% .64+.64)%.64,side=phase<.32?0:1,p=phase%.32,flash=p<.065||(p>=.105&&p<.17);left.emissiveIntensity=on&&flash&&side===0?9:0;right.emissiveIntensity=on&&flash&&side===1?9:0;};
   return [left,right];
 }
@@ -46,7 +46,7 @@ export function buildPoliceModel(type,color,rng,opts={}){
   }
   box(p,silver,[1.12,.035,.27],[0,d.H+.055,.20]);
   plane(p,label('ΑΣΤΥΝΟΜΙΑ'),.80,.095,[0,.80,d.L/2+.031]);
-  car.police=true;return car;
+  car.body.traverse(o=>{if(o.isMesh&&(o.material===blue||o.material.map))o.material.userData.fleetLivery=true;});car.police=true;return car;
 }
 
 function policeBike(type,color,rng,opts){

@@ -1,8 +1,9 @@
 // Player-only close-up mechanics, signal lamps and articulated damage boundaries.
 import * as THREE from 'three';
+import { seatMirrors, nearestSurface, mirrorSurfaces } from './vehicle-mirrors.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-const PLAYERS=new Set(['mini','z4','taxi','carrera','gr_yaris','gtv']);
+const PLAYERS=new Set(['mini','z4','taxi','carrera','gr_yaris','gtv','golf','corolla','superb','police_octavia']);
 export const isPlayerVehicle=car=>PLAYERS.has(car.spec?.id);
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 function mesh(p,g,m,name='',pos=[0,0,0]){const o=new THREE.Mesh(g,m);o.name=name;o.position.set(...pos);p.add(o);return o;}
@@ -63,12 +64,13 @@ function signals(car,d,M){
   const k=car.spec.id,F=-d.L/2-.032,R=d.L/2+.04;
   const lamp=(color)=>new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:0,roughness:.23,metalness:.15});
   const left=lamp('#ff7d08'),right=lamp('#ff7d08'),reverse=lamp('#e2eef2');car.signalMaterials={left,right,reverse};
-  const positions={mini:[.64,.68,.47],z4:[.69,.60,.77],taxi:[.67,.69,.84],carrera:[.57,.37,.745],gr_yaris:[.68,.69,.86],gtv:[.57,.53,.76]}[k];
+  const positions={mini:[.64,.68,.47],z4:[.69,.60,.77],taxi:[.67,.69,.84],carrera:[.57,.37,.745],gr_yaris:[.68,.69,.86],gtv:[.57,.53,.76]}[k]||[d.W*.37,d.front-.10,d.rear-.12];
   for(const s of [-1,1]){
     const side=s<0?'l':'r',m=s<0?left:right;
     for(const [z,y,end]of [[F,positions[1],'f'],[R,positions[2],'r']]){const o=box(car.body,m,[k==='gtv'?.08:.095,.018,.007],[s*positions[0],y,z],`indicator-${end}${side}`);o.userData.damagePart=`light_${end}${side}`;}
     const o=box(car.body,reverse,[.075,.019,.007],[s*(positions[0]-.11),positions[2]-.037,R],`reverse-${side}`);o.userData.damagePart=`light_r${side}`;
   }
+  if(car.spec.fleet){const panels=mirrorSurfaces(car);car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const hit=nearestSurface(o.position,panels,car.body);if(hit){o.position.copy(hit.point);o.position.z+=Math.sign(o.position.z)*.003;}}});}
   car.indicator='off';car.signalTime=0;
   car.setIndicators=value=>{car.indicator=['left','right','hazard'].includes(value)?value:'off';};
   car.updateSignalLights=(dt,speed)=>{car.signalTime+=Math.max(0,dt);const flash=(car.signalTime%0.8)<.4;left.emissiveIntensity=flash&&(car.indicator==='left'||car.indicator==='hazard')?3.5:0;right.emissiveIntensity=flash&&(car.indicator==='right'||car.indicator==='hazard')?3.5:0;reverse.emissiveIntensity=speed<-.05?2.3:0;if(M.optical?.emissive){M.optical.emissive.set('#e4f2ff');M.optical.emissiveIntensity=car.lightsOn?3.2:0;}};
@@ -104,6 +106,7 @@ function interiorDamageTags(car,d,M){
 export function refinePlayerDetails(car,d,M){if(!isPlayerVehicle(car))return;wheelDetails(car,d,M);paintFinish(car);signals(car,d,M);seatDetails(car,d,M);interiorDamageTags(car,d,M);}
 function inferPart(o,car,d){
   if(o.userData.damagePart)return o.userData.damagePart;
+  for(let p=o.parent;p&&p!==car.body;p=p.parent)if(p.userData.damagePart)return p.userData.damagePart;
   const name=o.name.toLowerCase();if(name.includes('windscreen'))return 'glass_windscreen';
   if(name.startsWith('attached-'))return 'structure';
   if(name.includes('glass')&&!name.includes('lamp'))return 'glass';if(/bonnet|hood/.test(name))return 'bonnet';if(name==='boot'||name.startsWith('boot-'))return 'boot';
@@ -111,6 +114,7 @@ function inferPart(o,car,d){
   if(o===car.mirrorL)return 'mirror_l';if(o===car.mirrorR)return 'mirror_r';
   o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(car.body.matrixWorld.clone().invert().multiply(o.matrixWorld)),p=bounds.getCenter(v());
   const s=p.x<0?'l':'r',end=p.z<0?'f':'r';
+  if(name.includes('mirror'))return 'mirror_'+s;
   // A lamp is its complete optical assembly, including non-emissive chrome.
   // Original MINI modules and sports projectors nest these under local groups.
   let lampAssembly=false;
@@ -121,7 +125,7 @@ function inferPart(o,car,d){
   if(o.material===car.materials.head||o.material===car.materials.tail||o.material===car.materials.led||(o.material===car.materials.red&&Math.abs(p.z)>d.L*.36))return `light_${end}${s}`;
   if(Math.abs(p.x)>d.W*.49&&p.z>d.cowl-.05&&p.z<d.cowl+.32&&p.y>d.belt)return `mirror_${s}`;
   if(Math.abs(p.z)>d.L*.44&&p.y<.48&&bounds.max.y<.52)return p.z<0?'bumper_f':'bumper_r';
-  if(name.includes('door')||name.includes('handle'))return `door_${s}${car.spec.id==='taxi'&&p.z>.4?'r':'f'}`;
+  if(name.includes('door')||name.includes('handle'))return `door_${s}${(car.spec.id==='taxi'||car.spec.fleet)&&p.z>.4?'r':'f'}`;
   return 'structure';
 }
 export function groupPlayerParts(car,d){
@@ -145,7 +149,7 @@ export function groupPlayerParts(car,d){
   for(const o of [...car.body.children].filter(o=>o.isMesh&&o.name==='body-side')){
     const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry,a=g.attributes.position,buckets=new Map();
     for(let i=0;i<a.count;i+=3){const x=(a.getX(i)+a.getX(i+1)+a.getX(i+2))/3,y=(a.getY(i)+a.getY(i+1)+a.getY(i+2))/3,z=(a.getZ(i)+a.getZ(i+1)+a.getZ(i+2))/3;
-      const rear=car.spec.id==='taxi'&&z>.38,end=car.spec.id==='taxi'?1.12:car.spec.id==='carrera'?.72:.67;
+      const rear=(car.spec.id==='taxi'||car.spec.fleet)&&z>.38,end=(car.spec.id==='taxi'||car.spec.fleet)?1.12:car.spec.id==='carrera'?.72:.67;
       const id=z>d.cowl+.10&&z<end&&y>.275?`door_${x<0?'l':'r'}${rear?'r':'f'}`:'body-side';
       if(!buckets.has(id))buckets.set(id,[]);buckets.get(id).push(i,i+1,i+2);
     }
@@ -162,7 +166,7 @@ export function groupPlayerParts(car,d){
     if(doorTrim||seatTrim){o.userData.damageInterior=true;o.userData.damageSide=p.x<0?'left':'right';keep.add(o);}
   });
   for(const name of ['structure','bumper_f','bumper_r','bonnet','boot','doors','mirrors','lights','glass']){const g=new THREE.Group();g.name=name;car.body.add(g);parts[name]=g;}
-  for(const name of ['door_lf','door_rf',...(car.spec.id==='taxi'?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
+  for(const name of ['door_lf','door_rf',...((car.spec.id==='taxi'||car.spec.fleet)?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
   for(const name of ['bumper_f','bumper_r','bonnet','boot'])parts[name].userData.damagePart=name;
   car.body.updateMatrixWorld(true);const all=[];car.body.traverse(o=>{if(o.isMesh&&!car.exteriorDash.children.includes(o))all.push(o);});
   const assignments=all.map(o=>[o,inferPart(o,car,d)]);
@@ -170,12 +174,17 @@ export function groupPlayerParts(car,d){
   // Preserve hit-side hiding without spending a draw per cushion or armrest.
   for(const side of ['left','right']){const interior=new THREE.Group();interior.name='interior-'+side;parts.structure.add(interior);for(const o of all)if(o.userData.damageInterior&&o.userData.damageSide===side){interior.attach(o);keep.delete(o);}batchStatic(interior);for(const o of interior.children){o.userData.damageInterior=true;o.userData.damageSide=side;keep.add(o);}}
   car.playerParts=parts;
+  seatMirrors(car);
+  for(const name of ['mirror_l','mirror_r']){const g=car.body.getObjectByName(name);if(g)parts[name]=g;}
+  const mirrors=[];car.body.traverse(o=>{if(o.userData.mirrorAssembly)mirrors.push(o);});
+  for(const g of mirrors)g.traverse(o=>keep.add(o));
   // Retain the real painted shell, glass and lamps at road distance; tiny trim,
   // cabin furniture and optical internals have no useful silhouette at 15 m.
   const medium=new THREE.Group();medium.name='player-road-detail';const batches=new Map();
   for(const o of all){
+    if(!o.parent||o.userData.damagePart?.startsWith('mirror')||o===car.mirrorL||o===car.mirrorR)continue;
     const b=o.geometry.boundingBox||new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position),size=b.getSize(v());
-    const principal=[car.paint,car.materials.glass,car.materials.head,car.tail,car.materials.led].includes(o.material);
+    const principal=o.material.userData.fleetLivery||[car.paint,car.materials.glass,car.materials.head,car.tail,car.materials.led].includes(o.material);
     const broadDark=o.material===car.materials.black&&(/roof|grille|undertray/.test(o.name));
     if(o.userData.damageInterior||o.geometry.type==='TubeGeometry'||(!principal&&!broadDark))continue;
     if(o.material===car.paint&&Math.max(size.x,size.y,size.z)<.18)continue;
@@ -198,7 +207,12 @@ export function installPlayerLOD(car,d){
   idx.push(0,1,2,0,2,4,2,3,4,25,27,26,25,29,27,27,29,28);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();mesh(low,g,car.paint,'distant-body');
   if(!d.open){const roof=box(low,car.paint,[d.W-.44,.045,d.roofBack-d.header],[0,d.H-.05,(d.roofBack+d.header)/2],'distant-roof');for(const [a,b]of [[d.cowl,d.header],[d.back,d.roofBack]]){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute([-d.W/2+.12,d.belt,a,d.W/2-.12,d.belt,a,-d.W/2+.22,d.H-.07,b,d.W/2-.22,d.H-.07,b],3));geo.setIndex([0,2,1,1,2,3]);geo.computeVertexNormals();mesh(low,geo,car.materials.glass,'distant-glass');}}
-  const lod=new THREE.LOD();lod.name='player-body-lod';lod.addLevel(high,0);lod.addLevel(car.mediumDetail,15,.08);lod.addLevel(low,65,.12);car.body.add(lod);car.visualLOD=lod;
+  if(car.spec.police){const blue=new THREE.MeshStandardMaterial({color:'#143c75'});for(const side of [-1,1]){box(low,blue,[.008,.18,2.1],[side*(d.W/2+.005),.76,0],'police-stripe');box(low,car.strobeMaterials[side<0?0:1],[.48,.095,.22],[side*.30,d.H+.10,.20],'police-lightbar');}}
+  for(const level of [car.mediumDetail,low]){
+    for(const side of ['l','r']){const g=car.playerParts['mirror_'+side].clone(true);g.userData.mirrorAssembly=false;level.add(g);}
+    seatMirrors(car,level);
+  }
+  const lod=new THREE.LOD();lod.name='player-body-lod';lod.addLevel(high,0);lod.addLevel(car.mediumDetail,15,.08);lod.addLevel(low,65,.12);car.body.add(lod);car.visualLOD=lod;car.mediumDetail.visible=false;low.visible=false;
   for(const w of car.wheels){const close=new THREE.Group();for(const child of [...w.spin.children])close.add(child);const far=new THREE.Group();const tyre=new THREE.CylinderGeometry(w.r,w.r,.18,12);tyre.rotateZ(Math.PI/2);mesh(far,tyre,car.materials.rubber);disc(far,car.materials.alloy,d.rim,w.side*.094);const mid=new THREE.Group();const mt=new THREE.CylinderGeometry(w.r,w.r,.20,24);mt.rotateZ(Math.PI/2);mesh(mid,mt,car.materials.rubber);disc(mid,car.materials.darkAlloy,d.rim,w.side*.102);for(let i=0;i<5;i++)spoke(mid,car.materials.alloy,w.side*.108,.03,d.rim*.94,i*Math.PI*.4,i*Math.PI*.4,.025);batchStatic(mid);const wl=new THREE.LOD();wl.addLevel(close,0);wl.addLevel(mid,15,.08);wl.addLevel(far,65,.12);w.spin.add(wl);}
 }
 

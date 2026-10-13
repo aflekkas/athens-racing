@@ -65,9 +65,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
-const mirrorCam = new THREE.PerspectiveCamera(42, 3.6, 0.4, 600);
-const mirrorRT = new THREE.WebGLRenderTarget(512, 144, { type: THREE.HalfFloatType });
-let mirrorFrame = 0;
 const audio = new Audio();
 audio.onTrack = (t) => hud.message(`♪ <i>${t.title}</i> · ${t.artist}`, 3);
 
@@ -233,6 +230,7 @@ function makeCar(spec, isPlayer) {
 }
 function disposeCar(c) {
   if (!c) return;
+  c.cockpit?.disposeMirrors();
   c.model.disposeDamage?.();
   scene.remove(c.model.root);
   const liveMaterials = new Set(), liveTextures = new Set();
@@ -256,7 +254,7 @@ function setCar(idx, keepPose = true) {
   veh.setSpec(spec); veh.gear = Math.min(veh.gear, spec.gears.length);
   player = { spec, veh, ...pc };
   veh.ground = ground;
-  player.cockpit = new Cockpit(spec, pc.model, mirrorRT.texture);
+  player.cockpit = new Cockpit(spec, pc.model);
   audio.setEngine(spec);
   // rival: a different body, same performance envelope so the race is fair. Offline the field is built per event
   // (buildGrid, from resetRace); this single rival is the boot-time car and what the online code reuses.
@@ -1211,7 +1209,7 @@ function updateCamera(dt, snap = false) {
     const lookYaw = -player.veh.steer * 0.12 - veh.w * 0.04 + clamp(look.yaw, -2.2, 2.2) + look.back;
     _e.set(-0.045 - clamp(veh.ax, -12, 12) * 0.0012 - look.pitch * 0.8 + noise1(t * 31 + 5) * 0.004 * rough, lookYaw, noise1(t * 19 + 9) * 0.004 * rough + G.shake * Math.sin(t * 40) * 0.02, 'YXZ');
     camera.quaternion.copy(_q).multiply(_q.clone().setFromEuler(_e));
-    const fov = settings.cockpitFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
+    const fov = Math.max(settings.cockpitFov, player.cockpit.mirrorFov(camera.aspect)) + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else if (G.cam === 'chase') {
     // behind the car, swung round by the free look: yaw about the car, pitch up / down, wheel zoom
@@ -1516,24 +1514,8 @@ function render() {
   if (!lowGraphics && (quality === 'med' ? frameN % 4 === 0 : (frameN & 1))) updateProbe();
   if ((frameN % 6) === 0) updateLod();
   sky.position.copy(camera.position);
-  // planar reflections and the rear-view mirror alternate frames
   if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
-  else if (G.cam === 'cockpit' && (player.cockpit.mirrorMat.map !== mirrorRT.texture || (++mirrorFrame % (lowGraphics ? 9 : 3)) === 1)) {
-    const body = player.model.body, eye = player.cockpit.eye;
-    _v1.set(0, eye.y + 0.12, eye.z - 0.1); body.localToWorld(_v1);
-    mirrorCam.position.copy(_v1);
-    body.getWorldQuaternion(_q); mirrorCam.quaternion.copy(_q).multiply(_q.clone().setFromAxisAngle(_v2.set(0, 1, 0), Math.PI));
-    mirrorCam.rotateX(-0.04);
-    // Exclude our cabin from the shared rear-facing view: seat backs and the driver
-    // otherwise occlude it. Low quality still needs a populated reflection target.
-    const wasVisible = player.model.root.visible;
-    player.model.root.visible = false;
-    const prevA = renderer.shadowMap.autoUpdate; renderer.shadowMap.autoUpdate = false;
-    renderer.setRenderTarget(mirrorRT); renderer.render(scene, mirrorCam); renderer.setRenderTarget(null);
-    renderer.shadowMap.autoUpdate = prevA;
-    player.model.root.visible = wasVisible;
-    player.cockpit.setMirrorReady?.();
-  }
+  if (G.cam === 'cockpit') player.cockpit.renderMirrors(renderer, scene, { enabled: !lowGraphics, frame: frameN });
   // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
   post.blur = orbit ? 0.35 : 0.5;

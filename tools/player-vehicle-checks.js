@@ -11,6 +11,11 @@ export function runPlayerVehicleChecks(){
     }
     for(const side of ['l','r']){let panel=false;car.playerParts['door_'+side+'f'].traverse(o=>{if(o.material===car.paint)panel=true;});check(panel,id+' detachable door has painted skin');}
     car.root.updateMatrixWorld(true);
+    if(spec.fleet)for(const side of ['l','r']){
+      const lenses=[];car.playerParts['light_r'+side].traverse(o=>{if(o.isMesh&&o.material===car.tail)lenses.push(o);});
+      const visible=lenses.some(o=>{const pos=o.geometry.attributes.position,idx=o.geometry.index,target=new THREE.Vector3();for(let i=0;i<3;i++)target.add(new THREE.Vector3().fromBufferAttribute(pos,idx?idx.getX(i):i));target.multiplyScalar(1/3);o.localToWorld(target);return new THREE.Raycaster(target.clone().add(new THREE.Vector3(0,0,1)),new THREE.Vector3(0,0,-1),0,1.01).intersectObjects(lenses,false).length>0;});
+      check(visible,id+' rear '+side+' lens visible from behind');
+    }
     for(const end of ['f','r']){const b=new THREE.Box3().setFromObject(car.playerParts['bumper_'+end]);check(b.max.y<.54,id+' bumper '+end+' excludes upper end cap');}
     const left=[],right=[];car.body.traverse(o=>{if(o.userData.damageInterior)(o.userData.damageSide==='left'?left:right).push(o);});
     car.setDamage('left',.5);check(left.length>0&&left.every(o=>!o.visible)&&right.every(o=>o.visible),id+' side intrusion hides only hit-side interior');car.setDamage('left',0);check(left.every(o=>o.visible),id+' repair restores interior upholstery');
@@ -22,7 +27,8 @@ export function runPlayerVehicleChecks(){
     check(left.every(o=>!o.visible)&&right.every(o=>o.visible),id+' full side50 impact hides only struck furniture and floor');
     car.setDamage('left',0);check(left.every(o=>o.visible),id+' side50 repair restores floor and furniture');
     const visible=[];car.root.traverseVisible(o=>{if(o.isMesh)visible.push(o);});
-    for(const mirror of [car.mirrorL,car.mirrorR]){mirror.geometry.computeBoundingBox();const target=mirror.geometry.boundingBox.getCenter(new THREE.Vector3());mirror.localToWorld(target);const ray=new THREE.Raycaster(target.clone().add(new THREE.Vector3(0,0,.4)),new THREE.Vector3(0,0,-1),0,.5);const hit=ray.intersectObjects(visible,false)[0];check(hit?.object===mirror,id+' reflective mirror face clears housing');}
+    for(const mirror of [car.mirrorL,car.mirrorR]){mirror.geometry.computeBoundingBox();const target=mirror.geometry.boundingBox.getCenter(new THREE.Vector3());target.x+=.003;target.y+=.002; // Avoid the shared centre vertex of triangulated circular glass.
+      mirror.localToWorld(target);const ray=new THREE.Raycaster(target.clone().add(new THREE.Vector3(0,0,.4)),new THREE.Vector3(0,0,-1),0,.5);const hit=ray.intersectObjects(visible,false)[0];check(hit?.object===mirror,id+' reflective mirror face clears housing');}
     const m=car.signalMaterials;
     for(const signal of Object.values(m)){let attached=false;car.body.traverse(o=>{if(o.material===signal)attached=true;});check(attached,id+' signal material is on visible geometry');}
     car.setIndicators('left');car.updateSignalLights(.1,0);check(m.left.emissiveIntensity>0&&m.right.emissiveIntensity===0,id+' independent left signal');

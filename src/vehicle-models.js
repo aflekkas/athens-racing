@@ -1,5 +1,8 @@
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from 'three';
+import { PASSENGER_MODELS, buildPassengerModel } from './traffic-passenger-models.js';
+import { buildPoliceModel } from './police-models.js';
+import { seatMirrors } from './vehicle-mirrors.js';
 import { installDamageSystem } from './damage.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -19,6 +22,9 @@ export const MODEL = {
   dolphin: { L:4.29,W:1.77,H:1.57,wb:2.70,track:1.53,r:0.326,belt:1.04,front:0.79,rear:1.05,cowl:-1.03,header:-0.57,back:1.91,roofBack:1.27,seatZ:0.02,eyeY:1.32,leather:'#444954',rim:0.216,ev:true },
   atto3: { L:4.455,W:1.875,H:1.615,wb:2.72,track:1.575,r:0.346,belt:1.10,front:0.85,rear:1.08,cowl:-0.91,header:-0.42,back:1.95,roofBack:1.21,seatZ:0.07,eyeY:1.36,leather:'#454955',rim:0.229,ev:true },
 };
+for(const [id,fleet]of Object.entries({golf:'hatch',corolla:'sedan',superb:'taxi_superb',police_octavia:'taxi'})){
+  const d=PASSENGER_MODELS[fleet];MODEL[id]={...d,axleOffset:d.ax,front:d.sections[0][2],rear:d.sections.at(-1)[2],seatZ:.12,eyeY:d.H-.24,leather:'#363a3b',rim:.216,doors:4,tyreF:.205,tyreR:.205};
+}
 const V = (x,y,z) => new THREE.Vector3(x,y,z);
 const mat = (color,roughness=0.45,metalness=0) => new THREE.MeshStandardMaterial({color,roughness,metalness,side:THREE.DoubleSide});
 function mesh(parent,geo,m,pos=[0,0,0],rot=[0,0,0],name='') { const o=new THREE.Mesh(geo,m);o.position.set(...pos);o.rotation.set(...rot);o.name=name;parent.add(o);return o; }
@@ -38,7 +44,7 @@ function textMaterial(text,bg='#15181c',fg='#d8dde0',w=512,h=96) {const map=canv
 let registration=1000;
 export function nextRegistration(taxi=false) {const n=registration++;const letters='ABEZHIKMNOPTYX';return `${taxi?'TAA':'IK'+letters[Math.floor(n/9000)%letters.length]} ${1000+n%9000}`;}
 export function makePlateMaterial(number=nextRegistration()) {const map=canvasTex(512,112,(g,w,h)=>{g.fillStyle='#ecece4';g.fillRect(0,0,w,h);g.fillStyle='#154493';g.fillRect(0,0,48,h);g.fillStyle='#ffda42';for(let i=0;i<12;i++){const a=i*Math.PI/6;g.beginPath();g.arc(24+13*Math.cos(a),31+13*Math.sin(a),2,0,7);g.fill();}g.fillStyle='white';g.font='bold 23px Arial';g.textAlign='center';g.fillText('GR',24,93);g.fillStyle='#15191b';g.font='600 73px Arial';g.textBaseline='middle';g.fillText(number,278,59);g.strokeStyle='#394047';g.lineWidth=4;g.strokeRect(2,2,w-4,h-4);});return new THREE.MeshStandardMaterial({map,roughness:0.4});}
-function emblem(kind) {const map=canvasTex(128,128,(g)=>{g.fillStyle='#14171a';g.beginPath();g.arc(64,64,61,0,7);g.fill();g.strokeStyle='#ccd0d5';g.lineWidth=5;g.stroke();if(kind==='z4'){for(let i=0;i<4;i++){g.beginPath();g.moveTo(64,64);g.arc(64,64,39,i*Math.PI/2,(i+1)*Math.PI/2);g.closePath();g.fillStyle=i%2?'#eef1f4':'#2478bc';g.fill();}g.fillStyle='white';g.font='bold 19px Arial';g.textAlign='center';g.fillText('B M W',64,24);}else{g.fillStyle='#eff1f2';g.textAlign='center';g.font=`bold ${kind==='mini'?23:19}px Arial`;g.fillText(({mini:'MINI',carrera:'PORSCHE',gr_yaris:'TOYOTA',gtv:'ALFA',dolphin:'BYD',atto3:'BYD'}[kind]||'ŠKODA'),64,72);}});return new THREE.MeshStandardMaterial({map,metalness:.45,roughness:.24});}
+function emblem(kind) {const map=canvasTex(128,128,(g)=>{g.fillStyle='#14171a';g.beginPath();g.arc(64,64,61,0,7);g.fill();g.strokeStyle='#ccd0d5';g.lineWidth=5;g.stroke();if(kind==='z4'){for(let i=0;i<4;i++){g.beginPath();g.moveTo(64,64);g.arc(64,64,39,i*Math.PI/2,(i+1)*Math.PI/2);g.closePath();g.fillStyle=i%2?'#eef1f4':'#2478bc';g.fill();}g.fillStyle='white';g.font='bold 19px Arial';g.textAlign='center';g.fillText('B M W',64,24);}else{g.fillStyle='#eff1f2';g.textAlign='center';g.font=`bold ${kind==='mini'?23:19}px Arial`;g.fillText(({mini:'MINI',carrera:'PORSCHE',gr_yaris:'TOYOTA',gtv:'ALFA',golf:'VW',corolla:'TOYOTA',dolphin:'BYD',atto3:'BYD'}[kind]||'ŠKODA'),64,72);}});return new THREE.MeshStandardMaterial({map,metalness:.45,roughness:.24});}
 function palette(car,d) {const paint=car.paint||new THREE.MeshPhysicalMaterial({color:car.spec.color,metalness:.48,roughness:.26,clearcoat:1,clearcoatRoughness:.08});paint.side=THREE.DoubleSide;return {paint,black:mat('#15191c',.64),rubber:mat('#151718',.89),seam:mat('#25292c',.67),chrome:mat('#c5cbd1',.23,.94),alloy:mat('#818b97',.3,.9),darkAlloy:mat('#252d37',.32,.78),glass:new THREE.MeshPhysicalMaterial({color:'#71868f',roughness:.08,metalness:.12,transparent:true,opacity:d.open?.13:.43,side:THREE.DoubleSide,depthWrite:false}),head:mat('#17242d',.19,.6),led:new THREE.MeshStandardMaterial({color:'#e6f4ff',emissive:'#cfedff',emissiveIntensity:1.5,roughness:.18}),tail:car.tail||new THREE.MeshStandardMaterial({color:'#6c1015',emissive:'#f62022',emissiveIntensity:.55,roughness:.24}),red:mat('#820713',.24),seat:mat(d.leather,.68),cloth:mat('#242628',.95),badge:emblem(car.modelKind)};}
 function widthAt(d,z) {const e=Math.max(0,(Math.abs(z)/(d.L/2)-.73)/.27);return d.W/2*(1-.095*e*e);}
 function topAt(d,z) {return z<d.cowl?lerp(d.front,d.belt,Math.sin(clamp((z+d.L/2)/(d.cowl+d.L/2),0,1)*Math.PI/2)):z>d.back?lerp(d.belt,d.rear,(z-d.back)/(d.L/2-d.back)):d.belt;}
@@ -389,11 +395,36 @@ export function buildDetailedCar(car,kind,opts={}) {
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
   const playerModel=isPlayerVehicle(car);car.root.userData.playerDetail=playerModel;
-  if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
-  cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
+  if(car.spec.fleet){
+    const build=car.spec.police?buildPoliceModel:buildPassengerModel;
+    const source=build({id:car.spec.fleet},car.spec.color,null,{low:false,parked:true});
+    const replacements=new Map(Object.keys(source.materials).filter(k=>M[k]).map(k=>[source.materials[k],M[k]]));
+    // Mirrored fleet lens polygons have opposite winding; preserve their two-sided optics.
+    for(const [original,replacement]of replacements)replacement.side=original.side;
+    source.body.traverse(o=>{if(o.isMesh){if(replacements.has(o.material))o.material=replacements.get(o.material);if(!o.geometry.attributes.uv)o.geometry.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(o.geometry.attributes.position.count*2),2));}});
+    // Replace coarse traffic furniture with the player cabin; preserve the traffic shell/fascia.
+    for(const o of [...source.body.children])if(/^(dashboard|centre-console|front-seat|headrest|rear-bench|steering-wheel)/.test(o.name))o.removeFromParent();
+    for(const o of [...source.body.children])car.body.add(o);
+    for(const o of car.body.children){if(o.name==='bumper_f'||o.name==='bumper_r'){o.name=o.name==='bumper_f'?'front-bumper':'rear-bumper';delete o.userData.damagePart;}if(o.name==='underfloor')o.name='undertray';}
+    // Traffic's bumper tag includes the upper grille and plate carrier. Keep
+    // those on the steel end cap when only the player bumper cover detaches.
+    car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^bumper_[fr]$/.test(o.userData.damagePart)){const box=new THREE.Box3().setFromObject(o);if(box.max.y>.535)o.userData.damagePart='structure';}});
+    car.windscreen=car.body.getObjectByName('windscreen-glass');car.windscreen.userData.damagePart='glass_windscreen';
+    car.mirrorL=car.body.getObjectByName('mirror_l').getObjectByName('mirror-face');car.mirrorR=car.body.getObjectByName('mirror_r').getObjectByName('mirror-face');
+    M.plate=source.materials.plate;car.plate=source.plate;car.exhaust=[V(-d.W*.28,.167,d.L/2-.047)];
+    if(source.setStrobe){car.strobeMaterials=source.strobeMaterials;car.setStrobe=source.setStrobe;car.police=true;}
+    cabinFittings(car,d,M,low);wheels(car,d,M,low);
+  }else{
+    if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
+    cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
+  }
   if(playerModel){refinePlayerDetails(car,d,M);refineOriginalPlayer(car,d,M,low);refineSportsPlayer(car,d,M,low);}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
+  if(!grouped){
+    for(const side of [-1,1]){const face=car[side<0?'mirrorL':'mirrorR'],g=new THREE.Group();g.name=side<0?'mirror_l':'mirror_r';car.body.add(g);g.attach(face);}
+    seatMirrors(car);
+  }
   if(grouped){
     for(const [name,part] of Object.entries(grouped.parts))if(!['doors','mirrors','lights','glass'].includes(name))compactMeshes(part,grouped.keep);
   }else compactMeshes(car.body, new Set([car.windscreen,car.mirrorL,car.mirrorR,...car.exteriorDash.children]));
@@ -461,7 +492,7 @@ export function trafficDetailedModel(type,color,rng) {
 // Bake decorative pieces by material without baking steering, spinning or mirror transforms.
 function compactMeshes(parent,exclude=new Set()) {
   const groups=new Map(),remove=[];parent.updateMatrixWorld(true);const inverse=parent.matrixWorld.clone().invert();
-  parent.traverse(o=>{if(!o.isMesh||exclude.has(o)||o.material.transparent)return;const key=o.material.uuid;if(!groups.has(key))groups.set(key,{material:o.material,geos:[]});let g=o.geometry.clone().applyMatrix4(inverse.clone().multiply(o.matrixWorld));if(g.index)g=g.toNonIndexed();for(const a of Object.keys(g.attributes))if(!['position','normal','uv'].includes(a))g.deleteAttribute(a);groups.get(key).geos.push(g);remove.push(o);});
+  parent.traverse(o=>{if(!o.isMesh||exclude.has(o)||o.material.transparent)return;for(let p=o;p&&p!==parent;p=p.parent)if(p.userData.mirrorAssembly)return;const key=o.material.uuid;if(!groups.has(key))groups.set(key,{material:o.material,geos:[]});let g=o.geometry.clone().applyMatrix4(inverse.clone().multiply(o.matrixWorld));if(g.index)g=g.toNonIndexed();for(const a of Object.keys(g.attributes))if(!['position','normal','uv'].includes(a))g.deleteAttribute(a);groups.get(key).geos.push(g);remove.push(o);});
   for(const o of remove)o.removeFromParent();
   for(const {material,geos}of groups.values()){const g=mergeGeometries(geos,false);if(g){const o=mesh(parent,g,material);o.name='assembled-'+(material.name||'trim');o.castShadow=true;o.receiveShadow=true;}for(const g of geos)g.dispose();}
 }

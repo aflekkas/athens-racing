@@ -56,6 +56,50 @@ export const CARS = [
     tyres: ['165 HR14','165 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.58, rollGrad: 4.8, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
     stats: { speed: 0.39, accel: 0.45, handling: 0.69, drift: 0.67 },
   },
+  // VW Golf VII press kit (2012), 1.4 TSI ACT: 103 kW, 250 Nm, 212 km/h.
+  // https://www.volkswagen-newsroom.com/en/the-new-golf-powertrain-structure-engines-and-gearboxes-2835
+  {
+    id: 'golf', name: 'VOLKSWAGEN GOLF 1.4 TSI', short: 'GOLF TSI', tag: 'Athens everyday. Turbo four. Six-speed manual.', color: '#526a83', accent: '#bdc5ca',
+    mass: 1270, power: 103, torque: 250, redline: 6500, idle: 800, gears: [3.615, 1.955, 1.281, .973, .778, .646], final: 3.647, wheelR: .315,
+    torqueCurve: [[0,95],[800,110],[1500,250],[3500,250],[4500,215],[5000,196.7],[6000,164],[6500,140]], peakTorqueRpm: 2500, peakPowerRpm: 5000,
+    wheelbase: 2.637, length: 4.255, width: 1.799, cdA: .62, vmax: 212, grip: 1.02, steer: .60, yawI: 1.02, drift: 1, brake: 1, cyl: 4, pitch: 1, body: 'golf', fleet: 'hatch', drive: 'fwd', engine: 'turbo4', turbo: .8, transmission: 'manual',
+    tyres: ['205/55 R16','205/55 R16'], frontW: .60, hcg: .51, track: 1.549, rsF: .59, susHz: 1.65, susZ: .54, rollK: 1.1, pitchK: 1.1, alphaPk: .125, mfC: 1.43, loadSens: .17, clA: 0, tc: .65, esc: .45, shiftT: .28, bias: .72, steerRate: 1.10, ebrake: .16, lsd: 0,
+    stats: { speed: .46, accel: .44, handling: .76, drift: .34 },
+  },
+  // Toyota European Corolla saloon (2019) 1.6 Valvematic: 97 kW at 6400 rpm,
+  // 159 Nm at 4400 rpm; six-speed manual, 200 km/h. Kerb mass varies by trim.
+  // https://media.toyota.co.uk/toyota-reveals-the-all-new-corolla-saloon/
+  {
+    id: 'corolla', name: 'TOYOTA COROLLA 1.6', short: 'COROLLA', tag: 'Naturally aspirated. Six-speed manual. Athens saloon.', color: '#d2d5d3', accent: '#ae3c35',
+    mass: 1280, power: 97, torque: 159, redline: 6800, idle: 800, gears: [3.538, 1.913, 1.31, .971, .818, .7], final: 4.214, wheelR: .318,
+    torqueCurve: [[0,60],[800,70],[1800,111],[3000,140],[4400,159],[5500,153],[6400,144.73],[6800,124]], peakTorqueRpm: 4400, peakPowerRpm: 6400,
+    wheelbase: 2.70, length: 4.630, width: 1.780, cdA: .60, vmax: 200, grip: 1.0, steer: .60, yawI: 1.08, drift: 1, brake: 1, cyl: 4, pitch: 1.05, body: 'corolla', fleet: 'sedan', drive: 'fwd', engine: 'na4', transmission: 'manual',
+    tyres: ['205/55 R16','205/55 R16'], frontW: .59, hcg: .51, track: 1.53, rsF: .60, susHz: 1.60, susZ: .53, rollK: 1.15, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .7, esc: .5, shiftT: .30, bias: .71, steerRate: 1.08, ebrake: .16, lsd: 0,
+    stats: { speed: .40, accel: .34, handling: .71, drift: .31 },
+  },
+  // Superb III 2.0 TSI DSG (2015): 162 kW, 350 Nm, 245 km/h; 1505 kg
+  // representative DIN kerb mass. Ratios expressed as overall ratios for split final drives.
+  // https://www.skoda-storyboard.com/en/press-kits/skoda-superb-press-kit/technical-data/
+  {
+    id: 'superb', name: 'ŠKODA SUPERB 2.0 TSI', short: 'SUPERB TSI', tag: 'Long-wheelbase liftback. 220 PS. Six-speed DSG.', color: '#25475b', accent: '#bec7cf',
+    mass: 1505, power: 162, torque: 350, redline: 6500, idle: 800, gears: [13.80, 8.20, 5.79, 4.28, 3.27, 2.65], final: 1, wheelR: .330,
+    torqueCurve: [[0,120],[800,145],[1500,350],[4400,350],[5000,309],[6200,249.5],[6500,220]], peakTorqueRpm: 3000, peakPowerRpm: 6200,
+    wheelbase: 2.841, length: 4.861, width: 1.864, cdA: .62, vmax: 245, grip: 1.05, steer: .57, yawI: 1.17, drift: 1, brake: 1.04, cyl: 4, pitch: .92, body: 'superb', fleet: 'taxi_superb', drive: 'fwd', engine: 'turbo4', turbo: 1,
+    tyres: ['215/55 R17','215/55 R17'], frontW: .60, hcg: .53, track: 1.584, rsF: .60, susHz: 1.6, susZ: .55, rollK: 1.15, pitchK: 1.15, alphaPk: .125, mfC: 1.44, loadSens: .17, clA: 0, tc: .7, esc: .5, shiftT: .20, bias: .72, steerRate: 1.02, ebrake: .16, lsd: 0,
+    stats: { speed: .69, accel: .61, handling: .70, drift: .31 },
+  },
+  // Octavia IV 1.5 TSI 6MT: 110 kW / 250 Nm, 230 km/h. Fictional police
+  // equipment adds 70 kg to a representative 1338 kg DIN kerb mass.
+  // https://cdn.skoda-storyboard.com/2019/12/Nova-Skoda_Octavia_technickeudaje.pdf
+  {
+    id: 'police_octavia', name: 'ŠKODA OCTAVIA POLICE', short: 'OCTAVIA POLICE', tag: 'Ελληνική Αστυνομία livery. 1.5 TSI. Six-speed manual.', color: '#eceee9', accent: '#194c87',
+    mass: 1408, power: 110, torque: 250, redline: 6500, idle: 800, gears: [3.615, 1.955, 1.281, .973, .778, .646], final: 3.647, wheelR: .323,
+    torqueCurve: [[0,95],[800,115],[1500,250],[3500,250],[4500,230],[5000,210.1],[6000,175],[6500,150]], peakTorqueRpm: 2500, peakPowerRpm: 5000,
+    wheelbase: 2.686, length: 4.689, width: 1.829, cdA: .58, vmax: 230, grip: 1.04, steer: .58, yawI: 1.12, drift: 1, brake: 1.04, cyl: 4, pitch: .96, body: 'police_octavia', fleet: 'taxi', police: true, drive: 'fwd', engine: 'turbo4', turbo: .9, transmission: 'manual',
+    tyres: ['205/55 R17','205/55 R17'], frontW: .60, hcg: .54, track: 1.543, rsF: .59, susHz: 1.70, susZ: .57, rollK: 1.05, pitchK: 1.05, alphaPk: .125, mfC: 1.44, loadSens: .17, clA: 0, tc: .65, esc: .45, shiftT: .28, bias: .72, steerRate: 1.08, ebrake: .16, lsd: 0,
+    stats: { speed: .58, accel: .45, handling: .75, drift: .34 },
+  },
+
 ];
 
 // body shape presets: key stations along the length (t: -1 rear .. +1 front), top heights; cabin from cabin[0]..cabin[1]

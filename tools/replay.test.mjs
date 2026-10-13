@@ -87,3 +87,13 @@ test('interchange rejects bad version, impossible counts, malformed time/bytes a
   }
   assert.equal(decodeReplay(JSON.stringify({ ...valid, valid: true, html: '<script>' })).html, undefined);
 });
+
+test('promoted fleet cars retain their ids through recording and replay', () => {
+  for (const car of ['golf', 'corolla', 'superb', 'police_octavia']) {
+    const recorder = new Recorder([{ car }], { ...meta, car });
+    recorder.tick(0, [state(0)]); recorder.tick(.1, [state(.1)]);
+    const replay = decodeReplay(encodeReplay(recorder.finish({ time: .1 })));
+    assert.equal(replay.car, car);
+    assert.ok(sampleReplay(replay, .05));
+  }
+});

@@ -7,6 +7,10 @@ export const PAINTS = {
   carrera: [['GT Silver','#c6c9cb'],['Guards Red','#c02624'],['Racing Yellow','#eccf24'],['Carrara White','#edede6'],['Basalt Black','#202328'],['Aqua Blue','#276490'],['Agate Grey','#64655f'],['Lime Gold','#aaa875']],
   gr_yaris: [['Super White','#e7e8e3'],['Platinum White Pearl','#eeeee5'],['Precious Black','#191b21'],['Emotional Red','#b61b28'],['Precious Metal','#777e86'],['Matt Stealth Grey · Ogier','#555c63']],
   gtv: [['Rosso Alfa','#b52125'],['Bianco Spino','#e8e4d8'],['Giallo Ocra','#c89431'],['Verde Pino','#264c38'],['Blu Olandese','#192e46'],['Prugna','#5a293f'],['Grigio Indaco','#737780'],['Azzurro Le Mans','#548da5']],
+  golf: [['Limestone Grey','#526a83'],['Pure White','#ededeb'],['Tornado Red','#b92827'],['Deep Black','#15191d'],['Reflex Silver','#bac0c3'],['Pacific Blue','#254e7c']],
+  corolla: [['Silver Metallic','#d2d5d3'],['Pure White','#ecece7'],['Eclipse Black','#191c22'],['Scarlet Flare','#a71f2c'],['Deep Blue','#234f77'],['Manhattan Grey','#656b70']],
+  superb: [['Lava Blue','#25475b'],['Moon White','#e8ebe5'],['Brilliant Silver','#bdc3c5'],['Black Magic','#1b1d23'],['Velvet Red','#982434'],['Business Grey','#6f7271']],
+  police_octavia: [['Police White','#eceee9'],['Fleet Silver','#b9c1c8'],['Graphite Grey','#656c73'],['Navy Blue','#243d63'],['Black Magic','#181c24'],['Candy White','#f4f3ed']],
 };
 export function validPaint(color) { return typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color); }
 export function savedPaint(spec) {

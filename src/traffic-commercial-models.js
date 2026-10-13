@@ -1,5 +1,6 @@
 // Metres, +Y up, -Z forward. Dedicated OSY Citaro, Ducato and NPR coachwork.
 import * as THREE from 'three';
+import { seatMirrors } from './vehicle-mirrors.js';
 import { makePlateMaterial, nextRegistration } from './vehicle-models.js';
 import { canvasTex } from './util.js';
 
@@ -108,5 +109,5 @@ export function buildCommercialModel(type,color,rng,opts={}){
  const M={paint,black,alloy,glass,led,head:led,tail,blue:standard('#126ba8'),yellow:standard('#f6c818'),seat:low?black:standard('#38647d'),cyan:low?paint:standard('#46c3db')};const plate=nextRegistration();M.plate=low?black:makePlateMaterial(plate);
  if(!low){M.destination=label('A2  ΑΚΑΔΗΜΙΑ • ΒΟΥΛΑ','#121812','#ffb938',1024,128,true);M.osy=label('ΟΣΥ  ΟΔΙΚΕΣ ΣΥΓΚΟΙΝΩΝΙΕΣ','#eef0e9','#1261a5');M.company=label('ΑΤΤΙΚΗ  •  ΔΙΑΝΟΜΕΣ','#edf0eb','#315f82',1024,192);M.badge=label(kind==='van'?'FIAT':kind==='truck'?'ISUZU':'✳',kind==='van'?'#972424':'#1b272d','#e5e9ea',256,128);}
  const c={root,body,paint,tail,wheels:[],plate,materials:M,dims:{L:d.L,W:d.W,H:d.H},shape:kind,modelKind:kind,spec:{color:kind==='bus'?'#edf0eb':color}};
- ({bus,van,truck}[kind])(c,d,M,low);wheels(c,d,M,low);if(!low)commercialExhaust(c,d,M);root.traverse(o=>{if(o.isMesh){if(!low){const named={'mirror_l':'mirror_l','mirror_r':'mirror_r','front-apron':'bumper_f','rear-apron':'bumper_r','short-sloping-bonnet':'bonnet','deep-plastic-bumper':'bumper_f','cab-bumper':'bumper_f','rear-doors':'boot'};if(named[o.name])o.userData.damagePart=named[o.name];if(o.material===M.led||o.material===M.tail){o.geometry.computeBoundingBox();const center=o.geometry.boundingBox.getCenter(new THREE.Vector3()).add(o.position);const front=center.z<0;o.name=`light_${front?'f':'r'}${center.x<0?'l':'r'}`;o.userData.damagePart=o.name;o.material=o.material.clone();}}o.castShadow=!o.name.includes('glass');o.receiveShadow=true;}});return c;
+ ({bus,van,truck}[kind])(c,d,M,low);wheels(c,d,M,low);if(!low)commercialExhaust(c,d,M);root.traverse(o=>{if(o.isMesh){if(!low){const named={'mirror_l':'mirror_l','mirror_r':'mirror_r','front-apron':'bumper_f','rear-apron':'bumper_r','short-sloping-bonnet':'bonnet','deep-plastic-bumper':'bumper_f','cab-bumper':'bumper_f','rear-doors':'boot'};if(named[o.name])o.userData.damagePart=named[o.name];if(o.material===M.led||o.material===M.tail){o.geometry.computeBoundingBox();const center=o.geometry.boundingBox.getCenter(new THREE.Vector3()).add(o.position);const front=center.z<0;o.name=`light_${front?'f':'r'}${center.x<0?'l':'r'}`;o.userData.damagePart=o.name;o.material=o.material.clone();}}o.castShadow=!o.name.includes('glass');o.receiveShadow=true;}});seatMirrors(c);return c;
 }
