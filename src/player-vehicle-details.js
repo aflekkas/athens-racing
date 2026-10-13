@@ -192,7 +192,7 @@ export function installPlayerLOD(car,d){
   if(!isPlayerVehicle(car))return;
   const high=new THREE.Group();high.name='player-close-detail';for(const child of [...car.body.children])high.add(child);
   const low=new THREE.Group();low.name='player-distance-shell';const pos=[],idx=[];
-  const stations=[[-d.L/2,.82,d.front],[-d.wb/2,1,d.belt],[d.cowl,1,d.belt],[0,1,d.belt],[d.back,1,d.belt],[d.L/2,.85,d.rear]];
+  const stations=[[-d.L/2,.82,d.front],[-d.wb/2,1,d.belt],[d.cowl,1,d.belt],[0,1,d.belt],[d.back,1,car.modelKind==='z4'?1.015:d.belt],[d.L/2,car.modelKind==='z4'?.94:.85,car.playerSurface?.top(d.L/2)||d.rear]];
   for(const [z,w,y]of stations)for(const [x,h]of [[-w,.19],[-w,y],[0,y+.025],[w,y],[w,.19]])pos.push(x*d.W/2,h,z);
   for(let i=0;i<stations.length-1;i++)for(let j=0;j<4;j++){const a=i*5+j;idx.push(a,a+5,a+1,a+1,a+5,a+6);}
   idx.push(0,1,2,0,2,4,2,3,4,25,27,26,25,29,27,27,29,28);

@@ -13,12 +13,12 @@ function box(p,m,size,pos,r=.02,name=''){const o=mesh(p,new RoundedBoxGeometry(.
 function patch(p,m,pts,name){return surface(p,m,(u,v)=>V(pts[0]).lerp(V(pts[1]),u).lerp(V(pts[3]).lerp(V(pts[2]),u),v).toArray(),8,5,name);}
 function fields(kind,d){
   const F=-d.L/2,R=d.L/2,W=d.W/2;
-  const shoulder=kind==='mini'?[[F,.85],[-1.67,.90],[-1.24,.975],[d.cowl,.96],[.5,.96],[1.24,.965],[R,.89]]:kind==='z4'?[[F,.65],[-1.78,.755],[-1.22,.835],[d.cowl,.87],[.4,.90],[1.12,.992],[1.58,.99],[R,.91]]:[[F,.77],[-1.72,.87],[d.cowl,.98],[.4,.994],[1.30,1.025],[1.86,1.005],[R,.97]];
-  const width=kind==='mini'?[[F,W*.905],[-1.55,W*.987],[-1.1,W],[d.cowl,W*.97],[.5,W*.976],[1.27,W],[R,W*.906]]:kind==='z4'?[[F,W*.905],[-1.63,W*.967],[-1.22,W*.99],[-.6,W*.952],[.18,W*.94],[.85,W*.99],[1.26,W],[1.7,W*.99],[R,W*.905]]:[[F,W*.905],[-1.7,W*.968],[-1.28,W*.987],[-.45,W*.987],[.6,W*.996],[1.35,W],[1.94,W*.965],[R,W*.905]];
+  const shoulder=kind==='mini'?[[F,.85],[-1.67,.90],[-1.24,.975],[d.cowl,.96],[.5,.96],[1.24,.965],[R,.89]]:kind==='z4'?[[F,.65],[-1.78,.755],[-1.22,.835],[d.cowl,.87],[.4,.90],[1.12,1.015],[1.58,1.025],[R-.20,1.025],[R,1.085]]:[[F,.77],[-1.72,.87],[d.cowl,.98],[.4,.994],[1.30,1.025],[1.86,1.005],[R,.97]];
+  const width=kind==='mini'?[[F,W*.905],[-1.55,W*.987],[-1.1,W],[d.cowl,W*.97],[.5,W*.976],[1.27,W],[R,W*.906]]:kind==='z4'?[[F,W*.905],[-1.63,W*.967],[-1.22,W*.99],[-.6,W*.952],[.18,W*.94],[.85,W*.99],[1.26,W],[1.7,W*.995],[R,W*.94]]:[[F,W*.905],[-1.7,W*.968],[-1.28,W*.987],[-.45,W*.987],[.6,W*.996],[1.35,W],[1.94,W*.965],[R,W*.905]];
   const top=z=>profile(shoulder,z);
   const side=(z,y)=>{const t=clamp((y-.18)/(top(z)-.18)),waist=kind==='z4'?.036:kind==='mini'?.007:.012;return profile(width,z)-.054*(1-t)**5-.024*t**8-waist*Math.sin(Math.PI*t)**2+.008*Math.exp(-(((t-.83)/.055)**2));};
-  const deck=(x,z)=>{const q=x/side(z,top(z));let y=top(z)+.036*(1-q*q);if(z<d.cowl){const k=Math.sin(Math.PI*clamp((z-F)/(d.cowl-F)));if(kind==='mini')y+=.037*Math.exp(-(((Math.abs(q)-.73)/.23)**2))*k;if(kind==='z4')y+=.038*Math.exp(-(((Math.abs(q)-.69)/.19)**2))*k-.017*(1-q*q)*k;}
-    if(kind==='z4'&&z>d.back)y+=.023*Math.exp(-(((z-R+.08)/.10)**2))*(1-q*q);return y;};
+  const deck=(x,z)=>{const q=x/side(z,top(z));let y=top(z)+(kind==='z4'&&z>d.back?.012:.036)*(1-q*q);if(z<d.cowl){const k=Math.sin(Math.PI*clamp((z-F)/(d.cowl-F)));if(kind==='mini')y+=.037*Math.exp(-(((Math.abs(q)-.73)/.23)**2))*k;if(kind==='z4')y+=.038*Math.exp(-(((Math.abs(q)-.69)/.19)**2))*k-.017*(1-q*q)*k;}
+    return y;};
   return {top,side,deck};
 }
 export function buildOriginalPlayerSkin(car,d,M,low=false){
@@ -52,7 +52,7 @@ export function buildOriginalPlayerSkin(car,d,M,low=false){
     }
   }
   for(const [a,b,name]of [[F,d.cowl,'bonnet'],[d.back,R,'boot']])surface(p,M.paint,(u,v)=>{const z=mix(a,b,u),x=(2*v-1)*side(z,top(z));return[x,deck(x,z),z];},low?20:36,18,name);
-  for(const z of [F,R])surface(p,M.paint,(u,v)=>{const q=2*u-1,y=mix(.18,top(z),v),x=q*side(z,y);return[x,y+.036*(1-q*q)*v**8,z];},24,10,z<0?'front-bumper':'rear-bumper');
+  for(const z of [F,R])surface(p,M.paint,(u,v)=>{const q=2*u-1,y=mix(.18,top(z),v),x=q*side(z,y);return[x,y+(kind==='z4'&&z>0?.012:.036)*(1-q*q)*v**8,z];},24,10,z<0?'front-bumper':'rear-bumper');
   for(const s of [-1,1]){const pts=[];for(let i=0;i<=32;i++){const z=mix(F+.12,d.cowl-.025,i/32),t=(z-F)/(d.cowl-F),x=s*side(z,top(z))*(kind==='mini'?.86:mix(.48,.74,t));pts.push([x,deck(x,z)+.002,z]);}line(p,M.seam,pts,.0022,'bonnet-shut-line');}
   if(kind==='mini'){
     const stripe=new THREE.MeshStandardMaterial({color:'#eeeae1',metalness:.25,roughness:.3,side:THREE.DoubleSide});
@@ -88,6 +88,31 @@ export function refineOriginalPlayer(car,d,M,low=false){
     // The narrowed G29 waist needs its inner door card inboard of the skin.
     for(const o of p.children)if(o.isMesh&&o.material===M.black&&Math.abs(Math.abs(o.position.x)-(W-.125))<.01&&Math.abs(o.position.y-(d.belt-.20))<.02)o.position.x-=Math.sign(o.position.x)*.065;
     const F=-d.L/2,{side,top,deck}=car.playerSurface;
+    const R=d.L/2;
+    // G29: an integrated rising ducktail, a flat trailing edge, and slim L lamps.
+    // BMW G29 press kit: https://www.press.bmwgroup.com/global/article/attachment/T0284770EN/442424
+    for(const o of [...p.children])if(o.isMesh){
+      o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone().applyMatrix4(o.matrix);
+      if([M.red,M.tail].includes(o.material)&&b.min.z>R-.06&&b.max.y>.65)o.removeFromParent();
+      if(o.userData.damagePart?.startsWith('light_r')&&/indicator|reverse/.test(o.name))o.position.y+=.16;
+      if(o.name==='registration'&&o.position.z>0)o.position.y=.56;
+    }
+    patch(p,M.black,[[-.75,.43,R+.008],[.75,.43,R+.008],[.66,.23,R+.008],[-.66,.23,R+.008]],'z4-rear-diffuser');
+    for(const sign of [-1,1])patch(p,M.black,[[sign*.76,.63,R+.009],[sign*.83,.64,R+.009],[sign*.82,.43,R+.009],[sign*.76,.44,R+.009]],'z4-rear-quarter-vent');
+    const bumperCrease=[];for(let i=0;i<=32;i++){const x=mix(-.81,.81,i/32);bumperCrease.push([x,.455+.06*(Math.abs(x)/.81)**2,R+.009]);}line(p,M.paint,bumperCrease,.008,'z4-rear-bumper-crease');
+    const shut=[];for(let i=0;i<=32;i++){const x=mix(-.73,.73,i/32),z=R-.23;shut.push([x,deck(x,z)+.002,z]);}line(p,M.seam,shut,.0025,'boot-trailing-shut-line');
+    for(const sign of [-1,1]){
+      const z=R+.006,pts=[[.30,.969],[.81,1.009],[.825,.907],[.68,.902],[.67,.935],[.32,.934]].map(([x,y])=>[sign*x,y,z]);
+      patch(p,M.head,[[sign*.29,.975,z-.001],[sign*.83,1.016,z-.001],[sign*.84,.895,z-.001],[sign*.32,.921,z-.001]],'rear-lamp-housing');
+      // Triangulated concave L contour, with a light guide on the same mounting face.
+      const shape=new THREE.Shape();pts.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();
+      const lamp=mesh(p,new THREE.ShapeGeometry(shape),M.red,'z4-tail-lens');lamp.position.z=z;
+      line(p,M.tail,[[sign*.33,.952,z+.003],[sign*.78,.986,z+.003],[sign*.79,.923,z+.003],[sign*.69,.920,z+.003]],.008,'z4-L-tail-signature');
+      surface(p,M.red,(u,v)=>{const zz=mix(R-.35,R-.085,u),y=mix(.945,.980,v);return[sign*(side(zz,y)+.003),y,zz];},12,2,'z4-wraparound-tail-lens');
+      const flank=[];for(let i=0;i<=20;i++){const zz=mix(R-.34,R-.07,i/20),y=.961;flank.push([sign*(side(zz,y)+.005),y,zz]);}line(p,M.tail,flank,.006,'z4-wraparound-tail-guide');
+      const seam=[];for(let i=0;i<=24;i++){const zz=mix(d.back+.08,R-.23,i/24),x=sign*.73;seam.push([x,deck(x,zz)+.002,zz]);}line(p,M.seam,seam,.0022,'boot-side-shut-line');
+    }
+
     for(const o of [...p.children])if(o.isMesh&&(o.material===M.head||o.material===M.led)){o.geometry.computeBoundingBox();const b=o.geometry.boundingBox;if(b.max.z+o.position.z<F+.05&&b.max.y+o.position.y>.5)o.removeFromParent();}
     for(const s of [-1,1]){
       const at=(u,v)=>{const z=mix(F+.02,F+.38,v),x=s*mix(mix(.46,.68,v),mix(.78,.82,v),u);return[x,deck(x,z)+.007,z];};
@@ -131,7 +156,7 @@ export function refineOriginalPlayer(car,d,M,low=false){
   p.updateMatrixWorld(true);
   const bodyInverse=p.matrixWorld.clone().invert(),point=new THREE.Vector3();
   p.traverse(o=>{if(!o.isMesh)return;const toBody=bodyInverse.clone().multiply(o.matrixWorld),fromBody=toBody.clone().invert(),a=o.geometry.attributes.position;let changed=false;
-    for(let i=0;i<a.count;i++){point.fromBufferAttribute(a,i).applyMatrix4(toBody);const distance=d.L/2-Math.abs(point.z);if(distance<.43){const weight=clamp((.43-distance)/.43),q=Math.min(1.12,Math.abs(point.x)/W),wrap=(kind==='mini'?.145:kind==='z4'?.18:.135)*q**3+.035*(1-clamp((point.y-.18)/.30))**2+(point.z<0?.075*clamp((point.y-.63)/.30)**2:.09*clamp((.55-point.y)/.35)**2+.065*clamp((point.y-.74)/.24)**2);point.z-=Math.sign(point.z)*wrap*weight;point.applyMatrix4(fromBody);a.setXYZ(i,point.x,point.y,point.z);changed=true;}}
+    for(let i=0;i<a.count;i++){point.fromBufferAttribute(a,i).applyMatrix4(toBody);const distance=d.L/2-Math.abs(point.z);if(distance<.43){const weight=clamp((.43-distance)/.43),q=Math.min(1.12,Math.abs(point.x)/W),wrap=(kind==='mini'?.145:kind==='z4'?(point.z>0?.065:.18):.135)*q**3+.035*(1-clamp((point.y-.18)/.30))**2+(point.z<0?.075*clamp((point.y-.63)/.30)**2:.09*clamp((.55-point.y)/.35)**2+(kind==='z4'?.012:.065)*clamp((point.y-.74)/.24)**2);point.z-=Math.sign(point.z)*wrap*weight;point.applyMatrix4(fromBody);a.setXYZ(i,point.x,point.y,point.z);changed=true;}}
     if(changed){a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();}
   });
 }
