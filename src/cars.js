@@ -140,6 +140,17 @@ export const CARS = [
     tyres: ['245/40 R19','275/35 R19'], frontW: .54, hcg: .50, track: 1.605, trackRear: 1.616, rsF: .56, susHz: 1.65, susZ: .58, rollK: .95, pitchK: 1, alphaPk: .115, mfC: 1.46, loadSens: .15, clA: .02, tc: .65, esc: .5, shiftT: .16, bias: .68, steerRate: 1.08, ebrake: .16, lsd: .35,
     stats: { speed: .73, accel: .72, handling: .79, drift: .60 },
   },
+  // H247 GLA 200 Progressive, 1.33-litre petrol FWD (non-48V market version).
+  // https://www.mercedes-benz.ph/media/enodlijs/mercedes-benz-gla-mb-ph-ebrochure-feb2024.pdf
+  // 7G-DCT overall ratios are a calibration approximation; not a published H247 ratio sheet.
+  {
+    id: 'gla', transmission: 'auto', name: 'MERCEDES-BENZ GLA 200', short: 'GLA 200', tag: 'H247 · Everyday compact SUV. Front-wheel drive. 7G-DCT.', color: '#b5bdc3', accent: '#c5cdd3', marque: 'mercedes',
+    mass: 1485, power: 120, torque: 250, redline: 6500, idle: 800, gears: [14.4,8.95,6.16,4.55,3.45,2.75,2.18], final: 1, wheelR: .346,
+    torqueCurve: [[0,85],[800,105],[1620,250],[4000,250],[4800,235],[5500,208.35],[6200,175],[6500,145]], peakTorqueRpm: 2500, peakPowerRpm: 5500,
+    wheelbase: 2.729, length: 4.410, width: 1.834, height: 1.611, cdA: .73, vmax: 210, grip: 1.05, steer: .58, yawI: 1.07, drift: 1, brake: 1, cyl: 4, pitch: 1.02, body: 'gla', drive: 'fwd', engine: 'turbo4', turbo: .8,
+    tyres: ['235/55 R18','235/55 R18'], frontW: .61, hcg: .58, track: 1.605, trackRear: 1.606, rsF: .60, susHz: 1.6, susZ: .56, rollK: 1.15, pitchK: 1.1, alphaPk: .125, mfC: 1.43, loadSens: .16, clA: 0, tc: .75, esc: .60, shiftT: .22, bias: .73, steerRate: 1.05, ebrake: .17, lsd: 0,
+    stats: { speed: .46, accel: .45, handling: .69, drift: .31 },
+  },
   // Huracan EVO AWD: Lamborghini 470 kW / 640 CV, 600 Nm, >325 km/h.
   // 1422 kg is dry; 1542 kg road-ready simulation mass adds estimated fluids/equipment.
   {
