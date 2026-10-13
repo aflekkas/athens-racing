@@ -3,7 +3,7 @@
 // with the real shop names (transliterated), rooftop solar water heaters, chapels with domes.
 import * as THREE from 'three';
 import { REFLECT_LAYER } from './env.js';
-import { RNG, CellInstances, M, canvasTex, pointInPoly, polyArea, clamp } from './util.js';
+import { RNG, CellInstances, GeoBatch, M, canvasTex, pointInPoly, polyArea, clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 
 const KIND = { apt: 0, villa: 1, hotel: 2, shop: 3, church: 4, roof: 5, shed: 6 };
@@ -13,7 +13,7 @@ export function facadeMaterial() {
   // glazing with interior mapping (rooms with floor, ceiling and walls seen in parallax behind the glass) and
   // Fresnel reflections of the sky, aluminium roller shutters, window frames, shopfronts, villa shutters.
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0 });
-  mat.customProgramCacheKey = () => 'facade6';
+  mat.customProgramCacheKey = () => 'facade7';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, { tPD: { value: TX.plaster_diff }, tPN: { value: TX.plaster_nor }, tPR: { value: TX.plaster_arm }, tCD: { value: TX.concrete_diff }, tCN: { value: TX.concrete_nor } });
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 aB; attribute vec2 aF; varying vec4 vB; varying vec2 vF; varying vec3 vWN; varying vec3 vWP2;')
@@ -27,10 +27,10 @@ export function facadeMaterial() {
       float gRough = 0.85; float gMetal = 0.0; vec3 gEmit = vec3(0.0); vec3 gN = vec3(0, 0, 1); float gNK = 0.6; vec2 gUV; float gSpec = 1.0;
       vec3 wallCol(float k, float seed){
         float r = fract(seed * 7.13);
-        if (k < 0.5) return r < 0.34 ? vec3(0.86, 0.84, 0.79) : r < 0.55 ? vec3(0.84, 0.76, 0.62) : r < 0.7 ? vec3(0.75, 0.73, 0.69) : r < 0.84 ? vec3(0.82, 0.68, 0.52) : r < 0.93 ? vec3(0.9, 0.88, 0.84) : vec3(0.66, 0.68, 0.66);
+        if (k < 0.5) return r < 0.34 ? vec3(0.86, 0.84, 0.79) : r < 0.55 ? vec3(0.84, 0.76, 0.62) : r < 0.7 ? vec3(0.75, 0.73, 0.69) : r < 0.84 ? vec3(0.88, 0.69, 0.40) : r < 0.93 ? vec3(0.9, 0.88, 0.84) : vec3(0.66, 0.68, 0.66);
         if (k < 1.5) { float q = fract(seed * 3.7); return q < 0.6 ? vec3(0.93, 0.92, 0.88) : q < 0.85 ? vec3(0.91, 0.84, 0.7) : vec3(0.86, 0.64, 0.5); }
-        if (k < 2.5) return vec3(0.92, 0.91, 0.88);
-        if (k < 3.5) return vec3(0.8, 0.8, 0.78);
+        if (k < 2.5) return r < 0.6 ? vec3(0.94, 0.93, 0.89) : vec3(0.79, 0.73, 0.61);
+        if (k < 3.5) return r < 0.3 ? vec3(0.91, 0.79, 0.58) : r < 0.6 ? vec3(0.92, 0.91, 0.86) : vec3(0.73, 0.79, 0.77);
         if (k < 4.5) return vec3(0.96, 0.95, 0.92);
         return vec3(0.6, 0.58, 0.55);
       }
@@ -76,6 +76,10 @@ export function facadeMaterial() {
         wall *= mix(0.72, 1.0, smoothstep(0.0, 1.4, y)); // splash grime at the base
         // rain streaks
         wall *= 1.0 - 0.08 * smoothstep(0.6, 0.9, vn2(vec2(along * 1.3, y * 0.08 + seed)));
+        // Narrow painted piers break up adjacent plain plaster facades.
+        float trim = step(0.68, fract(seed * 41.7)) * (1.0 - step(0.18, fract(along / 5.4)));
+        vec3 accent = fract(seed * 11.3) < 0.5 ? vec3(0.81, 0.66, 0.45) : vec3(0.68, 0.73, 0.72);
+        if (k < 3.5) wall = mix(wall, wall * accent, trim * 0.48);
         vec3 col = wall; gRough = clamp(pa.g + 0.05, 0.6, 1.0);
         if (flag > 0.5 && flag < 1.5) {
           // flat roof: weathered concrete / white-painted waterproofing
@@ -218,7 +222,7 @@ export function facadeMaterial() {
 /** balconies, railings, awnings and roof parapets as real geometry (they cast the strong horizontal shadows of Athens) */
 function detailMaterial() {
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, side: THREE.DoubleSide });
-  mat.customProgramCacheKey = () => 'bdetail6';
+  mat.customProgramCacheKey = () => 'bdetail7';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, { tPD: { value: TX.plaster_diff }, tPN: { value: TX.plaster_nor } });
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec3 aD; varying vec3 vD; varying vec2 vDU;')
@@ -240,7 +244,9 @@ function detailMaterial() {
           col = mix(vec3(0.05, 0.08, 0.085), vec3(0.8, 0.8, 0.8), fr);
           dRough = mix(0.05, 0.35, fr); dMetal = mix(0.2, 0.9, fr);
         } else if (type < 2.5) {     // railing: painted steel bars
-          float bar = step(0.75, fract(vDU.x / 0.12)) + step(0.94, vDU.y) + (1.0 - step(0.06, vDU.y));
+          float horizontal = step(0.5, fract(seed * 19.7));
+          float bar = mix(step(0.75, fract(vDU.x / 0.16)), step(0.79, fract(vDU.y / 0.22)), horizontal);
+          bar += step(0.94, vDU.y) + (1.0 - step(0.06, vDU.y)) + step(0.97, fract(vDU.x / 1.4));
           if (bar < 0.5) discard;
           col = sub > 0.5 ? vec3(0.06, 0.06, 0.065) : vec3(0.82, 0.82, 0.8);
           dRough = 0.45; dMetal = 0.5;
@@ -251,8 +257,22 @@ function detailMaterial() {
           col = r < 0.6 ? mix(c1, vec3(0.88, 0.86, 0.8), st) : c1;
           col *= 0.9 + 0.1 * sin(vDU.x * 200.0);
           dRough = 0.95;
-        } else {                     // AC units
-          col = vec3(0.86, 0.86, 0.84); dRough = 0.5;
+        } else if (type < 4.5) {     // AC units: condenser grille instead of blank white boxes
+          float slat = step(0.48, fract(vDU.x * 26.0));
+          col = mix(vec3(0.65, 0.67, 0.65), vec3(0.88, 0.88, 0.84), slat); dRough = 0.5;
+        } else if (type < 5.5) {     // pergola timber
+          col = mix(vec3(0.23, 0.15, 0.08), vec3(0.55, 0.40, 0.23), fract(seed * 13.2));
+          col *= 0.86 + 0.14 * sin(vDU.x * 31.0 + vn2(vDU * 6.0));
+        } else if (type < 6.5) {     // terracotta planter / tiled villa cornice
+          col = mix(vec3(0.49, 0.22, 0.12), vec3(0.76, 0.42, 0.24), fract(seed * 7.2));
+        } else {                   // clipped leaf and flower trellis cards, no extra material/draw call
+          vec2 cell = floor(vDU * 9.0), leaf = fract(vDU * 9.0) - 0.5;
+          float h = h12(cell + seed * 43.0);
+          leaf.x += 0.2 * sin(cell.y * 2.3);
+          if (dot(leaf * vec2(1.0, 1.8), leaf * vec2(1.0, 1.8)) > 0.18 || h < 0.17) discard;
+          vec3 flower = fract(seed * 5.7) < 0.5 ? vec3(0.72, 0.045, 0.25) : vec3(0.93, 0.27, 0.53);
+          col = mix(vec3(0.12, 0.29, 0.07) * (0.75 + h * 0.6), flower, step(0.61, h));
+          dRough = 0.94;
         }
         diffuseColor.rgb = col;
       }`)
@@ -290,6 +310,60 @@ class DetailBatch {
     g.setAttribute('aD', new THREE.Float32BufferAttribute(this.d, 3));
     g.setIndex(this.idx); g.computeBoundingSphere();
     return g;
+  }
+}
+
+/** A few low-poly pieces distinguish frontage silhouettes without another mesh per building. */
+function addFrontage(det, { ax, az, nx, nz, tx, tz, L, gmin, roofTop, k, seed, rng, heightC, footprint, roofOccupied }) {
+  const t = [tx, 0, tz], nn = [nx, 0, nz];
+  const P = (a, out, y = 0) => [ax + tx * a + nx * out, y, az + tz * a + nz * out];
+  const box = (a, out, w, d, y0, y1, type) => det.box(P(a, out), t, nn, w, d, y0, y1, [type, seed, 0]);
+  const card = (a, out, w, y, h) => det.quad(P(a, out, y), P(a + w, out, y), P(a + w, out, y + h), P(a, out, y + h), nn,
+    [[0, 0], [w, 0], [w, h], [0, h]], [7, seed, 0]);
+  const shop = k === KIND.shop || k === KIND.hotel || (k === KIND.apt && seed * 5.3 % 1 > 0.4);
+  if (shop) {
+    // A broad canvas canopy with a hanging valance reads as a cafe from the driver's seat.
+    const w = Math.min(L - 0.8, 10), a = (L - w) / 2, out = rng.range(1.15, 2.0);
+    const y = gmin + 2.65, top = y + 0.35;
+    const normal = new THREE.Vector3(nx * 0.35, out, nz * 0.35).normalize().toArray();
+    det.quad(P(a, out, y), P(a + w, out, y), P(a + w, 0.04, top), P(a, 0.04, top), normal,
+      [[0, 0], [w, 0], [w, out], [0, out]], [3, seed, 0]);
+    det.quad(P(a, out, y - 0.22), P(a + w, out, y - 0.22), P(a + w, out, y), P(a, out, y), nn,
+      [[0, 0], [w, 0], [w, 0.22], [0, 0.22]], [3, seed, 0]);
+    // Pots frame the entrance; flowers remain clipped cards rather than opaque spheres.
+    for (const side of [a + 0.2, a + w - 0.7]) {
+      const p = P(side, 0.8), ground = heightC(p[0], p[2]);
+      box(side, 0.8, 0.5, 0.5, ground, ground + 0.48, 6);
+      card(side - 0.08, 1.06, 0.66, ground + 0.4, 0.95);
+    }
+  }
+  if (k === KIND.villa || (k === KIND.hotel && rng.chance(0.65)) || (k === KIND.apt && rng.chance(0.22))) {
+    // Roof pergolas sit fully inside the footprint; keep them small on irregular OSM polygons.
+    const w = Math.min(5.2, L * 0.55), a = (L - w) / 2, d = 2.05;
+    const base = roofTop + 0.03, top = base + rng.range(1.9, 2.35);
+    const fits = [a, a + w / 2, a + w + 0.12].every(x => [-0.2, -d - 0.12].every(z => {
+      const p = P(x, z); return pointInPoly(p[0], p[2], footprint);
+    }));
+    if (fits) {
+      const occupied = [];
+      for (const [x, z] of [[a - 0.25, -0.1], [a + w + 0.25, -0.1], [a + w + 0.25, -d - 0.3], [a - 0.25, -d - 0.3]]) {
+        const p = P(x, z); occupied.push(p[0], p[2]);
+      }
+      roofOccupied.push(occupied);
+      for (const x of [a, a + w - 0.13]) for (const z of [-0.35, -d]) box(x, z, 0.13, 0.13, base, top, 5);
+      for (const z of [-0.35, -d]) box(a, z, w, 0.15, top - 0.16, top + 0.02, 5);
+      for (let x = a; x <= a + w; x += 0.48) box(x, -d - 0.12, 0.12, d, top, top + 0.13, 5);
+    }
+    if (k === KIND.villa) {
+      // One short wall with an open gate; no continuous fence blocking side streets.
+      const wallPoint = P(a, 1.65), wy = heightC(wallPoint[0], wallPoint[2]);
+      box(a, 1.65, Math.max(0.7, w * 0.3), 0.23, wy, wy + 1.05, 0);
+      box(a + w * 0.7, 1.65, w * 0.3, 0.23, wy, wy + 1.05, 0);
+      card(a - 0.2, 1.90, w * 0.42, wy + 0.55, 1.15);
+      card(a + w * 0.68, 1.90, w * 0.38, wy + 0.7, 1.05);
+      // Tile-coloured cornice breaks up the otherwise identical flat roof profile.
+      box(0.15, -0.08, L - 0.3, 0.35, roofTop - 0.15, roofTop + 0.05, 6);
+    }
   }
 }
 
@@ -409,8 +483,13 @@ export function infillBuildings(map, heightC) {
         const pr = route.project(x, z, null); if (Math.abs(pr.u) < route.edge(clamp(pr.s, 0, route.length)) + ROAD_CLEAR) { ok = false; break; }
       }
       if (!ok) continue;
-      const lv = rng.chance(0.15) ? 3 : rng.chance(0.55) ? 4 : rng.chance(0.6) ? 5 : 6;
-      const rec = { p: P, h: lv * 3.1 + rng.range(0.2, 1.2), lv, k: 'apt', s: Math.round(ss), u: Math.round(u), id: id++, infill: true };
+      // Consume the original placement RNG sequence unchanged, but derive architecture from the ID.
+      // Adjacent accepted parcels advance through different archetypes without shifting any footprints.
+      const legacyFloors = rng.chance(0.15) ? 3 : rng.chance(0.55) ? 4 : rng.chance(0.6) ? 5 : 6;
+      const roofHeight = rng.range(0.2, 1.2);
+      const style = id % 11, k = style === 2 || style === 7 ? 'villa' : style === 5 ? 'shop' : 'apt';
+      const lv = k === 'villa' ? 2 : k === 'shop' ? 1 + id % 2 : 2 + (legacyFloors + id) % 3;
+      const rec = { p: P, h: lv * 3.1 + roofHeight, lv, k, s: Math.round(ss), u: Math.round(u), id: id++, infill: true };
       out.push(rec);
       // block this footprint for the next candidates
       const r2 = { p: P, x0: Math.min(P[0], P[2], P[4], P[6]) - 3, x1: Math.max(P[0], P[2], P[4], P[6]) + 3, z0: Math.min(P[1], P[3], P[5], P[7]) - 3, z1: Math.max(P[1], P[3], P[5], P[7]) + 3 };
@@ -442,6 +521,8 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
   const roofs = [];
   const domes = [];
   for (const b of data.buildings.concat(infill)) {
+    // Stable per footprint: adding detail to one building cannot change every later facade.
+    const rng = new RNG(b.id ^ 0x53a19);
     let p = b.p;
     const n = p.length / 2; if (n < 3) continue;
     let area = polyArea(p);
@@ -457,7 +538,7 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     if (k === KIND.roof) H = 3.2;
     const y1 = gmax + H - (gmax - gmin) * 0.3;
     const lv = Math.max(1, Math.round((y1 - gmin) / 3.1 - 0.15));
-    const seed = (b.id % 997) / 997;
+    const seed = ((Math.imul(b.id | 0, 2654435761) >>> 0) % 65521) / 65521;
     const key = Math.floor(b.s / CH);
     let G = groups.get(key); if (!G) { G = { pos: [], nor: [], f: [], b: [], idx: [], det: new DetailBatch() }; groups.set(key, G); }
     const base = G.pos.length / 3;
@@ -470,7 +551,11 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     const railT = rng.next() < 0.45 ? 1 : rng.next() < 0.6 ? 2 : 0;
     const railDark = rng.next() < 0.5 ? 1 : 0;
     const bayW = 2.7 + ((seed * 13.1) % 1) * 1.3;
-    const depth = rng.range(1.0, 1.45);
+    const depth = rng.range(1.15, k === KIND.hotel ? 2.35 : 2.05);
+    const road = route.frame(b.s, {});
+    const frontage = [road.x - cx, road.z - cz];
+    let decoratedFront = false;
+    const roofOccupied = [];
     let longest = 0; for (let i = 0; i < n; i++) { const j = (i + 1) % n; longest = Math.max(longest, Math.hypot(p[j * 2] - p[i * 2], p[j * 2 + 1] - p[i * 2 + 1])); }
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;
@@ -522,6 +607,13 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
           }
         }
       }
+      // Street-facing ground-floor character; every addition stays in the existing chunk batch.
+      const front = nx * frontage[0] + nz * frontage[1] > 0;
+      if (!decoratedFront && front && L > 5 && Math.abs(b.u) < 260 && k <= KIND.shop) {
+        decoratedFront = true;
+        addFrontage(G.det, { ax, az, nx, nz, tx: (bx - ax) / L, tz: (bz - az) / L,
+          L, gmin, roofTop, k, seed, rng, heightC, footprint: p, roofOccupied });
+      }
       along += L;
     }
     // roof
@@ -540,7 +632,7 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     // spatial hash for prop placement
     const bb = { x0: 1e9, x1: -1e9, z0: 1e9, z1: -1e9 };
     for (let i = 0; i < n; i++) { bb.x0 = Math.min(bb.x0, p[i * 2]); bb.x1 = Math.max(bb.x1, p[i * 2]); bb.z0 = Math.min(bb.z0, p[i * 2 + 1]); bb.z1 = Math.max(bb.z1, p[i * 2 + 1]); }
-    const rec = { p, bb, top: roofTop, k, area, cx, cz, s: b.s, u: b.u, gmin };
+    const rec = { p, bb, top: roofTop, k, area, cx, cz, s: b.s, u: b.u, gmin, roofOccupied };
     for (let i = Math.floor(bb.x0 / HC); i <= Math.floor(bb.x1 / HC); i++) for (let j = Math.floor(bb.z0 / HC); j <= Math.floor(bb.z1 / HC); j++) { const kk = i * 100003 + j; if (!hashCell.has(kk)) hashCell.set(kk, []); hashCell.get(kk).push(rec); }
     if ((k === KIND.apt || k === KIND.villa || k === KIND.hotel) && area > 50) roofs.push(rec);
     if (k === KIND.church) domes.push(rec);
@@ -581,7 +673,7 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     for (let i = 0; i < cnt; i++) {
       for (let t = 0; t < 6; t++) {
         const x = rng.range(r.bb.x0 + 1.5, r.bb.x1 - 1.5), z = rng.range(r.bb.z0 + 1.5, r.bb.z1 - 1.5);
-        if (!pointInPoly(x, z, r.p)) continue;
+        if (!pointInPoly(x, z, r.p) || r.roofOccupied.some(poly => pointInPoly(x, z, poly))) continue;
         const yaw = sunYaw + rng.range(-0.25, 0.25);
         tanks.addTRS(x, r.top, z, yaw, 1); panels.addTRS(x, r.top, z, yaw, 1); frames.addTRS(x, r.top, z, yaw, 1);
         break;
@@ -597,6 +689,8 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     m.position.set(d.cx, d.top, d.cz); m.castShadow = true; group.add(m);
     const cross = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.9, 0.08), new THREE.MeshStandardMaterial({ color: '#d8c27a', metalness: 1, roughness: 0.3 }));
     cross.position.set(d.cx, d.top + r + 0.45, d.cz); group.add(cross);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.08), cross.material);
+    arm.position.set(d.cx, d.top + r + 0.61, d.cz); group.add(arm);
   }
 
   // ---- shop signs with the real names, mounted on the facade nearest each OSM shop/cafe
@@ -641,6 +735,36 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     if (kind === 'pharmacy') {
       const c = pharmacyCross.clone(); c.position.set(best.px + best.nx * 0.9 + best.nz * (w / 2 + 0.4), gy + 0.9, best.pz + best.nz * 0.9 - best.nx * (w / 2 + 0.4)); c.rotation.y = Math.atan2(best.nz, -best.nx); group.add(c);
     }
+  }
+  // The mapped Varkiza petrol forecourt: low canopy, slender columns, pumps and price sign.
+  // One vertex-colour batch per station, with the shared label atlas for the fascia.
+  for (const poi of data.pois) {
+    if (poi.k !== 'fuel' || Math.abs(poi.u) > 70 || inBuilding(poi.x, poi.z)) continue;
+    const station = new THREE.Group(), batch = new GeoBatch();
+    const box = (x, y, z, w, h, d, color) => {
+      const g = new THREE.BoxGeometry(w, h, d); batch.add(g, M(x,y,z), color); g.dispose();
+    };
+    box(0,0.04,0,8,0.08,12,'#b6b2a7');
+    box(0,4.55,0,7.8,0.35,10.5,'#e5e6d9');
+    box(-3.94,4.5,0,0.08,0.5,10.6,'#176b3a');
+    box(3.94,4.5,0,0.08,0.5,10.6,'#176b3a');
+    for (const z of [-3.4,3.4]) {
+      box(0,2.25,z,0.22,4.5,0.22,'#d6d9d5');
+      box(0,0.15,z,1.9,0.22,1.3,'#96988e');
+      for (const x of [-0.5,0.5]) {
+        box(x,0.91,z,0.48,1.48,0.62,'#e6e6dc');
+        box(x,1.26,z+0.32,0.36,0.33,0.025,'#172731');
+        box(x+0.26,0.78,z,0.06,1.05,0.36,'#171b1a');
+        box(x,0.33,z+0.34,0.45,0.16,0.045,'#e7c43a');
+      }
+    }
+    box(-3,2.1,5.3,0.18,4.2,0.18,'#e2e2d7');
+    const mesh = new THREE.Mesh(batch.build(),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.75}));
+    mesh.castShadow=true; mesh.receiveShadow=true; station.add(mesh);
+    const name = labels.add((poi.n || 'FUEL').toUpperCase() + ' · 24h', '#176b3a', '#fff3ac');
+    if (name) { const sign=labels.plane(name,3.2,0.75); sign.position.set(-3,3.8,5.42);station.add(sign); }
+    const fr=route.frame(poi.s,{});station.rotation.y=Math.atan2(fr.tx,fr.tz);
+    station.position.set(poi.x,heightC(poi.x,poi.z),poi.z);group.add(station);
   }
   return { group, inBuilding, roofs };
 }

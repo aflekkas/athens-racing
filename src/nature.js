@@ -5,7 +5,6 @@
 import * as THREE from 'three';
 import * as ENV from './env.js';
 import { REFLECT_LAYER, U, sunDir } from './env.js';
-import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RNG, CellInstances, M, canvasTex, pointInPoly, polyBounds, polyArea, clamp, smoothstep, lerp, vnoise } from './util.js';
 import { ROAD } from './road.js';
 import { TX, GLSL_HELPERS } from './tex.js';
@@ -13,7 +12,8 @@ import { TX, GLSL_HELPERS } from './tex.js';
 // ------------------------------------------------------------------ templates
 // leaf-card atlas quadrants (u0, v0, u1, v1) of assets/tex/foliage_atlas.webp (tools/make_foliage.py)
 const ATL = { citrus: [0, 0.5, 0.5, 1], oleander: [0.5, 0.5, 1, 1], pine: [0, 0, 0.5, 0.5], lentisk: [0.5, 0, 1, 0.5] };
-const CYP_TINT = new THREE.Color(0.62, 0.72, 0.6), OLE_CORE = new THREE.Color('#5d7a3c');
+const CYP_TINT = new THREE.Color(0.62, 0.72, 0.6);
+const EXTRA = { fan: [0, 0.5, 0.5, 1], olive: [0.5, 0.5, 1, 1], bougainvillea: [0, 0, 0.5, 0.5], scrub: [0.5, 0, 1, 0.5] };
 
 /** a shell of leaf cards around an ellipsoid: twigs radiate outward, normals bent outward for soft volumetric light */
 function cardCluster(n, seed, rect, { r = [1, 1, 1], cy = 0, w = 1, h = 1, tilt = 0.7, outward = 0.75, shell = 0.55 } = {}) {
@@ -62,22 +62,24 @@ const FOLIAGE_VS = (sway) => `
   transformed.y += sin(wph * 1.9 + position.x * 2.0) * wk * 0.5 * aAO;
 `;
 /** alpha-to-coverage leaf cards (MSAA), translucent toward the sun, per-instance tint; flowers keep their own colour */
-function leafMaterial(flowers) {
-  const m = new THREE.MeshStandardMaterial({ map: TX.foliage, alphaTest: 0.38, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.68, metalness: 0 });
-  m.customProgramCacheKey = () => 'leaf6' + (flowers ? 'f' : '');
+function leafMaterial(flowers, map = TX.foliage) {
+  const m = new THREE.MeshStandardMaterial({ map, alphaTest: 0.38, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.68, metalness: 0 });
+  m.customProgramCacheKey = () => 'leaf7' + (flowers ? 'f' : '');
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = U.time; sh.uniforms.uSun = { value: sunDir };
+    sh.uniforms.uLeafDaylight = { get value() { return ENV.COND_STATE.daylight; } };
+    sh.uniforms.uLeafSunColor = { value: ENV.SUN_COLOR };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aAO; varying float vAO; varying vec3 vLW; uniform float uTime;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvAO = aAO;\n' + FOLIAGE_VS('0.045'))
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvLW = (modelMatrix * vec4(transformed, 1.0)).xyz;\n#ifdef USE_INSTANCING\nvLW = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;\n#endif');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vAO; varying vec3 vLW; uniform vec3 uSun; vec3 leafT;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vAO; varying vec3 vLW; uniform vec3 uSun; uniform float uLeafDaylight; uniform vec3 uLeafSunColor; vec3 leafT;')
       .replace('#include <color_fragment>', `
         {
           vec3 c = diffuseColor.rgb;
           float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b));
-          float flw = ${flowers ? 'smoothstep(0.1, 0.03, mx - mn) * smoothstep(0.3, 0.6, mx)' : '0.0'};
+          float flw = ${flowers ? '(1.0 - smoothstep(0.03, 0.1, mx - mn)) * smoothstep(0.3, 0.6, mx)' : '0.0'};
           #if defined( USE_COLOR ) || defined( USE_INSTANCING_COLOR )
-            c = mix(c * vColor, vColor * (0.55 + 0.45 * mx) * 0.95, flw);
+            c = mix(c * ${flowers ? 'vec3(1.0)' : 'vColor'}, vColor * (0.55 + 0.45 * mx) * 0.95, flw);
           #endif
           diffuseColor.rgb = c * mix(1.0, vAO, 0.85 * (1.0 - flw));
           leafT = diffuseColor.rgb * (1.0 - flw);
@@ -86,7 +88,7 @@ function leafMaterial(flowers) {
         {
           vec3 vd = normalize(vLW - cameraPosition);
           float tr = pow(max(dot(vd, normalize(uSun)), 0.0), 5.0);
-          totalEmissiveRadiance += leafT * ${ENV.SUN_COLOR.r.toFixed(3)} * vec3(1.0, 0.95, 0.75) * tr * 1.2 * vAO;
+          totalEmissiveRadiance += leafT * uLeafSunColor * tr * 0.8 * vAO * uLeafDaylight;
         }`);
   };
   return m;
@@ -96,14 +98,16 @@ function frondMaterial() {
   m.customProgramCacheKey = () => 'frond6';
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = U.time; sh.uniforms.uSun = { value: sunDir };
+    sh.uniforms.uLeafDaylight = { get value() { return ENV.COND_STATE.daylight; } };
+    sh.uniforms.uLeafSunColor = { value: ENV.SUN_COLOR };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aAO; attribute float aDry; varying float vAO; varying float vDry; varying vec3 vLW; uniform float uTime;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvAO = aAO; vDry = aDry;\n' + FOLIAGE_VS('0.09'))
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvLW = (modelMatrix * vec4(transformed, 1.0)).xyz;\n#ifdef USE_INSTANCING\nvLW = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;\n#endif');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vAO; varying float vDry; varying vec3 vLW; uniform vec3 uSun;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vAO; varying float vDry; varying vec3 vLW; uniform vec3 uSun; uniform float uLeafDaylight; uniform vec3 uLeafSunColor;')
       .replace('#include <color_fragment>', `#include <color_fragment>
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.4))) * vec3(1.6, 1.25, 0.8), vDry) * (0.55 + 0.45 * vAO);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        { vec3 vd = normalize(vLW - cameraPosition); float tr = pow(max(dot(vd, normalize(uSun)), 0.0), 5.0); totalEmissiveRadiance += diffuseColor.rgb * vec3(1.0, 0.95, 0.7) * tr * 1.5; }`);
+        { vec3 vd = normalize(vLW - cameraPosition); float tr = pow(max(dot(vd, normalize(uSun)), 0.0), 5.0); totalEmissiveRadiance += diffuseColor.rgb * uLeafSunColor * tr * 0.9 * uLeafDaylight; }`);
   };
   return m;
 }
@@ -140,6 +144,88 @@ function rockMaterial() {
   return m;
 }
 
+/** A small deterministic atlas for species absent from the photographed leaf atlas.
+ * Transparent space is kept between leaves; these are cutout cards, never opaque canopy shells. */
+function rivieraFoliageAtlas() {
+  return canvasTex(1024, 1024, (ctx) => {
+    const r = new RNG(813);
+    const line = (x0, y0, x1, y1, color, width) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); };
+    const leaf = (x, y, a, length, width, color) => { ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(0, -length / 2, width / 2, length / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); };
+    // Washingtonia: radial, deeply divided fans rather than pinnate date-palm leaves.
+    line(256, 505, 256, 335, '#81834c', 12);
+    for (let j = 0; j < 37; j++) {
+      const a = -1.43 + j / 36 * 2.86, len = r.range(245, 310);
+      const x = 256 + Math.sin(a) * len * 0.79, y = 338 - Math.cos(a) * len;
+      ctx.fillStyle = r.pick(['#667c42', '#79904e', '#84994f', '#526c3f']);
+      ctx.beginPath(); ctx.moveTo(256, 345); ctx.lineTo(x - 6, y + 8); ctx.lineTo(x + 6, y); ctx.closePath(); ctx.fill();
+      line(256, 345, x, y + 8, '#a8ae70', 1.4);
+    }
+    // Silvery olive: opposite pairs of narrow leaves on airy branching sprays.
+    for (let b = 0; b < 5; b++) {
+      const bx = 745 + (b - 2) * 16, tx = 570 + b * 85;
+      line(bx, 506, tx, 60 + Math.abs(b - 2) * 30, '#837763', 5);
+      for (let j = 1; j < 13; j++) {
+        const t = j / 13, x = bx + (tx - bx) * t, y = 506 - (446 - Math.abs(b - 2) * 30) * t;
+        for (const side of [-1, 1]) leaf(x, y, side * 0.8 + (b - 2) * 0.13, r.range(38, 59), 9, r.pick(['#9ca58a', '#b6bca0', '#7e8e70', '#8c9b79']));
+      }
+    }
+    // Bougainvillea: angular papery bracts among green leaves. White bracts take instance tint.
+    for (let b = 0; b < 6; b++) {
+      const bx = 80 + b * 64;
+      line(255, 1020, bx, 610, '#716043', 5);
+      for (let j = 0; j < 10; j++) {
+        const t = j / 10, x = 255 + (bx - 255) * t, y = 1010 - 390 * t;
+        leaf(x, y, (b % 2 ? 1 : -1) * 0.8, 47, 25, '#62783b');
+        if (j > 3) for (let k = 0; k < 3; k++) {
+          ctx.save(); ctx.translate(x + r.range(-16, 16), y - 20); ctx.rotate(k * 2.1);
+          ctx.fillStyle = r.pick(['#f5f0ec', '#d9d9d4', '#fff9f3']); ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(-18, -13); ctx.quadraticCurveTo(-8, -37, 13, -31); ctx.lineTo(18, -10); ctx.closePath(); ctx.fill(); ctx.restore();
+        }
+      }
+    }
+    // Phrygana: wiry thyme / sage stems, seedheads and sparse drought-grey leaves.
+    for (let b = 0; b < 35; b++) {
+      const bx = r.range(685, 840), tx = r.range(540, 993), ty = r.range(570, 830);
+      line(bx, 1020, tx, ty, r.pick(['#afa17b', '#8c8f63', '#aaa98b']), 2.5);
+      for (let j = 2; j < 8; j++) { const t = j / 8; leaf(bx + (tx - bx) * t, 1020 + (ty - 1020) * t, r.range(-1, 1), r.range(13, 25), 5, '#92967a'); }
+      ctx.fillStyle = '#bca687'; ctx.beginPath(); ctx.ellipse(tx, ty, 4, 8, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }, { aniso: 4 });
+}
+
+function makeFanPalm() {
+  const parts = [];
+  for (let i = 0; i < 18; i++) {
+    const g = new THREE.PlaneGeometry(2.35, 2.9, 1, 3); g.translate(0, 1.45, 0);
+    const p = g.attributes.position, uv = g.attributes.uv;
+    for (let k = 0; k < p.count; k++) {
+      const t = p.getY(k) / 2.9;
+      p.setZ(k, -t * t * (i < 6 ? 0.4 : 1.1));
+      uv.setXY(k, uv.getX(k) * 0.5, 0.5 + uv.getY(k) * 0.5);
+    }
+    g.setAttribute('aAO', new THREE.Float32BufferAttribute(Array.from({ length: p.count }, (_, k) => 0.55 + 0.45 * p.getY(k) / 2.9), 1));
+    g.computeVertexNormals(); g.applyMatrix4(M(0, 0, 0, i < 6 ? -0.45 : i < 13 ? -1.1 : -1.8, i * 2.39996, 0, 1, 1, 1, 'YXZ')); parts.push(g);
+  }
+  return mergeGeosAttr(parts, ['aAO']);
+}
+
+function makeAgave() {
+  const parts = [];
+  for (let i = 0; i < 15; i++) {
+    const a = i * 2.39996, outer = i < 10, len = outer ? 1.2 : 0.8;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, -0.17, 0.32, -len * 0.42, 0, 0.41, -len * 0.44, 0.17, 0.32, -len * 0.42, 0, outer ? 0.44 : 1.1, -len], 3));
+    g.setIndex([0, 1, 2, 0, 2, 3, 1, 4, 2, 2, 4, 3]); g.computeVertexNormals(); g.rotateY(a); parts.push(g);
+  }
+  return mergeGeos(parts);
+}
+function makePricklyPear() {
+  const parts = [];
+  for (const [x, y, z, a, sx, sy] of [[0, 0.42, 0, 0, 0.28, 0.47], [-0.3, 1.0, 0, -0.5, 0.28, 0.43], [0.36, 1.05, 0, 0.5, 0.29, 0.44], [-0.51, 1.51, 0, -0.15, 0.21, 0.33], [0.22, 1.65, 0.02, -0.2, 0.23, 0.35], [0.48, 0.52, 0.1, 0.8, 0.2, 0.3]]) {
+    const g = new THREE.SphereGeometry(1, 8, 5); g.scale(sx, sy, 0.065); g.rotateZ(a); g.translate(x, y, z); parts.push(g);
+  }
+  return mergeGeos(parts);
+}
+
 function makePalm() {
   // trunk: tall, slightly curved, leaf-scar rings (bark texture), UVs in metres for a ~10 m palm
   const trunk = new THREE.CylinderGeometry(0.22, 0.34, 1, 12, 16, true); trunk.translate(0, 0.5, 0);
@@ -150,10 +236,10 @@ function makePalm() {
   // crown: ~34 arching fronds in three generations (young upright, mature, old drooping and drying)
   const R = new RNG(5);
   const parts = [];
-  for (let i = 0; i < 40; i++) {
-    const gen = i < 9 ? 0 : i < 28 ? 1 : 2;
+  for (let i = 0; i < 28; i++) {
+    const gen = i < 6 ? 0 : i < 20 ? 1 : 2;
     const L = gen === 0 ? R.range(3.2, 3.8) : R.range(3.8, 4.6);
-    const fr = new THREE.PlaneGeometry(1.9, L, 2, 12); fr.translate(0, L / 2, 0);
+    const fr = new THREE.PlaneGeometry(1.9, L, 1, 6); fr.translate(0, L / 2, 0);
     const fp = fr.attributes.position;
     const rise = gen === 0 ? 1.15 : gen === 1 ? R.range(0.5, 0.8) : R.range(0.05, 0.35);
     const droop = gen === 0 ? 0.25 : gen === 1 ? 0.75 : 1.25;
@@ -188,8 +274,8 @@ function makePine(seed) {
   for (let i = 0; i < 6; i++) {
     const sx = r.range(1.6, 2.6), sy = r.range(0.8, 1.2), sz = r.range(1.6, 2.6);
     const cx = r.range(-2, 2), cy = r.range(-0.6, 0.6), cz = r.range(-2, 2);
-    const g = blobGeo(1, seed * 10 + i, sx * 0.8, sy * 0.78, sz * 0.8); g.translate(cx, cy, cz); coreParts.push(g);
-    const c = cardCluster(26, seed * 100 + i, ATL.pine, { r: [sx, sy, sz], cy: 0, w: 1.7, h: 1.7, tilt: 0.9, outward: 0.6, shell: 0.75 });
+    const g = cardCluster(4, seed * 10 + i, ATL.pine, { r: [sx * 0.7, sy * 0.6, sz * 0.7], w: 3.1, h: 2.1, shell: 0.55 }); g.translate(cx, cy, cz); coreParts.push(g);
+    const c = cardCluster(18, seed * 100 + i, ATL.pine, { r: [sx, sy, sz], cy: 0, w: 1.7, h: 1.7, tilt: 0.9, outward: 0.6, shell: 0.75 });
     c.translate(cx, cy, cz); cardParts.push(c);
   }
   return { trunk, core: mergeGeos(coreParts), cards: mergeGeosAttr(cardParts, ['aAO']) };
@@ -221,24 +307,6 @@ export function mergeGeos(list) {
   out.setAttribute('aAO', new THREE.Float32BufferAttribute(ao, 1));
   out.computeBoundingSphere();
   return out;
-}
-function blobGeo(detail, seed, sx = 1, sy = 1, sz = 1) {
-  // smooth, lumpy foliage clump: welded vertices (soft shading), spherical UVs, baked ambient occlusion
-  let g = new THREE.IcosahedronGeometry(1, detail);
-  g.deleteAttribute('normal'); g.deleteAttribute('uv');
-  g = mergeVertices(g, 1e-4);
-  const p = g.attributes.position;
-  const uv = new Float32Array(p.count * 2), ao = new Float32Array(p.count);
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    const n = 0.78 + 0.22 * vnoise(x * 2.1 + seed, y * 2.1 + z * 1.7 + seed * 3) + 0.14 * vnoise(x * 5.3 + seed * 2, z * 5.1 - y * 4.7);
-    p.setXYZ(i, x * n * sx, y * n * sy, z * n * sz);
-    uv[i * 2] = Math.atan2(z, x) / (Math.PI * 2) * 3 + 0.5; uv[i * 2 + 1] = y * 1.5 + 0.5;
-    ao[i] = 0.45 + 0.55 * Math.min(1, Math.max(0, (y + 0.75) / 1.6)) * (0.8 + 0.2 * n);
-  }
-  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setAttribute('aAO', new THREE.BufferAttribute(ao, 1));
-  g.computeVertexNormals();
-  return g;
 }
 /** foliage: lumpy normals, darker inside, light shining through the edges; flowers from the instance colour */
 export function foliageMaterial(color, { map = null, flowers = 0 } = {}) {
@@ -274,13 +342,6 @@ export function foliageMaterial(color, { map = null, flowers = 0 } = {}) {
         totalEmissiveRadiance += diffuseColor.rgb * 0.06 * (1.0 - vAO);`);
   };
   return mat;
-}
-function pineCanopy(seed) {
-  // Aleppo pine: umbrella of several flattened clumps on a leaning trunk
-  const r = new RNG(seed);
-  const parts = [];
-  for (let i = 0; i < 6; i++) { const g = blobGeo(1, seed + i, r.range(1.6, 2.6), r.range(0.8, 1.2), r.range(1.6, 2.6)); g.translate(r.range(-2, 2), r.range(-0.6, 0.6), r.range(-2, 2)); parts.push(g); }
-  return mergeGeos(parts);
 }
 function rockGeo(seed) {
   const g = new THREE.IcosahedronGeometry(1, 1);
@@ -327,35 +388,43 @@ export function buildNature(map, scene, heightC, bld, assets) {
   const group = new THREE.Group(); scene.add(group);
   const rng = new RNG(2024);
   const pineTrunkMat = barkMaterial('pinebark', '#b8a898', 1.6);
-  const bushCoreMat = foliageMaterial('#4a6232', { flowers: 0.0 });
   const rockMat = rockMaterial();
 
-  // ---- species: a dense low-poly core (always drawn, the far LOD) + a shell of leaf cards (near LOD)
+  // Close leaf cards cross-fade into coarse cutout sprays. No opaque foliage blobs.
   const leafMat = leafMaterial(false), flowerMat = leafMaterial(true), frondMat = frondMaterial();
+  const extraAtlas = rivieraFoliageAtlas(), extraMat = leafMaterial(false, extraAtlas), extraFlowerMat = leafMaterial(true, extraAtlas);
   const palmT = makePalm(), pineT = [makePine(1), makePine(2), makePine(3)];
-  const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 1800 });
-  const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1800, cell: 300 });
+  const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 2400 });
+  const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1600, cell: 400, colors: true });
+  const fanCrown = new CellInstances(makeFanPalm(), extraMat, { far: 1800, cell: 400, colors: true });
   const palmBoot = new CellInstances(palmT.boot, barkMaterial('palmbark', '#a89880', 1.0), { far: 700, shadow: false });
-  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: 500, far: 1200 });
-  const pineCore = pineT.map((t) => new CellInstances(t.core, foliageMaterial('#41562a'), { cell: 500, far: 2400 }));
-  const pineCards = pineT.map((t) => new CellInstances(t.cards, leafMat, { cell: 250, far: 420, colors: true }));
-  const bushCores = [blobGeo(1, 5, 0.72, 0.55, 0.72), blobGeo(1, 9, 0.76, 0.48, 0.7)];
-  const oleCards = [cardCluster(46, 11, ATL.oleander, { r: [0.95, 0.75, 0.95], cy: 0, w: 0.95, h: 0.95, shell: 0.7 }), cardCluster(46, 12, ATL.oleander, { r: [1.0, 0.65, 0.9], cy: 0, w: 0.95, h: 0.95, shell: 0.7 })];
-  const lenCards = [cardCluster(34, 13, ATL.lentisk, { r: [0.95, 0.72, 0.95], cy: 0, w: 1.0, h: 1.0, shell: 0.7 }), cardCluster(34, 14, ATL.lentisk, { r: [1.0, 0.62, 0.9], cy: 0, w: 1.0, h: 1.0, shell: 0.7 })];
-  const bushCore = bushCores.map((g) => new CellInstances(g, bushCoreMat, { colors: true, cell: 400, far: 650, shadow: false }));
+  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: 500, far: 2000 });
+  const pineCore = pineT.map((t) => new CellInstances(t.core, leafMat, { cell: 500, near: 390, far: 2600, colors: true, shadow: false }));
+  const pineCards = pineT.map((t) => new CellInstances(t.cards, leafMat, { cell: 250, far: 500, colors: true }));
+  const oleCards = [11, 12].map((seed) => cardCluster(30, seed, ATL.oleander, { r: [0.95, 0.7, 0.9], w: 1.1, h: 1.1, shell: 0.65 }));
+  const lenCards = [13, 14].map((seed) => cardCluster(24, seed, ATL.lentisk, { r: [0.95, 0.65, 0.9], w: 1.05, h: 1.05, shell: 0.65 }));
+  const bushCore = [13, 14].map((seed) => new CellInstances(cardCluster(7, seed, ATL.lentisk, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), leafMat, { colors: true, cell: 400, near: 234, far: 900, shadow: false }));
+  const oleFar = [11, 12].map((seed) => new CellInstances(cardCluster(8, seed, ATL.oleander, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), flowerMat, { colors: true, cell: 400, near: 234, far: 900, shadow: false }));
   const oleI = oleCards.map((g) => new CellInstances(g, flowerMat, { colors: true, cell: 250, far: 300, shadow: false }));
   const lenI = lenCards.map((g) => new CellInstances(g, leafMat, { colors: true, cell: 250, far: 300, shadow: false }));
   const rocks = [rockGeo(1), rockGeo(2), rockGeo(3)].map((g) => new CellInstances(g, rockMat, { colors: true, cell: 400, far: 900, shadow: false }));
-  const cypCoreGeo = blobGeo(1, 3, 0.7, 4.3, 0.7); cypCoreGeo.translate(0, 4.2, 0);
-  const cypCards = cardCluster(56, 21, ATL.pine, { r: [0.85, 4.4, 0.85], cy: 4.2, w: 0.9, h: 1.1, tilt: 0.25, outward: 0.3 });
-  const cypCore = new CellInstances(cypCoreGeo, foliageMaterial('#34451f'), { far: 1500 });
-  const cypI = new CellInstances(cypCards, leafMat, { far: 380, cell: 250, colors: true });
-  const cypress = { add: (m) => { cypCore.add(m); cypI.add(m, CYP_TINT); } };
-  const orangeCoreGeo = blobGeo(1, 12, 1.1, 0.95, 1.1); orangeCoreGeo.translate(0, 2.9, 0);
-  const orangeCards = cardCluster(110, 31, ATL.citrus, { r: [1.5, 1.25, 1.5], cy: 2.9, w: 1.15, h: 1.15, shell: 0.72 });
-  const orangeCore = new CellInstances(orangeCoreGeo, foliageMaterial('#2f4a1c'), { far: 1100 });
-  const orangeI = new CellInstances(orangeCards, leafMat, { far: 380, cell: 250, colors: true });
-  const fruitGeo = new THREE.IcosahedronGeometry(0.075, 1);
+  const cypCards = cardCluster(46, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 0.85, h: 1.5, tilt: 0.15, outward: 0.2 });
+  const cypCore = new CellInstances(cardCluster(16, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 1.0, h: 2.0, tilt: 0.15, outward: 0.2 }), leafMat, { near: 390, far: 2200, colors: true, shadow: false });
+  const cypI = new CellInstances(cypCards, leafMat, { far: 500, cell: 250, colors: true });
+  const cypress = { add: (m) => { cypCore.add(m, CYP_TINT); cypI.add(m, CYP_TINT); } };
+  const orangeCards = cardCluster(64, 31, ATL.citrus, { r: [1.5, 1.25, 1.5], cy: 2.9, w: 1.3, h: 1.3, shell: 0.65 });
+  const orangeCore = new CellInstances(cardCluster(16, 31, ATL.citrus, { r: [1.3, 1.05, 1.3], cy: 2.9, w: 1.8, h: 1.8 }), leafMat, { near: 390, far: 1700, colors: true, shadow: false });
+  const orangeI = new CellInstances(orangeCards, leafMat, { far: 500, cell: 250, colors: true });
+  const oliveCards = new CellInstances(cardCluster(54, 63, EXTRA.olive, { r: [2.1, 1.45, 1.9], cy: 3.2, w: 1.9, h: 1.8 }), extraMat, { far: 500, cell: 300, colors: true });
+  const oliveFar = new CellInstances(cardCluster(15, 63, EXTRA.olive, { r: [1.9, 1.25, 1.7], cy: 3.2, w: 2.3, h: 2.2 }), extraMat, { near: 390, far: 2100, cell: 500, colors: true, shadow: false });
+  const oliveTrunkGeo = mergeGeos([-1, 1].map((side) => { const g = new THREE.CylinderGeometry(0.08, 0.24, 2.8, 7); g.rotateZ(side * 0.25); g.translate(side * 0.2, 1.35, 0); return g; }));
+  const oliveTrunks = new CellInstances(oliveTrunkGeo, pineTrunkMat, { far: 1200, cell: 500 });
+  const bougainvillea = new CellInstances(cardCluster(22, 88, EXTRA.bougainvillea, { r: [1.1, 0.85, 0.75], cy: 0.6, w: 1.2, h: 1.5 }), extraFlowerMat, { far: 650, cell: 350, colors: true, shadow: false });
+  const phrygana = new CellInstances(cardCluster(6, 97, EXTRA.scrub, { r: [0.5, 0.15, 0.5], cy: 0.3, w: 1.0, h: 0.85, outward: 0.25 }), extraMat, { far: 450, cell: 350, colors: true, shadow: false });
+  const succulentMat = new THREE.MeshStandardMaterial({ color: '#96ab86', roughness: 0.83, side: THREE.DoubleSide });
+  const agave = new CellInstances(makeAgave(), succulentMat, { far: 600, cell: 350, colors: true, shadow: false });
+  const pricklyPear = new CellInstances(makePricklyPear(), succulentMat, { far: 700, cell: 350, colors: true, shadow: false });
+  const fruitGeo = new THREE.IcosahedronGeometry(0.075, 0);
   const smallTrunkGeo = new THREE.CylinderGeometry(0.07, 0.11, 2.3, 7); smallTrunkGeo.translate(0, 1.15, 0); barkUV(smallTrunkGeo, 0.6);
   const smallTrunks = new CellInstances(smallTrunkGeo, pineTrunkMat, { far: 700, shadow: false });
   const fruitPos = [];
@@ -367,13 +436,14 @@ export function buildNature(map, scene, heightC, bld, assets) {
   const leafTint = () => new THREE.Color().setRGB(rng.range(0.85, 1.1), rng.range(0.9, 1.1), rng.range(0.8, 1.0));
 
   const addPalm = (x, y, z, h = rng.range(8, 14)) => {
-    const yaw = rng.range(0, 6.28);
-    palmTrunk.add(M(x, y - 0.2, z, 0, yaw, 0, 1, h, 1, 'YXZ'));
+    const yaw = rng.range(0, 6.28), fan = rng.chance(0.56), thickness = fan ? rng.range(0.7, 0.95) : rng.range(1.25, 1.65);
+    if (!fan) h *= 0.72;
+    palmTrunk.add(M(x, y - 0.2, z, 0, yaw, 0, thickness, h, thickness, 'YXZ'));
     // trunk top offset from the curvature in the template
-    const off = Math.sin(2.2) * 0.25;
+    const off = Math.sin(2.2) * 0.25 * thickness;
     const cx = x + Math.cos(yaw) * off, cz = z - Math.sin(yaw) * off;
     const sc = rng.range(0.9, 1.15);
-    palmCrown.add(M(cx, y + h - 0.3, cz, 0, rng.range(0, 6.28), 0, sc, sc, sc, 'YXZ'));
+    (fan ? fanCrown : palmCrown).add(M(cx, y + h - 0.3, cz, 0, rng.range(0, 6.28), 0, sc, sc, sc, 'YXZ'), leafTint());
     palmBoot.add(M(cx, y + h - 0.3, cz, 0, rng.range(0, 6.28), 0, 1, 1, 1));
   };
   const addPine = (x, y, z, h = rng.range(7, 13)) => {
@@ -382,20 +452,35 @@ export function buildNature(map, scene, heightC, bld, assets) {
     const tx = x + Math.sin(yaw) * Math.sin(lean) * h, tz = z + Math.cos(yaw) * Math.sin(lean) * h;
     const sc = h / 10, k = rng.int(0, 2);
     const m = M(tx, y + h - 0.6, tz, 0, rng.range(0, 6.28), 0, sc * rng.range(0.9, 1.2), sc, sc * rng.range(0.9, 1.2), 'YXZ');
-    pineCore[k].add(m); pineCards[k].add(m, leafTint());
+    const tint = leafTint(); pineCore[k].add(m, tint); pineCards[k].add(m, tint);
   };
   const addBush = (x, y, z, s, colors) => {
     const k = rng.int(0, 1), c = rng.pick(colors);
     const m = M(x, y + s * 0.35, z, 0, rng.range(0, 6.28), 0, s, s * rng.range(0.7, 1.1), s, 'YXZ');
-    if (colors === OLEANDER) { bushCore[k].add(m, OLE_CORE); oleI[k].add(m, c); }
+    if (colors === OLEANDER) { oleFar[k].add(m, c); oleI[k].add(m, c); }
     else { bushCore[k].add(m, c); lenI[k].add(m, c); }
   };
   const addRock = (x, y, z, s) => { rng.pick(rocks).add(M(x, y - s * 0.25, z, rng.range(-0.3, 0.3), rng.range(0, 6.28), rng.range(-0.3, 0.3), s, s, s, 'YXZ'), rng.pick(ROCKC)); };
   const addOrange = (x, y, z) => {
     smallTrunks.add(M(x, y, z, 0, 0, 0, 1)); const sc = rng.range(0.8, 1.1); const m = M(x, y, z, 0, rng.range(0, 6), 0, sc, sc, sc, 'YXZ');
-    orangeCore.add(m); orangeI.add(m, leafTint());
+    const tint = leafTint(); orangeCore.add(m, tint); orangeI.add(m, tint);
     for (let i = 0; i < 12; i++) { const a = rng.range(0, 6.28), r = rng.range(1.0, 1.5) * sc; fruitPos.push([x + Math.cos(a) * r, y + 2.9 * sc + rng.range(-0.9, 0.7), z + Math.sin(a) * r]); }
   };
+
+  // A separate stream varies species while keeping every tree's placement reproducible.
+  const variety = new RNG(9163);
+  const BOUGAINVILLEA = ['#d8429b', '#b438b4', '#ee6ba9', '#faf1dd', '#e86955'].map((c) => new THREE.Color(c));
+  const addOlive = (x, y, z) => {
+    const sc = variety.range(0.8, 1.35), m = M(x, y, z, 0, variety.range(0, 6.28), 0, sc, sc * variety.range(0.85, 1.1), sc, 'YXZ');
+    const tint = new THREE.Color().setRGB(variety.range(0.9, 1.1), variety.range(0.96, 1.12), variety.range(0.9, 1.06));
+    oliveTrunks.add(m); oliveCards.add(m, tint); oliveFar.add(m, tint);
+  };
+  const addDryPlant = (x, y, z, scale = 1) => {
+    const n = variety.next(), plant = n < 0.12 ? agave : n < 0.2 ? pricklyPear : phrygana;
+    const sc = scale * variety.range(0.65, 1.3), tint = new THREE.Color().setRGB(variety.range(0.85, 1.15), variety.range(0.88, 1.05), variety.range(0.78, 1.05));
+    plant.add(M(x, y, z, 0, variety.range(0, 6.28), 0, sc, sc * variety.range(0.8, 1.2), sc, 'YXZ'), tint);
+  };
+  const addBougainvillea = (x, y, z) => { const sc = variety.range(0.8, 1.35); bougainvillea.add(M(x, y, z, 0, variety.range(0, 6.28), 0, sc, sc, sc, 'YXZ'), variety.pick(BOUGAINVILLEA)); };
 
   // free ground test: on land, not in a building, not on the road or pavement
   const onRoad = (x, z, pad = 1.2) => {
@@ -423,7 +508,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
       const sea = side > 0 ? route.seaR(s) : route.seaL(s);
       const sw = ROAD.sidewalk(route, s, side);
       if (urb > 0.5) {
-        if (sea < 140 && s % 14 === (side > 0 ? 0 : 7)) { route.point(s, side * (e + sw - 1.0), pt); addPalm(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
+        if (sea < 140 && s % 14 === (side > 0 ? 0 : 6)) { route.point(s, side * (e + sw - 1.0), pt); addPalm(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
         else if (sea >= 140 && s % 10 === 4) { route.point(s, side * (e + 1.2), pt); if (!bld.inBuilding(pt.x, pt.z, 0.5)) addOrange(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
       } else {
         // cliff road: maquis on the verges, rocks below the guard rail, the odd pine
@@ -433,7 +518,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
     }
   }
   // ---- 2. OSM trees
-  for (const [x, z, palmF] of data.trees) { const h = free(x, z, 0.3); if (h === null) continue; if (palmF) addPalm(x, h, z); else if (rng.chance(0.5)) addPine(x, h, z, rng.range(6, 11)); else addOrange(x, h, z); }
+  for (const [x, z, palmF] of data.trees) { const h = free(x, z, 0.3); if (h === null) continue; if (palmF) addPalm(x, h, z); else if (rng.chance(0.58)) addPine(x, h, z, rng.range(6, 11)); else if (variety.chance(0.45)) addOlive(x, h, z); else addOrange(x, h, z); }
   // ---- 3. land-use areas
   const scatter = (poly, density, maxN, fn) => {
     const b = polyBounds(poly.p); const area = Math.abs(polyArea(poly.p));
@@ -447,15 +532,15 @@ export function buildNature(map, scene, heightC, bld, assets) {
     }
   };
   for (const a of data.areas.wood) if (a.c) scatter(a, 1 / 70, 900, (x, y, z) => addPine(x, y, z));
-  for (const a of data.areas.park) if (a.c) scatter(a, 1 / 110, 120, (x, y, z) => { const r = rng.next(); if (r < 0.5) addPine(x, y, z); else if (r < 0.75) addPalm(x, y, z); else addBush(x, y, z, rng.range(0.8, 1.6), MAQUIS); });
-  for (const a of data.areas.scrub) if (a.c) scatter(a, 1 / 45, 700, (x, y, z, du) => { if (rng.chance(0.85)) addBush(x, y, z, rng.range(0.6, 1.5), MAQUIS); else addRock(x, y, z, rng.range(0.5, 1.4)); });
+  for (const a of data.areas.park) if (a.c) scatter(a, 1 / 110, 120, (x, y, z) => { const r = rng.next(); if (r < 0.45) addPine(x, y, z); else if (r < 0.65) addPalm(x, y, z); else if (r < 0.85) addOlive(x, y, z); else addBush(x, y, z, rng.range(0.8, 1.6), MAQUIS); });
+  for (const a of data.areas.scrub) if (a.c) scatter(a, 1 / 45, 700, (x, y, z, du) => { if (variety.chance(0.57)) addDryPlant(x, y, z); else if (rng.chance(0.85)) addBush(x, y, z, rng.range(0.6, 1.5), MAQUIS); else addRock(x, y, z, rng.range(0.5, 1.4)); });
   for (const a of data.areas.rock) if (a.c) scatter(a, 1 / 30, 600, (x, y, z) => addRock(x, y, z, rng.range(0.5, 2.2)));
   // gardens of the villas (Kavouri / Vouliagmeni): pines, cypresses, oleanders between houses
   for (let s = 5800; s < 11000; s += 3.2) for (const side of [1, -1]) {
     const u = side * (rng.chance(0.6) ? rng.range(12, 70) : rng.range(70, 320)); route.point(s, u, pt);
     const h = free(pt.x, pt.z, 3); if (h === null) continue;
     const r = rng.next();
-    if (r < 0.45) addPine(pt.x, h, pt.z); else if (r < 0.6) cypress.add(M(pt.x, h - 0.3, pt.z, 0, 0, 0, rng.range(0.7, 1.1), rng.range(0.8, 1.2), rng.range(0.7, 1.1))); else addBush(pt.x, h, pt.z, rng.range(0.8, 1.6), r < 0.8 ? OLEANDER : MAQUIS);
+    if (r < 0.38) addPine(pt.x, h, pt.z); else if (r < 0.53) addOlive(pt.x, h, pt.z); else if (r < 0.66) cypress.add(M(pt.x, h - 0.3, pt.z, 0, variety.range(0, 6.28), 0, rng.range(0.7, 1.1), rng.range(0.8, 1.2), rng.range(0.7, 1.1))); else if (r < 0.8) addBougainvillea(pt.x, h, pt.z); else addBush(pt.x, h, pt.z, rng.range(0.8, 1.6), r < 0.91 ? OLEANDER : MAQUIS);
   }
   // the cliff road (Limanakia, past Varkiza, Lomvarda): boulders along the rocky shoreline and on the cliffs below the road
   for (let s = 0; s < route.length; s += 3) for (let k = 0; k < 2; k++) {
@@ -466,7 +551,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
     if (onRoad(pt.x, pt.z, 1)) continue;
     const nearSea = h < 4;
     if (nearSea || rng.chance(0.4)) addRock(pt.x, Math.max(h, -0.3), pt.z, nearSea ? rng.range(0.8, 3.2) : rng.range(0.5, 1.6));
-    else addBush(pt.x, h, pt.z, rng.range(0.5, 1.2), MAQUIS);
+    else if (variety.chance(0.6)) addDryPlant(pt.x, h, pt.z); else addBush(pt.x, h, pt.z, rng.range(0.5, 1.2), MAQUIS);
   }
   // breakwaters: rubble mounds of limestone blocks
   for (const a of data.areas.breakwater) {
@@ -476,7 +561,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
       for (let d = 0; d < L; d += 2.2) { const t = d / L; addRock(ax + (bx - ax) * t + rng.range(-1.5, 1.5), 0.6, az + (bz - az) * t + rng.range(-1.5, 1.5), rng.range(1.0, 2.0)); }
     }
   }
-  for (const c of [palmTrunk, palmCrown, palmBoot, pineTrunk, ...pineCore, ...pineCards, ...bushCore, ...oleI, ...lenI, ...rocks, cypCore, cypI, orangeCore, orangeI, smallTrunks]) c.build(group);
+  for (const c of [palmTrunk, palmCrown, fanCrown, palmBoot, pineTrunk, ...pineCore, ...pineCards, ...bushCore, ...oleFar, ...oleI, ...lenI, ...rocks, cypCore, cypI, orangeCore, orangeI, smallTrunks, oliveTrunks, oliveCards, oliveFar, bougainvillea, phrygana, agave, pricklyPear]) c.build(group);
   {
     const fruit = new CellInstances(fruitGeo, new THREE.MeshStandardMaterial({ color: '#f07a10', roughness: 0.42 }), { cell: 300, far: 260, shadow: false });
     for (const [x, y, z] of fruitPos) fruit.add(M(x, y, z));
@@ -588,7 +673,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
 }
 
 function buildSideStreets(list, group, heightC, route) {
-  const pos = [], col = [], idx = [];
+  const pos = [], col = [], idx = [], shadingRng = new RNG(451);
   const asph = new THREE.Color('#3a3a3c'), foot = new THREE.Color('#b9b1a1');
   for (const r of list) {
     const p = r.p; const n = p.length / 2; if (n < 2) continue;
@@ -610,7 +695,7 @@ function buildSideStreets(list, group, heightC, route) {
         const x = pts[i][0] + rx * hw * sd, z = pts[i][1] + rz * hw * sd;
         const h = heightC(x, z);
         pos.push(x, Math.max(h, 0.1) + 0.06, z);
-        const sh = 0.9 + Math.random() * 0.15; col.push(c.r * sh, c.g * sh, c.b * sh);
+        const sh = shadingRng.range(0.9, 1.05); col.push(c.r * sh, c.g * sh, c.b * sh);
       }
       if (i > 0) { const v = base + (rows - 1) * 2; idx.push(v, v + 2, v + 1, v + 1, v + 2, v + 3); }
       rows++;

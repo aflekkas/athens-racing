@@ -7,6 +7,7 @@
 //  -> final: exposure, filmic tone mapping (AgX, punchy), white balance + split-tone grade, chromatic aberration,
 //     sun glare and lens ghosts, vignette, film grain, gameplay flashes (nitro / impact / fade).
 import * as THREE from 'three';
+import * as ENV from './env.js';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
@@ -87,20 +88,29 @@ const CompositeShader = {
     uCamWorld: { value: new THREE.Matrix4() }, uPrevVP: { value: new THREE.Matrix4() }, uBlur: { value: 0 },
     uCarInv: { value: [new THREE.Matrix4(), new THREE.Matrix4()] }, uCarHalf: { value: [new THREE.Vector3(1, 1, 2.5), new THREE.Vector3(1, 1, 2.5)] },
     uAO: { value: 0.85 }, uRes: { value: new THREE.Vector2() }, uTime: { value: 0 },
-    uDof: { value: 0 }, uFocus: { value: 10 },
+    uHeat: { value: 0 }, uDof: { value: 0 }, uFocus: { value: 10 },
   },
   vertexShader: VS,
   fragmentShader: /* glsl */`
     varying vec2 vUv; uniform sampler2D tColor; uniform sampler2D tAO; uniform vec2 uRes; uniform float uTime;
     uniform mat4 uCamWorld; uniform mat4 uPrevVP; uniform float uBlur; uniform mat4 uCarInv[2]; uniform vec3 uCarHalf[2];
-    uniform float uAO; uniform float uDof; uniform float uFocus;
+    uniform float uAO; uniform float uHeat; uniform float uDof; uniform float uFocus;
     ${DEPTH_GLSL}
     float hh(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
     bool inCar(vec3 wp, int i){ vec3 l = (uCarInv[i] * vec4(wp, 1.0)).xyz; return all(lessThan(abs(l - vec3(0.0, uCarHalf[i].y, 0.0)), uCarHalf[i])); }
     void main(){
       float d = rawDepth(vUv);
       vec3 P = viewPos(vUv, min(d, 0.999999));
-      vec3 col = texture2D(tColor, vUv).rgb;
+      vec2 sampleUV = vUv;
+      // Sub-pixel refraction only on distant, nearly horizontal sight lines.
+      if (uHeat > 0.0) {
+      vec3 ray = normalize((uCamWorld * vec4(P, 0.0)).xyz);
+      float heat = uHeat * smoothstep(450.0, 1800.0, -P.z) * (1.0 - smoothstep(0.025, 0.11, abs(ray.y)));
+      vec2 wobble = vec2(sin(vUv.y * 340.0 + uTime * 1.7), sin(vUv.x * 280.0 - uTime * 1.2));
+      vec2 refracted = vUv + wobble * heat * 0.45 / uRes;
+      if (abs(rawDepth(refracted) - d) < 0.0002) sampleUV = refracted;
+      }
+      vec3 col = texture2D(tColor, sampleUV).rgb;
       float j = hh(gl_FragCoord.xy + fract(uTime * 7.0) * 61.0);
       // ---- depth of field (orbit / garage cameras)
       if (uDof > 0.0) {
@@ -255,13 +265,15 @@ const FinalShader = {
 };
 
 export const PHOTO_FILTERS = ['neutral', 'warm', 'cool', 'mono', 'film', 'sunset'];
-export function createPost(renderer, scene, camera, { lowQuality = false } = {}) {
+export function createPost(renderer, scene, camera, { lowQuality = false, quality = lowQuality ? 'low' : 'high' } = {}) {
+  lowQuality = quality === 'low';
+  const medium = quality === 'med';
   const size = renderer.getSize(new THREE.Vector2());
   const pr = renderer.getPixelRatio();
   const W = () => Math.max(1, Math.floor(size.x * pr)), H = () => Math.max(1, Math.floor(size.y * pr));
   const depthTex = new THREE.DepthTexture(W(), H());
   depthTex.type = THREE.UnsignedIntType;
-  const sceneRT = new THREE.WebGLRenderTarget(W(), H(), { type: THREE.HalfFloatType, samples: lowQuality ? 0 : 4, depthTexture: depthTex });
+  const sceneRT = new THREE.WebGLRenderTarget(W(), H(), { type: THREE.HalfFloatType, samples: lowQuality ? 0 : medium ? 2 : 4, depthTexture: depthTex });
   const hdrRT = new THREE.WebGLRenderTarget(W(), H(), { type: THREE.HalfFloatType, depthBuffer: false });
   const aoA = new THREE.WebGLRenderTarget(W() >> 1, H() >> 1, { type: THREE.HalfFloatType, depthBuffer: false });
   const aoB = new THREE.WebGLRenderTarget(W() >> 1, H() >> 1, { type: THREE.HalfFloatType, depthBuffer: false });
@@ -281,7 +293,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
   const u = finalMat.uniforms;
   const post = {
     u, comp: compMat.uniforms, bloom, sceneRT,
-    aoOn: !lowQuality && !location.search.includes('noao'),
+    aoOn: !lowQuality && !medium && !location.search.includes('noao'),
     /** set before render(): cars = [{inv: Matrix4 (world->car), half: Vector3}], blur strength, dof */
     render(dt = 1 / 60) {
       post.applyPhoto();
@@ -290,6 +302,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
       aoMat.uniforms.uProj.value.copy(camera.projectionMatrix);
       aoMat.uniforms.uTime.value = u.uTime.value;
       compMat.uniforms.uTime.value = u.uTime.value;
+      compMat.uniforms.uHeat.value = !lowQuality && ENV.COND_STATE.night === 0 && ENV.COND_STATE.over === 0 && ENV.COND_STATE.rain === 0 && ENV.sunDir.y > 0.15 ? 1 : 0;
       compMat.uniforms.uCamWorld.value.copy(camera.matrixWorld);
       curVP.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       compMat.uniforms.uPrevVP.value.copy(havePrev ? prevVP : curVP);
@@ -349,6 +362,8 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
       bloom.strength = 0.1 * st.bloom * post.bloomScale; bloom.threshold = 3.0 / Math.max(1, st.exposure * 0.8);
     },
   };
+  post.bloomScale = lowQuality ? 0 : medium ? 0.65 : 0.85;
+  post.setConditions(post.lastConditions || ENV.COND_STATE);
   post.setSize(size.x, size.y, pr);
   return post;
 }

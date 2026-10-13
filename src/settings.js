@@ -5,7 +5,7 @@
 //   settings.master/music/sfx 0..1 volumes (audio.setVolumes)
 //   settings.aids             true = traction control, ABS and stability control as the car came; false = all off
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
-//   settings.graphics         'auto' | 'high' | 'low' (applied by reloading the page)
+//   settings.graphics         'auto' | 'high' | 'med' | 'low' (applied by reloading the page)
 //   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
 //   settings.police           police in Quick Race / free roam (src/police.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function

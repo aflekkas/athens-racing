@@ -32,6 +32,7 @@ import { settings, onSettings, fmtSpeed, fmtDist, speedIn, speedUnit } from './s
 import { EventMarkers } from './event-markers.js';
 import { trackVersion } from './network-track.js';
 import { simplifyScenery } from './graphics.js';
+import { SCENERY_TIERS, addBuildingImpostors, prepareSceneryLod, updateSceneryLod } from './scenery.js';
 import { initWeather, updateWeather } from './weather.js';
 import { initReplay } from './replay-mode.js';
 
@@ -54,10 +55,11 @@ try { if (!Q.has('quality')) graphicsPreference = localStorage.getItem('paraliak
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 const lowGraphics = graphicsPreference === 'low' || (graphicsPreference === 'auto' && /SwiftShader|llvmpipe|softpipe|Software/i.test(gpuName));
-window.__renderInfo = () => ({ gpu: gpuName, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps });
-const DPR = Math.min(window.devicePixelRatio || 1, lowGraphics ? 0.8 : 1.5);
+const quality = lowGraphics ? 'low' : graphicsPreference === 'med' || (graphicsPreference === 'auto' && /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)) ? 'med' : 'high';
+window.__renderInfo = () => ({ gpu: gpuName, quality, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps });
+const DPR = Math.min(window.devicePixelRatio || 1, SCENERY_TIERS[quality].pixelRatio);
 const graphicsControl = document.createElement('select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics quality');
-for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['high', 'GRAPHICS: HIGH'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
+for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['high', 'GRAPHICS: HIGH'], ['med', 'GRAPHICS: MED'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
 graphicsControl.onchange = () => { try { localStorage.setItem('paraliaki.graphics', graphicsControl.value); } catch {} const url = new URL(location.href); url.searchParams.set('quality', graphicsControl.value); location.href = url; };
 let pixelRatio = DPR;
@@ -70,7 +72,7 @@ renderer.shadowMap.enabled = !lowGraphics;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
-const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 16000);
+const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 90000);
 const mirrorCam = new THREE.PerspectiveCamera(42, 3.6, 0.4, 600);
 const mirrorRT = new THREE.WebGLRenderTarget(512, 144, { type: THREE.HalfFloatType });
 const audio = new Audio();
@@ -89,10 +91,8 @@ window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.ro
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
 const lodList = [];
-function updateLod() {
-  const cx = camera.position.x, cz = camera.position.z;
-  for (const m of lodList) { const c = m.boundingSphere.center, dc = Math.hypot(c.x - cx, c.z - cz), d = dc - m.boundingSphere.radius; m.visible = d < m.userData.far && (!m.userData.near || dc + m.boundingSphere.radius * 0.3 > m.userData.near); }
-}
+function updateLod() { updateSceneryLod(lodList, camera); }
+
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
 const keys = controls.keys; // retained for the simulation test hook
 const input = controls.state;
@@ -144,7 +144,8 @@ async function boot() {
   scene.add(ENV.createFarScenery(map.data.proj));
   lstat('FUELLING THE CARS', 0.85); await frameYield();
   // distance culling for instanced props (cells carry userData.far)
-  scene.traverse((o) => { if (lowGraphics && o.userData.far) o.userData.far = Math.min(o.userData.far, 700); if ((o.isInstancedMesh || o.userData.lod) && o.userData.far && o.boundingSphere) lodList.push(o); });
+  addBuildingImpostors(bld.group, quality);
+  lodList.push(...prepareSceneryLod(scene, quality));
   traffic = new Traffic(scene, route, map.data);
   traffic.disabled = Q.has('notraffic');
   traffic.signals = signals; traffic.people = people; people.traffic = traffic;
@@ -164,10 +165,10 @@ async function boot() {
   window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, get player() { return player; } };
   // ?simhook: headless tests advance the game without rendering (software GL draws ~1 frame/s)
   if (Q.has('simhook')) Object.assign(window.__sim, { keys, step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
-  post = createPost(renderer, scene, camera, { lowQuality: lowGraphics });
+  post = createPost(renderer, scene, camera, { quality });
   probe = createProbe();
   setCarEnv(probe.envRT.texture);
-  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, low: lowGraphics, cars: () => [player, rival], cam: () => G.cam }); // time of day + weather (?tod=&wx=)
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality, cars: () => [player, rival], cam: () => G.cam }); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
   setCar(Q.has('car') ? clamp(+Q.get('car') - 1, 0, CARS.length - 1) : savedCar(), false);
   prepareEvent(SKIP_MENU && Q.get('event') || 'quick');
@@ -1518,11 +1519,11 @@ function updateProbe() {
 function render() {
   renderer.info.autoReset = false; renderer.info.reset();
   updateWeather(G.lastDt || 1 / 60);
-  if (!lowGraphics && (frameN & 1)) updateProbe();
+  if (!lowGraphics && (quality === 'med' ? frameN % 4 === 0 : (frameN & 1))) updateProbe();
   if ((frameN % 6) === 0) updateLod();
   sky.position.copy(camera.position);
   // planar reflections and the rear-view mirror alternate frames
-  if (!lowGraphics && (frameN % 3) === 0) water.renderReflection(renderer, scene, camera);
+  if (!lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
   else if (!lowGraphics && G.cam === 'cockpit' && (frameN % 3) === 1) {
     const body = player.model.body, eye = player.cockpit.eye;
     _v1.set(0, eye.y + 0.12, eye.z - 0.1); body.localToWorld(_v1);

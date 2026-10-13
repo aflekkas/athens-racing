@@ -227,7 +227,7 @@ export class Menu {
     return `<div class="set-wrap"><div class="kick">${d.from === 'pause' ? 'PAUSED · ' : ''}SETTINGS</div>
       <div class="set-group"><h3>SOUND</h3>${range('master', 'MASTER VOLUME')}${range('music', 'MUSIC')}${range('sfx', 'EFFECTS')}</div>
       <div class="set-group"><h3>DISPLAY</h3>${choice('units', 'SPEED UNITS', [['kmh', 'KM/H'], ['mph', 'MPH']])}
-        ${choice('graphics', 'GRAPHICS', [['auto', 'AUTO'], ['high', 'HIGH'], ['low', 'LOW']], locked ? 'LOCKED WHILE ONLINE' : 'RELOADS THE GAME')}</div>
+        ${choice('graphics', 'GRAPHICS', [['auto', 'AUTO'], ['high', 'HIGH'], ['med', 'MED'], ['low', 'LOW']], locked ? 'LOCKED WHILE ONLINE' : 'RELOADS THE GAME')}</div>
       <div class="set-group"><h3>DRIVING</h3>${choice('aids', 'DRIVER AIDS (TC · ABS · ESC)', [['true', 'ON'], ['false', 'OFF']])}${choice('police', 'POLICE IN QUICK RACE / FREE ROAM', [['false', 'OFF'], ['true', 'ON']])}${choice('transmission', 'GEARBOX', [['auto', 'AUTOMATIC'], ['manual', 'MANUAL']], 'MANUAL: SHIFT WITH E / Q · PAD RB / LB')}</div>
       <div class="set-group"><h3>GHOST</h3>${choice('ghostEnabled', 'RACE YOUR BEST GHOST', [['true', 'ON'], ['false', 'OFF']])}
         ${window.__replay ? `<div class="mi set" data-act="ghostImport"><span class="k">IMPORT A GHOST FILE</span><b>▶</b></div><div class="mi set" data-act="ghostExport"><span class="k">EXPORT LAST GHOST</span><b>▶</b></div>` : ''}</div>

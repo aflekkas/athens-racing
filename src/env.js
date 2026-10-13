@@ -157,6 +157,7 @@ const f1 = (x) => x.toExponential(5);
 const AP = {
   apHz: { value: new Float32Array(30) }, // horizon radiance table (10 x vec3, by angle from the sun's azimuth)
   apSun: { value: new Float32Array(3) },
+  apQ: { value: new Float32Array([0.000075, 240, 1]) }, // sea-level aerosol density / scale height / enabled
   apP: { value: new Float32Array(3) },   // x: haze (extinction) multiplier, y: 1 = uniforms present, z: sun-translucency scale
   apGlowC: { value: new Float32Array(3) }, apGlowD: { value: new Float32Array([GLOW_DIR.x, 0, GLOW_DIR.z]) },
 };
@@ -189,7 +190,7 @@ writeUniforms();
 /** GLSL: aerial perspective (transmittance + in-scattering toward the horizon colour). Reads the shared condition
  *  uniforms; materials without them (custom shaders) fall back to the boot-time constants. */
 export const AERIAL_GLSL = /* glsl */`
-  uniform vec3 apHz[10]; uniform vec3 apSun; uniform vec3 apP; uniform vec3 apGlowC; uniform vec3 apGlowD;
+  uniform vec3 apHz[10]; uniform vec3 apSun; uniform vec3 apQ; uniform vec3 apP; uniform vec3 apGlowC; uniform vec3 apGlowD;
   const vec3 AP_SUN0 = ${v3([sunDir.x, sunDir.y, sunDir.z])};
   const vec3 AP_BR = vec3(${BR.map(f1).join(',')});
   const float AP_BM = ${f1(BME)};
@@ -214,6 +215,8 @@ export const AERIAL_GLSL = /* glsl */`
   vec3 aerial(vec3 col, vec3 off, float camY){
     float d = length(off); vec3 dir = off / max(d, 1e-4); d = min(d, 80000.0);
     vec3 od = AP_BR * apOD(camY, dir.y, d, ${HR.toFixed(1)}) + AP_BM * apOD(camY, dir.y, d, ${HM.toFixed(1)}) * (apP.y > 0.5 ? apP.x : 1.0);
+    // Coastal boundary layer: height-integrated, weather-scaled, with the live angular sky radiance.
+    if (apP.y > 0.5 && apQ.z > 0.5) od += vec3(apQ.x * apOD(camY, dir.y, d, max(apQ.y, 1.0)) * sqrt(max(apP.x, 1.0)));
     vec3 T = exp(-od * AP_K);
     return col * T + apHorizon(dir) * (1.0 - T);
   }
@@ -585,6 +588,8 @@ export function createWater(skyCube, terrain, depthTex) {
         col += min(spec, vec3(60.0)) * (1.0 - foam * 0.8);
         // ---- aerial perspective
         col = aerial(col, vWorld - cameraPosition, cameraPosition.y);
+        // The finite ocean sheet reaches the same radiance as the sky before its edge.
+        col = mix(col, apHorizon(normalize(vWorld - cameraPosition)), smoothstep(8000.0, 26000.0, length(vWorld.xz - cameraPosition.xz)) * (1.0 - uLake));
         gl_FragColor = vec4(col, 1.0);
       }`,
   });
@@ -611,7 +616,7 @@ export function createWater(skyCube, terrain, depthTex) {
     virt.position.copy(view);
     virt.up.set(0, 1, 0).applyMatrix4(rot).reflect(normal);
     virt.lookAt(target);
-    virt.far = 6000;
+    virt.far = 90000; // include the same distant island silhouettes as the main view
     virt.updateMatrixWorld();
     virt.projectionMatrix.copy(camera.projectionMatrix);
     mat.uniforms.uReflMat.value.copy(bias).multiply(virt.projectionMatrix).multiply(virt.matrixWorldInverse);
@@ -663,7 +668,7 @@ function islandMaterial() {
   return islandMat;
 }
 function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86') {
-  const geo = new THREE.SphereGeometry(1, 96, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+  const geo = new THREE.SphereGeometry(1, 64, 24, 0, Math.PI * 2, 0, Math.PI / 2);
   const p = geo.attributes.position;
   const col = new Float32Array(p.count * 3), c0 = new THREE.Color(color);
   for (let i = 0; i < p.count; i++) {
@@ -680,6 +685,7 @@ function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86') {
   geo.computeVertexNormals();
   const m = new THREE.Mesh(geo, islandMaterial());
   m.position.set(cx, 0, cz);
+  m.name = 'Saronic distant relief';
   m.layers.enable(REFLECT_LAYER);
   return m;
 }
@@ -692,7 +698,7 @@ export function createFarScenery(proj) {
     ['Fleves', 37.772, 23.765, 600, 350, 60], ['Patroklou', 37.655, 23.95, 900, 600, 160], ['Methana', 37.6, 23.36, 4200, 3600, 740],
     ['Arsida', 37.786, 23.795, 160, 90, 18],
   ];
-  isl.forEach(([n, lat, lon, rx, rz, h], i) => { const [x, z] = P(lat, lon); g.add(islandMesh(x, z, rx, rz, h, i * 2.3, '#8a8670')); });
+  isl.forEach(([n, lat, lon, rx, rz, h], i) => { const [x, z] = P(lat, lon); const mesh = islandMesh(x, z, rx, rz, h, i * 2.3, '#8a8670'); mesh.name = n; g.add(mesh); });
   // Hymettus ridge inland (north-east), Peloponnese hills beyond Aegina
   const ridge = (lat, lon, len, w, h, rot, seed, color) => {
     const [x, z] = P(lat, lon);
