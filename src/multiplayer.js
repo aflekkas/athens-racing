@@ -14,10 +14,10 @@ export class Multiplayer {
     this.panel.innerHTML = `<div class="mp-card"><div class="mp-heading"><div><small>ATHENS RIVIERA · LIVE RACING</small><h2>MULTIPLAYER</h2></div><button id="mp-close" aria-label="Close multiplayer">×</button></div>
       <p id="mp-status" role="status">Connecting…</p>
       <div id="mp-browser"><div class="mp-fields"><label>DRIVER NAME<input id="mp-name" maxlength="28" placeholder="Your name" autocomplete="nickname"></label><label>YOUR CAR<select id="mp-car"></select></label></div>
-      <div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div>
+      <div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div>
       <form id="mp-join-form"><input id="mp-code" maxlength="6" placeholder="6-character code" aria-label="Lobby code"><button>JOIN BY CODE</button></form>
       <div class="mp-section"><h3>DISCOVER LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
-      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>RACE ROUTE<select id="mp-event"></select></label><label><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
+      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>RACE ROUTE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
       <button id="mp-leaderboard">VIEW BEST TIMES</button><div id="mp-times" hidden></div><p class="mp-note">2–8 drivers · Opponent cars are ghosts · 10-minute race limit · Rejoin within 90 seconds after a disconnect</p></div>`;
     document.body.append(this.panel);
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
@@ -85,8 +85,12 @@ export class Multiplayer {
         if (m.lobby.raceId && (this.startedRace !== m.lobby.raceId || m.resume)) { this.startedRace = m.lobby.raceId; this.peers.clear(); this.hidePanel(); this.hooks.start(m.lobby, this.id, m.resume ? m.state : null); }
         this.renderRoom(); this.hooks.members(m.lobby.players.filter(p => p.id !== this.id));
         if (m.lobby.status === 'results') { this.panel.hidden = false; this.hooks.results(); }
+        else this.advanceClock();
       } else if (m.type === 'snapshot' && m.raceId === this.lobby?.raceId) {
         for (const p of m.players) if (p.id !== this.id && p.state) this.peers.set(p.id, { ...p, at: performance.now() });
+        // Websocket messages keep race state current even when background tabs stop animation frames.
+        this.advanceClock();
+        if (document.hidden && this.loaded) this.hooks.remote(this.peers, 0.05);
       }
     };
     ws.onclose = e => {
@@ -133,6 +137,9 @@ export class Multiplayer {
     return s(b) - s(a);
   }); }
   progress(s) { const r = this.lobby?.event; return r ? (s - r.s0) * r.dir : s; }
+  advanceClock() {
+    if (this.loaded && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
+  }
   spectating() {
     if (!this.active || this.me?.finish == null || this.lobby.status === 'results') return null;
     const remaining = this.lobby.players.filter(p => p.id !== this.id && p.finish == null && p.connected !== false && this.peers.has(p.id));
@@ -155,7 +162,7 @@ export class Multiplayer {
     const l = this.lobby;
     if (!this.connected) return;
     if (['countdown', 'race'].includes(l.status)) {
-      this.hooks.clock(Math.max(0, (this.now() - l.startAt) / 1000), Math.max(0, (l.startAt - this.now()) / 1000));
+      this.advanceClock();
       if (this.now() >= l.startAt && performance.now() - (this.sentAt || 0) >= 50) { this.sentAt = performance.now(); this.send({ type: 'state', raceId: l.raceId, state }); }
     }
     if (performance.now() - (this.boardAt || 0) > 250) {

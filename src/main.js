@@ -420,7 +420,7 @@ addEventListener('pointerdown', () => audio.start());
 
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
-  const blocked = !multiplayer.panel.hidden || G.state === 'loading';
+  const blocked = document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked });
   for (const name of controls.actions) {
     // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
@@ -1277,6 +1277,8 @@ const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
 const sunScreen = new THREE.Vector3();
 function frame(now) {
   requestAnimationFrame(frame);
+  // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
+  if (multiplayer.active && (document.hidden || now < last)) return;
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;
   if (Q.has('fixeddt')) dt = 1 / 60;
@@ -1648,6 +1650,20 @@ const multiplayer = new Multiplayer(CARS, {
   },
 });
 window.__multiplayer = multiplayer;
+// Browsers stop rAF in hidden tabs. Keep online cars coasting and broadcasting without drawing.
+const onlineBackgroundTimer = setInterval(() => {
+  if (!document.hidden || !multiplayer.active || !multiplayer.loaded || !multiplayer.connected || multiplayer.lobby.status === 'waiting') return;
+  const now = performance.now(), elapsed = Math.min(2, Math.max(0, (now - last) / 1000));
+  if (!(elapsed > 0)) return;
+  last = now; clearDriveInput();
+  const count = Math.max(1, Math.ceil(elapsed / (1 / 60)));
+  for (let i = 0; i < count; i++) step(elapsed / count, false);
+}, 250);
+document.addEventListener('visibilitychange', () => {
+  if (!multiplayer.loaded || !multiplayer.active) return;
+  clearDriveInput(); last = performance.now(); multiplayer.advanceClock();
+  if (!document.hidden) multiplayer.hooks.remote(multiplayer.peers, 0.1);
+});
 if (Q.has('debug')) { window.__vehicle = () => player?.veh; window.__onlineCars = () => [...remoteCars].map(([id, c]) => ({ id, car: c.spec.id, visible: c.model.root.visible, s: c.veh.s })); }
 
 boot().catch(fail);
