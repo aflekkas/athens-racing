@@ -56,6 +56,58 @@ const list = CARS.filter((c) => !only || c.id === only);
   ];
   const bad = cases.filter(([, u, ok]) => !ok(g(u))).map(([n, u]) => `${n}: ${JSON.stringify(g(u))}`);
   check('wheel ground: kerb step 0 on the carriageway, the kerb on the pavement, blended at the edge, faded off it', bad.length === 0, bad.join(' | ') || `${cases.length} cases`);
+
+  const island = { ...kerbRoute, medHalf: () => 1.3, div: () => 1, surfaceY: (s, u) => 2 + 0.03 * u };
+  const gm = (u) => wheelGround(island, road, { y: island.surfaceY(100, u) + (Math.abs(u) < 1.3 ? 0.2 : 0) }, 100, u);
+  const medianCases = [1.1, 1.245, 1.3, 1.355, 1.5];
+  const expected = [0.2, 0.16875, 0.1, 0.03125, 0];
+  check('median island: both tyre-width edges blend onto a banked road plane',
+    medianCases.every((u, i) => [u, -u].every((x) => near(gm(x).input, expected[i]) && near(gm(x).plane, island.surfaceY(100, x)))),
+    medianCases.map((u) => `${u}: ${gm(u).input.toFixed(3)} m`).join(', '));
+
+  const circuit = { ...kerbRoute, closed: true, wrap: (s) => (s + 1000) % 1000, surfaceY: (s, u) => 0.02 * u };
+  const gc = (u, surf, rise) => wheelGround(circuit, road, { y: circuit.surfaceY(0, u) + rise, surf }, -1, u);
+  check('circuit: rounded kerbs use their sampled profile without adding an urban kerb or moving the plane',
+    [3.6, 3.8, 4].every((u) => near(gc(u, 'pavement', 0.045).input, 0.045) && near(gc(u, 'pavement', 0.045).plane, 0.02 * u)) &&
+    near(gc(5, 'gravel', 0.2).input, 0) && near(gc(5, 'gravel', 0.2).plane, 0.3) &&
+    gc(7, 'asphalt', 0.5).paved && near(gc(7, 'asphalt', 0.5).plane, 0.64));
+
+  // Exercise real Ground.at()/resolve(), stubbing only rendering imports. ROAD's production definition is
+  // extracted unchanged so these checks follow actual gutter/kerb dimensions rather than another copy of them.
+  const { readFileSync } = await import('node:fs');
+  const { register } = await import('node:module');
+  const roadSource = readFileSync(new URL('../../src/road.js', import.meta.url), 'utf8');
+  const start = roadSource.indexOf('export const ROAD =');
+  const roadURL = 'data:text/javascript,' + encodeURIComponent(
+    `import { lerp, smoothstep } from ${JSON.stringify(new URL('../../src/util.js', import.meta.url).href)};\n` +
+    roadSource.slice(start, roadSource.indexOf('\n};', start) + 3));
+  register('data:text/javascript,' + encodeURIComponent(`export async function resolve(spec, ctx, next) {
+    if (ctx.parentURL?.endsWith('/src/ground.js')) {
+      if (spec === './road.js') return { url: ${JSON.stringify(roadURL)}, shortCircuit: true };
+      if (spec === './tex.js') return { url: 'data:text/javascript,export const TX={};', shortCircuit: true };
+    }
+    return next(spec, ctx);
+  }`), import.meta.url);
+  const { Ground } = await import('../../src/ground.js');
+  const { ROAD } = await import(roadURL);
+  const r = { ...route, length: 1000, closed: false, edge: () => 3.5, medHalf: () => 1.3, div: () => 1,
+    seaR: () => 1000, seaL: () => 1000, bank: () => 0 };
+  const ground = Object.assign(Object.create(Ground.prototype), { route: r, out: {}, heightC: () => 0,
+    terrain: { cls: () => 4 }, traps: [], hump: () => 0, walls: () => null,
+    limits: (s, w, out) => Object.assign(out, { min: -100, max: 100 }) });
+  const spec = CARS.find((c) => c.id === 'z4'), v = new Vehicle(spec, r);
+  v.ground = ground; v.roadZ = () => 0;
+  const place = (u) => { v.reset(100, u); ground.resolve(v, 1 / 60); for (let i = 0; i < 180; i++) v.update(1 / 60, { throttle: 0, brake: 0, steer: 0 }); };
+  place(ROAD.gutter + r.edge(100) - v.track / 2 + 0.4);
+  check('Ground: astride a kerb lifts only the hit wheels through suspension, without moving the body plane',
+    near(v.y, 0) && v.wheelBump[0] === 0 && v.wheelBump[2] === 0 && v.corners[1].zu > 0.12 && v.corners[3].zu > 0.12 && !v.air);
+  place(ROAD.gutter + r.edge(100) + v.track / 2 + 0.4);
+  check('Ground: all four wheels on pavement count the kerb height once, with the body still on the base plane',
+    near(v.y, 0) && near(v.sus.z, 0.17, 0.015) && v.corners.every((c) => c.zu > 0.14 && c.zu < 0.2) && !v.air,
+    `plane ${f2(v.y)} m, body rise ${f2(v.sus.z)} m`);
+  place(0);
+  check('Ground: the median lifts all four wheels by its actual height without a second rigid body lift',
+    near(v.y, 0) && near(v.sus.z, 0.2, 0.01) && v.corners.every((c) => near(c.zu, 0.2, 0.01)) && !v.air);
 }
 
 // ------------------------------------------------------------------ 1. at rest
