@@ -8,6 +8,7 @@ import { buildRoad } from './road.js';
 import { buildBuildings, infillBuildings, LabelAtlas } from './buildings.js';
 import { buildNature } from './nature.js';
 import { buildRoadside } from './roadside.js';
+import { buildWorldContext } from './world-context.js';
 import { Traffic } from './traffic.js';
 import { Signals, findJunctions } from './signals.js';
 import { People } from './people.js';
@@ -94,6 +95,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
       if (road.asphalt) assets.asphalt = road.asphalt;
       natureGroup = new THREE.Group(); group.add(natureGroup);
     }
+    buildWorldContext(map, group, ter.heightC);
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
     if (route.closed) { people.dens = () => 0; people.anchors.length = 0; }
