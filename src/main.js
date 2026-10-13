@@ -8,6 +8,7 @@ import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint, carTransmission } from './cars.js';
 import { toggleTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
+import { applyCarDecals, packDecals, unpackDecals } from './vehicle-decals.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
@@ -221,7 +222,7 @@ window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: s
 
 // ------------------------------------------------------------------ cars
 function makeCar(spec, isPlayer) {
-  const model = new CarModel(spec);
+  const model = new CarModel(spec, isPlayer ? {} : {decals:[]});
   scene.add(model.root);
   const driver = new Driver(isPlayer ? {} : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   driver.root.position.copy(model.seat).add(new THREE.Vector3(0, -0.195, 0.1));
@@ -1585,7 +1586,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage } });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, paint: player.model.paintColor, decals: packDecals(player.model.decals || []) });
 function clearDriveInput() { controls.clear(); closeTowOffer(12); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
@@ -1648,6 +1649,8 @@ const multiplayer = new Multiplayer(CARS, {
     for (const [id, c] of remoteCars) {
       const peer = peers.get(id); if (!peer) continue;
       const p = peer.state, v = c.veh;
+      if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
+      applyCarDecals(c.model,unpackDecals(p.decals));
       const k = Math.hypot(v.x - p.x, v.z - p.z) > 30 ? 1 : 1 - Math.exp(-18 * dt);
       for (const key of ['x', 'y', 'z', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm']) v[key] += (p[key] - v[key]) * k;
       v.yaw += Math.atan2(Math.sin(p.yaw - v.yaw), Math.cos(p.yaw - v.yaw)) * k; v.gear = p.gear;

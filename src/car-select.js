@@ -4,6 +4,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint, carTransmission } from './cars.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
+import { updateCarDecals } from './vehicle-decals.js';
 
 // Period 0–100 km/h figures for the represented drivetrain (seconds).
 // Power, mass and driven wheels come from the live physics catalogue.
@@ -56,6 +57,7 @@ export function mountCarSelect(root, index) {
   model.root.traverse(o=>{if(o.material)o.material=Array.isArray(o.material)?o.material.map(cloneMaterial):cloneMaterial(o.material);});
   model.paint = cloneMaterial(model.paint);
   model.paintAccents = (model.paintAccents || []).map(cloneMaterial);
+  model.materials.black = cloneMaterial(model.materials.black); // Keep roof-vinyl receivers in this showroom material set.
   scene.add(new THREE.HemisphereLight('#dceaff', '#303038', 2.2));
   for (const [x,y,z,intensity] of [[-4,6,-3,3],[4,3,5,2]]) { const light = new THREE.DirectionalLight('#ffffff',intensity); light.position.set(x,y,z); if (x < 0) { light.castShadow=true; light.shadow.mapSize.set(1024,1024); Object.assign(light.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:20}); light.shadow.normalBias=.025; } scene.add(light); }
   const floor = new THREE.Mesh(new THREE.CircleGeometry(4.2,64).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:'#242d36',roughness:.7})); floor.position.y=-.02; floor.receiveShadow=true; scene.add(floor);
@@ -68,7 +70,7 @@ export function mountCarSelect(root, index) {
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
   let last = performance.now();
-  renderer.setAnimationLoop(now => { model.root.rotation.y += Math.min(.05,(now-last)/1000)*.16; last=now; renderer.render(scene,camera); });
+  renderer.setAnimationLoop(now => { updateCarDecals(model); model.root.rotation.y += Math.min(.05,(now-last)/1000)*.16; last=now; renderer.render(scene,camera); });
   return {
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {

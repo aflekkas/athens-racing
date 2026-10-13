@@ -1,3 +1,4 @@
+import { packDecals, unpackDecals } from '../src/vehicle-decal-data.js';
 // Shared lobby/race protocol. Transports own sockets, persistence and wake-up scheduling.
 const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-\x1f<>]/g, '').trim().slice(0, n) || fallback : fallback;
 const send = (ws, data) => { if (ws?.readyState === 1 && (ws.bufferedAmount || 0) < 65536) { try { ws.send(JSON.stringify(data)); } catch {} } };
@@ -143,7 +144,7 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
           const prevS = c.state?.s ?? event.s0;
           const elapsed = (now - (c.stateAt ?? l.startAt)) / 1000;
           if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
-          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: s.nitro ?? c.state?.nitro ?? 0.4, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true }; c.stateAt = now; l.dirty = true;
+          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: s.nitro ?? c.state?.nitro ?? 0.4, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: s.decals === undefined ? c.state?.decals ?? [] : packDecals(unpackDecals(s.decals)) }; c.stateAt = now; l.dirty = true;
           if (c.finish === null && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000; l.racers.get(c.id).finish = c.finish; publish(l);
             leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
