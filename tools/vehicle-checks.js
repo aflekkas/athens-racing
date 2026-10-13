@@ -1,6 +1,7 @@
 // Browser regression checks against the actual Three.js models (import via the studio).
 import { CARS, CarModel, TRAFFIC_TYPES, trafficModel, setPaint } from '../src/cars.js';
 import { PAINTS, savedPaint, savePaint } from '../src/vehicle-paint.js';
+import { Hud } from '../src/hud.js';
 import { RNG } from '../src/util.js';
 export function runVehicleChecks() {
   const results=[];const check=(label,value)=>{results.push({label,pass:!!value});if(!value)throw new Error(label);};
@@ -51,4 +52,24 @@ export function runVehicleChecks() {
   try{savePaint('__vehicle_test','#Fa3400');check('Custom paint persists by car id',savedPaint({id:'__vehicle_test',color:'#ffffff'})==='#fa3400');localStorage.setItem(key,'broken');check('Corrupt saved paint falls back safely',savedPaint({id:'__vehicle_test',color:'#ffffff'})==='#ffffff');}
   finally{if(prior===null)localStorage.removeItem(key);else localStorage.setItem(key,prior);}
   return {passed:results.length,results};
+}
+
+// Exercises the real garage controls without constructing a second world/terrain HUD.
+export function runGaragePaintChecks(){
+  const hud=Object.create(Hud.prototype),host=document.createElement('section');hud.el={};let passed=0;
+  for(const id of ['cIdx','cName','cTag','cSpecs','cStats','cBest']){const e=document.createElement('div');host.append(e);hud.el[id]=e;}
+  const before=new Map(CARS.map(c=>[c.id,localStorage.getItem('paraliaki.paint.'+c.id)]));
+  const assert=(ok,label)=>{if(!ok)throw new Error(label);passed++;};
+  try{
+    for(const [i,spec]of CARS.entries()){
+      const model=new CarModel(spec);hud.onPaint=(id,color)=>{assert(id===spec.id,'Paint callback car id');setPaint(model,color);};hud.showCar(CARS,i,0);
+      const buttons=hud.paintPanel.querySelectorAll('button');assert(buttons.length===PAINTS[spec.id].length,'Factory swatches rendered');buttons[1].click();
+      assert(model.paint.color.getHexString()===PAINTS[spec.id][1][1].slice(1),'Swatch updates visible model');
+      const picker=hud.paintPanel.querySelector('input');picker.value='#3498ab';picker.dispatchEvent(new Event('input'));
+      assert(model.paint.color.getHexString()==='3498ab'&&savedPaint(spec)==='#3498ab','Picker updates model and saves per-car preference');
+      const restored=new CarModel(spec);assert(restored.paint.color.getHexString()==='3498ab','Rebuilt car restores saved custom colour');
+      assert(hud.el.cIdx.textContent===`${i+1}/6`,'Garage index derives from six-car catalogue');
+    }
+  }finally{for(const [id,c]of before){const key='paraliaki.paint.'+id;if(c===null)localStorage.removeItem(key);else localStorage.setItem(key,c);}host.remove();}
+  return {passed};
 }

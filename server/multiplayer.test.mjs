@@ -128,7 +128,7 @@ test('race results retain a finisher who disconnects before the other driver fin
 test('dropped driver rejoins the same live race with token, state, identity and finish intact', async t => {
   const env = await setup(t, { reconnectGraceMs: 1000, raceLimitMs: 5000 }); const { a, b } = await pair(env);
   const l = await readyAndStart(a, b); await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
-  a.send({ type: 'state', raceId: l.raceId, state: state(5) });
+  a.send({ type: 'state', raceId: l.raceId, state: { ...state(5), nitro: 0.07, damage: { front: 0.6, rear: 0, left: 0.2, right: 0 } } });
   await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === a.id && p.state?.s === 5));
   a.ws.terminate();
   const dropped = (await b.next(m => m.type === 'lobby' && m.lobby.players.some(p => p.id === a.id && !p.connected))).lobby;
@@ -136,7 +136,7 @@ test('dropped driver rejoins the same live race with token, state, identity and 
   const rejoined = await env.client('Reloaded'); rejoined.send({ type: 'resume', token: a.token });
   const session = await rejoined.next(m => m.type === 'session'); assert.equal(session.resumed, true); assert.equal(session.id, a.id);
   const restored = await rejoined.next(m => m.type === 'lobby' && m.resume);
-  assert.equal(restored.lobby.raceId, l.raceId); assert.equal(restored.state.s, 5); assert.equal(restored.lobby.players.find(p => p.id === a.id).name, 'Alice');
+  assert.equal(restored.lobby.raceId, l.raceId); assert.equal(restored.state.s, 5); assert.equal(restored.state.nitro, 0.07); assert.equal(restored.state.damage.front, 0.6); assert.equal(restored.lobby.players.find(p => p.id === a.id).name, 'Alice');
   rejoined.send({ type: 'state', raceId: l.raceId, state: state(15) });
   const finished = (await b.next(m => m.type === 'lobby' && m.lobby.players.some(p => p.id === a.id && p.finish != null))).lobby.players.find(p => p.id === a.id).finish;
   rejoined.send({ type: 'state', raceId: l.raceId, state: state(20) });
@@ -194,4 +194,16 @@ test('leaderboard HTTP rejects invalid times, aborted runs, unknown cars, cross-
   for (let i = 0; i < 7; i++) await post(result);
   assert.equal((await post(result)).status, 429);
   assert.equal((await fetch(env.base + '/.data/leaderboard.json')).status, 404);
+});
+
+test('session switching cannot orphan a joined lobby or retain duplicate live sockets', async t => {
+  const env = await setup(t, { reconnectGraceMs: 500 });
+  const a = await env.client('Alice'); a.send({ type: 'create' }); await room(a);
+  const b = await env.client('Bob'); b.send({ type: 'create' }); const own = (await room(b)).lobby;
+  b.send({ type: 'resume', token: a.token }); assert.match((await b.next(m => m.type === 'error')).message, /Leave/);
+  assert.equal(env.app.lobbies.get(own.code).players.get(b.id).connected, true);
+  b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
+  b.send({ type: 'resume', token: a.token }); const session = await b.next(m => m.type === 'session'); assert.equal(session.id, a.id);
+  await b.next(m => m.type === 'lobby' && m.resume);
+  b.send({ type: 'leave' }); await b.next(m => m.type === 'left'); assert.equal(env.app.lobbies.size, 0);
 });

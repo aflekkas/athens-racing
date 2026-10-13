@@ -21,9 +21,14 @@ export async function createLeaderboard(file, definitions, cars, version) {
       const same = e => e.driverId === entry.driverId && e.eventId === entry.eventId && e.car === entry.car && e.traffic === entry.traffic && e.version === version;
       const old = entries.find(same);
       if (old && old.time <= entry.time) return { saved: false, best: old.time };
-      const next = entries.filter(e => !same(e)); next.push(entry);
-      // Bound disk and response size; keep the fastest records when the anonymous board fills.
-      next.sort((a, b) => a.time - b.time); if (next.length > 10000) next.length = 10000;
+      let next = entries.filter(e => !same(e)); next.push(entry);
+      // Bound each route/car/traffic board independently so short routes cannot crowd out long ones.
+      const buckets = new Map();
+      next = next.sort((a, b) => a.time - b.time).filter(e => {
+        const key = [e.version, e.eventId, e.car, e.traffic].join('|');
+        const count = (buckets.get(key) || 0) + 1; buckets.set(key, count); return count <= 200;
+      });
+      if (!next.includes(entry)) return { saved: false, best: old?.time ?? null, reason: 'This board retains its fastest 200 drivers.' };
       await mkdir(dirname(file), { recursive: true });
       const temp = file + '.' + randomUUID() + '.tmp';
       try { await writeFile(temp, JSON.stringify({ schema: 1, entries: next }) + '\n', { mode: 0o600 }); await rename(temp, file); }

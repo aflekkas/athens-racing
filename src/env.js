@@ -17,7 +17,7 @@ export const TIMES = {
   day: { elev: 62, az: 205, E: 1, bias: 1.0, wb: [0.96, 1.0, 1.06] },
   afternoon: { elev: 21, az: 250, E: 1, bias: 1.0, wb: [0.96, 1.0, 1.06] }, // the original look (default)
   sunset: { elev: 2.4, az: 282, E: 1, bias: 1.05, wb: [1.0, 0.97, 0.98], lamps: 0.35 },
-  night: { elev: 34, az: 140, E: 0.006, bias: 1.0, wb: [0.9, 0.98, 1.16], night: 1, lamps: 1 },
+  night: { elev: 34, az: 140, E: 0.006, bias: 0.62, wb: [0.9, 0.98, 1.16], night: 1, lamps: 1, tint: [0.55, 0.72, 1.0] },
 };
 // over: overcast cover, T: light through the cloud deck, haze: extra aerial extinction (visibility), rain intensity
 export const WEATHERS = {
@@ -146,7 +146,8 @@ let D = deriveConditions();
 export let ATMO = D.A;
 export let SUN_INTENSITY = lum(D.sunLight);
 export const SUN_COLOR = new THREE.Color();
-const setSunColor = () => { const s = Math.max(lum(D.sunLight), 1e-6); SUN_COLOR.setRGB(D.sunLight[0] / s, D.sunLight[1] / s, D.sunLight[2] / s); };
+// the key light's colour; moonlight is tinted blue (how night vision sees it)
+const setSunColor = () => { const t = TIMES[COND.time].tint || [1, 1, 1], c = D.sunLight.map((x, i) => x * t[i]), s = Math.max(lum(c), 1e-6); SUN_COLOR.setRGB(c[0] / s, c[1] / s, c[2] / s); };
 setSunColor();
 const v3 = (a) => `vec3(${a.map((x) => x.toFixed(6)).join(',')})`;
 const f1 = (x) => x.toExponential(5);
@@ -289,7 +290,7 @@ const CLOUD_GLSL = /* glsl */`
     float lit = cfbm(p1 * 1.6 + L.xz * 0.35, 4);
     float shade = clamp((lit - n1) * 2.5 + 0.55, 0.15, 1.0);
     float mu = dot(d, L);
-    vec3 sunL = uSunIrr * 1.15;
+    vec3 sunL = uSunIrr * (uNight > 0.5 ? 0.45 : 1.15);
     vec3 amb = uSkyIrr + cityGlow(d) * 6.0;
     vec3 cu = (sunL * (0.34 + 0.9 * pow(max(mu, 0.0), 6.0)) * shade + amb * 0.32) * 0.9;
     float a1 = den * smoothstep(0.004, 0.05, d.y);

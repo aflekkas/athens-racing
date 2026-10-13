@@ -28,7 +28,7 @@ function surface(p,m,fn,nu=32,nv=12,name='') {
 function patch(p,m,pts,name='') { return surface(p,m,(u,v)=>{const a=V(...pts[0]).lerp(V(...pts[1]),u),b=V(...pts[3]).lerp(V(...pts[2]),u);return a.lerp(b,v).toArray();},10,5,name); }
 function disk(p,m,r,pos,rot=[0,0,0]) { return mesh(p,new THREE.CircleGeometry(r,32),m,pos,rot); }
 function ring(p,m,r,t,pos,rot=[0,0,0],arc=Math.PI*2) {return mesh(p,new THREE.TorusGeometry(r,t,8,48,arc),m,pos,rot);}
-function textMaterial(text,bg='#15181c',fg='#d8dde0',w=512,h=96) {const map=canvasTex(w,h,(c,W,H)=>{c.fillStyle=bg;c.fillRect(0,0,W,H);c.fillStyle=fg;c.font=`600 ${H*.6}px Arial`;c.textAlign='center';c.textBaseline='middle';c.fillText(text,W/2,H/2);});return new THREE.MeshStandardMaterial({map,roughness:0.4});}
+function textMaterial(text,bg='#15181c',fg='#d8dde0',w=512,h=96) {const map=canvasTex(w,h,(c,W,H)=>{c.fillStyle=bg;c.fillRect(0,0,W,H);c.fillStyle=fg;c.font=`600 ${H*.6}px Arial`;c.textAlign='center';c.textBaseline='middle';c.fillText(text,W/2,H/2);});return new THREE.MeshStandardMaterial({map,roughness:0.4,transparent:!bg,depthWrite:!!bg});}
 let registration=1000;
 export function nextRegistration(taxi=false) {const n=registration++;const letters='ABEZHIKMNOPTYX';return `${taxi?'TAA':'IK'+letters[Math.floor(n/9000)%letters.length]} ${1000+n%9000}`;}
 export function makePlateMaterial(number=nextRegistration()) {const map=canvasTex(512,112,(g,w,h)=>{g.fillStyle='#ecece4';g.fillRect(0,0,w,h);g.fillStyle='#154493';g.fillRect(0,0,48,h);g.fillStyle='#ffda42';for(let i=0;i<12;i++){const a=i*Math.PI/6;g.beginPath();g.arc(24+13*Math.cos(a),31+13*Math.sin(a),2,0,7);g.fill();}g.fillStyle='white';g.font='bold 23px Arial';g.textAlign='center';g.fillText('GR',24,93);g.fillStyle='#15191b';g.font='600 73px Arial';g.textBaseline='middle';g.fillText(number,278,59);g.strokeStyle='#394047';g.lineWidth=4;g.strokeRect(2,2,w-4,h-4);});return new THREE.MeshStandardMaterial({map,roughness:0.4});}
@@ -237,7 +237,7 @@ function fascia(car,d,M,low,plate) {
   disk(p,M.badge,mini?.042:.035,[0,d.front+.065,F+.065],[-.7,Math.PI,0]);
   disk(p,M.badge,.037,[0,d.rear-.095,R+.024]);
   if(mini)for(const s of [-1,1])for(let i=0;i<3;i++)box(p,M.chrome,[.07-i*.014,.006,.008],[s*(.065-i*.006),d.rear-.09+i*.014,R+.024],.002);
-  if(!mini){const name=bmw?'Z4     M40i':d.ev?'B U I L D   Y O U R   D R E A M S':'Š K O D A';mesh(p,new THREE.PlaneGeometry(bmw?.46:.61,.044),textMaterial(name,car.spec.color,'#dce0e4'),[0,d.rear-.205,R+.023]);}
+  if(!mini){const name=bmw?'Z4     M40i':d.ev?'B U I L D   Y O U R   D R E A M S':'Š K O D A';mesh(p,new THREE.PlaneGeometry(bmw?.46:.61,.044),textMaterial(name,null,'#dce0e4'),[0,d.rear-.205,R+.023]);}
   if(car.spec.taxi){const sign=new THREE.Group();p.add(sign);sign.position.set(0,d.H+.09,.05);box(sign,M.black,[.61,.035,.23],[0,-.078,0],.025);box(sign,mat('#e7dba6',.45),[.56,.15,.17],[0,0,0],.026);const tm=textMaterial('TAXI','#efe6b7','#141818');tm.emissive=new THREE.Color('#efe5bb');tm.emissiveMap=tm.map;tm.emissiveIntensity=.25;for(const s of [-1,1])mesh(sign,new THREE.PlaneGeometry(.48,.106),tm,[0,0,s*.087],[0,s<0?Math.PI:0,0]);}
 }
 // The new cars have their own lamps, bumpers and grilles; all fascia surfaces seat against the end caps.

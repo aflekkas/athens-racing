@@ -184,7 +184,7 @@ export class Traffic {
     // who is behind the wheel. Most are ordinary; some keep an eye on the mirror and make room for a fast car;
     // a few are slow and careful; a rare one is on the phone (late to react, turns and changes lanes without looking)
     const r = rng.next(), pro = c.kind === 'taxi' || c.kind === 'delivery' || c.kind === 'bus';
-    const arch = r < 0.055 ? 'distracted' : agg > 0.72 ? 'aggressive' : r < (pro ? 0.12 : 0.33) ? 'courteous' : r < 0.45 ? 'cautious' : 'normal';
+    const arch = r < 0.05 ? 'distracted' : agg > 0.8 ? 'aggressive' : r < (pro ? 0.12 : 0.33) ? 'courteous' : r < 0.45 ? 'cautious' : 'normal';
     const D = c.drv;
     D.arch = arch;
     // perception-reaction time (s) to a hazard such as a car coming at them on their side of the road
@@ -509,15 +509,15 @@ export class Traffic {
       if (coming || (head && head.R === R)) E.lost = 0; else E.lost += dt;
       if (dS < -R.hs - c.len * 0.5 || E.lost > 1.2 || E.t > 9) {
         // it went past: shaken, a long blast of the horn after it, then back into the lane
-        if (dS < 0 && Math.abs(R.u - c.u) < hw + R.hu + 2.5) { c.honkCool = 0; this.honk(c, 'shaken', R.kind === 'player'); }
+        if (dS < 0 && Math.abs(R.u - c.u) < hw + R.hu + 4) { c.honkCool = 0; this.honk(c, 'shaken', R.kind === 'player'); }
         c.evade = null; c.shakenT = 1.5 + rng.range(0, 2); c.lcT = 0.5; c.blinkSide = 0;
       } else {
         if (head && E.t - E.pick > 0.35 && !E.freeze) { E.pick = E.t; E.uT = this.escapeU(c, head); }
         c.uT = E.uT;
         // brake as hard as they dare: harder the closer it is (and the phone driver panics)
-        const ttc = head ? head.ttc : 3;
-        const want = -lerp(3.5, d.arch === 'distracted' ? 9 : 8.2, clamp((3.6 - ttc) / 2.6, 0, 1));
-        acc = Math.min(acc, c.v > 0.3 ? want : 0);
+        const ttc = head ? head.ttc : 3, clear = head ? clamp((head.lat + 0.2) / 1.2, 0, 1) : 1;
+        const want = -lerp(lerp(3.5, d.arch === 'distracted' ? 9 : 8.2, clamp((3.6 - ttc) / 2.6, 0, 1)), 2.2, E.freeze ? 0 : clear);
+        acc = Math.min(acc, c.v > (E.freeze ? 0.3 : 3) ? want : 0.3);
       }
     } else if (head && c.seeT > d.rt && !c.task && !c.type.bus) {
       const freeze = rng.chance(d.freeze);

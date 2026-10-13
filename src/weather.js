@@ -382,8 +382,8 @@ export function updateWeather(dt) {
         _v.set(sx * wid * 0.36, hy, -len / 2 - 0.12).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.55;
         G.col.set([3.2 * front, 3.0 * front, 2.6 * front], n * 3); n++;
       }
-      const tb = (on ? 0.9 : 0) + (brake ? 2.2 : 0);
-      _v.set(sx * wid * 0.38, hy + 0.06, len / 2 + 0.1).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.42;
+      const tb = (on ? 0.45 : 0) + (brake ? 1.6 : 0);
+      _v.set(sx * wid * 0.38, hy + 0.06, len / 2 + 0.1).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.3;
       G.col.set([tb * back, tb * back * 0.04, tb * back * 0.02], n * 3); n++;
     }
     if (on && poolOK && nc < NC && dist < 220) {

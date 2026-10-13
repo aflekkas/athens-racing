@@ -100,6 +100,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       try {
         const m = JSON.parse(bytes); if (!m || typeof m !== 'object') return;
         if (m.type === 'resume') {
+          if (c.lobby) return error('Leave your current lobby before resuming another session.');
           const prior = sessions.get(m.token);
           if (!prior || prior === c || (!prior.connected && Date.now() - prior.touched > reconnectGraceMs)) { send(ws, { type: 'session', id: c.id, token: c.token, resumed: false }); return; }
           sessions.delete(c.token); clients.delete(c);
@@ -164,12 +165,15 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
           const fields = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'];
           if (!m.state || fields.some(k => !Number.isFinite(m.state[k]))) return;
           const s = m.state, event = lobbyEvent(l);
+          const zones = ['front', 'rear', 'left', 'right'];
+          if (s.nitro !== undefined && (!Number.isFinite(s.nitro) || s.nitro < 0 || s.nitro > 1)) return;
+          if (s.damage !== undefined && (!s.damage || zones.some(k => !Number.isFinite(s.damage[k]) || s.damage[k] < 0 || s.damage[k] > 1))) return;
           if (Math.abs(s.x) > 100000 || Math.abs(s.z) > 100000 || Math.abs(s.y) > 10000 || Math.abs(s.u) > 500 || s.s < Math.min(event.s0, event.s1) - 500 || s.s > Math.max(event.s0, event.s1) + 500 || Math.abs(s.vLong) > 150 || Math.abs(s.vLat) > 150 || s.rpm < 0 || s.rpm > 20000 || s.gear < 1 || s.gear > 10) return;
           // Client physics with bounded progress; the server owns race timing/results.
           const prevS = c.state?.s ?? event.s0;
           const elapsed = (now - (c.stateAt ?? l.startAt)) / 1000;
           if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
-          c.state = Object.fromEntries(fields.map(k => [k, s[k]])); c.stateAt = now;
+          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: s.nitro ?? c.state?.nitro ?? 0.4, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true }; c.stateAt = now;
           if (c.finish === null && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000; l.racers.get(c.id).finish = c.finish; publish(l);
             leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });

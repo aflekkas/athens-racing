@@ -30,6 +30,7 @@ export class Menu {
 
   // ---------------------------------------------------------------- show / hide
   show(screen, data = {}, push = false) {
+    this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });
     if (!push) this.stack.length = 0;
     this.screen = screen; this.data = data; this.focus = data.focus ?? 0;
@@ -39,16 +40,16 @@ export class Menu {
   }
   pop() {
     const prev = this.stack.pop(); if (!prev) return false;
+    this.leaving();
     this.screen = prev.screen; this.data = prev.data; this.focus = prev.focus; this.render(); document.body.dataset.ui = this.screen;
     return true;
   }
   hide() {
-    this.restoreGraphics();
+    this.leaving();
     this.screen = null; this.stack.length = 0; this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
   }
   render() {
-    this.restoreGraphics();
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
     this.root.className = 's-' + this.screen;
     if (this.screen === 'settings') this.mountSettings();
@@ -221,7 +222,8 @@ export class Menu {
     const b = this.root.querySelector('#bindings');
     if (b && this.h.bindings) { try { this.h.bindings(b); } catch (e) { b.textContent = 'Controls unavailable'; console.warn(e); } }
   }
-  restoreGraphics() { /* the graphics <select> stays where main.js put it; the settings row drives it */ }
+  /** leaving the settings screen: drop any half-done key capture in the bindings table */
+  leaving() { if (this.screen === 'settings') this.h.cancelBindings?.(); }
 
   r_pause(d) {
     const item = (act, label) => `<div class="mi big" data-act="${act}"><b>${label}</b></div>`;

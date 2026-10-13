@@ -48,7 +48,7 @@ export class Input {
     if (document) this.mountTouch();
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
-  destroy() { for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); this.touchUI?.remove(); this.cancelCapture(); }
+  destroy() { for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); clearTimeout(this.toastTimer); this.touchUI?.remove(); this.cancelCapture(); }
   load() {
     for (const kind of ['keyboard', 'gamepad']) {
       try {
@@ -91,6 +91,7 @@ export class Input {
   }
   clear() {
     this.keys.clear(); this.pending.clear(); this.touch = {}; this.previous = {};
+    this.actions = [];
     this.keyThrottle = this.keyBrake = 0;
     Object.assign(this.state, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false });
     for (const a of EDGE_ACTIONS) this.state[a] = false;
