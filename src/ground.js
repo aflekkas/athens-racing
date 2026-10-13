@@ -502,9 +502,11 @@ export class Ground {
     v.wheelSlide ||= [null, null, null, null]; v.wheelSlideV ||= [null, null, null, null];
     for (let i = 0; i < 4; i++) {
       const W = SURF[ws[i]] || SURF.dirt;
-      const grip = W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5));
+      const surfaceGrip = W.mu, wetMultiplier = 1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5);
+      const softGroundMultiplier = W.traction ?? 1;
+      const grip = surfaceGrip * wetMultiplier;
       mu += grip / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; bow += (W.bow || 0) / 4;
-      v.wheelMu[i] = v.air ? 0.02 : grip * (W.traction ?? 1);
+      v.wheelMu[i] = v.air ? 0.02 : grip * softGroundMultiplier;
       v.wheelPeak[i] = W.peak ?? 1; v.wheelSlide[i] = W.slide ?? null; v.wheelSlideV[i] = W.slideV ?? null;
     }
     v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;

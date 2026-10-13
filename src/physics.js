@@ -131,7 +131,7 @@ export class Vehicle {
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
     this.shiftEvent = 0; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
-    this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0; this.powerT = 0;
+    this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0; this.powerT = 0; this.burnout = false; this.burnoutPrimed = false; this.handbrakeInput = false;
     this.damage = { front: 0, rear: 0, left: 0, right: 0 }; this.smoke = false; this.lastDamage = null;
     this.damageFx();
   }
@@ -493,6 +493,13 @@ export class Vehicle {
     const vx = this.vLong, vy = this.vLat, av = Math.abs(vx), vt = Math.hypot(vx, vy);
     const thrIn = clamp(inp.throttle, 0, 1), brk = clamp(inp.brake, 0, 1);
     const beta = Math.atan2(vy, Math.max(2, av));
+    // Space / pad handbrake + deliberate throttle: FWD holds its rear brakes;
+    // RWD / AWD use a front line-lock. At road speed the normal drift handbrake remains.
+    const burnout = !!inp.handbrake && thrIn > 0.65 && brk < 0.2 && vt < 15 / 3.6 && !this.reverse;
+    this.handbrakeInput = !!inp.handbrake;
+    this.burnout = burnout;
+    if (!burnout) this.burnoutPrimed = false;
+    if (burnout) { this.tcCut = this.escCut = 0; for (const c of this.corners) c.edl = c.esc = 0; }
 
     // ---------------- steering: speed-sensitive lock, extra room to counter-steer a slide, rack rate per car
     const lock = this.lockAt(vt);
@@ -604,7 +611,7 @@ export class Vehicle {
     const thrRaw = this.reverse ? brk : thrIn;
     this.shiftT = Math.max(0, this.shiftT - dt); this.shiftCool = Math.max(0, this.shiftCool - dt);
     if (this.shiftT <= 0 && this.pendingGear) { this.gear = this.pendingGear; this.pendingGear = 0; }
-    const sR = this.shareR, sF = 1 - sR;
+    const sR = burnout && this.awd ? 1 : this.shareR, sF = 1 - sR;
     const vwF = (C4[0].vw + C4[1].vw) * 0.5, vwR = (C4[2].vw + C4[3].vw) * 0.5;
     const vwD = vwF * sF + vwR * sR; // differential carrier speed (contact-patch units)
     const gr = this.reverse ? -sp.gears[0] * sp.final * 1.1 : this.ratio();
@@ -616,7 +623,7 @@ export class Vehicle {
     // automatic sequential box: shift points follow the throttle; kick-down; rev-matched downshifts when braking
     // mid-drift it holds the gear (a locked or spinning axle says nothing about road speed): no shifts on the
     // handbrake, and while latched only an upshift at the limiter or a downshift once the car has really slowed
-    const holdGear = sR > 0 && (inp.handbrake || (this.driftLatch > 0.3 && Math.abs(beta) > 0.1)); // fwd: the box reads the (honest) front wheels
+    const holdGear = burnout || sR > 0 && (inp.handbrake || (this.driftLatch > 0.3 && Math.abs(beta) > 0.1)); // fwd: the box reads the (honest) front wheels
     if (!this.reverse && this.shiftT <= 0 && this.shiftCool <= 0 && av > 0.5 && !(holdGear && inp.handbrake)) {
       const nG = sp.gears.length;
       const up = holdGear ? red * 0.99 : red * lerp(0.6, 0.975, smoothstep(0.2, 0.9, thrRaw));
@@ -632,18 +639,24 @@ export class Vehicle {
     }
     }
     // clutch: slips on launch (holds revs up), otherwise locked to the driven wheels
-    const launchRpm = sp.idle + (red * (sp.engine === 'diesel' ? 0.38 : 0.5) - sp.idle) * thrRaw;
+    const launchRpm = sp.idle + (red * (burnout ? 0.9 : sp.engine === 'diesel' ? 0.38 : 0.5) - sp.idle) * thrRaw;
     const shifting = this.shiftT > 0;
     const slipGear = this.reverse || this.gear === 1;
     // handbrake: the driver dips the clutch so the engine can't fight the locked rears (rwd / awd); revs flare on throttle
-    const hbClutch = !!inp.handbrake && sR > 0;
-    const engaged = !hbClutch && !shifting && Math.abs(wheelRpm) > sp.idle * 0.9 && (!slipGear || Math.abs(wheelRpm) >= launchRpm * 0.98);
-    this.clutch = engaged ? 1 : shifting || hbClutch ? 0 : clamp(Math.abs(wheelRpm) / Math.max(1, launchRpm), 0, 0.99);
+    const hbClutch = !!inp.handbrake && sR > 0 && !burnout;
+    // Rev with the clutch dipped, then dump the stored flywheel momentum once.
+    // This breaks traction on lower-torque FWD cars without adding engine power.
+    const burnoutDump = burnout && !this.burnoutPrimed && this.rpm >= red * 0.8;
+    if (burnoutDump) this.burnoutPrimed = true;
+    const burnoutClutch = burnout && !this.burnoutPrimed;
+    const engaged = !hbClutch && !burnoutClutch && !shifting && Math.abs(wheelRpm) > sp.idle * 0.9 && (!slipGear || Math.abs(wheelRpm) >= launchRpm * 0.98);
+    this.clutch = engaged ? 1 : shifting || hbClutch || burnoutClutch ? 0 : clamp(Math.abs(wheelRpm) / Math.max(1, launchRpm), 0, 0.99);
     let rpmT = engaged ? Math.abs(wheelRpm) : hbClutch ? sp.idle + thrRaw * (red * 0.85 - sp.idle) : shifting ? (this.pendingGear ? Math.abs(vwD / R * this.ratio(this.pendingGear) * 60 / (2 * Math.PI)) : this.rpm) : launchRpm;
     if (shifting && this.pendingGear < this.gear && this.pendingGear) rpmT *= 1.05; // throttle blip
     rpmT = Math.max(rpmT, sp.idle);
     // clutch kick: letting the clutch out on a flared engine dumps its flywheel energy into the driven wheels
     if (engaged && this.wasDeclutched && this.rpm > Math.abs(wheelRpm) + 300) this.kickT = (this.rpm - Math.abs(wheelRpm)) * Math.PI / 30 * e.Je / 0.18;
+    if (burnoutDump) this.kickT = Math.max(0, this.rpm - Math.abs(wheelRpm)) * Math.PI / 30 * e.Je / 0.18;
     this.wasDeclutched = hbClutch;
     this.kickT = Math.max(0, this.kickT - dt * this.kickT / 0.18);
     this.rpm = engaged ? Math.max(sp.idle, Math.abs(wheelRpm)) : damp(this.rpm, rpmT, shifting ? 18 : 9, dt);
@@ -656,7 +669,7 @@ export class Vehicle {
     const Teb = sp.torque * (sp.ebrake ?? 0.15) * (0.25 + 0.75 * e_r) * Math.max(0, 1 - thrRaw * 4) * (wheelRpm < 0 ? -1 : 1);
     if (this.limiter) Te = 0;
     if (shifting) Te = 0;
-    let Tnet = engaged ? Te - Teb + this.kickT : hbClutch ? 0 : Te * (shifting ? 0 : 1);
+    let Tnet = engaged ? Te - Teb + this.kickT : hbClutch || burnoutClutch ? 0 : Te * (shifting ? 0 : 1) + (burnout ? this.kickT : 0);
     this.engT = Tnet;
     this.load = clamp(Tnet / (sp.torque * (sp.powerMul ?? POWER_MUL)), -1, 1);
     // nitro: extra fuel and a squirt of shove
@@ -675,7 +688,8 @@ export class Vehicle {
     const brakeIn = this.reverse ? thrIn : brk;
     const Fbrake = brakeIn * sp.brake * mu0 * this.m * G * 1.15;
     const bias = sp.bias ?? 0.65;
-    const hbF = inp.handbrake ? this.m * G * 0.45 : 0; // per rear wheel (Coulomb: also holds the car at rest)
+    const hbF = inp.handbrake && !(burnout && sR > 0) ? this.m * G * 0.45 : 0;
+    const lineF = burnout && sR > 0 ? this.m * G * 0.7 : 0; // per front wheel during a brake stand
 
     // ---------------- per-wheel tyres
     const sinD = Math.sin(delta), cosD = Math.cos(delta);
@@ -694,7 +708,10 @@ export class Vehicle {
         // distances or launch traction. Combined slip still shares one force
         // budget, and reverse keeps its existing parking/tyre behaviour.
         const lateral = vx > 0 ? sy * sy / (sN * sN) : 0;
-        const slide = this.wheelSlide?.[i] ?? lerp(this.slideLong, this.slideK, lateral);
+        const looseSlide = this.wheelSlide?.[i] ?? lerp(this.slideLong, this.slideK, lateral);
+        // Sustained brake-stand slip cooks the driven tread; kinetic grip falls,
+        // while breakaway still uses the ordinary static peak.
+        const slide = burnout && (i < 2 ? sF : sR) > 0 ? Math.min(looseSlide, 0.45) : looseSlide;
         f = 1 - (1 - slide) * (1 - Math.exp(-(sN - 1) * 1.6));
         // past the peak the rubber is sliding and friction keeps falling with sliding speed: once a tyre lets go it
         // stays gone until the torque eases (taller gear, more speed), then it hooks up again
@@ -723,7 +740,7 @@ export class Vehicle {
       Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * (this.wheelPeak?.[i] ?? 1) * Si.vref);
       Si.p = dt / (mw + dt * Si.kx);
       Si.brk = (front ? Fbrake * bias : Fbrake * (1 - bias)) * 0.5;
-      Si.Fb = Si.brk * Wc.abs + (front ? 0 : hbF + this.rearDrag * cap[i]) + Wc.esc + Wc.edl;
+      Si.Fb = Si.brk * Wc.abs + (front ? lineF : hbF + this.rearDrag * cap[i]) + Wc.esc + Wc.edl;
       Si.sg = Math.abs(Wc.vw) > 1e-3 ? Math.sign(Wc.vw) : 0;
       Si.G = -tyre(i, Wc.vw, tt).Fx - Si.Fb * Si.sg;
     }
@@ -777,6 +794,17 @@ export class Vehicle {
       // to the body frame; yaw moment about the CG (x forward, y right, positive = yaw right)
       const fx = t1.Fx * Si.c - t1.Fy * Si.s, fy = t1.Fx * Si.s + t1.Fy * Si.c;
       FxB += fx; FyB += fy; Mz += cx[i] * fy - cy[i] * fx;
+    }
+    // A locked tyre at walking pace has static friction, which the regularised
+    // slip-ratio curve cannot represent at zero velocity. Let the held axle
+    // react against the driven axle within its real contact-patch capacity.
+    if (burnout) {
+      const hold = sR > 0 ? [0, 1] : [2, 3];
+      let existing = 0, capacity = 0;
+      for (const i of hold) { existing += C4[i].Fx * S[i].c; capacity += cap[i] * this.muX * Math.abs(S[i].c); }
+      const reaction = clamp(-(FxB - existing) - this.m * vx * 10, -capacity, capacity);
+      FxB += reaction - existing;
+      for (const i of hold) { const old = C4[i].Fx * S[i].c, force = reaction * cap[i] / (cap[hold[0]] + cap[hold[1]]); Mz -= cy[i] * (force - old); C4[i].Fx = force / S[i].c; }
     }
     // axle summaries (API: wheel[0] front, wheel[1] rear)
     for (let j = 0; j < 2; j++) {
@@ -838,7 +866,8 @@ export class Vehicle {
     // lets a car with its wheels spinning claw its way out rather than dig itself in)
     const tcSand = (this.surfSoft ?? 0) * (1 - smoothstep(3, 8, av));
     if (tcSand > 0.05 && spinOver > 0) this.tcCut = Math.min(0.92 * tcSand, Math.max(this.tcCut, this.tcCut + spinOver * 4 * tcSand * dt));
-    const edlK = sp.edl ?? (this.lsd < 0.2 ? tcK : 0);
+    if (burnout) this.tcCut = 0;
+    const edlK = burnout ? 0 : sp.edl ?? (this.lsd < 0.2 ? tcK : 0);
     for (let j = 0; j < 2; j++) {
       const L = C4[j * 2], Rr = C4[j * 2 + 1], driven = (j ? sR : sF) > 0;
       for (const [Wc, O, ci] of [[L, Rr, cap[j * 2]], [Rr, L, cap[j * 2 + 1]]]) {
@@ -848,7 +877,7 @@ export class Vehicle {
       }
     }
     this.tcOn = this.tcCut > 0.05 || C4.some((c) => c.edl > 50);
-    const escK = (sp.esc ?? 0.4) * (1 - 0.95 * this.driftLatch) * smoothstep(3, 10, vt);
+    const escK = (burnout ? 0 : sp.esc ?? 0.4) * (1 - 0.95 * this.driftLatch) * smoothstep(3, 10, vt);
     this.escOn = false;
     const wGrip = sp.grip * G / Math.max(5, vt);
     const wDes = clamp(vx * Math.tan(delta) / this.wb, -wGrip, wGrip);
