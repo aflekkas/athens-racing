@@ -36,8 +36,9 @@ export class DamageLattice {
       this.values[k+2]=clamp(this.values[k+2]+nz*depth,-.62,.62);
       // Compressed bonnet/boot rises in a smooth fold, never high-frequency random spikes.
       const inward=zone==='front'?z-pz:pz-z;
-      const deck=clamp((y-.34)/.30,0,1)*clamp((d.H*.85-y)/.27,0,1);
-      const buckle=!side?.78*(1-q)*Math.pow(strength,1.5)*Math.exp(-(((inward-.45)/.60)**2))*Math.exp(-(((x-px)/1.25)**2))*deck:0;
+      const deck=clamp((y-.48)/.30,0,1)*clamp((d.H*.85-y)/.27,0,1);
+      const fold=clamp((inward-.08)/.42,0,1); // mounting face stays low; the deck folds behind it
+      const buckle=!side?.65*fold*(1-q)*Math.pow(strength,1.5)*Math.exp(-(((inward-.45)/.60)**2))*Math.exp(-(((x-px)/1.25)**2))*deck:0;
       const wrinkle=!side?.018*strength*strength*fall*Math.sin(inward*18+x*7):0;
       const bulge=!side?Math.sign(x)*.08*strength*fall*clamp((Math.abs(x)-d.W*.24)/.25,0,1):0;
       this.values[k]=clamp(this.values[k]+bulge,-.30,.30);
@@ -96,7 +97,7 @@ function crashInternals(car){
   const dark=new THREE.MeshStandardMaterial({color:'#22282a',roughness:.92}),metal=new THREE.MeshStandardMaterial({color:'#515859',metalness:.5,roughness:.8});resources.push(dark,metal);
   for(const [zone,sign]of [['front',-1],['rear',1]]){
     const g=new THREE.Group();g.name='damage-internal-'+zone;g.visible=false;car.body.add(g);ends[zone]=g;
-    const box=(size,pos,mat=dark)=>{const geo=new THREE.BoxGeometry(...size,6,3,4),m=new THREE.Mesh(geo,mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;g.add(m);resources.push(geo);return m;};
+    const box=(size,pos,mat=dark)=>{const geo=new THREE.BoxGeometry(...size,car.damageCheap?1:6,car.damageCheap?1:3,car.damageCheap?1:4),m=new THREE.Mesh(geo,mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;g.add(m);resources.push(geo);return m;};
     const end=sign*(d.L/2-.38),engine=(car.spec?.engineZone||'front')===zone;
     // Filled structural volume / firewall: cap the hull so missing plastic never reveals the far wheels.
     box([d.W*.84,.36,.60],[0,.42,end-sign*.16]);

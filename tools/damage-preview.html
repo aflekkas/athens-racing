@@ -110,6 +110,10 @@ function tests(){
     assert(values.every((v,i)=>Number.isFinite(v)&&Math.abs(v)<=[.30001,.50001,.62001][i%3]),'accumulated lattice displacement stays inside component bounds');
     const size=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
     assert(size.x<3&&size.y<2.2&&size.z<5,'repeated contact never explodes the visual mesh bounds');
+    const crush=new DamageLattice(dims);crush.impact('front',1,front);
+    const face=crush.sample(0,.8,-2,new THREE.Vector3()),deck=crush.sample(0,.8,-1.55,new THREE.Vector3());
+    assert(face.z>.35&&face.z<.65&&Math.abs(face.y)<.06,'heavy front impact shortens the structure without lifting the mounting face');
+    assert(deck.y>.15&&deck.y<.45&&deck.y>face.y+.12,'bonnet buckles upward behind the crushed mounting face');
     const malformed=new DamageLattice(dims);malformed.impact('front',1,{localPoint:{x:NaN,y:Infinity,z:-Infinity},localNormal:{x:NaN,y:Infinity,z:0}});
     assert(malformed.values.every(Number.isFinite),'nonfinite contact input is sanitized');
     return {passed:passed.length,checks:passed};

@@ -44,7 +44,9 @@ try{
     console.log(`${car} ${scenario}: ${report.deformationMs.toFixed(1)} ms, max displacement ${report.maxDisplacement.toFixed(3)} m`);
     if(!report.finite||report.bounds.size.some(n=>!Number.isFinite(n)||n>15)||report.maxDisplacement>1.5)throw new Error(`Invalid deformation: ${JSON.stringify(report)}`);
   }
-  await writeFile(resolve(out,'report.json'),JSON.stringify({createdAt:new Date().toISOString(),invariants,reports,errors},null,2)+'\n');
+  const createdAt=new Date().toISOString(),result={createdAt,invariants,reports,errors};
+  await writeFile(resolve(out,'report-'+createdAt.replaceAll(':','-')+'.json'),JSON.stringify(result,null,2)+'\n');
+  await writeFile(resolve(out,'report.json'),JSON.stringify(result,null,2)+'\n');
   if(errors.length)throw new Error(errors.join('\n'));
   console.log(`Saved ${reports.length*2} screenshots and report.json to ${out}`);
 }finally{await browser?.close();await new Promise(done=>server.close(done));}
