@@ -5,7 +5,8 @@ export function createSqlLeaderboard(sql, maps, cars) {
     key TEXT PRIMARY KEY, board TEXT NOT NULL, mapId TEXT NOT NULL, version TEXT NOT NULL,
     eventId TEXT NOT NULL, car TEXT NOT NULL, traffic INTEGER NOT NULL,
     time REAL NOT NULL, at INTEGER NOT NULL, entry TEXT NOT NULL
-  ); CREATE INDEX IF NOT EXISTS times_board ON times(board, time);`);
+  ); CREATE INDEX IF NOT EXISTS times_board ON times(board, time);
+    CREATE INDEX IF NOT EXISTS times_lookup ON times(mapId, version, eventId, car, traffic, time, at);`);
   const submit = async r => {
     const { event, version, mapId } = resultContext(r, null, null, maps);
     if (!validResult(r, event, cars)) throw Object.assign(new Error('Unknown event/car or implausible result time.'), { status: 400 });
