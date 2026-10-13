@@ -2,6 +2,8 @@
 #ui { position: fixed; inset: 0; z-index: 12; display: none; font-family: var(--cond); color: #fff; }
 body.ui-open #ui { display: block; }
 body.ui-open #hud { opacity: 0 !important; }
+body.ui-open #police-hud, body.ui-open #police-big, body.ui-open #ghost-delta,
+body.replay-active #police-hud, body.replay-active #police-big, body.replay-active #ghost-delta { display: none !important; }
 body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 #ui .kick { font-weight: 800; letter-spacing: .3em; font-size: 15px; color: #8f99a6; }
 #ui .kick em { font-style: normal; color: var(--red); }
