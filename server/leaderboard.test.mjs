@@ -19,3 +19,14 @@ test('concurrent records persist atomically, retain each best car/event/traffic 
   assert.deepEqual((await createLeaderboard(file, defs, cars, 'track2')).list(), []);
   await assert.rejects(board.submit({ ...base, time: 2 }), /implausible/);
 });
+
+test('a full short-route board reports unretained records honestly and leaves long-route boards available', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'leaderboard-limit-')); t.after(() => rm(dir, { recursive: true, force: true }));
+  const { writeFile } = await import('node:fs/promises'); const file = join(dir, 'leaderboard.json');
+  await writeFile(file, JSON.stringify({ entries: Array.from({ length: 200 }, (_, i) => ({ driverId: 'driver-' + String(i).padStart(4, '0'), eventId: 'short', car: 'mini', traffic: false, version: 'v1', time: 10 + i / 10, at: i })) }));
+  const defs = new Map([['short', { len: 100, routeKey: '0>100', traffic: false }], ['long', { len: 10000, routeKey: '0>10000', traffic: false }]]);
+  const board = await createLeaderboard(file, defs, new Set(['mini']), 'v1');
+  assert.equal((await board.submit({ driverId: 'new-driver', eventId: 'short', car: 'mini', time: 50 })).saved, false);
+  assert.equal((await board.submit({ driverId: 'new-driver', eventId: 'long', car: 'mini', time: 500 })).saved, true);
+  assert.equal(board.list({ eventId: 'long' }).length, 1);
+});

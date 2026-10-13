@@ -5,8 +5,9 @@ const WORLD = new URL('../assets/audio/world/', import.meta.url);
 const ENGINES = new URL('../assets/audio/engines/', import.meta.url);
 const MUSIC = new URL('../assets/audio/music/', import.meta.url);
 
-// Engine loops reused for traffic, with the RPM each was recorded at (see engine-recordings.js).
-const TRAFFIC_ENGINES = { 'car-idle': ['mini-idle.wav', 900], 'car-engine': ['mini-low.wav', 1800], 'diesel-idle': ['taxi-idle.wav', 860], 'diesel-engine': ['taxi-low.wav', 2000] };
+// Engine loops reused for traffic, with the RPM each was recorded at (see engine-recordings.js). Petrol traffic
+// uses the BMW exterior takes: they are heard from outside, and long enough that the loop never audibly repeats.
+const TRAFFIC_ENGINES = { 'car-idle': ['z4-idle.wav', 745], 'car-engine': ['z4-low.wav', 1545], 'diesel-idle': ['taxi-idle.wav', 860], 'diesel-engine': ['taxi-low.wav', 2000] };
 // Loaded first: what you hear in the first seconds of a race.
 const FIRST = ['sea-sand', 'cicadas', 'wind', 'tyre-squeal', 'car-idle', 'car-engine', 'city', 'diesel-idle', 'diesel-engine'];
 

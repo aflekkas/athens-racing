@@ -4,6 +4,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat } from './cockpit.js';
 import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetailedModel } from './vehicle-models.js';
+import { policeModel } from './police-models.js';
 import { savedPaint, setPaint } from './vehicle-paint.js';
 export { setPaint } from './vehicle-paint.js';
 
@@ -48,10 +49,10 @@ export const CARS = [
   },
   {
     id: 'gtv', name: 'ALFA ROMEO 2000 GTV', short: '2000 GTV', tag: 'Bertone classic · Twin-cam four. Rear-wheel drive.', color: '#b52125', accent: '#bf9160',
-    mass: 1028, power: 97, torque: 182, redline: 6500, idle: 850, gears: [3.304, 1.988, 1.355, 1, 0.791], final: 4.10, wheelR: 0.307,
+    mass: 1040, power: 97, torque: 182, redline: 6500, idle: 850, gears: [3.304, 1.988, 1.355, 1, 0.791], final: 4.10, wheelR: 0.313,
     torqueCurve: [[0,72],[850,86],[1800,130],[3000,165],[4000,180],[4200,182],[5000,177],[5500,168.42],[6000,150],[6500,125],[7100,100]], peakTorqueRpm: 4200, peakPowerRpm: 5500,
     wheelbase: 2.35, length: 4.10, width: 1.58, cdA: 0.70, vmax: 195, grip: 0.91, steer: 0.62, yawI: 1.02, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: 'gtv', drive: 'rwd', engine: 'na4', transmission: 'manual',
-    tyres: ['185/70 HR14','185/70 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.54, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
+    tyres: ['165 HR14','165 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.54, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
     stats: { speed: 0.39, accel: 0.45, handling: 0.69, drift: 0.67 },
   },
 ];
@@ -259,6 +260,8 @@ function blobMaterial() {
 
 // ------------------------------------------------------------------ traffic models (shared geometry per type)
 export const TRAFFIC_TYPES = [
+  { id:'police', police:true, w:0, model:'octavia', shape:'sedan', len:4.689, wid:1.829, colors:['#f0f1ed'] },
+  { id:'police_moto', police:true, scooter:true, moto:true, w:0, len:2.20, wid:.92, colors:['#f0f1ed'] },
   // w = share of the mix; colours lean on what you actually see in Athens: white, silver, grey, black, a few blues and reds
   { id: 'city', w: 16, shape: 'hatch', scale: 0.88, len: 3.65, wid: 1.6, colors: ['#f2f2f0', '#c9ccd1', '#b8282a', '#e9e2c9', '#2f6db0', '#9fb3a0', '#f4b9c0', '#7d8288'] },
   { id: 'hatch', w: 26, shape: 'hatch', len: 4.15, wid: 1.82, colors: ['#f2f2f0', '#c9ccd1', '#1d1f24', '#2e4c6a', '#8fa3b8', '#a33a2c', '#e8d9a8', '#3f5e4a', '#7d8288', '#5d6b78'] },
@@ -276,6 +279,7 @@ export const TRAFFIC_TYPES = [
 ];
 const TRAFFIC_GEO = {};
 export function trafficModel(type, color, rng, opts = {}) {
+  if (type.police) return policeModel(type, color, rng, opts);
   if (type.model && !opts.parked) return trafficDetailedModel(type, color, rng);
   const plate = makePlateMaterial();
   const S = shared();
@@ -444,7 +448,7 @@ export class Driver {
     let ax = 0, ay = 0, az = 0;
     this.curls.forEach((c, i) => { this._v.copy(c.rest).add(c.off); ax += c.off.x; ay += c.off.y; az += c.off.z; this._s.setScalar(c.s); this._m.compose(this._v, c.rot, this._s); this.curlMesh.setMatrixAt(i, this._m); });
     const n = this.curls.length;
-    this.hairBase.position.set(ax / n * 0.6, 0.13 + ay / n * 0.6, 0.13 + az / n * 0.6);
+    this.hairBase.position.set(ax / n * 0.6, (this.hairY ?? 0.13) + ay / n * 0.6, 0.13 + az / n * 0.6);
     this.curlMesh.instanceMatrix.needsUpdate = true;
   }
 }

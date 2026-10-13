@@ -66,10 +66,10 @@ class Particles {
 }
 
 // mark colours (rgb, alpha): rubber on tarmac, ruts in the soft stuff
-const MARK_COL = { asphalt: [0.04, 0.04, 0.045, 0.6], pavement: [0.07, 0.07, 0.07, 0.45], sand: [0.42, 0.35, 0.25, 0.55], dirt: [0.24, 0.18, 0.12, 0.5],
+const MARK_COL = { asphalt: [0.04, 0.04, 0.045, 0.6], pavement: [0.07, 0.07, 0.07, 0.45], sand: [0.42, 0.35, 0.25, 0.55], deepsand: [0.45, 0.37, 0.26, 0.65], dirt: [0.24, 0.18, 0.12, 0.5],
   gravel: [0.3, 0.27, 0.22, 0.45], scrub: [0.22, 0.2, 0.13, 0.45], verge: [0.2, 0.17, 0.1, 0.5] };
 // dust colours per surface
-const DUST = { sand: [0.86, 0.78, 0.62], dirt: [0.62, 0.52, 0.4], gravel: [0.72, 0.68, 0.6], scrub: [0.6, 0.55, 0.42], verge: [0.5, 0.42, 0.3] };
+const DUST = { sand: [0.86, 0.78, 0.62], deepsand: [0.88, 0.8, 0.64], dirt: [0.62, 0.52, 0.4], gravel: [0.72, 0.68, 0.6], scrub: [0.6, 0.55, 0.42], verge: [0.5, 0.42, 0.3] };
 
 export class Fx {
   constructor(scene, route, ground) {

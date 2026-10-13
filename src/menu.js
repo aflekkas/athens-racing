@@ -5,6 +5,7 @@
 // controls, so focus is drawn with a class and the keys keep flowing through flowAction().
 import { EVENTS, TYPES, getEvent, resolve, loadRecord, medalCount, targetLabels, MEDALS } from './events.js';
 import { settings, setSetting, speedUnit, fmtDist, speedIn } from './settings.js';
+import * as PUI from './progression-ui.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MEDAL_ICON = (m, cls = '') => `<i class="medal ${m || 'none'} ${cls}" title="${m ? m.toUpperCase() : 'NO MEDAL'}"></i>`;
@@ -92,6 +93,8 @@ export class Menu {
     if (this.screen !== 'title') this.show('title');
   }
   onClick(e) {
+    const g = e.target.closest?.('.gopt');
+    if (g) { const ev = g.closest('[data-ghost-ev]').dataset.ghostEv; try { window.__replay?.selectGhost?.(ev, g.dataset.g === 'off' ? null : g.dataset.g); } catch (err) { console.warn(err); } this.showDetail(ev); return; }
     const el = e.target.closest?.('[data-act], [data-ev], [data-filter], [data-kind]'); if (!el || !this.root.contains(el)) return;
     const it = this.items(); if (it.includes(el)) this.setFocus(it.indexOf(el), false);
     if (el.dataset.kind && e.target.closest('.opt')) { const o = e.target.closest('.opt'); this.choose(el, o.dataset.v); return; }
@@ -119,6 +122,10 @@ export class Menu {
       case 'next': this.h.next(this.data.next); break;
       case 'list': this.h.quit('events'); break;
       case 'menu': this.h.quit('title'); break;
+      case 'replay': window.__replay?.watch?.(); break;
+      case 'photo': window.__replay?.photo?.(); break;
+      case 'ghostImport': Promise.resolve(window.__replay?.importGhost?.()).then(() => this.render()).catch((e) => console.warn(e)); break;
+      case 'ghostExport': window.__replay?.exportGhost?.(this.data.eventId); break;
     }
   }
   cycleFilter(d) {
@@ -148,12 +155,21 @@ export class Menu {
     }
   }
 
+  /** ghost picker in the event detail (src/replay.js): OFF / each saved ghost for this event */
+  ghostRow(e) {
+    const R = window.__replay; if (!R?.listGhosts || !settings.ghostEnabled) return '';
+    let list = []; try { list = R.listGhosts(e.id) || []; } catch (err) { console.warn(err); }
+    const sel = (() => { try { return R.selectedGhost?.(e.id) ?? null; } catch { return null; } })();
+    const opts = [['off', 'OFF'], ...list.map((g) => [g.id, `${esc(g.name || 'GHOST')}${g.time != null ? ' · ' + this.h.fmtTime(g.time) : ''}`])];
+    return `<div class="d-ghost" data-ghost-ev="${e.id}"><span>GHOST</span><div class="opts">${opts.map(([v, l]) => `<span class="opt gopt ${String(sel ?? (list[0]?.id ?? 'off')) === String(v) ? 'on' : ''}" data-g="${esc(v)}">${l}</span>`).join('')}</div></div>`;
+  }
+
   // ---------------------------------------------------------------- screens
   r_title() {
     const m = medalCount();
     const item = (act, label, sub) => `<div class="mi big" data-act="${act}"><b>${label}</b><span>${sub}</span></div>`;
     return `<div class="t-wrap">
-      <div class="t-head"><div class="kick">ATHENS RIVIERA · EO91 · VOULIAGMENI <em>▶</em> LOMVARDA</div><h1>PARALIAKI</h1></div>
+      <div class="t-head"><div class="kick">ATHENS RIVIERA · EO91 · VOULIAGMENI <em>▶</em> LOMVARDA</div><h1>PARALIAKI</h1>${PUI.titleStrip?.() ?? ''}</div>
       <div class="t-list">
         ${item('quick', 'QUICK RACE', 'Full sprint · 3 rivals')}
         ${item('events', 'EVENTS', `${EVENTS.length} events · sprints, cameras, score attack`)}
@@ -168,12 +184,13 @@ export class Menu {
 
   r_events() {
     const ctx = this.h.ctx(), fmt = this.h.fmtTime;
-    const list = EVENTS.filter((e) => this.filter === 'all' || e.type === this.filter);
+    const all = EVENTS.filter((e) => this.filter === 'all' || e.type === this.filter);
+    const list = PUI.sortByTier ? PUI.sortByTier(all) : all; // career ladder order (src/progression-ui.js)
     const tabs = ['all', ...Object.keys(TYPES)].map((f) => `<div class="tab ${f === this.filter ? 'on' : ''}" data-filter="${f}">${f === 'all' ? 'ALL' : TYPES[f].label}</div>`).join('');
-    const rows = list.map((e) => {
+    const rows = list.map((e, i) => {
       const r = resolve(e, ctx), rec = loadRecord(e.id);
       const best = e.type === 'score' ? (rec.bestScore != null ? rec.bestScore.toLocaleString('en-US') + ' PTS' : '') : e.type === 'speedtrap' ? (rec.bestTrap != null ? Math.round(speedIn(rec.bestTrap)) + ' ' + speedUnit() : '') : rec.bestTime != null ? fmt(rec.bestTime) : '';
-      return `<div class="mi ev" data-ev="${e.id}">${MEDAL_ICON(rec.medal)}<div class="ev-main"><b>${esc(e.name)}</b><span>${esc(r.fromName)} ${r.reverse ? '◀' : '▶'} ${esc(r.toName)} · ${fmtDist(r.len)}${r.reverse ? ' · REVERSE' : ''}</span></div><div class="ev-type t-${e.type}">${TYPES[e.type].short}</div><div class="ev-best">${best}</div></div>`;
+      return `${PUI.tierHead?.(list, i) ?? ''}<div class="mi ev ${PUI.rowClass?.(e.id) ?? ''}" data-ev="${e.id}">${MEDAL_ICON(rec.medal)}<div class="ev-main"><b>${esc(e.name)}${PUI.rowBadge?.(e.id) ?? ''}</b><span>${esc(r.fromName)} ${r.reverse ? '◀' : '▶'} ${esc(r.toName)} · ${fmtDist(r.len)}${r.reverse ? ' · REVERSE' : ''}</span></div><div class="ev-type t-${e.type}">${TYPES[e.type].short}</div><div class="ev-best">${best}</div></div>`;
     }).join('');
     return `<div class="ev-wrap"><div class="ev-left"><div class="kick">${this.filter === 'timetrial' ? 'TIME TRIAL' : 'EVENTS'}</div><div class="tabs">${tabs}</div><div class="ev-list">${rows || '<div class="empty">NO EVENTS</div>'}</div>
       <div class="mi small" data-act="back"><b>◀ BACK</b></div></div><div class="ev-detail" id="evDetail"></div></div>
@@ -201,6 +218,8 @@ export class Menu {
       <div class="d-facts">${facts.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
       <div class="d-targets">${tg.map(([m, v]) => `<div class="tg ${m} ${rec.medal && MEDALS.indexOf(rec.medal) >= MEDALS.indexOf(m) ? 'got' : ''}">${MEDAL_ICON(m)}<b>${v}</b></div>`).join('')}</div>
       ${best.length ? `<div class="d-best">${best.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>` : '<div class="d-best none">NOT RACED YET</div>'}
+      ${this.ghostRow(e)}
+      ${PUI.detail?.(e.id) ?? ''}
       <div class="d-go">ENTER / CLICK TO START · ${esc(this.h.carName?.() || '')}</div>`;
   }
 
@@ -212,7 +231,9 @@ export class Menu {
       <div class="set-group"><h3>SOUND</h3>${range('master', 'MASTER VOLUME')}${range('music', 'MUSIC')}${range('sfx', 'EFFECTS')}</div>
       <div class="set-group"><h3>DISPLAY</h3>${choice('units', 'SPEED UNITS', [['kmh', 'KM/H'], ['mph', 'MPH']])}
         ${choice('graphics', 'GRAPHICS', [['auto', 'AUTO'], ['high', 'HIGH'], ['low', 'LOW']], locked ? 'LOCKED WHILE ONLINE' : 'RELOADS THE GAME')}</div>
-      <div class="set-group"><h3>DRIVING</h3>${choice('aids', 'DRIVER AIDS (TC · ABS · ESC)', [['true', 'ON'], ['false', 'OFF']])}${choice('transmission', 'GEARBOX', [['auto', 'AUTOMATIC'], ['manual', 'MANUAL']], 'MANUAL: SHIFT WITH E / Q · PAD RB / LB')}</div>
+      <div class="set-group"><h3>DRIVING</h3>${choice('aids', 'DRIVER AIDS (TC · ABS · ESC)', [['true', 'ON'], ['false', 'OFF']])}${choice('police', 'POLICE IN QUICK RACE / FREE ROAM', [['false', 'OFF'], ['true', 'ON']])}${choice('transmission', 'GEARBOX', [['auto', 'AUTOMATIC'], ['manual', 'MANUAL']], 'MANUAL: SHIFT WITH E / Q · PAD RB / LB')}</div>
+      <div class="set-group"><h3>GHOST</h3>${choice('ghostEnabled', 'RACE YOUR BEST GHOST', [['true', 'ON'], ['false', 'OFF']])}
+        ${window.__replay ? `<div class="mi set" data-act="ghostImport"><span class="k">IMPORT A GHOST FILE</span><b>▶</b></div><div class="mi set" data-act="ghostExport"><span class="k">EXPORT LAST GHOST</span><b>▶</b></div>` : ''}</div>
       <div class="set-group"><h3>CONTROLS</h3><div id="bindings" class="bindings"></div></div>
       <div class="mi small" data-act="back"><b>◀ BACK</b></div></div>
       <div class="ui-keys"><span><i>↑ ↓</i> SELECT</span><span><i>← →</i> CHANGE</span><span><i>ESC</i> BACK</span></div>`;
@@ -228,7 +249,7 @@ export class Menu {
   r_pause(d) {
     const item = (act, label) => `<div class="mi big" data-act="${act}"><b>${label}</b></div>`;
     return `<div class="p-wrap"><div class="kick">${esc(d.kick || '')}</div><h2>PAUSED</h2><div class="p-sub">${esc(d.sub || '')}</div>
-      <div class="p-list">${item('resume', 'RESUME')}${d.online ? '' : item('restart', 'RESTART')}${item('settings', 'SETTINGS')}${item('quit', d.online ? 'BACK TO MENU' : 'QUIT TO MENU')}</div></div>
+      <div class="p-list">${item('resume', 'RESUME')}${d.online ? '' : item('restart', 'RESTART')}${d.online || !window.__replay?.photo ? '' : item('photo', 'PHOTO MODE')}${item('settings', 'SETTINGS')}${item('quit', d.online ? 'BACK TO MENU' : 'QUIT TO MENU')}</div></div>
       <div class="ui-keys"><span><i>↑ ↓</i> SELECT</span><span><i>ENTER</i> OK</span><span><i>ESC</i> RESUME</span></div>`;
   }
 
@@ -244,7 +265,7 @@ export class Menu {
         <div class="r-medal">${MEDAL_ICON(m, 'big')}<span>${m ? m.toUpperCase() + ' MEDAL' : 'NO MEDAL'}${res.newBest ? ' · <em>NEW BEST</em>' : ''}</span></div>
         <h2>${esc(d.title || '')}</h2><div class="r-sub">${d.sub || ''}</div>
         <div class="r-table">${(d.rows || []).map(([k, v, hi]) => `<div><span>${esc(k)}</span><b class="${hi ? 'nb' : ''}">${v}</b></div>`).join('')}</div>
-        <div class="r-actions">${item('retry', 'RETRY')}${d.next ? item('next', 'NEXT EVENT') : ''}${item('list', 'EVENT LIST')}${item('menu', 'MAIN MENU')}</div>
-      </div><div class="r-right">${field}${splits}${bd}</div></div>`;
+        <div class="r-actions">${item('retry', 'RETRY')}${window.__replay?.watch ? item('replay', 'WATCH REPLAY') : ''}${d.next ? item('next', 'NEXT EVENT') : ''}${item('list', 'EVENT LIST')}${item('menu', 'MAIN MENU')}</div>
+      </div><div class="r-right">${PUI.resultsBlock?.(res) ?? ''}${field}${splits}${bd}</div></div>`;
   }
 }

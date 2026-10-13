@@ -83,3 +83,12 @@ crickets.mp3
 wipers.mp3
   "windshield wipers.aiff" by jc144940
   https://freesound.org/people/jc144940/sounds/180946/
+radio-chatter.mp3
+  "Police radio chatter" by Iam_calderon
+  https://freesound.org/people/Iam_calderon/sounds/435383/
+radio-squelch.mp3
+  "Radio Sign Off / Squelch" by JovianSounds
+  https://freesound.org/people/JovianSounds/sounds/524205/
+radio-beep.mp3
+  "Walkie Talkie - Roger Beep" by bruce965
+  https://freesound.org/people/bruce965/sounds/321906/

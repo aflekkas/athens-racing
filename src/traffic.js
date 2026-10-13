@@ -56,6 +56,29 @@ export function extents(veh, route) {
   return { hs: veh.halfL * c + veh.halfW * s, hu: veh.halfL * s + veh.halfW * c };
 }
 
+/** a stand-in roof light bar (blue, Greek police) + the strobe hook, for models that don't bring their own */
+function lightBar(m, type) {
+  m.root.updateMatrixWorld(true);
+  const top = new THREE.Box3().setFromObject(m.body).max.y - m.root.position.y;
+  const bar = new THREE.Group(), moto = !!type.scooter;
+  const base = new THREE.Mesh(new THREE.BoxGeometry(moto ? 0.3 : type.wid * 0.62, 0.06, moto ? 0.12 : 0.24), new THREE.MeshStandardMaterial({ color: '#1b1d22', roughness: 0.5 }));
+  bar.add(base);
+  const lamps = [];
+  for (const sx of moto ? [-1, 1] : [-1, -0.33, 0.33, 1]) {
+    const mat = new THREE.MeshStandardMaterial({ color: '#0b1a40', emissive: Math.abs(sx) < 0.5 && !moto ? '#ff2a2a' : '#1f6bff', emissiveIntensity: 0, roughness: 0.2, transparent: true, opacity: 0.9 });
+    const l = new THREE.Mesh(new THREE.BoxGeometry(moto ? 0.11 : type.wid * 0.14, 0.09, moto ? 0.1 : 0.2), mat);
+    l.position.set(sx * (moto ? 0.1 : type.wid * 0.23), 0.07, 0); bar.add(l); lamps.push({ mat, sx });
+  }
+  bar.position.set(0, top + 0.02, moto ? 0.55 : 0.1);
+  m.body.add(bar);
+  m.setStrobe = (on, t) => {
+    for (const L of lamps) {
+      // double flash, left / right alternating, ~2.5 Hz
+      const ph = (t * 2.5 + (L.sx < 0 ? 0 : 0.5)) % 1, f = ph < 0.12 || (ph > 0.2 && ph < 0.32);
+      L.mat.emissiveIntensity = on && f ? 9 : on ? 0.4 : 0;
+    }
+  };
+}
 function indicatorMat() { return new THREE.MeshStandardMaterial({ color: '#4a2a00', emissive: '#ff9a00', emissiveIntensity: 0, roughness: 0.4 }); }
 
 export class Traffic {
@@ -89,6 +112,19 @@ export class Traffic {
       const mass = MASS[type.id] || (type.bus ? 12000 : type.scooter ? 220 : 1400);
       this.cars.push({ id: i, type, kind, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV[type.id] || BEHAV[kind] || BEHAV.hatch, dmg: 0 });
     }
+    // the police (src/police.js): a reserved pool the ordinary spawner never uses. Until the model library has the
+    // ΕΛ.ΑΣ. types, a white sedan / motorbike stands in with a light bar of our own
+    for (let k = 0; k < 8; k++) {
+      const moto = k >= 6, type = byId[moto ? 'police_moto' : 'police'] || { ...(moto ? byId.moto : byId.taxi_superb || byId.sedan), id: moto ? 'police_moto' : 'police', police: true, taxi: false, colors: ['#f4f5f6'], w: 0 };
+      const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
+      if (!m.setStrobe) lightBar(m, type);
+      const indL = indicatorMat(), indR = indicatorMat(), flash = new THREE.MeshStandardMaterial({ color: '#202020', emissive: '#fff6e0', emissiveIntensity: 0, roughness: 0.3 });
+      if (!type.scooter) for (const [mat, sx] of [[indL, -1], [indR, 1]]) for (const z of [-1, 1]) { const b = new THREE.Mesh(indGeo, mat); b.position.set(sx * type.wid * 0.47, 0.72, z * type.len * 0.5); m.body.add(b); }
+      m.root.visible = false; scene.add(m.root);
+      const mass = moto ? 320 : 1550;
+      this.cars.push({ id: POOL + k, type, kind: type.id, police: true, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV.sedan, dmg: 0 });
+    }
+    this.police = null; // set by Police
     // road works: cones + a sign, closing the kerb lane for ~45 m in town
     this.sites = []; this.cones = [];
     const coneGeo = new THREE.ConeGeometry(0.19, 0.72, 12); coneGeo.translate(0, 0.36, 0);
@@ -111,7 +147,8 @@ export class Traffic {
       }
       for (let k = 2; k < 13; k += 3) this.cones.push({ s: s0 + k * 3.5 + 1.5, u: uc + LANE_W * 0.35, s0: s0 + k * 3.5 + 1.5, u0: uc + LANE_W * 0.35, y: 0, vs: 0, vu: 0, vy: 0, rx: 0, rz: 0, w: 0, hit: false });
     }
-    this.coneMesh = new THREE.InstancedMesh(coneGeo, coneMat, Math.max(1, this.cones.length));
+    this.coneMesh = new THREE.InstancedMesh(coneGeo, coneMat, this.cones.length + 64); // + room for police roadblocks
+    this.coneMesh.count = this.cones.length; this.coneBase = this.cones.length;
     this.coneMesh.castShadow = true; this.coneMesh.frustumCulled = false; scene.add(this.coneMesh);
     this._m = new THREE.Matrix4(); this._q = new THREE.Quaternion(); this._e = new THREE.Euler(); this._p = new THREE.Vector3(); this._s = new THREE.Vector3(1, 1, 1);
     this.t = 0;
@@ -165,7 +202,7 @@ export class Traffic {
   pickFree(pred) {
     // a free vehicle of a fitting type; buses are rarer outside the avenue
     let best = null;
-    for (const c of this.cars) if (!c.active && (!pred || pred(c))) { if (!best || this.rng.chance(0.35)) best = c; }
+    for (const c of this.cars) if (!c.active && !c.police && (!pred || pred(c))) { if (!best || this.rng.chance(0.35)) best = c; }
     return best;
   }
 
@@ -334,6 +371,7 @@ export class Traffic {
     for (const c of this.cars) {
       if (!c.active) continue;
       const ahead = (c.s - ps) * this.dir;
+      if (c.cop && c.cop.keep) { if (c.s < 5 || c.s > route.length - 5) { c.active = false; c.m.root.visible = false; } continue; }
       if (ahead < -260 || ahead > 1150 || c.s < 5 || c.s > route.length - 5) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
       if (c.mode === 'parked') parked++; else if (c.dir > 0) same++; else onc++;
     }
@@ -356,6 +394,7 @@ export class Traffic {
       const r = routeVel(a.veh, route), ex = extents(a.veh, route);
       this.racers.push({ a, kind: a.kind, s: a.veh.s, u: a.veh.u, vs: r.vs, vu: r.vu, hs: ex.hs, hu: ex.hu });
     }
+    for (const c of this.cars) if (c.active && c.cop && c.cop.siren && !c.crash) this.racers.push({ a: c, kind: 'police', s: c.s, u: c.u, vs: c.dir * c.v, vu: c.uv || 0, hs: c.len * 0.5, hu: c.wid * 0.5 });
     this.wrecks.length = 0;
     for (const c of this.cars) if (c.active && c.crash && c.crash.wreck) this.wrecks.push(c);
     for (const c of this.cars) {
@@ -363,7 +402,8 @@ export class Traffic {
       c.honkCool -= dt;
       if (c.crash) { this.updateCrashed(c, dt); continue; }
       if (c.cross) continue; // side-street cars crossing the junction: see updateCross
-      if (c.mode === 'parked') { this.updateParked(c, dt); continue; }
+      if (c.mode === 'parked') { if (!c.cop) this.updateParked(c, dt); continue; }
+      if (c.cop && c.cop.chase && this.police) { this.police.driveCop(c, dt); this.bumpCheck(c); continue; }
       this.drive(c, dt, pl);
     }
     this.updateCross(dt, ps, actors);
@@ -485,6 +525,7 @@ export class Traffic {
     const d = c.drv, hw = c.wid * 0.5, route = this.route, rng = this.rng;
     let head = null, rear = null;
     for (const R of this.racers) {
+      if (R.a === c) continue;
       const dS = (R.s - c.s) * c.dir, rvs = R.vs * c.dir;
       if (dS > 0 && rvs < -1.5) {
         const close = c.v - rvs, gap = dS - R.hs - c.len * 0.5;
@@ -539,7 +580,7 @@ export class Traffic {
     } else if (rear && !c.evade && !c.task && !c.ovt && c.lcT <= 0 && c.lcDelay <= 0 && c.mode === 'drive' && !c.type.scooter) {
       if (c.yieldFor !== rear.R) {
         c.yieldFor = rear.R;
-        c.yieldWill = rng.chance(d.mirror * (d.arch === 'courteous' ? 0.85 : 0.5));
+        c.yieldWill = rear.R.kind === 'police' ? d.arch !== 'distracted' || rng.chance(0.3) : rng.chance(d.mirror * (d.arch === 'courteous' ? 0.85 : 0.5)); // a siren: everybody (nearly) pulls over
       }
       if (c.yieldWill && rear.dist < 20 + rear.rel * 3) {
         c.yieldWill = false;
@@ -897,7 +938,7 @@ export class Traffic {
   spawnCross(j, side) {
     const rng = this.rng, route = this.route;
     for (const q of this.cars) if (q.active && q.cross && q.cross.j === j && q.cross.side === side && q.cross.t < 0.4) return;
-    const c = this.cars.find((q) => !q.active && !q.type.bus); if (!c) return;
+    const c = this.cars.find((q) => !q.active && !q.type.bus && !q.police); if (!c) return;
     c.mode = 'cross'; c.hazard = false; c.blinkSide = 0; c.task = null; c.ovt = null; c.split = false; c.acc = 0; c.uv = 0; c.braking = false; this.repair(c); if (!c.drv) this.personality(c);
     const along = j.sides[side > 0 ? 'R' : 'L'] || 0;
     const u0 = side * (route.edge(j.s) + ROAD.gutter + 14);
@@ -1052,7 +1093,8 @@ export class Traffic {
       c.s += ct.ns * sh * ib; c.u += ct.nu * sh * ib;
       if (r.j <= 0) continue; // touching or already separating: no impulse
       const dvA = Math.hypot(A.vs - vs0, A.vu - vu0), dvB = r.dvB;
-      if (dvB > 0.35 || c.crash) this.hitCar(c, B, dvB, zoneOf(B, ct.ps, ct.pu), now);
+      if (c.cop && c.cop.chase && !c.crash && dvB < 3) { c.v = Math.max(0, c.dir * B.vs); c.uv = B.vu; } // a police driver rides out a PIT / ram contact
+      else if (dvB > 0.35 || c.crash) this.hitCar(c, B, dvB, zoneOf(B, ct.ps, ct.pu), now);
       else if (c.mode !== 'parked') { c.v = Math.max(0, c.dir * B.vs); c.shakenT = 2; } // a nudge: brake, glare
       if (actor.kind === 'player') c.pHitT = now;
       const sev = r.vn;
@@ -1068,6 +1110,27 @@ export class Traffic {
       k.w = (Math.random() - 0.5) * 20; k.hit = true;
       rv.vs *= 0.985; setRouteVel(veh, rv.f, rv.vs, rv.vu);
       events.push({ kind: 'cone', who: actor.kind, sev: sp });
+    }
+  }
+
+  /** a chasing police car driving into traffic (it is kinematic, like all drivers): a real impact, maybe a crash */
+  bumpCheck(c) {
+    const A = this.carBody(c, this._PA || (this._PA = {})), B = this._PB || (this._PB = {});
+    for (const q of this.cars) {
+      if (q === c || !q.active || Math.abs(q.s - c.s) > 10 || Math.abs(q.u - c.u) > 6) continue;
+      this.carBody(q, B);
+      const ct = obbContact(A, B); if (!ct) continue;
+      const vA0s = A.vs, vA0u = A.vu;
+      const r = impulse(A, B, ct, 0.15, 0.45);
+      const ia = 1 / A.m, ib = 1 / B.m, sh = (ct.ov + 0.01) / (ia + ib);
+      c.s -= ct.ns * sh * ia; c.u -= ct.nu * sh * ia; A.s = c.s; A.u = c.u;
+      q.s += ct.ns * sh * ib; q.u += ct.nu * sh * ib;
+      if (r.j <= 0) continue;
+      const dvA = Math.hypot(A.vs - vA0s, A.vu - vA0u);
+      if (r.dvB > 0.35 || q.crash) this.hitCar(q, B, r.dvB, zoneOf(B, ct.ps, ct.pu), this.t);
+      if (dvA > 4) { this.hitCar(c, A, dvA, zoneOf(A, ct.ps, ct.pu), this.t); return; }
+      c.v = Math.max(0, A.vs * c.dir); c.uv = A.vu;
+      if (r.vn > 3) this.sounds.push({ kind: 'crunch', c: q, sev: r.vn });
     }
   }
 

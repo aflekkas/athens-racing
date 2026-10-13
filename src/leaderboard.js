@@ -14,7 +14,7 @@ export async function getLeaderboard(filters = {}) {
   return response.json();
 }
 export async function submitResult(result) {
-  if (!result?.valid || !Number.isFinite(result.time) || !['sprint', 'timetrial'].includes(result.type)) return { saved: false };
+  if (!result?.valid || !Number.isFinite(result.time)) return { saved: false };
   try {
     const response = await fetch('/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId: result.eventId, car: result.car, time: result.time, valid: true, driverId: driverId(), name: localStorage.getItem('paraliaki.driver') || 'DRIVER' }) });
     if (!response.ok) return { saved: false, error: (await response.json()).error };

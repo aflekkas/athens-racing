@@ -32,7 +32,9 @@
 //     rules: { timeLimit, penalty, signals },   score attack clock (s); red light penalty (s); signals off = all green
 //     traps: n | [s...],     speed cameras (auto-placed at the end of the longest straights when a count)
 //     targets: { gold, silver, bronze },  sprint: finishing position; timetrial: average km/h (-> a time);
-//                            score: points; speedtrap: summed km/h through all cameras
+//                            score: points; speedtrap: summed km/h through all cameras; pursuit: bounty
+//     rules.police / startHeat / goal: 'escape' (reach the finish unbusted) | 'survive' (rules.timeLimit s unbusted)
+//                            pursuit events: src/police.js drives the cops off events.on('start'); busted = DNF
 //     conditions: { time: 'dawn'|'day'|'afternoon'|'sunset'|'night', weather: 'clear'|'overcast'|'rain' } | null,
 //                            handed to setConditions() (src/weather.js) on top of the session's own conditions
 //     car: id | null }       forced car (otherwise your garage pick)
@@ -86,6 +88,7 @@ export const TYPES = {
   timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock. Split times at every district.' },
   score: { label: 'SCORE ATTACK', short: 'SCORE', desc: 'Near misses and drifts against the clock. Chain them for combos.' },
   speedtrap: { label: 'SPEED CAMERAS', short: 'CAMERAS', desc: 'Flash every camera as fast as you dare. Your speeds are added up.' },
+  pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Raise hell on the coast road, then shake the ΕΛ.ΑΣ. Get busted and it is over.' },
 };
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
@@ -101,6 +104,12 @@ export const EVENTS = [
   { id: 'score-beach', name: 'BEACH TRAFFIC FRENZY', blurb: 'Two minutes in the summer crawl. Thread the needle for points.', type: 'score', from: 'start', to: 'varkiza', rivals: 0, traffic: 1.5, rules: { timeLimit: 120 }, targets: { gold: 9000, silver: 5500, bronze: 2800 } },
   { id: 'score-varkiza', name: 'VARKIZA RUSH HOUR', blurb: '90 seconds through Varkiza by night and onto the coast. Drift, dodge, combo.', type: 'score', from: 'limanakia', to: 'finish', rivals: 0, traffic: 1.4, conditions: { time: 'night' }, rules: { timeLimit: 90 }, targets: { gold: 7000, silver: 4200, bronze: 2000 } },
   { id: 'cameras-coast', name: 'SPEED CAMERAS: COAST', blurb: 'Four cameras on the cliff road, in the rain. Smile.', type: 'speedtrap', from: 'varkiza', to: 'finish', rivals: 0, traffic: 0.5, traps: 4, conditions: { weather: 'rain' }, targets: { gold: 640, silver: 560, bronze: 470 } },
+  { id: 'classic-cup', name: 'CLASSIC CUP', blurb: 'Old iron only: C class or below, Vouliagmeni to the Limanakia cliffs.', type: 'sprint', from: 'start', to: 'limanakia', rivals: ['giorgos', 'dimitra', 'yiannis'], traffic: 0.6, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'hot-hatch', name: 'HOT HATCH SHOOTOUT', blurb: 'B class or below. The lake to the coast road, tyres screaming.', type: 'sprint', from: 'lake', to: 'coast', rivals: ['nikos', 'kostas', 'stavros', 'yiannis'], traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'tt-night-cliffs', name: 'MIDNIGHT CLIFFS TT', blurb: 'Limanakia to Lomvarda after dark. Closed road, headlights and the sea.', type: 'timetrial', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0, conditions: { time: 'night' }, targets: { gold: 138, silver: 120, bronze: 104 } },
+  { id: 'pursuit-escape', name: 'HOT PURSUIT: CLIFF ROAD', blurb: 'Two stars on your tail from Limanakia. Reach Lomvarda without getting busted.', type: 'pursuit', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0.9, rules: { police: true, startHeat: 2, goal: 'escape' }, targets: { gold: 12000, silver: 7000, bronze: 3000 } },
+  { id: 'pursuit-survive', name: 'MOST WANTED: RIVIERA', blurb: 'Survive three minutes with every patrol on the coast after you. Bounty pays.', type: 'pursuit', from: 'start', to: 'finish', rivals: 0, traffic: 1, rules: { police: true, startHeat: 1, goal: 'survive', timeLimit: 180 }, targets: { gold: 15000, silver: 9000, bronze: 4000 } },
+  { id: 'legend-run', name: 'LEGEND OF THE RIVIERA', blurb: 'The full road at night against all seven locals. Only the fastest machinery need apply.', type: 'sprint', from: 'start', to: 'finish', rivals: 7, traffic: 1.2, conditions: { time: 'night' }, targets: { gold: 1, silver: 2, bronze: 3 } },
   { id: 'cameras-riviera', name: 'SPEED CAMERAS: RIVIERA', blurb: 'Five cameras the length of the coast, reverse direction.', type: 'speedtrap', from: 'finish', to: 'start', rivals: 0, traffic: 0.6, traps: 5, targets: { gold: 780, silver: 680, bronze: 570 } },
 ];
 /** Quick Race: the full sprint in whatever car you have, three rivals */
@@ -165,6 +174,7 @@ export function medalFor(def, res, r) {
   if (def.type === 'sprint') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.position <= t[m]) return m; return null; }
   if (def.type === 'timetrial') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.time <= r.targetTimes[m]) return m; return null; }
   if (def.type === 'score') { for (const m of ['gold', 'silver', 'bronze']) if (res.score >= t[m]) return m; return null; }
+  if (def.type === 'pursuit') { if (res.time == null || res.busted) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.score >= t[m]) return m; return null; }
   if (def.type === 'speedtrap') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.trapTotal >= t[m]) return m; return null; }
   return null;
 }
@@ -172,7 +182,7 @@ export function medalFor(def, res, r) {
 export function targetLabels(def, r, fmtTime, unit = 'kmh') {
   const t = def.targets || {}, sp = (v) => (unit === 'mph' ? Math.round(v * 0.621371) + ' MPH' : Math.round(v) + ' KM/H');
   return ['gold', 'silver', 'bronze'].map((m) => [m,
-    def.type === 'sprint' ? (t[m] === 1 ? 'WIN' : 'TOP ' + t[m]) : def.type === 'timetrial' ? fmtTime(r.targetTimes[m]) : def.type === 'score' ? t[m].toLocaleString('en-US') + ' PTS' : sp(t[m]) + ' TOTAL']);
+    def.type === 'sprint' ? (t[m] === 1 ? 'WIN' : 'TOP ' + t[m]) : def.type === 'timetrial' ? fmtTime(r.targetTimes[m]) : def.type === 'score' ? t[m].toLocaleString('en-US') + ' PTS' : def.type === 'pursuit' ? t[m].toLocaleString('en-US') + ' BOUNTY' : sp(t[m]) + ' TOTAL']);
 }
 
 // ------------------------------------------------------------------ saved results
@@ -187,10 +197,10 @@ export function recordResult(def, res, st = store()) {
   rec.runs = (prev.runs || 0) + 1;
   rec.medal = betterMedal(prev.medal || null, res.medal) || null;
   let newBest = false;
-  if (def.type === 'score') { if (!(res.score <= (prev.bestScore ?? -1))) { rec.bestScore = res.score; newBest = true; } }
+  if (def.type === 'score' || (def.type === 'pursuit' && res.time != null && !res.busted)) { if (!(res.score <= (prev.bestScore ?? -1))) { rec.bestScore = res.score; newBest = true; } }
   else if (def.type === 'speedtrap') { if (res.time != null && !(res.trapTotal <= (prev.bestTrap ?? -1))) { rec.bestTrap = res.trapTotal; rec.trapSpeeds = res.trapSpeeds; newBest = true; } }
   if (res.time != null && def.type !== 'score') {
-    if (!(res.time >= (prev.bestTime ?? Infinity))) { rec.bestTime = res.time; rec.bestSplits = res.splits.slice(); rec.bestCar = res.car; if (def.type !== 'speedtrap') newBest = true; }
+    if (!(res.time >= (prev.bestTime ?? Infinity))) { rec.bestTime = res.time; rec.bestSplits = res.splits.slice(); rec.bestCar = res.car; if (def.type !== 'speedtrap' && def.type !== 'pursuit') newBest = true; }
   }
   if (def.type === 'sprint' && res.time != null) rec.bestPos = Math.min(prev.bestPos ?? 99, res.position);
   rec.last = { time: res.time, score: res.score, position: res.position, medal: res.medal, car: res.car, at: Date.now() };
@@ -215,13 +225,17 @@ export function rankRacers(racers) {
 }
 
 // ------------------------------------------------------------------ wrong way
-/** heading = cos(angle between the car's nose and the event's direction of travel); hysteresis so it doesn't flicker */
+/**
+ * heading = cos(angle between the car's nose and the event's direction of travel, already flipped for reverse
+ * events); speed = forward speed (m/s, negative reversing). Driving nose-first against the event for 1.5 s at more
+ * than 5 m/s turns it on; it clears with hysteresis so it doesn't flicker. Returns a boolean.
+ */
 export function wrongWay(state, dt, heading, speed) {
-  const bad = heading < -0.35 && speed > 2.5;
+  const bad = heading < -0.35 && speed > 5;
   state.t = bad ? Math.min(3, (state.t || 0) + dt) : Math.max(0, (state.t || 0) - dt * 2.5);
-  if (!state.on && state.t > 1.0) state.on = true;
+  if (!state.on && state.t > 1.5) state.on = true;
   else if (state.on && state.t <= 0.2) state.on = false;
-  return state.on;
+  return !!state.on;
 }
 
 // ------------------------------------------------------------------ a run of one event

@@ -207,3 +207,25 @@ test('session switching cannot orphan a joined lobby or retain duplicate live so
   await b.next(m => m.type === 'lobby' && m.resume);
   b.send({ type: 'leave' }); await b.next(m => m.type === 'left'); assert.equal(env.app.lobbies.size, 0);
 });
+
+test('all six catalogue cars can switch while waiting; race car changes are locked', async t => {
+  const env = await setup(t, { raceLimitMs: 5000 }); const { a, b } = await pair(env);
+  for (const car of ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv']) {
+    a.send({ type: 'ready', ready: false, version: a.version, car }); const changed = (await room(a)).lobby; await room(b);
+    assert.equal(changed.players.find(p => p.id === a.id).car, car);
+  }
+  const l = await readyAndStart(a, b); a.send({ type: 'ready', ready: false, version: a.version, car: 'z4' });
+  assert.match((await a.next(m => m.type === 'error')).message, /already started/);
+  assert.equal(env.app.lobbies.get(l.code).players.get(a.id).car, l.players.find(p => p.id === a.id).car);
+});
+
+test('departing host hands control to a connected driver ahead of reserved disconnected seats', async t => {
+  const env = await setup(t, { reconnectGraceMs: 1000 }); const { a, b, code } = await pair(env);
+  const c = await env.client('Charlie'); c.send({ type: 'join', code }); await room(c);
+  a.ws.terminate(); await b.next(m => m.type === 'lobby' && m.lobby.host === b.id);
+  b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
+  const roomC = (await c.next(m => m.type === 'lobby' && m.lobby.host === c.id)).lobby;
+  assert.equal(roomC.players.find(p => p.id === a.id).connected, false);
+  c.send({ type: 'options', eventId: 'return-leg', traffic: false });
+  assert.equal((await c.next(m => m.type === 'lobby' && m.lobby.eventId === 'return-leg')).lobby.host, c.id);
+});

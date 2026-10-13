@@ -62,7 +62,7 @@ export class Cockpit {
     // ---- windscreen base & dash geometry
     let wsZ, wsY, W;
     if (spec.body === 'mini') { wsZ = model.shape.cowl; wsY = model.shape.belt; W = model.dash.w; }
-    else { const sh = model.shape; wsZ = -sh.ws[1] * sh.L / 2 + 0.05; wsY = sh.belt + 0.03; W = sh.W * 0.92; }
+    else { const sh = model.shape; wsZ = -sh.ws[1] * sh.L / 2 + 0.05; wsY = sh.belt + 0.03; W = sh.W * (sh.profile === 'carrera' ? .78 : sh.profile === 'yaris' ? .84 : .92); }
     const topY = Math.min(eye.y - 0.21, wsY + 0.06), faceZ = wheelC.z - 0.15;
     // dash: extruded side profile (z,y) across the width
     const prof = new THREE.Shape();
@@ -213,7 +213,7 @@ export class Cockpit {
     // door top rails + grab handles for all
     for (const sx of [-1, 1]) {
       const rail = new THREE.Mesh(new RoundedBoxGeometry(0.08, 0.05, 1.1, 2, 0.02), spec.body === 'mini' ? soft : trim);
-      rail.position.set(sx * (W / 2 + 0.03), (spec.body === 'mini' ? 0.97 : model.shape.belt + 0.02), eye.z - 0.15); g.add(rail);
+      rail.position.set(sx * (model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03), (spec.body === 'mini' ? 0.97 : model.shape.belt + 0.02), eye.z - 0.15); g.add(rail);
     }
     g.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = true; } });
     this.wheelEuler = new THREE.Euler(this.wheelTilt, 0, 0, 'XYZ');

@@ -161,13 +161,13 @@ const FinalShader = {
     tHDR: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) },
     uSun: { value: new THREE.Vector3(0.5, 0.5, 0) }, uSpeed: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.56) },
     uShake: { value: 0 }, uFlash: { value: 0 }, uNitro: { value: 0 }, uFade: { value: 0 }, uExposure: { value: 1.0 },
-    uWB: { value: new THREE.Vector3(0.96, 1.0, 1.06) }, uGlare: { value: 1 }, uRainLens: { value: 0 },
+    uWB: { value: new THREE.Vector3(0.96, 1.0, 1.06) }, uGlare: { value: 1 }, uRainLens: { value: 0 }, uFilter: { value: 0 },
   },
   vertexShader: VS,
   fragmentShader: /* glsl */`
     uniform sampler2D tHDR; uniform float uTime; uniform vec2 uRes; uniform vec3 uSun; uniform float uSpeed; uniform vec2 uCenter;
     uniform float uShake; uniform float uFlash; uniform float uNitro; uniform float uFade; uniform float uExposure;
-    uniform vec3 uWB; uniform float uGlare; uniform float uRainLens;
+    uniform vec3 uWB; uniform float uGlare; uniform float uRainLens; uniform float uFilter;
     varying vec2 vUv;
     float hh(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
     const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(vec3(1.6605, -0.1246, -0.0182), vec3(-0.5876, 1.1329, -0.1006), vec3(-0.0728, -0.0083, 1.1187));
@@ -230,6 +230,15 @@ const FinalShader = {
       // grade: split-tone (cool shadows, warm highlights), gentle S-curve
       float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
       col = mix(col * vec3(0.97, 1.0, 1.04), col * vec3(1.03, 1.0, 0.95), smoothstep(0.1, 0.7, l));
+      // photo mode filters: 1 warm, 2 cool, 3 mono, 4 film, 5 sunset
+      if (uFilter > 0.5) {
+        float fl = dot(col, vec3(0.2126, 0.7152, 0.0722));
+        if (uFilter < 1.5) col *= vec3(1.07, 1.0, 0.88);
+        else if (uFilter < 2.5) col *= vec3(0.9, 0.99, 1.1);
+        else if (uFilter < 3.5) col = vec3(fl) * vec3(1.02, 1.0, 0.96);
+        else if (uFilter < 4.5) { col = mix(col, col * col * (3.0 - 2.0 * col), 0.35); col = mix(col * vec3(0.92, 1.0, 1.06), col * vec3(1.06, 1.0, 0.9), smoothstep(0.15, 0.6, fl)) * 0.9 + vec3(0.035, 0.03, 0.025); }
+        else { col *= vec3(1.12, 0.97, 0.8); col += vec3(0.05, 0.02, 0.0) * smoothstep(0.3, 1.0, vUv.y); }
+      }
       // nitro: cool edge tint; impact flash
       col = mix(col, col * vec3(0.8, 0.96, 1.2) + vec3(0.0, 0.01, 0.03), uNitro * smoothstep(0.25, 0.85, length(c * asp)) * 0.7);
       // optical vignette (cos^4-ish), slightly stronger at speed
@@ -245,6 +254,7 @@ const FinalShader = {
     }`,
 };
 
+export const PHOTO_FILTERS = ['neutral', 'warm', 'cool', 'mono', 'film', 'sunset'];
 export function createPost(renderer, scene, camera, { lowQuality = false } = {}) {
   const size = renderer.getSize(new THREE.Vector2());
   const pr = renderer.getPixelRatio();
@@ -274,6 +284,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
     aoOn: !lowQuality && !location.search.includes('noao'),
     /** set before render(): cars = [{inv: Matrix4 (world->car), half: Vector3}], blur strength, dof */
     render(dt = 1 / 60) {
+      post.applyPhoto();
       camera.updateMatrixWorld();
       aoMat.uniforms.uInvProj.value.copy(camera.projectionMatrixInverse);
       aoMat.uniforms.uProj.value.copy(camera.projectionMatrix);
@@ -314,9 +325,24 @@ export function createPost(renderer, scene, camera, { lowQuality = false } = {})
       bloom.setSize(ww / 2, hh / 2);
     },
     resetHistory() { havePrev = false; },
+    // ---- photo mode (replay.js): {focus: m, dof: 0..9 blur strength, exposure: EV stops, filter: name}
+    photo: null, baseExposure: 1,
+    setPhoto(p = {}) { post.photo = { ...(post.photo || {}), ...p }; post.applyPhoto(); },
+    clearPhoto() { post.photo = null; u.uFilter.value = 0; u.uExposure.value = post.baseExposure; },
+    /** re-apply the photo controls over the per-frame camera FX (render() calls it too) */
+    applyPhoto() {
+      const p = post.photo; if (!p) return;
+      // a still: no gameplay camera FX (main sets these every frame before render)
+      post.blur = 0; u.uSpeed.value = 0; u.uNitro.value = 0; u.uFlash.value = 0; u.uShake.value = 0;
+      if (p.dof !== undefined) compMat.uniforms.uDof.value = p.dof;
+      if (p.focus !== undefined) compMat.uniforms.uFocus.value = p.focus;
+      u.uExposure.value = post.baseExposure * Math.pow(2, p.exposure || 0);
+      u.uFilter.value = Math.max(0, PHOTO_FILTERS.indexOf(p.filter || 'neutral'));
+    },
     /** lighting state from env.js COND_STATE: exposure, white balance, sun glare, bloom (night lamps glow more) */
     setConditions(st) {
-      u.uExposure.value = st.exposure; u.uWB.value.fromArray(st.wb); u.uGlare.value = st.glare; u.uRainLens.value = st.rain;
+      post.baseExposure = st.exposure; u.uExposure.value = st.exposure * (post.photo ? Math.pow(2, post.photo.exposure || 0) : 1);
+      u.uWB.value.fromArray(st.wb); u.uGlare.value = st.glare; u.uRainLens.value = st.rain;
       bloom.strength = 0.1 * st.bloom; bloom.threshold = 3.0 / Math.max(1, st.exposure * 0.8);
     },
   };

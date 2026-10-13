@@ -36,10 +36,16 @@ def loop(x):
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--cache', type=pathlib.Path, default=ROOT / '.cache/engine-audio')
+    parser.add_argument('--only', nargs='+', help='Rebuild only these asset filenames (e.g. mini-mid.wav)')
     args = parser.parse_args(); args.cache.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((DEST / 'sources.json').read_text())
+    selected = [asset for asset in manifest['assets'] if not args.only or asset['file'] in args.only]
+    if args.only and set(args.only) - {asset['file'] for asset in selected}:
+        parser.error('Unknown asset filename in --only')
+    needed_sources = {asset['source'] for asset in selected}
     decoded = {}
     for key, source in manifest['sources'].items():
+        if key not in needed_sources: continue
         path = args.cache / source['cacheFile']
         if not path.exists():
             print('Downloading', key, flush=True)
@@ -50,7 +56,7 @@ def main():
             raise ValueError(f'Source checksum mismatch: {key}')
         source['sha256'] = digest
         decoded[key] = decode(path)
-    for asset in manifest['assets']:
+    for asset in selected:
         x = decoded[asset['source']][round(asset['trim'][0]*SR):round(asset['trim'][1]*SR)]
         x = signal.sosfilt(signal.butter(2, 25, fs=SR, btype='highpass', output='sos'), x)
         if asset['kind'] == 'loop':

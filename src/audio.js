@@ -1,6 +1,7 @@
 import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } from './engine-recordings.js';
 import { loadWorldSounds, loopSource, Radio } from './world-sounds.js';
 import { WeatherAudio } from './weather-audio.js';
+import { Sirens } from './sirens.js';
 
 // Recorded player/rival engines with procedural fallback; recorded world (WebAudio).
 // Starts on the first key press / click (autoplay policy).
@@ -154,14 +155,17 @@ export class EngineVoice {
 
 const MIDI = (n) => 440 * Math.pow(2, (n - 69) / 12);
 const MUSIC_LEVEL = 0.5;
-// traffic engine loops per vehicle class: [idle loop, its rpm, running loop, its rpm]
+// police units drive and sound like the vehicle they are
+const POLICE = { police: 'car', police_moto: 'moto' };
+// traffic engine loops per vehicle class: [idle loop, its rpm, running loop, its rpm]. The car refs sit ~15% above the
+// BMW takes' real rpm, so ordinary traffic plays them lower and less sporty.
 const TRAFFIC_LOOPS = {
-  car: ['car-idle', 900, 'car-engine', 1800], diesel: ['diesel-idle', 860, 'diesel-engine', 2000],
+  car: ['car-idle', 860, 'car-engine', 1800], diesel: ['diesel-idle', 860, 'diesel-engine', 2000],
   bus: ['bus-idle', 700, 'diesel-engine', 2700], scooter: ['scooter-idle', 3300, 'scooter-run', 7400], moto: ['scooter-idle', 2600, 'scooter-run', 8200],
 };
 
 export class Audio {
-  constructor() { this.ctx = null; this.musicOn = true; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); }
+  constructor() { this.ctx = null; this.musicOn = true; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { master: 1, music: 1, sfx: 1 }; }
 
   start() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
@@ -173,9 +177,11 @@ export class Audio {
     // --- buses: engine/chassis (inside the car), external world (through the cabin filter), sfx, music
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 3.5; comp.attack.value = 0.004; comp.release.value = 0.22;
+    // master = everything but the music (scaled by the SFX volume); mainOut = the master volume, music joins there
     this.master = ctx.createGain(); this.master.gain.value = 0;
-    this.master.gain.setTargetAtTime(0.9, ctx.currentTime, 0.6);
-    this.master.connect(comp); comp.connect(ctx.destination);
+    this.master.gain.setTargetAtTime(0.9 * this.vol.sfx, ctx.currentTime, 0.6);
+    this.mainOut = ctx.createGain(); this.mainOut.gain.value = this.vol.master;
+    this.master.connect(this.mainOut); this.mainOut.connect(comp); comp.connect(ctx.destination);
     this.analyser = ctx.createAnalyser(); this.analyser.fftSize = 2048; comp.connect(this.analyser);
     this.sfx = ctx.createGain(); this.sfx.gain.value = 0.75; this.sfx.connect(this.master);
     this.eng = ctx.createGain(); this.eng.gain.value = 0.5; this.eng.connect(this.master);
@@ -265,8 +271,9 @@ export class Audio {
     this.musicBus = gain(0);
     this.musicLP = filt('lowpass', 12000, 0.7);
     this.musicDuck = gain(1);
-    chain(this.musicBus, this.musicDuck, this.musicLP, this.master);
-    const mSend = gain(0.12); this.musicBus.connect(mSend); mSend.connect(this.verbIn);
+    this.musicVol = gain(this.vol.music); // the music volume setting (setVolumes)
+    chain(this.musicBus, this.musicDuck, this.musicLP, this.musicVol, this.mainOut);
+    const mSend = gain(0.12); this.musicVol.connect(mSend); mSend.connect(this.verbIn);
     this.radio = new Radio(ctx, this.musicBus, (track) => this.onTrack?.(track));
     if (this.musicOn) { this.radio.play(); this.musicBus.gain.setTargetAtTime(MUSIC_LEVEL, ctx.currentTime, 1.2); }
 
@@ -391,7 +398,7 @@ export class Audio {
     let node = s;
     if (lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; s.connect(f); node = f; }
     node.connect(g); g.connect(pn); pn.connect(bus || this.sfx);
-    if (dur) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.4); g.gain.setValueAtTime(gain, t + dur - 0.6); g.gain.linearRampToValueAtTime(0, t + dur); }
+    if (dur) { const fi = Math.min(0.4, dur * 0.2), fo = Math.min(0.6, dur * 0.3); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + fi); g.gain.setValueAtTime(gain, t + dur - fo); g.gain.linearRampToValueAtTime(0, t + dur); }
     s.start(t, offset, dur); s.onended = () => pn.disconnect();
     return true;
   }
@@ -479,6 +486,7 @@ export class Audio {
     }
     // ---- traffic voices
     this.updateTraffic(p.traffic || [], now, mute);
+    this.sirens.update(p.traffic || [], now, mute);
 
     // ---- ambience along the route
     const sea = p.sea || 0, city = p.city || 0, beach = p.beach || 0, cliff = p.cliff || 0;
@@ -504,6 +512,31 @@ export class Audio {
     this.lastDuck = duck;
   }
   duck(amount = 1) { this.duckEv = Math.max(this.duckEv, amount); }
+  // ---- police (traffic.js pursuits): radio one-shots; sirens are in sirens.js
+  /** radio squelch plus a burst of chatter; returns the time it ends (s from now) */
+  radioBurst(talk = 1.4, gain = 0.32, at = 0) {
+    const bed = this.S && this.S['radio-chatter'];
+    if (!this.sample('radio-squelch', { gain: gain * 0.8, at })) this.noise({ dur: 0.25, f: 1800, type: 'bandpass', q: 0.7, gain: 0.08, at });
+    if (bed) this.sample('radio-chatter', { gain, at: at + 0.12, offset: Math.random() * (bed.buffer.duration - talk - 0.2), dur: talk });
+    this.sample('radio-beep', { gain: gain * 0.6, at: at + talk + 0.15 });
+    return at + talk + 0.5;
+  }
+  /** dispatcher squelch when the heat goes up */
+  copRadio() { if (!this.ctx) return; this.radioBurst(0.9 + Math.random() * 0.8, 0.26); }
+  /** caught: radio chatter and a falling stinger */
+  copBusted() {
+    if (!this.ctx) return;
+    this.duck(1);
+    const end = this.radioBurst(2.2, 0.34, 0.6);
+    [[311, 0.22], [277, 0.22], [233, 0.7]].forEach(([f, d], i) => this.tone({ f, dur: d, gain: 0.1, type: 'sawtooth', at: i * 0.2, lp: 1500, attack: 0.02 }));
+    return end;
+  }
+  /** got away: a last crackle of radio and a rising pluck */
+  copEvaded() {
+    if (!this.ctx) return;
+    this.radioBurst(0.8, 0.2);
+    [62, 66, 69, 74, 78].forEach((n, i) => this.pluck(MIDI(n), 1.1 + i * 0.07, 0.14));
+  }
   /** weather.js: kind 'clear' | 'overcast' | 'rain', intensity 0..1 */
   setWeather(kind, intensity = 1) { this.weather.setWeather(kind, intensity); }
   /** weather.js: 'dawn' | 'day' | 'sunset' | 'night' */
@@ -531,7 +564,7 @@ export class Audio {
       }
       const dop = Math.max(0.75, Math.min(1.35, 343 / (343 - Math.max(-70, Math.min(70, o.vr)))));
       const loadK = Math.max(0, Math.min(1, 0.3 + o.acc * 0.4));
-      const K = v.kind;
+      const K = POLICE[v.kind] || v.kind;
       let rpm = 0, lvl;
       const sp = o.v;
       if (v.electric) {
@@ -569,6 +602,7 @@ export class Audio {
     }
   }
   voiceKind(v, K, now, electric = false) {
+    K = POLICE[K] || K;
     for (const { src, g } of v.srcs) { src.stop(now + 0.1); src.onended = () => g.disconnect(); }
     v.srcs = [];
     v.g3.gain.setValueAtTime(electric ? 0.1 : 0, now);
@@ -877,12 +911,19 @@ Audio.prototype.levels = function () {
   let s = 0, pk = 0; for (const v of buf) { s += v * v; pk = Math.max(pk, Math.abs(v)); }
   return { rms: +(10 * Math.log10(s / buf.length + 1e-12)).toFixed(1), peak: +(20 * Math.log10(pk + 1e-12)).toFixed(1) };
 };
+/** volume settings (src/settings.js), each 0..1: master = everything, music = the radio, sfx = everything but the radio */
+Audio.prototype.setVolumes = function ({ master = this.vol.master, music = this.vol.music, sfx = this.vol.sfx } = {}) {
+  this.vol = { master, music, sfx };
+  if (!this.ctx) return;
+  const t = this.ctx.currentTime;
+  this.mainOut.gain.setTargetAtTime(master, t, 0.01); this.musicVol.gain.setTargetAtTime(music, t, 0.01); this.master.gain.setTargetAtTime(0.9 * sfx, t, 0.01);
+};
 // debug helper: RMS (dBFS) per bus, to keep the mix balanced
 Audio.prototype.busLevels = function () {
   if (!this.ctx) return null;
   if (!this.taps) {
     this.taps = {};
-    for (const k of ['eng', 'chassis', 'trafficBus', 'amb', 'sfx', 'musicDuck']) { const an = this.ctx.createAnalyser(); an.fftSize = 2048; this[k].connect(an); this.taps[k] = an; }
+    for (const k of ['eng', 'chassis', 'trafficBus', 'amb', 'sfx', 'musicDuck', 'mainOut']) { const an = this.ctx.createAnalyser(); an.fftSize = 2048; this[k].connect(an); this.taps[k] = an; }
     return null;
   }
   const out = {}, buf = new Float32Array(2048);

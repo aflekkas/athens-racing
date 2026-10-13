@@ -172,7 +172,13 @@ export class Hud {
       g.beginPath(); g.arc(j.x, j.z, 6.5 / sc, 0, 7); g.fill(); g.stroke();
     }
     // traffic dots
-    if (st.traffic) { g.fillStyle = 'rgba(255,255,255,.75)'; for (const c of st.traffic) { if (!c.active || Math.abs(c.s - st.s) > R) continue; const p = route.point(c.s, c.u); g.fillRect(p.x - 2.2 / sc * 1.2, p.z - 2.2 / sc * 1.2, 4.4 / sc * 1.2, 4.4 / sc * 1.2); } }
+    if (st.traffic) { g.fillStyle = 'rgba(255,255,255,.75)'; for (const c of st.traffic) { if (!c.active || c.cop || Math.abs(c.s - st.s) > R) continue; const p = route.point(c.s, c.u); g.fillRect(p.x - 2.2 / sc * 1.2, p.z - 2.2 / sc * 1.2, 4.4 / sc * 1.2, 4.4 / sc * 1.2); } }
+    // police: bigger dots, flashing blue / red while their lights are on (src/police.js)
+    if (st.traffic) for (const c of st.traffic) {
+      if (!c.active || !c.cop || Math.abs(c.s - st.s) > R * 1.4) continue;
+      const p = route.point(c.s, c.u), lit = c.cop.siren || c.cop.block, on = ((performance.now() / 160) | 0) % 2;
+      g.fillStyle = lit ? (on ? '#2f7bff' : '#ff3340') : '#7fa8ff'; g.beginPath(); g.arc(p.x, p.z, 4.2 / sc * 1.2, 0, Math.PI * 2); g.fill();
+    }
     // rival
     g.fillStyle = '#29d8ff'; g.strokeStyle = '#001018'; g.lineWidth = 3 / sc;
     for (const p of st.remotes || [{ x: st.rx, z: st.rz }]) { g.beginPath(); g.arc(p.x, p.z, 8 / sc, 0, 7); g.fill(); g.stroke(); }
@@ -291,10 +297,10 @@ export class Hud {
   showPaint(spec) {
     if(!this.paintPanel){
       this.paintPanel=document.createElement('div');this.paintPanel.id='carPaint';
-      this.paintPanel.style.cssText='margin:12px 0;display:flex;gap:7px;align-items:center;flex-wrap:wrap';
+      this.paintPanel.style.cssText='margin:12px 0;display:flex;gap:7px;align-items:center;flex-wrap:wrap;pointer-events:auto';
       this.el.cBest.before(this.paintPanel);
       // Garage hotkeys must not consume arrows/space inside colour controls.
-      this.paintPanel.addEventListener('keydown',e=>e.stopPropagation());
+      this.paintPanel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.target.blur?.();return;}e.stopPropagation();});
       this.paintPanel.addEventListener('keyup',e=>e.stopPropagation());
     }
     const panel=this.paintPanel;panel.replaceChildren();
@@ -304,7 +310,7 @@ export class Hud {
     const buttons=[];
     const refresh=color=>{picker.value=color;name.textContent=PAINTS[spec.id]?.find(p=>p[1]===color)?.[0]||'Custom '+color.toUpperCase();for(const [b,hex]of buttons){const on=hex===color;b.setAttribute('aria-pressed',String(on));b.style.outline=on?'2px solid #edf4ff':'none';b.style.outlineOffset='2px';}};
     const apply=color=>{if(savePaint(spec.id,color)){refresh(color.toLowerCase());this.onPaint?.(spec.id,color);}};
-    for(const [label,color]of PAINTS[spec.id]||[]){const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.style.cssText=`width:26px;height:26px;min-width:26px;padding:0;border:1px solid #87939d;border-radius:50%;background:${color};cursor:pointer`;b.onclick=()=>apply(color);buttons.push([b,color]);panel.append(b);}
-    picker.addEventListener('input',()=>apply(picker.value));panel.append(picker,name);refresh(savedPaint(spec));
+    for(const [label,color]of PAINTS[spec.id]||[]){const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.style.cssText=`width:26px;height:26px;min-width:26px;padding:0;border:1px solid #87939d;border-radius:50%;background:${color};cursor:pointer`;b.onclick=()=>{apply(color);b.blur();};buttons.push([b,color]);panel.append(b);}
+    picker.addEventListener('input',()=>apply(picker.value));picker.addEventListener('change',()=>picker.blur());panel.append(picker,name);refresh(savedPaint(spec));
   }
 }

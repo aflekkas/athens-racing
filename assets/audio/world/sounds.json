@@ -173,5 +173,26 @@
   "frames": 489510,
   "sampleRate": 44100,
   "channels": 1
+ },
+ "radio-chatter": {
+  "file": "radio-chatter.mp3",
+  "kind": "bed",
+  "frames": 1023120,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "radio-squelch": {
+  "file": "radio-squelch.mp3",
+  "kind": "shot",
+  "frames": 52920,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "radio-beep": {
+  "file": "radio-beep.mp3",
+  "kind": "shot",
+  "frames": 28665,
+  "sampleRate": 44100,
+  "channels": 1
  }
 }

@@ -1,9 +1,10 @@
 // Local, edited field recordings. Full provenance and known substitutions:
 // assets/audio/engines/sources.json and CREDITS.txt.
 const base = new URL('../assets/audio/engines/', import.meta.url);
-const loop = (file, rpm) => ({ url: new URL(file + '.wav', base).href, rpm });
+const loop = (file, rpm, revision = '') => ({ url: new URL(file + '.wav' + (revision ? '?v=' + encodeURIComponent(revision) : ''), base).href, rpm });
 export const ENGINE_RECORDINGS = {
-  mini: { engine: 'turbo4', start: 'mini-start', catchAt: .7, loops: [loop('mini-idle', 900), loop('mini-low', 1800), loop('mini-mid', 4300), loop('mini-high', 6100)] },
+  // Version only the re-cut layer so existing browser asset caches fetch its replacement.
+  mini: { engine: 'turbo4', start: 'mini-start', catchAt: .7, loops: [loop('mini-idle', 900), loop('mini-low', 1800), loop('mini-mid', 4300, 'c58f458b'), loop('mini-high', 6100)] },
   z4: { engine: 'turbo6', start: 'z4-start', catchAt: .45, loops: [loop('z4-idle', 745), loop('z4-low', 1545), loop('z4-mid', 3000), loop('z4-high', 5050)] },
   taxi: { engine: 'diesel', start: 'taxi-start', catchAt: .85, loops: [loop('taxi-idle', 860), loop('taxi-low', 2000), loop('taxi-high', 3000)] },
 };

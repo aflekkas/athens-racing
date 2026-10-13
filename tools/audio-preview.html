@@ -9,6 +9,7 @@ body{font:17px system-ui;background:#101b22;color:#e8f0ef;max-width:850px;margin
 <div class="controls"><select id="car"><option value="mini">MINI Cooper S Cabrio</option><option value="z4">BMW Z4 M40i</option><option value="taxi">Škoda Octavia 2.0 TDI</option><option value="carrera">Porsche 911 Carrera 3.4 (synth)</option><option value="gr_yaris">Toyota GR Yaris (synth)</option><option value="gtv">Alfa Romeo 2000 GTV (synth)</option></select><button id="start">Start engine</button><button id="stop">Stop audio</button></div>
 <label>Engine speed <output id="rpmValue">850 RPM</output><input id="rpm" type="range" min="850" max="6800" value="850" step="10"></label>
 <label>Engine load <output id="loadValue">0%</output><input id="load" type="range" min="-100" max="100" value="0"></label>
+<div class="controls"><select id="timing" aria-label="Audio update timing"><option value="steady">Steady updates (60 Hz)</option><option value="jitter">Irregular updates (3–10 Hz)</option></select><button id="idle">Idle / no load</button><button id="low">1,500 RPM / light load</button></div>
 <p id="source"></p><p><a href="../assets/audio/engines/CREDITS.txt">Recording credits and source limitations</a> · <a href="../">Back to game</a></p>
 <button id="test">Run audio checks</button><pre id="status">Ready. Audio starts after a click.</pre>
 <script type="module">
@@ -40,7 +41,9 @@ async function start(){
 }
 $('car').onchange=()=>{const was=running;stop();ui();if(was)start()};$('start').onclick=start;$('stop').onclick=stop;
 $('rpm').oninput=()=>$('rpmValue').textContent=$('rpm').value+' RPM';$('load').oninput=()=>$('loadValue').textContent=$('load').value+'%';
-function frame(){if(running){const s=selected(),r=+$('rpm').value;voice.set(r,+$('load').value/100,Math.max(0,Math.min(1,(ctx.currentTime-catchTime)/.6)),ctx.currentTime,1,r>s.redline*.98)}requestAnimationFrame(frame)}frame();ui();
+function preset(rpm,load){$('rpm').value=rpm;$('load').value=load;$('rpm').oninput();$('load').oninput()}
+$('idle').onclick=()=>preset(selected().idle,0);$('low').onclick=()=>preset(1500,15);
+function frame(){if(running){const s=selected(),r=+$('rpm').value;voice.set(r,+$('load').value/100,Math.max(0,Math.min(1,(ctx.currentTime-catchTime)/.6)),ctx.currentTime,1,r>s.redline*.98)}setTimeout(frame,$('timing').value==='jitter'?1000/(3+Math.random()*7):1000/60)}frame();ui();
 window.runAudioTests=runAudioTests;
 $('test').onclick=async()=>{stop();$('status').textContent='Checking…';try{$('status').textContent=JSON.stringify(await runAudioTests(),null,2)}catch(e){$('status').textContent=e.stack}};
 </script>

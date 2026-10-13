@@ -2,7 +2,7 @@
 // World built from OpenStreetMap data (see tools/). Boots straight into a countdown, no click needed.
 import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
-import { Ground, Splash, buildHumps, buildBarriers } from './ground.js';
+import { Ground, Splash, buildHumps, buildBarriers, buildSandTraps } from './ground.js';
 import { buildRoadside } from './roadside.js';
 import { Fx } from './fx.js';
 import * as ENV from './env.js';
@@ -14,6 +14,8 @@ import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
 import { Vehicle } from './physics.js';
 import { input as controls } from './input.js';
 import { Traffic, routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
+import { Police, pursuit } from './police.js';
+import { PoliceHud } from './police-hud.js';
 import { Cockpit } from './cockpit.js';
 import { findJunctions, Signals } from './signals.js';
 import { People } from './people.js';
@@ -31,6 +33,9 @@ import { EventMarkers } from './event-markers.js';
 import { trackVersion } from './network-track.js';
 import { simplifyScenery } from './graphics.js';
 import { initWeather, updateWeather } from './weather.js';
+import { initReplay } from './replay-mode.js';
+import * as PROG from './progression.js';
+import * as PUI from './progression-ui.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -84,7 +89,7 @@ window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, near: G.nearMisses, style: G.style, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
-let ground = null, splash = null, fx = null;
+let ground = null, splash = null, fx = null, police = null, policeHud = null;
 const lodList = [];
 function updateLod() {
   const cx = camera.position.x, cz = camera.position.z;
@@ -150,7 +155,9 @@ async function boot() {
   traffic.buildParkedRows(scene, ground);
   ground.parked = traffic.parkedCars.concat(roadside.obstacles); // parked cars and roadside props are solid
   traffic.ground = ground; // crashed traffic slides off the road onto what's really there
+  police = new Police(traffic, route); policeHud = new PoliceHud(); window.__police = police; // ΕΛ.ΑΣ. pursuits (src/police.js)
   buildHumps(map, scene, ter.heightC);
+  buildSandTraps(ground, scene);
   buildBarriers(map, scene);
   splash = new Splash(scene);
   fx = new Fx(scene, route, ground);
@@ -180,6 +187,9 @@ async function boot() {
   multiplayer.loaded = true;
   multiplayer.trackVersion = trackVersion(map.data.route);
   initFlow();
+  initReplay({ G, scene, camera, renderer, canvas, post, traffic, route, hud, input, controls, render,
+    player: () => player, grid: () => multiplayer.active ? [] : grid, online: () => multiplayer.active,
+    trackVersion: () => multiplayer.trackVersion });
   if (multiplayer.active) {
     setCar(Math.max(0, CARS.findIndex(c => c.id === multiplayer.me.car)));
     // a race already under way (reload mid-race): rejoin it through the online start hook; otherwise wait in the lobby
@@ -200,7 +210,10 @@ function makeCar(spec, isPlayer) {
   const driver = new Driver(isPlayer ? {} : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   driver.root.position.copy(model.seat).add(new THREE.Vector3(0, -0.195, 0.1));
   model.body.add(driver.root);
-  if (spec.body !== 'mini' && driver.curlMesh) { driver.curlMesh.scale.setScalar(0.82); driver.hairBase.scale.multiplyScalar(0.85); }
+  if (!spec.convertible && driver.curlMesh) {
+    driver.curlMesh.scale.setScalar(.38); driver.hairBase.scale.multiplyScalar(.55);
+    driver.hairY = .015; driver.hairBase.position.y = driver.hairY; // closed-car roof clearance
+  } else if (spec.body !== 'mini' && driver.curlMesh) { driver.curlMesh.scale.setScalar(0.82); driver.hairBase.scale.multiplyScalar(0.85); }
   if (!isPlayer) for (const a of driver.arms) a.up.visible = a.fo.visible = a.hand.visible = false;
   return { model, driver };
 }
@@ -306,6 +319,7 @@ function resetEvent() {
   document.querySelector('#posBox .of').textContent = '/' + (grid.length + 1);
   if (grid[0]) $('rivalName').textContent = grid[0].name;
   syncCar(player, 0); for (const c of grid) syncCar(c, 0); if (solo) syncCar(rival, 0);
+  police?.reset(false); // police come back on at the event's 'start' (src/police.js)
 }
 // people spawn / despawn in a window ahead of where they're told the player is; reverse events look the other way
 const peopleS = (s) => (G.dir < 0 && !multiplayer.active ? s - 300 : s);
@@ -431,7 +445,9 @@ const evCtx = () => ({ route, marks: map.data.marks });
 const aidSpec = (spec) => (settings.aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0, abs: false });
 function applyDriving() {
   if (!player) return;
-  player.veh.setSpec(aidSpec(player.spec));
+  // career upgrades (src/progression.js) on top of the catalogue spec; online races stay stock
+  player.veh.setSpec(aidSpec(multiplayer.active ? player.spec : PROG.tunedSpec(player.spec)));
+  PUI.setCar?.(player.spec);
   player.veh.setManual?.(settings.transmission === 'manual');
 }
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
@@ -446,6 +462,12 @@ function initFlow() {
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
+  // police pursuits (src/police.js): keep the latest state; busted ends a pursuit event as a DNF
+  EV.events.on('pursuit', (p) => {
+    G.pursuit = p;
+    if (p.phase === 'busted' && G.state === 'race' && !multiplayer.active && G.ev?.def.type === 'pursuit') finishRace('busted');
+  });
+  EV.events.on('start', () => { G.pursuit = null; });
   // the leaderboard (multiplayer owner) gets every finished solo event
   import('./leaderboard.js').then((m) => { if (m?.submitResult) EV.events.on('finish', (r) => { try { m.submitResult(r); } catch (e) { console.warn(e); } }); }).catch(() => {});
 }
@@ -523,8 +545,10 @@ function onFlowSettings(s, key) {
 function startEvent(id) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = EV.getEvent(id); if (!def) return;
-  G.pendingEvent = def;
   const idx = def.car ? Math.max(0, CARS.findIndex((c) => c.id === def.car)) : G.carIdx;
+  const gate = PROG.canEnter(def, CARS[idx]); // career: tier / class limit / locked car outside Quick Race
+  if (!gate.ok) { PUI.notice?.(gate.reason); audio.ui?.(false); return; }
+  G.pendingEvent = def;
   restart(idx);
 }
 function pauseGame() {
@@ -564,6 +588,7 @@ function pickCar(d) {
   G.selIdx = (G.selIdx + d + CARS.length) % CARS.length;
   audio.ui(d > 0);
   hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
+  PUI.garage?.(CARS[G.selIdx], { onChange: () => applyDriving() });
   // live preview: swap the player's model in place
   const veh = player.veh; setCar(G.selIdx); player.veh = veh; G.carIdx = G.selIdx;
   syncCar(player, 0);
@@ -576,6 +601,7 @@ function openGarage() {
   G.state = 'garage'; G.selIdx = G.carIdx; G.cam = 'orbit'; applyCamMode();
   hud.showMenu('garage', { kick: 'GARAGE', title: 'PICK YOUR RIDE', sub: '<b>← →</b> to browse, <b>ENTER</b> to take it, <b>ESC</b> to keep your old car.' });
   hud.showCar(CARS, G.selIdx, carBest(G.selIdx));
+  PUI.garage?.(CARS[G.selIdx], { onChange: () => applyDriving() });
 }
 function closeGarage(keep = true) {
   const f = G.menuFrom; hud.hideMenu();
@@ -588,6 +614,7 @@ function closeGarage(keep = true) {
 /** every named input action lands here (src/input.js -> readInput -> window.__flow.action) */
 function flowAction(name) {
   if (G.state === 'loading' || !menu) return false;
+  if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
   if (G.state === 'garage') {
     if (name === 'left' || name === 'right') pickCar(name === 'right' ? 1 : -1);
     else if (name === 'confirm' || name === 'restart') { audio.ui(true); closeGarage(true); }
@@ -595,6 +622,7 @@ function flowAction(name) {
     else if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length) { G.selIdx = i - 1; pickCar(1); } }
     return true;
   }
+  if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
   if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length && !multiplayer.active) { audio.ui(true); restart(i); } return true; }
@@ -605,11 +633,11 @@ function flowAction(name) {
     case 'pause': pauseGame(); return true;
     case 'music': hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2); return true;
     case 'nextTrack': audio.nextTrack(); return true;
-    case 'garage': if (multiplayer.active) multiplayer.open(); return true;
+    case 'garage': if (multiplayer.active) multiplayer.open(); else pauseGame(); return true; // the garage lives in the menus; mid-race G pauses
   }
   return false;
 }
-const inMenu = () => MENU_STATES.includes(G.state);
+const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active; // replay / photo mode take the controls too
 window.__flow = {
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, quickRace: () => startEvent('quick'),
   pause: pauseGame, resume, quit: quitToMenu, hideGrid, setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => restart(), get state() { return G.state; }, get menu() { return menu; }, get grid() { return grid; },
@@ -696,7 +724,7 @@ function raceTiming(dt) {
       hud.pop('info cyan', 'CAMERA ' + (e.index + 1), fmtSpeed(e.kmh));
       G.lastTrap = e;
     } else if (e.kind === 'finish') { G.pFinish = G.raceT + G.pen; finishRace(); return; }
-    else if (e.kind === 'timeup') { finishRace(true); return; }
+    else if (e.kind === 'timeup') { finishRace('timeup'); return; }
   }
   // district banners, in the direction of travel
   const marks = G.marksDir;
@@ -723,18 +751,24 @@ function raceGap() {
   return { pos, gap };
 }
 
-function finishRace(timeUp = false) {
+/** how: 'finish' (crossed the line) | 'timeup' (the event clock ran out) | 'busted' (pursuit events) */
+function finishRace(how = 'finish') {
+  if (how === true) how = 'timeup';
   G.state = 'finished'; G.finishedT = 0; G.postT = 0;
   const pv = player.veh, run = G.run, def = G.ev.def, r = G.ev.r;
+  const pursuit = def.type === 'pursuit', timeUp = how === 'timeup' && !pursuit; // surviving a pursuit's clock is a finish
+  if (pursuit && how === 'timeup') G.pFinish = G.raceT + G.pen;
+  if (how === 'busted') G.pFinish = null;
   // penalties can still decide it: estimate where the rivals still running end up
   for (const c of grid) if (c.finish === null) { const est = G.raceT + c.pen + (r.len - prog(c.veh.s)) / Math.max(15, c.veh.vLong); if (G.pFinish !== null && est < G.pFinish) c.finish = est; }
   const pos = racePosition();
-  const res = run.finish({ time: timeUp ? null : G.pFinish, position: pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, nearMisses: G.nearMisses, reds: G.reds, style: Math.round(G.style), valid: !G.autodrive && !timeUp && !Q.has('s'), timeUp });
+  const extra = pursuit ? { score: Math.round(G.pursuit?.bounty || 0), busted: how === 'busted', fine: G.pursuit?.fine || 0, takedowns: G.pursuit?.takedowns || 0 } : {};
+  const res = run.finish({ time: timeUp || how === 'busted' ? null : G.pFinish, position: pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, nearMisses: G.nearMisses, reds: G.reds, style: Math.round(G.style), valid: !G.autodrive && !Q.has('s') && how !== 'busted', timeUp, ...extra });
   G.result = res;
   G.won = def.type === 'sprint' ? pos === 1 : !!res.medal;
   if (G.won) audio.win(); else audio.lose();
   const sub = res.medal ? res.medal.toUpperCase() + ' MEDAL' : def.type === 'sprint' ? 'P' + pos + ' · ' + r.toName : 'NO MEDAL';
-  hud.pop(G.won ? 'info good' : 'info bad', timeUp ? 'TIME!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', sub);
+  hud.pop(G.won ? 'info good' : 'info bad', how === 'busted' ? 'BUSTED!' : timeUp ? 'TIME!' : pursuit && how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', sub);
   // the per-car best of the full route (garage card)
   if (G.pFinish !== null && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
     const key = 'paraliaki.best.' + player.spec.id; const prev = +localStorage.getItem(key) || 0;
@@ -771,6 +805,10 @@ function showResults() {
     const L = { near: 'NEAR MISSES', oncoming: 'ONCOMING', drift: 'DRIFTS', overtake: 'OVERTAKES', cone: 'CONES', amber: 'AMBER GAMBLES', polite: 'POLITE DRIVING', scare: 'SCARED PEDESTRIANS' };
     breakdown = Object.entries(res.breakdown).map(([k, v]) => [`${L[k] || k.toUpperCase()} × ${run.counts[k] || 0}`, (v >= 0 ? '+' : '−') + Math.abs(v).toLocaleString('en-US'), v >= 0 ? 'good' : 'bad']);
     if (!breakdown.length) breakdown = [['NOTHING SCORED', '0']];
+  } else if (def.type === 'pursuit') {
+    title = res.busted ? 'BUSTED' : res.score.toLocaleString('en-US') + ' BOUNTY';
+    sub = res.busted ? `The ΕΛ.ΑΣ. got you. Fine <b>€${Math.round(res.fine || 0).toLocaleString('en-US')}</b>.` : def.rules?.goal === 'survive' ? `Survived <b>${fmtTime(res.time)}</b> with the police on your tail.` : `Reached <b>${esc(r.toName)}</b> without getting caught.`;
+    rows = [['BOUNTY', res.score.toLocaleString('en-US')], ['BEST', (res.record?.bestScore ?? prev.bestScore ?? 0).toLocaleString('en-US'), res.newBest], ['GOLD', def.targets.gold.toLocaleString('en-US')], ['TIME', T(res.time)], ['TAKEDOWNS', res.takedowns || 0], ['TOP SPEED', fmtSpeed(G.topSpeed)], ['CRASHES', G.crashes]];
   } else {
     title = fmtSpeed(res.trapTotal);
     sub = res.time == null ? 'Did not finish.' : `${res.trapSpeeds.length} cameras, summed.`;
@@ -790,7 +828,8 @@ function updateEventHud(dt) {
   const pv = player.veh, run = G.run, def = G.ev.def;
   // wrong way: nose against the event's direction of travel
   const hd = Math.atan2(-route.lin(route.TX, pv.s), -route.lin(route.TZ, pv.s)) + (G.dir < 0 ? Math.PI : 0);
-  const wrong = G.state === 'race' && EV.wrongWay(G.wrong, dt, Math.cos(pv.yaw - hd), pv.vLong);
+  // only once racing (never on the grid or in the countdown), and the HUD class is forced, never toggled
+  const wrong = G.state === 'race' && G.raceT > 1 && !!EV.wrongWay(G.wrong, dt, Math.cos(pv.yaw - hd), pv.vLong);
   if (wrong !== G.wrongShown) { G.wrongShown = wrong; ww.classList.toggle('on', wrong); }
   if ((frameN & 3) !== 0 || !run) return;
   let html = '';
@@ -801,6 +840,9 @@ function updateEventHud(dt) {
   } else if (def.type === 'score') {
     const left = run.timeLeft();
     html = `<div class="e-k">TIME LEFT</div><b class="${left < 10 ? 'bad' : ''}">${Math.max(0, left).toFixed(1)}</b><div class="e-k">SCORE</div><b class="sc">${Math.round(run.score).toLocaleString('en-US')}</b><small>GOLD ${def.targets.gold.toLocaleString('en-US')}</small>`;
+  } else if (def.type === 'pursuit') {
+    const left = run.timeLeft(), P = G.pursuit;
+    html = (isFinite(left) ? `<div class="e-k">SURVIVE</div><b class="${left < 10 ? 'good' : ''}">${Math.max(0, left).toFixed(1)}</b>` : '') + `<div class="e-k">BOUNTY</div><b class="sc">${Math.round(P?.bounty || 0).toLocaleString('en-US')}</b>`;
   } else if (def.type === 'speedtrap') {
     const nx = run.r.traps[run.trapIdx], tot = run.trapSpeeds.reduce((a, b) => a + b, 0);
     html = `<div class="e-k">CAMERAS ${run.trapIdx}/${run.r.traps.length}</div><b>${run.trapSpeeds.length ? fmtSpeed(run.trapSpeeds.at(-1)) : '—'}</b><div class="e-k">TOTAL</div><b class="sc">${fmtSpeed(tot)}</b>` + (nx && G.state === 'race' ? `<small>NEXT CAMERA · ${fmtDist(Math.max(0, nx.d - prog(pv.s)))}</small>` : '');
@@ -1017,6 +1059,16 @@ function racerPair(a, b, mine) {
   if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash('light', Math.min(1, sev / 8)); G.shake = Math.max(G.shake, 0.35); player.driver.impulse(0.4); }
 }
 
+/** pursuit transitions (src/police.js): call-outs, sounds. In a pursuit event BUSTED ends the run (events flow) */
+function onPolice(e) {
+  if (e.phase === 'start') { hud.pop('info bad', e.kind === 'event' ? 'POLICE PURSUIT!' : 'YOU\'VE BEEN SPOTTED!', '★'.repeat(e.level) + ' · ΕΛ.ΑΣ. IN PURSUIT'); audio.copRadio?.(); }
+  else if (e.phase === 'heat') { hud.pop('info bad', 'HEAT ' + '★'.repeat(e.level), e.level >= 3 ? 'ROADBLOCKS AHEAD' : e.level >= 2 ? 'THEY WILL TRY TO PIT YOU' : ''); audio.copRadio?.(); }
+  else if (e.phase === 'cooldown') hud.message('OUT OF SIGHT · <i>STAY HIDDEN</i> TO SHAKE THEM', 2.5);
+  else if (e.phase === 'resume') hud.pop('info bad', 'SPOTTED AGAIN!');
+  else if (e.phase === 'takedown') { hud.pop('opa', 'TAKEDOWN!', '+' + (e.pts || 0).toLocaleString('en-US')); G.style += e.pts || 0; }
+  else if (e.phase === 'evaded') { policeHud.shout('evaded', 'EVADED', `BOUNTY +${(e.pts || 0).toLocaleString('en-US')}`); audio.copEvaded?.(); }
+  else if (e.phase === 'busted') { policeHud.shout('busted', 'BUSTED', `FINE €${e.fine}`); audio.copBusted?.(); G.shake = Math.max(G.shake, 0.4); }
+}
 function handleEvents(events) {
   for (const e of events) {
     // damage where it hit (front / rear / left / right), scaled by the car's own change of velocity
@@ -1092,12 +1144,13 @@ function updateAudio(dt) {
   // nearby traffic, relative to the listener (camera): distance, pan, closing speed for doppler
   const tl = [];
   for (const c of traffic.cars) {
-    if (!c.active || c.mode === 'parked' || Math.abs(c.s - pv.s) > 150 || (c.crash && c.crash.y > 1)) continue;
+    const siren = !!(c.cop && c.cop.siren && !c.crash);
+    if (!c.active || (c.mode === 'parked' && !siren) || Math.abs(c.s - pv.s) > (siren ? 420 : 150) || (c.crash && c.crash.y > 1)) continue;
     const p = route.point(c.s, c.u, _ap), f = route.frame(c.s, _fr);
     const vs = c.crash ? c.crash.vs : c.cross ? c.xvs : c.dir * c.v, vu = c.crash ? c.crash.vu : c.cross ? c.xvu : (c.uv || 0);
     const L = listenerRel(p.x, p.y, p.z, f.tx * vs + f.rx * vu, f.tz * vs + f.rz * vu);
-    if (L.d > 130) continue;
-    tl.push({ id: c.id, kind: c.kind, electric: !!c.type.electric, d: L.d, pan: L.pan, vr: L.vr, v: Math.hypot(vs, vu), acc: c.acc || 0 });
+    if (L.d > (siren ? 400 : 130)) continue;
+    tl.push({ id: c.id, kind: c.kind, electric: !!c.type.electric, cop: !!c.cop, siren, d: L.d, pan: L.pan, vr: L.vr, v: Math.hypot(vs, vu), acc: c.acc || 0 });
   }
   tl.sort((a, b) => a.d - b.d);
   const rw = rv.velocityWorld(_av), RL = listenerRel(rv.x, rv.y, rv.z, rw.x, rw.z);
@@ -1166,6 +1219,7 @@ function applyCamMode() {
 }
 function noise1(t) { return Math.sin(t * 1.7) * 0.5 + Math.sin(t * 3.1 + 1.3) * 0.3 + Math.sin(t * 7.3 + 0.7) * 0.2; }
 function updateCamera(dt, snap = false) {
+  if (window.__replay?.updateCamera(dt)) return;
   const watching = multiplayer.spectating();
   const targetCar = watching && remoteCars.get(watching.id);
   if (targetCar?.model.root.visible) {
@@ -1265,6 +1319,8 @@ function frame(now) {
 }
 
 function step(dt, draw = true) {
+  // A queued first frame can predate boot's clock reset. Integrators require a positive timestep.
+  if (!(dt > 0)) return;
   G.t += dt; frameN++;
   const bootFrameLog = text => { if (frameN === 1) tlog(text); };
   bootFrameLog('first-frame');
@@ -1273,7 +1329,7 @@ function step(dt, draw = true) {
   if (!multiplayer.active && grid.length) rival = focusRival(); // the car the HUD gap, audio and slipstream follow
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
-  const simulate = G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && (multiplayer.active || multiplayer.panel.hidden);
+  const simulate = !window.__replay?.active && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && (multiplayer.active || multiplayer.panel.hidden);
   if (simulate) signals.update(dt, pv.s, camera.position);
   if (simulate) {
     // ---- state machine
@@ -1322,6 +1378,7 @@ function step(dt, draw = true) {
       seaCheck(pv, dt);
       stuckCheck(pv, dt);
       if (!pv.nitroOn) pv.nitro = Math.min(1, pv.nitro + dt * 0.012);
+      else pv.nitro = Math.min(1, pv.nitro + dt * PROG.nitroRefund(pv.spec)); // nitro upgrade: a bigger bottle drains slower
       if (pv.nitroOn && !G.nitroWas) audio.nitroStart();
       G.nitroWas = pv.nitroOn;
       if (!multiplayer.active) {
@@ -1339,6 +1396,7 @@ function step(dt, draw = true) {
       // out of sight a rival is not held up by traffic (they know these roads); in sight they race for real (updateGrid)
       if (!multiplayer.active) for (const c of grid) if (!c.ghost) { const n0 = events.length; traffic.collide(c.actor, events, G.t); for (let k = n0; k < events.length; k++) events[k].racer = c; }
       if (!multiplayer.active) racerCollide(dt);
+      if (police && !multiplayer.active) for (const e of police.update(dt, { events, reds: G.reds, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
       for (const h of traffic.honks) handleHonk(h);
@@ -1363,6 +1421,7 @@ function step(dt, draw = true) {
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
       // ---- timing, positions, finish
       if (G.state === 'race' && !multiplayer.active) {
+        window.__replay?.tick(dt);
         raceTiming(dt);
       } else if (G.state === 'finished') {
         G.postT += dt;
@@ -1377,7 +1436,7 @@ function step(dt, draw = true) {
     }
   }
   // ---- people (they live on during the countdown too)
-  if (simulate) { people.update(dt, peopleS(pv.s), multiplayer.active ? [] : ACTORS, camera.position); /* people track two actors: you and the nearest rival (focusRival) */ if (!multiplayer.active) handlePeople(); else people.events.length = 0; }
+  if (simulate) { people.update(dt, peopleS(pv.s), multiplayer.active ? [] : ACTORS, camera.position); /* people track two actors: you and the nearest rival (focusRival) */ if (!multiplayer.active) { police?.pedEvents(people.events); handlePeople(); } else people.events.length = 0; }
   // ---- next traffic light: HUD, green-man ticker, nitro top-up while waiting at red
   {
     const nj = signals.next(pv.s + pv.halfL, 1);
@@ -1398,14 +1457,16 @@ function step(dt, draw = true) {
   syncCar(player, simulate ? dt : 0); if (multiplayer.active || !grid.length) syncCar(rival, simulate ? dt : 0); else for (const c of grid) syncCar(c, simulate ? dt : 0);
   fx.update(simulate ? dt : 0, multiplayer.active ? [pv] : [pv, ...grid.map((c) => c.veh)], camera, innerHeight * pixelRatio);
   traffic.sync(pv.s);
+  if (police) { police.sync(G.t); policeHud.update(dt); }
   const acc = { x: pv.ay, y: 0, z: -pv.ax };
   player.cockpit.update(dt, { steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitro: pv.nitro, nitroOn: pv.nitroOn });
   player.driver.update(dt, G.t, pv.vLong, acc, player.cockpit.wheelInfo, pv.steer, pv.pose.heaveV);
   for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);
+  window.__replay?.visual(dt);
   updateCamera(dt);
   // sun + shadows follow the action
-  const fwd = pv.forward(_v2);
-  ENV.updateSun(sun, _v1.set(pv.x, pv.y, pv.z).addScaledVector(fwd, 35));
+  const fwd = _v2.set(0, 0, -1).applyQuaternion(player.model.root.quaternion);
+  ENV.updateSun(sun, _v1.copy(player.model.root.position).addScaledVector(fwd, 35));
   // crossings painted near us
   if (assets.asphalt && assets.crossings) {
     const u = assets.asphalt.userData.uniforms; let k = 0;
@@ -1466,7 +1527,7 @@ function createProbe() {
 }
 function updateProbe() {
   const p = probe;
-  if (p.face === 0) { p.cc.position.set(player.veh.x, player.veh.y + 1.8, player.veh.z); p.cc.updateMatrixWorld(true); }
+  if (p.face === 0) { p.cc.position.copy(player.model.root.position); p.cc.position.y += 1.8; p.cc.updateMatrixWorld(true); }
   const prevA = renderer.shadowMap.autoUpdate; renderer.shadowMap.autoUpdate = false;
   renderer.setRenderTarget(p.rt, p.face); renderer.render(scene, p.cc.children[p.face]); renderer.setRenderTarget(null);
   renderer.shadowMap.autoUpdate = prevA;
@@ -1540,6 +1601,7 @@ function onlineMembers(members) {
       c.ai = c.ai || { lane: 0, cool: 0 };
       c.veh.reset(startS, route.laneU(startS, 0)); remoteCars.set(p.id, c);
     }
+    if (c.spec.id !== p.car) { const spec = CARS.find(s => s.id === p.car) || CARS[0]; disposeCar(c); const built = makeCar(spec, false); c.model = built.model; c.driver = built.driver; c.spec = spec; c.veh.setSpec(spec); c.veh.reset(startS, route.laneU(startS, 0)); }
     c.networkName = p.name; c.model.root.visible = ['countdown', 'race'].includes(multiplayer.lobby.status);
   }
   const first = members[0];
@@ -1550,6 +1612,10 @@ const multiplayer = new Multiplayer(CARS, {
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   panelClosed() { G.countWall = performance.now(); },
   join(car) { graphicsControl.disabled = true; graphicsControl.title = 'Choose graphics before joining a lobby'; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
+  carChanged(car) {
+    for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
+    if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); }
+  },
   wait: onlineWait,
   leave() {
     graphicsControl.disabled = false; graphicsControl.title = '';
@@ -1566,7 +1632,7 @@ const multiplayer = new Multiplayer(CARS, {
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
     grid(player.veh, lobby.players.findIndex(p => p.id === id));
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
-    if (resumeState) { const v = player.veh; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); v.damageFx(); }
+    if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
     G.state = 'onlineCountdown'; G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
     document.body.classList.add('counting');
     multiplayer.resumeState = null;
@@ -1600,9 +1666,15 @@ const multiplayer = new Multiplayer(CARS, {
     G.pFinish = multiplayer.me?.finish ?? null;
     if (G.state !== 'onlineResults') { const won = G.pFinish !== null && multiplayer.ranking()[0]?.id === multiplayer.id; if (won) audio.win(); else audio.lose(); }
     G.state = 'onlineResults'; hud.count('');
+    document.body.classList.remove('racing', 'counting');
+    if (G.pFinish !== null && multiplayer.rewardedRaceId !== multiplayer.lobby.raceId) {
+      const ranking = multiplayer.ranking(), payout = { raceId: multiplayer.lobby.raceId, position: ranking.findIndex(p => p.id === multiplayer.id) + 1, field: ranking.length };
+      multiplayer.rewardedRaceId = payout.raceId;
+      import('./progression.js').then(m => m.awardOnline?.(payout)).catch(() => {});
+    }
   },
 });
 window.__multiplayer = multiplayer;
-if (Q.has('debug')) window.__vehicle = () => player?.veh;
+if (Q.has('debug')) { window.__vehicle = () => player?.veh; window.__onlineCars = () => [...remoteCars].map(([id, c]) => ({ id, car: c.spec.id, visible: c.model.root.visible, s: c.veh.s })); }
 
 boot().catch(fail);

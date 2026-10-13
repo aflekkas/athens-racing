@@ -18,6 +18,7 @@ export const SURF = {
   dirt: { mu: 0.68, drag: 0.8, rough: 0.9, res: 0.25, soft: 0.3 },
   scrub: { mu: 0.6, drag: 1.4, rough: 1, res: 0.4, soft: 0.2 },
   sand: { mu: 0.6, drag: 0.8, rough: 0.6, res: 0.45, soft: 1 },
+  deepsand: { mu: 0.56, drag: 1.1, rough: 0.5, res: 0.8, soft: 1.0, bow: 0.45 }, // the sand traps: loose, dry, deep
   rock: { mu: 0.75, drag: 0.5, rough: 1, res: 0, soft: 0 },
   water: { mu: 0.15, drag: 9, rough: 0, res: 0, soft: 0 },
 };
@@ -25,7 +26,7 @@ export const SURF = {
 // tarmac grip in the rain (soft ground much less, sand not at all), wet 0..1 (lighter skid marks, little tyre smoke),
 // ambient 0..1 light level (night darkens the unlit smoke / dust sprites in fx.js)
 export const WEATHER = { gripScale: 1, wet: 0, ambient: 1 };
-const WET_K = { asphalt: 1, pavement: 1, rock: 1, verge: 0.4, gravel: 0.4, dirt: 0.5, scrub: 0.4, sand: 0, water: 0 };
+const WET_K = { asphalt: 1, pavement: 1, rock: 1, verge: 0.4, gravel: 0.4, dirt: 0.5, scrub: 0.4, sand: 0.2, deepsand: 0.2, water: 0 }; // rain packs nothing here: sand only gets (a little) worse
 const MAX_CLIMB = 0.5;    // steepest hillside a road car will drive up (~27 deg); steeper is a wall
 const MAX_ABOVE = 9;      // the hillside stops being drivable this far above the road (scrub, boulders, terraces);
                           // the brush gets thicker (drag) for the last few metres so you feel it coming
@@ -66,12 +67,124 @@ export class Ground {
     for (const r of assets.rails || []) for (const q of r.pts) { const i = Math.round(q.s / 2); if (i >= 0 && i < N) (r.side > 0 ? this.railR : this.railL)[i] = q.u; }
     for (const b of data.barriers || []) for (let s = b.s0; s <= b.s1; s += 2) { const i = Math.round(s / 2); if (i >= 0 && i < N) (b.side > 0 ? this.railR : this.railL)[i] = Math.min((b.side > 0 ? this.railR : this.railL)[i], barrierU(route, s) - 0.3); }
     this.out = { y: 0, surf: 'asphalt', water: 0, nx: 0, nz: 0 };
+    this.traps = []; this._placeTraps(map.data);
   }
   _put(map, x, z, r, item) {
     const C = this.HC, x0 = Math.floor((x - r) / C), x1 = Math.floor((x + r) / C), z0 = Math.floor((z - r) / C), z1 = Math.floor((z + r) / C);
     for (let i = x0; i <= x1; i++) for (let j = z0; j <= z1; j++) { const k = i * 100003 + j; let b = map.get(k); if (!b) map.set(k, b = []); if (!b.includes(item)) b.push(item); }
   }
   _cell(map, x, z) { return map.get(Math.floor(x / this.HC) * 100003 + Math.floor(z / this.HC)); }
+  /**
+   * Sand traps: soft, deep, dry sand ('deepsand') that you can drive into from the road and dig yourself into.
+   * Ragged ellipses (x, z, half-length a along yaw, half-width b), a dune is also a steep mound of height h.
+   * Placed from the map at load (_placeTraps): the seaward end of the dirt beach car parks at Limanakia, Varkiza and
+   * Lomvarda, a soft run-off on the outside of the fastest open bend, a dune bank on a beach by the road.
+   * Returns { t: trap, h: height added } or null.
+   */
+  trap(x, z) {
+    for (const t of this.traps) {
+      const dx = x - t.x, dz = z - t.z;
+      if (dx * dx + dz * dz > t.R2) continue;
+      const lx = (dx * t.c + dz * t.s) / t.a, lz = (-dx * t.s + dz * t.c) / t.b, d = Math.hypot(lx, lz), th = Math.atan2(lz, lx);
+      const R = 1 + 0.12 * Math.sin(3 * th + t.seed) + 0.06 * Math.sin(7 * th + t.seed * 2);
+      if (d >= R) continue;
+      const r = this._tr || (this._tr = { t: null, h: 0 });
+      r.t = t; r.h = t.h ? t.h * (0.5 + 0.5 * Math.cos(Math.PI * Math.min(1, d / (R * 0.85)))) : 0;
+      return r;
+    }
+    return null;
+  }
+  _placeTraps(data) {
+    const route = this.route, T = this.traps, L = route.length, lo = Math.max(30, route.start ?? 0), hi = Math.min(L - 30, route.finish ?? L);
+    const lim = {}, w = {}, f = {};
+    const add = (name, kind, x, z, a, b, yaw, h = 0) => {
+      const t = { name, kind, x, z, a, b, c: Math.cos(yaw), s: Math.sin(yaw), h, seed: (x * 0.37 + z * 0.11) % 6.28, R2: (Math.max(a, b) * 1.2) ** 2 };
+      t.sAt = route.project(x, z, null).s; T.push(t); return t;
+    };
+    // a spot is good if it's reachable from the road (no guard rail; not up a cliff, nor down in the sea; no building,
+    // lamp post or parked car in it). dyMin: how far below the road it may lie (a beach down a bank)
+    const spots = data.parkSpots || [];
+    const reach = (s, u, half, dyMin = -2.2) => {
+      if (s < lo || s > hi) return false;
+      this.limits(s, 0.9, lim);
+      if (u + half > lim.max || u - half < lim.min) return false;
+      const ry = route.y(s);
+      for (const k of [-1, -0.5, 0, 0.5, 1]) {
+        const uu = u + k * half, p = route.point(s, uu), th = this.heightC(p.x, p.z);
+        if (th < WATER_Y + 0.4 || th - ry > 2.2 || th - ry < dyMin || this.walls(p.x, p.z, 1.2, w)) return false;
+        if (spots.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < 4)) return false;
+      }
+      return true;
+    };
+    // ... and you can drive to it: a clear run across the pavement from the road (no parked row, post or wall), and
+    // inside the drivable world (MAX_OFF)
+    const path = (s, u) => {
+      const side = Math.sign(u) || 1, e = route.edge(s) + ROAD.gutter;
+      if (Math.abs(u) - route.edge(s) > MAX_OFF - 14) return false;
+      // any car-wide gap within 12 m either side (between the parked cars, round the lamp post)
+      for (let ds = -12; ds <= 12; ds += 2) {
+        let ok = true;
+        for (let uu = e + 0.5; ok && uu < Math.abs(u) - 2; uu += 1.2) {
+          const p = route.point(s + ds, side * uu);
+          if (this.walls(p.x, p.z, 1.0, w) || spots.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < 2.4)) ok = false;
+        }
+        if (ok) return true;
+      }
+      return false;
+    };
+    const near = (s, d) => T.some((t) => Math.abs(t.sAt - s) < d);
+    const outer = (s, side) => route.edge(s) + ROAD.gutter + 0.18 + ROAD.sidewalk(route, s, side);
+    const mark = (id) => (data.marks || []).find((q) => q.id === id);
+    // 1. the dirt beach car parks nearest each stretch of coast: sand drifted in past the parked cars, seaward
+    const lots = (data.areas?.parking || []).filter((a) => a.sf === 'dirt' && a.p?.length >= 6).map((a) => {
+      let cx = 0, cz = 0; const n = a.p.length / 2; for (let i = 0; i < n; i++) { cx += a.p[i * 2]; cz += a.p[i * 2 + 1]; }
+      cx /= n; cz /= n; const pr = route.project(cx, cz, null); let ext = 0;
+      for (let i = 0; i < n; i++) ext = Math.max(ext, Math.hypot(a.p[i * 2] - cx, a.p[i * 2 + 1] - cz));
+      return { s: pr.s, u: pr.u, ext };
+    });
+    for (const id of ['limanakia', 'varkiza', 'coast', 'lomvarda']) {
+      const m = mark(id); if (!m) continue;
+      let best = null, bd = 1300;
+      for (const q of lots) {
+        if (Math.abs(q.s - m.s) >= bd || near(q.s, 300)) continue;
+        const side = Math.sign(q.u) || 1, o = outer(q.s, side);
+        for (const du of [2, 5, 8, 11]) {
+          const uc = side * Math.max(Math.abs(q.u) + du, o + 4.5);
+          if (reach(q.s, uc, 4) && path(q.s, uc)) { bd = Math.abs(q.s - m.s); best = { ...q, uc }; break; }
+        }
+      }
+      if (!best) continue;
+      const fr = route.frame(best.s, f), p = route.point(best.s, best.uc);
+      add((m.name === 'ATHINON-SOUNIOU' ? 'Coast road' : m.name) + ' car park', 'lot', p.x, p.z, clamp(best.ext * 0.4, 7, 12), 4.2, Math.atan2(fr.tz, fr.tx));
+    }
+    // 2. a soft run-off on the outside of the fastest open bend (miss the braking point and you're in it)
+    let run = null;
+    for (let s = lo + 60; s < hi - 60; s += 5) {
+      const a0 = route.frame(s - 30, f), t0x = a0.tx, t0z = a0.tz, a1 = route.frame(s + 30, f);
+      const turn = Math.asin(clamp(t0x * a1.tz - t0z * a1.tx, -1, 1)); // > 0 bends right (u+), < 0 left
+      const R = 60 / Math.max(1e-3, Math.abs(turn));
+      if (R < 70 || R > 260 || route.urban(s) > 0.5 || near(s, 250)) continue;
+      const side = turn > 0 ? -1 : 1, uc = side * (outer(s, side) + 1.6 + 8);
+      if (!reach(s, uc, 7) || !reach(s - 15, uc, 7) || !path(s - 15, uc)) continue;
+      if (!run || R > run.R) run = { s: s - 8, uc, R }; // the fastest bend that still needs braking
+    }
+    if (run) { const fr = route.frame(run.s, f), p = route.point(run.s, run.uc); add('Bend run-off', 'runoff', p.x, p.z, 26, 8, Math.atan2(fr.tz, fr.tx)); }
+    // 3. a dune on the beach below the road, nearest Varkiza: drive down the bank onto it and the loose mound and the
+    // climb back up keep you there (the way out is a tow)
+    let dune = null; const mv = mark('varkiza') || mark('limanakia');
+    for (let s = lo + 40; s < hi - 40; s += 10) for (const side of [1, -1]) {
+      if (near(s, 250)) continue;
+      for (let d = 3; d <= 20; d += 3) {
+        const uc = side * (outer(s, side) + 1.6 + d + 7), p = route.point(s, uc);
+        if (this.terrain.cls(p.x, p.z) !== 1 || !reach(s, uc, 7, -4.8) || !path(s, uc)) continue;
+        let sandy = 0; for (const [ox, oz] of [[6, 0], [-6, 0], [0, 6], [0, -6]]) sandy += this.terrain.cls(p.x + ox, p.z + oz) === 1 ? 1 : 0;
+        const score = sandy * 10 - d - (mv ? Math.abs(s - mv.s) / 100 : 0);
+        if (sandy >= 3 && (!dune || score > dune.score)) dune = { s, uc, score };
+        break;
+      }
+    }
+    if (dune) { const fr = route.frame(dune.s, f), p = route.point(dune.s, dune.uc); add('Beach dune', 'dune', p.x, p.z, 9, 7, Math.atan2(fr.tz, fr.tx), 2.1); }
+  }
   /** dirt humps: smooth cosine mounds [x, z, radius, height] */
   hump(x, z) {
     const b = this._cell(this.hh, x, z); if (!b) return 0;
@@ -104,6 +217,8 @@ export class Ground {
     y += hp; out.hump = hp;
     const cls = this.terrain.cls(x, z);
     out.surf = hp > 0.02 ? 'dirt' : cls === 1 ? 'sand' : cls === 2 ? 'rock' : cls === 3 || cls === 6 ? 'scrub' : cls === 4 || cls === 5 ? 'gravel' : 'dirt';
+    const tr = this.traps.length ? this.trap(x, z) : null;
+    if (tr) { out.surf = 'deepsand'; y += tr.h; out.hump += tr.h; out.trap = tr.t; } else out.trap = null;
     if (y < WATER_Y) { out.water = WATER_Y - y; out.surf = cls === 1 ? 'sand' : 'water'; }
     out.y = y;
     return out;
@@ -269,9 +384,12 @@ export class Ground {
     // height, and the attitude of the ground under the wheelbase (grade along the car, bank across it)
     // the ground under each wheel: a car astride a kerb sits on all four, tilted
     const q = this._q || (this._q = {}), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw), t2 = v.track / 2;
-    const wy = this._wy || (this._wy = [0, 0, 0, 0]), ws = this._ws || (this._ws = ['', '', '', '']);
-    for (let i = 0; i < 4; i++) {
-      const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2, a = this.at(v.x + fx * cx + rx * cy, v.z + fz * cx + rz * cy, v.s, v.u, q);
+    const wy = v._wy || (v._wy = [0, 0, 0, 0]), ws = v._wsurf || (v._wsurf = ['', '', '', '']); // per car: fx reads them later
+    const fw = route.frame(clamp(v.s, 0, route.length), v._f || (v._f = {}));
+    const ft = fx * fw.tx + fz * fw.tz, fr = fx * fw.rx + fz * fw.rz, rt = rx * fw.tx + rz * fw.tz, rr = rx * fw.rx + rz * fw.rz;
+    for (let i = 0; i < 4; i++) { // each wheel's own road coordinates: it can be on the kerb while the centre isn't
+      const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2;
+      const a = this.at(v.x + fx * cx + rx * cy, v.z + fz * cx + rz * cy, v.s + cx * ft + cy * rt, v.u + cx * fr + cy * rr, q);
       wy[i] = a.y; ws[i] = a.surf;
     }
     const yF = (wy[0] + wy[1]) / 2, yB = (wy[2] + wy[3]) / 2, yR = (wy[1] + wy[3]) / 2, yL = (wy[0] + wy[2]) / 2;
@@ -298,9 +416,9 @@ export class Ground {
     v._gx = v.x; v._gz = v.z; v._gy = v.y; v._gt = g.y - g.hump; v._gu = v.u;
     // grip / drag (airborne: no grip), water
     // grip and resistance: the average over the four contact patches (a car with two wheels in the sand feels it)
-    let mu = 0, dr = 0, res = 0, soft = 0;
-    for (let i = 0; i < 4; i++) { const W = SURF[ws[i]] || SURF.dirt; mu += W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5)) / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; }
-    v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft;
+    let mu = 0, dr = 0, res = 0, soft = 0, bow = 0;
+    for (let i = 0; i < 4; i++) { const W = SURF[ws[i]] || SURF.dirt; mu += W.mu * (1 - (1 - WEATHER.gripScale) * (WET_K[ws[i]] ?? 0.5)) / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; bow += (W.bow || 0) / 4; }
+    v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;
     if (!paved) { // thick maquis up the hillside / far from the road
       const sc = clamp(v.s, 0, route.length);
       const ex = Math.max(0, gy - route.y(sc) - (MAX_ABOVE - 4)) + Math.max(0, (Math.abs(v.u) - route.edge(sc) - (MAX_OFF - 12)) / 3);
@@ -360,6 +478,73 @@ export function buildBarriers(map, scene) {
   }
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, map: TX.concrete_diff || null, normalMap: TX.concrete_nor || null });
   const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; scene.add(m);
+  return m;
+}
+
+// ------------------------------------------------------------------ sand traps (visual)
+// each trap: a draped patch of pale loose sand on exactly the heights the physics uses (the dune's mound included),
+// and the ruts of the last driver who got stuck there: two tracks wandering in from the road side, ending in dug holes
+export function buildSandTraps(ground, scene) {
+  if (!ground.traps.length) return null;
+  const route = ground.route, q = {}, c = new THREE.Color();
+  const pos = [], uv = [], idx = [], col = [], rp = [], rc = [], ri = [];
+  const RINGS = 12, SEG = 48;
+  const yAt = (x, z) => { const pr = route.project(x, z, null); return ground.at(x, z, pr.s, pr.u, q).y; };
+  let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (const t of ground.traps) {
+    const base = pos.length / 3;
+    for (let i = 0; i <= RINGS; i++) {
+      for (let k = 0; k < SEG; k++) {
+        const th = k / SEG * Math.PI * 2, R = 1 + 0.12 * Math.sin(3 * th + t.seed) + 0.06 * Math.sin(7 * th + t.seed * 2);
+        const d = i / RINGS * R * (i === RINGS ? 1.04 : 0.999), lx = Math.cos(th) * d * t.a, lz = Math.sin(th) * d * t.b;
+        const x = t.x + lx * t.c - lz * t.s, z = t.z + lx * t.s + lz * t.c;
+        pos.push(x, yAt(x, z) + (i === RINGS ? -0.06 : 0.035), z); uv.push(x / 2.5, z / 2.5);
+        // dry and pale in the middle, darker and damper where it thins out at the edge
+        const n = 0.92 + 0.08 * Math.sin(x * 1.3 + z * 0.7) * Math.sin(z * 1.1 - x * 0.4);
+        c.setRGB(0.98, 0.9, 0.74).multiplyScalar(n * (1 - 0.18 * Math.pow(i / RINGS, 3))); col.push(c.r, c.g, c.b);
+      }
+    }
+    for (let i = 0; i < RINGS; i++) for (let k = 0; k < SEG; k++) {
+      const a = base + i * SEG + k, b = base + i * SEG + (k + 1) % SEG;
+      idx.push(a, b, a + SEG, b, b + SEG, a + SEG);
+    }
+    // ruts: a car came in from the road edge of the patch and dug in short of the far side
+    const roadSide = Math.sign(route.project(t.x, t.z, null).u) || 1; // the road is towards -u
+    for (let r = 0; r < (t.kind === 'runoff' ? 3 : 2); r++) {
+      const fr = route.frame(clamp(t.sAt, 0, route.length), {});
+      const inX = -fr.rx * roadSide, inZ = -fr.rz * roadSide; // from the patch towards the road
+      const along = (rnd() - 0.5) * 1.4 * t.a, len = t.b * (1.1 + rnd() * 0.6), bend = (rnd() - 0.5) * 3;
+      for (const off of [-0.75, 0.75]) {
+        const b0 = rp.length / 3; let n = 0;
+        for (let j = 0; j <= 16; j++) {
+          const f = j / 16, w = 0.13 + 0.05 * f;
+          const ax = t.x + fr.tx * (along + bend * f * f) + inX * (t.b * 0.95 - len * f), az = t.z + fr.tz * (along + bend * f * f) + inZ * (t.b * 0.95 - len * f);
+          const px = ax + fr.tx * off, pz = az + fr.tz * off;
+          for (const sd of [-1, 1]) { const x = px + fr.tx * w * sd, z = pz + fr.tz * w * sd; rp.push(x, yAt(x, z) + 0.06, z); const k = 0.55 - 0.12 * f; rc.push(0.62 * k, 0.5 * k, 0.36 * k); }
+          if (j) ri.push(b0 + (j - 1) * 2, b0 + (j - 1) * 2 + 1, b0 + j * 2, b0 + (j - 1) * 2 + 1, b0 + j * 2 + 1, b0 + j * 2);
+          n++;
+        }
+        // the hole the wheel dug where it gave up
+        const hb = rp.length / 3, hx = rp[rp.length - 6] * 0.5 + rp[rp.length - 3] * 0.5, hz = rp[rp.length - 4] * 0.5 + rp[rp.length - 1] * 0.5;
+        rp.push(hx, yAt(hx, hz) + 0.065, hz); rc.push(0.24, 0.19, 0.13);
+        for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2, x = hx + Math.cos(a) * 0.45, z = hz + Math.sin(a) * 0.32; rp.push(x, yAt(x, z) + 0.06, z); rc.push(0.5, 0.41, 0.3); }
+        for (let k = 0; k < 10; k++) ri.push(hb, hb + 1 + (k + 1) % 10, hb + 1 + k);
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: TX.sand_diff || null, normalMap: TX.sand_nor || null, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
+  m.receiveShadow = true; scene.add(m);
+  const rg = new THREE.BufferGeometry();
+  rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
+  rg.setAttribute('color', new THREE.Float32BufferAttribute(rc, 3));
+  rg.setIndex(ri); rg.computeVertexNormals();
+  const rm = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }));
+  rm.receiveShadow = true; scene.add(rm);
   return m;
 }
 

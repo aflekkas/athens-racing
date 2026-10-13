@@ -23,13 +23,13 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const track = { start: route.start, finish: route.finish, version: trackVersion(route) };
   const definitions = new Map();
   for (const def of [QUICK_RACE, ...EVENTS]) {
-    if (!['sprint', 'timetrial'].includes(def.type)) continue;
-    try { const r = resolveEvent(def, { route, marks }); definitions.set(def.id, { id: def.id, name: def.name, ...r, routeKey: `${r.s0}>${r.s1}`, traffic: def.traffic > 0 }); } catch { /* Map fixtures may omit named marks. */ }
+    try { const r = resolveEvent(def, { route, marks }); definitions.set(def.id, { id: def.id, type: def.type, name: def.name, ...r, routeKey: `${r.s0}>${r.s1}`, traffic: def.traffic > 0 }); } catch { /* Map fixtures may omit named marks. */ }
   }
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version);
   const lobbies = new Map(), clients = new Set(), sessions = new Map(), postLimits = new Map();
   const lobbyEvent = l => definitions.get(l.eventId);
-  const options = () => [...definitions.values()].map(({ id, name, s0, s1, dir, len, routeKey }) => ({ id, name, s0, s1, dir, len, routeKey }));
+  const onlineEvent = id => ['sprint', 'timetrial'].includes(definitions.get(id)?.type);
+  const options = () => [...definitions.values()].filter(e => onlineEvent(e.id)).map(({ id, name, s0, s1, dir, len, routeKey }) => ({ id, name, s0, s1, dir, len, routeKey }));
   const publicLobby = (l) => ({ code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected })), eventId: l.eventId, traffic: l.traffic, event: lobbyEvent(l), results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, track });
   const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private).map(publicLobby) });
   const publish = (l) => { for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby: publicLobby(l) }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
@@ -46,8 +46,8 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     l.players.delete(c.id); c.lobby = null; c.ready = false; c.state = null; c.stateAt = null;
     if (!l.players.size) lobbies.delete(l.code);
     else {
-      if (l.status === 'countdown' && l.players.size < 2) { l.status = 'waiting'; l.startAt = null; l.raceId = null; l.racers = null; for (const p of l.players.values()) p.ready = false; }
-      if (l.host === c.id) l.host = l.players.keys().next().value; if (['countdown', 'race'].includes(l.status) && [...l.players.values()].every(p => p.finish !== null)) results(l); publish(l); }
+      if (l.status === 'countdown' && [...l.players.values()].filter(p => p.connected).length < 2) { l.status = 'waiting'; l.startAt = null; l.raceId = null; l.racers = null; for (const p of l.players.values()) p.ready = false; }
+      if (l.host === c.id) l.host = [...l.players.values()].find(p => p.connected)?.id || l.players.keys().next().value; if (['countdown', 'race'].includes(l.status) && [...l.players.values()].every(p => p.finish !== null)) results(l); publish(l); }
     for (const other of clients) if (!other.lobby) send(other.ws, discover());
   };
   const server = http.createServer(async (req, res) => {
@@ -124,7 +124,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
           if (m.type === 'create') {
             if (lobbies.size >= 64) return error('Lobby limit reached. Join an existing lobby.');
             let code; do { code = randomBytes(3).toString('hex').toUpperCase(); } while (lobbies.has(code));
-            dest = { code, name: clean(m.lobbyName, `${c.name}'S RACE`), host: c.id, private: m.private === true, players: new Map(), status: 'waiting', startAt: null, raceId: null, eventId: definitions.has(m.eventId) ? m.eventId : 'quick', traffic: m.traffic === true };
+            dest = { code, name: clean(m.lobbyName, `${c.name}'S RACE`), host: c.id, private: m.private === true, players: new Map(), status: 'waiting', startAt: null, raceId: null, eventId: onlineEvent(m.eventId) ? m.eventId : 'quick', traffic: m.traffic === true };
             lobbies.set(code, dest);
           } else {
             dest = lobbies.get(String(m.code).trim().toUpperCase());
@@ -137,7 +137,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
         if (!l) return error('Join a lobby first.');
         if (m.type === 'options') {
           if (l.host !== c.id || l.status !== 'waiting') return error('Only the host can change a waiting lobby.');
-          if (!definitions.has(m.eventId)) return error('Unknown race route.');
+          if (!onlineEvent(m.eventId)) return error('Unknown race route.');
           l.eventId = m.eventId; l.traffic = m.traffic === true;
           for (const p of l.players.values()) p.ready = false;
           publish(l); return;

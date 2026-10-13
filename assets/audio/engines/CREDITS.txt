@@ -62,6 +62,12 @@ effects; Carrera and GTV do not. No recorded startups are assigned to these cars
 
 Audition all six: /tools/audio-preview.html (served from the project root).
 Rebuild: python tools/build_engine_audio.py --cache /path/to/source-cache
+For just the MINI mid layer, append --only mini-mid.wav. Its current trim is
+76–78 seconds of the same CC0 Cooper S recording, with the existing pitch
+stabilization and loop crossfade. This replaces a more uneven 29–32 second
+section; the original edited WAV is preserved as mini-mid.wav.orig and its
+trim/checksum are in sources.json (previousVersion). No EQ or envelope
+normalization was applied. The idle and other RPM layers are unchanged.
 Requires ffmpeg, numpy and scipy. Masters are cached outside runtime assets.
 To upgrade fidelity further, replace substitute sources with separately
 licensed Z4 B58 / Octavia EA288 / MINI B48 ignition recordings, plus sustained

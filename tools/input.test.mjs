@@ -81,6 +81,22 @@ test('gamepad rebinding waits for neutral and does not dispatch the captured pre
   input.capture = { kind: 'gamepad', action: 'camera', ready: false }; key('keydown', 'Escape'); assert.equal(input.capture, null); input.destroy();
 });
 
+test('photo/replay edges preserve Space handbrake and menu confirm defaults', () => {
+  const { input, key } = setup(); key('keydown', 'KeyP'); input.update(1 / 60); assert.ok(input.actions.includes('photo'));
+  input.update(1 / 60); assert.equal(input.state.photo, false);
+  key('keydown', 'Space'); input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.confirm, true); assert.equal(input.state.replayPlay, true);
+  input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.replayPlay, false); input.destroy();
+});
+
+test('clearing drive input on pause does not retrigger held pad buttons or keyboard repeats', () => {
+  const { input, pads, key } = setup(), pad = gamepad(); pads([pad]); pad.buttons[9].value = 1;
+  input.update(1 / 60); assert.equal(input.state.pause, true); input.clear();
+  input.update(1 / 60, { inMenu: true }); assert.equal(input.state.pause, false);
+  pad.buttons[9].value = 0; input.update(1 / 60, { inMenu: true }); pad.buttons[9].value = 1; input.update(1 / 60, { inMenu: true }); assert.equal(input.state.pause, true);
+  pads([]); input.clear(); key('keydown', 'KeyW'); input.update(1 / 60); input.clear(); key('keydown', 'KeyW', true); input.update(1 / 60); assert.equal(input.state.throttle, 0);
+  key('keyup', 'KeyW'); key('keydown', 'KeyW'); input.update(1 / 60); assert.ok(input.state.throttle > 0); input.destroy();
+});
+
 test('bindings and tuning persist, defaults reset, invalid saved data is ignored', () => {
   const { input, storage, key } = setup();
   assert.equal(input.bind('keyboard', 'throttle', ['KeyZ']), true); input.bind('gamepad', 'nitro', ['b10']); input.configure({ deadzone: 0.2, linearity: 2 });

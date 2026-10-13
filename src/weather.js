@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import * as ENV from './env.js';
 import { WEATHER } from './ground.js';
-import { setCarLights, setTrafficLights } from './vehicle-models.js';
+import { setCarLights } from './vehicle-models.js';
 
 export const setConditions = (c) => ENV.setConditions(c);
 export const getConditions = () => ENV.getConditions();
@@ -65,15 +65,15 @@ const WX_LIGHTS = /* glsl */`
 if (wxNight > 0.0) {
   vec3 Nw = normalize(inverseTransformDirection(normal, viewMatrix));
   vec3 Vw = normalize(cameraPosition - vWxP);
-  for (int i = 0; i < ${NL}; i++) {
+  for (int i = 0; i < WX_NL; i++) {
     vec4 lp = wxLamp[i]; if (lp.w <= 0.0) continue;
     vec3 Lv = lp.xyz - vWxP; float d2 = dot(Lv, Lv); vec3 Ln = Lv * inversesqrt(d2);
-    float cone = smoothstep(0.2, 0.75, Ln.y);
+    float cone = smoothstep(0.5, 0.86, Ln.y);
     vec3 E = wxLampC * (lp.w * cone * saturate(dot(Nw, Ln)) / (d2 + 3.0));
     reflectedLight.directDiffuse += E * BRDF_Lambert(material.diffuseColor);
     reflectedLight.directSpecular += E * BRDF_GGX(Ln, Vw, Nw, material);
   }
-  for (int i = 0; i < ${NC}; i++) {
+  for (int i = 0; i < WX_NC; i++) {
     vec4 cp = wxCarP[i]; if (cp.w <= 0.0) continue;
     vec3 Lv = cp.xyz - vWxP; float d2 = dot(Lv, Lv); vec3 Ln = Lv * inversesqrt(d2);
     float ca = dot(-Ln, wxCarD[i].xyz);
@@ -102,7 +102,9 @@ function roadHook(sh) {
   sh.vertexShader = replaceOnce(sh.vertexShader, '#include <common>', '#include <common>' + WX_VS_PARS, 'road vs common');
   sh.vertexShader = replaceOnce(sh.vertexShader, '#include <worldpos_vertex>', '#include <worldpos_vertex>' + WX_VS, 'road worldpos');
   const asphalt = sh.fragmentShader.includes('float gut') && sh.fragmentShader.includes('polish');
-  sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <common>', (asphalt ? '#define WX_ASPHALT\n' : '') + '#include <common>' + WX_FS_PARS, 'road fs common');
+  // LOW evaluates fewer lamps / car lights per pixel (compile-time loop counts)
+  const defs = `#define WX_NL ${W && W.low ? 6 : NL}\n#define WX_NC ${W && W.low ? 3 : NC}\n` + (asphalt ? '#define WX_ASPHALT\n' : '');
+  sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <common>', defs + '#include <common>' + WX_FS_PARS, 'road fs common');
   sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <lights_physical_fragment>', WX_WET + '\n#include <lights_physical_fragment>', 'road lights_physical');
   sh.fragmentShader = replaceOnce(sh.fragmentShader, '#include <lights_fragment_end>', '#include <lights_fragment_end>\n' + WX_LIGHTS, 'road lights_end');
 }
@@ -113,10 +115,11 @@ function facadeHook(sh) {
   sh.fragmentShader = replaceOnce(sh.fragmentShader, 'float E = 0.16 * exp(-hp.z * 0.32) + 0.02;',
     'float E = (0.16 * exp(-hp.z * 0.32) + 0.02) * wxDay; lit = max(lit, step(1.0 - wxWin, h12(vec2(seed, 2.9)))) * (1.0 + 5.0 * wxWin);', 'facade interior light');
 }
-// leaf / frond translucency toward the light: scaled to the direct light actually there (env.js apP.z)
+// leaf / frond translucency toward the light and the foliage's fake ambient fill: scaled to the direct light
+// actually there (env.js apP.z), so trees don't glow at night or under a thick deck
 function leafHook(sh) {
   sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n#ifdef USE_FOG\n#define WX_SUNK (apP.y > 0.5 ? apP.z : 1.0)\n#else\n#define WX_SUNK 1.0\n#endif')
-    .replace(/totalEmissiveRadiance \+= leafT/g, 'totalEmissiveRadiance += WX_SUNK * leafT');
+    .replace(/totalEmissiveRadiance \+= (leafT|diffuseColor\.rgb)/g, 'totalEmissiveRadiance += WX_SUNK * $1');
 }
 
 // ---- soft additive glow sprites (lamps, head / tail lamps), sized in metres with a minimum on-screen size
@@ -284,7 +287,7 @@ export function initWeather(ctx) {
       const key = m.customProgramCacheKey && m.customProgramCacheKey !== THREE.Material.prototype.customProgramCacheKey ? m.customProgramCacheKey() : '';
       if (/^(asphalt|paving|concrete)/.test(key)) wrap(m, 'wx-road', roadHook);
       else if (/^facade/.test(key)) wrap(m, 'wx-facade', facadeHook);
-      else if (/^(leaf|frond)/.test(key) || (m.onBeforeCompile && /totalEmissiveRadiance \+= leafT/.test(m.onBeforeCompile.toString()))) wrap(m, 'wx-leaf', leafHook);
+      else if (/^(leaf|frond)/.test(key) || (m.onBeforeCompile && /totalEmissiveRadiance \+= (leafT|diffuseColor\.rgb)/.test(m.onBeforeCompile.toString()))) wrap(m, 'wx-leaf', leafHook);
       // street-lamp heads (road.js): emissive '#fff2d6'
       if (m.emissive && m.emissive.getHexString() === 'fff2d6' && o.isInstancedMesh) W.lampMats.push(m);
     }
@@ -325,12 +328,12 @@ function apply(cond, st, changed) {
   WXU.wxWet.value = rain; WXU.wxRain.value = rain;
   WXU.wxNight.value = lamps > 0 || st.headlights ? 1 : 0;
   WXU.wxDay.value = Math.min(1.2, st.daylight); WXU.wxWin.value = night ? 0.5 : lamps * 0.35;
-  for (let i = 0; i < W.lampMats.length; i++) W.lampMats[i].emissiveIntensity = W.lampBase[i] + 28 * lamps;
+  for (let i = 0; i < W.lampMats.length; i++) W.lampMats[i].emissiveIntensity = W.lampBase[i] + 9 * lamps;
   W.lampGlow.p.visible = lamps > 0;
-  for (let i = 0; i < W.lamps.length; i++) W.lampGlow.col.set([4.5 * lamps, 3.4 * lamps, 2.1 * lamps], i * 3);
+  for (let i = 0; i < W.lamps.length; i++) W.lampGlow.col.set([2.6 * lamps, 1.95 * lamps, 1.2 * lamps], i * 3);
   W.lampGlow.g.attributes.aCol.needsUpdate = true;
   W.lightsOn = !!st.headlights;
-  setTrafficLights(W.lightsOn);
+  // (traffic templates are shared with the parked cars, so moving traffic gets its headlamps from the glow sprites)
   W.lastLights = null; // re-apply to the racers next frame
   W.post.setConditions(st);
   if (changed && W.probe && ENV.bakedSky()) W.probe.pmrem.fromCubemap(ENV.bakedSky(), W.probe.envRT);
@@ -379,14 +382,14 @@ export function updateWeather(dt) {
     for (const sx of [-1, 1]) {
       if (n + 2 > G.n) return;
       if (!(self && camIn)) {
-        _v.set(sx * wid * 0.36, hy, -len / 2 - 0.12).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.55;
+        _v.set(sx * wid * 0.36, hy, -len / 2 - 0.12).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.4;
         G.col.set([3.2 * front, 3.0 * front, 2.6 * front], n * 3); n++;
       }
       const tb = (on ? 0.45 : 0) + (brake ? 1.6 : 0);
       _v.set(sx * wid * 0.38, hy + 0.06, len / 2 + 0.1).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.3;
       G.col.set([tb * back, tb * back * 0.04, tb * back * 0.02], n * 3); n++;
     }
-    if (on && poolOK && nc < NC && dist < 220) {
+    if (on && poolOK && nc < (W.low ? 3 : NC) && dist < 220) {
       _v.set(0, hy, -len / 2).applyMatrix4(root.matrixWorld);
       cp.set([_v.x, _v.y, _v.z, 70], nc * 4);
       cd.set([_f.x, _f.y - 0.07, _f.z, 0], nc * 4); nc++;

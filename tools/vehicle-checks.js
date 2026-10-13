@@ -37,7 +37,7 @@ export function runVehicleChecks() {
     let finite=true;car.root.traverse(o=>{if(o.isMesh)for(const v of o.geometry.attributes.position.array)if(!Number.isFinite(v))finite=false;});check(spec.id+' geometry finite',finite);
     check(spec.id+' body dimensions match physical collider',Math.abs(car.dims.L-spec.length)<.001&&Math.abs(car.dims.W-spec.width)<.001);
   }
-  const types=TRAFFIC_TYPES.filter(t=>t.model),rng=new RNG(41),plates=new Set();
+  const types=TRAFFIC_TYPES.filter(t=>t.model&&!t.police),rng=new RNG(41),plates=new Set();
   for(const type of types){
     const a=trafficModel(type,type.colors[0],rng),b=trafficModel(type,type.colors[1],rng);plates.add(a.plate);plates.add(b.plate);
     roofFits(a);
@@ -71,5 +71,23 @@ export function runGaragePaintChecks(){
       assert(hud.el.cIdx.textContent===`${i+1}/6`,'Garage index derives from six-car catalogue');
     }
   }finally{for(const [id,c]of before){const key='paraliaki.paint.'+id;if(c===null)localStorage.removeItem(key);else localStorage.setItem(key,c);}host.remove();}
+  return {passed};
+}
+
+export function runPoliceChecks(){
+  let passed=0;const check=(v,label)=>{if(!v)throw new Error(label);passed++;};
+  const seen=new Set();
+  for(const id of ['police','police_moto']){
+    const type=TRAFFIC_TYPES.find(t=>t.id===id);check(type?.police&&type.w===0,id+' explicit spawn only');
+    const a=trafficModel(type,type.colors[0],new RNG(42)),b=trafficModel(type,type.colors[0],new RNG(43),{parked:true});
+    check(a.wheels.length===(type.moto?2:4)&&a.wheels.every(w=>w.spin.parent===w.pivot&&w.pivot!==w.spin),id+' steering/spin hierarchy');
+    check(typeof b.setStrobe==='function'&&typeof b.setDamage==='function',id+' parked hooks');
+    for(const m of [a,b]){check(m.plate&&!seen.has(m.plate),id+' unique plate');seen.add(m.plate);}
+    const levels=t=>{a.setStrobe(true,t);return a.strobeMaterials.map(m=>m.emissiveIntensity);};
+    check(levels(.02)[0]===9&&levels(.02)[1]===0&&levels(.12)[0]===9&&levels(.08)[0]===0&&levels(.34)[1]===9,id+' alternating double flash');
+    a.setStrobe(false,.34);check(a.strobeMaterials.every(m=>m.emissiveIntensity===0)&&b.strobeMaterials.every(m=>m.emissiveIntensity===0),id+' off and independent');
+    const base=a.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());a.setDamage('front',.8);check(a.damageMeshes.some((m,k)=>m.geometry.attributes.position.array.some((v,i)=>Math.abs(v-base[k][i])>1e-5)),id+' damaged');a.setDamage('front',0);check(a.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((v,i)=>Math.abs(v-base[k][i])<1e-6)),id+' repaired');
+    let finite=true;a.root.traverse(o=>{if(o.isMesh)for(const v of o.geometry.attributes.position.array)if(!Number.isFinite(v))finite=false;});check(finite,id+' finite');
+  }
   return {passed};
 }

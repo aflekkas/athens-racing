@@ -120,7 +120,7 @@ function deriveConditions() {
   let oc = ghi.map((x) => x * W.T / Math.PI);
   const ol = lum(oc); oc = oc.map((x) => ol + (x - ol) * 0.55);
   // city light pollution (sodium / LED orange) under the night sky
-  const glow = night ? [0.0036, 0.0021, 0.0011] : [0, 0, 0];
+  const glow = night ? [0.011, 0.0062, 0.003] : [0, 0, 0];
   const out = {
     A,
     sunLight: A.sunIrr.map((x) => x * (1 - over * (1 - W.T * 0.35))), // what still reaches the ground as a direct beam
@@ -136,7 +136,7 @@ function deriveConditions() {
     night, over, rain: W.rain, exposure, daylight: E / REF, lamps: T.lamps || 0, headlights: T.lamps || W.rain ? 1 : 0,
     ambient: THREE.MathUtils.clamp(E * exposure / REF, 0.02, 1.2), // how lit unlit (sprite) effects should look
     glare: (night ? 0.15 : 1) * (1 - over * 0.95),
-    bloom: night ? 2.2 : 1 + over * 0.2,
+    bloom: night ? 1.5 : 1 + over * 0.2,
     wb: T.wb,
   });
   return out;

@@ -92,6 +92,14 @@
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "sha256": "6587ffc83281ecea17bf41a37e461c93d73424b478759e78dad35d71310823da"
     },
+    "321906": {
+      "title": "Walkie Talkie - Roger Beep",
+      "author": "bruce965",
+      "pageUrl": "https://freesound.org/people/bruce965/sounds/321906/",
+      "downloadUrl": "https://cdn.freesound.org/previews/321/321906_1755779-hq.mp3",
+      "sha256": "ea3b7ef6b75dcd5ac24450bd614d1d0fe7ca623e985d10b25d9f0bbbb1e870e4",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
     "332056": {
       "title": "Fast Collision",
       "author": "qubodup",
@@ -148,6 +156,14 @@
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "sha256": "47524b84fbb311d3817dc31b76cfbcab1a083990706fc217d3796252c0dcc8f7"
     },
+    "435383": {
+      "title": "Police radio chatter",
+      "author": "Iam_calderon",
+      "pageUrl": "https://freesound.org/people/Iam_calderon/sounds/435383/",
+      "downloadUrl": "https://cdn.freesound.org/previews/435/435383_6282539-hq.mp3",
+      "sha256": "ca19eb4466ab0f7f1e68f636019c07fd1abf9f14fc3bda7df5b07af9fda078a3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
     "462462": {
       "title": "Seagulls / gaviotas clean wildtrack.WAV",
       "author": "Soojay",
@@ -163,6 +179,14 @@
       "downloadUrl": "https://cdn.freesound.org/previews/476/476099_3248005-hq.mp3",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "sha256": "88b7ced7b1f7643d3809112cb5b2feceaf568e827ba61fa38d477fdfb2836080"
+    },
+    "524205": {
+      "title": "Radio Sign Off / Squelch",
+      "author": "JovianSounds",
+      "pageUrl": "https://freesound.org/people/JovianSounds/sounds/524205/",
+      "downloadUrl": "https://cdn.freesound.org/previews/524/524205_9561949-hq.mp3",
+      "sha256": "53fef556970fe7e81d1e1426d44e8a510ebf62ba2de15ddd4ce8c0c14f987138",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
     "531430": {
       "title": "bathing beach atmo",
@@ -693,6 +717,61 @@
       "frames": 489510,
       "duration": 11.1,
       "sha256": "6ee2df2fd5bed9695eaf10f5d33a7c49d53834ca9d3de00c02785109f0ff0d59"
+    },
+    {
+      "file": "radio-chatter.mp3",
+      "kind": "bed",
+      "channels": 1,
+      "rms": 0.1,
+      "parts": [
+        {
+          "source": "435383",
+          "trim": [
+            0.3,
+            23.5
+          ],
+          "filter": "highpass=f=380,highpass=f=380,lowpass=f=3000,lowpass=f=3000"
+        }
+      ],
+      "frames": 1023120,
+      "duration": 23.2,
+      "sha256": "d960f9d3393881218bef3c51d8de360d3d1c0706c3c9d521a80104692c5f64d9"
+    },
+    {
+      "file": "radio-squelch.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "524205",
+          "trim": [
+            0,
+            1.2
+          ]
+        }
+      ],
+      "frames": 52920,
+      "duration": 1.2,
+      "sha256": "ad65d5b54519c99e5913744f287ae9b527277b41b741cbee9148b5208648b879"
+    },
+    {
+      "file": "radio-beep.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "321906",
+          "trim": [
+            0,
+            0.65
+          ]
+        }
+      ],
+      "frames": 28665,
+      "duration": 0.65,
+      "sha256": "47af73aa60b78bdeb71c37f627c2e1cae22933e2049ef4895073277f78656743"
     }
   ]
 }

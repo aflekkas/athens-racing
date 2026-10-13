@@ -6,10 +6,12 @@
 //   settings.aids             true = traction control, ABS and stability control as the car came; false = all off
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
 //   settings.graphics         'auto' | 'high' | 'low' (applied by reloading the page)
+//   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
+//   settings.police           police in Quick Race / free roam (src/police.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
 const KEY = 'paraliaki.settings';
-export const DEFAULTS = { master: 0.9, music: 0.7, sfx: 1, units: 'kmh', aids: true, transmission: 'auto', graphics: 'auto' };
+export const DEFAULTS = { master: 1, music: 1, sfx: 1, units: 'kmh', aids: true, transmission: 'auto', graphics: 'auto', ghostEnabled: true, police: false };
 const ls = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch { return null; } };
 
 function load() {
@@ -20,6 +22,8 @@ function load() {
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
   out.aids = out.aids !== false;
+  out.ghostEnabled = out.ghostEnabled !== false;
+  out.police = out.police === true;
   return out;
 }
 

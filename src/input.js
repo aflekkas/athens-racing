@@ -6,17 +6,17 @@ export const DEFAULT_BINDINGS = {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['KeyR', 'Enter'], pause: ['Escape'],
     garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyT'], music: ['KeyM'], nextTrack: ['KeyN'],
-    up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'],
+    up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], photo: ['KeyP'], replayPlay: ['Space'],
     ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => ['car' + (i + 1), ['Digit' + (i + 1)]])),
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
     restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], music: [], nextTrack: [],
-    up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'],
+    up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], photo: ['b10'], replayPlay: ['b0'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'music', 'nextTrack',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'music', 'nextTrack', 'photo', 'replayPlay',
   'up', 'down', 'left', 'right', 'confirm', 'back', ...Array.from({ length: 9 }, (_, i) => 'car' + (i + 1))];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
@@ -86,11 +86,14 @@ export class Input {
     const matched = Object.entries(this.bindings.keyboard).filter(([, codes]) => codes.includes(e.code));
     if (!matched.length) return;
     e.preventDefault?.();
+    // A menu/blur may clear a held key; OS repeats must not press it again until a real release/press.
+    if (e.repeat && !this.keys.has(e.code)) return;
     if (!e.repeat && !this.keys.has(e.code)) for (const [a] of matched) if (EDGE_ACTIONS.includes(a)) this.pending.add(a);
     this.keys.add(e.code);
   }
   clear() {
-    this.keys.clear(); this.pending.clear(); this.touch = {}; this.previous = {};
+    // Preserve edge latches for a held controller button when pause/menu code clears driving.
+    this.keys.clear(); this.pending.clear(); this.touch = {};
     this.actions = [];
     this.keyThrottle = this.keyBrake = 0;
     Object.assign(this.state, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false });

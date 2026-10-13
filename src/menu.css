@@ -34,7 +34,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 
 /* ---------------------------------------------------------------- event list */
 #ui.s-events, #ui.s-settings, #ui.s-pause, #ui.s-results { background: rgba(5,6,8,.84); }
-.ev-wrap { position: absolute; inset: 6vh 5vw 10vh; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .9fr); gap: 28px; }
+.ev-wrap { position: absolute; inset: 6vh 5vw 70px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .9fr); gap: 28px; }
 .ev-left { display: flex; flex-direction: column; min-height: 0; }
 .tabs { display: flex; gap: 4px; margin: 12px 0 10px; flex-wrap: wrap; }
 .tab { cursor: pointer; padding: 6px 14px; font-weight: 800; font-size: 14px; letter-spacing: .16em; background: rgba(255,255,255,.07); color: #aab3bd; }
@@ -43,14 +43,15 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .mi.ev { display: grid; grid-template-columns: 28px 1fr auto 110px; align-items: center; gap: 14px; padding: 9px 14px; background: rgba(255,255,255,.05); border-left: 4px solid transparent; }
 .mi.ev.focus { background: rgba(255,59,47,.22); border-left-color: var(--red); }
 .ev-main b { display: block; font-style: italic; font-weight: 900; font-size: 24px; line-height: 1; }
-.ev-main span { font-weight: 700; font-size: 13px; letter-spacing: .14em; color: #8f99a6; }
+.ev-main span { display: block; font-weight: 700; font-size: 13px; letter-spacing: .12em; color: #8f99a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-main { min-width: 0; }
 .ev-type, .d-type { font-weight: 800; font-size: 12px; letter-spacing: .2em; padding: 3px 8px; background: rgba(255,255,255,.1); }
 .t-sprint { color: var(--red); } .t-timetrial { color: var(--cyan); } .t-score { color: var(--gold); } .t-speedtrap { color: #8cff9e; }
 .ev-best { text-align: right; font-style: italic; font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums; color: var(--gold); }
 .mi.small { margin-top: 10px; padding: 8px 14px; align-self: start; background: rgba(255,255,255,.06); font-weight: 800; letter-spacing: .16em; }
 .mi.small.focus { background: var(--red); }
 .empty { color: #8f99a6; padding: 20px; letter-spacing: .2em; }
-.ev-detail { align-self: start; background: rgba(8,10,14,.92); padding: 22px 26px 24px; border-top: 4px solid var(--red); clip-path: polygon(22px 0, 100% 0, 100% 100%, 0 100%, 0 22px); }
+.ev-detail { align-self: start; max-height: 100%; overflow-y: auto; background: rgba(8,10,14,.92); padding: 22px 26px 24px; border-top: 4px solid var(--red); clip-path: polygon(22px 0, 100% 0, 100% 100%, 0 100%, 0 22px); }
 .d-type { display: inline-block; }
 .d-name { margin-top: 10px; font-style: italic; font-weight: 900; font-size: 44px; line-height: .95; }
 .d-blurb { margin-top: 10px; font-family: var(--sans); font-weight: 500; font-size: 15px; line-height: 1.45; color: #c3cbd4; }
@@ -140,4 +141,38 @@ body[data-mode=timetrial] #rRival, body[data-mode=score] #rRival, body[data-mode
   #ui .ui-keys { display: none; }
   #evBox { top: auto; bottom: 200px; right: 12px; min-width: 150px; }
   #evBox b { font-size: 26px; }
+}
+
+/* the floating MULTIPLAYER button and GRAPHICS select now live in the menus (title -> Multiplayer, Settings -> Graphics):
+   keep them off the race HUD and out of the way of the menus */
+body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle,
+#graphics-quality { display: none !important; }
+
+/* short / narrow screens: the route bar sits between the (moved) minimap and the right-hand widgets, district
+   names dropped (the ticks stay) so nothing runs under the minimap */
+@media (max-height: 480px), (max-width: 700px) {
+  #hud #routeBox { left: 118px; right: 118px; width: auto; transform: none; }
+  #hud #rticks .l { display: none; }
+  #hud #routeBox .rt { font-size: 12px; overflow: hidden; }
+  #hud #rRoad, #hud #routeBox .sep { display: none; }
+}
+.d-ghost { margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.d-ghost > span { font-weight: 700; font-size: 11px; letter-spacing: .2em; color: #8f99a6; }
+.mi.set[data-act] b { color: var(--red); }
+@media (max-width: 700px) {
+  #wrongWay { top: 30%; }
+  #wrongWay b { font-size: 40px; padding: 2px 18px; }
+  #wrongWay span { font-size: 11px; }
+}
+/* short landscape screens (laptops at 540-720px tall, phones sideways): the title stack and the event detail
+   card must fit without clipping the kicker / medal strip */
+@media (max-height: 720px) {
+  .t-head h1 { margin: 2px 0 12px; font-size: clamp(52px, 13vh, 96px); }
+  .mi.big { padding: 7px 18px 6px; }
+  .mi.big b { font-size: clamp(22px, 5.2vh, 34px); }
+  .t-foot { margin-top: 10px; }
+  .d-name { font-size: 34px; }
+  .d-facts, .d-best, .d-targets { margin-top: 10px; }
+  .d-facts b, .d-best b { font-size: 17px; }
+  .ev-detail { padding: 16px 20px 18px; }
 }

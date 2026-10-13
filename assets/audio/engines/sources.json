@@ -116,14 +116,24 @@
       "file": "mini-mid.wav",
       "source": "mini",
       "trim": [
-        29,
-        32
+        76,
+        78
       ],
       "kind": "loop",
       "rpm": 4300,
       "cylinders": 4,
-      "duration": 2.92689,
-      "sha256": "1f37aab9f736df8756d00a8d9acb26cb635ccb54e041553c5b308e5f48828a4d"
+      "duration": 2.07755,
+      "sha256": "c58f458b885d2cfb304d959dde750d894d59d6b77db2b7090d2a745ff1277f4d",
+      "previousVersion": {
+        "file": "mini-mid.wav.orig",
+        "trim": [
+          29,
+          32
+        ],
+        "duration": 2.92689,
+        "sha256": "1f37aab9f736df8756d00a8d9acb26cb635ccb54e041553c5b308e5f48828a4d"
+      },
+      "editNote": "Steadier mid-RPM window from the same CC0 Cooper S contact recording. Existing pitch stabilization and 90 ms loop crossfade retained; no EQ or envelope normalization. Offline 3394 RPM player blend: 0.3\u20131 Hz envelope modulation in 600\u2013800 Hz reduced >11 dB. Original asset kept as mini-mid.wav.orig."
     },
     {
       "file": "mini-high.wav",

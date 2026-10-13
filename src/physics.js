@@ -113,6 +113,12 @@ export class Vehicle {
     this.wheel = [newCorner(speed), newCorner(speed)];
     this.boost = 0; this.tcCut = 0; this.escCut = 0; this.limiter = false; this.load = 0; this.engT = 0;
     this.dig = 0; this.digF = 0; this.digB = 0; this.curbHit = 0;
+    // history from before the reset must not leak into the first step after it (a NaN or a teleport would): the
+    // integrator's differences and every per-car cache ground.js keeps (contact history, airborne state, kerb zones)
+    this.roadPrev = this.roadFPrev = this.lastAbsBeta = undefined;
+    this._gx = this._gz = this._gy = this._gt = this._gu = undefined; this._curbZ = null;
+    this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
+    this.wallNx = this.wallNz = 0; this.curbScrape = false;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
     this.shiftEvent = 0; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
     this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0;
@@ -205,6 +211,7 @@ export class Vehicle {
 
   /** input: {throttle, brake, steer (-1 left..1 right), handbrake, nitro} */
   update(dt, input) {
+    if (!(dt > 0)) return; // a zero / negative / NaN step would divide by zero in the integrator (suspension, ABS rates)
     // something outside the integrator (a crash, a wall) changed our speed: let the wheels follow
     if (Math.abs(this.vLong - this.lastV) > 1.5) this.syncWheels();
     const N = Math.max(1, Math.round(dt / H));
@@ -478,7 +485,8 @@ export class Vehicle {
       // ABS: back the pressure off while this wheel is past peak slip under braking
       // slip is signed along the wheel's x axis: spin / lock are measured against the direction of drive / travel
       const sxT = t1.sx * (Si.vgx < 0 ? -1 : 1), sxD = t1.sx * dirD;
-      if (Si.brk > 0 && !(i >= 2 && hbF) && av > 2 && sxT < -1.15) { Wc.abs = Math.max(0.35, Wc.abs - dt * 9); this.absOn = true; }
+      // spec.abs = false: driver aids off
+      if (sp.abs !== false && Si.brk > 0 && !(i >= 2 && hbF) && av > 2 && sxT < -1.15) { Wc.abs = Math.max(0.35, Wc.abs - dt * 9); this.absOn = true; }
       else Wc.abs = Math.min(1, Wc.abs + dt * 4);
       if ((i < 2 ? sF : sR) > 0) maxSpin = Math.max(maxSpin, sxD);
       maxLock = Math.max(maxLock, -sxT);
@@ -570,8 +578,13 @@ export class Vehicle {
       for (let i = 0; i < 4; i++) { if ((i < 2 ? sF : sR) <= 0) continue; const d = C4[i].vw - S[i].vgx; if (Math.abs(d) > Math.abs(spinV)) spinV = d; }
       const sv = Math.abs(spinV), fill = dt * av * 0.4;
       const dig = dt * soft * 0.55 * clamp((sv - 2) / 5, 0, 1) * (1 - smoothstep(0.5, 3.5, av));
-      if (spinV > 0) this.digF = Math.min(1, this.digF + dig); else this.digB = Math.min(1, this.digB + dig);
-      this.digF = Math.max(0, this.digF - fill); this.digB = Math.max(0, this.digB - fill); // rolling away leaves the ruts behind
+      if (spinV > 0) this.digF = Math.min(1, this.digF + dig * (1 - 0.7 * this.digB)); else this.digB = Math.min(1, this.digB + dig * (1 - 0.7 * this.digF)); // packed tracks dig less
+      // deep loose sand (surfBow): crawling through it pushes a bow wave up in front of the tyres until it stops you;
+      // the way back is over your own packed tracks, and rolling away leaves the ruts behind
+      const pile = dt * av * (this.surfBow ?? 0) * (1 - smoothstep(3, 7, av));
+      // (while the other side's bow wave is still there you are rolling back along your own tracks: no new pile)
+      if (vx >= 0) { this.digF = Math.min(1, this.digF + pile * (1 - this.digB)); this.digB = Math.max(0, this.digB - fill); }
+      else { this.digB = Math.min(1, this.digB + pile * (1 - this.digF)); this.digF = Math.max(0, this.digF - fill); }
     } else { this.digF = Math.max(0, this.digF - dt * 2); this.digB = Math.max(0, this.digB - dt * 2); }
     this.dig = Math.max(this.digF, this.digB);
     // Coulomb resistance: the surface's own (tyres sinking, bulldozing sand) plus the ruts'. At rest it holds the car
