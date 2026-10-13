@@ -51,13 +51,16 @@ function template(type,low,parked){
   const car=builder(type)(type,'#ffffff',new RNG(139),{low,parked});
   compact(car.body,car,!low);
   for(const w of car.wheels){compact(w.spin,car,false);for(const child of [...w.pivot.children])if(child!==w.spin&&child.isGroup)compact(child,car,false);}
-  let i=0;car.root.traverse(o=>{o.name=o.name||'fleet-node-'+i;o.userData.fleetNode=i++;if(o.geometry)o.geometry.userData.shared=true;});
+  let i=0;car.root.traverse(o=>{o.name=o.name||'fleet-node-'+i;o.userData.fleetNode=i++;if(o.geometry)o.geometry.userData.shared=true;
+    // Template textures (e.g. the 256x64 TAXI label) live as long as this module cache and are shared by every clone
+    // (material.clone() keeps .map): like the geometry, never owned by a map world, never disposed with one.
+    for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])for(const v of Object.values(m))if(v?.isTexture&&!v.userData.shared){v.userData.shared=true;v.name=v.name||'fleet-template:'+key+':'+(o.name||'tex');}});
   templates.set(key,car);return car;
 }
 // Parked plates share one atlas instead of allocating hundreds of 512-pixel textures.
 let atlas=null;
 function parkedPlate(number){
-  if(!atlas||atlas.count===1024){const canvas=document.createElement('canvas');canvas.width=2048;canvas.height=2048;const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;atlas={canvas,ctx:canvas.getContext('2d'),map,count:0,material:new THREE.MeshStandardMaterial({map,roughness:.5})};}
+  if(!atlas||atlas.count===1024){const canvas=document.createElement('canvas');canvas.width=2048;canvas.height=2048;const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.name='fleet-plate-atlas';map.userData.shared=true;atlas={canvas,ctx:canvas.getContext('2d'),map,count:0,material:new THREE.MeshStandardMaterial({map,roughness:.5})};}
   const slot=atlas.count++,x=slot%16*128,y=Math.floor(slot/16)*32,g=atlas.ctx;
   g.fillStyle='#e9e9e1';g.fillRect(x,y,128,32);g.fillStyle='#174582';g.fillRect(x,y,12,32);g.fillStyle='white';g.font='7px Arial';g.fillText('GR',x+1,y+27);g.fillStyle='#111820';g.font='bold 19px Arial';g.textAlign='center';g.fillText(number,x+70,y+23,110);g.textAlign='start';g.strokeStyle='#24282b';g.strokeRect(x+.5,y+.5,127,31);atlas.map.needsUpdate=true;
   return {material:atlas.material,uv:[x/2048,1-(y+32)/2048,128/2048,32/2048]};
