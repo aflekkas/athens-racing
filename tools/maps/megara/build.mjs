@@ -64,6 +64,9 @@ const pavedAreas=[{p:[[117,897],[190,891],[223,902],[337,903],[382,1015],[177,10
 const pitLane=[[341,903],[426,841],[512,769],[583,738],[658,729],[755,719]].map(p=>pix(...p));
 const pitEdge=(side)=>pitLane.map((p,i)=>{const a=pitLane[Math.max(0,i-1)],b=pitLane[Math.min(pitLane.length-1,i+1)],l=distance(a,b);return [round(p[0]-(b[1]-a[1])/l*3.5*side),round(p[1]+(b[0]-a[0])/l*3.5*side)];});
 pavedAreas.push({p:pitEdge(1).concat(pitEdge(-1).reverse()),y:9});
+// Source-reviewed asphalt shoulders/aprons; shared by scenery and Ground.at.
+// Omit y so these patches follow the same ground profile as the renderer.
+pavedAreas.push(...read('paved-runoffs.json'));
 const kerbs=[];let active=null;
 for(let i=0;i<count;i++) {
   const a=samples[(i-6+count)%count],b=samples[i],c=samples[(i+6)%count];

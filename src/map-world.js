@@ -42,7 +42,7 @@ export function disposeMapGroup(root, liveScene) {
   const counts = { geometries: 0, materials: 0, textures: 0 };
   for (const kind of Object.keys(owned)) for (const value of owned[kind]) {
     // Framebuffer attachments must be released through their owning RenderTarget.
-    if (live[kind].has(value) || (kind === 'geometries' && value.userData.shared) || (kind === 'textures' && value.isRenderTargetTexture)) continue;
+    if (live[kind].has(value) || value.userData?.shared || (kind === 'textures' && value.isRenderTargetTexture)) continue;
     value.dispose(); counts[kind]++;
   }
   // Instanced attributes belong to the mesh, rather than its shared geometry.

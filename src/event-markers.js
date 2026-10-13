@@ -22,8 +22,12 @@ export class EventMarkers {
   /** r = resolved event (events.js resolve); fixed = { start, finish } s of the gantries road.js already built */
   build(r, fixed) {
     this.clear();
-    const near = (s, f) => Math.abs(s - f) < 4;
-    const fixedAt = (s) => near(s, fixed.start) || near(s, fixed.finish);
+    const near = (s, f) => {
+      if (!Number.isFinite(f)) return false;
+      const d = Math.abs(this.route.closed ? this.route.wrap(s) - this.route.wrap(f) : s - f);
+      return (this.route.closed ? Math.min(d, this.route.length - d) : d) < 4;
+    };
+    const fixedAt = (s) => near(s, fixed.start) || near(s, fixed.finish) || (this.route.fixedGantries || []).some(f => near(s, f));
     // an arch where the event starts / ends, unless a matching gantry already stands there (for reverse runs the
     // fixed gantries face the other way and say the opposite, so we add ours alongside)
     if (r.reverse || !fixedAt(r.s0)) this.arch(r.s0, 'START', '#ff3d2e', r.dir, r.reverse ? 6 : 0);

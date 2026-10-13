@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { MAPS, Route, loadMap } from '../src/map.js';
 import { Vehicle } from '../src/physics.js';
 import { resolve as resolveEvent, targetLabels, medalFor } from '../src/events.js';
+import { EventMarkers } from '../src/event-markers.js';
 const read = promisify(readFile);
 const root = new URL('../', import.meta.url);
 const originalFetch = globalThis.fetch;
@@ -32,6 +33,15 @@ for (const s of [-4,0,.1,loop.length-.1,loop.length+3,loop.length*3+10]) {
 assert.ok(Math.abs(loop.frame(-.01,{}).grade-loop.frame(.01,{}).grade)<.001,'periodic grade');
 assert.ok(Math.abs(loop.curv(0))>.009,'seam curvature retained');
 console.log('PASS closed circuit seam, lap projection, width and periodic grade');
+// Lap finish stations are unwrapped; a physical timing gantry exists only once.
+const arches = [];
+loop.fixedGantries = [0];
+const markerFixture = { route: loop, clear() { arches.length = 0; }, arch(s) { arches.push(s); }, camera() {} };
+EventMarkers.prototype.build.call(markerFixture, { s0: 0, s1: loop.length * 3, dir: 1 }, { start: NaN, finish: NaN });
+assert.deepEqual(arches, [], 'multi-lap circuit reuses its authored timing gantry');
+EventMarkers.prototype.build.call(markerFixture, { s0: 50, s1: loop.length * 3 + 50, dir: 1 }, { start: NaN, finish: NaN });
+assert.equal(arches.length, 2, 'unmarked event endpoints still receive markers');
+console.log('PASS periodic authored circuit gantry reuse');
 try {
   for (const definition of MAPS) {
     const map=await loadMap(null,'./',definition.id), {route,terrain}=map;

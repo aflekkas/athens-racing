@@ -12,6 +12,8 @@
  * int16 decimetre heights, then uint8 surface classes, row-major. World +X east,+Z south.
  * Optional src/maps/<id>.js buildScenery(scene,map,{heightC,assets}) returns {group,
  * obstacles?,assets?,road?:{group,asphalt},dispose?}; inland maps omit coastal effects.
+ * Scenery with physical timing gantries sets route.fixedGantries=[s,...]; event
+ * markers reuse these positions across laps instead of adding duplicate arches.
  * loadMap(progress?,base='./',mapId='riviera') returns an independently owned bundle.
  * Geometry methods wrap on circuits; project(x,z,hint) keeps progress on hint's lap.
  * width is total tarmac width; route.edge(s) returns its half-width. racingLine is
