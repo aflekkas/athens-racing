@@ -13,11 +13,11 @@ function box(p,m,size,pos,r=.02,name=''){const o=mesh(p,new RoundedBoxGeometry(.
 function patch(p,m,pts,name){return surface(p,m,(u,v)=>V(pts[0]).lerp(V(pts[1]),u).lerp(V(pts[3]).lerp(V(pts[2]),u),v).toArray(),8,5,name);}
 function fields(kind,d){
   const F=-d.L/2,R=d.L/2,W=d.W/2;
-  const shoulder=kind==='mini'?[[F,.85],[-1.67,.90],[-1.24,.975],[d.cowl,.96],[.5,.96],[1.24,.965],[R,.89]]:kind==='z4'?[[F,.65],[-1.78,.755],[-1.22,.835],[d.cowl,.87],[.4,.90],[1.12,.995],[1.40,.985],[1.80,.945],[R-.14,.925],[R-.055,.940],[R,.954]]:[[F,.77],[-1.72,.87],[d.cowl,.98],[.4,.994],[1.30,1.025],[1.86,1.005],[R,.97]];
-  const width=kind==='mini'?[[F,W*.905],[-1.55,W*.987],[-1.1,W],[d.cowl,W*.97],[.5,W*.976],[1.27,W],[R,W*.906]]:kind==='z4'?[[F,W*.905],[-1.63,W*.967],[-1.22,W*.99],[-.6,W*.952],[.18,W*.94],[.85,W*.99],[1.26,W],[1.65,W*.97],[1.94,W*.93],[R,W*.875]]:[[F,W*.905],[-1.7,W*.968],[-1.28,W*.987],[-.45,W*.987],[.6,W*.996],[1.35,W],[1.94,W*.965],[R,W*.905]];
+  const shoulder=kind==='mini'?[[F,.85],[-1.67,.90],[-1.24,.975],[d.cowl,.96],[.5,.96],[1.24,.965],[R,.89]]:kind==='z4'?[[F,.65],[-1.78,.755],[-1.22,.835],[d.cowl,.87],[.4,.90],[1.08,.964],[1.36,.962],[1.75,.903],[R-.14,.885],[R-.055,.897],[R,.910]]:[[F,.77],[-1.72,.87],[d.cowl,.98],[.4,.994],[1.30,1.025],[1.86,1.005],[R,.97]];
+  const width=kind==='mini'?[[F,W*.905],[-1.55,W*.987],[-1.1,W],[d.cowl,W*.97],[.5,W*.976],[1.27,W],[R,W*.906]]:kind==='z4'?[[F,W*.905],[-1.63,W*.967],[-1.22,W*.99],[-.6,W*.952],[.18,W*.94],[.85,W*.99],[1.26,W],[1.60,W*.975],[1.90,W*.927],[R,W*.865]]:[[F,W*.905],[-1.7,W*.968],[-1.28,W*.987],[-.45,W*.987],[.6,W*.996],[1.35,W],[1.94,W*.965],[R,W*.905]];
   const top=z=>profile(shoulder,z);
-  const side=(z,y)=>{const t=clamp((y-.18)/(top(z)-.18)),waist=kind==='z4'?.036:kind==='mini'?.007:.012;const haunch=kind==='z4'?clamp((z-.55)/.55):0;return profile(width,z)-(.054+.045*haunch)*(1-t)**5-(.024+.065*haunch)*t**6-waist*Math.sin(Math.PI*t)**2+.008*Math.exp(-(((t-.83)/.055)**2));};
-  const deck=(x,z)=>{const q=x/side(z,top(z));let y=top(z)+(kind==='z4'&&z>=d.back-.05?-.038*Math.sin(Math.PI*clamp((z-d.back)/(R-.12-d.back))):.036)*(1-q*q);if(z<d.cowl){const k=Math.sin(Math.PI*clamp((z-F)/(d.cowl-F)));if(kind==='mini')y+=.037*Math.exp(-(((Math.abs(q)-.73)/.23)**2))*k;if(kind==='z4')y+=.038*Math.exp(-(((Math.abs(q)-.69)/.19)**2))*k-.017*(1-q*q)*k;}
+  const side=(z,y)=>{const t=clamp((y-.18)/(top(z)-.18)),waist=kind==='z4'?.036:kind==='mini'?.007:.012;const haunch=kind==='z4'?clamp((z-.55)/.55):0;return profile(width,z)-(.054+.080*haunch)*(1-t)**(kind==='z4'?4:5)-(.024+.065*haunch)*t**(kind==='z4'?5:6)-waist*Math.sin(Math.PI*t)**2+.008*Math.exp(-(((t-.83)/.055)**2));};
+  const deck=(x,z)=>{const q=x/side(z,top(z));let y=top(z)+(kind==='z4'&&z>=d.back-.05?-.042*Math.sin(Math.PI*clamp((z-d.back)/(R-.12-d.back))):.036)*(1-q*q);if(z<d.cowl){const k=Math.sin(Math.PI*clamp((z-F)/(d.cowl-F)));if(kind==='mini')y+=.037*Math.exp(-(((Math.abs(q)-.73)/.23)**2))*k;if(kind==='z4')y+=.038*Math.exp(-(((Math.abs(q)-.69)/.19)**2))*k-.017*(1-q*q)*k;}
     return y;};
   return {top,side,deck};
 }
@@ -90,26 +90,39 @@ export function refineOriginalPlayer(car,d,M,low=false){
     const F=-d.L/2,{side,top,deck}=car.playerSurface;
     const R=d.L/2;
     // G29: low concave boot between rounded haunches, short lip, tapered tail.
-    // Rear 3/4 reference: https://images.hgmsites.net/lrg/2019-bmw-z4-series_100666920_l.jpg
-    // BMW G29 press kit: https://www.press.bmwgroup.com/global/article/attachment/T0284770EN/442424
+    // BMW press rear/side/top: P90340094 / P90340065 / P90340068.
+    // https://www.press.bmwgroup.com/united-kingdom/article/detail/T0285137EN_GB/the-all-new-bmw-z4
     for(const o of [...p.children])if(o.isMesh){
       o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone().applyMatrix4(o.matrix);
       if([M.red,M.tail].includes(o.material)&&b.min.z>R-.06&&b.max.y>.65)o.removeFromParent();
       if(o.userData.damagePart?.startsWith('light_r')&&/indicator|reverse/.test(o.name))o.position.y+=.10;
       if(o.name==='registration'&&o.position.z>0)o.position.y=.56;
     }
+    for(const o of [...p.children])if(o.isMesh&&o.material===M.black&&Math.abs(o.position.x)<.01&&o.position.z>R&&Math.abs(o.position.y-.50)<.01)o.removeFromParent();
+    patch(p,M.darkAlloy,[[-.34,.657,R+.010],[.34,.657,R+.010],[.27,.485,R+.010],[-.27,.485,R+.010]],'z4-numberplate-recess');
+    // Raise the valance visually and sweep it into the rear corners.
     patch(p,M.black,[[-.75,.43,R+.008],[.75,.43,R+.008],[.66,.23,R+.008],[-.66,.23,R+.008]],'z4-rear-diffuser');
-    for(const sign of [-1,1])patch(p,M.black,[[sign*.69,.63,R+.009],[sign*.77,.64,R+.009],[sign*.75,.43,R+.009],[sign*.69,.44,R+.009]],'z4-rear-quarter-vent');
-    const bumperCrease=[];for(let i=0;i<=32;i++){const x=mix(-.81,.81,i/32);bumperCrease.push([x,.455+.06*(Math.abs(x)/.81)**2,R+.009]);}line(p,M.paint,bumperCrease,.008,'z4-rear-bumper-crease');
+    for(const sign of [-1,1])patch(p,M.black,[[sign*.65,.65,R+.009],[sign*.755,.67,R+.009],[sign*.70,.43,R+.009],[sign*.64,.44,R+.009]],'z4-rear-quarter-vent');
+    line(p,M.red,[[-.26,.874,R+.005],[0,.880,R+.012],[.26,.874,R+.005]],.005,'z4-high-brake-strip');
+    // M40i outlets are squat trapezoids, tucked into the valance rather than oval tips.
+    for(const o of [...p.children])if(o.name==='exhaust-outlet')o.removeFromParent();
+    for(const sign of [-1,1]){
+      const pts=[[-.080,.036],[.079,.032],[.068,-.034],[-.062,-.034],[-.080,.036]].map(([x,y])=>[sign*.64+x,.29+y,R+.027]);
+      line(p,M.darkAlloy,pts,.009,'z4-trapezoid-exhaust');
+      line(p,M.chrome,pts.map(([x,y,z])=>[x,y,z+.009]),.004,'z4-exhaust-rim');
+      patch(p,M.black,pts.slice(0,4).map(([x,y,z])=>[x,y,z-.009]),'z4-exhaust-cavity');
+    }
+
+    const bumperCrease=[];for(let i=0;i<=32;i++){const x=mix(-.81,.81,i/32);bumperCrease.push([x,.455+.06*(Math.abs(x)/.81)**2,R+.009]);}line(p,M.paint,bumperCrease,.003,'z4-rear-bumper-crease');
     const shut=[];for(let i=0;i<=32;i++){const x=mix(-.73,.73,i/32),z=R-.23;shut.push([x,deck(x,z)+.002,z]);}line(p,M.seam,shut,.0025,'boot-trailing-shut-line');
     for(const sign of [-1,1]){
-      const z=R+.006,pts=[[.30,.876],[.758,.915],[.773,.852],[.66,.850],[.65,.871],[.32,.854]].map(([x,y])=>[sign*x,y,z]);
-      patch(p,M.head,[[sign*.29,.883,z-.001],[sign*.767,.923,z-.001],[sign*.782,.845,z-.001],[sign*.31,.847,z-.001]],'rear-lamp-housing');
+      const z=R+.006,pts=[[.29,.838],[.746,.865],[.756,.813],[.65,.810],[.64,.827],[.31,.819]].map(([x,y])=>[sign*x,y,z]);
+      patch(p,M.head,[[sign*.28,.845,z-.001],[sign*.755,.873,z-.001],[sign*.765,.806,z-.001],[sign*.30,.812,z-.001]],'rear-lamp-housing');
       const shape=new THREE.Shape();pts.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();
       const lamp=mesh(p,new THREE.ShapeGeometry(shape),M.red,'z4-tail-lens');lamp.position.z=z;
-      line(p,M.tail,[[sign*.33,.865,z+.003],[sign*.746,.902,z+.003],[sign*.756,.858,z+.003],[sign*.66,.859,z+.003]],.006,'z4-L-tail-signature');
-      surface(p,M.red,(u,v)=>{const zz=mix(R-.39,R,u),y=mix(.872,.900,v)+.016*(1-u);return[sign*(side(zz,y)+.003),y,zz];},18,3,'z4-wraparound-tail-lens');
-      const flank=[];for(let i=0;i<=24;i++){const zz=mix(R-.38,R,i/24),y=.893+.016*(1-i/24);flank.push([sign*(side(zz,y)+.005),y,zz]);}line(p,M.tail,flank,.004,'z4-wraparound-tail-guide');
+      line(p,M.tail,[[sign*.32,.830,z+.003],[sign*.735,.853,z+.003],[sign*.745,.821,z+.003],[sign*.65,.819,z+.003]],.006,'z4-L-tail-signature');
+      surface(p,M.red,(u,v)=>{const zz=mix(R-.39,R,u),y=mix(.826,.854,v)+.040*(1-u);return[sign*(side(zz,y)+.003),y,zz];},18,3,'z4-wraparound-tail-lens');
+      const flank=[];for(let i=0;i<=24;i++){const zz=mix(R-.38,R,i/24),y=.848+.040*(1-i/24);flank.push([sign*(side(zz,y)+.005),y,zz]);}line(p,M.tail,flank,.004,'z4-wraparound-tail-guide');
       const seam=[];for(let i=0;i<=24;i++){const zz=mix(d.back+.08,R-.23,i/24),x=sign*.73;seam.push([x,deck(x,zz)+.002,zz]);}line(p,M.seam,seam,.0022,'boot-side-shut-line');
     }
 
