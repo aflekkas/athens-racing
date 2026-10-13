@@ -323,7 +323,7 @@ export class Crowd {
     if (i === p.mult - 1) p.n++;
   }
   draw(P, L, distance = 0) {
-    if (distance < 20 && this.nearCount < 12) {
+    if (distance < 20 && this.nearCount < 8) {
       let rig = this.near.get(L);
       // Spread cold geometry work across frames. Waiting actors remain visible
       // through the instanced LOD; cached rigs have no construction penalty.
