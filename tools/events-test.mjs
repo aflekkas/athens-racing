@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as EV from '../src/events.js';
+import * as RS from '../src/race-setup.js';
 
 const data = JSON.parse(fs.readFileSync(new URL('../data/map.json', import.meta.url)));
 const route = { start: data.route.start, finish: data.route.finish, length: data.route.length, from: data.route.from, to: data.route.to, curv: () => 0 };
@@ -91,7 +92,9 @@ test('sprint medals by position', () => {
   assert.equal(drive(def, 40, st, { position: 3 }).res.medal, 'bronze');
   assert.equal(drive(def, 40, st, { position: 4 }).res.medal, null);
   assert.equal(EV.loadRecord(def.id, st).bestPos, 1);
-  assert.equal(EV.gridFor(EV.QUICK_RACE).length, 3); assert.equal(EV.gridFor({ ...def, rivals: 7 }).length, 3, 'single player is always 3 rivals');
+  assert.equal(EV.gridFor(EV.QUICK_RACE).length, 3, 'three rivals by default'); assert.equal(EV.gridFor({ ...def, rivals: 7 }).length, 7, 'the grid follows the event count');
+  assert.equal(EV.gridFor({ ...def, rivalCount: 11 }).length, EV.MAX_RIVALS, 'up to MAX_RIVALS on request'); assert.equal(EV.gridFor({ ...def, rivalCount: 40 }).length, EV.MAX_RIVALS, 'capped at the driver pool');
+  assert.equal(EV.gridFor({ ...def, rivalCount: 0 }).length, 0, 'an empty grid is allowed');
   const r = drive(def, 40, st, { position: 2 }).res;
   assert.ok(!('score' in r) && !('breakdown' in r) && !('trapTotal' in r), 'no points in the result');
 });
@@ -175,4 +178,29 @@ test('closed circuit: three laps, no early finish, lap clocks and total-time ran
 test('map event registration isolates maps without changing Riviera', () => {
   EV.registerMapEvents('test-map',[{id:'test-map-tt',type:'timetrial'}]);
   assert.equal(EV.getEvent('test-map-tt').mapId,'test-map');assert.equal(EV.getEvents('test-map').length,1);assert.equal(EV.getEvents('riviera'),EV.EVENTS);assert.equal(EV.getEvent('unknown-event'),null);
+});
+
+test('race setup: defaults stay official, choices make a separate custom variant', () => {
+  const st = mem(), sprint = EV.getEvent('riviera-sprint');
+  assert.equal(RS.isCustom(sprint, {}), false);
+  const same = RS.applySetup(sprint, RS.loadSetup(sprint.id, st));
+  assert.equal(same.id, sprint.id); assert.ok(!same.custom); assert.equal(EV.gridFor(same).length, 3, 'default single player = 3 rivals');
+  RS.saveSetup(sprint.id, { rivals: 8, traffic: 2, time: 'night', weather: 'rain' }, st);
+  const run = RS.applySetup(sprint, RS.loadSetup(sprint.id, st));
+  assert.equal(EV.gridFor(run).length, 8); assert.equal(run.traffic, 2); assert.deepEqual(run.conditions, { time: 'night', weather: 'rain' });
+  assert.equal(run.id, 'riviera-sprint~r8~t2'); assert.ok(run.custom); assert.equal(run.baseId, sprint.id);
+  const night = RS.applySetup(sprint, { time: 'night' });
+  assert.equal(night.id, sprint.id, 'time of day and weather keep the official event');
+  const rev = RS.applySetup(sprint, { reverse: true });
+  assert.equal(rev.from, 'finish'); assert.equal(rev.to, 'start'); assert.ok(EV.resolve(rev, ctx).reverse);
+  const cup = EV.getEvent('classic-cup'), more = RS.applySetup(cup, { rivals: 5 });
+  assert.deepEqual(EV.gridFor(more).slice(0, 3).map((d) => d.id), ['giorgos', 'dimitra', 'yiannis'], 'named rivals stay on the grid');
+  assert.equal(EV.gridFor(more).length, 5);
+  const circuit = { id: 'c', type: 'timetrial', from: 'start', to: 'finish', laps: 3, rivals: 0, traffic: 0, targetTimes: { gold: 240, silver: 270, bronze: 315 } };
+  const five = RS.applySetup(circuit, { laps: 5, reverse: true }, { closed: true });
+  assert.equal(five.laps, 5); assert.equal(five.reverse, true); assert.equal(five.targetTimes.gold, 400); assert.equal(five.id, 'c~l5~rev');
+  assert.ok(!RS.setupFields(circuit, { closed: true }).some((f) => f.key === 'traffic'), 'circuits have no traffic option');
+  const r = new EV.EventRun(run, ctx, { storage: st }); r.start(); assert.equal(r.finish({ time: 300 }).valid, false, 'custom runs stay off the leaderboard');
+  RS.saveSetup(sprint.id, {}, st); assert.deepEqual(RS.loadSetup(sprint.id, st), {});
+  assert.deepEqual(RS.trafficLevels(0.8).map((l) => l[1]), [0, 0.5, 0.8, 1.5, 2], 'the event density is one of the choices');
 });

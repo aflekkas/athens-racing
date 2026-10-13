@@ -1,4 +1,4 @@
-// EVENTS: data-driven race events (sprints against a grid of 3, time trials, police pursuits), their route segments /
+// EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
 // Pure logic, no DOM or three.js: node can import and test it (tools/events-test.mjs).
 //
@@ -25,7 +25,8 @@
 //   { id, name, blurb, type: 'sprint' | 'timetrial' | 'pursuit',
 //     from, to,              route locations: 'start' | 'finish' | a data/map.json marks id | a route s in metres;
 //                            from > to (in s) means the REVERSE direction (Lomvarda -> Vouliagmeni)
-//     rivals: n | [ids],     sprint grid (DRIVERS ids; always exactly SP_RIVALS = 3 in single player), 0 for solo events
+//     rivals: n | [ids],     sprint grid (DRIVERS ids; SP_RIVALS = 3 by default, up to MAX_RIVALS via src/race-setup.js), 0 for solo events
+//     rivalCount: n          the player's choice of AI rivals (race setup); overrides the rivals count, keeps listed ids first
 //     traffic: 0..1.6,       traffic density multiplier (0 = closed road)
 //     rules: { timeLimit, penalty, signals },   pursuit survive clock (s); red light penalty (s); signals off = all green
 //     targets: { gold, silver, bronze },  sprint: finishing position; timetrial: average km/h (-> a time);
@@ -60,19 +61,34 @@ export const DRIVERS = [
   { id: 'kostas', name: 'KOSTAS', pace: 0.89, nitro: 1.2, risk: 1.1, mistakes: 1.0, car: ['mini', 'gr_yaris'], helmet: '#7d3fb0', blurb: 'Weekend hero from Glyfada.' },
   { id: 'maria', name: 'MARIA', pace: 0.93, nitro: 0.9, risk: 0.6, mistakes: 0.6, car: ['carrera', 'z4'], helmet: '#e05a1a', blurb: 'Track-day regular. Fast.' },
   { id: 'giorgos', name: 'GIORGOS', pace: 0.87, racePace: 1.02, aggression: 1, nitro: 1.0, risk: 1.5, mistakes: 1.3, car: ['gtv', 'taxi'], helmet: '#3d4651', blurb: 'Old school, no aids.' },
+  { id: 'sofia', name: 'SOFIA', pace: 0.91, nitro: 1.1, risk: 0.9, mistakes: 0.7, car: ['gr_yaris', 'carrera'], helmet: '#0f8c8c', blurb: 'Rally club, Saturday mornings.' },
+  { id: 'petros', name: 'PETROS', pace: 0.88, nitro: 0.9, risk: 1.2, mistakes: 1.1, car: ['z4', 'gtv'], helmet: '#b03a6a', blurb: 'Drives to the beach every evening.' },
+  { id: 'katerina', name: 'KATERINA', pace: 0.9, nitro: 1.0, risk: 0.7, mistakes: 0.8, car: ['carrera', 'mini'], helmet: '#5a7d1f', blurb: 'Smooth and patient.' },
 ];
+const CLASSIC_DRIVERS = 8; // the original grid pool (see gridFor)
 export const driver = (id) => DRIVERS.find((d) => d.id === id) || DRIVERS[0];
-/** single player: every race is you plus exactly this many AI racers */
+/** single player: the default number of AI racers in a sprint (the race setup can change it, 0..MAX_RIVALS) */
 export const SP_RIVALS = 3;
+/** the most AI racers a grid takes (one per driver); more than src/race-setup.js PERF_RIVALS shows a frame-rate warning */
+export const MAX_RIVALS = 11;
+/** how many AI racers an event runs: the player's choice, else the event's own count, else SP_RIVALS */
+export function rivalCount(def) {
+  if (def.type !== 'sprint') return 0;
+  const n = def.rivalCount ?? (Array.isArray(def.rivals) ? def.rivals.length : def.rivals ?? SP_RIVALS);
+  return Math.max(0, Math.min(MAX_RIVALS, DRIVERS.length, Math.floor(+n) || 0));
+}
 export const WRECK_EBS = 100 / 3.6;
 export const isWrecked = impactEbs => impactEbs >= WRECK_EBS;
-/** the grid for an event: driver records in grid order (explicit ids, or a stable per-event pick); sprints get SP_RIVALS */
+/** the grid for an event: driver records in grid order (explicit ids, or a stable per-event pick); rivalCount(def) of them */
 export function gridFor(def) {
-  const n = def.type === 'sprint' ? SP_RIVALS : Math.max(0, Math.min(SP_RIVALS, Array.isArray(def.rivals) ? def.rivals.length : def.rivals | 0));
+  const n = rivalCount(def);
   if (Array.isArray(def.rivals) && def.rivals.length >= n) return def.rivals.slice(0, n).map(driver);
   // a stable but per-event shuffle so the same event always has the same faces
-  const h = hash(def.id); const pool = DRIVERS.slice();
+  // (the first eight drivers shuffle exactly as before the grid could grow, so default grids keep their faces; the
+  // drivers added for bigger grids queue after them)
+  const h = hash(def.baseId || def.id); const pool = DRIVERS.slice(0, CLASSIC_DRIVERS);
   for (let i = pool.length - 1; i > 0; i--) { const j = ((h >>> (i % 16)) + i * 7) % (i + 1); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  pool.push(...DRIVERS.slice(CLASSIC_DRIVERS));
   const fixed = Array.isArray(def.rivals) ? def.rivals.map(driver) : [];
   const out = [...fixed, ...pool.filter((d) => !fixed.includes(d))].slice(0, n);
   if (n && !fixed.length && !out.some((d) => d.id === 'stavros')) out[0] = DRIVERS[0]; // STAVROS is always there
@@ -300,6 +316,7 @@ export class EventRun {
     };
     if (res.wrecked) { res.time = null; res.position = null; res.valid = false; res.won = false; res.busted = false; }
     if (res.time == null) res.valid = false;
+    if (this.def.custom) res.valid = false; // a changed race setup: kept apart from the official boards
     res.medal = medalFor(this.def, res, this.r);
     if (!this.def.quick || this.def.save) Object.assign(res, recordResult(this.def, res, this.st));
     else res.record = null;
