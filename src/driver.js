@@ -113,6 +113,8 @@ export class Driver {
     add(facePatch(0,-.056,.017,.0020,.0005),lipM,0,0,0,1,1,1,head);
     add(facePatch(0,-.0545,.017,.0004,.0008),shadowM,0,0,0,1,1,1,head);
 
+    this.controlReach=0;this.shiftReach=0;this.shiftHold=0;this.lastControlGear=null;
+    this._controlTarget=new THREE.Vector3();this._controlRotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,-.35));
     this.arms=[];
     for(const sx of [-1,1]) {
       const up=new THREE.Mesh(ARM,skinM),fo=new THREE.Mesh(ARM,skinM);
@@ -176,15 +178,30 @@ export class Driver {
   /** Wheel position is in driver-parent space, before the driver's placement transform. */
   update(dt,t,speed,acc,wheel,steer=0,heaveV=0) {
     const h=clamp(dt,0,1/30),ax=acc?.x||0,ay=acc?.y||0,az=acc?.z||0;
+    const control=wheel?.controls;
+    if(control){
+      if(control.manual&&this.lastControlGear!==null&&control.gear!==this.lastControlGear&&!control.held)this.shiftHold=.34;
+      this.lastControlGear=control.gear;
+    }
+    this.shiftHold=Math.max(0,this.shiftHold-h);
+    this.controlReach+=((control?.held?1:0)-this.controlReach)*(1-Math.exp(-16*h));
+    this.shiftReach+=((control?.manual&&this.shiftHold>0&&!control.held?1:0)-this.shiftReach)*(1-Math.exp(-22*h));
     if(wheel)for(const a of this.arms) {
       const shoulder=this._shoulder.set(a.sx*.18,-.10,.035);
       const ang=(a.sx>0?.25:Math.PI-.25)+(wheel.angle||0);
       const hand=this._hand.set(Math.cos(ang)*wheel.r,Math.sin(ang)*wheel.r,0).applyEuler(wheel.euler).add(wheel.pos).sub(this.root.position);
+      if(a.sx>0&&control){
+        // Positive X is the right hand in our LHD, nose -Z cabin coordinates.
+        const reach=this.controlReach,shift=this.shiftReach*(1-reach);
+        hand.lerp(this._controlTarget.copy(control.shifter).sub(this.root.position),shift);
+        hand.lerp(this._controlTarget.copy(control.handbrake).sub(this.root.position),reach);
+      }
       const elbow=this._elbow.copy(shoulder).lerp(hand,.5);elbow.x+=a.sx*.064;elbow.y-=.115;elbow.z+=.045;
       beam(a.up,shoulder,elbow,.098,this._delta);beam(a.fo,elbow,hand,.071,this._delta);a.hand.position.copy(hand);
       const tan=this._tan.set(-Math.sin(ang),Math.cos(ang),0).applyEuler(wheel.euler);
       const out=this._out.set(Math.cos(ang),Math.sin(ang),0).applyEuler(wheel.euler);
       this._normal.crossVectors(tan,out);a.hand.quaternion.setFromRotationMatrix(this._m.makeBasis(out,this._normal,tan));
+      if(a.sx>0&&control)a.hand.quaternion.slerp(this._controlRotation,Math.max(this.controlReach,this.shiftReach));
     }
     const hw=this.hw;
     hw.vx+=(-hw.x*100-hw.vx*15+az*.010)*h;

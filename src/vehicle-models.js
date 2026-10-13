@@ -1,5 +1,6 @@
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from 'three';
+import { ROAD_MODELS, buildRoadCar } from './player-road-cars.js';
 import { PASSENGER_MODELS, buildPassengerModel } from './traffic-passenger-models.js';
 import { buildPoliceModel } from './police-models.js';
 import { seatMirrors } from './vehicle-mirrors.js';
@@ -12,6 +13,7 @@ import { refineSportsPlayer } from './player-sports-surfaces.js';
 import { isPlayerVehicle, refinePlayerDetails, groupPlayerParts, installPlayerLOD } from './player-vehicle-details.js';
 
 export const MODEL = {
+  ...ROAD_MODELS,
   carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.04,back:1.57,roofBack:.54,seatZ:.36,eyeY:1.00,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
   gr_yaris: { profile:'yaris',axleOffset:0, L:3.995,W:1.805,H:1.455,wb:2.56,track:1.554,r:.319,belt:.98,front:.78,rear:1.04,cowl:-.84,header:-.31,back:1.84,roofBack:1.47,seatZ:.20,eyeY:1.155,leather:'#26272a',rim:.229,doors:2,tyreF:.225,tyreR:.225,blackRoof:true },
   gtv: { profile:'gtv',axleOffset:-.015, L:4.10,W:1.58,H:1.328,wb:2.35,track:1.30,r:.313,belt:.88,front:.77,rear:.87,cowl:-.77,header:-.27,back:1.30,roofBack:.69,seatZ:.19,eyeY:1.015,leather:'#a2764e',rim:.178,doors:2,tyreF:.165,tyreR:.165,classic:true,rearLow:true },
@@ -395,7 +397,9 @@ export function buildDetailedCar(car,kind,opts={}) {
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
   const playerModel=isPlayerVehicle(car);car.root.userData.playerDetail=playerModel;
-  if(car.spec.fleet){
+  if(ROAD_MODELS[kind]){
+    buildRoadCar(car,d,M,low,opts.plate||nextRegistration(),{surface,box,line,patch,mesh,ring,disk,cabin,wheels,makePlateMaterial,textMaterial});
+  }else if(car.spec.fleet){
     const build=car.spec.police?buildPoliceModel:buildPassengerModel;
     const source=build({id:car.spec.fleet},car.spec.color,null,{low:false,parked:true,playerCabin:true});
     const replacements=new Map(Object.keys(source.materials).filter(k=>M[k]).map(k=>[source.materials[k],M[k]]));

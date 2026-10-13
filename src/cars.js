@@ -101,6 +101,15 @@ export const CARS = [
     stats: { speed: .58, accel: .45, handling: .75, drift: .34 },
   },
 
+  // BMW MINI F56 JCW 2015 press specifications; DIN mass, six-speed manual.
+  {
+    id: 'mini_jcw', name: 'MINI JOHN COOPER WORKS', short: 'MINI JCW', tag: 'F56 hardtop · 231 PS. Six-speed manual. FWD.', color: '#22513d', accent: '#bc2028',
+    mass: 1205, power: 170, torque: 320, redline: 6800, idle: 850, gears: [3.923,2.136,1.276,.921,.756,.628], final: 3.824, wheelR: .316,
+    torqueCurve: [[0,105],[850,130],[1250,320],[4800,320],[5200,312.2],[6000,270.6],[6800,220]], peakTorqueRpm: 3000, peakPowerRpm: 6000,
+    wheelbase: 2.495, length: 3.874, width: 1.727, cdA: .71, vmax: 246, grip: 1.13, steer: .60, yawI: .98, drift: 1, brake: 1.08, cyl: 4, pitch: 1.04, body: 'mini_jcw', cabinWidth: .80, drive: 'fwd', engine: 'turbo4', turbo: 1, transmission: 'manual', playerDetail: true,
+    tyres: ['205/45 R17','205/45 R17'], frontW: .62, hcg: .48, track: 1.485, rsF: .60, usGrad: 3.0, susHz: 2.0, susZ: .57, rollK: .85, pitchK: .85, alphaPk: .115, mfC: 1.45, loadSens: .16, clA: .02, tc: .6, esc: .4, shiftT: .26, bias: .73, steerRate: 1.18, ebrake: .16, lsd: 0,
+    stats: { speed: .70, accel: .71, handling: .90, drift: .38 },
+  },
 ];
 
 for (const car of CARS) car.trafficWeight ??= defaultTrafficWeight(car);

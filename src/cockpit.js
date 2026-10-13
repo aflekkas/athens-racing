@@ -110,7 +110,7 @@ export class Cockpit {
   constructor(spec, model, mirrorTex) {
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
-    const isMini=spec.id==='mini',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
+    const isMini=spec.id==='mini'||spec.id==='mini_jcw',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.33,-.43));
     const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
@@ -123,7 +123,7 @@ export class Cockpit {
     const label=(text,w,h,x,y,z,colour='#d7dcdf',rx=0)=>part(new THREE.PlaneGeometry(w,h),labelMaterial(text,colour),x,y,z,rx);
     let wsZ,wsY,W;
     if(spec.body==='mini'){wsZ=model.shape.cowl;wsY=model.shape.belt;W=model.dash.w;}
-    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(spec.fleet?.82:isPorsche?.78:isYaris?.84:.92);}
+    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(spec.cabinWidth??(spec.fleet?.82:isPorsche?.78:isYaris?.84:.92));}
     const topY=Math.min(eye.y-.21,wsY+.06),faceZ=wheelC.z-.15;
     // The padded upper roll and lower knee bolster are separate surfaces, with the actual
     // model's wood, textile or aluminium fascia between them.
@@ -225,7 +225,13 @@ export class Cockpit {
     if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
     else label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
     if(isBMW||isMini)part(new THREE.CylinderGeometry(.028,.031,.023,24),alu,.069,consoleY+.066,faceZ+.46);
-    if(manual){const handbrake=box(.025,.022,.17,trim,.10,consoleY+.085,faceZ+.48,.009,-.20);handbrake.rotation.y=-.10;}
+    // A tactile lever is available even in cars with a factory electronic brake.
+    const brakePivot=this.handbrakePivot=new THREE.Group();brakePivot.name='handbrake-pivot';
+    brakePivot.position.set(.09,consoleY+.075,faceZ+.57);g.add(brakePivot);
+    const brakeGrip=new THREE.Mesh(new RoundedBoxGeometry(.031,.029,.18,1,.009),trim);
+    brakeGrip.name='handbrake-grip';brakeGrip.position.z=-.08;brakePivot.add(brakeGrip);
+    this.controlTargets={handbrake:new THREE.Vector3(),shifter:new THREE.Vector3(),pull:0,manual:false,gear:1};
+    this._brakeGrip=brakeGrip;
     for(const x of manual?[eye.x-.15,eye.x-.04,eye.x+.075]:[eye.x-.07,eye.x+.075]){
       const pedal=box(.06,.014,.105,alu,x,.31,faceZ-.02,.003,-.5);
       for(let j=-1;j<=1;j++)box(.052,.002,.005,trim,x,.321+j*.008,faceZ-.02+j*.023,.001,-.5);
@@ -313,13 +319,22 @@ export class Cockpit {
     cockpitLOD.addLevel(distantDash,15,.08);distantDash.visible=false;
     g.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = true; } });
     this.wheelEuler = new THREE.Euler(this.wheelTilt, 0, 0, 'XYZ');
-    this.wheelInfo = { pos: wheelC, angle: 0, euler: this.wheelEuler, r };
+    this.wheelInfo = { pos: wheelC, angle: 0, euler: this.wheelEuler, r, controls: this.controlTargets };
     this.frame = 0;
   }
   /** steer: front wheel angle (rad) */
   update(dt, st) {
     const ang = -st.steerInput * 2.35;
     this.wheelSpin.rotation.z = ang; this.wheelInfo.angle = ang;
+    const controls=this.controlTargets;
+    // Reach first, then raise the lever; keep the palm target on its moving grip.
+    controls.pull += ((st.handbrake?1:0)-controls.pull)*(1-Math.exp(-12*Math.max(0,dt)));
+    this.handbrakePivot.rotation.x=-.12+Math.max(0,(controls.pull-.55)/.45)*.52;
+    this.handbrakePivot.updateMatrix();
+    controls.handbrake.copy(this._brakeGrip.position).applyMatrix4(this.handbrakePivot.matrix);
+    controls.handbrake.y+=.018;
+    controls.shifter.copy(this.knob.position);controls.shifter.y+=.012;
+    controls.manual=!!st.manual;controls.gear=st.gear;controls.held=!!st.handbrake;
     // shift lights
     const k = clamp((st.rpm / st.redline - 0.7) / 0.27, 0, 1);
     const blink = st.rpm > st.redline * 0.97 && Math.sin(performance.now() * 0.05) > 0;
@@ -329,7 +344,7 @@ export class Cockpit {
   }
   drawCluster(st){
     const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.id;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';
-    if(id==='mini'){
+    if(id==='mini'||id==='mini_jcw'){
       g.beginPath();g.roundRect(0,0,W,H,180);g.fill();
       g.strokeStyle='#8a969c';g.lineWidth=5;g.beginPath();g.roundRect(4,4,W-8,H-8,175);g.stroke();
       // 2021 F57's oval TFT: RPM crescent at left, digital speed in the centre, fuel at right.

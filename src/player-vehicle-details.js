@@ -4,7 +4,7 @@ import { seatMirrors, nearestSurface, mirrorSurfaces } from './vehicle-mirrors.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 const PLAYERS=new Set(['mini','z4','taxi','carrera','gr_yaris','gtv','golf','corolla','superb','police_octavia']);
-export const isPlayerVehicle=car=>PLAYERS.has(car.spec?.id);
+export const isPlayerVehicle=car=>PLAYERS.has(car.spec?.id)||car.spec?.playerDetail===true;
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 function mesh(p,g,m,name='',pos=[0,0,0]){const o=new THREE.Mesh(g,m);o.name=name;o.position.set(...pos);p.add(o);return o;}
 function box(p,m,size,pos,name='',r=.006){return mesh(p,new RoundedBoxGeometry(...size,1,Math.min(r,...size.map(x=>x/2))),m,name,pos);}

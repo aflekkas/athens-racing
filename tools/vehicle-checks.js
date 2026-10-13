@@ -12,7 +12,7 @@ export function runVehicleChecks() {
   const roofFits=car=>{
     const rear=car.body.getObjectByName('rear-glass');if(!rear||car.spec.fleet)return;
     const front=car.body.getObjectByName('windscreen'),paint=[];
-    car.body.traverse(o=>{if(o.isMesh&&(o.material===car.paint||car.modelKind==='gr_yaris'&&o.material===car.materials.black))paint.push(o.geometry.attributes.position);});
+    car.body.traverse(o=>{if(o.isMesh&&(o.material===car.paint||car.shape.blackRoof&&o.material.color?.getHex()===car.materials.black.color.getHex()))paint.push(o.geometry.attributes.position);});
     let gap=0;
     for(const [glass,indices] of [[front,[10,12*11+10,24*11+10]],[rear,[0,11*13,22*13]]]){
       const a=glass.geometry.attributes.position;
@@ -20,7 +20,7 @@ export function runVehicleChecks() {
     }
     check((car.spec.id||car.modelKind)+' roof joins front and rear glass within 0.1 mm',gap<.0001);
   };
-  check('Ten unique playable cars including AWD and rear-engine',CARS.length===10&&new Set(CARS.map(s=>s.id)).size===10&&CARS.some(s=>s.drive==='awd')&&CARS.some(s=>s.engineZone==='rear'));
+  check('Unique playable catalogue including AWD and rear-engine',CARS.length>=10&&new Set(CARS.map(s=>s.id)).size===CARS.length&&CARS.some(s=>s.drive==='awd')&&CARS.some(s=>s.engineZone==='rear'));
   for(const spec of CARS){
     const car=new CarModel(spec);check(spec.id+' independent four wheel assemblies',car.wheels.length===4&&new Set(car.wheels.map(w=>w.spin)).size===4&&car.wheels.every(w=>w.spin.parent===w.pivot&&w.pivot.parent===car.root));
     roofFits(car);

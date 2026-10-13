@@ -11,7 +11,7 @@ const { Route } = await import('../../src/map.js');
 const catalogURL = new URL(process.env.CATALOG || '../../src/cars.js', import.meta.url);
 const catalogueSource = readFileSync(catalogURL, 'utf8');
 const allCars = Function('return ' + catalogueSource.split('export const CARS = ')[1].split('\n];')[0] + '\n];')();
-export const CARS = allCars.filter(c => ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv'].includes(c.id));
+export const CARS = allCars.filter(c => (process.env.CAR_IDS ? process.env.CAR_IDS.split(',') : ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv']).includes(c.id));
 const { MAPS } = await import('../../src/map-catalog.js');
 const DT = 1 / 60, G = 9.81, DEG = 180 / Math.PI;
 const mean = (a, key) => a.reduce((s, r) => s + r[key], 0) / a.length;

@@ -1448,7 +1448,7 @@ function step(dt, draw = true) {
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
   const acc = { x: pv.ay, y: 0, z: -pv.ax };
-  player.cockpit.update(dt, { steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
+  player.cockpit.update(dt, { handbrake: input.handbrake && G.state === 'race', manual: pv.manual, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
   player.driver.update(dt, G.t, pv.vLong, acc, player.cockpit.wheelInfo, pv.steer, pv.pose.heaveV);
   for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);
   window.__replay?.visual(dt);
