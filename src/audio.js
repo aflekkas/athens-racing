@@ -24,6 +24,9 @@ import { Sirens } from './sirens.js';
 // pat: per-cylinder pulse strength (uneven headers / firing order -> warble); jit: cycle-to-cycle variation;
 // knock: diesel injection clatter; lp: tone filter range; whine: gearbox whine; pops: overrun crackle tendency
 export const ENGINE_SOUND = {
+  // Catalogue additions: synthesized firing pulses, not recordings of these models.
+  na6: { cyl: 6, f1: 185, f2: 1600, t1: .0053, t2: .0012, b: .40, thump: .82, pat: [1,.98,.96,1,.97,.99], jit: .018, knock: 0, rasp: .19, lp: [850,7200], whine: .06, pops: .18, idleWobble: .02, gain: 1 },
+  v10: { cyl: 10, f1: 290, f2: 2300, t1: .0035, t2: .001, b: .52, thump: .68, pat: [1,.92,.98,.94,1,.91,.97,.95,.99,.93], jit: .018, knock: 0, rasp: .26, lp: [1100,8500], whine: .10, pops: .70, idleWobble: .016, gain: 1 },
   // GR Yaris G16E: three evenly spaced firings per 720°, low exhaust body and a muted turbo rasp.
   turbo3: { cyl: 3, f1: 145, f2: 1050, t1: 0.007, t2: 0.0015, b: 0.32, thump: 1.05, pat: [1, 0.96, 0.93], jit: 0.028, knock: 0, rasp: 0.14, lp: [650, 5400], whine: 0.05, pops: 0.35, idleWobble: 0.035, gain: 1 },
   // Alfa 2000 twin-cam: open, metallic exhaust/intake character with restrained overrun.
