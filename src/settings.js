@@ -13,7 +13,8 @@
 
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'ui'];
 const KEY = 'paraliaki.settings';
-export const DEFAULTS = { master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false,
+const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: false };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
@@ -25,7 +26,19 @@ const ls = () => { try { return typeof localStorage !== 'undefined' ? localStora
 
 function load() {
   const out = { ...DEFAULTS };
-  try { Object.assign(out, JSON.parse(ls()?.getItem(KEY) || '{}')); } catch {}
+  try {
+    const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
+    Object.assign(out, saved);
+    // Migrate the old default once. A later deliberate choice of 0.8 must survive reloads.
+    if (storage?.getItem(AUDIO_DEFAULT_VERSION) !== '1') {
+      if (saved?.master != null && +saved.master === 0.8) {
+        saved.master = DEFAULTS.master;
+        out.master = DEFAULTS.master;
+        try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
+      }
+      try { storage?.setItem(AUDIO_DEFAULT_VERSION, '1'); } catch {}
+    }
+  } catch {}
   try { const g = ls()?.getItem('paraliaki.graphics'); if (g) out.graphics = g; } catch {}
   for (const k of AUDIO_VOLUMES) out[k] = Math.max(0, Math.min(1, +out[k] || 0));
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';

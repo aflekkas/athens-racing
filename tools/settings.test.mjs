@@ -8,6 +8,29 @@ async function preferences(storage) {
   return import('../src/settings.js?steering-test=' + serial++);
 }
 
+test('comfortable master default migrates the old default once and preserves explicit volumes', async () => {
+  assert.equal((await preferences(memory())).settings.master, 0.6);
+  for (const master of [0, 0.3, 0.8, 0.95]) {
+    const storage = memory();
+    storage.setItem('paraliaki.settings', JSON.stringify({ master, music: 0.2, engine: 0.9 }));
+    const module = await preferences(storage);
+    assert.equal(module.settings.master, master === 0.8 ? 0.6 : master);
+    assert.equal(module.settings.music, 0.2);
+    assert.equal(module.settings.engine, 0.9);
+    module.setSetting('master', 0.8);
+    assert.equal((await preferences(storage)).settings.master, 0.8, 'intentional later selection survives');
+  }
+});
+
+test('saved volumes remain usable when storage writes are denied', async () => {
+  const storage = memory();
+  storage.setItem('paraliaki.settings', JSON.stringify({ master: 0.3, music: 0.2 }));
+  storage.setItem = () => { throw new Error('storage is read-only'); };
+  const module = await preferences(storage);
+  assert.equal(module.settings.master, 0.3);
+  assert.equal(module.settings.music, 0.2);
+});
+
 test('steering assist defaults follow the active device until explicitly selected', async () => {
   const storage = memory(), module = await preferences(storage), vehicle = {};
   assert.equal(module.settings.steeringAssist, null);

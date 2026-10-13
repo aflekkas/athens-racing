@@ -167,7 +167,7 @@ const TRAFFIC_LOOPS = {
 };
 
 // Mix controls are independent of legacy sfx (which still scales every non-music bus).
-export const AUDIO_DEFAULTS = Object.freeze({ master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4 });
+export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
 export class AudioMix {
