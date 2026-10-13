@@ -31,6 +31,19 @@ node tools/deploy-smoke.mjs https://paraliaki-racing-staging.aflekkas.workers.de
 node tools/deploy-smoke.mjs https://paraliaki-racing-staging.aflekkas.workers.dev --race
 ```
 
+On the shared VPS, release only a committed snapshot that has passed CI. Other agents can be editing the checkout during deployment; copying that working tree can publish an incomplete client module. Push the intended HEAD to staging and deploy an archive rather than a worktree:
+
+```sh
+mkdir -p .scratch
+release_repo_root="$(pwd)"
+release_artifact_dir="$(mktemp -d "$release_repo_root/.scratch/release.XXXXXX")"
+git archive HEAD | tar -xf - -C "$release_artifact_dir"
+ln -s "$release_repo_root/node_modules" "$release_artifact_dir/node_modules"
+(cd "$release_artifact_dir" && node_modules/.bin/wrangler deploy --env staging)
+```
+
+This assumes `npm ci` has installed the committed lockfile. If deploying another revision with different dependencies, run `npm ci` in its archive instead of sharing node_modules. GitHub Actions already deploys a committed checkout.
+
 `--race --map=megara` and `--race --map=penteli` also exercise their map-specific routes. Full race smoke sends bounded simulated progress at 120 m/s, checks two clients share raceId/startAt, sees relayed state and verifies both finishes. It uses a private temporary lobby and explicitly leaves afterward. The simulated records use clearly named deployment-smoke drivers.
 
 The existing VPS service on port 8000 is independent. Deploying Workers does not restart or stop it.
