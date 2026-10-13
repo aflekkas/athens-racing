@@ -145,6 +145,12 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
           const elapsed = (now - (c.stateAt ?? l.startAt)) / 1000;
           if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
           c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: s.nitro ?? c.state?.nitro ?? 0.4, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: s.decals === undefined ? c.state?.decals ?? [] : packDecals(unpackDecals(s.decals)) }; c.stateAt = now; l.dirty = true;
+          // Optional render clock only; progress checks and finishes use server receipt time.
+          if (Number.isFinite(s.sampleTime) && s.sampleTime >= 0 && s.sampleTime <= 1e12) {
+            c.state.sampleTime = s.sampleTime;
+            c.state.sampleAge = Number.isFinite(s.sampleAge) ? Math.max(0, Math.min(1000, s.sampleAge)) : 0;
+            if (Number.isSafeInteger(s.motionEpoch) && s.motionEpoch >= 0) c.state.motionEpoch = s.motionEpoch;
+          }
           if (c.finish === null && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000; l.racers.get(c.id).finish = c.finish; publish(l);
             leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
@@ -175,7 +181,7 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
       if (['countdown', 'race'].includes(l.status)) {
         if (now > l.startAt + raceLimitMs) { results(l); continue; }
         if (!l.dirty) continue; l.dirty = false;
-        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, finish: p.finish, dnf: p.dnf }));
+        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, stateAt: p.stateAt, finish: p.finish, dnf: p.dnf }));
         for (const p of l.players.values()) send(p.ws, { type: 'snapshot', raceId: l.raceId, now, players });
       }
     }

@@ -1,6 +1,7 @@
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
 import { StateSender } from './multiplayer-state.js';
+import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
 // the server owns membership, synchronized starts, and elapsed finish times.
 export class Multiplayer {
@@ -102,14 +103,18 @@ export class Multiplayer {
       else if (m.type === 'error') { this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left') this.left();
       else if (m.type === 'lobby') {
-        const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId; this.lobby = m.lobby;
+        const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
         if (previousRace !== m.lobby.raceId) this.peers.clear();
+        for (const member of m.lobby.players) {
+          const prior = previousMembers?.find(p => p.id === member.id), peer = this.peers.get(member.id);
+          if (peer && prior && (prior.car !== member.car || prior.connected === false && member.connected !== false)) delete peer.timeline;
+        }
         if (m.resume) { this.resumeState = m.state; this.pendingResume = true; this.connected = true; this.resumeCount++; }
         if (joined) { this.peers.clear(); this.hooks.join(this.me.car); this.panel.hidden = false; }
         else if (previousCar !== this.me?.car) this.hooks.carChanged?.(this.me.car);
         this.renderRoom(); this.syncLobby();
       } else if (m.type === 'snapshot' && m.raceId === this.lobby?.raceId) {
-        for (const p of m.players) if (p.id !== this.id && p.state) this.peers.set(p.id, { ...p, at: performance.now() });
+        receiveRemoteSnapshot(this.peers, m, { id: this.id, members: this.lobby.players });
         // Websocket messages keep race state current even when background tabs stop animation frames.
         this.advanceClock();
         if (document.hidden && this.worldReady) this.hooks.remote(this.peers, 0.1);
@@ -119,6 +124,7 @@ export class Multiplayer {
       if (this.ws !== ws) return;
       this.connected = false; this.hooks.clearInput();
       this.stateSender.reset(); this.wreckSent = false;
+      resetRemoteTimelines(this.peers);
       if (e.reason === 'Session resumed elsewhere') { this.left(); this.saveToken(null); this.status('This session is now open in another tab.'); return; }
       this.status(this.active ? 'Connection lost. Rejoining your race… (90-second reservation)' : 'Multiplayer is offline. Retrying…');
       if (this.active) this.panel.hidden = false;
