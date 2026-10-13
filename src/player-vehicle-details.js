@@ -137,7 +137,11 @@ export function groupPlayerParts(car,d){
   const parts={},keep=new Set([car.windscreen,car.mirrorL,car.mirrorR,...car.exteriorDash.children]);
   car.body.updateMatrixWorld(true);
   car.body.traverse(o=>{if(!o.isMesh||![car.materials.black,car.materials.seat,car.materials.chrome].includes(o.material))return;o.geometry.computeBoundingBox();const b=o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld),size=b.getSize(v()),p=b.getCenter(v());
-    if(Math.abs(p.x)>d.W*.29&&Math.abs(p.x)<d.W*.5&&size.x<.13&&size.z>.40&&p.y>.45&&p.y<d.belt+.04){o.userData.damageInterior=true;o.userData.damageSide=p.x<0?'left':'right';keep.add(o);}
+    const doorTrim=Math.abs(p.x)>d.W*.29&&Math.abs(p.x)<d.W*.5&&size.x<.13&&size.z>.10&&p.y>.45&&p.y<d.belt+.04;
+    // A heavily dented door can pass the outer seat cushion as well as its liner.
+    // Keep upholstered pieces independent so the hit-side interior can retract.
+    const seatTrim=o.material===car.materials.seat&&Math.abs(p.x)>d.W*.10&&p.z>d.cowl&&p.z<d.back+.25;
+    if(doorTrim||seatTrim){o.userData.damageInterior=true;o.userData.damageSide=p.x<0?'left':'right';keep.add(o);}
   });
   for(const name of ['structure','bumper_f','bumper_r','bonnet','boot','doors','mirrors','lights','glass']){const g=new THREE.Group();g.name=name;car.body.add(g);parts[name]=g;}
   for(const name of ['door_lf','door_rf',...(car.spec.id==='taxi'?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
@@ -145,6 +149,8 @@ export function groupPlayerParts(car,d){
   car.body.updateMatrixWorld(true);const all=[];car.body.traverse(o=>{if(o.isMesh&&!car.exteriorDash.children.includes(o))all.push(o);});
   const assignments=all.map(o=>[o,inferPart(o,car,d)]);
   for(const [o,id]of assignments){const target=parts[id]||parts.structure;target.attach(o);}
+  // Preserve hit-side hiding without spending a draw per cushion or armrest.
+  for(const side of ['left','right']){const interior=new THREE.Group();interior.name='interior-'+side;parts.structure.add(interior);for(const o of all)if(o.userData.damageInterior&&o.userData.damageSide===side){interior.attach(o);keep.delete(o);}batchStatic(interior);for(const o of interior.children){o.userData.damageInterior=true;o.userData.damageSide=side;keep.add(o);}}
   car.playerParts=parts;
   // Retain the real painted shell, glass and lamps at road distance; tiny trim,
   // cabin furniture and optical internals have no useful silhouette at 15 m.

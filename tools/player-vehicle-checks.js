@@ -12,6 +12,8 @@ export function runPlayerVehicleChecks(){
     for(const side of ['l','r']){let panel=false;car.playerParts['door_'+side+'f'].traverse(o=>{if(o.material===car.paint)panel=true;});check(panel,id+' detachable door has painted skin');}
     car.root.updateMatrixWorld(true);
     for(const end of ['f','r']){const b=new THREE.Box3().setFromObject(car.playerParts['bumper_'+end]);check(b.max.y<.54,id+' bumper '+end+' excludes upper end cap');}
+    const left=[],right=[];car.body.traverse(o=>{if(o.userData.damageInterior)(o.userData.damageSide==='left'?left:right).push(o);});
+    car.setDamage('left',.5);check(left.length>0&&left.every(o=>!o.visible)&&right.every(o=>o.visible),id+' side intrusion hides only hit-side interior');car.setDamage('left',0);check(left.every(o=>o.visible),id+' repair restores interior upholstery');
     const m=car.signalMaterials;
     for(const signal of Object.values(m)){let attached=false;car.body.traverse(o=>{if(o.material===signal)attached=true;});check(attached,id+' signal material is on visible geometry');}
     car.setIndicators('left');car.updateSignalLights(.1,0);check(m.left.emissiveIntensity>0&&m.right.emissiveIntensity===0,id+' independent left signal');
