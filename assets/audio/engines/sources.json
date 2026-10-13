@@ -269,6 +269,7 @@
     "Z4 M40i B58 is represented by a BMW M4 S55 turbo inline-six recording, NOT an exact Z4 recording. Neutral-load recordings are shaped by load at runtime; these are not independently recorded on/off load banks.",
     "Octavia taxi is represented by VW Passat diesel startup/idle, Audi 1.9 TDI 2000 RPM and VW Caravelle 2.0 TDI 3000 RPM. These are related diesel substitutes, NOT an exact Octavia recording.",
     "RPM references are estimates from harmonic analysis except the producer-labelled 2000/3000 RPM loops. Loops are trimmed, mono mixed, high-pass filtered, pitch-stabilized where specified, overlapped at their seams and level matched.",
-    "Sonniss recordings are licensed for use inside this game; they are not CC0 and must not be redistributed as a standalone sound pack. License version 2.0 effective 2026-08-27 applies."
+    "Sonniss recordings are licensed for use inside this game; they are not CC0 and must not be redistributed as a standalone sound pack. License version 2.0 effective 2026-08-27 applies.",
+    "Runtime playback of takes shorter than 1.25 s uses overlapping equal-power grains with randomized offsets and durations; the audio-rate pitch control remains RPM/Doppler driven. This removes the MINI low layer 0.907 s envelope repeat (0.453 s at 3600 RPM). No source assets or licences changed."
   ]
 }

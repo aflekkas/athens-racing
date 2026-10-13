@@ -18,3 +18,11 @@ Audition renders also contain existing engine/world/music recordings; see
 ../engines/CREDITS.txt, ../world/CREDITS.txt and ../music/CREDITS.txt.
 Reproduce locally: node tools/build_sound_audio.mjs, open http://localhost:8015.
 WAVs, spectrograms and EBU R128 measurements are written to .scratch/sound-v2/.
+
+Grip progression: subdued 450–570 Hz howl at 65–98% of peak combined slip;
+above peak, a rising 0.8–2.4 kHz fundamental and second/third harmonics with
+aperiodic micro-slip wavering. The CC0 recording stays underneath as texture.
+corner-sweep.wav/png sweeps normalized slip 0–150% over eight seconds.
+For signal regression, also renderSoundV2({scenarios:['corner-sweep'], isolate:'tyres'})
+and run python tools/build_sound_audio_analysis.py (numpy/scipy). It checks
+6–9 kHz envelope repetition and the rising fundamental/second harmonic in WAVs.

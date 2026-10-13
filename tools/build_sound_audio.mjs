@@ -2,13 +2,17 @@
  * node tools/build_sound_audio.mjs → open http://localhost:8015, then run the button.
  * Uses the production graph in OfflineAudioContext, saves PCM WAVs and ffmpeg spectrograms/LUFS.
  */
-export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-limit', 'handbrake-slide', 'rival-pass-150kmh', 'menu-duck', 'normal-race'] } = {}) {
+export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-limit', 'handbrake-slide', 'rival-pass-150kmh', 'menu-duck', 'normal-race', 'corner-sweep'], isolate = null } = {}) {
   const { Audio, tyreParameters } = await import('../src/audio.js');
   const { spatialAudio } = await import('../src/world-sounds.js');
   const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
   const loaded = { Fz: 3500, sx: 0, sy: 0, vw: 27.78, vgx: 27.78 };
   const straight = tyreParameters(loaded, 27.78), corner = tyreParameters({ ...loaded, sy: 1.3 }, 27.78);
   assert(corner.squeal > straight.squeal && corner.scrub > straight.scrub, 'Slip must audibly expose the grip limit');
+  const prePeak = tyreParameters({ ...loaded, sy: 0.9 }, 27.78);
+  assert(prePeak.howl > 0 && prePeak.squeal === 0, 'Pre-peak scrub must precede tonal squeal');
+  const overPeak = tyreParameters({ ...loaded, sy: 1.5 }, 27.78);
+  assert(overPeak.pitch > corner.pitch && overPeak.squeal > corner.squeal, 'Squeal must rise in pitch and level beyond peak');
   assert(tyreParameters({ ...loaded, Fz: 0, sy: 3 }, 27.78).squeal === 0, 'Airborne wheel squeals');
   assert(tyreParameters({ ...loaded, sy: 3 }, 27.78, 'sand').squeal < corner.squeal, 'Sand has asphalt squeal');
   assert(tyreParameters(loaded, 27.78, 'kerb').rumble > 0, 'Kerb has no rumble');
@@ -20,6 +24,7 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
     const seconds = 8, sr = 44100, ctx = new OfflineAudioContext(2, seconds * sr, sr), a = new Audio();
     a.musicOn = false;
     a.start({ context: ctx, recordings: true, radio: false });
+    if (isolate) a.setVolumes({ engine: isolate === 'engine' ? 0.85 : 0, tyres: isolate === 'tyres' ? 0.8 : 0, ambience: isolate === 'ambience' ? 0.5 : 0, traffic: 0, music: 0 });
     const spec = { id: 'mini', engine: 'turbo4', idle: 850, redline: 6800 };
     a.setEngine(spec); await Promise.all([a.engineReady, a.worldReady]); a.cancelIgnition();
     if (scenario === 'normal-race') {
@@ -32,6 +37,7 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
     for (let i = 0; i < seconds * 60; i++) {
       const time = i / 60, envelope = Math.min(1, Math.max(0, (time - 1) / 0.8));
       const wheels = Array.from({ length: 4 }, (_, j) => ({ ...loaded, Fz: 3500 }));
+      if (scenario === 'corner-sweep') for (const wheel of wheels) wheel.sy = 1.5 * time / (seconds - 1 / 60);
       if (scenario === 'corner-limit') for (let j = 0; j < 4; j++) Object.assign(wheels[j], { sy: (j < 2 ? 1.25 : 1.05) * envelope, Fz: j % 2 ? 4800 : 2200 });
       if (scenario === 'handbrake-slide') for (let j = 0; j < 4; j++) Object.assign(wheels[j], { sy: (j < 2 ? 0.85 : 3.2) * envelope, sx: j < 2 ? 0 : -6 * envelope, vw: j < 2 ? 27.78 : 27.78 * (1 - envelope) });
       const x = (time - 4) * (150 / 3.6), distance = Math.hypot(x, 5), closing = -x * (150 / 3.6) / distance;
@@ -57,7 +63,7 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
     if (duckDb != null) assert(duckDb < -15 && duckDb > -21, `Duck is ${duckDb} dB`);
     if (isPass) assert(dopplerMax > 1.1 && dopplerMin < 0.91, 'Pass has no audible Doppler');
     const row = { scenario, peak, rms: Math.sqrt(energy / buffer.length / 2), duckDb, ...(isPass ? { dopplerMin, dopplerMax } : {}) };
-    const saved = await fetch(`/render/${scenario}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav(buffer) });
+    const saved = await fetch(`/render/${scenario}${isolate ? '-' + isolate : ''}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav(buffer) });
     assert(saved.ok, `Save failed: ${saved.status}`);
     const measurement = await saved.json();
     if (scenario === 'normal-race') {

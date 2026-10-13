@@ -72,3 +72,8 @@ Requires ffmpeg, numpy and scipy. Masters are cached outside runtime assets.
 To upgrade fidelity further, replace substitute sources with separately
 licensed Z4 B58 / Octavia EA288 / MINI B48 ignition recordings, plus sustained
 on-load and off-load dyno RPM takes. Do not use game-ripped mod audio as masters.
+
+Sound v2 runtime playback: takes shorter than 1.25 seconds use randomly
+positioned, irregular-duration grains with overlapping equal-power fades.
+The shared audio-rate pitch follows RPM and Doppler. This suppresses the
+MINI low take's repeating envelope without changing any audio asset/licence.

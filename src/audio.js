@@ -212,17 +212,18 @@ export function tyreParameters(w, speed, surface = 'asphalt', nominalLoad = 3500
   const soft = /gravel|dirt|sand|grass|scrub|verge|water/.test(surface);
   const kerb = /kerb|curb|pavement|rumble/.test(surface);
   const grain = /gravel|rock/.test(surface) ? 1 : /sand|dirt/.test(surface) ? 0.65 : soft ? 0.35 : 0;
-  const scrub = clampAudio((slip - 0.25) / 0.75);
-  const squeal = Math.pow(clampAudio((slip - 0.8) / 1.7), 0.65);
+  const scrub = clampAudio((slip - 0.65) / 0.3);
+  const squeal = Math.pow(clampAudio((slip - 0.98) / 0.55), 0.7);
   const signedSlip = (w.sx ?? 0) * (w.vgx < 0 ? -1 : 1);
   const lock = signedSlip < -1 && patch > 2;
   return {
     roll: load * clampAudio(patch / 42) * (soft ? 0.055 : 0.024),
     rollHz: (soft ? 480 : 140) + Math.min(1600, patch * (soft ? 26 : 12)),
-    scrub: load * motion * scrub * (soft ? 0.025 : 0.11),
+    scrub: load * motion * scrub * (soft ? 0.025 : 0.045),
+    howl: soft ? 0 : load * motion * scrub * 0.025 * (1 - squeal * 0.65),
     squeal: load * motion * squeal * (soft ? 0.008 : 0.11),
     // Stick/slip resonances rise with sliding speed; locked rubber has a lower, rougher howl.
-    pitch: clampAudio(640 + 135 * Math.log1p(slip) + patch * 3.2 + Math.max(0, signedSlip) * 28 - (lock ? 140 : 0), 440, 1850),
+    pitch: clampAudio(800 + Math.max(0, slip - 0.98) * 1050 + patch * 2 + Math.max(0, signedSlip) * 20 - (lock ? 100 : 0), 700, 2400),
     grit: load * motion * grain * (0.04 + 0.018 * Math.min(3, slip)),
     rumble: kerb ? load * clampAudio(patch / 18) * 0.065 : 0,
     rumbleHz: clampAudio(patch / 0.45, 12, 170), lock, slip,
@@ -249,10 +250,13 @@ export class TyreVoice {
     // Rear axle is slightly darker and nearer the centre; preserve axle identity in headphones.
     this.axle = filter('lowpass', index < 2 ? 9500 : 6200); chain(this.axle, this.pan, dest);
     this.roll = gain(); this.rollLP = filter('lowpass', 400); chain(this.noise, this.rollLP, this.roll, this.axle);
-    this.scrub = gain(); this.scrubBP = filter('bandpass', 480, 1.8); chain(this.noise, this.scrubBP, this.scrub, this.axle);
+    this.scrub = gain(); this.scrubBP = filter('bandpass', 480, 4); chain(this.noise, this.scrubBP, this.scrub, this.axle);
+    this.howl = gain(); this.howlOsc = osc(380); chain(this.howlOsc, this.howl, this.axle);
+    this.waverRandom = rng32(3081 + index * 731); this.nextWaver = 0; this.waver = 0;
     this.grit = gain(); this.gritBP = filter('bandpass', 2500, 0.6); chain(this.noise, this.gritBP, this.grit, this.axle);
     this.rumble = gain(); this.rumbleOsc = osc(40, 'triangle'); chain(this.rumbleOsc, this.rumble, this.axle);
-    this.squeal = gain(); this.sq1 = osc(700); this.sq2 = osc(1021); this.sq2Gain = gain(0.33);
+    this.squeal = gain(); this.sq1 = osc(700); this.sq2 = osc(1400); this.sq2Gain = gain(0.38);
+    this.sq3 = osc(2100); this.sq3Gain = gain(0.12); chain(this.sq3, this.sq3Gain, this.squeal);
     chain(this.sq1, this.squeal, this.axle); chain(this.sq2, this.sq2Gain, this.squeal);
     // Noise-modulated stick/slip avoids a sterile pair of stable synthesizer tones.
     this.flutterLP = filter('lowpass', 48); this.flutter = gain(85);
@@ -267,15 +271,23 @@ export class TyreVoice {
   }
   set(w, speed, surface, nominalLoad, now) {
     const p = tyreParameters(w, speed, surface, nominalLoad);
-    for (const key of ['roll', 'scrub', 'grit', 'rumble', 'squeal']) this[key].gain.setTargetAtTime(p[key] * (key === 'squeal' && this.recording ? 0.55 : 1), now, key === 'squeal' ? 0.025 : 0.055);
+    for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble', 'squeal']) this[key].gain.setTargetAtTime(p[key], now, key === 'squeal' ? 0.025 : 0.055);
     if (this.recording) {
-      this.recordGain.gain.setTargetAtTime(p.squeal * 3.2, now, 0.035);
+      this.recordGain.gain.setTargetAtTime(p.squeal * 0.85, now, 0.035);
       this.recording.playbackRate.setTargetAtTime(clampAudio(p.pitch / 850, 0.7, 1.65) * (0.97 + this.index * 0.018), now, 0.07);
     }
     this.rollLP.frequency.setTargetAtTime(p.rollHz, now, 0.09);
     this.scrubBP.frequency.setTargetAtTime(320 + p.slip * 65 + Math.abs(speed) * 5, now, 0.06);
-    this.sq1.frequency.setTargetAtTime(p.pitch * (1 + this.index * 0.023), now, 0.045);
-    this.sq2.frequency.setTargetAtTime(p.pitch * (1.47 + this.index * 0.013), now, 0.055);
+    // Aperiodic, slowly interpolated micro-slip: no fixed vibrato LFO or grain cadence.
+    if (now >= this.nextWaver) {
+      this.waver = (this.waverRandom() * 2 - 1) * 12;
+      this.nextWaver = now + 0.07 + this.waverRandom() * 0.16;
+    }
+    const fundamental = p.pitch * (0.985 + this.index * 0.011) + this.waver;
+    this.howlOsc.frequency.setTargetAtTime(270 + Math.min(1.1, p.slip) * 240 + Math.abs(speed) * 1.2 + this.waver * 0.4, now, 0.08);
+    this.sq1.frequency.setTargetAtTime(fundamental, now, 0.045);
+    this.sq2.frequency.setTargetAtTime(fundamental * 2.003, now, 0.045);
+    this.sq3.frequency.setTargetAtTime(fundamental * 3.008, now, 0.045);
     this.rumbleOsc.frequency.setTargetAtTime(p.rumbleHz, now, 0.035);
     if (p.lock && !this.locked) {
       this.chirp.gain.cancelScheduledValues(now); this.chirp.gain.setValueAtTime(0, now);

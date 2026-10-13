@@ -55,6 +55,49 @@ export function rpmBlend(points, rpm) {
   return points.map((_, k) => k === i ? Math.cos(x * Math.PI / 2) : k === i + 1 ? Math.sin(x * Math.PI / 2) : 0);
 }
 
+/** Short takes otherwise reveal their recording envelope on every wrap (MINI low: 0.907 s).
+ * Irregular, overlapping source windows retain RPM pitch while breaking that cadence.
+ * Scheduling uses audio time from set(), so this works in realtime and OfflineAudioContext.
+ */
+export class GranularEngineLoop {
+  constructor(ctx, buffer, dest, seed = 1) {
+    this.ctx = ctx; this.buffer = buffer; this.nodes = new Set(); this.seed = seed;
+    this.rate = ctx.createConstantSource(); this.rate.offset.value = 1; this.rate.start();
+    this.playbackRate = this.rate.offset; this.out = ctx.createGain(); this.out.connect(dest);
+  }
+  random() { this.seed = (Math.imul(this.seed, 1664525) + 1013904223) >>> 0; return this.seed / 4294967296; }
+  start(now) { this.next = now; this.fadeIn = 0.008; }
+  schedule(now, rate) {
+    if (this.stopped) return;
+    // Late frames resume from now, never queue a burst of grains whose start time is in the past.
+    if (this.next < now) { this.next = now; this.fadeIn = 0.012; }
+    while (this.next < now + 0.6) {
+      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
+      source.buffer = this.buffer; source.loop = true; source.playbackRate.value = 0;
+      this.rate.connect(source.playbackRate); source.connect(gain); gain.connect(this.out);
+      const start = this.next;
+      const duration = Math.max(0.12, Math.min(0.52, this.buffer.duration / Math.max(0.25, rate) * (0.42 + this.random() * 0.28)));
+      const fadeOut = Math.min(duration * 0.38, 0.035 + this.random() * 0.055), end = start + duration;
+      const fadeIn = Math.min(this.fadeIn, duration * 0.4);
+      const rise = new Float32Array(33), fall = new Float32Array(33);
+      for (let i = 0; i < 33; i++) { rise[i] = Math.sin(i / 32 * Math.PI / 2); fall[i] = Math.cos(i / 32 * Math.PI / 2); }
+      gain.gain.value = 0;
+      gain.gain.setValueCurveAtTime(rise, start, fadeIn);
+      gain.gain.setValueCurveAtTime(fall, end - fadeOut, fadeOut);
+      source.start(start, this.random() * this.buffer.duration); source.stop(end);
+      const node = { source, gain }; this.nodes.add(node);
+      source.onended = () => { this.rate.disconnect(source.playbackRate); source.disconnect(); gain.disconnect(); this.nodes.delete(node); };
+      this.next = end - fadeOut; this.fadeIn = fadeOut;
+    }
+  }
+  stop(at) {
+    if (this.stopped) return; this.stopped = true;
+    for (const { source } of this.nodes) source.stop(at);
+    this.rate.stop(at);
+  }
+  disconnect() { this.out.disconnect(); }
+}
+
 export class RecordedEngineVoice {
   constructor(ctx, bank, dest, spec, gain = 1) {
     this.ctx = ctx; this.bank = bank; this.spec = spec; this.level = gain;
@@ -63,9 +106,12 @@ export class RecordedEngineVoice {
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.filter.connect(this.out); this.out.connect(dest);
     for (const sample of bank.loops) {
-      const source = ctx.createBufferSource(), g = ctx.createGain();
-      source.buffer = sample.buffer; source.loop = true; g.gain.value = 0;
-      source.connect(g); g.connect(this.filter); source.start(ctx.currentTime, Math.random() * sample.buffer.duration);
+      const g = ctx.createGain(); g.gain.value = 0; g.connect(this.filter);
+      const source = sample.buffer.duration < 1.25
+        ? new GranularEngineLoop(ctx, sample.buffer, g, 0x71a5 + this.sources.length * 1337 + Math.floor(Math.random() * 65536))
+        : ctx.createBufferSource();
+      if (!(source instanceof GranularEngineLoop)) { source.buffer = sample.buffer; source.loop = true; source.connect(g); }
+      source.start(ctx.currentTime, Math.random() * sample.buffer.duration);
       this.sources.push(source); this.gains.push(g);
     }
     // Preserve limiter feedback without distorting the recorded engine timbre.
@@ -79,7 +125,9 @@ export class RecordedEngineVoice {
     const weights = rpmBlend(this.bank.loops.map(s => s.rpm), r);
     this.sources.forEach((source, i) => {
       // Clamp only outside the driving envelope (e.g. corrupt telemetry).
-      source.playbackRate.setTargetAtTime(Math.max(.25, Math.min(4, r / this.bank.loops[i].rpm * dop)), now, tc);
+      const rate = Math.max(.25, Math.min(4, r / this.bank.loops[i].rpm * dop));
+      source.playbackRate.setTargetAtTime(rate, now, tc);
+      if (weights[i] > 0.001) source.schedule?.(now, rate);
       this.gains[i].gain.setTargetAtTime(weights[i], now, .06);
     });
     const rn = Math.min(1, r / this.spec.redline);
