@@ -56,10 +56,10 @@ export const DRIVERS = [
   { id: 'eleni', name: 'ELENI', pace: 0.92, nitro: 0.8, risk: 0.5, mistakes: 0.5, car: ['carrera', 'z4'], helmet: '#c2262e', blurb: 'Clean lines, late braking.' },
   { id: 'nikos', name: 'NIKOS', pace: 0.88, nitro: 1.4, risk: 1.8, mistakes: 1.6, car: ['gr_yaris', 'mini'], helmet: '#1f5fbf', blurb: 'All gas. Sometimes too much.' },
   { id: 'dimitra', name: 'DIMITRA', pace: 0.91, nitro: 1.0, risk: 0.8, mistakes: 0.8, car: ['gtv', 'z4'], helmet: '#2a8f5a', blurb: 'Classic car, modern pace.' },
-  { id: 'yiannis', name: 'YIANNIS', pace: 0.86, nitro: 0.6, risk: 1.3, mistakes: 1.2, car: ['taxi'], helmet: '#e8b716', blurb: 'Off shift. Still has a fare to make.' },
+  { id: 'yiannis', name: 'YIANNIS', pace: 0.86, racePace: 1.02, aggression: 1, nitro: 0.6, risk: 1.3, mistakes: 1.2, car: ['taxi'], helmet: '#e8b716', blurb: 'Off shift. Still has a fare to make.' },
   { id: 'kostas', name: 'KOSTAS', pace: 0.89, nitro: 1.2, risk: 1.1, mistakes: 1.0, car: ['mini', 'gr_yaris'], helmet: '#7d3fb0', blurb: 'Weekend hero from Glyfada.' },
   { id: 'maria', name: 'MARIA', pace: 0.93, nitro: 0.9, risk: 0.6, mistakes: 0.6, car: ['carrera', 'z4'], helmet: '#e05a1a', blurb: 'Track-day regular. Fast.' },
-  { id: 'giorgos', name: 'GIORGOS', pace: 0.87, nitro: 1.0, risk: 1.5, mistakes: 1.3, car: ['gtv', 'taxi'], helmet: '#3d4651', blurb: 'Old school, no aids.' },
+  { id: 'giorgos', name: 'GIORGOS', pace: 0.87, racePace: 1.02, aggression: 1, nitro: 1.0, risk: 1.5, mistakes: 1.3, car: ['gtv', 'taxi'], helmet: '#3d4651', blurb: 'Old school, no aids.' },
 ];
 export const driver = (id) => DRIVERS.find((d) => d.id === id) || DRIVERS[0];
 /** single player: every race is you plus exactly this many AI racers */
