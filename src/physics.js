@@ -17,6 +17,7 @@
 //  - crash damage per zone (front / rear / left / right) from the equivalent barrier speed of each impact
 import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
+import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 import { ROAD } from './road.js';
 
 const G = 9.81, RHO = 1.2;
@@ -47,10 +48,7 @@ function curveAt(c, x) {
 function hash(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
 const BODY_WB = { mini: 2.46, wedge: 2.7, coupe: 2.45, sedan: 2.78 };
 const newCorner = (v) => ({ vw: v, aDyn: 0, abs: 1, k: 0, sy: 0, sx: 0, sN: 0, Fx: 0, Fy: 0, Fz: 0, lock: 0, esc: 0, edl: 0 });
-// damage: an impact below ~8 km/h equivalent barrier speed is absorbed by the bumper; full crush of a zone at
-// ~54 km/h (front / rear crumple zones) or ~32 km/h (doors and sills have far less crush space)
 const DIG_RES = 0.09 * 9.81; // m/s^2 of extra resistance with the wheels dug in to the hubs (dig = 1): about what spinning tyres still push
-const DMG_V0 = 2.2, DMG_FULL = { front: 15, rear: 15, left: 9, right: 9 };
 
 export class Vehicle {
   constructor(spec, route) {
@@ -151,51 +149,86 @@ export class Vehicle {
     return Math.min(raw, grip);
   }
 
-  /**
-   * Crash damage. zone: 'front' | 'rear' | 'left' | 'right'. e: { kind, sev, car, side, zone, dv, heavy }.
-   * Two call forms:
-   *   traffic events (e.sev is a number): sev = closing speed along the contact normal (m/s) and dv = this car's
-   *     |delta-v| from the impulse. Damage is sized from sev; dv only gates it (dv > 0: an impulse actually acted,
-   *     sev > 0: the bodies were approaching). dv itself is NOT the closing speed: for equal cars it is already
-   *     ~sev (1 + e) / 2, so feeding it through the reduced-mass split below would halve the energy twice.
-   *   direct calls (walls, tests; no e.sev): dv is the closing speed (> 0 while approaching).
-   * Separating or resting contact does nothing. The crush energy this car absorbs becomes an equivalent barrier
-   * speed (EBS), with vc the closing speed:
-   *   rigid object (no e.car / kind 'wall'): EBS = vc
-   *   car of mass m2: E = 1/2 mu vc^2 (mu = m1 m2 / (m1 + m2)), shared by structural stiffness
-   *   (equal cars: half each -> EBS = vc / 2; a lorry / bus is far stiffer, this car takes 3/4)
-   * (translational mu: an upper bound on an off-centre hit, where rotation takes some of the energy)
-   * Damage grows linearly with EBS above the bumper's elastic limit (crush depth ~ EBS for a linear crush
-   * stiffness) and accumulates. Returns the increment. Deterministic: no randomness.
-   */
+  /** Crash energy uses closing speed, never delta-v twice. Traffic sev is closing speed, dv gates
+   * approaching impulses; direct wall calls pass closing speed as dv. Contact vectors use visual-car
+   * coordinates (x right, y up, -z front). Four replay zone totals retain their original [0, 1] format. */
   addDamage(zone, dv, e = {}) {
     zone = zone || e.zone;
-    dv = +(dv ?? e.dv) || 0;
-    const hasSev = typeof e.sev === 'number';
-    const vc = hasSev ? (Number.isFinite(e.sev) ? e.sev : 0) : dv;
-    if (!(dv > 0) || !(vc > 0) || !(zone in this.damage)) return 0;
-    const m1 = this.m;
-    let ebs = vc;
-    if (e.car && e.kind !== 'wall') {
-      const m2 = e.car.mass ?? (e.heavy ? 12000 : m1);
-      const mu = m1 * m2 / (m1 + m2), share = m2 > 3000 ? 0.75 : 0.5;
-      ebs = vc * Math.sqrt(share * mu / m1);
-    }
-    const inc = clamp((ebs - DMG_V0) / (DMG_FULL[zone] - DMG_V0), 0, 1);
+    dv = +(dv ?? e.dv);
+    const vc = typeof e.sev === 'number' ? e.sev : dv;
+    if (!Number.isFinite(dv) || !(dv > 0) || !Number.isFinite(vc) || !(vc > 0) ||
+        !Object.hasOwn(this.damage, zone)) return 0;
+    const ebs = equivalentBarrierSpeed(vc, this.m,
+      e.car ? (e.car.mass ?? (e.heavy ? 12000 : this.m)) : undefined, { rigid: e.kind === 'wall' });
+    const inc = damageIncrement(ebs, zone);
     if (inc <= 0) return 0;
+    this.damageFx(); // initialise caches after reset before applying corner-local damage
     this.damage[zone] = Math.min(1, this.damage[zone] + inc);
-    this.lastDamage = { zone, inc, ebs, kind: e.kind };
+    const vector = (v) => v && Number.isFinite(v.x) && Number.isFinite(v.z)
+      ? { x: v.x, y: Number.isFinite(v.y) ? v.y : 0, z: v.z } : undefined;
+    const point = vector(e.localPoint), normal = vector(e.localNormal);
+    const bend = smoothstep(5, 22, ebs); // ordinary parking taps never bend suspension
+    for (let i = 0; i < 4; i++) {
+      let exposure;
+      if (point) {
+        const dx = point.x - this.cy[i], dz = point.z + this.cx[i];
+        exposure = Math.exp(-(dx * dx + dz * dz) / (2 * 0.95 * 0.95));
+      } else {
+        exposure = zone === 'front' ? (i < 2 ? 0.75 : 0.03) : zone === 'rear' ? (i > 1 ? 0.75 : 0.03)
+          : (i % 2 === (zone === 'right' ? 1 : 0) ? (i < 2 ? 0.9 : 0.5) : 0.015);
+      }
+      this.cornerDamage[i] = Math.min(1, this.cornerDamage[i] + bend * exposure);
+    }
+    this.maxImpactEbs = Math.max(this.maxImpactEbs, ebs);
+    const engineZone = this.spec.engineZone || 'front';
+    // A very large engine-bay strike can stall; a 100 km/h barrier impact ends the race in any direction.
+    if ((zone === engineZone && ebs >= 75 / 3.6) || ebs >= 100 / 3.6) this.engineStalled = true;
+    // No random source: an uncommon structural failure on enormous impacts remains deterministic in replay.
+    const failureKey = Math.round(ebs * 10) + Math.round((point?.x || 0) * 100) * 3 +
+      { front: 11, rear: 23, left: 37, right: 53 }[zone];
+    if (ebs >= 115 / 3.6 && hash(failureKey) < 0.12) this.drivetrainBroken = true;
+    this.lastDamage = { zone, inc, ebs, kind: e.kind, localPoint: point, localNormal: normal,
+      serial: this._damageSerial = (this._damageSerial || 0) + 1 };
     this.damageFx();
     return inc;
   }
-  /** effects of the damage state: modest engine loss (cooling / intake) from the front, a toe / tie-rod pull
-   *  towards a damaged side, a little drag from bent panels; radiator steam once the front is badly crushed */
-  damageFx() {
+
+  /** Bounded corner alignment, delayed cooling failure, and light intermittent steam. Call once per step
+   * with dt; zero-dt calls apply new damage without advancing thermal / wobble time. */
+  damageFx(dt = 0) {
     const d = this.damage || { front: 0, rear: 0, left: 0, right: 0 };
-    this.engHealth = 1 - 0.3 * smoothstep(0.35, 1, d[this.spec.engineZone || 'front']);
-    this.toePull = 0.006 * (d.right - d.left);   // rad of steer offset at the road wheels (~0.35 deg, one bent wheel)
-    this.dmgDrag = 1 + 0.06 * Math.max(d.front, d.rear) + 0.03 * Math.max(d.left, d.right);
-    if (d.front >= 0.6) this.smoke = true;
+    if (this._damageState !== this.damage || !this.cornerDamage) {
+      this._damageState = this.damage;
+      // Legacy/replay totals have no contact history; give them a conservative axle/side reconstruction.
+      this.cornerDamage = [0, 1, 2, 3].map(i => clamp((i < 2 ? d.front : d.rear) * 0.25 +
+        (i % 2 ? d.right : d.left) * 0.3, 0, 1));
+      this.coolantTemp = 90; this.radiatorDamage = 0; this.maxImpactEbs = 0;
+      this.engineStalled = false; this.drivetrainBroken = false;
+      this._damageClock = 0; this._damageWheelPhase = 0;
+    }
+    const h = Number.isFinite(dt) ? clamp(dt, 0, 0.25) : 0;
+    const av = Number.isFinite(this.vLong) ? Math.abs(this.vLong) : 0;
+    this._damageClock += h;
+    this._damageWheelPhase = (this._damageWheelPhase + h * av / Math.max(0.2, this.spec.wheelR || 0.33)) % (Math.PI * 2);
+    this.radiatorDamage = Math.max(this.radiatorDamage, smoothstep(0.42, 0.95, d.front));
+    const heatRate = this.engineStalled ? -0.6 : this.radiatorDamage * (1.2 + 0.9 * clamp(this.load || 0, 0, 1));
+    this.coolantTemp = clamp(this.coolantTemp + h * (heatRate - (1 - this.radiatorDamage) *
+      Math.max(0, this.coolantTemp - 90) * (0.025 + av * 0.001)), 90, 145);
+    const thermalLoss = smoothstep(112, 140, this.coolantTemp);
+    if (this.coolantTemp >= 142) this.engineStalled = true;
+    this.engHealth = this.engineStalled || this.drivetrainBroken ? 0 : clamp(1 -
+      0.45 * smoothstep(0.35, 1, d[this.spec.engineZone || 'front']) - 0.65 * thermalLoss, 0.08, 1);
+    const c = this.cornerDamage;
+    this.wheelWobble = 0.002 * Math.max(c[0], c[1]) * Math.sin(this._damageWheelPhase) * smoothstep(1, 8, av);
+    this.toePull = clamp(0.04 * (c[1] - c[0]) + 0.015 * (c[3] - c[2]) + this.wheelWobble, -0.055, 0.055);
+    this.wheelCamber ||= [0, 0, 0, 0];
+    for (let i = 0; i < 4; i++) this.wheelCamber[i] = (i % 2 ? -1 : 1) * c[i] * 0.22;
+    this.dmgDrag = 1 + 0.14 * Math.max(d.front, d.rear) + 0.08 * Math.max(d.left, d.right) + 0.1 * Math.max(...c);
+    // A ruptured hot radiator emits little intermittent vapour, never a perpetual white exhaust plume.
+    const pulse = Math.max(0, Math.sin(this._damageClock * 2.3) - 0.3) / 0.7;
+    this.steamAmount = 0.18 * this.radiatorDamage * smoothstep(104, 120, this.coolantTemp) * pulse;
+    this.smoke = this.steamAmount > 0.005;
+    this.damageSignificant = Math.max(d.front, d.rear, d.left, d.right) > 0.24;
   }
 
   /** set every wheel to its free-rolling speed: the contact-patch velocity (body velocity + yaw rate x lever
@@ -240,6 +273,7 @@ export class Vehicle {
   }
 
   step(dt, inp) {
+    this.damageFx(dt);
     const sp = this.spec, route = this.route;
     const vx = this.vLong, vy = this.vLat, av = Math.abs(vx), vt = Math.hypot(vx, vy);
     const thrIn = clamp(inp.throttle, 0, 1), brk = clamp(inp.brake, 0, 1);

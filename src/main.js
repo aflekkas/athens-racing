@@ -228,6 +228,7 @@ function makeCar(spec, isPlayer) {
 }
 function disposeCar(c) {
   if (!c) return;
+  c.model.disposeDamage?.();
   scene.remove(c.model.root);
   const liveMaterials = new Set(), liveTextures = new Set();
   scene.traverse(o => { for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) { liveMaterials.add(m); if (m.map) liveTextures.add(m.map); } });
@@ -1033,8 +1034,15 @@ function handlePeople() {
 function syncCar(c, dt) {
   const v = c.veh;
   v.place(c.model.root);
+  c.model.steamAmount = v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
   c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
-  for (const zone of ['front', 'rear', 'left', 'right']) c.model.setDamage?.(zone, v.damage?.[zone] || 0);
+  const impact = v.lastDamage && v.lastDamage.serial !== c.damageSerial ? v.lastDamage : null;
+  for (const zone of ['front', 'rear', 'left', 'right']) c.model.setDamage?.(zone, v.damage?.[zone] || 0, impact?.zone === zone ? impact : undefined);
+  if (impact?.kind === 'wall' && c === player && impact.ebs > 3.3 && G.t - (c.damageSoundT ?? -1) > .18) {
+    c.damageSoundT = G.t;
+    audio.crash(impact.ebs > 10 ? 'heavy' : 'light', Math.min(1, (impact.ebs / 16) ** 2), { glass: impact.ebs > 7, metal: true });
+  }
+  c.damageSerial = v.lastDamage?.serial;
 }
 
 function racerCollide(dt) {
@@ -1057,6 +1065,18 @@ function racerPair(a, b, mine) {
     const cl = (ra.vu - rb.vu) * n; if (cl > 0) { const j = cl * 0.6; ra.vu -= n * j; rb.vu += n * j; sev = cl; }
   }
   setRouteVel(a, ra.f, ra.vs, ra.vu); setRouteVel(b, rb.f, rb.vs, rb.vu);
+  if (sev > 2.2) {
+    const sign = ox < oy ? Math.sign(ds) || 1 : Math.sign(du) || 1;
+    const nx = sign * (ox < oy ? ra.f.tx : ra.f.rx), nz = sign * (ox < oy ? ra.f.tz : ra.f.rz);
+    const px = (a.x + b.x) * .5, pz = (a.z + b.z) * .5;
+    for (const [v, other, inward] of [[a, b, -1], [b, a, 1]]) {
+      const c = Math.cos(v.yaw), s = Math.sin(v.yaw), dx = px - v.x, dz = pz - v.z;
+      const localPoint = { x: clamp(dx * c - dz * s, -v.halfW, v.halfW), y: .55, z: clamp(dx * s + dz * c, -v.halfL, v.halfL) };
+      const localNormal = { x: inward * (nx * c - nz * s), y: 0, z: inward * (nx * s + nz * c) };
+      const zone = Math.abs(localNormal.x) > Math.abs(localNormal.z) ? (localNormal.x > 0 ? 'left' : 'right') : (localNormal.z > 0 ? 'front' : 'rear');
+      v.addDamage?.(zone, sev * .6, { kind: 'crash', sev, car: { mass: other.m }, localPoint, localNormal });
+    }
+  }
   if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash('light', Math.min(1, sev / 8)); G.shake = Math.max(G.shake, 0.35); player.driver.impulse(0.4); }
 }
 
@@ -1073,7 +1093,13 @@ function handleEvents(events) {
   for (const e of events) {
     // damage where it hit (front / rear / left / right), scaled by the car's own change of velocity
     const rc = e.racer || rival;
-    if (e.zone && e.dv > 0) (e.who === 'rival' ? rc : player).veh.addDamage?.(e.zone, e.dv, e);
+    if (e.zone && e.dv > 0) {
+      const hit = e.who === 'rival' ? rc : player;
+      if (hit.veh.addDamage?.(e.zone, e.dv, e) > 0) {
+        hit.model.setDamage?.(e.zone, hit.veh.damage[e.zone], hit.veh.lastDamage);
+        hit.damageSerial = hit.veh.lastDamage?.serial;
+      }
+    }
     if (e.who === 'rival') {
       if ((e.kind === 'crash' || e.kind === 'bump') && Math.abs(rc.veh.s - player.veh.s) < 150) {
         const pan = clamp((rc.veh.u - player.veh.u) / 10, -1, 1);
@@ -1097,7 +1123,7 @@ function handleEvents(events) {
       G.crashes += big ? 1 : 0; G.combo = 0; G.comboT = 0;
       G.shake = Math.max(G.shake, big ? 1 : 0.5); G.flash = big ? 0.8 : 0.3;
       player.driver.impulse(big ? 1.1 : 0.55, -e.side * 0.5, 0.5);
-      audio.crash(e.heavy ? 'heavy' : 'light', Math.min(1, e.sev / 14));
+      audio.crash(e.heavy ? 'heavy' : 'light', Math.min(1, Math.pow((player.veh.lastDamage?.ebs || e.sev) / 16, 2)), { glass: (player.veh.lastDamage?.ebs || 0) > 7, metal: true });
       controls.rumble(big ? 1 : 0.5, big ? 0.8 : 0.4, big ? 450 : 200);
       if (big) {
         audio.opa(1.1);
@@ -1485,7 +1511,7 @@ function step(dt, draw = true) {
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
-  const st = { tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, style: G.style, combo: G.combo, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
+  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, style: G.style, combo: G.combo, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars };
   if (multiplayer.active) {

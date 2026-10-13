@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en"><head><base href="/"><meta charset="utf-8"><title>Damage visual verification</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;color:#eef3f7;background:#313d46;font:14px system-ui}canvas{display:block}header{position:absolute;left:26px;top:20px}h1{font-size:23px;margin:0 0 7px;font-weight:550}p{margin:0;color:#c4d0d8}footer{position:absolute;bottom:18px;left:26px;font:12px monospace;color:#d7e2e9}</style></head>
+<body><header><h1 id="title">Loading…</h1><p id="description"></p></header><footer id="metrics"></footer>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { CARS, CarModel, setCarEnv } from '../src/cars.js';
+import { Vehicle } from '../src/physics.js';
+import { installDamageSystem, DamageLattice } from '../src/damage.js';
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(1);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#35434f');scene.fog=new THREE.Fog('#35434f',20,65);
+const room=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),env=pmrem.fromScene(room,.04).texture;scene.environment=env;setCarEnv(env);room.dispose();pmrem.dispose();
+scene.add(new THREE.HemisphereLight('#d7e9ff','#5b5247',2));
+const key=new THREE.DirectionalLight('#fff0db',3);key.position.set(-4,8,-5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-8,right:8,top:8,bottom:-8,near:.1,far:30});key.shadow.normalBias=.025;scene.add(key);
+const fill=new THREE.DirectionalLight('#d5eaff',2);fill.position.set(4,4,6);scene.add(fill);
+const road=new THREE.Mesh(new THREE.PlaneGeometry(160,160).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:'#485159',roughness:.89}));road.position.y=-.007;road.receiveShadow=true;scene.add(road);
+const studioObjects=new Set(scene.children);
+const camera=new THREE.PerspectiveCamera(39,innerWidth/innerHeight,.025,180);
+const route={frame:()=>({tx:0,tz:-1}),point:()=>({x:0,y:0,z:0})};
+const scenarios={front30:{zone:'front',kmh:30},front60:{zone:'front',kmh:60},side50:{zone:'left',kmh:50},rear50:{zone:'rear',kmh:50}};
+let car,vehicle,current,rest=new Map(),report;
+function render(){scene.updateMatrixWorld(true);renderer.render(scene,camera);}
+function setup(id,scenario){
+  if(car){car.disposeDamage?.();const geos=new Set(),mats=new Set();car.root.traverse(o=>{if(o.geometry)geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])mats.add(m);});for(const g of geos)g.dispose();for(const m of mats){m.map?.dispose();m.dispose();}for(const child of [...scene.children])if(!studioObjects.has(child))child.removeFromParent();}
+  const spec=CARS.find(c=>c.id===id);if(!spec)throw new Error('Unknown car '+id);
+  current=scenarios[scenario];if(!current)throw new Error('Unknown scenario '+scenario);
+  car=new CarModel(spec);scene.add(car.root);vehicle=new Vehicle(spec,route);rest=new Map();
+  car.body.traverse(o=>{if(o.isMesh&&o.geometry?.attributes.position)rest.set(o.uuid,{positions:o.geometry.attributes.position.array.slice(),matrix:o.matrixWorld.clone()});});
+  const view=current.zone==='rear'?[4.5,2.4,6.2]:current.zone==='left'?[-6.4,2.4,-3.2]:[-4.5,2.4,-6.2];camera.position.set(...view);camera.lookAt(0,.62,0);render();
+  report={car:id,scenario,...current};document.getElementById('title').textContent=spec.name;document.getElementById('description').textContent=`${current.kmh} km/h ${current.zone} impact · BEFORE`;document.getElementById('metrics').textContent='Undamaged reference';
+  return report;
+}
+function inspect(){
+  render();let finite=true,maxDisplacement=0,vertices=0,changedVertices=0;
+  car.body.traverse(o=>{const a=o.geometry?.attributes.position;if(!a)return;vertices+=a.count;const r=rest.get(o.uuid)?.positions;
+    for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i),z=a.getZ(i);if(!Number.isFinite(x+y+z))finite=false;if(r&&r.length===a.array.length){const distance=new THREE.Vector3(x-r[i*3],y-r[i*3+1],z-r[i*3+2]).applyMatrix3(new THREE.Matrix3().setFromMatrix4(o.matrixWorld)).length();maxDisplacement=Math.max(maxDisplacement,distance);if(distance>.0001)changedVertices++;}}
+  });
+  const bounds=new THREE.Box3().setFromObject(car.root),size=bounds.getSize(new THREE.Vector3());
+  const detachedObjects=scene.children.filter(o=>!studioObjects.has(o)&&o!==car.root).map(o=>{const b=new THREE.Box3().setFromObject(o);return {name:o.name,position:o.position.toArray(),minY:b.min.y,maxY:b.max.y};});
+  return {finite,vertices,changedVertices,maxDisplacement,detachedObjects,bounds:{min:bounds.min.toArray(),max:bounds.max.toArray(),size:size.toArray()},drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles};
+}
+function impact(){
+  if(typeof car.updateDamage!=='function')throw new Error('New damage implementation unavailable: updateDamage missing');
+  const {zone,kmh}=current,d=car.dims;
+  const point=zone==='left'?{x:-d.W/2,y:.72,z:-.25}:zone==='rear'?{x:-d.W*.2,y:.51,z:d.L/2}:{x:-d.W*.18,y:.51,z:-d.L/2};
+  const normal=zone==='left'?{x:1,y:0,z:0}:zone==='rear'?{x:0,y:0,z:-1}:{x:0,y:0,z:1};
+  const e={kind:'wall',zone,localPoint:point,localNormal:normal,ebs:kmh/3.6};
+  vehicle.addDamage(zone,kmh/3.6,e);const start=performance.now();car.setDamage(zone,vehicle.damage[zone],{...e,...vehicle.lastDamage,localPoint:point,localNormal:normal});const deformationMs=performance.now()-start;
+  const settleStart=performance.now();for(let i=0;i<240;i++)car.updateDamage(1/120);const simulationMs=performance.now()-settleStart;
+  report={...report,damage:vehicle.damage[zone],deformationMs,simulationMs,...inspect()};
+  document.getElementById('description').textContent=`${kmh} km/h ${zone} impact · AFTER · debris settled for 2 s`;
+  document.getElementById('metrics').textContent=`${report.vertices.toLocaleString()} vertices · ${report.changedVertices.toLocaleString()} displaced · max ${report.maxDisplacement.toFixed(3)} m · deformation ${deformationMs.toFixed(1)} ms`;
+  render();return report;
+}
+function tests(){
+  const passed=[],resources=new Set(),world=new THREE.Scene();
+  const assert=(condition,name)=>{if(!condition)throw new Error('Damage browser invariant: '+name);passed.push(name);};
+  const dims={L:4,W:1.8,H:1.5},root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  const paint=new THREE.MeshStandardMaterial({color:'#bd1626'}),lampMaterial=new THREE.MeshStandardMaterial({color:'#ffffff',emissive:'#ffffff',emissiveIntensity:4});resources.add(paint);resources.add(lampMaterial);
+  function part(name,size,position,material=paint){const group=new THREE.Group();group.name=name;group.position.set(...position);const geometry=new THREE.BoxGeometry(...size,8,4,8);resources.add(geometry);group.add(new THREE.Mesh(geometry,material));body.add(group);return group;}
+  part('bumper_f',[1.65,.22,.18],[0,.48,-1.94]);
+  part('light_fl',[.25,.14,.06],[-.55,.70,-1.97],lampMaterial);
+  part('mirror_l',[.20,.14,.24],[-.98,1,-.65]);
+  part('door_left',[.035,.75,1.4],[-.88,.64,0]);
+  part('glass_windscreen',[1.35,.55,.04],[0,1.12,-.65]);
+  const twinRoot=root.clone(true),twinBody=twinRoot.children[0];twinRoot.position.x=8;world.add(root,twinRoot);
+  const a=installDamageSystem({root,body,dims,wheels:[]}),b=installDamageSystem({root:twinRoot,body:twinBody,dims,wheels:[]});
+  const ownRest=new Map();body.traverse(o=>{if(o.isMesh)ownRest.set(o.uuid,o.geometry.attributes.position.array.slice());});
+  const twinPositions=new Map();twinBody.traverse(o=>{if(o.isMesh)twinPositions.set(o.uuid,o.geometry.attributes.position.array.slice());});
+  const front={localPoint:{x:0,y:.5,z:-2},localNormal:{x:0,y:0,z:1},ebs:15};
+  const left={localPoint:{x:-.9,y:.9,z:-.65},localNormal:{x:1,y:0,z:0},ebs:14};
+  const state=id=>a.damageParts.find(p=>p.id===id);
+  try{
+    a.setDamage('front',.25,front);a.updateDamage(1/60);
+    assert(state('bumper_f').state==='hanging'&&state('bumper_f').node.visible,'moderate front contact leaves bumper hanging');
+    assert(state('bumper_f').node.position.y<state('bumper_f').position.y,'hanging bumper sags below its intact position');
+    a.setDamage('front',.90,front);
+    assert(state('bumper_f').state==='detached'&&!state('bumper_f').node.visible,'severe front contact detaches bumper');
+    assert(a.damageDebris.some(d=>!d.owned&&d.mesh.userData.damageDebris),'detached bumper exists as scene debris');
+    assert(state('light_fl').state==='broken','front lamp breaks');
+    const brokenLamp=state('light_fl').node.children[0];
+    assert(brokenLamp.material!==lampMaterial&&brokenLamp.material.emissiveIntensity===0,'broken lamp uses isolated dark material');
+    lampMaterial.emissive.set('#ffddaa');lampMaterial.emissiveIntensity=9;a.updateDamage(1/60);
+    assert(brokenLamp.material.emissiveIntensity===0&&brokenLamp.material.emissive.getHex()===0,'changing running lights cannot relight a broken lamp');
+    a.setDamage('left',.7,left);
+    assert(state('mirror_l').state==='detached'&&!state('mirror_l').node.visible,'side contact snaps mirror off');
+    assert(!!a.crackedGlass,'hard frontal cracks windscreen');
+    for(let i=0;i<360;i++)a.updateDamage(1/120);
+    assert(a.damageDebris.length>0&&a.damageDebris.every(d=>d.settled),'detached parts and shards settle within three seconds');
+    assert(a.damageDebris.every(d=>Math.abs(new THREE.Box3().setFromObject(d.mesh).min.y-d.floor)<.025),'settled debris rests on the road without floating or clipping');
+    let isolated=true;twinBody.traverse(o=>{const before=twinPositions.get(o.uuid),now=o.geometry?.attributes.position.array;if(before&&before.some((v,i)=>v!==now[i]))isolated=false;});
+    assert(isolated&&b.damageParts.every(p=>p.state==='intact'&&p.node.visible),'damage does not alter cloned traffic geometry or part state');
+    a.setDamage('front',0);a.setDamage('left',0);
+    assert(a.damageParts.every(p=>p.state==='intact'&&p.node.visible),'repair restores part states and visibility');
+    assert(state('light_fl').node.children[0].material===lampMaterial,'repair restores original lamp material');
+    assert(!a.crackedGlass&&a.damageDebris.length===0,'repair removes cracks and detached debris');
+    assert(a.damageParts.every(p=>p.node.position.distanceTo(p.position)<1e-9&&p.node.rotation.equals(p.rotation)),'repair restores attachment transforms');
+    let restored=true;body.traverse(o=>{const before=ownRest.get(o.uuid);if(before?.some((v,i)=>Math.abs(v-o.geometry.attributes.position.array[i])>1e-6))restored=false;});
+    assert(restored,'repair restores rest geometry');
+    for(let step=1;step<=30;step++)for(const zone of ['front','rear','left','right']){
+      const hit=zone==='front'?front:zone==='left'?left:zone==='rear'?{localPoint:{x:.3,y:.55,z:2},localNormal:{x:0,y:0,z:-1}}:{localPoint:{x:.9,y:.65,z:0},localNormal:{x:-1,y:0,z:0}};
+      a.setDamage(zone,step/30,hit);
+    }
+    let finitePositions=true;body.traverse(o=>{if(o.geometry?.attributes.position.array.some(v=>!Number.isFinite(v)))finitePositions=false;});
+    assert(finitePositions,'repeated contact leaves all mesh vertices finite');
+    const values=a.damageLattice.values;
+    assert(values.every((v,i)=>Number.isFinite(v)&&Math.abs(v)<=[.30001,.50001,.62001][i%3]),'accumulated lattice displacement stays inside component bounds');
+    const size=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+    assert(size.x<3&&size.y<2.2&&size.z<5,'repeated contact never explodes the visual mesh bounds');
+    const malformed=new DamageLattice(dims);malformed.impact('front',1,{localPoint:{x:NaN,y:Infinity,z:-Infinity},localNormal:{x:NaN,y:Infinity,z:0}});
+    assert(malformed.values.every(Number.isFinite),'nonfinite contact input is sanitized');
+    return {passed:passed.length,checks:passed};
+  }finally{
+    a.disposeDamage();b.disposeDamage();root.removeFromParent();twinRoot.removeFromParent();for(const resource of resources)resource.dispose();
+  }
+}
+window.damagePreview={cars:CARS.map(c=>c.id),scenarios:Object.keys(scenarios),setup,impact,inspect,tests,get car(){return car;},scene,renderer,camera};
+window.damageReady=true;
+</script></body></html>

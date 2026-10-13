@@ -234,6 +234,7 @@ export class Hud {
     g.fillStyle = '#fff'; g.font = 'italic 900 116px "Barlow Condensed", sans-serif'; g.textAlign = 'center';
     g.fillText(String(Math.round(st.kmh)), cx - 4, cy + 18);
     g.fillStyle = '#8f99a6'; g.font = '800 17px "Barlow Condensed", sans-serif'; g.fillText(st.unit || 'KM/H', cx, cy + 82);
+    if (st.damageLabel) { g.fillStyle = '#ffb34a'; g.font = '800 13px sans-serif'; g.fillText(st.damageLabel, cx, cy + 57); }
     // gear box
     const gx = cx, gy = cy - 86;
     g.fillStyle = st.shiftFlash > 0 ? '#ffc21a' : '#ff3b2f';
