@@ -6,7 +6,7 @@ import { RNG } from '../src/util.js';
 import * as THREE from 'three';
 import { nearestSurface, mirrorSurfaces } from '../src/vehicle-mirrors.js';
 import { bakeParkedFleet } from '../src/traffic-fleet.js';
-export function runVehicleChecks() {
+export function runVehicleChecks(carIds=null) {
   const results=[];const check=(label,value)=>{results.push({label,pass:!!value});if(!value)throw new Error(label);};
   // Test the actual assembled vertices: both curved glass edges must meet painted roof vertices.
   const roofFits=car=>{
@@ -21,9 +21,20 @@ export function runVehicleChecks() {
     check((car.spec.id||car.modelKind)+' roof joins front and rear glass within 0.1 mm',gap<.0001);
   };
   check('Unique playable catalogue including AWD and rear-engine',CARS.length>=10&&new Set(CARS.map(s=>s.id)).size===CARS.length&&CARS.some(s=>s.drive==='awd')&&CARS.some(s=>s.engineZone==='rear'));
-  for(const spec of CARS){
+  for(const spec of CARS.filter(s=>!carIds||carIds.includes(s.id))){
     const car=new CarModel(spec);check(spec.id+' independent four wheel assemblies',car.wheels.length===4&&new Set(car.wheels.map(w=>w.spin)).size===4&&car.wheels.every(w=>w.spin.parent===w.pivot&&w.pivot.parent===car.root));
     roofFits(car);
+    if(spec.marque==='mercedes'){
+      check(spec.id+' uses dedicated Mercedes body',!!car.mercedesSurface&&car.shape.mercedes);
+      check(spec.id+' retains player parts, LOD and three mirror anchors',!!car.playerParts&&car.visualLOD.levels.length>=3&&!!car.windscreen&&!!car.mirrorL&&!!car.mirrorR);
+      check(spec.id+' sourced wheelbase and height',Math.abs(car.shape.wb-spec.wheelbase)<.001&&Math.abs(car.dims.H-spec.height)<.001);
+      check(spec.id+' matching registration faces',!!car.plate&&!!car.materials.plate.map);
+      check(spec.id+' named paint is the default',PAINTS[spec.id].some(p=>p[1]===spec.color));
+      check(spec.id+' correct exhaust count',car.exhaust.length===(spec.id==='gla45'?4:2));
+      if(spec.id==='cle'||spec.id==='gla45')check(spec.id+' AWD distribution',spec.drive==='awd'&&spec.awdRear>0&&spec.awdRear<1);
+      else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
+      if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
+    }
     if(spec.id==='z4'){
       const {top,side,deck}=car.playerSurface,R=car.dims.L/2;
       check('Z4 low rear deck',deck(0,R)<.98&&deck(0,R-.2)<.97);
@@ -160,10 +171,10 @@ export function runTrafficFleetChecks(){
 
 // Measure the complete playable assembly, including the hero cockpit, using
 // actual visibility after THREE.LOD updates rather than counting hidden levels.
-export async function runPlayerBudgetChecks() {
+export async function runPlayerBudgetChecks(carIds=null) {
   const { Cockpit } = await import('../src/cockpit.js');
   const results=[],counts=[],camera=new THREE.PerspectiveCamera();
-  for(const spec of CARS){
+  for(const spec of CARS.filter(s=>!carIds||carIds.includes(s.id))){
     const car=new CarModel(spec);new Cockpit(spec,car,new THREE.Texture());
     car.root.updateMatrixWorld(true);const rows=[];
     for(const [distance,budget]of [[5,80000],[20,20000],[100,3000]]){
@@ -195,16 +206,16 @@ export function measureMirrorGaps(car){
     rows.push({side:group.name,rootGap:mount?.distance??Infinity,tipGap:box.distanceToPoint(tipWorld)});
   });return rows;
 }
-export function runMirrorChecks(){
+export function runMirrorChecks(carIds=null){
   const results=[],rng=new RNG(502),camera=new THREE.PerspectiveCamera();
   const verify=(car,label)=>{const rows=measureMirrorGaps(car);if(rows.length!==2)throw new Error(label+': expected two visible mirrors, got '+rows.length);for(const row of rows){const pass=row.rootGap<=.005&&row.tipGap<=.005;results.push({label:label+' '+row.side,pass,...row});if(!pass)throw new Error(JSON.stringify(results.at(-1)));}};
-  for(const spec of CARS){const car=new CarModel(spec);
+  for(const spec of CARS.filter(s=>!carIds||carIds.includes(s.id))){const car=new CarModel(spec);
     for(const distance of [5,20,100]){camera.position.set(0,0,distance);camera.updateMatrixWorld();car.root.updateMatrixWorld(true);car.root.traverse(o=>{if(o.isLOD)o.update(camera);});
       for(const color of [spec.color,'#2375a9']){setPaint(car,color);verify(car,spec.id+' '+distance+'m '+color);}
       car.setDamage('left',.12);car.setDamage('front',.3);verify(car,spec.id+' '+distance+'m dented');car.setDamage('left',0);car.setDamage('front',0);verify(car,spec.id+' '+distance+'m repaired');
     }
   }
-  for(const type of TRAFFIC_TYPES)for(const parked of [false,true]){
+  if(!carIds)for(const type of TRAFFIC_TYPES)for(const parked of [false,true]){
     const car=trafficModel(type,type.colors[0],rng,{parked});
     for(const distance of parked?[0]:[0,150]){car.setLOD(distance);verify(car,type.id+' '+(parked?'parked':distance));car.setDamage('right',.12);car.setDamage('front',.3);verify(car,type.id+' damaged '+distance);car.setDamage('right',0);car.setDamage('front',0);verify(car,type.id+' repaired '+distance);setPaint(car,'#4386a1');verify(car,type.id+' repainted '+distance);}
     if(parked)verify(car.makeNear(),type.id+' parked near');
@@ -215,10 +226,10 @@ export function runMirrorChecks(){
 }
 
 // Driver sightlines, independent optical views, update cadence and low-quality off.
-export async function runCockpitMirrorChecks(){
+export async function runCockpitMirrorChecks(carIds=null){
   const {Cockpit}=await import('../src/cockpit.js'),results=[];
   const check=(label,pass)=>{results.push({label,pass:!!pass});if(!pass)throw new Error(label);};
-  for(const spec of CARS){
+  for(const spec of CARS.filter(s=>!carIds||carIds.includes(s.id))){
     const car=new CarModel(spec),cockpit=new Cockpit(spec,car),camera=new THREE.PerspectiveCamera(66,1.6,.04,600);
     camera.position.copy(cockpit.eye);camera.position.y+=.02;camera.rotation.x=-.045;
     camera.fov=Math.max(66,cockpit.mirrorFov(camera.aspect));camera.updateProjectionMatrix();camera.updateMatrixWorld(true);car.root.updateMatrixWorld(true);

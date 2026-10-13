@@ -111,6 +111,7 @@ export class Cockpit {
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
     const isMini=spec.id==='mini'||spec.id==='mini_jcw',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
+    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.id==='cle';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.33,-.43));
     const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
@@ -123,7 +124,7 @@ export class Cockpit {
     const label=(text,w,h,x,y,z,colour='#d7dcdf',rx=0)=>part(new THREE.PlaneGeometry(w,h),labelMaterial(text,colour),x,y,z,rx);
     let wsZ,wsY,W;
     if(spec.body==='mini'){wsZ=model.shape.cowl;wsY=model.shape.belt;W=model.dash.w;}
-    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(spec.cabinWidth??(spec.fleet?.82:isPorsche?.78:isYaris?.84:.92));}
+    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(spec.cabinWidth??(spec.fleet?.82:isMercedes?.80:isPorsche?.78:isYaris?.84:.92));}
     const topY=Math.min(eye.y-.21,wsY+.06),faceZ=wheelC.z-.15;
     // The padded upper roll and lower knee bolster are separate surfaces, with the actual
     // model's wood, textile or aluminium fascia between them.
@@ -169,8 +170,8 @@ export class Cockpit {
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
-    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
-    const nw=spec.id==='huracan'?.15:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMini?.125:isPorsche?.135:.153;
+    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
+    const nw=spec.id==='huracan'?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
     if(!isClassic){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
@@ -192,12 +193,24 @@ export class Cockpit {
     else if(isClassic){for(const x of [-W/2+.085,W/2-.085])vent(x,topY-.09,.08,.07,true);}
     else if(isYaris){for(const x of [-W/2+.08,W/2-.08])vent(x,topY-.025,.09,.093,true);vent(-.005,topY-.112,.24,.03);}
     else if(isPorsche){for(const x of [-W/2+.10,-.17,.17,W/2-.10])vent(x,topY-.09,.11,x===-.17||x===.17?.12:.055);}
+    else if(isMercedes){
+      const turbine=(x,y)=>{
+        part(new THREE.CircleGeometry(.040,24),gloss,x,y,faceZ+.112);
+        part(new THREE.TorusGeometry(.043,.004,6,32),alu,x,y,faceZ+.115);
+        for(let i=0;i<8;i++){const a=i*Math.PI/4,o=box(.005,.030,.006,alu,x+Math.sin(a)*.020,y+Math.cos(a)*.020,faceZ+.117,.001);o.rotation.z=-a+.35;}
+      };
+      for(const x of [-W/2+.105,W/2-.105])turbine(x,topY-.07);
+      for(const x of [-.115,0,.115])turbine(x,topY-(isMercCoupe?.002:.145));
+      const ambient=new THREE.MeshBasicMaterial({color:'#6599e9'});
+      box(W*.92,.004,.006,ambient,0,topY-.105,faceZ+.091,.001);
+      if(spec.id==='cla'){box(W*.80,.22,.024,gloss,-.04,topY+.018,faceZ+.076,.018);label('MBUX   ·   MERCEDES-BENZ',.29,.035,W*.29,topY+.035,faceZ+.095,'#83bcde');}
+    }
     else{for(const x of [-W/2+.105,W/2-.105])vent(x,topY-.079,.15,.043);for(const x of [-.073,.073])vent(x,topY-(isSkoda?.205:.09),.135,.043);}
     // Switch faces are an inexpensive shared canvas atlas; knobs and buttons have real depth.
     const climateY=topY-(isPorsche?.267:isMini?.265:isSkoda?.153:.186);
     box(.255,.047,.025,gloss,0,climateY,faceZ+.144,.004);
     label(isClassic?'ARIA   CALDO':isSkoda?'MENU  CLIMA   ▵   SET':isMini?'21°     AUTO     21°':'20.0°   AUTO  A/C   20.0°',.22,.026,0,climateY,faceZ+.159,isClassic?'#d5c4a5':'#dddcd1');
-    if(!isSkoda&&!isClassic)for(const i of (isMini?[-1,0,1]:[-1,1])){
+    if(!isSkoda&&!isClassic&&!isMercedes)for(const i of (isMini?[-1,0,1]:[-1,1])){
       const x=i*.084;part(new THREE.CylinderGeometry(.02,.021,.024,20).rotateX(Math.PI/2),alu,x,climateY,faceZ+.169);
       part(new THREE.CircleGeometry(.016,20),trim,x,climateY,faceZ+.182);label(i===0?'AUTO':'21',.02,.012,x,climateY,faceZ+.184,'#e5bdae');
     }
@@ -221,6 +234,7 @@ export class Cockpit {
     const manual=spec.transmission==='manual';
     const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda&&!manual?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
     const knob=this.knob=isSkoda&&!manual?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
+    if(isMercedes){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
     this.selectorX=-.04;
     if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
     else label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);

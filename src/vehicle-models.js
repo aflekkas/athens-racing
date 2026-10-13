@@ -1,5 +1,6 @@
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from 'three';
+import { MERCEDES_MODELS, buildMercedes } from './player-mercedes.js';
 import { ROAD_MODELS, buildRoadCar } from './player-road-cars.js';
 import { PASSENGER_MODELS, buildPassengerModel } from './traffic-passenger-models.js';
 import { buildPoliceModel } from './police-models.js';
@@ -13,6 +14,7 @@ import { refineSportsPlayer } from './player-sports-surfaces.js';
 import { isPlayerVehicle, refinePlayerDetails, groupPlayerParts, installPlayerLOD } from './player-vehicle-details.js';
 
 export const MODEL = {
+  ...MERCEDES_MODELS,
   ...ROAD_MODELS,
   carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.04,back:1.57,roofBack:.54,seatZ:.36,eyeY:1.00,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
   gr_yaris: { profile:'yaris',axleOffset:0, L:3.995,W:1.805,H:1.455,wb:2.56,track:1.554,r:.319,belt:.98,front:.78,rear:1.04,cowl:-.84,header:-.31,back:1.84,roofBack:1.47,seatZ:.20,eyeY:1.155,leather:'#26272a',rim:.229,doors:2,tyreF:.225,tyreR:.225,blackRoof:true },
@@ -397,7 +399,10 @@ export function buildDetailedCar(car,kind,opts={}) {
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
   const playerModel=isPlayerVehicle(car);car.root.userData.playerDetail=playerModel;
-  if(ROAD_MODELS[kind]){
+  if(d.mercedes){
+    buildMercedes(car,d,M,low,opts.plate||nextRegistration(),{mesh,box,line,surface,patch,ring,cabinFittings,makePlateMaterial});
+    wheels(car,d,M,low);
+  }else if(ROAD_MODELS[kind]){
     buildRoadCar(car,d,M,low,opts.plate||nextRegistration(),{surface,box,line,patch,mesh,ring,disk,cabin,wheels,makePlateMaterial,textMaterial});
   }else if(car.spec.fleet){
     const build=car.spec.police?buildPoliceModel:buildPassengerModel;
@@ -427,6 +432,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   // dielectric specular gives the stronger grazing reflections without metallic glass.
   if(playerModel){M.glass.color.set('#c4d4cf');M.glass.opacity=d.open?.12:.18;M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
   if(ROAD_MODELS[kind]){M.glass.color.set('#829b9c');M.glass.opacity=.38;}
+  if(d.mercedes){M.glass.color.set('#71868f');M.glass.opacity=.55;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
   if(!grouped){

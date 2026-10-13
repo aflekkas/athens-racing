@@ -42,6 +42,7 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     if(car.spec?.id==='golf')center.y=car.shape.belt+.045;
     if(car.spec?.id==='gr_yaris')center.y=car.shape.belt+.057;
     if(car.spec?.id==='carrera'){center.y=car.shape.belt+.137;center.z=car.shape.cowl-.26;}
+    if(car.spec?.marque==='mercedes'){center.x=side*(car.dims.W/2+.075);center.z=car.shape.cowl-.20;if(car.spec.id==='cle')center.y=car.shape.belt+.075;}
     const size=bounds.getSize(V());const classic=car.spec?.id==='gtv',modern=!!car.spec?.mass&&!classic,z4=car.spec?.id==='z4';
     // Commercial mirrors retain their tall bus/truck envelope.
     const width=classic?.126:bike?.125:car.spec?.mass?(z4?.210:car.shape.open?.185:.20):Math.min(.245,Math.max(.18,size.x)),height=classic?.126:bike?.075:z4?.135:Math.min(.48,Math.max(.105,size.y)),depth=bike?.045:z4?.115:.13;

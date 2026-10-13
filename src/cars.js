@@ -126,6 +126,20 @@ export const CARS = [
     tyres: ['205/45 R17','205/45 R17'], frontW: .62, hcg: .48, track: 1.485, rsF: .60, usGrad: 3.0, susHz: 2.0, susZ: .57, rollK: .85, pitchK: .85, alphaPk: .115, mfC: 1.45, loadSens: .16, clA: .02, tc: .6, esc: .4, shiftT: .26, bias: .73, steerRate: 1.18, ebrake: .16, lsd: 0,
     stats: { speed: .70, accel: .71, handling: .90, drift: .38 },
   },
+  // C236 CLE 300 4MATIC: European DIN mass, M254 rated ICE output, 9G-TRONIC.
+  // Dimensions/engine: https://media.mercedes-benz.fr/decouvrez-la-nouvelle-mercedes-benz-cle/
+  // Technical sheet: https://nd-mediagallery2-public-production.s3.amazonaws.com/215df8a0a2f426ec8e82796a0eaca795/techdata_cle_c236_806_056.pdf
+  // Mass is representative DIN (1880 kg EU less 75 kg); trim/year varies.
+  // Off-peak torque, static weight split and suspension are game calibration.
+  // awdDrift is deliberate-slide game assistance, not a factory 4MATIC mode.
+  {
+    id: 'cle', transmission: 'auto', name: 'MERCEDES-BENZ CLE 300 4MATIC', short: 'CLE 300', tag: 'C236 · Long-bonnet coupé. 4MATIC. Nine-speed automatic.', color: '#929b9f', accent: '#b7c7d4', marque: 'mercedes',
+    mass: 1805, power: 190, torque: 400, redline: 6500, idle: 750, gears: [5.354,3.243,2.252,1.636,1.211,1,.865,.717,.601], final: 2.82, wheelR: .337,
+    torqueCurve: [[0,115],[750,145],[1500,290],[2000,400],[3200,400],[4000,390],[5000,360],[5800,312.82],[6500,260]], peakTorqueRpm: 2500, peakPowerRpm: 5800,
+    wheelbase: 2.865, length: 4.850, width: 1.861, height: 1.428, cdA: .60, vmax: 250, grip: 1.12, steer: .57, yawI: 1.12, drift: 1, brake: 1.06, cyl: 4, pitch: .95, body: 'cle', drive: 'awd', awdRear: .55, awdDrift: .9, driftAngle: .38, engine: 'turbo4', turbo: 1,
+    tyres: ['245/40 R19','275/35 R19'], frontW: .54, hcg: .50, track: 1.605, trackRear: 1.616, rsF: .56, susHz: 1.65, susZ: .58, rollK: .95, pitchK: 1, alphaPk: .115, mfC: 1.46, loadSens: .15, clA: .02, tc: .65, esc: .5, shiftT: .16, bias: .68, steerRate: 1.08, ebrake: .16, lsd: .35,
+    stats: { speed: .73, accel: .72, handling: .79, drift: .60 },
+  },
   // Huracan EVO AWD: Lamborghini 470 kW / 640 CV, 600 Nm, >325 km/h.
   // 1422 kg is dry; 1542 kg road-ready simulation mass adds estimated fluids/equipment.
   {

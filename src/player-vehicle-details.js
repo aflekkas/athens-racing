@@ -4,7 +4,7 @@ import { seatMirrors, nearestSurface, mirrorSurfaces } from './vehicle-mirrors.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 const PLAYERS=new Set(['mini','z4','taxi','carrera','gr_yaris','gtv','golf','corolla','superb','police_octavia']);
-export const isPlayerVehicle=car=>PLAYERS.has(car.spec?.id)||car.spec?.playerDetail===true;
+export const isPlayerVehicle=car=>PLAYERS.has(car.spec?.id)||car.spec?.marque==='mercedes'||car.spec?.playerDetail===true;
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 function mesh(p,g,m,name='',pos=[0,0,0]){const o=new THREE.Mesh(g,m);o.name=name;o.position.set(...pos);p.add(o);return o;}
 function box(p,m,size,pos,name='',r=.006){return mesh(p,new RoundedBoxGeometry(...size,1,Math.min(r,...size.map(x=>x/2))),m,name,pos);}
@@ -70,7 +70,7 @@ function signals(car,d,M){
     for(const [z,y,end]of [[F,positions[1],'f'],[R,positions[2],'r']]){const o=box(car.body,m,[k==='gtv'?.08:.095,.018,.007],[s*positions[0],y,z],`indicator-${end}${side}`);o.userData.damagePart=`light_${end}${side}`;}
     const o=box(car.body,reverse,[.075,.019,.007],[s*(positions[0]-.11),positions[2]-.037,R],`reverse-${side}`);o.userData.damagePart=`light_r${side}`;
   }
-  if(car.spec.fleet){const panels=mirrorSurfaces(car);car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const hit=nearestSurface(o.position,panels,car.body);if(hit){o.position.copy(hit.point);o.position.z+=Math.sign(o.position.z)*.003;}}});}
+  if(car.spec.fleet||d.mercedes){const panels=mirrorSurfaces(car);car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const hit=nearestSurface(o.position,panels,car.body);if(hit){o.position.copy(hit.point);o.position.z+=Math.sign(o.position.z)*.003;}}});}
   car.indicator='off';car.signalTime=0;
   car.setIndicators=value=>{car.indicator=['left','right','hazard'].includes(value)?value:'off';};
   car.updateSignalLights=(dt,speed)=>{car.signalTime+=Math.max(0,dt);const flash=(car.signalTime%0.8)<.4;left.emissiveIntensity=flash&&(car.indicator==='left'||car.indicator==='hazard')?3.5:0;right.emissiveIntensity=flash&&(car.indicator==='right'||car.indicator==='hazard')?3.5:0;reverse.emissiveIntensity=speed<-.05?2.3:0;if(M.optical?.emissive){M.optical.emissive.set('#e4f2ff');M.optical.emissiveIntensity=car.lightsOn?3.2:0;}};
@@ -125,7 +125,7 @@ function inferPart(o,car,d){
   if(o.material===car.materials.head||o.material===car.materials.tail||o.material===car.materials.led||(o.material===car.materials.red&&Math.abs(p.z)>d.L*.36))return `light_${end}${s}`;
   if(Math.abs(p.x)>d.W*.49&&p.z>d.cowl-.05&&p.z<d.cowl+.32&&p.y>d.belt)return `mirror_${s}`;
   if(Math.abs(p.z)>d.L*.44&&p.y<.48&&bounds.max.y<.52)return p.z<0?'bumper_f':'bumper_r';
-  if(name.includes('door')||name.includes('handle'))return `door_${s}${(car.spec.id==='taxi'||car.spec.fleet)&&p.z>.4?'r':'f'}`;
+  if(name.includes('door')||name.includes('handle'))return `door_${s}${(car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)&&p.z>.4?'r':'f'}`;
   return 'structure';
 }
 export function groupPlayerParts(car,d){
@@ -149,7 +149,7 @@ export function groupPlayerParts(car,d){
   for(const o of [...car.body.children].filter(o=>o.isMesh&&o.name==='body-side')){
     const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry,a=g.attributes.position,buckets=new Map();
     for(let i=0;i<a.count;i+=3){const x=(a.getX(i)+a.getX(i+1)+a.getX(i+2))/3,y=(a.getY(i)+a.getY(i+1)+a.getY(i+2))/3,z=(a.getZ(i)+a.getZ(i+1)+a.getZ(i+2))/3;
-      const rear=(car.spec.id==='taxi'||car.spec.fleet)&&z>.38,end=(car.spec.id==='taxi'||car.spec.fleet)?1.12:car.spec.id==='carrera'?.72:.67;
+      const rear=(car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)&&z>.38,end=(car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)?1.12:car.spec.id==='carrera'?.72:.67;
       const id=z>d.cowl+.10&&z<end&&y>.275?`door_${x<0?'l':'r'}${rear?'r':'f'}`:'body-side';
       if(!buckets.has(id))buckets.set(id,[]);buckets.get(id).push(i,i+1,i+2);
     }
@@ -166,7 +166,7 @@ export function groupPlayerParts(car,d){
     if(doorTrim||seatTrim){o.userData.damageInterior=true;o.userData.damageSide=p.x<0?'left':'right';keep.add(o);}
   });
   for(const name of ['structure','bumper_f','bumper_r','bonnet','boot','doors','mirrors','lights','glass']){const g=new THREE.Group();g.name=name;car.body.add(g);parts[name]=g;}
-  for(const name of ['door_lf','door_rf',...((car.spec.id==='taxi'||car.spec.fleet)?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
+  for(const name of ['door_lf','door_rf',...((car.spec.id==='taxi'||car.spec.fleet||d.mercedes&&d.doors===4)?['door_lr','door_rr']:[]),'mirror_l','mirror_r','light_fl','light_fr','light_rl','light_rr','glass_windscreen']){const g=new THREE.Group();g.name=name;g.userData.damagePart=name;(name.startsWith('door')?parts.doors:name.startsWith('mirror')?parts.mirrors:name.startsWith('light')?parts.lights:parts.glass).add(g);parts[name]=g;}
   for(const name of ['bumper_f','bumper_r','bonnet','boot'])parts[name].userData.damagePart=name;
   car.body.updateMatrixWorld(true);const all=[];car.body.traverse(o=>{if(o.isMesh&&!car.exteriorDash.children.includes(o))all.push(o);});
   const assignments=all.map(o=>[o,inferPart(o,car,d)]);
