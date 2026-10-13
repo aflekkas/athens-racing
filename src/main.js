@@ -1418,6 +1418,7 @@ function step(dt, draw = true) {
       if (pv.drift > 0.12 && pv.vLong > 14 && G.state === 'race') { G.driftAcc += dt * pv.vLong * pv.drift * 14; G.driftT = 0.7; }
       else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { pv.nitro = Math.min(1, pv.nitro + G.driftAcc / 2500); G.driftAcc = 0; /* a drift tops up the bottle; no points */ } else if (G.driftT <= 0) G.driftAcc = 0; }
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
+      if (G.state === 'race' && multiplayer.active) multiplayer.wreck(pv.maxImpactEbs);
       // ---- timing, positions, finish
       if (G.state === 'race' && !multiplayer.active) {
         window.__replay?.tick(dt);
@@ -1489,15 +1490,16 @@ function step(dt, draw = true) {
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars };
   if (multiplayer.active) {
-    pos = multiplayer.ranking(pv.s).findIndex(p => p.id === multiplayer.id) + 1; st.pos = pos; st.time = G.pFinish ?? G.raceT; st.gap = remoteCars.size ? (rv.s - pv.s) * (multiplayer.lobby.event?.dir || 1) / Math.max(5, Math.abs(pv.vLong)) : NaN; st.pen = 0;
+    pos = multiplayer.ranking(pv.s).findIndex(p => p.id === multiplayer.id) + 1; st.pos = multiplayer.retired ? null : pos; st.time = G.pFinish ?? G.raceT; st.gap = remoteCars.size ? (rv.s - pv.s) * (multiplayer.lobby.event?.dir || 1) / Math.max(5, Math.abs(pv.vLong)) : NaN; st.pen = 0;
     const other = multiplayer.lobby.players.find(p => p.id !== multiplayer.id);
     if (G.pFinish !== null && other?.finish != null) st.gap = G.pFinish - other.finish;
     st.remotes = [...remoteCars.values()].filter(c => c.model.root.visible).map(c => ({ x: c.veh.x, z: c.veh.z }));
-    document.querySelector('#posBox .of').textContent = '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
+    document.querySelector('#posBox .of').textContent = multiplayer.retired ? '' : '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
   }
   if (G.state === 'race' && G.raceT > 5) document.body.classList.add('started');
   document.body.classList.toggle('circuit-race', !!G.run?.r.closed && !multiplayer.active);
   hud.update(st);
+  if (multiplayer.retired) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
   updateLapHud(G.run, !multiplayer.active && !MENU_STATES.includes(G.state));
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
   bootFrameLog('frame-hud');
@@ -1657,6 +1659,12 @@ const multiplayer = new Multiplayer(CARS, {
       syncCar(c, dt);
     }
   },
+  wrecked() {
+    clearDriveInput(); G.pFinish = null;
+    if (G.state !== 'onlineWrecked' && G.state !== 'onlineResults') hud.message('WRECKED · DNF · WAITING FOR OTHER DRIVERS', 8);
+    if (G.state !== 'onlineResults') G.state = 'onlineWrecked';
+    hud.count('');
+  },
   clock(elapsed, remaining) {
     if (!multiplayer.loaded) return;
     if (G.state === 'onlineCountdown') {
@@ -1664,7 +1672,8 @@ const multiplayer = new Multiplayer(CARS, {
       if (n !== G.countShown) { G.countShown = n; hud.count(n > 0 ? String(n) : 'GO!', n === 0); audio.beep(n === 0); }
       if (remaining <= 0) { G.state = 'race'; document.body.classList.remove('counting'); document.body.classList.add('racing'); }
     }
-    if (multiplayer.me?.finish !== null && multiplayer.me?.finish !== undefined) {
+    if (multiplayer.wrecked) multiplayer.hooks.wrecked();
+    else if (multiplayer.me?.finish !== null && multiplayer.me?.finish !== undefined) {
       if (G.pFinish === null) { hud.message('FINISH · <i>' + fmtTime(multiplayer.me.finish) + '</i> · WAITING FOR OTHER DRIVERS', 8); audio.beep(true); }
       G.pFinish = multiplayer.me.finish; G.state = 'onlineFinished';
     }

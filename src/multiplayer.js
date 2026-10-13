@@ -11,7 +11,7 @@ export class Multiplayer {
     this.connected = false; this.resumeCount = 0; this.events = []; this.resumeState = null; this.spectateIndex = 0; this.spectateAt = 0;
     this.loaded = false; this.mapId = null; this.preparing = null; this.failedMap = null; this.pendingResume = false;
     this.maps = []; this.trackVersion = null; this.pendingCode = new URLSearchParams(location.search).get('lobby');
-    this.stateBatching = false; this.finishSent = null;
+    this.stateBatching = false; this.finishSent = null; this.wreckedRace = null; this.wreckSent = false;
     this.stateSender = new StateSender(packet => { if (this.connected && this.worldReady && this.lobby?.raceId === packet.raceId) this.send(packet); });
     this.panel = document.createElement('section'); this.panel.id = 'multiplayer'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Multiplayer lobbies');
@@ -50,7 +50,19 @@ export class Multiplayer {
   get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
+  get wrecked() { return !!this.lobby?.raceId && (this.me?.dnf === 'wrecked' || this.wreckedRace === this.lobby.raceId); }
+  get retired() { return !!this.me?.dnf || this.wrecked; }
   now() { return Date.now() + this.offset; }
+  wreck(impactEbs) {
+    const l = this.lobby;
+    if (!(impactEbs >= 100 / 3.6) || !this.worldReady || !l?.raceId || !['countdown', 'race'].includes(l.status) || this.now() < l.startAt || this.me?.finish != null || this.retired) return false;
+    this.wreckedRace = l.raceId; this.wreckSent = false;
+    this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck();
+    return true;
+  }
+  sendWreck() {
+    if (this.connected && this.wrecked && !this.me?.dnf && !this.wreckSent) { this.wreckSent = true; this.send({ type: 'dnf', raceId: this.lobby.raceId, reason: 'wrecked' }); }
+  }
   status(text) { this.$('mp-status').textContent = text; }
   open() { this.panel.hidden = false; this.hooks.clearInput(); if (!this.lobby) { this.$('mp-car').value = this.cars[this.hooks.carIndex()].id; if (this.maps.some(m => m.id === this.mapId)) this.$('mp-create-map').value = this.mapId; this.send({ type: 'discover' }); } }
   hidePanel() { if (this.panel.contains(document.activeElement) || document.activeElement === this.button) document.activeElement.blur(); this.panel.hidden = true; this.hooks.clearInput(); this.hooks.panelClosed?.(); }
@@ -106,7 +118,7 @@ export class Multiplayer {
     ws.onclose = e => {
       if (this.ws !== ws) return;
       this.connected = false; this.hooks.clearInput();
-      this.stateSender.reset();
+      this.stateSender.reset(); this.wreckSent = false;
       if (e.reason === 'Session resumed elsewhere') { this.left(); this.saveToken(null); this.status('This session is now open in another tab.'); return; }
       this.status(this.active ? 'Connection lost. Rejoining your race… (90-second reservation)' : 'Multiplayer is offline. Retrying…');
       if (this.active) this.panel.hidden = false;
@@ -148,6 +160,7 @@ export class Multiplayer {
     if (lobby.status === 'waiting') { if (this.startedRace) { this.startedRace = null; this.peers.clear(); this.stateSender.reset(); this.hooks.wait(); } this.pendingResume = false; this.resumeState = null; this.panel.hidden = false; }
     if (lobby.raceId && (this.startedRace !== lobby.raceId || this.pendingResume)) {
       const state = this.pendingResume ? this.resumeState : null;
+      if (this.startedRace !== lobby.raceId) { this.wreckedRace = null; this.wreckSent = false; }
       this.pendingResume = false; this.resumeState = null; this.startedRace = lobby.raceId;
       this.stateSender.reset(); this.finishSent = null;
       this.hidePanel(); this.hooks.start(lobby, this.id, state);
@@ -155,11 +168,11 @@ export class Multiplayer {
     this.renderRoom(); this.hooks.members(lobby.players.filter(p => p.id !== this.id));
     if (this.peers.size) this.hooks.remote(this.peers, 0.1);
     if (lobby.status === 'results') { this.panel.hidden = false; this.hooks.results(); }
-    else this.advanceClock();
+    else { this.advanceClock(); if (this.wrecked) { this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck(); } }
     return Promise.resolve();
   }
   saveToken(token) { this.token = token; try { if (token) sessionStorage.setItem('paraliaki.session', token); else sessionStorage.removeItem('paraliaki.session'); } catch {} }
-  left() { this.stateSender.reset(); this.resumeState = null; this.pendingResume = false; this.failedMap = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
+  left() { this.stateSender.reset(); this.wreckedRace = null; this.wreckSent = false; this.resumeState = null; this.pendingResume = false; this.failedMap = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
   renderDiscovery(lobbies) {
     const list = this.$('mp-list'); list.replaceChildren();
     if (!lobbies.length) { const p = document.createElement('p'); p.textContent = 'No public lobbies yet. Create one and invite your friends.'; list.append(p); }
@@ -185,11 +198,12 @@ export class Multiplayer {
     this.$('mp-start').textContent = l.status === 'results' ? 'REMATCH' : 'START RACE'; this.$('mp-start').hidden = !host;
     this.$('mp-start').disabled = !this.worldReady || (l.status !== 'results' && (l.status !== 'waiting' || l.players.length < 2 || !l.players.every(p => p.ready && p.connected !== false)));
     const results = this.$('mp-results'); results.replaceChildren();
-    if (l.status === 'results') { const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title); this.ranking().forEach((p, i) => { const row = document.createElement('p'); row.textContent = `${i + 1}. ${p.name} · ${p.finish !== null ? p.finish.toFixed(2) + ' s' : 'DNF'}`; results.append(row); }); }
+    if (l.status === 'results') { const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title); this.ranking().forEach((p, i) => { const row = document.createElement('p'); row.textContent = p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`; results.append(row); }); }
     this.board.hidden = l.status === 'waiting';
   }
   ranking(localS = 0) { return [...(this.lobby?.results || this.lobby?.players || [])].sort((a, b) => {
     if (a.finish !== null || b.finish !== null) return (a.finish ?? Infinity) - (b.finish ?? Infinity);
+    if (!!a.dnf !== !!b.dnf) return a.dnf ? 1 : -1;
     const s = p => this.progress(p.id === this.id ? localS : this.peers.get(p.id)?.state.s ?? this.lobby?.event?.s0 ?? 0);
     return s(b) - s(a);
   }); }
@@ -198,8 +212,8 @@ export class Multiplayer {
     if (this.worldReady && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
   }
   spectating() {
-    if (!this.active || this.me?.finish == null || this.lobby.status === 'results') return null;
-    const remaining = this.lobby.players.filter(p => p.id !== this.id && p.finish == null && p.connected !== false && this.peers.has(p.id));
+    if (!this.active || (this.me?.finish == null && !this.retired) || this.lobby.status === 'results') return null;
+    const remaining = this.lobby.players.filter(p => p.id !== this.id && p.finish == null && !p.dnf && p.connected !== false && this.peers.has(p.id));
     if (!remaining.length) return null;
     if (performance.now() - this.spectateAt > 7000) { this.spectateAt = performance.now(); this.spectateIndex++; }
     return remaining[this.spectateIndex % remaining.length];
@@ -220,7 +234,7 @@ export class Multiplayer {
     if (!this.connected) return;
     if (['countdown', 'race'].includes(l.status)) {
       this.advanceClock();
-      if (this.now() >= l.startAt) {
+      if (this.now() >= l.startAt && !this.retired) {
         const force = this.finishSent !== l.raceId && (state.s - l.event.s1) * l.event.dir >= 0 && Math.abs(state.u) < 30;
         if (force) this.finishSent = l.raceId;
         this.stateSender.sample(state, l.raceId, { batching: this.stateBatching, force });
@@ -228,8 +242,8 @@ export class Multiplayer {
     }
     if (performance.now() - (this.boardAt || 0) > 250) {
       this.boardAt = performance.now(); this.board.replaceChildren();
-      const title = document.createElement('b'); const watching = this.spectating(); title.textContent = l.status === 'results' ? 'RESULTS' : this.me?.finish !== null ? watching ? 'WATCHING · ' + watching.name : 'FINISHED · WAITING' : `LIVE · ${Math.round(this.latency)} ms`; this.board.append(title);
-      this.ranking(state.s).forEach((p, i) => { const row = document.createElement('div'); row.textContent = `${i + 1}. ${p.name}${p.id === this.id ? ' · YOU' : ''}${p.finish !== null ? ' · ' + p.finish.toFixed(2) + ' s' : l.status === 'results' ? ' · DNF' : ''}`; this.board.append(row); });
+      const title = document.createElement('b'); const watching = this.spectating(); title.textContent = l.status === 'results' ? 'RESULTS' : this.wrecked ? watching ? 'WRECKED · DNF · WATCHING ' + watching.name : 'WRECKED · DNF' : this.me?.finish !== null ? watching ? 'WATCHING · ' + watching.name : 'FINISHED · WAITING' : `LIVE · ${Math.round(this.latency)} ms`; this.board.append(title);
+      this.ranking(state.s).forEach((p, i) => { const row = document.createElement('div'); row.textContent = `${p.dnf ? 'DNF · ' : (i + 1) + '. '}${p.name}${p.id === this.id ? ' · YOU' : ''}${p.finish != null ? ' · ' + p.finish.toFixed(2) + ' s' : p.dnf === 'wrecked' ? ' · WRECKED' : l.status === 'results' ? ' · DNF' : ''}`; this.board.append(row); });
     }
   }
 }

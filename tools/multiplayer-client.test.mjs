@@ -61,7 +61,7 @@ function lobbyClient(mapId = 'megara') {
   Object.assign(m, { loaded: true, connected: true, mapId: 'riviera', preparing: null, failedMap: null, id: 'me', offset: 0,
     pendingResume: false, resumeState: null, startedRace: null, panel: { hidden: false }, peers: new Map(),
     lobby: { mapId, raceId: 'race', status: 'race', startAt: Date.now() - 1000, players: [{ id: 'me', finish: null }], event: { s1: 100, dir: 1 } },
-    hooks: { clearInput() {}, members() {}, wait() {}, results() {}, remote() {}, clock() {}, start: (...args) => starts.push(args), mapChanged: async id => { maps.push(id); m.mapId = id; } },
+    hooks: { clearInput() {}, members() {}, wait() {}, results() {}, remote() {}, clock() {}, wrecked() {}, start: (...args) => starts.push(args), mapChanged: async id => { maps.push(id); m.mapId = id; } },
     renderRoom() {}, status() {}, hidePanel() { this.panel.hidden = true; }, stateSender: new StateSender(p => packets.push(p)) });
   return { m, starts, maps, packets };
 }
@@ -105,4 +105,35 @@ test('solo and online board requests include the selected map', async () => {
     assert.equal(new URL(requests[0].url, 'http://localhost').searchParams.get('mapId'), 'megara');
     assert.equal(JSON.parse(requests[1].options.body).mapId, 'penteli'); assert.equal(requests.length, 2);
   } finally { globalThis.fetch = oldFetch; if (oldStore === undefined) delete globalThis.localStorage; else globalThis.localStorage = oldStore; }
+});
+
+
+test('100 km/h impact retires once, cancels a queued finish and never sends another state', () => {
+  const { m, packets } = lobbyClient('riviera'); let wrecks = 0;
+  const q = sender(); m.stateSender = q.sender; m.send = p => packets.push(p); m.hooks.wrecked = () => wrecks++;
+  m.boardAt = performance.now();
+  q.sender.sample(state({ s: 101, vLong: 10 }), 'race', { batching: true });
+  assert.equal(m.wreck(100 / 3.6 - 1e-6), false); assert.equal(q.timers.size, 1);
+  assert.equal(m.wreck(100 / 3.6), true); assert.equal(m.wreck(110 / 3.6), false);
+  assert.deepEqual(packets, [{ type: 'dnf', raceId: 'race', reason: 'wrecked' }]); assert.equal(wrecks, 1);
+  q.advance(200); m.update(1 / 60, state({ s: 101, vLong: 10 }));
+  assert.equal(q.packets.length, 0); assert.equal(packets.length, 1); assert.equal(m.me.finish, null);
+  m.me.dnf = 'wrecked'; m.sendWreck(); assert.equal(packets.length, 1);
+});
+
+test('wreck is retained across a reconnect, re-reported once and cleared for a new race', async () => {
+  const { m, packets } = lobbyClient('riviera'); m.startedRace = 'race'; m.send = p => packets.push(p); m.connected = false;
+  assert.equal(m.wreck(100 / 3.6), true); assert.equal(packets.length, 0);
+  m.connected = true; m.pendingResume = true; await m.syncLobby();
+  assert.equal(m.wrecked, true); assert.deepEqual(packets, [{ type: 'dnf', raceId: 'race', reason: 'wrecked' }]);
+  await m.syncLobby(); assert.equal(packets.length, 1);
+  m.lobby.raceId = 'next'; await m.syncLobby(); assert.equal(m.wrecked, false); assert.equal(m.retired, false);
+});
+
+test('wrecked drivers rank behind active racers and spectate only remaining drivers', () => {
+  const { m } = lobbyClient('riviera'); m.me.dnf = 'wrecked'; m.spectateIndex = 0; m.spectateAt = performance.now();
+  m.lobby.players.push({ id: 'active', finish: null }, { id: 'retired', finish: null, dnf: 'wrecked' });
+  m.peers.set('active', { state: state({ s: 10 }) }); m.peers.set('retired', { state: state({ s: 99 }) });
+  assert.equal(m.ranking(100)[0].id, 'active'); assert.equal(m.spectating().id, 'active');
+  m.me.finish = 1; assert.equal(m.wreck(120 / 3.6), false);
 });
