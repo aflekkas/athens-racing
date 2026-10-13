@@ -1,6 +1,6 @@
 // Browser adapter for replay.js. Owns ghost visuals, replay/photo controls and the camera override.
 import * as THREE from 'three';
-import { Recorder, GhostStore, sampleReplay, encodeReplay, decodeReplay, ghostKey, MAX_REPLAY_BYTES } from './replay.js';
+import { Recorder, GhostStore, sampleReplay, encodeReplay, decodeReplay, ghostKey, ghostOpacity, MAX_REPLAY_BYTES } from './replay.js';
 import { CARS, CarModel } from './cars.js';
 import { events } from './events.js';
 import { settings, onSettings } from './settings.js';
@@ -102,8 +102,13 @@ class ReplayMode {
     if (this.ghost?.spec.id !== car) {
       if (this.ghost) this.disposeGhost();
       const spec = CARS.find(c => c.id === car); if (!spec) return;
-      const model = new CarModel(spec), mat = new THREE.MeshBasicMaterial({ color: '#8de8ff', transparent: true, opacity: .20, depthWrite: false });
+      const model = new CarModel(spec), mat = new THREE.MeshBasicMaterial({ color: '#8de8ff', transparent: true, opacity: .28, depthWrite: false });
       const materials = new Set(); model.root.traverse(o => { if (o.isMesh) { for (const m of Array.isArray(o.material) ? o.material : [o.material]) materials.add(m); o.material = mat; o.castShadow = o.receiveShadow = false; } });
+      // CarModel's ground-contact blob is a visual shadow even with castShadow=false.
+      // Keep it hidden instead of recolouring it into a cyan rectangle below the ghost.
+      for (const o of model.root.children) if (o.isMesh && o.geometry.type === 'PlaneGeometry' && Math.abs(o.rotation.x + Math.PI / 2) < .001) {
+        o.visible = false; o.userData.ghostContactShadow = true;
+      }
       // CarModel's generated geometry is owned by this model; textures/materials may be shared with live cars.
       this.ghost = { model, spec, mat, originalMaterials: materials }; this.ctx.scene.add(model.root);
     }
@@ -239,8 +244,10 @@ class ReplayMode {
       const timeline = this.ui.querySelector('[data-scrub]'); if (timeline) { timeline.value = this.time; this.ui.querySelector('[data-time]').value = `${fmt(this.time)} / ${fmt(this.last.duration)}`; this.ui.querySelector('[data-play]').textContent = this.playing ? 'PAUSE' : 'PLAY'; }
     }
     if (this.ghost && this.ghostReplay && settings.ghostEnabled && G.state === 'race') {
-      const t = this.recorder?.elapsed || 0; this.ghost.model.root.visible = t <= this.ghostReplay.duration;
-      if (this.ghost.model.root.visible) applyState(this.ghost.model, sampleReplay(this.ghostReplay, t));
+      const t = this.recorder?.elapsed || 0, root = this.ghost.model.root;
+      applyState(this.ghost.model, sampleReplay(this.ghostReplay, t));
+      this.ghost.mat.opacity = ghostOpacity(root.position.distanceTo(this.ctx.player().model.root.position));
+      root.visible = t <= this.ghostReplay.duration && this.ghost.mat.opacity > .001;
     } else if (this.ghost) this.ghost.model.root.visible = false;
   }
   updateCamera(dt) {

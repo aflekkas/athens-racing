@@ -1,7 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Recorder, sampleReplay, encodeReplay, decodeReplay, GhostStore, REPLAY_STRIDE, slerp } from '../src/replay.js';
+import { Recorder, sampleReplay, encodeReplay, decodeReplay, GhostStore, REPLAY_STRIDE, slerp, ghostOpacity } from '../src/replay.js';
 const meta = { eventId: 'tt-test', car: 'z4', time: 2, splits: [1, 2], routeKey: '0>10000', trackVersion: 'test' };
+test('ghost fades smoothly through proximity, hides at overlap and stays translucent at distance', () => {
+  assert.equal(ghostOpacity(0), 0); assert.equal(ghostOpacity(2), 0);
+  assert.equal(ghostOpacity(10), .28); assert.equal(ghostOpacity(100), .28);
+  let previous = 0;
+  for (let distance = 2; distance <= 10; distance += .1) {
+    const opacity = ghostOpacity(distance);
+    assert.ok(opacity >= previous && opacity < 1); previous = opacity;
+  }
+  assert.ok(ghostOpacity(4) < .05); assert.ok(ghostOpacity(8) > .2);
+});
 const state = t => ({ position: [t * 27.317 + .0049, Math.sin(t) * .02 + 2, 10000 - t * 31.751], quaternion: [0, Math.sin(t * .3 / 2), 0, Math.cos(t * .3 / 2)],
   speed: 41.003, steer: .12934, spin: -t * 330.17, s: t * 42.153, brake: t > 1, pitch: .01345, roll: -.05432, heave: -.12345, damage: { front: .413, rear: 0, left: .6, right: 1 } });
 function record(seconds = 2, dt = 1 / 60, n = 1) {

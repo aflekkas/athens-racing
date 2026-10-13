@@ -3,6 +3,11 @@
 export const REPLAY_HZ = 20, REPLAY_STRIDE = 44, REPLAY_VERSION = 1;
 export const MAX_REPLAY_BYTES = 6 * 1024 * 1024;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// Keep overlapping cars out of the cockpit/chase sightline; reach full translucency at 10 metres.
+export function ghostOpacity(distance) {
+  const t = clamp((distance - 2) / 8, 0, 1);
+  return .28 * t * t * (3 - 2 * t);
+}
 const zones = ['front', 'rear', 'left', 'right'];
 const norm = q => { const l = Math.hypot(...q) || 1; return q.map(v => v / l); };
 export function slerp(a, b, t) {
