@@ -3,6 +3,8 @@ import { CARS, CarModel, TRAFFIC_TYPES, trafficModel, setPaint } from '../src/ca
 import { PAINTS, savedPaint, savePaint } from '../src/vehicle-paint.js';
 import { Hud } from '../src/hud.js';
 import { RNG } from '../src/util.js';
+import * as THREE from 'three';
+import { bakeParkedFleet } from '../src/traffic-fleet.js';
 export function runVehicleChecks() {
   const results=[];const check=(label,value)=>{results.push({label,pass:!!value});if(!value)throw new Error(label);};
   // Test the actual assembled vertices: both curved glass edges must meet painted roof vertices.
@@ -39,8 +41,9 @@ export function runVehicleChecks() {
   }
   const types=TRAFFIC_TYPES.filter(t=>t.model&&!t.police),rng=new RNG(41),plates=new Set();
   for(const type of types){
-    const a=trafficModel(type,type.colors[0],rng),b=trafficModel(type,type.colors[1],rng);plates.add(a.plate);plates.add(b.plate);
-    roofFits(a);
+    const otherColor=type.colors.find(c=>c!==type.colors[0])||'#426a8d';
+    const a=trafficModel(type,type.colors[0],rng),b=trafficModel(type,otherColor,rng);plates.add(a.plate);plates.add(b.plate);
+    // Fleet topology has its own checks; the player roof sample indices do not apply.
     check(type.id+' cached geometry shared before damage',a.damageMeshes.some((m,i)=>m.geometry===b.damageMeshes[i]?.geometry));
     const rest=b.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());a.setDamage('rear',1);
     check(type.id+' damage is isolated to hit car',b.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((v,i)=>v===rest[k][i])));
@@ -90,4 +93,70 @@ export function runPoliceChecks(){
     let finite=true;a.root.traverse(o=>{if(o.isMesh)for(const v of o.geometry.attributes.position.array)if(!Number.isFinite(v))finite=false;});check(finite,id+' finite');
   }
   return {passed};
+}
+
+// Covers every road and parked model, rather than only the original detailed taxi/BYD subset.
+export function runTrafficFleetChecks(){
+  const results=[],counts=[],plates=new Set(),rng=new RNG(994);
+  const check=(label,ok)=>{results.push({label,pass:!!ok});if(!ok)throw new Error(label);};
+  const triangles=root=>{let n=0;root.traverseVisible(o=>{if(o.isMesh)n+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});return n;};
+  const finite=root=>{let ok=true;root.traverse(o=>{if(o.isMesh)for(const v of o.geometry.attributes.position.array)if(!Number.isFinite(v))ok=false;});return ok;};
+  for(const type of TRAFFIC_TYPES){
+    const a=trafficModel(type,type.colors[0],rng),b=trafficModel(type,'#3277b1',rng),p=trafficModel(type,type.colors[0],rng,{parked:true});
+    for(const m of [a,b,p]){check(type.id+' unique registration',!!m.plate&&!plates.has(m.plate));plates.add(m.plate);}
+    check(type.id+' real catalogue dimensions',Math.abs(a.dims.L-type.len)<.002&&Math.abs(a.dims.W-type.wid)<.002);
+    check(type.id+' independent steering and spinning',a.wheels.length===(type.scooter?2:4)&&a.wheels.every(w=>w.spin.parent===w.pivot&&w.pivot.parent===a.root&&w.r>0));
+    check(type.id+' per-instance paint/lights',a.paint!==b.paint&&a.tail!==b.tail&&a.paint.color.getHex()!==b.paint.color.getHex());
+    check(type.id+' named damage parts',a.damageParts.length>=2);
+    check(type.id+' shared geometry before impacts',a.damageMeshes.some((m,i)=>m.geometry===b.damageMeshes[i]?.geometry));
+    a.setLOD(0);const near=triangles(a.root);a.setLOD(150);const far=triangles(a.root);
+    check(type.id+' distance detail reduces work',a.lodLevel===1&&far<near*.65);check(type.id+' near budget',near<=20000);check(type.id+' far budget',far<=3000);
+    a.wheels.forEach(w=>{w.spin.rotation.x=.8;w.pivot.rotation.y=w.front?.2:0;});a.setLOD(0);
+    check(type.id+' LOD keeps wheel transforms',a.wheels.every(w=>w.spin.rotation.x===.8&&w.pivot.rotation.y===(w.front?.2:0)));
+    const rest=a.damageMeshes.map(m=>m.geometry.attributes.position.array.slice()),other=b.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());
+    a.setDamage('front',.65);a.setDamage('right',.4);
+    check(type.id+' deforms on contact',a.damageMeshes.some((m,k)=>m.geometry.attributes.position.array.some((v,i)=>Math.abs(v-rest[k][i])>1e-5)));
+    check(type.id+' damage isolated',b.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((v,i)=>v===other[k][i])));
+    a.setDamage('front',0);a.setDamage('right',0);check(type.id+' fully repairable',a.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((v,i)=>Math.abs(v-rest[k][i])<1e-6)));
+    const lamps=[];a.root.traverse(o=>{if(o.isMesh&&o.userData.damagePart?.startsWith('light_f')&&o.material.emissive)lamps.push(o.material);});
+    for(const m of lamps){m.userData.damageBroken=true;m.emissiveIntensity=0;}a.setLights(true);
+    check(type.id+' lighting cannot revive a broken headlamp',lamps.length>0&&lamps.every(m=>m.emissiveIntensity===0));
+    for(const m of lamps)delete m.userData.damageBroken;a.setLights(false);
+    a.setLOD(150);const farLamps=[];a.root.traverseVisible(o=>{if(o.isMesh&&o.userData.damagePart?.startsWith('light_f'))farLamps.push(o);});
+    a.setDamage('front',1);a.setLights(true);
+    check(type.id+' far lamps retain damage across LOD and lighting changes',farLamps.length>0&&farLamps.every(o=>o.material.userData.damageBroken&&o.material.emissiveIntensity===0));
+    a.setDamage('front',0);a.setLights(false);
+    const farTails=[];a.root.traverseVisible(o=>{if(o.isMesh&&o.userData.damagePart?.startsWith('light_r'))farTails.push(o);});
+    a.setDamage('rear',1);a.tail.emissiveIntensity=5;a.updateDamage(.01);
+    check(type.id+' far broken tail lamps ignore brake-light updates',farTails.length>0&&farTails.every(o=>o.material.userData.damageBroken&&o.material.emissiveIntensity===0));a.setDamage('rear',0);
+    check(type.id+' finite geometry',finite(a.root)&&finite(p.root));
+    check(type.id+' parked detail available',typeof p.makeNear==='function'&&typeof p.setDamage==='function');
+    counts.push({id:type.id,near,far,parked:triangles(p.root),parts:a.damageParts.length});
+  }
+  const type=TRAFFIC_TYPES.find(t=>t.id==='hatch'),parked=[trafficModel(type,'#bbbbbb',rng,{parked:true}),trafficModel(type,'#224477',rng,{parked:true})];parked[1].root.position.x=5;
+  const hidden=new THREE.Group();hidden.visible=false;const sentinel=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),parked[0].paint);sentinel.position.y=50;hidden.add(sentinel);parked[0].root.add(hidden);
+  const cells=bakeParkedFleet(parked,40),camera=new THREE.PerspectiveCamera();camera.position.set(0,3,10);
+  check('Parked bake excludes children of hidden damage groups',new THREE.Box3().setFromObject(cells).max.y<5);sentinel.geometry.dispose();hidden.removeFromParent();
+  for(const cell of cells.children){cell.update(camera);check('Parked cell creates near LOD safely',cell.levels.length===2&&cell.near?.visible);camera.position.set(1000,3,1000);cell.update(camera);check('Parked cell evicts expensive geometry',!cell.near&&cell.levels.length===1&&cell.low.visible);}
+  return {passed:results.length,counts,results};
+}
+
+// Measure the complete playable assembly, including the hero cockpit, using
+// actual visibility after THREE.LOD updates rather than counting hidden levels.
+export async function runPlayerBudgetChecks() {
+  const { Cockpit } = await import('../src/cockpit.js');
+  const results=[],counts=[],camera=new THREE.PerspectiveCamera();
+  for(const spec of CARS){
+    const car=new CarModel(spec);new Cockpit(spec,car,new THREE.Texture());
+    car.root.updateMatrixWorld(true);const rows=[];
+    for(const [distance,budget]of [[5,80000],[20,20000],[100,3000]]){
+      camera.position.set(0,0,distance);camera.updateMatrixWorld(true);
+      car.root.traverse(o=>{if(o.isLOD)o.update(camera);});
+      let triangles=0,draws=0;car.root.traverseVisible(o=>{if(o.isMesh){triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;draws++;}});
+      const pass=triangles<=budget,label=`${spec.id} at ${distance}m: ${triangles} triangles <= ${budget}`;
+      results.push({label,pass});if(!pass)throw new Error(label);rows.push({distance,triangles,draws});
+    }
+    counts.push({id:spec.id,levels:rows});car.disposeDamage?.();
+  }
+  return {passed:results.length,counts,results};
 }

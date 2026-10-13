@@ -4,7 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat } from './cockpit.js';
 import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetailedModel } from './vehicle-models.js';
-import { policeModel } from './police-models.js';
+import { fleetModel } from './traffic-fleet.js';
+export { Driver } from './driver.js';
 import { savedPaint, setPaint } from './vehicle-paint.js';
 export { setPaint } from './vehicle-paint.js';
 
@@ -20,7 +21,7 @@ export const CARS = [
   {
     id: 'z4', name: 'BMW Z4 M40i', short: 'Z4 M40i', tag: 'Straight-six roadster. Rear-wheel drive.', color: '#22679d', accent: '#b7bdc5',
     mass: 1610, power: 250, torque: 500, redline: 7000, idle: 750, gears: [5.25, 3.36, 2.17, 1.72, 1.32, 1.0, 0.82, 0.64], final: 3.154, wheelR: 0.335,
-    wheelbase: 2.47, length: 4.324, width: 1.864, cdA: 0.64, vmax: 250, grip: 1.18, steer: 0.57, yawI: 1.06, drift: 1.0, brake: 1.12, cyl: 6, pitch: 0.94, convertible: true, body: 'z4', drive: 'rwd',
+    wheelbase: 2.47, length: 4.324, width: 1.864, cdA: 0.64, vmax: 250, grip: 1.18, gripRear: 1.05, steer: 0.57, yawI: 1.06, drift: 1.0, brake: 1.12, cyl: 6, pitch: 0.94, convertible: true, body: 'z4', drive: 'rwd',
     frontW: 0.50, hcg: 0.46, track: 1.60, rsF: 0.53, susHz: 2.1, susZ: 0.6, rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.15, bias: 0.64, steerRate: 1.15, ebrake: 0.14, engine: 'turbo6', turbo: 1.15, lsd: 0.45,
     stats: { speed: 0.82, accel: 0.93, handling: 0.94, drift: 0.91 },
   },
@@ -35,7 +36,7 @@ export const CARS = [
     id: 'carrera', name: 'PORSCHE 911 CARRERA', short: '911 CARRERA', tag: '991.1 · Rear-engine flat-six. Seven-speed manual.', color: '#c6c9cb', accent: '#a7acb2',
     mass: 1380, power: 257, torque: 390, redline: 7800, idle: 800, gears: [3.91, 2.29, 1.55, 1.30, 1.08, 0.88, 0.71], final: 3.44, wheelR: 0.331,
     torqueCurve: [[0,170],[800,190],[2000,270],[3500,340],[4500,370],[5600,390],[6500,370],[7400,331.65],[7800,302],[8500,260]], peakTorqueRpm: 5600, peakPowerRpm: 7400,
-    wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, steer: 0.55, yawI: 1.1, drift: 1, brake: 1.08, cyl: 6, pitch: 1, body: 'carrera', drive: 'rwd', engine: 'flat6', engineZone: 'rear', transmission: 'manual',
+    wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, gripRear: 1.08, steer: 0.55, yawI: 1.1, drift: 1, brake: 1.08, cyl: 6, pitch: 1, body: 'carrera', drive: 'rwd', engine: 'flat6', engineZone: 'rear', transmission: 'manual',
     tyres: ['235/40 ZR19','285/30 ZR19'], frontW: 0.39, hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2.0, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11, mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5, esc: 0.4, shiftT: 0.27, bias: 0.60, steerRate: 1.08, ebrake: 0.15, lsd: 0,
     stats: { speed: 0.96, accel: 0.91, handling: 0.94, drift: 0.78 },
   },
@@ -51,8 +52,8 @@ export const CARS = [
     id: 'gtv', name: 'ALFA ROMEO 2000 GTV', short: '2000 GTV', tag: 'Bertone classic · Twin-cam four. Rear-wheel drive.', color: '#b52125', accent: '#bf9160',
     mass: 1040, power: 97, torque: 182, redline: 6500, idle: 850, gears: [3.304, 1.988, 1.355, 1, 0.791], final: 4.10, wheelR: 0.313,
     torqueCurve: [[0,72],[850,86],[1800,130],[3000,165],[4000,180],[4200,182],[5000,177],[5500,168.42],[6000,150],[6500,125],[7100,100]], peakTorqueRpm: 4200, peakPowerRpm: 5500,
-    wheelbase: 2.35, length: 4.10, width: 1.58, cdA: 0.70, vmax: 195, grip: 0.91, steer: 0.62, yawI: 1.02, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: 'gtv', drive: 'rwd', engine: 'na4', transmission: 'manual',
-    tyres: ['165 HR14','165 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.54, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
+    wheelbase: 2.35, length: 4.10, width: 1.58, cdA: 0.70, vmax: 195, grip: 0.91, gripRear: 1.06, steer: 0.62, yawI: 1.02, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: 'gtv', drive: 'rwd', engine: 'na4', transmission: 'manual',
+    tyres: ['165 HR14','165 HR14'], frontW: 0.54, hcg: 0.48, track: 1.30, rsF: 0.62, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0, esc: 0, edl: 0, shiftT: 0.38, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25,
     stats: { speed: 0.39, accel: 0.45, handling: 0.69, drift: 0.67 },
   },
 ];
@@ -260,202 +261,24 @@ function blobMaterial() {
 
 // ------------------------------------------------------------------ traffic models (shared geometry per type)
 export const TRAFFIC_TYPES = [
-  { id:'police', police:true, w:0, model:'octavia', shape:'sedan', len:4.689, wid:1.829, colors:['#f0f1ed'] },
-  { id:'police_moto', police:true, scooter:true, moto:true, w:0, len:2.20, wid:.92, colors:['#f0f1ed'] },
+  { id:'police', name:'Škoda Octavia · ΕΛ.ΑΣ.', police:true, w:0, model:'octavia', shape:'sedan', len:4.689, wid:1.829, colors:['#f0f1ed'] },
+  { id:'police_moto', name:'BMW R 1250 RT · ΔΙ.ΑΣ.', police:true, scooter:true, moto:true, w:0, len:2.222, wid:.990, colors:['#f0f1ed'] },
   // w = share of the mix; colours lean on what you actually see in Athens: white, silver, grey, black, a few blues and reds
-  { id: 'city', w: 16, shape: 'hatch', scale: 0.88, len: 3.65, wid: 1.6, colors: ['#f2f2f0', '#c9ccd1', '#b8282a', '#e9e2c9', '#2f6db0', '#9fb3a0', '#f4b9c0', '#7d8288'] },
-  { id: 'hatch', w: 26, shape: 'hatch', len: 4.15, wid: 1.82, colors: ['#f2f2f0', '#c9ccd1', '#1d1f24', '#2e4c6a', '#8fa3b8', '#a33a2c', '#e8d9a8', '#3f5e4a', '#7d8288', '#5d6b78'] },
-  { id: 'sedan', w: 15, shape: 'sedan', len: 4.75, wid: 1.8, colors: ['#f2f2f0', '#26292e', '#7d8288', '#c9ccd1', '#41505e', '#6b1f24'] },
-  { id: 'taxi', w: 10, model: 'octavia', shape: 'sedan', len: 4.689, wid: 1.829, colors: ['#efc31f', '#e3ae12', '#f4cc34'], taxi: true },
-  { id: 'taxi_superb', w: 5, model: 'superb', shape: 'sedan', len: 4.869, wid: 1.864, colors: ['#e8b716', '#f5cd32', '#dbab18'], taxi: true },
-  { id: 'byd_dolphin', w: 8, model: 'dolphin', shape: 'hatch', len: 4.29, wid: 1.77, colors: ['#81b9b9', '#eae9e3', '#597aab', '#9d9eaa', '#da9584'], electric: true },
-  { id: 'byd_atto3', w: 7, model: 'atto3', shape: 'suv', len: 4.455, wid: 1.875, colors: ['#dce0df', '#356c9d', '#666d71', '#a94a49', '#192c39'], electric: true },
-  { id: 'suv', w: 13, shape: 'suv', len: 4.6, wid: 1.9, colors: ['#f2f2f0', '#1d1f24', '#7d8288', '#5b2a2a', '#c9ccd1', '#2c3b4d', '#8a7a5c'] },
-  { id: 'van', w: 6, shape: 'van', len: 5.0, wid: 2.0, colors: ['#f4f4f2', '#f4f4f2', '#d8d4c8', '#c9ccd1'] },
-  { id: 'bus', w: 3, shape: 'bus', len: 12, wid: 2.5, colors: ['#f4f4f2'], bus: true },
-  { id: 'delivery', w: 11, scooter: true, box: true, len: 1.9, wid: 0.7, colors: ['#f2f2f0', '#c3121c', '#1d1f24', '#2a6fb8', '#e8c33a'] },
-  { id: 'scooter', w: 6, scooter: true, len: 1.9, wid: 0.7, colors: ['#f2f2f0', '#c3121c', '#1d1f24', '#2a6fb8', '#9ad0c2', '#f0a0b0'] },
-  { id: 'moto', w: 3, scooter: true, moto: true, len: 2.1, wid: 0.8, colors: ['#1d1f24', '#c3121c', '#f2f2f0', '#e86a10'] },
+  { id: 'city', name: 'Toyota Aygo II', model: 'aygo', w: 16, shape: 'hatch', len: 3.455, wid: 1.615, colors: ['#f2f2f0', '#c9ccd1', '#b8282a', '#e9e2c9', '#2f6db0', '#9fb3a0', '#f4b9c0', '#7d8288'] },
+  { id: 'hatch', name: 'Volkswagen Golf VII', model: 'golf', w: 26, shape: 'hatch', len: 4.255, wid: 1.799, colors: ['#f2f2f0', '#c9ccd1', '#1d1f24', '#2e4c6a', '#8fa3b8', '#a33a2c', '#e8d9a8', '#3f5e4a', '#7d8288', '#5d6b78'] },
+  { id: 'sedan', name: 'Toyota Corolla E210', model: 'corolla', w: 15, shape: 'sedan', len: 4.630, wid: 1.780, colors: ['#f2f2f0', '#26292e', '#7d8288', '#c9ccd1', '#41505e', '#6b1f24'] },
+  { id: 'taxi', name: 'Škoda Octavia IV taxi', w: 10, model: 'octavia', shape: 'sedan', len: 4.689, wid: 1.829, colors: ['#efc31f', '#e3ae12', '#f4cc34'], taxi: true },
+  { id: 'taxi_superb', name: 'Škoda Superb III taxi', w: 5, model: 'superb', shape: 'sedan', len: 4.861, wid: 1.864, colors: ['#e8b716', '#f5cd32', '#dbab18'], taxi: true },
+  { id: 'byd_dolphin', name: 'BYD Dolphin', w: 8, model: 'dolphin', shape: 'hatch', len: 4.29, wid: 1.77, colors: ['#81b9b9', '#eae9e3', '#597aab', '#9d9eaa', '#da9584'], electric: true },
+  { id: 'byd_atto3', name: 'BYD Atto 3', w: 7, model: 'atto3', shape: 'suv', len: 4.455, wid: 1.875, colors: ['#dce0df', '#356c9d', '#666d71', '#a94a49', '#192c39'], electric: true },
+  { id: 'suv', name: 'Nissan Qashqai J11', model: 'qashqai', w: 13, shape: 'suv', len: 4.377, wid: 1.806, colors: ['#f2f2f0', '#1d1f24', '#7d8288', '#5b2a2a', '#c9ccd1', '#2c3b4d', '#8a7a5c'] },
+  { id: 'van', name: 'Fiat Ducato L2H2', model: 'ducato', w: 6, shape: 'van', len: 5.413, wid: 2.05, colors: ['#f4f4f2', '#f4f4f2', '#d8d4c8', '#c9ccd1'] },
+  { id: 'truck', name: 'Isuzu NPR delivery truck', model: 'npr', w: 3, shape: 'van', len: 6.40, wid: 2.30, colors: ['#f2f2ec', '#d9dce0', '#477ca0'] },
+  { id: 'bus', name: 'Mercedes-Benz Citaro · ΟΣΥ', model: 'citaro', w: 3, shape: 'bus', len: 12, wid: 2.55, colors: ['#f4f4f2'], bus: true },
+  { id: 'delivery', name: 'Honda SH150i delivery', model: 'sh150', w: 11, scooter: true, box: true, len: 2.030, wid: .740, colors: ['#f2f2f0', '#c3121c', '#1d1f24', '#2a6fb8', '#e8c33a'] },
+  { id: 'scooter', name: 'Piaggio Beverly 300', model: 'beverly', w: 6, scooter: true, len: 2.125, wid: .800, colors: ['#f2f2f0', '#c3121c', '#1d1f24', '#2a6fb8', '#9ad0c2', '#f0a0b0'] },
+  { id: 'moto', name: 'Yamaha Tracer 900', model: 'tracer', w: 3, scooter: true, moto: true, len: 2.160, wid: .850, colors: ['#1d1f24', '#c3121c', '#f2f2f0', '#e86a10'] },
 ];
-const TRAFFIC_GEO = {};
 export function trafficModel(type, color, rng, opts = {}) {
-  if (type.police) return policeModel(type, color, rng, opts);
-  if (type.model && !opts.parked) return trafficDetailedModel(type, color, rng);
-  const plate = makePlateMaterial();
-  const S = shared();
-  const root = new THREE.Group(); const body = new THREE.Group(); root.add(body);
-  const paint = paintMaterial(color, type.taxi || type.bus ? 0.1 : 0.4);
-  const tail = tailMaterial();
-  const wheels = [];
-  if (type.scooter) {
-    const frame = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.5, 1.4, 2, 0.15), paint); frame.position.set(0, 0.62, 0.1); body.add(frame);
-    const shield = new THREE.Mesh(new RoundedBoxGeometry(0.46, 0.8, 0.12, 2, 0.05), paint); shield.position.set(0, 0.85, -0.55); shield.rotation.x = -0.2; body.add(shield);
-    for (const z of [-0.65, 0.62]) { const w = new THREE.Mesh(S.tireGeo, S.tire); w.scale.set(0.11, 0.24, 0.24); w.position.set(0, 0.24, z); body.add(w); wheels.push({ spin: w, pivot: w, front: z < 0, r: 0.24 }); }
-    // rider (helmet), often with a food-delivery box
-    const shirt = new THREE.MeshStandardMaterial({ color: rng.pick(['#2c3e50', '#c0392b', '#ecf0f1', '#27ae60', '#f39c12']), roughness: 0.8 });
-    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.4, 4, 8), shirt); torso.position.set(0, 1.25, 0.15); torso.rotation.x = -0.2; body.add(torso);
-    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), new THREE.MeshStandardMaterial({ color: rng.pick(['#111', '#f2f2f2', '#c3121c', '#1e5aa8']), roughness: 0.3, metalness: 0.2 })); helmet.position.set(0, 1.72, 0.05); body.add(helmet);
-    for (const sx of [-1, 1]) { const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.4, 4, 6), new THREE.MeshStandardMaterial({ color: '#2b2d42' })); leg.position.set(sx * 0.17, 0.85, -0.05); leg.rotation.x = 1.2; body.add(leg); }
-    if (type.box) { const box = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.45, 0.45, 2, 0.05), new THREE.MeshStandardMaterial({ color: rng.pick(['#e4002b', '#e4002b', '#00a8e8', '#ff8000', '#ffcc00']), roughness: 0.5 })); box.position.set(0, 1.1, 0.75); body.add(box); }
-    if (type.moto) { frame.scale.set(0.8, 0.8, 1.15); shield.visible = false; }
-    const hl = new THREE.Mesh(new THREE.CircleGeometry(0.07, 12), S.head); hl.position.set(0, 1.05, -0.62); hl.rotation.y = Math.PI; body.add(hl);
-    const tl = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.03), tail); tl.position.set(0, 0.8, 0.82); body.add(tl);
-  } else {
-    const sh = SHAPES[type.shape];
-    if (!TRAFFIC_GEO[type.shape]) TRAFFIC_GEO[type.shape] = buildBodyGeo(sh);
-    const mesh = new THREE.Mesh(TRAFFIC_GEO[type.shape], [paint, S.glassDark, S.black]); body.add(mesh);
-    const car = { root, wheels: [] };
-    addWheels(car, sh, type.bus ? 0.5 : type.shape === 'suv' || type.shape === 'van' ? 0.36 : 0.31, sh.W * (type.bus ? 0.14 : 0.12), 0);
-    mesh.userData.mainBody = true;
-    wheels.push(...car.wheels);
-    const L2 = sh.L / 2;
-    for (const sx of [-1, 1]) {
-      const h = new THREE.Mesh(new THREE.BoxGeometry(sh.W * 0.18, 0.08, 0.05), S.head); h.position.set(sx * sh.W * 0.33, sh.nose - 0.08, -L2 + 0.05); body.add(h);
-      const t = new THREE.Mesh(new THREE.BoxGeometry(sh.W * 0.2, 0.08, 0.05), tail); t.position.set(sx * sh.W * 0.34, (sh.fastback ? sh.belt : sh.tail) - 0.1, L2); body.add(t);
-    }
-    const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); pl.position.set(0, sh.bottom + 0.3, L2 + 0.03); body.add(pl);
-    const fp = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); fp.position.set(0, sh.bottom + 0.26, -L2 - 0.03); fp.rotation.y = Math.PI; body.add(fp);
-    if (type.taxi) addTaxiSign(body, sh);
-    if (sh.flatEnds) { // rear window(s) on the flat back panel
-      const rw = new THREE.Mesh(new THREE.PlaneGeometry(sh.W * (type.bus ? 0.78 : 0.34), type.bus ? 0.95 : 0.55), S.glassDark);
-      if (type.bus) { rw.position.set(0, sh.H - 0.75, L2 + 0.02); body.add(rw); }
-      else for (const sx of [-1, 1]) { const w = rw.clone(); w.position.set(sx * sh.W * 0.2, sh.H - 0.62, L2 + 0.02); body.add(w); }
-    }
-    if (type.bus) {
-      const blue = new THREE.MeshStandardMaterial({ color: '#1f5fae', roughness: 0.45 });
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(sh.W + 0.02, 0.8, sh.L * 0.985), blue); stripe.position.y = 0.78; body.add(stripe);
-      const band = new THREE.Mesh(new THREE.BoxGeometry(sh.W + 0.03, 0.12, sh.L * 0.95), blue); band.position.y = sh.H - 0.08; body.add(band);
-      const dest = labelMesh(rng.pick(['A2 · VOULIAGMENI', '122 · SARONIDA', '149 · VARKIZA', 'E22 · SARONIDA']), 2.0, 0.28); dest.position.set(0, sh.H - 0.25, -L2 - 0.02); dest.rotation.y = Math.PI; body.add(dest);
-    }
-    if (type.id === 'van') { const lab = labelMesh(rng.pick(['ATHENS BAKERY', 'RIVIERA FLOWERS', 'FRESH FISH · VARI', 'COURIER EXPRESS']), 3.0, 0.42, '#f4f4f2', '#1d3557'); for (const sx of [-1, 1]) { const l = lab.clone(); l.position.set(sx * (sh.W / 2 + 0.02), 1.5, 0.3); l.rotation.y = sx * Math.PI / 2; body.add(l); } }
-  }
-  if (type.scale) body.scale.setScalar(type.scale);
-  root.traverse((o) => { if (o.isMesh) { o.castShadow = !!o.userData.mainBody || !!type.scooter; o.receiveShadow = true; } });
-  const blob = new THREE.Mesh(new THREE.PlaneGeometry(type.wid * 1.25, type.len * 1.12), blobMaterial()); blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03; blob.castShadow = false; root.add(blob);
-  return { root, body, wheels, tail, paint };
-}
-function labelMesh(text, w, h, bg = '#101418', fg = '#ffb000') {
-  const t = canvasTex(512, Math.round(512 * h / w), (g, W, H) => { g.fillStyle = bg; g.fillRect(0, 0, W, H); g.fillStyle = fg; g.font = `800 ${Math.round(H * 0.72)}px "Barlow Condensed", Arial`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, W / 2, H / 2 + 2); });
-  return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0.25 }));
-}
-
-// ------------------------------------------------------------------ the driver: big curly hair with spring physics
-export class Driver {
-  constructor({ hair = true, shirt = '#f6f4ee', skin = '#c98b62', helmet = false } = {}) {
-    const root = this.root = new THREE.Group();
-    const skinM = trimMat(skin, { rough: 0.5, scale: 0.025, nk: 0.22, sheen: 0.18 });
-    const shirtM = trimMat(shirt, { rough: 0.92, scale: 0.018, nk: 0.55, sheen: 0.3 });
-    const dark = new THREE.MeshStandardMaterial({ color: '#141210', roughness: 0.4 });
-    const gold = new THREE.MeshStandardMaterial({ color: '#e0b04a', metalness: 1, roughness: 0.25 });
-    const add = (geo, mat, x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1, parent = root) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); m.scale.set(sx, sy, sz); m.castShadow = true; parent.add(m); return m; };
-    this.torso = add(new THREE.CapsuleGeometry(0.17, 0.32, 6, 14), shirtM, 0, -0.28, 0.06, -0.18, 0, 0, 1.12, 1, 0.8);
-    add(new THREE.TorusGeometry(0.06, 0.005, 6, 20), gold, 0, -0.07, -0.06, 1.25, 0, 0);
-    const neck = this.neck = new THREE.Group(); neck.position.set(0, 0, 0); root.add(neck);
-    add(new THREE.CylinderGeometry(0.055, 0.06, 0.12, 12), skinM, 0, 0.03, 0, 0, 0, 0, 1, 1, 1, neck);
-    const head = this.head = new THREE.Group(); head.position.set(0, 0.17, 0); neck.add(head);
-    add(new THREE.SphereGeometry(0.115, 24, 18), skinM, 0, 0, 0, 0, 0, 0, 0.95, 1.12, 1.0, head);
-    add(new THREE.ConeGeometry(0.022, 0.06, 8), skinM, 0, -0.01, -0.12, -Math.PI / 2 + 0.3, 0, 0, 1, 1, 1, head);
-    add(new THREE.BoxGeometry(0.07, 0.016, 0.02), dark, 0, -0.045, -0.108, 0, 0, 0, 1, 1, 1, head);
-    for (const sx of [-1, 1]) {
-      add(new THREE.SphereGeometry(0.034, 14, 10), new THREE.MeshStandardMaterial({ color: '#1a1410', metalness: 0.6, roughness: 0.05 }), sx * 0.045, 0.025, -0.105, 0, 0, 0, 1.1, 0.9, 0.35, head);
-      add(new THREE.TorusGeometry(0.034, 0.004, 6, 16), gold, sx * 0.045, 0.025, -0.108, 0, 0, 0, 1.1, 0.9, 1, head);
-    }
-    // arms (beams updated each frame to reach the wheel)
-    const armGeo = new THREE.CapsuleGeometry(0.5, 1, 4, 10);
-    this.arms = [];
-    // driving gloves (perforated leather) closed around the rim; linen sleeves rolled to the forearm
-    const glove = trimMat('#2b1d14', { rough: 0.55, scale: 0.04, nk: 0.9 });
-    const fistGeo = new THREE.SphereGeometry(0.05, 16, 12); fistGeo.scale(0.82, 0.7, 1.15);
-    const thumbGeo = new THREE.CapsuleGeometry(0.014, 0.04, 4, 8); thumbGeo.rotateX(Math.PI / 2); thumbGeo.translate(0.03, 0.022, -0.01);
-    for (const sx of [-1, 1]) {
-      const up = new THREE.Mesh(armGeo, shirtM), fo = new THREE.Mesh(armGeo, skinM);
-      const hand = new THREE.Group(); hand.add(new THREE.Mesh(fistGeo, glove)); const th = new THREE.Mesh(thumbGeo, glove); th.scale.x = sx; hand.add(th);
-      root.add(up, fo, hand); this.arms.push({ sx, up, fo, hand });
-    }
-    if (helmet) {
-      add(new THREE.SphereGeometry(0.17, 18, 14), new THREE.MeshStandardMaterial({ color: '#111', roughness: 0.25, metalness: 0.3 }), 0, 0.02, 0.01, 0, 0, 0, 1, 1, 1, head);
-      this.curls = []; return;
-    }
-    // hair
-    const hairCol = new THREE.Color('#5a3219');
-    const base = new THREE.Mesh(new THREE.SphereGeometry(0.2, 22, 16), new THREE.MeshStandardMaterial({ color: hairCol, roughness: 0.7 }));
-    base.scale.set(1.08, 0.95, 0.95); base.position.set(0, 0.13, 0.13); base.castShadow = true; head.add(base); this.hairBase = base;
-    const curlGeo = new THREE.TorusKnotGeometry(0.5, 0.24, 20, 4, 2, 3);
-    const curlMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.5, sheen: 1.0, sheenColor: new THREE.Color('#c08a5a'), sheenRoughness: 0.4 });
-    const rng = new RNG(1234);
-    const curls = [];
-    const center = new THREE.Vector3(0, 0.08, 0.035), radii = new THREE.Vector3(0.27, 0.25, 0.27);
-    for (let tries = 0; curls.length < 380 && tries < 5000; tries++) {
-      const dir = new THREE.Vector3(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1));
-      if (dir.lengthSq() > 1 || dir.lengthSq() < 0.05) continue;
-      dir.normalize();
-      if (dir.z < -0.25 && dir.y < 0.35) continue;
-      if (dir.y < -0.45 && dir.z < 0.5) continue;
-      if (dir.y < -0.75) continue;
-      const layer = rng.next(); const r = 0.82 + layer * 0.32;
-      curls.push({ rest: new THREE.Vector3(dir.x * radii.x * r, dir.y * radii.y * r, dir.z * radii.z * r).add(center), off: new THREE.Vector3(), vel: new THREE.Vector3(), dir,
-        w: (0.35 + layer * 0.9) * (0.7 + 0.3 * Math.max(0, dir.y + 0.3)), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(rng.range(0, 6), rng.range(0, 6), rng.range(0, 6))),
-        s: rng.range(0.052, 0.08) * (0.85 + layer * 0.35), ph: rng.range(0, 6.28), f: rng.range(9, 16) });
-    }
-    const inst = new THREE.InstancedMesh(curlGeo, curlMat, curls.length); inst.castShadow = true;
-    const cc = new THREE.Color();
-    curls.forEach((c, i) => { cc.copy(hairCol).multiplyScalar(rng.range(0.7, 1.5)); inst.setColorAt(i, cc); });
-    inst.instanceColor.needsUpdate = true; head.add(inst);
-    this.curls = curls; this.curlMesh = inst;
-    this._m = new THREE.Matrix4(); this._v = new THREE.Vector3(); this._s = new THREE.Vector3();
-    this.hw = { x: 0, vx: 0, z: 0, vz: 0 };
-  }
-  impulse(strength, dx = 0, dz = 0) {
-    for (const c of this.curls) { c.vel.x += (Math.random() - 0.5) * strength * 2 + dx * strength * 2; c.vel.y += Math.random() * strength * 2.5; c.vel.z += (Math.random() - 0.5) * strength * 2 + dz * strength * 2; }
-    if (this.hw) { this.hw.vx += (Math.random() - 0.3) * strength * 30; this.hw.vz += dx * strength * 30; }
-  }
-  /** wheel: {pos: Vector3 (in driver-parent space), angle, euler}; acc: local acceleration */
-  update(dt, t, speed, acc, wheel, steer, heaveV = 0) {
-    // arms to the wheel rim
-    if (wheel) {
-      for (const a of this.arms) {
-        const shoulder = new THREE.Vector3(a.sx * 0.19, -0.1, 0.05);
-        const ang = (a.sx > 0 ? 0.25 : Math.PI - 0.25) + wheel.angle;
-        const hand = new THREE.Vector3(Math.cos(ang) * wheel.r, Math.sin(ang) * wheel.r, 0).applyEuler(wheel.euler).add(wheel.pos).sub(this.root.position);
-        const elbow = shoulder.clone().lerp(hand, 0.5).add(new THREE.Vector3(a.sx * 0.1, -0.12, 0.05));
-        beam(a.up, shoulder, elbow, 0.105); beam(a.fo, elbow, hand, 0.08); a.hand.position.copy(hand);
-        // fist wraps the rim: long axis along the rim tangent, knuckles facing out
-        const tan = new THREE.Vector3(-Math.sin(ang), Math.cos(ang), 0).applyEuler(wheel.euler);
-        const out = new THREE.Vector3(Math.cos(ang), Math.sin(ang), 0).applyEuler(wheel.euler);
-        const zz = tan.normalize(), xx = out.normalize(), yy = new THREE.Vector3().crossVectors(zz, xx);
-        a.hand.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xx, yy, zz));
-      }
-    }
-    if (!this.curls.length) return;
-    const hw = this.hw;
-    hw.vx += (-hw.x * 90 - hw.vx * 7 + acc.z * 0.012) * dt;
-    hw.vz += (-hw.z * 90 - hw.vz * 7 - acc.x * 0.012) * dt;
-    hw.x = clamp(hw.x + hw.vx * dt, -0.5, 0.5); hw.z = clamp(hw.z + hw.vz * dt, -0.5, 0.5);
-    this.neck.rotation.x = hw.x * 0.6; this.neck.rotation.z = hw.z * 0.6;
-    this.head.rotation.y = Math.sin(t * 0.5) * 0.1 - steer * 0.5;
-    const v = Math.abs(speed);
-    const windF = Math.min(1.8, v * v * 0.0009), flut = Math.min(1.4, v * 0.018);
-    const h = dt / 2;
-    for (let k = 0; k < 2; k++) for (const c of this.curls) {
-      const w = c.w;
-      const fx = -acc.x * 0.0025 * w + Math.sin(t * c.f + c.ph) * 0.06 * flut * w;
-      const fy = -acc.y * 0.002 * w - heaveV * 0.6 * w + Math.sin(t * c.f * 1.3 + c.ph) * 0.05 * flut * w + windF * 0.03 * w * Math.max(0, c.dir.z);
-      const fz = -acc.z * 0.0025 * w + windF * 0.12 * w * (0.4 + Math.max(0, c.dir.y)) + Math.cos(t * c.f * 0.8 + c.ph) * 0.05 * flut * w;
-      c.vel.x += (-c.off.x * 160 - c.vel.x * 6 + fx * 60) * h; c.vel.y += (-c.off.y * 160 - c.vel.y * 6 + fy * 60) * h; c.vel.z += (-c.off.z * 160 - c.vel.z * 6 + fz * 60) * h;
-      c.off.addScaledVector(c.vel, h);
-      const L = c.off.length(); if (L > 0.09) c.off.multiplyScalar(0.09 / L);
-    }
-    let ax = 0, ay = 0, az = 0;
-    this.curls.forEach((c, i) => { this._v.copy(c.rest).add(c.off); ax += c.off.x; ay += c.off.y; az += c.off.z; this._s.setScalar(c.s); this._m.compose(this._v, c.rot, this._s); this.curlMesh.setMatrixAt(i, this._m); });
-    const n = this.curls.length;
-    this.hairBase.position.set(ax / n * 0.6, (this.hairY ?? 0.13) + ay / n * 0.6, 0.13 + az / n * 0.6);
-    this.curlMesh.instanceMatrix.needsUpdate = true;
-  }
-}
-const _up = new THREE.Vector3(0, 1, 0);
-function beam(mesh, a, b, thick) {
-  const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
-  mesh.position.copy(a).add(b).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(_up, d.normalize());
-  mesh.scale.set(thick, len * 0.5, thick);
+  return fleetModel(type, color, rng, opts);
 }
