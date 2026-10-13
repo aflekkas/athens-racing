@@ -1,0 +1,154 @@
+[
+  {
+    "id": "01",
+    "osmNodeId": 278009540,
+    "station": 292,
+    "seed": {
+      "lat": 38.0944623,
+      "lon": 23.8940002
+    },
+    "panorama": {
+      "lat": 38.0945342,
+      "lon": 23.8940012
+    },
+    "heading": 158.1453565054477,
+    "captureDate": "September 2025",
+    "panoId": "2MT9yOoFrrh7jTVT2wtWiA",
+    "sourceUrl": "https://www.google.com/maps/@38.0945342,23.8940012,475a,90y,158.15h,90t/data=!3m7!1e1!3m5!1s2MT9yOoFrrh7jTVT2wtWiA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3D2MT9yOoFrrh7jTVT2wtWiA%26yaw%3D158.14536!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "02",
+    "osmNodeId": 7055762549,
+    "station": 1600,
+    "seed": {
+      "lat": 38.0878571,
+      "lon": 23.9027674
+    },
+    "panorama": {
+      "lat": 38.0878438,
+      "lon": 23.9027736
+    },
+    "heading": 175.77527137830555,
+    "captureDate": "September 2025",
+    "panoId": "d5CVp-txO8YCTgIjmnhqaA",
+    "sourceUrl": "https://www.google.com/maps/@38.0878438,23.9027736,469a,90y,175.78h,90t/data=!3m7!1e1!3m5!1sd5CVp-txO8YCTgIjmnhqaA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3Dd5CVp-txO8YCTgIjmnhqaA%26yaw%3D175.77527!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "03",
+    "osmNodeId": 7073913656,
+    "station": 3156,
+    "seed": {
+      "lat": 38.0796525,
+      "lon": 23.911931
+    },
+    "panorama": {
+      "lat": 38.079661,
+      "lon": 23.9119328
+    },
+    "heading": 162.56218716441276,
+    "captureDate": "September 2025",
+    "panoId": "YDTT-dxz_iWZ_CeRIlJz3w",
+    "sourceUrl": "https://www.google.com/maps/@38.079661,23.9119328,436a,90y,162.56h,90t/data=!3m7!1e1!3m5!1sYDTT-dxz_iWZ_CeRIlJz3w!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3DYDTT-dxz_iWZ_CeRIlJz3w%26yaw%3D162.56218!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "04",
+    "osmNodeId": 7073913681,
+    "station": 4558,
+    "seed": {
+      "lat": 38.0758983,
+      "lon": 23.9238631
+    },
+    "panorama": {
+      "lat": 38.0759121,
+      "lon": 23.9238844
+    },
+    "heading": 108.9695610144289,
+    "captureDate": "September 2025",
+    "panoId": "HYEvYN4RquswrnetVb6rfQ",
+    "sourceUrl": "https://www.google.com/maps/@38.0759121,23.9238844,472a,90y,108.97h,90t/data=!3m7!1e1!3m5!1sHYEvYN4RquswrnetVb6rfQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3DHYEvYN4RquswrnetVb6rfQ%26yaw%3D108.96956!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "05",
+    "osmNodeId": 6413470112,
+    "station": 5730,
+    "seed": {
+      "lat": 38.0718912,
+      "lon": 23.9344027
+    },
+    "panorama": {
+      "lat": 38.0719263,
+      "lon": 23.9343927
+    },
+    "heading": 61.40109702828124,
+    "captureDate": "September 2025",
+    "panoId": "CBRmgMFbVObdEfr1mudfrQ",
+    "sourceUrl": "https://www.google.com/maps/@38.0719263,23.9343927,500a,90y,61.4h,90t/data=!3m7!1e1!3m5!1sCBRmgMFbVObdEfr1mudfrQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3DCBRmgMFbVObdEfr1mudfrQ%26yaw%3D61.401096!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "06",
+    "osmNodeId": 8595665139,
+    "station": 6668,
+    "seed": {
+      "lat": 38.0696067,
+      "lon": 23.9277533
+    },
+    "panorama": {
+      "lat": 38.0695832,
+      "lon": 23.9277461
+    },
+    "heading": 274.091770558361,
+    "captureDate": "March 2026",
+    "panoId": "kmrwLnKHqnpLbxKDeqzACw",
+    "sourceUrl": "https://www.google.com/maps/@38.0695832,23.9277461,564a,90y,274.09h,90t/data=!3m7!1e1!3m5!1skmrwLnKHqnpLbxKDeqzACw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3DkmrwLnKHqnpLbxKDeqzACw%26yaw%3D274.09177!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "07",
+    "osmNodeId": 8595611108,
+    "station": 8142,
+    "seed": {
+      "lat": 38.070519,
+      "lon": 23.9173977
+    },
+    "panorama": {
+      "lat": 38.0705009,
+      "lon": 23.9174147
+    },
+    "heading": 155.63902411149888,
+    "captureDate": "March 2026",
+    "panoId": "N2hJziUPWyB3t-RQ8YJxCA",
+    "sourceUrl": "https://www.google.com/maps/@38.0705009,23.9174147,646a,90y,155.64h,90t/data=!3m7!1e1!3m5!1sN2hJziUPWyB3t-RQ8YJxCA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3DN2hJziUPWyB3t-RQ8YJxCA%26yaw%3D155.63902!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  },
+  {
+    "id": "08",
+    "osmNodeId": 5218359139,
+    "station": 10158,
+    "seed": {
+      "lat": 38.0670218,
+      "lon": 23.9012984
+    },
+    "panorama": {
+      "lat": 38.0669978,
+      "lon": 23.9013103
+    },
+    "heading": 254.0782425957816,
+    "captureDate": "March 2026",
+    "panoId": "kU3Ao9lbwcrO8-UlaPUq2w",
+    "sourceUrl": "https://www.google.com/maps/@38.0669978,23.9013103,710a,90y,254.08h,90t/data=!3m7!1e1!3m5!1skU3Ao9lbwcrO8-UlaPUq2w!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3DkU3Ao9lbwcrO8-UlaPUq2w%26yaw%3D254.07825!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+    "viewed": "2026-10-13",
+    "attribution": "Google Street View / \u00a9 2026 Google"
+  }
+]

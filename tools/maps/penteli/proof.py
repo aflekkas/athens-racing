@@ -3,9 +3,9 @@
 import json, pathlib, numpy as np, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 ROOT=pathlib.Path(__file__).resolve().parents[3];D=ROOT/'.scratch/penteli';D.mkdir(parents=True,exist_ok=True)
-r=json.loads((ROOT/'tools/maps/penteli/raw/route.json').read_text());p=json.loads((ROOT/'tools/maps/penteli/raw/profile.json').read_text());stations=json.loads((D/'stations.json').read_text());proj=r['proj']
+r=json.loads((ROOT/'tools/maps/penteli/raw/route.json').read_text());p=json.loads((ROOT/'tools/maps/penteli/raw/profile.json').read_text());stations=[{'id':q['id'],'s':q['station'],'lat':q['panorama']['lat'],'lon':q['panorama']['lon'],'heading':q['heading']} for q in json.loads((ROOT/'tools/maps/penteli/street-stations.json').read_text())];proj=r['proj']
 s=np.arange(len(p['raw']))*p['step'];mask=(s>=p['start'])&(s<=p['finish']);km=(s-p['start'])/1000
 plt.rcParams.update({'font.family':'DejaVu Sans','font.size':11,'axes.spines.top':False,'axes.spines.right':False})
 fig,axs=plt.subplots(2,1,figsize=(13,7),sharex=True,gridspec_kw={'height_ratios':[3,1]},layout='constrained')
@@ -28,8 +28,13 @@ for q in stations:
  a,b=D/f"street-{q['id']}.png",D/f"game-{q['id']}.png"
  if not a.exists() or not b.exists():continue
  meta=D/f"street-{q['id']}.json"
- if meta.exists() and 'No Street View imagery' in json.loads(meta.read_text()).get('text',''):continue
- left=Image.open(a).convert('RGB');right=Image.open(b).convert('RGB');w,h=960,600
- left=left.resize((w,h));right=right.resize((w,h));canvas=Image.new('RGB',(w*2,h+70),'#10242e');canvas.paste(left,(0,70));canvas.paste(right,(w,70));d=ImageDraw.Draw(canvas);font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',18)
- d.text((18,12),f"{q['id']}  GOOGLE STREET VIEW",font=font,fill='white');d.text((w+18,12),'PARALIAKI · ACTUAL IN-GAME RENDER',font=font,fill='white');d.text((18,40),f"{q['lat']:.6f}°N {q['lon']:.6f}°E · heading {q['heading']:.0f}° · station {q['s']}m",font=font,fill='#adceda');canvas.save(D/f"comparison-{q['id']}.png")
+ if not meta.exists():continue
+ record=json.loads(meta.read_text())
+ if not record.get('visually_verified',False):continue
+ game_meta=D/f"game-{q['id']}.json"
+ if not game_meta.exists() or not json.loads(game_meta.read_text()).get('visually_verified',False):continue
+ q={**q,**record.get('snapped',{})}
+ left=Image.open(a).convert('RGB');right=Image.open(b).convert('RGB');w,h=960,540
+ left=ImageOps.pad(left,(w,h),color='#10242e');right=ImageOps.pad(right,(w,h),color='#10242e');canvas=Image.new('RGB',(w*2,h+70),'#10242e');canvas.paste(left,(0,70));canvas.paste(right,(w,70));d=ImageDraw.Draw(canvas);font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',18)
+ d.text((18,12),f"{q['id']}  GOOGLE STREET VIEW · {record.get('capture_date','')}",font=font,fill='white');d.text((w+18,12),'PARALIAKI · ACTUAL IN-GAME RENDER',font=font,fill='white');d.text((18,40),f"{q['lat']:.6f}°N {q['lon']:.6f}°E · heading {q['heading']:.0f}° · station {q['s']}m",font=font,fill='#adceda');canvas.save(D/f"comparison-{q['id']}.png")
 print('Wrote satellite overlay, elevation profile and available paired imagery')
