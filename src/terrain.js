@@ -135,7 +135,7 @@ export function buildTerrain(terrain, route, extraStamps, scene) {
     if (au < edge + 12) { Hc[id] = Math.min(Hc[id], sy + Math.max(0, au - edge - 4) * 0.25); verge[id] = 1 - smoothstep(edge, edge + 14, au); }
     if (au < edge + 2 && Hc[id] < sy - 3) Hc[id] = Math.max(Hc[id], sy - 3); // never leave a hole right under the shoulder
   }
-  // Limanakia: the coast road climbs over bare limestone; DEM cells are too coarse for the cliffs and coves,
+  // the cliff road (Limanakia, Varkiza - Lomvarda) climbs over bare limestone; DEM cells are too coarse for the cliffs and coves,
   // so add ridged rock relief between the road and the sea (and a few rocks breaking the surface in the coves)
   const rug = new Float32Array(GX * GZ), H0 = Hc.slice();
   {
@@ -151,7 +151,7 @@ export function buildTerrain(terrain, route, extraStamps, scene) {
       const au = Math.abs(q.u), edge = route.edge(q.s) + 3;
       if (au < edge + 4) continue;
       const h = Hc[id]; if (h < -4) continue;
-      const k = smoothstep(edge + 14, edge + 48, au) * (1 - smoothstep(380, 480, au)) * smoothstep(s0 - 150, s0 + 100, q.s);
+      const k = smoothstep(edge + 14, edge + 48, au) * (1 - smoothstep(380, 480, au)) * (1 - smoothstep(0.3, 0.7, route.urban(q.s)));
       if (k <= 0) continue;
       const f = fbm(x * 0.022, z * 0.022, 4), ridge = Math.pow(1 - Math.abs(2 * f - 1), 3);
       const bumps = fbm(x * 0.09 + 31, z * 0.09, 3);

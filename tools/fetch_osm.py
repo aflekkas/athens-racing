@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch OpenStreetMap data for the Glyfada -> Limanakia route via Overpass.
+"""Fetch OpenStreetMap data for the Vouliagmeni -> Lomvarda coast road via Overpass.
 Raw responses are stored in data/raw/ so the game never calls a live API.
 Data (c) OpenStreetMap contributors, ODbL."""
 import json, sys, time, urllib.parse, urllib.request, os
@@ -9,7 +9,7 @@ MIRRORS = [
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
 ]
-BBOX = "37.784,23.728,37.882,23.825"  # S,W,N,E
+BBOX = "37.784,23.762,37.840,23.890"  # S,W,N,E
 OUT = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
 
 QUERIES = {

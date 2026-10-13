@@ -22,11 +22,12 @@ const MLON = 111412.84 * Math.cos(PHI) - 93.5 * Math.cos(3 * PHI);
 const P = (lat, lon) => [(lon - LON0) * MLON, -(lat - LAT0) * MLAT]; // x east, z south
 const r1 = (v) => Math.round(v * 10) / 10, r2 = (v) => Math.round(v * 100) / 100;
 
-// route: Glyfada seafront (Poseidonos Ave) -> Voula -> Vouliagmeni -> lake -> Limanakia
-const PRE_LL = [37.8768, 23.7322];      // a little run-up behind the grid (Glyfada / Ellinikon edge)
-const START_LL = [37.8722, 23.7378];    // start line: Glyfada, by the 4th marina
-const FINISH_LL = [37.8001, 23.7946];   // Limanakia coves (between Limanakia A and B)
-const END_LL = [37.8052, 23.8000];      // run-out towards Varkiza
+// route: Vouliagmeni -> Astir -> the lake -> Limanakia -> Varkiza -> the bends past Lomvarda (Athinon-Souniou, EO91)
+const FROM = 'Vouliagmeni', TO = 'Lomvarda';
+const PRE_LL = [37.8137, 23.7800];      // a little run-up behind the grid (Poseidonos, Vouliagmeni)
+const START_LL = [37.8126, 23.7822];    // start line: Vouliagmeni, above Astir
+const FINISH_LL = [37.8196, 23.8372];   // Lomvarda cove
+const END_LL = [37.8184, 23.8417];      // run-out towards Agia Marina
 
 // ------------------------------------------------------------------ helpers
 function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
@@ -117,9 +118,9 @@ function coastDist(x, z, maxR = 1500) {
   // coastline: land on the LEFT of the way direction. With x east / z south, "left" = cross < 0
   return Math.sqrt(bd) * side;
 }
-// sanity: Glyfada inland must be land
+// sanity: Vari inland must be land
 {
-  const inland = coastDist(...P(37.8640, 23.7560)), sea = coastDist(...P(37.850, 23.735));
+  const inland = coastDist(...P(37.8230, 23.8100)), sea = coastDist(...P(37.8000, 23.8200));
   console.log('coast sign check (inland +, sea -):', inland.toFixed(0), sea.toFixed(0));
   if (inland < 0) throw new Error('coast sign inverted');
 }
@@ -130,7 +131,7 @@ const nodePos = new Map(), adj = new Map(), wayTags = new Map();
 const MAIN = new Set(['trunk', 'primary', 'secondary', 'trunk_link', 'primary_link']);
 // the race follows the seafront: any proper street is allowed, but every metre is priced by how far it
 // strays from the Saronic Gulf shoreline, so the cheapest path is the coast road itself (Aktis / Iliou
-// along Voula beach, round Kavouri, the Vouliagmeni bay, then the cliff-side Athinon-Souniou road)
+// round the Vouliagmeni bay, the cliff-side Athinon-Souniou road and Varkiza beach)
 const ROUTE_OK = new Set([...MAIN, 'tertiary', 'tertiary_link', 'secondary_link', 'unclassified']);
 const TYPE_PEN = { trunk: 1, primary: 1, secondary: 1.05, trunk_link: 1.2, primary_link: 1.2, secondary_link: 1.2, tertiary: 1.3, tertiary_link: 1.3, unclassified: 1.6 };
 const coastPen = (x, z) => { const d = Math.abs(coastDist(x, z, 1500)); return 1 + (Math.max(0, d - 220) / 80) ** 2; };
@@ -222,8 +223,8 @@ for (let i = 0; i < N1; i++) {
 }
 // smooth step transitions (tapers ~150 m)
 const divS = gaussSmooth(Array.from(divided), 40, 1), nRS = gaussSmooth(Array.from(nR), 40, 1);
-const LANE_W = 3.5;
-const medHalfAt = (i) => 0.12 + divS[i] * 1.9; // 4 m planted median on the divided avenue, double line otherwise
+const LANE_W = 3.3;
+const medHalfAt = (i) => 0.12 + divS[i] * 1.2; // ~2.6 m raised island where the avenue splits, double line otherwise
 // shift from the carriageway (way) centre to the median line
 const median = sm.map((p, i) => {
   const a = sm[Math.max(0, i - 2)], b = sm[Math.min(N1 - 1, i + 2)];
@@ -268,6 +269,31 @@ const sOf = (ll) => project(...P(...ll)).s;
 const S_START = Math.round(sOf(START_LL)), S_FINISH = Math.round(sOf(FINISH_LL));
 console.log('start s', S_START, 'finish s', S_FINISH, 'race length', S_FINISH - S_START);
 
+// key places along the route for banners (s positions)
+const MARKS = [
+  { id: 'astir', name: 'ASTIR', sub: 'Astir Beach · Astir Palace across the bay', ll: [37.8092, 23.7790] },
+  { id: 'lake', name: 'LAKE VOULIAGMENI', sub: 'Thermal lake under the limestone cliff', ll: [37.8077, 23.7854] },
+  { id: 'limanakia', name: 'LIMANAKIA', sub: 'Rocky coves · Athinon-Souniou Avenue', ll: [37.8015, 23.7905] },
+  { id: 'varkiza', name: 'VARKIZA', sub: 'Varkiza Beach · the fishing harbour', ll: [37.8150, 23.8008] },
+  { id: 'coast', name: 'ATHINON-SOUNIOU', sub: 'The bends along the Saronic shore', ll: [37.8140, 23.8150] },
+  { id: 'lomvarda', name: 'LOMVARDA', sub: 'The cove below Agia Marina', ll: [37.8196, 23.8372] },
+];
+const marks = MARKS.map((m) => ({ ...m, s: Math.round(sOf(m.ll)) })).map(({ ll, ...r }) => r);
+// character of each stretch from where it begins: town / beach (summer crowd) / cliff (open coast road) / cove (cars on the dirt shoulders)
+const ZONES = [
+  { zone: 'beach', urban: 1, ll: START_LL },                 // Vouliagmeni, Astir, the lake
+  { zone: 'cliff', urban: 0, ll: [37.8045, 23.7867] }, // round the headland below the lake
+  { zone: 'cove', urban: 0, ll: [37.8017, 23.7895] },        // Limanakia A/B: parking on the dirt, steps down to the rocks
+  { zone: 'cliff', urban: 0, ll: [37.8045, 23.7978] },
+  { zone: 'town', urban: 1, ll: [37.8095, 23.8004] },        // Varkiza
+  { zone: 'cliff', urban: 0, ll: [37.8210, 23.8060] },
+  { zone: 'cove', urban: 0, ll: [37.8178, 23.8330] },        // Lomvarda
+  { zone: 'cliff', urban: 0, ll: [37.8212, 23.8420] },
+];
+const zones = ZONES.map((z) => ({ zone: z.zone, urban: z.urban, s: z.ll === START_LL ? 0 : Math.round(sOf(z.ll)) })).sort((a, b) => a.s - b.s);
+console.log('zones', zones.map((z) => z.zone + '@' + z.s).join(' '));
+const zoneAt = (s) => { let z = zones[0]; for (const q of zones) if (s >= q.s) z = q; return z.zone; };
+
 // lanes / median per 2 m sample
 const lanesOut = [], divOut = [];
 for (let i = 0; i < NS; i++) { const j = Math.min(N1 - 1, Math.round(RI[i])); lanesOut.push(r2(nRS[j])); divOut.push(r2(divS[j])); }
@@ -284,6 +310,20 @@ const roadNames = [];
     roadNames.push({ s: i * STEP, name: n }); last = n;
   }
 }
+
+// posted speed limits (OSM maxspeed), smoothed over ~120 m so a short junction way doesn't flicker a sign
+const speeds = [];
+{
+  const raw = [];
+  for (let i = 0; i < NS; i += 5) { const j = Math.min(N1 - 1, Math.round(RI[i])); const v = parseInt((wayTags.get(wayAt[j]) || {}).maxspeed || '0', 10); raw.push(v || null); }
+  let last = null;
+  for (let k = 0; k < raw.length; k++) {
+    const c = {}; for (let q = Math.max(0, k - 6); q <= Math.min(raw.length - 1, k + 6); q++) if (raw[q]) c[raw[q]] = (c[raw[q]] || 0) + 1;
+    let v = last, bc = 0; for (const key in c) if (c[key] > bc) { bc = c[key]; v = +key; }
+    if (v && v !== last) { speeds.push({ s: k * 5 * STEP, v }); last = v; }
+  }
+}
+console.log('speed limits', speeds.map((q) => q.v + '@' + q.s).join(' '));
 
 // ------------------------------------------------------------------ 2. elevation (DEM) along the route
 let dem = null;
@@ -316,9 +356,9 @@ RY = gaussSmooth(RY, 10, 1);
 const bEls = load('buildings');
 const ASTIR = { s: 37.7955, n: 37.8125, w: 23.7630, e: 23.7800 };
 const buildings = [];
-const roadHalfAt = (s) => { const i = Math.max(0, Math.min(NS - 1, Math.round(s / STEP))); const mh = 0.12 + divOut[i] * 1.9; return mh + lanesOut[i] * LANE_W + 1.2; };
+const roadHalfAt = (s) => { const i = Math.max(0, Math.min(NS - 1, Math.round(s / STEP))); const mh = 0.12 + divOut[i] * 1.2; return mh + lanesOut[i] * LANE_W + 1.2; };
 const routeYAt = (s) => RY[Math.max(0, Math.min(NS - 1, Math.round(s / STEP)))];
-const districtOf = (s) => (s < 4400 ? 'glyfada' : s < 7700 ? 'voula' : s < 10090 ? 'kavouri' : s < 11190 ? 'vouliagmeni' : 'limanakia');
+const districtOf = (s) => (zoneAt(s) === 'town' ? 'voula' : 'riviera'); // Varkiza: low apartment blocks; elsewhere villas
 for (const b of bEls) {
   if (!b.geometry || b.geometry.length < 4) continue;
   let pts = b.geometry.map((g) => P(g.lat, g.lon));
@@ -410,6 +450,7 @@ for (const e of fEls) {
     if (closed && pts.length > 3) pts.pop();
     const rec = { p: flat(pts), c: closed ? 1 : 0 };
     if (t.name) rec.n = latinName(t);
+    if (cls === 'parking') rec.sf = /^(unpaved|dirt|ground|gravel|compacted|fine_gravel|sand|grass|earth)$/.test(t.surface || '') ? 'dirt' : t.surface ? 'paved' : undefined;
     areas[cls].push(rec);
   } else if (e.type === 'node') {
     const p = P(e.lat, e.lon);
@@ -455,18 +496,79 @@ for (const w of roads) {
 }
 console.log('side roads', sideRoads.length);
 
-// key places along the route for banners (s positions)
-const MARKS = [
-  { id: 'glyfada', name: 'GLYFADA', sub: 'Poseidonos Avenue · the Athens Riviera', ll: [37.8700, 23.7400] },
-  { id: 'marinas', name: 'GLYFADA MARINAS', sub: 'Marinas 1-4 · Asteria seaside', ll: [37.8610, 23.7480] },
-  { id: 'voula', name: 'VOULA', sub: 'Voula Beach · Karamanli Avenue', ll: [37.8500, 23.7520] },
-  { id: 'kavouri', name: 'KAVOURI', sub: 'Megalo & Mikro Kavouri · pine-shaded villas', ll: [37.8290, 23.7700] },
-  { id: 'vouliagmeni', name: 'VOULIAGMENI', sub: 'Vouliagmeni Bay · Astir peninsula on your right', ll: [37.8130, 23.7810] },
-  { id: 'astir', name: 'ASTIR', sub: 'Astir Beach · Astir Palace across the bay', ll: [37.8092, 23.7790] },
-  { id: 'lake', name: 'LAKE VOULIAGMENI', sub: 'Thermal lake under the limestone cliff', ll: [37.8077, 23.7854] },
-  { id: 'limanakia', name: 'LIMANAKIA', sub: 'Rocky coves · Athinon-Souniou Avenue', ll: [37.8015, 23.7905] },
-];
-const marks = MARKS.map((m) => ({ ...m, s: Math.round(sOf(m.ll)) })).map(({ ll, ...r }) => r);
+// concrete New Jersey barriers documented on the sea side at the second Limanaki (replaced the steel rail)
+const BARRIERS = [{ from: [37.8019, 23.7915], to: [37.8016, 23.7945], side: 1 }];
+const barriers = BARRIERS.map((b) => { const a = Math.round(sOf(b.from)), c = Math.round(sOf(b.to)); return { s0: Math.min(a, c), s1: Math.max(a, c), side: b.side }; });
+console.log('barriers', JSON.stringify(barriers));
+
+// ------------------------------------------------------------------ 6b. where cars park, and the dirt humps
+// The coves (Limanakia, Lomvarda) have no marked bays: in summer cars line the dirt shoulder and fill the
+// unpaved lay-bys, which are bulldozed flat with spoil heaped round the edges. OSM parking polygons are used as
+// they are (rows of bays along their long side); untagged lots out of town are dirt, as they are on the ground.
+const parkSpots = [], humps = [];
+{
+  let seed = 1;
+  const rnd = () => hash(seed++);
+  const landFlat = (x, z, y0, tol) => coastDist(x, z, 300) > 5 && Math.abs(demAt(x, z) - y0) < tol;
+  const free = (x, z, r) => !parkSpots.some((q) => (q.x - x) ** 2 + (q.z - z) ** 2 < r * r) && !humps.some((h) => (h[0] - x) ** 2 + (h[1] - z) ** 2 < (h[2] + r) ** 2);
+  // 1. parking polygons near the route
+  for (const a of areas.parking) {
+    if (!a.c) continue;
+    const pts = []; for (let i = 0; i < a.p.length; i += 2) pts.push([a.p[i], a.p[i + 1]]);
+    const c = centroid(pts), q = project(c[0], c[1], 300); if (!q || q.d > 120 || q.s < 0 || q.s > routeLen) continue;
+    const dirt = a.sf === 'dirt' || (!a.sf && zoneAt(q.s) !== 'town');
+    a.sf = dirt ? 'dirt' : 'paved';
+    // long axis
+    let bi = 0, bl = 0; for (let i = 0; i < pts.length; i++) { const j = (i + 1) % pts.length, l = dist(pts[i], pts[j]); if (l > bl) { bl = l; bi = i; } }
+    const A = pts[bi], B = pts[(bi + 1) % pts.length], ax = (B[0] - A[0]) / bl, az = (B[1] - A[1]) / bl;
+    const inside = (x, z) => { let k = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, zi] = pts[i], [xj, zj] = pts[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) k = !k; } return k; };
+    const yaw = Math.atan2(az, -ax); // nose across the rows (forward = (-sin yaw, -cos yaw))
+    let ext = 0; for (const p of pts) ext = Math.max(ext, dist(p, c));
+    let lotN = 0;
+    for (let v = -ext; v <= ext; v += 6.2) for (let w = -ext; w <= ext; w += 2.7) {
+      const x = c[0] + ax * w - az * v, z = c[1] + az * w + ax * v;
+      if (!inside(x, z) || !inside(x + ax * 1.3, z + az * 1.3) || !inside(x - ax * 1.3, z - az * 1.3)) continue;
+      if (rnd() > (dirt ? 0.5 : 0.4) || lotN >= 28) continue;
+      { const qs = project(x, z, 100); if (qs && Math.abs(qs.u) < roadHalfAt(qs.s) + (zoneAt(qs.s) === 'town' ? 6.5 : 1.4)) continue; } // OSM lots overlap the verge; in town that's the pavement (kerbside bays are parked by traffic.js)
+      lotN++;
+      parkSpots.push({ x: r1(x), z: r1(z), yaw: r2(yaw + (rnd() < 0.5 ? 0 : Math.PI) + (rnd() - 0.5) * (dirt ? 0.3 : 0.06)), d: dirt ? 1 : 0 });
+    }
+    // spoil heaps round the edge of a dirt lot
+    if (dirt) for (let i = 0; i < pts.length; i++) {
+      const P0 = pts[i], P1 = pts[(i + 1) % pts.length], L = dist(P0, P1);
+      for (let t = 4; t < L - 4; t += 9 + rnd() * 10) {
+        const x = P0[0] + (P1[0] - P0[0]) * t / L, z = P0[1] + (P1[1] - P0[1]) * t / L;
+        const qq = project(x, z, 200); if (!qq || Math.abs(qq.u) < roadHalfAt(qq.s) + 5) continue; // not on the road side
+        const r = 2.2 + rnd() * 2.6;
+        if (free(x, z, r * 0.6)) humps.push([r1(x), r1(z), r2(r), r2(0.35 + rnd() * 0.75), r2(rnd() * 6)]);
+      }
+    }
+  }
+  // 2. the cove shoulders: a row of cars on the dirt, and a lay-by with humps every so often
+  for (let i = 0; i < NS; i += 1) {
+    const sAt = i * STEP;
+    if (zoneAt(sAt) !== 'cove' || i % 3) continue;
+    const half = roadHalfAt(sAt), y0 = RY[i];
+    for (const side of [1, -1]) {
+      const rx = -TZ[i] * side, rz = TX[i] * side;  // right normal * side
+      const u = half + 1.7;
+      const x = RX[i] + rx * u, z = RZ[i] + rz * u;
+      if (!landFlat(x, z, y0, 2.2)) continue;
+      if (rnd() < (side > 0 ? 0.62 : 0.4) && free(x, z, 4.6)) parkSpots.push({ x: r1(x), z: r1(z), yaw: r2(Math.atan2(-TX[i], -TZ[i]) + (side > 0 ? 0 : Math.PI) + (rnd() - 0.5) * 0.12), d: 1 });
+      // lay-by humps further out, where the ground is flat enough to pull off
+      if (rnd() < 0.05) {
+        const uu = half + 7 + rnd() * 9, hx = RX[i] + rx * uu, hz = RZ[i] + rz * uu;
+        if (landFlat(hx, hz, y0, 1.6)) { const r = 2.4 + rnd() * 2.8; if (free(hx, hz, r)) humps.push([r1(hx), r1(hz), r2(r), r2(0.4 + rnd() * 0.8), r2(rnd() * 6)]); }
+      }
+    }
+  }
+}
+// nobody parks (or heaps spoil) on the far side of a concrete barrier
+for (const b of barriers) for (const arr of [parkSpots, humps]) for (let k = arr.length - 1; k >= 0; k--) {
+  const it = arr[k], q = project(it.x ?? it[0], it.z ?? it[1], 80);
+  if (q && q.s > b.s0 - 10 && q.s < b.s1 + 10 && Math.sign(q.u) === b.side && Math.abs(q.u) < 30) arr.splice(k, 1);
+}
+console.log('park spots', parkSpots.length, 'humps', humps.length);
 
 // ------------------------------------------------------------------ 7. terrain grid
 const TG = 10;
@@ -577,9 +679,9 @@ const out = {
   proj: { lat0: LAT0, lon0: LON0, mlat: MLAT, mlon: MLON },
   route: {
     step: STEP, x: RX.map(r2), z: RZ.map(r2), y: RY.map(r2), lanes: lanesOut, div: divOut,
-    start: S_START, finish: S_FINISH, length: routeLen, names: roadNames,
+    start: S_START, finish: S_FINISH, length: routeLen, names: roadNames, from: FROM, to: TO, speeds,
   },
-  marks, coast, buildings, areas, trees, pois, furniture, places, sideRoads,
+  marks, zones, parkSpots, humps, barriers, coast, buildings, areas, trees, pois, furniture, places, sideRoads,
 };
 fs.writeFileSync(path.join(ROOT, 'data', 'map.json'), JSON.stringify(out));
 console.log('map.json', (fs.statSync(path.join(ROOT, 'data', 'map.json')).size / 1e6).toFixed(2), 'MB; terrain.bin', (fs.statSync(path.join(ROOT, 'data', 'terrain.bin')).size / 1e6).toFixed(2), 'MB');

@@ -1,0 +1,22 @@
+#mp-toggle{position:fixed;right:22px;top:90px;z-index:30;background:#ff3b2f;color:white;border:0;padding:11px 18px;font:800 17px 'Barlow Condensed',sans-serif;cursor:pointer;letter-spacing:1px}
+#multiplayer[hidden],#multiplayer [hidden],#mp-board[hidden]{display:none!important}
+#multiplayer{position:fixed;inset:0;z-index:100;background:rgba(5,9,16,.86);display:flex;align-items:center;justify-content:center;padding:20px;color:#fff;font-family:'Barlow',sans-serif;overflow:auto}
+.mp-card{width:760px;max-width:100%;max-height:92vh;overflow:auto;background:#101721;border:1px solid #354152;padding:26px;box-shadow:0 20px 100px #0008}
+.mp-heading,.mp-section,.mp-lobby,.mp-actions,.mp-create{display:flex;align-items:center;justify-content:space-between;gap:12px}.mp-heading small{font-size:11px;letter-spacing:2px;color:#8d9bac}.mp-heading h2{font:italic 900 42px 'Barlow Condensed',sans-serif;margin:3px 0 12px}
+#multiplayer button{background:#ff3b2f;color:white;border:0;padding:10px 14px;cursor:pointer;font:800 16px 'Barlow Condensed',sans-serif;white-space:nowrap}#multiplayer button:disabled{opacity:.4;cursor:default}#multiplayer button:focus-visible,#mp-toggle:focus-visible{outline:2px solid #29d8ff;outline-offset:3px}
+#multiplayer input,#multiplayer select{box-sizing:border-box;background:#07101a;border:1px solid #354152;color:#fff;padding:11px;font:500 14px 'Barlow',sans-serif;min-width:0}#multiplayer input:focus,#multiplayer select:focus{outline:2px solid #29d8ff}#multiplayer input[type=checkbox]{accent-color:#ff3b2f}
+.mp-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}.mp-fields label{font-size:11px;letter-spacing:1px;display:grid;gap:8px}.mp-create{flex-wrap:wrap}.mp-create>input{flex:1}.mp-create label{font-size:12px}#mp-join-form{display:flex;gap:10px;margin:16px 0}#mp-code{flex:1;text-transform:uppercase;letter-spacing:3px}.mp-section h3{font:800 20px 'Barlow Condensed',sans-serif;letter-spacing:1px}.mp-lobby,.mp-member{padding:12px 0;border-bottom:1px solid #293444;font-size:14px}.mp-actions{flex-wrap:wrap;justify-content:flex-start;margin:22px 0}.mp-note,#mp-room-help{color:#9eacbd;font-size:12px;line-height:1.6}#mp-status{color:#29d8ff;font-size:14px;overflow-wrap:anywhere}#mp-room-code{color:#29d8ff;letter-spacing:3px}#mp-board{position:fixed;top:145px;right:22px;z-index:25;background:#0a111ddd;border:1px solid #354152;color:white;padding:14px 18px;font:600 14px 'Barlow',sans-serif;min-width:175px;pointer-events:none}#mp-board b{display:block;color:#29d8ff;margin-bottom:8px}#mp-board div{padding:4px 0}
+@media(max-width:600px){.mp-card{padding:16px}.mp-fields{grid-template-columns:1fr}.mp-lobby{font-size:12px}.mp-heading h2{font-size:32px}#mp-toggle{right:10px;top:90px}#mp-board{right:10px;top:135px;font-size:11px;min-width:130px}.mp-create>input{flex-basis:100%}}
+
+#graphics-quality{position:fixed;right:190px;top:90px;z-index:30;background:#101721;color:white;border:1px solid #354152;padding:9px;font:700 14px "Barlow Condensed",sans-serif;cursor:pointer}@media(max-width:600px){#graphics-quality{right:165px;top:90px;font-size:12px;padding:10px 5px}}
+@media(max-width:700px), (max-height:550px) and (max-width:1000px){
+  #posBox{left:12px;top:12px;transform:scale(.68);transform-origin:top left}
+  #styleBox{display:none}#dialBox{width:170px;height:170px;right:8px;bottom:20px}
+  #mapBox{width:130px;height:130px;left:12px;bottom:25px}#mapLabel{font-size:9px;padding:3px 8px}
+  #routeBox{top:88px;width:90vw}#rZone{font-size:16px}#rRoad{font-size:10px}#rToGo{font-size:11px}
+  #routeBox .rt{gap:7px}#rticks .l{font-size:8px;letter-spacing:0}#sigBox{top:135px;transform:scale(.7);transform-origin:top right}
+  #mp-toggle{top:12px;right:12px;font-size:14px;padding:8px 11px}
+  #graphics-quality{top:46px;right:12px;font-size:12px;padding:7px}
+  #mp-board{top:130px;right:12px;min-width:125px;font-size:11px;padding:9px 12px}
+  #credit{font-size:8px}#msg{font-size:14px;max-width:80vw}#count{font-size:100px}
+}

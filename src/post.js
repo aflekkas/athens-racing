@@ -241,13 +241,13 @@ const FinalShader = {
     }`,
 };
 
-export function createPost(renderer, scene, camera) {
+export function createPost(renderer, scene, camera, { lowQuality = false } = {}) {
   const size = renderer.getSize(new THREE.Vector2());
   const pr = renderer.getPixelRatio();
   const W = () => Math.max(1, Math.floor(size.x * pr)), H = () => Math.max(1, Math.floor(size.y * pr));
   const depthTex = new THREE.DepthTexture(W(), H());
   depthTex.type = THREE.UnsignedIntType;
-  const sceneRT = new THREE.WebGLRenderTarget(W(), H(), { type: THREE.HalfFloatType, samples: 4, depthTexture: depthTex });
+  const sceneRT = new THREE.WebGLRenderTarget(W(), H(), { type: THREE.HalfFloatType, samples: lowQuality ? 0 : 4, depthTexture: depthTex });
   const hdrRT = new THREE.WebGLRenderTarget(W(), H(), { type: THREE.HalfFloatType, depthBuffer: false });
   const aoA = new THREE.WebGLRenderTarget(W() >> 1, H() >> 1, { type: THREE.HalfFloatType, depthBuffer: false });
   const aoB = new THREE.WebGLRenderTarget(W() >> 1, H() >> 1, { type: THREE.HalfFloatType, depthBuffer: false });
@@ -267,7 +267,7 @@ export function createPost(renderer, scene, camera) {
   const u = finalMat.uniforms;
   const post = {
     u, comp: compMat.uniforms, bloom, sceneRT,
-    aoOn: !location.search.includes('noao'),
+    aoOn: !lowQuality && !location.search.includes('noao'),
     /** set before render(): cars = [{inv: Matrix4 (world->car), half: Vector3}], blur strength, dof */
     render(dt = 1 / 60) {
       camera.updateMatrixWorld();
@@ -293,7 +293,7 @@ export function createPost(renderer, scene, camera) {
       compMat.uniforms.uBlur.value = post.blur * (1 / 60) / Math.max(1 / 240, dt);
       quad.material = compMat; renderer.setRenderTarget(hdrRT); quad.render(renderer);
       // bloom adds onto hdrRT
-      if (!NOBLOOM) bloom.render(renderer, null, hdrRT, dt, false);
+      if (!NOBLOOM && !lowQuality) bloom.render(renderer, null, hdrRT, dt, false);
       // final to screen
       quad.material = finalMat; renderer.setRenderTarget(null); quad.render(renderer);
       prevVP.copy(curVP); havePrev = true;

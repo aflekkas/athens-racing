@@ -112,7 +112,7 @@ export class People {
     const spots = [];
     const KINDS = /^(cafe|restaurant|bar|fast_food|ice_cream|pub|shop:pastry|shop:bakery|shop:confectionery)$/;
     for (const poi of data.pois) if (KINDS.test(poi.k) && Math.abs(poi.u) < 90 && poi.s > r.start - 80 && poi.s < r.finish && r.urban(poi.s) > 0.6) spots.push({ s: poi.s, side: Math.sign(poi.u) || 1 });
-    for (let s = r.start + 230; s < 10190; s += 410) if (r.seaR(s) < 150 && r.urban(s) > 0.7) spots.push({ s, side: 1 });
+    for (let s = r.start + 230; s < r.finish; s += 410) if (r.seaR(s) < 150 && r.urban(s) > 0.7) spots.push({ s, side: 1 });
     spots.sort((a, b) => a.s - b.s);
     const J = this.assets.junctions || [], X = this.assets.crossings || [], B = this.assets.busStops || [];
     const clear = (s) => !J.some((j) => Math.abs(j.s - s) < 32) && !X.some((c) => Math.abs(c - s) < 13) && !B.some((b) => Math.abs(b - s) < 16);

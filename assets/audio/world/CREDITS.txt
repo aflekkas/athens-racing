@@ -1,0 +1,70 @@
+PARALIAKI RACING — WORLD SOUNDS
+
+Edited field recordings from Freesound (public HQ previews). All are CC0 1.0
+(public domain): https://creativecommons.org/publicdomain/zero/1.0/
+Changes: trimmed, filtered, mixed, level matched, looped with crossfades.
+Rebuild with tools/build_world_audio.mjs; sources.json lists trims and checksums.
+
+sea-sand.mp3
+  "BGSaSc Greece Close Waves Water Splash Gurgle Beach 05" by Profispiesser
+  https://freesound.org/people/Profispiesser/sounds/550930/
+sea-rocks.mp3
+  "Waves_Crashing_Rocks_IT.wav" by uniuniversal
+  https://freesound.org/people/uniuniversal/sounds/620213/
+cicadas.mp3
+  "Cicada's orchestra" by Jedo
+  https://freesound.org/people/Jedo/sounds/396810/
+beach.mp3
+  "Ambience: Crowded Beach" by Sheyvan
+  https://freesound.org/people/Sheyvan/sounds/476099/
+beach.mp3
+  "bathing beach atmo" by Garuda1982
+  https://freesound.org/people/Garuda1982/sounds/531430/
+cafe.mp3
+  "paris cafe ambient with bells short.wav" by giant steps
+  https://freesound.org/people/giant%20steps/sounds/148852/
+city.mp3
+  "Car_traffic_Athens.wav" by Jedo
+  https://freesound.org/people/Jedo/sounds/396466/
+gulls.mp3
+  "Seagulls / gaviotas clean wildtrack.WAV" by Soojay
+  https://freesound.org/people/Soojay/sounds/462462/
+wind.mp3
+  "Wind Whipping By.wav" by FunWithSound
+  https://freesound.org/people/FunWithSound/sounds/361487/
+tyre-squeal.mp3
+  "Chrysler LHS tire squeal 04 (04-25-2009).wav" by audible-edge
+  https://freesound.org/people/audible-edge/sounds/71739/
+scooter-idle.mp3
+  "Gilera Runner 2007 revs backfire cold idle" by lovretta
+  https://freesound.org/people/lovretta/sounds/140384/
+scooter-run.mp3
+  "Aprilla SR-50 ( scooter sound )" by dif1891
+  https://freesound.org/people/dif1891/sounds/591372/
+bus-idle.mp3
+  "Bus Engine Idling" by bikesnbassboi
+  https://freesound.org/people/bikesnbassboi/sounds/540398/
+crash-heavy.mp3
+  "Car Crash" by squareal
+  https://freesound.org/people/squareal/sounds/237375/
+crash-glass.mp3
+  "Car Crash (with Glass)" by magnuswaker
+  https://freesound.org/people/magnuswaker/sounds/592388/
+crash-medium.mp3
+  "Crash.wav" by CogFireStudios
+  https://freesound.org/people/CogFireStudios/sounds/420356/
+hit-clank.mp3
+  "Clank Car Crash Collision" by qubodup
+  https://freesound.org/people/qubodup/sounds/151624/
+hit-fast.mp3
+  "Fast Collision" by qubodup
+  https://freesound.org/people/qubodup/sounds/332056/
+horn-double.mp3
+  "Car Honking" by MicktheMicGuy
+  https://freesound.org/people/MicktheMicGuy/sounds/434878/
+horn-long.mp3
+  "car horn.wav" by keweldog
+  https://freesound.org/people/keweldog/sounds/182474/
+scream.mp3
+  "Girl_Scream.wav" by tcrocker68
+  https://freesound.org/people/tcrocker68/sounds/235592/

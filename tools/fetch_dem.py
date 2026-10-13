@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Fetch a terrain elevation grid for the Glyfada -> Limanakia corridor.
+"""Fetch a terrain elevation grid for the Vouliagmeni -> Lomvarda corridor.
 Source: EU-DEM v1.1 (25 m) via the public OpenTopoData API (api.opentopodata.org).
 Sea cells come back as null and are stored as -5. Saved to data/raw/dem.json."""
 import json, math, os, time, urllib.request
 
 LAT0, LON0 = 37.835, 23.77
-S, W, N, E = 37.784, 23.722, 37.886, 23.828
+S, W, N, E = 37.780, 23.756, 37.844, 23.896
 STEP = 60.0  # metres
 OUT = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "dem.json")
 CACHE = OUT + ".partial"

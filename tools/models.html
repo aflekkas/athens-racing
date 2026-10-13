@@ -1,24 +1,41 @@
-<!doctype html><html><head><meta charset="utf-8">
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
-</head><body style="margin:0;background:#222"><script type="module">
-// Model viewer for checking the procedural cars / traffic from a given angle: ?a=angle(deg)&e=elev
+<!doctype html><html lang="en"><head><base href="/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paraliaki · Vehicle studio</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>*{box-sizing:border-box}body{margin:0;background:#151b22;color:#e3e9ed;font:13px system-ui}canvas{display:block}header{position:absolute;top:26px;left:30px}small{letter-spacing:.25em;color:#a4b3bd}h1{font-size:26px;font-weight:500;margin:10px 0}nav{display:flex;gap:6px;flex-wrap:wrap;max-width:700px}button,select{background:#202a34;color:#dce5ea;border:1px solid #40505e;padding:9px 13px;border-radius:4px;cursor:pointer}button:hover,button.active{background:#426175}footer{position:absolute;bottom:23px;left:30px;right:30px;display:flex;justify-content:space-between;gap:20px;color:#a6b6c2}#panel{position:absolute;right:25px;top:28px;display:grid;gap:10px}label{display:flex;align-items:center;gap:8px}a{color:#dce5ea}@media(max-width:700px){#panel{top:auto;bottom:70px}h1{font-size:20px}footer{font-size:11px}}</style></head>
+<body><header><small>PARALIAKI / VEHICLE STUDIO</small><h1 id="title">Loading models…</h1><nav id="cars"></nav><nav id="views" style="margin-top:10px"></nav></header><aside id="panel"><label><input id="rolling" type="checkbox"> Roll wheels</label><label>Steer <input id="steer" type="range" min="-.5" max=".5" step=".01" value="0"></label><label><input id="brake" type="checkbox"> Brake lights</label><label>Damage <input id="damage" type="range" min="0" max="1" step=".05" value="0"></label><select id="zone"><option>front</option><option>rear</option><option>left</option><option>right</option></select><button id="export">Export GLB</button></aside><footer><span>Drag to orbit · Scroll to inspect · Independent wheel / steering assemblies</span><span id="metrics"></span></footer>
+<script type="module">
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { CARS, CarModel, Driver, TRAFFIC_TYPES, trafficModel } from '../src/cars.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { CARS, CarModel, TRAFFIC_TYPES, trafficModel, setCarEnv } from '../src/cars.js';
+import { Cockpit } from '../src/cockpit.js';
+import { loadTextures } from '../src/tex.js';
 import { RNG } from '../src/util.js';
-const Q = new URLSearchParams(location.search);
-const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
-r.toneMapping = THREE.ACESFilmicToneMapping; r.outputColorSpace = THREE.SRGBColorSpace;
-const sc = new THREE.Scene(); sc.background = new THREE.Color('#8fa6b8');
-sc.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
-const sun = new THREE.DirectionalLight('#fff', 2.5); sun.position.set(5, 10, 6); sc.add(sun);
-sc.add(new THREE.Mesh(new THREE.PlaneGeometry(200, 200).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#555' })));
-let x = -16;
-for (const spec of CARS) { const m = new CarModel(spec); m.root.position.set(x, 0, 6); sc.add(m.root); x += 6.5; }
-x = -22; const rng = new RNG(3);
-for (const t of TRAFFIC_TYPES) { const m = trafficModel(t, t.colors[0], rng); m.root.position.set(x, 0, -4); sc.add(m.root); x += t.bus ? 9 : 6; }
-const cam = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 500);
-const a = (+(Q.get('a') || 30)) * Math.PI / 180, e = (+(Q.get('e') || 18)) * Math.PI / 180, d = +(Q.get('d') || 45);
-cam.position.set(Math.sin(a) * Math.cos(e) * d, Math.sin(e) * d, Math.cos(a) * Math.cos(e) * d); cam.lookAt(0, 0.5, 1);
-r.render(sc, cam);
+const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#35434f');scene.fog=new THREE.Fog('#35434f',22,55);
+const pmrem=new THREE.PMREMGenerator(renderer);const room=new RoomEnvironment();const env=pmrem.fromScene(room,.04).texture;scene.environment=env;setCarEnv(env);room.dispose();pmrem.dispose();
+const sun=new THREE.DirectionalLight('#fff1dd',3);sun.position.set(-3,7,-4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-7,right:7,top:7,bottom:-7,near:.1,far:25});sun.shadow.normalBias=.02;scene.add(sun);scene.add(new THREE.HemisphereLight('#d5e8ff','#4e4c42',1.6));
+const fill=new THREE.DirectionalLight('#d6eaff',1.7);fill.position.set(4,3,5);scene.add(fill);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:'#3c4851',roughness:.82}));ground.receiveShadow=true;ground.position.y=-.006;scene.add(ground);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.025,200);const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,.72,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.49;
+// A neutral studio horizon for mirror planes; a PMREM atlas is not a 2D mirror image.
+const mirrorCanvas=document.createElement('canvas');mirrorCanvas.width=256;mirrorCanvas.height=96;
+const mirrorContext=mirrorCanvas.getContext('2d'),mirrorGradient=mirrorContext.createLinearGradient(0,0,0,96);
+mirrorGradient.addColorStop(0,'#758796');mirrorGradient.addColorStop(.52,'#bac3c9');mirrorGradient.addColorStop(.53,'#59646c');mirrorGradient.addColorStop(1,'#35434f');
+mirrorContext.fillStyle=mirrorGradient;mirrorContext.fillRect(0,0,256,96);
+const studioMirror=new THREE.CanvasTexture(mirrorCanvas);studioMirror.colorSpace=THREE.SRGBColorSpace;
+await loadTextures();
+let model,cockpit,view='front',time=0,dirty=true;
+controls.addEventListener('change',()=>dirty=true);document.getElementById('panel').addEventListener('input',()=>dirty=true);
+const choices=[...CARS,...TRAFFIC_TYPES.filter(t=>t.model&&t.id!=='taxi')];
+function choose(id){if(model)scene.remove(model.root);const spec=choices.find(c=>c.id===id)||CARS[0];model=spec.mass?new CarModel(spec):trafficModel(spec,spec.colors[0],new RNG(31));cockpit=spec.mass?new Cockpit(spec,model,studioMirror):null;if(cockpit){cockpit.drawCluster({rpm:spec.idle,redline:spec.redline,kmh:0,gearLabel:'P',nitro:0});const g=cockpit.navCanvas.getContext('2d');g.fillStyle='#172c33';g.fillRect(0,0,256,160);g.strokeStyle='#81b8ca';g.lineWidth=5;g.beginPath();g.moveTo(0,100);g.lineTo(100,85);g.lineTo(160,30);g.lineTo(256,25);g.stroke();cockpit.navTex.needsUpdate=true;}scene.add(model.root);$('title').textContent=spec.name||spec.id.replaceAll('_',' ').toUpperCase();$('damage').value=0;for(const b of $('cars').children)b.classList.toggle('active',b.dataset.id===spec.id);setView(view);window.studio={model,cockpit,scene,camera,renderer,choose,setView};}
+function setView(v){dirty=true;view=v;controls.enabled=v!=='interior';if(v==='interior'&&cockpit){camera.position.copy(model.seat);camera.lookAt(model.seat.x,.92,-4);camera.fov=72;}else{camera.fov=38;controls.target.set(0,.74,0);const p={front:[-5,2.7,-6.2],rear:[5,2.5,6.4],side:[7,1.8,.1],top:[3.2,5.3,4],interior:[-3,3,4]}[v]||[-5,2.7,-6.2];camera.position.set(...p);camera.lookAt(controls.target);}camera.updateProjectionMatrix();if(controls.enabled)controls.update();}
+for(const c of choices){const b=document.createElement('button');b.textContent=c.short||c.id.replaceAll('_',' ').toUpperCase();b.dataset.id=c.id;b.onclick=()=>choose(c.id);$('cars').appendChild(b);}
+for(const v of ['front','rear','side','top','interior']){const b=document.createElement('button');b.textContent=v;b.onclick=()=>setView(v);$('views').appendChild(b);}
+$('damage').oninput=()=>model.setDamage($('zone').value,+$('damage').value);
+$('export').onclick=async()=>{const data=await new GLTFExporter().parseAsync(model.root,{binary:true});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'model/gltf-binary'}));a.download=(model.spec.id||model.modelKind)+'.glb';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+choose(Q.get('car')||'mini');if(Q.has('view'))setView(Q.get('view'));
+let last=performance.now();function frame(t){requestAnimationFrame(frame);const dt=Math.min(.05,(t-last)/1000);last=t;time+=dt;if(model.update)model.update(dt,$('rolling').checked?5:0,+$('steer').value,$('brake').checked,null);else for(const w of model.wheels){if($('rolling').checked)w.spin.rotation.x-=5*dt/w.r;w.pivot.rotation.y=w.front?-$('steer').value:0;}if(cockpit)cockpit.update(dt,{steerInput:+$('steer').value*2,rpm:$('rolling').checked?2100:model.spec.idle,redline:model.spec.redline,gear:1,gearLabel:$('rolling').checked?'D':'P',kmh:$('rolling').checked?18:0,nitro:0});if(controls.enabled)controls.update();if(dirty||$('rolling').checked){renderer.render(scene,camera);dirty=false;}$('metrics').textContent=`${renderer.info.render.triangles.toLocaleString()} triangles · ${renderer.info.render.calls} draws`;}requestAnimationFrame(frame);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);dirty=true;});
 </script></body></html>

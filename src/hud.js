@@ -42,7 +42,7 @@ export class Hud {
     for (const m of data.marks) {
       const f = (m.s - route.start) / this.raceLen; if (f < 0 || f > 1) continue;
       const t = document.createElement('div'); t.className = 't'; t.style.left = (f * 100) + '%'; ticks.appendChild(t);
-      if (['glyfada', 'voula', 'kavouri', 'vouliagmeni', 'limanakia'].includes(m.id)) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; if (alt++ % 2 && false) l.style.top = '28px'; ticks.appendChild(l); }
+      if (['lake', 'limanakia', 'varkiza', 'lomvarda'].includes(m.id)) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; if (alt++ % 2 && false) l.style.top = '28px'; ticks.appendChild(l); }
     }
     this.frame = 0; this.lastZone = null; this.lastPos = 0;
     this.styleShown = 0;
@@ -78,7 +78,7 @@ export class Hud {
     g.font = '800 15px "Barlow Condensed", sans-serif'; g.textBaseline = 'middle';
     const lab = (s, t, dx, col = '#fff') => { const p = route.point(s, 0); const x = ox + (p.x - x0) * sc, y = oz + (p.z - z0) * sc; g.fillStyle = 'rgba(8,10,14,.85)'; const w = g.measureText(t).width + 14; const lx = dx > 0 ? x + dx : x + dx - w; g.fillRect(lx, y - 11, w, 22); g.fillStyle = col; g.fillText(t, lx + 7, y + 1); };
     const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
-    lab(route.start, 'START · GLYFADA', 14); lab(mk.voula, 'VOULA', 14); lab(mk.kavouri, 'KAVOURI', 14); lab(mk.vouliagmeni - 200, 'VOULIAGMENI', -14); lab(mk.astir, 'ASTIR', -14); lab(route.finish, 'FINISH · LIMANAKIA', -14, '#ffc21a');
+    lab(route.start, 'START · ' + route.from.toUpperCase(), -14); lab(mk.lake, 'LAKE', 14); lab(mk.limanakia, 'LIMANAKIA', -14); lab(mk.varkiza, 'VARKIZA', 14); lab(route.finish, 'FINISH · ' + route.to.toUpperCase(), 14, '#ffc21a');
     g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '700 11px "Barlow Condensed", sans-serif'; g.fillText('SARONIC GULF', 40, H * 0.72);
     g.fillText('MAP DATA © OPENSTREETMAP CONTRIBUTORS', 40, H - 18);
   }
@@ -158,7 +158,7 @@ export class Hud {
     if (st.traffic) { g.fillStyle = 'rgba(255,255,255,.75)'; for (const c of st.traffic) { if (!c.active || Math.abs(c.s - st.s) > R) continue; const p = route.point(c.s, c.u); g.fillRect(p.x - 2.2 / sc * 1.2, p.z - 2.2 / sc * 1.2, 4.4 / sc * 1.2, 4.4 / sc * 1.2); } }
     // rival
     g.fillStyle = '#29d8ff'; g.strokeStyle = '#001018'; g.lineWidth = 3 / sc;
-    g.beginPath(); g.arc(st.rx, st.rz, 8 / sc, 0, 7); g.fill(); g.stroke();
+    for (const p of st.remotes || [{ x: st.rx, z: st.rz }]) { g.beginPath(); g.arc(p.x, p.z, 8 / sc, 0, 7); g.fill(); g.stroke(); }
     g.restore();
     // player arrow
     g.save(); g.translate(cx, cy);

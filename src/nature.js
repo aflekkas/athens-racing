@@ -1,6 +1,6 @@
 // Vegetation, coast and street life placed from the real OSM land use:
 // Washingtonia palms on the Glyfada promenade, bitter-orange street trees, oleanders in the median,
-// Aleppo pines in Kavouri/Vouliagmeni, maquis and limestone boulders at Limanakia, yachts in the
+// Aleppo pines in Vouliagmeni, maquis and limestone boulders along the cliff road, yachts in the
 // marinas, parasols on the organised beaches (Astir, Voula, the lake), side streets, kiosks.
 import * as THREE from 'three';
 import * as ENV from './env.js';
@@ -457,9 +457,9 @@ export function buildNature(map, scene, heightC, bld, assets) {
     const r = rng.next();
     if (r < 0.45) addPine(pt.x, h, pt.z); else if (r < 0.6) cypress.add(M(pt.x, h - 0.3, pt.z, 0, 0, 0, rng.range(0.7, 1.1), rng.range(0.8, 1.2), rng.range(0.7, 1.1))); else addBush(pt.x, h, pt.z, rng.range(0.8, 1.6), r < 0.8 ? OLEANDER : MAQUIS);
   }
-  // Limanakia: boulders along the rocky shoreline and on the cliffs below the road
-  const lim = data.marks.find((m) => m.id === 'limanakia').s, lake = data.marks.find((m) => m.id === 'lake').s;
-  for (let s = lake + 150; s < route.length; s += 3) for (let k = 0; k < 2; k++) {
+  // the cliff road (Limanakia, past Varkiza, Lomvarda): boulders along the rocky shoreline and on the cliffs below the road
+  for (let s = 0; s < route.length; s += 3) for (let k = 0; k < 2; k++) {
+    if (route.urban(s) > 0.4) { s += 9; break; }
     const u = rng.range(8, 140); route.point(s, u, pt);
     const h = heightC(pt.x, pt.z);
     if (h < -0.6 || h > 30) continue;

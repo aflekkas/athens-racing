@@ -1,0 +1,9 @@
+{
+  "note": "Radio playlist. Rebuild with: node tools/build_music.mjs (downloads, levels to -16 LUFS, 128 kbps MP3).",
+  "tracks": [
+    { "file": "greek-dance.mp3", "title": "Greek Dance", "artist": "Jason Shaw", "pageUrl": "https://audionautix.com/", "downloadUrl": "https://audionautix.com/Music/GreekDance.mp3", "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/", "credit": "Creative Commons Music by Jason Shaw on Audionautix.com" },
+    { "file": "surf-shimmy.mp3", "title": "Surf Shimmy", "artist": "Kevin MacLeod", "pageUrl": "https://incompetech.com/music/royalty-free/music.html", "downloadUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Surf%20Shimmy.mp3", "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/", "credit": "\"Surf Shimmy\" Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0" },
+    { "file": "oriental-fever.mp3", "title": "Oriental Fever", "artist": "Juanitos", "pageUrl": "https://freemusicarchive.org/music/Juanitos/Exotica/juanitos_-_05_-_oriental_fever/", "downloadUrl": "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/Oddio_Overplay/Juanitos/Exotica/Juanitos_-_05_-_Oriental_Fever.mp3", "license": "CC BY 2.0 FR", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/", "credit": "\"Oriental Fever\" by Juanitos, from Exotica, CC BY 2.0 FR" },
+    { "file": "midnight-cruiser.mp3", "title": "Midnight Cruiser", "artist": "Zane Little", "pageUrl": "https://opengameart.org/content/midnight-cruiser", "downloadUrl": "https://opengameart.org/sites/default/files/midnight_cruiser_0.mp3", "license": "CC0 1.0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/", "credit": "\"Midnight Cruiser\" by Zane Little (CC0)" }
+  ]
+}

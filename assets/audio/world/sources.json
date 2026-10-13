@@ -1,0 +1,563 @@
+{
+  "version": 1,
+  "acquired": "2026-10-13",
+  "sampleRate": 44100,
+  "note": "Freesound public HQ MP3 previews (originals need an account). Every source is CC0 1.0. Rebuild with: node tools/build_world_audio.mjs",
+  "sources": {
+    "71739": {
+      "title": "Chrysler LHS tire squeal 04 (04-25-2009).wav",
+      "author": "audible-edge",
+      "pageUrl": "https://freesound.org/people/audible-edge/sounds/71739/",
+      "downloadUrl": "https://cdn.freesound.org/previews/71/71739_995351-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "9e64108df59e561f8fe6f08090b65febd32a5539b5be49f947227d0869629dd1"
+    },
+    "140384": {
+      "title": "Gilera Runner 2007 revs backfire cold idle",
+      "author": "lovretta",
+      "pageUrl": "https://freesound.org/people/lovretta/sounds/140384/",
+      "downloadUrl": "https://cdn.freesound.org/previews/140/140384_581937-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "02ec9988e29cf93d3ef2b5a7a8115fec3db03cf67dfb02f4e5d50b5af8dda352"
+    },
+    "148852": {
+      "title": "paris cafe ambient with bells short.wav",
+      "author": "giant steps",
+      "pageUrl": "https://freesound.org/people/giant%20steps/sounds/148852/",
+      "downloadUrl": "https://cdn.freesound.org/previews/148/148852_1897650-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "b4842f2b5fa253c180cadb147146580018e567b4575e70844e46df5a3fc1231f"
+    },
+    "151624": {
+      "title": "Clank Car Crash Collision",
+      "author": "qubodup",
+      "pageUrl": "https://freesound.org/people/qubodup/sounds/151624/",
+      "downloadUrl": "https://cdn.freesound.org/previews/151/151624_71257-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "bdd232131b376d6b674e9a4c008eef9e94b1e65d797296b3bd06448b8b3a5944"
+    },
+    "182474": {
+      "title": "car horn.wav",
+      "author": "keweldog",
+      "pageUrl": "https://freesound.org/people/keweldog/sounds/182474/",
+      "downloadUrl": "https://cdn.freesound.org/previews/182/182474_3153523-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "9de748b259d851eb3e3de80df0e7f4f4f99fb9842bf65f7b26f8a5bbe7eae0e0"
+    },
+    "235592": {
+      "title": "Girl_Scream.wav",
+      "author": "tcrocker68",
+      "pageUrl": "https://freesound.org/people/tcrocker68/sounds/235592/",
+      "downloadUrl": "https://cdn.freesound.org/previews/235/235592_3396115-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "6268007ec60585e38e604c3dcda40b2b044a570d7f079d94dac3d2eba69062ec"
+    },
+    "237375": {
+      "title": "Car Crash",
+      "author": "squareal",
+      "pageUrl": "https://freesound.org/people/squareal/sounds/237375/",
+      "downloadUrl": "https://cdn.freesound.org/previews/237/237375_1502374-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "6587ffc83281ecea17bf41a37e461c93d73424b478759e78dad35d71310823da"
+    },
+    "332056": {
+      "title": "Fast Collision",
+      "author": "qubodup",
+      "pageUrl": "https://freesound.org/people/qubodup/sounds/332056/",
+      "downloadUrl": "https://cdn.freesound.org/previews/332/332056_71257-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "a37fdbadf85c9e47fdcbde82ccccb525f016ac9f20ac4218bbc262c295a26219"
+    },
+    "361487": {
+      "title": "Wind Whipping By.wav",
+      "author": "FunWithSound",
+      "pageUrl": "https://freesound.org/people/FunWithSound/sounds/361487/",
+      "downloadUrl": "https://cdn.freesound.org/previews/361/361487_6456158-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "229871f5a755ca3f4c92b5f55668011ea6c8ef0a92b18a8a4195d584b997e8de"
+    },
+    "396466": {
+      "title": "Car_traffic_Athens.wav",
+      "author": "Jedo",
+      "pageUrl": "https://freesound.org/people/Jedo/sounds/396466/",
+      "downloadUrl": "https://cdn.freesound.org/previews/396/396466_994215-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "414a3e8e6afe3653f427c4b4aaca667fe8019d63378197e9621da9b4cfe6e01c"
+    },
+    "396810": {
+      "title": "Cicada's orchestra",
+      "author": "Jedo",
+      "pageUrl": "https://freesound.org/people/Jedo/sounds/396810/",
+      "downloadUrl": "https://cdn.freesound.org/previews/396/396810_994215-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "f27c785a8a245e5f26f1ccdcb634754f2cdd305e57a9b10251b77c182b671625"
+    },
+    "420356": {
+      "title": "Crash.wav",
+      "author": "CogFireStudios",
+      "pageUrl": "https://freesound.org/people/CogFireStudios/sounds/420356/",
+      "downloadUrl": "https://cdn.freesound.org/previews/420/420356_7614679-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "40edf8270a95bf779aead6339bf02f9c6ff4c58bb9a76403fa77e400dab2bce3"
+    },
+    "434878": {
+      "title": "Car Honking",
+      "author": "MicktheMicGuy",
+      "pageUrl": "https://freesound.org/people/MicktheMicGuy/sounds/434878/",
+      "downloadUrl": "https://cdn.freesound.org/previews/434/434878_3388578-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "47524b84fbb311d3817dc31b76cfbcab1a083990706fc217d3796252c0dcc8f7"
+    },
+    "462462": {
+      "title": "Seagulls / gaviotas clean wildtrack.WAV",
+      "author": "Soojay",
+      "pageUrl": "https://freesound.org/people/Soojay/sounds/462462/",
+      "downloadUrl": "https://cdn.freesound.org/previews/462/462462_2752236-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "2a5b080e47e45ffc58ef199cf62c4f247c1fc6a11c0f18984f17ac61b6762dc9"
+    },
+    "476099": {
+      "title": "Ambience: Crowded Beach",
+      "author": "Sheyvan",
+      "pageUrl": "https://freesound.org/people/Sheyvan/sounds/476099/",
+      "downloadUrl": "https://cdn.freesound.org/previews/476/476099_3248005-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "88b7ced7b1f7643d3809112cb5b2feceaf568e827ba61fa38d477fdfb2836080"
+    },
+    "531430": {
+      "title": "bathing beach atmo",
+      "author": "Garuda1982",
+      "pageUrl": "https://freesound.org/people/Garuda1982/sounds/531430/",
+      "downloadUrl": "https://cdn.freesound.org/previews/531/531430_2061858-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "8cecdb0cfabfcad2b4771ae4b7bf9e3b40320f3e44cdcd60a977822f99917d36"
+    },
+    "540398": {
+      "title": "Bus Engine Idling",
+      "author": "bikesnbassboi",
+      "pageUrl": "https://freesound.org/people/bikesnbassboi/sounds/540398/",
+      "downloadUrl": "https://cdn.freesound.org/previews/540/540398_11267296-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "4f4b46ea7642ce7e82022f9c8d8cce02004707d0bb9446e0a5609ecc7319d59c"
+    },
+    "550930": {
+      "title": "BGSaSc Greece Close Waves Water Splash Gurgle Beach 05",
+      "author": "Profispiesser",
+      "pageUrl": "https://freesound.org/people/Profispiesser/sounds/550930/",
+      "downloadUrl": "https://cdn.freesound.org/previews/550/550930_6667441-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "6399775e46a9e630e73fbbe2b8e5636323fee6f706b5d6b8fe5a16c2fd42d6c5"
+    },
+    "591372": {
+      "title": "Aprilla SR-50 ( scooter sound )",
+      "author": "dif1891",
+      "pageUrl": "https://freesound.org/people/dif1891/sounds/591372/",
+      "downloadUrl": "https://cdn.freesound.org/previews/591/591372_13278369-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "31336a8ea6428c30d1315100ade44e7907a89dd4de6e3638b19ea7577972c52a"
+    },
+    "592388": {
+      "title": "Car Crash (with Glass)",
+      "author": "magnuswaker",
+      "pageUrl": "https://freesound.org/people/magnuswaker/sounds/592388/",
+      "downloadUrl": "https://cdn.freesound.org/previews/592/592388_11537497-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "0169d0fe29c4aba3cf1b0dd94c186a5fb917e9eef975c9a1485568d4a325d822"
+    },
+    "620213": {
+      "title": "Waves_Crashing_Rocks_IT.wav",
+      "author": "uniuniversal",
+      "pageUrl": "https://freesound.org/people/uniuniversal/sounds/620213/",
+      "downloadUrl": "https://cdn.freesound.org/previews/620/620213_13601611-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "2ffd0f300c6da36a22c3ee6d0100e88d21c1faabf3209fa24194b08c44d77f27"
+    }
+  },
+  "assets": [
+    {
+      "file": "sea-sand.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.12,
+      "parts": [
+        {
+          "source": "550930",
+          "trim": [
+            0.5,
+            41.2
+          ],
+          "filter": "highpass=f=50"
+        }
+      ],
+      "frames": 1728720,
+      "duration": 39.2,
+      "sha256": "4c4f8108507eeaa45e696742fd81612f0de0701ac199d827b6eb4bb10569958a"
+    },
+    {
+      "file": "sea-rocks.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.12,
+      "parts": [
+        {
+          "source": "620213",
+          "trim": [
+            148,
+            208
+          ],
+          "filter": "highpass=f=45"
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "761eebf9494b04d259bb6590202a2423866bd462d429e6547038bf346ddf1531"
+    },
+    {
+      "file": "cicadas.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.1,
+      "parts": [
+        {
+          "source": "396810",
+          "trim": [
+            45,
+            105
+          ],
+          "filter": "highpass=f=1400,lowpass=f=11000"
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "1e4c655c290de808c3a179779cfb487ddf85ae2d35fe6277d1be64234b96cf05"
+    },
+    {
+      "file": "beach.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.1,
+      "parts": [
+        {
+          "source": "476099",
+          "trim": [
+            30,
+            90
+          ],
+          "filter": "highpass=f=130"
+        },
+        {
+          "source": "531430",
+          "trim": [
+            20,
+            80
+          ],
+          "filter": "highpass=f=220",
+          "gain": 0.55
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "96cd0cd48eeaacf5fbf8fc3dfacc8e530ab4bfde6871fec8537d0595252cf519"
+    },
+    {
+      "file": "cafe.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.1,
+      "parts": [
+        {
+          "source": "148852",
+          "trim": [
+            5,
+            65
+          ],
+          "filter": "highpass=f=120"
+        }
+      ],
+      "frames": 2579850,
+      "duration": 58.5,
+      "sha256": "1bec82af81e2240ae0a1d20af545e4139a49d2c8aa71497c80949eaed30d7699"
+    },
+    {
+      "file": "city.mp3",
+      "kind": "loop",
+      "channels": 2,
+      "rms": 0.12,
+      "parts": [
+        {
+          "source": "396466",
+          "trim": [
+            4,
+            38
+          ],
+          "filter": "highpass=f=35"
+        }
+      ],
+      "frames": 1433250,
+      "duration": 32.5,
+      "sha256": "989cca2f038c9125ecb8c4fab5e52e5f58dd08cf788a9371938d69b96c356f90"
+    },
+    {
+      "file": "gulls.mp3",
+      "kind": "bed",
+      "channels": 2,
+      "rms": 0.06,
+      "parts": [
+        {
+          "source": "462462",
+          "trim": [
+            0.5,
+            60
+          ],
+          "filter": "highpass=f=650,highpass=f=650"
+        }
+      ],
+      "frames": 2623950,
+      "duration": 59.5,
+      "sha256": "f180803a8721baf36d0ba5ab6d1ed2720cac4d778dc46ca60ebd861a52a2a272"
+    },
+    {
+      "file": "wind.mp3",
+      "kind": "loop",
+      "channels": 1,
+      "rms": 0.15,
+      "parts": [
+        {
+          "source": "361487",
+          "trim": [
+            1,
+            23
+          ],
+          "filter": "highpass=f=40"
+        }
+      ],
+      "frames": 904050,
+      "duration": 20.5,
+      "sha256": "d15968cf40d97f5cc8ce42484e65d2a920da78cd694a3b49605adc6883842639"
+    },
+    {
+      "file": "tyre-squeal.mp3",
+      "kind": "loop",
+      "channels": 1,
+      "rms": 0.15,
+      "xfade": 0.25,
+      "parts": [
+        {
+          "source": "71739",
+          "trim": [
+            3.6,
+            14.2
+          ],
+          "filter": "highpass=f=300"
+        }
+      ],
+      "frames": 456435,
+      "duration": 10.35,
+      "sha256": "062c1dd4c829ebd00ba5a3c0f7e41d4a2c4600015c8a29ddc9d4e4c0c2017176"
+    },
+    {
+      "file": "scooter-idle.mp3",
+      "kind": "loop",
+      "channels": 1,
+      "rms": 0.15,
+      "xfade": 0.15,
+      "parts": [
+        {
+          "source": "140384",
+          "trim": [
+            46,
+            56
+          ],
+          "filter": "highpass=f=60"
+        }
+      ],
+      "frames": 434385,
+      "duration": 9.85,
+      "sha256": "90012bb11f8b6972aab43fec4db958990eb1a1476f4d0bd9b963611a1bf0c531"
+    },
+    {
+      "file": "scooter-run.mp3",
+      "kind": "loop",
+      "channels": 1,
+      "rms": 0.15,
+      "xfade": 0.15,
+      "parts": [
+        {
+          "source": "591372",
+          "trim": [
+            5.2,
+            10.4
+          ],
+          "filter": "highpass=f=80"
+        }
+      ],
+      "frames": 222705,
+      "duration": 5.05,
+      "sha256": "f2cf43a7d51940dc3b69d354c90884cf94691e2b722604581d27b43558e4d27f"
+    },
+    {
+      "file": "bus-idle.mp3",
+      "kind": "loop",
+      "channels": 1,
+      "rms": 0.15,
+      "xfade": 0.2,
+      "parts": [
+        {
+          "source": "540398",
+          "trim": [
+            0.5,
+            21.2
+          ],
+          "filter": "highpass=f=30"
+        }
+      ],
+      "frames": 904050,
+      "duration": 20.5,
+      "sha256": "9292251dd2bd4530ab559ca5d951f3e7c393f6b7bb4884fca55ea99c2e00c4c8"
+    },
+    {
+      "file": "crash-heavy.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "237375",
+          "trim": [
+            0.45,
+            3.7
+          ]
+        }
+      ],
+      "frames": 143325,
+      "duration": 3.25,
+      "sha256": "94fafc3093eaeb042655adf14ee48c0056f9c2990458eba4437608cc22adeae6"
+    },
+    {
+      "file": "crash-glass.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "592388",
+          "trim": [
+            0,
+            2.5
+          ]
+        }
+      ],
+      "frames": 110250,
+      "duration": 2.5,
+      "sha256": "de49facb1eb1f76c93ecfa224edafd0f0b43e5f4264096b8a8b29d023f8e6874"
+    },
+    {
+      "file": "crash-medium.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "420356",
+          "trim": [
+            0,
+            2.6
+          ]
+        }
+      ],
+      "frames": 114660,
+      "duration": 2.6,
+      "sha256": "c67df139414cede6dd51f9fddb3df437b07e5124295344a6f2c2d8d15ad90ad4"
+    },
+    {
+      "file": "hit-clank.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "151624",
+          "trim": [
+            0,
+            0.57
+          ]
+        }
+      ],
+      "frames": 23804,
+      "duration": 0.5398,
+      "sha256": "555f4acf80cdf200c733c6d629a3bf58637299c3675f9f99bfef5303d260fa70"
+    },
+    {
+      "file": "hit-fast.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "332056",
+          "trim": [
+            0,
+            0.33
+          ]
+        }
+      ],
+      "frames": 13613,
+      "duration": 0.3087,
+      "sha256": "a0c7088682b3e55a5149a16e37d2c63d08024e365f2eafdb074a10b0e9070250"
+    },
+    {
+      "file": "horn-double.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "434878",
+          "trim": [
+            0,
+            0.9
+          ]
+        }
+      ],
+      "frames": 38438,
+      "duration": 0.8716,
+      "sha256": "d4117a083a6ff5bfbf6eb6ae733177a71edba9043a6d0d8e4fa97673527135c4"
+    },
+    {
+      "file": "horn-long.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "182474",
+          "trim": [
+            1.22,
+            2.7
+          ]
+        }
+      ],
+      "frames": 65268,
+      "duration": 1.48,
+      "sha256": "2487dd562f5a06f74e7c002b422d54c6d87ac89aae9a5d664713b9c2718fb0c0"
+    },
+    {
+      "file": "scream.mp3",
+      "kind": "shot",
+      "channels": 1,
+      "peak": 0.89,
+      "parts": [
+        {
+          "source": "235592",
+          "trim": [
+            0.15,
+            2.45
+          ]
+        }
+      ],
+      "frames": 101430,
+      "duration": 2.3,
+      "sha256": "d5aeb844d4811a4c46eb84e45149910971cafd55ce8707ac2b05b5de9f66d39f"
+    }
+  ]
+}

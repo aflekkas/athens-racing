@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paraliaki engine audition</title>
+<style>
+body{font:17px system-ui;background:#101b22;color:#e8f0ef;max-width:850px;margin:48px auto;padding:24px}button,select{font:inherit;padding:12px;border:1px solid #506873;border-radius:8px;background:#23343e;color:inherit;cursor:pointer}label{display:block;margin:25px 0}input[type=range]{width:100%;accent-color:#f4bc64}h1{font-size:32px}p{line-height:1.6;color:#b9c9d0}output{float:right;color:#f4bc64}pre{white-space:pre-wrap;color:#addbbd}a{color:#f4bc64}.controls{display:flex;gap:12px;flex-wrap:wrap}
+</style>
+<h1>Engine audition</h1>
+<p>Recorded starts and engine loops, isolated from music and traffic. Select a car, start the engine, then vary RPM and load.</p>
+<div class="controls"><select id="car"><option value="mini">MINI Cooper S Cabrio</option><option value="z4">BMW Z4 M40i</option><option value="taxi">Škoda Octavia 2.0 TDI</option></select><button id="start">Start engine</button><button id="stop">Stop audio</button></div>
+<label>Engine speed <output id="rpmValue">850 RPM</output><input id="rpm" type="range" min="850" max="6800" value="850" step="10"></label>
+<label>Engine load <output id="loadValue">0%</output><input id="load" type="range" min="-100" max="100" value="0"></label>
+<p id="source"></p><p><a href="../assets/audio/engines/CREDITS.txt">Recording credits and source limitations</a> · <a href="../">Back to game</a></p>
+<button id="test">Run audio checks</button><pre id="status">Ready. Audio starts after a click.</pre>
+<script type="module">
+import {loadRecordedEngine, RecordedEngineVoice} from '../src/engine-recordings.js';
+import {runAudioTests, specs} from './engine-audio-test.js';
+const $=id=>document.getElementById(id);
+let ctx,voice,ignition,bank,revision=0,catchTime=0,running=false;
+const notes={mini:'Running: 2019 MINI Cooper S contact recordings. Startup: Fiat Punto petrol four-cylinder substitute.',z4:'BMW M4 S55 turbo inline-six recordings, used as a substitute for the Z4 B58.',taxi:'VW Passat diesel start/idle and Audi/VW TDI running loops, used as substitutes for the Octavia.'};
+function selected(){return specs.find(s=>s.id===$('car').value)}
+function ui(){let s=selected();$('rpm').min=s.idle;$('rpm').max=s.redline;$('rpm').value=s.idle;$('rpmValue').textContent=s.idle+' RPM';$('source').textContent=notes[s.id]}
+function stop(){revision++;running=false;voice?.stop();voice=null;if(ignition){try{ignition.stop()}catch{}ignition=null}}
+async function start(){stop();const token=revision;ctx ||= new AudioContext();await ctx.resume();$('status').textContent='Loading recordings…';try{let s=selected();bank=await loadRecordedEngine(ctx,s);if(token!==revision)return;voice=new RecordedEngineVoice(ctx,bank,ctx.destination,s,.65);ignition=ctx.createBufferSource();ignition.buffer=bank.start;const g=ctx.createGain();g.gain.value=.65;ignition.connect(g);g.connect(ctx.destination);ignition.onended=()=>g.disconnect();ignition.start();catchTime=ctx.currentTime+bank.catchAt;running=true;$('status').textContent='Playing recorded engine.'}catch(e){$('status').textContent=e.message}}
+$('car').onchange=()=>{const was=running;stop();ui();if(was)start()};$('start').onclick=start;$('stop').onclick=stop;
+$('rpm').oninput=()=>$('rpmValue').textContent=$('rpm').value+' RPM';$('load').oninput=()=>$('loadValue').textContent=$('load').value+'%';
+function frame(){if(running){const s=selected(),r=+$('rpm').value;voice.set(r,+$('load').value/100,Math.max(0,Math.min(1,(ctx.currentTime-catchTime)/.6)),ctx.currentTime,1,r>s.redline*.98)}requestAnimationFrame(frame)}frame();ui();
+window.runAudioTests=runAudioTests;
+$('test').onclick=async()=>{stop();$('status').textContent='Checking…';try{$('status').textContent=JSON.stringify(await runAudioTests(),null,2)}catch(e){$('status').textContent=e.stack}};
+</script>

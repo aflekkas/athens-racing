@@ -1,0 +1,142 @@
+{
+ "sea-sand": {
+  "file": "sea-sand.mp3",
+  "kind": "loop",
+  "frames": 1728720,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "sea-rocks": {
+  "file": "sea-rocks.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "cicadas": {
+  "file": "cicadas.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "beach": {
+  "file": "beach.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "cafe": {
+  "file": "cafe.mp3",
+  "kind": "loop",
+  "frames": 2579850,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "city": {
+  "file": "city.mp3",
+  "kind": "loop",
+  "frames": 1433250,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "gulls": {
+  "file": "gulls.mp3",
+  "kind": "bed",
+  "frames": 2623950,
+  "sampleRate": 44100,
+  "channels": 2
+ },
+ "wind": {
+  "file": "wind.mp3",
+  "kind": "loop",
+  "frames": 904050,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "tyre-squeal": {
+  "file": "tyre-squeal.mp3",
+  "kind": "loop",
+  "frames": 456435,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "scooter-idle": {
+  "file": "scooter-idle.mp3",
+  "kind": "loop",
+  "frames": 434385,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "scooter-run": {
+  "file": "scooter-run.mp3",
+  "kind": "loop",
+  "frames": 222705,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "bus-idle": {
+  "file": "bus-idle.mp3",
+  "kind": "loop",
+  "frames": 904050,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "crash-heavy": {
+  "file": "crash-heavy.mp3",
+  "kind": "shot",
+  "frames": 143325,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "crash-glass": {
+  "file": "crash-glass.mp3",
+  "kind": "shot",
+  "frames": 110250,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "crash-medium": {
+  "file": "crash-medium.mp3",
+  "kind": "shot",
+  "frames": 114660,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "hit-clank": {
+  "file": "hit-clank.mp3",
+  "kind": "shot",
+  "frames": 23804,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "hit-fast": {
+  "file": "hit-fast.mp3",
+  "kind": "shot",
+  "frames": 13613,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "horn-double": {
+  "file": "horn-double.mp3",
+  "kind": "shot",
+  "frames": 38438,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "horn-long": {
+  "file": "horn-long.mp3",
+  "kind": "shot",
+  "frames": 65268,
+  "sampleRate": 44100,
+  "channels": 1
+ },
+ "scream": {
+  "file": "scream.mp3",
+  "kind": "shot",
+  "frames": 101430,
+  "sampleRate": 44100,
+  "channels": 1
+ }
+}

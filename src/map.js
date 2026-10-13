@@ -1,10 +1,10 @@
 // Real-world map data (OpenStreetMap + Copernicus DEM, preprocessed by tools/build_map.mjs).
 // World space: metres, +x = east, +z = south, +y = up, origin at 37.835 N 23.770 E.
-// Route space: s = distance along the route (Glyfada -> Limanakia), u = lateral offset, + = right.
+// Route space: s = distance along the route (Vouliagmeni -> Lomvarda), u = lateral offset, + = right.
 import * as THREE from 'three';
 import { clamp, lerp, smoothstep } from './util.js';
 
-export const LANE_W = 3.5;
+export const LANE_W = 3.3; // Greek urban/coastal arterial lanes run 3.0-3.5 m (EO91 bends design: 3.00 / 3.25)
 
 export class Route {
   constructor(r) {
@@ -13,7 +13,7 @@ export class Route {
     this.X = Float32Array.from(r.x); this.Z = Float32Array.from(r.z); this.Y = Float32Array.from(r.y);
     this.LN = Float32Array.from(r.lanes); this.DV = Float32Array.from(r.div);
     this.length = (N - 1) * this.step;
-    this.start = r.start; this.finish = r.finish; this.names = r.names;
+    this.start = r.start; this.finish = r.finish; this.names = r.names; this.from = r.from; this.to = r.to; this.speeds = r.speeds || [];
     const TX = this.TX = new Float32Array(N), TZ = this.TZ = new Float32Array(N);
     for (let i = 0; i < N; i++) {
       const a = Math.max(0, i - 2), b = Math.min(N - 1, i + 2);
@@ -46,7 +46,7 @@ export class Route {
   lanes(s) { return Math.round(this.lin(this.LN, s)); }
   lanesF(s) { return this.lin(this.LN, s); }
   div(s) { return this.lin(this.DV, s); }
-  medHalf(s) { return 0.12 + 1.9 * this.div(s); }
+  medHalf(s) { return 0.12 + 1.2 * this.div(s); } // ~2.6 m raised island where the avenue splits
   edge(s) { return this.medHalf(s) + this.lanesF(s) * LANE_W; }
   laneU(s, lane) { return this.medHalf(s) + (lane + 0.5) * LANE_W; } // lane 0 = fast lane (next to the median); negative u for oncoming via -laneU
   curv(s) { return this.lin(this.K, s); }
@@ -164,9 +164,14 @@ export async function loadMap(onProgress, base = './') {
   }
   route.seaR = (s) => { const i = clamp(Math.round(s / 20), 0, side.length - 1); return side[i].r; };
   route.seaL = (s) => { const i = clamp(Math.round(s / 20), 0, side.length - 1); return side[i].l; };
-  // urban (town avenue) vs coastal cliff road; Limanakia stretch begins after the lake
-  const lakeS = data.marks.find((m) => m.id === 'lake')?.s ?? 9600;
-  route.urban = (s) => 1 - smoothstep(lakeS + 250, lakeS + 520, s);
+  // urban (town avenue) vs coastal cliff road, per stretch (data.zones), blended over ~250 m at each change
+  const zones = data.zones;
+  route.urban = (s) => {
+    let v = zones[0].urban;
+    for (let i = 1; i < zones.length; i++) v += (zones[i].urban - zones[i - 1].urban) * smoothstep(zones[i].s - 120, zones[i].s + 130, s);
+    return v;
+  };
+  route.district = (s) => { let z = zones[0]; for (const q of zones) if (s >= q.s) z = q; return z.zone; };
   route.zone = (s) => {
     let z = data.marks[0];
     for (const m of data.marks) if (s >= m.s - 60) z = m;

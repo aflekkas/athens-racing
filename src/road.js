@@ -65,7 +65,7 @@ function asphaltMaterial() {
         float pr = h12(pc + 7.1);
         if (pr > 0.86) { vec2 lf = fract(vec2(u / 3.5, s / 19.0)); float inP = band(lf.x, 0.5, 0.62 + 0.2 * h12(pc)) * band(lf.y, 0.45, 0.4 + 0.3 * h12(pc + 3.0)); base = mix(base, base * 0.62, inP); aN.xy *= 1.0 - 0.6 * inP; }
         // tyre-polished tracks in each lane, oil drips between them
-        float lu = (au - mh) / 3.5;
+        float lu = (au - mh) / ${LANE_W.toFixed(2)};
         float lf = fract(lu);
         float inLane = step(0.0, lu) * step(lu, nl);
         polish = (smoothstep(0.17, 0.0, abs(lf - 0.25)) + smoothstep(0.17, 0.0, abs(lf - 0.75))) * inLane;
@@ -83,7 +83,7 @@ function asphaltMaterial() {
         if (dv > 0.5) m += band(au, mh + 0.22, 0.12);       // inner edge next to the median
         else { m += band(u, 0.12, 0.1) + band(u, -0.12, 0.1); } // double solid centre line
         float dash = band(fract(s / 9.0), 0.185, 0.37);
-        for (int i = 1; i < 4; i++) { float fi = float(i); if (fi < nl - 0.3) m += band(au, mh + fi * 3.5, 0.12) * dash; }
+        for (int i = 1; i < 4; i++) { float fi = float(i); if (fi < nl - 0.3) m += band(au, mh + fi * ${LANE_W.toFixed(2)}, 0.12) * dash; }
         // zebra crossings and stop lines near the player
         float heavy = 0.0;
         for (int i = 0; i < 16; i++) {
@@ -254,7 +254,7 @@ export function buildRoad(map, scene, heightC, assets) {
 }
 
 // ------------------------------------------------------------------ furniture
-function signTexture() {
+function signTexture(route) {
   // atlas of road signs (all English / Latin)
   const W = 2048, H = 1024;
   const regions = {};
@@ -274,18 +274,17 @@ function signTexture() {
         g.save(); g.translate(52, yy); g.rotate(arrow); g.beginPath(); g.moveTo(0, -24); g.lineTo(18, 0); g.lineTo(6, 0); g.lineTo(6, 22); g.lineTo(-6, 22); g.lineTo(-6, 0); g.lineTo(-18, 0); g.closePath(); g.fill(); g.restore();
       });
     });
-    dirSign('d_voula', [['VOULA', 0, '3'], ['VOULIAGMENI', 0, '8'], ['SOUNIO', 0, '58']]);
-    dirSign('d_vouliagmeni', [['VOULIAGMENI', 0, '2'], ['VARKIZA', 0, '6'], ['VARI', -Math.PI / 2, '']]);
-    dirSign('d_lake', [['LAKE VOULIAGMENI', -Math.PI / 2, ''], ['LIMANAKIA', 0, '1.5'], ['SOUNIO', 0, '47']]);
+    dirSign('d_start', [['ASTIR BEACH', Math.PI / 2, ''], ['VARKIZA', 0, '6'], ['SOUNIO', 0, '47']]);
+    dirSign('d_lake', [['LAKE VOULIAGMENI', -Math.PI / 2, ''], ['LIMANAKIA', 0, '1.5'], ['VARKIZA', 0, '5']]);
     dirSign('d_astir', [['ASTIR BEACH', Math.PI / 2, ''], ['MARINA', Math.PI / 2, ''], ['VARKIZA', 0, '5']]);
-    dirSign('d_glyfada', [['GLYFADA CENTRE', -Math.PI / 2, ''], ['VOULA', 0, '4'], ['VOULIAGMENI', 0, '9']]);
+    dirSign('d_varkiza', [['VARI', -Math.PI / 2, '4'], ['LOMVARDA', 0, '3'], ['SOUNIO', 0, '42']]);
     // speed limits
-    for (const v of [50, 60, 70]) panel('sl' + v, 256, 256, (w, h) => {
+    for (const v of [30, 40, 50, 60, 70]) panel('sl' + v, 256, 256, (w, h) => {
       g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.beginPath(); g.arc(128, 128, 118, 0, Math.PI * 2); g.fillStyle = '#d0141e'; g.fill();
       g.beginPath(); g.arc(128, 128, 92, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.fillStyle = '#111'; g.font = font(118, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(v), 128, 134);
     });
     // place-name boards (white on blue, Greek style but Latin text)
-    for (const [k, t] of [['n_glyfada', 'GLYFADA'], ['n_voula', 'VOULA'], ['n_vouliagmeni', 'VOULIAGMENI'], ['n_limanakia', 'LIMANAKIA'], ['n_kavouri', 'KAVOURI']]) panel(k, 512, 128, (w, h) => {
+    for (const [k, t] of [['n_vouliagmeni', 'VOULIAGMENI'], ['n_limanakia', 'LIMANAKIA'], ['n_varkiza', 'VARKIZA'], ['n_lomvarda', 'LOMVARDA']]) panel(k, 512, 128, (w, h) => {
       g.fillStyle = '#f4f4f0'; g.fillRect(0, 0, w, h); g.strokeStyle = blue; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16); g.fillStyle = blue; g.font = font(78, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, w / 2, h / 2 + 4);
     });
     panel('bus', 256, 256, (w, h) => { g.fillStyle = '#0b4ea2'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = font(120, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('BUS', 128, 100); g.font = font(44, 700); g.fillText('OASA', 128, 196); });
@@ -293,7 +292,7 @@ function signTexture() {
     panel('finish', 1024, 256, (w, h) => {
       for (let i = 0; i < 32; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#111' : '#fff'; g.fillRect(i * 32, j * 32, 32, 32); }
       g.fillStyle = 'rgba(10,12,16,.92)'; g.fillRect(150, 50, w - 300, h - 100);
-      g.fillStyle = '#fff'; g.font = `italic 900 120px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('FINISH · LIMANAKIA', w / 2, h / 2 + 6);
+      g.fillStyle = '#fff'; g.font = `italic 900 120px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('FINISH · ' + route.to.toUpperCase(), w / 2, h / 2 + 6);
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
@@ -311,7 +310,7 @@ function buildFurniture(map, group, heightC, assets) {
   const darkMetal = new THREE.MeshStandardMaterial({ color: '#3b3f44', metalness: 0.7, roughness: 0.45 });
   const white = new THREE.MeshStandardMaterial({ color: '#e9e7e1', roughness: 0.6 });
   const lampHead = new THREE.MeshStandardMaterial({ color: '#d6d8da', metalness: 0.4, roughness: 0.4, emissive: '#fff2d6', emissiveIntensity: 0.15 });
-  const { tex, regions } = signTexture();
+  const { tex, regions } = signTexture(route);
   const signMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.1 });
   assets.signRegions = regions; assets.signMat = signMat;
   const lim = {};
@@ -364,6 +363,7 @@ function buildFurniture(map, group, heightC, assets) {
     }
   }
   posts.build(group); reflPosts.build(group);
+  assets.rails = railRuns; // the only hard barriers along the road (see ground.js)
   const prof = [[0, 0.52], [0.05, 0.55], [0.05, 0.62], [0, 0.66], [0, 0.72], [0.05, 0.76], [0.05, 0.83], [0, 0.86]];
   for (const run of railRuns) {
     if (run.pts.length < 3) continue;
@@ -389,7 +389,7 @@ function buildFurniture(map, group, heightC, assets) {
     if (f.t === 'crossing' && !nearJ(f.s) && !isNear(f.s, 'crossing', 25)) { crossings.push(f.s); used.push({ t: 'crossing', s: f.s }); }
     if (f.t === 'bus_stop' && !isNear(f.s + (f.u > 0 ? 0 : 0.5), 'bus' + Math.sign(f.u), 80) && f.u > 0 && !nearJ(f.s) ) {
       used.push({ t: 'bus' + Math.sign(f.u), s: f.s });
-      addBusStop(group, route, f, regions, signMat, assets);
+      // the shelter itself is modelled by roadside.js (OASA shelter + pole); here we only keep the stop for bus scheduling
       (assets.busStops = assets.busStops || []).push(f.s);
     }
   }
@@ -408,16 +408,19 @@ function buildFurniture(map, group, heightC, assets) {
     const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), metal); back.position.set(0, height + h / 2, -0.05); g.add(back);
   };
   const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
-  addSign(route.start + 300, 'd_glyfada', 4.2, 2.1, 2.2, 1, 2);
-  addSign(mk.voula - 150, 'n_voula', 2.4, 0.6);
-  addSign(mk.voula + 400, 'd_voula', 4.2, 2.1, 2.2, 1, 2);
-  addSign(mk.kavouri - 100, 'n_kavouri', 2.4, 0.6);
-  addSign(mk.vouliagmeni - 160, 'n_vouliagmeni', 2.4, 0.6);
-  addSign(mk.vouliagmeni + 60, 'd_vouliagmeni', 4.2, 2.1, 2.2, 1, 2);
+  addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.astir - 90, 'd_astir', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.lake - 160, 'd_lake', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.limanakia - 200, 'n_limanakia', 2.4, 0.6);
-  for (let s = route.start + 120; s < route.length; s += 900) { const v = route.urban(s) > 0.5 ? (route.div(s) > 0.5 ? 70 : 50) : 60; addSign(s, 'sl' + v, 0.75, 0.75, 1.9); }
+  addSign(mk.varkiza - 250, 'n_varkiza', 2.4, 0.6);
+  addSign(mk.varkiza + 350, 'd_varkiza', 4.2, 2.1, 2.2, 1, 2);
+  addSign(mk.lomvarda - 220, 'n_lomvarda', 2.4, 0.6);
+  // posted limits where OSM maxspeed changes (30 through Limanakia, 60 on the Ribas approach), repeated every ~900 m
+  const speeds = route.speeds && route.speeds.length ? route.speeds : [{ s: 0, v: 50 }];
+  speeds.forEach((q, i) => {
+    const end = i + 1 < speeds.length ? speeds[i + 1].s : route.length;
+    for (let s = Math.max(route.start - 60, q.s) + 25; s < end - 60; s += 900) if (regions['sl' + q.v]) addSign(s, 'sl' + q.v, 0.75, 0.75, 1.9);
+  });
   // chevrons on the tighter cliff bends
   for (let s = 0; s < route.length; s += 14) {
     const k = route.curv(s);

@@ -3,48 +3,30 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat } from './cockpit.js';
+import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetailedModel } from './vehicle-models.js';
 
 // ------------------------------------------------------------------ catalogue (player-selectable)
 export const CARS = [
   {
-    id: 'mini', name: 'MINI COOPER S CABRIO', short: 'MINI', tag: 'Red, roof down, curls out', color: '#c3121c', accent: '#f3f3f0',
-    mass: 1280, power: 150, torque: 320, redline: 6900, idle: 850, gears: [3.4, 2.15, 1.55, 1.2, 0.98, 0.82], final: 3.6, wheelR: 0.31,
-    cdA: 0.66, vmax: 255, grip: 1.18, steer: 0.6, yawI: 1.0, drift: 1.15, brake: 1.0, cyl: 4, pitch: 1.0, convertible: true, body: 'mini', drive: 'fwd',
-    // chassis: nose-heavy, short and darty; FWD pushes wide on power, tucks in when you lift
-    frontW: 0.62, hcg: 0.52, track: 1.50, rsF: 0.6, susHz: 1.9, susZ: 0.5, rollK: 1.0, pitchK: 1.0, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.05, tc: 0.75, esc: 0.6, shiftT: 0.22, bias: 0.68, steerRate: 1.15, ebrake: 0.16, engine: 'turbo4', turbo: 1,
-    stats: { speed: 0.55, accel: 0.55, handling: 0.95, drift: 0.65 },
+    id: 'mini', name: 'MINI COOPER S CABRIO', short: 'MINI', tag: 'Open skies. Short wheelbase. Front-wheel drive.', color: '#bd1626', accent: '#f1efe7',
+    mass: 1320, power: 141, torque: 280, redline: 6800, idle: 850, gears: [3.92, 2.43, 1.43, 1.0, 0.81, 0.67], final: 3.59, wheelR: 0.316,
+    wheelbase: 2.495, length: 3.85, width: 1.727, cdA: 0.68, vmax: 230, grip: 1.08, steer: 0.6, yawI: 1.0, drift: 1.0, brake: 1.0, cyl: 4, pitch: 1.0, convertible: true, body: 'mini', drive: 'fwd',
+    frontW: 0.61, hcg: 0.50, track: 1.485, rsF: 0.59, susHz: 1.85, susZ: 0.55, rollK: 1.0, pitchK: 1.0, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.22, bias: 0.74, steerRate: 1.15, ebrake: 0.16, engine: 'turbo4', turbo: 1,
+    stats: { speed: 0.58, accel: 0.56, handling: 0.88, drift: 0.38 },
   },
   {
-    id: 'kastro', name: 'KASTRO RS RALLY', short: 'KASTRO RS', tag: 'AWD hot hatch, born sideways', color: '#f2c318', accent: '#1d1d1f',
-    mass: 1250, power: 235, torque: 430, redline: 7400, idle: 950, gears: [3.3, 2.2, 1.62, 1.27, 1.04, 0.88], final: 3.9, wheelR: 0.32,
-    cdA: 0.74, vmax: 255, grip: 1.12, steer: 0.62, yawI: 0.9, drift: 1.35, brake: 1.05, cyl: 5, pitch: 0.9, body: 'hatch', drive: 'awd',
-    // soft rally set-up: lots of body movement, rear-biased AWD that rotates on the brakes and slides on the power
-    frontW: 0.6, hcg: 0.55, track: 1.55, rsF: 0.5, susHz: 1.55, susZ: 0.42, rollK: 1.5, pitchK: 1.4, alphaPk: 0.125, mfC: 1.5, loadSens: 0.14, clA: 0.1, tc: 0.3, esc: 0.25, shiftT: 0.12, bias: 0.6, steerRate: 1.15, ebrake: 0.2, awdRear: 0.62, engine: 'turbo5', turbo: 1.3,
-    stats: { speed: 0.68, accel: 0.8, handling: 0.8, drift: 1.0 },
+    id: 'z4', name: 'BMW Z4 M40i', short: 'Z4 M40i', tag: 'Straight-six roadster. Rear-wheel drive.', color: '#22679d', accent: '#b7bdc5',
+    mass: 1610, power: 250, torque: 500, redline: 7000, idle: 750, gears: [5.25, 3.36, 2.17, 1.72, 1.32, 1.0, 0.82, 0.64], final: 3.154, wheelR: 0.335,
+    wheelbase: 2.47, length: 4.324, width: 1.864, cdA: 0.64, vmax: 250, grip: 1.18, steer: 0.57, yawI: 1.06, drift: 1.0, brake: 1.12, cyl: 6, pitch: 0.94, convertible: true, body: 'z4', drive: 'rwd',
+    frontW: 0.50, hcg: 0.46, track: 1.60, rsF: 0.53, susHz: 2.1, susZ: 0.6, rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.15, bias: 0.64, steerRate: 1.15, ebrake: 0.14, engine: 'turbo6', turbo: 1.15, lsd: 0.45,
+    stats: { speed: 0.82, accel: 0.93, handling: 0.94, drift: 0.91 },
   },
   {
-    id: 'riviera', name: 'RIVIERA GT3 COUPE', short: 'GT3', tag: 'Rear-engined, flat-six, track scalpel', color: '#f1f1ee', accent: '#c8102e',
-    mass: 1430, power: 380, torque: 470, redline: 9000, idle: 1000, gears: [3.75, 2.38, 1.72, 1.34, 1.1, 0.92, 0.79], final: 3.6, wheelR: 0.34,
-    cdA: 0.6, vmax: 318, grip: 1.36, steer: 0.55, yawI: 1.1, drift: 0.85, brake: 1.25, cyl: 6, pitch: 1.25, body: 'coupe', drive: 'rwd',
-    // stiff, low, rear-engined: huge traction and brakes, aero grip at speed, but lift mid-corner and the tail comes round
-    frontW: 0.39, hcg: 0.45, track: 1.6, rsF: 0.58, susHz: 2.6, susZ: 0.6, rollK: 0.5, pitchK: 0.55, alphaPk: 0.09, mfC: 1.62, loadSens: 0.12, clA: 0.85, aeroF: 0.42, tc: 0.5, esc: 0.3, shiftT: 0.07, bias: 0.62, steerRate: 1.25, ebrake: 0.13, engine: 'flat6', turbo: 0,
-    stats: { speed: 0.84, accel: 0.86, handling: 1.0, drift: 0.6 },
-  },
-  {
-    id: 'poseidon', name: 'POSEIDON V12 HYPER', short: 'V12', tag: 'Sea-blue wedge, 800 hp, no mercy', color: '#0c5c8a', accent: '#e6e6e6',
-    mass: 1620, power: 590, torque: 720, redline: 8700, idle: 1000, gears: [3.2, 2.2, 1.65, 1.3, 1.08, 0.9, 0.76], final: 3.3, wheelR: 0.35,
-    cdA: 0.64, vmax: 345, grip: 1.26, steer: 0.5, yawI: 1.25, drift: 1.15, brake: 1.2, cyl: 12, pitch: 1.1, body: 'wedge', drive: 'awd',
-    // heavy, wide and planted; lazy to change direction (yaw inertia), monstrous straight-line shove, big downforce
-    frontW: 0.43, hcg: 0.44, track: 1.68, rsF: 0.56, susHz: 2.3, susZ: 0.6, rollK: 0.55, pitchK: 0.6, alphaPk: 0.095, mfC: 1.55, loadSens: 0.13, clA: 1.05, aeroF: 0.45, tc: 0.6, esc: 0.45, shiftT: 0.09, bias: 0.62, steerRate: 0.95, ebrake: 0.12, awdRear: 0.7, engine: 'v12', turbo: 0,
-    stats: { speed: 1.0, accel: 1.0, handling: 0.72, drift: 0.85 },
-  },
-  {
-    id: 'taxi', name: 'ATHENS TAXI', short: 'TAXI', tag: 'Diesel, yellow, fears nothing', color: '#f2c418', accent: '#1d1d1f',
-    mass: 1560, power: 125, torque: 330, redline: 5200, idle: 800, gears: [3.9, 2.3, 1.5, 1.1, 0.85, 0.7], final: 3.2, wheelR: 0.33,
-    cdA: 0.74, vmax: 212, grip: 0.98, steer: 0.58, yawI: 1.2, drift: 0.85, brake: 0.9, cyl: 4, pitch: 0.72, body: 'sedan', taxi: true, drive: 'rwd',
-    // soft and wallowy on old dampers, slow steering, early-shifting slushbox, diesel clatter; RWD so it will hang the tail out
-    frontW: 0.53, hcg: 0.58, track: 1.52, rsF: 0.62, susHz: 1.25, susZ: 0.32, rollK: 2.0, pitchK: 1.9, alphaPk: 0.135, mfC: 1.42, loadSens: 0.2, clA: 0.0, tc: 0.9, esc: 0.75, shiftT: 0.4, bias: 0.7, steerRate: 0.75, ebrake: 0.2, engine: 'diesel', turbo: 0.8,
-    stats: { speed: 0.4, accel: 0.35, handling: 0.5, drift: 0.8 },
+    id: 'taxi', name: 'ŠKODA OCTAVIA TAXI', short: 'OCTAVIA', tag: 'Athens yellow. 2.0 TDI. Front-wheel drive.', color: '#eebd19', accent: '#c7cbd0',
+    mass: 1460, power: 110, torque: 360, redline: 5000, idle: 800, gears: [14.91, 8.59, 5.24, 3.70, 2.82, 2.26, 1.75], final: 1, wheelR: 0.323,
+    wheelbase: 2.686, length: 4.689, width: 1.829, cdA: 0.57, vmax: 227, grip: 1.0, steer: 0.58, yawI: 1.15, drift: 0.8, brake: 1.0, cyl: 4, pitch: 0.72, body: 'octavia', taxi: true, drive: 'fwd',
+    frontW: 0.60, hcg: 0.53, track: 1.54, rsF: 0.6, susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.18, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.28, bias: 0.72, steerRate: 0.95, ebrake: 0.18, engine: 'diesel', turbo: 0.8,
+    stats: { speed: 0.5, accel: 0.42, handling: 0.64, drift: 0.25 },
   },
 ];
 
@@ -142,71 +124,6 @@ export function buildBodyGeo(sh) {
   return g;
 }
 
-// ------------------------------------------------------------------ the Mini (hand-tuned loft, convertible)
-const ML2 = 1.91, MWHEELS = [1.22, -1.24], MARCH = 0.375, MWY = 0.31;
-function miniProfile(s) {
-  let W = 0.86;
-  if (s > 1.0) W -= (s - 1.0) * 0.07;
-  if (s < -1.3) W -= (-1.3 - s) * 0.06;
-  let yb = 0.24;
-  for (const ws of MWHEELS) { const d = s - ws; if (Math.abs(d) < MARCH) yb = Math.max(yb, MWY + Math.sqrt(MARCH * MARCH - d * d) * 0.97); }
-  let yt;
-  if (s >= 0.62) { const t = (s - 0.62) / (ML2 - 0.62); yt = 0.985 - 0.15 * Math.pow(t, 1.5); }
-  else if (s >= -1.2) yt = 0.985 + (0.62 - s) * 0.008;
-  else { const t = (-1.2 - s) / (ML2 - 1.2); yt = 1.0 - t * t * 0.13; }
-  const c = smoothstep(-1.17, -1.11, s) * (1 - smoothstep(0.47, 0.53, s));
-  return { W, yb, yt, c, yf: 0.44 };
-}
-function buildMiniBody(paintHex, stripeHex) {
-  const N = 150;
-  const innerFracs = [0.79, 0.70, 0.58, 0.48, 0.40, 0.315, 0.25, 0.19, 0.135, 0.093, 0.045, 0];
-  const K = innerFracs.length;
-  const rings = [], info = [];
-  for (let i = 0; i < N; i++) {
-    const s = -ML2 + (2 * ML2) * i / (N - 1);
-    const { W, yb, yt, c, yf } = miniProfile(s);
-    const ys = lerp(yb, yt, 0.5);
-    const crown = s > 0.62 ? 0.04 : 0.02;
-    const right = [[0, yb], [W * 0.5, yb], [W - 0.1, yb], [W - 0.03, yb + 0.025], [W, yb + 0.09], [W + 0.005, Math.max(ys, yb + 0.12)], [W - 0.012, lerp(ys, yt, 0.55)], [W - 0.045, yt - 0.06], [W - 0.085, yt - 0.015], [W - 0.13, yt]];
-    const cock = [[W - 0.16, yt + 0.004], [W - 0.19, yt - 0.03], [W - 0.2, yt - 0.12], [W - 0.2, lerp(yt, yf, 0.45)], [W - 0.21, lerp(yt, yf, 0.85)], [W - 0.25, yf], [0.48, yf], [0.38, yf], [0.28, yf], [0.18, yf], [0.09, yf], [0, yf]];
-    for (let k = 0; k < K; k++) { const x = innerFracs[k] * W; const ny = yt + crown * (1 - (x / W) * (x / W)); right.push([lerp(x, cock[k][0], c), lerp(ny, cock[k][1], c)]); }
-    const R = s > 0 ? 0.3 : 0.24;
-    const e = clamp((Math.abs(s) - (ML2 - R)) / R, 0, 1);
-    const f = Math.sqrt(Math.max(0, 1 - e * e));
-    const ym = (yb + yt) * 0.5;
-    const full = right.concat(right.slice(1, right.length - 1).reverse().map(([x, y]) => [-x, y]));
-    rings.push(full.map(([x, y]) => new THREE.Vector3(x * f, ym + (y - ym) * (0.3 + 0.7 * f), -s)));
-    info.push({ s, c });
-  }
-  const R = rings[0].length, nRight = 10 + K;
-  const pos = []; for (const r of rings) for (const v of r) pos.push(v.x, v.y, v.z);
-  const red = new THREE.Color(paintHex), white = new THREE.Color(stripeHex);
-  const outer = [], inner = [];
-  for (let i = 0; i < N - 1; i++) for (let j = 0; j < R; j++) {
-    const j2 = (j + 1) % R;
-    const a = i * R + j, b = i * R + j2, c = (i + 1) * R + j, d = (i + 1) * R + j2;
-    const rj = j < nRight - 1 ? j : R - 1 - j;
-    const cc = Math.max(info[i].c, info[i + 1].c);
-    const interior = rj >= 10 && cc > 0.5;
-    let col = red;
-    if (!interior && (rj === 16 || rj === 18) && info[i].s > 0.68 && info[i + 1].s < 1.86) col = white;
-    (interior ? inner : outer).push([a, c, b, col], [b, c, d, col]);
-  }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  const all = []; for (const t of outer.concat(inner)) all.push(t[0], t[1], t[2]);
-  g.setIndex(all); g.computeVertexNormals();
-  const nrm = g.attributes.normal;
-  if (nrm.getX(Math.floor(N / 2) * R + 5) < 0) { for (const t of outer.concat(inner)) { const q = t[1]; t[1] = t[2]; t[2] = q; } const ai = []; for (const t of outer.concat(inner)) ai.push(t[0], t[1], t[2]); g.setIndex(ai); g.computeVertexNormals(); }
-  const expand = (list, withColor) => {
-    const P = [], Nn = [], Cc = [];
-    for (const t of list) for (let k = 0; k < 3; k++) { const vi = t[k]; P.push(pos[vi * 3], pos[vi * 3 + 1], pos[vi * 3 + 2]); Nn.push(nrm.getX(vi), nrm.getY(vi), nrm.getZ(vi)); if (withColor) Cc.push(t[3].r, t[3].g, t[3].b); }
-    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(Nn, 3));
-    if (withColor) geo.setAttribute('color', new THREE.Float32BufferAttribute(Cc, 3));
-    return geo;
-  };
-  return { outer: expand(outer, true), inner: expand(inner, false) };
-}
-
 // ------------------------------------------------------------------ shared materials / bits
 function tireMaterial() {
   // rubber: tread grooves on the running surface, moulded lettering band on the sidewall
@@ -288,110 +205,18 @@ export class CarModel {
     const S = shared();
     this.paint = paintMaterial(spec.color, spec.id === 'riviera' ? 0.15 : 0.45);
     this.tail = tailMaterial();
-    if (spec.body === 'mini') this.buildMini(); else this.buildGeneric();
+    buildDetailedCar(this, spec.body, { plate: opts.plate || (spec.id === 'mini' ? 'ΙΚΑ 1920' : spec.id === 'z4' ? 'ΙΒΜ 4040' : 'ΤΑΑ 2150') });
     this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     this.wheelSpin = 0;
     // contact shadow
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());
     blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03; blob.renderOrder = 1; blob.castShadow = false; this.root.add(blob);
   }
-  buildMini() {
-    const S = shared();
-    const { outer, inner } = buildMiniBody(this.spec.color, this.spec.accent);
-    const paint = new THREE.MeshPhysicalMaterial({ color: 0xffffff, vertexColors: true, metalness: 0.3, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.05 });
-    this.paint = paint;
-    this.body.add(new THREE.Mesh(outer, paint));
-    const solid = paintMaterial(this.spec.color, 0.3);
-    const frameMat = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(this.spec.color).multiplyScalar(0.55), roughness: 0.55, metalness: 0.2, clearcoat: 0.2 });
-    const im = new THREE.Mesh(inner, S.interior.clone()); im.material.side = THREE.DoubleSide; this.body.add(im);
-    const sh = { wb: 2.46, W: 1.72, track: 0.88 };
-    addWheels(this, sh, 0.31, 0.21, 7);
-    const add = (geo, mat, x, y, z, rx = 0, ry = 0, rz = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); this.body.add(m); return m; };
-    // windscreen frame + glass
-    const wsBase = new THREE.Vector3(0, 0.985, -0.6), wsTop = new THREE.Vector3(0, 1.38, -0.18);
-    const wsLen = wsBase.distanceTo(wsTop), wsAng = Math.atan2(wsTop.z - wsBase.z, wsTop.y - wsBase.y);
-    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.32, wsLen), S.glassClear); glass.position.copy(wsBase).add(wsTop).multiplyScalar(0.5); glass.rotation.x = wsAng; this.body.add(glass); this.windscreen = glass;
-    for (const sx of [-1, 1]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.045, wsLen + 0.04, 0.06), frameMat); p.position.set(sx * 0.68, (wsBase.y + wsTop.y) / 2, (wsBase.z + wsTop.z) / 2); p.rotation.x = wsAng; p.rotation.z = sx * 0.06; this.body.add(p); }
-    add(new RoundedBoxGeometry(1.4, 0.045, 0.06, 2, 0.015), frameMat, 0, 1.385, -0.19, wsAng);
-    // roll hoops, folded roof, seats
-    const leather = new THREE.MeshStandardMaterial({ color: '#c79a6c', roughness: 0.5 });
-    for (const sx of [-1, 1]) {
-      add(new RoundedBoxGeometry(0.52, 0.16, 0.52, 3, 0.06), leather, sx * 0.36, 0.5, 0.04);
-      add(new RoundedBoxGeometry(0.5, 0.62, 0.14, 3, 0.06), leather, sx * 0.36, 0.85, 0.33, 0.18);
-      add(new RoundedBoxGeometry(0.28, 0.17, 0.1, 3, 0.04), leather, sx * 0.36, 1.26, 0.41, 0.12);
-      add(new THREE.TorusGeometry(0.16, 0.022, 8, 18, Math.PI), S.chrome, sx * 0.33, 1.2, 1.12);
-    }
-    add(new RoundedBoxGeometry(1.2, 0.5, 0.14, 3, 0.06), leather, 0, 0.86, 1.02, 0.22);
-    add(new RoundedBoxGeometry(1.44, 0.17, 0.46, 3, 0.07), new THREE.MeshStandardMaterial({ color: '#1b1b1d', roughness: 0.9 }), 0, 1.04, 1.42);
-    // lights, grille, bumpers, mirrors
-    for (const sx of [-1, 1]) {
-      const hl = new THREE.Group(); hl.position.set(sx * 0.5, 0.74, -1.8); hl.rotation.set(-0.2, sx * 0.3, 0); this.body.add(hl);
-      const c = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.12, 0.14, 24).rotateX(Math.PI / 2), solid); c.position.z = 0.07; hl.add(c);
-      hl.add(new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.025, 8, 24), S.chrome));
-      const lens = new THREE.Mesh(new THREE.CircleGeometry(0.12, 24), S.head); lens.rotation.y = Math.PI; lens.position.z = -0.01; hl.add(lens);
-      const tl = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.05, 20).rotateX(Math.PI / 2), this.tail); tl.position.set(sx * 0.6, 0.82, 1.79); tl.scale.set(1.1, 1.45, 1); this.body.add(tl);
-      add(new THREE.BoxGeometry(0.03, 0.05, 0.08), S.black, sx * 0.8, 1.0, -0.56);
-      const mc = add(new THREE.SphereGeometry(0.5, 14, 10), solid, sx * 0.9, 1.04, -0.52); mc.scale.set(0.16, 0.09, 0.09);
-      this['mirror' + (sx > 0 ? 'R' : 'L')] = add(new THREE.PlaneGeometry(0.13, 0.065), new THREE.MeshStandardMaterial({ color: '#cfe3ef', metalness: 1, roughness: 0.05 }), sx * 0.9, 1.04, -0.472);
-    }
-    const hex = new THREE.CylinderGeometry(0.5, 0.5, 0.06, 6); hex.rotateX(Math.PI / 2);
-    const gr = add(hex, S.black, 0, 0.58, -1.86, 0.25); gr.scale.set(0.9, 0.42, 1);
-    const grc = add(hex, S.chrome, 0, 0.58, -1.845, 0.25); grc.scale.set(0.96, 0.47, 0.6);
-    add(new RoundedBoxGeometry(1.4, 0.16, 0.18, 2, 0.05), S.black, 0, 0.3, -1.8);
-    add(new RoundedBoxGeometry(1.5, 0.2, 0.2, 2, 0.06), S.black, 0, 0.33, 1.78);
-    add(new THREE.PlaneGeometry(0.52, 0.11), S.plate, 0, 0.3, -1.9, 0, Math.PI, 0);
-    add(new THREE.PlaneGeometry(0.52, 0.11), S.plate, 0, 0.53, 1.912, -0.05);
-    for (const sx of [-0.12, 0.12]) add(new THREE.CylinderGeometry(0.04, 0.04, 0.12, 12).rotateX(Math.PI / 2), S.chrome, sx, 0.27, 1.88);
-    this.dims = { L: 3.82, W: 1.72, H: 1.4 };
-    this.seat = new THREE.Vector3(-0.36, 1.13, 0.27); // driver's eye (local)
-    this.dash = { y: 0.98, z: -0.48, w: 1.36, wheelZ: -0.28, wheelY: 0.97, wheelR: 0.18, x: -0.36 };
-    this.exhaust = [new THREE.Vector3(-0.12, 0.27, 1.95), new THREE.Vector3(0.12, 0.27, 1.95)];
-  }
-  buildGeneric() {
-    const S = shared();
-    const sh = SHAPES[this.spec.body];
-    this.shape = sh;
-    const geo = buildBodyGeo(sh);
-    const mesh = new THREE.Mesh(geo, [this.paint, S.glassDark, S.black]);
-    this.body.add(mesh); this.bodyMesh = mesh;
-    const r = this.spec.wheelR;
-    addWheels(this, sh, r, sh.W * 0.13, this.spec.id === 'kastro' ? 6 : 5, this.spec.id === 'poseidon');
-    const L2 = sh.L / 2;
-    const add = (geo2, mat, x, y, z, rx = 0, ry = 0, rz = 0) => { const m = new THREE.Mesh(geo2, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); this.body.add(m); return m; };
-    for (const sx of [-1, 1]) {
-      add(new THREE.BoxGeometry(sh.W * 0.2, 0.08, 0.06), S.head, sx * sh.W * 0.34, sh.nose - 0.06, -L2 + 0.06, -0.3);
-      add(new THREE.BoxGeometry(sh.W * 0.22, 0.07, 0.05), this.tail, sx * sh.W * 0.33, (sh.fastback ? sh.belt : sh.tail) - 0.08, L2 - 0.03);
-      add(new THREE.BoxGeometry(0.05, 0.1, 0.16), S.black, sx * sh.W * 0.5, sh.belt + 0.08, -sh.L * 0.12);
-      this['mirror' + (sx > 0 ? 'R' : 'L')] = add(new THREE.PlaneGeometry(0.16, 0.08), new THREE.MeshStandardMaterial({ color: '#cfe3ef', metalness: 1, roughness: 0.05 }), sx * sh.W * 0.53, sh.belt + 0.1, -sh.L * 0.12 + 0.081);
-    }
-    add(new THREE.BoxGeometry(sh.W * 0.92, 0.18, 0.16), S.black, 0, sh.bottom + 0.12, -L2 + 0.04);
-    add(new THREE.BoxGeometry(sh.W * 0.92, 0.2, 0.14), S.black, 0, sh.bottom + 0.14, L2 - 0.04);
-    add(new THREE.PlaneGeometry(0.52, 0.11), S.plate, 0, sh.bottom + 0.22, -L2 - 0.03, 0, Math.PI, 0);
-    add(new THREE.PlaneGeometry(0.52, 0.11), S.plate, 0, sh.bottom + 0.3, L2 + 0.03);
-    if (this.spec.id === 'riviera' || this.spec.id === 'poseidon') {
-      // rear wing
-      add(new THREE.BoxGeometry(sh.W * 0.9, 0.04, 0.32), S.black, 0, sh.belt + 0.32, L2 - 0.3, 0.08);
-      for (const sx of [-1, 1]) add(new THREE.BoxGeometry(0.04, 0.3, 0.16), S.black, sx * 0.5, sh.belt + 0.17, L2 - 0.3);
-    }
-    if (this.spec.id === 'kastro') {
-      // rally stripes + roof vent + mud flaps
-      add(new THREE.BoxGeometry(0.34, 0.012, sh.L * 0.62), new THREE.MeshStandardMaterial({ color: this.spec.accent, roughness: 0.4 }), 0, sh.H + 0.012, -0.2);
-      for (const sx of [-1, 1]) add(new THREE.BoxGeometry(0.28, 0.24, 0.02), new THREE.MeshStandardMaterial({ color: '#d32f2f', roughness: 0.8 }), sx * 0.7, 0.2, sh.wb / 2 - 0.5);
-    }
-    if (this.spec.taxi) addTaxiSign(this.body, sh);
-    this.dims = { L: sh.L, W: sh.W, H: sh.H };
-    this.seat = new THREE.Vector3(-sh.W * 0.21, sh.belt + (sh.H - sh.belt) * 0.62, -sh.L * 0.02 + (this.spec.body === 'wedge' ? 0.2 : 0));
-    this.dash = { y: sh.belt + 0.06, z: -sh.L * 0.13, w: sh.W * 0.9, wheelZ: -sh.L * 0.13 + 0.32, wheelY: sh.belt + 0.04, wheelR: 0.18, x: -sh.W * 0.21 };
-    this.exhaust = [new THREE.Vector3(-0.35, sh.bottom + 0.1, L2 + 0.05), new THREE.Vector3(0.35, sh.bottom + 0.1, L2 + 0.05)];
-    this.windscreen = null;
-  }
-  update(dt, speed, steer, brake, pose) {
-    this.wheelSpin -= speed / (this.wheels[0]?.r || 0.32) * dt;
-    for (const w of this.wheels) { w.spin.rotation.x = this.wheelSpin; w.pivot.rotation.y = w.front ? steer : 0; }
-    this.tail.emissiveIntensity = brake ? 7 : 1.2;
-    if (pose) { this.body.position.y = pose.heave; this.body.rotation.set(pose.pitch, 0, pose.roll, 'YXZ'); }
+  update(dt, speed, steer, brake, pose, axles = null, yawRate = 0) {
+    animateDetailedCar(this, dt, speed, steer, brake, pose, axles, yawRate);
   }
 }
+
 function addTaxiSign(parent, sh) {
   const tex = canvasTex(256, 64, (g, w, h) => { g.fillStyle = '#f7f3e6'; g.fillRect(0, 0, w, h); g.fillStyle = '#111'; g.font = '800 46px "Barlow Condensed", Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('TAXI', w / 2, h / 2 + 2); });
   const m = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.18, 0.22), [new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.4 }), new THREE.MeshStandardMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.4 })]);
@@ -411,7 +236,10 @@ export const TRAFFIC_TYPES = [
   { id: 'city', w: 16, shape: 'hatch', scale: 0.88, len: 3.65, wid: 1.6, colors: ['#f2f2f0', '#c9ccd1', '#b8282a', '#e9e2c9', '#2f6db0', '#9fb3a0', '#f4b9c0', '#7d8288'] },
   { id: 'hatch', w: 26, shape: 'hatch', len: 4.15, wid: 1.82, colors: ['#f2f2f0', '#c9ccd1', '#1d1f24', '#2e4c6a', '#8fa3b8', '#a33a2c', '#e8d9a8', '#3f5e4a', '#7d8288', '#5d6b78'] },
   { id: 'sedan', w: 15, shape: 'sedan', len: 4.75, wid: 1.8, colors: ['#f2f2f0', '#26292e', '#7d8288', '#c9ccd1', '#41505e', '#6b1f24'] },
-  { id: 'taxi', w: 13, shape: 'sedan', len: 4.75, wid: 1.8, colors: ['#f2c418'], taxi: true },
+  { id: 'taxi', w: 10, model: 'octavia', shape: 'sedan', len: 4.689, wid: 1.829, colors: ['#efc31f', '#e3ae12', '#f4cc34'], taxi: true },
+  { id: 'taxi_superb', w: 5, model: 'superb', shape: 'sedan', len: 4.869, wid: 1.864, colors: ['#e8b716', '#f5cd32', '#dbab18'], taxi: true },
+  { id: 'byd_dolphin', w: 8, model: 'dolphin', shape: 'hatch', len: 4.29, wid: 1.77, colors: ['#81b9b9', '#eae9e3', '#597aab', '#9d9eaa', '#da9584'], electric: true },
+  { id: 'byd_atto3', w: 7, model: 'atto3', shape: 'suv', len: 4.455, wid: 1.875, colors: ['#dce0df', '#356c9d', '#666d71', '#a94a49', '#192c39'], electric: true },
   { id: 'suv', w: 13, shape: 'suv', len: 4.6, wid: 1.9, colors: ['#f2f2f0', '#1d1f24', '#7d8288', '#5b2a2a', '#c9ccd1', '#2c3b4d', '#8a7a5c'] },
   { id: 'van', w: 6, shape: 'van', len: 5.0, wid: 2.0, colors: ['#f4f4f2', '#f4f4f2', '#d8d4c8', '#c9ccd1'] },
   { id: 'bus', w: 3, shape: 'bus', len: 12, wid: 2.5, colors: ['#f4f4f2'], bus: true },
@@ -420,7 +248,9 @@ export const TRAFFIC_TYPES = [
   { id: 'moto', w: 3, scooter: true, moto: true, len: 2.1, wid: 0.8, colors: ['#1d1f24', '#c3121c', '#f2f2f0', '#e86a10'] },
 ];
 const TRAFFIC_GEO = {};
-export function trafficModel(type, color, rng) {
+export function trafficModel(type, color, rng, opts = {}) {
+  if (type.model && !opts.parked) return trafficDetailedModel(type, color, rng);
+  const plate = makePlateMaterial();
   const S = shared();
   const root = new THREE.Group(); const body = new THREE.Group(); root.add(body);
   const paint = paintMaterial(color, type.taxi || type.bus ? 0.1 : 0.4);
@@ -452,7 +282,8 @@ export function trafficModel(type, color, rng) {
       const h = new THREE.Mesh(new THREE.BoxGeometry(sh.W * 0.18, 0.08, 0.05), S.head); h.position.set(sx * sh.W * 0.33, sh.nose - 0.08, -L2 + 0.05); body.add(h);
       const t = new THREE.Mesh(new THREE.BoxGeometry(sh.W * 0.2, 0.08, 0.05), tail); t.position.set(sx * sh.W * 0.34, (sh.fastback ? sh.belt : sh.tail) - 0.1, L2); body.add(t);
     }
-    const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), S.plate); pl.position.set(0, sh.bottom + 0.3, L2 + 0.03); body.add(pl);
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); pl.position.set(0, sh.bottom + 0.3, L2 + 0.03); body.add(pl);
+    const fp = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); fp.position.set(0, sh.bottom + 0.26, -L2 - 0.03); fp.rotation.y = Math.PI; body.add(fp);
     if (type.taxi) addTaxiSign(body, sh);
     if (sh.flatEnds) { // rear window(s) on the flat back panel
       const rw = new THREE.Mesh(new THREE.PlaneGeometry(sh.W * (type.bus ? 0.78 : 0.34), type.bus ? 0.95 : 0.55), S.glassDark);

@@ -1,0 +1,18 @@
+[Unit]
+Description=Paraliaki Racing multiplayer and game server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/dev/projects/paraliaki-racing
+ExecStart=/usr/bin/node /home/dev/projects/paraliaki-racing/server/index.mjs
+Environment=HOST=0.0.0.0
+Environment=PORT=8000
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0027
+
+[Install]
+WantedBy=default.target

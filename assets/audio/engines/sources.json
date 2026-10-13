@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "acquired": "2026-10-13",
+  "sampleRate": 44100,
+  "sources": {
+    "mini": {
+      "cacheFile": "669618.mp3",
+      "title": "Car Engine Contact Recording-Mini Cooper S 2019.wav",
+      "author": "TheLittleCrow",
+      "pageUrl": "https://freesound.org/people/TheLittleCrow/sounds/669618/",
+      "downloadUrl": "https://cdn.freesound.org/previews/669/669618_5672786-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "formatNote": "Freesound public HQ MP3 preview; original WAV requires account",
+      "sha256": "5f487dd82d5c4a75e44e651dcaa9c48617d36c0e475cb167987ebc57dba9f07d"
+    },
+    "mini-high": {
+      "cacheFile": "669622.mp3",
+      "title": "Car Engine Contact Recording-Mini Cooper S 2019_Gunning_it.wav",
+      "author": "TheLittleCrow",
+      "pageUrl": "https://freesound.org/people/TheLittleCrow/sounds/669622/",
+      "downloadUrl": "https://cdn.freesound.org/previews/669/669622_5672786-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "formatNote": "Freesound public HQ MP3 preview; original WAV requires account",
+      "sha256": "fe89840499181282ecaf837201c81cf7cdcffacefa2af6f453d9c29b530f94c0"
+    },
+    "petrol-start": {
+      "cacheFile": "425158.mp3",
+      "title": "Car engine start up running and turning off.wav (Fiat Punto Grande)",
+      "author": "sound_catcher99",
+      "pageUrl": "https://freesound.org/people/sound_catcher99/sounds/425158/",
+      "downloadUrl": "https://cdn.freesound.org/previews/425/425158_4370343-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "formatNote": "Freesound public HQ MP3 preview; original WAV requires account",
+      "sha256": "19b212593dcfff7035fab9da9f5b0bacdbb2d191f871ce5afb66c9e29c3f5ee7"
+    },
+    "bmw": {
+      "cacheFile": "BMW_M4_t7_Ext_Start_Idle_Blips_Steady_in_Netural_Off_XY_RSM191.wav",
+      "title": "BMW M4 2014 exterior start, idle, blips and steady neutral RPM",
+      "author": "Pole Position Production",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20BMW%20M4%202014/BMW_M4_t7_Ext_Start_Idle_Blips_Steady_in_Netural_Off_XY_RSM191.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original 96 kHz WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "1bdadb4d987917bf0ff8fca734c9c5376b0b490db1d262eae7437c7767d1e227"
+    },
+    "diesel-start": {
+      "cacheFile": "89948.mp3",
+      "title": "car_inside_start_idle_diesel_engine.wav (2007 VW Passat)",
+      "author": "Loffy",
+      "pageUrl": "https://freesound.org/people/Loffy/sounds/89948/",
+      "downloadUrl": "https://cdn.freesound.org/previews/89/89948_128303-hq.mp3",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "formatNote": "Freesound public HQ MP3 preview; original WAV requires account",
+      "sha256": "2cb88f6034e5e484a02d6626dc61550f2442731f838cc0feb1831630fce5a0fd"
+    },
+    "diesel-low": {
+      "cacheFile": "Audi A3 8L 1.9 TDI engine 2k rpm loop interior stereo.wav",
+      "title": "Audi A3 8L 1.9 TDI 2000 RPM loop",
+      "author": "Soundholder",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Soundholder%20-%20Audi%20A3%208L%201.9%20TDI/Audi%20A3%208L%201.9%20TDI%20engine%202k%20rpm%20loop%20interior%20stereo.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original 96 kHz WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "67d20018c13cdc378badb500136f2fe01187be82eb3c1560a679b39bc9ada5a6"
+    },
+    "diesel-high": {
+      "cacheFile": "Volkswagen Caravelle T5 2.0 TDI Engine 09 - INT - 3k rpm loop stereo.wav",
+      "title": "Volkswagen Caravelle T5 2.0 TDI 3000 RPM loop",
+      "author": "Soundholder",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Soundholder%20-%20Volkswagen%20Caravelle%20T5%202.0%20TDI/Volkswagen%20Caravelle%20T5%202.0%20TDI%20Engine%2009%20-%20INT%20-%203k%20rpm%20loop%20stereo.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original 96 kHz WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "a31daa24826be72999233fbf1485056bd67b799ac0ae04f6297d164256f09e7b"
+    }
+  },
+  "assets": [
+    {
+      "file": "mini-start.wav",
+      "source": "petrol-start",
+      "trim": [
+        0.12,
+        1.55
+      ],
+      "kind": "start",
+      "duration": 1.43,
+      "sha256": "4c985a0b49ed483c8c8bf7c7e1826673ee76968c1771a1a1c211fe0b9fedb3b1"
+    },
+    {
+      "file": "mini-idle.wav",
+      "source": "mini",
+      "trim": [
+        0.2,
+        2.4
+      ],
+      "kind": "loop",
+      "rpm": 900,
+      "cylinders": 4,
+      "duration": 2.08803,
+      "sha256": "bdc06969e1fa92eb72a72d164f89717dbfdd7df3c8df325e15a7e88f7e655de8"
+    },
+    {
+      "file": "mini-low.wav",
+      "source": "mini",
+      "trim": [
+        3.5,
+        4.5
+      ],
+      "kind": "loop",
+      "rpm": 1800,
+      "cylinders": 4,
+      "duration": 0.90678,
+      "sha256": "cf7acf4486c14082f33ae586a091dfdcb9e5ddc0b3c9b0d4d2da85642494da27"
+    },
+    {
+      "file": "mini-mid.wav",
+      "source": "mini",
+      "trim": [
+        29,
+        32
+      ],
+      "kind": "loop",
+      "rpm": 4300,
+      "cylinders": 4,
+      "duration": 2.92689,
+      "sha256": "1f37aab9f736df8756d00a8d9acb26cb635ccb54e041553c5b308e5f48828a4d"
+    },
+    {
+      "file": "mini-high.wav",
+      "source": "mini-high",
+      "trim": [
+        4.75,
+        5.3
+      ],
+      "kind": "loop",
+      "rpm": 6100,
+      "cylinders": 4,
+      "duration": 0.43388,
+      "sha256": "d9836a9653866bf201d5c38876fbc43503510ac384da9cd0481c4884f1dafa9f"
+    },
+    {
+      "file": "z4-start.wav",
+      "source": "bmw",
+      "trim": [
+        0.18,
+        2.4
+      ],
+      "kind": "start",
+      "duration": 2.22,
+      "sha256": "9da6385cd3bc4470694ebe2dc49d38d5aed6479a0f824c8be265de25f93c29ee"
+    },
+    {
+      "file": "z4-idle.wav",
+      "source": "bmw",
+      "trim": [
+        5,
+        8
+      ],
+      "kind": "loop",
+      "rpm": 745,
+      "cylinders": 6,
+      "duration": 2.89438,
+      "sha256": "dc2f33973cabc60a13da4cfd86f9f1e692c6f82a4376da5720b6147380c1b37b"
+    },
+    {
+      "file": "z4-low.wav",
+      "source": "bmw",
+      "trim": [
+        63.5,
+        66
+      ],
+      "kind": "loop",
+      "rpm": 1545,
+      "cylinders": 6,
+      "duration": 2.41966,
+      "sha256": "896f6d69cc59e839bdb72203dfe73d6e6835a95e129caa0452b746b0092b1e11"
+    },
+    {
+      "file": "z4-mid.wav",
+      "source": "bmw",
+      "trim": [
+        78.3,
+        80.8
+      ],
+      "kind": "loop",
+      "rpm": 3000,
+      "cylinders": 6,
+      "duration": 2.41032,
+      "sha256": "d416ce741b180837269928cf9cd9a23a367f73542521a517407d62d5e2b06b07"
+    },
+    {
+      "file": "z4-high.wav",
+      "source": "bmw",
+      "trim": [
+        109,
+        112
+      ],
+      "kind": "loop",
+      "rpm": 5050,
+      "cylinders": 6,
+      "duration": 2.89571,
+      "sha256": "867d379259fcd32da709bff3fb2edf854cfcf05bb07e5247a695da903a792ccb"
+    },
+    {
+      "file": "taxi-start.wav",
+      "source": "diesel-start",
+      "trim": [
+        5.4,
+        8.1
+      ],
+      "kind": "start",
+      "duration": 2.7,
+      "sha256": "b889301b10fc88ee3c1a3bf1c9c6c0965e22f3c23cc7b99cb48b07a7554992ab"
+    },
+    {
+      "file": "taxi-idle.wav",
+      "source": "diesel-start",
+      "trim": [
+        8.3,
+        10.8
+      ],
+      "kind": "loop",
+      "rpm": 860,
+      "cylinders": 4,
+      "duration": 2.39327,
+      "sha256": "ca6662ce4e71b3301b93a24245f34af653f39622787513aebd4330b4849c34bd"
+    },
+    {
+      "file": "taxi-low.wav",
+      "source": "diesel-low",
+      "trim": [
+        0.2,
+        7.2
+      ],
+      "kind": "loop",
+      "rpm": 2000,
+      "cylinders": 4,
+      "stabilize": false,
+      "duration": 6.91,
+      "sha256": "12e721be53130af2575f59bd831684c42a0216493f98d4df472a73dd894ea90b"
+    },
+    {
+      "file": "taxi-high.wav",
+      "source": "diesel-high",
+      "trim": [
+        0.2,
+        6.2
+      ],
+      "kind": "loop",
+      "rpm": 3000,
+      "cylinders": 4,
+      "stabilize": false,
+      "duration": 5.91,
+      "sha256": "0f63ba4a69c353749298947571f109867570c3d5a728a089cc61750068c6d054"
+    }
+  ],
+  "notes": [
+    "MINI running recordings are a 2019 Cooper S engine/chassis contact recording; body/exhaust and mic perspective differ from the Cabrio. Startup is a Fiat Punto Grande petrol I4 substitute.",
+    "Z4 M40i B58 is represented by a BMW M4 S55 turbo inline-six recording, NOT an exact Z4 recording. Neutral-load recordings are shaped by load at runtime; these are not independently recorded on/off load banks.",
+    "Octavia taxi is represented by VW Passat diesel startup/idle, Audi 1.9 TDI 2000 RPM and VW Caravelle 2.0 TDI 3000 RPM. These are related diesel substitutes, NOT an exact Octavia recording.",
+    "RPM references are estimates from harmonic analysis except the producer-labelled 2000/3000 RPM loops. Loops are trimmed, mono mixed, high-pass filtered, pitch-stabilized where specified, overlapped at their seams and level matched.",
+    "Sonniss recordings are licensed for use inside this game; they are not CC0 and must not be redistributed as a standalone sound pack. License version 2.0 effective 2026-08-27 applies."
+  ]
+}

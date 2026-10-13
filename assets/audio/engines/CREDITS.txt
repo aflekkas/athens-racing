@@ -1,0 +1,60 @@
+PARALIAKI RACING — ENGINE RECORDINGS
+
+These are edited recordings of real engines. They are not all exact recordings
+of the represented car. sources.json records every source, trim, estimated RPM,
+license URL, download URL, transformation and SHA-256 checksum.
+
+MINI COOPER S CABRIO
+Running engine: TheLittleCrow, 2019 Mini Cooper S contact recordings (engine
+block + chassis), Freesound 669618 and 669622. CC0 1.0.
+https://freesound.org/people/TheLittleCrow/sounds/669618/
+https://freesound.org/people/TheLittleCrow/sounds/669622/
+Startup: sound_catcher99, Fiat Punto Grande gasoline start, Freesound 425158.
+CC0 1.0. This starter is a petrol four-cylinder SUBSTITUTE, not a MINI recording.
+https://freesound.org/people/sound_catcher99/sounds/425158/
+
+BMW Z4 M40i
+Pole Position Production, BMW M4 2014 exterior start/idle/blips/steady neutral
+RPM, from Sonniss GameAudioGDC 2020. BMW S55 turbo inline-six SUBSTITUTE for
+Z4 B58; exhaust and engine details differ. Not a model-exact Z4 recording.
+https://sonniss.com/gameaudiogdc/
+
+SKODA OCTAVIA TAXI
+Startup + idle: Loffy, car_inside_start_idle_diesel_engine.wav, 2007 VW Passat,
+Freesound 89948. Licensed CC BY 3.0; attribution to Loffy is required.
+https://freesound.org/people/Loffy/sounds/89948/
+https://creativecommons.org/licenses/by/3.0/
+Changes: cropped start and idle, mono 44.1 kHz conversion, high-pass filtering,
+level matching, pitch stabilization and loop seam overlap on the idle only.
+Running loops: Soundholder, Audi A3 8L 1.9 TDI 2000 RPM and Volkswagen
+Caravelle T5 2.0 TDI 3000 RPM, Sonniss GameAudioGDC 2020.
+These are diesel SUBSTITUTES, not an exact Octavia recording.
+
+LICENSES
+CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
+CC BY 3.0: https://creativecommons.org/licenses/by/3.0/
+Sonniss GameAudioGDC license v2.0, effective 27 August 2026:
+https://sonniss.com/gdc-bundle-license/
+Sonniss material is licensed for use inside this game. Do not redistribute it
+as a sound library, asset pack or project template. The finished game may be
+shared/published; collaborators may use these assets to work on this game.
+These files are not covered by any general source-code license of the project.
+
+IMPLEMENTATION AND LIMITATIONS
+The public Freesound HQ MP3 previews were used, not the account-gated original
+WAVs. Sonniss sources are original 96 kHz WAVs. Runtime files are PCM16 mono
+44.1 kHz WAV: no decoder padding at seams, and no external audio requests.
+RPM references are harmonic-analysis estimates, except the producer-labelled
+TDI loops. Short sections of revs were pitch-stabilized, seams overlapped, DC
+removed and levels matched. The high MINI loop is short (0.43 s); a longer
+steady full-load recording would improve variation. Load uses filtering and
+gain, not separate measured load/coast recordings. Road/tyre/turbo/shift sounds
+remain procedural. The existing rival shares the player's performance/audio
+bank. Engine synthesis remains as a network/decode fallback, now with an I6.
+
+Audition all three: /tools/audio-preview.html (served from the project root).
+Rebuild: python tools/build_engine_audio.py --cache /path/to/source-cache
+Requires ffmpeg, numpy and scipy. Masters are cached outside runtime assets.
+To upgrade fidelity further, replace substitute sources with separately
+licensed Z4 B58 / Octavia EA288 / MINI B48 ignition recordings, plus sustained
+on-load and off-load dyno RPM takes. Do not use game-ripped mod audio as masters.

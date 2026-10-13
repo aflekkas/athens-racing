@@ -1,0 +1,11 @@
+{
+  "name": "paraliaki-racing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "test": "node --test server/*.test.mjs"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": { "ws": "^8.18.3" }
+}
