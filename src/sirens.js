@@ -1,3 +1,5 @@
+import { spatialAudio } from './world-sounds.js';
+
 // Police sirens on top of Audio (audio.js). Electronic sirens are oscillators through a horn speaker, so they are
 // synthesized: a centre frequency plus an LFO sweep (wail far off, yelp up close, hi-lo two-tone on some units)
 // drive a square + saw pair through a driver-distortion and horn band. Doppler scales the whole frequency signal.
@@ -53,13 +55,14 @@ export class Sirens {
     for (const v of this.voices) if (v.id >= 0 && !ids.has(v.id)) { v.id = -1; v.out.gain.setTargetAtTime(0, now, 0.15); }
     for (const o of on) {
       let v = this.voices.find((q) => q.id === o.id);
-      if (!v) { v = this.voices.find((q) => q.id < 0); if (!v) continue; v.id = o.id; v.mode = null; }
+      if (!v) { v = this.voices.find((q) => q.id < 0); if (!v) continue; v.id = o.id; v.mode = null; v.spatialTime = null; v.doppler = 1; }
       this.setMode(v, o.d < 40 ? 'yelp' : o.id % 3 === 2 ? 'hilo' : 'wail', now);
-      const dop = Math.max(0.8, Math.min(1.25, 343 / (343 - Math.max(-70, Math.min(70, o.vr)))));
+      const spatial = spatialAudio(v, o, now, 30), dop = spatial.doppler;
       v.dop.gain.setTargetAtTime(dop, now, 0.05);
+      v.lfo.frequency.setTargetAtTime(MODES[v.mode].rate * dop, now, 0.05);
       const att = 1 / (1 + Math.pow(o.d / 30, 1.25));
       v.out.gain.setTargetAtTime(0.32 * att * mute, now, 0.08);
-      v.air.frequency.setTargetAtTime(1800 + 14000 / (1 + o.d / 40), now, 0.1);
+      v.air.frequency.setTargetAtTime(spatial.cutoff, now, 0.1);
       v.pan.pan.setTargetAtTime(Math.max(-0.95, Math.min(0.95, o.pan)), now, 0.05);
     }
     if (this.seen.size > 32) for (const [id, t] of this.seen) if (now - t > 30) this.seen.delete(id);
@@ -68,7 +71,7 @@ export class Sirens {
   whoop(o, now) {
     const att = 1 / (1 + Math.pow(o.d / 30, 1.25));
     if (att < 0.03) return;
-    const lp = 1800 + 14000 / (1 + o.d / 40);
-    for (const [type, g] of [['square', 0.07], ['sawtooth', 0.05]]) this.A.tone({ f: 420, slide: 1500, dur: 0.42, gain: g * att, type, attack: 0.02, lp, pan: o.pan, bus: this.A.trafficBus });
+    const spatial = spatialAudio({}, o, now, 30), lp = spatial.cutoff;
+    for (const [type, g] of [['square', 0.07], ['sawtooth', 0.05]]) this.A.tone({ f: 420 * spatial.doppler, slide: 1500 * spatial.doppler, dur: 0.42, gain: g * att, type, attack: 0.02, lp, pan: o.pan, bus: this.A.trafficBus });
   }
 }

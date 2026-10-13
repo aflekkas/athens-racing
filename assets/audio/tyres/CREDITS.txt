@@ -1,0 +1,20 @@
+ATHENS STREET RACERS — CONTACT-PATCH AUDIO (sound v2)
+
+Rolling, scrub, kerb rumble, grit, stick/slip resonances and lock-up chirps:
+original procedural synthesis implemented in src/audio.js (TyreVoice).
+No external recordings are used for these generated components; they follow
+this repository's source-code licence. No claim of a new third-party CC licence.
+
+Recorded rubber texture reuses ../world/tyre-squeal.mp3:
+"Chrysler LHS tire squeal 04 (04-25-2009).wav" by audible-edge
+https://freesound.org/people/audible-edge/sounds/71739/
+CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
+Existing asset trimmed 3.6–14.2 s, high-passed at 300 Hz, crossfaded as a loop.
+Sound v2 plays decorrelated, pitch-shifted copies per wheel, blended with
+procedural resonances; volume follows normal load and combined tyre slip.
+Full acquisition provenance and checksums: ../world/sources.json.
+
+Audition renders also contain existing engine/world/music recordings; see
+../engines/CREDITS.txt, ../world/CREDITS.txt and ../music/CREDITS.txt.
+Reproduce locally: node tools/build_sound_audio.mjs, open http://localhost:8015.
+WAVs, spectrograms and EBU R128 measurements are written to .scratch/sound-v2/.

@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "procedural": { "implementation": "src/audio.js#TyreVoice", "components": ["rolling", "scrub", "kerb-rumble", "grit", "stick-slip-resonances", "lock-up-chirp"], "license": "repository source-code licence; no external samples" },
+  "recordings": [{ "file": "../world/tyre-squeal.mp3", "title": "Chrysler LHS tire squeal 04 (04-25-2009).wav", "author": "audible-edge", "pageUrl": "https://freesound.org/people/audible-edge/sounds/71739/", "license": "CC0-1.0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/", "provenance": "../world/sources.json", "changes": "Existing crossfaded loop; four independent phases and slip-controlled pitches, gains and axle filters at runtime" }]
+}

@@ -584,7 +584,7 @@ function focusRival() {
 }
 
 function onFlowSettings(s, key) {
-  audio.setVolumes?.({ master: s.master, music: s.music, sfx: s.sfx });
+  audio.setVolumes?.(s);
   if (key === 'aids' || key === 'transmission' || !key) applyDriving();
   if (key === 'steeringAssist') syncSteeringAssist();
   if (key === 'units' && menu?.screen === 'events') menu.render();
@@ -1005,10 +1005,10 @@ function handleEvents(events) {
 
 // ------------------------------------------------------------------ audio feed
 const _fr = {}, _av = new THREE.Vector3(), _aw = new THREE.Vector3(), _ar = new THREE.Vector3(), _ap = new THREE.Vector3();
+const audioListener = { x: 0, z: 0, vx: 0, vz: 0, ready: false, camera: null };
 function listenerRel(x, y, z, vx, vz) {
   const cp = camera.position, dx = x - cp.x, dz = z - cp.z, d = Math.hypot(dx, dz, (y - cp.y) * 0.5);
-  const lv = player.veh.velocityWorld(_aw);
-  const rvx = vx - lv.x, rvz = vz - lv.z;
+  const rvx = vx - audioListener.vx, rvz = vz - audioListener.vz;
   _ar.set(1, 0, 0).applyQuaternion(camera.quaternion);
   return { d, pan: (dx * _ar.x + dz * _ar.z) / Math.max(3, d), vr: -(dx * rvx + dz * rvz) / Math.max(1, d) };
 }
@@ -1026,6 +1026,11 @@ function handleTrafficSounds() {
 function updateAudio(dt) {
   if (!audio.ctx) return;
   const pv = player.veh, rv = rival.veh;
+  const cp = camera.position, al = audioListener, moved = Math.hypot(cp.x - al.x, cp.z - al.z);
+  const continuous = al.ready && al.camera === G.cam && dt > 0 && dt < 0.2 && moved < 15;
+  al.vx = continuous ? clamp((cp.x - al.x) / dt, -120, 120) : 0;
+  al.vz = continuous ? clamp((cp.z - al.z) / dt, -120, 120) : 0;
+  al.x = cp.x; al.z = cp.z; al.ready = true; al.camera = G.cam;
   // where is the sea? (the shore side relative to the way the car is pointing)
   const seaR = route.seaR(pv.s), seaL = route.seaL(pv.s), seaD = Math.min(seaR, seaL);
   const ry = Math.atan2(-route.lin(route.TX, pv.s), -route.lin(route.TZ, pv.s));
@@ -1046,10 +1051,18 @@ function updateAudio(dt) {
   const rw = rv.velocityWorld(_av), RL = listenerRel(rv.x, rv.y, rv.z, rw.x, rw.z);
   const racing = G.state === 'race' || G.state === 'countdown';
   const counting = G.state === 'countdown';
+  const others = multiplayer.active ? [...remoteCars.entries()] : grid.map((c, i) => [`ai-${i}`, c]);
+  const rivals = others.filter(([, c]) => c.model.root.visible).map(([id, c]) => {
+    const v = c.veh, vel = v.velocityWorld(_av), rel = listenerRel(v.x, v.y, v.z, vel.x, vel.z);
+    return { id, spec: c.spec, rpm: v.rpm, load: c.lastBrake ? -0.3 : multiplayer.active ? 0.4 : v.load, ...rel };
+  });
   audio.update({
     dt, damage: pv.damage, rpm: pv.rpm, redline: pv.spec.redline, load: counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3), throttle: input.throttle,
     gear: pv.gear, gearRatio: pv.ratio(), shift: pv.shiftEvent, limiter: pv.limiter || (counting && pv.rpm > pv.spec.redline * 0.97), boost: pv.boost,
-    speed: Math.abs(pv.vLong), skid: pv.skid, wheelspin: pv.wheelspin, lockup: pv.lockup, bump: pv.bumpHit, rough: pv.rough, offroad: pv.offroad, nitro: pv.nitroOn, wb: pv.wb,
+    wheels: pv.corners.map((w, i) => ({ ...w, vgx: pv._S?.[i]?.vgx ?? pv.vLong })), surfaces: pv.wheelSurf,
+    nominalLoad: pv.m * 9.81 / 4, rivals,
+    menuOpen: !['race', 'countdown', 'onlineRace', 'onlineCountdown', 'onlineSpectating'].includes(G.state),
+    speed: Math.hypot(pv.vLong, pv.vLat), skid: pv.skid, wheelspin: pv.wheelspin, lockup: pv.lockup, bump: pv.bumpHit, rough: pv.rough, offroad: pv.offroad, nitro: pv.nitroOn, wb: pv.wb,
     open: player.spec.convertible || G.cam !== 'cockpit', muted: G.state === 'garage' || G.state === 'paused' || (!multiplayer.active && !multiplayer.panel.hidden),
     sea: 1 - smoothstep(30, 300, seaD), seaPan, city: route.urban(pv.s) * (zone === 'town' ? 0.85 : 0.45),
     beach: zone === 'beach' || zone === 'cove' ? 1 : 0, cliff: zone === 'cliff' ? 1 : 0,

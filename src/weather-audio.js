@@ -41,7 +41,7 @@ export class WeatherAudio {
     for (const [name, dest] of [['rain-light', this.light], ['rain-heavy', this.heavy], ['rain-cabin', this.cabin], ['crickets', this.crickets], ['wipers', this.wipers]]) {
       if (!this.srcs[name] && A.S[name] && (name === 'crickets' ? this.night : this.rain) > 0) this.srcs[name] = loopSource(A.ctx, A.S[name], dest);
     }
-    const r = this.rain, open = p.open ? 1 : 0, v = Math.max(0, p.speed || 0), mute = p.muted ? 0.25 : 1;
+    const r = this.rain, open = p.open ? 1 : 0, v = Math.max(0, p.speed || 0), mute = 1;
     const heavyK = Math.max(0, Math.min(1, (r - 0.35) / 0.5));
     this.light.gain.setTargetAtTime(0.7 * r * (1 - heavyK * 0.7), now, 1.5);
     this.heavy.gain.setTargetAtTime(0.75 * r * heavyK, now, 1.5);

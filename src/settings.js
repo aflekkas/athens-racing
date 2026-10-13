@@ -11,15 +11,16 @@
 //   settings.police           police in Quick Race / free roam (src/police.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
+export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'ui'];
 const KEY = 'paraliaki.settings';
-export const DEFAULTS = { master: 1, music: 1, sfx: 1, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false };
+export const DEFAULTS = { master: 0.8, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.7, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false };
 const ls = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch { return null; } };
 
 function load() {
   const out = { ...DEFAULTS };
   try { Object.assign(out, JSON.parse(ls()?.getItem(KEY) || '{}')); } catch {}
   try { const g = ls()?.getItem('paraliaki.graphics'); if (g) out.graphics = g; } catch {}
-  for (const k of ['master', 'music', 'sfx']) out[k] = Math.max(0, Math.min(1, +out[k] || 0));
+  for (const k of AUDIO_VOLUMES) out[k] = Math.max(0, Math.min(1, +out[k] || 0));
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
   if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
@@ -33,6 +34,7 @@ export const settings = load();
 const subs = new Set();
 export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
+  if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));
   if (!(key in DEFAULTS) || settings[key] === value) return;
   if (key === 'steeringAssist' && ![null, 'off', 'light', 'full'].includes(value)) return;
   settings[key] = value;

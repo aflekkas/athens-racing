@@ -83,3 +83,18 @@ export class Radio {
   }
   set rate(r) { this.el.playbackRate = r; }
 }
+
+/** Camera-relative moving source. vr is positive when closing (m/s).
+ * Slew limiting bounds network/camera discontinuities; AudioParam ramps handle sample-rate interpolation.
+ */
+export function spatialAudio(state, source, now, reference = 16) {
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, Number.isFinite(x) ? x : 0));
+  const vr = clamp(source.vr, -100, 100), distance = Math.max(0, source.d ?? source.dist ?? 0);
+  const target = clamp(343 / (343 - vr), 0.72, 1.4);
+  const dt = state.spatialTime == null ? 1 / 60 : clamp(now - state.spatialTime, 0, 0.1);
+  const previous = state.doppler ?? 1;
+  state.doppler = previous + clamp(target - previous, -1.8 * dt, 1.8 * dt);
+  state.spatialTime = now;
+  return { doppler: state.doppler, gain: 1 / (1 + (distance / reference) ** 1.6),
+    cutoff: 600 + 15000 * Math.exp(-distance / 85), pan: clamp(source.pan, -0.95, 0.95) };
+}
