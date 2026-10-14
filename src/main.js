@@ -8,7 +8,8 @@ import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint, carTransmission } from './cars.js';
 import { toggleTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
-import { applyCarDecals, packDecals, unpackDecals } from './vehicle-decals.js';
+import { applyCarDecals, packDecalsForNetwork, unpackDecals } from './vehicle-decals.js';
+import { getDriverAppearance } from './customization-store.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
@@ -107,6 +108,9 @@ const applyDrawDistance = () => { if (traffic) traffic.drawRange = clamp(drawDis
 onSettings((s, key) => { if (key === 'drawDistance') { setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); } });
 
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
+window.addEventListener('customizationchange', ({detail}) => {
+  if (player?.model.spec.id === detail?.carId) player.driver.setAppearance(detail.appearance?.driver);
+});
 const keys = controls.keys; // retained for the simulation test hook
 const input = controls.state;
 
@@ -242,7 +246,7 @@ window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: s
 function makeCar(spec, isPlayer) {
   const model = new CarModel(spec, isPlayer ? {} : {decals:[]});
   scene.add(model.root);
-  const driver = new Driver(isPlayer ? {} : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
+  const driver = new Driver(isPlayer ? getDriverAppearance(spec.id) : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   driver.root.position.copy(model.seat).add(new THREE.Vector3(0, -0.195, 0.1));
   model.body.add(driver.root);
   if (!spec.convertible && driver.curlMesh) {
@@ -255,6 +259,7 @@ function makeCar(spec, isPlayer) {
 function disposeCar(c) {
   if (!c) return;
   c.cockpit?.disposeMirrors();
+  c.driver?.dispose?.();
   c.model.disposeDamage?.();
   scene.remove(c.model.root);
   const liveMaterials = new Set(), liveTextures = new Set();
@@ -1727,7 +1732,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, paint: player.model.paintColor, decals: packDecals(player.model.decals || []) });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, paint: player.model.paintColor, decals: packDecalsForNetwork(player.model.decals || []), driver: { ...player.driver.appearance } });
 function clearDriveInput() { controls.clear(); closeTowOffer(12); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
@@ -1793,6 +1798,7 @@ const multiplayer = new Multiplayer(CARS, {
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       applyCarDecals(c.model,unpackDecals(p.decals));
+      if(p.driver)c.driver?.setAppearance?.(p.driver);
       c.lastBrake = false; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
     }

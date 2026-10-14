@@ -3,7 +3,7 @@ const tolerances = { x: .01, y: .01, z: .01, s: .02, u: .01, yaw: .001, steer: .
 function stationaryUnchanged(a, b) {
   if (!b || Math.abs(a.vLong) > .1 || Math.abs(a.vLat) > .1 || Math.abs(b.vLong) > .1 || Math.abs(b.vLat) > .1) return false;
   if (a.gear !== b.gear || a.reverse !== b.reverse) return false;
-  if (a.paint !== b.paint || JSON.stringify(a.decals || []) !== JSON.stringify(b.decals || [])) return false;
+  if (a.paint !== b.paint || JSON.stringify(a.decals || []) !== JSON.stringify(b.decals || []) || JSON.stringify(a.driver || null) !== JSON.stringify(b.driver || null)) return false;
   for (const [key, tolerance] of Object.entries(tolerances)) if (Math.abs(a[key] - b[key]) > tolerance) return false;
   for (const zone of ['front', 'rear', 'left', 'right']) if (Math.abs((a.damage?.[zone] || 0) - (b.damage?.[zone] || 0)) > .001) return false;
   return true;
@@ -28,7 +28,7 @@ export class StateSender {
     if (!force && now - this.lastAt < 100) return false;
     this.lastAt = now;
     if (!force && stationaryUnchanged(state, this.last)) return false;
-    const snapshot = { ...state, sampleTime: now, sampleAge: 0, motionEpoch: this.motionEpoch, damage: { ...state.damage }, ...(state.decals ? {decals:state.decals.map(d=>[...d])} : {}) };
+    const snapshot = { ...state, sampleTime: now, sampleAge: 0, motionEpoch: this.motionEpoch, damage: { ...state.damage }, ...(state.decals ? {decals:state.decals.map(d=>[...d])} : {}), ...(state.driver ? {driver:{...state.driver}} : {}) };
     this.last = snapshot;
     if (!batching) { this.send({ type: 'state', raceId, state: snapshot }); return true; }
     this.pending.push(snapshot);
