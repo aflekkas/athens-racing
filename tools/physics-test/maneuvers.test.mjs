@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runManeuvers, lowSpeedYawMoment } from './maneuvers.mjs';
 const results=runManeuvers();
-for(const r of results.donuts)test(`${r.car} ${r.kmh}km/h: full-lock full-power donut with TC/ESC off`,()=>{
- assert.ok(r.continuousYawSeconds>5,`${r.continuousYawSeconds}s continuous yaw >1rad/s`);assert.ok(r.headingDeg>720,`${r.headingDeg}° heading`);
+for(const r of results.donuts)test(`${r.car} ${r.kmh}km/h: full-lock power remains finite with TC/ESC off`,()=>{
+ // Ordinary power-over must be progressive; the playtest rejects compulsory endless donuts.
+ assert.ok(r.trace.every(t=>[t.w,t.beta,t.kmh,t.x,t.z].every(Number.isFinite)), 'finite power-over');
+ assert.ok(r.headingDeg>90,`${r.headingDeg}° still turns under full power/lock`);
  assert.equal(r.maxCut,0,'TC off remains off throughout the drift latch');assert.equal(r.maxESC,0,'ESC off remains off');
 });
 for(const r of results.handbrakeSpins)test(`${r.car} aids ${r.aids}: deliberate handbrake turn completes 360°`,()=>assert.ok(r.headingDeg>=360,`${r.headingDeg}°`));

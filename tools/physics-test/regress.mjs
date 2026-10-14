@@ -272,6 +272,49 @@ else {
   }
 }
 
+// Playtest 3: neutral steering stability, progressive power breakaway and driver recovery.
+{
+  const { stabilityScenarios } = await import('./stability.mjs');
+  for (const r of stabilityScenarios()) {
+    const label = `${r.car} ${r.wet ? 'wet' : 'dry'} TC ${r.aids ? 'on' : 'off'}`;
+    if (r.scenario === 'straight') check(`straight stability: ${label}`, r.peakBeta < 1 && Math.abs(r.finalBeta) < 0.1 && r.heading < 0.5 && r.offset < 1 && (r.aids || r.cut === 0),
+      `peak ${f2(r.peakBeta)} deg, heading ${f2(r.heading)} deg, offset ${f2(r.offset)} m`);
+    if (r.scenario === 'recovery') {
+      const limit = r.aids ? 15 : r.car === 'huracan' ? 20 : r.wet ? 55 : 30;
+      check(`power/lift/countersteer recovery: ${label}`, r.peakBeta < limit && Math.abs(r.finalBeta) < 1 && r.latch === 0 && r.kmh > 30 && (r.aids || r.cut === 0),
+        `peak ${f1(r.peakBeta)} deg, final ${f2(r.finalBeta)} deg, latch ${f2(r.latch)}, exit ${f1(r.kmh)} km/h`);
+    }
+    if (r.scenario === 'uturn') check(`walking-speed U-turn/unwind: ${label}`, r.turn >= 180 && r.turn < 215 && Math.abs(r.yawRate) < 0.1 && Math.abs(r.finalBeta) < 1 && r.latch === 0,
+      `turn ${f1(r.turn)} deg, final yaw rate ${f3(r.yawRate)}`);
+    if (r.scenario === 'brake') check(`catalogue braking in ${label}`, r.distance < (r.wet ? 55 : 40) && r.kmh < 0.3,
+      `100-0 ${f1(r.distance)} m`);
+  }
+}
+// Exercise recovery on every real road, both race directions, including tunnel axes and narrow circuits.
+{
+  const { Route } = await import('../../src/map.js');
+  const { MAPS } = await import('../../src/map-catalog.js');
+  const { RIVIERA_TUNNELS } = await import('../../src/maps/riviera-tunnels.js');
+  const { roadRecoveryPose } = await import('../../src/road-recovery.js');
+  for (const def of MAPS) {
+    const data = JSON.parse(readFileSync(new URL('../../' + def.dataUrl, import.meta.url)));
+    const road = new Route(data.route, { corridors: def.id === 'riviera' ? RIVIERA_TUNNELS : [] });
+    let count=0, bad=0, worst=0;
+    for (let s=0; s<road.length; s+=73) for (const dir of [-1,1]) for (const side of [-1,1]) {
+      const p=road.point(s,side*(road.edge(s)+12));
+      const pose=roadRecoveryPose(road,{...p,s:s-200},dir);
+      const v=new Vehicle({...BASE,drive:'rwd'},road);v.reset(pose.s,pose.u);v.yaw=pose.yaw;
+      const f=road.contactFrame(pose.s,pose.u,{}),dot=(-Math.sin(v.yaw)*f.tx-Math.cos(v.yaw)*f.tz)*dir;
+      const edge=road.edge(pose.s),median=road.closed?0:road.medHalf(pose.s);
+      worst=Math.max(worst,Math.abs(Math.abs(pose.u)-(road.closed?0:(edge+median)/2)));
+      if (!finite(v) || Math.abs(pose.u)+v.halfW>edge || !road.closed && Math.abs(pose.u)-v.halfW<median || dot<.999) bad++;
+      const anchored=roadRecoveryPose(road,p,dir,s);if(Math.abs(anchored.s-s)>1e-9)bad++;
+      count++;
+    }
+    check(`reset placement ${def.id}: road centreline, whole car on road, race direction, server anchor retained`, bad===0 && worst<1e-9, `${count} off-road samples, ${bad} invalid`);
+  }
+}
+
 console.log(results.join('\n'));
 console.log(`\n${passes} passed, ${fails} failed`);
 process.exitCode = fails ? 1 : 0;

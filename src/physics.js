@@ -532,25 +532,24 @@ export class Vehicle {
     // entry requires TC off; handbrake and lift-off feints remain explicit entries.
     const rearAtLimit = this.shareR > 0 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.1 && Math.abs(beta) > 0.1 && vt > 6;
     // With TC off, holding full power/lock for 0.4 s commits to power-over.
-    const powerSlideAllowed = (sp.tc ?? 0.5) <= 0;
+    const powerSlideAllowed = sp.drive === 'rwd' && (sp.tc ?? 0.5) <= 0;
     const powerIntent = powerSlideAllowed && this.shareR > 0 && thrIn > 0.95 && Math.abs(sIn) > 0.9 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.0 && vt > 6;
     this.powerT = powerIntent ? (this.powerT ?? 0) + dt : 0;
     if (inp.handbrake && slideMotion > 1.5) { this.driftLatch = 1; this.handbrakeTurn = true; }
     else if (this.powerT > 0.4) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
     else if (powerSlideAllowed && rearAtLimit && thrIn > 0.8) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
-    // Once deliberate, retain intent through the whole rotation, including
-    // backwards travel and a coasting FWD handbrake spin. Releasing the lever
-    // or lifting power is not recovery while the car still has a large angle.
-    else if (this.driftLatch > 0 && sliding) this.driftLatch = 1;
-    else if (this.flickT <= 0) this.driftLatch = Math.max(0, this.driftLatch - dt * (sliding ? (thrIn > 0.2 ? 0.05 : 0.3) : 1.5));
+    // Lift/unwind is a recovery request. Do not keep the raw drift rack and
+    // rear-biased AWD coupling latched merely because the tail is still out.
+    else if (this.driftLatch > 0 && sliding && thrIn > 0.5 && Math.abs(sIn) > 0.15) this.driftLatch = Math.min(1, this.driftLatch + dt * 2);
+    else if (this.flickT <= 0) this.driftLatch = Math.max(0, this.driftLatch - dt * (thrIn < 0.3 ? 4 : this.handbrakeTurn && thrIn > 0.3 && sliding ? 0 : 1.5));
     if (this.driftLatch === 0) this.handbrakeTurn = false;
     // AWD slide assist: the electronically controlled coupling moves torque rearward once you're drifting (spec.awdDrift,
     // rear share), approximating the rear-biased end of a variable split such as the 2024 GR Yaris Track mode
     // (60:40 .. 30:70; Gravel 53:47), so throttle swings the tail instead of the fronts pulling it straight. It eases
     // back to the base split (spec.awdRear) as the latch releases (coupling response ~0.2-0.3 s)
-    // It also leans rearward on its own when you're hard on the throttle in a loaded corner (no effect in a straight line)
+    // Ordinary throttle keeps the stock AWD split, including with TC off.
     if (this.awd) {
-      const rearPull = Math.max(this.driftLatch, smoothstep(0.6, 1, thrIn) * smoothstep(3, 7, Math.abs(this.ay)));
+      const rearPull = this.driftLatch;
       const tgt = lerp(this.shareR0, Math.max(this.shareR0, sp.awdDrift ?? 0.7), rearPull);
       this.shareR += clamp(tgt - this.shareR, -dt * 2.5, dt * 2.5);
     }
@@ -743,7 +742,22 @@ export class Vehicle {
         f *= 1 - slideV * (1 - Math.exp(-vs / 7)) * Math.min(1, (sN - 1) * 2);
       }
       const k = sN > 1e-6 ? f / sN : this.slope0;
-      out.Fx = cap[i] * this.muX * k * sx; out.Fy = -cap[i] * k * sy; out.sx = sx; out.sy = sy; out.sN = sN;
+      out.Fx = cap[i] * this.muX * k * sx;
+      // A spinning driven tyre still opposes lateral tread motion. Using the
+      // wheel-speed slip vector alone erased virtually all rear side force in
+      // a low gear, even after lift. Reserve the unused friction ellipse for
+      // the lateral brush force; locked/braked tyres keep their original curve.
+      const driveSlip = i >= 2 && sR > 0 && sx * (this.reverse ? -1 : 1) > 0 && !burnout && !this.handbrakeTurn;
+      let lateralK = k;
+      if (driveSlip && Math.abs(sy) > 1e-6) {
+        const aySlip = Math.abs(sy);
+        const pure = aySlip < 1 ? Math.sin(this.mfC * Math.atan(this.mfB * aySlip)) :
+          (1 - (1 - (this.wheelSlide?.[i] ?? this.slideK)) * (1 - Math.exp(-(aySlip - 1) * 1.6))) *
+          (1 - (this.wheelSlideV?.[i] ?? this.slideV) * (1 - Math.exp(-Math.abs(Si.vgy) / 7)));
+        const reserve = Math.sqrt(Math.max(0, 1 - (k * sx) ** 2));
+        lateralK = lerp(k, Math.max(k, pure * reserve / aySlip), 0.75);
+      }
+      out.Fy = -cap[i] * lateralK * sy; out.sx = sx; out.sy = sy; out.sN = sN;
       return out;
     };
     const tt = this._tt || (this._tt = { Fx: 0, Fy: 0, sx: 0, sy: 0, sN: 0 });
@@ -958,11 +972,15 @@ export class Vehicle {
       if (spinV > 0) this.digF = Math.min(1, this.digF + dig * (1 - 0.7 * this.digB)); else this.digB = Math.min(1, this.digB + dig * (1 - 0.7 * this.digF)); // packed tracks dig less
       // deep loose sand (surfBow): crawling through it pushes a bow wave up in front of the tyres until it stops you;
       // the way back is over your own packed tracks, and rolling away leaves the ruts behind
-      const pile = dt * av * (this.surfBow ?? 0) * (1 - smoothstep(3, 7, av));
+      const pile = dt * av * (this.surfBow ?? 0) * smoothstep(0.1, 0.3, thrIn) * (1 - smoothstep(3, 7, av));
       // (while the other side's bow wave is still there you are rolling back along your own tracks: no new pile)
       if (vx >= 0) { this.digF = Math.min(1, this.digF + pile * (1 - this.digB)); this.digB = Math.max(0, this.digB - fill); }
       else { this.digB = Math.min(1, this.digB + pile * (1 - this.digF)); this.digF = Math.max(0, this.digF - fill); }
     } else { this.digF = Math.max(0, this.digF - dt * 2); this.digB = Math.max(0, this.digB - dt * 2); }
+    // Runoff may slow the car, but ruts must not become a permanent immobilizer.
+    const rutFill = thrIn < 0.1 && brk < 0.1 ? dt * 0.35 : 0;
+    this.digF = clamp(this.digF - rutFill, 0, 0.45);
+    this.digB = clamp(this.digB - rutFill, 0, 0.45);
     this.dig = Math.max(this.digF, this.digB);
     // Coulomb resistance: the surface's own (tyres sinking, bulldozing sand) plus the ruts'. At rest it holds the car
     // until the tyres push harder than it.
@@ -977,10 +995,16 @@ export class Vehicle {
     this.axRaw = held ? 0 : ax; this.ayRaw = ay;
     this.vLong += (ax + this.w * vy) * dt;
     this.vLat += (ay - this.w * vx) * dt;
-    // Integrate every yaw moment, including a low-speed pivot. The shared
-    // slip reference regularizes parking tyres; projecting w/vLat onto a
-    // kinematic turn here used to catch donuts and snap slow drift recovery.
+    // Deliberate pivots integrate their tyre yaw moments. Gentle parking
+    // inputs blend toward rolling kinematics below walking/jogging speed.
     this.w += Mz / this.Iz * dt;
+    const parking = (1 - smoothstep(2, 4, vt)) * (1 - smoothstep(0.2, 0.45, thrIn)) *
+      (1 - this.driftLatch) * (inp.handbrake || burnout ? 0 : 1);
+    if (parking > 0) {
+      const yawParking = this.vLong * Math.tan(delta) / this.wb;
+      this.w = damp(this.w, yawParking, 12 * parking, dt);
+      this.vLat = damp(this.vLat, this.b * yawParking, 12 * parking, dt);
+    }
     if (!this.reverse && Math.abs(this.vLong) < 0.05 && thrIn < 0.05 && brk > 0) this.vLong = 0;
     // at rest (|vLat| gate: a car sliding sideways passes through vLong = 0 and must not be stopped dead)
     if (Math.abs(this.vLong) < 0.03 && Math.abs(this.vLat) < 0.4 && Math.abs(this.w) < 0.1 && thrRaw < 0.05) { this.vLong = 0; this.vLat *= 0.9; for (const Wc of C4) Wc.vw = 0; this.wheel[0].vw = this.wheel[1].vw = 0; }

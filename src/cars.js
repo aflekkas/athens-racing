@@ -37,7 +37,7 @@ export const CARS = [
     id: 'carrera', trafficWeight: 0.15, name: 'PORSCHE 911 CARRERA', short: '911 CARRERA', tag: '991.1 · Rear-engine flat-six. Seven-speed manual.', color: '#c6c9cb', accent: '#a7acb2',
     mass: 1380, power: 257, torque: 390, redline: 7800, idle: 800, gears: [3.91, 2.29, 1.55, 1.30, 1.08, 0.88, 0.71], final: 3.44, wheelR: 0.331,
     torqueCurve: [[0,170],[800,190],[2000,270],[3500,340],[4500,370],[5600,390],[6500,370],[7400,331.65],[7800,302],[8500,260]], peakTorqueRpm: 5600, peakPowerRpm: 7400,
-    wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, gripRear: 1.08, steer: 0.55, yawI: 1.1, drift: 1, brake: 1.08, cyl: 6, pitch: 1, body: 'carrera', drive: 'rwd', engine: 'flat6', engineZone: 'rear',
+    wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, gripRear: 1.08, steer: 0.55, yawI: 1.1, drift: 1, brake: 1.16, cyl: 6, pitch: 1, body: 'carrera', drive: 'rwd', engine: 'flat6', engineZone: 'rear',
     tyres: ['235/40 ZR19','285/30 ZR19'], frontW: 0.39, hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2.0, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11, mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5, esc: 0.4, shiftT: 0.27, bias: 0.60, steerRate: 1.08, ebrake: 0.15, lsd: 0,
     stats: { speed: 0.96, accel: 0.91, handling: 0.94, drift: 0.78 },
   },

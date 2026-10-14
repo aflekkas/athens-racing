@@ -18,8 +18,8 @@ export const SURF = {
   gravel: { mu: 0.56, peak: 1.5, slide: 0.95, slideV: 0.02, drag: 0.6, rough: 0.7, res: 0.2, soft: 0.25 },
   dirt: { mu: 0.67, peak: 1.35, slide: 0.94, slideV: 0.025, drag: 0.8, rough: 0.9, res: 0.25, soft: 0.3 },
   scrub: { mu: 0.5, peak: 1.45, slide: 0.94, slideV: 0.025, drag: 1.4, rough: 1, res: 0.4, soft: 0.2 },
-  sand: { mu: 0.6, traction: 0.62, drag: 0.8, rough: 0.6, res: 0.45, soft: 1 },
-  deepsand: { mu: 0.56, traction: 0.62, drag: 3.4, rough: 0.5, res: 0.8, soft: 1.0, bow: 0.45 }, // the sand traps: loose, dry, deep (ploughing ~0.35 g)
+  sand: { mu: 0.6, traction: 0.78, drag: 0.7, rough: 0.6, res: 0.3, soft: 0.5 },
+  deepsand: { mu: 0.56, traction: 0.74, drag: 0.9, rough: 0.5, res: 0.3, soft: 0.55, bow: 0.05 }, // slow runoff; a road car can still drive back out
   grass: { mu: 0.5, peak: 1.45, slide: 0.94, slideV: 0.025, drag: 0.9, rough: 0.7, res: 0.2, soft: 0.15 },
   rock: { mu: 0.75, drag: 0.5, rough: 1, res: 0, soft: 0 },
   water: { mu: 0.15, drag: 9, rough: 0, res: 0, soft: 0 },

@@ -31,6 +31,7 @@ import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
+import { roadRecoveryPose } from './road-recovery.js';
 import { DrivingFeedback } from './driving-feedback.js';
 import { driverName } from './driver-name.js';
 import * as EV from './events.js';
@@ -545,9 +546,10 @@ function backOnRoad(pv, recovery = null) {
     if (next) s = G.run.r.s0 + dir * Math.min(G.run.progress(s), next.d - 3);
   }
   if (!route.closed) s = clamp(s, 0, route.length);
-  const u = recovery?.u ?? (route.closed ? clamp(sf.u, -route.edge(s) + 1.5, route.edge(s) - 1.5) : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1)));
+  const placement = roadRecoveryPose(route, pv, dir, s);
+  const u = placement.u;
   const nitro = pv.nitro; beginCameraBlend();
-  pv.reset(s, u, 0); if (dir < 0) pv.yaw += Math.PI;
+  pv.reset(s, u, 0); pv.yaw = placement.yaw;
   if (online && !recovery) multiplayer.stateSender.discontinuity();
   pv.nitro = nitro; pv.safe = { s, u }; towOffer.safe = { s, u };
   // reset() clears contact history and marks the suspension fresh; the next update settles each wheel.
@@ -588,7 +590,7 @@ function tow(pv, { reset = false } = {}) {
     G.towing = false;
     if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
     // Reset uses the current road projection; multiplayer keeps the server's checkpoint-safe anchor.
-    if (reset && !multiplayer.active) recovery = { s: pv.s, u: route.closed ? 0 : (G.dir || 1) * route.laneU(pv.s, Math.min(1, route.lanes(pv.s) - 1)) };
+    if (reset && !multiplayer.active) recovery = roadRecoveryPose(route, pv, G.dir || 1);
     backOnRoad(pv, recovery);
     const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
     towOffer.recovering = hold;
