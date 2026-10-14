@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { extractRoadNetwork } from './build-road-network.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = path.join(ROOT, 'data', 'raw');
@@ -683,6 +684,7 @@ const out = {
   },
   marks, zones, parkSpots, humps, barriers, coast, buildings, areas, trees, pois, furniture, places, sideRoads,
 };
+out.roadNetwork = extractRoadNetwork(out, roads, { excludeWays: [...routeWays] });
 fs.writeFileSync(path.join(ROOT, 'data', 'map.json'), JSON.stringify(out));
 console.log('map.json', (fs.statSync(path.join(ROOT, 'data', 'map.json')).size / 1e6).toFixed(2), 'MB; terrain.bin', (fs.statSync(path.join(ROOT, 'data', 'terrain.bin')).size / 1e6).toFixed(2), 'MB');
 console.log('marks', marks.map((m) => m.id + '@' + m.s).join(' '));

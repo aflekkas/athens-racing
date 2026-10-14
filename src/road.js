@@ -207,6 +207,7 @@ export function buildRoad(map, scene, heightC, assets) {
     const c1 = Math.min(sMax, c0 + CHUNK);
     const road = new Strip(7), med = new Strip(6), curbR = new Strip(4), curbL = new Strip(4), walkR = new Strip(3), walkL = new Strip(3), skR = new Strip(3), skL = new Strip(3);
     const medianRows = [];
+    const sideRows = { '-1': [], '1': [] };
     for (let s = c0; s <= c1 + 0.001; s += STEP) {
       const e = route.edge(s), mh = route.medHalf(s), nl = route.lanesF(s), dv = route.div(s);
       medianRows.push(legacyMedian || dv > .01);
@@ -222,6 +223,7 @@ export function buildRoad(map, scene, heightC, assets) {
       // curbs + pavements both sides
       const ch = ROAD.curbH(route, s);
       for (const side of [1, -1]) {
+        sideRows[side].push(!assets.network?.mouth(s, side, 2));
         const sw = ROAD.sidewalk(route, s, side);
         const yC = route.surfaceY(s, side * eA);
         const yTop = yC + ch;
@@ -248,9 +250,9 @@ export function buildRoad(map, scene, heightC, assets) {
     const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); return m; };
     add(road.build(), asphalt, false, true);
     if (medianRows.some(Boolean)) add(med.build(false, legacyMedian ? null : medianRows), vergeMat, true);
-    add(curbR.build(), curbMat); add(curbL.build(true), curbMat);
-    add(walkR.build(), paving, false, true); add(walkL.build(true), paving, false, true);
-    add(skR.build(), vergeMat); add(skL.build(true), vergeMat);
+    add(curbR.build(false, sideRows[1]), curbMat); add(curbL.build(true, sideRows[-1]), curbMat);
+    add(walkR.build(false, sideRows[1]), paving, false, true); add(walkL.build(true, sideRows[-1]), paving, false, true);
+    add(skR.build(false, sideRows[1]), vergeMat); add(skL.build(true, sideRows[-1]), vergeMat);
   }
 
   if (assets.furniture !== false) buildFurniture(map, group, heightC, assets);
@@ -335,6 +337,7 @@ function buildFurniture(map, group, heightC, assets) {
       for (const a of [0, Math.PI]) { lampArm.addTRS(pt.x, pt.y + 0.2, pt.z, yaw + a, 1); lampHeadI.addTRS(pt.x, pt.y + 0.2, pt.z, yaw + a, 1); }
     } else {
       const u = route.edge(s) + ROAD.gutter + 0.6;
+      if (assets.network?.mouth(s, 1, 2)) continue;
       route.point(s, u, pt);
       lampPole.addTRS(pt.x, pt.y + 0.15, pt.z, yaw, 1);
       lampArm.addTRS(pt.x, pt.y + 0.15, pt.z, yaw, 1); lampHeadI.addTRS(pt.x, pt.y + 0.15, pt.z, yaw, 1);
@@ -359,9 +362,9 @@ function buildFurniture(map, group, heightC, assets) {
       const p2 = route.point(s, side * (u + 6), new THREE.Vector3());
       const drop2 = route.surfaceY(s, side * u) - heightC(p2.x, p2.z);
       const want = (urb < 0.5 && (side > 0 ? route.seaR(s) < 90 : false)) || (drop2 > 2.2 && urb < 0.8);
-      if (want) { if (!run) { run = []; railRuns.push({ side, pts: run }); } run.push({ s, u, p: pt.clone() }); }
+      if (want && !assets.network?.mouth(s, side, 3)) { if (!run) { run = []; railRuns.push({ side, pts: run }); } run.push({ s, u, p: pt.clone() }); }
       else run = null;
-      if (want && s % 4 === 0) { const f = route.frame(s, {}); posts.addTRS(pt.x, pt.y - 0.05, pt.z, Math.atan2(f.tx, f.tz), 1); }
+      if (want && !assets.network?.mouth(s, side, 3) && s % 4 === 0) { const f = route.frame(s, {}); posts.addTRS(pt.x, pt.y - 0.05, pt.z, Math.atan2(f.tx, f.tz), 1); }
       // white reflector posts along the cliff road's inland edge
       if (!want && urb < 0.5 && s % 50 === 0) { const f = route.frame(s, {}); reflPosts.addTRS(pt.x, pt.y - 0.05, pt.z, Math.atan2(f.tx, f.tz), 1); }
     }

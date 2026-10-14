@@ -927,6 +927,7 @@ export class Traffic {
     const totalWeight = types.reduce((sum, t) => sum + t.w, 0);
     const roots = [];
     for (const sp of spots) {
+      if (ground.network?.sample(sp.x, sp.z)) continue; // leave mapped street mouths and carriageways clear
       let draw = rng.next() * totalWeight, t = types[0];
       for (const candidate of types) { draw -= candidate.w; if (draw <= 0) { t = candidate; break; } }
       const m = trafficModel(t, rng.pick(t.colors), rng, { parked: true });
