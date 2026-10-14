@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { REFLECT_LAYER } from './env.js';
 import { vnoise, fbm, smoothstep, clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
+import { sampleTerrainHeight } from './terrain-contact.js';
 
 const C = (h) => new THREE.Color(h);
 const CLASS_COL = [C('#b9a985'), C('#dcc8a0'), C('#b7ab95'), C('#8a7d57'), C('#9a937f'), C('#738440'), C('#5c6435'), C('#6d6b57'), C('#9c8b63')];
@@ -258,14 +259,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   return { group, material: mat, heightC: (x, z) => sampleH(terrain, Hc, x, z) };
 }
 
-export function sampleH(terrain, Hc, x, z) {
-  const fx = (x - terrain.minX) / terrain.T, fz = (z - terrain.minZ) / terrain.T;
-  if (fx < 0 || fz < 0 || fx >= terrain.GX - 1 || fz >= terrain.GZ - 1) return -30;
-  const i = Math.floor(fx), j = Math.floor(fz), tx = fx - i, tz = fz - j, G = terrain.GX;
-  // follow the same diagonal split as the mesh is impossible to know cheaply; bilinear is within cm on 10 m cells
-  const a = Hc[j * G + i], b = Hc[j * G + i + 1], c = Hc[(j + 1) * G + i], d = Hc[(j + 1) * G + i + 1];
-  return (a * (1 - tx) + b * tx) * (1 - tz) + (c * (1 - tx) + d * tx) * tz;
-}
+export const sampleH = sampleTerrainHeight;
 
 function splitGeometry(geo, tile) {
   const pos = geo.attributes.position, col = geo.attributes.color, nor = geo.attributes.normal, ua = geo.attributes.aU, idx = geo.index.array;
