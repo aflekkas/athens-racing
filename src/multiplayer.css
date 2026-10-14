@@ -154,3 +154,5 @@
 #mp-members [data-kick-player]{font-size:11px;padding:5px 8px;min-height:30px;color:#ffafa7}.mp-blocked-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:10px}
 @media(max-height:480px){#mp-board{top:86px;right:12px;width:168px;max-height:160px;padding:7px 9px}#mp-board li{font-size:11px}}
 @media(max-width:500px){#mp-board{top:132px;right:12px;width:154px;max-height:210px;padding:8px}body[data-mode=taxi] #mp-board,body[data-mode=getaway] #mp-board{top:360px}}
+/* Short windscreens reserve the right corner for the dial and speed-limit sign. */
+@media(max-height:480px){#mp-board{top:90px;left:104px;right:auto;width:110px;max-height:90px;padding:6px}#mp-board ol{max-height:44px;overflow-y:auto;pointer-events:auto}#mp-board .mp-gaps{font-size:9px;padding:3px 0}#mp-board li{font-size:10px;gap:4px;line-height:1.4}#mp-board .mp-position{width:18px}#mp-board .mp-watch select{min-height:20px}#mp-board .mp-watch button{min-height:20px;padding:0 5px}}
