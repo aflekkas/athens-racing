@@ -13,10 +13,11 @@ export function runCharacterModelChecks(){
   const before=driver.head.getWorldPosition(new THREE.Vector3());
   driver.setAppearance(characterPresetLook('alex_adelman'));model.root.updateMatrixWorld(true);
   check(driver.head.getWorldPosition(new THREE.Vector3()).y>before.y,'168cm Adelman sits taller than163cm David');
-  check(driver.characterRig.messy.visible&&!driver.curlMesh.visible&&driver.characterRig.messy.children.length>12,'Adelman has straight ruffled locks');
+  check(driver.characterRig.messy.visible&&!driver.curlMesh.visible&&driver.characterRig.messy.userData.strandEnds.every(s=>s.tip[1]<s.root[1]),'Adelman straight strands fall down from the crown');
   check(driver.characterRig.can.visible&&driver.characterRig.can.parent===driver.arms[1].hand,'Spray can is attached to the free right hand');
   const wheel=driver.characterRig.wheelFor(0);driver.update(1/30,0,15,{},wheel,0);
   const hand=driver.arms[1].hand.position.clone(),left=driver.arms[0].hand.position.clone();
+  model.root.updateMatrixWorld(true);check(driver.arms[1].hand.getWorldPosition(new THREE.Vector3()).z<wheel.pos.z,'The free hand and held can sit forward of the rim for a clear cabin view');
   for(let i=0;i<30;i++){wheel.angle=1.5;driver.update(1/30,i/30,20,{},wheel,.6);}
   check(driver.characterRig.canLower>.99&&driver.arms[1].hand.position.y<hand.y-.10,'Hard steering lowers the spray can');
   check(driver.arms[0].hand.position.distanceTo(left)>.1,'The left hand continues steering');
@@ -26,6 +27,7 @@ export function runCharacterModelChecks(){
   driver.setAppearance(characterPresetLook('vasilis_pefaltes'));const passenger=driver.passenger;
   check(passenger?.appearance.gender==='female'&&passenger.root.name==='passenger:jonia_peroti','Vasilis creates the named female passenger');
   check(passenger.root.parent===model.body&&driver.root.parent===model.body&&passenger.root.position.x>0&&driver.root.position.x<0,'Jonia is attached in the opposite front seat');
+  check(passenger.root.userData.seat==='front-passenger'&&Math.abs(passenger.root.position.z-driver.root.position.z)<1e-8,'Jonia sits beside Vasilis at the same front-seat depth');
   driver.head.visible=false;check(passenger.head.visible&&passenger.root.visible,'Cockpit head hiding leaves the passenger visible');driver.head.visible=true;
   driver.update(1/30,1,30,{x:2,y:0,z:1},wheel,.4);
   check(passenger.arms.every(a=>Math.abs(a.hand.position.y+.48)<1e-8),'Passenger hands rest in her lap');

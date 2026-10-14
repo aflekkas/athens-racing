@@ -1,17 +1,35 @@
 // Preset traits and seated props extend the existing human driver and arm IK.
 // Passenger roots stay beside the driver, so cockpit head hiding never hides them.
 import * as THREE from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {sprayCanGeometry} from './spray-can.js';
 
 export function createCharacterRig(driver,{passengerFactory,seatRole}={}){
   const passengerRole=seatRole==='passenger',head=driver.head,material=driver.appearanceMaterials.hair;
   const messy=new THREE.Group();messy.name='straight-ruffled-hair';head.add(messy);
-  const lock=new THREE.ConeGeometry(.008,.045,5);
-  for(let i=0;i<23;i++){
-    const a=i*2.39996323,r=.025+.055*(i%5)/4;
-    const mesh=new THREE.Mesh(lock,material);mesh.position.set(Math.cos(a)*r,.118+(.075-r)*.20,.012+Math.sin(a)*r);
-    mesh.rotation.set(1.18+Math.sin(a)*.35,a,-Math.cos(a)*.7);mesh.scale.set(1,1+(i%3)*.12,.6);messy.add(mesh);
+  // Straight locks sweep off the crown and fall down over the forehead/sides.
+  // Rounded ends and a continuous scalp avoid the previous upright cone spikes.
+  const locks=[],strandEnds=[];
+  const strand=(root,middle,tip)=>{
+    const points=[root,middle,tip].map(p=>new THREE.Vector3(...p));
+    locks.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),8,.0037,5,false));
+    strandEnds.push({root,tip});
+  };
+  for(let i=0;i<16;i++){
+    const x=-.061+i*.0082,offset=Math.sin(i*2.1)*.016;
+    strand([x,.123-Math.abs(x)*.15+Math.sin(i*1.3)*.006,.004],[x+offset*.5,.092,-.058],[x+offset,.027+(i%5)*.009,-.091+Math.abs(x+offset)*.38]);
   }
+  for(let i=0;i<4;i++)strand([-.055+i*.011,.123,.026],[.010+i*.006,.097,-.045],[.046+i*.007,.043+i*.004,-.070]);
+  for(const side of [-1,1])for(let i=0;i<4;i++){
+    const z=-.014+i*.021;
+    strand([side*.062,.106,z],[side*.083,.053,z+.009],[side*.091,-.009+(i%2)*.007,z+.015]);
+  }
+  for(let i=0;i<6;i++){
+    const x=-.055+i*.022;
+    strand([x,.110,.039],[x,.068,.086],[x,-.037+(i%3)*.009,.096]);
+  }
+  const strands=new THREE.Mesh(mergeGeometries(locks),material);strands.name='falling-straight-strands';messy.add(strands);locks.forEach(g=>g.dispose());
+  messy.userData.strandEnds=strandEnds;
   const long=new THREE.Group();long.name='shoulder-length-hair';head.add(long);
   const longLock=new THREE.SphereGeometry(1,12,8);
   for(const [x,y,z,sx,sy,sz] of [[0,-.017,.082,.084,.164,.028],[-.084,-.038,.018,.024,.141,.052],[.084,-.038,.018,.024,.141,.052]]){
@@ -26,6 +44,7 @@ export function createCharacterRig(driver,{passengerFactory,seatRole}={}){
     if(!model)return;
     const scale=driver.root.scale.y;
     driver.root.position.copy(model.seat);if(passengerSeat)driver.root.position.x=-model.seat.x;
+    driver.root.userData.seat=passengerSeat?'front-passenger':'front-driver';
     // Keep the hip at the same cushion while a shorter torso lowers the head.
     driver.root.position.y+=-.195+(scale-1)*.52;driver.root.position.z+=.1;
     model.body.add(driver.root);
@@ -73,7 +92,7 @@ export function createCharacterRig(driver,{passengerFactory,seatRole}={}){
     adjustHand(arm,hand,wheel){
       if(passengerRole){hand.set(arm.sx*.10,-.48,-.075);return;}
       if(arm.sx<0||look.accessory!=='sprayCan'||!wheel)return;
-      hand.copy(v.set(.055,.09,.055).applyEuler(wheel.euler).add(wheel.pos).sub(driver.root.position).divide(driver.root.scale));
+      hand.copy(v.set(.08,.23,-.08).applyEuler(wheel.euler).add(wheel.pos).sub(driver.root.position).divide(driver.root.scale));
       hand.lerp(v.set(.15,-.40,-.13),lower);
     },
     orientHand(arm){
