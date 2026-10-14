@@ -31,6 +31,7 @@ class LoadingScreen {
     const el = this.el; if (!el) return;
     clearTimeout(this.hideTimer);
     this.setMap(mapId); this.progress('LOADING MAP DATA', 0);
+    el.inert = false; el.style.pointerEvents = ''; el.removeAttribute('aria-hidden');
     el.classList.add('open'); el.setAttribute('aria-busy', 'true');
     this.nextTip(); clearInterval(this.tipTimer); this.tipTimer = setInterval(() => this.nextTip(), 5200);
   }
@@ -80,6 +81,8 @@ class LoadingScreen {
     const el = this.el; if (!el) return;
     this.progress(null, 1);
     clearInterval(this.tipTimer);
+    // Loading is complete: menus must be clickable even while the fade finishes.
+    el.style.pointerEvents = 'none'; el.inert = true; el.setAttribute('aria-hidden', 'true');
     this.hideTimer = setTimeout(() => { el.classList.remove('open'); el.removeAttribute('aria-busy'); }, 180);
   }
   get open() { return !!this.el?.classList.contains('open'); }
