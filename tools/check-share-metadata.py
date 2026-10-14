@@ -6,8 +6,22 @@ import argparse
 import http.client
 import json
 import ssl
+import struct
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
+
+def jpeg_dimensions(body):
+    offset = 2
+    while offset < len(body):
+        assert body[offset] == 255, 'Invalid JPEG marker'
+        while body[offset] == 255: offset += 1
+        marker = body[offset]; offset += 1
+        length = struct.unpack_from('>H', body, offset)[0]
+        if marker in (192, 193, 194):
+            height, width = struct.unpack_from('>HH', body, offset + 3)
+            return width, height
+        offset += length
+    raise AssertionError('JPEG dimensions missing')
 
 class HeadParser(HTMLParser):
     def __init__(self):
@@ -80,7 +94,9 @@ def main():
         assert headers['content-type'] == 'image/jpeg'
         assert 'max-age=86400' in headers['cache-control']
         assert body[:2] == b'\xff\xd8' and len(body) <= 300000
-        print(json.dumps({'image':name, 'bytes':len(body), 'headers':headers}))
+        size = jpeg_dimensions(body)
+        assert size == (1200, 630 if name == 'og-image.jpg' else 1200), (name, size)
+        print(json.dumps({'image':name, 'dimensions':size, 'bytes':len(body), 'headers':headers}))
     robots, _ = get('/robots.txt','Twitterbot/1.0')
     assert b'Allow: /' in robots and (origin+'/sitemap.xml').encode() in robots
     sitemap, _ = get('/sitemap.xml','Twitterbot/1.0')
