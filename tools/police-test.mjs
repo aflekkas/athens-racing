@@ -347,3 +347,39 @@ test('organic: a pursuit that starts by crashing into the unit following you sti
   assert.equal(W.police.hm.state, 'pursuit'); assert.ok(fresh.length >= 1, 'a unit that can drive is chasing');
   W.police.reset(false); W.police.offs.forEach(off => off());
 });
+
+test('organic: a unit that warns you from the kerb ahead never pulls across you; it lets you by and falls in behind', () => {
+  for (const kmh of [60, 90, 140]) {
+    const W = world(); W.police.reset(true); const cop = parkedUnit(W, 1000); cop.u = 5.2;
+    W.player(940, 1.9, kmh / 3.6); W.police.hm.offence('red', 0.3, true); // warned while it is still ahead of you
+    let minClear = Infinity;
+    drive(W, 8, {}, 1 / 60, dt => {
+      const P = W.traffic.racers[0]; P.s += kmh / 3.6 * dt;
+      if (Math.abs(P.s - cop.s) < P.hs + cop.len / 2) minClear = Math.min(minClear, Math.abs(P.u - cop.u) - (P.hu + cop.wid / 2));
+    });
+    assert.ok(minClear > 0.5, `${kmh}: ${minClear} m side clearance while alongside`);
+    if (kmh > 80) assert.ok(cop.cop.chase && W.traffic.racers[0].s - cop.s > 0, `${kmh}: still speeding: following, behind you`);
+    W.police.reset(false); W.police.offs.forEach(off => off());
+  }
+});
+
+test('organic: stopping for a warning brings the unit up behind you and you are released for complying', () => {
+  const W = world(); W.police.reset(true); W.player(1000, 1.9, 0);
+  const cop = W.police.spawnCop(970, 1); cop.v = 12;
+  W.police.hm.offence('speeding', 0.9, true, { continuous: true, sustained: false }); // a warning at high suspicion
+  let t = 0, at = null;
+  drive(W, 12, {}, 1 / 30, dt => { t += dt; if (at === null && W.police.hm.state === 'idle') at = t; });
+  // lawful driving alone would take warningGrace + 0.9 / suspicionDecay = 7.5 s to drain it
+  assert.ok(at !== null && at < HEAT.warningGrace + 0.9 / HEAT.suspicionDecay - 1, `released at ${at}`);
+  assert.ok(Math.abs(W.traffic.racers[0].s - cop.s) < HEAT.bustDist || !cop.cop.chase);
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+
+test('organic: stopping in a one-star pursuit is an arrest once the chase is established (the unit pulls up to you)', () => {
+  const W = world(); W.police.reset(true); W.player(1000, 1.9, 0);
+  const cop = W.police.spawnCop(960, 1); cop.v = 15; W.police.enlist(cop);
+  W.police.hm.begin(1);
+  const out = drive(W, HEAT.bustAfter + HEAT.bustTime + 4);
+  assert.ok(out.some(e => e.phase === 'busted'), JSON.stringify(out.map(e => e.phase)));
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});

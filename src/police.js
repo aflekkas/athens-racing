@@ -509,12 +509,20 @@ export class Police {
       uT = gap > -(P.hs * 2 + c.len * 0.5 + 2) ? P.u + k.side * (P.hu + hw + 1.2) : P.u;
     }
     else if (t === 'search') { want = 0; uT = tr.laneUOf(c, c.s); }
+    else if (Math.abs(vP) < 4) want = 1.5; // you have stopped: pull up right behind you (to comply, or be arrested)
     let vT;
     if (t === 'catch' || t === 'uturn') vT = Math.min(vmax, vP + Math.max(4, Math.min(30, gap * 0.25)));
     else if (t === 'search') vT = 30;
     else if (t === 'box' && gap < want + 3) vT = vP - 4; // ahead of you: ease off and slow you down
     else vT = vP + Math.max(-10, Math.min(10, (gap - want) * 0.9));
     if (t !== 'box' || gap > 0) vT = Math.min(vT, vP + Math.sqrt(2 * 5 * Math.max(0, gap - want)) + (t === 'ram' ? 2.5 : 0.8)); // closing no faster than they can stop
+    // Not past this unit yet (it warned you from the kerb, or you are alongside): it never pulls across you. It keeps
+    // (or makes) room on its own side and eases off to let you by, then falls in behind.
+    if (!['pit', 'ram', 'box'].includes(t) && gap < 0.5) {
+      const side = Math.sign(c.u - P.u) || -c.dir, clear = P.hu + hw + 0.8;
+      uT = Math.abs(c.u - P.u) < clear ? P.u + side * clear : c.u;
+      vT = Math.min(vT, Math.max(0, vP - 2));
+    }
     // corners: what the tyres can hold (~0.95 g)
     let kc = 0; for (let d = 0; d <= 60; d += 15) kc = Math.max(kc, Math.abs(route.curv(c.s + c.dir * d)));
     vT = Math.min(vT, Math.sqrt(9.3 / Math.max(1e-4, kc)), vmax);
