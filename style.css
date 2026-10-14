@@ -67,6 +67,13 @@ body.menu #hud > :not(#pops) { opacity: 0; transition: opacity .4s; }
 /* dial */
 #dialBox { position: absolute; right: 18px; bottom: 6px; width: 340px; height: 340px; filter: drop-shadow(0 8px 24px rgba(0,0,0,.5)); }
 #tacho { width: 100%; height: 100%; }
+/* TODO(UI): the speed-limit sign hook. Opus UI owns this styling; behaviour is Hud.setLimit in src/hud.js. */
+#limitSign { position: absolute; left: -58px; bottom: 64px; width: 52px; height: 52px; border-radius: 50%;
+  background: #f7f7f4; border: 7px solid #c8102e; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; }
+#limitSign[hidden] { display: none; }
+#limitV { font: 900 22px system-ui, sans-serif; color: #111314; }
+#limitSign[data-src="inferred"] { opacity: .85; }
 
 /* popups */
 #pops { position: absolute; inset: 0; overflow: hidden; }

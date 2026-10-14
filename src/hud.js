@@ -69,7 +69,7 @@ export class RacerMarkers {
 export class Hud {
   constructor(map) {
     this.map = map; const { route, data, terrain } = map;
-    this.el = {}; for (const id of ['posBox', 'posN', 'posSuf', 'tRace', 'gap', 'rivalName', 'rZone', 'rRoad', 'rToGo', 'rfill', 'rticks', 'rRival', 'rMe', 'mapLabel', 'pops', 'banner', 'count', 'msg', 'menu', 'penRow', 'pen', 'sigBox', 'sigTxt', 'sigD', 'mKick', 'mTitle', 'mSub', 'mTable', 'cIdx', 'cName', 'cTag', 'cSpecs', 'cStats', 'cBest']) this.el[id] = $(id);
+    this.el = {}; for (const id of ['posBox', 'posN', 'posSuf', 'tRace', 'gap', 'rivalName', 'rZone', 'rRoad', 'rToGo', 'rfill', 'rticks', 'rRival', 'rMe', 'mapLabel', 'pops', 'banner', 'count', 'msg', 'menu', 'penRow', 'pen', 'sigBox', 'sigTxt', 'sigD', 'limitSign', 'limitV', 'mKick', 'mTitle', 'mSub', 'mTable', 'cIdx', 'cName', 'cTag', 'cSpecs', 'cStats', 'cBest']) this.el[id] = $(id);
     this.el.mapLabel.textContent = map.definition?.name || route.from;
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
@@ -184,6 +184,7 @@ export class Hud {
       let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name; el.rRoad.textContent = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
     }
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
+    this.setLimit(st.limit);
     this.drawTacho(st);
     this.gearbox.update(st);
     if ((this.frame & 1) === 0) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, 2.2);
@@ -316,6 +317,19 @@ export class Hud {
     for (const [txt, on, x, y] of [['ESC', st.esc, gx - 58, gy - 10], ['TC', st.tc, gx - 62, gy + 13], ['ABS', st.abs, gx + 62, gy + 2]]) { g.fillStyle = on ? '#ffb000' : 'rgba(255,255,255,.13)'; g.fillText(txt, x, y); }
   }
 
+  /** speed-limit sign hook: limit = {v, src} or null. Minimal styling on purpose:
+   *  TODO(UI) may restyle #limitSign freely without changing this behaviour. */
+  setLimit(limit) {
+    const el = this.el;
+    if (!el.limitSign || !el.limitV) return;
+    const key = limit ? `${limit.v}|${limit.src || ''}` : '';
+    if (key === this.limitKey) return; this.limitKey = key;
+    el.limitSign.hidden = !limit;
+    if (limit) {
+      el.limitV.textContent = String(limit.v);
+      if (limit.src) el.limitSign.dataset.src = limit.src; else delete el.limitSign.dataset.src;
+    }
+  }
   /** next traffic light widget: info = {main, d, wait} or null */
   signal(info) {
     const el = this.el;

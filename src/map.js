@@ -2,7 +2,9 @@
  * MAPS is the lightweight catalog in map-catalog.js. Existing Riviera URLs are unchanged.
  * Add data/maps/<id>/map.json + terrain.bin; register their URLs and menu metadata.
  * JSON: proj {lat0,lon0,mlat,mlon}; route {step,x[],z[],y[],lanes[],div[],start,finish,
- * from,to,closed?,width?[],racingLine?[]}; marks [{id,name,s}], zones [{s,urban,zone}], events[];
+ * from,to,closed?,width?[],racingLine?[],speeds[] ({s,v,src})}; marks [{id,name,s}], zones [{s,urban,zone}], events[];
+ * speedSigns [{s,u,v,dir,src}] (src 'osm' = mapped node, 'inferred' = limit change),
+ * speedCameras [{s,u,dir}]; network/side roads carry v (+vs provenance) limits.
  * scenery arrays: buildings, areas, trees, pois, furniture, places, sideRoads, coast,
  * parkSpots, humps, barriers. Events have globally unique id, mapId, type, from/to,
  * rivals, traffic; circuit events additionally laps and optional targetTimes medal

@@ -10,6 +10,7 @@ import { buildRoadNetwork, buildNetworkParking } from './road-network.js';
 import { buildBuildings, infillBuildings, LabelAtlas } from './buildings.js';
 import { buildNature } from './nature.js';
 import { buildRoadside } from './roadside.js';
+import { buildSpeedSigns } from './speed-signs.js';
 import { buildWorldContext } from './world-context.js';
 import { Traffic } from './traffic.js';
 import { Signals, findJunctions } from './signals.js';
@@ -102,6 +103,8 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
       natureGroup = new THREE.Group(); group.add(natureGroup);
     }
     buildWorldContext(map, group, ter.heightC);
+    // Real speed-limit signs from the map data (all maps; a no-op without sign data).
+    const speedSigns = buildSpeedSigns(map, group, ter.heightC);
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
     if (route.closed) { people.dens = () => 0; people.anchors.length = 0; }
@@ -112,7 +115,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const ground = custom?.ground || new Ground(map, ter.heightC, assets);
     if (coastal) traffic.buildParkedRows(group, ground);
     const streetParking = network ? buildNetworkParking(network, group, ground) : [];
-    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], streetParking);
+    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], speedSigns.obstacles, streetParking);
     traffic.ground = ground;
     if (coastal) { buildHumps(map, group, ter.heightC); buildSandTraps(ground, group); buildBarriers(map, group); }
     const splash = new Splash(group), fx = new Fx(group, route, ground);
