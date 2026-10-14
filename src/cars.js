@@ -184,7 +184,7 @@ export const CARS = [
     zeroTo100: 2.9, mass: 1542, power: 470, torque: 600, redline: 8500, idle: 900, gears: [15.325,10.193,7.712,6.085,4.789,3.844,3.312], final: 1, wheelR: .338,
     torqueCurve: [[0,170],[900,200],[2000,350],[3500,455],[5000,550],[6500,600],[7500,584],[8000,561.02],[8500,495]], peakTorqueRpm: 6500, peakPowerRpm: 8000,
     wheelbase: 2.620, length: 4.520, width: 1.933, cdA: .68, vmax: 325, grip: 1.24, gripRear: 1.10, steer: .54, yawI: 1.08, drift: 1, brake: 1.22, cyl: 10, pitch: 1.12, body: 'huracan', cabinWidth: .77, drive: 'awd', awdRear: .70, awdDrift: .80, engine: 'v10', engineZone: 'rear', transmission: 'auto', playerDetail: true, trafficWeight: .10,
-    tyres: ['245/30 ZR20','305/30 ZR20'], frontW: .43, hcg: .40, track: 1.668, rsF: .50, usGrad: 1.8, susHz: 2.2, susZ: .61, rollK: .65, pitchK: .65, alphaPk: .10, mfC: 1.50, loadSens: .14, clA: .12, tc: .60, esc: .40, shiftT: .10, bias: .62, steerRate: 1.15, ebrake: .15, lsd: .40,
+    tyres: ['245/30 ZR20','305/30 ZR20'], frontW: .43, hcg: .40, track: 1.668, rsF: .50, usGrad: 1.8, susHz: 1.9, susZ: .61, rollK: .65, pitchK: .65, alphaPk: .10, mfC: 1.50, loadSens: .14, clA: .12, tc: .80, esc: .40, shiftT: .10, bias: .62, steerRate: 1.15, ebrake: .15, lsd: .40,
     stats: { speed: 1, accel: 1, handling: .98, drift: .81 },
   },
   // Period manufacturer references and estimates: tools/models-more-notes.md.
@@ -193,7 +193,7 @@ export const CARS = [
     zeroTo100: 15.7, mass: 935, power: 44, torque: 107, redline: 6200, idle: 850, gears: [3.455,1.944,1.286,0.969,0.805], final: 4.063, wheelR: 0.289,
     torqueCurve: [[0,38],[850,48],[1800,85],[2800,107],[4000,99],[5200,80.8],[6200,57]], peakTorqueRpm: 2800, peakPowerRpm: 5200,
     wheelbase: 2.440, length: 3.813, width: 1.64, cdA: 0.65, vmax: 157, grip: 0.93, steer: .61, yawI: 1.05, drift: 1, brake: .97, cyl: 4, pitch: 1, body: 'ibiza', cabinWidth: .80, drive: 'fwd', engine: 'na4', transmission: 'manual', playerDetail: true, trafficWeight: 1.8, nitrous: true, steelWheels: true, rearDrums: true, oldDash: true,
-    tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.5, track: 1.429, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
+    tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.5, track: 1.429, tyreK: 170000, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
     stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
   },
   // Period manufacturer references and estimates: tools/models-more-notes.md.
@@ -202,7 +202,7 @@ export const CARS = [
     zeroTo100: 14.0, mass: 860, power: 44, torque: 102, redline: 6200, idle: 850, gears: [3.909,2.158,1.48,1.121,0.897], final: 3.438, wheelR: 0.286,
     torqueCurve: [[0,38],[850,50],[1500,80],[2500,102],[4000,96],[5000,84.03],[6200,59]], peakTorqueRpm: 2500, peakPowerRpm: 5000,
     wheelbase: 2.299, length: 3.538, width: 1.578, cdA: 0.69, vmax: 155, grip: 0.96, steer: .61, yawI: 1.05, drift: 1, brake: .97, cyl: 4, pitch: 1, body: 'panda', cabinWidth: .80, drive: 'fwd', engine: 'na4', transmission: 'manual', playerDetail: true, trafficWeight: 1.8, steelWheels: true, rearDrums: true, oldDash: true,
-    tyres: ['155/80 R13','155/80 R13'], frontW: 0.6, hcg: 0.55, track: 1.366, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
+    tyres: ['155/80 R13','155/80 R13'], frontW: 0.6, hcg: 0.55, track: 1.366, tyreK: 170000, rsF: .58, usGrad: 3.6, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
     stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
   },
   // Period manufacturer references and estimates: tools/models-more-notes.md.
@@ -211,7 +211,7 @@ export const CARS = [
     zeroTo100: 13.6, mass: 850, power: 50, torque: 90, redline: 6500, idle: 850, gears: [3.545,1.904,1.31,0.969,0.815], final: 4.294, wheelR: 0.282,
     torqueCurve: [[0,30],[850,40],[2000,66],[3000,80],[4100,90],[5000,88],[6000,79.58],[6500,65]], peakTorqueRpm: 4100, peakPowerRpm: 6000,
     wheelbase: 2.37, length: 3.615, width: 1.66, cdA: 0.61, vmax: 155, grip: 0.97, steer: .61, yawI: 1.05, drift: 1, brake: .97, cyl: 4, pitch: 1, body: 'yaris', cabinWidth: .80, drive: 'fwd', engine: 'na4', transmission: 'manual', playerDetail: true, trafficWeight: 1.8, steelWheels: true, rearDrums: true, oldDash: true, centerCluster: true,
-    tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.53, track: 1.44, rsF: .58, usGrad: 3.4, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
+    tyres: ['155/80 R13','155/80 R13'], frontW: 0.61, hcg: 0.53, track: 1.44, tyreK: 170000, rsF: .58, usGrad: 3.4, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .72, steerRate: 1.05, ebrake: .16,
     stats: { speed: .23, accel: .20, handling: .65, drift: .30 },
   },
   // Period manufacturer references and estimates: tools/models-more-notes.md.
