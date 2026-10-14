@@ -142,6 +142,7 @@ export class Menu {
     if (!this.screen) return false;
     if (document.body.dataset.customizer === 'open') return true;
     if (C.ui.action(name)) return true;
+    if (this.screen === 'maps' && this.mapView?.action(name)) return true;
     const cur = this.items()[this.focus];
     if (this.screen === 'settings' && this.data.tab === 'controls' && controlsAction(this, name, cur)) return true;
     if (name === 'shiftUp' || name === 'shiftDown') {
@@ -186,7 +187,7 @@ export class Menu {
     this.h.ui?.(true);
     switch (a) {
       case 'mapLoad': selectMap(this,this.data.mapId,true);break;
-      case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
+      case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'play': this.show('mode', {}, true); break;
