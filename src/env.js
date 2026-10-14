@@ -405,10 +405,22 @@ export function bakeSky(renderer, sky) {
 }
 
 let SUN = null;
+// The sun's shadow box follows the car: fade the shadows out toward its edges instead of cutting them off on a square.
+THREE.ShaderChunk.shadowmap_pars_fragment = THREE.ShaderChunk.shadowmap_pars_fragment.replace(
+  '\t\t}\n\t\treturn mix( 1.0, shadow, shadowIntensity );\n\t}\n\tvec2 cubeToUV',
+  '\t\t}\n\t\tvec2 shadowEdge = min( shadowCoord.xy, 1.0 - shadowCoord.xy );\n\t\treturn mix( 1.0, shadow, shadowIntensity * smoothstep( 0.0, 0.12, min( shadowEdge.x, shadowEdge.y ) ) );\n\t}\n\tvec2 cubeToUV');
+/** the shadow box half-size (m) and map resolution: per quality tier (graphics.js) */
+export function setShadowRange(half, mapSize = 4096) {
+  SHADOW_HALF = half; SHADOW_MAP = mapSize;
+  if (!SUN) return;
+  if (SUN.shadow.mapSize.x !== mapSize) { SUN.shadow.mapSize.set(mapSize, mapSize); SUN.shadow.map?.dispose(); SUN.shadow.map = null; }
+  Object.assign(SUN.shadow.camera, { left: -half, right: half, top: half, bottom: -half }); SUN.shadow.camera.updateProjectionMatrix();
+}
+export const shadowRange = () => SHADOW_HALF;
 export function createLights(scene) {
   const sun = new THREE.DirectionalLight(SUN_COLOR, SUN_INTENSITY);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(4096, 4096);
+  sun.shadow.mapSize.set(SHADOW_MAP, SHADOW_MAP);
   const S = SHADOW_HALF;
   Object.assign(sun.shadow.camera, { left: -S, right: S, top: S, bottom: -S, near: 1, far: 900 });
   sun.shadow.bias = -0.0002; sun.shadow.normalBias = 0.04; sun.shadow.radius = 3; sun.shadow.blurSamples = 12;
@@ -443,10 +455,10 @@ export function getConditions() { return { ...COND }; }
 export function rebakeSky() { if (BAKE.renderer) bakeSky(BAKE.renderer, BAKE.sky); }
 /** the baked sky cube (sky + clouds, no sun disc) for the current conditions */
 export function bakedSky() { return BAKE.envRT ? BAKE.envRT.texture : null; }
-const SHADOW_HALF = 95;
+let SHADOW_HALF = 95, SHADOW_MAP = 4096;
 const _m4 = new THREE.Matrix4(), _inv = new THREE.Matrix4(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3();
 export function updateSun(sun, center) {
-  const texel = (SHADOW_HALF * 2) / 4096;
+  const texel = (SHADOW_HALF * 2) / SHADOW_MAP;
   sun.position.copy(center).addScaledVector(sunDir, 420);
   sun.target.position.copy(center);
   _m4.lookAt(sun.position, sun.target.position, _up);
@@ -708,6 +720,21 @@ export function createFarScenery(proj, region = 'riviera') {
     const m = islandMesh(x, z, len, w, h, seed, color, region === 'megara' ? 1.05 : undefined);
     m.rotation.y = rot; m.name = name; g.add(m); return m;
   };
+  if (region === 'penteli') {
+    // Seen from the Dionysos - Karakanta climb: Parnitha (NW), Hymettus (S), Aigaleo across the basin (SW) and the
+    // Euboean mountains (Dirfys) over the gulf to the NE. All lie well outside the 7.4 km DEM around the road.
+    const inland = islandMaterial().clone();
+    inland.onBeforeCompile = sh => { islandMaterial().onBeforeCompile(sh); const q = new Float32Array(AP.apQ.value); q[0] *= 0.35; sh.uniforms.apQ = { value: q }; };
+    inland.customProgramCacheKey = () => islandMaterial().customProgramCacheKey();
+    const ranges = [
+      ridge(38.17, 23.72, 8000, 4500, 1413, 0.5, 17, '#7f8072', 'Parnitha · northwest'),
+      ridge(37.93, 23.80, 7000, 2500, 1026, -1.1, 19, '#878272', 'Hymettus · south'),
+      ridge(38.01, 23.63, 5000, 1800, 468, 0.9, 23, '#8a8574', 'Aigaleo · southwest'),
+      ridge(38.60, 23.85, 15000, 7000, 1743, 0.35, 29, '#80827a', 'Dirfys · Euboea'),
+    ];
+    for (const r of ranges) { r.scale.y = 1.25; r.material = inland; }
+    return g;
+  }
   if (region === 'megara') {
     // Geraneia / Makryplagi west of the circuit; Pateras forms the northern skyline.
     // https://www.topoguide.gr/mountains/attiki/hiking_on_geraneia_en.php

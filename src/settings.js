@@ -6,7 +6,9 @@
 //   settings.aids             true = traction control, ABS and stability control as the car came; false = all off
 //   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
-//   settings.graphics         'auto' | 'high' | 'med' | 'low' (applied by reloading the page)
+//   settings.graphics         'auto' | 'ultra' | 'high' | 'med' | 'low' (applied by reloading the page)
+//   settings.drawDistance     'auto' (the tier's default) | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
+//   settings.motionBlur       camera motion blur on / off (src/post.js)
 //   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
 //   settings.police           police in Quick Race / free roam (src/police.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
@@ -14,7 +16,7 @@
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'ui'];
 const KEY = 'paraliaki.settings';
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', ghostEnabled: true, police: false,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
@@ -47,6 +49,8 @@ function load() {
   out.aids = out.aids !== false;
   out.ghostEnabled = out.ghostEnabled !== false;
   out.police = out.police === true;
+  out.motionBlur = out.motionBlur !== false;
+  if (![500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
   for (const key of [...Object.keys(CAMERA_RANGES), ...CAMERA_FLAGS]) out[key] = cameraValue(key, out[key]);
   return out;
 }

@@ -31,7 +31,9 @@ import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { wetPlanningPace } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
-import { SCENERY_TIERS, updateSceneryLod } from './scenery.js';
+import { speedLimitAt } from './speed-limit.js';
+import { updateSceneryLod, setDrawDistance, drawDistanceFor, drawDistance } from './scenery.js';
+import { GRAPHICS_TIERS, detectQuality } from './graphics.js';
 import { initReplay } from './replay-mode.js';
 import { loading } from './ui/loading.js';
 import { ui, icon } from './ui/components.js';
@@ -52,12 +54,13 @@ let graphicsPreference = Q.get('quality') || 'auto';
 try { if (!Q.has('quality')) graphicsPreference = localStorage.getItem('paraliaki.graphics') || 'auto'; } catch {}
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
-const lowGraphics = graphicsPreference === 'low' || (graphicsPreference === 'auto' && /SwiftShader|llvmpipe|softpipe|Software/i.test(gpuName));
-const quality = lowGraphics ? 'low' : graphicsPreference === 'med' || (graphicsPreference === 'auto' && /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)) ? 'med' : 'high';
+// the post chain runs the full tier (graphics.js); the world, weather and LOD code use its scenery tier (ultra = high)
+const quality = detectQuality(graphicsPreference, gpuName, navigator.userAgent), sceneryQuality = GRAPHICS_TIERS[quality].scenery;
+const lowGraphics = quality === 'low';
 window.__renderInfo = () => ({ gpu: gpuName, quality, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps });
-const DPR = Math.min(window.devicePixelRatio || 1, SCENERY_TIERS[quality].pixelRatio);
+const DPR = Math.min(window.devicePixelRatio || 1, GRAPHICS_TIERS[quality].pixelRatio);
 const graphicsControl = document.createElement('select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics quality');
-for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['high', 'GRAPHICS: HIGH'], ['med', 'GRAPHICS: MED'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
+for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['ultra', 'GRAPHICS: ULTRA'], ['high', 'GRAPHICS: HIGH'], ['med', 'GRAPHICS: MED'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
 graphicsControl.onchange = () => { try { localStorage.setItem('paraliaki.graphics', graphicsControl.value); } catch {} const url = new URL(location.href); url.searchParams.set('quality', graphicsControl.value); location.href = url; };
 let pixelRatio = DPR;
@@ -90,7 +93,12 @@ let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, pe
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
 const lodList = [];
-function updateLod() { updateSceneryLod(lodList, camera); }
+const lodAt = new THREE.Vector3(1e9, 0, 0);
+function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
+// render distance (scenery.js): the setting applies live; traffic is drawn out to about half of it
+setDrawDistance(drawDistanceFor(quality), quality);
+const applyDrawDistance = () => { if (traffic) traffic.drawRange = clamp(drawDistance() * 0.55, 450, 1150); };
+onSettings((s, key) => { if (key === 'drawDistance') { setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); } });
 
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
 const keys = controls.keys; // retained for the simulation test hook
@@ -114,11 +122,11 @@ async function boot() {
   sky = ENV.createSky(); scene.add(sky);
   const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube;
   scene.environment = baked.env;
-  ({ sun } = ENV.createLights(scene));
-  world = await buildMapWorld(map, { scene, sky, skyCube: baked.cube, lowGraphics, quality, progress: lstat });
+  ({ sun } = ENV.createLights(scene)); if (GRAPHICS_TIERS[quality].shadow) ENV.setShadowRange(...GRAPHICS_TIERS[quality].shadow);
+  world = await buildMapWorld(map, { scene, sky, skyCube: baked.cube, lowGraphics, quality: sceneryQuality, progress: lstat });
   bindMapWorld(world);
   policeHud = new PoliceHud();
-  post = createPost(renderer, scene, camera, { quality });
+  post = createPost(renderer, scene, camera, { quality }); window.__post = post;
   probe = createProbe();
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
@@ -160,7 +168,7 @@ async function boot() {
 
 // Map scene ownership is separate from persistent rendering, input and menu state.
 function bindMapWorld(next) {
-  ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next);
+  ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next); applyDrawDistance();
   route = map.route; startS = route.start;
   lodList.splice(0, lodList.length, ...next.lod);
   traffic.disabled = Q.has('notraffic') || route.closed;
@@ -171,7 +179,7 @@ function bindMapWorld(next) {
   G.mapId = map.id || 'riviera';
 }
 function bindMapWeather() {
-  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality, cars: () => [player, rival], cam: () => G.cam });
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: sceneryQuality, cars: () => [player, rival], cam: () => G.cam });
 }
 /** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
 async function switchMap(id = 'riviera') {
@@ -185,7 +193,7 @@ async function switchMap(id = 'riviera') {
     let nextMap, nextWorld;
     try {
       nextMap = await loadMap(undefined, './', id);
-      nextWorld = await buildMapWorld(nextMap, { scene, sky, skyCube: probeSeed, lowGraphics, quality, progress: lstat });
+      nextWorld = await buildMapWorld(nextMap, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
     } catch (error) { nextMap?.dispose?.(); G.state = priorState; throw error; }
     if (G.run && !G.run.done) G.run.abort('map-change');
     window.__replay?.hideGhost();
@@ -1206,8 +1214,8 @@ function applyCamMode() {
   if (camState.mode !== G.cam) { beginCameraBlend(); camState.mode = G.cam; }
   const cock = G.cam === 'cockpit';
   player.cockpit.setVisible(true); // The open cabins keep their dashboard in chase/garage views.
-  player.driver.head.visible = !cock;
-  camera.near = cock ? 0.04 : 0.15; camera.updateProjectionMatrix();
+  player.driver.head.visible = !cock && !cameraBlend.active;
+  camera.near = cock ? 0.05 : 0.25; camera.updateProjectionMatrix(); // as far out as the cabin allows: depth precision at range
 }
 function noise1(t) { return Math.sin(t * 1.7) * 0.5 + Math.sin(t * 3.1 + 1.3) * 0.3 + Math.sin(t * 7.3 + 0.7) * 0.2; }
 function updateCamera(dt, snap = false) {
@@ -1475,7 +1483,7 @@ function step(dt, draw = true) {
   if (towOffer.element) towOffer.element.hidden = G.state !== 'race' || !!menu?.open || !multiplayer.panel.hidden;
   // sun + shadows follow the action
   const fwd = _v2.set(0, 0, -1).applyQuaternion(player.model.root.quaternion);
-  ENV.updateSun(sun, _v1.copy(player.model.root.position).addScaledVector(fwd, 35));
+  ENV.updateSun(sun, _v1.copy(player.model.root.position).addScaledVector(fwd, ENV.shadowRange() * 0.4));
   // crossings painted near us
   if (assets.asphalt && assets.crossings) {
     const u = assets.asphalt.userData.uniforms; let k = 0;
@@ -1554,7 +1562,7 @@ function render() {
   renderer.info.autoReset = false; renderer.info.reset();
   updateWeather(G.lastDt || 1 / 60);
   if (!lowGraphics && (quality === 'med' ? frameN % 4 === 0 : (frameN & 1))) updateProbe();
-  if ((frameN % 6) === 0) updateLod();
+  if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
   if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
   if (G.cam === 'cockpit') player.cockpit.renderMirrors(renderer, scene, { enabled: !lowGraphics, frame: frameN });

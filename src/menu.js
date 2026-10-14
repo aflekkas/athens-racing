@@ -344,7 +344,9 @@ export class Menu {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
       body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}</div>`;
     } else if (tab === 'video') {
-      body = `<div class="group"><h3 class="group__title">${icon('monitor')}QUALITY</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS', value: v('graphics'), options: [['auto', 'AUTO'], ['high', 'HIGH'], ['med', 'MED'], ['low', 'LOW']], note: locked ? 'LOCKED WHILE ONLINE' : 'CHANGING IT RELOADS THE GAME', attrs: SET, cls: locked ? 'locked' : '' })}</div>
+      body = `<div class="group"><h3 class="group__title">${icon('monitor')}QUALITY</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS', value: v('graphics'), options: [['auto', 'AUTO'], ['ultra', 'ULTRA'], ['high', 'HIGH'], ['med', 'MED'], ['low', 'LOW']], note: locked ? 'LOCKED WHILE ONLINE' : 'CHANGING IT RELOADS THE GAME', attrs: SET, cls: locked ? 'locked' : '' })}</div>
+        <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'AUTO'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'FULL DETAIL RANGE · LOW-DETAIL SCENERY STAYS VISIBLE TO THE HORIZON', attrs: SET })}
+          ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}</div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
     } else if (tab === 'driving') {
       body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key: 'aids', label: 'DRIVER AIDS · TC ABS ESC', value: settings.aids, attrs: SET })}

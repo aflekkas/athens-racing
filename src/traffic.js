@@ -1352,7 +1352,7 @@ export class Traffic {
     const route = this.route, f = {};
     for (const c of this.cars) {
       if (!c.active) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
-      const vis = Math.abs(c.s - ps) < 650;
+      const vis = Math.abs(c.s - ps) < (this.drawRange || 650); // main.js: from the render distance
       c.m.root.visible = vis; if (!vis) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
       c.m.setLOD?.(Math.abs(c.s - ps)); // detail by distance (src/cars.js)
       route.frame(c.s, f);

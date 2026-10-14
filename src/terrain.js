@@ -243,7 +243,11 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   const group = new THREE.Group();
   const tiles = splitGeometry(fineGeo, 600);
   for (const g of tiles) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
-  for (const g of splitGeometry(coarseGeo, 1500)) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  // The coarse mesh underlies the fine area too: push it back in depth so the fine tiles always win, even where the
+  // depth buffer can't resolve the few metres between them (kilometres away, cockpit near plane).
+  const coarseMat = mat.clone(); coarseMat.onBeforeCompile = mat.onBeforeCompile; coarseMat.customProgramCacheKey = mat.customProgramCacheKey;
+  Object.assign(coarseMat, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 });
+  for (const g of splitGeometry(coarseGeo, 1500)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
   scene.add(group);
   return { group, material: mat, heightC: (x, z) => sampleH(terrain, Hc, x, z) };
 }

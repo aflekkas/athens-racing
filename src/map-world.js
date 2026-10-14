@@ -86,7 +86,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     } else {
       const module = await import(`./maps/${map.id}.js`);
       custom = await module.buildScenery(group, map, { heightC: ter.heightC, assets });
-      if (map.id === 'megara') group.add(ENV.createFarScenery(map.data.proj, 'megara'));
+      if (map.id === 'megara' || map.id === 'penteli') group.add(ENV.createFarScenery(map.data.proj, map.id));
       if (custom?.group && !custom.group.parent) group.add(custom.group);
       Object.assign(assets, custom?.assets || {});
       // Open-road bundles can provide scenery only; the standard road surface omits coast-specific furniture.
