@@ -1790,14 +1790,24 @@ function step(dt, draw = true) {
   bootFrameLog('frame-done');
 }
 
-// One shadow pass over every caster in the world at load (a ±4 km box): the depth programs (instanced, skinned,
-// alpha-tested) compile now instead of as a hitch when a new kind of caster first enters the shadow range.
+// The shadow depth programs (instanced, skinned, alpha-tested...) compile at load instead of as a hitch when a new kind
+// of caster first enters the shadow range (compileAsync never builds them): one shadow pass over every caster on the
+// map, the distance-hidden ones included, into a 1×1 map with an empty main view (compile cost, no fill).
 function warmShadowPrograms() {
-  const cam = sun.shadow.camera, saved = { left: cam.left, right: cam.right, top: cam.top, bottom: cam.bottom, near: cam.near, far: cam.far };
-  const rt = new THREE.WebGLRenderTarget(1, 1), auto = renderer.shadowMap.autoUpdate;
-  Object.assign(cam, { left: -4000, right: 4000, top: 4000, bottom: -4000, near: -4000, far: 4000 }); cam.updateProjectionMatrix();
+  const shadow = sun.shadow, cam = shadow.camera, saved = { left: cam.left, right: cam.right, top: cam.top, bottom: cam.bottom, near: cam.near, far: cam.far };
+  const size = shadow.mapSize.clone(), rt = new THREE.WebGLRenderTarget(1, 1), auto = renderer.shadowMap.autoUpdate, far = camera.far, hidden = [];
+  scene.traverse(o => { if (!o.visible) { hidden.push(o); o.visible = true; } });
+  shadow.mapSize.set(1, 1); shadow.map?.dispose(); shadow.map = null;
+  Object.assign(cam, { left: -30000, right: 30000, top: 30000, bottom: -30000, near: -30000, far: 30000 }); cam.updateProjectionMatrix();
+  camera.far = camera.near * 1.001; camera.updateProjectionMatrix(); // nothing in the main view: compileAsync built those programs
   try { renderer.shadowMap.autoUpdate = true; renderer.setRenderTarget(rt); renderer.render(scene, camera); }
-  finally { renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate = auto; renderer.shadowMap.needsUpdate = true; Object.assign(cam, saved); cam.updateProjectionMatrix(); rt.dispose(); }
+  catch (e) { console.warn('Shadow shader warm-up skipped:', e?.message || e); } // best effort: they compile on first use
+  finally {
+    for (const o of hidden) o.visible = false;
+    camera.far = far; camera.updateProjectionMatrix();
+    renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate = auto; renderer.shadowMap.needsUpdate = true; rt.dispose();
+    shadow.mapSize.copy(size); shadow.map?.dispose(); shadow.map = null; Object.assign(cam, saved); cam.updateProjectionMatrix();
+  }
 }
 
 // reflection probe for the cars: one cube face per frame around the player, PMREM-filtered every full turn
