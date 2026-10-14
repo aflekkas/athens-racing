@@ -10,6 +10,7 @@
 // Side-street cross traffic, crash physics, near-miss tracking and road-works cones are kept from the previous build.
 import * as THREE from 'three';
 import { TRAFFIC_TYPES, trafficModel } from './cars.js';
+import { skipHiddenMatrices } from './batch.js';
 import { RNG, clamp, lerp, smoothstep } from './util.js';
 import { ROAD } from './road.js';
 import { LANE_W } from './map.js';
@@ -106,13 +107,15 @@ export class Traffic {
       const indL = indicatorMat(), indR = indicatorMat();
       // headlight flash (a driver warning you off): its own material per car, dark until used
       const flash = new THREE.MeshStandardMaterial({ color: '#202020', emissive: '#fff6e0', emissiveIntensity: 0, roughness: 0.3 });
-      if (!type.scooter) for (const sx of [-1, 1]) { const h = new THREE.Mesh(indGeo, flash); h.scale.set(1.6, 1.3, 1); h.position.set(sx * type.wid * 0.34, type.bus ? 0.9 : 0.66, -type.len * 0.5 - 0.01); m.body.add(h); }
+      // indicators + headlight flashers: own materials, so one draw each; hidden beyond reading distance (sync)
+      m.accessories = [];
+      if (!type.scooter) for (const sx of [-1, 1]) { const h = new THREE.Mesh(indGeo, flash); h.scale.set(1.6, 1.3, 1); h.position.set(sx * type.wid * 0.34, type.bus ? 0.9 : 0.66, -type.len * 0.5 - 0.01); m.body.add(h); m.accessories.push(h); }
       if (!type.scooter) {
         for (const [mat, sx] of [[indL, -1], [indR, 1]]) for (const z of [-1, 1]) {
-          const b = new THREE.Mesh(indGeo, mat); b.position.set(sx * type.wid * 0.47, type.bus ? 1.0 : 0.72, z * type.len * 0.5); m.body.add(b);
+          const b = new THREE.Mesh(indGeo, mat); b.position.set(sx * type.wid * 0.47, type.bus ? 1.0 : 0.72, z * type.len * 0.5); m.body.add(b); m.accessories.push(b);
         }
       }
-      m.root.visible = false;
+      m.root.visible = false; skipHiddenMatrices(m.root);
       scene.add(m.root);
       // kind is the driving role (every taxi model drives like a taxi); type.id picks mass and manners
       const kind = type.taxi ? 'taxi' : type.id;
@@ -127,7 +130,7 @@ export class Traffic {
       if (!m.setStrobe) lightBar(m, type);
       const indL = indicatorMat(), indR = indicatorMat(), flash = new THREE.MeshStandardMaterial({ color: '#202020', emissive: '#fff6e0', emissiveIntensity: 0, roughness: 0.3 });
       if (!type.scooter) for (const [mat, sx] of [[indL, -1], [indR, 1]]) for (const z of [-1, 1]) { const b = new THREE.Mesh(indGeo, mat); b.position.set(sx * type.wid * 0.47, 0.72, z * type.len * 0.5); m.body.add(b); }
-      m.root.visible = false; scene.add(m.root);
+      m.root.visible = false; skipHiddenMatrices(m.root); scene.add(m.root);
       const mass = moto ? 320 : 1550;
       this.cars.push({ id: POOL + k, type, kind: type.id, police: true, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV.sedan, dmg: 0 });
     }
@@ -1357,10 +1360,12 @@ export class Traffic {
   sync(ps) {
     const route = this.route, f = {};
     for (const c of this.cars) {
-      if (!c.active) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
+      if (!c.active) { if (c.m.damageDebris?.length) c.m.updateDamage?.(this.dtLast || 0.016); continue; } // only falling debris needs a pooled car's update
       const vis = Math.abs(c.s - ps) < (this.drawRange || 650); // main.js: from the render distance
       c.m.root.visible = vis; if (!vis) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
       c.m.setLOD?.(Math.abs(c.s - ps)); // detail by distance (src/cars.js)
+      const lamps = Math.abs(c.s - ps) < 110; // 16 cm indicator boxes are sub-pixel beyond this
+      if (c.m.accessories && c.lampsShown !== lamps) { c.lampsShown = lamps; for (const a of c.m.accessories) a.visible = lamps; }
       route.frame(c.s, f);
       route.point(c.s, c.u, _v);
       const k = c.crash;

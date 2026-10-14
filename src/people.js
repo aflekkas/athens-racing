@@ -45,6 +45,7 @@ export class People {
     this.crowd = new Crowd(scene, MAX);
     this.peds = Array.from({ length: MAX }, (_, i) => ({ slot: i, active: false, P: newPose() }));
     this.onRoad = []; this.events = []; this.t = 0;
+    this.drawRadius = 175; // m (main.js: graphics tier)
     this.traffic = null;
     const J = assets.junctions || [];
     this.zebras = (assets.crossings || []).map((s) => ({ s, j: J.find((j) => Math.abs(j.zF - s) < 0.5 || Math.abs(j.zO - s) < 0.5) || null }));
@@ -277,7 +278,7 @@ export class People {
     for (const p of this.peds) {
       if (!p.active) continue;
       const d2 = (p.x - cx) ** 2 + (p.z - cz) ** 2;
-      if (d2 > 175 * 175) continue;
+      if (d2 > this.drawRadius * this.drawRadius) continue;
       this.pose(p);
       this.crowd.draw(p.P, p.look, Math.sqrt(d2));
     }

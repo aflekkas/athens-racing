@@ -19,7 +19,7 @@ import { Signals, findJunctions } from './signals.js';
 import { People } from './people.js';
 import { Fx } from './fx.js';
 import { EventMarkers } from './event-markers.js';
-import { batchStatic } from './batch.js';
+import { batchStatic, freezeStatic } from './batch.js';
 import { simplifyScenery } from './graphics.js';
 import { TX } from './tex.js';
 import { frameYield } from './util.js';
@@ -66,10 +66,12 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
   map.roadNetwork = network;
   let water = null, custom = null;
   scene.add(group);
+  // the static builders' roots (freezeStatic below); `still(() => build())` collects what a builder adds to the group
+  const staticRoots = [], still = (build, label) => { const n = group.children.length, out = build(); for (const o of group.children.slice(n)) { o.name ||= label; staticRoots.push(o); } return out; };
   try {
     progress('BUILDING TERRAIN', .25); await frameYield();
     const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
-    const ter = buildTerrain(map.terrain, route, [], group, { coastal, farmland: map.id === 'megara', network });
+    const ter = still(() => buildTerrain(map.terrain, route, [], group, { coastal, farmland: map.id === 'megara', network }), 'terrain');
     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
     if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
     const labels = new LabelAtlas();
@@ -77,37 +79,39 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     progress(coastal ? 'PAVING POSEIDONOS AVENUE' : 'BUILDING ' + (map.definition?.name || map.id).toUpperCase(), .4); await frameYield();
     assets.junctions = coastal ? findJunctions(map) : [];
     assets.network = network;
-    if (network) buildRoadNetwork(network, group);
+    if (network) still(() => buildRoadNetwork(network, group), 'road-network');
     let road, natureGroup, signals;
     if (coastal) {
-      road = buildRoad(map, group, ter.heightC, assets); assets.asphalt = road.asphalt;
+      road = still(() => buildRoad(map, group, ter.heightC, assets), 'road'); assets.asphalt = road.asphalt;
       signals = new Signals(map, group, road.group, assets.junctions);
       progress('RAISING VOULIAGMENI', .55); await frameYield();
-      const bld = buildBuildings(map, group, ter.heightC, labels, infill);
+      const bld = still(() => buildBuildings(map, group, ter.heightC, labels, infill), 'buildings');
       progress('PLANTING PALMS AND PINES', .7); await frameYield();
-      const nat = buildNature(map, group, ter.heightC, bld, assets); natureGroup = nat.group;
+      const nat = still(() => buildNature(map, group, ter.heightC, bld, assets), 'nature'); natureGroup = nat.group;
       // Keep the original Riviera builders and their order, including the people before static batching.
       const people = new People(map, group, assets, natureGroup);
-      custom = { people, ...buildRoadside(map, group, ter.heightC, assets) };
+      custom = { people, ...still(() => buildRoadside(map, group, ter.heightC, assets), 'roadside') };
       for (const g of [road.group, bld.group, nat.group]) batchStatic(g);
       addBuildingImpostors(bld.group, quality);
-      group.add(ENV.createFarScenery(map.data.proj));
+      staticRoots.push(ENV.createFarScenery(map.data.proj)); group.add(staticRoots.at(-1));
     } else {
       const module = await import(`./maps/${map.id}.js`);
+      const n = group.children.length;
       custom = await module.buildScenery(group, map, { heightC: ter.heightC, assets });
-      if (map.id === 'megara' || map.id === 'penteli') group.add(ENV.createFarScenery(map.data.proj, map.id));
-      if (custom?.group && !custom.group.parent) group.add(custom.group);
+      staticRoots.push(...group.children.slice(n));
+      if (map.id === 'megara' || map.id === 'penteli') { staticRoots.push(ENV.createFarScenery(map.data.proj, map.id)); group.add(staticRoots.at(-1)); }
+      if (custom?.group && !custom.group.parent) { group.add(custom.group); staticRoots.push(custom.group); }
       Object.assign(assets, custom?.assets || {});
       // Open-road bundles can provide scenery only; the standard road surface omits coast-specific furniture.
-      if (!route.closed && !custom?.road) { assets.furniture = false; road = buildRoad(map, group, ter.heightC, assets); }
+      if (!route.closed && !custom?.road) { assets.furniture = false; road = still(() => buildRoad(map, group, ter.heightC, assets), 'road'); }
       else road = custom?.road || { group: custom?.group || group, asphalt: custom?.asphalt };
       if (road.asphalt) assets.asphalt = road.asphalt;
       natureGroup = new THREE.Group(); group.add(natureGroup);
     }
-    const landmarks = coastal ? buildRivieraLandmarks(map, group) : null;
-    buildWorldContext(map, group, ter.heightC, infill, quality);
+    const landmarks = coastal ? still(() => buildRivieraLandmarks(map, group), 'landmarks') : null;
+    still(() => buildWorldContext(map, group, ter.heightC, infill, quality), 'world-context');
     // Real speed-limit signs from the map data (all maps; a no-op without sign data).
-    const speedSigns = buildSpeedSigns(map, group, ter.heightC);
+    const speedSigns = still(() => buildSpeedSigns(map, group, ter.heightC), 'speed-signs');
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
     const streetLife = buildStreetLife(map, group, ter.heightC, coastal ? custom : null);
@@ -128,6 +132,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const splash = new Splash(group), fx = new Fx(group, route, ground);
     const markers = new EventMarkers(group, route);
     const lod = prepareSceneryLod(group, quality);
+    group.matrixAutoUpdate = false; group.updateMatrix(); freezeStatic(staticRoots);
     let disposed = false;
     return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod,
       dispose() {

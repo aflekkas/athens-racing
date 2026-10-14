@@ -80,10 +80,10 @@ function geometryOf(o,matrix,colored=false){
   return g;
 }
 // Preserve named deformation/detachment parts near the camera, and bake harmless trim together.
-function compact(parent,car,preserveParts){
+function compact(parent,car,preserveParts,mergeMirrors=false){
   parent.updateMatrixWorld(true);const inv=parent.matrixWorld.clone().invert(),buckets=new Map(),parts=[];
   const visit=o=>{
-    if(o!==parent&&(o.userData.mirrorAssembly||o.userData.mirrorSupport||preserveParts&&o.userData.damagePart)){parts.push(o);return;}
+    if(o!==parent&&(!mergeMirrors&&(o.userData.mirrorAssembly||o.userData.mirrorSupport)||preserveParts&&o.userData.damagePart)){parts.push(o);return;}
     if(o.isMesh&&!Array.isArray(o.material)){
       const m=o.material,plain=!m.transparent&&!m.map&&m!==car.paint&&m!==car.tail&&m!==car.materials.head&&m!==car.materials.led&&!car.strobeMaterials?.includes(m);
       const material=plain?trimMaterial:m;
@@ -111,7 +111,10 @@ function template(type,low,parked){
   const car=builder(type)(type,'#ffffff',new RNG(139),{low,parked});
   seatMirrors(car,car.body,{bike:!!type.scooter});
   flattenMirrorScopes(car);
-  compact(car.body,car,!low);
+  // The far level (beyond ~55 m, and parked rows) is a handful of batches: its mirrors and wheels bake into the body
+  // (a wheel's spin or a mirror's fold is sub-pixel there), so a distant car is ~5 draws instead of ~15.
+  if(low)for(const w of car.wheels)car.body.attach(w.pivot);
+  compact(car.body,car,!low,low);
   for(const w of car.wheels){compact(w.spin,car,false);for(const child of [...w.pivot.children])if(child!==w.spin&&child.isGroup)compact(child,car,false);}
   let i=0;car.root.traverse(o=>{o.name=o.name||'fleet-node-'+i;o.userData.fleetNode=i++;if(o.geometry)o.geometry.userData.shared=true;
     // Template textures (e.g. the 256x64 TAXI label) live as long as this module cache and are shared by every clone
@@ -176,6 +179,8 @@ function bake(models,origin){
   for(const {material,geos}of buckets.values()){const geometry=mergeGeometries(geos,false);if(geometry){const mesh=new THREE.Mesh(geometry,material);mesh.receiveShadow=true;group.add(mesh);}for(const g of geos)g.dispose();}
   return group;
 }
+// Parked cars are drawn out to the moving traffic's range (main.js: graphics tier and draw distance).
+export const PARKED_RANGE={far:Infinity};
 class ParkingCell extends THREE.LOD{
   constructor(models,origin){super();this.models=models;this.origin=origin;this.position.copy(origin);this.low=bake(models,origin);this.addLevel(this.low,0);this.near=null;this.userData.parkingCell=true;}
   update(camera){
@@ -183,6 +188,7 @@ class ParkingCell extends THREE.LOD{
     if(distance<75&&!this.near){this.near=bake(this.models.map(m=>m.makeNear()),this.origin);this.levels.length=0;this.addLevel(this.near,0);this.addLevel(this.low,75,.12);}
     if(distance>230&&this.near){this.near.traverse(o=>o.geometry?.dispose());this.remove(this.near);this.near=null;this.levels.length=0;this.addLevel(this.low,0);this.low.visible=true;}
     super.update(camera);
+    if(distance>PARKED_RANGE.far)for(const level of this.levels)level.object.visible=false;
   }
 }
 export function bakeParkedFleet(models,cell=40){

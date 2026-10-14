@@ -45,6 +45,9 @@ import { FinePhone } from './enforcement-hud.js';
 import { redViolation } from './enforcement.js';
 import { updateSceneryLod, setDrawDistance, drawDistanceFor, drawDistance } from './scenery.js';
 import { GRAPHICS_TIERS, detectQuality } from './graphics.js';
+import { RenderScale } from './render-scale.js';
+import { DistanceDetail } from './batch.js';
+import { PARKED_RANGE } from './traffic-fleet.js';
 import { initReplay } from './replay-mode.js';
 import { loading } from './ui/loading.js';
 import { ui, icon } from './ui/components.js';
@@ -97,6 +100,7 @@ for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['ultra', 'GRAPHICS: U
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
 graphicsControl.onchange = () => { try { localStorage.setItem('paraliaki.graphics', graphicsControl.value); } catch {} const url = new URL(location.href); url.searchParams.set('quality', graphicsControl.value); location.href = url; };
 let pixelRatio = DPR;
+const renderScale = new RenderScale({ max: DPR });
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -105,6 +109,7 @@ ENV.installAerial(ENV.AP_K); // aerial perspective replaces three's fog in every
 renderer.shadowMap.enabled = !lowGraphics;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
+scene.matrixAutoUpdate = false; // never moves; its children update themselves (static world: batch.js freezeStatic)
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
@@ -150,7 +155,8 @@ const lodAt = new THREE.Vector3(1e9, 0, 0);
 function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
 // render distance (scenery.js): the setting applies live; traffic is drawn out to about half of it
 setDrawDistance(drawDistanceFor(quality), quality);
-const applyDrawDistance = () => { if (traffic) traffic.drawRange = clamp(drawDistance() * 0.55, 450, 1150); };
+// med / low cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
+const applyDrawDistance = () => { const T = GRAPHICS_TIERS[quality]; if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(T.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 450, 1150)); if (people) people.drawRadius = T.crowd; };
 onSettings((s, key) => { if (key === 'drawDistance') { setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); } });
 
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
@@ -198,6 +204,7 @@ async function boot() {
   tlog('textures');
   updateLod();
   try { await renderer.compileAsync(scene, camera); } catch (e) { /* older drivers: compile on first frame */ }
+  if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
   tlog('compiled');
   onResize();
   document.body.classList.add('loaded');
@@ -279,6 +286,9 @@ async function switchMap(id = 'riviera') {
     G.state = 'menu'; G.cam = 'orbit'; applyCamMode(); updateCamera(0, true);
     document.body.classList.remove('racing', 'counting');
     post.resetHistory?.(); onResize(); updateLod();
+    // the new world's shaders (and shadow depth variants) compile behind the loading screen, not mid-race
+    try { await renderer.compileAsync(scene, camera); } catch (e) { /* older drivers: compile on first frame */ }
+    if (renderer.shadowMap.enabled) warmShadowPrograms();
     const url = new URL(location.href); url.searchParams.set('map', map.id); history.replaceState(null, '', url);
     last = performance.now();
     return map;
@@ -1156,6 +1166,7 @@ function syncCar(c, dt) {
   c.model.steamAmount = v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
   c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
+  if (c !== player) (c.model.detail ??= new DistanceDetail(c.model.root)).update(camera.position.distanceTo(c.model.root.position)); // batch.js
   const impact = v.lastDamage && v.lastDamage.serial !== c.damageSerial ? v.lastDamage : null;
   for (const zone of ['front', 'rear', 'left', 'right']) c.model.setDamage?.(zone, v.damage?.[zone] || 0, impact?.zone === zone ? impact : undefined);
   if (impact?.kind === 'wall' && c === player && impact.ebs > 3.3 && G.t - (c.damageSoundT ?? -1) > .18) {
@@ -1512,7 +1523,7 @@ function updateCamera(dt, snap = false) {
 const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
 
 // ------------------------------------------------------------------ main loop
-let last = 0, perfAcc = 0, perfN = 0, perfCool = 2, frameN = 0;
+let last = 0, frameN = 0;
 const events = [];
 const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
 const sunScreen = new THREE.Vector3();
@@ -1536,14 +1547,10 @@ function frame(now) {
     updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active, spectating: !!watching, towLabel: bindingLabel(controls.bindings, 'tow', activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
   }
-  // adaptive resolution
-  perfAcc += wallDt; perfN++; perfCool -= dt;
-  if (perfN >= 40) {
-    const avg = perfAcc / perfN; perfAcc = 0; perfN = 0;
-    if (perfCool <= 0 && !Q.has('fixeddt')) {
-      if (avg > 0.024 && pixelRatio > 0.6) { pixelRatio = Math.max(0.6, pixelRatio - 0.1); onResize(); perfCool = 1.5; }
-      else if (avg < 0.0135 && pixelRatio < DPR) { pixelRatio = Math.min(DPR, pixelRatio + 0.1); onResize(); perfCool = 3; }
-    }
+  // adaptive resolution (render-scale.js): only while driving, where a steady frame rate matters
+  if (!Q.has('fixeddt') && !Q.has('fixedres') && G.state === 'race' && !document.hidden) {
+    const next = renderScale.sample(wallDt * 1000);
+    if (next) { pixelRatio = next; onResize(); }
   }
 }
 
@@ -1783,6 +1790,16 @@ function step(dt, draw = true) {
   bootFrameLog('frame-done');
 }
 
+// One shadow pass over every caster in the world at load (a ±4 km box): the depth programs (instanced, skinned,
+// alpha-tested) compile now instead of as a hitch when a new kind of caster first enters the shadow range.
+function warmShadowPrograms() {
+  const cam = sun.shadow.camera, saved = { left: cam.left, right: cam.right, top: cam.top, bottom: cam.bottom, near: cam.near, far: cam.far };
+  const rt = new THREE.WebGLRenderTarget(1, 1), auto = renderer.shadowMap.autoUpdate;
+  Object.assign(cam, { left: -4000, right: 4000, top: 4000, bottom: -4000, near: -4000, far: 4000 }); cam.updateProjectionMatrix();
+  try { renderer.shadowMap.autoUpdate = true; renderer.setRenderTarget(rt); renderer.render(scene, camera); }
+  finally { renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate = auto; renderer.shadowMap.needsUpdate = true; Object.assign(cam, saved); cam.updateProjectionMatrix(); rt.dispose(); }
+}
+
 // reflection probe for the cars: one cube face per frame around the player, PMREM-filtered every full turn
 function createProbe() {
   const rt = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: false });
@@ -1812,7 +1829,10 @@ function render() {
   if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
   if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
-  if (G.cam === 'cockpit') player.cockpit.renderMirrors(renderer, scene, { enabled: !lowGraphics, frame: frameN });
+  // med: mirrors at half cadence with a shorter far plane, shadow map every 2nd frame (graphics.js)
+  const T = GRAPHICS_TIERS[quality];
+  if (T.shadowEvery > 1) renderer.shadowMap.autoUpdate = false;
+  if (G.cam === 'cockpit' && (!T.mirrorEvery || frameN % T.mirrorEvery === 0)) player.cockpit.renderMirrors(renderer, scene, { enabled: T.mirrorEvery > 0, frame: frameN, far: T.mirrorFar });
   // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
   post.blur = orbit ? 0.35 : 0.5;
@@ -1823,6 +1843,7 @@ function render() {
   }
   post.comp.uDof.value = orbit ? 5.5 : 0;
   if (orbit) post.comp.uFocus.value = camera.position.distanceTo(_v1.set(player.veh.x, player.veh.y + 0.7, player.veh.z));
+  if (T.shadowEvery > 1) renderer.shadowMap.needsUpdate = frameN % T.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
   post.render(G.lastDt || 1 / 60);
 }
 

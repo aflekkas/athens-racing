@@ -39,7 +39,7 @@ export const LANE_W = 3.3; // Greek urban/coastal arterial lanes run 3.0-3.5 m (
 
 export class Route {
   constructor(r, { corridors = [] } = {}) {
-    this.step = r.step;
+    this.step = r.step; this._t = 0;
     this.closed = !!r.closed;
     const N = this.N = r.x.length;
     this.X = Float32Array.from(r.x); this.Z = Float32Array.from(r.z); this.Y = Float32Array.from(r.y);
@@ -84,10 +84,11 @@ export class Route {
   setLocalCorridors(metadata) { this.localLayout = metadata.length ? new LocalCarriageways(this, metadata) : null; this.localCorridors = this.localLayout?.bores || []; }
   contactFrame(s, u, out = {}) { if (this.localLayout?.contains(s)) return this.localLayout.frame(s,u,out); this.frame(s,out); out.mapped=false; return out; }
   wrap(s) { return this.closed ? ((s % this.length) + this.length) % this.length : s; }
-  _i(s) { const f = clamp(this.wrap(s) / this.step, 0, this.N - 1.0001); const i = Math.floor(f); return [i, f - i]; }
-  lin(A, s) { const [i, t] = this._i(s); return A[i] + (A[i + 1] - A[i]) * t; }
+  // segment index of s; the fraction within it is left in this._t (no array per call: thousands of calls a frame, millions while building a world)
+  _i(s) { const f = clamp(this.wrap(s) / this.step, 0, this.N - 1.0001); const i = Math.floor(f); this._t = f - i; return i; }
+  lin(A, s) { const i = this._i(s), t = this._t; return A[i] + (A[i + 1] - A[i]) * t; }
   y(s) { // cubic Hermite for a C1 vertical profile
-    const [i, t] = this._i(s);
+    const i = this._i(s), t = this._t;
     const y0 = this.Y[i], y1 = this.Y[i + 1];
     const m0 = this.GR[i] * this.step, m1 = this.GR[i + 1] * this.step;
     const t2 = t * t, t3 = t2 * t;
@@ -106,7 +107,7 @@ export class Route {
   heading(s, u = 0) { if (Math.abs(u) >= this.medHalf(s) && this.localLayout?.contains(s)) { const f=this.contactFrame(s,u,{}); return Math.atan2(f.tx,-f.tz); } const tx = this.lin(this.TX, s), tz = this.lin(this.TZ, s); return Math.atan2(tx, -tz); }
   /** world point at (s,u) on the road surface */
   point(s, u, out = new THREE.Vector3()) {
-    const [i, t] = this._i(s);
+    const i = this._i(s), t = this._t;
     let ex = 0; if (!this.closed && s < 0) ex = s; else if (!this.closed && s > this.length) ex = s - this.length;
     const x = this.X[i] + (this.X[i + 1] - this.X[i]) * t, z = this.Z[i] + (this.Z[i + 1] - this.Z[i]) * t;
     const tx = this.TX[i] + (this.TX[i + 1] - this.TX[i]) * t, tz = this.TZ[i] + (this.TZ[i + 1] - this.TZ[i]) * t;
@@ -117,7 +118,7 @@ export class Route {
     return out;
   }
   frame(s, out) {
-    const [i, t] = this._i(s);
+    const i = this._i(s), t = this._t;
     out.x = this.X[i] + (this.X[i + 1] - this.X[i]) * t; out.z = this.Z[i] + (this.Z[i + 1] - this.Z[i]) * t; out.y = this.y(s);
     let tx = this.TX[i] + (this.TX[i + 1] - this.TX[i]) * t, tz = this.TZ[i] + (this.TZ[i + 1] - this.TZ[i]) * t;
     const L = Math.hypot(tx, tz) || 1; tx /= L; tz /= L;
@@ -140,8 +141,8 @@ export class Route {
       const h = this._hash(), C = 60, cx = Math.floor(x / C), cz = Math.floor(z / C);
       let best = -1, bd = Infinity;
       for (let r = 0; r < 40; r++) {
-        for (let i = -r; i <= r; i++) for (let j = -r; j <= r; j++) {
-          if (Math.max(Math.abs(i), Math.abs(j)) !== r) continue;
+        // the ring's perimeter only (same cells and order as filtering the full square, O(r) instead of O(r²))
+        for (let i = -r; i <= r; i++) for (let j = -r; j <= r; j += Math.abs(i) === r ? 1 : 2 * r) {
           const b = h.get((cx + i) * 100003 + cz + j); if (!b) continue;
           for (const k of b) { const d = (this.X[k] - x) ** 2 + (this.Z[k] - z) ** 2; if (d < bd) { bd = d; best = k; } }
         }

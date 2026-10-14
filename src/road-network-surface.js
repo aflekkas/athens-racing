@@ -38,7 +38,7 @@ export class RoadNetwork {
   if(wa>=-1e-4&&wb>=-1e-4&&wc>=-1e-4)return wa*p[i+1]+wb*p[i+4]+wc*p[i+7]-step;
  }return null;}
  project(x,z){if(!this.routeCells.size)return this.route.project(x,z,null);const cx=Math.floor(x/64),cz=Math.floor(z/64);let best=-1,bd=Infinity;
-  for(let r=0;r<14;r++){for(let i=-r;i<=r;i++)for(let j=-r;j<=r;j++){if(Math.max(Math.abs(i),Math.abs(j))!==r)continue;for(const k of this.routeCells.get(`${cx+i},${cz+j}`)||[]){const d=(x-this.route.X[k])**2+(z-this.route.Z[k])**2;if(d<bd){bd=d;best=k;}}}if(best>=0&&Math.sqrt(bd)<(r-.5)*64)break;}
+  for(let r=0;r<14;r++){for(let i=-r;i<=r;i++)for(let j=-r;j<=r;j+=Math.abs(i)===r?1:2*r){for(const k of this.routeCells.get(`${cx+i},${cz+j}`)||[]){const d=(x-this.route.X[k])**2+(z-this.route.Z[k])**2;if(d<bd){bd=d;best=k;}}}if(best>=0&&Math.sqrt(bd)<(r-.5)*64)break;}
   return this.route.project(x,z,best<0?null:best*this.route.step,12);
  }
  distance(seg,x,z){const t=clamp(((x-seg.ax)*seg.dx+(z-seg.az)*seg.dz)/seg.L2,0,1);return Math.hypot(x-seg.ax-seg.dx*t,z-seg.az-seg.dz*t);}

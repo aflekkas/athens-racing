@@ -45,3 +45,50 @@ export function batchStatic(root, cell = 450) {
   }
   return { before, after };
 }
+
+/** Static world content never moves: compute its matrices once and take it out of three's per-frame matrix update
+ * (by default every object is recomposed and re-multiplied every frame; the Riviera has ~13k of them).
+ * Sprites keep updating (signal halos scale with distance). Nothing under these roots may be moved afterwards. */
+export function freezeStatic(roots) {
+  let frozen = 0;
+  for (const root of roots) {
+    root.updateMatrixWorld(true);
+    root.traverse((o) => { if (o.isSprite || o.isBone || o.isSkinnedMesh) return; o.matrixAutoUpdate = false; frozen++; });
+  }
+  return frozen;
+}
+
+const updateMatrixWorld = THREE.Object3D.prototype.updateMatrixWorld;
+function updateVisibleMatrixWorld(force) { if (this.visible) updateMatrixWorld.call(this, force); }
+/** Pooled models (the traffic fleet) spend most of their life hidden, and three still recomposes every node of a
+ * hidden subtree each frame. Skip them: a node shown again recomputes its world matrix on that frame's update
+ * (an auto-updating node always flags itself), and nothing draws or reads a hidden pooled model meanwhile. */
+export function skipHiddenMatrices(root) {
+  root.traverse((o) => { o.updateMatrixWorld = updateVisibleMatrixWorld; });
+  return root;
+}
+
+// small or cabin-only parts of a detailed car: sub-pixel or behind glass beyond ~60 m
+const CABIN = /interior|dashboard|seat|caliper|seal|pedal|steering|driver|helmet|wiper|badge|exhaust/i, LIT = /lamp|light|led|tail|head|indicator|beacon/i;
+/** Racing cars carry hundreds of parts at full detail at any distance; hide the small and cabin-only ones beyond
+ * `far` m (back at `near`). Lamps and damage parts are never touched; only parts this hid are shown again. */
+export class DistanceDetail {
+  constructor(root, { radius = 0.2, near = 55, far = 65 } = {}) {
+    Object.assign(this, { near, far, hidden: false, off: [] });
+    root.updateMatrixWorld(true);
+    const named = (o) => { for (let p = o; p && p !== root; p = p.parent) if (CABIN.test(p.name)) return true; return false; };
+    this.parts = [];
+    root.traverse((o) => {
+      if (!o.isMesh || o.parent?.isLOD || o.userData.damagePart || LIT.test(o.name) || o.material?.emissiveIntensity > 0.05) return;
+      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      if (o.geometry.boundingSphere.radius * o.matrixWorld.getMaxScaleOnAxis() < radius || named(o)) this.parts.push(o);
+    });
+  }
+  update(distance) {
+    const hide = this.hidden ? distance > this.near : distance > this.far;
+    if (hide === this.hidden) return;
+    this.hidden = hide;
+    if (hide) { this.off = this.parts.filter((o) => o.visible); for (const o of this.off) o.visible = false; }
+    else { for (const o of this.off) o.visible = true; this.off = []; }
+  }
+}

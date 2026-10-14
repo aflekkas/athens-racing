@@ -9,6 +9,7 @@ import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
 import { MirrorCadence } from './mirror-cadence.js';
+const MIRROR_FLIP=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
 
 /**
  * Interior trim: grained soft-touch plastics, perforated / stitched leather and suede-like fabric, sampled
@@ -426,7 +427,7 @@ export class Cockpit {
     }
     return Math.min(71,THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect)));
   }
-  renderMirrors(renderer,scene,{enabled=true,now=performance.now()}={}){
+  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),far=600}={}){
     const cadence=this.mirrorCadence??=new MirrorCadence();
     if(!enabled){
       cadence.reset();
@@ -440,9 +441,10 @@ export class Cockpit {
     // Compute camera poses before hiding our cabin. Opponents and traffic remain
     // in the scene; each camera is at its own physical mirror, aimed rearward.
     for(const m of this.mirrors){
+      if(m.camera.far!==far){m.camera.far=far;m.camera.updateProjectionMatrix();}
       if(!m.target){m.target=new THREE.WebGLRenderTarget(m.width,m.height,{depthBuffer:true});m.target.texture.name='mirror-'+m.name;m.target.texture.colorSpace=THREE.SRGBColorSpace;}
       m.mesh.geometry.computeBoundingBox();m.mesh.geometry.boundingBox.getCenter(m.camera.position);m.mesh.localToWorld(m.camera.position);body.getWorldQuaternion(m.camera.quaternion);
-      m.camera.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI));m.camera.updateMatrixWorld(true);
+      m.camera.quaternion.multiply(MIRROR_FLIP);m.camera.updateMatrixWorld(true);
     }
     root.visible=false;renderer.shadowMap.autoUpdate=false;
     try{for(const m of this.mirrors){renderer.setRenderTarget(m.target);renderer.render(scene,m.camera);if(m.material.map!==m.target.texture){m.material.map=m.target.texture;m.material.needsUpdate=true;}m.material.color.set(0xffffff);}this.mirrorUpdates++;cadence.rendered(now);}

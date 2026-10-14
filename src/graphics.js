@@ -8,11 +8,15 @@ import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 //   bloomMips: 0 = off · blurTaps: camera motion blur taps (0 = off) · dofTaps: photo / orbit depth of field ·
 //   sharpen: contrast-adaptive, luma only · heat: distant heat shimmer on clear days ·
 //   shadow: [sun shadow box half-size m, map size] (it fades out toward its edges; low has no shadow maps)
+// Frame cadence and range of the per-frame extras (main.js / traffic / people; laptops on med and low):
+//   shadowEvery: re-render the sun shadow map every n frames · mirrorEvery: cockpit mirror cadence divisor (0 = off) ·
+//   mirrorFar: mirror camera far plane (m) · trafficDraw: traffic drawn out to (m, null = from the draw distance) ·
+//   crowd: pedestrians drawn out to (m)
 export const GRAPHICS_TIERS = {
-  low: { scenery: 'low', pixelRatio: 0.8, msaa: 0, fxaa: true, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 12, sharpen: 0, heat: false, shadow: null },
-  med: { scenery: 'med', pixelRatio: 1.1, msaa: 2, fxaa: true, ao: 6, bloomMips: 4, blurTaps: 6, dofTaps: 16, sharpen: 0.12, heat: false, shadow: [110, 2048] },
-  high: { scenery: 'high', pixelRatio: 1.5, msaa: 4, fxaa: true, ao: 10, bloomMips: 5, blurTaps: 8, dofTaps: 24, sharpen: 0.18, heat: true, shadow: [150, 4096] },
-  ultra: { scenery: 'high', pixelRatio: 2, msaa: 8, fxaa: true, ao: 16, bloomMips: 6, blurTaps: 12, dofTaps: 40, sharpen: 0.18, heat: true, shadow: [220, 4096] },
+  low: { scenery: 'low', pixelRatio: 0.8, msaa: 0, fxaa: true, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 12, sharpen: 0, heat: false, shadow: null, shadowEvery: 1, mirrorEvery: 0, mirrorFar: 0, trafficDraw: 320, crowd: 110 },
+  med: { scenery: 'med', pixelRatio: 1.1, msaa: 2, fxaa: true, ao: 6, bloomMips: 4, blurTaps: 6, dofTaps: 16, sharpen: 0.12, heat: false, shadow: [95, 2048], shadowEvery: 2, mirrorEvery: 2, mirrorFar: 240, trafficDraw: 420, crowd: 140 },
+  high: { scenery: 'high', pixelRatio: 1.5, msaa: 4, fxaa: true, ao: 10, bloomMips: 5, blurTaps: 8, dofTaps: 24, sharpen: 0.18, heat: true, shadow: [150, 4096], shadowEvery: 1, mirrorEvery: 1, mirrorFar: 600, trafficDraw: null, crowd: 175 },
+  ultra: { scenery: 'high', pixelRatio: 2, msaa: 8, fxaa: true, ao: 16, bloomMips: 6, blurTaps: 12, dofTaps: 40, sharpen: 0.18, heat: true, shadow: [220, 4096], shadowEvery: 1, mirrorEvery: 1, mirrorFar: 600, trafficDraw: null, crowd: 175 },
 };
 export const GRAPHICS_CHOICES = ['auto', 'ultra', 'high', 'med', 'low'];
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
