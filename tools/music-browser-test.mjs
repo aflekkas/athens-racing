@@ -13,6 +13,8 @@ function tone(frequency) {
   for (let i = 0; i < length; i++) bytes.writeInt16LE(Math.round(Math.sin(2 * Math.PI * frequency * i / rate) * 8000), 44 + i * 2);
   return bytes;
 }
+// Current stream checked on the publisher's official YouTube /streams page; IDs can expire.
+const youtubeURL = process.env.MUSIC_YOUTUBE_URL || 'https://www.youtube.com/watch?v=rFZHOHl-L8A';
 const first = resolve(out, 'tone-440.wav'), second = resolve(out, 'tone-660.wav');
 await writeFile(first, tone(440)); await writeFile(second, tone(660));
 const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE || '/tmp/pw/node_modules/playwright/index.mjs'));
@@ -110,7 +112,7 @@ try {
   assert.equal(requests.some(url => /spotify|scdn/.test(url)), false);
   evidence.checks.push('Spotify no-ID setup, Premium note, external link; no OAuth/SDK requests'); await save('03-spotify-setup');
   await page.getByLabel('Music source').selectOption('youtube');
-  await page.locator('[data-youtube-url]').fill('https://www.youtube.com/watch?v=jfKfPfyJRdk');
+  await page.locator('[data-youtube-url]').fill(youtubeURL);
   await page.locator('[data-youtube-load]').click();
   await page.locator('.music-youtube iframe').waitFor({ timeout: 30000 });
   await page.locator('.music-youtube').scrollIntoViewIfNeeded();
@@ -118,7 +120,8 @@ try {
   const iframe = page.locator('.music-youtube iframe'), box = await iframe.boundingBox();
   assert.ok(box.width >= 200 && box.height >= 200, JSON.stringify(box));
   evidence.youtube = { src: await iframe.getAttribute('src'), box, status: await page.locator('.music-status').innerText(), requests: requests.filter(url => /youtube/.test(url)).slice(0, 8) };
-  assert.match(evidence.youtube.src, /jfKfPfyJRdk/);
+  const { parseYouTubeURL } = await import('../src/music-youtube.js');
+  assert.ok(evidence.youtube.src.includes(parseYouTubeURL(youtubeURL).video));
   await save('04-youtube-player'); evidence.checks.push('Real IFrame API + public livestream loaded; visible minimum-size player');
   await page.getByLabel('Music source').selectOption('off'); assert.equal(await page.locator('.music-youtube iframe').count(), 0);
   evidence.checks.push('Changing source destroys YouTube; leaving Sound settings also disposes it');
