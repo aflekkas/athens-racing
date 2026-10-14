@@ -226,7 +226,6 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           const loaded = m.loaded === true && m.mapId === l.mapId && m.version === maps.get(l.mapId).track.version;
           c.loaded = loaded; if (!loaded) c.ready = false;
           if (loaded && ['countdown', 'race'].includes(l.status) && !c.state) c.enteredAt = now;
-          else if (allowedChanged) for (const id of newlyDisallowed) { const p = l.players.get(id); if (p) p.ready = false; }
           publish(l); return;
         }
         if (m.type === 'car' || m.type === 'ready') {
