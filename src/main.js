@@ -609,7 +609,9 @@ function resetCar() {
 }
 
 function recoverFromCapture() {
-  if (G.state !== 'race' || G.towing || multiplayer.active) return;
+  if (G.state !== 'race' || G.towing) return;
+  // Online the capture is the server's recovery hold (it costs the clock time), then you race on.
+  if (multiplayer.active) { police?.reset(police.enabled); tow(player.veh); hud.message('<i>CAPTURED</i> · RECOVERY HOLD', 4); return; }
   if (G.ev?.def.type === 'pursuit') { finishRace('busted'); return; }
   if (!inFreeRoam()) G.pen += 15;
   police?.reset(police.enabled);
@@ -746,7 +748,8 @@ function initFlow() {
   // Police captures recover with a time cost; shaking them off wins an escape.
   EV.events.on('pursuit', (p) => {
     G.pursuit = p;
-    if (G.state !== 'race' || multiplayer.active || !G.ev) return;
+    if (G.state !== 'race' || !G.ev) return;
+    if (multiplayer.active) { if (p.phase === 'busted') recoverFromCapture(); return; }
     if (p.phase === 'busted') {
       if (G.ev.def.type !== 'pursuit') finePhone.show(enforcement.recordCapture(G.t, inFreeRoam() ? 0 : 15));
       recoverFromCapture();
@@ -1759,7 +1762,7 @@ function step(dt, draw = true) {
       const actors = multiplayer.active ? [{ veh: pv, kind: 'player' }] : [{ veh: pv, kind: 'player' }, ...grid.map((c) => c.actor)];
       traffic.update(dt, pv.s, actors);
       events.length = 0;
-      if ((!multiplayer.active || multiplayer.lobby.traffic) && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
+      if ((!multiplayer.active || multiplayer.lobby.traffic || police?.enabled) && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
       // out of sight a rival is not held up by traffic (they know these roads); in sight they race for real (updateGrid)
       if (!multiplayer.active) for (const c of grid) if (!c.ghost) { const n0 = events.length; traffic.collide(c.actor, events, G.t); for (let k = n0; k < events.length; k++) events[k].racer = c; }
       if (!multiplayer.active) racerCollide(dt);
@@ -1772,7 +1775,7 @@ function step(dt, draw = true) {
         }), dt, now, multiplayer.contacts) : [];
         containOnlineVehicle(pv, route);
       }
-      if (police && !multiplayer.active) for (const e of police.update(dt, { events, reds: G.reds, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
+      if (police) for (const e of police.update(dt, { events, reds: G.reds, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
       for (const h of traffic.honks) handleHonk(h);
@@ -2034,6 +2037,8 @@ function onlineWait() {
   G.trafficMul = 0; traffic.disabled = true; resetRace(); rival.model.root.visible = false;
   document.body.classList.remove('racing', 'counting');
 }
+/** MP police: only the host's lobby setting turns them on; after onlineWait's resetRace. */
+function startOnlinePolice(lobby) { police?.configureOnline(lobby); }
 function onlineMembers(members) {
   if (!multiplayer.loaded) return;
   const ids = new Set(members.map(p => p.id));
@@ -2086,6 +2091,7 @@ const multiplayer = new Multiplayer(CARS, {
     beginCameraBlend();
     window.__flow?.prepareEvent({ ...lobby.event, id: lobby.eventId, from: lobby.event.s0, to: lobby.event.s1, traffic: 0, police: lobby.config.police === true, rules: { ...lobby.event.rules, police: lobby.config.police === true }, conditions: { time: lobby.config.time, weather: lobby.config.weather } });
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));
+    startOnlinePolice(lobby);
     configureWorldLife({ type: lobby.event?.type, conditions: { time: lobby.config.time, weather: lobby.config.weather } }, G.baseCond || window.__conditions());
     if (lobby.world?.raceId === lobby.raceId && lobby.world.generation === lobby.generation) receiveWorldLife(lobby.world.state, Math.max(0, (multiplayer.now() - lobby.world.at) / 1000));
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };

@@ -13,14 +13,13 @@
 //   settings.drawDistance     'auto' (the tier's default) | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
 //   settings.motionBlur       camera motion blur on / off (src/post.js)
 //   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
-//   settings.police           police in Quick Race / free roam (src/police.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
 const KEY = 'paraliaki.settings';
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', renderScale: 'auto', pixelRatioCap: 1.5, drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', renderScale: 'auto', pixelRatioCap: 1.5, drawDistance: 'auto', motionBlur: true, ghostEnabled: true,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
@@ -75,7 +74,7 @@ function load() {
   out.aids = out.aids !== false;
   out.abs = out.abs !== false;
   out.ghostEnabled = out.ghostEnabled !== false;
-  out.police = out.police === true;
+  delete out.police; // police are a race / lobby setting only, never a per-browser preference
   out.mildLanguage = out.mildLanguage === true;
   out.showTyreGrip = out.showTyreGrip === true;
   out.motionBlur = out.motionBlur !== false;

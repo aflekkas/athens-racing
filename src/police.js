@@ -13,7 +13,6 @@
 // for 4 s (2.5 s boxed in by two). After any stop/escape the police stay quiet
 // for a while; reinforcements are capped at 3 and never appear in your view.
 import { events } from './events.js';
-import { settings } from './settings.js';
 import { routeLimitAt } from './speed-limit.js';
 import { patrolPlan } from './police-patrols.js';
 
@@ -139,7 +138,12 @@ export class HeatMachine {
 // ------------------------------------------------------------------ live status for the HUD / events
 export const pursuit = { enabled: false, state: 'off', heat: 0, level: 0, bustMeter: 0, evadeMeter: 0, time: 0, units: 0 };
 
-const QS = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
+/** a small seeded generator with the rng interface Police uses */
+export function seededRng(key) {
+  let h = 2166136261; for (const ch of String(key)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const next = () => { h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  return { next, range: (a, b) => a + next() * (b - a), chance: (p) => next() < p, int: (a, b) => a + Math.floor(next() * (b - a + 1)) };
+}
 
 export class Police {
   constructor(traffic, route) {
@@ -153,14 +157,24 @@ export class Police {
       events.on('start', (p) => {
         const r = p.def?.rules || {};
         this.eventId = p.eventId;
-        // An explicit saved setup overrides the legacy preference and dev URL.
-        const on = p.def?.type === 'pursuit' || (typeof r.police === 'boolean' ? r.police : QS.has('police') || (!!settings.police && (p.def?.quick || p.type === 'free' || p.def?.free)));
+        // Police are only ever a race-setup choice (or a pursuit event's premise).
+        const on = p.def?.type === 'pursuit' || r.police === true;
         this.traffic.allowClosedPolice = on && r.police === true; // explicit setup On permits track-map patrols
         this.reset(on);
         if (on && r.startHeat) this.hm.begin(r.startHeat); // 'start' comes out of the next update (engage() needs the player)
       }),
       events.on('abort', () => this.reset(false)),
     ];
+  }
+  /** Multiplayer: police are the host's lobby setting. Every client runs the same map patrols from
+   *  the same race seed, each one pursuing its own driver (the only racer in its local traffic). */
+  configureOnline(lobby) {
+    const on = (lobby?.config?.police ?? lobby?.event?.police) === true;
+    this.traffic.allowClosedPolice = on;
+    this.rng = seededRng(`${lobby?.raceId ?? ''}:${lobby?.generation ?? 0}`);
+    this.eventId = lobby?.eventId ?? null;
+    this.reset(on);
+    return this.enabled;
   }
   /** posted limit (km/h) at route s */
   limitAt(s) { return routeLimitAt(this.speeds, this.route.closed ? this.route.wrap?.(s) ?? s : s)?.v || 50; }
