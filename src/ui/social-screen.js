@@ -1,6 +1,7 @@
 // UI-owned presentation over the accounts owner's client APIs and event binders.
 import { account, renderAccountCard, bindAccountCard } from '../account.js';
 import { friends, renderFriendsCard, bindFriendsCard } from '../friends.js';
+import { createAddFriendButton } from './friend-actions.js';
 import { formatPlate } from '../plate.js';
 import { CARS } from '../cars.js';
 import { MAPS } from '../map-catalog.js';
@@ -24,6 +25,7 @@ export function mountSocial(menu) {
   const friendsRoot=root.querySelector('[data-friends=root]');
   if(friendsRoot)bindFriendsCard(friendsRoot,{onJoin(username){const code=friends.joinableCode(username);if(!code)return C.ui.toast('LOBBY IS NO LONGER JOINABLE',{tone:'bad',icon:'warning'});const mp=window.__multiplayer;mp?.open();mp?.action('join',{code});}});
   const styleButtons=()=>{
+    for(const old of root.querySelectorAll('[data-list=recent] button[data-act=request]')){const add=createAddFriendButton(old.dataset.username);if(add)old.replaceWith(add);else old.remove();}
     for(const row of root.querySelectorAll('[data-list=results] .friend-row')){const label=row.querySelector('.friend-acts > span');if(label?.textContent==='BLOCKED'){const button=document.createElement('button');button.type='button';button.dataset.act='unblock';button.dataset.username=row.dataset.username;button.textContent='UNBLOCK';label.replaceWith(button);}}
     root.querySelectorAll('[data-friends] button').forEach(b=>{b.classList.add('mi','btn','btn--secondary','btn--sm');if(b.dataset.act==='join')b.hidden=!friends.joinableCode(b.dataset.username);});
   };styleButtons();

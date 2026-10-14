@@ -2,6 +2,7 @@ import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
 import { account } from './account.js';
 import { friends } from './friends.js';
+import { createAddFriendButton } from './ui/friend-actions.js';
 import { presetCars } from './plate.js';
 import { configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
@@ -345,14 +346,30 @@ export class Multiplayer {
     // the room summary below carries the host setup instead.
     this.applyRoleVisibility(l, host);
     const list = this.$('mp-members'); list.replaceChildren();
-    for (const p of l.players) { const row = document.createElement('div'); row.className = 'mp-member'; row.textContent = `${p.name}${p.id === this.id ? ' (YOU)' : ''}${p.id === l.host ? ' · HOST' : ''} · ${this.cars.find(c => c.id === p.car)?.short || p.car} · ${p.connected === false ? 'RECONNECTING' : p.ready ? 'READY' : 'NOT READY'}`; list.append(row); }
+    for (const p of l.players) {
+      const row = document.createElement('div'); row.className = 'mp-member';
+      const label = document.createElement('span'); label.textContent = `${p.name}${p.id === this.id ? ' (YOU)' : ''}${p.id === l.host ? ' · HOST' : ''} · ${this.cars.find(c => c.id === p.car)?.short || p.car} · ${p.connected === false ? 'RECONNECTING' : p.ready ? 'READY' : 'NOT READY'}`;
+      row.append(label);
+      const add = p.id !== this.id && createAddFriendButton(p.plate, message => this.status(message));
+      if (add) row.append(add);
+      list.append(row);
+    }
     this.$('mp-ready').disabled = !this.worldReady || l.status !== 'waiting'; this.$('mp-ready').textContent = me?.ready ? 'NOT READY' : 'READY';
     this.$('mp-start').textContent = l.status === 'results' ? 'REMATCH' : 'START RACE'; this.$('mp-start').hidden = !host;
     this.$('mp-start').disabled = !this.worldReady || (l.status !== 'results' && (l.status !== 'waiting' || l.players.length < 2 || !l.players.every(p => p.ready && p.connected !== false)));
     this.$('mp-restart').hidden = !host || !['countdown', 'race'].includes(l.status);
     this.$('mp-tolobby').hidden = !host || l.status === 'waiting';
     const results = this.$('mp-results'); results.replaceChildren();
-    if (l.status === 'results') { const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title); this.ranking().forEach((p, i) => { const row = document.createElement('p'); row.textContent = p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`; results.append(row); }); }
+    if (l.status === 'results') {
+      const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title);
+      this.ranking().forEach((p, i) => {
+        const row = document.createElement('p'); row.textContent = p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`;
+        const username = p.plate || p.username || l.players.find(member => member.id === p.id)?.plate;
+        const add = p.id !== this.id && createAddFriendButton(username, message => this.status(message));
+        if (add) row.append(' ', add);
+        results.append(row);
+      });
+    }
     this.board.hidden = l.status === 'waiting';
   }
   // Role visibility contract (UI owns presentation; this owns the rule):
