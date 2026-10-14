@@ -1,0 +1,37 @@
+// UI models only. Physics owns tyre limits, damage and recovery outcomes.
+const clamp = v => Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0));
+export function gripFeedback(telemetry) {
+  if (!telemetry?.front || !telemetry?.rear) return { available: false, message: 'Grip telemetry unavailable' };
+  const axle = a => ({ percent: Math.round(clamp(a.utilization) * 100),
+    state: !a.contact ? 'NO CONTACT' : a.sliding ? 'SLIDING' : a.saturated ? 'AT LIMIT' : 'GRIP', contact: !!a.contact });
+  const front = axle(telemetry.front), rear = axle(telemetry.rear);
+  const message = telemetry.understeer ? 'Front grip exceeded · ease steering and throttle'
+    : front.state === 'SLIDING' ? 'Front tyres sliding · ease steering'
+    : rear.state === 'SLIDING' ? 'Rear tyres sliding · ease throttle'
+    : !front.contact || !rear.contact ? 'Tyres off the ground'
+    : front.state === 'AT LIMIT' ? 'Front tyres at limit · more steering will not help' : 'Tyre force used · 100% = grip limit';
+  return { available: true, front, rear, message, warning: !!telemetry.understeer || front.state !== 'GRIP' || rear.state !== 'GRIP' };
+}
+
+export function damageFeedback(vehicle, { spectating = false, towLabel = 'TOW', repairAvailable = false, towCost = '5 seconds' } = {}) {
+  if (!vehicle) return { visible: false };
+  const damage = clamp(vehicle.engineDamage), health = Number.isFinite(vehicle.engHealth) ? clamp(vehicle.engHealth) : 1 - damage;
+  const hot = vehicle.coolantTemp >= 110, stopped = !!(vehicle.engineFailureReason || vehicle.engineStalled || vehicle.drivetrainBroken);
+  const bent = vehicle.damageSignificant || vehicle.cornerDamage?.some(d => d > .25);
+  if (!(damage > .01 || health < .99 || hot || stopped || bent)) return { visible: false };
+  const failure = vehicle.engineFailureReason;
+  let cause = failure === 'mechanical_overrev' ? 'Unsafe downshift · mechanical over-rev'
+    : failure === 'overheating' ? 'Engine overheated'
+    : failure === 'drivetrain' || vehicle.drivetrainBroken ? 'Impact broke the drivetrain'
+    : stopped ? 'Impact stopped the engine'
+    : hot ? vehicle.radiatorDamage > .1 ? 'Impact damaged the radiator · overheating' : 'Engine overheating'
+    : damage > .01 ? 'Engine wear from over-rev or heat'
+    : 'Impact damage';
+  if (cause === 'Impact damage' && vehicle.lastDamage?.zone) cause = `${vehicle.lastDamage.zone} impact damage`;
+  const effect = stopped ? 'No engine power' : health < .99 ? `${Math.round(health * 100)}% engine power available`
+    : bent ? 'Wheel damage affects steering' : 'Heat is reducing engine power';
+  const repairAction = spectating ? 'Watching this driver · recovery is their choice'
+    : repairAvailable ? `${towLabel} · Tow and repair · ${towCost}` : 'Recovery unavailable right now';
+  return { visible: true, title: stopped ? 'ENGINE DISABLED' : hot ? 'ENGINE HOT' : 'CAR IMPAIRED', cause, effect, repairAction,
+    health, tone: stopped || health < .3 ? 'bad' : 'warn' };
+}

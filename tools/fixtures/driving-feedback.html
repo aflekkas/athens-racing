@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Driving feedback component fixture</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<link rel="stylesheet" href="../../src/menu.css"><link rel="stylesheet" href="../../src/driving-feedback.css">
+<style>body{margin:0;background:#15202b;color:white;font:14px system-ui}main{padding:24px;max-width:480px}button{min-height:40px;margin:4px;padding:8px}#dialBox{position:fixed;right:22px;bottom:145px;width:260px;height:150px}#engineHud{top:0!important;width:230px!important}#mp-board{position:fixed;top:145px;right:22px;background:#182839;padding:12px;width:180px}#mp-board[hidden]{display:none}#road{position:fixed;inset:0;z-index:-1}#fixture-controls{max-width:200px}@media(max-width:600px){main{padding:12px;max-width:145px}main h1{font-size:16px}#dialBox{right:12px;width:210px}#engineHud{width:190px!important}}</style></head>
+<body><canvas id="road"></canvas><main><h1>Component validation fixture</h1><p>Synthetic inputs feed the production HUD and geometry. No full game world.</p><div id="fixture-controls"><button data-case="grip">Front slip</button><button data-case="spectator">Spectator unknown</button><button data-case="healthy">Healthy</button><button data-case="damage">Engine impaired</button><button data-case="board">Online board</button><button data-case="pause">Pause</button><output id="repaired"></output></div></main><aside id="mp-board" hidden>ONLINE<br>Driver one<br>Driver two<br>Driver three</aside><div id="dialBox"></div>
+<script type="module">
+import * as THREE from 'three';
+import { DrivingFeedback } from '../../src/driving-feedback.js';
+import { updateEngineHud } from '../../src/engine-hud.js';
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight,.1,600);
+const renderer = new THREE.WebGLRenderer({canvas:document.querySelector('#road'),antialias:false});renderer.setSize(innerWidth,innerHeight);renderer.setClearColor('#15202b');
+camera.position.set(-10,30,50);camera.lookAt(5,0,140);
+const route={length:1000,edge:()=>3.5,medHalf:()=>.12,laneU:()=>1.75,lanes:()=>1,point(s,u,out){if(s<150)return out.set(u,s*.01,s);const a=(s-150)/20,r=20-u;return out.set(20-r*Math.cos(a),s*.01,150+r*Math.sin(a));}};
+const axle={contact:true,utilization:.66,slipDemand:1.7,saturated:true,sliding:true};
+const vehicle={s:100,u:1.75,vLong:30,spec:{grip:1,brake:1,vmax:250},engineDamage:.65,engHealth:.35,coolantTemp:100,tyreTelemetry:{front:axle,rear:{...axle,utilization:.48,slipDemand:.7,saturated:false,sliding:false},understeer:true}};
+const feedback=new DrivingFeedback({scene});let spectating=false,visible=true;
+const update=()=>{feedback.nextUpdate=0;feedback.update({vehicle,route,visible,spectating});updateEngineHud(vehicle,{visible,spectating,towLabel:'RB',repairAvailable:!spectating,towCost:'5 seconds',onRepair(){Object.assign(vehicle,{engineDamage:0,engHealth:1,coolantTemp:90});document.querySelector('#repaired').textContent='Repair callback received';update();}});renderer.render(scene,camera);};
+document.querySelectorAll('[data-case]').forEach(button=>button.onclick=()=>{const name=button.dataset.case;if(name==='board')document.querySelector('#mp-board').hidden=!document.querySelector('#mp-board').hidden;else if(name==='pause')visible=!visible;else{spectating=name==='spectator';vehicle.engineDamage=name==='healthy'?0:.65;vehicle.engHealth=name==='healthy'?1:.35;}update();});
+feedback.root.querySelector('[data-option=line]').addEventListener('change',update);
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();update();});
+window.fixture={feedback,vehicle,scene,update,set(options){Object.assign(vehicle,options.vehicle||{});if(options.spectating!==undefined)spectating=options.spectating;if(options.visible!==undefined)visible=options.visible;update();}};update();
+</script></body></html>
