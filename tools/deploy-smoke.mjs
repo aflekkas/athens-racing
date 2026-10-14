@@ -4,22 +4,19 @@ import { WebSocket } from 'ws';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { getMap } from '../src/map-catalog.js';
 import { resolveMap } from '../server/map-definitions.mjs';
+import { checkDeployedEntry } from './deploy-smoke-assets.mjs';
 import { smokeDrive, SMOKE_SPEED, SMOKE_STEP } from './deploy-smoke-route.mjs';
 const base = (process.argv[2] || '').replace(/\/$/, '');
 if (!/^https?:\/\//.test(base)) throw new Error('Usage: node tools/deploy-smoke.mjs https://worker.workers.dev [--race] [--map=riviera|penteli]');
 const raceProof = process.argv.includes('--race'), mapId = process.argv.find(v => v.startsWith('--map='))?.slice(6) || 'riviera';
-let build;
-for (const path of ['/', '/src/main.js', '/assets/maps/riviera.svg']) {
-  const r = await fetch(base + path, { signal: AbortSignal.timeout(15000) });
-  assert.equal(r.status, 200, `${path} HTTP ${r.status}`);
-  const bytes = await r.arrayBuffer();
-  assert.ok(bytes.byteLength > 0, `${path} is empty`);
-  if (path === '/') build = new TextDecoder().decode(bytes).match(/<meta\s+name=["']asr-build["']\s+content=["']([^"']+)/i)?.[1];
-}
+const { build, entry } = await checkDeployedEntry(base);
+const preview = await fetch(base + '/assets/maps/riviera.svg', { signal: AbortSignal.timeout(15000) });
+assert.equal(preview.status, 200, `Map preview HTTP ${preview.status}`);
+assert.ok((await preview.arrayBuffer()).byteLength, 'Map preview is empty');
 for (const path of ['/server/core.mjs', '/tools/prepare-deploy.mjs', '/package.json', '/wrangler.jsonc', '/.git/config', '/chain.pid']) assert.equal((await fetch(base + path, { signal: AbortSignal.timeout(15000) })).status, 404, `${path} must remain private`);
 const healthResponse = await fetch(base + '/health', { signal: AbortSignal.timeout(15000) });
 assert.equal(healthResponse.status, 200);
-console.log(JSON.stringify({ proof: 'health', base, build: build || null, health: await healthResponse.json() }));
+console.log(JSON.stringify({ proof: 'health', base, entry, build: build || null, health: await healthResponse.json() }));
 function client(name) {
   const url = new URL('/ws', base.replace(/^http/, 'ws'));
   url.searchParams.set('protocol', MULTIPLAYER_PROTOCOL);

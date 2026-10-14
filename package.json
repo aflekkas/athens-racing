@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.mjs",
-    "test": "node --test server/*.test.mjs worker/accounts.test.mjs tools/input.test.mjs tools/settings.test.mjs tools/replay.test.mjs tools/multiplayer-client.test.mjs tools/service-worker.test.mjs tools/render-scale.test.mjs tools/baked-world.test.mjs tools/bundle-browser.test.mjs && node --import ./tools/physics-test/register.mjs --test tools/physics-test/manual.test.mjs tools/physics-test/engine-abuse.test.mjs tools/traffic-test.mjs tools/damage-mechanics.test.mjs && node --import ./tools/damage-test-register.mjs --test tools/damage-geometry.test.mjs tools/damage-ground.test.mjs && node --test worker/damage.test.mjs tools/vehicle-restore.test.mjs"
+    "test": "node --test server/*.test.mjs worker/accounts.test.mjs tools/input.test.mjs tools/settings.test.mjs tools/replay.test.mjs tools/multiplayer-client.test.mjs tools/service-worker.test.mjs tools/render-scale.test.mjs tools/baked-world.test.mjs tools/bundle-browser.test.mjs tools/deploy-smoke-assets.test.mjs && node --import ./tools/physics-test/register.mjs --test tools/physics-test/manual.test.mjs tools/physics-test/engine-abuse.test.mjs tools/traffic-test.mjs tools/damage-mechanics.test.mjs && node --import ./tools/damage-test-register.mjs --test tools/damage-geometry.test.mjs tools/damage-ground.test.mjs && node --test worker/damage.test.mjs tools/vehicle-restore.test.mjs"
   },
   "engines": {
     "node": ">=22"
