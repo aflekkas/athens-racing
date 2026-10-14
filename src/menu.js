@@ -11,6 +11,7 @@ import { renderMapSelect, renderMapConfirm, selectMap, mountMapSelect } from './
 import { CARS } from './cars.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
 import * as C from './ui/components.js';
+import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
@@ -46,7 +47,7 @@ export class Menu {
     this.filter = 'all'; this.participants = 'solo';
     this.accountUnsub = account.onChange(profile => { if (this.screen === 'title' && profile && !profile.guest && !profile.username) this.show('account', {}, true); else if (['account','friends'].includes(this.screen)) this.refresh(); });
     this.friendsUnsub = friends.onChange(() => { if (this.screen === 'friends') this.refresh(); });
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));

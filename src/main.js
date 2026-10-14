@@ -31,6 +31,7 @@ import { DrivingFeedback } from './driving-feedback.js';
 import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
+import { firstQualityPreference } from './ui/graphics-onboarding.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
@@ -85,6 +86,7 @@ let graphicsPreference = Q.get('quality') || 'auto';
 try { if (!Q.has('quality')) graphicsPreference = localStorage.getItem('paraliaki.graphics') || 'auto'; } catch {}
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
+graphicsPreference = await firstQualityPreference(graphicsPreference, { gpuName });
 // the post chain runs the full tier (graphics.js); the world, weather and LOD code use its scenery tier (ultra = high)
 const quality = detectQuality(graphicsPreference, gpuName, navigator.userAgent), sceneryQuality = GRAPHICS_TIERS[quality].scenery;
 const lowGraphics = quality === 'low';
