@@ -86,3 +86,7 @@
 .mp-member > span { min-width: 0; }
 #multiplayer .mp-picker { margin-top: .4rem; justify-content: center; }
 @media(max-width:600px) { #mp-car-toggles { padding: .7rem; grid-template-columns: repeat(6,minmax(0,1fr)); } #mp-car-toggles > button { grid-column: span 2; } .mp-member { flex-wrap: wrap; } .mp-car-toggle { font-size: .75rem; padding: .5rem; } }
+#multiplayer .mp-car-preview { margin-top: .5rem; background: #141b23; border-radius: .35rem; overflow: hidden; }
+#multiplayer .mp-car-preview .car-grid { display: block; height: 7rem; overflow: hidden; margin: 0; padding: 0; }
+#multiplayer .mp-car-preview img { width: 100%; height: 100%; object-fit: contain; }
+#multiplayer .mp-car-preview > span { display: block; padding: .45rem .6rem; color: #b5c6d6; font: 700 .65rem var(--f-cond); letter-spacing: .02em; }

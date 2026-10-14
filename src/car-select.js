@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint, carTransmission } from './cars.js';
+import { account } from './account.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 import { updateCarDecals, listDecals, getCarDecals, setCarDecals } from './vehicle-decals.js';
@@ -33,10 +34,10 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       <div class="car-grid scroll-y">${list.map(({ car, index: i }) => {
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
         return C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
-          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', ...(i === index && !locked ? { 'data-default': '' } : {}) },
+          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR AND CUSTOMISE', ...(i === index && !locked ? { 'data-default': '' } : {}) },
           media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(car.name),
           text: `${carCategory(car).toUpperCase()} · ${transmissionLabel(car)}`,
-          foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge('UNAVAILABLE', '', 'lock-simple') : ''}` });
+          foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
   }
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
@@ -56,7 +57,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
         <div class="decal-actions">${C.button({ label: 'ADD LAYER', icon: 'plus', act: 'decalAdd', disabled: layers.length >= 8 })}${C.button({ label: 'CLEAR ALL', icon: 'trash', act: 'decalClear', variant: 'ghost', disabled: !layers.length })}</div>
         <div class="decal-layers">${layers.map((l, i) => C.button({ label: `${i + 1}. ${designs.find(d => d.id === l.id)?.name || l.id} · ${l.position}`, iconRight: 'x', act: 'decalRemove', variant: 'ghost', size: 'sm', attrs: { 'data-layer': i }, title: 'Remove layer' })).join('')}</div>
       </div>
-      <div class="car-actions">${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
+      <div class="car-actions">${C.button({ label: 'CUSTOMIZE', icon: 'sliders-horizontal', act: 'carCustomize', block: true })}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
 }
 export const transmissionLabel = c => carTransmission(c) === 'both' ? 'MANUAL / AUTO' : carTransmission(c).toUpperCase() + ' ONLY';
@@ -110,7 +111,7 @@ export function mountCarSelect(root, index) {
   const pmrem = new THREE.PMREMGenerator(renderer), room = new RoomEnvironment();
   const environment = pmrem.fromScene(room, .04); scene.environment = environment.texture;
   room.dispose(); pmrem.dispose();
-  const model = new CarModel(CARS[index]);
+  const model = new CarModel(CARS[index], { plate: account.plate() });
   new Cockpit(CARS[index], model);
   model.root.rotation.y = -.5; scene.add(model.root);
   // Clone materials so the studio cannot change shared materials on the road.
@@ -138,6 +139,7 @@ export function mountCarSelect(root, index) {
   renderer.setAnimationLoop(now => { updateCarDecals(model); model.root.rotation.y += Math.min(.05,(now-last)/1000)*.16; last=now; renderer.render(scene,camera); });
   return {
     index,
+    captureFrame() { renderer.setAnimationLoop(null); updateCarDecals(model); renderer.render(scene, camera); },
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {
       renderer.setAnimationLoop(null); observer.disconnect(); model.disposeDamage?.();

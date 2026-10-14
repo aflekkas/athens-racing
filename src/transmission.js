@@ -19,5 +19,5 @@ export function gearFeedback(st) {
   const rev = Math.min(1, Math.max(0, ratio));
   return { rev, band: rev >= 0.97 ? 'red' : rev >= 0.82 ? 'yellow' : 'green',
     limiter: !!st.limiter || ratio > 1.005,
-    upshift: !!st.manual && st.canUpshift !== false && !['N', 'R'].includes(st.gearLabel) && rev >= 0.9 };
+    upshift: !!st.manual && !st.engineStalled && st.engHealth !== 0 && st.canUpshift !== false && !['N', 'R'].includes(st.gearLabel) && rev >= 0.9 };
 }

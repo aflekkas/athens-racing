@@ -2,7 +2,7 @@
 import { ui, icon, esc } from './ui/components.js';
 import { damageFeedback } from './driving-feedback-model.js';
 let root, lastVehicle, lastSerial;
-const reasons={bounds:'NO GEAR IN THAT DIRECTION',cooldown:'SHIFT IN PROGRESS · WAIT',mode:'SHIFT UNAVAILABLE IN THIS GEARBOX MODE',reverse:'SHIFT UNAVAILABLE IN REVERSE',overrev_protection:'SHIFT REJECTED · WOULD EXCEED REDLINE'};
+const reasons={bounds:'NO GEAR IN THAT DIRECTION',cooldown:'SHIFT IN PROGRESS · WAIT',mode:'SHIFT UNAVAILABLE IN THIS GEARBOX MODE',reverse:'SHIFT UNAVAILABLE IN REVERSE',overrev_protection:'AUTO PROTECTION · LOWER GEAR WOULD OVER-REV'};
 export function updateEngineHud(vehicle,{visible=true,spectating=false,towLabel='TOW',repairAvailable=false,towCost='5 seconds',onRepair}={}) {
   if(!root){const parent=document.getElementById('dialBox');if(!parent)return;root=document.createElement('aside');root.id='engineHud';root.setAttribute('role','status');parent.append(root);}
   const temp=Number(vehicle?.coolantTemp),feedback=damageFeedback(vehicle,{spectating,towLabel,repairAvailable,towCost}),health=feedback.health??1;

@@ -460,3 +460,6 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 #engineHud b,#engineHud small { display: block; }
 #engineHud small { margin-top: .2rem; color: #e4ebf3; letter-spacing: .02em; font-size: .65rem; }
 #engineHud > i { position: absolute; bottom: 0; left: 0; height: 3px; width: calc(var(--health)*100%); background: currentColor; }
+.car-actions { display: grid; gap: .5rem; }
+.mode-grid { overflow-y: auto; grid-auto-rows: minmax(9rem,max-content); align-content: start; }
+@media (max-height:500px) { .mode-grid { grid-template-columns: repeat(3,minmax(0,1fr)); grid-auto-rows: minmax(6rem,max-content); gap: .6rem; } }

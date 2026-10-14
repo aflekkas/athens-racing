@@ -91,11 +91,11 @@ export class Input {
       else { const { action, done } = this.capture; this.capture = null; this.bind('keyboard', action, [e.code]); done?.(); }
       return;
     }
-    const menuButton = this.inMenu && e.target?.closest?.('button') && !e.target?.closest?.('.input-bindings');
+    const menuButton = this.inMenu && e.target?.closest?.('#ui') && e.target?.closest?.('button') && !e.target?.closest?.('.input-bindings');
     if ((editable(e) && !menuButton) || this.capture) return;
     const matched = Object.entries(this.bindings.keyboard).filter(([a, codes]) => (a !== 'nitro' || this.nitrousEnabled) && codes.includes(e.code));
     if (!matched.length) return;
-    e.preventDefault?.();
+    e.preventDefault?.(); e.stopPropagation?.();
     // A menu/blur may clear a held key; OS repeats must not press it again until a real release/press.
     if (e.repeat && !this.keys.has(e.code)) return;
     if (!e.repeat && !this.keys.has(e.code)) for (const [a] of matched) if (EDGE_ACTIONS.includes(a)) this.pending.add(a);

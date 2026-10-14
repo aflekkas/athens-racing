@@ -39,7 +39,9 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all';
-    C.bindRoot(root);
+    C.bindRoot(root); root.tabIndex = -1;
+    root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
+    root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
     root.addEventListener('pointermove', (e) => { const it = e.target.closest?.('.mi'); if (it && !it.classList.contains('focus')) { const i = this.items().indexOf(it); if (i >= 0) this.setFocus(i, false); } });
     root.addEventListener('ui:change', (e) => this.onChange(e.detail));
@@ -65,7 +67,7 @@ export class Menu {
     return true;
   }
   hide() {
-    this.leaving();
+    this.leaving(); this.mapView?.dispose(); this.mapView = null;
     this.screen = null; this.stack.length = 0; this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
   }
@@ -135,6 +137,7 @@ export class Menu {
   /** a named input action; true if the menu used it */
   action(name) {
     if (!this.screen) return false;
+    if (document.body.dataset.customizer === 'open') return true;
     if (C.ui.action(name)) return true;
     const cur = this.items()[this.focus];
     if (this.screen === 'settings' && this.data.tab === 'controls' && controlsAction(this, name, cur)) return true;
@@ -185,6 +188,7 @@ export class Menu {
       case 'play': this.show('mode', {}, true); break;
       case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'events': this.filter = 'all'; this.show('maps', { filter: 'all' }, true); break;
+      case 'taxi': case 'getaway': this.filter = a; this.show('maps', { filter: a, mode: a }, true); break;
       case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); break;
       case 'roamCar': this.h.freeRoamCar?.(); break;
       case 'roamConditions': this.h.roamConditions?.(); break;
@@ -196,8 +200,10 @@ export class Menu {
       case 'decalAdd': { const id = CARS[this.data.index || 0].id; const list = getCarDecals(id); if (list.length < 8) setCarDecals(id, [...list, { id: 'stripes', position: 'bonnet', color: '#ffffff', number: 7, ...this.data.decal }]); this.refresh(); break; }
       case 'decalClear': setCarDecals(CARS[this.data.index || 0].id, []); this.refresh(); break;
       case 'decalRemove': { const id = CARS[this.data.index || 0].id; setCarDecals(id, getCarDecals(id).filter((_, i) => i !== +el.dataset.layer)); this.refresh(); break; }
+      case 'carCustomize': { const spec = CARS[this.data.index || 0]; import('./customization-editor.js').then(({ openCustomizationEditor }) => openCustomizationEditor({ spec, onChange: preset => { if (preset.paint) this.carView?.paint(preset.paint); this.refresh(); } })).catch(error => C.ui.toast(error.message || 'CUSTOMIZATION UNAVAILABLE', { icon: 'warning', tone: 'bad' })); break; }
       case 'carConfirm': this.confirmCar(); break;
       case 'paint': this.carView?.paint(el.dataset.color); for (const paint of this.root.querySelectorAll('.paint')) paint.classList.toggle('selected', paint === el); this.root.querySelector('.car-paint-name').textContent = el.title; break;
+      case 'setupAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
       case 'setupGo': this.startSetup(); break;
       case 'setupReset': saveSetup(this.setupKey(), {}); this.refresh(); C.ui.toast('EVENT DEFAULTS RESTORED', { icon: 'arrow-counter-clockwise' }); break;
       case 'mp': this.h.multiplayer(); break;
@@ -251,7 +257,7 @@ export class Menu {
     return `<div class="scr scr--title"><div class="title__col">
       <div class="kick">GREEK ROADS <span class="acc">/</span> PURE TIME</div>
       <h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">Real roads of Attica: the Athens Riviera, the Megara circuit and the Penteli hill climb.</p>
+      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>
       <div class="title__menu">${C.option({ icon: 'flag-checkered', title: 'RACE', desc: 'Quick race, events, time trials and online', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint and specs`, act: 'garage' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
@@ -260,7 +266,7 @@ export class Menu {
   r_mode() {
     const tile = (act, ic, title, desc) => `<div class="mi mode-tile" role="button" data-act="${act}"><span class="mode-tile__ico">${icon(ic)}</span><b class="mode-tile__title">${title}</b><span class="mode-tile__desc">${desc}</span></div>`;
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('events', 'trophy', 'EVENTS', 'Sprints, time trials and police pursuits. Medals for time and position.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('tt', 'timer', 'TIME TRIAL', 'You, the road and the clock. Race your best ghost.')}${tile('mp', 'users-three', 'MULTIPLAYER', 'Public lobbies or a private code. Up to eight drivers.')}</div>` });
+      body: `<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('events', 'trophy', 'EVENTS', 'Sprints, time trials and police pursuits. Medals for time and position.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('taxi', 'car', 'TAXI', 'Five minutes of pickups and drop-offs. Any car; taxi suggested.')}${tile('getaway', 'siren', 'GETAWAY DRIVER', 'Five minutes of driving jobs. Stop at pickup and drop-off.')}${tile('tt', 'timer', 'TIME TRIAL', 'You, the road and the clock. Race your best ghost.')}${tile('mp', 'users-three', 'MULTIPLAYER', 'Public lobbies or a private code. Up to eight drivers.')}</div>` });
   }
 
   // ---------------------------------------------------------------- maps
@@ -308,6 +314,7 @@ export class Menu {
   }
   /** the event card: type, name, blurb, facts, medal targets and your records */
   eventSummary(e, r, recId = e.id) {
+    if (e.objectiveMode) return `<div class="evs__top">${C.badge(TYPES[e.type]?.label || e.name)}</div><h3 class="evs__name">${esc(e.name)}</h3><p class="evs__blurb">${esc(e.blurb || 'Stop at each pickup and drop-off. Complete as many jobs as you can in five minutes.')}</p>${C.stats([['SESSION', '5:00', { icon: 'timer' }], ['OBJECTIVES', 'PICKUP / DROP-OFF', { icon: 'map-pin' }], ['ROAD', TRAFFIC(e.traffic ?? 1), { icon: 'traffic-cone' }]])}<p class="group__note">ALL CARS AVAILABLE${e.type === 'taxi' ? ' · OCTAVIA TAXI SUGGESTED' : ''}</p>`;
     const rec = loadRecord(recId), fmt = this.h.fmtTime, n = rivalCount(e);
     const tg = targetLabels(e, r, fmt, settings.units);
     const facts = [['DISTANCE', fmtDist(r.len), 'path'], [r.closed ? 'LAPS' : 'ROUTE', r.closed ? r.laps : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`, r.closed ? 'arrows-clockwise' : 'map-pin'],
@@ -324,7 +331,7 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- race setup (event detail)
-  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return this.data.eventId === 'quick' || !this.data.eventId ? this.eventsHere()[0] || QUICK_RACE : getEvent(this.data.eventId) || QUICK_RACE; }
+  setupDef() { if (['taxi', 'getaway'].includes(this.data.mode)) return window.__flow.drivingModeDef(this.data.mode); if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return this.data.eventId === 'quick' || !this.data.eventId ? this.eventsHere()[0] || QUICK_RACE : getEvent(this.data.eventId) || QUICK_RACE; }
   setupKey() { const d = this.setupDef(); return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {
@@ -334,7 +341,7 @@ export class Menu {
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users-three', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
         note: cur.rivals > PERF_RIVALS ? `${icon('warning')} MORE THAN ${PERF_RIVALS} RIVALS CAN LOWER THE FRAME RATE` : f.dflt === cur.rivals ? 'EVENT DEFAULT' : `EVENT DEFAULT: ${f.dflt}`, noteCls: cur.rivals > PERF_RIVALS ? 'warn' : '' }));
-      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE', icon: 'shield', value: String(cur.police), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['false', 'OFF'], ['true', 'ON']] }));
+      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'shield', value: String(cur.police), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['false', 'OFF'], ['true', 'ON']] }));
       if (f.key === 'traffic') rows.push(C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: cur.traffic, type: 'num', dflt: f.dflt, attrs: A, options: f.levels.map(([, v, l]) => [v, l]) }));
       if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'arrows-clockwise', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len)} IN TOTAL` }));
       if (f.key === 'reverse') rows.push(C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: String(cur.reverse), type: 'bool', dflt: 'false', attrs: A, options: [['false', closed ? 'CLOCKWISE' : 'FORWARD'], ['true', closed ? 'ANTI-CLOCKWISE' : 'REVERSE']] }));
@@ -350,11 +357,11 @@ export class Menu {
       rows.push(C.select({ key: 'ghost', label: 'GHOST', icon: 'ghost', value: String(sel ?? list[0]?.id ?? 'off'), options: opts, attrs: { 'data-scope': 'ghost' }, note: list.length ? '' : 'FINISH A RUN TO RACE YOUR GHOST' }));
     }
     const note = custom ? `<div class="setup__custom">${icon('sliders-horizontal')}<span>CUSTOM SETUP · ${runDef.custom ? 'RECORDS AND GHOSTS KEPT APART FROM THE EVENT, OFF THE ONLINE BOARD' : 'CONDITIONS ONLY · STILL COUNTS FOR THE EVENT'}</span></div>` : '';
-    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: 'RACE SETUP',
+    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${this.eventSummary(runDef, r, runDef.id)}</aside>
         <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}YOUR RACE</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
-          <div class="setup__fields scroll-y">${rows.join('')}</div>${note}
+          <div class="setup__fields scroll-y">${rows.filter(row => /data-key="(?:rivals|traffic|time|police)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police)"/.test(row)).join('') : ''}</div>${note}
           <div class="setup__go">${C.button({ label: 'CHOOSE CAR', icon: 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
   }
   startSetup() {
@@ -379,8 +386,8 @@ export class Menu {
     } else if (tab === 'driving') {
       body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key: 'aids', label: 'DRIVER AIDS · TC ABS ESC', value: settings.aids, attrs: SET })}
           ${C.segmented({ key: 'steeringAssist', label: 'STEERING ASSIST', value: v('steeringAssist'), options: [['off', 'OFF'], ['light', 'LIGHT'], ['full', 'FULL']], attrs: SET, note: settings.steeringAssist === null ? 'FOLLOWS YOUR DEVICE UNTIL YOU CHOOSE' : '' })}
-          ${C.segmented({ key: 'transmission', label: 'GEARBOX', value: v('transmission'), options: [['auto', 'AUTO'], ['manual', 'MANUAL']], attrs: SET, note: 'MANUAL: SHIFT WITH E / Q · PAD RB / LB' })}</div>
-        <div class="group"><h3 class="group__title">${icon('police-car')}WORLD</h3>${C.toggle({ key: 'police', label: 'POLICE IN QUICK RACE', value: settings.police, attrs: SET })}</div>
+          ${C.segmented({ key: 'transmission', label: 'GEARBOX', value: v('transmission'), options: [['auto', 'AUTO'], ['manual', 'MANUAL']], attrs: SET, note: C.keyHints([['tabs', 'SHIFT DOWN / UP']]) })}</div>
+        <div class="group"><h3 class="group__title">${icon('police-car')}WORLD</h3>${C.toggle({ key: 'police', label: 'POLICE & LAWS', value: settings.police, attrs: SET })}</div>
         <div class="group"><h3 class="group__title">${icon('ghost')}GHOSTS</h3>${C.toggle({ key: 'ghostEnabled', label: 'RACE YOUR BEST GHOST', value: settings.ghostEnabled, attrs: SET })}
           ${window.__replay ? `<div class="field-actions">${C.button({ label: 'IMPORT GHOST', icon: 'download-simple', act: 'ghostImport', size: 'sm' })}${C.button({ label: 'EXPORT LAST GHOST', icon: 'export', act: 'ghostExport', size: 'sm' })}</div>` : ''}</div>`;
     } else if (tab === 'camera') {
