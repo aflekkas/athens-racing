@@ -1893,7 +1893,7 @@ const multiplayer = new Multiplayer(CARS, {
       if(p.driver)c.driver?.setAppearance?.(p.driver);
       c.lastBrake = false; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
-      c.driver.update(dt,G.t,v.vLong,{x:v.ay||0,y:0,z:-(v.ax||0)},c.cockpit?.wheelInfo,v.steer||0,0);
+      c.driver?.update?.(dt,G.t,v.vLong,{x:v.ay||0,y:0,z:-(v.ax||0)},c.cockpit?.wheelInfo,v.steer||0,0);
     }
   },
   wrecked() {
