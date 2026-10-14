@@ -61,3 +61,42 @@
 :root #race-settings, :root body #mp-toggle { border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: var(--hu-sheen), rgba(10,14,19,.78); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
   color: #fff; font: 600 12px var(--f-cond); letter-spacing: .14em; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
 :root #race-settings:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ---------------------------------------------------------------- race HUD: the cluster readouts and the nav screen.
+   Base rules live in style.css, menu.css and gearbox-hud.js (which injects its own <style>, hence :root). Sizes and
+   positions stay as they were; only the surfaces, weights and colours move to the head-unit tokens. No italics. */
+:root #hud, :root #hud * { font-style: normal; }
+:root #posBox { filter: drop-shadow(0 .6rem 1.6rem rgba(0,0,0,.4)); }
+:root #posBox .pos { font-family: var(--f-sans); font-weight: 300; color: var(--hu-text); clip-path: none; padding: .35rem 1.1rem .3rem .9rem;
+  background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
+  border: 1px solid var(--hu-hair-2); border-right: 0; border-radius: var(--r-4) 0 0 var(--r-4); box-shadow: var(--hu-edge); }
+:root #posBox.p1 .pos { color: var(--hu-ice); background: var(--hu-sheen), var(--hu-glass); }
+:root #posBox #posN { font-weight: 300; letter-spacing: -.02em; }
+:root #posBox #posSuf, :root #posBox .of { font-family: var(--f-cond); font-weight: 600; letter-spacing: .12em; color: var(--hu-text-2); }
+:root #posBox .rows { margin-left: 0; clip-path: none; background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
+  border: 1px solid var(--hu-hair-2); border-left: 0; border-radius: 0 var(--r-4) var(--r-4) 0; box-shadow: var(--hu-edge); padding: .5rem 1.1rem .5rem 1rem; }
+:root #posBox .row .k { font-family: var(--f-cond); font-weight: 600; letter-spacing: .18em; color: var(--hu-text-3); }
+:root #posBox .row.rv .k { color: var(--hu-ice); }
+:root #posBox .row b { font-family: var(--f-sans); font-weight: 300; color: var(--hu-text); font-variant-numeric: tabular-nums; }
+:root #gap.ahead { color: var(--tt-green); } :root #gap.behind { color: var(--tt-red); }
+:root #routeBox .rt { font-family: var(--f-cond); font-weight: 600; letter-spacing: .16em; color: var(--hu-text-2); }
+:root #routeBox .sep { background: var(--hu-ice); transform: none; height: 2px; width: 14px; border-radius: 2px; }
+:root #rfill { background: var(--hu-ice); box-shadow: 0 0 10px var(--hu-ice-glow); }
+:root #mapBox { clip-path: none; overflow: hidden; border-radius: var(--r-4); border: 1px solid var(--hu-hair-2); box-shadow: var(--hu-shadow); }
+:root #mapBox::after { border: 0; }
+:root #mapLabel { font-family: var(--f-cond); font-weight: 600; letter-spacing: .2em; color: var(--hu-text-2); background: linear-gradient(transparent, rgba(3,5,7,.78)); }
+:root #gearboxHud { border-radius: var(--r-4); border: 1px solid var(--hu-hair-2); background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
+  box-shadow: var(--hu-shadow); color: var(--hu-text); font-family: var(--f-sans); }
+:root #gearboxHud .gearbox-mode { font: 600 var(--t-2xs)/1 var(--f-cond); letter-spacing: .2em; color: var(--hu-text-3); }
+:root #gearboxHud .gearbox-gear { font-family: var(--f-sans); font-weight: 300; font-size: 46px; color: #fff; }
+:root #gearboxHud .gearbox-revs { height: 3px; margin: .45rem 0; background: rgba(190,215,235,.14); border-radius: 2px; }
+:root #gearboxHud .gearbox-revs i { background: var(--hu-ice); box-shadow: 0 0 8px var(--hu-ice-glow); }
+:root #gearboxHud[data-band="yellow"] .gearbox-revs i { background: var(--tt-amber); box-shadow: 0 0 8px rgba(255,178,26,.5); }
+:root #gearboxHud[data-band="red"] .gearbox-revs i { background: var(--tt-red); box-shadow: 0 0 8px rgba(255,69,58,.6); }
+:root #gearboxHud .gearbox-upshift { font: 600 var(--t-2xs)/1 var(--f-cond); letter-spacing: .16em; color: var(--tt-amber); }
+:root #evBox { border-radius: var(--r-4); border: 1px solid var(--hu-hair-2); border-right: 1px solid var(--hu-hair-2); background: var(--hu-sheen), var(--hu-glass);
+  -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); box-shadow: var(--hu-shadow); font-family: var(--f-sans); }
+:root #evBox .e-k { font-family: var(--f-cond); font-weight: 600; color: var(--hu-text-3); }
+:root #evBox b { font-family: var(--f-sans); font-weight: 300; font-variant-numeric: tabular-nums; color: var(--hu-text); }
+:root #evBox b.good { color: var(--tt-green); } :root #evBox b.bad { color: var(--tt-red); } :root #evBox b.sc { color: var(--tt-amber); }
+:root #evBox small { font-family: var(--f-cond); font-weight: 600; color: var(--hu-text-2); }
