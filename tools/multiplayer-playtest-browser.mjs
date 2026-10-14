@@ -13,7 +13,7 @@ const pages=[],errors=[],proof={};
 const all=async fn=>Promise.all(pages.map(page=>page.evaluate(fn)));
 try {
  for(let i=0;i<3;i++){
-  const page=await browser.newPage({viewport:{width:800,height:450}});pages.push(page);page.on('pageerror',error=>errors.push(error.stack));
+  const page=await browser.newPage({viewport:{width:800,height:450}});pages.push(page);page.on('pageerror',error=>{errors.push(error.stack);console.error('PAGEERROR',error.stack);});
   await page.addInitScript(({i})=>{
    localStorage.setItem('paraliaki.driver','PARROT');localStorage.setItem('paraliaki.car','mini');localStorage.setItem('paraliaki.paint.mini',['#ffcc00','#0088ff','#ffffff'][i]);
    const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__holdFrame&&cb.name==='frame'?0:raf(cb);
@@ -35,7 +35,7 @@ try {
  await all(()=>{__multiplayer.close();__flow.menu.close?.();__sim.step(1,1/60);});
  proof.start=await all(()=>({race:__multiplayer.lobby.raceId,slot:__multiplayer.me.gridSlot,s:__vehicle().s,weather:__conditions(),world:__multiplayer.lobby.world.state,traffic:__sim.traffic.disabled,visibleTraffic:__sim.traffic.cars.filter(c=>!c.cop&&c.active&&c.m.root.visible).length}));
  assert.ok(proof.start.every(p=>p.race===proof.start[0].race&&p.weather.weather==='rain'&&p.weather.time==='night'&&p.world.wet===1&&p.traffic&&p.visibleTraffic===0));
- console.log('Shared start verified');
+ assert.deepEqual(errors,[]);console.log('Shared start verified');
  // Send genuine accepted positions along the route, with the second driver ahead.
  for(let i=0;i<3;i++)await pages[i].evaluate(i=>{const v=__vehicle(),r=__multiplayer.lobby.event,s=r.s0+r.dir*(4+i*4);v.reset(s,__sim.route.laneU(s,0),0);__multiplayer.stateSender.discontinuity();__multiplayer.update(1/60,{...Object.fromEntries(['x','y','z','yaw','s','u','vLong','vLat','steer','rpm','gear','nitro','reverse'].map(k=>[k,v[k]])),damage:{...v.damage}});},i);
  await pages[0].waitForTimeout(400);
@@ -46,7 +46,7 @@ try {
  const remote=await pages[1].evaluate(()=>({id:__multiplayer.id,state:__multiplayer.hooks.appearance()}));
  const contact=await pages[0].evaluate(({id})=>{
   const mp=__multiplayer,v=__vehicle(),peer=mp.peers.get(id);mp.hooks.remote(mp.peers,0);const s=peer.state.s,u=peer.state.u;
-  v.reset(s-1,u,30);v.yaw=peer.state.yaw;__sim.G.state='race';__sim.input.throttle=0;__sim.input.brake=0;__sim.input.steer=0;
+  v.reset(s-(v.halfL*2-.15),u,30);v.yaw=peer.state.yaw;__sim.G.state='race';__sim.input.throttle=0;__sim.input.brake=0;__sim.input.steer=0;
   peer.at=performance.now();const before={speed:v.vLong,y:v.y,damage:{...v.damage}};__sim.step(1,1/60);
   return {before,after:{speed:v.vLong,y:v.y,damage:{...v.damage}},contacts:mp.lastContacts};
  },remote);
