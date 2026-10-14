@@ -410,20 +410,21 @@ export class Cockpit {
     }
     this.clusterTex.needsUpdate=true;
   }
-  // Fit the real door mirrors in the forward view without moving the driver's
-  // seat or inventing oversized mirror glass. Preserve wider user FOV choices.
+  // Keep a natural forward view. Door mirrors outside it are reached with
+  // mouse look; fitting the passenger mirror must not widen the whole cabin.
   mirrorFov(aspect){
     let tangent=0;this.model.root.updateMatrixWorld(true);
     // Account for the angled glass corners: a centre-only fit cuts off the
     // passenger edge of the 991 rear-view unit at narrow viewport aspects.
-    for(const {mesh}of this.mirrors){
+    for(const {mesh,name}of this.mirrors){
+      if(name!=='interior')continue;
       mesh.geometry.computeBoundingBox();const box=mesh.geometry.boundingBox;
       for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y]){
         const p=this.model.body.worldToLocal(mesh.localToWorld(new THREE.Vector3(x,y,box.max.z)));
         tangent=Math.max(tangent,(Math.abs(p.x-this.eye.x)+.012)/Math.max(.15,this.eye.z-p.z));
       }
     }
-    return THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect));
+    return Math.min(71,THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect)));
   }
   renderMirrors(renderer,scene,{enabled=true,now=performance.now()}={}){
     const cadence=this.mirrorCadence??=new MirrorCadence();
