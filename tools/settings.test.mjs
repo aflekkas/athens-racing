@@ -8,6 +8,15 @@ async function preferences(storage) {
   return import('../src/settings.js?steering-test=' + serial++);
 }
 
+test('old all-aids-off migrates ABS and quick TC/ESC persists without changing ABS', async () => {
+  for (const oldAids of [false, true]) {
+    const storage=memory();storage.setItem('paraliaki.settings',JSON.stringify({aids:oldAids}));
+    const module=await preferences(storage);assert.equal(module.settings.aids,oldAids);assert.equal(module.settings.abs,oldAids);
+    module.setSetting('aids',!oldAids);assert.equal(module.settings.abs,oldAids);
+    const loaded=await preferences(storage);assert.equal(loaded.settings.aids,!oldAids);assert.equal(loaded.settings.abs,oldAids);
+  }
+});
+
 test('comfortable master default migrates the old default once and preserves explicit volumes', async () => {
   assert.equal((await preferences(memory())).settings.master, 0.6);
   for (const master of [0, 0.3, 0.8, 0.95]) {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Input, axisValue } from '../src/input.js';
+import { Input, axisValue, DEFAULT_BINDINGS } from '../src/input.js';
 
 function setup() {
   const target = new EventTarget(), saved = new Map();
@@ -14,6 +14,20 @@ function setup() {
   return { input, storage, target, key, pads: value => { pads = value; } };
 }
 const gamepad = () => ({ id: 'test standard', index: 0, mapping: 'standard', connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ value: 0, pressed: false })) });
+
+test('quick TC/ESC has its own keyboard binding and one edge per key or pad press', () => {
+  const { input, key, pads } = setup(), pad = gamepad();
+  try {
+    assert.equal(Object.entries(DEFAULT_BINDINGS.keyboard).filter(([, codes]) => codes.includes('KeyV')).length, 1);
+    key('keydown', 'KeyV'); key('keyup', 'KeyV'); input.update(1/60);
+    assert.equal(input.state.tractionControl, true); assert.equal(input.state.tow, false);
+    input.update(1/60); assert.equal(input.state.tractionControl, false);
+    pads([pad]); pad.buttons[14].value = 1; input.update(1/60); assert.equal(input.state.tractionControl, true);
+    for (let i=0;i<60;i++) { input.update(1/60); assert.equal(input.state.tractionControl, false); }
+    pad.buttons[14].value = 0; input.update(1/60); pad.buttons[14].value = 1; input.update(1/60); assert.equal(input.state.tractionControl, true);
+    key('keydown','KeyV',false,true); input.update(1/60); assert.equal(input.state.tractionControl,false,'editing never toggles');
+  } finally { input.destroy(); }
+});
 
 test('standard pad analog pedals, steering deadzone/curve and camera axes', () => {
   const { input, pads } = setup(), pad = gamepad(); pads([pad]);

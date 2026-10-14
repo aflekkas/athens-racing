@@ -316,7 +316,7 @@ export class Hud {
     g.fillStyle = st.shiftFlash > 0 ? '#07090c' : '#fff'; g.font = 'italic 900 44px "Barlow Condensed", sans-serif'; g.fillText(st.gearLabel, gx, gy + 3);
     // driver-aid lamps
     g.font = '800 15px "Barlow Condensed", sans-serif';
-    for (const [txt, on, x, y] of [['ESC', st.esc, gx - 58, gy - 10], ['TC', st.tc, gx - 62, gy + 13], ['ABS', st.abs, gx + 62, gy + 2]]) { g.fillStyle = on ? '#ffb000' : 'rgba(255,255,255,.13)'; g.fillText(txt, x, y); }
+    for (const [txt, on, x, y] of [['ESC', st.esc, gx - 58, gy - 10], ['TC', st.tc, gx - 62, gy + 13], ['ABS', st.abs, gx + 62, gy + 2]]) { const off = st.aidsOff && txt !== 'ABS'; g.font = `${off ? '800 12px' : '800 15px'} "Barlow Condensed", sans-serif`; g.fillStyle = off || on ? '#ffb000' : 'rgba(255,255,255,.13)'; g.fillText(off ? txt + ' OFF' : txt, x, y); }
   }
 
   /** speed-limit sign hook: limit = {v, src} or null. Minimal styling on purpose:

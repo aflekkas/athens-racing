@@ -3,7 +3,8 @@
 //   import { settings, setSetting, onSettings } from './settings.js';
 //   settings.units            'kmh' | 'mph'
 //   settings.master/music/sfx 0..1 volumes (audio.setVolumes)
-//   settings.aids             true = traction control, ABS and stability control as the car came; false = all off
+//   settings.aids             traction and stability control (TC/ESC/EDL) as fitted; false = off
+//   settings.abs              ABS as fitted; independent of the live TC/ESC toggle
 //   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
 //   settings.graphics         'auto' | 'ultra' | 'high' | 'med' | 'low' (applied by reloading the page)
@@ -16,7 +17,7 @@
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
 const KEY = 'paraliaki.settings';
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
@@ -31,6 +32,8 @@ function load() {
   try {
     const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
     Object.assign(out, saved);
+    // Preserve the old all-aids-off choice when separating ABS from TC/ESC.
+    if (saved.abs === undefined) out.abs = saved.aids !== false;
     // Migrate the old default once. A later deliberate choice of 0.8 must survive reloads.
     if (storage?.getItem(AUDIO_DEFAULT_VERSION) !== '1') {
       if (saved?.master != null && +saved.master === 0.8) {
@@ -47,6 +50,7 @@ function load() {
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
   if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
   out.aids = out.aids !== false;
+  out.abs = out.abs !== false;
   out.ghostEnabled = out.ghostEnabled !== false;
   out.police = out.police === true;
   out.mildLanguage = out.mildLanguage === true;
@@ -61,7 +65,7 @@ export const settings = load();
 const subs = new Set();
 export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
-  if (key === 'mildLanguage' || key === 'showTyreGrip') value = value === true;
+  if (key === 'mildLanguage' || key === 'showTyreGrip' || key === 'aids' || key === 'abs') value = value === true;
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);
   if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));
   if (!(key in DEFAULTS) || settings[key] === value) return;

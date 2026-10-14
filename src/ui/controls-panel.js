@@ -7,7 +7,7 @@ import * as C from './components.js';
 
 const { icon, esc } = C;
 const GROUPS = [
-  ['DRIVING', 'steering-wheel', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN' }],
+  ['DRIVING', 'steering-wheel', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', tractionControl: 'TOGGLE TC / ESC', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN' }],
   ['CAMERA', 'camera', { camera: 'CHANGE CAMERA', lookBack: 'LOOK BACK', lookLeft: 'LOOK LEFT', lookRight: 'LOOK RIGHT', lookUp: 'LOOK UP', lookDown: 'LOOK DOWN' }],
   ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE', photo: 'PHOTO MODE', replayPlay: 'REPLAY PLAY / PAUSE', transmission: 'MANUAL / AUTO · CHOICE CARS', music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
   ['MENUS', 'list', { up: 'UP', down: 'DOWN', menuLeft: 'LEFT', menuRight: 'RIGHT', confirm: 'CONFIRM', back: 'BACK' }],

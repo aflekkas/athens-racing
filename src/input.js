@@ -8,17 +8,17 @@ export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyM'], music: ['KeyJ'], nextTrack: ['KeyN'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyM'], tractionControl: ['KeyV'], music: ['KeyJ'], nextTrack: ['KeyN'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], photo: ['KeyP'], replayPlay: ['Space'],
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
-    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], music: [], nextTrack: [],
+    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], music: [], nextTrack: [],
     up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], photo: ['b10'], replayPlay: ['b0'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'music', 'nextTrack', 'photo', 'replayPlay',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'music', 'nextTrack', 'photo', 'replayPlay',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
@@ -60,16 +60,25 @@ export class Input {
   }
   // Production polls the selected spec every frame, including car switches and menu resumes.
   setCarSpec(spec) {
+    this.setAidsEnabled(preferences.aids);
     this.setNitrousEnabled(spec?.nitrous === true);
     this.transmissionEnabled = !!spec && carTransmission(spec) !== 'manual';
     const button = this.touchUI?.querySelector('[data-action="transmission"]');
     if (button && button.hidden !== !this.transmissionEnabled) button.hidden = !this.transmissionEnabled;
     if (!this.transmissionEnabled && this.touch.transmission) { this.touch.transmission = 0; this.pending.delete('transmission'); }
     if (!this.transmissionEnabled && button?.classList.contains('held')) button.classList.remove('held');
-    const columns = String(this.nitrousEnabled || this.transmissionEnabled ? 4 : 3);
+    const columns = String(this.nitrousEnabled || this.transmissionEnabled ? 5 : 4);
     if (this.touchUI && this.touchUI.dataset.auxColumns !== columns) this.touchUI.dataset.auxColumns = columns;
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
+  setAidsEnabled(enabled) {
+    const button = this.touchUI?.querySelector('[data-action="tractionControl"]');
+    if (!button) return;
+    const label = enabled ? 'TC ON' : 'TC OFF';
+    if (button.textContent !== label) button.textContent = label;
+    button.setAttribute('aria-label', 'Toggle traction and stability control');
+    button.setAttribute('aria-pressed', String(!!enabled));
+  }
   destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); this.gameplayToast = null; const toast = this.document?.getElementById?.('input-toast'); if (toast) toast.hidden = true; this.touchUI?.remove(); this.cancelCapture(); }
   load() {
     for (const kind of ['keyboard', 'gamepad']) {
@@ -304,15 +313,16 @@ export class Input {
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
       const actions = doc.createElement('div'); actions.className = 'touch-actions';
       const gears = doc.createElement('div'); gears.className = 'touch-gears'; gears.setAttribute('role', 'group'); gears.setAttribute('aria-label', 'Gear shifts');
-      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
+      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
         const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled; if (action === 'transmission') button.hidden = !this.transmissionEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });
         (action === 'throttle' || action === 'brake' ? pedals : action === 'shiftUp' || action === 'shiftDown' ? gears : actions).append(button);
       }
-      root.dataset.auxColumns = String(this.nitrousEnabled || this.transmissionEnabled ? 4 : 3);
+      root.dataset.auxColumns = String(this.nitrousEnabled || this.transmissionEnabled ? 5 : 4);
       aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
+      this.setAidsEnabled(preferences.aids);
     };
     if ((this.navigator?.maxTouchPoints || 0) > 0 || this.target?.matchMedia?.('(pointer: coarse)').matches) enable();
     else this.listen('touchstart', enable);

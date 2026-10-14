@@ -21,13 +21,22 @@ function setup(){
  const button=action=>input.touchUI.querySelector(`[data-action="${action}"]`);
  return{input,mode,frame,button};
 }
+test('touch TC/ESC emits one toggle while held and its label follows settings',()=>{
+ const {input,frame,button}=setup();
+ try{
+  frame(cars[0]);const tc=button('tractionControl');assert.ok(tc);assert.equal(tc.hidden,false);assert.equal(tc.textContent,'TC ON');
+  const event=new Event('pointerdown',{cancelable:true});Object.assign(event,{pointerId:1});tc.dispatchEvent(event);
+  frame(cars[0]);assert.equal(input.state.tractionControl,true);frame(cars[0]);assert.equal(input.state.tractionControl,false);
+  input.setAidsEnabled(false);assert.equal(tc.textContent,'TC OFF');input.setAidsEnabled(true);assert.equal(tc.textContent,'TC ON');
+ }finally{input.destroy();}
+});
 test('production selected-car polling shows SEAT nitrous, hides MINI nitrous and locked MODE',()=>{
  const{input,frame,button}=setup();
  try{
   const seat=cars.find(c=>c.id==='ibiza'),mini=cars.find(c=>c.id==='mini');
   assert.equal(seat.nitrous,true);assert.equal(mini.transmission,'manual');
-  frame(seat);assert.equal(button('nitro').hidden,false);assert.equal(button('transmission').hidden,false);assert.equal(input.touchUI.dataset.auxColumns,'4');
-  frame(mini);assert.equal(button('nitro').hidden,true);assert.equal(button('transmission').hidden,true);assert.equal(input.touchUI.dataset.auxColumns,'3');
+  frame(seat);assert.equal(button('nitro').hidden,false);assert.equal(button('transmission').hidden,false);assert.equal(input.touchUI.dataset.auxColumns,'5');
+  frame(mini);assert.equal(button('nitro').hidden,true);assert.equal(button('transmission').hidden,true);assert.equal(input.touchUI.dataset.auxColumns,'4');
   for(const car of cars){frame(car);assert.equal(button('nitro').hidden,car.nitrous!==true,car.id);assert.equal(button('transmission').hidden,car.transmission==='manual',car.id);}
  }finally{input.destroy();}
 });

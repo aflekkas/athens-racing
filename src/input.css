@@ -62,8 +62,8 @@ body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw -
 }
 
 /* Remaining actions fill both rows after car-specific buttons disappear. */
-#touch-controls { --touch-columns: 4; }
-#touch-controls[data-aux-columns="3"] { --touch-columns: 3; }
+#touch-controls { --touch-columns: 5; }
+#touch-controls[data-aux-columns="4"] { --touch-columns: 4; }
 #touch-controls button[hidden] { display: none !important; }
 .touch-buttons { display: flex; flex-wrap: nowrap; width: calc(var(--touch-columns) * 40px + (var(--touch-columns) - 1) * 4px); }
 .touch-actions { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; align-content: start; gap: 4px; }
