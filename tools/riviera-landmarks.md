@@ -31,7 +31,7 @@ Artifacts in `.scratch/world-playtest/`:
 - `loumbarda-{before,after}.png`, `loumbarda-interior.png`: native-browser isolated shells on production corridor axes, with simplified road ribbons. No full-game terrain/postprocessing is shown.
 - `penteli-contact-{before,after}.png`: actual production terrain mesh crop and contact-height marker. These illustrate the measured mismatch; they are not a full vehicle fallthrough replay.
 - `landmark-proof.json`: 285 clear driving positions, 570 side-clearance rays, 134/134 solid rock wall contacts and camera crown occlusion. CPU geometry/contact test using actual Three.js and Ground.
-- `landmark-browser.json`: isolated rendering changed 2 to 4 draw calls. Render-call wall times were below 1 ms and too close to timer resolution for a useful performance claim. This does not establish a full-game FPS gate.
+- `landmark-browser.json`: isolated rendering changed 2 to 4 draw calls. Median render-call wall time was 0.2 ms before and 0.1 ms after (20 samples each, 1280×800; individual samples 0–1.7 ms). These values are too close to timer resolution for a useful performance claim. This does not establish a full-game FPS gate.
 - `terrain-contact-{before,after}.json`: coordinate-level production mesh/contact sweep.
 
 All five comparison images and the source imagery were opened and visually inspected. The current browser job is deliberately limited to these local fixtures; historical full-map performance captures remain in `.scratch/world-v3/`.
