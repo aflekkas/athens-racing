@@ -1,4 +1,5 @@
 import { NotificationQueue, notificationPlacement } from './notification-queue.js';
+import { noticeStyle, telltaleMask } from './notice-style.js';
 
 const now=()=>globalThis.performance?.now?.()??Date.now();
 export function notificationText(value) {
@@ -32,9 +33,11 @@ export class NotificationManager {
   card(item){
     let card=this.cards.get(item.id);
     if(!card){card=document.createElement('article');card.className='race-notice';card.dataset.notificationId=item.id;card.setAttribute('role',item.slot==='banner'?'alert':'status');this.cards.set(item.id,card);}
-    const signature=item.signature+'|'+(item.node?'node':'text');
-    if(card.dataset.signature!==signature||(item.node&&card.firstElementChild!==item.node)){card.dataset.signature=signature;card.replaceChildren();if(item.node)card.append(item.node);else{if(item.title){const title=document.createElement('b');title.textContent=item.title;card.append(title);}if(item.text){const text=document.createElement('span');text.textContent=item.text;card.append(text);}if(item.actions?.length){const row=document.createElement('div');row.className='notice-actions';for(const[index,action]of item.actions.entries()){const button=document.createElement('button');button.type='button';button.textContent=action.label;button.onclick=()=>{const current=this.queue.items.get(item.id)?.actions?.[index];this.dismiss(item.id);current?.run?.();};row.append(button);}card.append(row);}}}
-    card.dataset.slot=item.slot;card.dataset.tone=item.tone||'info';return card;
+    const signature=item.signature+'|'+(item.node?'node':'text'),look=noticeStyle(item);
+    if(card.dataset.signature!==signature||(item.node&&card.firstElementChild!==item.node)){card.dataset.signature=signature;card.replaceChildren();if(item.node)card.append(item.node);else{if(look.kind==='card'&&look.label){const label=document.createElement('small');label.className='notice-label';label.textContent=look.label;card.append(label);}if(item.title){const title=document.createElement('b');title.textContent=item.title;card.append(title);}if(item.text){const text=document.createElement('span');text.textContent=item.text;card.append(text);}if(item.actions?.length){const row=document.createElement('div');row.className='notice-actions';for(const[index,action]of item.actions.entries()){const button=document.createElement('button');button.type='button';button.textContent=action.label;button.onclick=()=>{const current=this.queue.items.get(item.id)?.actions?.[index];this.dismiss(item.id);current?.run?.();};row.append(button);}card.append(row);}}}
+    // car-native look (notice-style.js): cluster tell-tale tile, head-up cue or infotainment card; the lamp is CSS-drawn
+    card.dataset.slot=item.slot;card.dataset.tone=item.tone||'info';card.dataset.kind=look.kind;card.dataset.lamp=look.tone;card.dataset.telltale=look.telltale;
+    if(look.label)card.dataset.label=look.label;else delete card.dataset.label;card.style?.setProperty('--telltale',telltaleMask(look.telltale));return card;
   }
   update(){
     if(!this.root)return;

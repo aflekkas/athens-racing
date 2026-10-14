@@ -1,0 +1,63 @@
+/* Head-unit skin for panels whose markup and behaviour other modules own: the loading screen (src/ui/loading.js +
+   style.css), the multiplayer lobby (src/multiplayer.js + multiplayer.css) and the race corner buttons. Loaded last
+   (index.html); rules carry :root so they also win over stylesheets that modules append later. Tokens: src/ui/ui.css. */
+
+/* ---------------------------------------------------------------- loading: the car's welcome sequence */
+:root #loading { background: radial-gradient(110% 90% at 70% 42%, #102029 0%, #05080b 62%); font-family: var(--f-sans); }
+:root #loading .ld-shade { background: linear-gradient(90deg, rgba(5,8,11,.97) 0%, rgba(5,8,11,.78) 34%, rgba(5,8,11,0) 62%), linear-gradient(0deg, rgba(5,8,11,.95), rgba(5,8,11,0) 34%); }
+:root #loading .ld-route { filter: drop-shadow(0 0 6px rgba(255,90,70,.55)); }
+:root #loading .ld-map .kick { font-size: var(--t-xs); }
+:root #loading .ld-dot { background: var(--hu-ice); box-shadow: 0 0 6px var(--hu-ice); }
+:root #loading h1 { margin: .5rem 0 0; font-family: var(--f-sans); font-style: normal; font-weight: 300; font-size: min(4.2rem, 11vw, 13vh); line-height: 1; letter-spacing: .1em; text-transform: uppercase; }
+:root #loading #ldSub { font-weight: 500; font-size: var(--t-lg); letter-spacing: .02em; color: var(--hu-text-2); }
+:root #loading .ld-foot { gap: .7rem; max-width: 56rem; }
+:root #loading .ld-row { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .22em; color: var(--hu-text-3); }
+:root #loading #lpct { font: 300 1.9rem var(--f-sans); letter-spacing: .02em; color: #fff; }
+:root #loading .ld-bar { height: 3px; }
+:root #loading .ld-tip { align-items: center; gap: .9rem; width: fit-content; max-width: 100%; margin-top: .9rem; min-height: 0; padding: .7rem 1.2rem .7rem .7rem; border-radius: var(--r-3);
+  background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair); box-shadow: var(--hu-shadow);
+  font: 500 var(--t-sm)/1.45 var(--f-sans); color: var(--hu-text); text-shadow: none; }
+:root #loading .ld-tip__k { padding: .35em .7em; border-radius: var(--r-pill); background: var(--hu-ice-tint); box-shadow: inset 0 0 0 1px rgba(111,208,255,.35); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .2em; color: var(--hu-ice); }
+
+/* ---------------------------------------------------------------- multiplayer lobby / join */
+:root #multiplayer { font-family: var(--f-sans); }
+:root #multiplayer .mp-card { border-radius: var(--r-4); border: 1px solid var(--hu-hair-2); border-top: 1px solid var(--hu-hair-2);
+  background: var(--hu-sheen), rgba(10, 14, 19, .9); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); box-shadow: 0 2rem 5rem rgba(0,0,0,.6), var(--hu-edge); }
+:root #multiplayer .mp-heading small, :root #multiplayer .mp-heading .kick { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .2em; color: var(--hu-text-3); }
+:root #multiplayer .mp-heading h2 { font: 400 var(--t-2xl)/1.1 var(--f-sans); letter-spacing: .12em; text-transform: uppercase; font-style: normal; }
+:root #multiplayer .mp-section h3, :root #multiplayer .mp-session-settings h3 { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .2em; color: var(--hu-text-3); }
+:root #multiplayer button { border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: rgba(255,255,255,.07); font: 600 var(--t-sm) var(--f-cond); letter-spacing: .14em; color: #fff; }
+:root #multiplayer button:hover { background: rgba(255,255,255,.13); }
+:root #multiplayer #mp-create, :root #multiplayer #mp-join-form button, :root #multiplayer #mp-ready, :root #multiplayer #mp-start {
+  background: var(--hu-lit); color: var(--hu-lit-fg); border-color: transparent; font-weight: 700; box-shadow: 0 .4rem 1.6rem rgba(111,208,255,.2); }
+:root #multiplayer #mp-create:hover, :root #multiplayer #mp-join-form button:hover, :root #multiplayer #mp-ready:hover, :root #multiplayer #mp-start:hover { background: #fff; }
+:root #multiplayer button:focus-visible, :root #mp-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+:root #multiplayer #mp-close { border-radius: 50%; }
+:root #multiplayer input:not([type=checkbox]) { border-radius: var(--r-3); border: 1px solid var(--hu-hair-2); background: rgba(0,0,0,.35); font-family: var(--f-sans); letter-spacing: .04em; }
+:root #multiplayer input:not([type=checkbox]):focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14); }
+:root #multiplayer #mp-code { font: 400 1.6rem var(--f-cond); letter-spacing: .4em; text-transform: uppercase; }
+:root #multiplayer details, :root #multiplayer .mp-lobby, :root #multiplayer .mp-member, :root #multiplayer #mp-list > p { border-radius: var(--r-3); border-color: var(--hu-hair); background: rgba(255,255,255,.035); }
+:root #multiplayer [data-join-card], :root #multiplayer .mp-join-card, :root #multiplayer .mp-invite { border-radius: var(--r-4); }
+:root #multiplayer .mp-note, :root #multiplayer #mp-room-help, :root #multiplayer #mp-status { font-family: var(--f-sans); }
+
+:root #multiplayer .mp-join-hero { background: linear-gradient(120deg, rgba(111,208,255,.12), rgba(111,208,255,.02) 55%), rgba(255,255,255,.035); border: 1px solid rgba(111,208,255,.35); border-radius: var(--r-4); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+:root #multiplayer .mp-join-hero small, :root #multiplayer .mp-join-hero label { color: var(--hu-ice); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .2em; }
+:root #multiplayer .mp-join-hero h3 { font: 400 var(--t-2xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; }
+:root #multiplayer .mp-join-hero p { color: var(--hu-text-2); font: 500 var(--t-sm) var(--f-sans); }
+:root #multiplayer #mp-join-form button, :root #multiplayer #mp-ready, :root #multiplayer #mp-start { border: 0; box-shadow: 0 .4rem 1.6rem rgba(111,208,255,.22); font-size: var(--t-md); letter-spacing: .18em; }
+:root #multiplayer .mp-create-fold { border-color: var(--hu-hair); border-radius: var(--r-3); background: rgba(255,255,255,.03); }
+:root #multiplayer .mp-create-fold summary { font: 600 var(--t-sm) var(--f-cond); letter-spacing: .16em; color: var(--hu-text-2); }
+:root #multiplayer .mp-lobby { border-radius: var(--r-4); border: 1px solid var(--hu-hair); background: var(--hu-sheen), rgba(255,255,255,.04); }
+:root #multiplayer .mp-lobby h4 { font: 500 var(--t-xl) var(--f-sans); letter-spacing: .06em; }
+:root #multiplayer .mp-lobby-state { color: var(--tt-green); font: 600 var(--t-xs) var(--f-cond); letter-spacing: .16em; }
+:root #multiplayer .mp-lobby button { background: var(--hu-lit); color: var(--hu-lit-fg); border: 0; font-weight: 700; }
+:root #multiplayer .mp-actions { background: linear-gradient(0deg, rgba(10,14,19,.98), rgba(10,14,19,.9)); border-top: 1px solid var(--hu-hair); }
+:root #multiplayer .mp-garage { border-radius: var(--r-4); border-color: var(--hu-hair); background: rgba(255,255,255,.03); }
+:root #multiplayer .mp-garage-title { font: 400 var(--t-xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; }
+:root #multiplayer .mp-garage-title span { color: var(--hu-ice); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .18em; }
+:root #multiplayer .car-card:focus-visible { outline: none; border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14); }
+
+/* ---------------------------------------------------------------- race corner buttons (settings / multiplayer) */
+:root #race-settings, :root body #mp-toggle { border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: var(--hu-sheen), rgba(10,14,19,.78); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
+  color: #fff; font: 600 12px var(--f-cond); letter-spacing: .14em; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+:root #race-settings:focus-visible { outline: none; box-shadow: var(--focus-ring); }

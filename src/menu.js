@@ -149,6 +149,11 @@ export class Menu {
       const t = this.root.querySelector('.mi[data-kind=tabs]'); if (t) { C.step(t, name === 'shiftUp' ? 1 : -1); this.h.ui?.(name === 'shiftUp'); }
       return true;
     }
+    // a vertical tab rail (Settings): up / down change section, right enters the list
+    if (cur?.dataset.kind === 'tabs' && getComputedStyle(cur).flexDirection === 'column') {
+      if (name === 'up' || name === 'down') { if (C.step(cur, name === 'down' ? 1 : -1)) this.h.ui?.(name === 'down'); return true; }
+      if (name === 'left' || name === 'right') { this.move(name); return true; }
+    }
     if (name === 'up' || name === 'down') { this.move(name); return true; }
     if (name === 'left' || name === 'right') {
       const d = name === 'right' ? 1 : -1;
@@ -252,16 +257,15 @@ export class Menu {
 
   // ---------------------------------------------------------------- title / mode
   r_title() {
-    return `<div class="scr scr--title"><div class="title__col">
-      <div class="kick">GREEK ROADS <span class="acc">/</span> PURE TIME</div>
-      <h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>
-      <div class="title__menu">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
+    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
+      <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
+      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
+      <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
         ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
         ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint, driver looks and specs`, act: 'garage' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
-      </div><footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
+      </div><footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {

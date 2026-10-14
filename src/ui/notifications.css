@@ -1,16 +1,70 @@
-#notification-lane{position:fixed;z-index:46;display:flex;flex-direction:column;gap:6px;pointer-events:none;font:700 13px/1.25 'Barlow Condensed',system-ui,sans-serif;box-sizing:border-box}
+/* Race notices as native car UI (look chosen by src/ui/notice-style.js; lane / priority / placement by the manager).
+   data-kind=telltale  instrument-cluster warning tile: a lamp well with an ISO tell-tale, lit amber / red / green
+   data-kind=hud       head-up display cue: glowing HUD type and a symbol, no panel
+   data-kind=card      infotainment card: glass, an app label, body text and pill buttons
+   The lamp glyph is a CSS mask (--telltale) so adopted DOM (tow prompt, engine repair) stays the card's first child. */
+#notification-lane{position:fixed;z-index:46;display:flex;flex-direction:column;gap:8px;pointer-events:none;font:500 13px/1.3 Barlow,'Barlow Condensed',system-ui,sans-serif;box-sizing:border-box;
+  --lamp:#e8eef2;--lamp-glow:rgba(232,238,242,.35)}
 #notification-lane[hidden],#notification-lane [hidden]{display:none!important}
-.race-notice{box-sizing:border-box;flex:none;padding:8px 12px;border:1px solid #ffffff26;border-left:3px solid #51ccdf;border-radius:4px;background:#10171ff5;color:#f0f4f7;box-shadow:0 3px 12px #0005;text-align:left}
-.race-notice[data-slot=banner]{border-left-color:#ffd064;background:#221d14f5}
-.race-notice[data-tone=bad]{border-left-color:#ff796b;background:#281816f5}.race-notice[data-tone=good]{border-left-color:#62e9bf}
-.race-notice b,.race-notice>span{display:block}.race-notice b{font-size:14px;letter-spacing:.06em}.race-notice>span{font-size:12px;color:#d0dbe4}
-.notice-actions,.race-notice .tow-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}.notice-actions button,.race-notice button{pointer-events:auto;border:1px solid #ffffff3a;border-radius:3px;background:#263541;color:#fff;font:800 11px 'Barlow Condensed',sans-serif;padding:5px 8px;min-height:28px;cursor:pointer}.race-notice button:focus-visible{outline:2px solid #ffd064;outline-offset:2px}
+.race-notice{--lamp:#4a9dff;--lamp-glow:rgba(74,157,255,.4);position:relative;box-sizing:border-box;flex:none;min-height:56px;padding:9px 14px 10px 62px;color:#f1f5f8;text-align:left;
+  border-radius:12px;border:1px solid rgba(190,215,235,.12);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0) 40%),linear-gradient(180deg,rgba(11,15,20,.94),rgba(6,9,12,.94));
+  box-shadow:0 10px 26px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);animation:tt-in .28s cubic-bezier(.2,.8,.2,1) both;display:flex;flex-direction:column;justify-content:center}
+.race-notice[data-lamp=warn]{--lamp:#ffb21a;--lamp-glow:rgba(255,178,26,.45)}
+.race-notice[data-lamp=bad]{--lamp:#ff453a;--lamp-glow:rgba(255,69,58,.5)}
+.race-notice[data-lamp=good]{--lamp:#38e07b;--lamp-glow:rgba(56,224,123,.42)}
+/* the lamp well and the lit tell-tale */
+.race-notice::before{content:"";position:absolute;left:8px;top:50%;width:42px;height:42px;margin-top:-21px;border-radius:10px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--lamp) 16%,transparent),transparent 70%),#020304;box-shadow:inset 0 0 0 1px rgba(190,215,235,.08),inset 0 2px 6px rgba(0,0,0,.8)}
+.race-notice::after{content:"";position:absolute;left:16px;top:50%;width:26px;height:26px;margin-top:-13px;background:var(--lamp);-webkit-mask:var(--telltale) center/contain no-repeat;mask:var(--telltale) center/contain no-repeat;filter:drop-shadow(0 0 5px var(--lamp-glow));animation:tt-lamp .5s ease-out both}
+.race-notice[data-lamp=bad]::after{animation:tt-lamp .5s ease-out both,tt-pulse 1s ease-in-out .5s infinite alternate}
+.race-notice b,.race-notice>span{display:block}
+.race-notice b{font:600 14px/1.2 Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.race-notice>span{margin-top:2px;font:500 12px/1.35 Barlow,sans-serif;color:#a9b6c1}
+.race-notice[data-lamp=bad] b{color:#fff}
+/* a one-line notice (hud.message, aids toggles) reads as the tile's title */
+.race-notice>span:only-child{margin:0;font:600 14px/1.2 Barlow,sans-serif;letter-spacing:.08em;color:#f1f5f8;text-transform:uppercase}
+/* head-up cue: projected type, no panel */
+.race-notice[data-kind=hud]{--lamp:#bff4ff;--lamp-glow:rgba(120,230,255,.7);min-height:50px;padding:6px 14px 6px 56px;border:0;border-radius:0;box-shadow:none;
+  background:radial-gradient(closest-side,rgba(0,8,12,.55),rgba(0,8,12,.3) 55%,transparent);color:var(--lamp);text-shadow:0 0 10px var(--lamp-glow),0 1px 2px rgba(0,0,0,.8);animation:hud-in .32s ease-out both}
+.race-notice[data-kind=hud][data-lamp=bad],.race-notice[data-kind=hud][data-lamp=warn]{--lamp:#ffc95a;--lamp-glow:rgba(255,178,26,.65)}
+.race-notice[data-kind=hud]::before{display:none}
+.race-notice[data-kind=hud]::after{left:10px;width:34px;height:34px;margin-top:-17px;filter:drop-shadow(0 0 6px var(--lamp-glow))}
+.race-notice[data-kind=hud][data-lamp=bad]::after{animation:tt-lamp .5s ease-out both,tt-pulse 1s ease-in-out .5s infinite alternate}
+.race-notice[data-kind=hud] b{font:500 17px/1.15 Barlow,sans-serif;letter-spacing:.16em;color:inherit}
+.race-notice[data-kind=hud]>span:only-child{font:500 15px/1.2 Barlow,sans-serif;letter-spacing:.14em;opacity:1}
+.race-notice[data-kind=hud]>span{font:600 11px/1.3 'Barlow Condensed',sans-serif;letter-spacing:.18em;color:inherit;opacity:.82;text-transform:uppercase}
+/* infotainment card */
+.race-notice[data-kind=card]{--lamp:#6fd0ff;--lamp-glow:rgba(111,208,255,.4);padding:30px 14px 12px 14px;border-radius:14px;border-color:rgba(190,215,235,.16);
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0) 40%),rgba(14,19,26,.86);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+.race-notice[data-kind=card]::before{left:12px;top:9px;width:20px;height:20px;margin:0;border-radius:6px;background:linear-gradient(180deg,#9ae0ff,#2b8fd8);box-shadow:none}
+.race-notice[data-kind=card]::after{left:15px;top:12px;width:14px;height:14px;margin:0;background:#061018;filter:none;animation:none}
+.race-notice[data-kind=card]:not([data-label]){padding-top:11px;padding-left:44px}
+.race-notice[data-kind=card]:not([data-label])::before{top:11px}.race-notice[data-kind=card]:not([data-label])::after{top:14px}
+.race-notice[data-kind=card] b{font-size:14px}
+.race-notice[data-kind=card]>span{font-size:12.5px;color:#c8d3dc}
+.notice-label{position:absolute;left:40px;top:11px;font:600 10.5px/20px 'Barlow Condensed',sans-serif;letter-spacing:.2em;color:#8fa0ad;text-transform:uppercase}
+/* actions: pills */
+.notice-actions,.race-notice .tow-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.notice-actions button,.race-notice button{pointer-events:auto;border:1px solid rgba(190,215,235,.22);border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font:600 11px 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:0 12px;min-height:30px;cursor:pointer}
+.notice-actions button:first-child,.race-notice .tow-actions button:first-child{background:linear-gradient(180deg,#fff,#dce6ed);color:#061018;border-color:transparent}
+.race-notice button:hover{background:rgba(255,255,255,.16)}.notice-actions button:first-child:hover,.race-notice .tow-actions button:first-child:hover{background:#fff}
+.race-notice button:focus-visible{outline:none;box-shadow:0 0 0 1.5px #6fd0ff,0 0 0 5px rgba(111,208,255,.2)}
+/* adopted HUD nodes take the tile's typography */
 #notification-lane #tow-prompt,#notification-lane #engineHud{position:static!important;inset:auto!important;transform:none!important;width:auto!important;max-width:none!important;padding:0!important;border:0!important;box-shadow:none!important;background:none!important;font:inherit!important;color:inherit;display:block}
-#notification-lane #tow-prompt strong{font-size:14px}#notification-lane #tow-prompt p{font-size:12px;line-height:1.2;margin:3px 0}#notification-lane #tow-prompt .tow-actions button{min-height:28px;padding:4px 7px;font-size:11px}
-#notification-lane #tow-prompt.minimised .tow-chip{display:block;padding:0;font:800 13px 'Barlow Condensed',sans-serif}#notification-lane #tow-prompt.minimised>:not(.tow-chip){display:none}#notification-lane #tow-prompt:not(.minimised) .tow-chip{display:none}
-#notification-lane #engineHud{display:flex;gap:7px;align-items:center}#notification-lane #engineHud small{display:block;font-size:11px}#notification-lane #engineHud i{display:none}#notification-lane #engineHud .engine-repair{display:block;margin-top:4px;font-size:11px}
-.menu-feedback{position:static;margin:8px 0;padding:8px 12px;border-left:3px solid #51ccdf;background:#16242d;font:700 13px/1.35 'Barlow Condensed',sans-serif;color:#eaf3f6}.menu-feedback[data-tone=bad]{border-color:#ff796b}
+#notification-lane #tow-prompt strong{display:block;font:600 14px/1.2 Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase}#notification-lane #tow-prompt p{font:500 12px/1.3 Barlow,sans-serif;color:#a9b6c1;margin:2px 0 0}
+#notification-lane #tow-prompt .tow-actions button{min-height:28px;padding:0 11px;font-size:11px}
+#notification-lane #tow-prompt.minimised .tow-chip{display:block;padding:0;font:600 13px Barlow,sans-serif;letter-spacing:.08em}#notification-lane #tow-prompt.minimised>:not(.tow-chip){display:none}#notification-lane #tow-prompt:not(.minimised) .tow-chip{display:none}
+#notification-lane #engineHud{display:flex;gap:7px;align-items:center}#notification-lane #engineHud b{display:block;font:600 14px/1.2 Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase}#notification-lane #engineHud small{display:block;font:500 12px/1.3 Barlow,sans-serif;color:#a9b6c1}
+#notification-lane #engineHud>.ico,#notification-lane #engineHud i{display:none}#notification-lane #engineHud .engine-repair{display:inline-flex;align-items:center;margin-top:6px;font-size:11px}
+/* menus: a one-line status row under the screen title (components.js toast outside races) */
+.menu-feedback{position:static;margin:8px 0;padding:8px 14px 8px 12px;border-radius:999px;background:rgba(111,208,255,.1);box-shadow:inset 0 0 0 1px rgba(111,208,255,.3);font:500 13px/1.35 Barlow,sans-serif;letter-spacing:.04em;color:#eaf3f6}
+.menu-feedback[data-tone=bad]{background:rgba(255,69,58,.1);box-shadow:inset 0 0 0 1px rgba(255,69,58,.35)}.menu-feedback[data-tone=good]{background:rgba(56,224,123,.1);box-shadow:inset 0 0 0 1px rgba(56,224,123,.35)}
+@keyframes tt-in{from{opacity:0;transform:translateY(-6px) scale(.98)}}
+@keyframes hud-in{from{opacity:0;transform:translateY(4px)}}
+@keyframes tt-lamp{0%{opacity:0;filter:brightness(2.2) drop-shadow(0 0 10px var(--lamp-glow))}30%{opacity:1}}
+@keyframes tt-pulse{to{filter:drop-shadow(0 0 1px var(--lamp-glow)) brightness(.78)}}
+@media(prefers-reduced-motion:reduce){.race-notice,.race-notice::after{animation:none!important}}
 /* Legacy notice anchors stay inert; every race warning is rendered by the manager. */
 #input-toast,#wrongWay,#police-hud,#police-big,#checkpoint-banner,#drivingHints,#drivingTip,#fine-phone,#pops,#banner,#msg,.toasts{display:none!important}
 body.ui-open #notification-lane,body.menu #notification-lane,body:has(#multiplayer:not([hidden])) #notification-lane,body:has(#loading.open) #notification-lane,body:has(.modal-scrim) #notification-lane,body[data-customizer=open] #notification-lane{display:none!important}
-@media(max-height:480px){.race-notice{padding:5px 9px}.race-notice b{font-size:12px}.race-notice>span{font-size:11px}#notification-lane #tow-prompt p{display:none}#notification-lane #tow-prompt strong{font-size:12px}}
+@media(max-height:480px){.race-notice{min-height:44px;padding:6px 10px 6px 50px}.race-notice::before{left:6px;width:34px;height:34px;margin-top:-17px}.race-notice::after{left:12px;width:22px;height:22px;margin-top:-11px}
+  .race-notice b{font-size:12px}.race-notice>span{font-size:11px}.race-notice[data-kind=hud] b{font-size:14px}#notification-lane #tow-prompt p{display:none}#notification-lane #tow-prompt strong{font-size:12px}}

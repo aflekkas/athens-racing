@@ -30,6 +30,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 // Icons: Phosphor Icons (bold, MIT), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
 
 import { bindingLabel } from '../input-labels.js';
+import { driverName } from '../driver-name.js';
 export let hintBindings = null;
 export const setHintBindings = fn => { hintBindings = fn; };
 
@@ -96,9 +97,17 @@ export function keyHints(list, cls = '') {
 }
 export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kbd--pad' : ''} ${cls}">${text}</kbd>`;
 
-/** the standard menu screen: header (back + kicker + title + right slot), a body that scrolls, a footer of key hints */
+/** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), and the driver chip + clock at the right.
+ *  Back never shares a row with the page title, so every title lines up with the content grid below it. */
+export function statusBar({ back = true, kick = '' } = {}) {
+  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r"><span class="hu-driver" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></span><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
+}
+const clockText = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);
+driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
+/** the standard menu screen: the status bar, a title row (title + right slot), a body that scrolls, a footer of key hints */
 export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '' } = {}) {
-  return `<div class="scr ${cls}"><header class="scr__head">${back ? button({ icon: 'arrow-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}<div class="scr__titles">${kick ? `<div class="kick">${kick}</div>` : ''}${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
+  return `<div class="scr ${cls}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
     <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
 /** the ASR mark (assets/icon.svg, also the favicon) */
