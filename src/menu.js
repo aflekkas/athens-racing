@@ -16,6 +16,9 @@ import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, 
 import { MAPS } from './map-catalog.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
 import './ui/hosts.js';
+import { account } from './account.js';
+import { friends } from './friends.js';
+import { renderDriver, renderSocial, mountSocial, loadSocial } from './ui/social-screen.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
@@ -40,6 +43,8 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all'; this.participants = 'solo';
+    this.accountUnsub = account.onChange(profile => { if (this.screen === 'title' && profile && !profile.guest && !profile.username) this.show('account', {}, true); else if (['account','friends'].includes(this.screen)) this.refresh(); });
+    this.friendsUnsub = friends.onChange(() => { if (this.screen === 'friends') this.refresh(); });
     C.bindRoot(root); root.tabIndex = -1;
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
@@ -52,6 +57,8 @@ export class Menu {
 
   // ---------------------------------------------------------------- show / hide
   show(screen, data = {}, push = false) {
+    const profile = account.cached();
+    if (screen === 'title' && profile && !profile.guest && !profile.username) screen = 'account';
     if (screen === 'events' && this.screen === 'maps') data = { ...data, mode: this.data.mode };
     this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });
@@ -60,6 +67,7 @@ export class Menu {
     document.body.classList.add('ui-open'); // before render: focus needs laid-out items
     document.body.dataset.ui = screen;
     this.render();
+    if (screen === 'account' || screen === 'friends') loadSocial(this, screen);
   }
   pop() {
     const prev = this.stack.pop(); if (!prev) return false;
@@ -68,7 +76,7 @@ export class Menu {
     return true;
   }
   hide() {
-    this.leaving(); this.mapView?.dispose(); this.mapView = null;
+    this.leaving(); this.socialView?.dispose(); this.socialView = null; this.mapView?.dispose(); this.mapView = null;
     this.screen = null; this.stack.length = 0; this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
   }
@@ -76,13 +84,14 @@ export class Menu {
     const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
     const stage = keepCar ? this.root.querySelector('#carStage') : null;
     if (!keepCar) { this.carView?.dispose(); this.carView = null; } this.mapView?.dispose(); this.mapView = null;
-    C.closeListbox();
+    C.closeListbox(); this.socialView?.dispose(); this.socialView = null;
     const keep = this.root.querySelector('.scr__body .scroll-y, .scr__body')?.scrollTop;
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
     this.root.className = 's-' + this.screen;
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
     if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
+    if (['account','friends'].includes(this.screen)) this.socialView = mountSocial(this);
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -153,7 +162,7 @@ export class Menu {
       if (this.screen === 'events' && !this.move(name)) { const t = this.root.querySelector('.mi[data-kind=tabs]'); if (t) { C.step(t, d); this.h.ui?.(d > 0); } return true; }
       this.move(name); return true;
     }
-    if (name === 'confirm') { if (cur) this.activate(cur); return true; }
+    if (name === 'confirm') { if (cur) { if (['account','friends'].includes(this.screen) && (cur.closest('[data-account]') || cur.closest('[data-friends]'))) { const input = cur.querySelector('input'); if(input) input.focus(); else cur.click(); } else this.activate(cur); } return true; }
     if (name === 'back' || name === 'pause') { this.back(); return true; }
     return true; // menus swallow everything else (camera, tow, restart keys...)
   }
@@ -208,6 +217,8 @@ export class Menu {
       case 'setupGo': this.startSetup(); break;
       case 'setupReset': saveSetup(this.setupKey(), {}); this.refresh(); C.ui.toast('EVENT DEFAULTS RESTORED', { icon: 'arrow-counter-clockwise' }); break;
       case 'mp': this.h.multiplayer(); break;
+      case 'account': this.show('account', {}, true); break;
+      case 'friends': this.show('friends', {}, true); break;
       case 'garage': this.h.garage(); break;
       case 'settings': this.show('settings', { from: this.screen, tab: 'audio' }, true); break;
       case 'back': this.back(); break;
@@ -261,10 +272,14 @@ export class Menu {
       <h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
       <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>
       <div class="title__menu">${C.option({ icon: 'flag-checkered', title: 'RACE', desc: 'Quick race, events, time trials and online', act: 'play', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint and specs`, act: 'garage' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint, vinyls and specs`, act: 'garage' })}
+        ${C.option({ icon: 'user', title: account.cached()?.username ? 'DRIVER PROFILE' : 'CREATE YOUR DRIVER', desc: 'Your plate, stats and friends', act: 'account' })}
+        ${C.option({ icon: 'users-three', title: 'FRIENDS', desc: 'Online drivers, requests and recent opponents', act: 'friends' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
       </div><footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
+  r_account(d) { return renderDriver(d); }
+  r_friends(d) { return renderSocial(d); }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {
     const tile = (act, ic, title, desc) => `<div class="mi mode-tile" role="button" data-act="${act}"><span class="mode-tile__ico">${icon(ic)}</span><b class="mode-tile__title">${title}</b><span class="mode-tile__desc">${desc}</span></div>`;
@@ -408,7 +423,7 @@ export class Menu {
       body: `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
-  leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
+  leaving() { this.mapView?.dispose(); this.mapView = null; this.socialView?.dispose(); this.socialView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
   r_pause(d) {
