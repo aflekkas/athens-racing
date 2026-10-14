@@ -39,6 +39,7 @@ const BEHAV = {
   scooter: { a: 2.1, b: 4.0, T: 0.9, s0: 1.2, vf: 0.95, latV: 2.2 },
   moto: { a: 3.2, b: 5.0, T: 0.8, s0: 1.4, vf: 1.15, latV: 2.4 },
 };
+const CREEP = 1.1; // m/s: how fast a car that is stuck, or lining up for a stop, edges sideways at a standstill
 const _v = new THREE.Vector3();
 
 // Racer snapshots and the player's actor wrapper are rebuilt every frame; the vehicle stays the same.
@@ -259,7 +260,7 @@ export class Traffic {
     if (!keepDrv || !c.drv) this.personality(c);
     Object.assign(c, {
       mode: 'drive', uT: c.u, uv: 0, acc: 0, accT: 0, lcEval: this.rng.range(0.2, 1.2), lcT: 0, lcDelay: 0, blinkSide: 0, hazard: false,
-      ovt: null, split: false, task: null, evade: null, yieldT: 0, yieldU: undefined, yieldFor: null, seeT: 0, flashT: 0, shakenT: 0, quirkT: this.rng.range(4, 30), lastJ: null, stuckT: 0, honkCool: this.rng.range(1, 3), waitT: 0, brakeT: 0, lastStop: -1e9, wheel: c.wheel || 0, yawLC: 0,
+      ovt: null, split: false, task: null, evade: null, yieldT: 0, yieldU: undefined, yieldFor: null, seeT: 0, flashT: 0, shakenT: 0, quirkT: this.rng.range(4, 30), lastJ: null, stuckT: 0, heldT: 0, honkCool: this.rng.range(1, 3), waitT: 0, brakeT: 0, lastStop: -1e9, wheel: c.wheel || 0, yawLC: 0,
       hs: c.len * 0.5, hu: c.wid * 0.5, sigJ: -1, sigGo: false, cross: null, crash: null,
     });
   }
@@ -317,7 +318,7 @@ export class Traffic {
     this.initDrive(c);
     c.mode = 'parked'; c.v = 0; c.v0 = this.roadSpeed(s) * c.drv.vf;
     c.hazard = z !== 'beach' && z !== 'cove' ? true : rng.chance(0.3);
-    c.parkT = rng.range(12, 60); // some of them eventually drive off
+    c.parkT = rng.range(8, 36); // all of them drive off before long
     c.m.root.visible = true;
   }
 
@@ -424,6 +425,7 @@ export class Traffic {
       this.racers.push({ a, kind: a.kind, s: a.veh.s, u: a.veh.u, vs: r.vs, vu: r.vu, hs: ex.hs, hu: ex.hu });
     }
     for (const c of this.cars) if (c.active && c.cop && c.cop.siren && !c.crash) this.racers.push({ a: c, kind: 'police', s: c.s, u: c.u, vs: c.dir * c.v, vu: c.uv || 0, hs: c.len * 0.5, hu: c.wid * 0.5 });
+    this.trackHeldRacers(dt);
     this.wrecks.length = 0;
     for (const c of this.cars) if (c.active && c.crash && c.crash.wreck) this.wrecks.push(c);
     for (const c of this.cars) {
@@ -439,16 +441,51 @@ export class Traffic {
     this.updateCones(dt);
   }
 
+  /** how long a racer has been queued behind each civilian (standing or crawling within 40 m, in its lane): c.heldT.
+   *  Standing civilians (a double-parked car, a taxi at the kerb, a bus in its stop) use it to move on. */
+  trackHeldRacers(dt) {
+    for (const c of this.cars) {
+      if (!c.active || c.cross || c.cop) continue;
+      let held = false;
+      if ((c.crash ? Math.hypot(c.crash.vs, c.crash.vu) : c.v) < 1.5) for (const R of this.racers) {
+        if (R.kind === 'police' || R.a === c) continue;
+        const behind = (c.s - R.s) * c.dir - c.len * 0.5 - R.hs;
+        if (behind < -1 || behind > 40 || Math.abs(R.u - c.u) > c.hu + R.hu + 1.6 || R.vs * c.dir > 4) continue;
+        held = true; break;
+      }
+      c.heldT = held ? c.heldT + dt : Math.max(0, c.heldT - dt * 2);
+      // a wreck the field has been stuck behind is towed away
+      if (c.crash && c.crash.wreck && c.heldT > 10) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; }
+    }
+  }
+
+  /** the follower from follow() is standing in a queue (or crawling) and not level with us: pulling out ahead of it
+   *  costs it nothing, so a standing car need not wait for a gap. A racer alongside is held off by the steering guard. */
+  queueBehind(F) {
+    return F.fv < 1.5 && (F.gap > 0 || F.o.kind === 'player' || F.o.kind === 'rival');
+  }
+  /** pulling out of the kerb (or a parking spot) in front of a follower F (from follow()). A hurried driver takes a smaller
+   *  gap the longer they have waited, a queue standing behind needs none, but nobody pulls out in front of a racer
+   *  closing fast: it cannot stop in time. */
+  pullOutOk(F, waited, escalate) {
+    if (!F.o || F.gap > 14 + F.fv * 1.6) return true;
+    if (F.fv > 8 && (F.o.kind === 'player' || F.o.kind === 'rival')) return false;
+    return waited && (this.queueBehind(F) || escalate(F));
+  }
+
   updateParked(c, dt) {
     c.v = 0; c.acc = 0;
     c.parkT -= dt;
+    // a driver who sees a racer queued behind them comes back and moves on (cars left for good off the road stay)
+    if (c.heldT > 2.5 && c.parkT < 1e8) c.parkT = Math.min(c.parkT, 0);
     if (c.parkT > 0) return;
     // pull out: indicate towards the traffic, wait for a gap, go
     const lu = this.laneUOf(c, c.s, this.laneCount(c.s) - 1);
-    const f = this.follow(c, lu, c.wid * 0.5, 60);
+    const f = this.follow(c, lu, c.wid * 0.5, 130);
     c.blinkSide = -1; c.hazard = false;
     c.waitT = (c.waitT || 0) + dt;
-    const ok = f.gap > 14 + f.fv * 1.6 || (c.waitT > 6 && f.gap > 6 + f.fv * 0.8);
+    // a queue standing behind us is no reason to wait: we drive away from it
+    const ok = this.pullOutOk(f, c.waitT > 1.5, (q) => (c.waitT > 6 && q.gap > 6 + q.fv * 0.8) || (c.waitT > 10 && q.gap > 3 + q.fv * 0.3));
     if (ok) { c.mode = 'drive'; c.uT = lu; c.v = 0.5; c.lane = this.laneCount(c.s) - 1; c.lcT = 2.5; c.waitT = 0; }
   }
 
@@ -473,7 +510,7 @@ export class Traffic {
     // ---- tasks: taxi fares, bus stops, cruisers grabbing a spot, pull-overs and turn-offs
     if (!c.task && c.mode === 'drive') this.maybeTask(c, n, dt);
     let acc;
-    if (c.task) acc = this.runTask(c, dt, n, gap, lv);
+    if (c.task) acc = this.runTask(c, dt, n, gap, lv, L);
     else {
       if (c.split) v0 = Math.min(v0, Math.max(7, (L.lv > 0 ? L.lv : 0) + 7));
       acc = this.idm(c, c.v, v0, gap, lv);
@@ -509,7 +546,9 @@ export class Traffic {
     // ---- lateral: critically damped towards uT, lateral speed limited by forward speed (no crab-walking).
     // An emergency swerve is a yank of the wheel: much faster, up to what the tyres allow (~0.8 g)
     const ev = !!c.evade;
-    const latMax = ev ? Math.min(4.5, 0.1 + c.v * 0.5) : Math.min(d.latV, 0.06 + c.v * 0.32);
+    // (a driver stuck behind something standing inches out into the next lane instead of waiting for speed to steer)
+    const creep = !ev && ((c.stuckT > 1 && (c.lcT > 0 || c.ovt || c.split)) || (c.task && c.v < 1.5)) ? CREEP : 0;
+    const latMax = ev ? Math.min(4.5, 0.1 + c.v * 0.5) : Math.max(creep, Math.min(d.latV, 0.06 + c.v * 0.32));
     // the phone driver drifts about in the lane
     let uAim = c.uT + (d.wander && !c.task && !ev ? Math.sin(this.t * 0.37 + c.id * 1.7) * Math.sin(this.t * 0.11 + c.id) * d.wander : 0);
     // Never steer into a racer alongside, whatever the manoeuvre (an escape, its
@@ -532,7 +571,7 @@ export class Traffic {
     }
     c.u += c.uv * dt;
     if (c.lcT > 0) c.lcT -= dt;
-    c.yawLC = Math.atan2(c.uv, Math.max(1.5, c.v)) * c.dir;
+    c.yawLC = Math.atan2(c.uv, Math.max(2.4, c.v)) * c.dir;
     c.wheel += c.v * dt;
     // ---- impatience
     const stoppedBehind = c.v < 0.8 && gap < 9 && (sigGap === null || gap < sigGap - 0.5);
@@ -682,7 +721,7 @@ export class Traffic {
       const u = this.laneUOf(c, c.s, tl);
       const N = this.lead(c, u, hw, 160);
       const accNew = this.idm(c, c.v, c.v0, Math.min(N.gap, 1e4), N.lv);
-      const F = this.follow(c, u, hw, 70);
+      const F = this.follow(c, u, hw, 110);
       // safety: the new follower must not need to brake harder than this driver is willing to impose
       const squeeze = d.agg > 0.7 || (blocked && c.stuckT > 1.5);
       if (F.o) {
@@ -690,9 +729,10 @@ export class Traffic {
         if (accF < -d.bsafe * (squeeze ? 1.5 : 1) || F.gap < (squeeze ? 1.0 : 3.5)) continue;
       }
       if (N.gap < (squeeze ? 2 : 6)) continue;
+      if (this.racerClosing(c, u)) continue;
       let gain = accNew - accCur;
       if (F.o) gain -= d.polite * Math.max(0, -this.idmGeneric(F.fv, F.gap, c.v));
-      if (blocked) gain += 3;
+      if (blocked && !(N.o && N.o.stopped && N.gap < 70)) gain += 3; // (a lane blocked by the same standing car is no way out)
       if (tl > c.lane && (c.kind === 'bus' || c.kind === 'van' || c.kind === 'truck' || d.cruiser)) gain += 0.4; // slow vehicles keep to the kerb
       if (tl > c.lane && !blocked) gain -= 0.1; // nobody in Athens volunteers for the kerb lane
       for (const st of this.sites) if (st.lane === tl && c.dir > 0 && st.s - c.s > -20 && st.s - c.s < 200) gain -= 5;
@@ -700,11 +740,23 @@ export class Traffic {
     }
     if (best >= 0) this.startLC(c, best, d.indicate < 0.3);
   }
+  /** a racer coming up behind fast in the lane at lateral position u would arrive before we have cleared it
+   *  (steering across takes longer the slower we are going; the racers' own drivers cannot be counted on to lift) */
+  racerClosing(c, u, margin = 0) {
+    const latV = Math.max(c.stuckT > 1 || c.task ? CREEP : 0, Math.min(c.drv.latV, 0.06 + c.v * 0.32)), dur = 1.5 + Math.abs(u - c.u) / Math.max(0.3, latV);
+    for (const R of this.racers) {
+      if (R.a === c || R.kind === 'police') continue;
+      const dist = (c.s - R.s) * c.dir - R.hs - c.len * 0.5, closing = R.vs * c.dir - c.v;
+      if (dist < -c.len || dist > 260 || closing < 2 || R.vs * c.dir < 8 || Math.abs(R.u - u) > R.hu + c.wid * 0.5 + 0.6) continue; // (a racer crawling in a queue sees us)
+      if (dist / closing < dur + margin) return true;
+    }
+    return false;
+  }
   startLC(c, lane, sudden = false) {
     c.lane = lane;
     const toU = this.laneUOf(c, c.s, lane);
     c.blinkSide = Math.sign((toU - c.u) * c.dir) || 0; // + = to the right of travel
-    c.lcDelay = sudden ? 0 : c.drv.indicate;
+    c.lcDelay = sudden ? 0 : c.stuckT > 1.5 ? Math.min(c.drv.indicate, 0.4) : c.drv.indicate;
     if (c.lcDelay <= 0) { c.uT = toU; c.lcT = 3; }
   }
 
@@ -795,7 +847,7 @@ export class Traffic {
     if (!fare && !park) return;
     const sStop = c.s + c.dir * (c.v * c.v / (2 * 3.6) + 8);
     if (nearJ(sStop) || this.busStops.some((b) => Math.abs(b - sStop) < 25)) return;
-    if (this.sites.some((st) => Math.abs(st.s - sStop) < 60)) return;
+    if (this.sites.some((st) => Math.abs(st.s - sStop) < 60) || this.racerClosing(c, this.laneUOf(c, c.s, n - 1), 3)) return;
     c.task = { kind: fare ? 'fare' : 'park', sStop, phase: 'in', t: 0 };
     c.lane = n - 1; c.ovt = null; c.split = false;
     c.blinkSide = c.drv.indicate > 0.2 || rng.chance(0.4) ? 1 : 0; // half of them don't bother
@@ -812,6 +864,7 @@ export class Traffic {
   }
   tryPull(c, n) {
     const route = this.route, J = this.signals ? this.signals.J : [];
+    if (this.racerClosing(c, this.laneUOf(c, c.s, n - 1), 3)) return false;
     const b = c.drv.arch === 'distracted' ? 5 : 2.6;
     const sStop = c.s + c.dir * (c.v * c.v / (2 * b) + (c.drv.arch === 'distracted' ? 4 : 25));
     if (route.div(sStop) < 0.45 && n < 2 && route.edge(sStop) < 4.5) return false; // too narrow to stop without blocking it
@@ -823,6 +876,7 @@ export class Traffic {
   /** turn off right: a side street at the next junction, or (beach / town) a driveway, a petrol station, a car park */
   tryTurn(c, n) {
     const route = this.route, rng = this.rng, key = c.dir > 0 ? 'R' : 'L';
+    if (this.racerClosing(c, this.laneUOf(c, c.s, n - 1), 3)) return false;
     const J = this.signals ? this.signals.J : [];
     for (const j of J) {
       const dd = (j.s - c.s) * c.dir;
@@ -859,9 +913,20 @@ export class Traffic {
     Object.assign(c, { dir: 1, xyaw, xvs: Math.cos(xyaw) * c.v, xvu: 0, yawLC: 0 });
     c.cross = { j: k.j, side: Math.sign(uE), P, t: 0, len, mode: 'exit', dirT: 0, lane: 0, vT: k.j ? 6 : 4, blink: k.blink ? 1 : 0, honkT: 0 };
   }
-  runTask(c, dt, n, gap, lv) {
+  /** give up a stop: the way to it is blocked (a car already standing at the kerb, a queue we cannot get past) */
+  dropTask(c) {
+    c.task = null; c.blinkSide = 0; c.hazard = false; c.lastStop = this.t;
+  }
+  runTask(c, dt, n, gap, lv, L) {
     const k = c.task, d = c.drv;
     k.t += dt;
+    if (k.phase === 'in') {
+      // stuck on the way in behind something standing (not a red light) or with a racer queued behind us: nobody
+      // waits in the lane for a kerb space; carry on and look for another
+      k.blockT = c.v < 0.5 && L.o && L.gap < 9 && L.lv < 0.5 ? (k.blockT || 0) + dt : Math.max(0, (k.blockT || 0) - dt);
+      // ... or a racer is coming up fast in the kerb lane: nobody stops dead in front of it
+      if (k.blockT > 2.5 || (c.v < 0.5 && c.heldT > 3) || (c.v > 1 && k.kind !== 'turn' && this.racerClosing(c, this.laneUOf(c, c.s, n - 1), 3))) { this.dropTask(c); return this.idm(c, c.v, c.v0, gap, lv); }
+    }
     const kerb = this.kerbU(c, c.s, c.kind === 'bus' ? 1.35 : 1.05);
     if ((k.kind === 'pull' || k.kind === 'turn') && k.phase === 'in') {
       const sGoal = k.kind === 'turn' ? k.sTurn : k.sStop, dStop = (sGoal - c.s) * c.dir;
@@ -886,7 +951,7 @@ export class Traffic {
       c.uT = kerb;
       if (dStop < c.v * c.v / (2 * bk) + 2) acc = Math.min(acc, -c.v * c.v / (2 * Math.max(0.6, dStop)));
       else acc = Math.min(acc, this.idm(c, c.v, c.v0 * 0.75, dStop + 2, 0));
-      if ((dStop < 1.5 || (c.v < 0.4 && dStop < 8)) && Math.abs(c.u - kerb) < 0.7) { k.phase = 'wait'; k.t = 0; k.dur = this.rng.range(5, 25); c.hazard = this.rng.chance(0.6); }
+      if ((dStop < 1.5 || (c.v < 0.4 && dStop < 8)) && Math.abs(c.u - kerb) < 0.7) { k.phase = 'wait'; k.t = 0; k.dur = this.rng.range(3, 8); c.hazard = this.rng.chance(0.6); }
       if (dStop < -8) { k.phase = 'out'; k.t = 0; }
       return acc;
     }
@@ -906,16 +971,22 @@ export class Traffic {
       c.uT = kerb; c.v = 0;
       if (k.kind !== 'pull') c.hazard = c.kind !== 'bus';
       c.blinkSide = c.kind === 'bus' || c.hazard ? 0 : c.blinkSide;
-      if (k.kind === 'park') { c.task = null; c.mode = 'parked'; c.parkT = this.rng.range(20, 80); c.hazard = false; c.blinkSide = 0; c.lastStop = this.t; return 0; }
-      if (k.t > k.dur) { k.phase = 'out'; k.t = 0; c.hazard = false; c.blinkSide = -1; if (c.kind === 'bus') this.sounds.push({ kind: 'air', c }); }
+      if (k.kind === 'park') { c.task = null; c.mode = 'parked'; c.parkT = this.rng.range(10, 40); c.hazard = false; c.blinkSide = 0; c.lastStop = this.t; return 0; }
+      if (k.t > k.dur || c.heldT > 2.5) { k.phase = 'out'; k.t = 0; c.hazard = false; c.blinkSide = -1; if (c.kind === 'bus') this.sounds.push({ kind: 'air', c }); }
       return -3;
     }
     // out: wait for a gap in the lane (buses and impatient taxis push out anyway after a moment)
     const lu = this.laneUOf(c, c.s, n - 1);
-    const F = this.follow(c, lu, c.wid * 0.5, 70);
+    const F = this.follow(c, lu, c.wid * 0.5, 130);
     const pushy = c.kind === 'bus' ? 1.8 : c.kind === 'taxi' ? 2.5 + 3 * (1 - d.agg) : 4;
-    const ok = !F.o || F.gap > 10 + F.fv * 1.5 || (k.t > pushy && F.gap > 4 + F.fv * 0.5);
-    if (!ok && Math.abs(c.u - kerb) < 0.3) { c.uT = kerb; return -2; }
+    const ok = this.pullOutOk(F, k.t > pushy, (q) => q.gap > 4 + q.fv * 0.5 || (k.t > pushy + 4 && q.gap > 3 + q.fv * 0.3));
+    if (!ok) {
+      // standing at the kerb for a gap; once somebody queues up behind (or it takes too long) drive off along the
+      // kerb instead and join the lane when it opens up
+      const roll = c.heldT > 2 || k.t > pushy + 6;
+      if (Math.abs(c.u - kerb) < 0.3 && !roll) { c.uT = kerb; return -2; }
+      if (roll && k.t < pushy + 16) { c.uT = kerb; return this.idm(c, c.v, c.v0 * 0.7, gap, lv); }
+    }
     c.uT = lu;
     if (Math.abs(c.u - lu) < 0.35) { c.task = null; c.blinkSide = 0; c.lastStop = this.t; c.lane = n - 1; }
     return this.idm(c, c.v, c.v0, gap, lv);
@@ -1028,10 +1099,19 @@ export class Traffic {
       const eAl = Math.abs(hs) * ehs + Math.abs(hu) * ehu, eLt = Math.abs(hu) * ehs + Math.abs(hs) * ehu;
       return al + eAl > 0.3 && al - eAl < reach && Math.abs(lt) < halfW + eLt;
     };
-    let block = null;
+    let block = null, ped = false;
     for (const a of actors) if (inPath(a.veh.s, a.veh.u, a.veh.halfL, a.veh.halfW)) block = a;
     if (!block) for (const q of this.cars) if (q !== c && q.active && inPath(q.s, q.u, q.hs, q.hu)) { block = q; break; }
-    if (!block && this.people) for (const p of this.people.onRoad) if (inPath(p.s, p.u, 0.4, 0.4)) { block = p; break; }
+    if (!block && this.people) for (const p of this.people.onRoad) if (inPath(p.s, p.u, 0.4, 0.4)) { block = p; ped = true; break; }
+    // turning into the avenue: do not nose out into a lane whose first stretch is standing in a queue
+    if (!block && (k.mode === 'near' || k.mode === 'far') && Math.abs(c.u) > this.route.edge(c.s) + ROAD.gutter + 0.3) {
+      const sM = P[4], uM = P[3], ahead = (qs) => (qs - sM) * k.dirT;
+      for (const q of this.cars) if (q !== c && q.active && !q.cross && !q.crash && q.dir === k.dirT && Math.abs(q.u - uM) < 2.6 && ahead(q.s) > -8 && ahead(q.s) < 14 && q.v < 3) { block = q; break; }
+      if (!block) for (const a of actors) if (Math.abs(a.veh.u - uM) < 2.6 && ahead(a.veh.s) > -8 && ahead(a.veh.s) < 14 && Math.abs(a.veh.vLong) < 3) { block = a; break; }
+    }
+    // a crossing that cannot move for a long time (two queues nose to nose in the junction) clears itself
+    k.blockT = block && c.v < 0.3 ? (k.blockT || 0) + dt : 0;
+    if (k.blockT > 8 && !ped) { c.active = false; c.m.root.visible = false; c.cross = null; c.indL.emissiveIntensity = c.indR.emissiveIntensity = 0; return; }
     const vT = block ? 0 : k.vT;
     c.v = vT < c.v ? Math.max(vT, c.v - 8 * dt) : Math.min(vT, c.v + 2.4 * dt);
     k.honkT -= dt;

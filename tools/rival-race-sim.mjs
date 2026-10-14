@@ -4,8 +4,13 @@
 // attempt, abort and racer contact so rival racecraft can be compared.
 // node --import ./tools/physics-test/register.mjs tools/rival-race-sim.mjs [--map riviera|penteli] [--label before] [--player slow|matched|fast]
 // AI=<path to rival-ai.js> compares another controller with the same harness.
+// --real-traffic runs the production src/traffic.js civilians (and signals) instead of the scripted lane-keepers and
+// reports how long each civilian stood still in the road (tools/headless-traffic.mjs, tools/traffic-race.test.mjs).
+// --hour <h> sets the time of day (traffic density), --out <dir> where the .log/.json go, --watch <civilian id> [--wfrom s --wto s] traces one civilian.
 import { register } from 'node:module';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { resolve as resolvePath, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
 const limitsSource = `export const ROAD = { limits(route, s, out) {
   const outer = route.edge(s) + 0.55 + (route.urban(s) > 0.5 ? 0 : 1.1);
   out.max = outer; out.min = -outer;
@@ -22,6 +27,7 @@ const { Vehicle } = await import('../src/physics.js');
 const { Route } = await import('../src/map.js');
 const { RIVIERA_TUNNELS } = await import('../src/maps/riviera-tunnels.js');
 const EV = await import('../src/events.js');
+const { buildWorld } = await import('./headless-traffic.mjs');
 const { smoothstep } = await import('../src/util.js');
 const { RivalAI } = await import(process.env.AI ? new URL(process.env.AI, 'file://' + process.cwd() + '/').href : '../src/rival-ai.js');
 
@@ -29,7 +35,7 @@ const arg = (name, dflt) => { const i = process.argv.indexOf('--' + name); retur
 const mapId = arg('map', 'riviera'), label = arg('label', 'after'), playerMode = arg('player', 'slow');
 const traceName = arg('trace', null), traceFrom = +arg('from', 0), traceTo = +arg('to', 1e9);
 const rivalsN = +arg('rivals', 3), seconds = +arg('seconds', 900);
-const root = new URL('../', import.meta.url), out = new URL('.scratch/rival-ai-v2/', root);
+const root = new URL('../', import.meta.url), out = arg('out') ? pathToFileURL(resolvePath(arg('out')) + sep) : new URL('.scratch/rival-ai-v2/', root);
 mkdirSync(out, { recursive: true });
 const data = JSON.parse(readFileSync(new URL(mapId === 'penteli' ? 'data/maps/penteli/map.json' : 'data/map.json', root)));
 const route = new Route(data.route, { corridors: mapId === 'riviera' ? RIVIERA_TUNNELS : [] });
@@ -45,6 +51,7 @@ const r = EV.resolve({ ...def, rivals: rivalsN }, { route, marks: data.marks });
 const dir = r.dir, closedRoad = def.traffic === 0; route._testDirection = dir;
 const drivers = EV.gridFor({ ...def, rivals: rivalsN });
 const playerSpec = CARS.find((c) => c.id === (arg('car', 'z4')));
+const realTraffic = process.argv.includes('--real-traffic') && !closedRoad;
 const dt = 1 / 60, prog = (s) => (s - r.s0) * dir;
 
 // Grid exactly as main.js gridSlot: rivals in front, player in the last slot.
@@ -76,10 +83,22 @@ const basePace = { slow: 0.9, matched: 0.95, fast: 1 }[playerMode] ?? +playerMod
 const playerPace = (s) => basePace * (1 + 0.045 * Math.sin(prog(s) / 520) * (playerMode === 'fast' ? 0 : 1));
 
 // Light constant-speed traffic on two-way roads: same-direction and oncoming.
-const traffic = [];
-if (!closedRoad && !process.argv.includes('--notraffic')) {
+let traffic = [], world = null, actors = [];
+if (realTraffic) {
+  world = buildWorld(route, data, { hour: +arg('hour', 15) });
+  world.traffic.dir = dir;
+  // as main.js aiObstacles(): the civilians themselves plus the road works
+  traffic = world.traffic.cars;
+}
+if (!closedRoad && !realTraffic && !process.argv.includes('--notraffic')) {
   for (let d = 500; d < r.len; d += 650) traffic.push({ active: true, s: r.s0 + dir * d, u: dir * route.laneU(r.s0 + dir * d, 0), hs: 2.2, hu: 0.92, vs: dir * 13, v: 13, dir, len: 4.4, wid: 1.84 });
   for (let d = 900; d < r.len + 4000; d += 800) traffic.push({ active: true, s: r.s0 + dir * d, u: -dir * route.laneU(r.s0 + dir * d, 0), hs: 2.2, hu: 0.92, vs: -dir * 14, v: 14, dir: -dir, len: 4.4, wid: 1.84 });
+}
+
+if (realTraffic) {
+  actors = all.map((c) => ({ veh: c.veh, kind: c.isPlayer ? 'player' : 'rival' }));
+  world.traffic.reset(player.veh.s);
+  traffic = [...world.traffic.cars, ...world.traffic.sites.map((st) => ({ s: st.s, u: st.u, hs: st.len / 2, hu: st.wid / 2, vs: 0, v: 0, dir: 0, active: true }))];
 }
 
 function contact(a, b) {
@@ -102,6 +121,56 @@ const say = (line) => { log.push(`${t.toFixed(1).padStart(6)}s  ${line}`); };
 const corner = (s) => { const k = Math.abs(route.curv(s)); return k > 0.012 ? `bend R${Math.round(1 / k)}` : k > 0.004 ? `sweeper R${Math.round(1 / k)}` : 'straight'; };
 say(`${mapId} ${def.id} ${r.len.toFixed(0)} m · player ${playerSpec.id} pace ${playerMode} · grid ${field.map((c) => `${c.name}(${c.spec})`).join(', ')} · traffic ${traffic.length}`);
 const lastPass = new Map();
+// ---- real-traffic bookkeeping: every stretch a civilian stood still (< 0.5 m/s) and why, and racers' stops
+const civilianHits = [], episodes = [], open = new Map();
+let fieldStall = 0, maxFieldStall = 0, fieldNoted = false;
+function cause(c) {
+  const T = world.traffic;
+  if (c.mode === 'parked') return c.parkT > 1e8 ? 'parked-off-road' : 'parked';
+  if (c.task) return 'task-' + c.task.kind + '-' + c.task.phase;
+  const front = c.s + c.dir * c.len * 0.5, j = world.signals.next(front, c.dir), dj = j ? ((c.dir > 0 ? j.sF : j.sO) - front) * c.dir : 99;
+  if (j && j.main !== 'G' && dj > -1 && dj < 25) return 'red-light';
+  const L = T.lead(c, c.u, c.wid * 0.5, 40);
+  if (!L.o) return 'nothing-ahead';
+  const o = L.o, r = o.ref;
+  return 'behind-' + (o.kind === 'car' ? (r.mode === 'parked' ? 'parked' : r.task ? 'task-' + r.task.kind + '-' + r.task.phase : r.v < 0.5 ? 'stopped-car' : 'moving-car') : o.kind) + (L.gap < 12 ? '' : '-far');
+}
+const watchId = arg('watch', null), watchFrom = +arg('wfrom', 0), watchTo = +arg('wto', 1e9);
+const f = (x, n = 1) => (typeof x === 'number' ? x.toFixed(n) : '-');
+/** the episode is filed under the reason it spent most of its frames in (a task that ends a moment before the car moves off is still that task) */
+const close = (e) => { e.why = Object.entries(e.whys).sort((a, b) => b[1] - a[1])[0][0]; return e; };
+function watchCivilians() {
+  if (watchId !== null && Math.round(t * 60) % 60 === 0 && t >= watchFrom && t <= watchTo) {
+    const c = world.traffic.cars[+watchId], T = world.traffic, L = T.lead(c, c.u, c.wid * 0.5, 60), k = c.task, X = c.cross;
+    const j = world.signals.next(c.s + c.dir * c.len * 0.5, c.dir);
+    say(`  <civ ${c.id} ${c.kind}> s=${f(prog(c.s))} u=${f(c.u, 2)} uT=${f(c.uT, 2)} v=${f(c.v, 2)} acc=${f(c.acc, 2)} mode=${c.mode} lane=${c.lane} dir=${c.dir} crash=${c.crash ? 'wreck' + c.crash.wreck + '/t' + f(c.crash.t, 0) : '-'} cross=${X ? X.mode + '/t' + f(X.t, 2) : '-'} task=${k ? k.kind + '/' + k.phase + '/t' + f(k.t, 0) : '-'} lcT=${f(c.lcT)} yield=${f(c.yieldT)} evade=${!!c.evade} stuckT=${f(c.stuckT)} v0=${f(c.v0)} next=${j ? j.main + '@' + f(((c.dir > 0 ? j.sF : j.sO) - c.s) * c.dir, 0) : '-'} held=${f(c.heldT)} lead=${L.o ? L.o.kind + (L.o.ref?.id ?? '') + ' gap' + f(L.gap) + ' lv' + f(L.lv) : '-'} racers=` + all.filter((r) => Math.abs(r.veh.s - c.s) < 40).map((r) => `${r.name}@${f(((r.veh.s - c.s) * c.dir), 0)}/${f(r.veh.u)}/v${f(r.veh.vLong, 0)}`).join(','));
+  }
+  for (const c of world.traffic.cars) {
+    const e = open.get(c.id), still = c.active && !c.crash && !c.cross && c.v < 0.5 && c.mode !== 'cross' && !c.police;
+    if (still && t > 3) {
+      const why = cause(c);
+      const waiting = all.some((r) => r.finish === null && Math.abs(r.veh.vLong) < 3 && (c.s - r.veh.s) * c.dir > 0 && (c.s - r.veh.s) * c.dir < 40 && Math.abs(r.veh.u - c.u) < 3.5);
+      if (!e) open.set(c.id, { id: c.id, kind: c.kind, t0: t, t1: t, s0: prog(c.s), u: +c.u.toFixed(2), lane: c.lane, why, whys: { [why]: 1 }, racerWait: 0 });
+      else { e.t1 = t; e.whys[why] = (e.whys[why] || 0) + 1; e.why = why; }
+      if (waiting) open.get(c.id).racerWait += dt;
+    } else if (e) { open.delete(c.id); if (e.t1 - e.t0 >= 1) episodes.push(close(e)); }
+  }
+  // a stall of the whole field: every racer under 1 m/s at once
+  const racing = all.filter((c) => c.finish === null);
+  if (t > 5 && racing.length && racing.every((c) => Math.abs(c.veh.vLong) < 1)) { fieldStall += dt; maxFieldStall = Math.max(maxFieldStall, fieldStall); } else fieldStall = 0;
+  for (const c of racing) {
+    c.stopT = Math.abs(c.veh.vLong) < 1 && t > 5 ? (c.stopT || 0) + dt : 0; c.maxStop = Math.max(c.maxStop || 0, c.stopT);
+    if (c.stopT === 0) c.stopNoted = false;
+    if (c.stopT > 10 && !c.stopNoted) {
+      c.stopNoted = true;
+      // what is in front of a racer that has been standing still for 10 s
+      const v = c.veh, near = world.traffic.cars.filter((o) => o.active && Math.abs(o.s - v.s) < 30 && Math.abs(o.u - v.u) < 5).sort((a, b) => Math.abs(a.s - v.s) - Math.abs(b.s - v.s)).slice(0, 5);
+      say(`STOPPED 10 s: ${c.name} at ${prog(v.s).toFixed(0)} m u=${v.u.toFixed(1)} yaw=${v.yaw.toFixed(2)}; near: ` + near.map((o) => `${o.kind}#${o.id} ${((o.s - v.s) * dir).toFixed(1)}m u=${o.u.toFixed(1)} v=${o.v.toFixed(1)} ${cause(o)} lane=${o.lane}`).join(' | ') + ` | lights ${world.signals.J.filter((j) => Math.abs(j.s - v.s) < 80).map((j) => j.main + '@' + (j.s - v.s).toFixed(0)).join(',')}`);
+    }
+  }
+  if (fieldStall > 10 && !fieldNoted) { fieldNoted = true; say('FIELD STALL 10 s at ' + all.map((c) => `${c.name}:${prog(c.veh.s).toFixed(0)}`).join(' ')); }
+  if (fieldStall === 0) fieldNoted = false;
+}
 for (let step = 0; step < seconds / dt; step++) {
   t = (step + 1) * dt;
   const inputs = all.map((c) => {
@@ -109,7 +178,7 @@ for (let step = 0; step < seconds / dt; step++) {
     if (c.finish !== null && prog(c.veh.s) > r.len + 120) return { throttle: 0, brake: c.veh.vLong > 1 ? 0.7 : 0, steer: 0, handbrake: c.veh.vLong <= 1 };
     const pace = c.finish !== null ? 0.3 : c.isPlayer ? playerPace(c.veh.s) : 1;
     const t0 = performance.now();
-    const input = c.ai.update(dt, { racers: ghost ? [] : all, traffic, pace, signals: null, gapToPlayer: c.isPlayer ? null : (c.veh.s - player.veh.s) * dir });
+    const input = c.ai.update(dt, { racers: ghost ? [] : all, traffic, pace, signals: realTraffic ? world.signals : null, gapToPlayer: c.isPlayer ? null : (c.veh.s - player.veh.s) * dir });
     const took = performance.now() - t0; aiMs += took; aiCalls++; if (t > 2) aiMax = Math.max(aiMax, took); if (t > 2 && took > 5) slowCalls.push([+t.toFixed(2), c.name, +took.toFixed(1), c.ai.debug?.passState || '-']);
     const dbg = c.ai.debug || {};
     const state = dbg.passState || (dbg.passing ? 'oncoming' : null);
@@ -132,7 +201,15 @@ for (let step = 0; step < seconds / dt; step++) {
     if (v.wallHit > 0.5) c.wall++;
     if (c.finish === null && prog(v.s) >= r.len) { c.finish = t; say(`${c.name} FINISHES ${t.toFixed(2)} s`); }
   }
-  for (const c of traffic) { c.s += c.vs * dt; c.u = c.dir * route.laneU(c.s, 0); } // lane keeping
+  if (realTraffic) {
+    world.signals.update(dt, player.veh.s);
+    world.traffic.update(dt, player.veh.s, actors);
+    for (const a of actors) {
+      const n0 = civilianHits.length; world.traffic.collide(a, civilianHits, t);
+      for (let k = n0; k < civilianHits.length; k++) { const h = civilianHits[k]; if (h.car && h.kind !== 'near') say(`HIT ${h.kind} sev=${h.sev?.toFixed(1)} civ#${h.car.id} ${h.car.kind} at ${prog(h.car.s).toFixed(0)} m u=${h.car.u.toFixed(1)} by ${all[actors.indexOf(a)].name}`); }
+    }
+    watchCivilians();
+  } else for (const c of traffic) { c.s += c.vs * dt; c.u = c.dir * route.laneU(c.s, 0); } // lane keeping
   // Racer contacts (onsets) and traffic contacts.
   for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
     const a = all[i], b = all[j], key = i * 31 + j, hit = a.finish === null && b.finish === null && contact(a.veh, b.veh);
@@ -141,7 +218,7 @@ for (let step = 0; step < seconds / dt; step++) {
   }
   if (step % 6 === 0) for (const c of all) {
     if (c.finish !== null) continue;
-    const near = traffic.filter((o) => Math.abs(o.s - c.veh.s) < 12);
+    const near = traffic.filter((o) => o.active !== false && !o.crash && Math.abs(o.s - c.veh.s) < 12);
     const hit = near.some((o) => contact(c.veh, trafficBody(o)));
     if (hit && !c.trafficHit) { events.push({ t, kind: 'traffic', a: c.name, s: prog(c.veh.s) }); say(`TRAFFIC CONTACT ${c.name} at ${prog(c.veh.s).toFixed(0)} m`); }
     c.trafficHit = hit;
@@ -186,9 +263,24 @@ const summary = {
   racerContacts: events.filter((e) => e.kind === 'contact').length, trafficContacts: events.filter((e) => e.kind === 'traffic').length,
   cars: all.map((c) => ({ name: c.name, car: c.spec, finish: c.finish, attempts: c.attempts, aborts: c.aborts, overtakes: c.ai.overtakes, contacts: c.contacts, wallFrames: c.wall, followSeconds: c.followT || 0, maxStuckSeconds: c.maxStuck })),
 };
+if (realTraffic) {
+  for (const e of open.values()) if (e.t1 - e.t0 >= 1) episodes.push(close(e));
+  const dur = (e) => +(e.t1 - e.t0).toFixed(1);
+  const longest = [...episodes].sort((a, b) => dur(b) - dur(a));
+  // genuinely held: a red light, a bus/taxi in its bay, a car parked off the road (and a queue behind those)
+  const held = (e) => /^(red-light|parked-off-road|task-(bus|fare|park|pull)-wait|behind-(red-light|parked-off-road))/.test(e.why);
+  summary.civilians = {
+    episodes: episodes.length, maxStillS: longest[0] ? dur(longest[0]) : 0,
+    over8s: episodes.filter((e) => dur(e) > 8).length, over20s: episodes.filter((e) => dur(e) > 20).length,
+    unheldOver8s: episodes.filter((e) => !held(e) && dur(e) > 8).length,
+    longest: longest.slice(0, 12).map((e) => ({ id: e.id, racerWait: +e.racerWait.toFixed(1), kind: e.kind, s: +e.s0.toFixed(0), u: e.u, t0: +e.t0.toFixed(1), dur: dur(e), why: e.why, whys: Object.entries(e.whys).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => k + ':' + (n / 60).toFixed(1)) })),
+    maxFieldStallS: +maxFieldStall.toFixed(1), civilianHits: civilianHits.length,
+  };
+  for (const c of all) summary.cars.find((x) => x.name === c.name).maxStopS = +(c.maxStop || 0).toFixed(1);
+}
 summary.slowUpdates = slowCalls.length; say('SLOW ' + JSON.stringify(slowCalls.slice(0, 40)));
 say('SUMMARY ' + JSON.stringify(summary));
 const base = `${label}-${mapId}-${playerMode}${pole ? '-pole' : ''}${sameCar ? '-samecar' : ''}${ghost ? '-ghost' : ''}`;
 writeFileSync(new URL(base + '.log', out), log.join('\n') + '\n');
-writeFileSync(new URL(base + '.json', out), JSON.stringify({ summary, events, samples }) + '\n');
+writeFileSync(new URL(base + '.json', out), JSON.stringify({ summary, events, samples, episodes: realTraffic ? episodes.map((e) => ({ ...e, dur: +(e.t1 - e.t0).toFixed(1), racerWait: +e.racerWait.toFixed(1) })) : undefined }) + '\n');
 console.log(JSON.stringify(summary));
