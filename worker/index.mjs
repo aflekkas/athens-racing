@@ -3,6 +3,8 @@ import { rewriteShareMetadata } from './share-metadata.mjs';
 import catalogue from '../.deploy/catalogue.json';
 import { createGameCore } from '../server/core.mjs';
 import { createSqlLeaderboard } from './leaderboard.mjs';
+import { createCustomizationService, handleCustomizationRequest } from '../server/customization.mjs';
+import { createSqlCustomizationStore } from '../server/customization-store.mjs';
 
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
 const cars = new Set(catalogue.cars);
@@ -12,6 +14,11 @@ const json = (value, status = 200) => Response.json(value, { status, headers: { 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/customization' || url.pathname.startsWith('/api/customization/')) {
+      const origin = request.headers.get('Origin');
+      if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
+      return env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request);
+    }
     if (['/ws', '/health', '/api/lobbies', '/api/leaderboard'].includes(url.pathname)) {
       const origin = request.headers.get('Origin');
       if (origin && new URL(origin).host !== url.host) return json({ error: 'Origin mismatch.' }, 403);
@@ -28,8 +35,9 @@ export class GameArena extends DurableObject {
     this.ctx = ctx;
     this.timer = null;
     this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars);
+    this.customization = createCustomizationService(createSqlCustomizationStore(ctx.storage.sql), { cars });
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS post_limits (ip TEXT PRIMARY KEY, at INTEGER NOT NULL, count INTEGER NOT NULL)');
-    this.core = createGameCore({ maps, cars, nitrousCars, leaderboard: this.leaderboard });
+    this.core = createGameCore({ maps, cars, nitrousCars, leaderboard: this.leaderboard, appearance: this.customization });
     // Auto-response avoids waking the object for optional idle keepalives.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('keepalive', 'alive'));
     ctx.blockConcurrencyWhile(async () => {
@@ -77,6 +85,9 @@ export class GameArena extends DurableObject {
     }
     if (request.method === 'GET' && path === '/health') return json({ ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
     if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);
+    // Account routes are integrated separately. Never trust client-supplied identity.
+    const me = () => { throw Object.assign(new Error('Sign in with Google first.'), { status: 401 }); };
+    if (path === '/api/customization' || path.startsWith('/api/customization/')) return handleCustomizationRequest(request, { service: this.customization, who: me });
     if (path === '/api/leaderboard') {
       if (request.method === 'GET') return json(this.leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, limit: url.searchParams.get('limit') }));
       if (request.method !== 'POST') return json({ error: 'Use GET or POST.' }, 405);
