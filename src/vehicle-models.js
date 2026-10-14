@@ -432,7 +432,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   // dielectric specular gives the stronger grazing reflections without metallic glass.
   if(playerModel){M.glass.color.set('#c4d4cf');M.glass.opacity=d.open?.12:.18;M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
   if(ROAD_MODELS[kind]){M.glass.color.set('#829b9c');M.glass.opacity=.38;}
-  if(d.mercedes){M.glass.color.set(d.suv?'#354e59':'#71868f');M.glass.opacity=d.suv?.42:.55;}
+  if(d.mercedes){M.glass.color.set(d.sculpted?'#26343e':d.suv?'#354e59':'#71868f');M.glass.opacity=d.sculpted?.64:d.suv?.42:.55;if(d.sculpted)M.glass.envMapIntensity=.25;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
   if(!grouped){
