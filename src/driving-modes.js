@@ -1,6 +1,7 @@
 import { events } from './events.js';
 import { buildDrivingRoutes, createObjectiveState, stepObjectives, objectiveResult, objectiveSnapshot, resolveDrivingMode, objectiveTarget, DRIVING_MODES } from './driving-objectives.js';
 export { drivingModeDefinition, isDrivingMode, resolveDrivingMode, DRIVING_MODES } from './driving-objectives.js';
+export function drivingModeTarget(objective, routes) { const target = objective && routes?.length ? objectiveTarget(objective, routes) : null; return target ? { ...target, phase: objective.phase } : null; }
 
 // EventRun-compatible adapter. Main owns simulation/pause/reset; no second update loop.
 export class DrivingModeRun {
@@ -35,6 +36,7 @@ export class DrivingModeRun {
   finish(extra = {}) {
     if (this.done) return this.result;
     this.done = true;
+    this.state.done = true; this.state.phase = 'finished'; this.state.holdSeconds = 0;
     this.result = { eventId: this.id, mapId: this.def.mapId, type: this.type, car: this.car, ...extra, ...objectiveResult(this.state), position: null, field: extra.field || 1 };
     // Session counts stay out of race records and leaderboard submissions.
     events.emit('finish', this.result); return this.result;
@@ -50,7 +52,8 @@ export function drivingModeHud(objective, trips, pose = {}) {
   const action = objective.phase === 'pickup' ? (mode === 'taxi' ? 'PICK UP PASSENGER' : 'REACH BANK PICKUP') : objective.phase === 'dropoff' ? (mode === 'taxi' ? 'TAKE PASSENGER TO DESTINATION' : 'ESCAPE TO DROPOFF') : objective.phase === 'cooldown' ? 'NEXT JOB IN A MOMENT' : 'SESSION COMPLETE';
   const distance = target && Number.isFinite(pose.x) && Number.isFinite(pose.z) ? Math.hypot(target.x - pose.x, target.z - pose.z) : null;
   const nearby = distance !== null && distance <= 10;
-  const detail = nearby ? `STOP BELOW 8 KM/H · ${Math.min(1.5, objective.holdSeconds || 0).toFixed(1)} / 1.5 S` : target ? `${esc(target.district)}${distance !== null ? ` · ${distance >= 1000 ? (distance / 1000).toFixed(1) + ' KM' : Math.round(distance) + ' M'}` : ''} · FOLLOW THE ROAD` : '';
+  const direction = target && Number.isFinite(pose.s) ? target.s < pose.s - 20 ? 'TURN BACK SAFELY · FOLLOW THE ROAD' : 'FOLLOW THE ROAD' : 'FOLLOW THE ROAD';
+  const detail = nearby ? `STOP BELOW 8 KM/H · ${Math.min(1.5, objective.holdSeconds || 0).toFixed(1)} / 1.5 S` : target ? `${esc(target.district)}${distance !== null ? ` · ${distance >= 1000 ? (distance / 1000).toFixed(1) + ' KM' : Math.round(distance) + ' M'}` : ''} · ${direction}` : '';
   return `<div class="e-k">${DRIVING_MODES[mode]?.label || 'DRIVING'} · ${completed} ${mode === 'taxi' ? 'FARES' : 'MISSIONS'} · ${clock(objective.remaining)}</div><b style="font-size:14px">${action}</b><div style="font-size:11px;margin-top:5px">${detail}</div>`;
 }
 export function drivingModeResults(run, res, fmtTime) {

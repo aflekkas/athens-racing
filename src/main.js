@@ -24,7 +24,7 @@ import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import * as EV from './events.js';
-import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults } from './driving-modes.js';
+import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
@@ -1621,6 +1621,9 @@ function step(dt, draw = true) {
   }
   if (G.state === 'race' && G.raceT > 5) document.body.classList.add('started');
   document.body.classList.toggle('circuit-race', !!G.run?.r.closed && !multiplayer.active);
+  st.objectiveMode = multiplayer.active ? isDrivingMode(multiplayer.lobby?.mode || multiplayer.lobby?.event?.type) : isDrivingMode(G.ev?.def);
+  const objectiveDriver = multiplayer.active ? multiplayer.spectating?.() || multiplayer.me : null;
+  st.objectiveTarget = st.objectiveMode ? drivingModeTarget(multiplayer.active ? objectiveDriver?.objective : G.run?.objective, multiplayer.active ? multiplayer.lobby.event?.objectiveRoutes : G.run?.routes) : null;
   hud.update(st);
   for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }

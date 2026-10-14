@@ -225,8 +225,14 @@ export class Hud {
     g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; this.pathRange(g, Math.max(i0, ic), Math.min(i1, fi)); g.stroke();
     // finish
     const sFin = this.r1 ?? route.finish;
-    if (Math.abs(sFin - st.s) < R) {
+    if (!st.objectiveMode && Math.abs(sFin - st.s) < R) {
       const p = route.point(sFin, 0); g.fillStyle = '#ffc21a'; g.beginPath(); g.arc(p.x, p.z, 9 / sc, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3 / sc; g.stroke();
+    }
+    // Driving missions show the actual pickup/dropoff instead of a race finish.
+    if (st.objectiveTarget) {
+      const p = st.objectiveTarget; g.fillStyle = p.phase === 'dropoff' ? '#62e9bf' : '#ffd34d';
+      g.beginPath(); g.arc(p.x, p.z, 9 / sc, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#000'; g.lineWidth = 3 / sc; g.stroke();
     }
     // traffic lights
     if (st.junctions) for (const j of st.junctions) {
