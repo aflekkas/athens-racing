@@ -14,8 +14,8 @@ export { MAX_RIVALS };
 /** above this many AI cars the frame rate can suffer on modest machines: the menu shows a warning, not a limit */
 export const PERF_RIVALS = 5;
 export const TRAFFIC_LEVELS = Object.freeze([['off', 0, 'OFF'], ['light', 0.5, 'LIGHT'], ['normal', 1, 'NORMAL'], ['heavy', 1.5, 'HEAVY'], ['extreme', 2, 'EXTREME']]);
-export const TIMES = Object.freeze([['dawn', 'DAWN'], ['day', 'MIDDAY'], ['afternoon', 'AFTERNOON'], ['sunset', 'SUNSET'], ['night', 'NIGHT']]);
-export const WEATHERS = Object.freeze([['clear', 'CLEAR'], ['overcast', 'OVERCAST'], ['rain', 'RAIN']]);
+export const TIMES = Object.freeze([['dawn', 'DAWN'], ['day', 'MIDDAY'], ['afternoon', 'AFTERNOON'], ['sunset', 'SUNSET'], ['night', 'NIGHT'], ['dynamic', 'DYNAMIC']]);
+export const WEATHERS = Object.freeze([['clear', 'CLEAR'], ['overcast', 'OVERCAST'], ['rain', 'RAIN'], ['dynamic', 'DYNAMIC']]);
 export const MAX_LAPS = 20;
 const KEY = 'paraliaki.raceSetup';
 const memStore = { m: new Map(), getItem(k) { return this.m.get(k) ?? null; }, setItem(k, v) { this.m.set(k, String(v)); } };

@@ -7,6 +7,10 @@ import { ROAD } from './road.js';
 import { RNG, clamp, damp, wrapAngle, CellInstances } from './util.js';
 import { Crowd, makeLook, newPose, poseWalk, poseCycle, poseStand, poseSit, poseLie, poseSwim, armsPanic, armsFist, armsWave, HIP_Y } from './human.js';
 
+import { PeoplePolicy, peopleSchedule, villageResidents } from './people-policy.js';
+import { COND, COND_STATE } from './env.js';
+import { hourForTime } from './world-life.js';
+
 const MAX = 150;
 const TAU = Math.PI * 2;
 // ------------------------------------------------------------------ café furniture
@@ -42,6 +46,7 @@ export class People {
   constructor(map, scene, assets, group) {
     this.map = map; this.route = map.route; this.terrain = map.terrain; this.assets = assets;
     this.rng = new RNG(2024);
+    this.policy = new PeoplePolicy(map, ROAD.sidewalk);
     this.crowd = new Crowd(scene, MAX);
     this.peds = Array.from({ length: MAX }, (_, i) => ({ slot: i, active: false, P: newPose() }));
     this.onRoad = []; this.events = []; this.t = 0;
@@ -53,6 +58,7 @@ export class People {
     this.buildCafes(group);
     this.collectBeach();
     this.collectBusStops();
+    this.anchors.push(...villageResidents(map, this.policy));
     this.anchors.sort((a, b) => a.s - b.s);
     this._f = {}; this._v = new THREE.Vector3();
     this.acts = [{}, {}];
@@ -141,10 +147,9 @@ export class People {
 
   // ---------------------------------------------------------------- spawning
   dens(s) {
-    const r = this.route, urb = r.urban(s);
-    const z = s < 3700 ? 1 : s < 6850 ? 0.8 : s < 9570 ? 0.55 : s < 10290 ? 0.9 : 0.05;
-    return urb > 0.4 ? z * urb : 0.03;
+    return Math.max(this.policy.density(s, 1, this.hour(), COND_STATE.rain), this.policy.density(s, -1, this.hour(), COND_STATE.rain));
   }
+  hour() { return Number.isFinite(COND.hour) ? COND.hour : hourForTime(COND.time); }
   free() { for (const p of this.peds) if (!p.active) return p; return null; }
   init(p, kind, look) {
     Object.assign(p, {
@@ -157,6 +162,7 @@ export class People {
   despawn(p) { p.active = false; if (p.anchor) { p.anchor.ped = null; p.anchor = null; } }
 
   spawnWalker(ps, initial) {
+    if (this.map.id === 'penteli') return;
     const r = this.route, rng = this.rng;
     const p = this.free(); if (!p) return;
     let s = null;
@@ -169,11 +175,14 @@ export class People {
     if (s === null) for (let i = 0; i < 6; i++) { const c = initial ? ps + rng.range(-60, 470) : ps + rng.range(270, 470); if (rng.next() < this.dens(c)) { s = c; break; } }
     if (s === null || s < 30 || s > r.length - 30) return;
     const side = rng.chance(r.seaR(s) < 140 ? 0.62 : 0.5) ? 1 : -1;
-    const sw = ROAD.sidewalk(r, s, side); if (sw < 1.4) return;
+    const sw = ROAD.sidewalk(r, s, side); if (sw < 1.4 || !this.policy.zone(s, side).allowed) return;
     // Keep bicycles on broad promenades; runners share the ordinary pavement.
-    const activity = !zeb && sw > 4.5 && rng.chance(0.12) ? 'cyclist' : !zeb && rng.chance(0.13) ? 'jogger' : 'street';
+    const activity = !zeb && sw > 4.5 && this.policy.zone(s, side).coastal && rng.chance(peopleSchedule('cyclist', this.hour(), COND_STATE.rain)) ? 'cyclist' : !zeb && rng.chance(peopleSchedule('jogger', this.hour(), COND_STATE.rain)) ? 'jogger' : 'street';
+    const uo = rng.range(0.9, Math.max(1.0, sw * 0.4));
+    if (!this.policy.safePoint(s, side * (r.edge(s) + ROAD.gutter + .18 + uo))) return;
     this.init(p, 'walker', makeLook(rng, activity));
-    Object.assign(p, { rs: true, s, side, u: 0, uo: rng.range(0.9, Math.max(1.0, sw * 0.4)), dirS: rng.chance(0.5) ? 1 : -1, speed: p.look.speed, mode: 'walk' });
+    p.look.umbrella = COND_STATE.rain > .12 && p.look.role === 'street';
+    Object.assign(p, { rs: true, s, side, u: side * (r.edge(s) + ROAD.gutter + .18 + uo), uo, dirS: rng.chance(0.5) ? 1 : -1, speed: p.look.speed, mode: 'walk' });
     p.uoT = p.uo;
     if (p.look.role === 'cyclist') { p.uo = Math.min(sw - 0.7, Math.max(1.7, sw * 0.5)); p.uoT = p.uo; }
     if (zeb) { p.mode = 'wait'; p.zeb = zeb; p.waitT = rng.range(0, 4); p.uo = 0.3; }
@@ -189,15 +198,16 @@ export class People {
   }
   spawnAnchor(a) {
     const p = this.free(); if (!p) return;
-    const ctx = a.kind === 'artist' ? 'jogger' : a.kind === 'cafe' || a.kind === 'stop' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
+    const ctx = a.kind === 'artist' ? 'jogger' : a.kind === 'cafe' || a.kind === 'stop' || a.kind === 'resident' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
     const look = makeLook(this.rng, ctx);
+    if (a.kind === 'stop' || a.kind === 'resident') look.umbrella = COND_STATE.rain > .12;
     if (a.kind === 'artist') { look.role = 'artist'; look.cup = look.phone = look.bag = look.umbrella = look.towel = false; look.sprayCan = true; }
     if (a.kind === 'swim' || a.kind === 'lie') { look.cup = false; look.towel = false; look.bag = false; look.umbrella = false; look.phone = false; look.glasses = a.kind === 'lie' && look.glasses; if (a.kind === 'swim') look.hat = null; }
     if (a.kind === 'stop' || a.kind === 'beach' || a.kind === 'wander') look.cup = look.cup && this.rng.chance(0.5);
     this.init(p, a.kind, look);
     a.ped = p; p.anchor = a;
     p.x = a.x; p.z = a.z; p.y = a.y; p.yaw = a.yaw; p.home = { x: a.x, z: a.z, y: a.y, yaw: a.yaw };
-    p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand', artist: 'stand' }[a.kind];
+    p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand', artist: 'stand', resident: 'stand' }[a.kind];
     p.variant = a.kind === 'stop' ? this.rng.pick(['idle', 'phone', 'look', 'cross']) : a.kind === 'beach' ? this.rng.pick(['chat', 'idle', 'hips', 'chat', 'phone']) : 'idle';
     look.phone = p.variant === 'phone';
     p.target = null; p.speed = p.look.speed * 0.7;
@@ -214,9 +224,11 @@ export class People {
 
   updateAnchors(ps) {
     for (const a of this.anchors) {
-      const inW = a.s > ps - 150 && a.s < ps + 380;
+      const rank = ((Math.imul(Math.round(a.s * 17 + a.x * 7), 2654435761) >>> 0) % 1000) / 1000;
+      const available = rank < this.policy.anchor(a, this.hour(), COND_STATE.rain);
+      const inW = available && a.s > ps - 150 && a.s < ps + 380;
       if (inW && !a.ped) this.spawnAnchor(a);
-      else if (!inW && a.ped && (a.s < ps - 190 || a.s > ps + 430)) this.despawn(a.ped);
+      else if (!inW && a.ped && (!available || a.s < ps - 190 || a.s > ps + 430)) this.despawn(a.ped);
     }
   }
 
@@ -229,10 +241,11 @@ export class People {
     let walkers = 0;
     for (const p of this.peds) {
       if (!p.active) continue;
-      if (p.kind === 'walker') { if (p.s < ps - 130 || p.s > ps + 520) { this.despawn(p); continue; } walkers++; }
+      if (p.kind === 'walker') { if (p.s < ps - 130 || p.s > ps + 520 || !this.policy.zone(p.s, p.side).allowed || (p.mode === 'walk' && !this.policy.safePoint(p.s, p.u))) { this.despawn(p); continue; } p.look.umbrella = COND_STATE.rain > .12 && p.look.role === 'street'; walkers++; }
     }
     if ((this.frame = (this.frame || 0) + 1) % 10 === 0) this.updateAnchors(ps);
     const want = Math.round(70 * Math.max(this.dens(ps + 120), this.dens(ps + 350)));
+    if (walkers > want && this.frame % 10 === 0) { const p = this.peds.find(p => p.active && p.kind === 'walker' && p.mode === 'walk'); if (p) this.despawn(p); }
     if (walkers < want) this.spawnWalker(ps, false);
     // actors in world space
     const acts = this.acts;
@@ -287,6 +300,7 @@ export class People {
   }
 
   walkY(s, u) {
+    if (this.map.id === 'penteli' && Math.abs(u) > this.route.edge(s) + ROAD.gutter) { const p = this.route.point(s, u, this._v); return this.terrain.height(p.x, p.z) + .015; }
     const r = this.route, au = Math.abs(u), eA = r.edge(s) + ROAD.gutter, side = u >= 0 ? 1 : -1;
     if (au > eA + 0.12) return r.surfaceY(s, side * eA) + ROAD.curbH(r, s) + 0.015;
     if (r.div(s) > 0.45 && au < r.medHalf(s)) return r.surfaceY(s, u) + 0.2;
@@ -299,6 +313,8 @@ export class People {
     const busy = p.react && p.react.type !== 'wave';
     if (p.air) { p.hd = p.hd ?? 0; return; }
     if (p.mode === 'walk') {
+      const nextS = p.s + p.dirS * p.speed * dt;
+      if (!this.policy.safePoint(nextS, p.side * (r.edge(nextS) + ROAD.gutter + .18 + p.uo))) { p.dirS *= -1; this.nextZebra(p); }
       const v = busy ? 0 : p.speed;
       p.moving = v > 0;
       p.s += p.dirS * v * dt;

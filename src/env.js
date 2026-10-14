@@ -4,6 +4,7 @@
 // photographic wave normals, real bathymetry, clear-water seabed with caustics, shore foam).
 import * as THREE from 'three';
 import { TX } from './tex.js';
+import { timeForHour, FRONTS } from './world-life.js';
 
 export const U = { time: { value: 0 } };
 
@@ -24,6 +25,7 @@ export const WEATHERS = {
   clear: { over: 0, T: 1, haze: 1, rain: 0 },
   overcast: { over: 1, T: 0.36, haze: 3, rain: 0 },
   rain: { over: 1, T: 0.22, haze: 30, rain: 1 },
+  cloudy: FRONTS.cloudy, lightRain: FRONTS.lightRain, clearing: FRONTS.clearing,
 };
 const Qp = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
 /** the current conditions as plain data (what events and multiplayer exchange) */
@@ -109,11 +111,35 @@ const mix3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
 // reference light level for the exposure: the original late-afternoon look is exposure 1
 const REF = (() => { const a = computeAtmosphere(dirFromAngles(21, 250)); return lum(a.sunIrr) * Math.sin(THREE.MathUtils.degToRad(21)) + lum(a.skyIrr); })();
 
+// Sun/moon keyframes around a summer Athens day; radiance is cached at quarter-hour
+// knots, then interpolated. Continuous frames never run the atmosphere integrator.
+const CLOCK_KEYS = [[0, TIMES.night], [4.8, TIMES.night],
+  [5.5, { ...TIMES.dawn, elev: .2, E: .06, lamps: .85, night: .75 }],
+  [6, TIMES.dawn], [8, { ...TIMES.day, elev: 24, az: 104 }],
+  [14, TIMES.day], [17, TIMES.afternoon], [20, TIMES.sunset],
+  [21, { ...TIMES.night, elev: 8, az: 120 }], [24, TIMES.night]];
+let liveTime = null, liveWeather = null;
+const atmosphereCache = new Map();
+function clockLight(hour) {
+  let i = 0; while (i < CLOCK_KEYS.length - 2 && hour > CLOCK_KEYS[i + 1][0]) i++;
+  const [a, A] = CLOCK_KEYS[i], [b, B] = CLOCK_KEYS[i + 1], t = (hour - a) / (b - a), out = {};
+  for (const k of ['elev', 'az', 'E', 'bias', 'lamps', 'night']) out[k] = (A[k] || 0) + ((B[k] || 0) - (A[k] || 0)) * t;
+  out.wb = mix3(A.wb, B.wb, t); out.tint = mix3(A.tint || [1, 1, 1], B.tint || [1, 1, 1], t);
+  return out;
+}
+function clockAtmosphere(hour) {
+  const a = Math.floor(hour * 4) / 4, b = a + .25, t = (hour - a) * 4;
+  const get = h => { if (!atmosphereCache.has(h)) { const T = clockLight(h); atmosphereCache.set(h, computeAtmosphere(dirFromAngles(T.elev, T.az), T.E)); } return atmosphereCache.get(h); };
+  const A = get(a), B = get(b), out = { ANG };
+  for (const k of ['Tsun', 'sunIrr', 'skyIrr', 'zenith']) out[k] = mix3(A[k], B[k], t);
+  out.horizon = A.horizon.map((v, i) => mix3(v, B.horizon[i], t)); return out;
+}
+
 /** everything the shaders and lights need for the current conditions */
 function deriveConditions() {
-  const T = TIMES[COND.time], W = WEATHERS[COND.weather];
+  const T = liveTime || TIMES[COND.time], W = liveWeather || WEATHERS[COND.weather];
   SUN_ELEV = T.elev; SUN_AZ = T.az; dirFromAngles(T.elev, T.az, sunDir);
-  const A = computeAtmosphere(sunDir, T.E);
+  const A = liveTime ? clockAtmosphere(COND.hour) : computeAtmosphere(sunDir, T.E);
   const night = T.night || 0, over = W.over;
   // the underside of an overcast deck: diffuse light through the cloud, a little desaturated
   const ghi = A.sunIrr.map((s, c) => s * Math.max(sunDir.y, 0.04) + A.skyIrr[c]);
@@ -147,7 +173,7 @@ export let ATMO = D.A;
 export let SUN_INTENSITY = lum(D.sunLight);
 export const SUN_COLOR = new THREE.Color();
 // the key light's colour; moonlight is tinted blue (how night vision sees it)
-const setSunColor = () => { const t = TIMES[COND.time].tint || [1, 1, 1], c = D.sunLight.map((x, i) => x * t[i]), s = Math.max(lum(c), 1e-6); SUN_COLOR.setRGB(c[0] / s, c[1] / s, c[2] / s); };
+const setSunColor = () => { const t = (liveTime || TIMES[COND.time]).tint || [1, 1, 1], c = D.sunLight.map((x, i) => x * t[i]), s = Math.max(lum(c), 1e-6); SUN_COLOR.setRGB(c[0] / s, c[1] / s, c[2] / s); };
 setSunColor();
 const v3 = (a) => `vec3(${a.map((x) => x.toFixed(6)).join(',')})`;
 const f1 = (x) => x.toExponential(5);
@@ -178,7 +204,7 @@ function writeUniforms() {
   AP.apP.value.set([D.haze, 1, THREE.MathUtils.clamp(lum(D.sunLight) / Math.max(lum(ATMO0.sunIrr), 1e-6), 0, 1.3)]);
   AP.apGlowC.value.set(D.glow.map((x) => x * (1 + D.over * 0.5)));
   CU.uSunIrr.value.fromArray(A.sunIrr); CU.uSkyIrr.value.fromArray(D.skyIrr); CU.uSunE.value.fromArray(D.sunLight);
-  CU.uOcCol.value.fromArray(D.oc); CU.uOver.value = D.over; CU.uRain.value = D.rain; CU.uNight.value = D.night; CU.uE.value = TIMES[COND.time].E;
+  CU.uOcCol.value.fromArray(D.oc); CU.uOver.value = D.over; CU.uRain.value = D.rain; CU.uNight.value = D.night; CU.uE.value = (liveTime || TIMES[COND.time]).E;
   CU.uGlowC.value.fromArray(D.glow);
   // LOW-tier sea body colour: scaled to the light on the water
   const k = (lum(D.sunLight) * Math.max(sunDir.y, 0) + lum(D.skyIrr)) / REF;
@@ -482,7 +508,10 @@ export function onConditions(fn) { listeners.push(fn); return () => { const i = 
  */
 export function setConditions(c = {}) {
   const time = TIMES[c.time] ? c.time : COND.time, weather = WEATHERS[c.weather] ? c.weather : COND.weather;
-  const changed = time !== COND.time || weather !== COND.weather;
+  const wasLive = !!liveTime;
+  liveTime = liveWeather = null; delete COND.hour;
+  invalidateWorldBlend();
+  const changed = wasLive || time !== COND.time || weather !== COND.weather;
   COND.time = time; COND.weather = weather;
   if (changed) {
     D = deriveConditions(); ATMO = D.A; SUN_INTENSITY = lum(D.sunLight); setSunColor();
@@ -497,6 +526,66 @@ export function setConditions(c = {}) {
 export function getConditions() { return { ...COND }; }
 /** re-bake the sky cubes as they are (after a WebGL context restore the render targets come back empty) */
 export function rebakeSky() { if (BAKE.renderer) bakeSky(BAKE.renderer, BAKE.sky); }
+// Crossfade into the original targets: sea, LOW sky, scene.environment and car
+// probes keep their texture identities. Only cheap texture blits run during fades.
+let worldBlend = null, bakeHour = null, bakeWeather = null;
+export function invalidateWorldBlend() { if (worldBlend) worldBlend.ready = false; bakeHour = bakeWeather = null; }
+function blendResources() {
+  if (worldBlend) return worldBlend;
+  const plane = new THREE.ShaderMaterial({ toneMapped: false, depthTest: false, depthWrite: false,
+    uniforms: { a: { value: null }, b: { value: null }, t: { value: 0 } },
+    vertexShader: 'varying vec2 uvOut; void main(){uvOut=uv;gl_Position=vec4(position.xy,0.,1.);}',
+    fragmentShader: 'uniform sampler2D a,b; uniform float t; varying vec2 uvOut; void main(){gl_FragColor=mix(texture2D(a,uvOut),texture2D(b,uvOut),t);}' });
+  const cube = new THREE.ShaderMaterial({ toneMapped: false, side: THREE.BackSide, depthTest: false, depthWrite: false,
+    uniforms: { a: { value: null }, b: { value: null }, t: { value: 0 } },
+    vertexShader: 'varying vec3 dir; void main(){dir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader: 'uniform samplerCube a,b; uniform float t; varying vec3 dir; void main(){gl_FragColor=mix(textureCube(a,normalize(dir)),textureCube(b,normalize(dir)),t);}' });
+  const ps = new THREE.Scene(); ps.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), plane));
+  const cs = new THREE.Scene(); cs.add(new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cube));
+  const targets = [BAKE.atmoRT, BAKE.envRT, BAKE.pmremRT].map(target => ({ target, old: target.clone(), next: target.clone() }));
+  worldBlend = { plane, cube, ps, cs, camera: new THREE.Camera(), targets, ready: false, progress: 1 };
+  // Context-restored targets contain no pixels, even though their identities survive.
+  BAKE.renderer.domElement.addEventListener('webglcontextrestored', invalidateWorldBlend);
+  for (const pair of targets) for (const rt of [pair.old, pair.next]) rt.addEventListener('dispose', invalidateWorldBlend);
+  return worldBlend;
+}
+function blitWorld(target, a, b = a, t = 0) {
+  const r = BAKE.renderer, blend = worldBlend, cube = target.isWebGLCubeRenderTarget;
+  const old = { target: r.getRenderTarget(), face: r.getActiveCubeFace(), mip: r.getActiveMipmapLevel(), auto: r.shadowMap.autoUpdate, needs: r.shadowMap.needsUpdate, clear: r.autoClear };
+  r.shadowMap.autoUpdate = r.shadowMap.needsUpdate = false; r.autoClear = true;
+  const mat = cube ? blend.cube : blend.plane;
+  Object.assign(mat.uniforms.a, { value: a }); mat.uniforms.b.value = b; mat.uniforms.t.value = t;
+  try {
+    if (cube) new THREE.CubeCamera(.1, 10, target).update(r, blend.cs);
+    else { target.scissorTest = false; r.setRenderTarget(target); r.render(blend.ps, blend.camera); }
+  } finally { r.setRenderTarget(old.target, old.face, old.mip); r.shadowMap.autoUpdate = old.auto; r.shadowMap.needsUpdate = old.needs; r.autoClear = old.clear; }
+}
+export function updateWorldBlend(dt) {
+  if (!worldBlend?.ready || worldBlend.progress >= 1 || BAKE.renderer.getContext().isContextLost()) return;
+  worldBlend.progress = Math.min(1, worldBlend.progress + Math.max(0, dt) / 1.5);
+  const t = worldBlend.progress * worldBlend.progress * (3 - 2 * worldBlend.progress);
+  for (const p of worldBlend.targets) blitWorld(p.target, p.old.texture, p.next.texture, t);
+}
+/** Live world sample. Atmospheric integration is cached; environment bakes are throttled. */
+export function setWorldConditions(sample, { forceBake = false } = {}) {
+  COND.hour = sample.hour; COND.time = timeForHour(sample.hour); COND.weather = sample.weather;
+  liveTime = clockLight(sample.hour); liveWeather = sample.atmosphere;
+  D = deriveConditions(); ATMO = D.A; SUN_INTENSITY = lum(D.sunLight); setSunColor(); writeUniforms();
+  if (SUN) { SUN.color.copy(SUN_COLOR); SUN.intensity = SUN_INTENSITY; } if (FILL) updateFill();
+  const hourDelta = bakeHour === null ? Infinity : Math.abs(((sample.hour - bakeHour + 12) % 24 + 24) % 24 - 12);
+  const wxDelta = bakeWeather === null ? Infinity : Math.max(Math.abs(sample.atmosphere.over - bakeWeather.over), Math.abs(sample.atmosphere.rain - bakeWeather.rain));
+  if (BAKE.renderer && (forceBake || hourDelta >= 5 / 60 || wxDelta >= .08)) {
+    const blend = blendResources(), fade = blend.ready && !BAKE.invalid && !forceBake;
+    if (fade) for (const p of blend.targets) blitWorld(p.old, p.target.texture);
+    bakeSky(BAKE.renderer, BAKE.sky);
+    for (const p of blend.targets) { blitWorld(p.next, p.target.texture); if (!fade) blitWorld(p.old, p.target.texture); }
+    blend.ready = true; blend.progress = fade ? 0 : 1;
+    if (fade) for (const p of blend.targets) blitWorld(p.target, p.old.texture);
+    bakeHour = sample.hour; bakeWeather = { ...sample.atmosphere };
+  }
+  for (const fn of listeners) fn(COND, COND_STATE, false);
+  return { ...COND };
+}
 /** the baked sky cube (sky + clouds, no sun disc) for the current conditions */
 export function bakedSky() { return BAKE.envRT ? BAKE.envRT.texture : null; }
 let SHADOW_HALF = 95, SHADOW_MAP = 4096;

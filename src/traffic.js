@@ -9,6 +9,8 @@
 // summer beach crowd near Vouliagmeni and Limanakia (more cars, cruisers hunting for parking, cars parked along the road).
 // Side-street cross traffic, crash physics, near-miss tracking and road-works cones are kept from the previous build.
 import * as THREE from 'three';
+import { COND } from './env.js';
+import { trafficByHour, hourForTime } from './world-life.js';
 import { TRAFFIC_TYPES, trafficModel } from './cars.js';
 import { skipHiddenMatrices } from './batch.js';
 import { RNG, clamp, lerp, smoothstep } from './util.js';
@@ -180,7 +182,7 @@ export class Traffic {
   set disabled(v) { this._disabled = !!v; }
   /** vehicles per km per lane (each direction) */
   density(s) {
-    return { town: 0.9, beach: 1.15, cliff: 0.7, cove: 1.0 }[this.zone(s)];
+    return ({ town: 0.9, beach: 1.15, cliff: 0.7, cove: 1.0 }[this.zone(s)] || .5) * trafficByHour(COND.hour ?? hourForTime(COND.time));
   }
   /** desired cruising speed of the road (m/s) before personal factors */
   roadSpeed(s) {
@@ -205,7 +207,8 @@ export class Traffic {
     this.honks.length = 0; this.sounds.length = 0; this.lastBus = -1e9;
     if (!this.disabled) {
       for (let i = 0; i < 5; i++) this.spawnParked(ps, true);
-      for (let i = 0; i < POOL - 14; i++) this.spawn(ps, true);
+      const initial = Math.min(POOL - 14, Math.round(this.laneCount(ps + this.dir * 500) * 13 * this.density(ps + this.dir * 500)));
+      for (let i = 0; i < initial; i++) this.spawn(ps, true);
     }
     this.updateCones(0);
   }
@@ -400,10 +403,16 @@ export class Traffic {
       const z = this.zone(ps + this.dir * 500);
       const wantParked = { town: 3, beach: 4, cliff: 0, cove: 2 }[z];
       if (same < wantSame || onc < wantOnc) this.spawn(ps);
+      // Let excess traffic leave the visible area as the rush ends; never pop a nearby car.
+      if (this.t >= (this.densityTrimAt || 0)) {
+        this.densityTrimAt = this.t + 1;
+        const excess = this.cars.find(c => c.active && !c.cop && c.mode === 'drive' && Math.abs(c.s - ps) > (this.drawRange || 650) + 40 && (c.dir > 0 ? same > wantSame : onc > wantOnc));
+        if (excess) { excess.active = false; excess.m.root.visible = false; excess.cross = null; }
+      }
       if (parked < wantParked && rng.chance(dt * 2)) this.spawnParked(ps);
       // traffic also catches up from behind (so you get queued on and honked at when you sit at a green)
       const pl = actors.find((a) => a.kind === 'player');
-      if (pl && pl.veh.vLong < 9 && rng.chance(dt * 0.35)) this.spawn(ps, false, true);
+      if (pl && same < wantSame && pl.veh.vLong < 9 && rng.chance(dt * 0.35)) this.spawn(ps, false, true);
     }
     this.gather(actors);
     const pl = actors.find((a) => a.kind === 'player');

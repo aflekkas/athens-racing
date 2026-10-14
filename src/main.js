@@ -7,6 +7,7 @@ import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './a
 import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
 import * as ENV from './env.js';
+import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
 import { shiftTransmission } from './transmission.js';
@@ -782,6 +783,7 @@ function prepareEvent(e) {
     const want = { ...G.baseCond, ...(def.conditions || {}) }, now = gc();
     if (want.time !== now.time || want.weather !== now.weather) { try { sc(want); } catch (err) { console.warn('[events] setConditions', err); } }
   }
+  configureWorldLife(def, G.baseCond || window.__conditions());
   return r;
 }
 /** Grid slot i: 8 m rows; single file on one-lane roads, two abreast otherwise. */
@@ -888,6 +890,7 @@ function switchRoamCar(carId) {
 function setRoamConditions(conditions) {
   if (!inFreeRoam()) return;
   window.__setConditions(conditions); G.baseCond = window.__conditions();
+  configureWorldLife({ ...G.ev.def, conditions }, G.baseCond);
   G.ev.def.conditions = { ...G.baseCond };
 }
 function teleportLandmark(id) {
@@ -1666,6 +1669,7 @@ function step(dt, draw = true) {
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
   const simulate = !window.__replay?.active && G.state !== 'menu' && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && !(multiplayer.active && inMenu()) && (multiplayer.active || multiplayer.panel.hidden);
+  tickWorldLife(dt, { running: simulate, online: multiplayer.active ? multiplayer : null });
   if (simulate) updateRoadWeather(dt);
   if (simulate) signals.update(dt, pv.s, camera.position);
   if (simulate) {
@@ -1940,6 +1944,7 @@ function render() {
   if (G.ctxLost || renderer.getContext().isContextLost()) return;
   guardLighting();
   renderer.info.autoReset = false; renderer.info.reset();
+  ENV.updateWorldBlend(G.lastDt || 1 / 60);
   updateWeather(G.lastDt || 1 / 60);
   // Auxiliary views must never consume a pending main-view shadow update (mirrors hide the player).
   const shadowEnabled = !lowGraphics, pendingShadow = renderer.shadowMap.needsUpdate;
@@ -2038,6 +2043,7 @@ const multiplayer = new Multiplayer(CARS, {
     traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); quitToMenu();
   },
   members: onlineMembers,
+  world(snapshot, age) { receiveWorldLife(snapshot, age); },
   fine(entry) {
     if (entry.raceId !== multiplayer.lobby?.raceId || entry.generation !== multiplayer.lobby?.generation) return;
     const fine = enforcement.record({ ...entry, now: G.t }); if (fine) finePhone.show(fine);
@@ -2048,6 +2054,8 @@ const multiplayer = new Multiplayer(CARS, {
     beginCameraBlend();
     window.__flow?.prepareEvent(lobby.eventId || 'quick');
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));
+    configureWorldLife({ type: lobby.event?.type, conditions: lobby.event?.conditions }, G.baseCond || window.__conditions());
+    if (lobby.world?.raceId === lobby.raceId && lobby.world.generation === lobby.generation) receiveWorldLife(lobby.world.state, Math.max(0, (multiplayer.now() - lobby.world.at) / 1000));
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
     grid(player.veh, lobby.players.findIndex(p => p.id === id)); resetTowOffer();
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }

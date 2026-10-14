@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createGameCore } from './core.mjs';
+import { WorldLife } from '../src/world-life.js';
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
+const socket = () => ({ readyState: 1, messages: [], send(s) { this.messages.push(JSON.parse(s)); }, close() {} });
+test('only the current host can relay a valid current-generation world; persists across restore and host transfer', t => {
+  let now = 100000; t.mock.method(Date, 'now', () => now);
+  const def = { id: 'quick', name: 'race', type: 'sprint', s0: 0, s1: 100, dir: 1, len: 100, traffic: true };
+  const options = { maps: new Map([['riviera', { id: 'riviera', track: { start: 0, finish: 100, version: 'v1' }, definitions: new Map([['quick', def]]) }]]), cars: new Set(['mini']), leaderboard: { submit: async () => ({}) }, countdownMs: 10 };
+  let core = createGameCore(options); const a = socket(), b = socket();
+  core.connect(a, 'a', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'b', { protocol: MULTIPLAYER_PROTOCOL });
+  const send = (ws, data) => core.message(ws, JSON.stringify({ name: 'Driver', car: 'mini', ...data }));
+  send(a, { type: 'create' }); const code = a.messages.at(-1).lobby.code; send(b, { type: 'join', code });
+  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'v1' });
+  send(a, { type: 'start' }); now += 11; core.tick(); const race = core.lobbies.get(code);
+  const w = new WorldLife(); w.configure({ type: 'free', time: 'dawn', weather: 'rain' }); w.advance(20);
+  const packet = { type: 'world', raceId: race.raceId, generation: race.generation, world: w.snapshot() };
+  send(b, packet); assert.equal(race.world, undefined);
+  send(a, { ...packet, generation: 999 }); assert.equal(race.world, undefined);
+  send(a, { ...packet, world: { ...packet.world, atmosphere: { rain: NaN } } }); assert.equal(race.world, undefined);
+  send(a, packet); assert.deepEqual(b.messages.at(-1).world, packet.world); assert.equal(b.messages.at(-1).type, 'world');
+  const saved = structuredClone(core.exportState()), connections = new Map([...core.clients].map(c => [c.token, c.ws]));
+  core = createGameCore(options); core.restore(saved, connections); assert.deepEqual(core.lobbies.get(code).world.state, packet.world);
+  const bId = b.messages.find(m => m.type === 'hello').id; send(a, { type: 'transfer', to: bId });
+  assert.equal(core.lobbies.get(code).host, bId);
+  now += 1001; w.advance(1); send(b, { ...packet, world: w.snapshot() }); assert.equal(a.messages.at(-1).type, 'world');
+});

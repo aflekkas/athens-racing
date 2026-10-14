@@ -267,6 +267,7 @@ export class Multiplayer {
         else if (!m.lobby) this.left();
       }
       else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); this.offset = m.now - (m.sent + Date.now()) / 2; }
+      else if (m.type === 'world' && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.world?.(m.world, Math.max(0, (this.now() - m.now) / 1000));
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);
       else if (m.type === 'error') { this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left' || m.type === 'kicked') { this.left(); this.panel.hidden = false; if (m.message || m.reason) this.status(m.message || m.reason); if (m.type === 'kicked') { this.kickCooldown = { lobbyCode: m.lobbyCode, until: m.until }; this.hooks.kicked?.(m); } }

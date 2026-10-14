@@ -1,3 +1,4 @@
+import { validWorldSnapshot } from '../src/world-life.js';
 import { formatPlate } from '../src/plate.js';
 import { normalizeDriverName } from '../src/driver-name.js';
 import { isTerminalImpact } from '../src/damage-math.js';
@@ -25,7 +26,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
   const publicLobby = (l, manifest = true) => {
     const def = lobbyEvent(l), event = effectiveEvent(def, l.config);
     const trips = manifest && isObjectiveMode(event?.type) ? (maps.get(l.mapId).trips || {})[event.type] || null : null;
-    return { code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null })), blockedPlayers: manifest ? (l.blocks || []).filter(b => b.until > Date.now()).map(({ id, name, until }) => ({ id, name, until })) : undefined, eventId: l.eventId, traffic: l.traffic, event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)] };
+    return { world: l.world || null, code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null })), blockedPlayers: manifest ? (l.blocks || []).filter(b => b.until > Date.now()).map(({ id, name, until }) => ({ id, name, until })) : undefined, eventId: l.eventId, traffic: l.traffic, event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)] };
   };
   const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId)).map(l => publicLobby(l, false)) });
   const publish = (l) => { l.touched = Date.now(); for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby: publicLobby(l) }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
@@ -311,6 +312,12 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           if (!recovery) return error('Recovery needs a current race position.');
           clearObjectiveHold(l, c.id);
           l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
+        }
+        if (m.type === 'world') {
+          if (c.id !== l.host || !['countdown', 'race'].includes(l.status) || m.raceId !== l.raceId || m.generation !== (l.generation || 0) || !validWorldSnapshot(m.world) || now - (l.world?.at || 0) < 800) return;
+          l.world = { state: m.world, at: now, raceId: l.raceId, generation: l.generation || 0 };
+          for (const p of l.players.values()) if (p.id !== c.id) send(p.ws, { type: 'world', world: m.world, now, raceId: l.raceId, generation: l.generation || 0 });
+          return;
         }
         if (m.type === 'dnf') {
           if (!['countdown', 'race'].includes(l.status) || now < l.startAt || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
