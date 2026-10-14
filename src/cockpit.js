@@ -8,6 +8,7 @@ import { clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
+import { MirrorCadence } from './mirror-cadence.js';
 
 /**
  * Interior trim: grained soft-touch plastics, perforated / stitched leather and suede-like fabric, sampled
@@ -424,9 +425,15 @@ export class Cockpit {
     }
     return THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect));
   }
-  renderMirrors(renderer,scene,{enabled=true,frame=0}={}){
-    if(!enabled){for(const m of this.mirrors)if(m.material.map!==m.fallback){m.material.map=m.fallback;m.material.needsUpdate=true;}return;}
-    if(this.mirrorUpdates&&frame%2)return;
+  renderMirrors(renderer,scene,{enabled=true,now=performance.now()}={}){
+    const cadence=this.mirrorCadence??=new MirrorCadence();
+    if(!enabled){
+      cadence.reset();
+      // Low quality shows an inert dark surface, never a stale traffic image.
+      for(const m of this.mirrors){if(m.material.map){m.material.map=null;m.material.needsUpdate=true;}m.material.color.set('#485158');}
+      return;
+    }
+    if(!cadence.due(now))return;
     const body=this.model.body,root=this.model.root,visible=root.visible,target=renderer.getRenderTarget(),shadow=renderer.shadowMap.autoUpdate;
     root.updateMatrixWorld(true);
     // Compute camera poses before hiding our cabin. Opponents and traffic remain
@@ -437,9 +444,9 @@ export class Cockpit {
       m.camera.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI));m.camera.updateMatrixWorld(true);
     }
     root.visible=false;renderer.shadowMap.autoUpdate=false;
-    try{for(const m of this.mirrors){renderer.setRenderTarget(m.target);renderer.render(scene,m.camera);if(m.material.map!==m.target.texture){m.material.map=m.target.texture;m.material.needsUpdate=true;}}this.mirrorUpdates++;}
+    try{for(const m of this.mirrors){renderer.setRenderTarget(m.target);renderer.render(scene,m.camera);if(m.material.map!==m.target.texture){m.material.map=m.target.texture;m.material.needsUpdate=true;}m.material.color.set(0xffffff);}this.mirrorUpdates++;cadence.rendered(now);}
     finally{renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
   }
   disposeMirrors(){for(const m of this.mirrors)m.target?.dispose();if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
-  setVisible(v) { this.lod.visible = v; }
+  setVisible(v) { if(this.lod.visible!==v)this.mirrorCadence?.reset();this.lod.visible = v; }
 }
