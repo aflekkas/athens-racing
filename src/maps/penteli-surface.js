@@ -92,7 +92,7 @@ export function buildPenteliSurface(scene,map,heightC) {
   }
   // Tie the narrow gravel shoulder into the carved DEM: level verge, then a
   // cut slope uphill or a fill slope downhill. Skip real junction mouths.
-  const earth=new THREE.MeshLambertMaterial({color:'#a49d82',...(TX.ground_diff?{map:TX.ground_diff}:{}),side:THREE.DoubleSide});
+  const earth=terrain; // Same rock/maquis splat as the hillside, not a broad bare-soil strip.
   for(const side of [-1,1])for(let start=-60;start<route.length+60;start+=200){
     const pos=[],uv=[],idx=[],valid=[],offsets=[.35,.8,3,6,10,16,22];let row=0;
     for(let s=start;s<=Math.min(start+200,route.length+60);s+=2,row++){
@@ -107,12 +107,14 @@ export function buildPenteliSurface(scene,map,heightC) {
           // Test all four corners against the global nearest leg. A local
           // station hint misses the opposite side of a tight switchback.
           const a=(row-1)*offsets.length+j-1,b=a+offsets.length;
-          if([a,a+1,b,b+1].every(k=>valid[k]))idx.push(a,a+1,b,a+1,b+1,b);
+          if([a,a+1,b,b+1].every(k=>valid[k])){
+            if(side>0)idx.push(a,a+1,b,a+1,b+1,b);else idx.push(a,b,a+1,a+1,b,b+1);
+          }
         }
       }
     }
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
     const mesh=new THREE.Mesh(g,earth);mesh.name='Penteli cut and fill verge';mesh.receiveShadow=true;group.add(mesh);
   }
-  return {group,asphalt,dispose(){group.removeFromParent();group.traverse(o=>o.geometry?.dispose());asphalt.dispose();terrain.dispose();earth.dispose();}};
+  return {group,asphalt,dispose(){group.removeFromParent();group.traverse(o=>o.geometry?.dispose());asphalt.dispose();terrain.dispose();}};
 }

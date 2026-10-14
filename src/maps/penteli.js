@@ -86,12 +86,12 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   const leaf=std('#ffffff',{map:TX.foliage,alphaTest:.34,alphaToCoverage:true,side:THREE.DoubleSide,vertexColors:true});
   // The atlas already contains dark needle colour. Do not multiply it by another
   // dark material tint, and do not flip radial crown normals on card backfaces.
-  leaf.customProgramCacheKey=()=> 'penteli-pine-transmission-v2';
+  leaf.customProgramCacheKey=()=> 'penteli-pine-transmission-v3';
   leaf.onBeforeCompile=sh=>{
     sh.uniforms.uPineDaylight={get value(){return COND_STATE.daylight;}};
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uPineDaylight;')
       .replace('#include <normal_fragment_begin>',THREE.ShaderChunk.normal_fragment_begin.replace('normal *= faceDirection;','// Crown-shell normals remain outward on both card faces.'))
-      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * (0.72 * uPineDaylight);');
+      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * (0.38 * uPineDaylight);');
   };
   const metal=std('#959a9e',{metalness:.68,roughness:.42,side:THREE.DoubleSide});
   const white=std('#e7e3d7'), black=std('#252a27'), red=std('#a83c2a',{roughness:.4});
