@@ -173,7 +173,7 @@ export class Traffic {
     return zone === 'mountain' ? 'cliff' : zone === 'chapel' ? 'cove' : zone === 'circuit' && this.allowClosedRoam ? 'town' : zone;
   }
   /** Closed races default to no civilian population; free roam explicitly opts into traffic. */
-  get disabled() { return this._disabled || (!!this.route.closed && !this.allowClosedRoam); // mode owner: free roam can populate the circuit }
+  get disabled() { return this._disabled || (!!this.route.closed && !this.allowClosedRoam); } // mode owner: free roam can populate the circuit
   set disabled(v) { this._disabled = !!v; }
   /** vehicles per km per lane (each direction) */
   density(s) {
