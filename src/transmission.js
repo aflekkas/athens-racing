@@ -1,3 +1,4 @@
+import { gearboxMessage } from './input-labels.js';
 // Transmission metadata is independent of rendering so physics, menus and benches agree.
 export function carTransmission(car) {
   return ['manual', 'auto', 'both'].includes(car?.transmission) ? car.transmission : 'both';
@@ -6,13 +7,11 @@ export function manualMode(car, preference) {
   const type = carTransmission(car);
   return type === 'manual' || type === 'both' && !!preference;
 }
-export function toggleTransmission(vehicle) {
+export function toggleTransmission(vehicle, { bindings, device = 'keyboard' } = {}) {
   const type = carTransmission(vehicle.spec);
-  if (type !== 'both') return { locked: true, message: type === 'manual'
-    ? 'MANUAL ONLY · M locked · E ↑ / Q ↓ to shift'
-    : 'AUTO ONLY · M locked · E ↑ / Q ↓ paddle override' };
+  if (type !== 'both') return { locked: true, message: gearboxMessage(type, vehicle.manual, bindings, device, { toggle: true }) };
   vehicle.setManual(!vehicle.manual);
-  return { locked: false, message: vehicle.manual ? 'MANUAL · E ↑ / Q ↓ · RB / LB' : 'AUTO · automatic shifting' };
+  return { locked: false, message: gearboxMessage(type, vehicle.manual, bindings, device) };
 }
 // Pure feedback calculation, shared by the live HUD and its behavioural bench.
 export function gearFeedback(st) {

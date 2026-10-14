@@ -9,12 +9,13 @@ import { getEvents, QUICK_RACE, TYPES, getEvent, resolve, loadRecord, targetLabe
 import * as S from './settings.js';
 import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
-import { renderCarSelect, mountCarSelect } from './car-select.js';
+import { renderCarSelect, mountCarSelect, mountCarGrid, getCarDecals, setCarDecals } from './car-select.js';
 import * as C from './ui/components.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
 import './ui/hosts.js';
+import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
 const { esc, icon } = C;
@@ -42,6 +43,7 @@ export class Menu {
     root.addEventListener('click', (e) => this.onClick(e));
     root.addEventListener('pointermove', (e) => { const it = e.target.closest?.('.mi'); if (it && !it.classList.contains('focus')) { const i = this.items().indexOf(it); if (i >= 0) this.setFocus(i, false); } });
     root.addEventListener('ui:change', (e) => this.onChange(e.detail));
+    root.addEventListener('input', e => { if (!e.target.matches('[data-car-search]')) return; const value = e.target.value, pos = e.target.selectionStart; this.data.filters = { ...this.data.filters, search: value }; this.render(); const search = root.querySelector('[data-car-search]'); search.focus(); search.setSelectionRange?.(pos, pos); });
   }
   get open() { return !!this.screen; }
 
@@ -68,13 +70,16 @@ export class Menu {
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
   }
   render() {
-    this.carView?.dispose(); this.carView = null;
+    const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
+    const stage = keepCar ? this.root.querySelector('#carStage') : null;
+    if (!keepCar) { this.carView?.dispose(); this.carView = null; } this.mapView?.dispose(); this.mapView = null;
     C.closeListbox();
     const keep = this.root.querySelector('.scr__body .scroll-y, .scr__body')?.scrollTop;
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
     this.root.className = 's-' + this.screen;
-    if (this.screen === 'car') this.carView = mountCarSelect(this.root, this.data.index || 0);
-    if (this.screen === 'maps') mountMapSelect(this.root);
+    if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
+    else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
+    if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -100,6 +105,7 @@ export class Menu {
     const el = it[this.focus];
     if (scroll) el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     if (this.screen === 'events' && el.dataset.ev) this.showDetail(el.dataset.ev);
+    if (this.screen === 'maps' && el.dataset.mapId) this.mapView?.preview(el.dataset.mapId);
   }
   /** spatial focus movement: the nearest item in that direction; up / down wrap at the ends of a column */
   move(dir) {
@@ -139,7 +145,6 @@ export class Menu {
     if (name === 'up' || name === 'down') { this.move(name); return true; }
     if (name === 'left' || name === 'right') {
       const d = name === 'right' ? 1 : -1;
-      if (this.screen === 'car' && !cur?.classList.contains('paint')) { this.browseCar(d); return true; }
       if (cur?.dataset.kind && C.step(cur, d)) { if (cur.dataset.kind !== 'slider') this.h.ui?.(d > 0); return true; }
       if (this.screen === 'events' && !this.move(name)) { const t = this.root.querySelector('.mi[data-kind=tabs]'); if (t) { C.step(t, d); this.h.ui?.(d > 0); } return true; }
       this.move(name); return true;
@@ -152,8 +157,10 @@ export class Menu {
     this.h.ui?.(false);
     if (this.screen === 'pause') { this.h.resume(); return; }
     if (this.screen === 'results') { this.h.quit('events'); return; }
-    if (this.pop()) return;
+    const cancel = this.screen === 'car' && !this.data.detail ? this.data.onCancel : null;
+    if (this.pop()) { cancel?.(); return; }
     if (this.screen !== 'title') this.show('title');
+    cancel?.();
   }
   onClick(e) {
     const it = this.items();
@@ -165,18 +172,24 @@ export class Menu {
     this.activate(el);
   }
   activate(el) {
+    if (el.classList.contains('off') || el.getAttribute('aria-disabled') === 'true') return;
     if (el.dataset.kind && C.activate(el)) { this.h.ui?.(true); return; }
     if (el.dataset.mapId) { this.h.ui?.(true); selectMap(this, el.dataset.mapId); return; }
     if (el.dataset.ev) { this.h.ui?.(true); this.show('setup', { eventId: el.dataset.ev }, true); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
     switch (a) {
+      case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
+      case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'play': this.show('mode', {}, true); break;
       case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'events': this.filter = 'all'; this.show('maps', { filter: 'all' }, true); break;
       case 'tt': this.filter = 'timetrial'; this.show('maps', { filter: 'timetrial', mode: 'tt' }, true); break;
-      case 'carPrev': this.browseCar(-1); break;
-      case 'carNext': this.browseCar(1); break;
+      case 'carDetail': this.show('car', { ...this.data, index: +el.dataset.carIndex, detail: true }, true); break;
+      case 'decalColor': this.data.decal = { ...this.data.decal, color: el.dataset.color }; this.refresh(); break;
+      case 'decalAdd': { const id = CARS[this.data.index || 0].id; const list = getCarDecals(id); if (list.length < 8) setCarDecals(id, [...list, { id: 'stripes', position: 'bonnet', color: '#ffffff', number: 7, ...this.data.decal }]); this.refresh(); break; }
+      case 'decalClear': setCarDecals(CARS[this.data.index || 0].id, []); this.refresh(); break;
+      case 'decalRemove': { const id = CARS[this.data.index || 0].id; setCarDecals(id, getCarDecals(id).filter((_, i) => i !== +el.dataset.layer)); this.refresh(); break; }
       case 'carConfirm': this.confirmCar(); break;
       case 'paint': this.carView?.paint(el.dataset.color); for (const paint of this.root.querySelectorAll('.paint')) paint.classList.toggle('selected', paint === el); this.root.querySelector('.car-paint-name').textContent = el.title; break;
       case 'setupGo': this.startSetup(); break;
@@ -201,6 +214,8 @@ export class Menu {
   /** a component value changed (keyboard, gamepad, mouse or touch) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
+    if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
+    if (scope === 'decal') { this.data.decal = { ...this.data.decal, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {
       if (key === 'settingsTab') { this.h.cancelBindings?.(); this.data.tab = value; this.focus = 0; this.render(); }
       else if (key === 'eventFilter') { this.filter = value; this.focus = null; this.render(); }
@@ -252,7 +267,12 @@ export class Menu {
     const data = { ...this.data, index: ((this.data.index || 0) + delta + CARS.length) % CARS.length };
     this.leaving(); this.data = data; this.focus = null; this.render();
   }
-  confirmCar() { this.h.chooseCar?.(this.data.index || 0, this.data.def, this.data.garage); }
+  confirmCar() {
+    const c = CARS[this.data.index || 0];
+    if (this.data.allowedCars && !this.data.allowedCars.includes(c.id)) return;
+    if (this.data.onPick) { const pick = this.data.onPick; const roaming = this.data.inFreeRoam; if (pick(c.id) === false) return; const origin = [...this.stack].reverse().find(x => x.screen !== 'car'); if (roaming) this.show('pause', origin?.data || { inFreeRoam: true }); else if (origin) this.show(origin.screen, origin.data); else this.hide(); return; }
+    this.h.chooseCar?.(this.data.index || 0, this.data.def, this.data.garage);
+  }
 
   // ---------------------------------------------------------------- events
   eventsHere() {
@@ -369,14 +389,14 @@ export class Menu {
       body: `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
-  leaving() { if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
+  leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
   r_pause(d) {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.online ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${d.online || !window.__replay?.photo ? '' : C.option({ icon: 'camera', title: 'PHOTO MODE', act: 'photo' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.online ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${d.online || !window.__replay?.photo ? '' : C.option({ icon: 'camera', title: 'PHOTO MODE', act: 'photo' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
   }
 

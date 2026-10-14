@@ -9,7 +9,7 @@ const { icon, esc } = C;
 const GROUPS = [
   ['DRIVING', 'steering-wheel', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN' }],
   ['CAMERA', 'camera', { camera: 'CHANGE CAMERA', lookBack: 'LOOK BACK', lookLeft: 'LOOK LEFT', lookRight: 'LOOK RIGHT', lookUp: 'LOOK UP', lookDown: 'LOOK DOWN' }],
-  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE', photo: 'PHOTO MODE', replayPlay: 'REPLAY PLAY / PAUSE', transmission: 'MANUAL / AUTO (M · CHOICE CARS)', music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
+  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE', photo: 'PHOTO MODE', replayPlay: 'REPLAY PLAY / PAUSE', transmission: 'MANUAL / AUTO · CHOICE CARS', music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
   ['MENUS', 'list', { up: 'UP', down: 'DOWN', menuLeft: 'LEFT', menuRight: 'RIGHT', confirm: 'CONFIRM', back: 'BACK' }],
 ];
 const KEYS = { Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', Backspace: 'BKSP', Tab: 'TAB', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', CapsLock: 'CAPS', Comma: ',', Period: '.', Slash: '/', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', Minus: '-', Equal: '=', Backquote: '`', Backslash: '\\' };
@@ -37,8 +37,8 @@ export function renderControls(menu) {
   const s = input.settings, A = { 'data-scope': 'input' };
   const known = new Set(GROUPS.flatMap(([, , g]) => Object.keys(g)));
   const all = [...new Set([...Object.keys(input.bindings.keyboard), ...Object.keys(input.bindings.gamepad)])].filter(a => a !== 'nitro' || input.nitrousEnabled);
-  const cars = all.filter((a) => /^car\d$/.test(a)), other = all.filter((a) => !known.has(a) && !cars.includes(a));
-  const groups = [...GROUPS, ['QUICK CAR PICK', 'car-profile', Object.fromEntries(cars.map((a) => [a, 'CAR ' + a.slice(3)]))], ...(other.length ? [['OTHER', 'wrench', Object.fromEntries(other.map((a) => [a, a.replace(/([A-Z])/g, ' $1').toUpperCase()]))]] : [])];
+  const other = all.filter(a => !known.has(a));
+  const groups = [...GROUPS, ...(other.length ? [['OTHER', 'wrench', Object.fromEntries(other.map((a) => [a, a.replace(/([A-Z])/g, ' $1').toUpperCase()]))]] : [])];
   menu.bindCol = menu.bindCol || 0; paintCol(menu);
   return `<div class="group"><h3 class="group__title">${icon('game-controller')}STEERING RESPONSE</h3>
       ${C.slider({ key: 'deadzone', label: 'STICK DEADZONE', value: s.deadzone, min: 0, max: 0.45, step: 0.01, format: 'f2', attrs: A })}

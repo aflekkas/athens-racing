@@ -8,7 +8,6 @@ export const DEFAULT_BINDINGS = {
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['KeyR', 'Enter'], pause: ['Escape'],
     garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyT'], transmission: ['KeyM'], music: ['KeyJ'], nextTrack: ['KeyN'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], photo: ['KeyP'], replayPlay: ['Space'],
-    ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => ['car' + (i + 1), ['Digit' + (i + 1)]])),
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
@@ -18,7 +17,7 @@ export const DEFAULT_BINDINGS = {
   },
 };
 export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'transmission', 'music', 'nextTrack', 'photo', 'replayPlay',
-  'up', 'down', 'left', 'right', 'confirm', 'back', ...Array.from({ length: 9 }, (_, i) => 'car' + (i + 1))];
+  'up', 'down', 'left', 'right', 'confirm', 'back'];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
 export function axisValue(value, deadzone = 0.15, sensitivity = 1, linearity = 1) {
@@ -272,7 +271,7 @@ export class Input {
       for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) steer.addEventListener(name, e => { if (e.pointerId === pointer) { pointer = undefined; this.touch.steer = 0; } }); root.append(steer);
       const pedals = doc.createElement('div'); pedals.className = 'touch-pedals';
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
-      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['pause', 'Ⅱ']]) {
+      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftDown', 'GEAR −'], ['shiftUp', 'GEAR +'], ['transmission', 'MODE'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
         const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });

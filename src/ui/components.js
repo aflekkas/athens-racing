@@ -28,6 +28,10 @@
 //
 // Icons: Phosphor Icons (bold, MIT), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
 
+import { bindingLabel } from '../input-labels.js';
+export let hintBindings = null;
+export const setHintBindings = fn => { hintBindings = fn; };
+
 export const SPRITE = new URL('../../assets/icons/sprite.svg', import.meta.url).href;
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -78,7 +82,14 @@ const HINT_KEYS = {
 };
 export function keyHints(list, cls = '') {
   return `<div class="hints ${cls}">${list.map(([k, label, padKey]) => {
-    const [kb, pad] = HINT_KEYS[k] || [KB(k), padKey ? PAD(padKey) : null];
+    let [kb, pad] = HINT_KEYS[k] || [KB(k), padKey ? PAD(padKey) : null];
+    const actions = ({ confirm:['confirm'], back:['back'], select:['up','down'], updown:['up','down'], leftright:['menuLeft','menuRight'], tabs:['shiftDown','shiftUp'], restart:['restart'], photo:['photo'], garage:['garage'] })[k];
+    const bindings = hintBindings?.();
+    if (bindings && actions) {
+      kb = actions.map(a => KB(esc(bindingLabel(bindings, a === 'menuLeft' ? 'left' : a === 'menuRight' ? 'right' : a, 'keyboard')))).join('');
+      const labels = actions.map(a => bindingLabel(bindings, a, 'gamepad')).filter(x => x !== 'UNBOUND');
+      pad = labels.length ? labels.map(l => PAD(esc(l))).join('') : null;
+    }
     return `<span class="hint ${pad ? '' : 'no-pad'}"><span class="hint__keys on-key">${kb}</span>${pad ? `<span class="hint__keys on-pad">${pad}</span>` : ''}${label}</span>`;
   }).join('')}</div>`;
 }

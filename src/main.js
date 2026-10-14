@@ -37,6 +37,9 @@ import { GRAPHICS_TIERS, detectQuality } from './graphics.js';
 import { initReplay } from './replay-mode.js';
 import { loading } from './ui/loading.js';
 import { ui, icon } from './ui/components.js';
+import { drivingHints } from './ui/driving-hints.js';
+import { updateEngineHud } from './engine-hud.js';
+import { gearboxMessage, bindingLabel } from './input-labels.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -262,8 +265,7 @@ function disposeCar(c) {
 
 
 function announceGearbox(spec) {
-  if (carTransmission(spec) === 'manual') controls.toast('MANUAL ONLY: E ↑ / Q ↓ to shift · RB / LB on pad');
-  else if (carTransmission(spec) === 'auto') controls.toast('AUTO: E ↑ / Q ↓ paddle override · M locked');
+  controls.toast(gearboxMessage(carTransmission(spec), player?.veh.manual, controls.bindings, activeInputDevice()));
 }
 
 function setCar(idx, keepPose = true) {
@@ -375,7 +377,7 @@ function offerTow() {
   if (towOffer.element || towOffer.cooldown > 0) return;
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>Return to the road in the race direction. Costs 5 seconds.</p><div class="tow-actions"><button type="button" data-tow="accept">TOW TO TRACK · R / Y</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>Return to the road in the race direction. Costs 5 seconds.</p><div class="tow-actions"><button type="button" data-tow="accept">TOW TO TRACK · ' + bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'camera' : 'restart', activeInputDevice()) + '</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(12); };
   towOffer.element = el; document.body.append(el); controls.releaseMouseLook();
@@ -509,6 +511,7 @@ function readInput(dt) {
   for (const name of controls.actions) {
     // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
     if ((inMenu && name === 'restart' && input.confirm) || (inMenu && name === 'pause' && input.back) || (!inMenu && name === 'back')) continue;
+    if (!inMenu) drivingHints.action(name);
     flowAction(name);
     if (!inMenu && (name === 'shiftUp' || name === 'shiftDown')) player?.veh.shiftManual(name === 'shiftUp' ? 1 : -1);
   }
@@ -552,7 +555,7 @@ function initFlow() {
       G.pendingEvent = def; restart(index);
     },
     resume, restart: () => openEvent(G.ev.def), quit: quitToMenu, next: (id) => openEvent(id),
-    ctx: evCtx, inputDevice: activeInputDevice, carName: () => player.spec.name, fmtTime, ui: (fwd) => audio.ui?.(fwd),
+    ctx: evCtx, inputDevice: activeInputDevice, carName: () => player.spec.name, carSpec: () => player.spec, manual: () => player.veh.manual, fmtTime, ui: (fwd) => audio.ui?.(fwd),
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
@@ -714,14 +717,13 @@ function flowAction(name) {
   if (towOffer.element && !menu.open && G.state === 'race' && (name === 'restart' || name === 'camera' && input.camera && (controls.pad?.buttons?.[3]?.value || 0) > 0.55)) { tow(player.veh); return true; }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
-  if (/^car[1-9]$/.test(name)) { const i = +name.slice(3) - 1; if (i < CARS.length && !multiplayer.active) { audio.ui(true); openEvent(G.ev.def, i); } return true; }
   switch (name) {
     case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
     case 'restart': if (G.state === 'race' || G.state === 'countdown' || G.state === 'finished') openEvent(G.ev.def); return true;
     case 'pause': pauseGame(); return true;
     case 'transmission': {
-      const result = toggleTransmission(player.veh);
+      const result = toggleTransmission(player.veh, { bindings: controls.bindings, device: activeInputDevice() });
       if (!result.locked) setSetting('transmission', player.veh.manual ? 'manual' : 'auto');
       controls.toast(result.message); return true;
     }
@@ -1313,6 +1315,9 @@ function frame(now) {
   const slices = Math.max(1, Math.ceil(dt / (1 / 60)));
   try { for (let i = 0; i < reps; i++) for (let j = 0; j < slices; j++) step(dt / slices, i === reps - 1 && j === slices - 1); } catch (e) { if (G.ctxLost || renderer.getContext().isContextLost()) return; fail(e); throw e; }
   if (splash) splash.update(dt);
+  if (player) drivingHints.update({ state: G.state, device: activeInputDevice(), car: player.spec, manual: player.veh.manual, blocked: !!menu?.open || !multiplayer.panel.hidden || !!window.__replay?.active });
+  if (input.handbrake) drivingHints.action('handbrake');
+  if (player) updateEngineHud(player.veh, { visible: G.state === 'race' && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active });
   // adaptive resolution
   perfAcc += wallDt; perfN++; perfCool -= dt;
   if (perfN >= 40) {

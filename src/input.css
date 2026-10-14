@@ -42,3 +42,7 @@ body.touch-driving #dialBox { right: 10px; bottom: 128px; width: 160px; height: 
 /* the legacy rebinding table (input.openBindings) if a tool still mounts it: the menus use src/ui/controls-panel.js */
 .input-bindings { font: 500 14px 'Barlow', sans-serif; }
 .input-bindings button { background: #1d252e; border: 1px solid rgba(255,255,255,.18); border-radius: 4px; font: 800 14px 'Barlow Condensed', sans-serif; letter-spacing: .08em; }
+/* Manual cars remain playable on touch; auxiliary controls use a short horizontal row. */
+.touch-buttons { grid-template-columns: repeat(5,40px); gap: 4px; max-width: calc(100vw - 24px); }
+#touch-controls button[data-action=shiftUp], #touch-controls button[data-action=shiftDown] { border-color: #ffc35e; font-size: 11px; letter-spacing: .03em; }
+@media (max-width:500px) { .touch-buttons { grid-template-columns: repeat(5,34px); } .touch-buttons button { min-height: 32px; } }

@@ -70,3 +70,19 @@
   #credit{font-size:8px}#msg{font-size:14px;max-width:80vw}#count{font-size:100px}
 
 }
+
+/* Host-only allowed-car grid, fed by Multiplayer.renderCarToggles(). */
+#mp-car-toggles { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: .45rem; margin: 1rem 0; padding: 1rem; background: #080f17; border: 1px solid var(--c-line-2); border-radius: var(--r-2); }
+#mp-car-toggles[hidden] { display: none; }
+#mp-car-toggles::before { content: 'ALLOWED CARS · HOST RULES · KEEP AT LEAST ONE'; grid-column: 1 / -1; color: #b7c8d9; font: 800 .8rem var(--f-cond); letter-spacing: .08em; margin-bottom: .5rem; }
+#mp-car-toggles > button { grid-column: span 4; background: var(--c-surface-3); min-height: 2.7rem; }
+#mp-car-toggles > button[data-preset] { border-color: var(--c-accent); }
+.mp-car-toggle { grid-column: span 3; display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .65rem; background: var(--c-surface-2); border: 1px solid var(--c-line); border-radius: var(--r-2); font: 800 .8rem var(--f-cond); letter-spacing: .03em; cursor: pointer; }
+.mp-car-toggle:has(input:checked) { border-color: #69c7a3; background: #183028; }
+.mp-car-toggle:not(:has(input:checked)) { color: #7f8b96; }
+.mp-car-toggle .switch { flex: none; transform: scale(.8); transform-origin: left center; order: -1; }
+.mp-add-friend { margin-left: .7rem; padding: .25rem .6rem !important; min-height: 2rem !important; font-size: .75rem !important; }
+.mp-member { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.mp-member > span { min-width: 0; }
+#multiplayer .mp-picker { margin-top: .4rem; justify-content: center; }
+@media(max-width:600px) { #mp-car-toggles { padding: .7rem; grid-template-columns: repeat(6,minmax(0,1fr)); } #mp-car-toggles > button { grid-column: span 2; } .mp-member { flex-wrap: wrap; } .mp-car-toggle { font-size: .75rem; padding: .5rem; } }

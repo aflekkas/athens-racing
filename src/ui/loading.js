@@ -4,18 +4,20 @@
 // compile) and a rotating tip. The markup lives in index.html (#loading) so it paints before any module loads.
 //   import { loading } from './ui/loading.js';
 //   loading.show(mapId)      reset to 0 and fade in      loading.progress('BUILDING TERRAIN', .25)      loading.hide()
+import { input } from '../input.js';
+import { bindingLabel, gearboxMessage } from '../input-labels.js';
 import { MAPS } from '../map-catalog.js';
 import { setProgress, esc } from './components.js';
 
 const TIPS = [
   'Running a red light adds a time penalty. The SEAT’s nitrous bottle refills while waiting at a red.',
-  'Stuck off the road? Press T to be towed back onto it.',
-  'C switches between the cockpit and chase cameras.',
+  () => 'Stuck off the road? ' + bindingLabel(input.bindings, 'tow', document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard') + ' to be towed back onto it.',
+  () => bindingLabel(input.bindings, 'camera') + ' switches between the cockpit and chase cameras.',
   'Change AI rivals, traffic, time of day and weather in the race setup before every event.',
   'Pavements and dirt lay-bys are drivable. Kerbs and humps will unsettle the car.',
   'In a time trial you race your best ghost. Turn it off under Settings, Driving.',
-  'Manual gearbox: shift with E / Q, or RB / LB on a controller.',
-  'Pause and press P for photo mode: free camera, depth of field and exposure.',
+  () => 'Manual gearbox: ' + gearboxMessage('manual', true, input.bindings, document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard'),
+  () => 'Pause with ' + bindingLabel(input.bindings, 'pause') + ', then ' + bindingLabel(input.bindings, 'photo') + ' for photo mode: free camera, depth of field and exposure.',
   'Multiplayer: share a six-character lobby code and race up to seven friends.',
   'Steering assist adapts to your device. Set it to OFF for full control.',
   'Medals are for time and position only. Every second counts.',
@@ -74,7 +76,7 @@ class LoadingScreen {
   nextTip() {
     const t = $('ldTip'); if (!t) return;
     this.tipIdx = (this.tipIdx + 1) % TIPS.length;
-    t.classList.remove('in'); void t.offsetWidth; t.innerHTML = esc(TIPS[this.tipIdx]); t.classList.add('in');
+    t.classList.remove('in'); void t.offsetWidth; const tip = TIPS[this.tipIdx]; t.innerHTML = esc(typeof tip === 'function' ? tip() : tip); t.classList.add('in');
   }
   hide() {
     const el = this.el; if (!el) return;

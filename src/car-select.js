@@ -4,7 +4,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint, carTransmission } from './cars.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { updateCarDecals } from './vehicle-decals.js';
+import { updateCarDecals, listDecals, getCarDecals, setCarDecals } from './vehicle-decals.js';
+import { CAR_CLASSES, carCategory, filterCars } from './car-catalog.js';
+export { listDecals, getCarDecals, setCarDecals };
 
 // Period 0–100 km/h figures for the represented drivetrain (seconds).
 // Power, mass and driven wheels come from the live physics catalogue.
@@ -17,22 +19,85 @@ import { updateCarDecals } from './vehicle-decals.js';
 export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0 };
 import * as C from './ui/components.js';
 const { esc, icon } = C;
-export function renderCarSelect({ index = 0, def, garage = false } = {}) {
-  const c = CARS[index], locked = !!def?.car, paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id];
-  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', String(c.drive).toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
-  const arrowBtn = (act, ic, label) => `<div class="mi car-arrow btn btn--secondary btn--icon ${locked ? 'off' : ''}" role="button" aria-label="${label}" data-act="${act}">${icon(ic)}</div>`;
-  return C.screen({ cls: 'scr--car', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'CHOOSE YOUR CAR',
-    hints: [['leftright', 'CAR'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'BACK']],
-    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count tnum">${locked ? `${icon('lock-simple')} EVENT CAR` : `${index + 1} / ${CARS.length}`}</span></div>
-    <section class="car-info panel panel--notch">
-      <div class="car-browse">${arrowBtn('carPrev', 'caret-left', 'Previous car')}<div class="car-browse__name"><h3>${esc(c.name)}</h3>${c.tag ? `<p>${esc(c.tag)}</p>` : ''}</div>${arrowBtn('carNext', 'caret-right', 'Next car')}</div>
-      <!-- UI owner: restyle .car-transmission; retain data-transmission for grid badges. -->
-      <div class="car-transmission label" data-transmission="${carTransmission(c)}">${carTransmission(c) === 'both' ? 'MANUAL / AUTO · PLAYER CHOICE' : carTransmission(c).toUpperCase() + ' ONLY'} · ${c.gears.length}-SPEED</div>
-      <div class="car-dots" aria-hidden="true">${CARS.map((_, i) => `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>
+export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, decal = {} } = {}) {
+  const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id];
+  if (!detail) {
+    const list = filterCars(CARS, filters), attrs = { 'data-scope': 'catalog' };
+    return C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
+      body: `<div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
+      ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...CAR_CLASSES.map(x => [x, x.toUpperCase()])], attrs })}
+      ${C.select({ key: 'drive', label: 'DRIVE', value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
+      ${C.select({ key: 'power', label: 'POWER', value: filters.power || 'all', options: [['all', 'ALL HP'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
+      ${C.select({ key: 'sort', label: 'SORT', value: filters.sort || 'name', options: [['name', 'NAME'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>
+      <div class="catalog-count label">${list.length} / ${CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}</div>
+      <div class="car-grid scroll-y">${list.map(({ car, index: i }) => {
+        const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
+        return C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
+          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', ...(i === index && !locked ? { 'data-default': '' } : {}) },
+          media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(car.name),
+          text: `${carCategory(car).toUpperCase()} · ${transmissionLabel(car)}`,
+          foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge('UNAVAILABLE', '', 'lock-simple') : ''}` });
+      }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
+  }
+  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
+  const layer = { id: 'stripes', position: 'bonnet', color: '#ffffff', number: 7, ...decal }, designs = listDecals(), layers = getCarDecals(c.id), A = { 'data-scope': 'decal' };
+  return C.screen({ cls: 'scr--car', kick: carCategory(c).toUpperCase(), title: c.name,
+    hints: [['select', 'CUSTOMISE'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
+    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count">${C.badge(c.drive.toUpperCase())}${C.badge(transmissionLabel(c))}</span></div>
+    <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
+      <div class="car-transmission label" data-transmission="${carTransmission(c)}">${transmissionLabel(c)} · ${c.gears.length}-SPEED</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
-      <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find((p) => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
-      <div class="car-actions">${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', attrs: { 'data-default': '' } })}</div>
+      <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
+      <div class="car-decals"><h3 class="label">VINYLS · ${layers.length} / 8 LAYERS</h3>
+        ${C.select({ key: 'id', label: 'DESIGN', value: layer.id, options: designs.map(d => [d.id, d.name.toUpperCase()]), attrs: A })}
+        ${C.segmented({ key: 'position', label: 'POSITION', value: layer.position, options: ['bonnet', 'doors', 'roof', 'rear'].map(x => [x, x.toUpperCase()]), attrs: A })}
+        <div class="car-paints__row">${designs[0].colors.map(color => `<div class="mi paint ${layer.color === color ? 'selected' : ''}" role="button" aria-label="Vinyl color ${color}" data-act="decalColor" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div>
+        ${layer.id === 'roundel' ? C.stepper({ key: 'number', label: 'RACE NUMBER', value: layer.number, min: 0, max: 999, step: 1, attrs: A }) : ''}
+        <div class="decal-actions">${C.button({ label: 'ADD LAYER', icon: 'plus', act: 'decalAdd', disabled: layers.length >= 8 })}${C.button({ label: 'CLEAR ALL', icon: 'trash', act: 'decalClear', variant: 'ghost', disabled: !layers.length })}</div>
+        <div class="decal-layers">${layers.map((l, i) => C.button({ label: `${i + 1}. ${designs.find(d => d.id === l.id)?.name || l.id} · ${l.position}`, iconRight: 'x', act: 'decalRemove', variant: 'ghost', size: 'sm', attrs: { 'data-layer': i }, title: 'Remove layer' })).join('')}</div>
+      </div>
+      <div class="car-actions">${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
+}
+export const transmissionLabel = c => carTransmission(c) === 'both' ? 'MANUAL / AUTO' : carTransmission(c).toUpperCase() + ' ONLY';
+
+// A single disposable renderer renders visible catalogue thumbnails; no per-card WebGL contexts.
+const thumbs = new Map();
+export function mountCarGrid(root) {
+  let stopped = false, frame, renderer, observer;
+  const pending = [], scene = new THREE.Scene(); scene.background = new THREE.Color('#141b23');
+  scene.add(new THREE.HemisphereLight('#edf3ff', '#444650', 3));
+  const keyLight = new THREE.DirectionalLight('#fff', 4); keyLight.position.set(-4, 6, -5); scene.add(keyLight);
+  const camera = new THREE.PerspectiveCamera(32, 2, .1, 40); camera.position.set(6, 3, 7); camera.lookAt(0, .6, 0);
+  const run = () => {
+    if (stopped || !pending.length) return;
+    const img = pending.shift(), c = CARS.find(c => c.id === img.dataset.carThumb);
+    if (!c) return;
+    const key = c.id + savedPaint(c);
+    if (thumbs.has(key)) img.src = thumbs.get(key);
+    else {
+      try {
+        renderer ||= new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(480, 240); renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        const model = new CarModel(c); model.root.rotation.y = -.45; scene.add(model.root);
+        renderer.render(scene, camera); const url = renderer.domElement.toDataURL('image/png'); img.src = url; thumbs.set(key, url);
+        model.root.removeFromParent(); model.disposeDamage?.();
+        // The models share geometry/materials with the game; only thumbnail-specific geometry may be released.
+        const geo = new Set(); model.root.traverse(o => { if (o.geometry && !o.geometry.userData.shared) geo.add(o.geometry); }); geo.forEach(g => g.dispose());
+      } catch { img.alt = c.short; }
+    }
+    frame = requestAnimationFrame(run);
+  };
+  observer = new IntersectionObserver(entries => { for (const e of entries) if (e.isIntersecting) { pending.push(e.target); observer.unobserve(e.target); } cancelAnimationFrame(frame); frame = requestAnimationFrame(run); }, { root: root.querySelector('.car-grid'), rootMargin: '100px' });
+  root.querySelectorAll('[data-car-thumb]').forEach(img => observer.observe(img));
+  return { dispose() { stopped = true; cancelAnimationFrame(frame); observer.disconnect(); renderer?.dispose(); renderer?.forceContextLoss(); } };
+}
+/** Uses the live Menu instance supplied by main.js; selection returns a car ID without restarting the session. */
+export function openCarPicker(options = {}) {
+  const menu = options.menu || window.__flow?.menu;
+  if (!menu) return false;
+  menu.show('car', { ...options, garage: true, index: options.index ?? menu.h?.carIndex?.() ?? 0 }, true);
+  return true;
 }
 export function mountCarSelect(root, index) {
   const container = root.querySelector('#carStage');
@@ -72,6 +137,7 @@ export function mountCarSelect(root, index) {
   let last = performance.now();
   renderer.setAnimationLoop(now => { updateCarDecals(model); model.root.rotation.y += Math.min(.05,(now-last)/1000)*.16; last=now; renderer.render(scene,camera); });
   return {
+    index,
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {
       renderer.setAnimationLoop(null); observer.disconnect(); model.disposeDamage?.();
