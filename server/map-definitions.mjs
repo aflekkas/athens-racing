@@ -1,15 +1,6 @@
 import { RIVIERA_TUNNELS } from '../src/maps/riviera-tunnels.js';
 import { trackVersion } from '../src/network-track.js';
-import { EVENTS, QUICK_RACE, resolve as resolveEvent } from '../src/events.js';
-import { isDrivingMode, resolveDrivingMode, drivingModeDefinition, buildDrivingRoutes } from '../src/driving-objectives.js';
-
-// Deterministic per-map objective itineraries (seed 1): both transports
-// derive the same manifest from the same raw data. Null when the road
-// cannot host missions (closed circuits, short test fixtures).
-const drivingTrips = (data, mode) => {
-  try { return buildDrivingRoutes(data, mode, { seed: 1 }); } catch { return null; }
-};
-
+import { QUICK_RACE, freeRoam, resolve as resolveEvent } from '../src/events.js';
 // Enforcement site lists collected from raw map data (empty until verified
 // site data lands; claims validate to reject meanwhile). Shape:
 // data.enforcement = { cameras: [{ id, s, dir, limitKmh }], redLights: [{ id, s }] }.
@@ -41,25 +32,15 @@ export function resolveMap(meta, data) {
   const { route, marks = [] } = data;
   const track = { start: route.start, finish: route.finish, version: trackVersion(route) };
   const definitions = new Map();
-  const defs = meta.id === 'riviera' ? [QUICK_RACE, ...EVENTS] : data.events || [];
+  const race = meta.id === 'riviera' ? QUICK_RACE : (data.events || []).find(e => e.type === 'sprint');
+  const defs = [...(race ? [{ ...race, name: 'QUICK RACE', quick: true }] : []), freeRoam(meta.id)];
   for (const def of defs) {
     try {
-      const r = isDrivingMode(def.type) ? resolveDrivingMode(def, { route }) : resolveEvent(def, { route, marks });
+      const r = resolveEvent(def, { route, marks });
       definitions.set(def.id, { id: def.id, mapId: meta.id, type: def.type, name: def.name, ...r, routeKey: `${r.s0}>${r.s1}`, traffic: def.traffic > 0, trafficLevel: def.traffic > 0 ? def.traffic : 0, conditions: def.conditions || null, police: def.rules?.police === true, rules: def.rules || null });
     } catch { /* Test fixtures can omit named marks. */ }
   }
-  if (![...definitions.values()].some(e => ['sprint', 'timetrial'].includes(e.type))) throw new Error(`Map ${meta.id} has no online events`);
-  const trips = { taxi: drivingTrips(data, 'taxi'), getaway: drivingTrips(data, 'getaway') };
-  // Offered driving modes are registered when their manifest is valid, so
-  // options can offer taxi/getaway and create accepts them. Closed circuits
-  // and short fixtures yield null manifests and register nothing.
-  for (const mode of ['taxi', 'getaway']) {
-    if (!trips[mode] || [...definitions.values()].some(d => d.type === mode)) continue;
-    try {
-      const def = drivingModeDefinition(mode, meta.id);
-      const r = resolveDrivingMode(def, { route });
-      definitions.set(def.id, { id: def.id, mapId: meta.id, type: def.type, name: def.name, ...r, routeKey: `${r.s0}>${r.s1}`, traffic: def.traffic > 0, trafficLevel: def.traffic > 0 ? def.traffic : 0, conditions: def.conditions || null, police: def.rules?.police === true, rules: def.rules || null });
-    } catch { /* Unresolvable road geometry hosts no missions. */ }
-  }
+  if (![...definitions.values()].some(e => e.type === 'sprint')) throw new Error(`Map ${meta.id} has no Quick Race route`);
+  const trips = { taxi: null, getaway: null }; // Legacy storage shape; objective modes are dormant.
   return { id: meta.id, name: meta.name, track, geometry: { ...route, corridors: meta.id === 'riviera' ? RIVIERA_TUNNELS : [] }, closed: route.closed === true, trips, enforcement: { cameras: collectCameras({ id: meta.id, data }), redSites: collectRedLightSites({ id: meta.id, data }) }, definitions };
 }

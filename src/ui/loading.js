@@ -13,13 +13,12 @@ const TIPS = [
   'Running a red light adds a time penalty. The SEAT’s nitrous bottle refills while waiting at a red.',
   () => 'Stuck off the road? ' + bindingLabel(input.bindings, 'tow', document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard') + ' to be towed back onto it.',
   () => bindingLabel(input.bindings, 'camera') + ' switches between the cockpit and chase cameras.',
-  'Change AI rivals, traffic, time of day and weather in the race setup before every event.',
+  'Change AI rivals, traffic, time of day and weather in the race setup before every Quick Race.',
   'Pavements and dirt lay-bys are drivable. Kerbs and humps will unsettle the car.',
-  'In a time trial you race your best ghost. Turn it off under Settings, Driving.',
   () => 'Manual gearbox: ' + gearboxMessage('manual', true, input.bindings, document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard'),
   'Multiplayer: share a six-character lobby code and race up to seven friends.',
   'Steering assist adapts to your device. Set it to OFF for full control.',
-  'Medals are for time and position only. Every second counts.',
+  'Choose JOIN GAME on the main menu to enter a code or browse open lobbies.',
 ];
 const $ = (id) => document.getElementById(id);
 const fmtKm = (m) => (m / 1000).toFixed(1) + ' KM';

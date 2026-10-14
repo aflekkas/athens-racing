@@ -16,9 +16,8 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
   const track = maps.get('riviera').track;
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
   const lobbyEvent = l => maps.get(l.mapId).definitions.get(l.eventId);
-  // Any event the map defines is offered online (sprint, timetrial, pursuit,
-  // taxi/getaway): no silent race-only coercion. Disabled maps leave every list.
-  const onlineEvent = (id, mapId = 'riviera') => !!maps.get(mapId)?.definitions.get(id);
+  // Removed modes stay unavailable even when a legacy catalogue is supplied.
+  const onlineEvent = (id, mapId = 'riviera') => ['sprint', 'free'].includes(maps.get(mapId)?.definitions.get(id)?.type);
   const options = (mapId = 'riviera') => [...maps.get(mapId).definitions.values()].filter(e => onlineEvent(e.id, mapId)).map(({ id, name, type, s0, s1, dir, len, routeKey }) => ({ id, name, type, mapId, s0, s1, dir, len, routeKey }));
   const catalogue = () => [...maps].filter(([id]) => isMapEnabled(id)).map(([id, m]) => ({ id, name: m.name, track: m.track, events: options(id), trips: m.trips || { taxi: null, getaway: null } }));
   const publicLobby = (l, manifest = true) => {
@@ -213,6 +212,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           return;
         }
         if (m.type === 'leave') { leave(c); send(ws, { type: 'left' }); return; }
+        if (['create', 'options'].includes(m.type) && m.mode !== undefined && !['sprint', 'free'].includes(m.mode)) return error('Mode unavailable. Choose Quick Race or Free Roam.');
         if (m.type === 'create' || m.type === 'join') {
           if (l) return error('Leave your current lobby first.');
           c.name = clean(m.name, 'DRIVER'); c.car = CARS.has(m.car) ? m.car : 'mini';
@@ -453,7 +453,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           rememberRecoveryRoad(c, event, l.raceId);
           // Objective modes never take the crossing finish; reversed runs keep
           // their time but stay off the leaderboard. Fines add into the finish.
-          if (c.finish === null && !isObjectiveMode(event.type) && c.course?.passed === c.course?.gates.length && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
+          if (c.finish === null && event.type === 'sprint' && c.course?.passed === c.course?.gates.length && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000 + (c.enfPenalty || 0); l.racers.get(c.id).finish = c.finish; publish(l);
             if (!l.config?.reverse) leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
             if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
@@ -482,7 +482,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
       if (['waiting', 'results'].includes(l.status) && now - l.touched > idleLobbyMs) { for (const p of [...l.players.values()]) { leave(p); send(p.ws, { type: 'left', reason: 'Idle lobby expired.' }); } continue; }
       if (l.status === 'countdown' && now >= l.startAt) { l.status = 'race'; publish(l); }
       if (['countdown', 'race'].includes(l.status)) {
-        if (now > l.startAt + raceLimitFor(l, raceLimitMs)) { results(l); continue; }
+        if (lobbyEvent(l)?.type !== 'free' && now > l.startAt + raceLimitFor(l, raceLimitMs)) { results(l); continue; }
         // Objective rounds advance on the receipt clock even for parked
         // drivers; an all-done round ends the race like a full finish.
         if (l.objectives && l.status === 'race') {
@@ -510,7 +510,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     }
     const byId = new Map([...sessions.values()].map(c => [c.id, c]));
     for (const data of saved?.lobbies || []) {
-      if (!maps.has(data.mapId) || !maps.get(data.mapId).definitions.has(data.eventId)) continue;
+      if (!maps.has(data.mapId) || !onlineEvent(data.eventId, data.mapId)) continue;
       const l = { ...data, players: new Map(), racers: data.racers ? new Map(data.racers) : null, objectives: data.objectives ? new Map(data.objectives) : null };
       if (!l.config) l.config = defaultConfig(maps.get(data.mapId)?.definitions.get(data.eventId));
       if (l.objectives) l.objectiveTrips = (maps.get(data.mapId)?.trips || {})[maps.get(data.mapId)?.definitions.get(data.eventId)?.type] || null;

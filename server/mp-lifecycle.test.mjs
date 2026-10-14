@@ -88,8 +88,8 @@ test('client adapter maps lobby config to race-setup semantics', () => {
   assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 3, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false });
   assert.equal(trafficBoolToLevel(true), 1); assert.equal(trafficBoolToLevel(false), 0);
   assert.equal(trafficLevelToBool(0.5), true); assert.equal(trafficLevelToBool(0), false);
-  assert.equal(describeMode('sprint'), 'SPRINT'); assert.equal(describeMode('pursuit'), 'PURSUIT');
-  assert.equal(describeMode('taxi'), 'TAXI'); assert.equal(describeMode(), 'SPRINT');
+  assert.equal(describeMode('sprint'), 'QUICK RACE'); assert.equal(describeMode('free'), 'FREE ROAM');
+  assert.equal(describeMode('taxi'), 'UNAVAILABLE MODE'); assert.equal(describeMode(), 'QUICK RACE');
 });
 
 // ---------- core-level (Worker-like, fake sockets) ----------
@@ -115,30 +115,27 @@ function harness(t, opts = {}) {
 }
 const stateAt = (s, u = 0) => ({ x: s, y: 0, z: 0, yaw: 0, s, u, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
 
-test('create seeds shared config; pursuit and taxi accepted, closed and disabled maps rejected', (t) => {
+test('create seeds configurable Quick Race; removed modes and disabled maps rejected', (t) => {
   const { core, socket, lobbyOf, errOf, hello } = harness(t);
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   const a = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL });
-  assert.deepEqual(hello(a).maps.map((m) => m.id).sort(), ['riviera'], 'disabled maps leave the catalogue');
+  assert.deepEqual(hello(a).maps.map((m) => m.id).sort(), ['riviera']);
+  assert.deepEqual(hello(a).events.filter(e => e.mapId === 'riviera').map(e => e.id), ['quick'], 'legacy objective/pursuit definitions are not advertised');
   send(a, { type: 'create', mapId: 'megara' });
   assert.match(errOf(a), /unavailable/);
-  send(a, { type: 'create', mapId: 'ring', eventId: 'ring-taxi' });
-  assert.match(errOf(a), /public roads/);
-  send(a, { type: 'create', mapId: 'riviera', eventId: 'chase', config: { rivals: 5, traffic: 0.5, time: 'night', weather: 'rain', reverse: true } });
+  for (const eventId of ['chase', 'cab']) {
+    send(a, { type: 'create', eventId });
+    assert.match(errOf(a), /Mode unavailable/);
+    assert.equal(core.lobbies.size, 0);
+  }
+  send(a, { type: 'create', eventId: 'quick', config: { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true } });
   const l = lobbyOf(a);
-  assert.equal(l.mode, 'pursuit');
-  assert.equal(l.generation, 0);
-  assert.deepEqual(l.config, { rivals: 5, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: false, sessionDuration: 300, enforcement: null }, 'event police default fills missing keys');
-  assert.deepEqual([l.event.s0, l.event.s1, l.event.dir, l.event.routeKey], [15, 5, -1, '15>5'], 'reversed geometry is race-facing');
-  send(a, { type: 'create', eventId: 'cab' });
-  assert.match(errOf(a), /Leave your current lobby/);
-  const b = socket(); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
-  send(b, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
-  const cab = lobbyOf(b);
-  assert.equal(cab.mode, 'taxi');
-  assert.ok(cab.event.objectiveRoutes.length === 1, 'manifest rides the event view');
-  assert.equal(cab.players[0].objective, null, 'no rounds before a start');
-  void core;
+  assert.equal(l.mode, 'sprint');
+  assert.deepEqual(l.config, { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
+  assert.deepEqual([l.event.s0, l.event.s1, l.event.dir, l.event.routeKey], [15, 0, -1, '15>0']);
+  send(a, { type: 'options', eventId: 'cab' });
+  assert.match(errOf(a), /Mode unavailable/);
+  assert.equal(core.lobbies.get(l.code).eventId, 'quick');
 });
 
 test('guests change cars while the host edits; readiness invalidates only when needed', (t) => {
@@ -263,53 +260,6 @@ test('reversed runs finish at the mirrored line and skip the leaderboard', (t) =
   assert.equal(submissions.length, 0, 'reversed runs never touch the leaderboard');
 });
 
-test('objective rounds step on validated poses, snapshot live, and time up', (t) => {
-  submissions.length = 0;
-  const { core, socket, lobbyOf, advance } = harness(t);
-  const a = socket(), b = socket();
-  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
-  const send = (ws, v) => core.message(ws, JSON.stringify(v));
-  send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
-  const code = lobbyOf(a).code;
-  send(b, { type: 'join', code });
-  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
-  send(a, { type: 'start' }); const raceId = lobbyOf(a).raceId;
-  advance(150); core.tick();
-  assert.equal(lobbyOf(a).status, 'race');
-  const stop = { x: 0, y: 0, z: 0, yaw: 0, s: 1, u: 0, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1 };
-  for (let i = 0; i < 7; i++) { send(a, { type: 'state', raceId, state: stop }); advance(400); }
-  const me = lobbyOf(a).players.find((p) => p.id === lobbyOf(a).host);
-  assert.ok(me.objective, 'players carry live objective snapshots');
-  assert.equal(me.objective.phase, 'dropoff', '1.5s stopped in the zone picks up');
-  assert.equal(me.objective.roundId, raceId);
-  assert.equal(submissions.length, 0, 'objective modes never submit times');
-});
-
-test('objective results keep racer entries sorted by completed, never null', (t) => {
-  const { core, socket, lobbyOf, advance } = harness(t);
-  const a = socket(), b = socket();
-  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
-  const send = (ws, v) => core.message(ws, JSON.stringify(v));
-  send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
-  const code = lobbyOf(a).code;
-  send(b, { type: 'join', code });
-  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
-  send(a, { type: 'start' }); const raceId = lobbyOf(a).raceId;
-  advance(150); core.tick();
-  // Host runs the full fare (pickup then dropoff at the fixture origin).
-  const stop = { x: 0, y: 0, z: 0, yaw: 0, s: 1, u: 0, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1 };
-  for (let i = 0; i < 14; i++) { send(a, { type: 'state', raceId, state: stop }); advance(400); }
-  const hostId = lobbyOf(a).host;
-  assert.equal(lobbyOf(a).players.find((p) => p.id === hostId).objective.completed, 1);
-  // Guest idles past the deadline; the round ends with plain sorted results.
-  advance(25000); core.tick();
-  const done = lobbyOf(a);
-  assert.equal(done.status, 'results');
-  assert.equal(done.results.length, 2);
-  assert.ok(done.results.every((r) => r && typeof r.id === 'string' && r.objective), 'no null entries');
-  assert.deepEqual(done.results.map((r) => r.objective.completed), [1, 0], 'completed desc');
-});
-
 test('telemetry extras relay validated; violations without sites stay silent', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
@@ -334,12 +284,12 @@ test('telemetry extras relay validated; violations without sites stay silent', (
   assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'duplicate rejected claims stay silent');
 });
 
-test('hibernation preserves code, config, generation and objective rounds', (t) => {
+test('hibernation preserves Quick Race code, config and generation', (t) => {
   const { core, socket, lobbyOf } = harness(t);
   const a = socket();
   core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
-  send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { rivals: 2 } });
+  send(a, { type: 'create', mapId: 'riviera', eventId: 'quick', config: { rivals: 2 } });
   for (const ws of [a]) send(ws, { type: 'ready', ready: true, version: 'coast' });
   const before = lobbyOf(a);
   const saved = JSON.parse(JSON.stringify(core.exportState()));
@@ -350,7 +300,7 @@ test('hibernation preserves code, config, generation and objective rounds', (t) 
   assert.ok(l, 'room code survives');
   assert.equal(l.generation, 0);
   assert.equal(l.config.rivals, 2);
-  assert.equal(l.eventId, 'cab');
+  assert.equal(l.eventId, 'quick');
 });
 
 // ---------- real WebSocket: three-client create/edit race ----------

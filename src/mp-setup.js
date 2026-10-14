@@ -38,7 +38,7 @@ export function trafficBoolToLevel(on) { return on === true ? 1 : 0; }
 export function trafficLevelToBool(level) { return (level ?? 0) > 0; }
 
 // Human mode label for the lobby/room UI ("mode unclear" playtest note).
-// Unknown future modes (taxi/getaway/...) fall back to their uppercased id.
+// Only the supported session modes have player-facing labels.
 export function describeMode(type) {
-  return { sprint: 'SPRINT', timetrial: 'TIME TRIAL', pursuit: 'PURSUIT', free: 'FREE ROAM' }[type] || String(type || 'sprint').toUpperCase();
+  return { sprint: 'QUICK RACE', free: 'FREE ROAM' }[type || 'sprint'] || 'UNAVAILABLE MODE';
 }

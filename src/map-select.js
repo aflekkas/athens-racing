@@ -18,7 +18,7 @@ function preview(map) {
 }
 export function renderMapSelect(selectedId = 'riviera', mode) {
   style(); const selectable = getPlayableMaps(MAPS); const selected = selectable.find(m => m.id === selectedId) || selectable[0];
-  return C.screen({ cls: 'scr--maps', kick: mode === 'taxi' ? 'TAXI / 5 MINUTES' : mode === 'getaway' ? 'GETAWAY DRIVER / 5 MINUTES' : mode === 'free' ? 'FREE ROAM' : mode === 'quick' ? 'QUICK RACE' : mode === 'tt' ? 'TIME TRIAL' : 'EVENTS', title: 'ATTICA / CHOOSE YOUR TRACK',
+  return C.screen({ cls: 'scr--maps', kick: mode === 'free' ? 'FREE ROAM' : 'QUICK RACE', title: 'ATTICA / CHOOSE YOUR TRACK',
     hints: [['select', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
     body: `<div class="attica-layout"><div class="attica-map" aria-label="Map of Attica with playable race locations"><div class="attica-layer"><img class="attica-art" src="assets/maps/attica.svg" alt="Stylised Attica coastline, Athens, Saronic Gulf, Hymettus and Penteli mountains" draggable="false"/>
       ${selectable.map((m,i) => { const [x,y] = TRACK_PINS[m.id]; return `<div class="mi track-pin ${m.id === selected.id ? 'selected' : ''}" role="button" aria-label="${m.name}" data-map-id="${m.id}" style="left:${x/1040*100}%;top:${y/840*100}%;--pin:${m.id === 'penteli' ? '#73dbc2' : '#ff594b'}" ${m.id === selected.id ? 'data-default' : ''}>${icon(KIND(m)[1])}<span>${m.name}</span></div>`; }).join('')}</div>
@@ -50,10 +50,8 @@ export async function selectMap(menu, id, confirmed = false) {
   try {
     await (menu.h.switchMap || window.__flow.switchMap)(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
-    if (['taxi', 'getaway'].includes(menu.data.mode)) menu.show('setup', { eventId: menu.data.mode + ':' + id, mode: menu.data.mode }, true);
-    else if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
-    else if (menu.data.mode === 'quick') menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
-    else menu.show('events', { mapId: id }, true);
+    if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
+    else menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
 }

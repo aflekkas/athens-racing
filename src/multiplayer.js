@@ -9,7 +9,7 @@ import { account } from './account.js';
 import { friends } from './friends.js';
 import { createAddFriendButton } from './ui/friend-actions.js';
 import { presetCars } from './plate.js';
-import { configFromLobby } from './mp-setup.js';
+import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
 // the server owns membership, synchronized starts, and elapsed finish times.
@@ -29,9 +29,9 @@ export class Multiplayer {
     this.panel.innerHTML = `<div class="mp-card"><div class="mp-heading"><div><small>ATHENS RIVIERA · LIVE RACING</small><h2>MULTIPLAYER</h2></div><button id="mp-close" aria-label="Close multiplayer">×</button></div>
       <p id="mp-status" role="status">Connecting…</p>
       <div id="mp-browser"><form id="mp-join-form" class="mp-join-hero"><div><small>HAVE AN INVITE?</small><h3>JOIN BY CODE</h3><p>Enter your friend’s six-character lobby code.</p></div><label>LOBBY CODE<input id="mp-code" maxlength="6" placeholder="ABC123" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button type="submit">JOIN LOBBY →</button></form><div class="mp-fields"><label>DRIVER NAME<input id="mp-name" maxlength="28" placeholder="Your name" autocomplete="nickname"></label><label>YOUR CAR<select id="mp-car"></select></label></div>
-      <details class="mp-create-fold"><summary>HOST A NEW LOBBY</summary><div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<select id="mp-create-map"></select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div></details>
-      <div class="mp-section"><h3>DISCOVER LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
-      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>TRACK<select id="mp-map"></select></label><label>RACE ROUTE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
+      <details class="mp-create-fold"><summary>HOST / CREATE GAME</summary><div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<select id="mp-create-map"></select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div></details>
+      <div class="mp-section"><h3>BROWSE OPEN LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
+      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>TRACK<select id="mp-map"></select></label><label>MODE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
       <button id="mp-leaderboard">VIEW BEST TIMES</button><div id="mp-times" hidden></div><p class="mp-note">2–8 drivers · Opponent cars are ghosts · 10-minute race limit · Rejoin within 90 seconds after a disconnect</p></div>`;
     document.body.append(this.panel);
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
@@ -47,6 +47,7 @@ export class Multiplayer {
     $('mp-create').onclick = () => { if (this.lobby || this.creating) return; this.creating = true; $('mp-create').disabled = true; this.status('Creating lobby…'); this.action('create', { lobbyName: $('mp-lobby-name').value, private: $('mp-private').checked }); };
     $('mp-restart').onclick = () => this.restart();
     $('mp-tolobby').onclick = () => this.returnToLobby();
+    $('mp-code').oninput = e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
     $('mp-join-form').onsubmit = e => { e.preventDefault(); this.action('join', { code: $('mp-code').value }); };
     $('mp-ready').onclick = () => { if (!this.worldReady) return this.status(this.versionMismatch ? 'The lobby track was updated. Reload the game to update.' : 'The track is loading. Ready becomes available when it finishes.'); const me = this.me; this.send({ type: 'ready', ready: !me?.ready, car: me?.car || $('mp-car').value, mapId: this.mapId, version: this.trackVersion }); };
     $('mp-start').onclick = () => this.send({ type: this.lobby?.status === 'results' ? 'rematch' : 'start' });
@@ -227,6 +228,11 @@ export class Multiplayer {
       if (typeof draft.mapId === 'string' && this.maps.some(m => m.id === draft.mapId)) this.$('mp-create-map').value = draft.mapId;
     }
     this.panel.hidden = false; this.hooks.clearInput();
+    if (!this.lobby) {
+      this.panel.querySelector('.mp-create-fold').open = draft?.entry === 'host' || !!draft?.mode;
+      if (draft?.entry === 'host') this.$('mp-lobby-name').focus();
+      else if (draft?.entry === 'join') this.$('mp-code').focus();
+    }
     if (!this.lobby) { this.$('mp-car').value = this.cars[this.hooks.carIndex()].id; if (!this.pendingDraft?.mapId && this.maps.some(m => m.id === this.mapId)) this.$('mp-create-map').value = this.mapId; this.send({ type: 'discover' }); }
   }
   hidePanel() { if (this.panel.contains(document.activeElement) || document.activeElement === this.button) document.activeElement.blur(); this.panel.hidden = true; this.hooks.clearInput(); this.hooks.panelClosed?.(); }
@@ -339,9 +345,9 @@ export class Multiplayer {
   renderEvents(mapId) {
     const select = this.$('mp-event'), previous = select.value;
     select.replaceChildren();
-    for (const e of this.events.filter(e => (e.mapId || 'riviera') === mapId)) {
+    for (const e of this.events.filter(e => (e.mapId || 'riviera') === mapId && ['sprint', 'free'].includes(e.type))) {
       const option = document.createElement('option'); option.value = e.id;
-      option.textContent = `${e.name} · ${(e.len / 1000).toFixed(1)} km${e.dir < 0 ? ' · REVERSE' : ''} · ${String(e.type || 'sprint').toUpperCase()}`;
+      option.textContent = describeMode(e.type);
       select.append(option);
     }
     if ([...select.options].some(o => o.value === previous)) select.value = previous;

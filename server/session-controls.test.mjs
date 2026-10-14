@@ -13,12 +13,12 @@ test('car changes unready ready drivers, work after race/reconnect, obey filters
 test('side-road checkpoint skip cannot finish; go back through missing gate then complete ordered course',t=>{const e=setup(t),{a,b,l,send}=e;send(a,{type:'start',force:true});e.advance();const raceId=l.raceId;send(b,{type:'state',raceId,state:state(60,20)});e.advance();send(b,{type:'state',raceId,state:state(110,20)});assert.equal(e.core.clientData(b).course.passed,0);assert.equal(b.messages.at(-1).type,'checkpoint');assert.match(b.messages.at(-1).message,/MISSED CHECKPOINT/);e.advance();send(b,{type:'state',raceId,state:state(200)});assert.equal(e.core.clientData(b).finish,null);e.restore();assert.equal(e.core.clientData(b).course.passed,0);for(const s of [60,90,110,170,200]){e.advance();send(b,{type:'state',raceId,state:state(s)});}assert.ok(e.core.clientData(b).finish>0);});
 test('teleported world position cannot count a gate with forged s/u',t=>{const e=setup(t),{a,b,l,send}=e;send(a,{type:'start',force:true});e.advance();send(b,{type:'state',raceId:l.raceId,state:{...state(85),x:5000}});assert.equal(e.core.clientData(b).finish,null);assert.equal(e.core.clientData(b).course.passed,0);});
 
-test('real tt-coast race never sends a missed warning on the legal bore and both drivers finish', async t => {
+test('real Quick Race never sends a missed warning on the legal bore and both drivers finish', async t => {
   const { readFile } = await import('node:fs/promises');
   const { resolveMap } = await import('./map-definitions.mjs');
   const { smokeDrive } = await import('../tools/deploy-smoke-route.mjs');
   const data = JSON.parse(await readFile(new URL('../data/map.json', import.meta.url)));
-  const map = resolveMap({ id: 'riviera' }, data), event = map.definitions.get('tt-coast');
+  const map = resolveMap({ id: 'riviera' }, data), event = map.definitions.get('quick');
   const drive = smokeDrive(event, map.geometry);
   let now = 100000;
   t.mock.method(Date, 'now', () => now);
@@ -37,7 +37,7 @@ test('real tt-coast race never sends a missed warning on the legal bore and both
     for (const ws of [host, guest]) send(ws, { type: 'state', raceId: lobby.raceId, state });
     if (state.s === 9500) for (const ws of [host, guest]) {
       const course = core.clientData(ws).course;
-      assert.equal(course.passed, 61);
+      assert.equal(course.passed, course.gates.findIndex(g => g.s === 9502));
       assert.equal(course.gates[course.passed].s, 9502);
       assert.equal(course.missed, false);
     }

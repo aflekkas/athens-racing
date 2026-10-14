@@ -162,9 +162,9 @@ test('invalid/expired tokens cannot recover a race and explicit leave releases t
 
 test('host route/traffic choices clear ready votes; reverse finish follows event direction', async t => {
   const env = await setup(t, { raceLimitMs: 5000 }); const { a, b } = await pair(env);
-  b.send({ type: 'options', eventId: 'return-leg', traffic: true }); assert.match((await b.next(m => m.type === 'error')).message, /host/);
+  b.send({ type: 'options', eventId: 'quick', traffic: true, config: { reverse: true } }); assert.match((await b.next(m => m.type === 'error')).message, /host/);
   a.send({ type: 'ready', ready: true, version: a.version }); await room(a); await room(b);
-  a.send({ type: 'options', eventId: 'return-leg', traffic: true });
+  a.send({ type: 'options', eventId: 'quick', traffic: true, config: { reverse: true } });
   const changed = (await room(a)).lobby; await room(b);
   assert.equal(changed.event.dir, -1); assert.equal(changed.traffic, true); assert.ok(changed.players.every(p => !p.ready));
   const l = await readyAndStart(a, b); await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
@@ -176,8 +176,8 @@ test('host route/traffic choices clear ready votes; reverse finish follows event
   const completed = (await a.next(m => m.type === 'lobby' && m.lobby.status === 'results')).lobby;
   assert.ok(completed.players.every(p => p.finish != null));
   await env.app.leaderboard.flush();
-  const times = await (await fetch(env.base + '/api/leaderboard?eventId=return-leg&car=mini&traffic=true')).json();
-  assert.equal(times.length, 2); assert.ok(times.every(e => e.source === 'online' && e.routeKey === '15>0'));
+  const times = await (await fetch(env.base + '/api/leaderboard?eventId=quick&car=mini&traffic=true')).json();
+  assert.equal(times.length, 0, 'custom reverse Quick Race stays off the leaderboard');
 });
 
 test('leaderboard HTTP rejects invalid times, aborted runs, unknown cars, cross-origin and oversized requests; rate limits POST', async t => {
@@ -227,8 +227,8 @@ test('departing host hands control to a connected driver ahead of reserved disco
   b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
   const roomC = (await c.next(m => m.type === 'lobby' && m.lobby.host === c.id)).lobby;
   assert.equal(roomC.players.find(p => p.id === a.id).connected, false);
-  c.send({ type: 'options', eventId: 'return-leg', traffic: false });
-  assert.equal((await c.next(m => m.type === 'lobby' && m.lobby.eventId === 'return-leg')).lobby.host, c.id);
+  c.send({ type: 'options', eventId: 'quick', traffic: false, config: { reverse: true } });
+  assert.equal((await c.next(m => m.type === 'lobby' && m.lobby.eventId === 'quick' && m.lobby.config.reverse)).lobby.host, c.id);
 });
 
 test('guest-only identity endpoints; lobby allow-lists work without accounts', async t => {

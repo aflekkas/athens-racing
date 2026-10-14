@@ -756,12 +756,12 @@ function initFlow() {
 }
 
 function mapEvent(id) {
-  if (id && typeof id === 'object') return id;
+  if (id && typeof id === 'object') return ['sprint', 'free'].includes(id.type) ? id : null;
   if (id === 'free') return EV.freeRoam(map.id);
-  if (isDrivingMode(id)) return drivingModeDefinition(id, map.id);
   const list = map.events || [];
   if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
-  return list.find(e => e.id === id) || EV.getEvent(id);
+  const def = list.find(e => e.id === id) || EV.getEvent(id);
+  return ['sprint', 'free'].includes(def?.type) ? def : null;
 }
 
 /** make an event (definition or id) the active one: route segment / direction, HUD range, arches, traffic direction */
@@ -1104,7 +1104,7 @@ function finishRace(how = 'finish') {
   G.result = res;
   G.won = !dnf && (isDrivingMode(def) ? res.completed > 0 : def.type === 'sprint' ? pos === 1 : !!res.medal);
   if (G.won) audio.win(); else audio.lose();
-  hud.pop(G.won ? 'info good' : 'info bad', isDrivingMode(def) ? 'SESSION COMPLETE' : wrecked ? 'WRECKED' : busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', res.medal ? res.medal.toUpperCase() + ' MEDAL' : '');
+  hud.pop(G.won ? 'info good' : 'info bad', isDrivingMode(def) ? 'SESSION COMPLETE' : wrecked ? 'WRECKED' : busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', '');
   // the per-car best of the full route (garage card)
   if (G.pFinish !== null && !isDrivingMode(def) && def.type !== 'pursuit' && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
     const key = 'paraliaki.best.' + player.spec.id; const prev = +localStorage.getItem(key) || 0;

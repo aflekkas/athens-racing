@@ -195,9 +195,10 @@ export function clearTelemetryFields() { telemetryFields.clear(); }
 // the leaderboard; the reducer below owns duration, completions and results.
 export const isObjectiveMode = (type) => isDrivingMode(type);
 
-// Closed circuits cannot host driving missions (route.closed comes from raw map data).
+// Both the Node server and Worker reject removed modes, including legacy catalogues.
 export function assertModeAllowed(eventDef, routeClosed) {
-  if (isObjectiveMode(eventDef?.type) && routeClosed) return 'Driving missions need public roads; closed circuits cannot host them.';
+  void routeClosed;
+  if (!['sprint', 'free'].includes(eventDef?.type)) return 'Mode unavailable. Choose Quick Race or Free Roam.';
   return null;
 }
 
