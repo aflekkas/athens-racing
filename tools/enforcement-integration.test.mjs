@@ -6,20 +6,21 @@ import http from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
 import { createGameCore } from '../server/core.mjs';
 import { resolveMap } from '../server/map-definitions.mjs';
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 const camera={id:'fixture-ermou',mapId:'riviera',s:220,dir:1,limitKmh:50,verified:true,active:true,source:'fixture: not a verified post'};
 async function room(t,{police=true,cameraDir=1,mode='sprint'}={}) {
  const event={id:'quick',name:'Fixture race',type:mode,s0:200,s1:260,dir:1,len:60,routeKey:'200>260',traffic:false,police};
  const maps=new Map([['riviera',{id:'riviera',name:'Fixture',track:{start:200,finish:260,version:'fixture-v1'},definitions:new Map([['quick',event]]),enforcement:{cameras:[{...camera,dir:cameraDir}],redSites:[]},trips:{taxi:[{pickup:{x:1000,y:0,z:0},dropoff:{x:1100,y:0,z:0}}]}}]]);
  const core=createGameCore({maps,cars:new Set(['mini']),leaderboard:{submit:async()=>{}},countdownMs:10});
  const server=http.createServer(),wss=new WebSocketServer({server});
- wss.on('connection',(ws,req)=>{core.connect(ws,req.socket.remoteAddress);ws.on('message',m=>core.message(ws,m.toString()));ws.on('close',()=>core.disconnect(ws));});
+ wss.on('connection',(ws,req)=>{core.connect(ws,req.socket.remoteAddress,{protocol:MULTIPLAYER_PROTOCOL});ws.on('message',m=>core.message(ws,m.toString()));ws.on('close',()=>core.disconnect(ws));});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const timer=setInterval(core.tick,10),connections=[];
  t.after(async()=>{clearInterval(timer);for(const ws of connections)ws.terminate();await new Promise(r=>wss.close(r));await new Promise(r=>server.close(r));});
  async function connect(name){
   const ws=new WebSocket(`ws://127.0.0.1:${server.address().port}`),inbox=[],waiters=[];connections.push(ws);
   ws.on('message',data=>{const m=JSON.parse(data);const i=waiters.findIndex(w=>w.pred(m));if(i<0)inbox.push(m);else waiters.splice(i,1)[0].resolve(m);});
   const next=pred=>new Promise((resolve,reject)=>{const i=inbox.findIndex(pred);if(i>=0)return resolve(inbox.splice(i,1)[0]);const timer=setTimeout(()=>reject(Error('Protocol message timeout')),2500);waiters.push({pred,resolve:m=>{clearTimeout(timer);resolve(m);}});});
-  const hello=await next(m=>m.type==='hello');return {ws,id:hello.id,inbox,next,send:m=>ws.send(JSON.stringify({name,car:'mini',...m}))};
+  const hello=await next(m=>m.type==='hello');ws.send(JSON.stringify({type:'hello',protocol:MULTIPLAYER_PROTOCOL}));return {ws,id:hello.id,inbox,next,send:m=>ws.send(JSON.stringify({name,car:'mini',...m}))};
  }
  const a=await connect('Fined'),b=await connect('Unfined');a.send({type:'create',mapId:'riviera',eventId:'quick',config:{police}});const waiting=(await a.next(m=>m.type==='lobby')).lobby;
  b.send({type:'join',code:waiting.code});await b.next(m=>m.type==='lobby');
@@ -27,7 +28,12 @@ async function room(t,{police=true,cameraDir=1,mode='sprint'}={}) {
  await a.next(m=>m.type==='lobby'&&m.lobby.players.length===2&&m.lobby.players.every(p=>p.ready));a.send({type:'start'});
  const lobby=(await a.next(m=>m.type==='lobby'&&m.lobby.status==='race')).lobby;
  const pose=s=>({x:s,y:0,z:0,yaw:0,s,u:2,vLong:25,vLat:0,steer:0,rpm:3000,gear:2});
- const state=(c,s,extra={})=>c.send({type:'state',raceId:lobby.raceId,generation:lobby.generation,state:{...pose(s),...extra}});
+ // Keep snapshots continuous under the production checkpoint/discontinuity rules.
+ const state=(c,s,extra={})=>{
+  let from=c.lastRaceId===lobby.raceId?c.lastS:200;
+  while(Math.abs(s-from)>10){from+=Math.sign(s-from)*10;c.send({type:'state',raceId:lobby.raceId,generation:lobby.generation,state:{...pose(from),...extra}});}
+  c.send({type:'state',raceId:lobby.raceId,generation:lobby.generation,state:{...pose(s),...extra}});c.lastS=s;c.lastRaceId=lobby.raceId;
+ };
  const claim=(c,id,extra={})=>c.send({type:'violation',id,kind:'camera',siteId:camera.id,s:220,kmh:90,dir:1,at:Date.now(),raceId:lobby.raceId,generation:lobby.generation,...extra});
  return {core,a,b,lobby,state,claim};
 }

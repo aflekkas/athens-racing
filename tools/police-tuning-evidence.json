@@ -1,0 +1,247 @@
+{
+  "productionBaseline": "0a914d0",
+  "measurement": "60 Hz straight-road runtime; seeded fixture; speed and cop position controlled for 60 seconds. A null wanted time means no star during that window. Red/contact events happen on frame 2. Before includes an explicit unobstructed ground stub for the cop at 130 m; after every offence uses fresh LOS within 75 m.",
+  "before": [
+    {
+      "trigger": "120 km/h; no cops",
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAtEnd": 0
+    },
+    {
+      "trigger": "+40 km/h; cop 60 m",
+      "timeToStar": 0.016666666666666666,
+      "timeToPursuit": 0.016666666666666666,
+      "heatAtEnd": 0.012200000000000003
+    },
+    {
+      "trigger": "+21 km/h; cop 60 m",
+      "timeToStar": 0.016666666666666666,
+      "timeToPursuit": 0.016666666666666666,
+      "heatAtEnd": 0.006499999999999999
+    },
+    {
+      "trigger": "+40 km/h; cop 130 m, clear terrain",
+      "timeToStar": 0.016666666666666666,
+      "timeToPursuit": 0.016666666666666666,
+      "heatAtEnd": 0.012200000000000003
+    },
+    {
+      "trigger": "+40 km/h; cop 160 m",
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAtEnd": 0
+    },
+    {
+      "trigger": "+40 km/h; blocked LOS at 20 m",
+      "timeToStar": 0.016666666666666666,
+      "timeToPursuit": 0.016666666666666666,
+      "heatAtEnd": 0.012200000000000003
+    },
+    {
+      "trigger": "red; no cop",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": null,
+      "heatAtEnd": 0.3
+    },
+    {
+      "trigger": "red; cop 60 m",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": 0.03333333333333333,
+      "heatAtEnd": 0.7001999999999999
+    },
+    {
+      "trigger": "near miss; cop 60 m",
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAtEnd": 0
+    },
+    {
+      "trigger": "traffic bump; no cop",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": null,
+      "heatAtEnd": 0.125
+    },
+    {
+      "trigger": "traffic bump; cop 60 m",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": 0.03333333333333333,
+      "heatAtEnd": 0.2502
+    },
+    {
+      "trigger": "police bump",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": 0.03333333333333333,
+      "heatAtEnd": 0.6002
+    },
+    {
+      "trigger": "police crash",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": 0.03333333333333333,
+      "heatAtEnd": 1.2002
+    },
+    {
+      "trigger": "wrong side; legal speed; cop 60 m",
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAtEnd": 0
+    },
+    {
+      "trigger": "event speed camera; no cop",
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": null,
+      "heatAtEnd": 0.7
+    },
+    {
+      "trigger": "120 km/h normal race; automatic patrols",
+      "timeToStar": 10.7,
+      "timeToPursuit": 10.7,
+      "heatAtEnd": 0.021200000000000004
+    }
+  ],
+  "after": [
+    {
+      "trigger": "120 km/h; no cops",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "+40 km/h; cop 60 m",
+      "timeToWarning": 1,
+      "timeToStar": 4,
+      "timeToPursuit": 4,
+      "heatAt60s": 3.800000000000169
+    },
+    {
+      "trigger": "+21 km/h; cop 60 m",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "+30 km/h; cop 60 m",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "+40 km/h; cop 130 m",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "+40 km/h; blocked LOS at 20 m",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "red; no cop",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "red; cop 60 m",
+      "timeToWarning": 0.03333333333333333,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "near miss; cop 60 m",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "traffic bump; no cop",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "traffic bump; cop 60 m",
+      "timeToWarning": 0.03333333333333333,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "traffic crash; no cop",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "traffic crash; cop 60 m",
+      "timeToWarning": 0.03333333333333333,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "police bump",
+      "timeToWarning": 0.03333333333333333,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "police crash",
+      "timeToWarning": null,
+      "timeToStar": 0.03333333333333333,
+      "timeToPursuit": 0.03333333333333333,
+      "heatAt60s": 1
+    },
+    {
+      "trigger": "wrong side; cop 60 m",
+      "timeToWarning": 2.5,
+      "timeToStar": 10,
+      "timeToPursuit": 10,
+      "heatAt60s": 2.500000000000066
+    },
+    {
+      "trigger": "wrong side; no cop",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    },
+    {
+      "trigger": "event speed camera; no cop",
+      "timeToWarning": null,
+      "timeToStar": null,
+      "timeToPursuit": null,
+      "heatAt60s": 0
+    }
+  ],
+  "rules": {
+    "policeSetting": "existing On/Off only",
+    "witnessRangeM": 75,
+    "speedMarginKmh": 30,
+    "speedSecondsToFirstStar": 4,
+    "warningSecondsForSpeed": 1,
+    "continuedSpeedSecondsPerExtraStar": 20,
+    "complyStoppedSeconds": 2,
+    "fleeingSecondsAfterWarning": 6,
+    "lostSightSeconds": 3,
+    "cooldownSecondsAtOneStar": 10,
+    "suspicionDecayPerSecond": 0.2,
+    "speedCameraPenaltySeconds": 3,
+    "cameraHeat": 0,
+    "onlineWitnesses": "client claims rejected; receiver-owned witness required",
+    "patrols": "Riviera: four fixed map-anchored sites, two roaming. Penteli: one village motorcycle and one roaming patrol. Gameplay reconstruction, not actual deployment data."
+  }
+}

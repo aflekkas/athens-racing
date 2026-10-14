@@ -1145,10 +1145,12 @@ function onStopLine(j, who, rc = rival) {
     G.rPen += penalty; G.rReds++; rc.pen = (rc.pen || 0) + penalty; rc.reds = (rc.reds || 0) + 1;
     people.redRun(j); return;
   }
-  // cop.sees is visibility of the player, computed by patrol AI. It is never
-  // used as evidence about a rival or another multiplayer connection.
-  const witnessed = police?.enabled && police.cops.some(c => c.cop.sees && !c.crash);
-  if (enforcement.red(j, lawState(), witnessed)) {
+  // Recheck the unit's actual short-range sight line at the crossing. Online
+  // players cannot self-certify witnesses for themselves or other drivers.
+  const st = lawState();
+  const witnessed = !enforcement.online && police?.witnesses(st);
+  if (enforcement.red(j, st, witnessed)) {
+    police?.witnessedRed(st);
     hud.flashCam(); audio.shutter(); people.redRun(j);
   }
 }

@@ -26,7 +26,7 @@ export class EnforcementRuntime {
     this.prevS = st.s;
   }
   red(junction, st, witnessed = false) {
-    if (!this.enabled || ![1, -1].includes(st.dir)) return null;
+    if (!this.enabled || this.online || witnessed !== true || ![1, -1].includes(st.dir)) return null;
     const site = this.redSites?.find(c => Math.abs(c.s - junction.s) < 30 && (c.dir === 0 || c.dir === st.dir));
     if (!redViolation(junction, { camera: !!site, witnessed: witnessed === true && !this.online })) return null;
     const id = site?.id || `witness:${junction.i}:${st.dir}`;

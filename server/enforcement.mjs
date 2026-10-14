@@ -53,6 +53,7 @@ export function validateViolation(claim, ctx = {}) {
   } else {
     // Core may supply a phase derived from its deterministic signal plan.
     // A client red flag or witness boolean is never sufficient evidence.
+    if (ctx.redWitness?.(site, st, ctx.now) !== true) return reject('witness');
     const phase = ctx.redPhase?.(site, ctx.now);
     if (!(phase?.main === 'R' && phase.redT > 0.3 && phase.toGreen > 0.3)) return reject('phase');
   }

@@ -26,8 +26,8 @@ test('swept trigger catches a fast legitimate pass; a teleport and off-road pose
  const w=new CameraWatch();assert.equal(w.step(cam.id,cam,{...st(240),prevS:200}),'fire');w.reset();
  assert.equal(w.step(cam.id,cam,{...st(1000),prevS:0}),'absent');assert.equal(w.step(cam.id,cam,{...st(),u:40}),'absent');
 });
-test('red requires camera or real witness, phase and grace',()=>{
- const red={main:'R',redT:2,toGreen:3};assert.equal(redViolation(red,{}),false);assert.equal(redViolation(red,{witnessed:true}),true);
+test('red requires a real witness, phase and grace; cameras alone are silent',()=>{
+ const red={main:'R',redT:2,toGreen:3};assert.equal(redViolation(red,{}),false);assert.equal(redViolation(red,{camera:true}),false);assert.equal(redViolation(red,{witnessed:true}),true);
  assert.equal(redViolation({...red,redT:.2},{camera:true}),false);assert.equal(redViolation({...red,main:'G'},{camera:true}),false);
 });
 test('catalogue isolates maps, disabled/unknown facing/unknown provenance',()=>{
@@ -82,8 +82,9 @@ test('bounded claim memory remains bounded over repeated passes',()=>{
  assert.equal(c.enforcement.claims.size,MAX_CLAIMS);assert.equal(c.enforcement.sites.size,1);
 });
 test('red server cannot accept client phase/witness; needs receiver-owned phase',()=>{
- const c=ctx();c.redSites=[cam];const m=claim({kind:'red',witnessed:true,main:'R'});assert.equal(validateViolation(m,c).reason,'phase');
- c.redPhase=()=>({main:'R',redT:2,toGreen:3});assert.equal(validateViolation(m,c).accept,true);
+ const c=ctx();c.redSites=[cam];const m=claim({kind:'red',witnessed:true,main:'R'});assert.equal(validateViolation(m,c).reason,'witness');
+ c.redPhase=()=>({main:'R',redT:2,toGreen:3});assert.equal(validateViolation(m,c).reason,'witness');
+ c.redWitness=()=>true;assert.equal(validateViolation(m,c).accept,true);
 });
 test('two sender reducers cannot penalise a victim named in a claim',()=>{
  const a=ctx(),b=ctx();assert.equal(validateViolation(claim({playerId:'victim'}),a).accept,true);assert.equal(b.enforcement.sites.size,0);
@@ -105,7 +106,7 @@ function gameStopLine({enabled=true,witness=false,online=false}={}) {
  const enforcement=new EnforcementRuntime(entry=>{const fine=enforcement.record(entry);if(fine){G.pen+=fine.penaltySec;if(fine.kind==='red')G.reds++;finePhone.show(fine);}});
  enforcement.setMap({id:'riviera',data:{route:{length:10988}}});enforcement.configure({enabled,online});
  let flashes=0; const fn=new Function('lawsEnabled','enforcement','redViolation','G','rival','police','lawState','hud','audio','people',hook+'\nreturn onStopLine;')(
-  ()=>enabled,enforcement,redViolation,G,{}, {enabled,cops:witness?[{cop:{sees:true}}]:[]},()=>st(1000),{flashCam(){flashes++;}},{shutter(){}},{redRun(){}});
+  ()=>enabled,enforcement,redViolation,G,{}, {enabled,witnesses:()=>enabled&&witness,witnessedRed(){},cops:witness?[{cop:{sees:true}}]:[]},()=>st(1000),{flashCam(){flashes++;}},{shutter(){}},{redRun(){}});
  return {fn,G,enforcement,finePhone,flashes:()=>flashes};
 }
 test('actual main stop-line hook: disabled/no witness makes no penalty, no phone',()=>{

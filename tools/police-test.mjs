@@ -11,33 +11,39 @@ const run = (hm, secs, s, dt = 1 / 60) => { const out = []; for (let t = 0; t < 
 const phases = (out) => out.map((e) => e.phase);
 
 test('stars from heat', () => {
-  assert.equal(levelOf(0), 0); assert.equal(levelOf(0.2), 1); assert.equal(levelOf(1.0), 1); assert.equal(levelOf(2), 2); assert.equal(levelOf(3.5), 4); assert.equal(levelOf(5), 5);
+  assert.equal(levelOf(0), 0); assert.equal(levelOf(0.2), 0); assert.equal(levelOf(1.0), 1); assert.equal(levelOf(2), 2); assert.equal(levelOf(3.5), 3); assert.equal(levelOf(5), 5);
 });
 
-test('an unwitnessed offence adds heat but no pursuit; a witnessed one starts it', () => {
+test('unwitnessed offences do nothing; minor witnesses warn before continued offences build a star', () => {
   const hm = new HeatMachine();
   hm.offence('camera', 0.4, false);
-  assert.equal(hm.state, 'idle'); assert.ok(Math.abs(hm.heat - 0.4) < 1e-9);
-  assert.deepEqual(phases(hm.drain()), ['heat']); // 0 -> 1 star
-  hm.offence('speeding', 0.3, true);
-  assert.equal(hm.state, 'pursuit');
-  assert.deepEqual(phases(hm.drain()), ['start']);
-  hm.offence('crash', 0.6, true); // 1.3
-  assert.equal(hm.level, 2);
-  assert.deepEqual(phases(hm.drain()), ['heat']);
-  hm.offence('x', 99, true); assert.equal(hm.heat, 5); // capped
+  assert.equal(hm.heat, 0); assert.equal(hm.state, 'idle'); assert.deepEqual(hm.drain(), []);
+  hm.offence('red', 0.3, true);
+  assert.equal(hm.state, 'warning'); assert.equal(hm.level, 0); assert.deepEqual(phases(hm.drain()), ['warning']);
+  hm.offence('speeding', 0.7, true, { continuous: true });
+  assert.equal(hm.state, 'pursuit'); assert.equal(hm.level, 1); assert.deepEqual(phases(hm.drain()), ['start', 'heat']);
+  hm.offence('crash', 0.6, true); assert.equal(hm.level, 1);
+  hm.offence('x', 99, true); assert.equal(hm.heat, 5);
 });
 
-test('pursuit escalates while it lasts', () => {
+test('a lawful pursuit never escalates just because time passes', () => {
   const hm = new HeatMachine(); hm.begin(1.2); hm.drain();
-  run(hm, 30, { seen: true, copNear: false, slow: false });
-  assert.equal(hm.state, 'pursuit');
-  assert.ok(hm.heat > 1.2 + 30 * HEAT.escalate - 0.01 && hm.heat < 1.6);
-  assert.equal(Math.round(hm.time), 30);
+  run(hm, 90, { seen: true, copNear: false, slow: false });
+  assert.equal(hm.state, 'pursuit'); assert.equal(hm.heat, 1.2); assert.equal(hm.level, 1);
+});
+
+test('a warning can be complied with; fleeing for six seconds gives one star', () => {
+  const hm = new HeatMachine(); hm.offence('bump', .15, true); hm.drain();
+  const out = run(hm, HEAT.complyTime + .1, { seen: true, copNear: true, slow: true });
+  assert.ok(phases(out).includes('released')); assert.equal(hm.state, 'idle'); assert.equal(hm.heat, 0);
+  hm.offence('red', .3, true); hm.drain();
+  run(hm, 5.9, { seen: true, fleeing: true }); assert.equal(hm.level, 0);
+  const fled = run(hm, .2, { seen: true, fleeing: true });
+  assert.ok(fled.some(e => e.phase === 'start' && e.kind === 'fleeing')); assert.equal(hm.level, 1);
 });
 
 test('losing sight -> cooldown -> EVADED after the heat-scaled time, heat cleared, bonus paid', () => {
-  const hm = new HeatMachine(); hm.begin(2.5); hm.drain(); // 3 stars (ceil)
+  const hm = new HeatMachine(); hm.begin(3); hm.drain(); // exactly 3 stars
   run(hm, 1, { seen: true });
   let out = run(hm, HEAT.lostAfter + 0.1, { seen: false });
   assert.deepEqual(phases(out), ['cooldown']);
@@ -85,25 +91,9 @@ test('no bust meter outside a pursuit; takedowns add heat (no points)', () => {
 });
 
 // ------------------------------------------------------------------ the runtime against a stub world
-function world() {
-  const route = { length: 20000, speeds: [{ s: 0, v: 50 }, { s: 5000, v: 70 }], start: 0, finish: 20000,
-    point: (s, u) => ({ x: u, y: 0, z: -s }), edge: () => 7.1, curv: () => 0, div: () => 0, medHalf: () => 0.12, laneU: (s, l) => 0.12 + (l + 0.5) * 3.5, urban: () => 0.3,
-    project: (x, z) => ({ s: -z, u: x }) };
-  const mk = (i, moto) => ({ id: 100 + i, police: true, type: { id: moto ? 'police_moto' : 'police', len: moto ? 2.2 : 4.7, wid: moto ? 0.9 : 1.8, scooter: moto }, active: false, cop: null, crash: null,
-    m: { root: { visible: false }, setStrobe() {} }, indL: {}, indR: {}, len: 4.7, wid: 1.8 });
-  const traffic = {
-    route, cars: [0, 1, 2, 3, 4, 5].map((i) => mk(i, i === 5)), racers: [], signals: null, ground: null, sites: [], cones: [], coneBase: 0, coneMesh: { count: 0 },
-    laneCount: () => 2, laneUOf: (c, s, l = c.lane) => c.dir * (0.12 + (l + 0.5) * 3.5), kerbU: (c, s, i) => c.dir * (7.1 - i), roadSpeed: () => 20,
-    personality(c) { c.drv = { vf: 1 }; }, initDrive(c) { c.mode = 'drive'; }, repair() {}, lead: () => ({ gap: 1e9, lv: 0, o: null }),
-  };
-  const police = new Police(traffic, route);
-  police.rng = { next: () => 0.99, range: (a, b) => (a + b) / 2, chance: () => false, int: (a) => a };
-  const player = (s, u, vs) => { traffic.racers = [{ kind: 'player', a: {}, s, u, vs, vu: 0, hs: 2.2, hu: 0.9 }]; };
-  return { route, traffic, police, player };
-}
-const step = (W, secs, ctx = {}, dt = 1 / 30, move) => { const out = []; for (let t = 0; t < secs; t += dt) { move?.(dt); out.push(...W.police.update(dt, { racing: true, dir: 1, reds: 0, ...ctx })); } return out; };
+import { world, step } from './police-fixture.mjs';
 
-test('runtime: off unless enabled; speeding in front of a patrol starts a pursuit; events emitted', () => {
+test('runtime: off unless enabled; four seconds of witnessed speeding starts pursuit; events emitted', () => {
   const W = world(); W.player(1000, 1.9, 30);
   assert.deepEqual(step(W, 1), []); assert.equal(pursuit.state, 'off');
   W.police.reset(true);
@@ -115,6 +105,8 @@ test('runtime: off unless enabled; speeding in front of a patrol starts a pursui
   assert.equal(W.police.hm.state, 'idle'); assert.equal(W.police.hm.heat, 0);
   W.player(1000, 1.9, 30); // 108 km/h in a 50
   step(W, 1.5);
+  assert.equal(W.police.hm.state, 'warning'); assert.equal(W.police.hm.level, 0);
+  step(W, 2.5);
   assert.equal(W.police.hm.state, 'pursuit'); assert.ok(W.police.hm.level >= 1);
   assert.ok(seen.includes('start')); assert.equal(pursuit.state, 'pursuit');
   assert.ok(cop.cop.chase && cop.cop.siren, 'the witness joins the chase');
@@ -122,12 +114,11 @@ test('runtime: off unless enabled; speeding in front of a patrol starts a pursui
   assert.equal(scores.length, 0, 'the police never emit score');
 });
 
-test('runtime: speeding where no unit can see you is free; a red-light camera adds heat without a pursuit', () => {
-  const W = world(); W.police.reset(true); W.player(1000, 1.9, 35);
-  step(W, 2, { reds: 0 });
-  assert.equal(W.police.hm.heat, 0);
-  step(W, 0.1, { reds: 1 });
-  assert.ok(W.police.hm.heat > 0.25); assert.equal(W.police.hm.state, 'idle');
+test('runtime: no cops, red/camera counters and trap events never build heat', () => {
+  const W = world(); W.police.reset(true); W.player(1000, 1.9, 120 / 3.6);
+  step(W, 60, { reds: 0 }); events.emit('trap', { kmh: 120 });
+  step(W, .1, { reds: 10 });
+  assert.equal(W.police.hm.heat, 0); assert.equal(W.police.hm.state, 'idle');
 });
 
 test('runtime: stopped next to a chasing unit -> BUSTED (no score event, everyone stands down)', () => {

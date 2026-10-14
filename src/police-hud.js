@@ -46,11 +46,11 @@ export class PoliceHud {
     this.el.classList.toggle('on', show);
     if (!show) return;
     this.el.classList.toggle('pursuit', p.state === 'pursuit');
-    const key = `${p.level}|${p.state}`;
+    const key = `${p.level}|${p.state}|${Math.round(p.heat * 100)}`;
     if (key !== this.last) {
       this.last = key;
       this.stars.forEach((s, i) => s.classList.toggle('lit', i < p.level));
-      this.lbl.textContent = p.state === 'pursuit' ? 'PURSUIT' : p.state === 'cooldown' ? 'COOLDOWN' : 'WANTED';
+      this.lbl.textContent = p.state === 'pursuit' ? 'PURSUIT' : p.state === 'cooldown' ? 'COOLDOWN' : p.state === 'warning' ? 'PULL OVER · STOP SAFELY' : `OBSERVED ${Math.round(p.heat * 100)}%`;
     }
   }
 }

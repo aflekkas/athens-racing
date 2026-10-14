@@ -15,8 +15,7 @@
 //     enforced for the travel direction it faces, with a per-camera cooldown so
 //     one pass = one fine (never a fine per frame);
 //   - red lights: a stop-line crossing during red counts ONLY when that
-//     junction is enforced — a red-light camera site or a police unit that
-//     witnessed it. No omniscient checks: unenforced junctions are free.
+//     a police unit actually witnessed it. No omniscient checks: unenforced junctions are free.
 // Police capture (busted) is a time penalty + roadside hold, then you keep
 // driving — not a permanent DNF — except in pursuit-type events where being
 // caught fails the event's own objective (existing semantics, kept).
@@ -86,14 +85,14 @@ export class CameraWatch {
 
 /**
  * Red-light judge. A crossing counts ONLY when the junction is enforced:
- * a red-light camera site, or a police unit that saw it (witnessed=true).
+ * a police unit that saw it (witnessed=true). Cameras alone do not count.
  * Crossing detected by the caller via signals.crossed(); phase from the
  * junction state ({ main === 'R', redT, toGreen }).
  */
 export function redViolation(junction, enforcement) {
   if (!junction || junction.main !== 'R') return false;
   if (!(junction.redT > ENF.redGraceSec && junction.toGreen > ENF.redGraceSec)) return false;
-  return !!(enforcement && (enforcement.camera || enforcement.witnessed));
+  return enforcement?.witnessed === true;
 }
 
 /** In-game fine ledger: plain race stats (seconds), with history. Mode reset clears it. */
