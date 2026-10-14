@@ -52,7 +52,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
   if(d.blackRoof){const roof=p.getObjectByName('roof');roof.material=M.black.clone();roof.material.envMapIntensity=.10;roof.material.roughness=.88;roof.material.userData.fleetLivery=true;roof.userData.mirrorSupport=true;}
 
   // Fascia helpers retain named damage boundaries, optics and a matched Greek plate pair.
-  const face=(m,points,z,name)=>{const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();const base=new THREE.ShapeGeometry(shape).toNonIndexed(),a=base.attributes.position,vertices=[];const n=10;for(let i=0;i<a.count;i+=3){const A=new THREE.Vector3().fromBufferAttribute(a,i),B=new THREE.Vector3().fromBufferAttribute(a,i+1),C=new THREE.Vector3().fromBufferAttribute(a,i+2);const q=(u,v)=>A.clone().addScaledVector(B.clone().sub(A),u/n).addScaledVector(C.clone().sub(A),v/n).toArray();for(let u=0;u<n;u++)for(let v=0;v<n-u;v++){vertices.push(...q(u,v),...q(u+1,v),...q(u,v+1));if(u+v<n-1)vertices.push(...q(u+1,v),...q(u+1,v+1),...q(u,v+1));}}base.dispose();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(vertices.length/3*2),2));g.computeVertexNormals();return mesh(p,g,m,[0,0,z],[0,0,0],name);};
+  const face=(m,points,z,name,holes=[])=>{const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();for(const points of holes){const hole=new THREE.Path();points.forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();shape.holes.push(hole);}const base=new THREE.ShapeGeometry(shape).toNonIndexed(),a=base.attributes.position,vertices=[];const n=10;for(let i=0;i<a.count;i+=3){const A=new THREE.Vector3().fromBufferAttribute(a,i),B=new THREE.Vector3().fromBufferAttribute(a,i+1),C=new THREE.Vector3().fromBufferAttribute(a,i+2);const q=(u,v)=>A.clone().addScaledVector(B.clone().sub(A),u/n).addScaledVector(C.clone().sub(A),v/n).toArray();for(let u=0;u<n;u++)for(let v=0;v<n-u;v++){vertices.push(...q(u,v),...q(u+1,v),...q(u,v+1));if(u+v<n-1)vertices.push(...q(u+1,v),...q(u+1,v+1),...q(u,v+1));}}base.dispose();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(vertices.length/3*2),2));g.computeVertexNormals();return mesh(p,g,m,[0,0,z],[0,0,0],name);};
   const badgeMat=textMaterial(d.brand,'#171b20','#dddddd',256,80);M.badge.map=badgeMat.map;M.badge.needsUpdate=true;
   const lamp=(s,points,rear=false)=>face(rear?M.tail:M.head,points.map(([x,y])=>[s*x,y]),rear?R+.004:F-.004,`${rear?'rear':'front'}-lamp-housing`);
   const badge=(text,w,h,y,z)=>mesh(p,new THREE.PlaneGeometry(w,h),textMaterial(text,null),[0,y,z],[0,z<0?Math.PI:0,0],'badge');
@@ -87,23 +87,41 @@ export function buildRoadCar(car,d,M,low,plate,H){
       face(M.black,[[s*.21,.32],[s*.58,.365],[s*.73,.31],[s*.66,.17],[s*.38,.17]],F-.009,'evo-y-intake');
       line(p,M.paint,[[s*.39,.18,F-.02],[s*.54,.27,F-.02],[s*.30,.34,F-.02]],.022);
 
-      // Dark optical pockets and a thin red signature wrap the tapered tail corners.
-      patch(p,M.black,[[s*.28,.811,R+.009],[s*.75,.815,R+.009],[s*.76,.749,R+.009],[s*.32,.742,R+.009]],'rear-lamp-housing');
-      patch(p,M.black,[[s*.75,.815,R+.009],[s*.79,.824,R-.17],[s*.79,.755,R-.17],[s*.76,.749,R+.009]],'rear-lamp-housing');
-      line(p,M.tail,[[s*.31,.796,R+.015],[s*.74,.800,R+.015],[s*.79,.809,R-.17]],.006);
-      for(const t of [0,.16])line(p,M.tail,[[s*(.38+t),.777,R+.015],[s*(.45+t),.791,R+.015],[s*(.51+t),.777,R+.015]],.004);
-
+      // The thin light pocket follows the haunch around the tail corner.
+      patch(p,M.black,[[s*.08,.802,R+.012],[s*.75,.803,R+.012],[s*.75,.752,R+.012],[s*.08,.751,R+.012]],'rear-lamp-housing');
+      patch(p,M.black,[[s*.75,.803,R+.012],[s*.84,.813,R-.30],[s*.84,.763,R-.30],[s*.75,.752,R+.012]],'rear-lamp-housing');
+      line(p,M.tail,[[s*.02,.783,R+.019],[s*.73,.785,R+.019],[s*.84,.795,R-.30]],.004);
+      for(const t of [0,.16]){line(p,M.tail,[[s*(.36+t),.765,R+.022],[s*(.43+t),.785,R+.022],[s*(.49+t),.765,R+.022]],.005);}
+    }
+    // A recessed engine vent with real apertures around the high central outlets.
+    const outlets=[-.34,.34],exY=.626,exR=.103;
+    const holes=outlets.map(x=>Array.from({length:6},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return[x+exR*Math.cos(a),exY+exR*Math.sin(a)];}));
+    face(M.black,[[-.74,.747],[.74,.747],[.66,.535],[.46,.505],[-.46,.505],[-.66,.535]],R+.012,'evo-rear-mesh',holes);
+    const ventWires=[];
+    for(let row=0;row<8;row++)for(let col=0;col<37;col++){
+      const x=-.70+col*.039+(row%2)*.0195,y=.521+row*.028;
+      if(Math.abs(x)>.62+(y-.53)*.48||outlets.some(cx=>Math.hypot(x-cx,y-exY)<exR+.023))continue;
+      const pts=[];for(let k=0;k<=6;k++){const a=k*Math.PI/3;pts.push([x+Math.cos(a)*.019,y+Math.sin(a)*.013,R+.018]);}for(let k=0;k<6;k++){const a=pts[k],b=pts[k+1],n=.0014/Math.hypot(b[0]-a[0],b[1]-a[1]),dx=-(b[1]-a[1])*n,dy=(b[0]-a[0])*n;
+        const A=[a[0]+dx,a[1]+dy,a[2]],B=[b[0]+dx,b[1]+dy,b[2]],C=[b[0]-dx,b[1]-dy,b[2]],D=[a[0]-dx,a[1]-dy,a[2]];ventWires.push(...A,...B,...C,...A,...C,...D);}
 
     }
-    face(M.black,[[-.76,.748],[.76,.748],[.70,.615],[-.70,.615]],R+.008,'evo-rear-mesh');
-    face(M.black,[[-.70,.43],[-.58,.52],[-.29,.535],[.29,.535],[.58,.52],[.70,.43],[.63,.23],[-.63,.23]],R+.009,'evo-diffuser-valance');
-    for(let row=0;row<4;row++)for(let col=0;col<24;col++){const x=-.69+col*.059+(row%2)*.0295,y=.637+row*.030;const pts=[];for(let k=0;k<=6;k++){const a=k*Math.PI/3;pts.push([x+Math.cos(a)*.029,y+Math.sin(a)*.019,R+.012]);}line(p,M.darkAlloy,pts,.0018,'evo-grille-hex');}
+    const ventGeometry=new THREE.BufferGeometry();ventGeometry.setAttribute('position',new THREE.Float32BufferAttribute(ventWires,3));ventGeometry.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(ventWires.length/3*2),2));ventGeometry.computeVertexNormals();mesh(p,ventGeometry,M.darkAlloy,[0,0,0],[0,0,0],'evo-grille-hex');
+    // The diffuser rolls underneath the bumper; seven deep fins remain vertical.
+    surface(p,M.black,(u,v)=>{const x=(2*u-1)*mix(.61,.73,v),y=mix(.18,.49,v),z=R-.12+.15*v-.055*(x/.73)**2;return[x,y,z];},32,8,'evo-diffuser-valance');
+    for(let i=-3;i<=3;i++){
+      const x=i*.19;
+      patch(p,M.darkAlloy,[[x-.008,.16,R-.25],[x+.008,.16,R-.25],[x+.008,.37,R+.025],[x-.008,.37,R+.025]],'diffuser-strake');
+      patch(p,M.black,[[x-.008,.16,R-.25],[x-.008,.16,R+.025],[x-.008,.37,R+.025],[x-.008,.30,R-.25]],'diffuser-strake');
+    }
+    for(const s of [-1,1]){
+      // Dark rear-corner exits follow the haunch, instead of ending as a square panel.
+      patch(p,M.black,[[s*.70,.50,R+.018],[s*(side(R-.30,.55)+.006),.55,R-.30],[s*(side(R-.30,.27)+.006),.27,R-.30],[s*.62,.23,R-.04]],'evo-rear-corner-vent');
+      line(p,M.paint,[[s*.69,.51,R+.022],[s*(side(R-.30,.56)+.008),.56,R-.30]],.009);
+    }
     box(p,M.black,[1.50,.025,.22],[0,.15,F+.08],.012,[0,0,0],'front-splitter');
-    box(p,M.black,[1.15,.08,.34],[0,.29,R-.17],.01,[0,0,0],'rear-diffuser');
-    for(let i=-3;i<=3;i++)box(p,M.black,[.018,.09,.25],[i*.19,.24,R-.17],.005,[0,0,0],'diffuser-strake');
     for(let i=0;i<7;i++){const z=1.40+i*.105;surface(p,M.black,(u,v)=>{const x=(2*u-1)*.55,zz=z+(v-.5)*.035;return[x,deck(x,zz)+.005,zz];},20,2,'engine-cover-louvre');}
-    surface(p,M.paint,(u,v)=>{const x=(2*u-1)*.78,z=R-.10+.09*v;return[x,deck(x,z)+.012+.009*v,z];},32,3,'evo-tail-spoiler');
-    badge('LAMBORGHINI',.33,.022,.795,R+.02);car.exhaust=[new THREE.Vector3(-.39,.49,R-.03),new THREE.Vector3(.39,.49,R-.03)];
+    surface(p,M.paint,(u,v)=>{const x=(2*u-1)*.78,z=R-.08+.07*v;return[x,deck(x,z)+.006+.010*v,z];},32,3,'evo-tail-spoiler');
+    badge('LAMBORGHINI',.20,.014,.777,R+.025);car.exhaust=[new THREE.Vector3(-.34,.626,R+.095),new THREE.Vector3(.34,.626,R+.095)];
   }
   if(['ibiza','panda','yaris','e36'].includes(id)){
     const amber=new THREE.MeshStandardMaterial({color:'#d87a26',roughness:.25,side:THREE.DoubleSide});
@@ -137,7 +155,19 @@ export function buildRoadCar(car,d,M,low,plate,H){
   M.plate=makePlateMaterial(plate);car.plate=plate;
   for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?(id==='huracan'?.255:.465):(id==='huracan'?.465:.53),s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112,12,2),M.plate,[0,s<0?(id==='huracan'?.255:.465):(id==='huracan'?.465:.53),s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}
   if(!car.exhaust)car.exhaust=[new THREE.Vector3(-W*.55,.245,R+.02)];
-  for(const v of car.exhaust){const pipe=mesh(p,new THREE.CylinderGeometry(id==='huracan'?.082:.037,id==='huracan'?.082:.037,id==='huracan'?.08:.16,id==='huracan'?6:16,1,true),M.chrome,v.toArray(),[Math.PI/2,0,0],'exhaust');if(id==='huracan'){mesh(p,new THREE.CircleGeometry(.070,6),M.black,[v.x,v.y,v.z+.041],[0,0,Math.PI/6]);mesh(p,new THREE.RingGeometry(.070,.084,6),M.chrome,[v.x,v.y,v.z+.044],[0,0,Math.PI/6],'hex-exhaust-lip');}else disk(p,M.black,.031,[v.x,v.y,v.z+.081]);}
+  for(const v of car.exhaust){
+    if(id==='huracan'){
+      // Closed-thickness hexagonal tubes: outer jacket, dark bore, bevel and a recessed throat.
+      const ringAt=(u,r,z)=>{const a=Math.PI/6+u*Math.PI*2;return[v.x+r*Math.cos(a),v.y+r*Math.sin(a),z];};
+      surface(p,M.chrome,(u,t)=>ringAt(u,mix(.092,.098,t),mix(v.z-.12,v.z,t)),6,4,'exhaust');
+      surface(p,M.darkAlloy,(u,t)=>ringAt(u,mix(.076,.082,t),mix(v.z-.075,v.z-.007,t)),6,4,'exhaust-inner');
+      surface(p,M.chrome,(u,t)=>ringAt(u,mix(.082,.098,t),v.z-.007+Math.sin(t*Math.PI/2)*.007),6,3,'hex-exhaust-lip');
+      mesh(p,new THREE.CircleGeometry(.077,6),M.black,[v.x,v.y,v.z-.075],[0,0,Math.PI/6],'exhaust-throat');
+    }else{
+      mesh(p,new THREE.CylinderGeometry(.037,.037,.16,16,1,true),M.chrome,v.toArray(),[Math.PI/2,0,0],'exhaust');disk(p,M.black,.031,[v.x,v.y,v.z+.081]);
+    }
+  }
+
   p.updateMatrixWorld(true);
   const world=new THREE.Vector3();
   p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=Math.max(0,Math.min(1,(Math.abs(world.z)-d.L*.34)/(d.L*.16)));world.z-=Math.sign(world.z)*(id==='huracan'?.34:.16)*t*t*(Math.abs(world.x)/W)**2;if(id==='huracan'&&world.z>0)world.z-=.07*t*t*((world.y-.56)/.42)**2;world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});

@@ -32,7 +32,9 @@ export function buildHuracanShell(car,d,M,low,H){
   const archAt=a=>d.r+(a>0?.016:.027);
   const deck=(x,z)=>{const [w,h]=section(z),u=Math.min(1,Math.abs(x)/Math.max(.1,side(z,h)));
     if(z<d.cowl)return h-.055*(1-u*u)*Math.sin(Math.PI*(z-F)/(d.cowl-F))+.03*(1-u*u)*Math.max(0,(z-d.cowl+.22)/.22);
-    return mix(huracanRoof(z,0),h,u*u);
+    // Lower only the centre cover; retain the accepted side edge and canopy.
+    const t=Math.max(0,Math.min(1,(z-d.back)/(R-d.back)));
+    return mix(huracanRoof(z,0),h,u*u)-.045*t*t*(3-2*t)*(1-u*u);
   };
   const intake=[[.35,.155],[.40,.225],[.69,.335],[.88,.22],[.84,.15],[.45,.14]];
   const cut=z=>{const hits=[];for(let i=0;i<intake.length;i++){const a=intake[i],b=intake[(i+1)%intake.length];if(z>=Math.min(a[0],b[0])&&z<Math.max(a[0],b[0]))hits.push(mix(a[1],b[1],(z-a[0])/(b[0]-a[0])));}return hits.length>1?[Math.min(...hits),Math.max(...hits)]:[bottom(z),bottom(z)];};
@@ -59,7 +61,8 @@ export function buildHuracanShell(car,d,M,low,H){
     box(p,M.black,[.095,.028,1.95],[s*.88,.125,.02],.006,[0,0,0],'evo-sill');
   }
   for(const [a,b,name]of [[F,d.cowl,'bonnet'],[d.back,R,'boot']])surface(p,M.paint,(u,v)=>{const z=mix(a,b,u),x=(2*v-1)*side(z,section(z)[1]);return[x,deck(x,z),z];},48,28,name);
-  for(const z of [F,R])surface(p,M.paint,(u,v)=>{const y=mix(bottom(z),section(z)[1],v),x=(2*u-1)*side(z,y);return[x,mix(bottom(z),deck(x,z),v),z];},30,8,z<0?'front-bumper':'rear-bumper');
+  // The lower rear opening is closed by the rolled diffuser, not an upright painted cap.
+  for(const z of [F,R])surface(p,M.paint,(u,v)=>{const base=z>0?.49:bottom(z),y=mix(base,section(z)[1],v),x=(2*u-1)*side(z,y);return[x,mix(base,deck(x,z),v),z];},30,8,z<0?'front-bumper':'rear-bumper');
   box(p,M.black,[1.40,.04,3.9],[0,.15,0],.009,[0,0,0],'undertray');
   for(const s of [-1,1]){const pts=[];for(let i=0;i<=30;i++){const z=mix(F+.15,d.cowl,i/30),x=s*mix(.28,.55,i/30);pts.push([x,deck(x,z)+.003,z]);}line(p,M.seam,pts,.002,'evo-bonnet-crease');}
   return {section,side,deck};
