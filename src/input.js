@@ -296,15 +296,17 @@ export class Input {
       for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) steer.addEventListener(name, e => { if (e.pointerId === pointer) { pointer = undefined; this.touch.steer = 0; } }); root.append(steer);
       const pedals = doc.createElement('div'); pedals.className = 'touch-pedals';
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
-      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftDown', 'GEAR −'], ['shiftUp', 'GEAR +'], ['transmission', 'MODE'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
+      const actions = doc.createElement('div'); actions.className = 'touch-actions';
+      const gears = doc.createElement('div'); gears.className = 'touch-gears'; gears.setAttribute('role', 'group'); gears.setAttribute('aria-label', 'Gear shifts');
+      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
         const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled; if (action === 'transmission') button.hidden = !this.transmissionEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });
-        (action === 'throttle' || action === 'brake' ? pedals : aux).append(button);
+        (action === 'throttle' || action === 'brake' ? pedals : action === 'shiftUp' || action === 'shiftDown' ? gears : actions).append(button);
       }
       root.dataset.auxColumns = String(this.nitrousEnabled || this.transmissionEnabled ? 4 : 3);
-      root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
+      aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
     };
     if ((this.navigator?.maxTouchPoints || 0) > 0 || this.target?.matchMedia?.('(pointer: coarse)').matches) enable();
     else this.listen('touchstart', enable);

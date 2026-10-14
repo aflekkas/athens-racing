@@ -65,9 +65,14 @@ body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw -
 #touch-controls { --touch-columns: 4; }
 #touch-controls[data-aux-columns="3"] { --touch-columns: 3; }
 #touch-controls button[hidden] { display: none !important; }
-.touch-buttons { display: flex; flex-wrap: wrap; width: calc(var(--touch-columns) * 40px + (var(--touch-columns) - 1) * 4px); }
-.touch-buttons button { flex: 1 0 40px; }
+.touch-buttons { display: flex; flex-wrap: nowrap; width: calc(var(--touch-columns) * 40px + (var(--touch-columns) - 1) * 4px); }
+.touch-actions { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; align-content: start; gap: 4px; }
+.touch-actions button { min-width: 0; flex: 1 0 calc((100% - (var(--touch-columns) - 2) * 4px) / (var(--touch-columns) - 1)); }
+.touch-gears { flex: 0 0 40px; display: flex; flex-direction: column; gap: 4px; }
+.touch-gears button { flex: 0 0 38px; width: 100%; min-width: 0; padding: 0; white-space: nowrap; }
 @media(max-width:500px) {
   .touch-buttons { width: auto; }
-  .touch-buttons button { flex-basis: calc((100% - (var(--touch-columns) - 1) * 6px) / var(--touch-columns)); }
+  .touch-actions, .touch-gears { gap: 6px; }
+  .touch-actions button { flex-basis: calc((100% - (var(--touch-columns) - 2) * 6px) / (var(--touch-columns) - 1)); }
+  .touch-gears { flex-basis: calc((100% - (var(--touch-columns) - 1) * 6px) / var(--touch-columns)); }
 }
