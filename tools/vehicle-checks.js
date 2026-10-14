@@ -153,6 +153,7 @@ export function runTrafficFleetChecks(carIds=null){
     check(type.id+' shared geometry before impacts',a.damageMeshes.some((m,i)=>m.geometry===b.damageMeshes[i]?.geometry));
     a.setLOD(0);const near=triangles(a.root);a.setLOD(150);const far=triangles(a.root);
     check(type.id+' distance detail reduces work',a.lodLevel===1&&far<near*.65);check(type.id+' near budget',near<=20000);check(type.id+' far budget',far<=3000);
+    if(['cle','cla','gla','gla45'].includes(type.id)){a.setLOD(0);let tinted=false;a.root.traverseVisible(o=>{if(o.isMesh&&o.material.userData.playerGlass)tinted=true;});check(type.id+' traffic road LOD retains tinted rear glazing',tinted);a.setLOD(150);}
     a.wheels.forEach(w=>{w.spin.rotation.x=.8;w.pivot.rotation.y=w.front?.2:0;});a.setLOD(0);
     check(type.id+' LOD keeps wheel transforms',a.wheels.every(w=>w.spin.rotation.x===.8&&w.pivot.rotation.y===(w.front?.2:0)));
     const rest=a.damageMeshes.map(m=>m.geometry.attributes.position.array.slice()),other=b.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());

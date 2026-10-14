@@ -54,3 +54,26 @@ Visual references for this pass are Mercedes press images `20c0325-008.jpg` (sid
 Revised matched-angle comparisons, individual views, normal real-game chase captures and logs are in `.scratch/models-merc/h247-revision/`. `gla-comparison.png` and `gla45-comparison.png` pair manufacturer views with the new geometry. `cle-cla-preserved.json` compares every assembled mesh's position buffer and transform before/after the Mercedes-builder edit: both CLE and CLA hashes are identical, including their original dimensions.
 
 The full vehicle suite passes 3,875 assertions. The focused suite passes 609 assertions, including 12 new hatch/stance/bumper checks, plus 83 traffic-fleet assertions and 96 traffic/player mirror assertions. GLA traffic near meshes are now 16,362 / 17,642 triangles; the far/parked meshes remain 2,542 / 2,974. Physics regression passes 108 checks; all four Mercedes drift runs pass applicable checks and all four driver-feel sweeps complete. `npm test` passes 105 tests; `node --import ./tools/physics-test/register.mjs --test tools/*.test.mjs` passes 118. The loader is necessary for the Three.js physics imports in the damage test. This follow-up does not change multiplayer, push or deploy.
+
+
+## Curvature and silhouette revision (14 October 2026, round 3)
+
+GLA 45 S now has a low, wide Panamericana opening, swept lenses projected onto the bonnet, rounded bumper corners, wider visible arch bands, and a rising side-window sill over the rear wheel. Its roof rolls down into a raked hatch. CLA remains obsidian black, with an arched four-door coupe roof, higher belt, narrower curved glasshouse, shorter visible nose corners and slim connected star lights. CLE has a continuous roof arch, long rear pillar sweep, uninterrupted side glazing without the opaque B-pillar, two bonnet power domes, multi-spoke wheels, and slimmer rear lights wrapping around the quarters. All three have deeper waist curvature and tighter wheel-arch gaps; published body dimensions and the physics catalogue are unchanged.
+
+The CLE door mirror sits 100 mm further aft to clear the raked A-pillar; the mount still uses the shared actual-body-surface attachment. Curved A-pillar trim follows the glass rather than cutting across it. Dark rear glazing is retained in the traffic road LOD, with a regression check for all four Mercedes. The basic GLA's body geometry was preserved.
+
+Additional shape sources: the manufacturer's C174 brochure at https://media.mercedes-benz.fr/download/a39ec976-adb6-4310-a492-951866f5b9e5/brochure-cla-c174-29-04-2025.pdf and a Mercedes dealer-hosted manufacturer side photograph at https://s3-sxb.aci-cloud.com/prod/mercedes-kroely/sections/CLA_gallerie_3_960263800.webp (page https://www.mercedes-kroely.fr/gammes-mercedes-benz/cla-2025). The red electric CLA photograph references the shared glasshouse, while the existing hybrid press images reference the nose/grille. All downloaded source files and URL mappings stay in `.scratch/models-merc/refs/`.
+
+Evidence: `.scratch/models-merc/round3/{gla45,cla,cle}-comparison.png`, corresponding `*-overlay.png`, individual front/rear/side/interior renders, `silhouette-metrics.json`, and capture scripts. Each sheet was opened and reviewed. The overlays align two wheel centres using uniform scale and rotation only. Manually traced photo landmarks give maximum residuals as percentages of projected car length:
+
+| Model | Roof | Window sill | Front/rear ends |
+|---|---:|---:|---:|
+| GLA 45 S | 2.81% | 0.46% | 2.66% |
+| CLA | 2.67% | 1.84% | 0.97% |
+| CLE | 2.21% | 1.26% | 3.12% |
+
+These are image-space comparisons, not manufacturer CAD tolerances: lens, camera perspective, tyre contact and hand tracing limit accuracy. Honest remaining differences: bumper-to-quarter transitions and lamp internals are still more angular/simplified than the press cars; the CLE rear end remains the largest outline residual. Roof and beltline proportions are substantially closer than the prior slab-sided versions. Studio captures use the small model harness; no additional full-world boot was needed for this revision.
+
+Scoped private-index CAS checkpoints: `fc04fb3` (GLA 45), `f746cc3` (black CLA), `9c5ecff` (CLE), `c41ab4f` (GLA rear sill and retained tinted road glass), and `d257181` (remove an unreachable branch accidentally duplicated while assembling the previous private-index patch). The shared index, multiplayer implementation, pushes and deployment were not touched.
+
+Validation logs in `round3/`: full vehicle suite 3,989 assertions, focused revised-car checks 448, physics regression 108, `npm test` 164 tests across its two stages, and `tools/*.test.mjs` 209 tests. Drift checks pass for all four Mercedes and all four driver-feel sweeps complete. The subsequent Mercedes traffic run passes 87 assertions, including four new tinted-glazing regression checks. No engine, drivetrain, gear, tyre-grip or suspension physics value changed.
