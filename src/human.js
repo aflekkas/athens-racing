@@ -271,6 +271,7 @@ export function poseCycle(P, ph) {
 // Every frame the visible people are packed into the instance buffers (begin / draw... / end), so each
 // part only ever draws as many instances as there are people using it.
 const SHADOW = new Set(['pelvis', 'torsoM', 'torsoF', 'head', 'thigh', 'shin', 'skirt', 'uarm', 'hair1']);
+const NEAR_RIGS = 3, NEAR_RIG_DIST = 15, NEAR_RIG_CACHE = 16;
 export class Crowd {
   constructor(scene, max) {
     this.max = max; this.scene = scene; this.near = new Map(); this.nearCount = 0; this.nearBuilt = 0; this.frame = 0;
@@ -325,13 +326,14 @@ export class Crowd {
     if (i === p.mult - 1) p.n++;
   }
   draw(P, L, distance = 0) {
-    if (distance < 20 && this.nearCount < 8) {
+    // Skinned close-up rigs are the expensive LOD: only the few people right next to you get one.
+    if (distance < NEAR_RIG_DIST && this.nearCount < NEAR_RIGS) {
       let rig = this.near.get(L);
       // Spread cold geometry work across frames. Waiting actors remain visible
       // through the instanced LOD; cached rigs have no construction penalty.
       if (!rig && this.nearBuilt < 1) {
         this.nearBuilt++;
-        if (this.near.size >= 64) {
+        if (this.near.size >= NEAR_RIG_CACHE) {
           let oldest; for (const entry of this.near) if (entry[1].lastFrame !== this.frame && (!oldest || entry[1].lastFrame < oldest[1].lastFrame)) oldest = entry;
           if (oldest) { this.scene.remove(oldest[1].mesh); oldest[1].mesh.geometry.dispose(); for (const p of oldest[1].pedals) { p.pedal.geometry.dispose(); p.crank.geometry.dispose(); } oldest[1].skeleton.dispose(); this.near.delete(oldest[0]); }
         }

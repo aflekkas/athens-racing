@@ -11,7 +11,11 @@ import { PeoplePolicy, peopleSchedule, villageResidents } from './people-policy.
 import { COND, COND_STATE } from './env.js';
 import { hourForTime } from './world-life.js';
 
-const MAX = 150;
+// A light sprinkle: people are set dressing, so the pool, the walker target and the share of
+// anchored spots (café seats, beach, bus stops) are kept small, and distant people tick slowly.
+const MAX = 56, WALKERS = 18, INITIAL_WALKERS = 16;
+const ANCHOR_SHARE = { cafe: .4, stop: .5, beach: .3, wander: .25, lie: .3, swim: .3, resident: .7, artist: 1 };
+const FAR_TICK = 80 * 80, FAR_EVERY = 4; // beyond 80 m from the camera, update every 4th frame
 const TAU = Math.PI * 2;
 // ------------------------------------------------------------------ café furniture
 function chairGeo() {
@@ -155,7 +159,7 @@ export class People {
     Object.assign(p, {
       active: true, kind, look, rs: false, mode: 'stand', variant: 'idle', sd: this.rng.next(), t: this.rng.range(0, 20), ph: this.rng.range(0, TAU),
       air: null, react: null, startleCool: 0, thanked: false, blockT: 0, wy: 0, home: null, drawn: false, hurry: false, zeb: null,
-      yaw: undefined, hd: 0, moving: false, anchor: null, toSide: 0, zebI: -1, target: null, pause: 0,
+      yaw: undefined, hd: 0, moving: false, anchor: null, toSide: 0, zebI: -1, target: null, pause: 0, lag: 0,
     });
     return p;
   }
@@ -218,17 +222,25 @@ export class People {
     for (const a of this.anchors) a.ped = null;
     this.t = 0;
     this.streetLife?.reset();
-    for (let i = 0; i < 60; i++) this.spawnWalker(ps, true);
+    for (let i = 0; i < INITIAL_WALKERS; i++) this.spawnWalker(ps, true);
     this.updateAnchors(ps);
   }
 
   updateAnchors(ps) {
-    for (const a of this.anchors) {
-      const rank = ((Math.imul(Math.round(a.s * 17 + a.x * 7), 2654435761) >>> 0) % 1000) / 1000;
-      const available = rank < this.policy.anchor(a, this.hour(), COND_STATE.rain);
-      const inW = available && a.s > ps - 150 && a.s < ps + 380;
+    // Anchors are sorted by s: only the window around the player is evaluated, and the
+    // schedule/policy answer is cached per anchor until the hour or the rain moves on.
+    const A = this.anchors, hour = this.hour(), rain = COND_STATE.rain, key = Math.round(hour * 4) * 16 + Math.round(rain * 10);
+    let lo = 0, hi = A.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (A[m].s < ps - 190) lo = m + 1; else hi = m; }
+    for (let i = lo; i < A.length && A[i].s <= ps + 430; i++) {
+      const a = A[i];
+      if (a.availKey !== key) {
+        a.rank ??= ((Math.imul(Math.round(a.s * 17 + a.x * 7), 2654435761) >>> 0) % 1000) / 1000;
+        a.avail = a.rank < this.policy.anchor(a, hour, rain) * (ANCHOR_SHARE[a.kind] ?? .5); a.availKey = key;
+      }
+      const inW = a.avail && a.s > ps - 150 && a.s < ps + 380;
       if (inW && !a.ped) this.spawnAnchor(a);
-      else if (!inW && a.ped && (!available || a.s < ps - 190 || a.s > ps + 430)) this.despawn(a.ped);
+      else if (!inW && a.ped && (!a.avail || a.s < ps - 190 || a.s > ps + 430)) this.despawn(a.ped);
     }
   }
 
@@ -242,9 +254,10 @@ export class People {
     for (const p of this.peds) {
       if (!p.active) continue;
       if (p.kind === 'walker') { if (p.s < ps - 130 || p.s > ps + 520 || !this.policy.zone(p.s, p.side).allowed || (p.mode === 'walk' && !this.policy.safePoint(p.s, p.u))) { this.despawn(p); continue; } p.look.umbrella = COND_STATE.rain > .12 && p.look.role === 'street'; walkers++; }
+      else if (p.anchor && (p.anchor.s < ps - 190 || p.anchor.s > ps + 430)) this.despawn(p);
     }
     if ((this.frame = (this.frame || 0) + 1) % 10 === 0) this.updateAnchors(ps);
-    const want = Math.round(70 * Math.max(this.dens(ps + 120), this.dens(ps + 350)));
+    const want = Math.round(WALKERS * Math.max(this.dens(ps + 120), this.dens(ps + 350)));
     if (walkers > want && this.frame % 10 === 0) { const p = this.peds.find(p => p.active && p.kind === 'walker' && p.mode === 'walk'); if (p) this.despawn(p); }
     if (walkers < want) this.spawnWalker(ps, false);
     // actors in world space
@@ -256,9 +269,22 @@ export class People {
       A.v = Math.max(0, v.vLong); A.halfL = v.halfL; A.halfW = v.halfW; A.veh = v;
     });
     this.onRoad.length = 0;
-    const f = this._f;
+    const f = this._f, cx = camPos.x, cz = camPos.z, frame = this.frame;
     for (const p of this.peds) {
       if (!p.active) continue;
+      // Far from the camera and calm: catch up every few frames with the accumulated time.
+      p.lag = (p.lag || 0) + dt;
+      if (!p.air && !p.react && p.mode !== 'cross' && (p.x - cx) ** 2 + (p.z - cz) ** 2 > FAR_TICK && (frame + p.slot) % FAR_EVERY) continue;
+      const pdt = p.lag; p.lag = 0;
+      this.tickPed(p, pdt, actors, f);
+    }
+    this.draw(camPos);
+    this.streetLife?.update(dt, camPos);
+  }
+
+  tickPed(p, dt, actors, f) {
+    const r = this.route;
+    {
       p.t += dt; p.startleCool -= dt;
       if (p.react) { p.react.t += dt; if (p.react.t > p.react.dur) p.react = null; }
       if (p.rs) this.updateStreet(p, dt, actors, f); else this.updateAnchored(p, dt);
@@ -285,7 +311,9 @@ export class People {
       p.wy = p.y + (p.air ? p.air.y : 0);
       this.react(p, dt);
     }
-    // drawing
+  }
+
+  draw(camPos) {
     const cx = camPos.x, cz = camPos.z;
     this.crowd.begin();
     for (const p of this.peds) {
@@ -296,7 +324,6 @@ export class People {
       this.crowd.draw(p.P, p.look, Math.sqrt(d2));
     }
     this.crowd.end();
-    this.streetLife?.update(dt, camPos);
   }
 
   walkY(s, u) {

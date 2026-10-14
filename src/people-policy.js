@@ -35,10 +35,10 @@ export function peopleSchedule(kind, hour = 17, rain = 0, nightlife = false) {
   return density * (1 - rain * (kind === 'stop' ? .4 : kind === 'cafe' ? .85 : .72));
 }
 export class PeoplePolicy {
-  constructor(map, sidewalk) { this.map = map; this.sidewalk = sidewalk; this.cache = new Map(); }
+  constructor(map, sidewalk) { this.map = map; this.sidewalk = sidewalk; this.cache = new Map(); this.safe = new Map(); }
   zone(s, side = 1) {
     const { map } = this, r = map.route; s = r.wrap ? r.wrap(s) : s;
-    const key = `${Math.round(s / 10)},${side}`; if (this.cache.has(key)) return this.cache.get(key);
+    const key = Math.round(s / 10) * 2 + (side > 0 ? 1 : 0), hit = this.cache.get(key); if (hit) return hit;
     const zone = map.data.zones?.findLast(z => z.s <= s)?.zone || r.district?.(s) || 'rural';
     const district = zone === 'chapel' ? 'village' : zone === 'town' ? 'town' : zone;
     const denied = ['mountain', 'cliff', 'forest', 'circuit'].includes(zone);
@@ -65,8 +65,15 @@ export class PeoplePolicy {
     const q = this.map.route.project(a.x, a.z, a.s), z = this.zone(a.s, Math.sign(q.u) || 1);
     return z.allowed ? peopleSchedule(a.kind, hour, rain, z.nightlife) : 0;
   }
+  /** Walkers ask this every frame: cached on a 0.5 m x 0.25 m grid (the answer is geometry, not time). */
   safePoint(s, u) {
     if (this.map.id === 'penteli') return false; // its mapped road has gravel shoulders, no continuous pavement
+    const key = Math.round(s * 2) * 128 + Math.min(63, Math.round(Math.abs(u) * 4)) * 2 + (u >= 0 ? 1 : 0);
+    let hit = this.safe.get(key);
+    if (hit === undefined) { if (this.safe.size > 40000) this.safe.clear(); this.safe.set(key, hit = this.safeAt(s, u)); }
+    return hit;
+  }
+  safeAt(s, u) {
     const r = this.map.route, side = Math.sign(u) || 1, z = this.zone(s, side);
     if (!z.allowed || Math.abs(u) < r.edge(s) + .55 + .3) return false;
     const p = r.point(s, u);
