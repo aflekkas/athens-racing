@@ -33,9 +33,11 @@ const baseLaps = (def) => Math.max(1, Math.floor(def.laps || 1));
 export function setupFields(def, { closed = false } = {}) {
   const out = [];
   if (def.type === 'sprint') out.push({ key: 'rivals', dflt: rivalCount(def), min: 0, max: MAX_RIVALS });
-  if (!closed) out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
-  if (closed) out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
-  if (def.type !== 'pursuit') out.push({ key: 'reverse', dflt: false });
+  // UI owner: saved race-setup key is `police` (boolean); style its Off / On segmented control.
+  if (def.type !== 'pursuit') out.push({ key: 'police', dflt: def.rules?.police === true });
+  if (!closed || def.type === 'free') out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
+  if (closed && def.type !== 'free') out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
+  if (!['pursuit', 'free'].includes(def.type)) out.push({ key: 'reverse', dflt: false });
   out.push({ key: 'time', dflt: def.conditions?.time || 'afternoon' }, { key: 'weather', dflt: def.conditions?.weather || 'clear' });
   return out;
 }
@@ -59,6 +61,7 @@ export function resolveSetup(def, setup = {}, ctx = {}) {
     let v = setup[f.key];
     if (f.key === 'rivals' || f.key === 'laps') v = Number.isFinite(+v) && v !== null && v !== '' ? clamp(Math.round(+v), f.min, f.max) : f.dflt;
     else if (f.key === 'traffic') v = Number.isFinite(+v) && v !== null && v !== '' ? clamp(+v, 0, 2) : f.dflt;
+    else if (f.key === 'police') v = v === true;
     else if (f.key === 'reverse') v = v === true;
     else if (f.key === 'time') v = TIMES.some(([t]) => t === v) ? v : f.dflt;
     else if (f.key === 'weather') v = WEATHERS.some(([w]) => w === v) ? v : f.dflt;
@@ -77,6 +80,7 @@ export function applySetup(def, setup = {}, ctx = {}) {
   const fields = setupFields(def, ctx), cur = resolveSetup(def, setup, ctx), dflt = Object.fromEntries(fields.map((f) => [f.key, f.dflt]));
   const out = { ...def, baseId: def.baseId || def.id };
   const key = [];
+  if ('police' in cur) { out.rules = { ...(def.rules || {}), police: cur.police }; if (cur.police !== dflt.police) key.push('police' + Number(cur.police)); }
   if ('rivals' in cur) {
     out.rivalCount = cur.rivals;
     if (Array.isArray(def.rivals)) out.rivals = def.rivals.slice(0, cur.rivals);
@@ -100,7 +104,7 @@ export function applySetup(def, setup = {}, ctx = {}) {
     const cond = { ...(def.conditions || {}) };
     if (cur.time !== dflt.time || def.conditions?.time) cond.time = cur.time;
     if (cur.weather !== dflt.weather || def.conditions?.weather) cond.weather = cur.weather;
-    out.conditions = Object.keys(cond).length ? cond : (def.conditions ?? null);
+    out.conditions = def.type === 'free' ? { ...cond, time: cur.time, weather: cur.weather } : Object.keys(cond).length ? cond : (def.conditions ?? null);
   }
   if (key.length) { out.id = `${out.baseId}~${key.join('~')}`; out.custom = true; }
   out.setup = cur;

@@ -270,6 +270,7 @@ function setCar(idx, keepPose = true) {
   const old = player;
   const spec = CARS[idx];
   G.carIdx = idx; G.selIdx = idx;
+  if (old) beginCameraBlend();
   disposeCar(old);
   const pc = makeCar(spec, true);
   const veh = old ? old.veh : new Vehicle(spec, route);
@@ -375,7 +376,7 @@ function offerTow() {
   if (towOffer.element || towOffer.cooldown > 0) return;
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>Return to the road in the race direction. Costs 5 seconds.</p><div class="tow-actions"><button type="button" data-tow="accept">TOW TO TRACK · R / Y</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>Return to the road. ' + (inFreeRoam() ? 'Free recovery.' : 'Costs 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">TOW TO TRACK · R / Y</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(12); };
   towOffer.element = el; document.body.append(el); controls.releaseMouseLook();
@@ -414,11 +415,11 @@ function backOnRoad(pv) {
   syncCar(player, 0); updateCamera(0, true);
 }
 function stuckCheck(pv, dt) {
-  if (G.state !== 'race' || G.towing || multiplayer.retired || EV.isWrecked(pv.maxImpactEbs)) {
+  if (G.state !== 'race' || G.towing || multiplayer.retired || (!inFreeRoam() && EV.isWrecked(pv.maxImpactEbs))) {
     G.stuckT = 0; closeTowOffer(); return;
   }
   towOffer.cooldown = Math.max(0, towOffer.cooldown - dt);
-  const beyond = Math.abs(pv.u) - route.edge(pv.s);
+  const beyond = pv._network ? 0 : Math.abs(pv.u) - route.edge(pv.s); // side streets are valid roads, not a recovery zone
   const offroad = !!pv.offroad || beyond > 0.5 || pv.water > 0.05;
   const inverted = Math.abs(pv.pose.roll) > Math.PI / 2 || Math.abs(pv.pose.pitch) > Math.PI / 2;
   const disabled = pv.engineStalled || pv.drivetrainBroken;
@@ -431,7 +432,7 @@ function stuckCheck(pv, dt) {
   if ((beyond > 8 || pv.water > 0.2 || inverted || disabled || G.stuckT > 3 || towOffer.offT > 5) && towOffer.hold <= 0) offerTow();
 }
 function tow(pv) {
-  if (G.state !== 'race' || G.towing || multiplayer.retired || EV.isWrecked(pv.maxImpactEbs)) return;
+  if (G.state !== 'race' || G.towing || multiplayer.retired || (!inFreeRoam() && EV.isWrecked(pv.maxImpactEbs))) return;
   G.towing = true; G.stuckT = 0; closeTowOffer(12);
   controls.releaseMouseLook(); document.body.classList.add('fading');
   setTimeout(() => {
@@ -439,14 +440,15 @@ function tow(pv) {
     if (G.state !== 'race' || player.veh !== pv || multiplayer.retired) { document.body.classList.remove('fading'); return; }
     backOnRoad(pv);
     const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
-    if (hold) towOffer.hold = 5; else G.pen += 5;
-    hud.message('<i>TOWED</i> · +5 s · BACK ON THE ROAD', 3);
+    if (hold) towOffer.hold = 5; else if (!inFreeRoam()) G.pen += 5;
+    hud.message(inFreeRoam() ? '<i>TOWED</i> · BACK ON THE ROAD' : '<i>TOWED</i> · +5 s · BACK ON THE ROAD', 3);
     setTimeout(() => document.body.classList.remove('fading'), 120);
   }, 320);
 }
 
+const inFreeRoam = () => !multiplayer.active && G.ev?.def.type === 'free';
 function startCountdown() {
-  G.cameraStarting = false;
+  G.cameraStarting = false; G.paused = null;
   syncSteeringAssist();
   G.state = 'countdown'; G.countT = 0; G.countShown = -1; G.countWall = 0;
   document.body.classList.remove('racing'); document.body.classList.add('counting');
@@ -455,6 +457,11 @@ function startCountdown() {
   if (!multiplayer.active && G.ev) {
     if (G.run && !G.run.done) G.run.abort('restart');
     G.run = new EV.EventRun(G.ev.def, evCtx(), { car: player.spec.id });
+    if (inFreeRoam()) {
+      G.state = 'race'; G.run.start({ field: 1, grid: [] }); hud.count('');
+      document.body.classList.remove('counting'); document.body.classList.add('racing', 'started');
+      hud.banner('FREE ROAM', map.definition?.name || map.id); return;
+    }
     const r = G.ev.r; hud.banner(G.ev.def.name, `${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
   }
 }
@@ -465,6 +472,8 @@ function restart(idx = G.carIdx) {
   document.body.classList.add('fading');
   setTimeout(() => {
     if (multiplayer.active) { document.body.classList.remove('fading'); return; }
+    // Capture at the actual reset, after the fade delay; the old blend has already elapsed.
+    beginCameraBlend(.65);
     if (G.run && !G.run.done) G.run.abort('restart');
     if (G.pendingEvent) { prepareEvent(G.pendingEvent); G.pendingEvent = null; }
     if (idx !== G.carIdx || player.spec !== CARS[idx]) setCar(idx);
@@ -547,10 +556,12 @@ function initFlow() {
     quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, switchMap,
     chooseCar: (index, def, garage) => {
       try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}
+      if (menu.data.inFreeRoam) { const onPick = menu.data.onPick; menu.back(); onPick?.(CARS[index].id); return; }
       if (garage) { setCar(index); menu.back(); return; }
       if (!def) return;
       G.pendingEvent = def; restart(index);
     },
+    openCarPicker, freeRoamCar: () => openCarPicker({ inFreeRoam: true, onPick: switchRoamCar }), roamConditions: openRoamConditions, roamLandmarks: openRoamLandmarks, roamTow: () => { resume(); tow(player.veh); },
     resume, restart: () => openEvent(G.ev.def), quit: quitToMenu, next: (id) => openEvent(id),
     ctx: evCtx, inputDevice: activeInputDevice, carName: () => player.spec.name, fmtTime, ui: (fwd) => audio.ui?.(fwd),
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
@@ -560,7 +571,10 @@ function initFlow() {
   EV.events.on('pursuit', (p) => {
     G.pursuit = p;
     if (G.state !== 'race' || multiplayer.active || !G.ev) return;
-    if (p.phase === 'busted') finishRace('busted'); // a DNF in any race
+    if (p.phase === 'busted') {
+      if (inFreeRoam()) { hud.message('<i>BUSTED</i> · PATROLS RESET', 3); police?.reset(police.enabled); }
+      else finishRace('busted');
+    } // a DNF in any race
     else if (p.phase === 'evaded' && G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'escape') finishRace('evaded');
   });
   EV.events.on('start', () => { G.pursuit = null; });
@@ -570,6 +584,7 @@ function initFlow() {
 
 function mapEvent(id) {
   if (id && typeof id === 'object') return id;
+  if (id === 'free') return EV.freeRoam(map.id);
   const list = map.events || [];
   if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
   return list.find(e => e.id === id) || EV.getEvent(id);
@@ -582,7 +597,9 @@ function prepareEvent(e) {
   G.ev = { def, r }; G.dir = r.dir; startS = r.s0;
   traffic.dir = r.dir;
   hud.setRange(r.s0, r.s1);
-  markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });
+  traffic.allowClosedRoam = def.type === 'free';
+  markers.group.visible = def.type !== 'free';
+  if (def.type !== 'free') markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });
   document.body.dataset.mode = def.type;
   // time of day / weather (the conditions system, when it is there)
   const sc = window.__setConditions, gc = window.__conditions;
@@ -655,6 +672,7 @@ function startEvent(id, opts = {}) {
   const def = mapEvent(id); if (!def) return;
   const car = def.car || opts.car;
   const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === car));
+  if (window.__replay?.active) window.__replay.close();
   G.pendingEvent = def; restart(idx);
 }
 function openEvent(id, index = G.carIdx) {
@@ -666,17 +684,53 @@ function openEvent(id, index = G.carIdx) {
   menu.show('car', { def, index: idx }, true);
 }
 
+// UI owner (opus-ui-overhaul-2055): window.__flow.openCarPicker({ inFreeRoam: true, onPick(carId) })
+// reuses your car grid. Pause handlers: freeRoamCar, roamConditions, roamLandmarks, roamTow. Keep the paused session intact.
+function openCarPicker({ inFreeRoam: roaming = false, onPick } = {}) {
+  if (roaming && !inFreeRoam()) return;
+  if (roaming && G.state === 'race') pauseGame();
+  menu.show('car', { index: G.carIdx, garage: true, inFreeRoam: roaming, onPick }, true);
+}
+function switchRoamCar(carId) {
+  if (!inFreeRoam()) return false;
+  const idx = CARS.findIndex(c => c.id === carId); if (idx < 0) return false;
+  const old = player.veh, pose = Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'w', 'grade', 'bank'].map(k => [k, old[k]]));
+  const gear = old.gear, bodyPose = { ...old.pose };
+  beginCameraBlend(); setCar(idx);
+  // A replacement car is mechanically fresh; retain the exact location and motion, including on a side street.
+  const v = player.veh; v.reset(pose.s, pose.u, pose.vLong); Object.assign(v, pose); v.pose = bodyPose;
+  v.gear = Math.max(1, Math.min(gear, v.spec.gears.length));
+  v.rpm = clamp(Math.abs(v.vLong) / v.spec.wheelR * v.ratio() * 30 / Math.PI, v.spec.idle, v.spec.redline);
+  syncCar(player, 0); updateCamera(0, true);
+  G.run.car = carId; try { localStorage.setItem('paraliaki.car', carId); } catch {}
+  return true;
+}
+function setRoamConditions(conditions) {
+  if (!inFreeRoam()) return;
+  window.__setConditions(conditions); G.baseCond = window.__conditions();
+  G.ev.def.conditions = { ...G.baseCond };
+}
+function teleportLandmark(id) {
+  if (!inFreeRoam()) return false;
+  const mark = map.data.marks.find(m => m.id === id); if (!mark) return false;
+  beginCameraBlend(0.8); placeVeh(player.veh, mark.s, route.closed ? 0 : route.laneU(mark.s, 0), 1);
+  resetTowOffer(); traffic.reset(mark.s); people.reset(mark.s); syncCar(player, 0); updateCamera(0, true);
+  return true;
+}
+function openRoamConditions() { if (inFreeRoam()) menu.show('roamConditions', { conditions: window.__conditions() }, true); }
+function openRoamLandmarks() { if (inFreeRoam()) menu.show('roamLandmarks', { landmarks: map.data.marks }, true); }
+
 function pauseGame() {
   if (multiplayer.active) { multiplayer.open(); return; }
   if (!['race', 'countdown', 'finished'].includes(G.state)) return;
-  G.paused = { state: G.state, cam: G.cam };
+  G.paused = { state: G.state, cam: G.cam, t: G.t }; beginCameraBlend();
   G.state = 'paused'; closeTowOffer(12); controls.clear();
   const d = G.ev.def;
-  menu.show('pause', { def: d, r: G.ev.r, mapName: map.definition?.name, sub: G.paused.state === 'countdown' ? 'ON THE GRID' : `TIME ${fmtTime(G.raceT + G.pen)}` });
+  menu.show('pause', { def: d, r: G.ev.r, mapName: map.definition?.name, inFreeRoam: inFreeRoam(), sub: inFreeRoam() ? 'DRIVE ANYWHERE · NO CLOCK' : G.paused.state === 'countdown' ? 'ON THE GRID' : `TIME ${fmtTime(G.raceT + G.pen)}` });
 }
 function resume() {
   if (G.state !== 'paused') return;
-  menu.hide(); G.state = G.paused.state; G.countWall = performance.now(); G.paused = null; G.cameraStarting = false; controls.requestMouseLock();
+  beginCameraBlend(); menu.hide(); G.state = G.paused.state; G.countWall = performance.now(); G.paused = null; G.cameraStarting = false; controls.requestMouseLock();
 }
 function quitToMenu(screen = 'title') {
   if (multiplayer.active) return;
@@ -685,7 +739,7 @@ function quitToMenu(screen = 'title') {
   setTimeout(() => {
     hud.hideMenu(); hud.count('');
     document.body.classList.remove('racing', 'counting');
-    G.state = 'menu'; G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4;
+    G.state = 'menu'; G.paused = null; G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4;
     resetRace(); audio.restart?.();
     updateCamera(0, true);
     menu.show(screen === 'events' ? 'events' : 'title');
@@ -735,7 +789,7 @@ const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active 
 window.__flow = {
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
-  pause: pauseGame, resume, quit: quitToMenu, hideGrid, setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, get grid() { return grid; },
+  pause: pauseGame, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(map.id), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !multiplayer.active && (G.state === 'race' || G.state === 'countdown')) pauseGame(); });
 
@@ -907,6 +961,7 @@ function updateEventHud(dt) {
   const box = $('evBox'), ww = $('wrongWay');
   if (!box || !G.ev || multiplayer.active) return;
   const pv = player.veh, run = G.run, def = G.ev.def;
+  if (inFreeRoam()) { box.classList.remove('on'); ww.classList.remove('on'); return; }
   // wrong way: nose against the event's direction of travel
   const hd = Math.atan2(-route.lin(route.TX, pv.s), -route.lin(route.TZ, pv.s)) + (G.dir < 0 ? Math.PI : 0);
   // only once racing (never on the grid or in the countdown), and the HUD class is forced, never toggled
@@ -1354,7 +1409,7 @@ function step(dt, draw = true) {
       for (const c of grid.length ? grid : [rival]) { const v = c.veh; v.rpm = damp(v.rpm, v.spec.idle + (G.countT > 1.0 ? v.spec.redline * (0.5 + 0.1 * Math.sin(G.t * 3 + v.halfL * 7)) : 600 * (Math.sin(G.t * 5 + v.halfW * 9) * 0.5 + 0.5)), 5, dt); }
     }
     if (['race', 'finished', 'results', 'onlineFinished', 'onlineResults'].includes(G.state)) {
-      if (G.state === 'race' && !multiplayer.active) G.raceT += dt;
+      if (G.state === 'race' && !multiplayer.active && !inFreeRoam()) G.raceT += dt;
       // ---- player
       let pin = input;
       if (G.autodrive && !multiplayer.active && G.state === 'race') { player.ai = player.ai || { lane: 1, u: pv.u, cool: 0 }; pin = aiInput(player, dt, 0.95, grid); }
@@ -1384,6 +1439,7 @@ function step(dt, draw = true) {
       pv.dragMul = 1 - 0.32 * (G.draft || 0);
       const snapP = Q.has('nantrap') ? JSON.stringify({ x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw, vL: pv.vLong, vLat: pv.vLat, w: pv.w, pin, ai: player.ai }) : '';
       pv.update(dt, pin);
+      if (inFreeRoam() && route.closed) pv.s = route.wrap(pv.s); // untimed traffic stays in the same lap coordinates
       // A recovery hold is a time cost even on a slope or with a held throttle; suspension still settles.
       if (recoveryPose) Object.assign(pv, recoveryPose, { vLong: 0, vLat: 0, w: 0, lastV: 0 });
       if (Q.has('nantrap') && !G.nanP && !isFinite(pv.x + pv.vLong + pv.w + pv.s)) { G.nanP = 1; console.warn('NaN player after update', snapP); }
@@ -1431,11 +1487,10 @@ function step(dt, draw = true) {
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
       if (G.state === 'race' && multiplayer.active) multiplayer.wreck(pv.maxImpactEbs);
       // A fatal impact takes precedence over crossing a checkpoint or the finish line.
-      if (G.state === 'race' && !multiplayer.active && EV.isWrecked(pv.maxImpactEbs)) finishRace('wrecked');
+      if (G.state === 'race' && !multiplayer.active && !inFreeRoam() && EV.isWrecked(pv.maxImpactEbs)) finishRace('wrecked');
       // ---- timing, positions, finish
       if (G.state === 'race' && !multiplayer.active) {
-        window.__replay?.tick(dt);
-        raceTiming(dt);
+        if (!inFreeRoam()) { window.__replay?.tick(dt); raceTiming(dt); }
       } else if (G.state === 'finished') {
         G.postT += dt;
         for (const c of grid) if (c.finish === null && !EV.isWrecked(c.veh.maxImpactEbs) && prog(c.veh.s) >= G.ev.r.len) c.finish = G.raceT + G.postT + c.pen - (prog(c.veh.s) - G.ev.r.len) / Math.max(1, c.veh.vLong);
@@ -1496,7 +1551,7 @@ function step(dt, draw = true) {
   bootFrameLog('frame-visuals');
   // HUD
   let gap = NaN, pos = 1;
-  if (!multiplayer.active && G.ev) ({ gap, pos } = raceGap());
+  if (!multiplayer.active && G.ev && !inFreeRoam()) ({ gap, pos } = raceGap());
   updateEventHud(dt);
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
@@ -1515,6 +1570,8 @@ function step(dt, draw = true) {
   if (G.state === 'race' && G.raceT > 5) document.body.classList.add('started');
   document.body.classList.toggle('circuit-race', !!G.run?.r.closed && !multiplayer.active);
   hud.update(st);
+  for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
+  if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
   if (multiplayer.retired) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
   updateLapHud(G.run, !multiplayer.active && !MENU_STATES.includes(G.state));
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
