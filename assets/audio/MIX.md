@@ -208,3 +208,28 @@ The first 180-second Megara render exposed repeated whole-gust envelopes at roug
 Implementation commit: `288caf6`; wind refinement `11990a9`. No engine/tyre/Doppler synthesis or unrelated vehicle, camera, UI or gameplay changes were included.
 
 Review verification: 85 tool tests pass; 16 ambience routing/behaviour assertions pass. All 27 paired fixtures were re-rendered, and corrected before/after spectrograms were inspected. The unrelated in-progress physics failure was left to its owner as requested; npm test was not rerun for this gain-only correction. The earlier three-map full-game smoke had zero errors; this gain-only revision adds browser offline renders on all three maps without repeating the full-game smoke. Subjective listening remains unverified because this harness cannot receive audio.
+
+## Greek voice reactions — 2026-10-14
+
+Short offline-generated barks now use a separate `voice` bus, default 0.65,
+under the same SFX, master, world-menu duck and limiter stages. This addition
+was not present in the earlier real-game captures above. Assets target -20 LUFS,
+-4 dBTP before Vorbis encoding. One line maximum, at least 2.5 s global gap
+plus 12–18 s per-speaker cooldown. Menus/pause cancel active and pending barks.
+
+Equal-power 3D panners follow speaker heads in camera-local coordinates.
+Distance gain: `.75 / (1 + (d/9)^1.6)`, multiplied by the squared linear fade
+from 30 to 50 m. The panner's own rolloff is disabled to avoid double attenuation.
+Existing bounded Doppler is reused; air low-pass falls with distance. Closed
+listener cabin: gain ×.55 / 2.2 kHz; closed source car: ×.62 / 2.6 kHz.
+Police stop commands represent an open-window call. No text bubbles/subtitles.
+Settings: `voice` (0–1), `mildLanguage` (boolean, default false).
+
+Four-second OfflineAudioContext fixtures through the real AudioMix/VoiceReactions:
+5 m chase -29.53 LUFS, 25 m -42.38 LUFS, 50 m silent; cockpit -34.22 / -47.12 /
+silent. True peak at 5 m chase -17.57 dBTP. These isolated barks are intentionally
+subordinate to the continuous engine; this is not a full-race remix measurement.
+WAVs, loudness reports and spectrograms: `.scratch/voice/crash-*`.
+Reproduce: `tools/browser-slot.sh node tools/voice-browser-test.mjs`, then
+`python3 tools/measure_voice.py`. Model provenance: `voice/CREDITS.txt`,
+`voice/sources.json`, `voice/MODELS.md`; maintainable scripts: `voice/lines.json`.

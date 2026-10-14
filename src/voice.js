@@ -30,12 +30,12 @@ export class VoiceReactions {
     }
     return this.cache.get(key);
   }
-  async trigger(category, speaker, locate, { enclosed = false, gender } = {}) {
+  async trigger(category, speaker, locate, { enclosed = false, gender, older } = {}) {
     const ctx = this.audio.ctx;
     if (!ctx || !this.audio.mix?.buses.voice || !this.enabled || this.settings.voice === 0 || this.active || this.pending || ctx.currentTime < this.next || !speaker || !locate) return false;
     let state = this.speakers.get(speaker);
     if (!state) {
-      const choices = VOICE_PROFILES.filter(p => !gender || p.id.startsWith(gender + '-'));
+      const choices = VOICE_PROFILES.filter(p => (!gender || p.id.startsWith(gender + '-')) && (older == null || p.id.endsWith(older ? '-older' : '-young')));
       state = { next: 0, profile: choices[Math.floor(this.random() * choices.length)].id };
       this.speakers.set(speaker, state);
     }

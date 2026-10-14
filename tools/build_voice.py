@@ -46,6 +46,7 @@ if model=='espeak': result['child_cpu_seconds']=resource.getrusage(resource.RUSA
 (out/'metrics.json').write_text(json.dumps(result,indent=2)+'\n');print(result,flush=True)
 if final:
  data=json.loads((ASSETS/'lines.json').read_text()); records=[]
+ (ROOT/'src/voice-lines.js').write_text('// Generated from assets/audio/voice/lines.json by tools/build_voice.py. No display text.\nexport const VOICE_PROFILES = '+json.dumps(data['profiles'])+';\nexport const VOICE_LINES = '+json.dumps([{k:v for k,v in line.items() if k in ('id','category','strong')} for line in data['lines']])+';\n')
  for line in data['lines']:
   raw=out/(line['id']+'.wav');render(line['text'],raw)
   for p in data['profiles']:

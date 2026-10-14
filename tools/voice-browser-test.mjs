@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 // One browser job, always run with tools/browser-slot.sh. Needs PLAYWRIGHT_MODULE/CHROME_BIN or local defaults.
-import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { resolve, extname } from 'node:path';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import { createGameServer } from '../server/index.mjs';
@@ -12,7 +11,7 @@ const app=await createGameServer({root,dataDir:resolve(out,'server-data')});cons
 app.server.on('request',async(req,res)=>{
  try {
   const url=new URL(req.url,'http://localhost');
-  if(url.pathname==='/voice-fixture'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Voice offline render</title>');return;}
+  if(url.pathname==='/voice-fixture'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Voice offline render</title><link rel="icon" href="data:,">');return;}
   if(url.pathname.startsWith('/voice-three/')) {res.setHeader('Content-Type','text/javascript');res.end(await readFile(resolve(process.env.THREE_MODULE_ROOT||'/tmp/roads-v2-three/node_modules/three',url.pathname.slice(13))));return;}
   if(url.pathname==='/'){res.setHeader('Content-Type','text/html');res.end((await readFile(resolve(root,'index.html'),'utf8')).replaceAll('https://cdn.jsdelivr.net/npm/three@0.170.0/','/voice-three/'));return;}
   normal(req,res);
@@ -21,7 +20,8 @@ app.server.on('request',async(req,res)=>{
 await new Promise(r=>app.server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${app.server.address().port}`;
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||'/home/dev/.cache/puppeteer/chrome/linux-150.0.7871.24/chrome-linux64/chrome',args:['--no-sandbox','--autoplay-policy=no-user-gesture-required','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
 const page=await browser.newPage({viewport:{width:640,height:360}}), errors=[];
-page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+page.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERROR',e.message);});page.on('console',m=>{if(m.type()==='error'){errors.push(m.text());console.log('CONSOLE',m.text(),m.location());}});
+page.on('response',r=>{if(r.status()>=400)console.log('HTTP',r.status(),r.url());});
 try {
  await page.goto(base+'/voice-fixture');
  for(const cockpit of [false,true])for(const d of [5,25,50]) {
@@ -43,7 +43,7 @@ try {
  }
  await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
  await page.goto(base+'/?simhook&quality=low&car=mini&cam=chase',{waitUntil:'domcontentloaded',timeout:120000});
- await page.waitForFunction(()=>window.__sim?.player && window.__voice && document.body.classList.contains('loaded'),null,{timeout:180000});
+ await page.waitForFunction(()=>window.__sim?.player && window.__voice && document.body.classList.contains('loaded'),null,{timeout:180000,polling:250});
  const smoke=[];
  for(const category of ['pedestrian','near','driver','police','artist']) {
   const result=await page.evaluate(async category=>{
@@ -57,4 +57,4 @@ try {
   assert.ok(result.played,JSON.stringify(result));smoke.push(result);await page.waitForTimeout(2800);
  }
  await writeFile(resolve(out,'browser-smoke.json'),JSON.stringify({smoke,errors},null,2));assert.deepEqual(errors,[]);console.log('All five categories played; zero console errors.');
-} finally { await browser.close();await new Promise(r=>app.server.close(r)); }
+} catch(e) { await writeFile(resolve(out,'browser-failure.json'),JSON.stringify({error:String(e),errors,state:await page.evaluate(()=>({ready:!!window.__sim?.player,loaded:document.body.classList.contains('loaded'),text:document.body.innerText.slice(-2000)})).catch(()=>null)},null,2));throw e; } finally { await browser.close();await new Promise(r=>app.server.close(r)); }

@@ -111,7 +111,7 @@ function voiceRelative(p) {
   return voicePoint.set(p.x, p.y, p.z).sub(camera.position).applyQuaternion(voiceRotation.copy(camera.quaternion).invert()).clone();
 }
 function pedestrianVoice(p, category) {
-  return voices.trigger(category, p, () => p.active ? { x: p.x, y: (p.wy ?? p.y) + (p.look?.h || 1.7) * .9, z: p.z } : null);
+  return voices.trigger(category, p, () => p.active ? { x: p.x, y: (p.wy ?? p.y) + (p.look?.h || 1.7) * .9, z: p.z } : null, { gender: p.look?.female === undefined ? undefined : p.look.female ? 'female' : 'male', older: p.look?.old });
 }
 function driverVoice(c, category = 'driver') {
   if (!c) return;
@@ -1256,6 +1256,10 @@ function handleTrafficSounds() {
 }
 function updateAudio(dt) {
   voices.update({ enabled: ['race', 'onlineRace'].includes(G.state), cockpit: G.cam === 'cockpit' && !player.spec.convertible, relative: voiceRelative });
+  if (G.state === 'race' && police?.hm.state === 'pursuit' && Math.abs(player.veh.vLong) < 4) {
+    const cop = police.cops.filter(c => c.active && !c.crash && Math.abs(c.s - player.veh.s) < 20).sort((a, b) => Math.abs(a.s - player.veh.s) - Math.abs(b.s - player.veh.s))[0];
+    driverVoice(cop, 'police');
+  }
   if (G.state === 'race' && Math.abs(player.veh.vLong) > 3) for (const a of people.streetLife?.artists || []) {
     if (a.ped?.active && Math.hypot(a.ped.x - player.veh.x, a.ped.z - player.veh.z) < 7) pedestrianVoice(a.ped, 'artist');
   }

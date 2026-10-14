@@ -51,3 +51,12 @@ test('silent/out-of-range/invalid speakers never start; failed fetch recovers', 
   f.settings.voice=0;assert.equal(await f.v.trigger('near',{},f.locate),false);
   const g=fixture(async()=>{throw Error('offline')});assert.equal(await g.v.trigger('near',{},g.locate),false);assert.equal(g.v.pending,false);assert.equal(g.v.cache.size,0);
 });
+test('speaker appearance selects a stable matching profile and moving sources apply Doppler', async () => {
+  const f=fixture();let z=-10;
+  await f.v.trigger('near',f.speaker,()=>({x:0,y:0,z}),{gender:'female',older:true});
+  assert.equal(f.v.speakers.get(f.speaker).profile,'female-older');
+  const a=f.v.active, initial=a.src.playbackRate.value;
+  z=-9;f.ctx.currentTime+=.05;f.v.update({enabled:true,relative:p=>p});
+  assert.ok(a.src.playbackRate.value>initial,'approaching source raises pitch');
+  assert.equal(a.pan.positionZ.value,-9,'panner follows speaker');
+});
