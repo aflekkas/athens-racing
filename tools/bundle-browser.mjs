@@ -4,7 +4,7 @@ import { readFile, writeFile, readdir, unlink } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 export async function bundleBrowser(root, out) {
   const result = await build({
-    absWorkingDir: root, entryPoints: ['src/main.js'], outdir: resolve(out, 'src'),
+    absWorkingDir: root, entryPoints: ['src/main.js', ...(await readFile(resolve(root, 'src/world-worker.js')).then(() => ['src/world-worker.js']).catch(() => []))], outdir: resolve(out, 'src'),
     entryNames: '[name]-[hash]', chunkNames: 'chunk-[hash]', bundle: true, splitting: true,
     format: 'esm', platform: 'browser', target: 'es2022', minify: true, keepNames: true,
     metafile: true, legalComments: 'eof',
@@ -33,6 +33,13 @@ export async function bundleBrowser(root, out) {
   const index = resolve(out, 'index.html'), html = await readFile(index, 'utf8');
   if (!html.includes('src="./src/main.js"')) throw new Error('Browser module entry missing from index');
   await writeFile(index, html.replace('src="./src/main.js"', `src="${path}"`));
+  const worker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/world-worker.js')?.[0];
+  if (worker) {
+    for (const path of [resolve(out, 'data/map.json'), ...['penteli'].map(id => resolve(out, `data/maps/${id}/map.json`))]) {
+      const data = JSON.parse(await readFile(path, 'utf8'));
+      if (data.bakedWorld) { data.bakedWorld.worker = './' + relative(out, resolve(root, worker)).split(sep).join('/'); await writeFile(path, JSON.stringify(data)); }
+    }
+  }
   await writeFile(resolve(root, '.deploy/browser-metafile.json'), JSON.stringify(result.metafile));
   console.log(`Bundled browser: ${Object.keys(result.metafile.inputs).length} inputs, ${Object.keys(result.metafile.outputs).length} ESM chunks, ${Object.values(result.metafile.outputs).reduce((sum, o) => sum + o.bytes, 0)} bytes`);
   return result.metafile;

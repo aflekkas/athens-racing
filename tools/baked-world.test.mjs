@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { resolve } from 'node:path';
 import { gzipSync, gunzipSync } from 'node:zlib';
+import { packGroup } from '../src/baked-world-pack.js';
 import { generateMapBake } from './bake-world.mjs';
 import { encodeGeometryPack, decodeGeometryPack } from '../src/baked-geometry.js';
 import { restoreBakedTerrain, restoreBakedRoads } from '../src/baked-world.js';
@@ -39,10 +40,16 @@ test('geometry packs reject invalid magic, versions and out-of-bounds views', ()
 });
 for (const id of ['riviera', 'penteli']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, async () => {
   const bake = await generateMapBake(root, id), terrainPack = roundTrip(bake.terrain), roadsPack = roundTrip(bake.roads);
+  // The worker uses raw (unshuffled) transferable packs; build bakes choose gzip-friendly byte planes.
+  const workerTerrain = decodeGeometryPack(packGroup(bake.terrainGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, height: 0, source: 1 }, [bake.map.terrain.Hc, bake.network.source]));
+  const workerRoads = decodeGeometryPack(packGroup(bake.roadsGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, stats: roadsPack.metadata.stats }));
   const network = new RoadNetwork(bake.map), scene = new THREE.Group();
   const ter = restoreBakedTerrain(terrainPack, bake.map.terrain, network, scene, { coastal: id === 'riviera' });
   const roads = restoreBakedRoads(roadsPack, network, scene);
   equalGroup(bake.terrainGroup, ter.group); equalGroup(bake.roadsGroup, roads);
+  const rawNetwork = new RoadNetwork(bake.map), rawScene = new THREE.Group();
+  equalGroup(ter.group, restoreBakedTerrain(workerTerrain, bake.map.terrain, rawNetwork, rawScene, { coastal: id === 'riviera' }).group);
+  equalGroup(roads, restoreBakedRoads(workerRoads, rawNetwork, rawScene));
   assert.deepEqual(bake.map.terrain.Hc, terrainPack.arrays[0]); assert.deepEqual(network.source, bake.network.source);
   assert.equal(network.stats.triangles, bake.network.stats.triangles);
   // Includes random barycentric locations on the actual road triangles and fallback DEM points.

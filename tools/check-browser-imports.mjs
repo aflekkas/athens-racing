@@ -1,11 +1,12 @@
-// Resolve every browser module without changing the native ES-module game output.
+// Resolve the source graph before bundling; native ESM remains the development path.
 // Syntax-only checks miss imports of files accidentally omitted from a commit.
 import { build } from 'esbuild';
 import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const result = await build({
   absWorkingDir: root,
-  entryPoints: ['src/main.js'],
+  entryPoints: ['src/main.js', 'src/world-worker.js'],
+  outdir: '.scratch/import-check',
   bundle: true,
   format: 'esm',
   platform: 'browser',

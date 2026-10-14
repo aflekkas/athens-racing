@@ -1,11 +1,14 @@
 // Start map-specific downloads as soon as map data arrives, alongside HUD and sky construction.
+import { generatedWorld } from './generated-world-cache.js';
 import { decodeGeometryPack } from './baked-geometry.js';
 
 export async function loadBakedWorldData(map) {
   const def = map.data.bakedWorld;
   if (!def || def.version !== 1 || !map.data.roadNetwork || ['nobake', 'noroadnetwork'].some(key => new URLSearchParams(typeof location === 'undefined' ? '' : location.search).has(key))) return null;
   try {
-    const packs = await Promise.all([def.terrain, def.roads].map(async url => {
+    let generated = null;
+    try { generated = await generatedWorld(map); } catch (e) { console.warn('World worker unavailable; using build buffers:', e.message); }
+    const packs = generated ? [decodeGeometryPack(generated.terrain), decodeGeometryPack(generated.roads)] : await Promise.all([def.terrain, def.roads].map(async url => {
       const r = await fetch(url); if (!r.ok) throw new Error(`Baked world HTTP ${r.status}`);
       if (def.compression !== 'gzip' || typeof DecompressionStream === 'undefined') throw new Error('Baked compression unsupported');
       const buffer = await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
