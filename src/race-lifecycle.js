@@ -70,3 +70,19 @@ export function applySpectatorState(vehicle, snapshot) {
   vehicle.remoteEngineTelemetry = Number.isFinite(snapshot.engHealth);
   for (const key of engineFields) vehicle[key] = snapshot[key];
 }
+
+// Resume physical state without copying derived or remote display telemetry.
+export function restoreVehicleState(vehicle, state) {
+  for (const [key, value] of Object.entries(state)) {
+    if (key === 'tyreTelemetry' || key === 'remoteTyreTelemetry') continue;
+    let owner = vehicle, descriptor;
+    while (owner && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(owner, key);
+      owner = Object.getPrototypeOf(owner);
+    }
+    // Restore plain writable data only; never invoke an accessor setter.
+    if (descriptor && (!('value' in descriptor) || !descriptor.writable)) continue;
+    vehicle[key] = value;
+  }
+  return vehicle;
+}

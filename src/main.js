@@ -26,7 +26,7 @@ import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
-import { recoveryPosition, spectatorState, applySpectatorState } from './race-lifecycle.js';
+import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
 import { DrivingFeedback } from './driving-feedback.js';
 import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
@@ -768,7 +768,7 @@ function switchRoamCar(carId) {
   const gear = old.gear, bodyPose = { ...old.pose };
   beginCameraBlend(); setCar(idx);
   // A replacement car is mechanically fresh; retain the exact location and motion, including on a side street.
-  const v = player.veh; v.reset(pose.s, pose.u, pose.vLong); Object.assign(v, pose); v.pose = bodyPose;
+  const v = player.veh; v.reset(pose.s, pose.u, pose.vLong); restoreVehicleState(v, pose); v.pose = bodyPose;
   v.gear = Math.max(1, Math.min(gear, v.spec.gears.length));
   v.rpm = clamp(Math.abs(v.vLong) / v.spec.wheelR * v.ratio() * 30 / Math.PI, v.spec.idle, v.spec.redline);
   syncCar(player, 0); updateCamera(0, true);
@@ -1582,7 +1582,7 @@ function step(dt, draw = true) {
       pv.update(dt, pin);
       if (inFreeRoam() && route.closed) pv.s = route.wrap(pv.s); // untimed traffic stays in the same lap coordinates
       // A recovery hold is a time cost even on a slope or with a held throttle; suspension still settles.
-      if (recoveryPose) Object.assign(pv, recoveryPose, { vLong: 0, vLat: 0, w: 0, lastV: 0 });
+      if (recoveryPose) restoreVehicleState(pv, { ...recoveryPose, vLong: 0, vLat: 0, w: 0, lastV: 0 });
       if (Q.has('nantrap') && !G.nanP && !isFinite(pv.x + pv.vLong + pv.w + pv.s)) { G.nanP = 1; console.warn('NaN player after update', snapP); }
       seaCheck(pv, dt);
       stuckCheck(pv, dt);
@@ -1879,7 +1879,7 @@ const multiplayer = new Multiplayer(CARS, {
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
     grid(player.veh, lobby.players.findIndex(p => p.id === id)); resetTowOffer();
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
-    if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); if (v.spec.nitrous !== true) { v.nitro = 0; v.nitroOn = false; } v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
+    if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); restoreVehicleState(v, resumeState); if (v.spec.nitrous !== true) { v.nitro = 0; v.nitroOn = false; } v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
     if (resumeState?.recoveryUntil > multiplayer.now()) towOffer.hold = (resumeState.recoveryUntil - multiplayer.now()) / 1000;
     G.state = 'onlineCountdown'; G.cameraStarting = false; controls.requestMouseLock(); G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
     document.body.classList.add('counting');
