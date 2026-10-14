@@ -1,6 +1,7 @@
 // MAP SELECT: one card per map (src/map-catalog.js) on a rail that fits the screen, or scrolls sideways with arrows,
 // edge fades and dots when it does not. Choosing a map loads it behind the full-screen loading screen (src/ui/loading.js).
 import { MAPS } from './map-catalog.js';
+import { getPlayableMaps, isMapEnabled } from './enabled-maps.js';
 import { TRACK_PINS } from './attica-map-data.js';
 import { fmtDist } from './settings.js';
 import * as C from './ui/components.js';
@@ -16,11 +17,11 @@ function preview(map) {
   return `<img src="${map.preview}" alt="${esc(map.name)} route outline"/><div class="map-preview__info">${C.badge(kind, '', ic)}<h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b>${C.button({ label: 'SELECT TRACK', icon: 'flag-checkered', variant: 'primary', attrs: { 'data-map-id': map.id } })}</div>`;
 }
 export function renderMapSelect(selectedId = 'riviera', mode) {
-  style(); const selected = MAPS.find(m => m.id === selectedId) || MAPS[0];
-  return C.screen({ cls: 'scr--maps', kick: mode === 'free' ? 'FREE ROAM' : mode === 'quick' ? 'QUICK RACE' : mode === 'tt' ? 'TIME TRIAL' : 'EVENTS', title: 'ATTICA / CHOOSE YOUR TRACK',
+  style(); const selectable = getPlayableMaps(MAPS); const selected = selectable.find(m => m.id === selectedId) || selectable[0];
+  return C.screen({ cls: 'scr--maps', kick: mode === 'taxi' ? 'TAXI / 5 MINUTES' : mode === 'getaway' ? 'GETAWAY DRIVER / 5 MINUTES' : mode === 'free' ? 'FREE ROAM' : mode === 'quick' ? 'QUICK RACE' : mode === 'tt' ? 'TIME TRIAL' : 'EVENTS', title: 'ATTICA / CHOOSE YOUR TRACK',
     hints: [['select', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
-    body: `<div class="attica-layout"><div class="attica-map" aria-label="Map of Attica with three race locations"><div class="attica-layer"><img class="attica-art" src="assets/maps/attica.svg" alt="Stylised Attica coastline, Athens, Saronic Gulf, Hymettus and Penteli mountains" draggable="false"/>
-      ${MAPS.map((m,i) => { const [x,y] = TRACK_PINS[m.id]; return `<div class="mi track-pin ${m.id === selected.id ? 'selected' : ''}" role="button" aria-label="${m.name}" data-map-id="${m.id}" style="left:${x/1040*100}%;top:${y/840*100}%;--pin:${['#ff594b','#ffc35e','#73dbc2'][i]}" ${m.id === selected.id ? 'data-default' : ''}>${icon(KIND(m)[1])}<span>${m.name}</span></div>`; }).join('')}</div>
+    body: `<div class="attica-layout"><div class="attica-map" aria-label="Map of Attica with playable race locations"><div class="attica-layer"><img class="attica-art" src="assets/maps/attica.svg" alt="Stylised Attica coastline, Athens, Saronic Gulf, Hymettus and Penteli mountains" draggable="false"/>
+      ${selectable.map((m,i) => { const [x,y] = TRACK_PINS[m.id]; return `<div class="mi track-pin ${m.id === selected.id ? 'selected' : ''}" role="button" aria-label="${m.name}" data-map-id="${m.id}" style="left:${x/1040*100}%;top:${y/840*100}%;--pin:${m.id === 'penteli' ? '#73dbc2' : '#ff594b'}" ${m.id === selected.id ? 'data-default' : ''}>${icon(KIND(m)[1])}<span>${m.name}</span></div>`; }).join('')}</div>
       <div class="map-tools">${C.button({ label: '+', act: 'mapZoomIn', title: 'Zoom in', size: 'sm' })}${C.button({ label: '−', act: 'mapZoomOut', title: 'Zoom out', size: 'sm' })}${C.button({ label: 'RESET', act: 'mapReset', size: 'sm' })}</div><div class="attica-caption">DRAG TO PAN · SCROLL / PINCH TO ZOOM<br/><small>OSM CONTRIBUTORS · REGIONAL OUTLINE SCHEMATIC</small></div><div class="map-north">N ↑</div></div>
       <aside class="map-preview panel" aria-live="polite">${preview(selected)}</aside></div>` });
 }
@@ -43,12 +44,13 @@ export function mountMapSelect(root) {
   return { preview:show, action(name){if(name==='mapZoomIn')zoom(.3);else if(name==='mapZoomOut')zoom(-.3);else if(name==='mapReset'){scale=1;x=y=0;sync();}}, dispose(){if(disposed)return;disposed=true;resize.disconnect();root.removeEventListener('pointerover',hover);} };
 }
 export async function selectMap(menu, id) {
-  if (menu.mapLoading) return;
+  if (menu.mapLoading || !isMapEnabled(id)) return;
   menu.mapLoading = true;
   try {
     await (menu.h.switchMap || window.__flow.switchMap)(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
-    if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
+    if (['taxi', 'getaway'].includes(menu.data.mode)) menu.show('setup', { eventId: menu.data.mode + ':' + id, mode: menu.data.mode }, true);
+    else if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
     else if (menu.data.mode === 'quick') menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
     else menu.show('events', { mapId: id }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
