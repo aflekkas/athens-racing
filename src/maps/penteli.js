@@ -9,6 +9,7 @@ import { COND_STATE } from '../env.js';
 import { buildPenteliSurface } from './penteli-surface.js';
 import { penteliGuardrail } from './penteli-roadside.js';
 import { PenteliGround } from './penteli-ground.js';
+import { villageForecourtBuffer } from '../people-policy.js';
 
 const CHAPEL = [3023.3,880.68,3022.94,874.64,3007.82,875.52,3008.47,886.61,3013.55,886.31,3013.25,881.27];
 const TAU = Math.PI * 2;
@@ -111,6 +112,17 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   const shrubGeo=needleCards([{c:new THREE.Vector3(0,.75,0),r:[1.25,.7,1.1]}],202,19,.78,[.5,0,1,.5]);
   const shrubs=instances(shrubGeo,leaf,{colors:true,shadow:false,far:680,cell:200});
   const farShrubs=instances(needleCards([{c:new THREE.Vector3(0,.55,0),r:[1,.5,1]}],209,6,1.1,[.5,0,1,.5]),leaf,{colors:true,shadow:false,far:1500,cell:360});
+  // Reserve civic/villa access courts. Filter after random transforms are drawn,
+  // so removing a town shrub does not reseed vegetation along the mountain route.
+  const clearance = { excluded: 0 }; group.userData.worldLifeClearance = clearance;
+  for (const pool of [shrubs, farShrubs, rocks, ...pines.flatMap(p => [p.trunk, p.close, p.far])]) {
+    const add = pool.add;
+    pool.add = function(matrix, color) {
+      const e = matrix.elements;
+      if (villageForecourtBuffer(map, e[12], e[14])) { clearance.excluded++; return; }
+      return add.call(this, matrix, color);
+    };
+  }
   const forest=[...polygons(data,'forest'),...polygons(data,'wood')], quarries=polygons(data,'quarry');
   const buildings=(data.buildings||[]).filter(b=>b.p).map(b=>({...b,b:polyBounds(b.p)}));
   // Sample world-space cells once: nearby legs of a hairpin do not double plant.

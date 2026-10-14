@@ -9,9 +9,24 @@ const polygonDistance = (x, z, p) => {
 };
 const VENUE = /^(cafe|restaurant|bar|pub|nightclub|fast_food|ice_cream|kiosk|shop:)/;
 const NIGHTLIFE = /^(bar|pub|nightclub)$/;
+const forecourtBounds = new WeakMap();
+/** A small access court beside a mapped town building, shared with scenery planting. */
+export function villageForecourtBuffer(map, x, z, margin = 5) {
+  let bounds = forecourtBounds.get(map);
+  if (!bounds) {
+    bounds = (map.data.buildings || []).filter(b => b.p?.length >= 6 && map.route.district(b.s) === 'town' && (b.name || b.n || b.k === 'villa')).map(b => {
+      const xs = b.p.filter((_, i) => !(i % 2)), zs = b.p.filter((_, i) => i % 2);
+      return { p: b.p, x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) };
+    });
+    forecourtBounds.set(map, bounds);
+  }
+  if (!bounds.some(b => x >= b.x0 - margin && x <= b.x1 + margin && z >= b.z0 - margin && z <= b.z1 + margin && polygonDistance(x, z, b.p) <= margin)) return false;
+  const q = map.route.project(x, z, null);
+  return q.s >= 0 && q.s <= map.route.length && map.route.district(q.s) === 'town';
+}
 export function peopleSchedule(kind, hour = 17, rain = 0, nightlife = false) {
   hour = ((hour % 24) + 24) % 24; rain = clamp(rain);
-  if (['beach', 'swim', 'lie', 'wander'].includes(kind)) return hour >= 8 && hour < 19.5 && rain < .08 ? 1 : 0;
+  if (['beach', 'swim', 'lie', 'wander'].includes(kind)) return hour >= 8 && hour < 19.5 && rain < .08 ? Math.min(1, .15 + (hour - 8) * .425, (19.5 - hour) / 1.5) : 0;
   if (kind === 'artist') return (hour >= 19 || hour < 5 ? .95 : hour < 8 ? .12 : .04) * (1 - rain);
   if (kind === 'jogger' || kind === 'cyclist') return (hour >= 6 && hour < 10 ? .13 : hour >= 17 && hour < 20 ? .08 : hour >= 10 && hour < 17 ? .025 : 0) * (1 - rain);
   const knots = [[0, nightlife ? .45 : .12], [3, nightlife ? .22 : .025], [5, .035], [8, .45], [14, .65], [18, .85], [21, 1], [24, nightlife ? .45 : .12]];

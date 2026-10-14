@@ -9,6 +9,7 @@ import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import { auditMarkdown } from './world-life-audit.mjs';
 const workspace = resolve(import.meta.dirname, '..');
+const forecourtsOnly = process.argv.includes('--forecourts');
 const root = process.env.WORLD_LIFE_ARCHIVE || (await fs.readFile(resolve(workspace, '.scratch/world-life/archive-path'), 'utf8')).trim();
 const out = resolve(process.env.WORLD_LIFE_EVIDENCE || resolve(workspace, '.scratch/world-life/evidence')); await fs.mkdir(out, { recursive: true });
 const { createGameServer } = await import(pathToFileURL(resolve(root, 'server/index.mjs')).href);
@@ -40,8 +41,8 @@ try {
     await page.waitForFunction(() => document.body.classList.contains('loaded') && window.__sim?.people, null, { timeout: 600000 });
     await page.evaluate(async () => {
       window.__freezeWorld = true; window.__worldENV = await import('/src/env.js');
-      window.__worldUtil = await import('/src/util.js'); window.__worldAudit = await import('/tools/world-life-audit.mjs');
-      window.__flow.startEvent('free'); window.__sim.G.state = 'paused'; window.__sim.G.lastDt = .25;
+      window.__worldTHREE = await import('three'); window.__worldUtil = await import('/src/util.js'); window.__worldAudit = await import('/tools/world-life-audit.mjs');
+      window.__flow.startEvent('free'); await new Promise(done => setTimeout(done, 500)); window.__sim.G.state = 'paused'; window.__sim.G.lastDt = .25;
       window.__iblIdentity = window.__replay.ctx.scene.environment;
     });
     const rows = await page.evaluate(() => {
@@ -57,7 +58,7 @@ try {
         sim.player.veh.reset(s, r.laneU(s, 0), 0); sim.people.reset(s); sim.traffic.reset(s); sim.traffic.sync(s);
         const f = r.frame(s, {}), p = r.point(s, 0);
         let anchor = resident ? sim.people.anchors.find(a => a.kind === 'resident') : null;
-        if (anchor) { camera.position.set(anchor.x + 5, anchor.y + 2.6, anchor.z + 7); camera.lookAt(anchor.x, anchor.y + .8, anchor.z); }
+        if (anchor) { camera.position.set(anchor.x - Math.sin(anchor.yaw) * 5 + Math.cos(anchor.yaw) * 2, anchor.y + 2.1, anchor.z - Math.cos(anchor.yaw) * 5 - Math.sin(anchor.yaw) * 2); camera.lookAt(anchor.x, anchor.y + .8, anchor.z); }
         else { camera.position.set(p.x - f.tx * 14 + f.rx * 4, p.y + 3.2, p.z - f.tz * 14 + f.rz * 4); const target = r.point(s + 28, 0); camera.lookAt(target.x, target.y + .8, target.z); }
         camera.near = .25; camera.fov = 58; camera.updateProjectionMatrix(); camera.updateMatrixWorld(true); sim.G.lastDt = .25; ctx.post.resetHistory();
         sim.people.update(0, s, [], camera.position); for (let i = 0; i < 7; i++) sim.render();
@@ -69,12 +70,20 @@ try {
         const ctx = window.__replay.ctx; ctx.render(); ctx.renderer.getContext().finish();
         const canvas = document.createElement('canvas'); canvas.width = 800; canvas.height = 500; const c = canvas.getContext('2d'); c.drawImage(ctx.canvas, 0, 0, 800, 500); const a = c.getImageData(0, 0, 800, 500).data;
         let lum = 0; for (let i = 0; i < a.length; i += 4) lum += .2126 * a[i] + .7152 * a[i + 1] + .0722 * a[i + 2];
-        return { png: canvas.toDataURL().split(',')[1], luminance: lum / (a.length / 4), conditions: window.__conditions(), health: window.__lightingInfo(), snapshot: window.__worldLife.world.snapshot(), sameIBL: ctx.scene.environment === window.__iblIdentity };
+        const THREE = window.__worldTHREE, rt = new THREE.WebGLRenderTarget(16, 16), diag = new THREE.Scene();
+        const mat = new THREE.ShaderMaterial({ toneMapped: false, uniforms: { env: { value: ctx.scene.environment } }, vertexShader: 'varying vec2 uvOut;void main(){uvOut=uv;gl_Position=vec4(position.xy,0.,1.);}', fragmentShader: 'uniform sampler2D env;varying vec2 uvOut;void main(){gl_FragColor=vec4(texture2D(env,uvOut).rgb,1.);}' });
+        const geo = new THREE.PlaneGeometry(2, 2); diag.add(new THREE.Mesh(geo, mat)); const bytes = new Uint8Array(16 * 16 * 4);
+        const previous = { target: ctx.renderer.getRenderTarget(), auto: ctx.renderer.shadowMap.autoUpdate, needs: ctx.renderer.shadowMap.needsUpdate };
+        ctx.renderer.shadowMap.autoUpdate = ctx.renderer.shadowMap.needsUpdate = false;
+        try { ctx.renderer.setRenderTarget(rt); ctx.renderer.render(diag, new THREE.Camera()); ctx.renderer.readRenderTargetPixels(rt, 0, 0, 16, 16, bytes); }
+        finally { ctx.renderer.setRenderTarget(previous.target); ctx.renderer.shadowMap.autoUpdate = previous.auto; ctx.renderer.shadowMap.needsUpdate = previous.needs; rt.dispose(); mat.dispose(); geo.dispose(); }
+        let ibl = 0; for (let i = 0; i < bytes.length; i += 4) ibl += bytes[i] + bytes[i + 1] + bytes[i + 2];
+        return { iblLuminance: ibl / (16 * 16 * 3), png: canvas.toDataURL().split(',')[1], luminance: lum / (a.length / 4), conditions: window.__conditions(), health: window.__lightingInfo(), snapshot: window.__worldLife.world.snapshot(), sameIBL: ctx.scene.environment === window.__iblIdentity };
       });
       await fs.writeFile(resolve(out, file), Buffer.from(state.png, 'base64')); delete state.png;
       report.shots.push({ file, ...state, ...detail }); console.log('SHOT', file, state.luminance, JSON.stringify(state.conditions)); assert.ok(state.sameIBL); await save(); return state;
     }
-    if (id === 'riviera') {
+    if (id === 'riviera' && !forecourtsOnly) {
       await page.evaluate(() => window.__worldLife.configure({ type: 'free', conditions: { time: 'dawn', weather: 'clear' } }));
       const station = 4700; await position(station);
       for (const [name, seconds] of [['dawn', 0], ['noon', 600], ['dusk', 450], ['night', 525]]) {
@@ -93,11 +102,13 @@ try {
       assert.ok(before); await page.waitForFunction(() => window.__sim.G.ctxLost, null, { timeout: 30000 });
       await page.evaluate(() => window.__worldRestore.restoreContext()); await page.waitForFunction(() => !window.__sim.G.ctxLost, null, { timeout: 60000 });
       await page.evaluate(() => { window.__sim.render(); window.__worldENV.setWorldConditions(window.__worldLife.world.sample()); for (let i = 0; i < 10; i++) { window.__worldENV.updateWorldBlend(.2); window.__sim.render(); } });
-      report.restore = await capture('riviera-restored.png'); assert.ok(report.restore.luminance > 5); assert.ok(report.restore.health.environment); assert.ok(report.restore.health.sun);
-    } else {
+      report.restore = await capture('riviera-restored.png'); assert.ok(report.restore.luminance > 5); assert.ok(report.restore.iblLuminance > .1, 'restored PMREM contains HDR pixels after both snapshots are reseeded'); assert.ok(report.restore.health.environment); assert.ok(report.restore.health.sun);
+    } else if (id === 'penteli') {
       await page.evaluate(() => window.__worldLife.configure({ type: 'free', conditions: { time: 'day', weather: 'clear' } }));
       const residents = await position(120, true); assert.ok(residents.active.some(p => p.kind === 'resident'));
-      await capture('penteli-village.png', residents);
+      const clearance = await page.evaluate(() => { let result = null; window.__replay.ctx.scene.traverse(o => { if (o.userData.worldLifeClearance) result = o.userData.worldLifeClearance; }); return result; });
+      assert.ok(clearance?.excluded > 0, 'procedural vegetation is excluded from mapped forecourts');
+      await capture('penteli-village.png', { ...residents, clearance });
       for (const s of [2500, 7344]) { const mountain = await position(s); assert.equal(mountain.active.length, 0); await capture(`penteli-mountain-${s}.png`, mountain); }
     }
     await page.close();
