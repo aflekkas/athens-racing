@@ -177,7 +177,7 @@ const TRAFFIC_LOOPS = {
 };
 
 // Mix controls are independent of legacy sfx (which still scales every non-music bus).
-export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4 });
+export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
 /** One detail budget across rivals and traffic, so separate pools cannot each fill the foreground. */
@@ -226,29 +226,36 @@ export class AudioMix {
 
 /** Map actual FL/FR/RL/RR contact patches to sound. sx/sy are normalized to the tyre's grip peak. */
 export function tyreParameters(w, speed, surface = 'asphalt', nominalLoad = 3500) {
-  const load = Math.sqrt(clampAudio((w.Fz ?? nominalLoad) / Math.max(1, nominalLoad), 0, 2));
+  const loadRatio = clampAudio((w.Fz ?? nominalLoad) / Math.max(1, nominalLoad), 0, 2);
+  const load = Math.sqrt(loadRatio);
   const slip = Math.hypot(w.sx ?? ((w.slipRatio || 0) / 0.12), w.sy ?? (Math.tan(w.aDyn ?? w.slipAngle ?? 0) / Math.tan(0.12)));
   const patch = Math.abs(w.vgx ?? speed), spinSpeed = Math.abs(w.vw ?? speed);
   const motion = clampAudio(Math.max(patch, spinSpeed) / 7);
   const soft = /gravel|dirt|sand|grass|scrub|verge|water/.test(surface);
   const kerb = /kerb|curb|pavement|rumble/.test(surface);
   const grain = /gravel|rock/.test(surface) ? 1 : /sand|dirt/.test(surface) ? 0.65 : soft ? 0.35 : 0;
-  const scrub = clampAudio((slip - 0.65) / 0.3);
-  const squeal = Math.pow(clampAudio((slip - 0.98) / 0.55), 1.15);
+  const scrub = clampAudio((slip - 0.82) / 0.23);
+  const squealEligible = !soft && loadRatio >= .20 && Math.abs(speed) > 25 / 3.6;
+  const squeal = squealEligible ? Math.pow(clampAudio((slip - 1.10) / .65), 1.15) : 0;
   const signedSlip = (w.sx ?? 0) * (w.vgx < 0 ? -1 : 1);
   const lock = signedSlip < -1 && patch > 2;
   return {
-    roll: load * clampAudio(patch / 42) * (soft ? 0.055 : 0.024),
+    roll: load * clampAudio(patch / 42) * (soft ? 0.055 : 0.012),
     rollHz: (soft ? 480 : 140) + Math.min(1600, patch * (soft ? 26 : 12)),
-    scrub: load * motion * scrub * (soft ? 0.025 : 0.42) * (1 - squeal * 0.55),
-    howl: soft ? 0 : load * motion * scrub * 0.34 * (1 - squeal * 0.7),
+    scrub: load * motion * scrub * (soft ? 0.025 : 0.07) * (1 - squeal * 0.55),
+    howl: soft ? 0 : load * motion * scrub * 0.025 * (1 - squeal * 0.7),
     squeal: load * motion * squeal * (soft ? 0.008 : 0.11),
     // Stick/slip resonances rise with sliding speed; locked rubber has a lower, rougher howl.
     pitch: clampAudio(800 + Math.max(0, slip - 0.98) * 1050 + patch * 2 + Math.max(0, signedSlip) * 20 - (lock ? 100 : 0), 700, 2400),
     grit: load * motion * grain * (0.04 + 0.018 * Math.min(3, slip)),
     rumble: kerb ? load * clampAudio(patch / 18) * 0.065 : 0,
-    rumbleHz: clampAudio(patch / 0.45, 12, 170), lock, slip,
+    rumbleHz: clampAudio(patch / 0.45, 12, 170), lock, slip, squealEligible,
   };
+}
+
+// Onset/release use different slip thresholds; level still follows excess above 1.10.
+export function tyreSquealActive(active, parameters) {
+  return parameters.squealEligible && parameters.slip > (active ? 1.06 : 1.14);
 }
 
 /** Four decorrelated contact-patch voices; no downloaded squeal is needed before the first corner. */
@@ -281,7 +288,10 @@ export class TyreVoice {
     this.rumble = gain(); this.rumbleOsc = osc(40, 'triangle'); chain(this.rumbleOsc, this.rumble, this.axle);
     // Rubber is a cluster of noisy stick/slip modes, not three clean sine oscillators.
     // Each harmonic has two detuned, independently wandering resonances per contact patch.
-    this.squeal = gain(); this.squealFlutter = gain(1); chain(this.squeal, this.squealFlutter, this.axle);
+    // All squeal paths (synthesis, recording and lock chirp) share the same -7 dB trim.
+    this.squealBus = gain(Math.pow(10, -7 / 20)); this.squealBus.connect(this.axle);
+    this.squealActive = false; this.squealTarget = 0;
+    this.squeal = gain(); this.squealFlutter = gain(1); chain(this.squeal, this.squealFlutter, this.squealBus);
     this.squealModes = [];
     for (const [harmonic, level] of [[1, 15.2], [2, 6.4], [3, 1.92]]) {
       for (const detune of [0.977, 1.026]) {
@@ -291,19 +301,24 @@ export class TyreVoice {
       }
     }
     this.nextFlutter = 0; this.nextChatter = 0; this.chatterUntil = 0;
-    this.chirp = gain(); this.chirpOsc = osc(1200); chain(this.chirpOsc, this.chirp, this.axle);
+    this.chirp = gain(); this.chirpOsc = osc(1200); chain(this.chirpOsc, this.chirp, this.squealBus);
   }
   attachRecording(sound) {
     if (this.recording) return;
     this.recordGain = this.ctx.createGain(); this.recordGain.gain.value = 0;
-    this.recordGain.connect(this.axle);
+    this.recordGain.connect(this.squealBus);
     this.recording = loopSource(this.ctx, sound, this.recordGain, 0.95 + this.index * 0.025);
   }
   set(w, speed, surface, nominalLoad, now) {
     const p = tyreParameters(w, speed, surface, nominalLoad);
-    for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble', 'squeal']) this[key].gain.setTargetAtTime(p[key], now, key === 'squeal' ? 0.085 : 0.055);
+    this.squealActive = tyreSquealActive(this.squealActive, p);
+    p.squeal = this.squealActive ? p.squeal : 0;
+    const squealTime = p.squeal > this.squealTarget ? .12 : .20;
+    this.squealTarget = p.squeal;
+    for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble']) this[key].gain.setTargetAtTime(p[key], now, .055);
+    this.squeal.gain.setTargetAtTime(p.squeal, now, squealTime);
     if (this.recording) {
-      this.recordGain.gain.setTargetAtTime(p.squeal * 0.85, now, 0.035);
+      this.recordGain.gain.setTargetAtTime(p.squeal * 0.85, now, squealTime);
       this.recording.playbackRate.setTargetAtTime(clampAudio(p.pitch / 850, 0.7, 1.65) * (0.97 + this.index * 0.018), now, 0.07);
     }
     this.rollLP.frequency.setTargetAtTime(p.rollHz, now, 0.09);
@@ -330,10 +345,11 @@ export class TyreVoice {
       this.nextFlutter = now + 0.018 + this.waverRandom() * 0.035;
     }
     this.rumbleOsc.frequency.setTargetAtTime(p.rumbleHz, now, 0.035);
-    if (p.lock && !this.locked) {
+    if (p.lock && !this.locked && p.squeal > 0) {
       this.chirp.gain.cancelScheduledValues(now); this.chirp.gain.setValueAtTime(0, now);
       this.chirp.gain.linearRampToValueAtTime(p.squeal * 0.7, now + 0.008);
       this.chirp.gain.exponentialRampToValueAtTime(0.00001, now + 0.13);
+      this.chirp.gain.linearRampToValueAtTime(0, now + 0.15);
       this.chirpOsc.frequency.setValueAtTime(p.pitch * 1.65, now);
       this.chirpOsc.frequency.exponentialRampToValueAtTime(p.pitch, now + 0.13);
     }
@@ -360,7 +376,9 @@ export class Audio {
     this.engineLP = ctx.createBiquadFilter(); this.engineLP.type = 'lowpass'; this.engineLP.frequency.value = 16000;
     // Preserve engine feedback while the master/headroom stages and surrounding voices become quieter.
     this.eng = ctx.createGain(); this.eng.channelCount = 1; this.eng.channelCountMode = 'explicit'; this.eng.gain.value = PLAYER_ENGINE_LEVEL; this.eng.connect(this.engineLP); this.engineLP.connect(this.mix.buses.engine);
-    this.chassis = ctx.createGain(); this.chassis.channelCount = 1; this.chassis.channelCountMode = 'explicit'; this.chassis.gain.value = 0.7; this.chassis.connect(this.mix.buses.tyres);
+    this.chassis = ctx.createGain(); this.chassis.channelCount = 1; this.chassis.channelCountMode = 'explicit'; this.chassis.gain.value = 0.7;
+    this.roadLP = ctx.createBiquadFilter(); this.roadLP.type = 'lowpass'; this.roadLP.frequency.value = 14000; this.roadLP.Q.value = 0.5;
+    this.roadCabin = ctx.createGain(); this.chassis.connect(this.roadLP); this.roadLP.connect(this.roadCabin); this.roadCabin.connect(this.mix.buses.tyres);
     this.cabinLP = ctx.createBiquadFilter(); this.cabinLP.type = 'lowpass'; this.cabinLP.frequency.value = 14000; this.cabinLP.Q.value = 0.5;
     // Each external bus has its own cabin filter, preserving independent volume controls.
     this.ext = ctx.createGain(); this.ext.gain.value = 1; this.ext.connect(this.cabinLP); this.cabinLP.connect(this.mix.buses.traffic);
@@ -639,6 +657,8 @@ export class Audio {
     if (p.bump > 0.05 && !p.muted) this.thump(p.bump, p.wb && v > 2 ? p.wb / v : 0.1);
     // ---- wind (roof down: the full blast; roof up: muffled with a mirror whistle)
     const open = p.open ? 1 : 0;
+    this.roadLP.frequency.setTargetAtTime(open ? 14000 : 1100, now, 0.2);
+    this.roadCabin.gain.setTargetAtTime(open ? 1 : 0.65, now, 0.2);
     t.windG.gain.setTargetAtTime(mute * Math.min(0.2, v * v * 0.00003) * (0.45 + 0.55 * open), now, 0.25);
     t.windLP.frequency.setTargetAtTime(Math.min(12000, 450 + v * (open ? 110 : 45)), now, 0.3);
     t.wind?.playbackRate.setTargetAtTime(0.75 + Math.min(0.45, v / 110), now, 0.4);

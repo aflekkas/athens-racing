@@ -40,6 +40,20 @@ test('saved volumes remain usable when storage writes are denied', async () => {
   assert.equal(module.settings.music, 0.2);
 });
 
+test('quieter tyres migrate the old default once without changing custom levels or master', async () => {
+  assert.equal((await preferences(memory())).settings.tyres, 0.28);
+  for (const tyres of [0, 0.3, 0.8, 0.95]) {
+    const storage = memory();
+    storage.setItem('paraliaki.audio-default-version', '1');
+    storage.setItem('paraliaki.settings', JSON.stringify({ master: 0.8, tyres }));
+    const module = await preferences(storage);
+    assert.equal(module.settings.tyres, tyres === 0.8 ? 0.28 : tyres);
+    assert.equal(module.settings.master, 0.8);
+    module.setSetting('tyres', 0.8);
+    assert.equal((await preferences(storage)).settings.tyres, 0.8);
+  }
+});
+
 test('steering assist defaults follow the active device until explicitly selected', async () => {
   const storage = memory(), module = await preferences(storage), vehicle = {};
   assert.equal(module.settings.steeringAssist, null);

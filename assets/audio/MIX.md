@@ -6,7 +6,7 @@
 
 Normal moving race: **−20 to −18 LUFS integrated**, maximum 3-second loudness **≤ −14 LUFS**, true peak **≤ −3 dBTP**. Menus and loading music aim for **approximately −26 LUFS**. Stopped/idling segments and the closed taxi cabin can be quieter.
 
-Defaults: **master 0.60**, music 0.55, SFX 1.00, engine 0.85, tyres 0.80, ambience 0.50, traffic 0.65, UI 0.40. Only a saved master equal to the old 0.80 default migrates, once; other preferences and later explicit choices are retained.
+Defaults: **master 0.60**, music 0.55, SFX 1.00, engine 0.85, tyres 0.28 (−9.1 dB from 0.80), ambience 0.50, traffic 0.65, UI 0.40. Saved master and tyre levels equal to their old 0.80 defaults migrate once, independently; other preferences and later explicit choices are retained.
 
 ## Real-game captures
 
@@ -233,3 +233,7 @@ WAVs, loudness reports and spectrograms: `.scratch/voice/crash-*`.
 Reproduce: `tools/browser-slot.sh node tools/voice-browser-test.mjs`, then
 `python3 tools/measure_voice.py`. Model provenance: `voice/CREDITS.txt`,
 `voice/sources.json`, `voice/MODELS.md`; maintainable scripts: `voice/lines.json`.
+
+## Tyre feedback retune (2026-10-14)
+
+The tyre bus defaults to 0.28, a 9.1 dB reduction. Asphalt roll is halved and scrub begins only above 82% normalized combined peak slip. Cockpit road sound passes through a 1.1 kHz low-pass and 0.65 cabin gain. Squeal enters above 1.14 peak slip, requires over 25 km/h and 20% nominal wheel load, follows excess above 1.10 and releases below 1.06. All squeal paths share a further −7 dB trim and 120/200 ms attack/release time constants. Master, engine, limiter and loudness targets are unchanged. Reproducible fixture and real-game evidence: `.scratch/sound-v3/tyre-retune/`.

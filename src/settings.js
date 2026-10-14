@@ -17,7 +17,8 @@
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
 const KEY = 'paraliaki.settings';
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
+const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
@@ -42,6 +43,14 @@ function load() {
         try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
       }
       try { storage?.setItem(AUDIO_DEFAULT_VERSION, '1'); } catch {}
+    }
+    // Independently version tyre defaults: don't repeat the earlier master migration.
+    if (storage?.getItem(TYRE_DEFAULT_VERSION) !== '1') {
+      if (saved?.tyres != null && +saved.tyres === 0.8) {
+        saved.tyres = out.tyres = DEFAULTS.tyres;
+        try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
+      }
+      try { storage?.setItem(TYRE_DEFAULT_VERSION, '1'); } catch {}
     }
   } catch {}
   try { const g = ls()?.getItem('paraliaki.graphics'); if (g) out.graphics = g; } catch {}

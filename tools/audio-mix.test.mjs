@@ -5,6 +5,7 @@ import { DEFAULTS } from '../src/settings.js';
 
 test('audio graph and stored preferences use the same comfortable defaults', () => {
   assert.equal(AUDIO_DEFAULTS.master, 0.6);
+  assert.equal(AUDIO_DEFAULTS.tyres, 0.28);
   for (const [key, value] of Object.entries(AUDIO_DEFAULTS)) assert.equal(DEFAULTS[key], value);
 });
 
