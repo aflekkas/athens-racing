@@ -200,3 +200,20 @@ for (const dir of [1, -1]) test(`traffic-no-side-swipe-${dir}`, () => {
   record(`traffic-no-side-swipe-${dir}`, { contacts, minGap }, []);
   if (!baseline) { assert.equal(contacts, 0); assert.ok(minGap > 0.3, `kept ${minGap.toFixed(2)} m`); }
 });
+// Live game, Riviera: a rival stopped nose-to-tail behind a parked-up civilian
+// sat there for the rest of the race (a car cannot step sideways at rest). It
+// must back off or creep out on lock and get past, touching nothing.
+for (const gap of [1.2, 3]) test(`boxed-in-${gap}`, () => {
+  const route = road({ wide: true }), bot = make(route, 500, 2.25, 0, 1);
+  bot.controller.launchHoldDistance = 0; // mid-race, not on the grid
+  const stopped = obstacle(500 + bot.veh.halfL + 2.2 + gap, 2.25, 0);
+  let contacts = 0, passedAt = null, wall = 0, maxU = 0;
+  for (let step = 0; step < 25 / dt; step++) {
+    const v = bot.veh, input = bot.controller.update(dt, { traffic: [stopped] });
+    v.wallHit = 0; v.update(dt, input); if (v.wallHit > 0.01) wall++; maxU = Math.max(maxU, Math.abs(v.u));
+    if (overlap(v, stopped, route)) contacts++;
+    if (passedAt === null && v.s - stopped.s > v.halfL + stopped.hs + 3) passedAt = step * dt;
+  }
+  record(`boxed-in-${gap}`, { contacts, passedAt, wall, maxU }, []);
+  if (!baseline) { assert.equal(contacts, 0); assert.ok(passedAt !== null && passedAt < 20, `got past at ${passedAt}`); assert.ok(maxU < route.edge(0) - 0.9, `stayed on the road (max u ${maxU.toFixed(2)})`); }
+});

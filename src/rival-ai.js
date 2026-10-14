@@ -375,7 +375,7 @@ export class RivalAI {
     this.caps = vehicleCapabilities(veh);
     this.offset = veh.u - this.line.sample(this.line.u, veh.s);
     this.elapsed = 0; this.slow = 0; this.recovery = 'drive';
-    this.pass = null; this.evade = null; this.defend = null; this.overtakes = 0; this.abortedPasses = 0; this.passAttempts = 0;
+    this.pass = null; this.evade = null; this.defend = null; this.unbox = null; this.overtakes = 0; this.abortedPasses = 0; this.passAttempts = 0;
     this.recoveryT = 0; this.integral = 0; this.yawI = 0; this.mistake = 0;
     this.heldT = 0; this.heldKey = null; this.cooldown = 0; this.composure = 0; this.upsets = 0; this.defendCooldown = 0; this.sideT = 0;
     this.draft = 0; this.band = 0; this.lastV = Math.hypot(veh.vLong, veh.vLat);
@@ -427,6 +427,12 @@ export class RivalAI {
     if (o.d < -140 || o.d > (o.vs < -1 ? 520 : 300)) return;
     obs.push(o);
   }
+  /** Slowest line speed in the next `reach` metres (hairpins are no place to pass). */
+  _slowAhead(reach) {
+    let m = Infinity;
+    for (let d = 0; d <= reach; d += 10) m = Math.min(m, this.line.sample(this.profile, this.veh.s + this.dir * d));
+    return m;
+  }
   _find(key) { const obs = this._obs; for (let i = 0; i < obs.length; i++) if (obs[i].key === key) return obs[i]; return null; }
   /** The speed this lane allows given everything in it, plus the nearest car in it. */
   _corridor(u, changing, out) {
@@ -443,9 +449,11 @@ export class RivalAI {
       if (Math.abs(ou - u) > lateral) continue;
       const g = o.d - veh.halfL - o.hs;
       // Never move across an alongside car or cut off a fast follower.
-      // A car already directly behind us in our own lane is not cut off by a sideways step.
-      if (changing && o.d < veh.halfL + o.hs + 5 && o.d > -veh.halfL - o.hs - Math.max(5, (o.vs - v) * 1.5) &&
-        !(o.d < -veh.halfL && Math.abs(o.u - veh.u) < veh.halfW + o.hu - 0.2)) safe = false;
+      // Alongside (or just ahead) always blocks; a car behind only if it is
+      // closing on us. A car already directly behind in our own lane is not
+      // cut off by a sideways step, and a stopped one never is.
+      if (changing && o.d < veh.halfL + o.hs + 5 && !(o.d < -veh.halfL && Math.abs(o.u - veh.u) < veh.halfW + o.hu - 0.2) &&
+        (o.d > -veh.halfL - o.hs - 1 || o.vs > v + 0.5 && o.d > -veh.halfL - o.hs - Math.max(5, (o.vs - v) * 1.5))) safe = false;
       if (g >= -veh.halfL * 2 && g < gap) { gap = g; leader = o; }
       if (this.elapsed < 2.5 && v < 6 && o.racer && o.vs > 0.2 && g > 2.5) continue;
       if (g > -veh.halfL * 2) {
@@ -546,6 +554,8 @@ export class RivalAI {
       const obs = this._obs;
       for (let i = 0; !blocked && i < obs.length; i++) {
         const o = obs[i];
+        // Pulling out from behind the car ahead is not crossing it.
+        if (o === leader && o.d - veh.halfL - o.hs > 0.8) continue;
         if (Math.abs(o.d) < veh.halfL + o.hs + 3 && o.u > Math.min(veh.u, u) - o.hu - veh.halfW && o.u < Math.max(veh.u, u) + o.hu + veh.halfW) blocked = true;
       }
       if (blocked) { if (side < 0) roomL = -1 - (r.safe ? 0 : 1); else roomR = -1 - (r.safe ? 0 : 1); }
@@ -597,7 +607,7 @@ export class RivalAI {
     this._v = v; this._horizon = Math.max(35, v * 4); this._buffer = 0.35 + (1 - p.aggression) * 0.25;
     const current = this._corridor(veh.u, false, this._c[0]);
     let desiredU = baseU, oncoming = false;
-    const launchHold = (veh.s - this.launchS) * dir < this.launchHoldDistance && this.elapsed < 20;
+    const launchHold = this.launchHoldDistance > 0 && (veh.s - this.launchS) * dir < this.launchHoldDistance && this.elapsed < 20;
 
     // Held up: the car ahead is what sets our speed, not the road.
     const leader = current.leader;
@@ -646,10 +656,12 @@ export class RivalAI {
           // A momentary squeeze as their line swings is not yet a closed door.
           P.squeeze = room < 0 ? P.squeeze + dt : 0;
           const verdict = P.phase === 'merge' ? 'cleared' : passVerdict(L.d, veh.halfL, L.hs, P.squeeze > 0.4 ? room : Math.max(0, room), P.stall, mix(1.6, 3.5, p.aggression), P.t, 3);
-          let abort = verdict === 'abort' || (this.composure > 0 && P.phase === 'pull');
+          // Never try to go side by side into a hairpin taken at walking pace.
+          let abort = verdict === 'abort' || (this.composure > 0 && P.phase === 'pull') || verdict !== 'cleared' && this._slowAhead(35) < 9;
+          if (abort && verdict !== 'abort' && this.composure <= 0) P.reason = 'hairpin';
           if (!abort && P.oncoming && verdict !== 'cleared' && !this._twoWayClear(L, u, targetSpeed, baseU, v)) abort = true;
           if (abort) {
-            P.reason = verdict === 'abort' ? (room < 0 ? 'room' : P.stall > 1 ? 'stall' : 'time') : P.oncoming ? 'oncoming' : 'composure';
+            P.reason = verdict === 'abort' ? (room < 0 ? 'room' : P.stall > 1 ? 'stall' : 'time') : P.reason === 'hairpin' ? 'hairpin' : P.oncoming ? 'oncoming' : 'composure';
             P.phase = 'abort'; P.abortT = P.t; this.abortedPasses++; this.heldT = 0;
             this.cooldown = mix(4, 1.5, p.aggression);
             desiredU = u;
@@ -669,7 +681,7 @@ export class RivalAI {
       }
     }
     // ---- the decision to go for it
-    if (!this.pass && !launchHold && !this.evade && leader && leader.vs >= 0 && this.sideT <= 0 && freeSpeed > 12 &&
+    if (!this.pass && !launchHold && !this.evade && leader && leader.vs >= 0 && this.sideT <= 0 && freeSpeed > 12 && this._slowAhead(80) > 12 &&
       shouldCommit(this.heldT, p.patience, current.gap, v, this.cooldown, this.composure, v - leader.vs)) {
       this.sideT = 0.2; // re-scan for room five times a second, not every frame
       const choice = this._chooseSide(leader, baseU, v, freeSpeed, current.speed);
@@ -771,7 +783,8 @@ export class RivalAI {
     let uMin = -Infinity, uMax = Infinity;
     for (let i = 0; i < obs.length; i++) {
       const o = obs[i], reach = veh.halfL + o.hs + Math.max(1.5, Math.abs(o.vs - v) * 0.6);
-      if (Math.abs(o.d) >= reach) continue;
+      // Squarely ahead of or behind us in our own lane is following, not alongside.
+      if (Math.abs(o.d) >= reach || Math.abs(o.u - veh.u) < veh.halfW + o.hu - 0.1) continue;
       const side = Math.sign(o.u - veh.u) || 1, closing = Math.max(0, (egoVu - o.vu) * side);
       const gap = o.racer ? 0.45 : 0.6, line = o.u - side * (bodyHalfW + o.hu + gap);
       // Sideways speed must be shed before the gap runs out (about 3 m/s^2 of
@@ -866,6 +879,43 @@ export class RivalAI {
     if (!this.perfect && this.elapsed > this.nextMistake) { this.mistake = 0.35 + this.random() * 0.35; this.nextMistake = this.elapsed + 1 / Math.max(1e-5, p.mistakeRate) * (0.75 + this.random()); }
     if (this.mistake > 0) { this.mistake -= dt; targetSpeed *= 0.96; }
 
+    // Boxed in at a standstill behind a stopped car with a clear lane beside it:
+    // a car cannot step sideways at rest. Back off until the gap allows a
+    // full-lock turn out, then creep out on lock until clear of its flank.
+    const block = here.leader;
+    if (!this.unbox && !held && block && block.vs < 1 && v < 3 && here.gap < 8 && this.recovery === 'drive' && Math.abs(desiredU - veh.u) > 0.3 &&
+      Math.sign(desiredU - veh.u) !== Math.sign(block.u - veh.u) && this._corridor(desiredU, false, this._c[4]).speed > 3) {
+      this.unbox = { key: block.key, side: Math.sign(desiredU - veh.u), phase: 'back', t: 0 };
+    }
+    if (this.unbox) {
+      const X = this.unbox, B = this._find(X.key);
+      X.t += dt;
+      // Out means clear of the corridor it blocks, not merely of its paint.
+      const need = B ? veh.halfW + B.hu + this._buffer + 0.15 - Math.abs(B.u - veh.u) : 0;
+      if (!B || need <= 0 || B.d < 0 || B.vs > 2 || X.t > 12 || held) this.unbox = null;
+      else {
+        const R = veh.wb / Math.tan(Math.max(0.2, caps.lock(2))), gap = B.d - veh.halfL - B.hs;
+        const reach = need >= R ? R : Math.sqrt(R * R - (R - need) * (R - need));
+        if (X.phase === 'back') {
+          let rearClear = true;
+          for (let i = 0; i < obs.length; i++) { const o = obs[i]; if (o.d < 0 && o.d > -(veh.halfL + o.hs + 1.5) && Math.abs(o.u - veh.u) < veh.halfW + o.hu + 0.3) rearClear = false; }
+          if (gap >= reach + 0.8 || !rearClear || X.t > 4) { X.phase = 'out'; X.t = 0; }
+          else return this.result(0, veh.vLong > -1.5 ? 0.85 : 0, 0, false, false, 'backoff', 0, veh.u); // a slow, straight reverse
+        }
+        if (X.phase === 'out') {
+          // Body-clear of its flank already: straighten and drive by; otherwise
+          // a closing gap means backing off for another go.
+          const flankClear = Math.abs(B.u - veh.u) >= veh.halfW + B.hu + 0.15;
+          if (gap < 0.4 && veh.vLong > -0.2 && !flankClear) { X.phase = 'back'; X.t = 0; }
+          // Stop the reverse roll first (forward drive, as the recovery rejoin does).
+          if (veh.vLong < -0.2) return this.result(0.6, 0, 0, false, false, 'unbox', 2, veh.u);
+          const brake = veh.vLong > 2.2 ? 0.3 : 0, throttle = veh.vLong < 1.6 ? 0.35 : 0;
+          // Turn out to about 25 degrees off the road heading, no more.
+          const across = Math.asin(clamp(-Math.sin(veh.yaw) * frame.rx - Math.cos(veh.yaw) * frame.rz, -1, 1));
+          return this.result(throttle, brake, clamp(((flankClear ? 0 : X.side * 0.45) - across) * 3 * this.dir, -1, 1), false, false, 'unbox', 2, veh.u);
+        }
+      }
+    }
     const intentionalStop = held || targetSpeed < 2 && here.leader;
     this.slow = !intentionalStop && (this.elapsed > 3 || veh.wallHit > 2) && (v < 1.2 && targetSpeed > 3 || Math.abs(headingError) > 1.2 && v < 7) ? this.slow + dt : Math.max(0, this.slow - dt);
     if (this.slow > 1.1 && this.recovery === 'drive') { this.recovery = 'reverse'; this.recoveryT = 0; this.slow = 0; this.yawI = 0; if (this.pass) this._passObj.end = 'recovery'; this.pass = null; this.defend = null; }
