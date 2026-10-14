@@ -8,7 +8,7 @@ for (const id of ['riviera', 'penteli']) {
   const data = JSON.parse(await readFile(new URL(path, import.meta.url)));
   const map = resolveMap({ id }, data);
   for (const event of map.definitions.values()) {
-    if (!['sprint', 'timetrial'].includes(event.type)) continue;
+    if (event.type !== 'sprint') continue;
     test(`deployment smoke drives every checkpoint: ${id}/${event.id}`, () => {
       const drive = smokeDrive(event, map.geometry);
       assert.ok(drive.checkpoints >= Math.ceil(event.len / 80));

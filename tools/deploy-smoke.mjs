@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { WebSocket } from 'ws';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { getMap } from '../src/map-catalog.js';
-import { resolveMap } from '../server/map-definitions.mjs';
+import { verifySessionCatalogue } from './deploy-smoke-catalogue.mjs';
 import { checkDeployedEntry } from './deploy-smoke-assets.mjs';
 import { smokeDrive, SMOKE_SPEED, SMOKE_STEP } from './deploy-smoke-route.mjs';
 const base = (process.argv[2] || '').replace(/\/$/, '');
@@ -72,17 +72,15 @@ async function connect(name) {
 try {
   const { c: a, hello } = await connect('Deployment smoke host');
   const map = hello.maps.find(m => m.id === mapId); assert.ok(map, `Missing ${mapId} in hello`);
-  const event = map.events.filter(e => ['sprint', 'timetrial'].includes(e.type)).sort((a, b) => a.len - b.len)[0];
-  assert.ok(event, `No timed race on ${mapId}`);
+  const meta = getMap(mapId);
+  const response = await fetch(new URL(meta.dataUrl, base + '/'), { signal: AbortSignal.timeout(15000) });
+  assert.equal(response.status, 200);
+  const { event, definition, resolved } = verifySessionCatalogue(meta, await response.json(), map);
+  console.log(JSON.stringify({ proof: 'matching Quick Race + Free Roam catalogues', mapId, events: map.events.map(({ id, type }) => ({ id, type })) }));
   a.send({ type: 'create', mapId, eventId: event.id, private: true, lobbyName: 'Deployment smoke' });
   const created = (await a.next(m => m.type === 'lobby')).lobby;
   assert.equal(created.mapId, mapId); assert.equal(created.eventId, event.id); assert.equal(created.players.length, 1);
   if (raceProof) {
-    const meta = getMap(mapId);
-    const response = await fetch(new URL(meta.dataUrl, base + '/'), { signal: AbortSignal.timeout(15000) });
-    assert.equal(response.status, 200);
-    const resolved = resolveMap(meta, await response.json());
-    assert.equal(resolved.track.version, map.track.version, 'Deployed geometry must match the server track');
     const { c: b, hello: guest } = await connect('Deployment smoke guest');
     b.send({ type: 'join', code: created.code }); await b.next(m => m.type === 'lobby' && m.lobby.players.length === 2);
     for (const c of [a, b]) c.send({ type: 'ready', ready: true, version: map.track.version });
@@ -91,8 +89,7 @@ try {
     const running = (await a.next(m => m.type === 'lobby' && m.lobby.status === 'race')).lobby;
     const other = (await b.next(m => m.type === 'lobby' && m.lobby.status === 'race')).lobby;
     assert.equal(running.raceId, other.raceId); assert.equal(running.startAt, other.startAt);
-    const definition = resolved.definitions.get(event.id);
-    assert.ok(definition);
+    assert.equal(running.eventId, definition.id, 'Started race must retain the verified Quick Race ID');
     for (const field of ['s0', 's1', 'dir', 'len']) assert.equal(running.event[field], definition[field], `Server ${field} must match resolved event`);
     const drive = smokeDrive(running.event, resolved.geometry);
     let cursor = 0;
