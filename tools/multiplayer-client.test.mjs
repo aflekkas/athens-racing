@@ -189,3 +189,18 @@ test('race result heading, finish seconds, DNF rows and ordering stay unchanged'
   assert.equal(title, 'RACE RESULTS');
   assert.deepEqual(rows, ['1. Fast · 65.13 s', '2. Slow · 72.34 s', 'DNF · Wreck · WRECKED']);
 });
+
+test('objective results subtitle says round complete and avoids repeating the event mode', () => {
+  const m = Object.create(Multiplayer.prototype);
+  Object.assign(m, { id: 'guest', maps: [{ id: 'riviera', name: 'ATHENS RIVIERA' }],
+    lobby: { host: 'host', status: 'results', mapId: 'riviera', mode: 'taxi', event: { name: 'TAXI', type: 'taxi' }, players: [] } });
+  assert.equal(m.roomHelpText(), 'Round complete. The host can prepare a rematch. ATHENS RIVIERA · TAXI');
+  m.lobby.mode = 'getaway'; m.lobby.event = { name: 'Getaway', type: 'getaway' };
+  assert.equal(m.roomHelpText(), 'Round complete. The host can prepare a rematch. ATHENS RIVIERA · Getaway');
+  m.lobby.event.name = 'BANK PICKUP';
+  assert.equal(m.roomHelpText(), 'Round complete. The host can prepare a rematch. ATHENS RIVIERA · BANK PICKUP · GETAWAY');
+  m.lobby.host = m.id;
+  assert.equal(m.roomHelpText(), 'Round complete. The host can prepare a rematch.');
+  m.lobby.host = 'host'; m.lobby.mode = 'sprint'; m.lobby.event = { name: 'COAST RUN', type: 'sprint' };
+  assert.equal(m.roomHelpText(), 'Race complete. The host can prepare a rematch. ATHENS RIVIERA · COAST RUN · SPRINT');
+});

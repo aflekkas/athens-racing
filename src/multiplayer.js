@@ -331,7 +331,7 @@ export class Multiplayer {
   renderRoom() {
     const l = this.lobby, me = this.me, host = l.host === this.id; this.$('mp-browser').hidden = true; this.$('mp-room').hidden = false;
     this.$('mp-room-name').textContent = l.name; this.$('mp-room-code').textContent = l.code;
-    this.$('mp-room-help').textContent = (l.status === 'waiting' ? 'Get ready. The host starts when at least two drivers are ready.' : l.status === 'results' ? 'Race complete. The host can prepare a rematch.' : me?.finish !== null ? 'You finished. Waiting for the other drivers; the race ends after ten minutes.' : 'Race in progress. Close this panel to keep driving.') + (!host ? ` ${this.maps.find(m => m.id === (l.mapId || 'riviera'))?.name || ''} · ${l.event?.name || ''} · ${String(l.mode || l.event?.type || 'sprint').toUpperCase()}` : '');
+    this.$('mp-room-help').textContent = this.roomHelpText();
     this.status(this.preparing ? 'Loading the lobby track…' : this.versionMismatch ? 'The lobby track was updated. Reload the game to update.' : this.failedMap === (l.mapId || 'riviera') ? 'Could not load the lobby track. Choose another track or leave the lobby.' : `Connected · ${Math.round(this.latency)} ms · ${l.players.length}/8 drivers`);
     // Guests keep choosing cars while the lobby track loads (ready gating
     // stays server-side), and an open dropdown is never snapped back by a
@@ -361,6 +361,13 @@ export class Multiplayer {
     this.$('mp-tolobby').hidden = !host || l.status === 'waiting';
     this.renderResults();
     this.board.hidden = l.status === 'waiting';
+  }
+  roomHelpText() {
+    const l = this.lobby, mode = String(l.mode || l.event?.type || 'sprint').toUpperCase(), eventName = l.event?.name || '';
+    const message = l.status === 'waiting' ? 'Get ready. The host starts when at least two drivers are ready.' : l.status === 'results' ? `${this.objectiveMode ? 'Round' : 'Race'} complete. The host can prepare a rematch.` : this.me?.finish !== null ? 'You finished. Waiting for the other drivers; the race ends after ten minutes.' : 'Race in progress. Close this panel to keep driving.';
+    const details = [this.maps.find(m => m.id === (l.mapId || 'riviera'))?.name, eventName];
+    if (eventName.trim().toUpperCase() !== mode) details.push(mode);
+    return message + (l.host !== this.id ? ` ${details.filter(Boolean).join(' · ')}` : '');
   }
   renderResults() {
     const l = this.lobby, results = this.$('mp-results'); results.replaceChildren();
