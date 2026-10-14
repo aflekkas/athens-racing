@@ -301,7 +301,7 @@ export class Multiplayer {
         if (m.world) { this.lobby.world = m.world; this.hooks.world?.(m.world.state, Math.max(0, (this.now() - m.world.at) / 1000)); }
         for (const p of m.players || []) { const member = this.lobby.players.find(x => x.id === p.id); if (member) { member.finish = p.finish; member.dnf = p.dnf; } }
         const mine = m.players?.find(p => p.id === this.id); if (mine?.checkpoint) this.applyCheckpoint(mine.checkpoint);
-        receiveRemoteSnapshot(this.peers, m, { id: this.id, members: this.lobby.players });
+        receiveRemoteSnapshot(this.peers, m, { id: this.id, members: this.lobby.players, networkDelay: this.latency / 2 });
         // Websocket messages keep race state current even when background tabs stop animation frames.
         this.advanceClock();
         if (document.hidden && this.worldReady) this.hooks.remote(this.peers, 0.1);

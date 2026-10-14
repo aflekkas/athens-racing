@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createGameCore } from './core.mjs';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { socketAttachment } from '../worker/socket-attachment.mjs';
+import { normalizeDriverAppearance } from '../src/driver-appearance-data.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { resolvePlayerContacts, containOnlineVehicle } from '../src/multiplayer-contact.js';
 const pose = (s, u = 0) => ({ x: s, y: 0, z: u, s, u, yaw: -Math.PI/2, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
@@ -47,13 +48,17 @@ test('ordered checkpoint standings are identical on all clients and ignore local
  const publicLobby=core.publicLobby(l);assert.equal(publicLobby.traffic,false);assert.equal(publicLobby.config.traffic,0);
  for(const ws of [a,b,c]) { const mp=Object.assign(Object.create(Multiplayer.prototype),{id:core.clientData(ws).id,lobby:publicLobby,peers:new Map()});assert.deepEqual(mp.ranking(9999).map(p=>p.id),packets[0].standings.map(p=>p.id)); }
 });
-test('attachment remains under 2KiB with full telemetry and accumulated enforcement; restores latest checkpoint cursor',t=>{
+test('attachment stays within a conservative 2KiB budget with full telemetry; restores latest checkpoint cursor',t=>{
  const {core,clients:[a,b],send,lobby:l,opts,advance}=setup(t);send(b,{type:'join',code:l.code});send(a,{type:'start',force:true});advance(1000);
  const saved=structuredClone(core.exportState());
  send(a,{type:'state',raceId:l.raceId,state:{...pose(90),sampleTime:100.123456789,motionEpoch:2}});
- const client=core.clientData(a);client.enforcement={claims:Array.from({length:100},(_,i)=>['site'+i,{at:10000+i}])};client.state.tyreTelemetry={front:{utilization:.123456789123456},rear:{utilization:.456789123456789}};
+ const client=core.clientData(a);
+ const look=normalizeDriverAppearance({presetId:'vasilis_pefaltes',accessory:'sprayCan',heightCm:209,hairVolume:1.789});
+ client.driver=look;client.state.driver=look;
+ Object.assign(client.state,{vLong:20.123456789123456,vLat:.123456789123456,steer:.123456789123456,rpm:3000.123456789123,engHealth:.987654321987654,engineDamage:.123456789123456,coolantTemp:104.123456789123456,impactMechanical:.123456789123456,maxImpactEbs:12.123456789123456,mechanicalOverrevRpm:7891.123456789123,engineStalled:false,drivetrainBroken:false,engineFailureReason:'mechanical_overrev',damage:{front:.123456789123456,rear:.123456789123456,left:.123456789123456,right:.123456789123456}});
+ const axle={utilization:.123456789123456,slipDemand:1.123456789123456,saturated:false,sliding:false,contact:true};client.state.tyreTelemetry={front:axle,rear:axle,understeer:false};
  const old={...client};delete old.course;
- assert.ok(new TextEncoder().encode(JSON.stringify(old)).length>2048,'reproduces old attachment overflow');
+ assert.ok(new TextEncoder().encode(JSON.stringify(old)).length>2048,'reproduces a telemetry-heavy legacy attachment');
  const bounded=socketAttachment(client);assert.ok(new TextEncoder().encode(JSON.stringify(bounded)).length<2048);
  const savedClient=saved.sessions.find(c=>c.id===client.id);Object.assign(savedClient,bounded);
  const restored=createGameCore(opts);restored.restore(saved,new Map([...core.clients].map(c=>[c.token,c.ws])));

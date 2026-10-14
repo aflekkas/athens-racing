@@ -146,6 +146,6 @@ export class GameArena extends DurableObject {
     try { ws.close(code === 1005 ? 1000 : code, reason); } catch {}
     await this.persist();
   }
-  async webSocketError(ws) { this.core.disconnect(ws); try { ws.close(1011, 'WebSocket error'); } catch {} await this.persist(); }
+  async webSocketError(ws, error) { console.error('Multiplayer socket error', { id: this.core.clientData(ws)?.id, message: error?.message || String(error || 'WebSocket error') }); this.core.disconnect(ws); try { ws.close(1011, 'WebSocket error'); } catch {} await this.persist(); }
   async alarm() { this.core.tick(); await this.persist(); }
 }

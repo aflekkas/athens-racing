@@ -215,3 +215,11 @@ test('a frozen playhead stays at the prediction horizon and resumes without a 1.
   const resumed = timeline.sample(1032); close(Math.abs(resumed.z - frozen.z), 20 * .016, .0001);
   assert.equal(timeline.resetCount, 0); assert.equal(timeline.mode, 'interpolate');
 });
+
+
+test('bounded half-RTT compensation predicts toward current time without changing authoritative state', () => {
+ const peers=new Map();
+ for(const time of [0,100])receiveRemoteSnapshot(peers,{now:100000+time,players:[{id:'p',stateAt:100000+time,state:state(time,{sampleTime:time,motionEpoch:1})}]},{receivedAt:time+150,networkDelay:50});
+ const peer=peers.get('p'),p=peer.timeline.sample(300);
+ close(p.s,3.6);close(peer.state.s,2);assert.ok(peer.timeline.delay<=100);
+});

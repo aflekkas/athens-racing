@@ -9,14 +9,14 @@ const samePose = (a, b) => [...fields, 'yaw', 'gear', 'reverse'].every(k => a[k]
 
 export class RemoteTimeline {
   constructor() { this.samples = []; this.delay = 40; this.jitter = 0; this.cadence = 200; this.offset = null; this.playhead = null; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; }
-  push(state, { receivedAt, serverNow, stateAt, car, stopped = false } = {}) {
+  push(state, { receivedAt, serverNow, stateAt, car, stopped = false, networkDelay = 0 } = {}) {
     if (!valid(state)) return false;
     const previous = this.samples.at(-1);
     // The receipt stamp is per player: another driver's packet must not rejuvenate a held pose.
     const receipt = Number.isFinite(stateAt) ? stateAt : null;
     const source = Number.isFinite(state.sampleTime) ? state.sampleTime : receipt ?? serverNow ?? receivedAt;
     const age = receipt !== null && Number.isFinite(serverNow) ? clamp(serverNow - receipt + (state.sampleAge || 0), 0, 10000) : 0;
-    const local = receivedAt - age;
+    const local = receivedAt - age - (Number.isFinite(networkDelay) ? clamp(networkDelay, 0, 150) : 0);
     const restart = previous && receipt !== null && receipt > previous.receipt && source < previous.time - 500;
     if (previous && !restart && (source <= previous.time || (receipt === null && !Number.isFinite(state.sampleTime) && samePose(state, previous.state)))) return false;
     const gap = previous ? (source - previous.time) / 1000 : 0;
@@ -99,13 +99,13 @@ export class RemoteTimeline {
   }
 }
 
-export function receiveRemoteSnapshot(peers, message, { id, members = [], receivedAt = performance.now() } = {}) {
+export function receiveRemoteSnapshot(peers, message, { id, members = [], receivedAt = performance.now(), networkDelay = 0 } = {}) {
   for (const p of message.players) {
     if (p.id === id || !valid(p.state)) continue;
     const previous = peers.get(p.id), member = members.find(m => m.id === p.id);
     const timeline = previous?.timeline || new RemoteTimeline();
     const stopped = p.finish != null || !!p.dnf;
-    const accepted = timeline.push(p.state, { receivedAt, serverNow: message.now, stateAt: p.stateAt, car: member?.car, stopped });
+    const accepted = timeline.push(p.state, { receivedAt, serverNow: message.now, stateAt: p.stateAt, car: member?.car, stopped, networkDelay });
     // Keep the newest authoritative state separate from the delayed rendering pose.
     if (accepted || !previous) peers.set(p.id, { ...p, at: receivedAt, timeline });
     else { previous.finish = p.finish; previous.dnf = p.dnf; }

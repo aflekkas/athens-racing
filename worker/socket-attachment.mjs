@@ -1,7 +1,7 @@
 // Arena storage owns full course state. Socket attachments only need
 // bounded connection data for token lookup and the no-arena recovery fallback.
 export function socketAttachment(data) {
-  // serializeAttachment has a hard 2048-byte limit. Enforcement claims,
+  // Keep a conservative 2KiB budget within the 16KiB attachment limit. Enforcement claims,
   // recovery caches, courses and long numeric telemetry grow during a race.
   const keys = ['id', 'token', 'protocol', 'lobbyCode', 'stateAt', 'messages', 'window', 'finish', 'dnf', 'loaded'];
   const connection = Object.fromEntries(keys.filter(k => data[k] !== undefined).map(k => [k, data[k]]));

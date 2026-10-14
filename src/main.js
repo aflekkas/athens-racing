@@ -2082,7 +2082,7 @@ const multiplayer = new Multiplayer(CARS, {
     if (!multiplayer.loaded) return;
     if (!resumeState) { applyDriving(); }
     beginCameraBlend();
-    window.__flow?.prepareEvent({ ...lobby.event, id: lobby.eventId, traffic: 0, police: lobby.config.police === true, rules: { ...lobby.event.rules, police: lobby.config.police === true }, conditions: { time: lobby.config.time, weather: lobby.config.weather } });
+    window.__flow?.prepareEvent({ ...lobby.event, id: lobby.eventId, from: lobby.event.s0, to: lobby.event.s1, traffic: 0, police: lobby.config.police === true, rules: { ...lobby.event.rules, police: lobby.config.police === true }, conditions: { time: lobby.config.time, weather: lobby.config.weather } });
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));
     configureWorldLife({ type: lobby.event?.type, conditions: { time: lobby.config.time, weather: lobby.config.weather } }, G.baseCond || window.__conditions());
     if (lobby.world?.raceId === lobby.raceId && lobby.world.generation === lobby.generation) receiveWorldLife(lobby.world.state, Math.max(0, (multiplayer.now() - lobby.world.at) / 1000));
