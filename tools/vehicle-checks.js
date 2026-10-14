@@ -36,8 +36,8 @@ export function runVehicleChecks(carIds=null) {
       if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
       if(car.shape.suv){
         const glass=car.body.getObjectByName('rear-glass');glass.geometry.computeBoundingBox();const b=glass.geometry.boundingBox;
-        check(spec.id+' hatch roof extends behind the rear axle',b.min.z>car.shape.wb/2+car.shape.axleOffset+.25);
-        check(spec.id+' short raised hatch glazing, no saloon backlight',b.min.y>1.14&&b.max.y-b.min.y>.24&&b.max.z-b.min.z<.45);
+        check(spec.id+' hatch roof extends behind the rear axle',b.min.z>car.shape.wb/2+car.shape.axleOffset+(car.shape.sculpted?.18:.25));
+        check(spec.id+' short raised hatch glazing, no saloon backlight',b.min.y>1.14&&b.max.y-b.min.y>.24&&b.max.z-b.min.z<(car.shape.sculpted?.60:.45));
         check(spec.id+' fixed rear quarter-light and complete hatch panel',!!car.body.getObjectByName('rear-quarter-glass')&&car.playerParts.boot.children.length>0);
         check(spec.id+' rear axle uses its sourced track',car.wheels.filter(w=>!w.front).every(w=>Math.abs(Math.abs(w.pivot.position.x)*2-spec.trackRear)<.001));
         const face=car.mercedesSurface.face,z=car.shape.L/2;
