@@ -1,3 +1,4 @@
+import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
 // TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
 // World built from OpenStreetMap data (see tools/). Boots straight into a countdown, no click needed.
@@ -1264,10 +1265,7 @@ function handleEvents(events) {
 const _fr = {}, _av = new THREE.Vector3(), _aw = new THREE.Vector3(), _ar = new THREE.Vector3(), _ap = new THREE.Vector3();
 const audioListener = { x: 0, z: 0, vx: 0, vz: 0, ready: false, camera: null };
 function listenerRel(x, y, z, vx, vz) {
-  const cp = camera.position, dx = x - cp.x, dz = z - cp.z, d = Math.hypot(dx, dz, (y - cp.y) * 0.5);
-  const rvx = vx - audioListener.vx, rvz = vz - audioListener.vz;
-  _ar.set(1, 0, 0).applyQuaternion(camera.quaternion);
-  return { d, pan: (dx * _ar.x + dz * _ar.z) / Math.max(3, d), vr: -(dx * rvx + dz * rvz) / Math.max(1, d) };
+  return cameraRelativeSource(camera, audioListener, x, y, z, vx, vz);
 }
 function handleTrafficSounds() {
   for (const e of traffic.sounds) {
@@ -1290,6 +1288,7 @@ function updateAudio(dt) {
     if (a.ped?.active && Math.hypot(a.ped.x - player.veh.x, a.ped.z - player.veh.z) < 7) pedestrianVoice(a.ped, 'artist');
   }
   if (!audio.ctx) return;
+  syncAudioListener(audio.ctx, camera);
   const pv = player.veh, rv = rival.veh;
   const cp = camera.position, al = audioListener, moved = Math.hypot(cp.x - al.x, cp.z - al.z);
   const continuous = al.ready && al.camera === G.cam && dt > 0 && dt < 0.2 && moved < 15;
@@ -1298,8 +1297,8 @@ function updateAudio(dt) {
   al.x = cp.x; al.z = cp.z; al.ready = true; al.camera = G.cam;
   // where is the sea? (the shore side relative to the way the car is pointing)
   const seaR = route.seaR(pv.s), seaL = route.seaL(pv.s), seaD = Math.min(seaR, seaL);
-  const ry = Math.atan2(-route.lin(route.TX, pv.s), -route.lin(route.TZ, pv.s));
-  const seaPan = (seaR <= seaL ? 1 : -1) * 0.75 * Math.cos(pv.yaw - ry);
+  const shoreFrame = route.frame(pv.s, _fr);
+  const seaPan = (seaR <= seaL ? 1 : -1) * 0.75 * cameraDirectionPan(camera, shoreFrame.rx, 0, shoreFrame.rz);
   const zone = traffic.zone(pv.s);
   // nearby traffic, relative to the listener (camera): distance, pan, closing speed for doppler
   const tl = [];

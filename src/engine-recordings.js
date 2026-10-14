@@ -183,8 +183,8 @@ export class RecordedEngineVoice {
       this.gains[i].gain.setTargetAtTime(weights[i], now, .06);
     });
     const rn = Math.min(1, r / this.spec.redline);
-    this.filter.frequency.setTargetAtTime((this.spec.engine === 'diesel' ? 2500 : 4800) + on * 6500 + rn * 1800, now, .07);
-    const amplitude = level * this.level * (.48 + .35 * on + .17 * rn);
+    this.filter.frequency.setTargetAtTime((this.spec.engine === 'diesel' ? 1700 : 2200) + on * 8300 + rn * (700 + on * 1100), now, .07);
+    const amplitude = level * this.level * (.37 + .46 * on + .17 * rn);
     this.out.gain.setTargetAtTime(amplitude, now, .055);
     this.limiterGain.gain.setTargetAtTime(limiter ? -amplitude * .35 : 0, now, .015);
   }

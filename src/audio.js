@@ -50,7 +50,7 @@ function renderEngineCycle(ctx, E, refRpm, onLoad, cycles, seed) {
   const ti = nc / E.cyl;
   const L1 = Math.min(N, Math.ceil(E.t1 * 7 * sr) + Math.ceil(ti));
   const w1 = 2 * Math.PI * E.f1 / sr, w2 = 2 * Math.PI * E.f2 / sr;
-  const thumpW = Math.max(8, ti * (onLoad ? 0.55 : 0.75));
+  const thumpW = Math.max(8, Math.min(ti * .70, sr * (onLoad ? .0028 : .0042)));
   let hp = 0;
   for (let c = 0; c < cycles; c++) {
     for (let k = 0; k < E.cyl; k++) {
@@ -60,9 +60,12 @@ function renderEngineCycle(ctx, E, refRpm, onLoad, cycles, seed) {
       const bAmp = E.b * (onLoad ? 1 : 0.35), th = E.thump * (onLoad ? 1 : 0.6);
       for (let n = 0; n < L1; n++) {
         let v = 0;
-        if (n < thumpW) v += th * Math.sin(Math.PI * n / thumpW) * 0.8;
+        if (n < thumpW) { const t=n/thumpW; v += th * (Math.exp(-t*6)-Math.exp(-t*24)) * 2.6; }
         v += Math.exp(-n / (E.t1 * sr)) * Math.sin(w1 * n);
         v += bAmp * Math.exp(-n / (E.t2 * sr)) * Math.sin(w2 * n + 0.6);
+        // Header reflection is a quieter delayed pressure wave; bank lengths differ slightly.
+        const reflected=n-Math.round(sr*(.0011+(k%2)*.00017));
+        if(reflected>0)v+=.22*Math.exp(-reflected/(E.t1*sr*.65))*Math.sin(w1*reflected*1.37);
         out[(t0 + n) % N] += v * amp;
       }
       // exhaust rasp: a burst of noise riding each pulse (high-passed)
@@ -100,12 +103,13 @@ export class EngineVoice {
     const E = bank.E;
     this.sum = ctx.createGain();
     this.src = []; this.gOn = []; this.gOff = [];
-    const t = ctx.currentTime;
+    const t = ctx.currentTime, crankPhase = Math.random();
+    this.wander = rng32(413 + E.cyl); this.nextWander = 0; this.rpmWander = 0;
     for (let i = 0; i < bank.pts.length; i++) {
       for (const [list, gl, b] of [[this.src, this.gOn, bank.on[i]], [this.src, this.gOff, bank.off[i]]]) {
         const s = ctx.createBufferSource(); s.buffer = b.buf; s.loop = true; s.playbackRate.value = 1;
         const g = ctx.createGain(); g.gain.value = 0;
-        s.connect(g); g.connect(this.sum); s.start(t, Math.random() * b.buf.duration);
+        s.connect(g); g.connect(this.sum); s.start(t, crankPhase * 120 / b.ref);
         list.push(s); gl.push(g);
       }
     }
@@ -128,7 +132,8 @@ export class EngineVoice {
   set(rpm, load, level, now, dop = 1, limiter = false, tc = 0.03) {
     if (this.stopped) return;
     const b = this.bank, P = b.pts, E = b.E;
-    const r = Math.max(P[0] * 0.7, rpm);
+    if(now >= this.nextWander){this.rpmWander=(this.wander()*2-1)*E.idleWobble;this.nextWander=now+.08+this.wander()*.14;}
+    const r = Math.max(P[0] * 0.7, rpm) * (1 + this.rpmWander * Math.max(0,1-rpm/(P[0]*2)));
     let i = 0; while (i < P.length - 2 && r > P[i + 1]) i++;
     let x = Math.log(r / P[i]) / Math.log(P[i + 1] / P[i]); x = Math.max(0, Math.min(1, x));
     const wA = Math.cos(x * Math.PI / 2), wB = Math.sin(x * Math.PI / 2);
@@ -140,11 +145,11 @@ export class EngineVoice {
       this.src[k * 2].playbackRate.setTargetAtTime(rate, now, tc);
       this.src[k * 2 + 1].playbackRate.setTargetAtTime(rate, now, tc);
       this.gOn[k].gain.setTargetAtTime(w * gOn, now, 0.03);
-      this.gOff[k].gain.setTargetAtTime(w * gOff * 0.9, now, 0.03);
+      this.gOff[k].gain.setTargetAtTime(w * gOff * 0.60, now, 0.03);
     }
     const rn = Math.min(1.1, rpm / (P[3] / 0.88));
     this.lp.frequency.setTargetAtTime(E.lp[0] + (E.lp[1] - E.lp[0]) * Math.min(1, rn * (0.5 + 0.5 * on)), now, 0.04);
-    this.pre.gain.setTargetAtTime(0.9 + on * 0.6, now, 0.05);
+    this.pre.gain.setTargetAtTime(0.78 + on * 0.50, now, 0.05);
     this.out.gain.setTargetAtTime(level * this.level * 0.3 * (0.4 + 0.6 * rn) * (0.62 + 0.38 * on), now, 0.03);
     this.lfoG.gain.setTargetAtTime(limiter ? -0.55 : 0, now, 0.01);
   }
@@ -262,10 +267,12 @@ export class TyreVoice {
     for (let i = 0; i < seam; i++) data[n - seam + i] = data[n - seam + i] * (1 - i / seam) + data[i] * (i / seam);
     this.noise = ctx.createBufferSource(); this.noise.buffer = noise; this.noise.loop = true; this.noise.loopStart = seam / ctx.sampleRate;
     this.noise.start(0, rand() * noise.duration);
-    this.pan = ctx.createStereoPanner(); this.pan.pan.value = (index % 2 ? 1 : -1) * (index < 2 ? 0.58 : 0.38);
-    // Rear axle is slightly darker and nearer the centre; preserve axle identity in headphones.
-    this.axle = filter('lowpass', index < 2 ? 9500 : 6200); chain(this.axle, this.pan, dest);
-    this.roll = gain(); this.rollLP = filter('lowpass', 400); chain(this.noise, this.rollLP, this.roll, this.axle);
+    // Player contact patches stay centred even when one loaded wheel dominates.
+    // Axles retain independent texture and filtering, without head-fixed left/right bias.
+    this.axle = filter('lowpass', index < 2 ? 9500 : 6200);
+    // Preserve the removed equal-power panner's centre gain (no 3 dB loudness jump).
+    this.center = gain(Math.SQRT1_2); chain(this.axle, this.center, dest);
+    this.roll = gain(); this.rollLP = filter('lowpass', 400); this.cavity = filter('peaking', 205, 1.1); this.cavity.gain.value = 2; chain(this.noise, this.rollLP, this.cavity, this.roll, this.axle);
     this.scrubLP = filter('lowpass', 1200, 0.7); this.scrubLP.connect(this.axle);
     this.scrub = gain(); this.scrubBP = filter('bandpass', 580, 1.8); chain(this.noise, this.scrubBP, this.scrub, this.scrubLP);
     this.howl = gain(); this.howlBP = filter('bandpass', 460, 3); chain(this.noise, this.howlBP, this.howl, this.scrubLP);
@@ -300,6 +307,8 @@ export class TyreVoice {
       this.recording.playbackRate.setTargetAtTime(clampAudio(p.pitch / 850, 0.7, 1.65) * (0.97 + this.index * 0.018), now, 0.07);
     }
     this.rollLP.frequency.setTargetAtTime(p.rollHz, now, 0.09);
+    this.cavity.frequency.setTargetAtTime(180 + Math.min(70,Math.abs(speed)*1.5),now,.12);
+    this.cavity.gain.setTargetAtTime(/asphalt|concrete/.test(surface)?2:0,now,.12);
     this.scrubBP.frequency.setTargetAtTime(360 + Math.min(1.4, p.slip) * 180 + Math.abs(speed) * 3, now, 0.06);
     // Renew random targets at 4–12 Hz; no oscillator LFO, repeated grain clock or fixed vibrato.
     if (now >= this.nextWaver) {
@@ -350,8 +359,8 @@ export class Audio {
     this.uiBus = this.mix.buses.ui;
     this.engineLP = ctx.createBiquadFilter(); this.engineLP.type = 'lowpass'; this.engineLP.frequency.value = 16000;
     // Preserve engine feedback while the master/headroom stages and surrounding voices become quieter.
-    this.eng = ctx.createGain(); this.eng.gain.value = PLAYER_ENGINE_LEVEL; this.eng.connect(this.engineLP); this.engineLP.connect(this.mix.buses.engine);
-    this.chassis = ctx.createGain(); this.chassis.gain.value = 0.7; this.chassis.connect(this.mix.buses.tyres);
+    this.eng = ctx.createGain(); this.eng.channelCount = 1; this.eng.channelCountMode = 'explicit'; this.eng.gain.value = PLAYER_ENGINE_LEVEL; this.eng.connect(this.engineLP); this.engineLP.connect(this.mix.buses.engine);
+    this.chassis = ctx.createGain(); this.chassis.channelCount = 1; this.chassis.channelCountMode = 'explicit'; this.chassis.gain.value = 0.7; this.chassis.connect(this.mix.buses.tyres);
     this.cabinLP = ctx.createBiquadFilter(); this.cabinLP.type = 'lowpass'; this.cabinLP.frequency.value = 14000; this.cabinLP.Q.value = 0.5;
     // Each external bus has its own cabin filter, preserving independent volume controls.
     this.ext = ctx.createGain(); this.ext.gain.value = 1; this.ext.connect(this.cabinLP); this.cabinLP.connect(this.mix.buses.traffic);
@@ -394,6 +403,7 @@ export class Audio {
     x.intake = loopSrc(this.pink); x.intakeBP = filt('bandpass', 500, 0.9); x.intakeG = gain(); chain(x.intake, x.intakeBP, x.intakeG, this.eng);
     x.turbo = osc('sine', 2500); x.turbo2 = osc('sine', 5000); x.turboG = gain(); x.turbo2G = gain(0.3);
     x.turbo.connect(x.turboG); chain(x.turbo2, x.turbo2G, x.turboG); x.turboG.connect(this.eng);
+    x.compressorAir = loopSrc(this.white); x.compressorBP = filt('bandpass', 3200, .8); x.compressorG = gain(); chain(x.compressorAir, x.compressorBP, x.compressorG, this.eng);
     x.whine = osc('sine', 600); x.whineG = gain(); chain(x.whine, x.whineG, this.eng);
     x.nitro = loopSrc(this.white); x.nitroBP = filt('bandpass', 2400, 0.7); x.nitroG = gain(); chain(x.nitro, x.nitroBP, x.nitroG, this.eng);
     this.x = x;
@@ -595,21 +605,26 @@ export class Audio {
     const boost = p.boost || 0, tb = (E === ENGINE_SOUND.turbo3 || E === ENGINE_SOUND.turbo4 || E === ENGINE_SOUND.turbo6) ? 1 : E === ENGINE_SOUND.turbo5 ? 1.25 : E === ENGINE_SOUND.diesel ? 0.6 : 0;
     x.turbo.frequency.setTargetAtTime(1800 + boost * 5200 * (0.6 + 0.4 * rn), now, 0.06);
     x.turbo2.frequency.setTargetAtTime((1800 + boost * 5200 * (0.6 + 0.4 * rn)) * 2.01, now, 0.06);
-    x.turboG.gain.setTargetAtTime(mute * tb * boost * boost * 0.011, now, 0.05);
+    x.turboG.gain.setTargetAtTime(mute * tb * boost * boost * 0.006, now, 0.05);
+    x.compressorBP.frequency.setTargetAtTime(1800 + boost * 3600, now, .10);
+    x.compressorG.gain.setTargetAtTime(tb * boost * boost * .013 * startLevel, now, .08);
     // blow-off valve / wastegate flutter when the throttle snaps shut on boost
     const lift = (this.lastLoad ?? 0) > 0.3 && load < 0.05;
     if (lift && tb && boost > 0.35) {
       if (E === ENGINE_SOUND.turbo5) this.flutter(boost); else this.noise({ dur: 0.45, f: 2400, sweep: 900, type: 'bandpass', q: 0.7, gain: 0.06 * boost * tb, attack: 0.01, bus: this.eng });
     }
     // overrun: burble and pops from hot exhausts after a lift at high rpm, and on the upshift ignition cut
-    if (load < -0.05 && rn > 0.42 && !p.muted) {
-      this.popAcc = (this.popAcc || 0) + p.dt * E.pops * (rn - 0.35) * 9 * (this.lastLift < 2 ? 1 : 0.25);
+    const crackle = E.knock ? 0 : E.pops;
+    if (lift && rn > .42) this.overrunUntil = now + .7 + crackle * .9;
+    if (load < -0.05 && rn > 0.42 && !p.muted && now < (this.overrunUntil || 0)) {
+      this.popAcc = (this.popAcc || 0) + Math.min(.1,p.dt || 0) * crackle * (rn - 0.35) * 9 * (this.lastLift < 2 ? 1 : 0.25);
       while (this.popAcc > 1) { this.popAcc -= 1 + Math.random(); this.pop(0.35 + Math.random() * 0.5 * rn, Math.random() * 0.05); }
     }
+    else this.popAcc = 0;
     this.lastLift = load < -0.05 ? (this.lastLift || 0) + p.dt : 0;
-    if (p.shift > 0 && (this.lastLoad ?? 0) > 0.6 && rn > 0.62) { this.clunk(0.6); if (Math.random() < E.pops) this.pop(0.9 + Math.random() * 0.4, 0.015); }
+    if (p.shift > 0 && (this.lastLoad ?? 0) > 0.6 && rn > 0.62) { this.clunk(0.6); if (Math.random() < crackle) this.pop(0.9 + Math.random() * 0.4, 0.015); }
     else if (p.shift > 0) this.clunk(0.4);
-    else if (p.shift < 0) { this.clunk(0.3); if (rn > 0.5 && Math.random() < E.pops * 0.8) this.pop(0.5, 0.12); }
+    else if (p.shift < 0) { this.clunk(0.3); if (rn > 0.5 && Math.random() < crackle * 0.8) this.pop(0.5, 0.12); }
     this.lastLoad = load;
     x.whine.frequency.setTargetAtTime(p.rpm / 60 * 7.3 / Math.max(0.6, (p.gearRatio || 1) * 0.35), now, 0.05);
     x.whineG.gain.setTargetAtTime(mute * E.whine * 0.012 * (0.3 + Math.abs(load)) * Math.min(1, v / 8), now, 0.08);
