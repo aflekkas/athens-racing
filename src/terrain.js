@@ -99,7 +99,7 @@ export function terrainMaterial({ farmland = false } = {}) {
  * Build terrain meshes. `corridorPts` is an array of [x,z,r] stamps marking the detailed area.
  * clampFn(x, z) -> max height allowed (keeps the ground under the road and pavements) or Infinity.
  */
-export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false } = {}) {
+export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, network = null } = {}) {
   const { GX, GZ, T, minX, minZ, H, C: CL } = terrain;
   const mat = terrainMaterial({ farmland });
   // ---------------------------------------------------------------- corridor mask (10 m vertices)
@@ -174,6 +174,12 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     }
   }
   if (location.search.includes('debug')) { let n = 0, mx = 0; for (let i = 0; i < rug.length; i++) if (rug[i] > 0) { n++; mx = Math.max(mx, rug[i]); } console.log('rugged cells', n, mx); }
+  // Surrounding roads use the actual DEM, without decorative cliff relief across their carriageways.
+  if (network) {
+    const source = Hc.slice();
+    for (let i = 0; i < source.length; i++) if (rug[i] > 0) source[i] = H0[i];
+    network.prepareTerrain(Hc, stamp, source);
+  }
   terrain.Hc = Hc;
 
   const cropGreen = C('#78864c'), cropDry = C('#b6ae72'), cropVerge = C('#929c5a');

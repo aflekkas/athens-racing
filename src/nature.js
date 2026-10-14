@@ -484,6 +484,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
 
   // free ground test: on land, not in a building, not on the road or pavement
   const onRoad = (x, z, pad = 1.2) => {
+    if (map.roadNetwork?.sample(x, z)) return true;
     const q = route.project(x, z, null);
     if (Math.abs(q.s - clamp(q.s, 0, route.length)) > 30) return false;
     const lim = route.edge(q.s) + ROAD.gutter + ROAD.sidewalk(route, q.s, Math.sign(q.u) || 1) + pad;
@@ -505,6 +506,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
       if (s % 48 === 18) { route.point(s, 0, pt); addPalm(pt.x, pt.y + 0.2, pt.z, rng.range(9, 12)); }
     }
     for (const side of [1, -1]) {
+      if (map.roadNetwork?.mouth(s, side, 2)) continue;
       const sea = side > 0 ? route.seaR(s) : route.seaL(s);
       const sw = ROAD.sidewalk(route, s, side);
       if (urb > 0.5) {
@@ -638,7 +640,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
   poleI.build(group); topI.build(group); strawI.build(group); beds.build(group);
 
   // ---- 7. side streets from OSM (asphalt and footpaths draped on the terrain)
-  buildSideStreets(data.sideRoads, group, heightC, route);
+  buildSideStreets(map.roadNetwork ? data.sideRoads.filter(r => r.f) : data.sideRoads, group, heightC, route);
 
   // ---- 8. kiosks (periptero) at the real OSM kiosk positions on the avenue
   for (const poi of data.pois) {

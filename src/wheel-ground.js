@@ -11,6 +11,10 @@ const smoothstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); retu
 const TYRE_HALF = 0.11; // half a tyre's width (m): the band either side of a kerb edge over which the load moves across
 
 export function wheelGround(route, road, a, si, ui, out = {}) {
+  if (a.network) {
+    out.step = a.networkStep || 0; out.plane = a.y - out.step; out.input = out.step;
+    out.paved = a.surf === 'asphalt' || a.surf === 'pavement'; return out;
+  }
   const sc = route.closed ? route.wrap(si) : clamp(si, 0, route.length), au = Math.abs(ui), side = ui >= 0 ? 1 : -1;
   // Circuit kerbs are rounded profiles already sampled by at(), not urban pavement steps. Paved runoffs can
   // have their own height, so only split the kerb surface from the circuit's banked plane.

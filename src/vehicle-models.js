@@ -64,7 +64,7 @@ function skin(car,d,M,low) {
   const p=car.body, arch=d.r+.06;
   // Actual open wheel wells: the lower edge follows the tyre envelope at both axles.
   for(const s of [-1,1]) {
-    surface(p,M.paint,(u,v)=>{const z=lerp(-d.L/2,d.L/2,u),w=widthAt(d,z);let y0=.19;for(const axle of [-d.wb/2,d.wb/2]){const dz=z-axle;if(Math.abs(dz)<arch)y0=Math.max(y0,d.r+Math.sqrt(arch*arch-dz*dz));}const y=lerp(y0,topAt(d,z),v);return [s*sideSkinX(d,z,y),y,z];},low?80:160,12,'body-side');
+    surface(p,M.paint,(u,v)=>{const z=lerp(-d.L/2,d.L/2,u),w=widthAt(d,z);let y0=.19;for(const axle of [-d.wb/2,d.wb/2]){const dz=z-axle;if(Math.abs(dz)<arch)y0=Math.max(y0,d.r+Math.sqrt(arch*arch-dz*dz));}const y=lerp(y0,topAt(d,z),v);return [s*sideSkinX(d,z,y),y,z];},low?64:160,12,'body-side');
     for(const z of [-d.wb/2,d.wb/2]) {
       const pts=[];for(let i=0;i<=32;i++){const a=Math.PI*i/32;const zz=z+Math.cos(a)*arch;const yy=d.r+Math.sin(a)*arch;pts.push([s*(sideSkinX(d,zz,yy)+.004),yy,zz]);}
       line(p,car.modelKind==='mini'||d.ev?M.black:M.paint,pts,car.modelKind==='mini'?.024:.012);
@@ -115,7 +115,7 @@ function deckY(d,x,z){
 function shapedSkin(car,d,M,low){
   const p=car.body,F=-d.L/2,R=d.L/2,ax=d.axleOffset||0,arch=d.r+.055;
   for(const s of [-1,1]){
-    surface(p,M.paint,(u,v)=>{const z=lerp(F,R,u);let bottom=.18;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=lerp(bottom,shoulderY(d,z),v);return [s*shapedWidth(d,z,y),y,z];},low?100:180,16,'body-side');
+    surface(p,M.paint,(u,v)=>{const z=lerp(F,R,u);let bottom=.18;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=lerp(bottom,shoulderY(d,z),v);return [s*shapedWidth(d,z,y),y,z];},low?64:180,16,'body-side');
     for(const a of [-d.wb/2+ax,d.wb/2+ax]){
       const pts=[];for(let i=0;i<=40;i++){const t=Math.PI*i/40,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);pts.push([s*(shapedWidth(d,z,y)+.001),y,z]);}line(p,M.paint,pts,d.profile==='yaris'?.018:.008);
       surface(p,M.black,(u,v)=>{const t=u*Math.PI,z=a+(arch-.006)*Math.cos(t),y=d.r+(arch-.006)*Math.sin(t);return[s*lerp(d.track/2-.12,shapedWidth(d,z,y)-.008,v),y,z];},40,4);
@@ -250,7 +250,7 @@ function cabinFittings(car,d,M,low){
 function wheels(car,d,M,low) {
   car.wheels=[];
   for(const front of [true,false])for(const s of [-1,1]) {
-    const pivot=new THREE.Group();pivot.name=`${front?'front':'rear'}-${s<0?'left':'right'}-steering`;pivot.position.set(s*d.track/2,d.r,(front?-1:1)*d.wb/2+(d.axleOffset||0));car.root.add(pivot);
+    const pivot=new THREE.Group();pivot.name=`${front?'front':'rear'}-${s<0?'left':'right'}-steering`;pivot.position.set(s*(d.mercedes&&!front?d.trackRear||d.track:d.track)/2,d.r,(front?-1:1)*d.wb/2+(d.axleOffset||0));car.root.add(pivot);
     const spin=new THREE.Group();spin.name='wheel-spin';pivot.add(spin);
     const width=(front?d.tyreF:d.tyreR)||(car.modelKind==='z4'?(front?.255:.275):.215), R=d.r, rim=d.rim;
     const points=[[rim,-width*.49],[R*.91,-width*.51],[R*.986,-width*.40],[R,-width*.29],[R,width*.29],[R*.986,width*.40],[R*.91,width*.51],[rim,width*.49]].map(([r,z])=>new THREE.Vector2(r,z));
@@ -432,7 +432,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   // dielectric specular gives the stronger grazing reflections without metallic glass.
   if(playerModel){M.glass.color.set('#c4d4cf');M.glass.opacity=d.open?.12:.18;M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
   if(ROAD_MODELS[kind]){M.glass.color.set('#829b9c');M.glass.opacity=.38;}
-  if(d.mercedes){M.glass.color.set('#71868f');M.glass.opacity=.55;}
+  if(d.mercedes){M.glass.color.set(d.suv?'#354e59':'#71868f');M.glass.opacity=d.suv?.42:.55;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
   if(!grouped){

@@ -102,10 +102,13 @@ export function driverCar(d, carIds, avoid) {
 
 // ------------------------------------------------------------------ the events
 export const TYPES = {
+  free: { label: 'FREE ROAM', short: 'FREE', desc: 'Drive anywhere in traffic. No clock, rivals or finish.' },
   sprint: { label: 'SPRINT', short: 'SPRINT', desc: 'Beat three locals to the line.' },
   timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock.' },
   pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
+/** Map-local untimed session; never part of the competitive event catalogue. */
+export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', free: true, from: 'start', to: 'finish', rivals: 0, traffic: 1, targets: {} });
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [
@@ -133,7 +136,7 @@ export function registerMapEvents(mapId, defs) {
   mapEvents.set(mapId, defs.map(def => ({ ...def, mapId })));
 }
 export function getEvents(mapId = 'riviera') { return mapEvents.get(mapId) || (mapId === 'riviera' ? EVENTS : []); }
-export const getEvent = (id) => (id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || [...mapEvents.values()].flat().find(e => e.id === id) || null);
+export const getEvent = (id) => (id?.startsWith('free:') ? freeRoam(id.slice(5)) : id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || [...mapEvents.values()].flat().find(e => e.id === id) || null);
 
 // ------------------------------------------------------------------ resolving a definition onto the route
 /** ctx = { route: {start, finish, length, from, to, curv?}, marks: [{id, name, sub, s}] } */
@@ -149,6 +152,7 @@ function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for
 
 export function resolve(def, ctx) {
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
+  if (def.type === 'free') return { s0: a.s, s1: b.s, dir: 1, len: ctx.route.length, fromName: a.name, toName: b.name, checkpoints: [], reverse: false, timeLimit: 0, targetTimes: null, free: true };
   if (ctx.route.closed) {
     const laps = Math.max(1, Math.min(99, Math.floor(def.laps || 1))), lapLength = ctx.route.length;
     const dir = def.reverse ? -1 : 1, len = lapLength * laps, checkpoints = [];
@@ -192,6 +196,7 @@ export function medalFor(def, res, r) {
 }
 /** human-readable targets: [['gold', 'WIN'], ...] (all times, or positions for sprints) */
 export function targetLabels(def, r, fmtTime) {
+  if (def.type === 'free') return [];
   const t = def.targets || {};
   if (def.type === 'pursuit' && def.rules?.goal === 'survive') return [['gold', 'SURVIVE ' + fmtTime(def.rules.timeLimit)]];
   return ['gold', 'silver', 'bronze'].map((m) => [m,
@@ -280,7 +285,7 @@ export class EventRun {
    */
   update(dt, p) {
     const out = [];
-    if (!this.started || this.done) return out;
+    if (!this.started || this.done || this.type === 'free') return out;
     this.t = p.t;
     const prog = this.progress(p.s);
     this.maxProg = Math.max(this.maxProg, prog);

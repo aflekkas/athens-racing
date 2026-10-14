@@ -176,6 +176,7 @@ export class Menu {
     if (el.dataset.kind && C.activate(el)) { this.h.ui?.(true); return; }
     if (el.dataset.mapId) { this.h.ui?.(true); selectMap(this, el.dataset.mapId); return; }
     if (el.dataset.ev) { this.h.ui?.(true); this.show('setup', { eventId: el.dataset.ev }, true); return; }
+    if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
     switch (a) {
@@ -184,6 +185,11 @@ export class Menu {
       case 'play': this.show('mode', {}, true); break;
       case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'events': this.filter = 'all'; this.show('maps', { filter: 'all' }, true); break;
+      case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); break;
+      case 'roamCar': this.h.freeRoamCar?.(); break;
+      case 'roamConditions': this.h.roamConditions?.(); break;
+      case 'roamLandmarks': this.h.roamLandmarks?.(); break;
+      case 'roamTow': this.h.roamTow?.(); break;
       case 'tt': this.filter = 'timetrial'; this.show('maps', { filter: 'timetrial', mode: 'tt' }, true); break;
       case 'carDetail': this.show('car', { ...this.data, index: +el.dataset.carIndex, detail: true }, true); break;
       case 'decalColor': this.data.decal = { ...this.data.decal, color: el.dataset.color }; this.refresh(); break;
@@ -221,6 +227,7 @@ export class Menu {
       else if (key === 'eventFilter') { this.filter = value; this.focus = null; this.render(); }
       return;
     }
+    if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
       if (key === 'graphics') { const g = this.h.graphicsControl; if (!g || g.disabled) return; if (g.value !== value) { g.value = value; setSetting('graphics', value); g.onchange?.(); } return; }
       setSetting(key, value);
@@ -253,7 +260,7 @@ export class Menu {
   r_mode() {
     const tile = (act, ic, title, desc) => `<div class="mi mode-tile" role="button" data-act="${act}"><span class="mode-tile__ico">${icon(ic)}</span><b class="mode-tile__title">${title}</b><span class="mode-tile__desc">${desc}</span></div>`;
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('events', 'trophy', 'EVENTS', 'Sprints, time trials and police pursuits. Medals for time and position.')}${tile('tt', 'timer', 'TIME TRIAL', 'You, the road and the clock. Race your best ghost.')}${tile('mp', 'users-three', 'MULTIPLAYER', 'Public lobbies or a private code. Up to eight drivers.')}</div>` });
+      body: `<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('events', 'trophy', 'EVENTS', 'Sprints, time trials and police pursuits. Medals for time and position.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('tt', 'timer', 'TIME TRIAL', 'You, the road and the clock. Race your best ghost.')}${tile('mp', 'users-three', 'MULTIPLAYER', 'Public lobbies or a private code. Up to eight drivers.')}</div>` });
   }
 
   // ---------------------------------------------------------------- maps
@@ -317,7 +324,7 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- race setup (event detail)
-  setupDef() { return this.data.eventId === 'quick' || !this.data.eventId ? this.eventsHere()[0] || QUICK_RACE : getEvent(this.data.eventId) || QUICK_RACE; }
+  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return this.data.eventId === 'quick' || !this.data.eventId ? this.eventsHere()[0] || QUICK_RACE : getEvent(this.data.eventId) || QUICK_RACE; }
   setupKey() { const d = this.setupDef(); return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {
@@ -327,6 +334,7 @@ export class Menu {
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users-three', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
         note: cur.rivals > PERF_RIVALS ? `${icon('warning')} MORE THAN ${PERF_RIVALS} RIVALS CAN LOWER THE FRAME RATE` : f.dflt === cur.rivals ? 'EVENT DEFAULT' : `EVENT DEFAULT: ${f.dflt}`, noteCls: cur.rivals > PERF_RIVALS ? 'warn' : '' }));
+      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE', icon: 'shield', value: String(cur.police), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['false', 'OFF'], ['true', 'ON']] }));
       if (f.key === 'traffic') rows.push(C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: cur.traffic, type: 'num', dflt: f.dflt, attrs: A, options: f.levels.map(([, v, l]) => [v, l]) }));
       if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'arrows-clockwise', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len)} IN TOTAL` }));
       if (f.key === 'reverse') rows.push(C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: String(cur.reverse), type: 'bool', dflt: 'false', attrs: A, options: [['false', closed ? 'CLOCKWISE' : 'FORWARD'], ['true', closed ? 'ANTI-CLOCKWISE' : 'REVERSE']] }));
@@ -396,8 +404,17 @@ export class Menu {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.online ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${d.online || !window.__replay?.photo ? '' : C.option({ icon: 'camera', title: 'PHOTO MODE', act: 'photo' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${d.online || !window.__replay?.photo ? '' : C.option({ icon: 'camera', title: 'PHOTO MODE', act: 'photo' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
+  }
+
+  // Mode owner handlers; UI owner can restyle these with the rest of the pause menu.
+  r_roamConditions() {
+    const c = window.__conditions(), attrs = { 'data-scope': 'roam' };
+    return C.screen({ title: 'TIME & WEATHER', body: C.select({ key: 'time', label: 'TIME OF DAY', value: c.time, attrs, options: TIMES }) + C.segmented({ key: 'weather', label: 'WEATHER', value: c.weather, attrs, options: WEATHERS }), hints: [['back', 'BACK']] });
+  }
+  r_roamLandmarks(d) {
+    return C.screen({ title: 'TELEPORT TO LANDMARK', body: d.landmarks.map(m => C.option({ icon: 'map-pin', title: esc(m.name), attrs: { 'data-landmark': m.id } })).join(''), hints: [['back', 'BACK']] });
   }
 
   // ---------------------------------------------------------------- results

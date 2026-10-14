@@ -197,3 +197,18 @@ test('a closed circuit never has police, whatever asks for them', () => {
   assert.equal(W.police.spawnCop(1100, -1), null);
   assert.deepEqual(step(W, 1), []); assert.equal(pursuit.state, 'off');
 });
+
+test('free-roam mode wiring explicitly enables patrols on a circuit map', () => {
+  const W = world(); W.route.closed = true; W.traffic.allowClosedRoam = true;
+  W.police.reset(true); assert.equal(W.police.enabled, true);
+  assert.ok(W.police.spawnCop(1100, 1));
+  W.police.reset(false);
+});
+
+test('explicit Police On setup enables circuit patrols and accepts unwrapped race-lap progress', () => {
+  const W = world(); W.route.closed = true;
+  events.emit('start', { eventId: 'track-with-police', type: 'sprint', def: { type: 'sprint', rules: { police: true } } });
+  assert.equal(W.police.enabled, true); assert.equal(W.traffic.allowClosedPolice, true);
+  assert.ok(W.police.spawnCop(W.route.length + 100, 1));
+  W.police.reset(false); assert.equal(W.traffic.allowClosedPolice, false);
+});

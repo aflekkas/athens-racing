@@ -95,7 +95,8 @@ export class Hud {
     const CELL = 250; this.CELL = CELL; this.cells = new Map();
     const put = (x, z, kind, item) => { const k = Math.floor(x / CELL) * 10007 + Math.floor(z / CELL); let c = this.cells.get(k); if (!c) { c = { b: [], r: [], c: [] }; this.cells.set(k, c); } c[kind].push(item); };
     for (const b of data.buildings) { let x = 0, z = 0; const n = b.p.length / 2; for (let i = 0; i < n; i++) { x += b.p[i * 2]; z += b.p[i * 2 + 1]; } put(x / n, z / n, 'b', b.p); }
-    for (const r of data.sideRoads) { const p = r.p; for (let i = 0; i + 3 < p.length; i += 2) put((p[i] + p[i + 2]) / 2, (p[i + 1] + p[i + 3]) / 2, 'r', [p[i], p[i + 1], p[i + 2], p[i + 3], r.w, r.f]); }
+    const roads = data.roadNetwork ? [...data.sideRoads.filter(r => r.f), ...data.roadNetwork.roads] : data.sideRoads;
+    for (const r of roads) { const p = r.p; for (let i = 0; i + 3 < p.length; i += 2) put((p[i] + p[i + 2]) / 2, (p[i + 1] + p[i + 3]) / 2, 'r', [p[i], p[i + 1], p[i + 2], p[i + 3], r.w, r.f]); }
     for (const c of data.coast) for (let i = 0; i + 3 < c.length; i += 2) put(c[i], c[i + 1], 'c', [c[i], c[i + 1], c[i + 2], c[i + 3]]);
     // route polyline (10 m)
     this.rpts = []; for (let s = 0; s <= route.length; s += 10) { const i = Math.round(s / route.step); this.rpts.push(route.X[Math.min(route.N - 1, i)], route.Z[Math.min(route.N - 1, i)]); }
