@@ -98,7 +98,8 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   const white=std('#e7e3d7'), black=std('#252a27'), red=std('#a83c2a',{roughness:.4});
   const box=geo(new THREE.BoxGeometry(1,1,1));
   const buckets=[];
-  const instances=(g,m,options={})=>{geo(g);const b=new CellInstances(g,m,{cell:320,far:1100,...options});buckets.push(b);return b;};
+  // 640 m cells: small low-poly props, so bigger chunks cost less than more draw calls
+  const instances=(g,m,options={})=>{geo(g);const b=new CellInstances(g,m,{cell:640,far:1100,...options});buckets.push(b);return b;};
   const posts=instances(box,metal,{far:700,shadow:false}), reflectorPosts=instances(box,white,{far:450,shadow:false});
   const reflectorBlack=instances(box,black,{far:350,shadow:false}), reflectorRed=instances(box,red,{far:350,shadow:false});
   const rockGeo=geo(new THREE.IcosahedronGeometry(1,0));

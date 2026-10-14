@@ -393,32 +393,34 @@ export function buildNature(map, scene, heightC, bld, assets) {
   // Close leaf cards cross-fade into coarse cutout sprays. No opaque foliage blobs.
   const leafMat = leafMaterial(false), flowerMat = leafMaterial(true), frondMat = frondMaterial();
   const extraAtlas = rivieraFoliageAtlas(), extraMat = leafMaterial(false, extraAtlas), extraFlowerMat = leafMaterial(true, extraAtlas);
+  // Far LOD levels (cores, trunks, palms) use big cells: a few dozen triangles per instance, so drawing a whole
+  // 0.8-1 km chunk is cheaper than the extra draw calls of small ones. Close card levels keep small cells.
   const palmT = makePalm(), pineT = [makePine(1), makePine(2), makePine(3)];
-  const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 1800 });
-  const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1800, cell: 400, colors: true });
-  const fanCrown = new CellInstances(makeFanPalm(), extraMat, { far: 1800, cell: 400, colors: true });
+  const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 1800, cell: 800 });
+  const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1800, cell: 800, colors: true });
+  const fanCrown = new CellInstances(makeFanPalm(), extraMat, { far: 1800, cell: 800, colors: true });
   const palmBoot = new CellInstances(palmT.boot, barkMaterial('palmbark', '#a89880', 1.0), { far: 700, shadow: false });
-  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: 500, far: 2000 });
-  const pineCore = pineT.map((t) => new CellInstances(t.core, leafMat, { cell: 500, near: 390, far: 2600, colors: true, shadow: false }));
+  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: 1000, far: 2000 });
+  const pineCore = pineT.map((t) => new CellInstances(t.core, leafMat, { cell: 1000, near: 390, far: 2600, colors: true, shadow: false }));
   const pineCards = pineT.map((t) => new CellInstances(t.cards, leafMat, { cell: 250, far: 500, colors: true }));
   const oleCards = [11, 12].map((seed) => cardCluster(30, seed, ATL.oleander, { r: [0.95, 0.7, 0.9], w: 1.1, h: 1.1, shell: 0.65 }));
   const lenCards = [13, 14].map((seed) => cardCluster(24, seed, ATL.lentisk, { r: [0.95, 0.65, 0.9], w: 1.05, h: 1.05, shell: 0.65 }));
-  const bushCore = [13, 14].map((seed) => new CellInstances(cardCluster(7, seed, ATL.lentisk, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), leafMat, { colors: true, cell: 400, near: 234, far: 900, shadow: false }));
-  const oleFar = [11, 12].map((seed) => new CellInstances(cardCluster(8, seed, ATL.oleander, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), flowerMat, { colors: true, cell: 400, near: 234, far: 900, shadow: false }));
+  const bushCore = [13, 14].map((seed) => new CellInstances(cardCluster(7, seed, ATL.lentisk, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), leafMat, { colors: true, cell: 800, near: 234, far: 900, shadow: false }));
+  const oleFar = [11, 12].map((seed) => new CellInstances(cardCluster(8, seed, ATL.oleander, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), flowerMat, { colors: true, cell: 800, near: 234, far: 900, shadow: false }));
   const oleI = oleCards.map((g) => new CellInstances(g, flowerMat, { colors: true, cell: 250, far: 300, shadow: false }));
   const lenI = lenCards.map((g) => new CellInstances(g, leafMat, { colors: true, cell: 250, far: 300, shadow: false }));
-  const rocks = [rockGeo(1), rockGeo(2), rockGeo(3)].map((g) => new CellInstances(g, rockMat, { colors: true, cell: 400, far: 900, shadow: false }));
+  const rocks = [rockGeo(1), rockGeo(2), rockGeo(3)].map((g) => new CellInstances(g, rockMat, { colors: true, cell: 800, far: 900, shadow: false }));
   const cypCards = cardCluster(46, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 0.85, h: 1.5, tilt: 0.15, outward: 0.2 });
-  const cypCore = new CellInstances(cardCluster(16, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 1.0, h: 2.0, tilt: 0.15, outward: 0.2 }), leafMat, { near: 390, far: 2200, colors: true, shadow: false });
+  const cypCore = new CellInstances(cardCluster(16, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 1.0, h: 2.0, tilt: 0.15, outward: 0.2 }), leafMat, { near: 390, far: 2200, cell: 1000, colors: true, shadow: false });
   const cypI = new CellInstances(cypCards, leafMat, { far: 500, cell: 250, colors: true });
   const cypress = { add: (m) => { cypCore.add(m, CYP_TINT); cypI.add(m, CYP_TINT); } };
   const orangeCards = cardCluster(64, 31, ATL.citrus, { r: [1.5, 1.25, 1.5], cy: 2.9, w: 1.3, h: 1.3, shell: 0.65 });
-  const orangeCore = new CellInstances(cardCluster(16, 31, ATL.citrus, { r: [1.3, 1.05, 1.3], cy: 2.9, w: 1.8, h: 1.8 }), leafMat, { near: 390, far: 1700, colors: true, shadow: false });
+  const orangeCore = new CellInstances(cardCluster(16, 31, ATL.citrus, { r: [1.3, 1.05, 1.3], cy: 2.9, w: 1.8, h: 1.8 }), leafMat, { near: 390, far: 1700, cell: 1000, colors: true, shadow: false });
   const orangeI = new CellInstances(orangeCards, leafMat, { far: 500, cell: 250, colors: true });
   const oliveCards = new CellInstances(cardCluster(54, 63, EXTRA.olive, { r: [2.1, 1.45, 1.9], cy: 3.2, w: 1.9, h: 1.8 }), extraMat, { far: 500, cell: 300, colors: true });
-  const oliveFar = new CellInstances(cardCluster(15, 63, EXTRA.olive, { r: [1.9, 1.25, 1.7], cy: 3.2, w: 2.3, h: 2.2 }), extraMat, { near: 390, far: 2100, cell: 500, colors: true, shadow: false });
+  const oliveFar = new CellInstances(cardCluster(15, 63, EXTRA.olive, { r: [1.9, 1.25, 1.7], cy: 3.2, w: 2.3, h: 2.2 }), extraMat, { near: 390, far: 2100, cell: 1000, colors: true, shadow: false });
   const oliveTrunkGeo = mergeGeos([-1, 1].map((side) => { const g = new THREE.CylinderGeometry(0.08, 0.24, 2.8, 7); g.rotateZ(side * 0.25); g.translate(side * 0.2, 1.35, 0); return g; }));
-  const oliveTrunks = new CellInstances(oliveTrunkGeo, pineTrunkMat, { far: 1200, cell: 500 });
+  const oliveTrunks = new CellInstances(oliveTrunkGeo, pineTrunkMat, { far: 1200, cell: 1000 });
   const bougainvillea = new CellInstances(cardCluster(22, 88, EXTRA.bougainvillea, { r: [1.1, 0.85, 0.75], cy: 0.6, w: 1.2, h: 1.5 }), extraFlowerMat, { far: 650, cell: 350, colors: true, shadow: false });
   const phrygana = new CellInstances(cardCluster(6, 97, EXTRA.scrub, { r: [0.5, 0.15, 0.5], cy: 0.3, w: 1.0, h: 0.85, outward: 0.25 }), extraMat, { far: 450, cell: 350, colors: true, shadow: false });
   const succulentMat = new THREE.MeshStandardMaterial({ color: '#96ab86', roughness: 0.83, side: THREE.DoubleSide });

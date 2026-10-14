@@ -51,9 +51,18 @@ export function batchStatic(root, cell = 450) {
  * Sprites keep updating (signal halos scale with distance). Nothing under these roots may be moved afterwards. */
 export function freezeStatic(roots) {
   let frozen = 0;
+  // A node whose whole subtree is frozen is also skipped by three's per-frame matrix walk (matrixWorldAutoUpdate):
+  // the scene graph has ~13k static nodes, and visiting them every frame cost more than drawing some of them.
+  const prune = (o) => {
+    let still = !(o.isSprite || o.isBone || o.isSkinnedMesh);
+    if (still) { o.matrixAutoUpdate = false; frozen++; }
+    for (const c of o.children) if (!prune(c)) still = false;
+    return still;
+  };
   for (const root of roots) {
     root.updateMatrixWorld(true);
-    root.traverse((o) => { if (o.isSprite || o.isBone || o.isSkinnedMesh) return; o.matrixAutoUpdate = false; frozen++; });
+    for (const c of root.children) if (prune(c)) c.matrixWorldAutoUpdate = false;
+    if (!root.isSprite && !root.isBone && !root.isSkinnedMesh) { root.matrixAutoUpdate = false; frozen++; }
   }
   return frozen;
 }

@@ -70,7 +70,8 @@ export function buildWorldContext(map, scene, heightC, infill = [], quality = 'h
   };
   buildHillsideCover(map, group, heightC, material, clear, infill, quality);
   const buckets = [];
-  const bucket = (g, far = 5200) => { const b = new CellInstances(g, material, { cell: 900, far, colors: true, shadow: false, receive: false }); buckets.push(b); return b; };
+  // coarse cells: these are a few dozen triangles each, so fewer, bigger chunks cost less than more draw calls
+  const bucket = (g, far = 5200) => { const b = new CellInstances(g, material, { cell: 1800, far, colors: true, shadow: false, receive: false }); buckets.push(b); return b; };
   const pine = bucket(template([
     colored(new THREE.CylinderGeometry(.14,.28,5,5).translate(0,2.5,0),0x655c46),
     colored(new THREE.IcosahedronGeometry(1,0).scale(3.6,2.3,3.2).translate(0,6,0),0x496043),

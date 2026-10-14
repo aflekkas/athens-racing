@@ -1,6 +1,7 @@
 // The road: a continuous spline sweep along the real route with banking, shader-drawn markings,
 // curbs, pavements/shoulders, planted median, guard rails and road furniture.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { REFLECT_LAYER } from './env.js';
 import { clamp, smoothstep, canvasTex, CellInstances, M, RNG, lerp } from './util.js';
 import { LANE_W } from './map.js';
@@ -8,7 +9,7 @@ import { terrainMaterial } from './terrain.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 
 const STEP = 2;
-const CHUNK = 600; // metres per mesh chunk
+const CHUNK = 1000; // metres per mesh chunk (both sides merged per material: few draw calls)
 
 export const ROAD = {
   curbH: (route, s) => 0.16 * smoothstep(0.15, 0.6, route.urban(s)),
@@ -168,6 +169,13 @@ export function concreteMaterial(color = '#d8d3c8', scale = 2.0) {
 }
 
 // ------------------------------------------------------------------ geometry
+/** two indexed strips with the same attributes as one geometry (null when they differ) */
+function mergePair(a, b) {
+  const ka = Object.keys(a.attributes).sort().join(), kb = Object.keys(b.attributes).sort().join();
+  if (ka !== kb || !a.index || !b.index) return null;
+  const g = mergeGeometries([a, b]); if (!g) return null;
+  a.dispose(); b.dispose(); g.computeBoundingSphere(); return g;
+}
 class Strip {
   constructor(cols) { this.cols = cols; this.pos = []; this.su = []; this.em = []; this.col = []; this.rows = 0; }
   row(points) { // points: [{p:Vector3, s, u, c?:Color}]
@@ -251,9 +259,11 @@ export function buildRoad(map, scene, heightC, assets) {
     const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); return m; };
     add(road.build(false, null, (r,c) => (c !== 2 && c !== 3) || !route.localLayout?.contains(c0 + (r + .5) * STEP)), asphalt, false, true);
     if (medianRows.some(Boolean)) add(med.build(false, legacyMedian && !route.localLayout ? null : medianRows), vergeMat, true);
-    add(curbR.build(false, sideRows[1]), curbMat); add(curbL.build(true, sideRows[-1]), curbMat);
-    add(walkR.build(false, sideRows[1]), paving, false, true); add(walkL.build(true, sideRows[-1]), paving, false, true);
-    add(skR.build(false, sideRows[1]), vergeMat); add(skL.build(true, sideRows[-1]), vergeMat);
+    // both sides of a chunk share one mesh per material: fewer draw calls, same triangles
+    const pair = (a, b, mat, shadow, refl) => { const m = mergePair(a, b); if (m) add(m, mat, shadow, refl); else { add(a, mat, shadow, refl); add(b, mat, shadow, refl); } };
+    pair(curbR.build(false, sideRows[1]), curbL.build(true, sideRows[-1]), curbMat);
+    pair(walkR.build(false, sideRows[1]), walkL.build(true, sideRows[-1]), paving, false, true);
+    pair(skR.build(false, sideRows[1]), skL.build(true, sideRows[-1]), vergeMat);
   }
 
   if (assets.furniture !== false) buildFurniture(map, group, heightC, assets);
