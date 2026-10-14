@@ -345,7 +345,7 @@ function shared() {
     rimDark: envd(new THREE.MeshStandardMaterial({ color: '#2b2d30', metalness: 0.85, roughness: 0.3 })),
     black: envd(new THREE.MeshStandardMaterial({ color: '#0c0c0d', roughness: 0.5 })),
     chrome: envd(new THREE.MeshStandardMaterial({ color: '#f2f2f2', metalness: 1, roughness: 0.06 })),
-    glassDark: envd(new THREE.MeshPhysicalMaterial({ color: '#06090b', metalness: 0, roughness: 0.02, specularIntensity: 1, ior: 1.52, envMapIntensity: 1.2 })),
+    glassDark: envd(new THREE.MeshPhysicalMaterial({ color: '#4a5d63', metalness: 0, roughness: 0.02, specularIntensity: 1, ior: 1.52, envMapIntensity: 1.2 })),
     glassClear: envd(new THREE.MeshPhysicalMaterial({ color: '#c9dde8', roughness: 0.02, transparent: true, opacity: 0.12, envMapIntensity: 1.6, side: THREE.DoubleSide, depthWrite: false })),
     head: envd(new THREE.MeshPhysicalMaterial({ color: '#d9e0e4', metalness: 0.7, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.02, emissive: '#fff4e4', emissiveIntensity: 0.45 })),
     plate: new THREE.MeshStandardMaterial({ map: plateTex, roughness: 0.5 }),

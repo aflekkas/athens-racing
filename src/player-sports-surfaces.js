@@ -1,6 +1,7 @@
 // Close-view refinements for the 991.1 Carrera, facelift GR Yaris and Bertone 2000 GTV.
 // Original procedural geometry; source photographs are recorded in the vehicle notes.
 import * as THREE from 'three';
+import { tintGlass } from './glass-tint.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -262,6 +263,6 @@ export function refineSportsPlayer(car,d,M,low=false){
   if(car.modelKind==='carrera'){carrera(car,d,M,low);carreraGlasshouse(car,d,M);}
   else if(car.modelKind==='gr_yaris')yaris(car,d,M,low);
   else gtv(car,d,M,low);
-  M.glass.color.set(car.modelKind==='gtv'?'#91a29e':'#46626c');M.glass.opacity=car.modelKind==='gtv'?.48:.66;M.glass.metalness=.22;M.glass.roughness=.07;
+  tintGlass(M.glass);M.glass.roughness=.07;
   modernMirrors(car,d,M);windowSeals(car,M);tagOptics(car);curvedTrimSupport(car,d);subdivideEndTrim(car,d);roundEnds(car,d);
 }

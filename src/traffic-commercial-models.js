@@ -1,5 +1,6 @@
 // Metres, +Y up, -Z forward. Dedicated OSY Citaro, Ducato and NPR coachwork.
 import * as THREE from 'three';
+import { tintGlass } from './glass-tint.js';
 import { seatMirrors } from './vehicle-mirrors.js';
 import { makePlateMaterial, nextRegistration } from './vehicle-models.js';
 import { canvasTex } from './util.js';
@@ -104,7 +105,7 @@ function truck(c,d,M,low){const p=c.body,F=-d.L/2,R=d.L/2,cw=2.03;
 }
 export function buildCommercialModel(type,color,rng,opts={}){
  const kind=typeof type==='string'?type:type.id,d=COMMERCIAL_MODELS[kind];if(!d)throw new Error(`Unknown commercial vehicle: ${kind}`);const low=!!opts.low,root=new THREE.Group(),body=new THREE.Group();root.name=d.name;root.add(body);
- const paint=standard(kind==='bus'?'#edf0eb':color||'#e5e8e5',.34,.15),black=standard('#172024',.85),alloy=standard('#a3acb0',.32,.65),glass=new THREE.MeshStandardMaterial({color:'#294650',roughness:.16,metalness:.20,transparent:!low,opacity:low?1:.48,side:THREE.DoubleSide,depthWrite:low});
+ const paint=standard(kind==='bus'?'#edf0eb':color||'#e5e8e5',.34,.15),black=standard('#172024',.85),alloy=standard('#a3acb0',.32,.65),glass=tintGlass(new THREE.MeshStandardMaterial({roughness:.14,metalness:0,transparent:!low,side:THREE.DoubleSide,depthWrite:low}),low?'far':'cabin');
  const led=new THREE.MeshStandardMaterial({color:'#dce6df',emissive:'#d9ebff',emissiveIntensity:.4,side:THREE.DoubleSide}),tail=new THREE.MeshStandardMaterial({color:'#841815',emissive:'#ed221a',emissiveIntensity:.2});
  const M={paint,black,alloy,glass,led,head:led,tail,blue:standard('#126ba8'),yellow:standard('#f6c818'),seat:low?black:standard('#38647d'),cyan:low?paint:standard('#46c3db')};const plate=nextRegistration();M.plate=low?black:makePlateMaterial(plate);
  if(!low){M.destination=label('A2  ΑΚΑΔΗΜΙΑ • ΒΟΥΛΑ','#121812','#ffb938',1024,128,true);M.osy=label('ΟΣΥ  ΟΔΙΚΕΣ ΣΥΓΚΟΙΝΩΝΙΕΣ','#eef0e9','#1261a5');M.company=label('ΑΤΤΙΚΗ  •  ΔΙΑΝΟΜΕΣ','#edf0eb','#315f82',1024,192);M.badge=label(kind==='van'?'FIAT':kind==='truck'?'ISUZU':'✳',kind==='van'?'#972424':'#1b272d','#e5e9ea',256,128);}

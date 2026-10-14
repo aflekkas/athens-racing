@@ -1,6 +1,7 @@
 // Player-only F57 / G29 / Octavia IV coachwork. Metres, nose -Z.
 // Separate body fields keep every arch, panel seam and shoulder on the same surface.
 import * as THREE from 'three';
+import { tintGlass } from './glass-tint.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 const mix=(a,b,t)=>a+(b-a)*t;
 const clamp=t=>Math.max(0,Math.min(1,t));
@@ -139,7 +140,7 @@ export function refineOriginalPlayer(car,d,M,low=false){
   }
   if(kind==='octavia'){
     for(const sign of [-1,1])for(const x of [.54,.68])projector(p,[sign*x,d.front-.075,-d.L/2-.017],[.035,.023,.012]);
-    M.glass.color.set('#455c65');M.glass.opacity=.61;M.glass.metalness=.18;
+    tintGlass(M.glass);
     for(const o of [...p.children])if(o.isMesh&&o.material===M.black&&o.position.z>d.L/2-.3&&o.position.y<.3&&Math.abs(o.position.x)<.4&&Math.abs(o.position.y-.195)<.01)o.removeFromParent();
     // Preserve the exact shared roof/windscreen/rear-glass endpoints. The old side
     // windows extended into the painted C-pillar and made the liftback look glass-roofed.

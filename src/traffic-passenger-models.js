@@ -1,6 +1,7 @@
 // Athens passenger fleet. Metres, nose -Z. Each section is [z, half width, shoulder height].
 // Production dimensions from manufacturer press kits; independently drawn body/greenhouse stations.
 import * as THREE from 'three';
+import { tintGlass } from './glass-tint.js';
 import { seatMirrors } from './vehicle-mirrors.js';
 import { nextRegistration, makePlateMaterial } from './vehicle-models.js';
 export const PASSENGER_MODELS = {
@@ -27,7 +28,7 @@ function poly(p,m,pts,name,part){const a=pts.flat(),idx=[];for(let i=1;i<pts.len
 function box(p,m,size,pos,name,part){const o=mesh(p,new THREE.BoxGeometry(...size),m,name,part);o.position.set(...pos);return o;}
 function rod(p,m,a,b,r=.007,part){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),o=mesh(p,new THREE.CylinderGeometry(r,r,A.distanceTo(B),5),m,'trim',part);o.position.copy(A).add(B).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),B.sub(A).normalize());return o;}
 function chain(p,m,pts,r,part){for(let i=1;i<pts.length;i++)rod(p,m,pts[i-1],pts[i],r,part);}
-function palette(color,low){const mat=(c,r=.5,metalness=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness,side:THREE.DoubleSide});const paint=mat(color,.30,.38),black=mat('#161a1e',.85),chrome=mat('#a9b4bf',.27,.8),head=mat('#344652',.19,.6),tail=mat('#a10e1a',.26),led=low?head:mat('#edf9ff',.18);tail.emissive.set('#600609');led.emissive.set('#a1b5c3');return {paint,black,chrome,head,tail,led,glass:new THREE.MeshStandardMaterial({color:'#536873',roughness:.16,metalness:.28,transparent:!low,opacity:low?1:.58,depthWrite:low,side:THREE.DoubleSide})};}
+function palette(color,low){const mat=(c,r=.5,metalness=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness,side:THREE.DoubleSide});const paint=mat(color,.30,.38),black=mat('#161a1e',.85),chrome=mat('#a9b4bf',.27,.8),head=mat('#344652',.19,.6),tail=mat('#a10e1a',.26),led=low?head:mat('#edf9ff',.18);tail.emissive.set('#600609');led.emissive.set('#a1b5c3');return {paint,black,chrome,head,tail,led,glass:tintGlass(new THREE.MeshStandardMaterial({roughness:.14,metalness:0,transparent:!low,depthWrite:low,side:THREE.DoubleSide}),low?'far':'cabin')};}
 export function passengerSideX(d,z,y){const [w,h]=section(d,z),t=Math.max(0,Math.min(1,(y-.19)/(h-.19)));return w-.105*(1-t)**3-.055*t**8-.024*Math.sin(t*Math.PI*2);}
 function skin(car,d,M,low){const p=car.body,F=-d.L/2,R=d.L/2,arch=d.r+.045;
  const edge=(z,y)=>{const [w,h]=section(d,z),t=Math.max(0,Math.min(1,(y-.19)/(h-.19)));return w-.105*(1-t)**3-.055*t**8-.024*Math.sin(t*Math.PI*2);};

@@ -3,6 +3,7 @@
 // https://media.mercedes-benz.fr/decouvrez-la-nouvelle-mercedes-benz-cle/
 // https://nd-mediagallery2-public-production.s3.amazonaws.com/215df8a0a2f426ec8e82796a0eaca795/techdata_cle_c236_806_056.pdf
 import * as THREE from 'three';
+import { tintGlass } from './glass-tint.js';
 
 export const MERCEDES_MODELS = {
   // H247 dimensions and 19-inch Progressive wheels: Mercedes-Benz PH brochure (refs/gla.pdf).
@@ -88,7 +89,7 @@ export function buildMercedes(car,d,M,low,plate,H){
   const p=car.body,F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0,S=mercedesSurface(d),C=S.contour,arch=d.r+(C?.archGap||.055);
   const suv=!!d.suv,amg=!!d.amg,cla=!!d.cla;
   car.mercedesSurface=S;
-  const rearGlass=(suv||C)?M.glass.clone():M.glass;if(suv||C){rearGlass.color.set('#182b35');rearGlass.opacity=.78;rearGlass.metalness=.02;rearGlass.envMapIntensity=.25;rearGlass.userData.playerGlass=true;}
+  const rearGlass=(suv||C)?M.glass.clone():M.glass;if(suv||C){tintGlass(rearGlass,'privacy');rearGlass.envMapIntensity=.5;rearGlass.userData.playerGlass=true;}
   const windowBelt=C?.belt||(z=>suv?sample([[d.cowl,d.belt+.024],[.35,d.belt+.038],[1.5,d.hatchGlassY-.016],[d.back,d.hatchGlassY]],z):d.belt+.024);
   for(const s of [-1,1]){
     surface(p,M.paint,(u,v)=>{const z=mix(F,R,u);let bottom=.19;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=mix(bottom,S.top(z),v);const x=s*S.side(z,y);return[x,y,S.longitudinal(x,z,y)];},C?128:suv?128:160,(suv||C)?10:12,'body-side');

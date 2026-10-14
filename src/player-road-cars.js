@@ -40,7 +40,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
   for(const z of [F,R])surface(p,M.paint,(u,v)=>{const y=mix(.18,section(z)[1],v),x=(2*u-1)*side(z,y);return[x,mix(.18,deck(x,z),v),z];},24,10,z<0?'front-bumper':'rear-bumper');
   box(p,M.black,[d.W*.81,.07,d.L*.86],[0,.20,0],.02,[0,0,0],'undertray');
   }
-  if(id==='huracan'){M.glass.color.set('#253b3c');M.glass.opacity=.72;buildHuracanCabin(car,d,M,low,H);}else cabin(car,d,M,low);wheels(car,d,M,low);
+  if(id==='huracan'){buildHuracanCabin(car,d,M,low,H);}else cabin(car,d,M,low);wheels(car,d,M,low);
   // Cabin liners must stay inside a pinched coupe waist.
   for(const o of p.children)if(o.isMesh&&o.material===M.black&&Math.abs(o.position.x)>W-.15&&o.position.y<d.belt&&o.position.y>d.belt-.4)o.position.x=Math.sign(o.position.x)*(W-.24);
   // Broad sheet-metal pillars, unlike the convertible's narrow perimeter rails.
