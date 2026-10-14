@@ -64,7 +64,8 @@ export function objectiveTarget(state, trips) {
 }
 /** `now` is monotonic seconds: simulation time in SP, server receipt time in MP.
  * Call only with coordinator-validated poses. Client completion claims are never an input.
- * Missing/stale samples break the continuous stop; identical receipt timestamps add no dwell.
+ * Null poses are timer-only ticks: they never add dwell and clear it when the last pose is stale.
+ * Identical receipt timestamps add no dwell; only accepted pose samples refresh lastAt.
  */
 export function stepObjectives(state, trips, now, pose = null) {
   const events = [];
@@ -73,12 +74,16 @@ export function stepObjectives(state, trips, now, pose = null) {
   state.remaining = Math.max(0, state.deadline - now);
   if (now >= state.deadline) { state.done = true; state.phase = 'finished'; state.holdSeconds = 0; events.push({ kind: 'timeup', completed: state.completed }); return events; }
   const dt = state.lastAt === null ? 0 : now - state.lastAt;
-  state.lastAt = now;
   if (state.phase === 'cooldown') {
     if (now < state.cooldownUntil) return events;
     state.phase = 'pickup'; state.routeIndex++; state.wasStopped = false;
     events.push({ kind: 'objective-ready', routeIndex: state.routeIndex });
   }
+  if (!pose) {
+    if (dt > OBJECTIVE_RULES.maxSampleGap) { state.holdSeconds = 0; state.wasStopped = false; }
+    return events;
+  }
+  state.lastAt = now;
   const target = objectiveTarget(state, trips);
   const kmh = pose?.kmh ?? Math.hypot(pose?.vLong, pose?.vLat || 0) * 3.6;
   const stopped = !!target && !!pose && [pose.x, pose.y, pose.z, kmh].every(Number.isFinite) &&

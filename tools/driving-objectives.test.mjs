@@ -50,6 +50,17 @@ test('duplicate/out-of-order receipt clocks and client counts cannot advance sta
   assert.equal(s.holdSeconds, 0); const prev = structuredClone(s); stepObjectives(s, trips, .5, poseAt(trips[0].pickup)); assert.deepEqual(s, prev);
   assert.equal(objectiveSnapshot(s).roundId, 'round-2'); assert.equal(s.completed, 0);
 });
+test('coordinator timer ticks preserve fresh pose dwell without crediting it and clear stale dwell', () => {
+  const s = createObjectiveState({ mode: 'taxi' });
+  for (let i = 0; i <= 16; i++) {
+    const now = i / 10; stepObjectives(s, trips, now, poseAt(trips[0].pickup));
+    const held = s.holdSeconds; stepObjectives(s, trips, now + .05, null); assert.equal(s.holdSeconds, held);
+  }
+  assert.equal(s.phase, 'dropoff'); assert.equal(s.completed, 0);
+  const stale = createObjectiveState({ mode: 'taxi' }); stop(stale, trips[0].pickup, 0, .9);
+  stepObjectives(stale, trips, 2, null); assert.equal(stale.holdSeconds, 0); assert.equal(stale.wasStopped, false);
+  assert.equal(stale.lastAt < 1, true); stop(stale, trips[0].pickup, 2.1, 1); assert.equal(stale.phase, 'pickup');
+});
 test('deadline wins over coincident delivery and expires exactly once', () => {
   const s = createObjectiveState({ mode: 'taxi', duration: 30 }); stop(s, trips[0].pickup, 0);
   stop(s, trips[0].dropoff, 28.5, 1.4); assert.equal(s.completed, 0);
