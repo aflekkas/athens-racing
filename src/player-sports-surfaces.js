@@ -41,6 +41,7 @@ function louvres(p,M,x,y,z,w,h,count,name){box(p,M.black,[w,h,.016],[x,y,z],name
 function carrera(car,d,M,low){
   const p=car.body,F=-d.L/2-.012,R=d.L/2+.014;
   const front=group(p,'sports-carrera-front-lights');
+  const lampBowl=material('#7e8a91',.24,.35);
   // 991.1 halogen/bi-xenon architecture: one main projector and a separate lower reflector.
   // The lens is inclined with the front wing, with a fine polished rim, not an upright circle.
   for(const s of [-1,1]){
@@ -48,12 +49,12 @@ function carrera(car,d,M,low){
     const at=(pts,z)=>{for(let i=1;i<pts.length;i++)if(z<=pts[i][0]){const [a,b]=[pts[i-1],pts[i]],t=smooth((z-a[0])/(b[0]-a[0]));return a[1]+(b[1]-a[1])*t;}return pts.at(-1)[1];};
     const wing=(x,z)=>{const h=at([[-d.L/2,.62],[-1.82,.78],[-1.25,.86],[d.cowl,d.belt]],z),w=at([[-d.L/2,d.W/2*.78],[-1.72,d.W/2*.95],[-1.1,d.W/2*.95]],z)-.014,q=x/w;return h+.028*(1-q*q)-.11*Math.exp(-(((z+1.55)/.58)**2))*(1-Math.exp(-(((Math.abs(q)-.72)/.22)**2)))*clamp((d.cowl-z)/.5);};
     if(s===1){const crest=add(front,new THREE.PlaneGeometry(.042,.056),crestMaterial(),'carrera-bonnet-crest',[0,wing(0,-2.09)+.015,-2.09],[-Math.PI/2,0,Math.PI]);}
-    const outline=[];for(let i=0;i<32;i++){const t=i*Math.PI/16,x=cx+.136*Math.cos(t),z=cz+.189*Math.sin(t);outline.push([x,wing(x,z)+.006,z]);}
-    const lamp=surface(front,M.head,(u,t)=>{const a=u*Math.PI*2,rad=t;const x=cx+.136*Math.cos(a)*rad,z=cz+.189*Math.sin(a)*rad;return[x,wing(x,z)+.008,z];},28,4,'carrera-headlamp-housing');
+    const outline=[];for(let i=0;i<32;i++){const t=i*Math.PI/16,x=cx+.150*Math.cos(t),z=cz+.225*Math.sin(t);outline.push([x,wing(x,z)+.006,z]);}
+    const lamp=surface(front,lampBowl,(u,t)=>{const a=u*Math.PI*2,rad=t;const x=cx+.150*Math.cos(a)*rad,z=cz+.225*Math.sin(a)*rad;return[x,wing(x,z)+.008,z];},28,4,'carrera-headlamp-housing');
     tube(front,M.chrome,outline,.004,'carrera-headlamp-rim',true);
     for(const [r,mat,dy]of [[.063,M.chrome,.011],[.050,M.optical,.013],[.029,M.head,.015]])surface(front,mat,(u,t)=>{const a=u*Math.PI*2,x=cx+r*Math.cos(a)*t,z=cz+.035+r*1.12*Math.sin(a)*t;return[x,wing(x,z)+dy,z];},20,3,'carrera-recessed-projector');
     const reflector=add(front,new THREE.SphereGeometry(1,12,8),M.chrome,'carrera-secondary-reflector',[cx,wing(cx,cz-.088)+.013,cz-.088]);reflector.scale.set(.066,.019,.037);
-    surface(front,M.lens,(u,t)=>{const a=u*Math.PI*2,x=cx+.133*Math.cos(a)*t,z=cz+.186*Math.sin(a)*t;return[x,wing(x,z)+.026+.013*(1-t*t),z];},28,4,'carrera-headlamp-glass');
+    surface(front,M.lens,(u,t)=>{const a=u*Math.PI*2,x=cx+.147*Math.cos(a)*t,z=cz+.222*Math.sin(a)*t;return[x,wing(x,z)+.026+.013*(1-t*t),z];},28,4,'carrera-headlamp-glass');
     const intake=polygon(p,M.black,[[s*.33,.39,F],[s*.73,.41,F],[s*.75,.26,F],[s*.37,.24,F]],'carrera-radiator-inlet');
     for(let j=0;j<3;j++)tube(p,M.darkAlloy,[[s*.365,.275+j*.04,F-.009],[s*.70,.288+j*.04,F-.009]],.007,'carrera-intake-louvre');
     tube(front,M.led,[[s*.35,.414,F-.013],[s*.56,.43,F-.013],[s*.73,.42,F-.013]],.007,'carrera-drl');
@@ -63,17 +64,27 @@ function carrera(car,d,M,low){
     tube(p,M.tail,[[s*.32,.778,R+.012],[s*.70,.786,R+.012],[s*.705,.735,R+.012],[s*.39,.725,R+.012]],.007,'carrera-tail-signature');
     box(p,M.chrome,[.27,.022,.006],[s*.52,.747,R+.014],'carrera-clear-tail-divider',.006);
     box(p,M.red,[.16,.017,.01],[s*.56,.36,R+.012],'carrera-rear-reflector',.006);
+    // 991.1 lenses continue around the outer rear shoulder, unlike a 964 light bar.
+    const wrap=(u,v)=>{const z=d.L/2-.24*u,x=d.W/2*(.98-.14*smooth((z-1.60)/(d.L/2-1.60)))-.004-.030*(1-u);return[s*x,.802+.071*u-(.085-.049*u)*v,z+.014];};
+    surface(p,M.red,(u,v)=>wrap(u,v),16,3,'carrera-tail-wrap');
+    tube(p,M.tail,Array.from({length:9},(_,i)=>wrap(i/8,.19)),.006,'carrera-tail-wrap-guide');
   }
   polygon(p,M.black,[[-.29,.345,F],[.29,.345,F],[.27,.235,F],[-.27,.235,F]],'carrera-central-radiator');
   if(!low)for(let i=0;i<7;i++)tube(p,M.darkAlloy,[[-.25,.245+i*.013,F-.009],[.25,.245+i*.013,F-.009]],.002,'carrera-radiator-fins');
   label(p,'P O R S C H E',[.57,.047],[0,.738,R+.02],'carrera-rear-lettering');label(p,'911 Carrera',[.32,.038],[0,.681,R+.021],'carrera-script');
   box(p,M.black,[1.30,.10,.035],[0,.255,R],'carrera-rear-valance');
+  polygon(p,M.black,[[-.285,.458,R+.020],[.285,.458,R+.020],[.355,.294,R+.020],[-.355,.294,R+.020]],'carrera-registration-recess');
   // Three broad horizontal engine-cover slats, as on 991.1 (not the vertical 991.2 grille).
   car.body.updateMatrixWorld(true);for(const o of [...p.children]){if(!o.isMesh||o.material!==M.black||o.name)continue;const b=bounds(o);if(b.min.z>1.58&&b.max.z<1.94&&b.min.y>.8)o.removeFromParent();}
   const deck=(x,z)=>{const t=smooth((z-1.47)/(d.L/2-1.47));return .97+(.79-.97)*t+.028*(1-(x/.84)**2);};
   for(let i=0;i<3;i++){const z=1.645+i*.085;surface(p,M.black,(u,t)=>{const x=(u-.5)*.99,zz=z+t*.049;return[x,deck(x,zz)+.007,zz];},24,2,'carrera-engine-grille-slot');surface(p,M.paint,(u,t)=>{const x=(u-.5)*1.01,zz=z-.017+t*.021;return[x,deck(x,zz)+.013,zz];},24,2,'carrera-engine-cover-slat');}
   // Fuel filler on the front right wing.
   tube(p,M.seam,[[.847,.73,-1.20],[.851,.81,-1.20],[.852,.813,-1.02],[.850,.731,-1.02]],.0018,'carrera-fuel-flap',true);
+  // Modern inset pull handles replace the old bright rectangular strips.
+  for(const s of [-1,1]){
+    const old=p.children.find(o=>o.isMesh&&!o.name&&Math.abs(o.position.z-.55)<.005&&Math.abs(o.position.y-(d.belt-.1))<.005&&Math.sign(o.position.x)===s);
+    if(old){const pos=old.position.clone();old.removeFromParent();const cup=add(p,new THREE.SphereGeometry(1,16,8),M.seam,'carrera-handle-recess',pos.toArray());cup.scale.set(.009,.024,.085);const handle=add(p,new THREE.SphereGeometry(1,16,8),M.paint,'carrera-door-handle',[pos.x+s*.008,pos.y+.003,pos.z]);handle.scale.set(.012,.012,.070);}
+  }
 }
 function yaris(car,d,M,low){
   const p=car.body,F=-d.L/2-.012,R=d.L/2+.015;
@@ -222,8 +233,16 @@ function roundEnds(car,d){
       const q=new THREE.Vector3(a.getX(i),a.getY(i),a.getZ(i)).applyMatrix4(toBody),z=q.z,sourceY=q.y,ax=Math.abs(q.x)/w;
       const t=smooth((Math.abs(z)-(half-.60))/.60),sign=Math.sign(z);
       if(isYaris)q.z-=.25*smooth((z-.25)/1.18)*smooth((q.y-.96)/.22);
-      if(is911){q.y-=.105*smooth((-z-1.82)/.425)*smooth((q.y-.35)/.28);const cabinFront=smooth((z+1.13)/.40)*(1-smooth((z+.30)/.86));q.z-=.16*cabinFront*smooth((q.y-.73)/.15);}
-      if(t){const corner=(classic?.070:is911?.20:.16)*ax**4;const capHeight=sign<0?d.front:d.rear;const belly=(classic?.035:.10)*Math.sin(clamp((q.y-.18)/(capHeight-.18))*Math.PI);q.z+=sign*t*(belly-corner);q.y+=t*.024*ax**4*(1-smooth((q.y-.18)/.38));}
+      if(is911){
+        q.y-=.105*smooth((-z-1.82)/.425)*smooth((q.y-.35)/.28);
+        // Press-photo 991.1 wing crests rise above the low bonnet; carry the
+        // same map through lenses and skin so the larger ovals remain seated.
+        q.y+=.092*Math.exp(-(((z+1.74)/.38)**2))*Math.exp(-(((ax-.70)/.23)**2))*smooth((q.y-.53)/.19);
+        const cabinFront=smooth((z+1.13)/.40)*(1-smooth((z+.30)/.86));q.z-=.16*cabinFront*smooth((q.y-.73)/.15);
+        // Soften the roof crown and fastback rather than leave planar-looking rails.
+        q.y+=.020*Math.sin(clamp((z+.1)/1.0)*Math.PI)*smooth((q.y-1.06)/.15);
+      }
+      if(t){const corner=(classic?.070:is911?(sign<0?.29:.24):.16)*ax**4;const capHeight=sign<0?d.front:d.rear;const belly=(classic?.035:.10)*Math.sin(clamp((q.y-.18)/(capHeight-.18))*Math.PI);q.z+=sign*t*(belly-corner);q.y+=t*.024*ax**4*(1-smooth((q.y-.18)/.38));}
       // Convex side surfaces and rounded shoulders produce a softer light roll on the front/rear wings.
       if(classic&&z<0)q.y+=.095*smooth((-z-(half-.76))/.6)*(1-smooth((q.y-.20)/.32));
       if(z>0)q.y+=(classic?.085:is911?.145:.080)*smooth((z-(half-.88))/.72)*(1-smooth((q.y-.20)/.37));

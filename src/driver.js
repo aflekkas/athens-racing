@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { trimMat } from './cockpit.js';
 import { clamp, RNG } from './util.js';
+import { normalizeDriverAppearance } from './driver-appearance-data.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const SPHERE = new THREE.SphereGeometry(1, 18, 12);
@@ -57,6 +58,7 @@ function scalpGeometry(helmet=false) {
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(ix);g.computeVertexNormals();return g;
 }
 const SCALP=scalpGeometry();
+const SHARED_GEOMETRIES=new Set([SPHERE,ARM,CURL,HEAD,SCALP]);
 // Thin almond patches follow the sculpted face instead of sitting on top as eyeballs/lips.
 function facePatch(x,y,w,h,offset=.0005,arch=0) {
   const p=[],ix=[],n=24;
@@ -69,13 +71,16 @@ function facePatch(x,y,w,h,offset=.0005,arch=0) {
 }
 
 export class Driver {
-  constructor({hair=true,shirt='#f6f4ee',skin='#c98b62',helmet=false}={}) {
+  constructor(options={}) {
+    const appearance=normalizeDriverAppearance({...options,...(options.hair===false?{hairStyle:'none'}:{})});
+    const {shirt,skin,hair}=appearance;
     const root=this.root=new THREE.Group(); root.name='driver';
     const skinM=new THREE.MeshStandardMaterial({color:skin,roughness:.68});
     const lipM=new THREE.MeshStandardMaterial({color:new THREE.Color(skin).lerp(new THREE.Color('#92534d'),.24),roughness:.78});
     const shadowM=new THREE.MeshStandardMaterial({color:new THREE.Color(skin).multiplyScalar(.48),roughness:.88});
     const shirtM=trimMat(shirt,{rough:.9,scale:.025,nk:.18,sheen:.06});
-    const hairM=new THREE.MeshStandardMaterial({color:'#30221b',roughness:.94});
+    const hairM=new THREE.MeshStandardMaterial({color:hair,roughness:.94});
+    this.appearanceMaterials={skin:skinM,lip:lipM,shadow:shadowM,shirt:shirtM,hair:hairM};
     const irisM=new THREE.MeshStandardMaterial({color:'#332b23',roughness:.6});
     const eyeM=new THREE.MeshStandardMaterial({color:'#bcb3a4',roughness:.6});
     const add=(geo,mat,x,y,z,sx=1,sy=1,sz=1,parent=root)=>{
@@ -136,16 +141,19 @@ export class Driver {
     this._m=new THREE.Matrix4();this._v=new THREE.Vector3();this._s=new THREE.Vector3();
     this._shoulder=new THREE.Vector3();this._hand=new THREE.Vector3();this._elbow=new THREE.Vector3();
     this._tan=new THREE.Vector3();this._out=new THREE.Vector3();this._normal=new THREE.Vector3();this._delta=new THREE.Vector3();
-    if(helmet) {
+    this.helmetGroup=new THREE.Group();this.helmetGroup.name='driver-helmet';head.add(this.helmetGroup);
+    this.hairGroup=new THREE.Group();this.hairGroup.name='driver-hair';head.add(this.hairGroup);
+    {
       const shellM=new THREE.MeshStandardMaterial({color:'#24282a',roughness:.32,metalness:.08});
       // An open-face shell leaves the facial structure visible and clears the neck.
-      add(scalpGeometry(true),shellM,0,0,0,1,1,1,head);
-      for(const sx of [-1,1])ell(shellM,sx*.098,-.010,.025,.017,.055,.048,head);
-      const strap=add(new THREE.TorusGeometry(.073,.006,6,24,Math.PI),hairM,0,-.052,.007,1,.75,1,head);strap.rotation.x=Math.PI/2;
-    } else if(hair) {
+      add(scalpGeometry(true),shellM,0,0,0,1,1,1,this.helmetGroup);
+      for(const sx of [-1,1])ell(shellM,sx*.098,-.010,.025,.017,.055,.048,this.helmetGroup);
+      const strap=add(new THREE.TorusGeometry(.073,.006,6,24,Math.PI),shellM,0,-.052,.007,1,.75,1,this.helmetGroup);strap.rotation.x=Math.PI/2;
+    }
+    {
       // Fixed scalp survives the legacy roof-clearance scale on the moving hair layer.
-      add(SCALP,hairM,0,0,0,1,1,1,head);
-      this.hairBase=ell(hairM,0,.085,.019,.079,.045,.084,head);
+      add(SCALP,hairM,0,0,0,1,1,1,this.hairGroup);
+      this.hairBase=ell(hairM,0,.085,.019,.079,.045,.084,this.hairGroup);
       this._hairRestY=.085;
       const rng=new RNG(1234);
       for(let i=0;i<64;i++) {
@@ -159,14 +167,43 @@ export class Driver {
       const curlMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.86});
       this.curlMesh=new THREE.InstancedMesh(CURL,curlMat,this.curls.length);this.curlMesh.castShadow=true;
       this.curlMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.curls.forEach((c,i)=>this.curlMesh.setColorAt(i,new THREE.Color('#39271d').multiplyScalar(rng.range(.88,1.06))));
-      head.add(this.curlMesh);this._writeHair();
+      this.curls.forEach((c,i)=>{c.shade=rng.range(.88,1.06);this.curlMesh.setColorAt(i,new THREE.Color(hair).multiplyScalar(c.shade));});
+      this.hairGroup.add(this.curlMesh);this._writeHair();
     }
     // Merge rigid facial details and fingers by material; retain the animated public meshes.
     mergeRigidMeshes(head, this.hairBase);
+    mergeRigidMeshes(this.helmetGroup);
+    this.setAppearance(appearance);
     for (const a of this.arms) mergeRigidMeshes(a.hand);
     root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+    this._ownedGeometries=new Set();this._ownedMaterials=new Set();this._ownedTextures=new Set();
+    root.traverse(o=>{if(o.geometry&&!SHARED_GEOMETRIES.has(o.geometry))this._ownedGeometries.add(o.geometry);if(o.material){this._ownedMaterials.add(o.material);for(const value of Object.values(o.material))if(value?.isTexture)this._ownedTextures.add(value);}});
     this.update(0,0,0,{x:0,y:0,z:0},{pos:new THREE.Vector3(0,-.135,-.53),angle:0,euler:new THREE.Euler(-.36,0,0),r:.18},0);
+  }
+
+  /** Mutate materials/visibility only: preserve seating, IK, roof fit and spring state. */
+  setAppearance(value){
+    const next=normalizeDriverAppearance(value),signature=JSON.stringify(next);
+    if(signature===this.appearanceSignature)return {...this.appearance};
+    this.appearance=next;this.appearanceSignature=signature;
+    const m=this.appearanceMaterials;
+    m.skin.color.set(next.skin);m.shirt.color.set(next.shirt);m.hair.color.set(next.hair);
+    m.lip.color.set(next.skin).lerp(new THREE.Color('#92534d'),.24);
+    m.shadow.color.set(next.skin).multiplyScalar(.48);
+    this.helmetGroup.visible=next.helmet;
+    this.hairGroup.visible=!next.helmet&&next.hairStyle!=='none';
+    this.hairBase.visible=this.curlMesh.visible=next.hairStyle==='curly';
+    const color=new THREE.Color(next.hair);
+    this.curls.forEach((c,i)=>this.curlMesh.setColorAt(i,color.clone().multiplyScalar(c.shade)));
+    this.curlMesh.instanceColor.needsUpdate=true;
+    return {...next};
+  }
+
+  dispose(){
+    if(this.disposed)return;this.disposed=true;this.root.removeFromParent();
+    this.curlMesh.dispose();
+    for(const resource of [...this._ownedGeometries,...this._ownedMaterials,...this._ownedTextures])resource.dispose();
+    this._ownedGeometries.clear();this._ownedMaterials.clear();this._ownedTextures.clear();
   }
 
   impulse(strength,dx=0,dz=0) {
@@ -209,7 +246,7 @@ export class Driver {
     hw.x=clamp(hw.x+hw.vx*h,-.085,.085);hw.z=clamp(hw.z+hw.vz*h,-.075,.075);
     this.neck.rotation.x=hw.x;this.neck.rotation.z=hw.z;
     this.head.rotation.y=Math.sin(t*.48)*.022-steer*.26;
-    if(!this.curls.length)return;
+    if(!this.curls.length||!this.hairGroup.visible||!this.curlMesh.visible)return;
     const wind=Math.min(1,Math.abs(speed)/40),step=h/2;
     for(let k=0;k<2;k++)for(const c of this.curls) {
       c.vel.x+=(-c.off.x*240-c.vel.x*25-ax*.0008+c.w*Math.sin(t*c.f+c.ph)*wind*.020)*step;
@@ -257,7 +294,7 @@ function mergeRigidMeshes(parent, retained = null) {
       return geometry;
     });
     const merged = new THREE.Mesh(mergeGeometries(geometries), material);
-    for (const mesh of meshes) parent.remove(mesh);
+    for (const mesh of meshes){parent.remove(mesh);if(!SHARED_GEOMETRIES.has(mesh.geometry))mesh.geometry.dispose();}
     for (const geometry of geometries) geometry.dispose();
     parent.add(merged);
   }
