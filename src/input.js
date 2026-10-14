@@ -1,4 +1,5 @@
 import { GameplayToast } from './gameplay-toast.js';
+import { carTransmission } from './transmission.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
@@ -40,7 +41,7 @@ export class Input {
     this.state = { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false,
       ...Object.fromEntries(EDGE_ACTIONS.map(a => [a, false])) };
     this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
-    this.nitrousEnabled = false;
+    this.nitrousEnabled = false; this.transmissionEnabled = false;
     this.load();
     this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => this.keys.delete(e.code));
     this.listen('blur', () => this.clear());
@@ -51,10 +52,22 @@ export class Input {
   }
   setNitrousEnabled(enabled) {
     this.nitrousEnabled = enabled === true;
-    if (!this.nitrousEnabled) this.state.nitro = false;
+    if (!this.nitrousEnabled) { this.state.nitro = false; this.touch.nitro = 0; }
     const button = this.touchUI?.querySelector('[data-action="nitro"]');
-    if (button) button.hidden = !this.nitrousEnabled;
-    for (const hint of this.document?.querySelectorAll?.('[data-nitrous]') || []) hint.hidden = !this.nitrousEnabled;
+    if (button && button.hidden !== !this.nitrousEnabled) button.hidden = !this.nitrousEnabled;
+    if (!this.nitrousEnabled && button?.classList.contains('held')) button.classList.remove('held');
+    for (const hint of this.document?.querySelectorAll?.('[data-nitrous]') || []) if (hint.hidden !== !this.nitrousEnabled) hint.hidden = !this.nitrousEnabled;
+  }
+  // Production polls the selected spec every frame, including car switches and menu resumes.
+  setCarSpec(spec) {
+    this.setNitrousEnabled(spec?.nitrous === true);
+    this.transmissionEnabled = !!spec && carTransmission(spec) === 'both';
+    const button = this.touchUI?.querySelector('[data-action="transmission"]');
+    if (button && button.hidden !== !this.transmissionEnabled) button.hidden = !this.transmissionEnabled;
+    if (!this.transmissionEnabled && this.touch.transmission) { this.touch.transmission = 0; this.pending.delete('transmission'); }
+    if (!this.transmissionEnabled && button?.classList.contains('held')) button.classList.remove('held');
+    const columns = String(this.nitrousEnabled || this.transmissionEnabled ? 4 : 3);
+    if (this.touchUI && this.touchUI.dataset.auxColumns !== columns) this.touchUI.dataset.auxColumns = columns;
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
   destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); this.gameplayToast = null; const toast = this.document?.getElementById?.('input-toast'); if (toast) toast.hidden = true; this.touchUI?.remove(); this.cancelCapture(); }
@@ -284,12 +297,13 @@ export class Input {
       const pedals = doc.createElement('div'); pedals.className = 'touch-pedals';
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
       for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftDown', 'GEAR −'], ['shiftUp', 'GEAR +'], ['transmission', 'MODE'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
-        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
+        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled; if (action === 'transmission') button.hidden = !this.transmissionEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });
         (action === 'throttle' || action === 'brake' ? pedals : aux).append(button);
       }
+      root.dataset.auxColumns = String(this.nitrousEnabled || this.transmissionEnabled ? 4 : 3);
       root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
     };
     if ((this.navigator?.maxTouchPoints || 0) > 0 || this.target?.matchMedia?.('(pointer: coarse)').matches) enable();

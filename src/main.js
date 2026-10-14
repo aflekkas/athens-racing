@@ -574,7 +574,7 @@ addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch'
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
   const blocked = G.ctxLost || document.hidden || G.state === 'loading' && !menu?.open && multiplayer.panel.hidden;
-  controls.setNitrousEnabled(player?.veh.spec.nitrous === true);
+  controls.setCarSpec(player?.veh.spec);
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked, retainMouseLock: !!G.cameraStarting });
   const pad = controls.pad;
   if (controls.keys.size) G.inputDevice = 'keyboard';
