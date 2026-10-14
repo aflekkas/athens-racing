@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { settings, setSetting } from './settings.js';
 import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 
 // ---------------------------------------------------------------- quality tiers
@@ -13,10 +14,10 @@ import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 //   mirrorFar: mirror camera far plane (m) · trafficDraw: traffic drawn out to (m, null = from the draw distance) ·
 //   crowd: pedestrians drawn out to (m)
 export const GRAPHICS_TIERS = {
-  low: { scenery: 'low', pixelRatio: 0.8, msaa: 0, fxaa: true, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 12, sharpen: 0, heat: false, shadow: null, shadowEvery: 1, mirrorEvery: 0, mirrorFar: 0, trafficDraw: 320, crowd: 110 },
-  med: { scenery: 'med', pixelRatio: 1.1, msaa: 2, fxaa: true, ao: 6, bloomMips: 4, blurTaps: 6, dofTaps: 16, sharpen: 0.12, heat: false, shadow: [95, 2048], shadowEvery: 2, mirrorEvery: 2, mirrorFar: 240, trafficDraw: 420, crowd: 140 },
-  high: { scenery: 'high', pixelRatio: 1.5, msaa: 4, fxaa: true, ao: 10, bloomMips: 5, blurTaps: 8, dofTaps: 24, sharpen: 0.18, heat: true, shadow: [150, 4096], shadowEvery: 1, mirrorEvery: 1, mirrorFar: 600, trafficDraw: null, crowd: 175 },
-  ultra: { scenery: 'high', pixelRatio: 2, msaa: 8, fxaa: true, ao: 16, bloomMips: 6, blurTaps: 12, dofTaps: 40, sharpen: 0.18, heat: true, shadow: [220, 4096], shadowEvery: 1, mirrorEvery: 1, mirrorFar: 600, trafficDraw: null, crowd: 175 },
+  low: { scenery: 'low', msaa: 0, fxaa: true, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 12, sharpen: 0, heat: false, shadow: null, shadowEvery: 1, mirrorEvery: 0, mirrorFar: 0, trafficDraw: 320, crowd: 110 },
+  med: { scenery: 'med', msaa: 2, fxaa: true, ao: 6, bloomMips: 4, blurTaps: 6, dofTaps: 16, sharpen: 0.12, heat: false, shadow: [95, 2048], shadowEvery: 2, mirrorEvery: 2, mirrorFar: 240, trafficDraw: 420, crowd: 140 },
+  high: { scenery: 'high', msaa: 4, fxaa: true, ao: 10, bloomMips: 5, blurTaps: 8, dofTaps: 24, sharpen: 0.18, heat: true, shadow: [150, 4096], shadowEvery: 1, mirrorEvery: 1, mirrorFar: 600, trafficDraw: null, crowd: 175 },
+  ultra: { scenery: 'high', msaa: 8, fxaa: true, ao: 16, bloomMips: 6, blurTaps: 12, dofTaps: 40, sharpen: 0.18, heat: true, shadow: [220, 4096], shadowEvery: 1, mirrorEvery: 1, mirrorFar: 600, trafficDraw: null, crowd: 175 },
 };
 export const GRAPHICS_CHOICES = ['auto', 'ultra', 'high', 'med', 'low'];
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
@@ -98,18 +99,22 @@ export async function detectQualityTier({ probe = true, gpuName = '', userAgent 
   if (tier === 'ultra') tier = 'high';
   return { tier, reasons, gpu, cores, memory, msPerPass: ms ?? null };
 }
-/**
- * Persist a tier choice ('auto' | 'low' | 'med' | 'high' | 'ultra'). The renderer, shadow maps and world LOD are
- * built once per page load, so a change of the running tier reloads with ?quality=; returns true when it reloads.
- * Pass { reload: false } to only store it (e.g. before the game has booted).
- */
-export function applyQualityTier(tier, { reload = true, current = window.__renderInfo?.().quality } = {}) {
+/** Persist and apply quality live. The legacy reload option is accepted without navigation. */
+export function applyQualityTier(tier, _options = {}) {
   if (tier !== 'auto' && !GRAPHICS_TIERS[tier]) throw new Error(`Unknown graphics tier: ${tier}`);
-  try { localStorage.setItem(QUALITY_STORAGE_KEY, tier); } catch {}
-  const resolved = tier === 'auto' ? null : tier;
-  if (!reload || (resolved && resolved === current)) return false;
-  const url = new URL(location.href); url.searchParams.set('quality', tier); location.href = url;
-  return true;
+  const changed = settings.graphics !== tier;
+  setSetting('graphics', tier);
+  return changed;
+}
+/** Resolution is independent of effects quality: 'auto' or 0.5..1 of the capped device DPR. */
+export function applyRenderResolution(scale, { pixelRatioCap } = {}) {
+  const previous = [settings.renderScale, settings.pixelRatioCap];
+  setSetting('renderScale', scale);
+  if (pixelRatioCap !== undefined) setSetting('pixelRatioCap', pixelRatioCap);
+  return previous[0] !== settings.renderScale || previous[1] !== settings.pixelRatioCap;
+}
+export function resolutionRatio(deviceRatio = 1, scale = settings.renderScale, cap = settings.pixelRatioCap) {
+  return Math.min(deviceRatio || 1, cap) * (scale === 'auto' ? 1 : scale);
 }
 
 // Keep the course and car geometry intact while reducing expensive per-pixel
@@ -117,17 +122,19 @@ export function applyQualityTier(tier, { reload = true, current = window.__rende
 export function simplifyScenery(sky, skyCube, water, terrain) {
   if (!sky.userData.lowScenery) {
   const oldSky = sky.material;
-  sky.material = new THREE.ShaderMaterial({
+  sky.material = sky.userData.lowMaterial ||= new THREE.ShaderMaterial({
     uniforms: { skyCube: { value: skyCube } }, side: THREE.BackSide, depthWrite: false, fog: false,
     vertexShader: 'varying vec3 vDir; void main(){vDir=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.0); gl_Position=p.xyww;}',
     fragmentShader: 'uniform samplerCube skyCube; varying vec3 vDir; void main(){gl_FragColor=vec4(textureCube(skyCube,normalize(vDir)).rgb,1.0);}',
   });
   // the full sky material stays alive: env.js bakes the sky cube with it on every change of conditions
-  void oldSky;
+  sky.userData.fullMaterial ||= oldSky;
   sky.userData.lowScenery = true;
   }
   if (water) {
-  const oldWater = water.mesh.material;
+  if (!water.mesh.userData.fullMaterial) water.mesh.userData.fullMaterial = water.mesh.material;
+  const oldWater = water.mesh.userData.fullMaterial;
+  if (water.mesh.userData.lowMaterial) { water.mesh.material = water.mesh.userData.lowMaterial; } else {
   const sea = new THREE.ShaderMaterial({
     uniforms: { ...AP_UNIFORMS, skyCube: { value: skyCube }, time: oldWater.uniforms.uTime, uBody: CU.uSeaBody }, // body colour follows the time of day (env.js)
     vertexShader: 'varying vec3 world; void main(){world=(modelMatrix*vec4(position,1.0)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(world,1.0);}',
@@ -144,10 +151,32 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
       col=mix(col,apHorizon(normalize(off)),smoothstep(8000.,26000.,length(off.xz)));
       gl_FragColor=vec4(col,1.);}`,
   });
-  water.mesh.material = sea;
+  water.mesh.material = sea; water.mesh.userData.lowMaterial = sea;
   }
+  }
+  if (terrain && !terrain.userData?.lowMaterials) {
+  terrain.userData ||= {};
+  terrain.userData.lowMaterials = true;
   const ground = new THREE.MeshLambertMaterial({ vertexColors: true });
   const coarse = ground.clone(); Object.assign(coarse, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 }); // see terrain.js
-  terrain.group.traverse(o => { if (o.isMesh) o.material = o.userData.coarseTerrain ? coarse : ground; });
-  terrain.material.dispose();
+  terrain.group.traverse(o => { if (o.isMesh) { o.userData.fullMaterial = o.material; o.userData.lowMaterial = o.userData.coarseTerrain ? coarse : ground; o.material = o.userData.lowMaterial; } });
+  }
+}
+
+/** Reuse the existing world; material variants are kept for later switches. */
+export function applySceneryQuality(sky, skyCube, water, worldGroup, low) {
+  if (low) simplifyScenery(sky, skyCube, water, null);
+  else if (sky.userData.fullMaterial) { sky.material = sky.userData.fullMaterial; sky.userData.lowScenery = false; }
+  if (water?.mesh.userData.fullMaterial) water.mesh.material = low ? water.mesh.userData.lowMaterial : water.mesh.userData.fullMaterial;
+  worldGroup?.traverse(o => { if (o.userData.lowMaterial && o.userData.fullMaterial) o.material = low ? o.userData.lowMaterial : o.userData.fullMaterial; });
+}
+
+/** Release inactive quality variants when their owning map is disposed. */
+export function releaseSceneryVariants(root) {
+  const active = new Set(), variants = new Set();
+  root.traverse(o => {
+    for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) active.add(m);
+    for (const value of [o.userData.fullMaterial, o.userData.lowMaterial]) for (const m of Array.isArray(value) ? value : value ? [value] : []) variants.add(m);
+  });
+  for (const m of variants) if (!active.has(m) && !m.userData.shared) m.dispose();
 }

@@ -388,11 +388,11 @@ function gradeFor(time, weather) {
 
 export const PHOTO_FILTERS = ['neutral', 'warm', 'cool', 'mono', 'film', 'sunset'];
 export function createPost(renderer, scene, camera, { lowQuality = false, quality = lowQuality ? 'low' : 'high' } = {}) {
-  const tier = GRAPHICS_TIERS[quality] || GRAPHICS_TIERS.high;
+  let tier = GRAPHICS_TIERS[quality] || GRAPHICS_TIERS.high;
   lowQuality = quality === 'low';
   const gl = renderer.getContext();
   const size = renderer.getSize(new THREE.Vector2());
-  const pr = renderer.getPixelRatio();
+  let pr = renderer.getPixelRatio();
   const W = () => Math.max(1, Math.floor(size.x * pr)), H = () => Math.max(1, Math.floor(size.y * pr));
   const depthTex = new THREE.DepthTexture(W(), H());
   depthTex.type = THREE.UnsignedIntType;
@@ -410,7 +410,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
   compMat.uniforms.tColor.value = sceneRT.texture; compMat.uniforms.tAO.value = aoA.texture;
   const quad = new FullScreenQuad(null);
   // ---- bloom chain
-  const bloomMips = NOBLOOM ? 0 : tier.bloomMips;
+  let bloomMips = NOBLOOM ? 0 : tier.bloomMips;
   const mips = [];
   for (let i = 0; i < bloomMips; i++) mips.push(new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false }));
   const bloomMat = (frag, defines = {}, blend = false) => new THREE.ShaderMaterial({ defines, vertexShader: VS, fragmentShader: frag, depthTest: false, depthWrite: false,
@@ -507,6 +507,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
     },
     blur: 0.5,
     setSize(w, h, p) {
+      pr = p;
       size.set(w, h);
       const ww = Math.max(1, Math.floor(w * p)), hh = Math.max(1, Math.floor(h * p));
       sceneRT.setSize(ww, hh); hdrRT.setSize(ww, hh);
@@ -515,6 +516,22 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
       compMat.uniforms.uRes.value.set(ww, hh);
       u.uRes.value.set(ww, hh);
       mips.forEach((m, i) => m.setSize(Math.max(1, ww >> (i + 1)), Math.max(1, hh >> (i + 1))));
+    },
+    /** Keep this object (replay/weather reference it); rebuild only changed GPU resources. */
+    setQuality(next) {
+      if (!GRAPHICS_TIERS[next] || next === post.quality) return;
+      tier = GRAPHICS_TIERS[next]; post.quality = quality = next; lowQuality = next === 'low'; post.tier = tier;
+      const nextSamples = Math.min(tier.msaa, gl.getParameter(gl.MAX_SAMPLES) || 0);
+      if (sceneRT.samples !== nextSamples) { sceneRT.dispose(); sceneRT.samples = nextSamples; }
+      for (const [mat, defs] of [[aoMat, { NS: Math.max(1, tier.ao) }], [compMat, { BLUR_TAPS: tier.blurTaps, DOF_TAPS: tier.dofTaps }]]) {
+        Object.assign(mat.defines, defs); mat.needsUpdate = true;
+      }
+      bloomMips = NOBLOOM ? 0 : tier.bloomMips;
+      while (mips.length > bloomMips) mips.pop().dispose();
+      while (mips.length < bloomMips) mips.push(new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false }));
+      u.tBloom.value = mips[0]?.texture || blackTex;
+      post.aoOn = tier.ao > 0 && !NOAO; post.sharpen = tier.sharpen; post.bloomScale = tier.bloomMips ? 1 : 0;
+      post.setConditions(ENV.COND_STATE); post.setSize(size.x, size.y, pr); post.resetHistory();
     },
     resetHistory() { havePrev = false; post.snapGrade(); },
     /** jump the eased grade / exposure to the current conditions (map switch, photo mode, captures) */

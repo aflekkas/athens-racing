@@ -89,7 +89,7 @@ function wrap(mat, tag, fn) {
   if (mat.userData.wx) return; mat.userData.wx = tag;
   const prev = mat.onBeforeCompile, prevKey = mat.customProgramCacheKey;
   mat.onBeforeCompile = function (sh, r) { prev.call(this, sh, r); fn(sh); };
-  mat.customProgramCacheKey = function () { return prevKey.call(this) + '|' + tag; };
+  mat.customProgramCacheKey = function () { return prevKey.call(this) + '|' + tag + (tag === 'wx-road' ? `-${W?.nl}-${W?.nc}` : ''); };
   mat.needsUpdate = true;
 }
 const warned = new Set();
@@ -280,7 +280,6 @@ const _v = new THREE.Vector3(), _f = new THREE.Vector3(), _c = new THREE.Vector3
 export function disposeWeather() {
   if (!W) return;
   W.offConditions?.();
-  if (W.onRestore) W.renderer.domElement.removeEventListener('webglcontextrestored', W.onRestore);
   const geometries = new Set(), materials = new Set();
   for (const object of [W.lampGlow?.p, W.carGlow?.p, W.rain?.mesh, W.spray?.pts, W.spot, W.spot?.target]) {
     object?.removeFromParent();
@@ -326,20 +325,33 @@ export function initWeather(ctx) {
   W.lampGlow.p.visible = false; scene.add(W.lampGlow.p);
   W.carGlow = pointsOf(4 * 72, W.glowMat); W.carGlow.p.visible = false; scene.add(W.carGlow.p);
   // -- the player's headlights: one real spot light on HIGH (always in the scene so switching never recompiles)
-  if (q === 'high') {
+  {
     W.spot = new THREE.SpotLight(0xfff1dc, 0, 0, 0.62, 0.55, 2);
     W.spot.castShadow = false; scene.add(W.spot); scene.add(W.spot.target);
   }
   // -- rain, spray
-  W.rain = createRain(low ? 1800 : med ? 3500 : 6000); scene.add(W.rain.mesh);
-  W.spray = new Spray(scene, low ? 220 : med ? 400 : 600);
+  W.rain = createRain(6000); scene.add(W.rain.mesh);
+  W.spray = new Spray(scene, 600);
   W.dropMat = dropMaterial();
-  // a lost and restored WebGL context brings the render targets back empty: re-bake the sky / IBL and the car probe seed
-  W.onRestore = () => { ENV.rebakeSky(); if (W.probe && ENV.bakedSky()) W.probe.pmrem.fromCubemap(ENV.bakedSky(), W.probe.envRT); };
-  ctx.renderer.domElement.addEventListener('webglcontextrestored', W.onRestore);
   W.offConditions = ENV.onConditions(apply);
+  applyWeatherQuality(q);
   apply(ENV.COND, ENV.COND_STATE, true);
   return W;
+}
+
+/** Reconfigure weather effects in place; no lamp scan, world rebuild, or physics reset. */
+export function applyWeatherQuality(quality) {
+  if (!W) return;
+  const low = quality === 'low', med = quality === 'med';
+  W.q = quality; W.quality = quality; W.low = low;
+  const nl = low ? 6 : med ? 8 : NL, nc = low ? 3 : med ? 4 : NC;
+  if (nl !== W.nl || nc !== W.nc) {
+    W.nl = nl; W.nc = nc;
+    W.scene.traverse(o => { for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) if (m.userData.wx === 'wx-road') m.needsUpdate = true; });
+  }
+  W.rain.mesh.geometry.instanceCount = low ? 1800 : med ? 3500 : 6000;
+  W.spray.n = low ? 220 : med ? 400 : 600; W.spray.k %= W.spray.n;
+  W.spray.g.setDrawRange(0, W.spray.n);
 }
 
 function apply(cond, st, changed) {
@@ -358,7 +370,7 @@ function apply(cond, st, changed) {
   // (traffic templates are shared with the parked cars, so moving traffic gets its headlamps from the glow sprites)
   W.lastLights = null; // re-apply to the racers next frame
   W.post.setConditions(st);
-  if (changed && W.probe && ENV.bakedSky()) W.probe.pmrem.fromCubemap(ENV.bakedSky(), W.probe.envRT);
+  if (changed) W.probe?.reset();
   W.rain.mesh.visible = rain > 0; W.spray.pts.visible = rain > 0;
   W.audio?.setWeather?.(cond.weather, rain || (st.over ? 0.3 : 0));
   W.audio?.setTimeOfDay?.(cond.time);
@@ -424,7 +436,7 @@ export function updateWeather(dt) {
   if (on || f % 2 === 0) {
     for (let i = 0; i < cars.length; i++) {
       const c = cars[i], m = c.model; if (!m.root.visible) continue;
-      pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0, i > 0 || !W.spot);
+      pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0, i > 0 || W.q !== 'high');
     }
     if (W.traffic) {
       carList.length = 0;
@@ -437,7 +449,7 @@ export function updateWeather(dt) {
     for (const a of ['position', 'aSize', 'aCol']) G.g.attributes[a].needsUpdate = true;
   }
   if (W.spot && player) {
-    W.spot.intensity = on ? 90 : 0;
+    W.spot.intensity = on && W.q === 'high' ? 90 : 0;
     if (on) {
       const r = player.model.root; r.updateMatrixWorld();
       W.spot.position.set(0, 0.72, -player.model.dims.L / 2 + 0.2).applyMatrix4(r.matrixWorld);

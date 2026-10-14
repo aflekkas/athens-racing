@@ -375,12 +375,13 @@ export function createSky() {
 
 // the baked sky lives in fixed render targets: a change of conditions re-renders into the same textures, so the
 // sea, scene.environment, the LOW-tier sky and the car probe all follow without being re-wired
-const BAKE = { renderer: null, sky: null, atmoRT: null, envRT: null, pmremRT: null, atmoMat: null, s1: null, s2: null };
+const BAKE = { renderer: null, sky: null, atmoRT: null, envRT: null, pmremRT: null, pmrem: null, invalid: true, atmoMat: null, s1: null, s2: null };
 export function bakeSky(renderer, sky) {
   // 1. the clear atmosphere into a cube (expensive shader, done once per change of conditions)
   if (!BAKE.atmoRT) {
     // keep the full sky material for baking: LOW (graphics.js) swaps the visible dome for a cube lookup
     BAKE.renderer = renderer; BAKE.sky = sky; BAKE.skyMat = sky.material;
+    BAKE.pmrem = new THREE.PMREMGenerator(renderer);
     BAKE.atmoRT = new THREE.WebGLCubeRenderTarget(192, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
     BAKE.atmoMat = new THREE.ShaderMaterial({
       uniforms: { uSun: { value: sunDir }, uE: CU.uE, uSunIrr: CU.uSunIrr, uSkyIrr: CU.uSkyIrr }, side: THREE.BackSide, depthWrite: false,
@@ -392,19 +393,60 @@ export function bakeSky(renderer, sky) {
     BAKE.envRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
     BAKE.s2 = new THREE.Scene(); const s = sky.clone(); s.material = BAKE.skyMat; s.position.set(0, 0, 0); BAKE.s2.add(s);
   }
+  const oldAuto = renderer.shadowMap.autoUpdate, oldNeeds = renderer.shadowMap.needsUpdate;
+  renderer.shadowMap.autoUpdate = renderer.shadowMap.needsUpdate = false;
+  try {
   new THREE.CubeCamera(0.1, 100, BAKE.atmoRT).update(renderer, BAKE.s1);
   const su = BAKE.skyMat.uniforms;
   su.uAtmo.value = BAKE.atmoRT.texture;
   su.uEnv.value = 1;
   new THREE.CubeCamera(1, 20000, BAKE.envRT).update(renderer, BAKE.s2);
   su.uEnv.value = 0;
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  BAKE.pmremRT = pmrem.fromCubemap(BAKE.envRT.texture, BAKE.pmremRT);
-  pmrem.dispose();
+  // A fresh PMREMGenerator cannot reuse an output target: fromCubemap skips allocating its
+  // private blur buffers in that path. Keep the initialized generator for this fixed cube size.
+  BAKE.pmremRT = BAKE.pmrem.fromCubemap(BAKE.envRT.texture, BAKE.pmremRT);
+  if (!BAKE.tracked) {
+    for (const rt of [BAKE.atmoRT, BAKE.envRT, BAKE.pmremRT]) {
+      rt.addEventListener('dispose', () => { BAKE.invalid = true; });
+      rt.texture.addEventListener('dispose', () => { BAKE.invalid = true; });
+    }
+    BAKE.tracked = true;
+  }
+  BAKE.invalid = false;
+  } finally {
+    BAKE.skyMat.uniforms.uEnv.value = 0;
+    renderer.shadowMap.autoUpdate = oldAuto; renderer.shadowMap.needsUpdate = oldNeeds;
+  }
   return { cube: BAKE.envRT.texture, env: BAKE.pmremRT.texture, atmo: BAKE.atmoRT.texture };
 }
 
-let SUN = null;
+/** Seed a reflection cube at its own resolution, including all six faces. */
+export function fillSkyCube(renderer, target) {
+  const auto = renderer.shadowMap.autoUpdate, needs = renderer.shadowMap.needsUpdate;
+  renderer.shadowMap.autoUpdate = renderer.shadowMap.needsUpdate = false;
+  BAKE.skyMat.uniforms.uEnv.value = 1;
+  try { new THREE.CubeCamera(1, 20000, target).update(renderer, BAKE.s2); }
+  finally { BAKE.skyMat.uniforms.uEnv.value = 0; renderer.shadowMap.autoUpdate = auto; renderer.shadowMap.needsUpdate = needs; }
+}
+export function lightingState(scene) {
+  return { environment: !!BAKE.pmremRT && !BAKE.invalid && scene.environment === BAKE.pmremRT.texture,
+    sun: !!SUN && SUN.parent === scene && SUN.target.parent === scene && Number.isFinite(SUN.intensity) && SUN.intensity > 0,
+    fill: !!FILL && FILL.parent === scene && Number.isFinite(FILL.intensity) && FILL.intensity > 0 };
+}
+/** Recover detached lights or disposed/null IBL without replacing scene or race objects. */
+export function ensureLighting(scene, { rebake = false } = {}) {
+  const st = lightingState(scene);
+  if (rebake || !st.environment) { const baked = bakeSky(BAKE.renderer, BAKE.sky); scene.environment = baked.env; }
+  if (SUN) { if (SUN.parent !== scene) scene.add(SUN); if (SUN.target.parent !== scene) scene.add(SUN.target); SUN.color.copy(SUN_COLOR); SUN.intensity = SUN_INTENSITY; }
+  if (FILL) { if (FILL.parent !== scene) scene.add(FILL); updateFill(); }
+  return rebake || !st.environment || !st.sun || !st.fill;
+}
+
+let SUN = null, FILL = null;
+function updateFill() {
+  // Small diffuse safety fill also serves Lambert terrain/impostors, which cannot sample IBL.
+  FILL.intensity = Math.max(0.015, COND_STATE.daylight * 0.12);
+}
 // The sun's shadow box follows the car: fade the shadows out toward its edges instead of cutting them off on a square.
 THREE.ShaderChunk.shadowmap_pars_fragment = THREE.ShaderChunk.shadowmap_pars_fragment.replace(
   '\t\t}\n\t\treturn mix( 1.0, shadow, shadowIntensity );\n\t}\n\tvec2 cubeToUV',
@@ -426,7 +468,8 @@ export function createLights(scene) {
   sun.shadow.bias = -0.0002; sun.shadow.normalBias = 0.04; sun.shadow.radius = 3; sun.shadow.blurSamples = 12;
   scene.add(sun); scene.add(sun.target);
   SUN = sun;
-  return { sun };
+  FILL = new THREE.HemisphereLight(0xc8dcf2, 0x837563, 0.12); updateFill(); scene.add(FILL);
+  return { sun, fill: FILL };
 }
 
 const listeners = [];
@@ -447,6 +490,7 @@ export function setConditions(c = {}) {
     if (BAKE.renderer) bakeSky(BAKE.renderer, BAKE.sky);
   }
   if (SUN) { SUN.color.copy(SUN_COLOR); SUN.intensity = SUN_INTENSITY; }
+  if (FILL) updateFill();
   for (const fn of listeners) fn(COND, COND_STATE, changed);
   return { ...COND };
 }

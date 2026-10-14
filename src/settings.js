@@ -7,7 +7,9 @@
 //   settings.abs              ABS as fitted; independent of the live TC/ESC toggle
 //   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
-//   settings.graphics         'auto' | 'ultra' | 'high' | 'med' | 'low' (applied by reloading the page)
+//   settings.graphics         'auto' | 'ultra' | 'high' | 'med' | 'low' (applied live)
+//   settings.renderScale      'auto' | 0.5..1 (live, independent of quality)
+//   settings.pixelRatioCap    1..2 (caps device DPR before multiplying renderScale)
 //   settings.drawDistance     'auto' (the tier's default) | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
 //   settings.motionBlur       camera motion blur on / off (src/post.js)
 //   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
@@ -18,13 +20,22 @@ export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambi
 const KEY = 'paraliaki.settings';
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', renderScale: 'auto', pixelRatioCap: 1.5, drawDistance: 'auto', motionBlur: true, ghostEnabled: true, police: false,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
 function cameraValue(key, value) {
   const range = CAMERA_RANGES[key];
   return range ? Math.max(range[0], Math.min(range[1], Number.isFinite(+value) ? +value : DEFAULTS[key])) : value === true;
+}
+export function resolutionValue(value) {
+  if (value === 'auto') return 'auto';
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0.5, Math.min(1, n)) : 'auto';
+}
+export function pixelRatioCapValue(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(1, Math.min(2, n)) : DEFAULTS.pixelRatioCap;
 }
 const ls = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch { return null; } };
 
@@ -58,6 +69,9 @@ function load() {
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
   if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
+  if (!['auto', 'low', 'med', 'high', 'ultra'].includes(out.graphics)) out.graphics = 'auto';
+  out.renderScale = resolutionValue(out.renderScale);
+  out.pixelRatioCap = pixelRatioCapValue(out.pixelRatioCap);
   out.aids = out.aids !== false;
   out.abs = out.abs !== false;
   out.ghostEnabled = out.ghostEnabled !== false;
@@ -74,6 +88,9 @@ export const settings = load();
 const subs = new Set();
 export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
+  if (key === 'graphics' && !['auto', 'low', 'med', 'high', 'ultra'].includes(value)) return;
+  if (key === 'renderScale') value = resolutionValue(value);
+  if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
   if (key === 'mildLanguage' || key === 'showTyreGrip' || key === 'aids' || key === 'abs') value = value === true;
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);
   if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));

@@ -39,7 +39,7 @@ import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
-import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
+import { initWeather, updateWeather, updateRoadWeather, disposeWeather, applyWeatherQuality } from './weather.js';
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
 import { SessionTransitions } from './session-transitions.js';
@@ -48,7 +48,7 @@ import { EnforcementRuntime } from './enforcement-runtime.js';
 import { FinePhone } from './enforcement-hud.js';
 import { redViolation } from './enforcement.js';
 import { updateSceneryLod, setDrawDistance, drawDistanceFor, drawDistance } from './scenery.js';
-import { GRAPHICS_TIERS, detectQuality } from './graphics.js';
+import { GRAPHICS_TIERS, detectQuality, applyQualityTier, applyRenderResolution, resolutionRatio, applySceneryQuality, releaseSceneryVariants } from './graphics.js';
 import { RenderScale } from './render-scale.js';
 import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE } from './traffic-fleet.js';
@@ -96,16 +96,26 @@ const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_rendere
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 graphicsPreference = await firstQualityPreference(graphicsPreference, { gpuName });
 // the post chain runs the full tier (graphics.js); the world, weather and LOD code use its scenery tier (ultra = high)
-const quality = detectQuality(graphicsPreference, gpuName, navigator.userAgent), sceneryQuality = GRAPHICS_TIERS[quality].scenery;
-const lowGraphics = quality === 'low';
-window.__renderInfo = () => ({ gpu: gpuName, quality, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps });
-const DPR = Math.min(window.devicePixelRatio || 1, GRAPHICS_TIERS[quality].pixelRatio);
+let quality = detectQuality(graphicsPreference, gpuName, navigator.userAgent), sceneryQuality = GRAPHICS_TIERS[quality].scenery;
+let lowGraphics = quality === 'low';
+setSetting('graphics', graphicsPreference);
+window.__renderInfo = () => ({ gpu: gpuName, quality, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale, pixelRatioCap: settings.pixelRatioCap });
+let DPR = resolutionRatio(window.devicePixelRatio);
 const graphicsControl = document.createElement('select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics quality');
 for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['ultra', 'GRAPHICS: ULTRA'], ['high', 'GRAPHICS: HIGH'], ['med', 'GRAPHICS: MED'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
-graphicsControl.onchange = () => { try { localStorage.setItem('paraliaki.graphics', graphicsControl.value); } catch {} const url = new URL(location.href); url.searchParams.set('quality', graphicsControl.value); location.href = url; };
+graphicsControl.onchange = () => applyQualityTier(graphicsControl.value);
+// Minimal controls remain usable until Settings mounts its styled controls.
+const resolutionControl = document.createElement('select'); resolutionControl.id = 'render-resolution'; resolutionControl.setAttribute('aria-label', 'Render resolution');
+for (const value of ['auto', ...Array.from({ length: 11 }, (_, i) => Number((.5 + i * .05).toFixed(2)))]) { const o = document.createElement('option'); o.value = value; o.textContent = value === 'auto' ? 'RESOLUTION: AUTO' : `RESOLUTION: ${Math.round(value * 100)}%`; resolutionControl.append(o); }
+resolutionControl.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:90';
+resolutionControl.value = settings.renderScale; resolutionControl.onchange = () => applyRenderResolution(resolutionControl.value); document.body.append(resolutionControl);
+const capControl = document.createElement('select'); capControl.id = 'pixel-ratio-cap'; capControl.setAttribute('aria-label', 'Pixel ratio cap');
+for (const value of [1, 1.5, 2]) { const o = document.createElement('option'); o.value = value; o.textContent = `PIXEL RATIO CAP: ${value}`; capControl.append(o); }
+capControl.style.cssText = 'position:fixed;right:12px;bottom:44px;z-index:90';
+capControl.value = settings.pixelRatioCap; capControl.onchange = () => applyRenderResolution(settings.renderScale, { pixelRatioCap: capControl.value }); document.body.append(capControl);
 let pixelRatio = DPR;
-const renderScale = new RenderScale({ max: DPR });
+let renderScale = new RenderScale({ max: resolutionRatio(window.devicePixelRatio, 'auto'), min: resolutionRatio(window.devicePixelRatio, .5) });
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -145,13 +155,38 @@ const G = {
   shake: 0, flash: 0, driftAcc: 0, driftT: 0, markIdx: 0, finishedT: 0, orbitA: 0, autodrive: Q.has('autodrive'),
 };
 canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); G.ctxLost = true; clearDriveInput(); });
-canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; });
+canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; lightingRecoveryPending = true; });
 window.__game = G;
 window.__voice = { voices, pedestrianVoice, driverVoice };
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
+let lightingRecoveryPending = false, lightingChecks = 0, lightingRepairs = 0;
+function lightingInfo() {
+  const st = ENV.lightingState(scene), probeOK = !!probe && !probe.invalid && !!probe.envRT.texture;
+  const exposure = post?.baseExposure;
+  return { ...st, probe: probeOK, probeFace: probe?.face, exposure, valid: st.environment && st.sun && st.fill && probeOK && Number.isFinite(exposure) && exposure > 0,
+    checks: lightingChecks, repairs: lightingRepairs };
+}
+function guardLighting(force = false) {
+  if (!sky || !post || !probe || G.ctxLost || renderer.getContext().isContextLost()) return;
+  if (!force && !lightingRecoveryPending && ++lightingChecks % 120) return;
+  const before = lightingInfo();
+  const recovered = ENV.ensureLighting(scene, { rebake: lightingRecoveryPending });
+  if (lightingRecoveryPending || recovered || !before.probe) probe.reset();
+  if (!Number.isFinite(post.baseExposure) || post.baseExposure <= 0) { post.setConditions(ENV.COND_STATE); post.resetHistory(); }
+  if (lightingRecoveryPending || recovered || !before.valid) { renderer.shadowMap.needsUpdate = true; sun.shadow.needsUpdate = true; post.resetHistory(); lightingRepairs++; }
+  lightingRecoveryPending = false;
+}
+window.__lightingInfo = lightingInfo;
+window.__lightingGuard = guardLighting;
+if (Q.has('simhook')) window.__renderTest = {
+  applyQualityTier, applyRenderResolution,
+  probeFace(face) { probe.face = face; },
+  breakLighting() { scene.environment?.dispose(); scene.environment = null; sun.removeFromParent(); probe.envRT.dispose(); post.baseExposure = NaN; },
+};
+
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
 let drivingModeView = null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
@@ -164,6 +199,27 @@ setDrawDistance(drawDistanceFor(quality), quality);
 // med / low cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
 const applyDrawDistance = () => { const T = GRAPHICS_TIERS[quality]; if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(T.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 450, 1150)); if (people) people.drawRadius = T.crowd; };
 onSettings((s, key) => { if (key === 'drawDistance') { setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); } });
+
+onSettings((s, key) => {
+  if (key === 'graphics') {
+    graphicsPreference = s.graphics; graphicsControl.value = s.graphics;
+    const next = detectQuality(s.graphics, gpuName, navigator.userAgent);
+    const url = new URL(location.href); if (url.searchParams.has('quality')) { url.searchParams.set('quality', s.graphics); history.replaceState(null, '', url); }
+    if (next === quality) return;
+    quality = next; sceneryQuality = GRAPHICS_TIERS[next].scenery; lowGraphics = next === 'low';
+    if (!post) return; // boot reads the current tier below
+    post.setQuality(next);
+    renderer.shadowMap.enabled = !lowGraphics; renderer.shadowMap.autoUpdate = true; renderer.shadowMap.needsUpdate = true;
+    if (GRAPHICS_TIERS[next].shadow) ENV.setShadowRange(...GRAPHICS_TIERS[next].shadow);
+    applySceneryQuality(sky, probeSeed, water, world?.group, lowGraphics); applyWeatherQuality(sceneryQuality);
+    setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); guardLighting(true);
+  } else if (key === 'renderScale' || key === 'pixelRatioCap') {
+    DPR = resolutionRatio(window.devicePixelRatio); pixelRatio = DPR;
+    renderScale = new RenderScale({ max: resolutionRatio(window.devicePixelRatio, 'auto'), min: resolutionRatio(window.devicePixelRatio, .5) });
+    resolutionControl.value = s.renderScale; capControl.value = s.pixelRatioCap;
+    onResize(); post?.resetHistory();
+  }
+});
 
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
 window.addEventListener('customizationchange', ({detail}) => {
@@ -285,6 +341,7 @@ async function switchMap(id = 'riviera') {
     hud.drawOverview($('overview'));
     if (window.__replay) { Object.assign(window.__replay.ctx, { route, traffic, hud }); window.__replay.last = null; window.__replay.saved = null; window.__replay.recorder = null; }
     G.ev = null; G.run = null; G.pendingEvent = null; G.gridKey = null;
+    releaseSceneryVariants(previous.group);
     const disposedResources = previous.dispose();
     lastMapDisposal = { mapId: previous.map.id, detached: !previous.group.parent, children: previous.group.children.length, bundleDisposed: previous.map.disposed, resources: disposedResources };
     renderer.renderLists.dispose();
@@ -1590,7 +1647,7 @@ function frame(now) {
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
   }
   // adaptive resolution (render-scale.js): only while driving, where a steady frame rate matters
-  if (!Q.has('fixeddt') && !Q.has('fixedres') && G.state === 'race' && !document.hidden) {
+  if (!Q.has('fixeddt') && !Q.has('fixedres') && settings.renderScale === 'auto' && G.state === 'race' && !document.hidden) {
     const next = renderScale.sample(wallDt * 1000);
     if (next) { pixelRatio = next; onResize(); }
   }
@@ -1857,33 +1914,43 @@ function createProbe() {
   const rt = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: false });
   const cc = new THREE.CubeCamera(0.5, 320, rt);
   for (const c of cc.children) { c.layers.set(ENV.REFLECT_LAYER); c.layers.enable(ENV.PROBE_LAYER); }
-  // start from the baked sky (no scene renders at boot); the faces stream in once the race is running
   cc.coordinateSystem = renderer.coordinateSystem; cc.updateCoordinateSystem();
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const envRT = pmrem.fromCubemap(probeSeed);
-  return { rt, cc, pmrem, envRT, face: 0 };
+  // All inputs are 128px. Reusing a 256px seed's PMREM buffers for 128px scene faces corrupts the filter.
+  ENV.fillSkyCube(renderer, rt);
+  const envRT = pmrem.fromCubemap(rt.texture);
+  const p = { rt, cc, pmrem, envRT, face: 0, invalid: false, reset() {
+    ENV.fillSkyCube(renderer, rt); pmrem.fromCubemap(rt.texture, envRT); p.face = 0; p.invalid = false;
+  } };
+  for (const resource of [rt, rt.texture, envRT, envRT.texture]) resource.addEventListener('dispose', () => { p.invalid = true; });
+  return p;
 }
 function updateProbe() {
   const p = probe;
   if (p.face === 0) { p.cc.position.copy(player.model.root.position); p.cc.position.y += 1.8; p.cc.updateMatrixWorld(true); }
-  const prevA = renderer.shadowMap.autoUpdate; renderer.shadowMap.autoUpdate = false;
-  renderer.setRenderTarget(p.rt, p.face); renderer.render(scene, p.cc.children[p.face]); renderer.setRenderTarget(null);
-  renderer.shadowMap.autoUpdate = prevA;
+  const prevA = renderer.shadowMap.autoUpdate, prevN = renderer.shadowMap.needsUpdate, target = renderer.getRenderTarget();
+  renderer.shadowMap.autoUpdate = renderer.shadowMap.needsUpdate = false;
+  try { renderer.setRenderTarget(p.rt, p.face); renderer.render(scene, p.cc.children[p.face]); }
+  finally { renderer.setRenderTarget(target); renderer.shadowMap.autoUpdate = prevA; renderer.shadowMap.needsUpdate = prevN; }
   p.face = (p.face + 1) % 6;
   if (p.face === 0) p.pmrem.fromCubemap(p.rt.texture, p.envRT);
 }
 
 function render() {
   if (G.ctxLost || renderer.getContext().isContextLost()) return;
+  guardLighting();
   renderer.info.autoReset = false; renderer.info.reset();
   updateWeather(G.lastDt || 1 / 60);
+  // Auxiliary views must never consume a pending main-view shadow update (mirrors hide the player).
+  const shadowEnabled = !lowGraphics, pendingShadow = renderer.shadowMap.needsUpdate;
+  renderer.shadowMap.enabled = false;
   if (!lowGraphics && (quality === 'med' ? frameN % 4 === 0 : (frameN & 1))) updateProbe();
   if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
   if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
   // med: mirrors at half cadence with a shorter far plane, shadow map every 2nd frame (graphics.js)
   const T = GRAPHICS_TIERS[quality];
-  if (T.shadowEvery > 1) renderer.shadowMap.autoUpdate = false;
+
   if (G.cam === 'cockpit' && (!T.mirrorEvery || frameN % T.mirrorEvery === 0)) player.cockpit.renderMirrors(renderer, scene, { enabled: T.mirrorEvery > 0, frame: frameN, far: T.mirrorFar });
   // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
@@ -1895,7 +1962,9 @@ function render() {
   }
   post.comp.uDof.value = orbit ? 5.5 : 0;
   if (orbit) post.comp.uFocus.value = camera.position.distanceTo(_v1.set(player.veh.x, player.veh.y + 0.7, player.veh.z));
-  if (T.shadowEvery > 1) renderer.shadowMap.needsUpdate = frameN % T.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
+  renderer.shadowMap.enabled = shadowEnabled;
+  renderer.shadowMap.autoUpdate = T.shadowEvery === 1;
+  renderer.shadowMap.needsUpdate = pendingShadow || !sun.shadow.map || frameN % T.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
   post.render(G.lastDt || 1 / 60);
 }
 
@@ -1956,7 +2025,7 @@ const multiplayer = new Multiplayer(CARS, {
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   async mapChanged(id) { await window.__flow.switchMap(id); if (multiplayer.active) onlineWait(); else window.__flow.quit(); },
   panelClosed() { G.countWall = performance.now(); if (G.state === 'race') controls.requestMouseLock(); },
-  join(car) { graphicsControl.disabled = true; graphicsControl.title = 'Choose graphics before joining a lobby'; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
+  join(car) { graphicsControl.disabled = false; graphicsControl.title = ''; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
   carChanged(car) {
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
     if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); }

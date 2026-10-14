@@ -96,3 +96,31 @@ test('invalid saved steering assist returns to the adaptive default', async () =
   module.setSetting('steeringAssist', 'invalid');
   assert.equal(module.settings.steeringAssist, null);
 });
+
+test('quality and resolution persist separately and notify live subscribers', async () => {
+  const storage = memory(), module = await preferences(storage), changes = [];
+  const off = module.onSettings((s, key) => changes.push([key, s[key]]));
+  module.setSetting('graphics', 'ultra');
+  module.setSetting('renderScale', .65);
+  module.setSetting('pixelRatioCap', 2);
+  assert.deepEqual(changes, [['graphics', 'ultra'], ['renderScale', .65], ['pixelRatioCap', 2]]);
+  assert.equal(storage.getItem('paraliaki.graphics'), 'ultra');
+  const saved = JSON.parse(storage.getItem('paraliaki.settings'));
+  assert.equal(saved.renderScale, .65); assert.equal(saved.pixelRatioCap, 2);
+  module.setSetting('graphics', 'low');
+  assert.equal(module.settings.renderScale, .65); assert.equal(module.settings.pixelRatioCap, 2);
+  const restored = await preferences(storage);
+  assert.equal(restored.settings.graphics, 'low'); assert.equal(restored.settings.renderScale, .65);
+  module.setSetting('renderScale', 'auto'); assert.equal(module.settings.renderScale, 'auto');
+  off();
+});
+
+test('resolution values are bounded on load and live writes', async () => {
+  const storage = memory(); storage.setItem('paraliaki.settings', JSON.stringify({ renderScale: 3, pixelRatioCap: .2 }));
+  const module = await preferences(storage);
+  assert.equal(module.settings.renderScale, 1); assert.equal(module.settings.pixelRatioCap, 1);
+  module.setSetting('renderScale', .1); assert.equal(module.settings.renderScale, .5);
+  module.setSetting('pixelRatioCap', 10); assert.equal(module.settings.pixelRatioCap, 2);
+  module.setSetting('renderScale', 'invalid'); assert.equal(module.settings.renderScale, 'auto');
+  module.setSetting('graphics', 'invalid'); assert.equal(module.settings.graphics, 'auto');
+});
