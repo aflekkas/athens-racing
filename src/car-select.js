@@ -6,7 +6,7 @@ import { TurntableControl } from './turntable-control.js';
 import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { CAR_CLASSES, carCategory, filterCars } from './car-catalog.js';
+import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars } from './car-catalog.js';
 
 // Period 0–100 km/h figures for the represented drivetrain (seconds).
 // Power, mass and driven wheels come from the live physics catalogue.
@@ -25,24 +25,25 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
     const list = filterCars(CARS, filters), attrs = { 'data-scope': 'catalog' };
     const html = C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
       body: `<div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
-      ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...CAR_CLASSES.map(x => [x, x.toUpperCase()])], attrs })}
+      ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
       ${C.select({ key: 'drive', label: 'DRIVE', value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
       ${C.select({ key: 'power', label: 'POWER', value: filters.power || 'all', options: [['all', 'ALL HP'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
-      ${C.select({ key: 'sort', label: 'SORT', value: filters.sort || 'name', options: [['name', 'NAME'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>
-      <div class="catalog-count label">${list.length} / ${CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}</div>
-      <div class="car-grid scroll-y">${list.map(({ car, index: i }) => {
+      ${C.select({ key: 'sort', label: 'SORT', value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>
+      <div class="catalog-count label">${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}</div>
+      <div class="car-grid scroll-y">${list.map(({ car, index: i }, n) => {
+        const group = carCategory(car), head = n === 0 || carCategory(list[n - 1].car) !== group ? `<h3 class="car-group label">${classLabel(group)}<span>${list.filter(x => carCategory(x.car) === group).length}</span></h3>` : '';
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
-        return C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
+        return head + C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
           attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
           media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(car.name),
-          text: `${carCategory(car).toUpperCase()}`,
+          text: classLabel(carCategory(car)),
           foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
     return embedded ? html.slice(html.indexOf('<div class="scr__body">') + '<div class="scr__body">'.length, html.lastIndexOf('</div><footer class="scr__foot">')) : html;
   }
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
-  return C.screen({ cls: 'scr--car', kick: carCategory(c).toUpperCase(), title: c.name,
-    hints: [['select', 'SELECT'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
+  return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
+    hints: [['select', 'BROWSE'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
     body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count">${C.badge(c.drive.toUpperCase())}</span></div>
     <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
       <div class="car-transmission label">${c.gears.length}-SPEED</div>

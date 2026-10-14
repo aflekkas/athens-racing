@@ -9,6 +9,7 @@ import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount } from './events.js';
 import * as S from './settings.js';
 import { renderMapSelect, renderMapConfirm, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
+import { GARAGE_CARS } from './car-catalog.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
 import * as C from './ui/components.js';
 import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
@@ -261,7 +262,7 @@ export class Menu {
       <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
         ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · specs and paint`, act: 'garage' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
       </div><footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
@@ -278,12 +279,6 @@ export class Menu {
 
   // ---------------------------------------------------------------- car
   r_car(d) { return renderCarSelect(d); }
-  browseCar(delta) {
-    if (this.data.def?.car) return;
-    this.h.ui?.(delta > 0);
-    const data = { ...this.data, index: ((this.data.index || 0) + delta + CARS.length) % CARS.length };
-    this.leaving(); this.data = data; this.focus = null; this.render();
-  }
   confirmCar() {
     const c = CARS[this.data.index || 0];
     if (this.data.allowedCars && !this.data.allowedCars.includes(c.id)) return;

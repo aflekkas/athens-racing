@@ -458,6 +458,11 @@ body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons
 .catalog-search input::placeholder { color: var(--c-text-3); }
 .catalog-search:focus-within { border-color: transparent; box-shadow: var(--focus-ring); }
 .car-grid { flex: 1; grid-auto-rows: max-content; display: grid; grid-template-columns: repeat(auto-fill,minmax(15rem,1fr)); align-content: start; gap: 1rem; padding: 3px 3px 1rem; min-height: 0; }
+.car-group { grid-column: 1 / -1; display: flex; align-items: center; gap: .7rem; margin: .7rem 0 -.3rem; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .22em; color: var(--hu-text-2); }
+.car-group:first-child { margin-top: 0; }
+.car-grid .car-card { scroll-margin-top: 2.4rem; } /* focusing a card keeps its class header in view */
+.car-group span { color: var(--hu-text-3); letter-spacing: .1em; }
+.car-group::after { content: ""; flex: 1; height: 1px; background: var(--hu-hair); }
 .car-card .card__media { flex: none; min-height: 6rem; aspect-ratio: 2; background: #141b23; }
 .car-card .card__media::after { content: ""; position: absolute; inset: auto 0 0; height: 40%; background: linear-gradient(0deg, rgba(10,14,19,.65), transparent); pointer-events: none; }
 .car-card .card__media img { width: 100%; height: 100%; object-fit: contain; }

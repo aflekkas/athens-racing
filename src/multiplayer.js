@@ -7,6 +7,7 @@ import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecyc
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 import { driverName } from './driver-name.js';
 import { presetCars } from './plate.js';
+import { inGarage } from './car-catalog.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
@@ -95,7 +96,7 @@ export class Multiplayer {
     this.hooks.checkpoint?.(status);
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('race-checkpoint', { detail: status }));
   }
-  setAllowedPreset(preset) { return this.setAllowedCars(presetCars(this.cars, preset)); }
+  setAllowedPreset(preset) { return this.setAllowedCars(presetCars(this.cars.filter(inGarage), preset)); }
   // Shared session-setup contract (UI binds host controls to these; the
   // server stays authoritative and rejects guest writes + invalid values).
   // getLobbyConfig() returns { mode, mapId, eventId, rivals, traffic, time,
@@ -456,7 +457,7 @@ export class Multiplayer {
       const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.dataset.preset = preset;
       b.onclick = () => this.setAllowedPreset(preset); box.append(b);
     }
-    for (const car of this.cars) {
+    for (const car of this.cars.filter(inGarage)) {
       const label = document.createElement('label'); label.className = 'mp-car-toggle'; label.dataset.car = car.id;
       const input = document.createElement('input'); input.type = 'checkbox'; input.checked = allowed.has(car.id); input.dataset.car = car.id;
       // Deselecting the final checkbox is rejected server-side and locally

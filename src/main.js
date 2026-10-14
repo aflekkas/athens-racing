@@ -11,6 +11,7 @@ import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-lif
 import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
+import { inGarage } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { bindDriverToCar } from './driver-seating.js';
@@ -719,7 +720,7 @@ function applyDriving() {
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
 // dev / test URLs (?simhook, ?autodrive, ?car=, ?s=, ?event=, ?quick) skip the title menu; ?menu forces it
 const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some((k) => Q.has(k));
-function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 ? i : 0; } catch { return 0; } }
+function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 && inGarage(CARS[i]) ? i : 0; } catch { return 0; } } // a car since dropped from the garage falls back to the default
 function initFlow() {
   let plate = player.model.plate;
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
