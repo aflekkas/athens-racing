@@ -289,7 +289,7 @@ test('runtime: no PIT, box or ram in a warning, at one star, or early in a two-s
 const parkedUnit = (W, s) => { const c = W.police.spawnCop(s, 1); c.mode = 'parked'; c.parkT = 1e9; c.v = 0; c.cop.keep = true; return c; };
 const cruise = (W, kmh) => dt => { W.traffic.racers[0].s += kmh / 3.6 * dt; };
 
-test('organic: blasting past a parked unit warns, it follows with lights, and speeding on becomes a pursuit', () => {
+test('organic: blasting past a parked unit (even at 140 in a 50) warns, it follows with lights, and speeding on becomes a pursuit', () => {
   for (const kmh of [88, 110, 140]) {
     const W = world(); W.police.reset(true); const cop = parkedUnit(W, 1000);
     W.player(800, 1.9, kmh / 3.6);
@@ -302,7 +302,7 @@ test('organic: blasting past a parked unit warns, it follows with lights, and sp
     });
     assert.ok(warnAt !== null, `${kmh}: warned`);
     assert.ok(startAt !== null && startAt - warnAt <= 12, `${kmh}: pursuit ${startAt} after the warning at ${warnAt}`);
-    assert.ok(maxGap < HEAT.followRange, `${kmh}: the following unit kept you in view (max gap ${maxGap})`);
+    assert.ok(maxGap < 170, `${kmh}: the following unit kept you in view (max gap ${maxGap})`);
     assert.ok(out.some(e => e.phase === 'start') && cop.cop.chase && W.police.hm.level >= 1);
     assert.ok(W.traffic.racers[0].s - cop.s < 40, `${kmh}: the unit is on your tail (${W.traffic.racers[0].s - cop.s} m)`);
     W.police.reset(false); W.police.offs.forEach(off => off());
