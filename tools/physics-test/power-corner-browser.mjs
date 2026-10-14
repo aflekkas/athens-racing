@@ -6,6 +6,7 @@ import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve, extname, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 import { WebSocketServer } from 'ws';
 const root = resolve(import.meta.dirname, '../..');
 const out = resolve(process.env.FEEL_OUT || '.scratch/power-corner-browser');
@@ -32,6 +33,8 @@ sockets.on('connection', socket => socket.on('message', bytes => {
 }));
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const port=server.address().port, errors=[], runs=[];
+const hash = file => readFile(file).then(bytes => createHash('sha256').update(bytes).digest('hex'));
+const sources = { commit: process.env.FEEL_COMMIT || null, physics: await hash(resolve(root,'src/physics.js')), beforePhysics: await hash(process.env.BEFORE_PHYS), input: await hash(resolve(root,'src/input.js')), controller: await hash(resolve(root,'src/rival-ai.js')) };
 console.log(`proof server ${port}, PID ${process.pid}`);
 let browser;
 try {
@@ -76,6 +79,9 @@ try {
         const sim=window.__sim,{route,G}=sim;
         const {Vehicle}=await import('/src/physics.js?proof='+phase);
         const v=new Vehicle(sim.player.veh.spec,route);v.ground=sim.ground;v.steerAssist=1;
+        // Reset the real Input object's pedal/steering ramps between replays,
+        // using the game's normal pause action (which calls controls.clear).
+        window.__flow.pause();
         sim.player.veh=v;G.state='race';G.inputDevice='keyboard';G.paused=null;
         window.__flow.menu.hide();sim.keys.clear();window.__proofEvents.length=0;
         const u=route.laneU(s,0);v.reset(s,u,kmh/3.6);v.manual=true;v.gear=2;
@@ -101,11 +107,13 @@ try {
       for(const code of [...held])await key(code,false);
       await page.evaluate(()=>window.__sim.render());
       const label=phase+'-'+scenario.id;
+      if (Math.abs(trace[0].steerInput) > 0.12 || (scenario.powerAt > 0 && trace[0].throttle !== 0)) throw new Error(label+': previous input ramp leaked into replay');
       await page.screenshot({path:resolve(out,label+'.png')});
       const events=await page.evaluate(()=>window.__proofEvents);
       runs.push({label,phase,map,scenario,...setup,trace,events});
       await writeFile(resolve(out,label+'.json'),JSON.stringify(runs.at(-1),null,2)+'\n');
-      await writeFile(resolve(out,'browser.json'),JSON.stringify({port,errors,runs},null,2)+'\n');
+      await writeFile(resolve(out,'browser.json'),JSON.stringify({port,sources,errors,runs},null,2)+'\n');
+      if(events.some(e=>e.type==='clear'))throw new Error(label+': driving input cleared during replay');
       if(trace.some(t=>!Number.isFinite(t.yawRate)))throw new Error(label+': nonfinite dynamics');
       if(Math.max(...trace.map(t=>Math.abs(t.steerInput)))<.99 || trace.slice(20).some(t=>!t.keys.includes(steerKey)))throw new Error(label+': held trusted steering did not reach the player');
       if(scenario.powerAt<scenario.frames&&Math.max(...trace.map(t=>t.throttle))<.99)throw new Error(label+': W did not reach the player');
@@ -114,6 +122,6 @@ try {
   }
   if(errors.length)throw new Error(errors.join('\n'));
 } finally {
-  await writeFile(resolve(out,'browser.json'),JSON.stringify({port,errors,runs},null,2)+'\n');
+  await writeFile(resolve(out,'browser.json'),JSON.stringify({port,sources,errors,runs},null,2)+'\n');
   await browser?.close();for (const socket of sockets.clients) socket.terminate();await new Promise(r=>sockets.close(r));await new Promise(r=>server.close(r));
 }
