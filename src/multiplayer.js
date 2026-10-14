@@ -1,14 +1,15 @@
+import { renderLiveBoard } from './ui/live-board.js';
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
+import { StateSender } from './multiplayer-state.js';
+import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
+import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 import { account } from './account.js';
 import { friends } from './friends.js';
 import { createAddFriendButton } from './ui/friend-actions.js';
 import { presetCars } from './plate.js';
 import { configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
-import { StateSender } from './multiplayer-state.js';
-import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
-import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
 // the server owns membership, synchronized starts, and elapsed finish times.
 export class Multiplayer {
@@ -457,7 +458,6 @@ export class Multiplayer {
       label.append(input, document.createTextNode(car.short)); box.append(label);
     }
   }
-
   driverProgress(p, localS = 0) { return this.progress(p.id === this.id ? localS : this.peers.get(p.id)?.state.s ?? this.lobby?.event?.s0 ?? 0); }
   ranking(localS = 0) {
     const drivers = this.lobby?.results || this.lobby?.players || [];
@@ -507,25 +507,7 @@ export class Multiplayer {
     }
     if (performance.now() - (this.boardAt || 0) > 250) {
       if (this.board.contains?.(document.activeElement)) return;
-      this.boardAt = performance.now(); this.board.replaceChildren();
-      const title = document.createElement('b'); const watching = this.spectating(); title.textContent = l.status === 'results' ? 'RESULTS' : watching ? 'WATCHING · ' + watching.name : this.retired ? 'RETIRED · DNF' : this.me?.finish != null ? 'FINISHED · WAITING' : `LIVE · ${Math.round(this.latency)} ms`; this.board.append(title);
-      if (watching) {
-        const controls = document.createElement('div'); controls.style.pointerEvents = 'auto';
-        const prev = document.createElement('button'), next = document.createElement('button'), select = document.createElement('select');
-        prev.textContent = '‹'; prev.setAttribute('aria-label', 'Watch previous driver'); prev.onclick = () => { this.stepSpectator(-1); prev.blur(); this.boardAt = 0; };
-        next.textContent = '›'; next.setAttribute('aria-label', 'Watch next driver'); next.onclick = () => { this.stepSpectator(1); next.blur(); this.boardAt = 0; };
-        select.setAttribute('aria-label', 'Choose driver to watch');
-        for (const p of this.spectatorDrivers()) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; select.append(o); }
-        select.value = watching.id; select.onchange = () => { this.selectSpectator(select.value); select.blur(); this.boardAt = 0; }; controls.append(prev, select, next); this.board.append(controls);
-      } else if (!this.retired && this.me?.finish == null && l.status === 'race') {
-        const retire = document.createElement('button'); retire.textContent = 'RETIRE · DNF'; retire.style.pointerEvents = 'auto'; retire.onclick = () => this.retire(); this.board.append(retire);
-      }
-      const telemetry = this.telemetry(state);
-      if (telemetry && l.status !== 'results') {
-        const info = document.createElement('div'), metres = n => n == null ? '—' : Math.round(Math.abs(n)) + ' m';
-        info.textContent = `${telemetry.status} · ${Math.round(telemetry.progress)} m · ${telemetry.time.toFixed(2)} s · Ahead ${metres(telemetry.aheadMetres)} · Behind ${metres(telemetry.behindMetres)} · Leader ${metres(telemetry.leaderMetres)}`; this.board.append(info);
-      }
-      this.ranking(state.s).forEach((p, i) => { const row = document.createElement('div'); row.textContent = l.status === 'results' && this.objectiveMode ? this.resultRowText(p, i) : `${p.dnf ? 'DNF · ' : (i + 1) + '. '}${p.name}${p.id === this.id ? ' · YOU' : ''}${p.finish != null ? ' · ' + p.finish.toFixed(2) + ' s' : p.dnf === 'wrecked' ? ' · WRECKED' : l.status === 'results' ? ' · DNF' : ''}`; this.board.append(row); });
+      this.boardAt = performance.now(); renderLiveBoard(this,state);
     }
   }
 }

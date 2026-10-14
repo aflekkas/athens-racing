@@ -2,6 +2,8 @@
 // UI kit's custom Select / Slider / Toggle in place of their native controls (components.js autoEnhance) as soon as
 // they appear in the document; their own code keeps reading and writing the (now hidden) native elements.
 import './lobby-setup.js';
+import './checkpoint-banner.js';
+import { syncHostControls } from './host-controls.js';
 import { autoEnhance, button, esc } from './components.js';
 import { CARS } from '../cars.js';
 import { mountCarGrid, renderCarSelect, openCarPicker } from '../car-select.js';
@@ -38,5 +40,5 @@ export function syncGarage(select) {
   autoEnhance(host);host.__view=mountCarGrid(host);
 }
 let scheduled=false;
-export function installPickers(){const panel=document.getElementById('multiplayer');if(!panel)return;for(const id of ['mp-car','mp-room-car']){const select=document.getElementById(id);if(select)syncGarage(select);}}
+export function installPickers(){syncHostControls();const panel=document.getElementById('multiplayer');if(!panel)return;for(const id of ['mp-car','mp-room-car']){const select=document.getElementById(id);if(select)syncGarage(select);}}
 if(typeof document!=='undefined'&&document.body){installPickers();const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;installPickers();});});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','hidden']});}

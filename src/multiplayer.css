@@ -140,3 +140,17 @@
 #multiplayer #mp-ready,#multiplayer #mp-start { min-height: 52px; flex: 1 1 180px; font-size: 21px; border: 2px solid #ff8b82; box-shadow: 0 4px 0 #8e241d; }
 @media(max-width:700px) { #multiplayer .mp-join-hero { grid-template-columns: 1fr 1fr; padding: 14px; gap: 12px; } .mp-join-hero > div { grid-column: 1/-1; } #multiplayer #mp-list { grid-template-columns: 1fr; } }
 @media(max-width:420px) { #multiplayer .mp-join-hero { grid-template-columns: 1fr; } .mp-join-hero > div { grid-column: 1; } #multiplayer #mp-ready,#multiplayer #mp-start { flex-basis: 100%; } }
+
+/* Standings stay at the edge of the windscreen, with no running telemetry panel. */
+#mp-board{top:145px;right:14px;width:180px;min-width:0;max-height:250px;padding:9px 10px;font-size:12px;letter-spacing:.025em;border-left-width:2px;overflow:auto;box-sizing:border-box}
+#mp-board header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#mp-board b{margin:0;font-size:10px;letter-spacing:.12em}
+#mp-board .mp-latency{display:flex;align-items:center;gap:4px;color:#c1ccd6;font-size:9px;white-space:nowrap}
+.mp-latency::before{content:'';width:6px;height:6px;border-radius:50%;background:#62e9bf}.mp-latency[data-quality=fair]::before{background:#ffd34d}.mp-latency[data-quality=poor]::before{background:#f47676}
+#mp-board .mp-gaps{font-size:10px;color:#bdccd8;padding:5px 0;border-bottom:1px solid #ffffff19;white-space:pre}
+#mp-board ol{list-style:none;margin:4px 0 0;padding:0}#mp-board li{display:flex;gap:8px;align-items:center;line-height:1.5;font-size:12px}#mp-board li.me{color:#62e9bf}
+#mp-board .mp-position{width:23px;flex:none;font-size:10px;font-variant-numeric:tabular-nums;color:#a8b7c3}#mp-board .mp-driver-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mp-board .mp-watch{display:flex;gap:3px;padding:3px 0;pointer-events:auto}#mp-board .mp-watch select{width:0;flex:1;font-size:10px;min-height:26px}#mp-board .mp-watch button{padding:0 8px;min-height:26px}
+#mp-members [data-kick-player]{font-size:11px;padding:5px 8px;min-height:30px;color:#ffafa7}.mp-blocked-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:10px}
+@media(max-height:480px){#mp-board{top:86px;right:12px;width:168px;max-height:160px;padding:7px 9px}#mp-board li{font-size:11px}}
+@media(max-width:500px){#mp-board{top:132px;right:12px;width:154px;max-height:210px;padding:8px}body[data-mode=taxi] #mp-board,body[data-mode=getaway] #mp-board{top:360px}}

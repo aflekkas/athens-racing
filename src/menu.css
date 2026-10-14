@@ -520,3 +520,8 @@ body.ui-open :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#
 body:has(#multiplayer:not([hidden])) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
 body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
 body[data-customizer="open"] :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone) { visibility: hidden !important; pointer-events: none !important; }
+
+#checkpoint-banner{position:absolute;top:94px;left:50%;transform:translateX(-50%);width:330px;padding:9px 14px;background:#311d16ed;border-left:3px solid #ffb277;box-sizing:border-box;color:#fff;font-family:var(--font-ui,sans-serif);pointer-events:none}
+#checkpoint-banner b{display:block;font-size:16px;letter-spacing:.08em;color:#ffb277}#checkpoint-banner span{font-size:11px;letter-spacing:.07em}#checkpoint-banner[hidden]{display:none}
+@media(max-height:480px){#checkpoint-banner{left:228px;top:82px;transform:none;width:300px;padding:7px 10px}}
+@media(max-width:500px){#checkpoint-banner{left:122px;top:140px;transform:none;width:calc(100vw - 134px)}body[data-mode=taxi] #checkpoint-banner,body[data-mode=getaway] #checkpoint-banner{top:290px}#checkpoint-banner b{font-size:14px}}
