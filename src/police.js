@@ -46,7 +46,8 @@ export class HeatMachine {
     if (!witnessed || !(amt > 0)) return;
     const l0 = this.level;
     // A single minor offence cannot skip the warning, even a cluster of bumps.
-    this.heat = Math.min(this.active || serious || continuous && sustained ? 5 : continuous ? 0.999 : 0.95, this.heat + amt);
+    const cap = this.active || serious || continuous && sustained ? 5 : continuous ? 0.999 : 0.95;
+    this.heat = Math.min(Math.max(this.heat, cap), this.heat + amt);
     if ((this.state === 'idle' || this.state === 'warning') && this.level >= 1) {
       this.state = 'pursuit'; this.time = 0; this.lostT = 0; this.evade = 0; this.bust = 0; this.push('start', { kind });
     } else if (this.state === 'idle' && (!continuous || this.heat >= this.cfg.warningHeat - 1e-6)) {
@@ -147,7 +148,7 @@ export class Police {
   reset(enabled = this.enabled) {
     this.enabled = enabled && (this.traffic.allowClosedRoam || this.traffic.allowClosedPolice || !this.route.closed && !this.traffic.route?.closed); // free roam opts into patrols on every map
     if (!this.enabled) this.traffic.allowClosedPolice = false;
-    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.speedT = 0; this.pedT = -Infinity;
+    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.pedT = -Infinity;
     for (const c of this.traffic.cars) if (c.police) { c.active = false; c.m.root.visible = false; c.cop = null; c.crash = null; c.m.setStrobe?.(false, 0); }
     for (const b of this.blocks.slice()) this.clearBlock(b);
     this.patrols = patrolPlan(this.route, this.traffic.data, this.traffic.signals?.J); this.reinT = 6; this.blockT = 10;
@@ -195,7 +196,7 @@ export class Police {
       if (!k && !witness) continue;
       if (this.t - (this.contacts.get(e.car) ?? -Infinity) < HEAT.contactCooldown) continue;
       this.contacts.set(e.car, this.t);
-      if (k) { k.hitT = this.t; hm.offence('hitcop', e.kind === 'crash' ? 1 : 0.4, true, { serious: e.kind === 'crash' }); }
+      if (k) { this.contactWitness = e.car; k.hitT = this.t; hm.offence('hitcop', e.kind === 'crash' ? 1 : 0.4, true, { serious: e.kind === 'crash' }); }
       else {
         const serious = e.kind === 'crash' && e.dv >= 8;
         hm.offence(e.kind, serious ? 1 : e.kind === 'crash' ? 0.4 : 0.15, true, { serious });
@@ -212,6 +213,7 @@ export class Police {
       if (e.phase === 'start' || e.phase === 'resume') this.engage(e.kind === 'event');
       if (e.phase === 'evaded' || e.phase === 'busted' || e.phase === 'released') this.standDown();
     }
+    this.contactWitness = null;
     // ---- units: patrols, reinforcements, tactics, roadblocks
     this.manage(dt);
     for (const e of out) this.announce(e);
@@ -257,8 +259,9 @@ export class Police {
   }
   warn() {
     const c = this.cops.filter(c => !c.crash && this.distance(c, this.P) <= HEAT.witnessRange && this.los(c, this.P))
-      .sort((a, b) => this.distance(a, this.P) - this.distance(b, this.P))[0];
-    if (c) { this.enlist(c); c.cop.tactic = 'tail'; }
+      .sort((a, b) => this.distance(a, this.P) - this.distance(b, this.P))[0] || this.contactWitness;
+    this.contactWitness = null;
+    if (c && c.active && !c.crash) { this.enlist(c); c.cop.tactic = 'tail'; }
   }
 
   /** line of sight from a unit to the player over the real ground (hills, cliff faces) and buildings */
@@ -339,7 +342,7 @@ export class Police {
           site.car = c; site.started = true; c.cop.station = site.id; c.cop.keep = true;
           if (site.fixed) { c.mode = 'parked'; c.parkT = 1e9; c.v = 0; c.u = tr.kerbU(c, site.s, -0.6); }
         }
-        if (!site.fixed && site.car && (site.car.s < 60 || site.car.s > this.route.length - 60)) site.car.dir *= -1;
+        if (!site.fixed && site.car && (site.car.s < 60 || site.car.s > this.route.length - 60)) site.car.dir = site.car.s < 60 ? 1 : -1;
       }
     } else if (hm.state === 'warning') {
       // One following officer with lights. No reinforcements, PIT or roadblocks.

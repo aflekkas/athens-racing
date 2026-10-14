@@ -91,3 +91,17 @@ test('fixed sites stream at their coordinates, not ahead of the player, and roam
   assert.equal(W.police.cops.filter(c => c.mode === 'parked').length, 0);
   assert.equal(W.police.cops.length, 2);
 });
+
+test('a police scrape itself identifies the officer even when visibility is blocked', t => {
+  const W = fixture(t); W.player(1000, 2, 45 / 3.6); const c = W.police.spawnCop(1003, 1);
+  W.police.los = () => false;
+  step(W, 1 / 60, { events: [{ who: 'player', kind: 'bump', car: c }] }, 1 / 60);
+  assert.equal(W.police.hm.state, 'warning'); assert.equal(W.police.hm.level, 0); assert.equal(c.cop.siren, true);
+});
+test('a minor contact never reduces existing suspicion; a witnessed severe impact is serious', t => {
+  const W = fixture(t); W.player(1000, 2, 90 / 3.6); W.police.spawnCop(1060, 1);
+  step(W, 3.9, {}, 1 / 60); const heat = W.police.hm.heat;
+  W.police.hm.offence('bump', .15, true); assert.ok(W.police.hm.heat >= heat); assert.equal(W.police.hm.level, 0);
+  step(W, 1 / 60, { events: [{ who: 'player', kind: 'crash', car: {}, dv: 9 }] }, 1 / 60);
+  assert.equal(W.police.hm.level, 1); assert.equal(W.police.hm.state, 'pursuit');
+});

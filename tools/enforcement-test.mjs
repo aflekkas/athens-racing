@@ -127,3 +127,9 @@ test('client race reset/resume never reuses claim ids',()=>{
  const a=[],r=new EnforcementRuntime(e=>a.push(e));r.setMap(map);r.configure({enabled:true,raceId:'r1'});r.step(st());r.reset();r.step(st());
  assert.notEqual(a[0].id,a[1].id);assert.ok(a.every(e=>e.id.length<=64));
 });
+
+test('a mapped red-light site alone is silent, and an online client cannot certify a site witness',()=>{
+ const a=[],r=new EnforcementRuntime(e=>a.push(e));r.setMap(map);r.configure({enabled:true});
+ const j={s:220,i:1,main:'R',redT:2,toGreen:3};assert.equal(r.red(j,st(),false),null);
+ r.configure({enabled:true,online:true,raceId:'online'});assert.equal(r.red(j,st(),true),null);assert.deepEqual(a,[]);
+});

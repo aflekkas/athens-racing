@@ -3,7 +3,7 @@
 // Run from a clean archive: tools/browser-slot.sh node tools/police-browser.mjs
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { resolve, extname } from 'node:path';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { homedir } from 'node:os';
 import assert from 'node:assert/strict';
@@ -45,7 +45,7 @@ const report = { errors: [], normal: null, witnessed: [], browser: executablePat
 page.on('pageerror', error => { report.errors.push(String(error)); console.log('PAGEERROR', String(error)); });
 page.on('console', msg => { if (msg.type() === 'error') console.log('CONSOLE', msg.text().slice(0, 400)); });
 async function capture(name) {
-  await page.evaluate(() => { window.__sim.render(); window.__replay.ctx.renderer.getContext().finish(); window.__notifications?.update(); });
+  await page.evaluate(() => { window.__sim.render(); document.getElementById('c').getContext('webgl2')?.finish(); window.__notifications?.update(); });
   await page.screenshot({ path: resolve(out, name + '.png'), animations: 'disabled', timeout: 30000 });
   console.log('SCREENSHOT', name);
 }
@@ -61,7 +61,9 @@ try {
   await page.waitForFunction(() => window.__game?.state === 'countdown' || window.__sim.G.state === 'countdown', null, { timeout: 120000 });
   await page.evaluate(() => {
     const sim = window.__sim;
-    sim.G.countWall = performance.now() - 6000; sim.G.autodrive = true; sim.G.cameraStarting = false; sim.step(1);
+    sim.G.countWall = performance.now() - 6000; sim.G.autodrive = true; sim.G.cameraStarting = false;
+    // AI drivers use the game's automatic gearbox even in a manual-only car.
+    sim.player.veh.setManual(false, { ai: true }); sim.G.sessionManual = false; sim.step(1);
     window.__policeTrace = [];
     window.__cruise = (target, exact = false) => {
       const controller = sim.player.ai?.controller;
@@ -92,6 +94,7 @@ try {
     const sim = window.__sim, police = window.__police, v = sim.player.veh;
     const site = police.patrols.find(p => p.id === 'coast-speed-trap'); const s = site.s - 45;
     police.reset(true); const limit = police.limitAt(s); v.reset(s, sim.route.laneU(s, 0), (limit + 40) / 3.6);
+    v.setManual(false, { ai: true }); v.gear = 3;
     sim.player.ai = null; sim.G.pFront = v.s + v.halfL;
     // One nearby real unit, on the road behind the player. The offence itself
     // comes from the live speed/LOS checks; no wanted/heat is injected.
