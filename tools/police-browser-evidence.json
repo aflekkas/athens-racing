@@ -1,0 +1,75 @@
+{
+  "normal": {
+    "seconds": 20.000000000000146,
+    "start": 2028.184027151911,
+    "maxKmh": 120.12157525383235,
+    "maxHeat": 0,
+    "maxStars": 0,
+    "end": 2582.6946016610163,
+    "distance": 554.5105745091053,
+    "enabled": true,
+    "state": "race"
+  },
+  "witnessed": [
+    {
+      "seconds": 1.4999999999999996,
+      "limit": 50,
+      "visibleTicks": 90,
+      "minKmh": 89.91354423159113,
+      "maxKmh": 90.07685454522196,
+      "heat": 0.3749999999999999,
+      "stars": 0,
+      "state": "warning",
+      "gear": 3,
+      "manual": false
+    },
+    {
+      "seconds": 4.499999999999989,
+      "limit": 50,
+      "visibleTicks": 180,
+      "minKmh": 89.87971513375199,
+      "maxKmh": 89.93451857268786,
+      "heat": 1.024999999999995,
+      "stars": 1,
+      "state": "pursuit",
+      "gear": 3,
+      "manual": false
+    }
+  ],
+  "commit": "8b50b64165e9a4cf46c62a063616d4c055849f4a",
+  "firstStar": {
+    "t": 3.9999999999999907,
+    "heat": 0.9999999999999977,
+    "stars": 1,
+    "state": "pursuit",
+    "kmh": 89.9227118615139,
+    "witness": true
+  },
+  "verification": {
+    "browserSlotJobs": 1,
+    "slotJobResult": "Normal sprint had zero heat/stars; offence assert failed because the manual fixture stayed in first gear. Transmission and countdown setup corrected, then both scenarios verified in the native collaborative browser without allocating another slot.",
+    "screenshotsOpened": true,
+    "screenshots": [
+      ".scratch/police-tuning/native-browser/01-normal-sprint-no-wanted.png",
+      ".scratch/police-tuning/native-browser/02-witnessed-warning.png",
+      ".scratch/police-tuning/native-browser/03-gradual-one-star.png"
+    ],
+    "cleanArchiveChecks": {
+      "commit": "8b50b64165e9a4cf46c62a063616d4c055849f4a",
+      "npmTest": {
+        "pass": 247,
+        "skipped": 1,
+        "fail": 0
+      },
+      "policeLawsEvents": {
+        "pass": 89,
+        "fail": 0
+      },
+      "regress": {
+        "pass": 108,
+        "fail": 0
+      },
+      "browserImports": 156
+    }
+  }
+}

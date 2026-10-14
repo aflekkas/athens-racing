@@ -63,7 +63,9 @@ try {
     const sim = window.__sim;
     sim.G.countWall = performance.now() - 6000; sim.G.autodrive = true; sim.G.cameraStarting = false;
     // AI drivers use the game's automatic gearbox even in a manual-only car.
-    sim.player.veh.setManual(false, { ai: true }); sim.G.sessionManual = false; sim.step(1);
+    sim.player.veh.setManual(false, { ai: true }); sim.G.sessionManual = false;
+    for (let i = 0; i < 240 && sim.G.state === 'countdown'; i++) sim.step(1);
+    if (sim.G.state !== 'race') throw Error('Countdown did not reach GO');
     window.__policeTrace = [];
     window.__cruise = (target, exact = false) => {
       const controller = sim.player.ai?.controller;
@@ -90,9 +92,21 @@ try {
   console.log('NORMAL', JSON.stringify(report.normal));
   assert.equal(report.normal.enabled, true); assert.equal(report.normal.maxStars, 0); assert.ok(report.normal.distance > 100);
   await capture('01-normal-sprint-no-wanted');
+  // Start the offence proof at this station through normal event setup, so
+  // moving the fixture there doesn't create a missed-checkpoint notification.
+  await page.evaluate(async () => {
+    const site = window.__police.patrols.find(p => p.id === 'coast-speed-trap');
+    window.__offenceStation = site.s - 45;
+    window.__flow.startEvent({ id: 'police-witness-proof', name: 'POLICE ON · WITNESSED SPEEDING', type: 'sprint', from: window.__offenceStation, to: 10500, rivals: 0, traffic: 0, rules: { police: true, laws: true }, conditions: { time: 'day', weather: 'clear' }, targets: { gold: 200 } }, { car: 'mini' });
+    await new Promise(done => setTimeout(done, 700));
+  });
+  await page.waitForFunction(() => window.__sim.G.state === 'countdown', null, { timeout: 120000 });
   await page.evaluate(() => {
     const sim = window.__sim, police = window.__police, v = sim.player.veh;
-    const site = police.patrols.find(p => p.id === 'coast-speed-trap'); const s = site.s - 45;
+    sim.G.autodrive = true; v.setManual(false, { ai: true }); sim.G.sessionManual = false;
+    for (let i = 0; i < 240 && sim.G.state === 'countdown'; i++) sim.step(1);
+    if (sim.G.state !== 'race') throw Error('Offence countdown did not reach GO');
+    const s = window.__offenceStation;
     police.reset(true); const limit = police.limitAt(s); v.reset(s, sim.route.laneU(s, 0), (limit + 40) / 3.6);
     v.setManual(false, { ai: true }); v.gear = 3;
     sim.player.ai = null; sim.G.pFront = v.s + v.halfL;
