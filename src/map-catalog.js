@@ -9,3 +9,5 @@ export function getMap(id = 'riviera') {
   if (!def) throw new Error('Unknown map: ' + id);
   return def;
 }
+// Playable-map registry lives in src/enabled-maps.js (session owner);
+export { PLAYABLE_MAPS, isMapEnabled, getPlayableMaps } from './enabled-maps.js';

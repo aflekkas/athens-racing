@@ -4,7 +4,7 @@ const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-
 const send = (ws, data) => { if (ws?.readyState === 1 && (ws.bufferedAmount || 0) < 65536) { try { ws.send(JSON.stringify(data)); } catch {} } };
 const randomUUID = () => crypto.randomUUID();
 const randomHex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(x => x.toString(16).padStart(2, '0')).join('');
-export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), leaderboard, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, idleLobbyMs = 1800000 }) {
+export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), leaderboard, appearance = null, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, idleLobbyMs = 1800000 }) {
   const handlers = new Map();
   const track = maps.get('riviera').track;
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
