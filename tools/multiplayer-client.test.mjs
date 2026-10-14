@@ -146,3 +146,46 @@ test('lobby map picker offers only enabled maps (Megara retained, not selectable
   assert.deepEqual(getPlayableMaps([{ id: 'riviera' }, { id: 'megara' }, { id: 'penteli' }]).map((m) => m.id), ['riviera', 'penteli']);
   assert.deepEqual(getPlayableMaps([]), []);
 });
+
+// Exercise the actual results renderer without loading a WebGL world.
+function resultsPanel(t, mode, results, config = { sessionDuration: 30 }) {
+  const element = tag => ({ tag, textContent: '', children: [], append(...items) { this.children.push(...items); }, replaceChildren() { this.children = []; } });
+  const panel = element('section'), m = Object.create(Multiplayer.prototype);
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'document', { configurable: true, writable: true, value: { createElement: element } });
+  t.after(() => { if (previous) Object.defineProperty(globalThis, 'document', previous); else delete globalThis.document; });
+  Object.assign(m, { id: results[0]?.id, lobby: { mode, event: { type: mode }, status: 'results', config, results, players: results },
+    peers: new Map(), $: () => panel, status() {} });
+  m.renderResults();
+  return { m, panel, title: panel.children[0].textContent, rows: panel.children.slice(1).map(row => row.textContent) };
+}
+const objectiveDriver = (id, completed, bestTrip, elapsed = 30, extra = {}) => ({ id, name: id, finish: null, dnf: false,
+  objective: { phase: 'finished', done: true, completed, bestTrip, elapsed }, ...extra });
+
+test('Taxi results render completed fares, real DNF only, and configured session time', t => {
+  const drivers = [objectiveDriver('Empty', 0, null), objectiveDriver('Winner', 3, 42), objectiveDriver('Retired', 0, null, 12, { dnf: true })];
+  const { m, title, rows } = resultsPanel(t, 'taxi', drivers);
+  assert.equal(title, 'TAXI RESULTS');
+  assert.deepEqual(rows, ['1 · Winner · 3 fares · best 0:42', 'DNF · Retired · 0 fares · best —', '3 · Empty · 0 fares · best —']);
+  assert.equal(m.sessionDurationText() + ' SESSION', '0:30 SESSION');
+  m.lobby.config.sessionDuration = 90; assert.equal(m.sessionDurationText() + ' SESSION', '1:30 SESSION');
+  m.lobby.config = {}; assert.equal(m.sessionDurationText() + ' SESSION', '5:00 SESSION');
+  assert.deepEqual(drivers.map(p => p.id), ['Empty', 'Winner', 'Retired'], 'rendering does not mutate server results');
+});
+
+test('Getaway results sort counts, fastest trip, then elapsed; retirements remain DNF', t => {
+  const drivers = [objectiveDriver('Slower', 2, 50), objectiveDriver('Fewer', 1, 10), objectiveDriver('Later', 2, 40),
+    objectiveDriver('Earlier', 2, 40, 27), objectiveDriver('Wreck', 0, null, 20, { dnf: 'wrecked' })];
+  const { title, rows } = resultsPanel(t, 'getaway', drivers);
+  assert.equal(title, 'GETAWAY RESULTS');
+  assert.deepEqual(rows, ['1 · Earlier · 2 missions · best 0:40', '2 · Later · 2 missions · best 0:40',
+    '3 · Slower · 2 missions · best 0:50', '4 · Fewer · 1 mission · best 0:10', 'DNF · Wreck · 0 missions · best — · WRECKED']);
+});
+
+test('race result heading, finish seconds, DNF rows and ordering stay unchanged', t => {
+  const drivers = [{ id: 'slow', name: 'Slow', finish: 72.345, dnf: false }, { id: 'wreck', name: 'Wreck', finish: null, dnf: 'wrecked' },
+    { id: 'fast', name: 'Fast', finish: 65.125, dnf: false }];
+  const { title, rows } = resultsPanel(t, 'sprint', drivers);
+  assert.equal(title, 'RACE RESULTS');
+  assert.deepEqual(rows, ['1. Fast · 65.13 s', '2. Slow · 72.34 s', 'DNF · Wreck · WRECKED']);
+});

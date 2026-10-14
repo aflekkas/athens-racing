@@ -359,18 +359,32 @@ export class Multiplayer {
     this.$('mp-start').disabled = !this.worldReady || (l.status !== 'results' && (l.status !== 'waiting' || l.players.length < 2 || !l.players.every(p => p.ready && p.connected !== false)));
     this.$('mp-restart').hidden = !host || !['countdown', 'race'].includes(l.status);
     this.$('mp-tolobby').hidden = !host || l.status === 'waiting';
-    const results = this.$('mp-results'); results.replaceChildren();
+    this.renderResults();
+    this.board.hidden = l.status === 'waiting';
+  }
+  renderResults() {
+    const l = this.lobby, results = this.$('mp-results'); results.replaceChildren();
     if (l.status === 'results') {
-      const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title);
+      const title = document.createElement('h3'); title.textContent = this.objectiveMode ? `${this.objectiveMode.toUpperCase()} RESULTS` : 'RACE RESULTS'; results.append(title);
       this.ranking().forEach((p, i) => {
-        const row = document.createElement('p'); row.textContent = p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`;
+        const row = document.createElement('p'); row.textContent = this.resultRowText(p, i);
         const username = p.plate || p.username || l.players.find(member => member.id === p.id)?.plate;
         const add = p.id !== this.id && createAddFriendButton(username, message => this.status(message));
         if (add) row.append(' ', add);
         results.append(row);
       });
     }
-    this.board.hidden = l.status === 'waiting';
+  }
+  get objectiveMode() { const mode = this.lobby?.mode || this.lobby?.event?.type; return ['taxi', 'getaway'].includes(mode) ? mode : null; }
+  sessionDurationText() {
+    const seconds = configFromLobby(this.lobby).sessionDuration;
+    return this.resultTimeText(Number.isFinite(seconds) && seconds > 0 ? seconds : 300);
+  }
+  resultTimeText(seconds) { const whole = Math.max(0, Math.floor(seconds)); return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`; }
+  resultRowText(p, i) {
+    if (!this.objectiveMode) return p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`;
+    const count = p.objective?.completed || 0, noun = this.objectiveMode === 'taxi' ? 'fare' : 'mission';
+    return `${p.dnf ? 'DNF' : i + 1} · ${p.name} · ${count} ${noun}${count === 1 ? '' : 's'} · best ${p.objective?.bestTrip == null ? '—' : this.resultTimeText(p.objective.bestTrip)}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`;
   }
   // Role visibility contract (UI owns presentation; this owns the rule):
   // host-only config rows hide for guests instead of showing fake-disabled
@@ -404,7 +418,11 @@ export class Multiplayer {
   }
 
   driverProgress(p, localS = 0) { return this.progress(p.id === this.id ? localS : this.peers.get(p.id)?.state.s ?? this.lobby?.event?.s0 ?? 0); }
-  ranking(localS = 0) { return rankDrivers(this.lobby?.results || this.lobby?.players || [], p => this.driverProgress(p, localS)); }
+  ranking(localS = 0) {
+    const drivers = this.lobby?.results || this.lobby?.players || [];
+    if (this.objectiveMode) return [...drivers].sort((a, b) => ((b.objective?.completed || 0) - (a.objective?.completed || 0)) || ((a.objective?.bestTrip ?? Infinity) - (b.objective?.bestTrip ?? Infinity)) || ((a.objective?.elapsed ?? Infinity) - (b.objective?.elapsed ?? Infinity)));
+    return rankDrivers(drivers, p => this.driverProgress(p, localS));
+  }
   progress(s) { const r = this.lobby?.event; return r ? (s - r.s0) * r.dir : s; }
   advanceClock() {
     if (this.worldReady && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
@@ -466,7 +484,7 @@ export class Multiplayer {
         const info = document.createElement('div'), metres = n => n == null ? '—' : Math.round(Math.abs(n)) + ' m';
         info.textContent = `${telemetry.status} · ${Math.round(telemetry.progress)} m · ${telemetry.time.toFixed(2)} s · Ahead ${metres(telemetry.aheadMetres)} · Behind ${metres(telemetry.behindMetres)} · Leader ${metres(telemetry.leaderMetres)}`; this.board.append(info);
       }
-      this.ranking(state.s).forEach((p, i) => { const row = document.createElement('div'); row.textContent = `${p.dnf ? 'DNF · ' : (i + 1) + '. '}${p.name}${p.id === this.id ? ' · YOU' : ''}${p.finish != null ? ' · ' + p.finish.toFixed(2) + ' s' : p.dnf === 'wrecked' ? ' · WRECKED' : l.status === 'results' ? ' · DNF' : ''}`; this.board.append(row); });
+      this.ranking(state.s).forEach((p, i) => { const row = document.createElement('div'); row.textContent = l.status === 'results' && this.objectiveMode ? this.resultRowText(p, i) : `${p.dnf ? 'DNF · ' : (i + 1) + '. '}${p.name}${p.id === this.id ? ' · YOU' : ''}${p.finish != null ? ' · ' + p.finish.toFixed(2) + ' s' : p.dnf === 'wrecked' ? ' · WRECKED' : l.status === 'results' ? ' · DNF' : ''}`; this.board.append(row); });
     }
   }
 }
