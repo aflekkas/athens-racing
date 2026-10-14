@@ -505,7 +505,7 @@ export class Vehicle {
     const beta = Math.atan2(vy, Math.max(2, av));
     // Space / pad handbrake + deliberate throttle: FWD holds its rear brakes;
     // RWD / AWD use a front line-lock. At road speed the normal drift handbrake remains.
-    const burnout = !!inp.handbrake && thrIn > 0.65 && brk < 0.2 && vt < 15 / 3.6 && !this.reverse;
+    const burnout = !!inp.handbrake && thrIn > 0.65 && brk < 0.2 && vt < 15 / 3.6 && !this.reverse && Math.abs(inp.steer) < 0.15 && Math.abs(this.w) < 0.25;
     this.handbrakeInput = !!inp.handbrake;
     this.burnout = burnout;
     if (!burnout) this.burnoutPrimed = false;
@@ -517,7 +517,9 @@ export class Vehicle {
     const counter = Math.sign(sIn) === Math.sign(beta) ? Math.min(0.5, Math.abs(beta) * 1.0) : 0; // enough opposite lock to catch ~40 deg
     // drift latch: handbrake (or a held slide on power) tells the assists you mean it. It stays latched while the car
     // is still sliding, so TC / ESC / the steering helper don't straighten the car out under you mid-drift
-    const sliding = Math.abs(beta) > 0.1 && vt > 6;
+    const travelBeta = Math.atan2(vy, this.reverse ? -vx : vx);
+    const slideMotion = Math.max(vt, Math.abs(this.w) * this.wb);
+    const sliding = Math.abs(travelBeta) > 0.1 && slideMotion > 1.5;
     // a Scandinavian flick (a big steering reversal at speed) is a drift entry: latch straight away
     this.flickT = Math.max(0, this.flickT - dt); this.bigSteerT += dt;
     if (Math.abs(sIn) > 0.5) {
@@ -533,13 +535,13 @@ export class Vehicle {
     const powerSlideAllowed = (sp.tc ?? 0.5) <= 0;
     const powerIntent = powerSlideAllowed && this.shareR > 0 && thrIn > 0.95 && Math.abs(sIn) > 0.9 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.0 && vt > 6;
     this.powerT = powerIntent ? (this.powerT ?? 0) + dt : 0;
-    if (inp.handbrake && vt > 6) this.driftLatch = 1;
+    if (inp.handbrake && slideMotion > 1.5) this.driftLatch = 1;
     else if (this.powerT > 0.4) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
     else if (powerSlideAllowed && rearAtLimit && thrIn > 0.8) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
-    else if (this.driftLatch > 0 && sliding && thrIn > 0.5 && this.shareR > 0 && this.spin > 0.2) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
-    // Counter-steer sustains an established deliberate drift; ordinary recovery
-    // must not itself disable grip assists or start rear-brake drift holding.
-    else if (this.driftLatch > 0 && sliding && Math.sign(sIn) === Math.sign(beta) && Math.abs(sIn) > 0.15 && this.w * beta < -0.02) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
+    // Once deliberate, retain intent through the whole rotation, including
+    // backwards travel and a coasting FWD handbrake spin. Releasing the lever
+    // or lifting power is not recovery while the car still has a large angle.
+    else if (this.driftLatch > 0 && sliding) this.driftLatch = 1;
     else if (this.flickT <= 0) this.driftLatch = Math.max(0, this.driftLatch - dt * (sliding ? (thrIn > 0.2 ? 0.05 : 0.3) : 1.5));
     // AWD slide assist: the electronically controlled coupling moves torque rearward once you're drifting (spec.awdDrift,
     // rear share), approximating the rear-biased end of a variable split such as the 2024 GR Yaris Track mode
@@ -553,7 +555,7 @@ export class Vehicle {
     }
     // a light counter-steer helper when the rear steps out and you aren't steering into it (a steering input aid,
     // the car's yaw still comes only from tyre forces)
-    const helper = clamp(beta * 0.55, -0.22, 0.22) * smoothstep(5, 14, vt) * (Math.abs(sIn) < 0.1 ? 1 : 0.35) * (1 - 0.6 * this.driftLatch);
+    const helper = clamp(beta * 0.55, -0.22, 0.22) * smoothstep(5, 14, vt) * (Math.abs(sIn) < 0.1 ? 1 : 0.35) * (1 - this.driftLatch) * clamp(this.steerAssist ?? 1, 0, 1);
     const rack = this.rackLock(vt);
     const raw = sIn * (rack + counter) + helper;
     // steering assist (digital input: keyboard / touch). The input range maps onto the angle that asks the front tyres
@@ -566,8 +568,8 @@ export class Vehicle {
     // compliance: the front axle's lateral force (as a share of its static load) bends the wheels back out of the turn
     const comp = this.kComp * clamp(this.wheel[0].Fy / (this.m * G * (sp.frontW ?? 0.55)), -1.5, 1.5);
     const assisted = clamp(sIn * into + comp + helper, -(rack + 0.5), rack + 0.5);
-    // (mid-drift, latched, the driver wants the wheel more directly: the assist eases to half)
-    const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - 0.5 * this.driftLatch);
+    // Deliberate slides use the rack directly; do not fight their countersteer.
+    const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
     let target = lerp(raw, assisted, A);
     // Light assist must still catch gross front-tyre over-driving. At road
     // speeds the raw rack can ask for twice peak slip, so blending it with
@@ -725,8 +727,9 @@ export class Vehicle {
       else {
         // Broaden lateral breakaway without changing locked-wheel stopping
         // distances or launch traction. Combined slip still shares one force
-        // budget, and reverse keeps its existing parking/tyre behaviour.
-        const lateral = vx > 0 ? sy * sy / (sN * sN) : 0;
+        // budget. Use wheel slip direction on both sides of vLong=0: a
+        // spinning car crossing sideways must not jump to a different curve.
+        const lateral = sy * sy / (sN * sN);
         const looseSlide = this.wheelSlide?.[i] ?? lerp(this.slideLong, this.slideK, lateral);
         // Sustained brake-stand slip cooks the driven tread; kinetic grip falls,
         // while breakaway still uses the ordinary static peak.
@@ -751,10 +754,12 @@ export class Vehicle {
       const c = front ? cosD : 1, s_ = front ? sinD : 0;
       Si.c = c; Si.s = s_;
       Si.vgx = vxp * c + vyp * s_; Si.vgy = -vxp * s_ + vyp * c;
-      // slip angle with relaxation length (~0.45 m)
-      const aT = Math.atan(Si.vgy / Math.max(Math.abs(Si.vgx), 1.0));
-      Wc.aDyn += (aT - Wc.aDyn) * Math.min(1, (Math.hypot(Si.vgx, Si.vgy) + 1.5) * dt / 0.45); // patch speed, so it stays quick sideways
+      // Slip angle and slip ratio share the same low-speed reference. Using
+      // 1 m/s here but 3 m/s for longitudinal slip skewed the force direction
+      // as a spinning car's contact patch crossed sideways.
       Si.vref = Math.max(Math.abs(Si.vgx), 3);
+      const aT = Math.atan(Si.vgy / Si.vref);
+      Wc.aDyn += (aT - Wc.aDyn) * Math.min(1, (Math.hypot(Si.vgx, Si.vgy) + 1.5) * dt / 0.45); // patch speed, so it stays quick sideways
       // implicit wheel-speed update linearises the tyre around the current slip with its steepest slope
       Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * (this.wheelPeak?.[i] ?? 1) * wetPeakScale(this._wsurf?.[i] || this.surf) * Si.vref);
       Si.p = dt / (mw + dt * Si.kx);
@@ -853,9 +858,10 @@ export class Vehicle {
     // ---------------- traction control (throttle cut), electronic diff lock (brake the spinning wheel of an
     // open diff so the other side can drive) and stability control (single-wheel braking); all relax once you
     // have deliberately unsettled the car
-    // latched it becomes a drift mode, not "off": lots of wheelspin allowed, but a runaway (spinning faster and faster
-    // as the sliding rubber loses grip) is still reined in, so steady throttle holds an angle instead of spinning
-    const tcK = lerp(sp.tc ?? 0.5, 0.5, this.driftLatch);
+    // TC off stays off. A deliberate handbrake/feint slide also yields the
+    // electronic interventions until recovery; the old interpolation silently
+    // restored 0.5 TC, even when the driver had disabled it.
+    const tcK = (inp.handbrake ? 0 : sp.tc ?? 0.5) * (1 - this.driftLatch);
     // A driven tyre shares one budget between steering and drive. Judge its
     // own combined slip rather than pairing max wheelspin with another tyre's
     // lateral demand. Applies to FWD, AWD and RWD; straight launches and explicit
@@ -894,10 +900,10 @@ export class Vehicle {
     this.tcCut = clamp(this.tcCut + (spinOver > 0 ? spinOver * tcK * tcAttack : -tcRelease) * dt, 0, tcMax);
     // crawling in soft sand the traction control cuts as hard as it can, as real systems do on low grip (it's what
     // lets a car with its wheels spinning claw its way out rather than dig itself in)
-    const tcSand = (this.surfSoft ?? 0) * (1 - smoothstep(3, 8, av));
+    const tcSand = tcK > 0 ? (this.surfSoft ?? 0) * (1 - smoothstep(3, 8, av)) : 0;
     if (tcSand > 0.05 && spinOver > 0) this.tcCut = Math.min(0.92 * tcSand, Math.max(this.tcCut, this.tcCut + spinOver * 4 * tcSand * dt));
     if (burnout) this.tcCut = 0;
-    const edlK = burnout ? 0 : sp.edl ?? (this.lsd < 0.2 ? tcK : 0);
+    const edlK = burnout || inp.handbrake ? 0 : (sp.edl ?? (this.lsd < 0.2 ? sp.tc ?? 0.5 : 0)) * (1 - this.driftLatch);
     for (let j = 0; j < 2; j++) {
       const L = C4[j * 2], Rr = C4[j * 2 + 1], driven = (j ? sR : sF) > 0;
       for (const [Wc, O, ci] of [[L, Rr, cap[j * 2]], [Rr, L, cap[j * 2 + 1]]]) {
@@ -907,7 +913,7 @@ export class Vehicle {
       }
     }
     this.tcOn = this.tcCut > 0.05 || C4.some((c) => c.edl > 50);
-    const escK = (burnout ? 0 : sp.esc ?? 0.4) * (1 - 0.95 * this.driftLatch) * smoothstep(3, 10, vt);
+    const escK = (burnout || inp.handbrake ? 0 : sp.esc ?? 0.4) * (1 - this.driftLatch) * smoothstep(3, 10, vt);
     this.escOn = false;
     const wGrip = sp.grip * G / Math.max(5, vt);
     const wDes = clamp(vx * Math.tan(delta) / this.wb, -wGrip, wGrip);
@@ -970,13 +976,10 @@ export class Vehicle {
     this.axRaw = held ? 0 : ax; this.ayRaw = ay;
     this.vLong += (ax + this.w * vy) * dt;
     this.vLat += (ay - this.w * vx) * dt;
-    const kin = smoothstep(0.8, 3.2, vt);
+    // Integrate every yaw moment, including a low-speed pivot. The shared
+    // slip reference regularizes parking tyres; projecting w/vLat onto a
+    // kinematic turn here used to catch donuts and snap slow drift recovery.
     this.w += Mz / this.Iz * dt;
-    // low speed: kinematic steering (tyre model is ill-conditioned when parking)
-    if (kin < 1) {
-      this.w = lerp(this.vLong * Math.tan(delta) / this.wb, this.w, kin);
-      this.vLat = lerp(damp(this.vLat, 0, 10, dt), this.vLat, kin);
-    }
     if (!this.reverse && Math.abs(this.vLong) < 0.05 && thrIn < 0.05 && brk > 0) this.vLong = 0;
     // at rest (|vLat| gate: a car sliding sideways passes through vLong = 0 and must not be stopped dead)
     if (Math.abs(this.vLong) < 0.03 && Math.abs(this.vLat) < 0.4 && thrRaw < 0.05) { this.vLong = 0; this.vLat *= 0.9; for (const Wc of C4) Wc.vw = 0; this.wheel[0].vw = this.wheel[1].vw = 0; }
