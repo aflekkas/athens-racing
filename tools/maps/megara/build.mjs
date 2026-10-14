@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { extractRoadNetwork } from '../../build-road-network.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
@@ -80,6 +81,7 @@ const marks=[{id:'megara-grid',name:'MEGARA',sub:'Start / finish',s:0},{id:'mega
 const events=[{id:'megara-tt',mapId:'megara',name:'Megara Time Trial',blurb:'Three clockwise laps. Your total time decides the result.',type:'timetrial',from:'start',to:'finish',laps:3,rivals:0,traffic:0,targetTimes:{gold:240,silver:270,bronze:315}},{id:'megara-race',mapId:'megara',name:'Megara Club Race',blurb:'Three laps against three rivals.',type:'sprint',from:'start',to:'finish',laps:3,rivals:3,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
 const data={id:'megara',name:'Megara Circuit',type:'circuit',sea:false,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation EU-DEM v1.1 / OpenTopoData',proj:{lat0,lon0,mlat,mlon},route,events,marks,zones:[{zone:'circuit',urban:0,s:0}],buildings,sideRoads,areas,coast:[],trees:[],pois:[],furniture:[],places:[],parkSpots:[],humps:[],barriers:[],circuit:{direction:'clockwise',publishedLength:2100,measuredLength:length,nominalWidth:11.5,kerbs,pavedAreas,pitLane,kartRoute:poly(ways.find(w=>w.id===70043225)),shortcut:ways.find(w=>w.id===70043231).geometry.map(P).map(p=>p.map(round))},sources:{osmWay:70043234,precision:'OSM centreline and interpolated EU-DEM; not a laser survey. Width nominal; kerbs and facilities interpreted from imagery.'}};
 // Same 32-byte header + decimetre Int16 heights + Uint8 land class as Riviera.
+data.roadNetwork = extractRoadNetwork(data, ways.map(w => ({type:'way',...w})));
 const T=10,GX=361,GZ=361,n=GX*GZ,buffer=Buffer.alloc(32+n*3);
 buffer.writeInt32LE(GX,0);buffer.writeInt32LE(GZ,4);buffer.writeFloatLE(-1800,8);buffer.writeFloatLE(-1800,12);buffer.writeFloatLE(T,16);
 for(let j=0;j<GZ;j++)for(let i=0;i<GX;i++){const x=-1800+i*T,z=-1800+j*T,k=j*GX+i;buffer.writeInt16LE(Math.round(elevation(x,z)*10),32+k*2);buffer[32+n*2+k]=3;}
