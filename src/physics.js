@@ -20,6 +20,7 @@ import { clamp, lerp, damp, smoothstep } from './util.js';
 import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 import { ROAD } from './road.js';
 import { carTransmission, manualMode } from './transmission.js';
+import { ENGINE_ABUSE, resetEngineAbuse, predictedGearRpm, shiftFeedback, updateMechanicalOverrev, updateManualHeat, engineWearFactor } from './engine-abuse.js';
 import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 
 const G = 9.81, RHO = 1.2;
@@ -293,6 +294,7 @@ export class Vehicle {
         (i % 2 ? d.right : d.left) * 0.3, 0, 1));
       this.coolantTemp = 90; this.radiatorDamage = 0; this.maxImpactEbs = 0;
       this.engineStalled = false; this.drivetrainBroken = false;
+      resetEngineAbuse(this); // Vehicle.reset/tow replaces damage and fully repairs engine abuse too.
       this._damageClock = 0; this._damageWheelPhase = 0;
     }
     const h = Number.isFinite(dt) ? clamp(dt, 0, 0.25) : 0;
@@ -303,10 +305,12 @@ export class Vehicle {
     const heatRate = this.engineStalled ? -0.6 : this.radiatorDamage * (1.2 + 0.9 * clamp(this.load || 0, 0, 1));
     this.coolantTemp = clamp(this.coolantTemp + h * (heatRate - (1 - this.radiatorDamage) *
       Math.max(0, this.coolantTemp - 90) * (0.025 + av * 0.001)), 90, 145);
+    updateManualHeat(this, h);
     const thermalLoss = smoothstep(112, 140, this.coolantTemp);
     if (this.coolantTemp >= 142) this.engineStalled = true;
+    const wearFactor = engineWearFactor(this);
     this.engHealth = this.engineStalled || this.drivetrainBroken ? 0 : clamp(1 -
-      0.45 * smoothstep(0.35, 1, d[this.spec.engineZone || 'front']) - 0.65 * thermalLoss, 0.08, 1);
+      0.45 * smoothstep(0.35, 1, d[this.spec.engineZone || 'front']) - 0.65 * thermalLoss, 0.08, 1) * wearFactor;
     const c = this.cornerDamage;
     this.wheelWobble = 0.002 * Math.max(c[0], c[1]) * Math.sin(this._damageWheelPhase) * smoothstep(1, 8, av);
     this.toePull = clamp(0.04 * (c[1] - c[0]) + 0.015 * (c[3] - c[2]) + this.wheelWobble, -0.055, 0.055);
@@ -614,6 +618,7 @@ export class Vehicle {
     if (av < 0.1 && vt < 0.5 && brk > 0.5 && thrIn < 0.1) this.reverse = true;
     if (thrIn > 0.1 && this.reverse && vx > -0.8) this.reverse = false;
     const thrRaw = this.reverse ? brk : thrIn;
+    this.engineThrottle = thrRaw;
     this.shiftT = Math.max(0, this.shiftT - dt); this.shiftCool = Math.max(0, this.shiftCool - dt);
     if (this.shiftT <= 0 && this.pendingGear) { this.gear = this.pendingGear; this.pendingGear = 0; }
     const sR = burnout && this.awd ? 1 : this.shareR, sF = 1 - sR;
@@ -665,6 +670,8 @@ export class Vehicle {
     this.wasDeclutched = hbClutch;
     this.kickT = Math.max(0, this.kickT - dt * this.kickT / 0.18);
     this.rpm = engaged ? Math.max(sp.idle, Math.abs(wheelRpm)) : damp(this.rpm, rpmT, shifting ? 18 : 9, dt);
+    if (this.manual) this.rpm = Math.min(this.rpm, red * ENGINE_ABUSE.displayRatio);
+    if (updateMechanicalOverrev(this, dt, wheelRpm, engaged)) this.damageFx();
     // limiter (fuel cut with hysteresis)
     if (this.rpm > red * 1.005) this.limiter = true; else if (this.rpm < red * 0.97) this.limiter = false;
     // traction control trims torque while the driven wheels spin
@@ -1020,14 +1027,18 @@ export class Vehicle {
     return this.manual;
   }
   shiftManual(direction) {
-    if ((!this.manual && carTransmission(this.spec) !== 'auto') || this.reverse || this.shiftT > 0 || this.shiftCool > 0 || !direction) return false;
+    if (!this.manual && carTransmission(this.spec) !== 'auto') return shiftFeedback(this, false, 'mode');
+    if (this.reverse) return shiftFeedback(this, false, 'reverse');
+    if (this.shiftT > 0 || this.shiftCool > 0) return shiftFeedback(this, false, 'cooldown');
+    if (!Number.isFinite(direction) || !direction) return shiftFeedback(this, false, 'bounds');
     const g = this.gear + Math.sign(direction), sp = this.spec;
-    if (g < 1 || g > sp.gears.length) return false;
-    // Reject a downshift that would mechanically over-rev the engine, even with the fuel cut active.
-    const c = this.corners, vw = (c[0].vw + c[1].vw) * 0.5 * (1 - this.shareR) + (c[2].vw + c[3].vw) * 0.5 * this.shareR;
-    if (g < this.gear && Math.abs(vw / sp.wheelR * this.ratio(g) * 60 / (2 * Math.PI)) > sp.redline) return false;
+    if (g < 1 || g > sp.gears.length) return shiftFeedback(this, false, 'bounds', g);
+    const rpm = predictedGearRpm(this, g), unsafe = g < this.gear && rpm > sp.redline;
+    // A stick accepts a money shift. Automated/paddle boxes still protect their engine.
+    if (unsafe && !this.manual) return shiftFeedback(this, false, 'overrev_protection', g, rpm);
+    this._unsafeShift = this.manual && g < this.gear ? { gear: g, from: this.gear, unsafe } : null;
     this.shift(g, (sp.shiftT ?? 0.15) * (g < this.gear ? 0.7 : 1));
-    return true;
+    return shiftFeedback(this, true, unsafe ? 'mechanical_overrev' : 'shifted', g, rpm, unsafe);
   }
   shift(g, t) {
     this.shiftEvent = g > this.gear ? 1 : -1;

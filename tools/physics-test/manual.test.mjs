@@ -7,13 +7,13 @@ const spec = { id: 'manual-test', mass: 1500, power: 250, torque: 500, redline: 
 const drive = { throttle: 1, brake: 0, steer: 0 };
 const run = (v, n, input = drive) => { for (let i = 0; i < n; i++) v.update(1 / 60, input); };
 
-test('manual shifts complete sequentially; reject bounds, cooldown and unsafe downshifts', () => {
+test('manual shifts complete sequentially; reject bounds/cooldown but allow unsafe downshifts', () => {
   const v = new Vehicle({ ...spec, manual: true }, route); assert.equal(v.manual, true);
   assert.equal(v.shiftManual(-1), false); assert.equal(v.shiftManual(1), true); assert.equal(v.pendingGear, 2); assert.equal(v.shiftManual(1), false);
   run(v, 45, { throttle: 0, brake: 0, steer: 0 }); assert.equal(v.gear, 2);
   assert.equal(v.shiftManual(-1), true); run(v, 45); assert.equal(v.gear, 1);
   v.gear = spec.gears.length; assert.equal(v.shiftManual(1), false);
-  v.reset(0, 0, 70); v.gear = 2; v.syncWheels(); assert.equal(v.shiftManual(-1), false); assert.equal(v.pendingGear, 0);
+  v.reset(0, 0, 70); v.gear = 2; v.syncWheels(); assert.equal(v.shiftManual(-1), true); assert.equal(v.pendingGear, 1); assert.equal(v.shiftFeedback.unsafe, true);
   v.setManual(false); assert.equal(v.shiftManual(1), false);
 });
 
