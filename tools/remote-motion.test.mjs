@@ -13,10 +13,10 @@ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const renderBody = main.slice(main.indexOf('  remote(peers, dt) {'), main.indexOf('  wrecked() {', main.indexOf('  remote(peers, dt) {')));
 // Execute the production render hook, with only the graphics side effects stubbed.
 function productionRender(client, clock) {
-  const vehicle = state(0), car = { veh: vehicle, model: { root: {}, paintColor: '#123456' } };
+  const vehicle = state(0), car = { veh: vehicle, model: { root: {}, paintColor: '#123456' }, driver: { update() {} } };
   let draws = 0;
-  const remote = Function('remoteCars', 'multiplayer', 'applyRemotePose', 'performance', 'setPaint', 'applyCarDecals', 'unpackDecals', 'syncCar', 'applySpectatorState', `return ({${renderBody}}).remote`)(
-    new Map([['driver', car]]), client, applyRemotePose, { now: clock }, () => {}, () => {}, x => x, () => draws++, applySpectatorState);
+  const remote = Function('remoteCars', 'multiplayer', 'applyRemotePose', 'performance', 'setPaint', 'applyCarDecals', 'unpackDecals', 'syncCar', 'applySpectatorState', 'G', `return ({${renderBody}}).remote`)(
+    new Map([['driver', car]]), client, applyRemotePose, { now: clock }, () => {}, () => {}, x => x, () => draws++, applySpectatorState, { t: 0 });
   return { remote, vehicle, car, get draws() { return draws; } };
 }
 
@@ -159,4 +159,58 @@ test('production lobby handler clears race history and resets car/rejoin timelin
   t.mock.method(globalThis,'setTimeout',() => 1);
   client.ws.onclose({ reason: '' }); assert.equal(client.peers.get('driver').state.s, 24);
   deliver({ ...client.lobby, raceId: 'next' }); assert.equal(client.peers.size,0);
+});
+
+test('recorded ~4.78Hz Worker arrivals survive queued receiver bursts without reconnect resets or pose chasing', () => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/remote-motion-arrivals.json', import.meta.url), 'utf8'));
+  const client = { peers: new Map(), lobby: { players: [{ id: 'driver', car: 'mini', connected: true }] } };
+  let now = 0, index = 0; const render = productionRender(client, () => now), frames = [];
+  for (now of fixture.frames) {
+    while (index < fixture.arrivals.length && fixture.arrivals[index][1] <= now) {
+      const [time, receivedAt, age] = fixture.arrivals[index++];
+      receiveRemoteSnapshot(client.peers, { now: 100000 + time + age, players: [{ id: 'driver', stateAt: 100000 + time, state: state(time, { sampleTime: time, motionEpoch: 1 }) }] }, { members: client.lobby.players, receivedAt });
+    }
+    if (!client.peers.size) continue;
+    render.remote(client.peers, .5);
+    frames.push({ at: now, z: render.vehicle.z });
+  }
+  const stats = metrics(frames), timeline = client.peers.get('driver').timeline;
+  console.log('Recorded WebGL arrival replay', JSON.stringify(stats));
+  assert.equal(timeline.resetCount, 0, 'continuous source samples must survive >1.5sec receiver stalls');
+  assert.ok(stats.cv < .04, 'recorded burst timing must not cause the old clock-reset oscillations');
+  assert.ok(stats.max <= 20.001, 'recovery must not accelerate the car to chase its target');
+  assert.ok(timeline.samples.length <= 16); assert.ok(timeline.delay >= 200 && timeline.delay <= 400);
+});
+
+test('4.78Hz snapshots with measured-scale arrival jitter and two dropped batches freeze and resume at normal speed', () => {
+  const peers = new Map(), interval = 1000 / 4.78;
+  const jitter = [30, 62, 15, 95, 20, 5, 80, 40];
+  const arrivals = Array.from({ length: 55 }, (_, i) => ({ source: i * interval, at: i * interval + 100 + jitter[i % jitter.length] })).filter((_, i) => i !== 16 && i !== 17);
+  let index = 0, previous, freezes = 0; const frames = [];
+  for (let now = 0; now < 12000; now += 1000 / 60) {
+    while (index < arrivals.length && arrivals[index].at <= now) {
+      const a = arrivals[index++];
+      receiveRemoteSnapshot(peers, { now: 100000 + a.source + 100, players: [{ id: 'p', stateAt: 100000 + a.source, state: state(a.source, { sampleTime: a.source, motionEpoch: 1 }) }] }, { receivedAt: a.at });
+    }
+    if (!peers.size) continue;
+    const t = peers.get('p').timeline, p = t.sample(now);
+    if (t.mode === 'freeze') { freezes++; close(p.vLong, 0); }
+    if (previous && now > 1000) {
+      const velocity = (p.s - previous.s) * 1000 / (now - previous.at);
+      assert.ok(velocity >= -1e-7 && velocity <= 20.001, `${velocity} m/s: recovery must not chase a target`);
+    }
+    frames.push({ at: now, z: p.z }); previous = { at: now, s: p.s };
+  }
+  assert.ok(freezes > 0, 'packet loss must exercise bounded extrapolation followed by freeze');
+  assert.equal(peers.get('p').timeline.resetCount, 0);
+  assert.ok(peers.get('p').timeline.delay <= 400);
+});
+
+test('a frozen playhead stays at the prediction horizon and resumes without a 1.5x catch-up phase', () => {
+  const timeline = new RemoteTimeline(); push(timeline, 0); push(timeline, 200);
+  const frozen = timeline.sample(1000), head = timeline.playhead;
+  close(head, 320); close(timeline.sample(1016).z, frozen.z); close(timeline.playhead, head);
+  push(timeline, 600, {}, { receivedAt: 1030 });
+  const resumed = timeline.sample(1032); close(Math.abs(resumed.z - frozen.z), 20 * .016, .0001);
+  assert.equal(timeline.resetCount, 0); assert.equal(timeline.mode, 'interpolate');
 });

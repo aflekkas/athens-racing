@@ -8,7 +8,7 @@ const valid = p => p && [...fields, 'yaw'].every(k => Number.isFinite(p[k]));
 const samePose = (a, b) => [...fields, 'yaw', 'gear', 'reverse'].every(k => a[k] === b[k]);
 
 export class RemoteTimeline {
-  constructor() { this.samples = []; this.delay = 250; this.jitter = 0; this.cadence = 200; this.offset = null; this.playhead = null; this.renderAt = null; }
+  constructor() { this.samples = []; this.delay = 250; this.jitter = 0; this.cadence = 200; this.offset = null; this.playhead = null; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; }
   push(state, { receivedAt, serverNow, stateAt, car, stopped = false } = {}) {
     if (!valid(state)) return false;
     const previous = this.samples.at(-1);
@@ -21,13 +21,18 @@ export class RemoteTimeline {
     if (previous && !restart && (source <= previous.time || (receipt === null && !Number.isFinite(state.sampleTime) && samePose(state, previous.state)))) return false;
     const gap = previous ? (source - previous.time) / 1000 : 0;
     const distance = previous ? Math.hypot(state.x - previous.state.x, state.z - previous.state.z) : 0;
-    const discontinuity = previous && (restart || car !== previous.car || state.motionEpoch !== previous.state.motionEpoch || receivedAt - previous.receivedAt > 1500 || distance > 3 + Math.max(speed(state), speed(previous.state)) * Math.max(0, gap) * 1.6);
-    if (discontinuity) { this.samples = []; this.playhead = this.renderAt = null; this.lastPose = null; this.recovering = false; this.offset = null; this.delay = 250; this.jitter = 0; this.cadence = 200; }
+    // Receiver stalls queue otherwise continuous snapshots. Only a gap on the
+    // player's sample clock signals a stalled stream; receipt gaps cannot reset
+    // the clock to the oldest packet in a queued burst.
+    const discontinuity = previous && (restart || car !== previous.car || state.motionEpoch !== previous.state.motionEpoch || gap > 1.5 || distance > 3 + Math.max(speed(state), speed(previous.state)) * Math.max(0, gap) * 1.6);
+    if (discontinuity) { this.samples = []; this.playhead = this.renderAt = null; this.offset = null; this.delay = 250; this.jitter = 0; this.cadence = 200; this.resetCount++; }
     const last = this.samples.at(-1);
     const candidate = local - source;
     if (this.offset === null) this.offset = candidate;
-    // Track clock drift slowly; delayed packets cannot drag the clock forward.
-    else this.offset += clamp(candidate - this.offset, -2, .2);
+    // A queued burst reveals the correct clock in its freshest packet. Adopt
+    // lower-delay observations immediately; delayed packets cannot drag it
+    // forward. Playback stays monotonic even when this estimate improves.
+    else this.offset = Math.min(candidate, this.offset + .2);
     if (last) {
       const interval = source - last.time;
       if (interval <= 600) this.cadence += (interval - this.cadence) * .1;
@@ -40,37 +45,28 @@ export class RemoteTimeline {
     return true;
   }
   sample(now, stopped = false) {
-    const previous = this.lastPose, elapsed = (now - this.lastPoseAt) / 1000;
-    const p = this.poseAt(now, stopped);
-    if (!p) return null;
-    // Recover from a frozen stream at a bounded speed, rather than jumping to its
-    // resumed timeline. Discontinuities explicitly clear this visual correction.
-    if (previous && elapsed > 0 && elapsed < 1) {
-      const distance = Math.hypot(p.x - previous.x, p.z - previous.z);
-      const limit = Math.max(speed(p), speed(previous), 1) * elapsed * 1.5;
-      if (distance > limit) {
-        this.recovering = true;
-        const fraction = limit / distance;
-        for (const key of ['x', 'y', 'z', 's', 'u']) p[key] = previous[key] + (p[key] - previous[key]) * fraction;
-        p.yaw = previous.yaw + angle(p.yaw - previous.yaw) * fraction;
-      } else this.recovering = false;
-    }
-    this.lastPose = { ...p }; this.lastPoseAt = now;
-    return p;
+    return this.poseAt(now, stopped);
   }
   poseAt(now, stopped = false) {
     if (!this.samples.length) return null;
     const target = now - this.offset - this.delay;
-    // A changing jitter buffer slows/speeds playback by at most 10%, never rewinds it.
-    if (this.playhead === null || now - this.renderAt > 1000) this.playhead = target;
-    else { const dt = Math.max(0, now - this.renderAt); this.playhead += dt * clamp(1 + (target - this.playhead - dt) / 1000, .9, 1.1); }
+    const latest = this.samples.at(-1), previous = this.samples.at(-2);
+    const moving = previous && Math.hypot(latest.state.x - previous.state.x, latest.state.z - previous.state.z) > .01 && speed(latest.state) > .1 && !stopped && !latest.stopped;
+    // Keep time at the last bounded prediction while frozen. On packet recovery
+    // playback continues from there, rather than chasing a distant pose at 1.5x
+    // speed. Growing jitter delay may slow the clock by 10%; it never speeds up.
+    if (this.playhead === null) this.playhead = target;
+    else { const dt = Math.max(0, now - this.renderAt); this.playhead += dt * clamp(1 + (target - this.playhead - dt) / 1000, .9, 1); }
+    this.playhead = Math.min(this.playhead, latest.time + (moving ? 120 : 0));
     this.renderAt = now;
-    const time = this.playhead, latest = this.samples.at(-1);
+    const time = this.playhead;
     while (this.samples.length > 2 && this.samples[1].time <= time) this.samples.shift();
-    if (time <= this.samples[0].time) return { ...this.samples[0].state };
+    if (this.samples.length === 1 || !moving && time >= latest.time) { this.mode = 'stopped'; return { ...latest.state, vLong: 0, vLat: 0 }; }
+    if (time <= this.samples[0].time) { this.mode = 'buffering'; return { ...this.samples[0].state }; }
     for (let i = 1; i < this.samples.length; i++) {
       const a = this.samples[i - 1], b = this.samples[i];
       if (time > b.time) continue;
+      this.mode = 'interpolate';
       const span = b.time - a.time, t = clamp((time - a.time) / span, 0, 1), p = { ...a.state };
       for (const key of fields) p[key] = a.state[key] + (b.state[key] - a.state[key]) * t;
       p.yaw = a.state.yaw + angle(b.state.yaw - a.state.yaw) * t;
@@ -85,11 +81,11 @@ export class RemoteTimeline {
       }
       return p;
     }
-    const p = { ...latest.state }, previous = this.samples.at(-2);
-    const moving = previous && Math.hypot(p.x - previous.state.x, p.z - previous.state.z) > .01 && speed(p) > .1;
-    if (!moving || stopped || latest.stopped) { p.vLong = p.vLat = 0; return p; }
+    const p = { ...latest.state };
+    if (!moving) { this.mode = 'stopped'; p.vLong = p.vLat = 0; return p; }
     // One missed packet can coast briefly. After 120ms the pose AND wheel speed freeze.
     const late = Math.max(0, time - latest.time), dt = Math.min(late, 120) / 1000;
+    this.mode = late >= 120 ? 'freeze' : 'extrapolate';
     const vel = velocity(p), span = (latest.time - previous.time) / 1000;
     const yawRate = clamp(angle(p.yaw - previous.state.yaw) / span, -3, 3);
     const half = yawRate * dt / 2;
