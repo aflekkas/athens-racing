@@ -250,7 +250,7 @@ function cabinFittings(car,d,M,low){
 function wheels(car,d,M,low) {
   car.wheels=[];
   for(const front of [true,false])for(const s of [-1,1]) {
-    const pivot=new THREE.Group();pivot.name=`${front?'front':'rear'}-${s<0?'left':'right'}-steering`;pivot.position.set(s*d.track/2,d.r,(front?-1:1)*d.wb/2+(d.axleOffset||0));car.root.add(pivot);
+    const pivot=new THREE.Group();pivot.name=`${front?'front':'rear'}-${s<0?'left':'right'}-steering`;pivot.position.set(s*(d.mercedes&&!front?d.trackRear||d.track:d.track)/2,d.r,(front?-1:1)*d.wb/2+(d.axleOffset||0));car.root.add(pivot);
     const spin=new THREE.Group();spin.name='wheel-spin';pivot.add(spin);
     const width=(front?d.tyreF:d.tyreR)||(car.modelKind==='z4'?(front?.255:.275):.215), R=d.r, rim=d.rim;
     const points=[[rim,-width*.49],[R*.91,-width*.51],[R*.986,-width*.40],[R,-width*.29],[R,width*.29],[R*.986,width*.40],[R*.91,width*.51],[rim,width*.49]].map(([r,z])=>new THREE.Vector2(r,z));
@@ -432,7 +432,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   // dielectric specular gives the stronger grazing reflections without metallic glass.
   if(playerModel){M.glass.color.set('#c4d4cf');M.glass.opacity=d.open?.12:.18;M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
   if(ROAD_MODELS[kind]){M.glass.color.set('#829b9c');M.glass.opacity=.38;}
-  if(d.mercedes){M.glass.color.set('#71868f');M.glass.opacity=.55;}
+  if(d.mercedes){M.glass.color.set(d.suv?'#354e59':'#71868f');M.glass.opacity=d.suv?.42:.55;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
   if(!grouped){
