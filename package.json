@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.mjs",
-    "test": "node --test server/*.test.mjs tools/input.test.mjs tools/settings.test.mjs tools/replay.test.mjs tools/multiplayer-client.test.mjs && node --import ./tools/physics-test/register.mjs --test tools/physics-test/manual.test.mjs tools/physics-test/engine-abuse.test.mjs tools/traffic-test.mjs"
+    "test": "node --test server/*.test.mjs worker/oidc.test.mjs tools/input.test.mjs tools/settings.test.mjs tools/replay.test.mjs tools/multiplayer-client.test.mjs && node --import ./tools/physics-test/register.mjs --test tools/physics-test/manual.test.mjs tools/physics-test/engine-abuse.test.mjs tools/traffic-test.mjs"
   },
   "engines": {
     "node": ">=22"

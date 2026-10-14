@@ -1,5 +1,8 @@
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
+import { account } from './account.js';
+import { friends } from './friends.js';
+import { presetCars } from './plate.js';
 import { getPlayableMaps } from './enabled-maps.js';
 import { StateSender } from './multiplayer-state.js';
 import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
@@ -50,6 +53,30 @@ export class Multiplayer {
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }
   }
   get active() { return !!this.lobby; }
+  // Lobby car allow-list (host-only writes). `lobby.allowedCars` arrives
+  // with every lobby message; empty/missing means the whole catalogue.
+  get allowedCars() { return this.lobby?.allowedCars?.length ? [...this.lobby.allowedCars] : this.cars.map(c => c.id); }
+  setAllowedCars(ids) {
+    const list = [...new Set((ids || []).filter(id => this.cars.some(c => c.id === id)))];
+    if (!list.length) { this.status('Allow at least one car.'); return false; }
+    this.send({ type: 'options', allowedCars: list });
+    return true;
+  }
+  setAllowedPreset(preset) { return this.setAllowedCars(presetCars(this.cars, preset)); }
+  async authSession() {
+    // Guests skip silently: multiplayer works without an account. Signed-in
+    // browsers usually link through the handshake cookie already; the ticket
+    // covers the rest (fresh logins, cookie-less contexts).
+    try {
+      const me = await account.get();
+      this.account = me.guest ? null : me;
+      if (me.guest) return;
+      const res = await fetch('/api/auth/ticket', { method: 'POST' });
+      if (!res.ok) return;
+      const { ticket } = await res.json();
+      if (ticket) this.send({ type: 'auth', ticket });
+    } catch {}
+  }
   get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
@@ -112,6 +139,7 @@ export class Multiplayer {
         this.renderEvents(this.lobby?.mapId || 'riviera');
         if (this.token) this.send({ type: 'resume', token: this.token });
         else { this.id = m.id; this.saveToken(m.token); this.connected = true; this.status('Connected · find a lobby or create your own.'); }
+        this.authSession();
       }
       else if (m.type === 'session') {
         this.id = m.id; this.saveToken(m.token);
@@ -123,6 +151,9 @@ export class Multiplayer {
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);
       else if (m.type === 'error') { this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left') this.left();
+      else if (m.type === 'account') { this.account = m.account; account.adopt(m.account); }
+      else if (m.type === 'friends') { friends.adopt(m); this.renderRoom(); }
+      else if (m.type === 'notify') { friends.notify(m); }
       else if (m.type === 'lobby') {
         const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
         if (previousRace !== m.lobby.raceId) { this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
@@ -235,6 +266,28 @@ export class Multiplayer {
     if (l.status === 'results') { const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title); this.ranking().forEach((p, i) => { const row = document.createElement('p'); row.textContent = p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`; results.append(row); }); }
     this.board.hidden = l.status === 'waiting';
   }
+  // Host-only car toggles with quick presets. Unstyled hooks for the UI
+  // agent: #mp-car-toggles [data-preset], label.mp-car-toggle input[data-car].
+  renderCarToggles(lobby, host, allowed) {
+    const box = this.$('mp-car-toggles'); box.replaceChildren();
+    const show = host && lobby.status === 'waiting';
+    box.hidden = !show;
+    if (!show) return;
+    for (const [preset, label] of [['all', 'ALL'], ['normal', 'NORMAL'], ['supercar', 'SUPERCARS']]) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.dataset.preset = preset;
+      b.onclick = () => this.setAllowedPreset(preset); box.append(b);
+    }
+    for (const car of this.cars) {
+      const label = document.createElement('label'); label.className = 'mp-car-toggle'; label.dataset.car = car.id;
+      const input = document.createElement('input'); input.type = 'checkbox'; input.checked = allowed.has(car.id); input.dataset.car = car.id;
+      // Deselecting the final checkbox is rejected server-side and locally
+      // (setAllowedCars returns false): restore it so the UI never shows an
+      // empty allow-list the lobby does not have.
+      input.onchange = () => { if (!this.setAllowedCars([...box.querySelectorAll('input[data-car]:checked')].map(i => i.dataset.car))) input.checked = true; };
+      label.append(input, document.createTextNode(car.short)); box.append(label);
+    }
+  }
+
   driverProgress(p, localS = 0) { return this.progress(p.id === this.id ? localS : this.peers.get(p.id)?.state.s ?? this.lobby?.event?.s0 ?? 0); }
   ranking(localS = 0) { return rankDrivers(this.lobby?.results || this.lobby?.players || [], p => this.driverProgress(p, localS)); }
   progress(s) { const r = this.lobby?.event; return r ? (s - r.s0) * r.dir : s; }

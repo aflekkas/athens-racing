@@ -3,10 +3,14 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { createGameCore } from './core.mjs';
 import { createSqlLeaderboard } from '../worker/leaderboard.mjs';
+import { createAccountService } from './accounts.mjs';
+import { createFriendService } from './friends.mjs';
+import { createMemorySocialStore } from './social-store.mjs';
 
 const map = (id, len, version, closed = false) => ({ id, name: id, track: { start: 0, finish: len, version }, definitions: new Map([[id === 'riviera' ? 'quick' : id + '-race', { id: id === 'riviera' ? 'quick' : id + '-race', name: id, type: 'sprint', s0: 0, s1: len, dir: 1, len, routeKey: `0>${len}`, traffic: false, closed }]]) });
-// Lobby fixtures use only enabled maps for live flows (Megara stays in the
-// fixture so the registry exclusion is covered, not offered).
+// Lobby fixtures use only enabled maps (Megara is retained in MAPS/data but not
+// offered: the registry rejects it at create/options). Leaderboard history
+// below still covers megara records.
 const maps = new Map([['riviera', map('riviera', 15, 'coast')], ['penteli', map('penteli', 40, 'circuit')], ['megara', map('megara', 40, 'circuit', true)]]), cars = new Set(['mini']);
 const socket = () => ({ readyState: 1, messages: [], send(data) { this.messages.push(JSON.parse(data)); }, close() { this.readyState = 3; } });
 const state = s => ({ x: s, y: 0, z: 0, yaw: 0, s, u: 0, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
@@ -36,6 +40,23 @@ test('shared core restores lobby, socket identity, race clock and state after hi
   assert.equal(core.sessions.get(hello.token).state.s, 6);
   now += 1000; for (const ws of [a, b]) send(ws, { type: 'state', raceId: race.raceId, state: state(40) });
   assert.equal(a.messages.at(-1).lobby.status, 'results'); assert.ok(a.messages.at(-1).lobby.results.every(p => p.finish !== null));
+});
+
+test('disabled maps leave every lobby list: hello excludes Megara; create/switch/join reject it', () => {
+  const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) } });
+  const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
+  const send = (ws, value) => core.message(ws, JSON.stringify(value));
+  assert.deepEqual(a.messages.find((m) => m.type === 'hello').maps.map((m) => m.id).sort(), ['penteli', 'riviera']);
+  send(a, { type: 'create', mapId: 'megara' });
+  assert.match(a.messages.at(-1).message, /unavailable/);
+  send(a, { type: 'create', mapId: 'riviera' });
+  const code = a.messages.at(-1).lobby.code;
+  send(a, { type: 'options', mapId: 'megara' });
+  assert.match(a.messages.at(-1).message, /unavailable/);
+  assert.equal(core.lobbies.get(code).mapId, 'riviera', 'rejected switch keeps the lobby');
+  core.lobbies.set('MEG', { code: 'MEG', status: 'waiting', players: new Map(), mapId: 'megara' });
+  send(b, { type: 'join', code: 'meg' });
+  assert.match(b.messages.at(-1).message, /unavailable/);
 });
 
 test('idle lobbies expire without a repeating timer and map changes invalidate ready votes', t => {
@@ -99,19 +120,78 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   send(a, { type: 'rematch' }); assert.ok(a.messages.at(-1).lobby.players.every(p => p.dnf === false && p.finish === null));
 });
 
-test('disabled maps leave every lobby list: hello excludes Megara; create/switch/join reject it', () => {
-  const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) } });
-  const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
-  const send = (ws, value) => core.message(ws, JSON.stringify(value));
-  assert.deepEqual(a.messages.find((m) => m.type === 'hello').maps.map((m) => m.id).sort(), ['penteli', 'riviera']);
-  send(a, { type: 'create', mapId: 'megara' });
-  assert.match(a.messages.at(-1).message, /unavailable/);
-  send(a, { type: 'create', mapId: 'riviera' });
-  const code = a.messages.at(-1).lobby.code;
-  send(a, { type: 'options', mapId: 'megara' });
-  assert.match(a.messages.at(-1).message, /unavailable/);
-  assert.equal(core.lobbies.get(code).mapId, 'riviera', 'rejected switch keeps the lobby');
-  core.lobbies.set('MEG', { code: 'MEG', status: 'waiting', players: new Map(), mapId: 'megara' });
-  send(b, { type: 'join', code: 'meg' });
-  assert.match(b.messages.at(-1).message, /unavailable/);
+// --- Google sign-in, plate = username, lobby allow-lists, MP stats -------
+const cars3 = new Set(['mini', 'z4', 'carrera']);
+function socialCore(t, nowRef = { at: 500000 }) {
+  t.mock.method(Date, 'now', () => nowRef.at);
+  const store = createMemorySocialStore();
+  const accounts = createAccountService(store, { now: () => nowRef.at });
+  const friends = createFriendService(store, { now: () => nowRef.at });
+  const core = createGameCore({ maps, cars: cars3, leaderboard: { submit: async () => ({ saved: true }) }, accounts, friends, countdownMs: 100, raceLimitMs: 5000 });
+  for (const [sub, name] of [['g1', 'one'], ['g2', 'two']]) { accounts.upsertGoogleUser({ sub, displayName: name }); accounts.setUsername(sub, name); }
+  const login = (ws) => { const sub = ws === sockets.a ? 'g1' : 'g2'; core.message(ws, JSON.stringify({ type: 'auth', ticket: accounts.createTicket(sub).ticket })); };
+  const sockets = { a: socket(), b: socket() };
+  core.connect(sockets.a, 'one'); core.connect(sockets.b, 'two');
+  return { core, accounts, friends, nowRef, ...sockets, login, send: (ws, m) => core.message(ws, JSON.stringify(m)) };
+}
+
+test('ticket auth links the username plate; allow-lists coerce and reject; stats and recent accrue', t => {
+  const { core, accounts, friends, nowRef, a, b, login, send } = socialCore(t);
+  assert.match(a.messages.at(-1).type, /discovery/);
+  send(a, { type: 'auth', ticket: 'bogus' }); assert.match(a.messages.at(-1).message, /ticket/);
+  login(a); login(b);
+  assert.equal([...a.messages].reverse().find(m => m.type === 'account').account.username, 'ONE');
+  send(a, { type: 'create', name: 'Alice', car: 'carrera', allowedCars: ['mini', 'z4'] });
+  let lobby = a.messages.at(-1).lobby;
+  assert.equal(lobby.players[0].plate, 'ONE', 'plate is the username');
+  assert.deepEqual(lobby.allowedCars, ['mini', 'z4']);
+  assert.equal(lobby.players[0].car, 'mini', 'a disallowed create car is coerced');
+  send(b, { type: 'join', code: lobby.code, name: 'Bob', car: 'carrera' });
+  lobby = b.messages.at(-1).lobby;
+  assert.equal(lobby.players.find(p => p.name === 'Bob').car, 'mini', 'a disallowed join car is coerced');
+  assert.equal(lobby.players.find(p => p.name === 'Bob').plate, 'TWO');
+  send(b, { type: 'ready', ready: false, version: 'coast', car: 'carrera' });
+  assert.match(b.messages.at(-1).message, /not allowed/);
+  send(a, { type: 'options', allowedCars: [] }); assert.match(a.messages.at(-1).message, /at least one/);
+  send(a, { type: 'options', allowedCars: ['mini', 'nope'] });
+  assert.deepEqual(a.messages.at(-1).lobby.allowedCars, ['mini'], 'unknown ids are dropped, never stored');
+  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
+  send(a, { type: 'start' });
+  const race = a.messages.at(-1).lobby; assert.equal(race.status, 'countdown');
+  nowRef.at = 500000 + 101; core.tick();
+  send(a, { type: 'state', raceId: race.raceId, state: state(15) });
+  send(b, { type: 'state', raceId: race.raceId, state: state(15) });
+  const done = a.messages.at(-1).lobby;
+  assert.equal(done.status, 'results');
+  const s1 = accounts.get('g1').stats;
+  assert.deepEqual([s1.started, s1.finished, s1.wins, s1.podiums, s1.km], [1, 1, 1, 0, 0.015]);
+  assert.equal(s1.best['riviera|quick|mini|0'], done.players.find(p => p.name === 'Alice').finish);
+  assert.deepEqual(friends.recent('g1').map(u => u.username), ['TWO'], 'shared races make recent players');
+});
+
+test('presence rides lobby transitions: menu, lobby, racing, offline', t => {
+  const { core, friends, a, b, login, send } = socialCore(t);
+  login(a); login(b);
+  friends.request('g1', 'two'); friends.accept('g2', 'one');
+  const lastFriends = () => [...a.messages].reverse().find(m => m.type === 'friends');
+  send(a, { type: 'create', name: 'Alice' });
+  const code = [...a.messages].reverse().find(m => m.type === 'lobby').lobby.code;
+  send(b, { type: 'join', code, name: 'Bob' });
+  let snap = lastFriends();
+  assert.equal(snap.friends[0].username, 'TWO');
+  assert.equal(snap.friends[0].presence.online, true);
+  assert.equal(snap.friends[0].presence.activity, 'lobby');
+  assert.equal(snap.friends[0].presence.lobbyCode, code);
+  assert.equal(snap.friends[0].presence.joinable, true);
+  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
+  send(a, { type: 'start' });
+  snap = lastFriends();
+  assert.equal(snap.friends[0].presence.activity, 'racing');
+  assert.equal(snap.friends[0].presence.joinable, false);
+  send(b, { type: 'leave' });
+  snap = lastFriends();
+  assert.equal(snap.friends[0].presence.activity, 'menu');
+  core.disconnect(b);
+  snap = lastFriends();
+  assert.equal(snap.friends[0].presence.online, false);
 });
