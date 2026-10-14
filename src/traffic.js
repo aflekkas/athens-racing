@@ -399,7 +399,8 @@ export class Traffic {
     }
     if (!this.disabled) {
       const n = this.laneCount(ps + this.dir * 500), dens = this.density(ps + this.dir * 500);
-      const wantSame = Math.round(n * 7 * dens), wantOnc = Math.round(n * 6 * dens);
+      // ~20 visible cars in a busy town: enough to weave through, each one is a model's worth of draws
+      const wantSame = Math.round(n * 5 * dens), wantOnc = Math.round(n * 4.5 * dens);
       const z = this.zone(ps + this.dir * 500);
       const wantParked = { town: 3, beach: 4, cliff: 0, cove: 2 }[z];
       if (same < wantSame || onc < wantOnc) this.spawn(ps);
