@@ -96,6 +96,17 @@ export class RacingLine {
     const lo = new Float64Array(this.n), hi = new Float64Array(this.n), frames = [];
     for (let i = 0; i < this.n; i++) {
       const s = i * this.step, b = this.bounds(s), f = route.frame(s, {});
+      // A mapped carriageway can curve away from the race centre road.
+      // Construct its local affine u->world frame before measuring the line;
+      // route.point() and our steering targets already follow this carriageway.
+      if (route.localLayout?.contains(s)) {
+        const u = (b.min + b.max) / 2, p = route.point(s, u, pointOut());
+        const l = route.point(s, u - 0.25, pointOut()), r = route.point(s, u + 0.25, pointOut());
+        f.rx = (r.x - l.x) * 2; f.rz = (r.z - l.z) * 2;
+        f.x = p.x - f.rx * u; f.z = p.z - f.rz * u;
+        f.grade = route.contactFrame(s, u, {}).grade;
+        f.uScale2 = f.rx * f.rx + f.rz * f.rz;
+      }
       lo[i] = b.min; hi[i] = b.max; frames.push(f);
       this.u[i] = clamp(route.closed ? route.racingU?.(s) ?? 0 : (b.min + b.max) / 2, b.min, b.max);
       this.x[i] = f.x + f.rx * this.u[i]; this.z[i] = f.z + f.rz * this.u[i];
@@ -109,7 +120,8 @@ export class RacingLine {
         const a = this.index(i - stride), b = this.index(i + stride), c = this.index(i - 2 * stride), d = this.index(i + 2 * stride), f = frames[i];
         const target = ((4 * (this.x[a] + this.x[b]) - this.x[c] - this.x[d]) / 6 - f.x) * f.rx +
           ((4 * (this.z[a] + this.z[b]) - this.z[c] - this.z[d]) / 6 - f.z) * f.rz;
-        this.u[i] = clamp(mix(this.u[i], target, 0.28), lo[i], hi[i]);
+        const projected = target / (f.uScale2 || 1);
+        this.u[i] = clamp(mix(this.u[i], projected, 0.28), lo[i], hi[i]);
         this.x[i] = f.x + f.rx * this.u[i]; this.z[i] = f.z + f.rz * this.u[i];
       }
     }

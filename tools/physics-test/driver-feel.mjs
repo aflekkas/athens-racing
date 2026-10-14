@@ -13,6 +13,7 @@ const catalogueSource = readFileSync(catalogURL, 'utf8');
 const allCars = Function('return ' + catalogueSource.split('export const CARS = ')[1].split('\n];')[0] + '\n];')();
 export const CARS = allCars.filter(c => (process.env.CAR_IDS ? process.env.CAR_IDS.split(',') : ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv']).includes(c.id));
 const { MAPS } = await import('../../src/map-catalog.js');
+const { RIVIERA_TUNNELS } = await import('../../src/maps/riviera-tunnels.js');
 const DT = 1 / 60, G = 9.81, DEG = 180 / Math.PI;
 const mean = (a, key) => a.reduce((s, r) => s + r[key], 0) / a.length;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -20,7 +21,7 @@ const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 
 export const routes = MAPS.map(def => {
   const data = JSON.parse(readFileSync(new URL('../../' + def.dataUrl, import.meta.url)));
-  const route = new Route(data.route);
+  const route = new Route(data.route, { corridors: def.id === 'riviera' ? RIVIERA_TUNNELS : [] });
   route.urban = () => 1;
   return { def, route };
 });
@@ -42,9 +43,10 @@ export function cornerAt(route, kmh, targetG = 0.85) {
   return best;
 }
 
-export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = false, assist, throttle, seconds = 2, cornerG = 0.85, powerAt = 0, initialBeta = 0, inputScale = 1, bend: selectedBend, gear, aids = true } = {}) {
+export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = false, assist, throttle, seconds = 2, cornerG = 0.85, powerAt = 0, initialBeta = 0, inputScale = 1, bend: selectedBend, gear, aids = true, texture = true } = {}) {
   const bend = selectedBend ?? cornerAt(route, kmh, cornerG), side = Math.sign(bend.k);
   const vehicle = new Vehicle(aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0 }, route);
+  if (!texture) vehicle.roadZ = () => 0;
   if (gear) { vehicle.manual = true; vehicle.gear = gear; }
   const pad = { id: 'driver-feel', index: 0, connected: true, axes: [side * (0.15 + 0.85 * inputScale), 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ value: 0 })) };
   const controls = new Input({ target: null, navigator: { getGamepads: () => device === 'gamepad' ? [pad] : [] }, document: null, storage: null });
