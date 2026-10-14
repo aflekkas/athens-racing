@@ -14,7 +14,8 @@ export function smokeDrive(event, geometry) {
     const offset = frame.lanes ? 0 : u;
     const state = { x: frame.x - frame.tz * offset, y: frame.y, z: frame.z + frame.tx * offset,
       yaw: Math.atan2(frame.tx * dir, frame.tz * dir), s, u, vLong: SMOKE_SPEED, vLat: 0, steer: 0, rpm: 5000, gear: 5 };
-    observeCourse(course, state, distance / SMOKE_SPEED);
+    const status = observeCourse(course, state, distance / SMOKE_SPEED);
+    assert.equal(status.missed, false, `Smoke path warns at station ${s}, next gate ${status.next?.s}`);
     samples.push(state);
     if (distance === length + 2) break;
   }

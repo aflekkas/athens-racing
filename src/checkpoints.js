@@ -108,8 +108,10 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
       crossed = d0 < gate.d && d1 >= gate.d;
       valid = Math.abs(pose.u ?? 0) <= gate.halfWidth; // geometry-free test fixtures
     }
-    if (!crossed) break;
-    if (!valid) { course.missed = true; break; }
+    // Each carriageway has its own plane. Crossing the other bore's infinite
+    // plane outside its width says nothing about the gate on our lane. Keep
+    // the gate pending; the station tolerance below decides when it is missed.
+    if (!crossed || !valid) break;
     course.passed++; course.missed = false; gate = course.gates[course.passed];
   }
   if (gate && d1 > gate.d + 5) course.missed = true;

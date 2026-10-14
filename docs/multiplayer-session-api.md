@@ -60,6 +60,11 @@ ordered gates too. Existing finish distance/lateral, clock and leaderboard
 validation still apply. Taxi/getaway use their existing ordered objective
 reducers rather than race-course gates; free roam has no finish gates.
 
+At mapped twin carriageways, crossing the other carriageway's infinite gate
+plane outside its road width leaves the checkpoint pending. The existing
+five-metre station tolerance decides when an unpassed gate becomes missed;
+only an in-width, height-valid physical crossing advances it.
+
 Accepted, relayed and restored server race state ignores legacy decal
 descriptors. Paint and bounded driver appearance remain supported.
 
@@ -68,7 +73,10 @@ descriptors. Paint and bounded driver appearance remain supported.
 - `npm test` includes core/Node session regressions.
 - `node --test tools/checkpoints.test.mjs tools/multiplayer-client.test.mjs`
 - `node --import ./tools/physics-test/register.mjs --test tools/checkpoint-routes.test.mjs`
-  checks every gate on both legal Riviera/Penteli lanes and two Megara laps in both directions.
+  sweeps every Riviera/Penteli event and seeded taxi/getaway itinerary in both
+  directions, through each lane centre and inner/outer road edge, against server
+  and solo geometry. It includes paired packets, the tt-coast HUD regression,
+  shortcut rejection, and two Megara laps in both directions.
 - `MP_WORKER_BASE=http://127.0.0.1:<private-port> node --test server/session-transport.test.mjs`
   runs the same socket contract on a local SQLite Durable Object via `wrangler dev`.
 

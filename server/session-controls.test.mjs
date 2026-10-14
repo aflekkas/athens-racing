@@ -12,3 +12,41 @@ test('kick cooldown survives reconnect, changed identity and DO hibernation; hos
 test('car changes unready ready drivers, work after race/reconnect, obey filters and reject racing edits',t=>{const e=setup(t),{a,b,l,send}=e;send(b,{type:'ready',ready:true,version:'v'});send(b,{type:'car',car:'z4'});const guest=[...l.players.values()][1];assert.equal(guest.car,'z4');assert.equal(guest.ready,false);send(a,{type:'options',allowedCars:['mini'],config:{time:'invalid'}});assert.deepEqual(l.allowedCars,['mini','z4']);send(a,{type:'options',allowedCars:['mini']});assert.equal(guest.car,'mini');send(b,{type:'car',car:'z4'});assert.match(b.messages.at(-1).message,/allowed/);send(a,{type:'options',allowedCars:['mini','z4']});send(a,{type:'start',force:true});send(b,{type:'car',car:'z4'});assert.match(b.messages.at(-1).message,/started/);e.advance();for(const s of [a,b])send(s,{type:'dnf',raceId:l.raceId,reason:'retired'});assert.equal(l.status,'results');send(b,{type:'car',car:'z4'});assert.equal(guest.car,'z4');assert.equal(l.racers.get(guest.id).car,'mini');e.core.disconnect(b);const resumed=socket();e.core.connect(resumed,'b', { protocol: MULTIPLAYER_PROTOCOL });send(resumed,{type:'resume',token:guest.token});send(resumed,{type:'car',car:'mini'});assert.equal(guest.car,'mini');send(a,{type:'rematch'});send(resumed,{type:'ready',ready:false,car:'z4'});assert.equal(guest.car,'z4');});
 test('side-road checkpoint skip cannot finish; go back through missing gate then complete ordered course',t=>{const e=setup(t),{a,b,l,send}=e;send(a,{type:'start',force:true});e.advance();const raceId=l.raceId;send(b,{type:'state',raceId,state:state(60,20)});e.advance();send(b,{type:'state',raceId,state:state(110,20)});assert.equal(e.core.clientData(b).course.passed,0);assert.equal(b.messages.at(-1).type,'checkpoint');assert.match(b.messages.at(-1).message,/MISSED CHECKPOINT/);e.advance();send(b,{type:'state',raceId,state:state(200)});assert.equal(e.core.clientData(b).finish,null);e.restore();assert.equal(e.core.clientData(b).course.passed,0);for(const s of [60,90,110,170,200]){e.advance();send(b,{type:'state',raceId,state:state(s)});}assert.ok(e.core.clientData(b).finish>0);});
 test('teleported world position cannot count a gate with forged s/u',t=>{const e=setup(t),{a,b,l,send}=e;send(a,{type:'start',force:true});e.advance();send(b,{type:'state',raceId:l.raceId,state:{...state(85),x:5000}});assert.equal(e.core.clientData(b).finish,null);assert.equal(e.core.clientData(b).course.passed,0);});
+
+test('real tt-coast race never sends a missed warning on the legal bore and both drivers finish', async t => {
+  const { readFile } = await import('node:fs/promises');
+  const { resolveMap } = await import('./map-definitions.mjs');
+  const { smokeDrive } = await import('../tools/deploy-smoke-route.mjs');
+  const data = JSON.parse(await readFile(new URL('../data/map.json', import.meta.url)));
+  const map = resolveMap({ id: 'riviera' }, data), event = map.definitions.get('tt-coast');
+  const drive = smokeDrive(event, map.geometry);
+  let now = 100000;
+  t.mock.method(Date, 'now', () => now);
+  const core = createGameCore({ maps: new Map([['riviera', map]]), cars: new Set(['mini']),
+    leaderboard: { submit: async () => {} }, countdownMs: 100 });
+  const host = socket(), guest = socket(), send = (ws, m) => core.message(ws, JSON.stringify(m));
+  core.connect(host, 'host', { protocol: MULTIPLAYER_PROTOCOL });
+  core.connect(guest, 'guest', { protocol: MULTIPLAYER_PROTOCOL });
+  send(host, { type: 'create', mapId: 'riviera', eventId: event.id });
+  const lobby = [...core.lobbies.values()][0];
+  send(guest, { type: 'join', code: lobby.code });
+  send(host, { type: 'start', force: true });
+  now += 100; core.tick();
+  for (const state of drive.samples) {
+    now += 100; core.tick();
+    for (const ws of [host, guest]) send(ws, { type: 'state', raceId: lobby.raceId, state });
+    if (state.s === 9500) for (const ws of [host, guest]) {
+      const course = core.clientData(ws).course;
+      assert.equal(course.passed, 61);
+      assert.equal(course.gates[course.passed].s, 9502);
+      assert.equal(course.missed, false);
+    }
+  }
+  for (const ws of [host, guest]) {
+    assert.equal(ws.messages.some(m => m.type === 'checkpoint' && m.missed), false);
+    assert.equal(ws.messages.some(m => m.type === 'error'), false);
+    assert.equal(core.clientData(ws).course.passed, drive.checkpoints);
+    assert.ok(Number.isFinite(core.clientData(ws).finish));
+  }
+  assert.equal(lobby.status, 'results');
+});
