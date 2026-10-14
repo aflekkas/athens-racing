@@ -43,7 +43,8 @@ export function mountMapSelect(root) {
     camera = clampCamera(camera, view, MAP_VIEW);
     const zoom = camera.scale / baseScale;
     layer.style.transform = `translate(calc(-50% + ${camera.x}px),calc(-50% + ${camera.y}px)) scale(${zoom})`;
-    scaleBar.querySelector('span').style.width = `${5000 / MAP_VIEW.metersPerUnit * camera.scale}px`;
+    const scaleSpan = scaleBar?.querySelector('span');
+    if (scaleSpan) scaleSpan.style.width = `${5000 / MAP_VIEW.metersPerUnit * camera.scale}px`;
     // Keep pin targets and text at their UI size as the geographic scene zooms.
     root.querySelectorAll('.track-pin').forEach(pin => {
       const dot = pin.querySelector('.track-pin__dot'), anchor = pin.dataset.mapId === 'penteli' ? pin.offsetWidth - dot.offsetWidth / 2 : dot.offsetWidth / 2;
