@@ -21,8 +21,8 @@ export class DrivingFeedback {
     root.innerHTML = `<div class="df-heading"><span data-driver>TYRE GRIP</span><button type="button" class="df-options" aria-label="Driving assist options" aria-expanded="false">ASSISTS</button></div>
       <div class="df-settings" hidden><label><input type="checkbox" data-option="grip">Live tyre grip</label><label><input type="checkbox" data-option="line">Road braking line</label><small>Advisory · allows for car grip and weather; watch traffic.</small></div>
       <div class="df-grip"><div class="df-axle" data-axle="front"><span>FRONT</span><meter min="0" max="100" value="0" aria-label="Front tyre grip utilization"></meter><output>—</output></div>
-      <div class="df-axle" data-axle="rear"><span>REAR</span><meter min="0" max="100" value="0" aria-label="Rear tyre grip utilization"></meter><output>—</output></div><p class="df-explanation"></p></div><p class="df-guidance" hidden></p>`;
-    this.grip = root.querySelector('.df-grip'); this.message = root.querySelector('.df-explanation'); this.cue = root.querySelector('.df-guidance'); this.driver = root.querySelector('[data-driver]');
+      <div class="df-axle" data-axle="rear"><span>REAR</span><meter min="0" max="100" value="0" aria-label="Rear tyre grip utilization"></meter><output>—</output></div></div><p class="df-guidance" hidden></p>`;
+    this.grip = root.querySelector('.df-grip'); this.cue = root.querySelector('.df-guidance'); this.driver = root.querySelector('[data-driver]');
     this.axles = ['front', 'rear'].map(k => { const row = root.querySelector(`[data-axle=${k}]`); return { row, meter: row.querySelector('meter'), value: row.querySelector('output') }; });
     const settings = root.querySelector('.df-settings'), button = root.querySelector('button');
     button.addEventListener('click', () => { settings.hidden = !settings.hidden; button.setAttribute('aria-expanded', String(!settings.hidden)); });
@@ -85,7 +85,8 @@ export class DrivingFeedback {
   }
   showGrip(telemetry) {
     if (!this.root) return;
-    const model = gripFeedback(telemetry); this.grip.hidden = !this.options.grip; this.message.textContent = model.message; this.message.dataset.warning = String(!!model.warning);
+    // Meters only: the sliding / spin sentence under them read as a popup telling you that you spun (playtest).
+    const model = gripFeedback(telemetry); this.grip.hidden = !this.options.grip;
     ['front', 'rear'].forEach((k, i) => { const a = model[k], { row, meter, value } = this.axles[i]; meter.value = a?.percent || 0;
       row.dataset.state = a?.state || 'UNAVAILABLE'; value.textContent = a ? `${a.percent}% · ${a.state}` : '—'; meter.setAttribute('aria-valuetext', a ? `${a.percent}% force used, ${a.state.toLowerCase()}` : 'Unavailable'); });
   }
