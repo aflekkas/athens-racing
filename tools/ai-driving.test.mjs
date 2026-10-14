@@ -153,3 +153,50 @@ test('seeded traffic races measure overtakes and contact rate', () => {
 test('write reproducible metrics', () => {
   writeFileSync(new URL(`${baseline ? 'before' : 'after'}-metrics.json`, artifacts), JSON.stringify({ dt, physicsHash: createHash('sha256').update(readFileSync(new URL('src/physics.js', root))).digest('hex'), controllerHash: createHash('sha256').update(aiSource).digest('hex'), results }, null, 2));
 });
+// Playtest 2026-10-14c D1: dodging one player must never side-swipe another
+// alongside. A threat comes head-on in our lane while a second car holds the
+// lane beside us (the kerb-side escape). The rival brakes and keeps its gap.
+for (const dir of [1, -1]) test(`no-side-swipe-${dir}`, () => {
+  const route = road({ wide: true }), bot = make(route, 500, dir * 2.25, 18, dir);
+  const oncoming = make(route, 500 + dir * 110, dir * 2.25, 23, -dir).veh, beside = make(route, 500, dir * 5.75, 18, dir).veh;
+  let contacts = 0, minGap = Infinity, moved = false;
+  for (let step = 0; step < 8 / dt; step++) {
+    // The car beside matches our progress, so it is alongside for the whole run.
+    beside.s = bot.veh.s + dir * 0.5; beside.z = -beside.s;
+    // ...and, like the playtest, it moves over into the lane we just left.
+    // A human stops short of the rival (0.6 m), so any contact is the rival's doing.
+    if (bot.controller.evade || moved) {
+      moved = true;
+      const stop = dir > 0 ? Math.max(2.25, bot.veh.u + 2.44) : Math.min(-2.25, bot.veh.u - 2.44);
+      beside.u += clamp(stop - beside.u, -2 * dt, 2 * dt); beside.x = beside.u;
+    }
+    const input = bot.controller.update(dt, { racers: [{ veh: oncoming }, { veh: beside }] });
+    bot.veh.update(dt, input); oncoming.s -= dir * 23 * dt; oncoming.z = -oncoming.s;
+    minGap = Math.min(minGap, Math.abs(beside.u - bot.veh.u) - beside.halfW - bot.veh.halfW);
+  }
+  record(`no-side-swipe-${dir}`, { contacts, minGap }, []);
+  if (!baseline) { assert.equal(contacts, 0); assert.ok(minGap > 0.3, `kept ${minGap.toFixed(2)} m from the car alongside`); }
+});
+// Playtest 2026-10-14c D1 (online, traffic on): a civilian dodged one player,
+// then cut back into the other player alongside. A second racer holds the
+// lane beside the civilian; it must never be side-swiped.
+for (const dir of [1, -1]) test(`traffic-no-side-swipe-${dir}`, () => {
+  const T = Object.create(Traffic.prototype), route = road({ wide: true }), rng = new RNG(17);
+  Object.assign(T, { route, rng, t: 0, cars: [], racers: [], objs: [], sites: [], wrecks: [], honks: [], sounds: [], roadSpeed: () => 20, maybeTask() {}, laneChange() {}, overtakeLogic() {} });
+  const c = { id: 1, s: 500, u: dir * 2.25, dir, lane: 0, v: 18, len: 4.4, wid: 1.8, kind: 'sedan', type: {}, active: true, indL: {}, indR: {}, flash: {},
+    drv: { arch: 'normal', agg: 0.3, rt: 0.4, freeze: 0, horn: 1, mirror: 0.35, indicate: 1, a: 1.6, b: 3, T: 1.2, s0: 2.2, vf: 1, latV: 1.5, patience: 40 } };
+  T.initDrive(c);
+  let ps = 500 + dir * 110, bu = dir * 5.75, contacts = 0, minGap = Infinity, evaded = false;
+  for (let step = 0; step < 8 / dt; step++) {
+    const A = { a: { veh: {} }, kind: 'player', s: ps, u: dir * 2.25, vs: -dir * 23, vu: 0, hs: 2.2, hu: 0.9 };
+    // The second player rides alongside, then (like the playtest) steers toward
+    // the lane the civilian left, stopping 0.6 m short of it.
+    if (c.evade || evaded) { evaded = true; bu += clamp((dir > 0 ? Math.max(2.25, c.u + 2.4) : Math.min(-2.25, c.u - 2.4)) - bu, -2 * dt, 2 * dt); }
+    const B = { a: { veh: {} }, kind: 'player', s: c.s + dir * 0.5, u: bu, vs: dir * c.v, vu: 0, hs: 2.2, hu: 0.9 };
+    T.racers = [A, B]; T.objs = [A, B]; T.t += dt; T.drive(c, dt); ps -= dir * 23 * dt;
+    if (Math.abs(B.s - c.s) < c.len / 2 + B.hs && Math.abs(B.u - c.u) < c.wid / 2 + B.hu) contacts++;
+    minGap = Math.min(minGap, Math.abs(B.u - c.u) - c.wid / 2 - B.hu);
+  }
+  record(`traffic-no-side-swipe-${dir}`, { contacts, minGap }, []);
+  if (!baseline) { assert.equal(contacts, 0); assert.ok(minGap > 0.3, `kept ${minGap.toFixed(2)} m`); }
+});
