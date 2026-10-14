@@ -50,7 +50,8 @@ and exposes `run.checkpoint` using the same status fields.
 Race gates are no more than 80 metres apart and also include existing named
 sectors and the finish. They span the mapped tarmac plus a two-metre shoulder
 allowance. Each forward movement segment must intersect the next gate within
-its width and eight metres of road height. World-position and progress changes
+its width and eight metres of road height. Twin tunnel gates follow each mapped
+carriageway independently, including transitions; land between them is excluded. World-position and progress changes
 are bounded by server receipt time (solo simulation time), with a five-second
 maximum gap for course validation. Passing beside a gate or teleporting cannot
 advance it; return behind the missing gate and cross on the road. Recovery cannot
@@ -66,5 +67,7 @@ descriptors. Paint and bounded driver appearance remain supported.
 
 - `npm test` includes core/Node session regressions.
 - `node --test tools/checkpoints.test.mjs tools/multiplayer-client.test.mjs`
+- `node --import ./tools/physics-test/register.mjs --test tools/checkpoint-routes.test.mjs`
+  checks every gate on both legal Riviera/Penteli lanes and two Megara laps in both directions.
 - `MP_WORKER_BASE=http://127.0.0.1:<private-port> node --test server/session-transport.test.mjs`
   runs the same socket contract on a local SQLite Durable Object via `wrangler dev`.
