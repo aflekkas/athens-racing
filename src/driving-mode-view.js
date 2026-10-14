@@ -18,7 +18,7 @@ export class DrivingModeView {
     this.passenger.add(body, head); this.root.add(this.passenger);
     this.canvas = document.createElement('canvas'); this.canvas.width = 640; this.canvas.height = 96;
     this.texture = new THREE.CanvasTexture(this.canvas);
-    this.label = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.texture, depthTest: false, transparent: true })); this.label.scale.set(14, 2.1, 1); this.label.position.y = 8; this.root.add(this.label);
+    this.label = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.texture, depthTest: false, transparent: true })); this.label.scale.set(9, 1.35, 1); this.label.position.y = 4.8; this.root.add(this.label);
     this.key = '';
   }
   update(objective, routes, active = true) {
@@ -33,9 +33,9 @@ export class DrivingModeView {
     const y = this.route?.surfaceY ? this.route.surfaceY(target.s, target.u) : target.y;
     this.root.position.set(target.x, y + .12, target.z);
     this.passenger.visible = objective.mode === 'taxi' && objective.phase === 'pickup';
-    const ctx = this.canvas.getContext('2d'); ctx.clearRect(0, 0, 640, 96); ctx.fillStyle = '#10171dec'; ctx.fillRect(0, 0, 640, 96);
-    ctx.fillStyle = '#' + color.toString(16).padStart(6, '0'); ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(target.label, 320, 40);
-    ctx.fillStyle = '#ffffff'; ctx.font = '22px sans-serif'; ctx.fillText('STOP BELOW 8 KM/H · HOLD 1.5 S', 320, 75); this.texture.needsUpdate = true;
+    const ctx = this.canvas.getContext('2d'); ctx.clearRect(0, 0, 640, 96); ctx.fillStyle = '#10171dec'; ctx.beginPath();ctx.roundRect(0,0,640,96,12);ctx.fill();ctx.strokeStyle='#'+color.toString(16).padStart(6,'0');ctx.lineWidth=5;ctx.stroke();
+    ctx.fillStyle = '#' + color.toString(16).padStart(6, '0'); ctx.font = '800 32px Barlow Condensed, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(target.label, 320, 40);
+    ctx.fillStyle = '#ffffff'; ctx.font = '800 22px Barlow Condensed, sans-serif'; ctx.fillText('STOP BELOW 8 KM/H · HOLD 1.5 S', 320, 75); this.texture.needsUpdate = true;
   }
   dispose() { this.root.removeFromParent(); this.root.traverse(o => { o.geometry?.dispose(); o.material?.dispose(); }); this.texture.dispose(); }
 }

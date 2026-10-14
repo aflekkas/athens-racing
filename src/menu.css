@@ -494,3 +494,23 @@ body.racing #hud #routeBox { right: 285px; }
 
 #multiplayer .mp-heading { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 10px; }
 @media(max-width:500px) { #multiplayer .mp-heading { grid-template-columns: minmax(0,1fr) auto; } #multiplayer .mp-heading > div { grid-column: 1; grid-row: 1; } #multiplayer #mp-close { grid-column: 2; grid-row: 1; } #multiplayer [data-open-settings] { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-left: 0 !important; } }
+
+body[data-mode="taxi"] #hud #routeBox,body[data-mode="getaway"] #hud #routeBox { display: none; }
+#evBox:has(.objective-card) { top: 22px; left: 320px; right: auto; width: 320px; transform: none; padding: 0; background: none; clip-path: none; text-align: left; }
+.objective-card { color: white; background: #0b131eee; border: 1px solid #ffffff25; border-left: 3px solid #ffc21a; border-radius: 7px; padding: 12px; font-family: var(--f-cond); }
+.objective-card[data-phase="dropoff"] { border-left-color: #62e9bf; }
+.objective-card header { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; letter-spacing: .08em; color: #ffc21a; }
+.objective-card header strong { margin-left: auto; color: white; font-size: 20px; font-variant-numeric: tabular-nums; }
+.objective-card header small { color: #94a8b9; font-size: 11px; }
+.objective-body { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 10px; margin: 8px 0; }
+.objective-arrow { color: #ffc21a; background: #ffc21a12; border-radius: 6px; padding: 5px; }
+.objective-card[data-phase="dropoff"] .objective-arrow { color: #62e9bf; }
+.objective-arrow svg { display: block; width: 32px; height: 32px; }
+.objective-distance { font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.objective-body h3 { font-size: 16px; line-height: 1.1; margin: 4px 0; }
+.objective-body p { color: #b3c4d2; font-size: 12px; margin: 0; }
+.objective-card footer { color: #d0dde6; font-size: 11px; font-weight: 700; letter-spacing: .07em; }
+.objective-hold { height: 4px; margin-top: 8px; background: #ffffff18; }
+.objective-hold i { display: block; height: 100%; background: #62e9bf; }
+@media(max-height:480px) { #evBox:has(.objective-card) { top: 8px; left: 228px; width: 300px; } .objective-card { padding: 8px; } }
+@media(max-width:500px) { #evBox:has(.objective-card) { top: 128px; left: 122px; width: calc(100vw - 134px); } .objective-card { padding: 9px; } .objective-card header { gap: 6px; font-size: 11px; } .objective-card header small { display: none; } .objective-body h3 { font-size: 14px; } body[data-mode="taxi"] #input-toast,body[data-mode="getaway"] #input-toast { top: 316px; } }

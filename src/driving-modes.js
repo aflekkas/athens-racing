@@ -53,8 +53,10 @@ export function drivingModeHud(objective, trips, pose = {}) {
   const distance = target && Number.isFinite(pose.x) && Number.isFinite(pose.z) ? Math.hypot(target.x - pose.x, target.z - pose.z) : null;
   const nearby = distance !== null && distance <= 10;
   const direction = target && Number.isFinite(pose.s) ? target.s < pose.s - 20 ? 'TURN BACK SAFELY · FOLLOW THE ROAD' : 'FOLLOW THE ROAD' : 'FOLLOW THE ROAD';
-  const detail = nearby ? `STOP BELOW 8 KM/H · ${Math.min(1.5, objective.holdSeconds || 0).toFixed(1)} / 1.5 S` : target ? `${esc(target.district)}${distance !== null ? ` · ${distance >= 1000 ? (distance / 1000).toFixed(1) + ' KM' : Math.round(distance) + ' M'}` : ''} · ${direction}` : '';
-  return `<div class="e-k">${DRIVING_MODES[mode]?.label || 'DRIVING'} · ${completed} ${mode === 'taxi' ? 'FARES' : 'MISSIONS'} · ${clock(objective.remaining)}</div><b style="font-size:14px">${action}</b><div style="font-size:11px;margin-top:5px">${detail}</div>`;
+  const bearing=target&&Number.isFinite(pose.yaw)?(pose.yaw-Math.atan2(-(target.x-pose.x),-(target.z-pose.z)))*180/Math.PI:0;
+  const distanceText=distance===null?'—':distance>=1000?(distance/1000).toFixed(1)+' KM':Math.round(distance)+' M';
+  const hold=Math.max(0,Math.min(1,(objective.holdSeconds||0)/1.5));
+  return `<section class="objective-card" data-phase="${esc(objective.phase)}"><header><span>${DRIVING_MODES[mode]?.label||'DRIVING'}</span><strong>${clock(objective.remaining)}</strong><small>${completed} ${mode==='taxi'?'FARES':'MISSIONS'}</small></header><div class="objective-body"><div class="objective-arrow" aria-label="Target direction"><svg viewBox="0 0 40 40" style="transform:rotate(${Number.isFinite(bearing)?bearing.toFixed(1):0}deg)"><path d="M20 4 34 22H25V36H15V22H6Z" fill="currentColor"/></svg></div><div><b class="objective-distance">${distanceText}</b><h3>${action}</h3><p>${esc(target?.district||'')}</p></div></div><footer>${nearby?'STOP & HOLD · '+Math.min(1.5,objective.holdSeconds||0).toFixed(1)+' / 1.5 S':direction}</footer>${nearby?`<div class="objective-hold"><i style="width:${(hold*100).toFixed(0)}%"></i></div>`:''}</section>`;
 }
 export function drivingModeResults(run, res, fmtTime) {
   const noun = run.type === 'taxi' ? 'FARES' : 'MISSIONS';
