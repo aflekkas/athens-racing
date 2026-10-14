@@ -553,7 +553,11 @@ export function setShadowRange(half, mapSize = 4096) {
   if (!SUN) return;
   if (SUN.shadow.mapSize.x !== mapSize) { SUN.shadow.mapSize.set(mapSize, mapSize); SUN.shadow.map?.dispose(); SUN.shadow.map = null; }
   Object.assign(SUN.shadow.camera, { left: -half, right: half, top: half, bottom: -half }); SUN.shadow.camera.updateProjectionMatrix();
+  SUN.shadow.normalBias = shadowNormalBias(half, mapSize);
 }
+// The normal offset was tuned for the high map (150 m half-box at 4096: 7.3 cm texels). Coarser maps (lower lighting
+// levels) need it in proportion, or surfaces shadow themselves in stripes (acne: "lines across the screen").
+const shadowNormalBias = (half, mapSize) => 0.04 * Math.max(1, (2 * half / mapSize) / 0.0733);
 export const shadowRange = () => SHADOW_HALF;
 export function createLights(scene) {
   const sun = new THREE.DirectionalLight(SUN_COLOR, SUN_INTENSITY);
@@ -561,7 +565,7 @@ export function createLights(scene) {
   sun.shadow.mapSize.set(SHADOW_MAP, SHADOW_MAP);
   const S = SHADOW_HALF;
   Object.assign(sun.shadow.camera, { left: -S, right: S, top: S, bottom: -S, near: 1, far: 900 });
-  sun.shadow.bias = -0.0002; sun.shadow.normalBias = 0.04; sun.shadow.radius = 3; sun.shadow.blurSamples = 12;
+  sun.shadow.bias = -0.0002; sun.shadow.normalBias = shadowNormalBias(S, SHADOW_MAP); sun.shadow.radius = 3; sun.shadow.blurSamples = 12;
   scene.add(sun); scene.add(sun.target);
   SUN = sun;
   FILL = new THREE.HemisphereLight(0xc8dcf2, 0x837563, 0.12); updateFill(); scene.add(FILL);
