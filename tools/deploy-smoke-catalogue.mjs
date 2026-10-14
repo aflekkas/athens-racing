@@ -19,3 +19,17 @@ export function verifySessionCatalogue(meta, data, offered) {
   assert.ok(event, `${meta.id}: Quick Race missing`);
   return { event, definition: resolved.definitions.get(event.id), resolved };
 }
+
+// A just-deployed Worker/DO can briefly advertise the previous catalogue.
+// Retry only that preflight, with fresh sockets and map data, before any create.
+export async function verifySessionCatalogueWithRetry(meta, read, { attempts = 3, delayMs = 1000, pause = ms => new Promise(resolve => setTimeout(resolve, ms)), onRetry = () => {} } = {}) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const snapshot = await read();
+    try { return { ...snapshot, ...verifySessionCatalogue(meta, snapshot.data, snapshot.map) }; }
+    catch (error) {
+      snapshot.c?.close();
+      if (attempt === attempts || error.code !== 'ERR_ASSERTION' || !/catalogue|geometry|mode mismatch|expected exactly/.test(error.message)) throw error;
+      onRetry(error, attempt); await pause(delayMs);
+    }
+  }
+}

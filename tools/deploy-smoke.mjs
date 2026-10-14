@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { WebSocket } from 'ws';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { getMap } from '../src/map-catalog.js';
-import { verifySessionCatalogue } from './deploy-smoke-catalogue.mjs';
+import { verifySessionCatalogueWithRetry } from './deploy-smoke-catalogue.mjs';
 import { checkDeployedEntry } from './deploy-smoke-assets.mjs';
 import { smokeDrive, SMOKE_SPEED, SMOKE_STEP } from './deploy-smoke-route.mjs';
 const base = (process.argv[2] || '').replace(/\/$/, '');
@@ -70,12 +70,14 @@ async function connect(name) {
   return { c, hello };
 }
 try {
-  const { c: a, hello } = await connect('Deployment smoke host');
-  const map = hello.maps.find(m => m.id === mapId); assert.ok(map, `Missing ${mapId} in hello`);
   const meta = getMap(mapId);
-  const response = await fetch(new URL(meta.dataUrl, base + '/'), { signal: AbortSignal.timeout(15000) });
-  assert.equal(response.status, 200);
-  const { event, definition, resolved } = verifySessionCatalogue(meta, await response.json(), map);
+  const { c: a, hello, map, event, definition, resolved } = await verifySessionCatalogueWithRetry(meta, async () => {
+    const { c, hello } = await connect('Deployment smoke host');
+    const map = hello.maps.find(m => m.id === mapId); assert.ok(map, `Missing ${mapId} in hello`);
+    const response = await fetch(new URL(meta.dataUrl, base + '/'), { signal: AbortSignal.timeout(15000) });
+    assert.equal(response.status, 200);
+    return { c, hello, map, data: await response.json() };
+  }, { onRetry: (error, attempt) => console.warn(`Catalogue propagation retry ${attempt}/2: ${error.message}`) });
   console.log(JSON.stringify({ proof: 'matching Quick Race + Free Roam catalogues', mapId, events: map.events.map(({ id, type }) => ({ id, type })) }));
   a.send({ type: 'create', mapId, eventId: event.id, private: true, lobbyName: 'Deployment smoke' });
   const created = (await a.next(m => m.type === 'lobby')).lobby;
