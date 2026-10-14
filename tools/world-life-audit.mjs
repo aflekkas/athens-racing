@@ -10,7 +10,9 @@ export function auditPeople(people, setConditions, resetSeed) {
       for (const p of people.peds) if (p.active) {
         const s = p.rs ? p.s : p.anchor.s;
         if (s < start || s >= Math.min(start + 500, r.length)) continue;
-        const zone = people.map.id === 'penteli' && r.district(s) === 'town' ? 'village' : people.policy.zone(s, p.side || 1).zone;
+        // Shore swimmers/sunbeds occupy the beach, even when the road above is a cliff section.
+        const shore = people.map.id === 'riviera' && ['beach', 'swim', 'lie', 'wander'].includes(p.kind);
+        const zone = shore ? 'beach' : people.map.id === 'penteli' && r.district(s) === 'town' ? 'village' : people.policy.zone(s, p.side || 1).zone;
         counts[zone] = (counts[zone] || 0) + 1; kinds[p.kind] = (kinds[p.kind] || 0) + 1;
       }
     }

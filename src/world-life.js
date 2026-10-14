@@ -59,6 +59,7 @@ export class WorldLife {
 }
 export function validWorldSnapshot(d) {
   if (!d || !FRONTS[d.weather] || !Number.isFinite(d.hour) || d.hour < 0 || d.hour >= 24 || typeof d.clockDynamic !== 'boolean' || typeof d.weatherDynamic !== 'boolean') return false;
+  if (d.wet !== undefined && (!Number.isFinite(d.wet) || d.wet < 0 || d.wet > 1)) return false;
   if (!Number.isFinite(d.dayMinutes) || d.dayMinutes < 24 || d.dayMinutes > 40 || !Number.isSafeInteger(d.seed) || d.seed < 0 || d.seed > 4294967295 || !Number.isFinite(d.hold) || d.hold <= 0 || d.hold > 540 || !Number.isFinite(d.transition) || d.transition < 0 || d.transition > 1) return false;
   return ['atmosphere', 'from'].every(obj => ['over', 'T', 'rain', 'haze'].every(k => Number.isFinite(d[obj]?.[k]) && d[obj][k] >= 0 && d[obj][k] <= (k === 'haze' ? 30 : 1)));
 }

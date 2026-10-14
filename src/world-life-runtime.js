@@ -1,5 +1,6 @@
 import * as ENV from './env.js';
 import { WorldLife, hourForTime } from './world-life.js';
+import { WEATHER } from './wet-grip.js';
 
 export const worldLife = new WorldLife();
 let applyAge = 0, broadcastAge = 0, lastWall = null, wasRunning = false;
@@ -14,6 +15,7 @@ export function configureWorldLife(def, conditions = ENV.getConditions()) {
 }
 export function receiveWorldLife(snapshot, age = 0) {
   if (!worldLife.adopt(snapshot, age)) return false;
+  if (Number.isFinite(snapshot.wet)) { WEATHER.wet = snapshot.wet; WEATHER.gripScale = 1 - .24 * snapshot.wet; }
   if (snapshot.dynamic) ENV.setWorldConditions(worldLife.sample());
   else ENV.setConditions({ time: snapshot.time, weather: snapshot.weather });
   return true;
@@ -26,7 +28,7 @@ export function tickWorldLife(dt, { running = true, online = null, wallClock = t
   const sample = worldLife.advance(elapsed); applyAge += elapsed; broadcastAge += elapsed;
   if (sample.dynamic && applyAge >= .25) { ENV.setWorldConditions(sample); applyAge = 0; }
   if (online?.connected && online.lobby?.host === online.id && broadcastAge >= 1) {
-    online.send({ type: 'world', raceId: online.lobby.raceId, generation: online.lobby.generation, world: worldLife.snapshot() }); broadcastAge = 0;
+    online.send({ type: 'world', raceId: online.lobby.raceId, generation: online.lobby.generation, world: { ...worldLife.snapshot(), wet: WEATHER.wet } }); broadcastAge = 0;
   }
 }
 if (typeof window !== 'undefined') window.__worldLife = { world: worldLife, configure: configureWorldLife, tick: (dt) => tickWorldLife(dt, { wallClock: false }), receive: receiveWorldLife };

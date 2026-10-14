@@ -4,6 +4,7 @@ import { WorldLife, FRONTS, trafficByHour, validWorldSnapshot } from '../src/wor
 import { WEATHER, advanceRoadWetness } from '../src/wet-grip.js';
 import * as ENV from '../src/env.js';
 import { applySetup } from '../src/race-setup.js';
+import { receiveWorldLife } from '../src/world-life-runtime.js';
 
 test('free roam starts at chosen time and completes a configurable real-time day', () => {
   const world = new WorldLife({ dayMinutes: 30 }); world.configure({ type: 'free', time: 'dawn' });
@@ -31,6 +32,8 @@ test('host snapshots preserve the exact next front and elapsed clock, with bound
   const client = new WorldLife({ seed: 9 }); assert.ok(client.adopt(host.snapshot(), 2)); host.advance(2);
   assert.deepEqual(client.sample(), host.sample()); host.advance(400); client.advance(400); assert.deepEqual(client.snapshot(), host.snapshot());
   assert.equal(validWorldSnapshot({ ...host.snapshot(), hour: 99 }), false); assert.equal(client.adopt({}), false);
+  assert.equal(validWorldSnapshot({ ...host.snapshot(), wet: 9 }), false);
+  assert.ok(receiveWorldLife({ ...host.snapshot(), wet: .65 })); assert.equal(WEATHER.wet, .65); assert.equal(WEATHER.gripScale, 1 - .24 * .65);
 });
 test('continuous canonical lighting is smooth at midnight/dawn/dusk, with headlights at night', () => {
   const world = new WorldLife(); world.configure({ type: 'free' });
