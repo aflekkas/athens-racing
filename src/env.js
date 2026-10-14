@@ -11,14 +11,14 @@ export const U = { time: { value: 0 } };
 // ---------------------------------------------------------------- conditions: time of day + weather
 // Each time of day is a light source (the sun, or the moon at night) at a real compass position over the Riviera
 // (the coast runs NW-SE with the Saronic Gulf to the south-west): the sun comes up over Hymettus inland, sets over
-// the gulf. E scales the source (moonlight is ~1/170 of sunlight here: stylised so the night stays readable).
-// Exposure adapts partially to the light level, so a sunset is darker than noon and the night stays dark.
+// the gulf. E scales the source (moonlight is stylised to ~1/60 of sunlight so the night reads as moonlit blue).
+// Exposure adapts partially to the light level, so a sunset is darker than noon and the night stays a night.
 export const TIMES = {
   dawn: { elev: 4.5, az: 80, E: 1, bias: 1.0, wb: [1.0, 0.98, 1.04], lamps: 0.25 },
   day: { elev: 62, az: 205, E: 1, bias: 1.0, wb: [0.96, 1.0, 1.06] },
   afternoon: { elev: 21, az: 250, E: 1, bias: 1.0, wb: [0.96, 1.0, 1.06] }, // the original look (default)
   sunset: { elev: 2.4, az: 282, E: 1, bias: 1.05, wb: [1.0, 0.97, 0.98], lamps: 0.35 },
-  night: { elev: 34, az: 140, E: 0.006, bias: 0.62, wb: [0.9, 0.98, 1.16], night: 1, lamps: 1, tint: [0.55, 0.72, 1.0] },
+  night: { elev: 34, az: 140, E: 0.016, bias: 0.8, wb: [0.9, 0.98, 1.16], night: 1, lamps: 1, tint: [0.55, 0.72, 1.0] },
 };
 // over: overcast cover, T: light through the cloud deck, haze: extra aerial extinction (visibility), rain intensity
 export const WEATHERS = {
@@ -114,7 +114,7 @@ const REF = (() => { const a = computeAtmosphere(dirFromAngles(21, 250)); return
 // Sun/moon keyframes around a summer Athens day; radiance is cached at quarter-hour
 // knots, then interpolated. Continuous frames never run the atmosphere integrator.
 const CLOCK_KEYS = [[0, TIMES.night], [4.8, TIMES.night],
-  [5.5, { ...TIMES.dawn, elev: .2, E: .06, lamps: .85, night: .75 }],
+  [5.5, { ...TIMES.dawn, elev: .2, E: .08, lamps: .85, night: .75 }],
   [6, TIMES.dawn], [8, { ...TIMES.day, elev: 24, az: 104 }],
   [14, TIMES.day], [17, TIMES.afternoon], [20, TIMES.sunset],
   [21, { ...TIMES.night, elev: 8, az: 120 }], [24, TIMES.night]];
@@ -157,7 +157,7 @@ function deriveConditions() {
   if (night) out.skyIrr = out.skyIrr.map((x, c) => x + glow[c] * 0.8 * (1 - over));
   const E = lum(out.sunLight) * Math.max(sunDir.y, 0) + lum(out.skyIrr);
   // partial adaptation: darker scenes are brought up, but not all the way
-  const exposure = THREE.MathUtils.clamp(Math.pow(REF / Math.max(E, 1e-6), 0.62), 0.55, 9) * T.bias;
+  const exposure = THREE.MathUtils.clamp(Math.pow(REF / Math.max(E, 1e-6), 0.62), 0.55, 11) * T.bias;
   Object.assign(COND_STATE, {
     night, over, rain: W.rain, exposure, daylight: E / REF, lamps: T.lamps || 0, headlights: T.lamps || W.rain ? 1 : 0,
     ambient: THREE.MathUtils.clamp(E * exposure / REF, 0.02, 1.2), // how lit unlit (sprite) effects should look
@@ -195,7 +195,9 @@ export const CU = {
   uSunIrr: { value: new THREE.Vector3() }, uSkyIrr: { value: new THREE.Vector3() }, uSunE: { value: new THREE.Vector3() },
   uOcCol: { value: new THREE.Vector3() }, uOver: { value: 0 }, uRain: { value: 0 }, uNight: { value: 0 }, uE: { value: 1 },
   uGlowC: { value: new THREE.Vector3() }, uGlowD: { value: GLOW_DIR.clone() }, uSeaBody: { value: new THREE.Vector3(0.018, 0.13, 0.18) },
+  uStarK: { value: 0 }, uExpInv: { value: 1 }, // night sky overlay: visibility (night, clear) and 1 / exposure (it is designed display-referred)
 };
+let NIGHT_SKY = null; // the night overlay (createNightSky), shown only at night
 function writeUniforms() {
   const A = D.A;
   for (let i = 0; i < 10; i++) for (let c = 0; c < 3; c++) AP.apHz.value[i * 3 + c] = D.horizon[i][c];
@@ -206,6 +208,8 @@ function writeUniforms() {
   CU.uSunIrr.value.fromArray(A.sunIrr); CU.uSkyIrr.value.fromArray(D.skyIrr); CU.uSunE.value.fromArray(D.sunLight);
   CU.uOcCol.value.fromArray(D.oc); CU.uOver.value = D.over; CU.uRain.value = D.rain; CU.uNight.value = D.night; CU.uE.value = (liveTime || TIMES[COND.time]).E;
   CU.uGlowC.value.fromArray(D.glow);
+  CU.uStarK.value = D.night * (1 - D.over); CU.uExpInv.value = 1 / Math.max(COND_STATE.exposure, 1e-3);
+  if (NIGHT_SKY) NIGHT_SKY.visible = D.night > 0.01;
   // LOW-tier sea body colour: scaled to the light on the water
   const k = (lum(D.sunLight) * Math.max(sunDir.y, 0) + lum(D.skyIrr)) / REF;
   CU.uSeaBody.value.set(0.018, 0.13, 0.18).multiplyScalar(THREE.MathUtils.clamp(k, 0, 1.4));
@@ -344,13 +348,7 @@ const CLOUD_GLSL = /* glsl */`
     c *= 1.0 + 0.35 * pow(max(dot(normalize(vec3(d.x, y, d.z)), normalize(uSunDir)), 0.0), 4.0) * (1.0 - uRain * 0.6);
     return vec4(c, uOver * smoothstep(-0.06, 0.02, d.y));
   }
-  float stars(vec3 d){
-    if (d.y < 0.0) return 0.0;
-    vec3 q = d * 260.0; vec3 i = floor(q); vec3 f = fract(q) - 0.5;
-    float h = ch(i.xy * 1.7 + i.z * 13.1);
-    float s = smoothstep(0.985, 1.0, h) * smoothstep(0.22, 0.0, length(f));
-    return s * smoothstep(0.02, 0.25, d.y) * (0.4 + 0.6 * ch(i.zx + 3.3));
-  }`;
+`;
 
 export function createSky() {
   const mat = new THREE.ShaderMaterial({
@@ -371,18 +369,17 @@ export function createSky() {
         vec3 d = normalize(vDir); vec3 L = normalize(uSunDir);
         vec3 col = textureCube(uAtmo, d).rgb;
         float mu = dot(d, L);
-        // night: stars (washed out toward the city glow) and the glow itself
+        // night: the city glow (stars and the moon are the night overlay's, see createNightSky)
         if (uNight > 0.5) {
           vec3 g = cityGlow(d) * exp(-max(d.y, 0.0) * 9.0);
           col += g;
-          col += vec3(0.9, 0.95, 1.0) * stars(d) * 0.05 * (1.0 - uOver) / (1.0 + dot(g, vec3(400.0)));
         }
-        if (uEnv < 0.5) {
-          // sun (or moon) disc with limb darkening (radiance clamped to what a half-float target can hold)
-          float r = acos(clamp(mu, -1.0, 1.0)) / (uNight > 0.5 ? 0.0055 : 0.00465);
+        if (uEnv < 0.5 && uNight < 0.5) {
+          // sun disc with limb darkening (radiance clamped to what a half-float target can hold)
+          float r = acos(clamp(mu, -1.0, 1.0)) / 0.00465;
           float disc = 1.0 - smoothstep(0.92, 1.0, r);
           float limb = 1.0 - 0.6 * (1.0 - sqrt(max(0.0, 1.0 - min(r, 1.0) * min(r, 1.0))));
-          col += uSunIrr * disc * limb * (uNight > 0.5 ? 1500.0 : 900.0);
+          col += uSunIrr * disc * limb * 900.0;
         }
         vec4 c = clouds(d, L, uTime);
         col = mix(col, c.rgb, c.a * (1.0 - uOver));
@@ -396,7 +393,80 @@ export function createSky() {
   // not in REFLECT_LAYER: the sea takes the sky from the baked cube (the xyww dome doesn't survive oblique clipping);
   // the car reflection probe sees it on PROBE_LAYER
   sky.layers.enable(PROBE_LAYER);
+  sky.add(createNightSky());
   return sky;
+}
+
+// The night sky: stars (twinkling, pixel-sized at any resolution), the moon with its halo, a faint horizon lift and
+// the amber dome of Athens. One additive pass at the far plane, so only sky pixels run it, on every tier (LOW's
+// dome is a baked cube, too coarse for stars). It follows the sky dome (a child) and stays out of the bakes.
+function createNightSky() {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uMoon: { value: sunDir }, uTime: U.time, uStarK: CU.uStarK, uExpInv: CU.uExpInv, uNight: CU.uNight, uOver: CU.uOver, uGlowD: CU.uGlowD },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.BackSide, fog: false,
+    vertexShader: /* glsl */`
+      varying vec3 vDir;
+      void main(){ vDir = (modelMatrix * vec4(position, 1.0)).xyz - cameraPosition; gl_Position = (projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0)).xyww; }`,
+    fragmentShader: /* glsl */`
+      uniform vec3 uMoon; uniform float uTime; uniform float uStarK; uniform float uExpInv; uniform float uNight; uniform float uOver; uniform vec3 uGlowD;
+      varying vec3 vDir;
+      vec3 h33(vec3 p){ p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6))); return fract(sin(p) * 43758.5453); }
+      float ch(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+      float cn(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3. - 2. * f);
+        return mix(mix(ch(i), ch(i + vec2(1, 0)), u.x), mix(ch(i + vec2(0, 1)), ch(i + vec2(1, 1)), u.x), u.y); }
+      float cfbm(vec2 p, int oct){ float s = 0., a = .5; for (int i = 0; i < 4; i++){ if (i >= oct) break; s += a * cn(p); p = mat2(1.6, 1.2, -1.2, 1.6) * p + vec2(3.1, 7.7); a *= .5; } return s; }
+      // the sky's cumulus layer, cheaply (fewer octaves): what hides the stars and the moon
+      float cloudCover(vec3 d){
+        float t1 = 1600.0 / max(d.y, 0.004); vec2 p1 = d.xz * t1 * 0.00042 + vec2(uTime * 0.0016, uTime * 0.0007);
+        float cov = smoothstep(0.42, 0.75, cfbm(p1 * 0.35, 3));
+        return clamp((cfbm(p1 * 1.6, 4) - 0.62 + 0.45 * cov) * 3.2, 0.0, 1.0) * cov;
+      }
+      // one layer of stars: a jittered star in some cells, drawn as a ~1.5 px gaussian (px: radians per pixel)
+      vec3 stars(vec3 d, float N, float dens, float k, float px){
+        vec3 c = floor(d * N); vec3 r = h33(c);
+        if (r.x > dens) return vec3(0.0);
+        vec3 sp = normalize((c + 0.25 + 0.5 * h33(c + 7.1)) / N);
+        float q = length(d - sp) / px;
+        float b = k * (0.08 + 0.92 * r.y * r.y * r.y) * (0.7 + 0.3 * sin(uTime * (1.5 + 4.0 * r.z) + r.y * 40.0));
+        return mix(vec3(0.72, 0.82, 1.0), vec3(1.0, 0.88, 0.72), r.z) * b * exp(-q * q * 1.4);
+      }
+      void main(){
+        vec3 d = normalize(vDir);
+        if (d.y < -0.06) discard;
+        float px = max(length(fwidth(d)), 2e-4);
+        vec2 hd = normalize(d.xz + vec2(1e-5));
+        float athens = pow(max(dot(hd, uGlowD.xz), 0.0), 3.0);
+        float clear = 1.0 - cloudCover(d) * smoothstep(0.0, 0.05, d.y);
+        vec3 col = vec3(0.0);
+        // stars: fewer toward the horizon (extinction) and under the city's glow
+        float sk = uStarK * clear * smoothstep(0.02, 0.35, d.y) * (1.0 - 0.75 * athens * exp(-d.y * 4.0));
+        if (sk > 0.001) col += (stars(d, 64.0, 0.045, 1.4, px) + stars(d.zxy, 150.0, 0.03, 0.3, px)) * sk;
+        // the moon (stylised ~2.5x its true size), maria, limb darkening, a soft halo in the haze
+        // (the key light is the sun through dusk and dawn on the live clock: the moon only shows in full night)
+        vec3 M = normalize(uMoon); float mk = uStarK * smoothstep(-0.02, 0.04, M.y) * smoothstep(0.8, 1.0, uNight);
+        if (mk > 0.001) {
+          const float R = 0.0115;
+          vec3 off = d - M; float a = length(off);
+          vec3 mx = normalize(cross(M, vec3(0.0, 1.0, 0.0))), my = cross(mx, M);
+          vec2 uv = vec2(dot(off, mx), dot(off, my)) / R; float rr = length(uv);
+          float disc = 1.0 - smoothstep(1.0 - px / R, 1.0 + px / R, rr);
+          float maria = smoothstep(0.38, 0.62, cn(uv * 2.2 + 4.0) * 0.65 + cn(uv * 5.3 + 1.0) * 0.35);
+          float limb = 0.72 + 0.28 * sqrt(max(0.0, 1.0 - rr * rr));
+          float mc = mix(1.0, 0.25 + 0.75 * clear, smoothstep(0.0, 0.03, M.y));
+          col += vec3(1.0, 0.97, 0.9) * disc * limb * mix(0.62, 1.0, maria) * 4.0 * mk * mc;
+          col += vec3(0.62, 0.74, 1.0) * (exp(-a / 0.05) * 0.1 + exp(-a / 0.015) * 0.22) * (1.0 - disc) * mk * mix(1.0, 0.6 + 0.4 * clear, 0.7);
+        }
+        // a faint blue horizon lift and the amber dome of Athens (stronger under a cloud deck it lights from below)
+        float n = uNight * smoothstep(-0.06, 0.0, d.y);
+        col += vec3(0.02, 0.035, 0.07) * exp(-max(d.y, 0.0) * 5.0) * n;
+        col += vec3(1.0, 0.55, 0.26) * (0.02 + 0.13 * athens) * exp(-max(d.y, 0.0) * 6.0) * n * (1.0 + uOver);
+        gl_FragColor = vec4(col * uExpInv, 1.0);
+      }`,
+  });
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(8000, 32, 16), mat);
+  mesh.name = 'night-sky'; mesh.frustumCulled = false; mesh.renderOrder = -999; mesh.visible = COND_STATE.night > 0.01;
+  NIGHT_SKY = mesh;
+  return mesh;
 }
 
 // the baked sky lives in fixed render targets: a change of conditions re-renders into the same textures, so the
@@ -417,7 +487,7 @@ export function bakeSky(renderer, sky) {
     BAKE.s1 = new THREE.Scene(); BAKE.s1.add(new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), BAKE.atmoMat));
     // 2. sky + clouds (no sun disc) for image-based lighting and sea reflections
     BAKE.envRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
-    BAKE.s2 = new THREE.Scene(); const s = sky.clone(); s.material = BAKE.skyMat; s.position.set(0, 0, 0); BAKE.s2.add(s);
+    BAKE.s2 = new THREE.Scene(); const s = sky.clone(false); s.material = BAKE.skyMat; s.position.set(0, 0, 0); BAKE.s2.add(s);
   }
   const oldAuto = renderer.shadowMap.autoUpdate, oldNeeds = renderer.shadowMap.needsUpdate;
   renderer.shadowMap.autoUpdate = renderer.shadowMap.needsUpdate = false;
