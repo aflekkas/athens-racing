@@ -38,6 +38,7 @@ export const HEAT = {
   warningHeat: 0.25, warningGrace: 3, complyTime: 2, fleeAfter: 10, fleeMargin: 20,
   quietAfter: 20,      // s after a bust / escape / release when minor offences are ignored and no patrol respawns
   maxChasers: 3, maxUnits: 4, // reinforcement caps (roadblock cars excluded from maxUnits)
+  contactLevel: 2, contactAfter: 15, // PIT / box / ram only in a live pursuit of 2+ stars, 15 s in
   suspicionDecay: 0.2, // heat/s outside sight, or after lawful driving in a warning
   contactCooldown: 1, // one contact per vehicle per second, not every physics frame
 };
@@ -339,6 +340,8 @@ export class Police {
     if (fromEvent) for (let i = 0; i < 2; i++) { const c = this.spawnBehind(P, D, 200 + i * 60, Math.max(10, P.vs * D)); if (c) this.enlist(c); }
     if (!this.cops.some((c) => c.cop.chase)) { const c = this.spawnBehind(P, D, 220, Math.max(10, P.vs * D + 5)); if (c) this.enlist(c); }
   }
+  /** Deliberate contact (PIT, box-in, ram) is reserved for an escalated, established pursuit. */
+  contactAllowed() { const hm = this.hm; return hm.state === 'pursuit' && hm.level >= HEAT.contactLevel && hm.time >= HEAT.contactAfter - 1e-6; }
   /** a unit can only appear where the player cannot see it pop in */
   hidden(s, P = this.P) { return !P || !this.los({ s, u: 0 }, P); }
   spawnBehind(P, D, gap, v, opts = {}) { return this.spawnCop(P.s - D * gap, D, { v, ...opts }); }
@@ -403,8 +406,9 @@ export class Police {
         if (k.tacT > 0) return;
         k.tacT = 1.2 + rng.range(0, 0.8);
         const gap = (P.s - c.s) * D;
+        const contact = this.contactAllowed();
         k.tactic = hm.state === 'cooldown' ? 'search' : c.dir !== D ? 'uturn' : gap > 35 ? 'catch'
-          : hm.level >= 4 && i === 0 ? 'ram' : hm.level >= 3 && i === 1 ? 'box' : hm.level >= 2 && i === 0 && !c.type.scooter ? 'pit' : 'tail';
+          : !contact ? 'tail' : hm.level >= 4 && i === 0 ? 'ram' : hm.level >= 3 && i === 1 ? 'box' : i === 0 && !c.type.scooter ? 'pit' : 'tail';
         if (k.tactic !== 'pit' && k.tactic !== 'box') k.side = 0;
       });
     }
@@ -467,7 +471,8 @@ export class Police {
       return;
     }
     const gap = (P.s - c.s) * D - (P.hs + c.len * 0.5); // bumper to bumper, + = the player is ahead
-    const vP = P.vs * D, t = k.tactic;
+    // A tactic chosen a moment ago never outlives the escalation that allowed it (warning, cooldown, a bust).
+    const vP = P.vs * D, t = ['pit', 'ram', 'box'].includes(k.tactic) && !this.contactAllowed() ? 'tail' : k.tactic;
     let want = 6, uT = P.u;
     if (t === 'pit') {
       if (!k.side) { const room = (s) => (route.edge(c.s) - Math.abs(P.u + s * (P.hu + hw + 0.4))); k.side = room(1) > room(-1) ? 1 : -1; }

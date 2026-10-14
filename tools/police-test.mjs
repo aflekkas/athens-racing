@@ -260,3 +260,27 @@ test('runtime: reinforcements are capped, slow and never spawn in view ahead', (
   assert.ok(spawned.every((s, i) => s < 5000 + 30 * 60), JSON.stringify(spawned));
   W.police.reset(false); W.police.offs.forEach(off => off());
 });
+
+test('runtime: no PIT, box or ram in a warning, at one star, or early in a two-star chase', () => {
+  const W = world(); W.police.reset(true); W.player(1000, 1.9, 13); // 47 km/h: no further offences, so no escalation
+  W.police.rng = { next: () => 0.5, range: (a, b) => (a + b) / 2, chance: () => false, int: (a) => a };
+  const units = () => W.traffic.cars.filter(q => q.active && q.cop?.chase);
+  const contact = () => units().filter(q => ['pit', 'ram', 'box'].includes(q.cop.tactic));
+  const follow = dt => { const P = W.traffic.racers[0]; P.s += 13 * dt; units().forEach((q, i) => { q.s = P.s - 8 - i * 6; q.dir = 1; }); };
+  // a warning: lights and following only
+  W.police.spawnCop(1010, 1); W.police.hm.offence('red', .3, true); step(W, .05);
+  assert.equal(W.police.hm.state, 'warning');
+  for (let i = 0; i < 60; i++) { step(W, .1, {}, 1 / 30, follow); assert.equal(contact().length, 0, 'warning'); }
+  // one star, a long time: still only tailing
+  W.police.hm.begin(1); step(W, .05);
+  for (let i = 0; i < 400; i++) { step(W, .1, {}, 1 / 30, follow); assert.equal(contact().length, 0, `one star, ${i / 10} s`); }
+  // two stars: nothing in the first contactAfter seconds, a PIT once the chase is established
+  W.police.hm.begin(2); step(W, .05);
+  let first = null;
+  for (let i = 0; i < 300 && first === null; i++) { step(W, .1, {}, 1 / 30, follow); if (contact().length) first = W.police.hm.time; }
+  assert.ok(first !== null && first >= HEAT.contactAfter - 1e-6, `first contact at ${first}`);
+  // a stale PIT tactic is never driven once the pursuit drops into the cooldown
+  const c = units()[0]; c.cop.tactic = 'pit'; W.police.hm.state = 'cooldown';
+  assert.equal(W.police.contactAllowed(), false);
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
