@@ -11,7 +11,7 @@ export const ROAD_MODELS = {
 
  ibiza: {L:3.813,W:1.640,H:1.414,wb:2.440,track:1.429,r:.289,rim:.165,tyreF:.155,tyreR:.155,belt:.91,front:.76,rear:.95,cowl:-.78,header:-.25,roofBack:1.10,back:1.63,seatZ:.27,eyeY:1.08,leather:'#686665',doors:4,brand:'SEAT',stations:[[-1.9065,.70,.76],[-1.5,.79,.82],[-1.0,.82,.89],[-.78,.80,.91],[.5,.80,.92],[1.23,.82,.96],[1.9065,.73,.95]]},
 
- huracan: {L:4.520,W:1.933,H:1.165,axleOffset:.13,wb:2.620,track:1.668,r:.338,rim:.254,tyreF:.245,tyreR:.305,belt:.79,front:.56,rear:.82,cowl:-1.02,header:-.46,roofBack:.67,back:1.35,seatZ:-.06,eyeY:.87,leather:'#282b2d',doors:2,seats:2,seatBase:.30,brand:'LAMBORGHINI',stations:[[-2.26,.73,.49],[-1.80,.91,.64],[-1.18,.9665,.79],[-1.02,.94,.80],[.3,.91,.87],[1.35,.96,.915],[1.44,.9665,.905],[1.90,.90,.82],[2.26,.81,.78]]},
+ huracan: {L:4.520,W:1.933,H:1.165,axleOffset:.13,wb:2.620,track:1.668,r:.338,rim:.254,tyreF:.245,tyreR:.305,belt:.77,front:.39,rear:.80,cowl:-1.02,header:-.46,roofBack:.67,back:1.35,seatZ:-.06,eyeY:.87,leather:'#282b2d',doors:2,seats:2,seatBase:.30,brand:'LAMBORGHINI',stations:[[-2.26,.73,.35],[-2.05,.84,.425],[-1.75,.93,.605],[-1.18,.9665,.765],[-1.02,.936,.775],[-.50,.90,.785],[.25,.91,.82],[.82,.94,.875],[1.44,.9665,.875],[1.80,.91,.835],[2.26,.82,.785]]},
 
   mini_jcw: {L:3.874,W:1.727,H:1.414,wb:2.495,track:1.485,r:.316,rim:.216,tyreF:.205,tyreR:.205,belt:.96,front:.82,rear:.98,cowl:-.65,header:-.24,roofBack:1.25,back:1.67,seatZ:.34,eyeY:1.10,leather:'#292a2c',doors:2,blackRoof:true,archTrim:true,brand:'MINI',stations:[[-1.937,.76,.82],[-1.55,.85,.92],[-1.0,.864,.97],[-.65,.85,.96],[.55,.85,.96],[1.28,.864,.98],[1.937,.76,.98]]},
 };
@@ -84,22 +84,26 @@ export function buildRoadCar(car,d,M,low,plate,H){
       const hp=(x,z)=>[s*x,deck(s*x,z)+.009,z];
       patch(p,M.head,[hp(.42,F+.24),hp(.78,F+.60),hp(.80,F+.32),hp(.55,F+.17)],'front-lamp-housing');
       line(p,M.led,[hp(.50,F+.26),hp(.65,F+.38),hp(.75,F+.49)],.008);line(p,M.led,[hp(.65,F+.38),hp(.72,F+.31)],.008);
-      face(M.black,[[s*.21,.42],[s*.58,.46],[s*.73,.39],[s*.66,.21],[s*.38,.21]],F-.009,'evo-y-intake');
-      line(p,M.paint,[[s*.39,.22,F-.02],[s*.54,.33,F-.02],[s*.30,.43,F-.02]],.022);
+      face(M.black,[[s*.21,.32],[s*.58,.365],[s*.73,.31],[s*.66,.17],[s*.38,.17]],F-.009,'evo-y-intake');
+      line(p,M.paint,[[s*.39,.18,F-.02],[s*.54,.27,F-.02],[s*.30,.34,F-.02]],.022);
 
-      lamp(s,[[.32,.745],[.755,.755],[.745,.715],[.36,.705]],true);
-      for(const t of [0,.16])line(p,M.tail,[[s*(.40+t),.725,R+.02],[s*(.47+t),.745,R+.02],[s*(.53+t),.725,R+.02]],.009);
+      // Dark optical pockets and a thin red signature wrap the tapered tail corners.
+      patch(p,M.black,[[s*.28,.811,R+.009],[s*.75,.815,R+.009],[s*.76,.749,R+.009],[s*.32,.742,R+.009]],'rear-lamp-housing');
+      patch(p,M.black,[[s*.75,.815,R+.009],[s*.79,.824,R-.17],[s*.79,.755,R-.17],[s*.76,.749,R+.009]],'rear-lamp-housing');
+      line(p,M.tail,[[s*.31,.796,R+.015],[s*.74,.800,R+.015],[s*.79,.809,R-.17]],.006);
+      for(const t of [0,.16])line(p,M.tail,[[s*(.38+t),.777,R+.015],[s*(.45+t),.791,R+.015],[s*(.51+t),.777,R+.015]],.004);
+
 
     }
-    face(M.black,[[-.75,.685],[.75,.685],[.71,.455],[-.71,.455]],R+.008,'evo-rear-mesh');
-    face(M.black,[[-.74,.48],[.74,.48],[.68,.24],[-.68,.24]],R+.009,'evo-diffuser-valance');
-    for(let row=0;row<6;row++)for(let col=0;col<24;col++){const x=-.69+col*.059+(row%2)*.0295,y=.480+row*.034;const pts=[];for(let k=0;k<=6;k++){const a=k*Math.PI/3;pts.push([x+Math.cos(a)*.029,y+Math.sin(a)*.023,R+.012]);}line(p,M.darkAlloy,pts,.002,'evo-grille-hex');}
+    face(M.black,[[-.76,.748],[.76,.748],[.70,.615],[-.70,.615]],R+.008,'evo-rear-mesh');
+    face(M.black,[[-.70,.43],[-.58,.52],[-.29,.535],[.29,.535],[.58,.52],[.70,.43],[.63,.23],[-.63,.23]],R+.009,'evo-diffuser-valance');
+    for(let row=0;row<4;row++)for(let col=0;col<24;col++){const x=-.69+col*.059+(row%2)*.0295,y=.637+row*.030;const pts=[];for(let k=0;k<=6;k++){const a=k*Math.PI/3;pts.push([x+Math.cos(a)*.029,y+Math.sin(a)*.019,R+.012]);}line(p,M.darkAlloy,pts,.0018,'evo-grille-hex');}
     box(p,M.black,[1.50,.025,.22],[0,.15,F+.08],.012,[0,0,0],'front-splitter');
-    box(p,M.black,[1.40,.08,.34],[0,.29,R-.17],.01,[0,0,0],'rear-diffuser');
+    box(p,M.black,[1.15,.08,.34],[0,.29,R-.17],.01,[0,0,0],'rear-diffuser');
     for(let i=-3;i<=3;i++)box(p,M.black,[.018,.09,.25],[i*.19,.24,R-.17],.005,[0,0,0],'diffuser-strake');
-    for(let i=0;i<8;i++){const z=1.39+i*.095;box(p,M.black,[1.13,.013,.04],[0,deck(0,z)+.008,z],.006,[0,0,0],'engine-cover-louvre');}
-    box(p,M.paint,[1.53,.018,.11],[0,.801,R-.065],.01,[0,0,0],'evo-tail-spoiler');
-    badge('LAMBORGHINI',.33,.022,.757,R+.02);car.exhaust=[new THREE.Vector3(-.25,.57,R-.03),new THREE.Vector3(.25,.57,R-.03)];
+    for(let i=0;i<7;i++){const z=1.40+i*.105;surface(p,M.black,(u,v)=>{const x=(2*u-1)*.55,zz=z+(v-.5)*.035;return[x,deck(x,zz)+.005,zz];},20,2,'engine-cover-louvre');}
+    surface(p,M.paint,(u,v)=>{const x=(2*u-1)*.78,z=R-.10+.09*v;return[x,deck(x,z)+.012+.009*v,z];},32,3,'evo-tail-spoiler');
+    badge('LAMBORGHINI',.33,.022,.795,R+.02);car.exhaust=[new THREE.Vector3(-.39,.49,R-.03),new THREE.Vector3(.39,.49,R-.03)];
   }
   if(['ibiza','panda','yaris','e36'].includes(id)){
     const amber=new THREE.MeshStandardMaterial({color:'#d87a26',roughness:.25,side:THREE.DoubleSide});
@@ -131,10 +135,10 @@ export function buildRoadCar(car,d,M,low,plate,H){
     if(id==='ibiza'){const rust=new THREE.MeshStandardMaterial({color:'#795844',roughness:1,side:THREE.DoubleSide});for(const s of [-1,1])for(let i=0;i<6;i++){const z=.86+i*.044,y=.28+i%2*.012;box(p,rust,[.004,.008+i%3*.003,.023],[s*(side(z,y)+.003),y,z],.001,[0,0,0],'sill-patina');}const bottle=mesh(p,new THREE.CylinderGeometry(.075,.075,.38,16),new THREE.MeshStandardMaterial({color:'#206b98',metalness:.45,roughness:.25}),[.25,.52,1.14],[Math.PI/2,0,0],'nitrous-bottle');box(p,M.chrome,[.06,.04,.07],[.25,.52,.92],.006,[0,0,0],'nitrous-valve');}
   }
   M.plate=makePlateMaterial(plate);car.plate=plate;
-  for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?(id==='huracan'?.36:.465):(id==='huracan'?.405:.53),s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112,12,2),M.plate,[0,s<0?(id==='huracan'?.36:.465):(id==='huracan'?.405:.53),s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}
+  for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?(id==='huracan'?.255:.465):(id==='huracan'?.465:.53),s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112,12,2),M.plate,[0,s<0?(id==='huracan'?.255:.465):(id==='huracan'?.465:.53),s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}
   if(!car.exhaust)car.exhaust=[new THREE.Vector3(-W*.55,.245,R+.02)];
   for(const v of car.exhaust){const pipe=mesh(p,new THREE.CylinderGeometry(id==='huracan'?.082:.037,id==='huracan'?.082:.037,id==='huracan'?.08:.16,id==='huracan'?6:16,1,true),M.chrome,v.toArray(),[Math.PI/2,0,0],'exhaust');if(id==='huracan'){mesh(p,new THREE.CircleGeometry(.070,6),M.black,[v.x,v.y,v.z+.041],[0,0,Math.PI/6]);mesh(p,new THREE.RingGeometry(.070,.084,6),M.chrome,[v.x,v.y,v.z+.044],[0,0,Math.PI/6],'hex-exhaust-lip');}else disk(p,M.black,.031,[v.x,v.y,v.z+.081]);}
   p.updateMatrixWorld(true);
   const world=new THREE.Vector3();
-  p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=Math.max(0,Math.min(1,(Math.abs(world.z)-d.L*.34)/(d.L*.16)));world.z-=Math.sign(world.z)*.16*t*t*(Math.abs(world.x)/W)**2;world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});
+  p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=Math.max(0,Math.min(1,(Math.abs(world.z)-d.L*.34)/(d.L*.16)));world.z-=Math.sign(world.z)*(id==='huracan'?.34:.16)*t*t*(Math.abs(world.x)/W)**2;if(id==='huracan'&&world.z>0)world.z-=.07*t*t*((world.y-.56)/.42)**2;world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});
 }

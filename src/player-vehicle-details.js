@@ -73,7 +73,7 @@ function signals(car,d,M){
     const o=box(car.body,reverse,[.075,.019,.007],[s*(positions[0]-.11),positions[2]-.037,R],`reverse-${side}`);o.userData.damagePart=`light_r${side}`;
   }
   if(car.spec.fleet||d.mercedes){const panels=mirrorSurfaces(car);car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const hit=nearestSurface(o.position,panels,car.body);if(hit){o.position.copy(hit.point);o.position.z+=Math.sign(o.position.z)*.003;}}});}
-  if(car.spec.playerDetail)car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const t=Math.max(0,Math.min(1,(Math.abs(o.position.z)-d.L*.34)/(d.L*.16)));o.position.z-=Math.sign(o.position.z)*(.16*t*t*(Math.abs(o.position.x)/(d.W/2))**2+.027);}});
+  if(car.spec.playerDetail)car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const t=Math.max(0,Math.min(1,(Math.abs(o.position.z)-d.L*.34)/(d.L*.16)));o.position.z-=Math.sign(o.position.z)*((k==='huracan'?.34:.16)*t*t*(Math.abs(o.position.x)/(d.W/2))**2+.027);if(k==='huracan'&&o.position.z>0)o.position.z-=.07*t*t*((o.position.y-.56)/.42)**2;}});
   car.indicator='off';car.signalTime=0;
   car.setIndicators=value=>{car.indicator=['left','right','hazard'].includes(value)?value:'off';};
   car.updateSignalLights=(dt,speed)=>{car.signalTime+=Math.max(0,dt);const flash=(car.signalTime%0.8)<.4;left.emissiveIntensity=flash&&(car.indicator==='left'||car.indicator==='hazard')?3.5:0;right.emissiveIntensity=flash&&(car.indicator==='right'||car.indicator==='hazard')?3.5:0;reverse.emissiveIntensity=speed<-.05?2.3:0;if(M.optical?.emissive){M.optical.emissive.set('#e4f2ff');M.optical.emissiveIntensity=car.lightsOn?3.2:0;}};
