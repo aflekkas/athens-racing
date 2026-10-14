@@ -1,5 +1,5 @@
 // CPU-only storage/account isolation tests. Real account client, repository,
-// service and SQLite contract; replace only GPU car/decal material adapters.
+// service and SQLite contract; replace only GPU car material adapters.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
@@ -8,8 +8,8 @@ import {createMemoryCustomizationStore} from '../server/customization-store.mjs'
 const root=new URL('../',import.meta.url).pathname;
 async function harness(){
   const result=await build({stdin:{contents:`export {account} from './src/account.js'; export * from './src/customization-store.js';`,resolveDir:root,sourcefile:'customization-sync-entry.js'},bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.url':JSON.stringify(new URL('../src/customization-store.js',import.meta.url).href)},logLevel:'error',plugins:[{name:'cpu-car-adapters',setup(b){
-    b.onResolve({filter:/\/(cars|vehicle-decals)\.js$/},a=>({path:a.path.endsWith('/cars.js')?'catalog':'decals',namespace:'cpu'}));
-    b.onLoad({filter:/.*/,namespace:'cpu'},a=>({contents:a.path==='catalog'?"export const CARS=[{id:'mini',color:'#bd1626'},{id:'z4',color:'#22679d'}];":`import {normalizeDecals} from ${JSON.stringify(root+'src/vehicle-decal-data.js')}; const data=new Map();export const getCarDecals=id=>structuredClone(data.get(id)||[]);export const setCarDecals=(id,list)=>data.set(id,normalizeDecals(list));`,resolveDir:root}));
+    b.onResolve({filter:/\/cars\.js$/},()=>({path:'catalog',namespace:'cpu'}));
+    b.onLoad({filter:/.*/,namespace:'cpu'},()=>({contents:"export const CARS=[{id:'mini',color:'#bd1626'},{id:'z4',color:'#22679d'}];",resolveDir:root}));
   }}]});
   const disk=new Map();globalThis.localStorage={getItem:k=>disk.get(k)||null,setItem:(k,v)=>disk.set(k,String(v)),removeItem:k=>disk.delete(k)};
   const service=createCustomizationService(createMemoryCustomizationStore());let who=null,hold,release;
@@ -19,7 +19,7 @@ async function harness(){
   const api=await import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64')+'#'+Math.random());
   return {api,service,disk,setUser:v=>{who=v;},holdWrites(){hold=new Promise(r=>release=r);},releaseWrites(){hold=null;release?.();}};
 }
-const guestLook={paint:'#bb2222',decals:[{id:'stripes',position:'bonnet',color:'#ffffff'}],driver:{skin:'#b67c56',shirt:'#112233',hair:'#30231c',hairStyle:'curly',helmet:false}};
+const guestLook={paint:'#bb2222',driver:{skin:'#b67c56',shirt:'#112233',hair:'#30231c',hairStyle:'curly',helmet:false}};
 test('guest look restores after sign-out; signed-in presets remain account-owned and absent from guest collection',async()=>{
   const h=await harness(),{api}=h;await api.account.get();let state=await api.getCustomizationRepository();await state.repository.reload();await state.repository.save('mini','Guest Red',guestLook);api.applyCustomization({id:'mini',color:'#bd1626'},guestLook);
   h.setUser({sub:'A',username:'RACER-A'});await api.account.get();state=await api.getCustomizationRepository();await state.repository.reload();assert.deepEqual(state.repository.snapshot().presets,[]);

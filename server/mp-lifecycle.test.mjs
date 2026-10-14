@@ -352,18 +352,6 @@ test('hibernation preserves code, config, generation and objective rounds', (t) 
   assert.equal(l.eventId, 'cab');
 });
 
-test('photo gate keeps library layers, drops guest and unowned photos', async () => {
-  const { stripUnownedPhotos } = await import('./appearance-state.mjs');
-  const lib = { id: 'stripes', position: 'bonnet' };
-  const owned = { id: 'photo', assetId: 'a'.repeat(32), position: 'doors' };
-  const foreign = { id: 'photo', assetId: 'b'.repeat(32), position: 'roof' };
-  const service = { owns: (owner, id) => owner === 'sub1' && id === 'a'.repeat(32) };
-  assert.deepEqual(stripUnownedPhotos([lib, owned, foreign], service, 'sub1'), [lib, owned]);
-  assert.deepEqual(stripUnownedPhotos([lib, owned], service, 'sub2'), [lib]);
-  assert.deepEqual(stripUnownedPhotos([lib, owned], null, 'sub1'), [lib]);
-  assert.deepEqual(stripUnownedPhotos('nope', service, 'sub1'), []);
-});
-
 // ---------- real WebSocket: three-client create/edit race ----------
 
 async function wsSetup(t, opts = {}) {

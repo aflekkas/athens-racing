@@ -103,16 +103,6 @@ try {
         return { distance: Math.hypot(p.x - before.x, p.z - before.z), moving: p.moving }; });
       assert.ok(reaction.distance > .1 && reaction.moving, 'artist steps back from a slow close car');
       console.log('ARTIST REACTION', reaction);
-      await page.evaluate(async () => {
-        const sim = window.__sim, model = sim.player.model;
-        const { applyCarDecals } = await import('/src/vehicle-decals.js');
-        applyCarDecals(model, [{ id: 'toe_bubble', position: 'doors', color: '#ef57aa', scale: 1.25, rotation: -12 }, { id: 'toe_drip', position: 'bonnet', color: '#69dfce', scale: 1 }]); await model.decalReady;
-        const root = model.root, camera = window.__replay.ctx.camera, p = root.position, yaw = root.rotation.y;
-        camera.position.set(p.x + Math.cos(yaw) * 5.8 + Math.sin(yaw) * 3, p.y + 2.1, p.z - Math.sin(yaw) * 5.8 + Math.cos(yaw) * 3);
-        camera.lookAt(p.x, p.y + .75, p.z); camera.rotation.reorder('YXZ');
-        Object.assign(window.__replay.photoState, { position: camera.position.clone(), yaw: camera.rotation.y, pitch: camera.rotation.x, fov: 55, dof: 0 }); window.__replay.updateCamera(0);
-      });
-      await capture('race-car-toe.png');
     }
     const row = { id, ...setup, perf, frames, errors }; report.push(row);
     await fs.writeFile(resolve(out, 'browser-report.json'), JSON.stringify(report, null, 2));

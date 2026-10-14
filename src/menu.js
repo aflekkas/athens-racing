@@ -9,7 +9,7 @@ import { getEvents, QUICK_RACE, TYPES, getEvent, resolve, loadRecord, targetLabe
 import * as S from './settings.js';
 import { renderMapSelect, renderMapConfirm, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
-import { renderCarSelect, mountCarSelect, mountCarGrid, getCarDecals, setCarDecals } from './car-select.js';
+import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
 import * as C from './ui/components.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
@@ -209,10 +209,6 @@ export class Menu {
       case 'roamTow': this.h.roamTow?.(); break;
       case 'tt': this.filter = 'timetrial'; this.show('maps', { filter: 'timetrial', mode: 'tt' }, true); break;
       case 'carDetail': this.show('car', { ...this.data, index: +el.dataset.carIndex, detail: true }, true); break;
-      case 'decalColor': this.data.decal = { ...this.data.decal, color: el.dataset.color }; this.refresh(); break;
-      case 'decalAdd': { const id = CARS[this.data.index || 0].id; const list = getCarDecals(id); if (list.length < 8) setCarDecals(id, [...list, { id: 'stripes', position: 'bonnet', color: '#ffffff', number: 7, ...this.data.decal }]); this.refresh(); break; }
-      case 'decalClear': setCarDecals(CARS[this.data.index || 0].id, []); this.refresh(); break;
-      case 'decalRemove': { const id = CARS[this.data.index || 0].id; setCarDecals(id, getCarDecals(id).filter((_, i) => i !== +el.dataset.layer)); this.refresh(); break; }
       case 'carCustomize': { const spec = CARS[this.data.index || 0]; import('./customization-editor.js').then(({ openCustomizationEditor }) => openCustomizationEditor({ spec, onChange: preset => { if (preset.paint) this.carView?.paint(preset.paint); this.refresh(); } })).catch(error => C.ui.toast(error.message || 'CUSTOMIZATION UNAVAILABLE', { icon: 'warning', tone: 'bad' })); break; }
       case 'carConfirm': this.confirmCar(); break;
       case 'paint': this.carView?.paint(el.dataset.color); for (const paint of this.root.querySelectorAll('.paint')) paint.classList.toggle('selected', paint === el); this.root.querySelector('.car-paint-name').textContent = el.title; break;
@@ -245,7 +241,6 @@ export class Menu {
     const scope = el.dataset.scope;
     if (scope === 'participants') { this.participants = value; this.refresh(); return; }
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
-    if (scope === 'decal') { this.data.decal = { ...this.data.decal, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {
       if (key === 'settingsTab') { this.h.cancelBindings?.(); this.data.tab = value; this.focus = 0; this.render(); }
       else if (key === 'eventFilter') { this.filter = value; this.focus = null; this.render(); }
@@ -277,7 +272,7 @@ export class Menu {
       <h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
       <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>
       <div class="title__menu">${C.option({ icon: 'flag-checkered', title: 'RACE', desc: 'Quick race, events, time trials and online', act: 'play', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint, vinyls and specs`, act: 'garage' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint, driver looks and specs`, act: 'garage' })}
         ${C.option({ icon: 'user', title: account.cached()?.username ? 'DRIVER PROFILE' : 'CREATE YOUR DRIVER', desc: 'Your plate, stats and friends', act: 'account' })}
         ${C.option({ icon: 'users-three', title: 'FRIENDS', desc: 'Online drivers, requests and recent opponents', act: 'friends' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>

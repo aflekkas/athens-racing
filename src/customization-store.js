@@ -2,7 +2,6 @@ import {account} from './account.js';
 import {CARS} from './cars.js';
 import {normalizeAppearance,normalizeDriver} from './customization-data.js';
 import {savePaint,savedPaint} from './vehicle-paint.js';
-import {getCarDecals,setCarDecals} from './vehicle-decals.js';
 import {createPresetRepository} from './customization-repository.js';
 export {createPresetRepository};
 const GUEST_KEY='paraliaki.customization.guest.v1',BASELINE_KEY='paraliaki.customization.guest-baseline.v1';
@@ -22,8 +21,8 @@ export async function getCustomizationRepository(){
   return {repository,signedIn};
 }
 export function getDriverAppearance(carId){return normalizeDriver(activeLooks.get(carId)?.driver);}
-export function currentCarAppearance(spec){return normalizeAppearance(activeLooks.get(spec.id)||{paint:savedPaint(spec),decals:getCarDecals(spec.id),driver:getDriverAppearance(spec.id)});}
-function publish(spec,clean,onChange){activeLooks.set(spec.id,clean);savePaint(spec.id,clean.paint);setCarDecals(spec.id,clean.decals);globalThis.window?.dispatchEvent(new CustomEvent('customizationchange',{detail:{carId:spec.id,appearance:copy(clean)}}));onChange?.(copy(clean));}
+export function currentCarAppearance(spec){return normalizeAppearance(activeLooks.get(spec.id)||{paint:savedPaint(spec),driver:getDriverAppearance(spec.id)});}
+function publish(spec,clean,onChange){activeLooks.set(spec.id,clean);savePaint(spec.id,clean.paint);globalThis.window?.dispatchEvent(new CustomEvent('customizationchange',{detail:{carId:spec.id,appearance:copy(clean)}}));onChange?.(copy(clean));}
 export function applyCustomization(spec,appearance,{onChange}={}){
   const clean=normalizeAppearance(appearance),signed=account.cached()&&!account.cached().guest;
   if(signed&&!guestBaseline[spec.id]){const full=CARS.find(c=>c.id===spec.id)||spec;guestBaseline[spec.id]=currentCarAppearance(full);try{localStorage.setItem(BASELINE_KEY,JSON.stringify(guestBaseline));}catch{}}

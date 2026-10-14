@@ -1,24 +1,12 @@
-// Bounded JSON only. Image bytes live separately; no identity or external URLs.
-import { normalizeDecals } from './vehicle-decal-data.js';
+// Bounded paint and driver looks; legacy car stickers are ignored.
 import { DEFAULT_DRIVER_APPEARANCE, normalizeDriverAppearance } from './driver-appearance-data.js';
-export const CUSTOMIZATION_LIMITS = Object.freeze({ presets:64, presetsPerCar:16, assets:16, assetBytes:96*1024, accountBytes:1536*1024, imageEdge:512, uploadBytes:8*1024*1024, manifestBytes:128*1024 });
+export const CUSTOMIZATION_LIMITS = Object.freeze({ presets:64, presetsPerCar:16, manifestBytes:128*1024 });
 export const ASSET_ID_RE=/^[a-f0-9]{32}$/;
 export const DEFAULT_DRIVER=DEFAULT_DRIVER_APPEARANCE;
 export const color=(v,fallback)=>typeof v==='string'&&/^#[a-f\d]{6}$/i.test(v)?v.toLowerCase():fallback;
 export const normalizeDriver=normalizeDriverAppearance;
-const clamp=(v,min,max,fallback)=>Number.isFinite(v)?Math.round(Math.max(min,Math.min(max,v))*1000)/1000:fallback;
-// Preserve the existing library API and extend only validated fields until its
-// rendering owner lands the same extension in normalizeDecals.
-export function normalizeStickerLayers(list){
-  if(!Array.isArray(list))return [];
-  return list.slice(0,8).flatMap(d=>{
-    if(!d||typeof d!=='object')return [];
-    let base=d.id==='photo'&&ASSET_ID_RE.test(d.assetId||'')&&['bonnet','doors','roof','rear'].includes(d.position)?{id:'photo',assetId:d.assetId,position:d.position,color:'#ffffff'}:normalizeDecals([d])[0];
-    if(!base)return [];
-    return [{...base,x:clamp(d.x,-1,1,0),y:clamp(d.y,-1,1,0),scale:clamp(d.scale,.2,2,1),rotation:clamp(d.rotation,-180,180,0),flipX:d.flipX===true}];
-  });
-}
-export function normalizeAppearance(value={}){return {paint:color(value.paint,'#315476'),decals:normalizeStickerLayers(value.decals),driver:normalizeDriver(value.driver)};}
+// Older manifests may contain decals; normalization deliberately ignores them.
+export function normalizeAppearance(value={}){return {paint:color(value.paint,'#315476'),driver:normalizeDriver(value.driver)};}
 export function normalizePreset(value,cars){
   if(!value||typeof value!=='object'||!ASSET_ID_RE.test(value.id||'')||typeof value.carId!=='string'||!/^[a-z0-9_-]{1,32}$/.test(value.carId)||(cars&&!cars.has(value.carId)))return null;
   const name=String(value.name||'').replace(/[\x00-\x1f<>]/g,'').trim().slice(0,40);
@@ -34,5 +22,4 @@ export function normalizeManifest(value,cars){
   const active={};for(const p of presets)if(value?.active?.[p.carId]===p.id)active[p.carId]=p.id;
   return {version:1,revision:Number.isSafeInteger(value?.revision)&&value.revision>=0?value.revision:0,presets,active};
 }
-export function referencedAssets(manifest){return new Set((manifest.presets||[]).flatMap(p=>p.decals.filter(d=>d.id==='photo').map(d=>d.assetId)));}
 export function newCustomizationId(){const b=crypto.getRandomValues(new Uint8Array(16));return Array.from(b,v=>v.toString(16).padStart(2,'0')).join('');}

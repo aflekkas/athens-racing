@@ -7,7 +7,6 @@ import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetaile
 import { fleetModel } from './traffic-fleet.js';
 export { Driver } from './driver.js';
 import { savedPaint, setPaint } from './vehicle-paint.js';
-import { applyCarDecals, getCarDecals, updateCarDecals } from './vehicle-decals.js';
 export { setPaint } from './vehicle-paint.js';
 // UI/physics share the same transmission policy; missing metadata means player choice.
 export { carTransmission } from './transmission.js';
@@ -409,14 +408,12 @@ export class CarModel {
     buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',taxi:'ΤΑΑ 2150',carrera:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
     setPaint(this, savedPaint(spec));
     this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-    applyCarDecals(this, opts.decals ?? getCarDecals(spec.id), {local:opts.decals === undefined});
     this.wheelSpin = 0;
     // contact shadow
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());
     blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03; blob.renderOrder = 1; blob.castShadow = false; this.root.add(blob);
   }
   update(dt, speed, steer, brake, pose, axles = null, yawRate = 0) {
-    updateCarDecals(this);
     animateDetailedCar(this, dt, speed, steer, brake, pose, axles, yawRate);
   }
 }

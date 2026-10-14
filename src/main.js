@@ -9,7 +9,6 @@ import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint, carTransmission } from './cars.js';
 import { toggleTransmission, shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
-import { applyCarDecals, packDecalsForNetwork, unpackDecals } from './vehicle-decals.js';
 import { getDriverAppearance } from './customization-store.js';
 import { bindDriverToCar } from './driver-seating.js';
 import { Vehicle } from './physics.js';
@@ -1850,7 +1849,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, decals: packDecalsForNetwork(player.model.decals || []), driver: { ...player.driver.appearance } });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance } });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
@@ -1924,7 +1923,6 @@ const multiplayer = new Multiplayer(CARS, {
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
       applySpectatorState(v, p);
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
-      applyCarDecals(c.model,unpackDecals(p.decals));
       if(p.driver)c.driver?.setAppearance?.(p.driver);
       c.lastBrake = false; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
