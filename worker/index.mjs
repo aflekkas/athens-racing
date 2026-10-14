@@ -21,6 +21,11 @@ const sessionCookie = (id, maxAge) => `${SESSION_COOKIE}=${encodeURIComponent(id
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
+// Dynamic routes are never stored by a browser or shared cache (the offline service worker skips them too).
+const noStore = (response) => {
+  if (response.status === 101 || response.headers.has('Cache-Control')) return response;
+  const out = new Response(response.body, response); out.headers.set('Cache-Control', 'no-store'); return out;
+};
 const json = (value, status = 200) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
 export default {
@@ -29,13 +34,13 @@ export default {
     if (url.pathname === '/api/customization' || url.pathname.startsWith('/api/customization/')) {
       const origin = request.headers.get('Origin');
       if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
-      return env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request);
+      return noStore(await env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request));
     }
     if (['/ws', '/health', '/api/lobbies', '/api/leaderboard', '/api/me', '/api/username', '/api/auth/ticket', '/api/friends', '/api/friends/search', '/api/friends/request', '/api/friends/accept', '/api/friends/decline', '/api/friends/remove', '/api/friends/block', '/api/friends/unblock', '/api/recent', '/auth/google/start', '/auth/google/callback', '/auth/logout'].includes(url.pathname)) {
       const origin = request.headers.get('Origin');
       if (origin && new URL(origin).host !== url.host) return json({ error: 'Origin mismatch.' }, 403);
       // One arena shares discovery and connections. Idle rooms hibernate; games share duration.
-      return env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request);
+      return noStore(await env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request));
     }
     return rewriteShareMetadata(request, await env.ASSETS.fetch(request));
   }
