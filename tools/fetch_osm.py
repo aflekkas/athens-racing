@@ -35,12 +35,23 @@ out body geom qt;""",
   node({BBOX})[tourism];
   node({BBOX})[amenity~"^(cafe|restaurant|bar|fuel|pharmacy|bank|fast_food|ice_cream|bus_station)$"];
   node({BBOX})[highway~"^(traffic_signals|bus_stop|crossing|street_lamp)$"];
+  node({BBOX})[traffic_sign];
+  node({BBOX})[highway=traffic_sign];
   node({BBOX})[shop];
   node({BBOX})[leisure];
   way({BBOX})[tourism];
   way({BBOX})[place~"^(island|islet)$"];
 );
 out body geom qt;""",
+    "signs": f"""[out:json][timeout:120];
+(
+  node({BBOX})[traffic_sign];
+  node({BBOX})[highway=traffic_sign];
+  node({BBOX})["traffic_sign:forward"];
+  node({BBOX})["traffic_sign:backward"];
+  node({BBOX})[highway=speed_camera];
+);
+out body;""",
 }
 
 def fetch(name, q):
