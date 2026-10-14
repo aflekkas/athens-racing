@@ -9,11 +9,13 @@ export function world(PoliceClass = Police) {
   const traffic = {
     route, cars: [0, 1, 2, 3, 4, 5].map((i) => mk(i, i === 5)), racers: [], signals: null, ground: null, sites: [], cones: [], coneBase: 0, coneMesh: { count: 0 },
     laneCount: () => 2, laneUOf: (c, s, l = c.lane) => c.dir * (0.12 + (l + 0.5) * 3.5), kerbU: (c, s, i) => c.dir * (7.1 - i), roadSpeed: () => 20,
-    personality(c) { c.drv = { vf: 1 }; }, initDrive(c) { c.mode = 'drive'; }, repair() {}, lead: () => ({ gap: 1e9, lv: 0, o: null }),
+    personality(c) { c.drv = { vf: 1 }; }, initDrive(c) { c.mode = 'drive'; c.uv = 0; c.acc = 0; c.wheel = 0; }, repair() {}, lead: () => ({ gap: 1e9, lv: 0, o: null }),
   };
   const police = new PoliceClass(traffic, route);
   police.rng = { next: () => 0.99, range: (a, b) => (a + b) / 2, chance: () => false, int: (a) => a };
   const player = (s, u, vs) => { traffic.racers = [{ kind: 'player', a: {}, s, u, vs, vu: 0, hs: 2.2, hu: 0.9 }]; };
   return { route, traffic, police, player };
 }
+/** step with every chasing unit driven by Police.driveCop, as Traffic.update does in the game */
+export const drive = (W, secs, ctx = {}, dt = 1 / 30, move) => step(W, secs, ctx, dt, (d) => { move?.(d); for (const c of W.traffic.cars) if (c.active && c.cop?.chase && !c.crash) W.police.driveCop(c, d); });
 export const step = (W, secs, ctx = {}, dt = 1 / 30, move) => { const out = []; for (let t = 0; t < secs; t += dt) { move?.(dt); out.push(...W.police.update(dt, { racing: true, dir: 1, reds: 0, ...ctx })); } return out; };

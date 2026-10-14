@@ -95,7 +95,7 @@ test('no bust meter outside a pursuit; takedowns add heat (no points)', () => {
 });
 
 // ------------------------------------------------------------------ the runtime against a stub world
-import { world, step } from './police-fixture.mjs';
+import { world, step, drive } from './police-fixture.mjs';
 
 test('runtime: off unless enabled; five seconds of witnessed flagrant speeding starts pursuit; events emitted', () => {
   const W = world(); W.player(1000, 1.9, 30);
@@ -282,5 +282,68 @@ test('runtime: no PIT, box or ram in a warning, at one star, or early in a two-s
   // a stale PIT tactic is never driven once the pursuit drops into the cooldown
   const c = units()[0]; c.cop.tactic = 'pit'; W.police.hm.state = 'cooldown';
   assert.equal(W.police.contactAllowed(), false);
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+
+// ------------------------------------------------------------------ organic play: units driven by driveCop
+const parkedUnit = (W, s) => { const c = W.police.spawnCop(s, 1); c.mode = 'parked'; c.parkT = 1e9; c.v = 0; c.cop.keep = true; return c; };
+const cruise = (W, kmh) => dt => { W.traffic.racers[0].s += kmh / 3.6 * dt; };
+
+test('organic: blasting past a parked unit warns, it follows with lights, and speeding on becomes a pursuit', () => {
+  for (const kmh of [88, 110, 140]) {
+    const W = world(); W.police.reset(true); const cop = parkedUnit(W, 1000);
+    W.player(800, 1.9, kmh / 3.6);
+    let warnAt = null, startAt = null, t = 0, maxGap = 0;
+    const out = drive(W, 40, {}, 1 / 30, dt => {
+      cruise(W, kmh)(dt); t += dt;
+      if (warnAt === null && W.police.hm.state === 'warning') warnAt = t;
+      if (warnAt !== null && startAt === null) maxGap = Math.max(maxGap, W.traffic.racers[0].s - cop.s);
+      if (startAt === null && W.police.hm.state === 'pursuit') startAt = t;
+    });
+    assert.ok(warnAt !== null, `${kmh}: warned`);
+    assert.ok(startAt !== null && startAt - warnAt <= 12, `${kmh}: pursuit ${startAt} after the warning at ${warnAt}`);
+    assert.ok(maxGap < HEAT.followRange, `${kmh}: the following unit kept you in view (max gap ${maxGap})`);
+    assert.ok(out.some(e => e.phase === 'start') && cop.cop.chase && W.police.hm.level >= 1);
+    assert.ok(W.traffic.racers[0].s - cop.s < 40, `${kmh}: the unit is on your tail (${W.traffic.racers[0].s - cop.s} m)`);
+    W.police.reset(false); W.police.offs.forEach(off => off());
+  }
+});
+
+test('organic: slowing to the limit after a drive-past warning is a release, not a chase', () => {
+  const W = world(); W.police.reset(true); parkedUnit(W, 1000); W.player(800, 1.9, 88 / 3.6);
+  let v = 88;
+  const out = drive(W, 40, {}, 1 / 30, dt => { if (W.police.hm.state === 'warning') v = 48; W.traffic.racers[0].vs = v / 3.6; cruise(W, v)(dt); });
+  assert.ok(out.some(e => e.phase === 'warning') && out.some(e => e.phase === 'released'), JSON.stringify(out.map(e => e.phase)));
+  assert.ok(!out.some(e => e.phase === 'start'));
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+
+test('organic: a pursuit has a unit closing on you within 4 s and reinforcements on the reinforcement clock', () => {
+  const W = world(); W.police.reset(true); W.player(2000, 1.9, 30);
+  W.police.rng = { next: () => 0.5, range: (a, b) => (a + b) / 2, chance: () => false, int: (a) => a };
+  W.police.hm.begin(2); // no unit anywhere near: the first one comes from behind
+  const gaps = [], firstAt = { chase: null, near: null }; let t = 0;
+  drive(W, 30, {}, 1 / 30, dt => {
+    cruise(W, 108)(dt); t += dt;
+    const P = W.traffic.racers[0], units = W.traffic.cars.filter(c => c.active && c.cop?.chase);
+    if (units.length && firstAt.chase === null) firstAt.chase = t;
+    const g = Math.min(...units.map(c => P.s - c.s));
+    if (Math.abs(t % 1) < dt) gaps.push(Math.round(g));
+    if (g < HEAT.witnessRange && firstAt.near === null) firstAt.near = t;
+  });
+  assert.ok(firstAt.chase !== null && firstAt.chase < 0.1, `a unit is assigned at once (${firstAt.chase})`);
+  assert.ok(gaps[4] < gaps[0] - 40, `closing within 4 s: ${gaps}`);
+  assert.ok(firstAt.near !== null && firstAt.near < 15, `in sight within 15 s (${firstAt.near}): ${gaps}`);
+  assert.ok(W.traffic.cars.filter(c => c.active && c.cop?.chase).length === 2, 'a second unit by 30 s at two stars');
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+
+test('organic: a pursuit that starts by crashing into the unit following you still gets a unit after you at once', () => {
+  const W = world(); W.police.reset(true); W.player(1000, 1.9, 25);
+  const cop = W.police.spawnCop(1010, 1); cop.v = 20; W.police.enlist(cop); // following you with lights
+  cop.crash = { wreck: false, t: 0 }; // traffic.collide spun it (not a wreck) before the police see the crash
+  W.police.update(1 / 30, { racing: true, dir: 1, events: [{ who: 'player', car: cop, kind: 'crash' }] });
+  const fresh = W.traffic.cars.filter(c => c.active && c.cop?.chase && !c.crash);
+  assert.equal(W.police.hm.state, 'pursuit'); assert.ok(fresh.length >= 1, 'a unit that can drive is chasing');
   W.police.reset(false); W.police.offs.forEach(off => off());
 });

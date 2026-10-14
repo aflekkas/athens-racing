@@ -5,7 +5,9 @@
 // Cameras only fine through enforcement.js. No camera dispatch or unseen heat.
 // Hook API: pursuit live status; events.emit('pursuit', {phase,heat,level,time,kind}).
 // Speeding: +30 km/h is tolerated; beyond it a unit warns after ~3 s and a star
-// needs ~12 s of witnessed speeding (+50 km/h: ~5 s). A drive-past is a warning.
+// needs ~12 s of witnessed speeding (+50 km/h: ~5 s). A drive-past is a warning:
+// the unit pulls out, catches up and keeps you in view to 170 m, so speeding on
+// becomes a pursuit; slow to the limit and it lets you go. No contact on a warning.
 // Warning is lights/following with no wanted star. Stop nearby for 2 s to comply.
 // Losing sight drains suspicion. Pursuit: 3 s unseen -> cooldown, then 8 s at
 // one star (+2 s per extra star) unseen -> evaded. No time-based escalation.
@@ -28,6 +30,7 @@ export const HEAT = {
   bustDist: 7.5,       // m centre to centre
   bustSpeed: 2.5,      // m/s (~9 km/h)
   witnessRange: 75,    // m, for offences, including offences during a pursuit
+  followRange: 170,    // m, a unit following you with lights (a warning) keeps you in view as far as a one-star chase
   speedMargin: 30,     // km/h over the posted limit; exact +30 is tolerated
   speedHeat: 0.08,     // ~3 s to a warning, 12.5 sustained witnessed seconds to the first star
   seriousMargin: 50,   // km/h over: flagrant speeding
@@ -66,7 +69,7 @@ export class HeatMachine {
     if ((this.state === 'idle' || this.state === 'warning') && this.level >= 1) {
       this.state = 'pursuit'; this.time = 0; this.lostT = 0; this.evade = 0; this.bust = 0; this.push('start', { kind });
     } else if (this.state === 'idle' && (!continuous || this.heat >= this.cfg.warningHeat - 1e-6)) {
-      this.state = 'warning'; this.warningT = 0; this.fleeT = 0; this.complyT = 0; this.push('warning', { kind });
+      this.state = 'warning'; this.warningT = 0; this.fleeT = 0; this.complyT = 0; this.lostT = 0; this.push('warning', { kind });
     } else if (this.state === 'cooldown') {
       this.state = 'pursuit'; this.lostT = 0; this.evade *= 0.5; this.push('resume', { kind });
     }
@@ -86,13 +89,16 @@ export class HeatMachine {
       if (this.state === 'warning') {
         this.warningT += dt;
         this.complyT = s.copNear && s.slow ? this.complyT + dt : 0;
-        this.fleeT = s.seen && s.fleeing ? this.fleeT + dt : 0;
+        // The officer following you may lose sight for a moment (a bend, a truck) without the warning lapsing.
+        this.lostT = s.seen ? 0 : this.lostT + dt;
+        this.fleeT = s.fleeing && this.lostT <= C.lostAfter ? this.fleeT + (s.seen ? dt : 0) : 0;
         if (this.fleeT >= C.fleeAfter - 1e-6) this.offence('fleeing', Math.max(0.01, 1 - this.heat), true, { serious: true });
         else if (this.complyT >= C.complyTime - 1e-6) {
           const out = this.drain(); this.reset(); this.quiet = C.quietAfter * 0.5; out.push({ phase: 'released', heat: 0, level: 0, time: 0 }); return out;
         }
       }
-      if (!this.active && (!s.seen || !s.offending && !s.fleeing && (this.state === 'idle' || this.warningT > C.warningGrace))) {
+      const lost = this.state === 'warning' ? this.lostT > C.lostAfter || !s.seen && !s.fleeing : !s.seen;
+      if (!this.active && (lost || !s.offending && !s.fleeing && (this.state === 'idle' || this.warningT > C.warningGrace))) {
         this.heat = Math.max(0, this.heat - dt * C.suspicionDecay);
         if (this.state === 'warning' && this.heat <= 1e-6) {
           this.push('released'); this.state = 'idle'; this.heat = 0; this.quiet = C.quietAfter * 0.5;
@@ -210,7 +216,8 @@ export class Police {
       if (c.crash) { k.sees = false; if (c.crash.wreck && !k.down) { k.down = true; k.chase = false; k.siren = false; k.keep = false; /* a wreck: traffic culls it once you're past */ if ((hm.active || k.wasChasing) && this.t - (k.hitT ?? -99) < 4) out.push(...this.takedown(c)); } continue; }
       k.losT = (k.losT || 0) - dt;
       const d = this.distance(c, P);
-      if (k.losT <= 0 || d > range) { k.losT = 0.2 + rng.range(0, 0.1); k.sees = d <= range && this.los(c, P); }
+      const r = k.chase && hm.state === 'warning' ? HEAT.followRange : range;
+      if (k.losT <= 0 || d > r) { k.losT = 0.2 + rng.range(0, 0.1); k.sees = d <= r && this.los(c, P); }
       if (k.sees) seen = true;
       if (k.chase && d < HEAT.bustDist) near++;
       if (k.chase) nearest = Math.min(nearest, d);
@@ -352,7 +359,8 @@ export class Police {
     const free = this.cops.filter(c => !c.crash && !c.cop.block && (c.cop.sees || c.cop.chase || Math.abs(c.s - P.s) < 200)).sort((a, b) => Math.abs(a.s - P.s) - Math.abs(b.s - P.s));
     for (const c of free.slice(0, HEAT.maxChasers)) this.enlist(c);
     if (fromEvent) for (let i = 0; i < 2; i++) { const c = this.spawnBehind(P, D, 200 + i * 60, Math.max(10, P.vs * D)); if (c) this.enlist(c); }
-    if (!this.cops.some((c) => c.cop.chase)) { const c = this.spawnBehind(P, D, 220, Math.max(10, P.vs * D + 5)); if (c) this.enlist(c); }
+    // Nobody able to drive after you (a unit you just crashed into counts as nobody): one comes from behind at once.
+    if (!this.cops.some((c) => c.cop.chase && !c.crash)) { const c = this.spawnBehind(P, D, 220, Math.max(10, P.vs * D + 5)); if (c) this.enlist(c); }
   }
   /** Deliberate contact (PIT, box-in, ram) is reserved for an escalated, established pursuit. */
   contactAllowed() { const hm = this.hm; return hm.state === 'pursuit' && hm.level >= HEAT.contactLevel && hm.time >= HEAT.contactAfter - 1e-6; }
@@ -392,8 +400,8 @@ export class Police {
         if (!site.fixed && site.car && (site.car.s < 60 || site.car.s > this.route.length - 60)) site.car.dir = site.car.s < 60 ? 1 : -1;
       }
     } else if (hm.state === 'warning') {
-      // One following officer with lights. No reinforcements, PIT or roadblocks.
-      for (const c of chasing) c.cop.tactic = 'tail';
+      // One following officer with lights: catches up, then tails. No reinforcements, PIT or roadblocks.
+      for (const c of chasing) c.cop.tactic = c.dir !== D ? 'uturn' : (P.s - c.s) * D > 35 ? 'catch' : 'tail';
     } else {
       // ---- reinforcements: 1 unit at one star, 2 at two-three, 3 from four; slowly, from behind (out of
       // the chase camera) and from 3 stars sometimes from far ahead, only where you can't see them appear
