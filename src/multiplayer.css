@@ -93,8 +93,7 @@
 .mp-session-settings h3 { margin: 0; color: var(--c-accent); font: 800 .85rem var(--f-cond); letter-spacing: .12em; }
 .mp-session-summary { color: #aab8c8; font: 700 .7rem var(--f-cond); line-height: 1.6; letter-spacing: .05em; }
 .mp-settings-primary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .7rem; }
-.mp-settings-primary label { display: grid; gap: .4rem; font: 700 .75rem var(--f-cond); letter-spacing: .07em; }
-.mp-settings-primary .mp-toggle-field { display: flex; align-items: center; gap: .5rem; }
+.mp-settings-primary label { display: grid; gap: var(--s-2,8px); font: 800 var(--t-xs,12px) 'Barlow Condensed',sans-serif; letter-spacing: .18em; color: var(--c-text-3,#8d97a3); } /* same labels as TRACK / MODE above */
 .mp-settings-advanced { margin-top: .8rem; }
 .mp-settings-advanced summary { padding: .65rem 0; cursor: pointer; color: #aab8c8; font: 800 .75rem var(--f-cond); letter-spacing: .08em; }
 .mp-settings-advanced[open] summary { color: white; }
