@@ -98,11 +98,16 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
   send(a, { type: 'start' }); const raceId = a.messages.at(-1).lobby.raceId;
   // A pre-GO or stale packet cannot declare a wreck for a different race.
-  send(a, { type: 'dnf', raceId, reason: 'wrecked' }); assert.equal(core.lobbies.get(code).players.get(helloA.id).dnf, false);
+  send(a, { type: 'dnf', raceId, reason: 'wrecked', impactEbs: 90 / 3.6 }); assert.equal(core.lobbies.get(code).players.get(helloA.id).dnf, false);
   now += 2100; core.tick();
   send(a, { type: 'dnf', raceId: 'stale-race', reason: 'wrecked' }); assert.equal(core.lobbies.get(code).players.get(helloA.id).dnf, false);
   send(a, { type: 'dnf', raceId, reason: 'busted' }); assert.match(a.messages.at(-1).message, /Unknown DNF/);
-  send(a, { type: 'dnf', raceId, reason: 'wrecked' });
+  for (const evidence of [{}, { impactEbs: 60 / 3.6 }, { impactEbs: 89 / 3.6 }, { impactMechanical: .97 }]) {
+    send(a, { type: 'dnf', raceId, reason: 'wrecked', ...evidence });
+    assert.equal(core.lobbies.get(code).players.get(helloA.id).dnf, false);
+    assert.match(a.messages.at(-1).message, /recoverable/);
+  }
+  send(a, { type: 'dnf', raceId, reason: 'wrecked', impactEbs: 90 / 3.6 });
   const wreck = a.messages.at(-1).lobby.players.find(p => p.id === helloA.id);
   assert.equal(wreck.dnf, 'wrecked'); assert.equal(wreck.finish, null); assert.equal(submissions.length, 0);
   const saved = JSON.parse(JSON.stringify(core.exportState())), sockets = new Map([...core.clients].map(c => [c.token, c.ws]));
@@ -195,4 +200,16 @@ test('presence rides lobby transitions: menu, lobby, racing, offline', t => {
   core.disconnect(b);
   snap = lastFriends();
   assert.equal(snap.friends[0].presence.online, false);
+});
+
+test('accumulated big frontal crashes share the client mechanical wreck threshold',t=>{
+  let now=900000;t.mock.method(Date,'now',()=>now);
+  const core=createGameCore({maps,cars,leaderboard:{submit:async()=>assert.fail('wreck cannot record a time')},countdownMs:100});
+  const a=socket(),b=socket();core.connect(a,'one',{protocol:MULTIPLAYER_PROTOCOL});core.connect(b,'two',{protocol:MULTIPLAYER_PROTOCOL});
+  const id=a.messages.find(m=>m.type==='hello').id,send=(ws,m)=>core.message(ws,JSON.stringify(m));
+  send(a,{type:'create'});const code=a.messages.at(-1).lobby.code;send(b,{type:'join',code});
+  for(const ws of [a,b])send(ws,{type:'ready',ready:true,version:'coast'});
+  send(a,{type:'start'});const raceId=a.messages.at(-1).lobby.raceId;now+=2100;core.tick();
+  send(a,{type:'dnf',raceId,reason:'wrecked',impactEbs:60/3.6,impactMechanical:.97});assert.equal(core.lobbies.get(code).players.get(id).dnf,false);
+  send(a,{type:'dnf',raceId,reason:'wrecked',impactEbs:60/3.6,impactMechanical:.98});assert.equal(core.lobbies.get(code).players.get(id).dnf,'wrecked');assert.equal(core.lobbies.get(code).players.get(id).finish,null);
 });

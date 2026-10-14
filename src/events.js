@@ -79,8 +79,8 @@ export function rivalCount(def) {
   const n = def.rivalCount ?? (Array.isArray(def.rivals) ? def.rivals.length : def.rivals ?? SP_RIVALS);
   return Math.max(0, Math.min(MAX_RIVALS, DRIVERS.length, Math.floor(+n) || 0));
 }
-export const WRECK_EBS = 100 / 3.6;
-export const isWrecked = impactEbs => impactEbs >= WRECK_EBS;
+export { WRECK_EBS } from './damage-math.js';
+export { isTerminalImpact as isWrecked } from './damage-math.js';
 /** the grid for an event: driver records in grid order (explicit ids, or a stable per-event pick); rivalCount(def) of them */
 export function gridFor(def) {
   const n = rivalCount(def);

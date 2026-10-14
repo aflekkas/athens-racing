@@ -119,8 +119,8 @@ test('pursuit: busted is a DNF, escape is judged on time, survive is pass/fail',
 });
 
 test('100 km/h impact: wrecked is a DNF with no medal, winning position or best update', () => {
-  assert.equal(EV.isWrecked(100 / 3.6 - 0.0001), false);
-  assert.equal(EV.isWrecked(100 / 3.6), true);
+  assert.equal(EV.isWrecked(90 / 3.6 - 0.0001), false);
+  assert.equal(EV.isWrecked(90 / 3.6), true);
   assert.equal(EV.isWrecked(120 / 3.6), true);
   const st = mem(), def = EV.getEvent('astir-varkiza');
   const completed = new EV.EventRun(def, ctx, { storage: st }); completed.start();

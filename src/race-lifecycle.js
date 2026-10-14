@@ -54,7 +54,7 @@ export function recoveryPosition(currentS, safeS, dir = 1, nextCheckpointS = nul
   return s;
 }
 
-const engineFields = ['engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm'];
+const engineFields = ['impactMechanical', 'maxImpactEbs', 'engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm'];
 // Lightweight cosmetic telemetry rides the existing state cadence; no wheel-force arrays.
 export function spectatorState(vehicle) {
   const state = Object.fromEntries(engineFields.filter(k => vehicle[k] !== undefined).map(k => [k, vehicle[k]]));
@@ -73,7 +73,13 @@ export function applySpectatorState(vehicle, snapshot) {
 
 // Resume physical state without copying derived or remote display telemetry.
 export function restoreVehicleState(vehicle, state) {
+  // Initialise the new damage object's caches before restoring mechanical telemetry;
+  // damageFx on resume must not erase the engine state it has just received.
+  if (state.damage && typeof vehicle.damageFx === 'function') {
+    vehicle.damage = { ...state.damage }; vehicle.damageFx();
+  }
   for (const [key, value] of Object.entries(state)) {
+    if (key === 'damage' && state.damage && typeof vehicle.damageFx === 'function') continue;
     if (key === 'tyreTelemetry' || key === 'remoteTyreTelemetry') continue;
     let owner = vehicle, descriptor;
     while (owner && !descriptor) {

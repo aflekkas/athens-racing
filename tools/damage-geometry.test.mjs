@@ -30,3 +30,23 @@ test('far traffic baked mirror tags cannot throw and interrupt damage/repair', (
   assert.ok(car.damageMeshes.some(m=>m.geometry.attributes.position.needsUpdate || m.geometry.attributes.position.version>0));
   assert.doesNotThrow(()=>car.setDamage('rear',0));car.disposeDamage();
 });
+
+test('real traffic fleet near/far graphs survive a crash, isolate geometry and repair',async()=>{
+  // Geometry builders only need a canvas texture object; no raster assertions here.
+  const previous=globalThis.document,noop=()=>{},gradient={addColorStop:noop};
+  const ctx=new Proxy({measureText:()=>({width:50}),createLinearGradient:()=>gradient,createRadialGradient:()=>gradient},{get:(o,k)=>k in o?o[k]:noop,set:(o,k,v)=>(o[k]=v,true)});
+  globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx})};
+  try{
+    const {TRAFFIC_TYPES,trafficModel}=await import('../src/cars.js'),{RNG}=await import('../src/util.js');
+    for(const id of ['police','bus']){
+      const type=TRAFFIC_TYPES.find(t=>t.id===id),a=trafficModel(type,type.colors[0],new RNG(41)),b=trafficModel(type,type.colors[0],new RNG(42));
+      const rest=a.damageMeshes.map(m=>m.geometry.attributes.position.array.slice()),twin=b.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());
+      assert.doesNotThrow(()=>a.setDamage('rear',.5),id+' must not throw after far mirror compaction');
+      assert.ok(a.damageMeshes.some((m,k)=>m.geometry.attributes.position.array.some((n,i)=>Math.abs(n-rest[k][i])>1e-5)),id+' must visibly deform');
+      assert.ok(b.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((n,i)=>n===twin[k][i])),id+' twin must remain intact');
+      assert.doesNotThrow(()=>a.setDamage('rear',0));
+      assert.ok(a.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((n,i)=>Math.abs(n-rest[k][i])<1e-6)),id+' repair must restore geometry');
+      a.disposeDamage?.();b.disposeDamage?.();
+    }
+  }finally{globalThis.document=previous;}
+});

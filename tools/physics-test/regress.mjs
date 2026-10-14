@@ -200,17 +200,17 @@ else {
   check('damage: equal-mass car at 2 dv equals a barrier at dv (EBS = dv / 2)', Math.abs(a.damage.front - b.damage.front) < 1e-9, `${f3(a.damage.front)} vs ${f3(b.damage.front)}`);
   const h = mk({ drive: 'fwd' }); h.addDamage('front', 20, { kind: 'crash', car: { mass: 15000 }, heavy: true });
   check('damage: a lorry hurts more than a car at the same closing speed', h.damage.front > b.damage.front);
-  const w = mk({ drive: 'fwd' }); w.addDamage('front', 16, { kind: 'wall' });
-  check('damage: severe front hit -> full crush, ruptured radiator, power loss before delayed steam', w.damage.front === 1 && w.radiatorDamage > 0.9 && !w.smoke && w.engHealth > 0.3 && w.engHealth < 0.7, `engHealth ${f2(w.engHealth)}`);
+  const w = mk({ drive: 'fwd' }); w.addDamage('front', 85 / 3.6, { kind: 'wall' });
+  check('damage: heavy frontal crash -> crush and cooling damage, gradual power loss before steam', w.damage.front === 1 && w.radiatorDamage > 0.3 && !w.smoke && w.engHealth > 0.3 && w.engHealth < 0.7, `engHealth ${f2(w.engHealth)}`);
   let steamPeak = 0; for (let i = 0; i < 600; i++) { w.damageFx(DT); steamPeak = Math.max(steamPeak, w.steamAmount); }
-  check('damage: ruptured cooling system heats gradually with no immediate white plume', w.coolantTemp > 100 && !w.smoke && steamPeak === 0, `coolant ${f1(w.coolantTemp)} C`);
-  const s = mk({ drive: 'fwd' }); s.reset(0, 0, 25); s.addDamage('left', 8, { kind: 'wall' });
+  check('damage: ruptured cooling system heats gradually with no immediate white plume', w.coolantTemp > 90 && w.coolantTemp < 104 && !w.smoke && steamPeak === 0, `coolant ${f1(w.coolantTemp)} C`);
+  const s = mk({ drive: 'fwd' }); s.reset(0, 0, 25); s.addDamage('front', 70 / 3.6, { kind: 'wall', localPoint: { x: -s.track / 2, y: .4, z: -s.a } });
   for (let i = 0; i < 300; i++) s.update(DT, { throttle: 0.3, brake: 0, steer: 0 });
   const c = mk({ drive: 'fwd' }); c.reset(0, 0, 25);
   for (let i = 0; i < 300; i++) c.update(DT, { throttle: 0.3, brake: 0, steer: 0 });
-  check('damage: a left-side hit makes the car pull left, the undamaged car goes straight', s.x < -1 && Math.abs(c.x) < 0.05, `drift damaged ${f2(s.x)} m, clean ${f3(c.x)} m in 5 s`);
+  check('damage: a large off-centre frontal hit pulls towards its struck wheel', s.x < -0.5 && Math.abs(c.x) < 0.05, `drift damaged ${f2(s.x)} m, clean ${f3(c.x)} m in 5 s`);
   // in-gear 80-130 km/h (not traction limited, so it isolates the engine loss)
-  const pull = (wreck) => { const q = mk({ drive: 'rwd' }); q.reset(0, 0, 80 / 3.6); q.gear = 4; if (wreck) q.addDamage('front', 16, { kind: 'wall' }); let t = 0; while (q.kmh < 130 && t < 30) { q.update(DT, { throttle: 1, brake: 0, steer: 0 }); t += DT; } return t; };
+  const pull = (wreck) => { const q = mk({ drive: 'rwd' }); q.reset(0, 0, 80 / 3.6); q.gear = 4; if (wreck) q.addDamage('front', 85 / 3.6, { kind: 'wall' }); let t = 0; while (q.kmh < 130 && t < 30) { q.update(DT, { throttle: 1, brake: 0, steer: 0 }); t += DT; } return t; };
   const before = pull(false), after = pull(true);
   check('damage: serious frontal substantially slows acceleration while car remains driveable', after > before * 1.25 && after < before * 3, `80-130 ${f2(before)} -> ${f2(after)} s`);
   w.reset(0, 0, 0);
@@ -260,7 +260,7 @@ else {
     }
     if(spec.engineZone==='rear'){
       const rear=new Vehicle(spec,route),front=new Vehicle(spec,route);rear.addDamage('rear',16,{kind:'wall'});front.addDamage('front',16,{kind:'wall'});
-      check(`catalogue ${spec.id}: rear engine damage follows engine location`,rear.engHealth<front.engHealth&&front.radiatorDamage>0&&!front.smoke);
+      check(`catalogue ${spec.id}: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage`,rear.engHealth===1&&front.engHealth<1&&front.radiatorDamage===0&&!front.smoke);
     }
     const v = new Vehicle(spec, route); v.reset(0, 0, 0); let t = 0, t100 = null, ok = true;
     while (t < 60) { v.update(DT, { throttle: 1, brake: 0, steer: 0 }); t += DT; if (!t100 && v.kmh >= 100) t100 = t; if (!finite(v)) { ok = false; break; } }

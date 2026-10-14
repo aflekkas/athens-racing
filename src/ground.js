@@ -360,7 +360,7 @@ export class Ground {
    * contact point. Square on, the tyre climbs: it loses part of its speed into the kerb face (an impulse at the wheel,
    * so a front wheel clipping it also yaws the car), the body bounces and rolls, the steering kicks. A glancing touch
    * at speed can't climb a full-height kerb: the tyre wall rubs along it and bounces back off the face. Coming down
-   * off a kerb is a drop. Hard hits bend the suspension on that side (side damage -> toe pull).
+   * off a kerb is a drop. These wheel/ground contacts never consume the crash damage budget.
    */
   _curbs(v) {
     if (this.route.closed) return; // low, rounded circuit kerbs are sampled per wheel in at()
@@ -415,7 +415,6 @@ export class Ground {
           // (the body's bounce comes from that wheel riding up the step through its tyre and spring: see resolve)
           if (!v.sus) { v.pose.heaveV += 0.5 * k; v.pose.pitchV += (cx > 0 ? -0.35 : 0.25) * k; v.pose.rollV += (cy > 0 ? 0.6 : -0.6) * k; }
           if (cx > 0) v.steer += (cy > 0 ? -1 : 1) * 0.04 * k; // the rack kicks against the hit wheel
-          if (vn > 8 && cx > 0) v.addDamage?.(cy > 0 ? 'right' : 'left', (vn - 8) * 0.5 + 2.2, { kind: 'wall' }); // a bent wheel / track rod
         }
         const hit = clamp((glance ? 0.25 : 0.35) * sev + vn * 0.06 + vAlong * 0.008, 0, 1);
         v.bumpHit = Math.max(v.bumpHit, hit); v.curbHit = Math.max(v.curbHit || 0, hit);

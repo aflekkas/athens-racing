@@ -17,21 +17,25 @@ export function damageFeedback(vehicle, { spectating = false, towLabel = 'TOW', 
   if (!vehicle) return { visible: false };
   const damage = clamp(vehicle.engineDamage), health = Number.isFinite(vehicle.engHealth) ? clamp(vehicle.engHealth) : 1 - damage;
   const hot = vehicle.coolantTemp >= 110, stopped = !!(vehicle.engineFailureReason || vehicle.engineStalled || vehicle.drivetrainBroken);
-  const bent = vehicle.damageSignificant || vehicle.cornerDamage?.some(d => d > .25);
-  if (!(damage > .01 || health < .99 || hot || stopped || bent)) return { visible: false };
+  const bent = vehicle.cornerDamage?.some(d => d > .05);
+  const body = !!vehicle.damageSignificant || Object.values(vehicle.damage || {}).some(d => d > .1);
+  const impact = clamp(vehicle.impactMechanical);
+  if (!(damage > .01 || impact > .01 || health < .99 || hot || stopped || bent || body)) return { visible: false };
   const failure = vehicle.engineFailureReason;
   let cause = failure === 'mechanical_overrev' ? 'Unsafe downshift · mechanical over-rev'
     : failure === 'overheating' ? 'Engine overheated'
     : failure === 'drivetrain' || vehicle.drivetrainBroken ? 'Impact broke the drivetrain'
     : stopped ? 'Impact stopped the engine'
     : hot ? vehicle.radiatorDamage > .1 ? 'Impact damaged the radiator · overheating' : 'Engine overheating'
+    : impact > .01 ? 'Frontal impact damaged the powertrain'
     : damage > .01 ? 'Engine wear from over-rev or heat'
+    : body && !bent ? 'Bodywork dented'
     : 'Impact damage';
   if (cause === 'Impact damage' && vehicle.lastDamage?.zone) cause = `${vehicle.lastDamage.zone} impact damage`;
   const effect = stopped ? 'No engine power' : health < .99 ? `${Math.round(health * 100)}% engine power available`
-    : bent ? 'Wheel damage affects steering' : 'Heat is reducing engine power';
+    : bent ? 'Wheel damage affects steering' : body ? 'Cosmetic damage · full engine power' : hot ? 'Engine is hot · full power available' : 'Full engine power available';
   const repairAction = spectating ? 'Watching this driver · recovery is their choice'
     : repairAvailable ? `${towLabel} · Tow and repair · ${towCost}` : 'Recovery unavailable right now';
-  return { visible: true, title: stopped ? 'ENGINE DISABLED' : hot ? 'ENGINE HOT' : 'CAR IMPAIRED', cause, effect, repairAction,
+  return { visible: true, title: stopped ? 'ENGINE DISABLED' : hot ? 'ENGINE HOT' : health <= .7 ? 'LIMP MODE' : body && !bent && health >= .99 ? 'BODY DAMAGE' : 'CAR IMPAIRED', cause, effect, repairAction,
     health, tone: stopped || health < .3 ? 'bad' : 'warn' };
 }

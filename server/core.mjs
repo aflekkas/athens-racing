@@ -1,3 +1,4 @@
+import { isTerminalImpact } from '../src/damage-math.js';
 import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion } from '../src/multiplayer-protocol.js';
 import { buildCourse, observeCourse, courseStatus } from '../src/checkpoints.js';
 import { defaultConfig, sanitizeConfig, effectiveEvent, configInvalidates, nextGeneration, cancelToWaiting, restartRace, startObjectiveRound, stepPlayerObjective, snapshotPlayerObjective, resultPlayerObjective, objectiveRoundDone, clearObjectiveHold, applyObjectivePenalty, raceLimitFor, isObjectiveMode, assertModeAllowed, validateStateExtras } from './mp-lifecycle.mjs';
@@ -403,6 +404,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
         if (m.type === 'dnf') {
           if (!['countdown', 'race'].includes(l.status) || now < l.startAt || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
           if (!['retired', 'wrecked'].includes(m.reason)) return error('Unknown DNF reason.');
+          if (m.reason === 'wrecked' && !isTerminalImpact(m.impactEbs, m.impactMechanical)) return error('Impact is recoverable; tow and repair.');
           if (l.status === 'countdown') l.status = 'race';
           c.dnf = m.reason; c.finish = null;
           const racer = l.racers.get(c.id); racer.dnf = m.reason; racer.finish = null;

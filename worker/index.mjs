@@ -1,3 +1,4 @@
+import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
 import { connectionProtocol, MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { DurableObject } from 'cloudflare:workers';
@@ -271,7 +272,12 @@ export class GameArena extends DurableObject {
   }
   async webSocketMessage(ws, message) {
     if (typeof message !== 'string' || new TextEncoder().encode(message).byteLength > 4096) { ws.close(1009, 'Message too large'); return; }
-    let type; try { type = JSON.parse(message)?.type; } catch { type = 'invalid'; }
+    let packet; try { packet = JSON.parse(message); } catch {}
+    const type = packet?.type || 'invalid';
+    // Use the same frontal/cumulative wreck boundary as client physics and Node.
+    if (type === 'dnf' && packet.reason === 'wrecked' && !isTerminalImpact(packet.impactEbs, packet.impactMechanical)) {
+      ws.send(JSON.stringify({ type: 'error', message: 'Impact is recoverable; tow and repair.' })); return;
+    }
     const before = this.core.clientData(ws)?.finish;
     this.core.message(ws, message);
     this.attach(ws);
