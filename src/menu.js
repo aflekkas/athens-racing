@@ -7,7 +7,7 @@
 // focused form controls, so focus is drawn with a class and the keys keep flowing through flowAction().
 import { getEvents, QUICK_RACE, TYPES, getEvent, resolve, loadRecord, targetLabels, MEDALS, rivalCount } from './events.js';
 import * as S from './settings.js';
-import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
+import { renderMapSelect, renderMapConfirm, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid, getCarDecals, setCarDecals } from './car-select.js';
 import * as C from './ui/components.js';
@@ -195,6 +195,7 @@ export class Menu {
     const a = el.dataset.act;
     this.h.ui?.(true);
     switch (a) {
+      case 'mapLoad': selectMap(this,this.data.mapId,true);break;
       case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'play': this.show('mode', {}, true); break;
@@ -292,6 +293,7 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- maps
+  r_mapConfirm() { return renderMapConfirm(this.data.mapId); }
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
 
   // ---------------------------------------------------------------- car

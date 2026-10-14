@@ -14,7 +14,7 @@ function style() {
 const KIND = (m) => m.type === 'circuit' ? ['CIRCUIT', 'arrows-clockwise'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountains'] : ['POINT TO POINT', 'path'];
 function preview(map) {
   const [kind, ic] = KIND(map);
-  return `<img src="${map.preview}" alt="${esc(map.name)} route outline"/><div class="map-preview__info">${C.badge(kind, '', ic)}<h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b>${C.button({ label: 'SELECT TRACK', icon: 'flag-checkered', variant: 'primary', attrs: { 'data-map-id': map.id } })}</div>`;
+  return `<img src="${map.preview}" alt="${esc(map.name)} route outline"/><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div>${C.badge(kind, '', ic)}<h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b>${C.button({ label: 'SELECT TRACK', icon: 'flag-checkered', variant: 'primary', attrs: { 'data-map-id': map.id } })}</div>`;
 }
 export function renderMapSelect(selectedId = 'riviera', mode) {
   style(); const selectable = getPlayableMaps(MAPS); const selected = selectable.find(m => m.id === selectedId) || selectable[0];
@@ -43,8 +43,9 @@ export function mountMapSelect(root) {
   const resize=new ResizeObserver(sync);resize.observe(map);
   return { preview:show, action(name){if(name==='mapZoomIn')zoom(.3);else if(name==='mapZoomOut')zoom(-.3);else if(name==='mapReset'){scale=1;x=y=0;sync();}}, dispose(){if(disposed)return;disposed=true;resize.disconnect();root.removeEventListener('pointerover',hover);} };
 }
-export async function selectMap(menu, id) {
+export async function selectMap(menu, id, confirmed = false) {
   if (menu.mapLoading || !isMapEnabled(id)) return;
+  if(!confirmed){menu.show('mapConfirm',{...menu.data,mapId:id},true);return;}
   menu.mapLoading = true;
   try {
     await (menu.h.switchMap || window.__flow.switchMap)(id);
@@ -55,4 +56,9 @@ export async function selectMap(menu, id) {
     else menu.show('events', { mapId: id }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
+}
+
+export function renderMapConfirm(id) {
+  const map=MAPS.find(m=>m.id===id&&isMapEnabled(m.id));if(!map)return '';
+  return C.screen({cls:'scr--map-confirm',kick:'SELECTED TRACK · CONFIRM BEFORE LOADING',title:map.name,hints:[['confirm','LOAD TRACK'],['back','CHOOSE ANOTHER']],body:`<div class="map-confirm"><img src="${map.preview}" alt="${esc(map.name)} route"/><section class="panel"><h2>${esc(map.subtitle)}</h2><p>${fmtDist(map.length)} · ${KIND(map)[0]}</p>${C.button({label:'LOAD '+map.name,icon:'flag-checkered',variant:'primary',size:'lg',act:'mapLoad',attrs:{'data-default':''},block:true})}${C.button({label:'CHOOSE ANOTHER TRACK',act:'back',variant:'ghost',block:true})}</section></div>`});
 }
