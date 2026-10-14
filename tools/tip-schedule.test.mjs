@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import{TipSchedule}from'../src/ui/tip-schedule.js';
+test('first ten race seconds have no unsolicited tips',()=>{const q=new TipSchedule();q.startRace(0);assert.equal(q.show('camera',9999),false);assert.equal(q.show('camera',10000),true);});
+test('tips show once, even after a reload or a new race',()=>{const saved={},q=new TipSchedule(saved);q.startRace(0);assert.equal(q.show('tow',10000),true);const reloaded=new TipSchedule(saved);reloaded.startRace(200000);assert.equal(reloaded.show('tow',210000),false);assert.equal(reloaded.show('camera',210000),true);});
+test('two minute cap survives races, dismissals and reloads',()=>{const saved={},q=new TipSchedule(saved);q.startRace(0);q.show('controls',10000);const next=new TipSchedule(saved);next.startRace(20000);assert.equal(next.show('shifting',129999),false);assert.equal(next.show('shifting',130000),true);});
+test('different profiles keep independent seen and pacing state',()=>{const a=new TipSchedule({}),b=new TipSchedule({});a.startRace(0);b.startRace(0);assert.equal(a.show('camera',10000),true);assert.equal(b.show('camera',10000),true);assert.equal(a.show('tow',20000),false);});
