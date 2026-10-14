@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>Recovery and spectator integration</title>
+<link rel="stylesheet" href="/src/multiplayer.css"><style>body{background:#0d1726;color:white;font:16px system-ui;padding:24px}#multiplayer,#mp-toggle{display:none}#mp-board{position:relative;inset:auto;max-width:700px;min-width:500px;margin:12px;padding:16px}button,select{font:inherit;padding:6px}pre{white-space:pre-wrap}</style>
+<h1>Three real browser WebSocket clients</h1><p>Actual Multiplayer UI and server protocol. No world renderer or simulated tyres.</p><div id="boards"></div><pre id="evidence">Connecting…</pre>
+<script type="module">
+import { Multiplayer } from '/src/multiplayer.js';
+sessionStorage.removeItem('paraliaki.session');
+const evidence=document.querySelector('#evidence'), clients=[];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function wait(predicate,label){for(let i=0;i<100;i++){if(predicate())return;await sleep(50)}throw Error('Timed out: '+label)}
+function client(name){const hooks={clearInput(){},carIndex:()=>0,join(){},carChanged(){},wait(){},leave(){},members(){},remote(){},start(){},clock(){},results(){},wrecked(){}};const m=new Multiplayer([{id:'mini',short:'MINI'}],hooks);m.mapId='riviera';m.$('mp-name').value=name;clients.push(m);document.querySelector('#boards').append(m.board);return m}
+const [a,b,c]=['Alice','Bob','Charlie'].map(client);window.recoveryClients=clients;
+try{
+ await wait(()=>clients.every(m=>m.connected&&m.trackVersion),'connect');
+ for(const m of clients)m.loaded=true;
+ a.action('create',{lobbyName:'Recovery integration'});await wait(()=>a.lobby,'create');
+ b.action('join',{code:a.lobby.code});c.action('join',{code:a.lobby.code});await wait(()=>clients.every(m=>m.lobby?.players.length===3),'join');
+ for(const m of clients)m.send({type:'ready',ready:true,version:m.trackVersion});await wait(()=>a.lobby.players.every(p=>p.ready),'ready');
+ a.send({type:'start'});await wait(()=>clients.every(m=>m.lobby?.status==='race'),'start');
+ const s0=a.lobby.event.s0,dir=a.lobby.event.dir;
+ const pose=(distance,gear=2,rpm=3000)=>({x:distance,y:0,z:0,yaw:0,s:s0+dir*distance,u:2,vLong:20,vLat:0,steer:0,rpm,gear,nitro:0,damage:{front:0,rear:0,left:0,right:0},sampleTime:performance.now(),motionEpoch:1});
+ for(const [i,m]of clients.entries())m.send({type:'state',raceId:m.lobby.raceId,generation:m.lobby.generation,state:pose(i*10)});
+ await wait(()=>a.peers.has(b.id)&&a.peers.has(c.id),'snapshots');
+ const repaired=await b.recover();b.send({type:'state',raceId:b.lobby.raceId,generation:b.lobby.generation,state:{...pose(10),s:repaired.s,u:repaired.u,vLong:0,motionEpoch:repaired.motionEpoch}});
+ a.retire();await wait(()=>a.me.dnf==='retired','explicit retire');a.selectSpectator(c.id);
+ for(const m of [b,c])m.board.hidden=true;a.panel.hidden=true;
+ const render=()=>{a.boardAt=0;a.update(.1,pose(0));};render();
+ const selected=a.spectating().id;await sleep(8000);render();
+ const stable=a.spectating().id===selected,telemetry=a.telemetry(pose(0));
+ window.recoveryEvidence={clients:3,realWebSockets:true,worldRenderer:false,recovery:repaired,stableAfter8Seconds:stable,selectedName:telemetry.member.name,selectedGear:telemetry.state.gear,selectedRpm:telemetry.state.rpm,progressMetres:telemetry.progress,gapUnit:telemetry.gapUnit};
+ evidence.textContent=JSON.stringify(window.recoveryEvidence,null,2);
+ window.renderRecovery=render;
+}catch(e){evidence.textContent=e.stack;window.recoveryError=e.message}
+</script>

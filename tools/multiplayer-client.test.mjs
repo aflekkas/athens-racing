@@ -109,25 +109,25 @@ test('solo and online board requests include the selected map', async () => {
 });
 
 
-test('100 km/h impact retires once, cancels a queued finish and never sends another state', () => {
-  const { m, packets } = lobbyClient('riviera'); let wrecks = 0;
-  const q = sender(); m.stateSender = q.sender; m.send = p => packets.push(p); m.hooks.wrecked = () => wrecks++;
+test('100 km/h impact stays recoverable and explicit retirement cancels queued finish', () => {
+  const { m, packets } = lobbyClient('riviera'); let retirements = 0;
+  const q = sender(); m.stateSender = q.sender; m.send = p => packets.push(p); m.hooks.wrecked = () => retirements++;
   m.boardAt = performance.now();
-  q.sender.sample(state({ s: 101, vLong: 10 }), 'race', { batching: true });
-  assert.equal(m.wreck(100 / 3.6 - 1e-6), false); assert.equal(q.timers.size, 1);
-  assert.equal(m.wreck(100 / 3.6), true); assert.equal(m.wreck(110 / 3.6), false);
-  assert.deepEqual(packets, [{ type: 'dnf', raceId: 'race', reason: 'wrecked' }]); assert.equal(wrecks, 1);
+  q.sender.sample(state({ s: 90, vLong: 10 }), 'race', { batching: true });
+  assert.equal(m.wreck(120 / 3.6), false); assert.equal(m.retired, false); assert.equal(q.timers.size, 1);
+  assert.equal(m.retire(), true); assert.equal(m.retire(), false);
+  assert.deepEqual(packets, [{ type: 'dnf', raceId: 'race', generation: undefined, reason: 'retired' }]); assert.equal(retirements, 1);
   q.advance(200); m.update(1 / 60, state({ s: 101, vLong: 10 }));
   assert.equal(q.packets.length, 0); assert.equal(packets.length, 1); assert.equal(m.me.finish, null);
-  m.me.dnf = 'wrecked'; m.sendWreck(); assert.equal(packets.length, 1);
+  m.me.dnf = 'retired'; m.sendWreck(); assert.equal(packets.length, 1);
 });
 
-test('wreck is retained across a reconnect, re-reported once and cleared for a new race', async () => {
-  const { m, packets } = lobbyClient('riviera'); m.startedRace = 'race'; m.send = p => packets.push(p); m.connected = false;
-  assert.equal(m.wreck(100 / 3.6), true); assert.equal(packets.length, 0);
+test('explicit retirement persists through reconnect and a new race clears it', async () => {
+  const { m, packets } = lobbyClient('riviera'); m.startedRace = 'race'; m.send = p => packets.push(p);
+  assert.equal(m.retire(), true); assert.equal(packets.length, 1);
+  m.connected = false; m.wreckSent = false; assert.equal(m.retired, true);
   m.connected = true; m.pendingResume = true; await m.syncLobby();
-  assert.equal(m.wrecked, true); assert.deepEqual(packets, [{ type: 'dnf', raceId: 'race', reason: 'wrecked' }]);
-  await m.syncLobby(); assert.equal(packets.length, 1);
+  assert.equal(m.retired, true); assert.equal(packets.length, 2);
   m.lobby.raceId = 'next'; await m.syncLobby(); assert.equal(m.wrecked, false); assert.equal(m.retired, false);
 });
 

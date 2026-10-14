@@ -1,6 +1,7 @@
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
 import { StateSender } from './multiplayer-state.js';
+import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
 // the server owns membership, synchronized starts, and elapsed finish times.
@@ -52,17 +53,36 @@ export class Multiplayer {
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
   get wrecked() { return !!this.lobby?.raceId && (this.me?.dnf === 'wrecked' || this.wreckedRace === this.lobby.raceId); }
-  get retired() { return !!this.me?.dnf || this.wrecked; }
+  get retired() { return !!this.me?.dnf || this.retiredRace === this.lobby?.raceId && !!this.lobby?.raceId; }
   now() { return Date.now() + this.offset; }
   wreck(impactEbs) {
+    // Impacts are recoverable. Only the explicit retire/leave action ends a race.
+    return false;
+  }
+  retire() {
     const l = this.lobby;
-    if (!(impactEbs >= 100 / 3.6) || !this.worldReady || !l?.raceId || !['countdown', 'race'].includes(l.status) || this.now() < l.startAt || this.me?.finish != null || this.retired) return false;
-    this.wreckedRace = l.raceId; this.wreckSent = false;
-    this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck();
-    return true;
+    if (!this.connected || !l?.raceId || l.status !== 'race' || this.me?.finish != null || this.retired) return false;
+    this.cancelRecovery('Driver retired.'); this.retiredRace = l.raceId; this.wreckSent = false;
+    this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck(); return true;
   }
   sendWreck() {
-    if (this.connected && this.wrecked && !this.me?.dnf && !this.wreckSent) { this.wreckSent = true; this.send({ type: 'dnf', raceId: this.lobby.raceId, reason: 'wrecked' }); }
+    if (this.connected && this.retired && !this.me?.dnf && !this.wreckSent) { this.wreckSent = true; this.send({ type: 'dnf', raceId: this.lobby.raceId, generation: this.lobby.generation, reason: 'retired' }); }
+  }
+  recover() {
+    if (!this.connected || this.retired || this.me?.finish != null || this.lobby?.status !== 'race') return Promise.reject(new Error('Recovery is unavailable.'));
+    if (this.recoveryPending) return this.recoveryPending.promise;
+    this.stateSender.discontinuity();
+    const raceId = this.lobby.raceId, motionEpoch = this.stateSender.motionEpoch;
+    let resolve, reject;
+    const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+    const timer = setTimeout(() => this.cancelRecovery('Recovery timed out. Try again.'), 8000);
+    this.recoveryPending = { raceId, motionEpoch, promise, resolve, reject, timer };
+    this.send({ type: 'recover', raceId, generation: this.lobby.generation, motionEpoch }); return promise;
+  }
+  cancelRecovery(message = 'The race changed before recovery completed.') {
+    if (!this.recoveryPending) return;
+    const pending = this.recoveryPending; this.recoveryPending = null;
+    clearTimeout(pending.timer); pending.reject(new Error(message));
   }
   status(text) { this.$('mp-status').textContent = text; }
   open() { this.panel.hidden = false; this.hooks.clearInput(); if (!this.lobby) { this.$('mp-car').value = this.cars[this.hooks.carIndex()].id; if (this.maps.some(m => m.id === this.mapId)) this.$('mp-create-map').value = this.mapId; this.send({ type: 'discover' }); } }
@@ -104,7 +124,7 @@ export class Multiplayer {
       else if (m.type === 'left') this.left();
       else if (m.type === 'lobby') {
         const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
-        if (previousRace !== m.lobby.raceId) this.peers.clear();
+        if (previousRace !== m.lobby.raceId) { this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
         for (const member of m.lobby.players) {
           const prior = previousMembers?.find(p => p.id === member.id), peer = this.peers.get(member.id);
           if (peer && prior && (prior.car !== member.car || prior.connected === false && member.connected !== false)) delete peer.timeline;
@@ -113,6 +133,11 @@ export class Multiplayer {
         if (joined) { this.peers.clear(); this.hooks.join(this.me.car); this.panel.hidden = false; }
         else if (previousCar !== this.me?.car) this.hooks.carChanged?.(this.me.car);
         this.renderRoom(); this.syncLobby();
+      } else if (m.type === 'recovered' && m.raceId === this.lobby?.raceId && (m.generation === undefined || m.generation === this.lobby.generation)) {
+        const pending = this.recoveryPending;
+        if (pending && m.motionEpoch === pending.motionEpoch && Number.isFinite(m.s) && Number.isFinite(m.u) && Number.isFinite(m.until)) {
+          clearTimeout(pending.timer); this.recoveryPending = null; pending.resolve(m);
+        }
       } else if (m.type === 'snapshot' && m.raceId === this.lobby?.raceId) {
         receiveRemoteSnapshot(this.peers, m, { id: this.id, members: this.lobby.players });
         // Websocket messages keep race state current even when background tabs stop animation frames.
@@ -123,6 +148,7 @@ export class Multiplayer {
     ws.onclose = e => {
       if (this.ws !== ws) return;
       this.connected = false; this.hooks.clearInput();
+      this.cancelRecovery('Connection lost before recovery completed.');
       this.stateSender.reset(); this.wreckSent = false;
       resetRemoteTimelines(this.peers);
       if (e.reason === 'Session resumed elsewhere') { this.left(); this.saveToken(null); this.status('This session is now open in another tab.'); return; }
@@ -169,12 +195,13 @@ export class Multiplayer {
       if (this.startedRace !== lobby.raceId) { this.wreckedRace = null; this.wreckSent = false; }
       this.pendingResume = false; this.resumeState = null; this.startedRace = lobby.raceId;
       this.stateSender.reset(); this.finishSent = null;
+      if (Number.isSafeInteger(state?.motionEpoch)) this.stateSender.motionEpoch = Math.max(this.stateSender.motionEpoch, state.motionEpoch + 1);
       this.hidePanel(); this.hooks.start(lobby, this.id, state);
     }
     this.renderRoom(); this.hooks.members(lobby.players.filter(p => p.id !== this.id));
     if (this.peers.size) this.hooks.remote(this.peers, 0.1);
     if (lobby.status === 'results') { this.panel.hidden = false; this.hooks.results(); }
-    else { this.advanceClock(); if (this.wrecked) { this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck(); } }
+    else { this.advanceClock(); if (this.retired) { this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck(); } }
     return Promise.resolve();
   }
   saveToken(token) { this.token = token; try { if (token) sessionStorage.setItem('paraliaki.session', token); else sessionStorage.removeItem('paraliaki.session'); } catch {} }
@@ -207,22 +234,26 @@ export class Multiplayer {
     if (l.status === 'results') { const title = document.createElement('h3'); title.textContent = 'RACE RESULTS'; results.append(title); this.ranking().forEach((p, i) => { const row = document.createElement('p'); row.textContent = p.finish != null ? `${i + 1}. ${p.name} · ${p.finish.toFixed(2)} s` : `DNF · ${p.name}${p.dnf === 'wrecked' ? ' · WRECKED' : ''}`; results.append(row); }); }
     this.board.hidden = l.status === 'waiting';
   }
-  ranking(localS = 0) { return [...(this.lobby?.results || this.lobby?.players || [])].sort((a, b) => {
-    if (a.finish !== null || b.finish !== null) return (a.finish ?? Infinity) - (b.finish ?? Infinity);
-    if (!!a.dnf !== !!b.dnf) return a.dnf ? 1 : -1;
-    const s = p => this.progress(p.id === this.id ? localS : this.peers.get(p.id)?.state.s ?? this.lobby?.event?.s0 ?? 0);
-    return s(b) - s(a);
-  }); }
+  driverProgress(p, localS = 0) { return this.progress(p.id === this.id ? localS : this.peers.get(p.id)?.state.s ?? this.lobby?.event?.s0 ?? 0); }
+  ranking(localS = 0) { return rankDrivers(this.lobby?.results || this.lobby?.players || [], p => this.driverProgress(p, localS)); }
   progress(s) { const r = this.lobby?.event; return r ? (s - r.s0) * r.dir : s; }
   advanceClock() {
     if (this.worldReady && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
   }
   spectating() {
     if (!this.active || (this.me?.finish == null && !this.retired) || this.lobby.status === 'results') return null;
-    const remaining = this.lobby.players.filter(p => p.id !== this.id && p.finish == null && !p.dnf && p.connected !== false && this.peers.has(p.id));
-    if (!remaining.length) return null;
-    if (performance.now() - this.spectateAt > 7000) { this.spectateAt = performance.now(); this.spectateIndex++; }
-    return remaining[this.spectateIndex % remaining.length];
+    this.selection ||= new SpectatorSelection();
+    return this.selection.target(this.lobby.raceId, this.spectatorDrivers());
+  }
+  spectatorDrivers() {
+    // A chosen finisher stays selected while the race is running. Disconnects/retirements are removed.
+    return (this.lobby?.players || []).filter(p => p.id !== this.id && !p.dnf && p.connected !== false && this.peers.has(p.id));
+  }
+  selectSpectator(id) { this.selection ||= new SpectatorSelection(); return this.selection.choose(id, this.lobby?.raceId, this.spectatorDrivers()); }
+  stepSpectator(direction) { this.selection ||= new SpectatorSelection(); return this.selection.step(direction, this.lobby?.raceId, this.spectatorDrivers()); }
+  telemetry(localState, id = this.spectating()?.id || this.id) {
+    const member = this.lobby?.players.find(p => p.id === id), state = id === this.id ? localState : this.peers.get(id)?.state;
+    return driverTelemetry({ member, state, event: this.lobby?.event, startAt: this.lobby?.startAt, now: this.now(), ranked: this.ranking(localState.s), progress: p => this.driverProgress(p, localState.s) });
   }
   async showLeaderboard() {
     const box = this.$('mp-times'); box.hidden = false; box.textContent = 'Loading best times…';
@@ -240,15 +271,32 @@ export class Multiplayer {
     if (!this.connected) return;
     if (['countdown', 'race'].includes(l.status)) {
       this.advanceClock();
-      if (this.now() >= l.startAt && !this.retired) {
+      if (this.now() >= l.startAt && !this.retired && !this.recoveryPending) {
         const force = this.finishSent !== l.raceId && (state.s - l.event.s1) * l.event.dir >= 0 && Math.abs(state.u) < 30;
         if (force) this.finishSent = l.raceId;
         this.stateSender.sample(state, l.raceId, { batching: this.stateBatching, force });
       }
     }
     if (performance.now() - (this.boardAt || 0) > 250) {
+      if (this.board.contains?.(document.activeElement)) return;
       this.boardAt = performance.now(); this.board.replaceChildren();
-      const title = document.createElement('b'); const watching = this.spectating(); title.textContent = l.status === 'results' ? 'RESULTS' : this.wrecked ? watching ? 'WRECKED · DNF · WATCHING ' + watching.name : 'WRECKED · DNF' : this.me?.finish !== null ? watching ? 'WATCHING · ' + watching.name : 'FINISHED · WAITING' : `LIVE · ${Math.round(this.latency)} ms`; this.board.append(title);
+      const title = document.createElement('b'); const watching = this.spectating(); title.textContent = l.status === 'results' ? 'RESULTS' : watching ? 'WATCHING · ' + watching.name : this.retired ? 'RETIRED · DNF' : this.me?.finish != null ? 'FINISHED · WAITING' : `LIVE · ${Math.round(this.latency)} ms`; this.board.append(title);
+      if (watching) {
+        const controls = document.createElement('div'); controls.style.pointerEvents = 'auto';
+        const prev = document.createElement('button'), next = document.createElement('button'), select = document.createElement('select');
+        prev.textContent = '‹'; prev.setAttribute('aria-label', 'Watch previous driver'); prev.onclick = () => { this.stepSpectator(-1); prev.blur(); this.boardAt = 0; };
+        next.textContent = '›'; next.setAttribute('aria-label', 'Watch next driver'); next.onclick = () => { this.stepSpectator(1); next.blur(); this.boardAt = 0; };
+        select.setAttribute('aria-label', 'Choose driver to watch');
+        for (const p of this.spectatorDrivers()) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; select.append(o); }
+        select.value = watching.id; select.onchange = () => { this.selectSpectator(select.value); select.blur(); this.boardAt = 0; }; controls.append(prev, select, next); this.board.append(controls);
+      } else if (!this.retired && this.me?.finish == null && l.status === 'race') {
+        const retire = document.createElement('button'); retire.textContent = 'RETIRE · DNF'; retire.style.pointerEvents = 'auto'; retire.onclick = () => this.retire(); this.board.append(retire);
+      }
+      const telemetry = this.telemetry(state);
+      if (telemetry && l.status !== 'results') {
+        const info = document.createElement('div'), metres = n => n == null ? '—' : Math.round(Math.abs(n)) + ' m';
+        info.textContent = `${telemetry.status} · ${Math.round(telemetry.progress)} m · ${telemetry.time.toFixed(2)} s · Ahead ${metres(telemetry.aheadMetres)} · Behind ${metres(telemetry.behindMetres)} · Leader ${metres(telemetry.leaderMetres)}`; this.board.append(info);
+      }
       this.ranking(state.s).forEach((p, i) => { const row = document.createElement('div'); row.textContent = `${p.dnf ? 'DNF · ' : (i + 1) + '. '}${p.name}${p.id === this.id ? ' · YOU' : ''}${p.finish != null ? ' · ' + p.finish.toFixed(2) + ' s' : p.dnf === 'wrecked' ? ' · WRECKED' : l.status === 'results' ? ' · DNF' : ''}`; this.board.append(row); });
     }
   }

@@ -1,4 +1,5 @@
 import { packDecals, unpackDecals } from '../src/vehicle-decal-data.js';
+import { rememberRecoveryRoad, requestRecovery, recoveryStateAllowed } from './race-recovery.mjs';
 // Shared lobby/race protocol. Transports own sockets, persistence and wake-up scheduling.
 const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-\x1f<>]/g, '').trim().slice(0, n) || fallback : fallback;
 const send = (ws, data) => { if (ws?.readyState === 1 && (ws.bufferedAmount || 0) < 65536) { try { ws.send(JSON.stringify(data)); } catch {} } };
@@ -122,12 +123,18 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           for (const p of l.players.values()) { p.ready = false; p.finish = null; p.dnf = false; p.state = null; p.stateAt = null; }
           publish(l); return;
         }
+        if (m.type === 'recover') {
+          if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
+          const recovery = requestRecovery(c, publicLobby(l).event, l.raceId, m.motionEpoch, now);
+          if (!recovery) return error('Recovery needs a current race position.');
+          l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
+        }
         if (m.type === 'dnf') {
-          if (!['countdown', 'race'].includes(l.status) || now < l.startAt || m.raceId !== l.raceId || c.finish !== null || c.dnf) return;
-          if (m.reason !== 'wrecked') return error('Unknown DNF reason.');
+          if (!['countdown', 'race'].includes(l.status) || now < l.startAt || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
+          if (!['retired', 'wrecked'].includes(m.reason)) return error('Unknown DNF reason.');
           if (l.status === 'countdown') l.status = 'race';
-          c.dnf = 'wrecked'; c.finish = null;
-          const racer = l.racers.get(c.id); racer.dnf = 'wrecked'; racer.finish = null;
+          c.dnf = m.reason; c.finish = null;
+          const racer = l.racers.get(c.id); racer.dnf = m.reason; racer.finish = null;
           l.dirty = true; publish(l);
           if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
           return;
@@ -136,13 +143,14 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           const fields = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'];
           if (!m.state || fields.some(k => !Number.isFinite(m.state[k]))) return;
           const s = m.state, event = lobbyEvent(l);
+          if (!recoveryStateAllowed(c, s, l.raceId, now)) return;
           const zones = ['front', 'rear', 'left', 'right'];
           if (s.nitro !== undefined && (!Number.isFinite(s.nitro) || s.nitro < 0 || s.nitro > 1)) return;
           if (s.damage !== undefined && (!s.damage || zones.some(k => !Number.isFinite(s.damage[k]) || s.damage[k] < 0 || s.damage[k] > 1))) return;
           if (Math.abs(s.x) > 100000 || Math.abs(s.z) > 100000 || Math.abs(s.y) > 10000 || Math.abs(s.u) > 500 || s.s < Math.min(event.s0, event.s1) - 500 || s.s > Math.max(event.s0, event.s1) + 500 || Math.abs(s.vLong) > 150 || Math.abs(s.vLat) > 150 || s.rpm < 0 || s.rpm > 20000 || s.gear < 1 || s.gear > 10) return;
           // Client physics with bounded progress; the server owns race timing/results.
           const prevS = c.state?.s ?? event.s0;
-          const elapsed = (now - (c.stateAt ?? l.startAt)) / 1000;
+          const elapsed = Math.max(0, (now - Math.max(c.stateAt ?? l.startAt, c.recovery?.raceId === l.raceId ? c.recovery.until : l.startAt)) / 1000);
           if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
           c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: s.decals === undefined ? c.state?.decals ?? [] : packDecals(unpackDecals(s.decals)) }; c.stateAt = now; l.dirty = true;
           // Optional render clock only; progress checks and finishes use server receipt time.
@@ -151,6 +159,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
             c.state.sampleAge = Number.isFinite(s.sampleAge) ? Math.max(0, Math.min(1000, s.sampleAge)) : 0;
             if (Number.isSafeInteger(s.motionEpoch) && s.motionEpoch >= 0) c.state.motionEpoch = s.motionEpoch;
           }
+          rememberRecoveryRoad(c, event, l.raceId);
           if (c.finish === null && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000; l.racers.get(c.id).finish = c.finish; publish(l);
             leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });

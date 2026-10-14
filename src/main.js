@@ -24,6 +24,8 @@ import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
+import { recoveryPosition, spectatorState, applySpectatorState } from './race-lifecycle.js';
+import { DrivingFeedback } from './driving-feedback.js';
 import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
@@ -32,7 +34,7 @@ import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
-import { wetPlanningPace } from './wet-grip.js';
+import { wetPlanningPace, WEATHER } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistanceFor, drawDistance } from './scenery.js';
@@ -78,6 +80,7 @@ ENV.installAerial(ENV.AP_K); // aerial perspective replaces three's fog in every
 renderer.shadowMap.enabled = !lowGraphics;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
+const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 const audio = new Audio();
@@ -387,9 +390,14 @@ function offerTow() {
   if (towOffer.element || towOffer.cooldown > 0) return;
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>Return to the road. ' + (inFreeRoam() ? 'Free recovery.' : 'Costs 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">TOW TO TRACK · ' + bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'camera' : 'restart', activeInputDevice()) + '</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>Repair the car and return to your last road position. ' + (inFreeRoam() ? 'Free recovery.' : 'Costs 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">TOW + REPAIR · ' + bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'camera' : 'tow', activeInputDevice()) + '</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(12); };
+  if (!inFreeRoam()) {
+    const retire = document.createElement('button'); retire.type = 'button'; retire.textContent = 'RETIRE · DNF';
+    retire.onclick = () => { closeTowOffer(); if (multiplayer.active) multiplayer.retire(); else finishRace('retired'); };
+    el.querySelector('.tow-actions').append(retire);
+  }
   towOffer.element = el; document.body.append(el); controls.releaseMouseLook();
 }
 // Water still produces its splash, but recovery waits for the driver to accept the offer.
@@ -405,35 +413,35 @@ function seaCheck(pv, dt) {
   }
   if (pv.water <= 0.05) G.sinkT = 0;
 }
-function backOnRoad(pv) {
+function backOnRoad(pv, recovery = null) {
   const online = multiplayer.active, dir = online ? multiplayer.lobby.event?.dir || 1 : G.dir || 1;
   const sf = towOffer.safe || pv.safe || { s: G.ev.r.s0, u: 0 };
   // Road projection gives the nearest point on all maps, including unwrapped circuit laps.
   // Online recovery uses the last valid road progress, never the off-road projection or a forward jump.
-  let s = online ? sf.s : pv.s + dir * 6;
+  let s = recovery?.s ?? recoveryPosition(pv.s, sf.s, dir);
   if (!online && G.run) {
     const next = G.run.r.checkpoints[G.run.cpIdx];
     if (next) s = G.run.r.s0 + dir * Math.min(G.run.progress(s), next.d - 3);
   }
-  if (!route.closed) s = clamp(s, 5, route.length - 5);
-  const u = route.closed ? clamp(sf.u, -route.edge(s) + 1.5, route.edge(s) - 1.5) : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1));
+  if (!route.closed) s = clamp(s, 0, route.length);
+  const u = recovery?.u ?? (route.closed ? clamp(sf.u, -route.edge(s) + 1.5, route.edge(s) - 1.5) : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1)));
   const nitro = pv.nitro; beginCameraBlend();
   pv.reset(s, u, 0); if (dir < 0) pv.yaw += Math.PI;
-  if (online) multiplayer.stateSender.discontinuity();
+  if (online && !recovery) multiplayer.stateSender.discontinuity();
   pv.nitro = nitro; pv.safe = { s, u }; towOffer.safe = { s, u };
   // reset() clears contact history and marks the suspension fresh; the next update settles each wheel.
   G.sinkT = 0; G.sinkFade = false; look.yaw = look.pitch = look.targetYaw = look.targetPitch = look.yawV = look.pitchV = 0;
   syncCar(player, 0); updateCamera(0, true);
 }
 function stuckCheck(pv, dt) {
-  if (G.state !== 'race' || G.towing || multiplayer.retired || (!inFreeRoam() && EV.isWrecked(pv.maxImpactEbs))) {
+  if (G.state !== 'race' || G.towing || multiplayer.retired) {
     G.stuckT = 0; closeTowOffer(); return;
   }
   towOffer.cooldown = Math.max(0, towOffer.cooldown - dt);
   const beyond = pv._network ? 0 : Math.abs(pv.u) - route.edge(pv.s); // side streets are valid roads, not a recovery zone
   const offroad = !!pv.offroad || beyond > 0.5 || pv.water > 0.05;
   const inverted = Math.abs(pv.pose.roll) > Math.PI / 2 || Math.abs(pv.pose.pitch) > Math.PI / 2;
-  const disabled = pv.engineStalled || pv.drivetrainBroken;
+  const disabled = pv.engineStalled || pv.drivetrainBroken || EV.isWrecked(pv.maxImpactEbs);
   // Only on-road poses advance the recovery anchor; a circuit excursion cannot skip a checkpoint.
   if (!offroad && !inverted && !disabled && !G.towing && towOffer.hold <= 0) {
     towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = G.stuckT = 0; return;
@@ -443,18 +451,31 @@ function stuckCheck(pv, dt) {
   if ((beyond > 8 || pv.water > 0.2 || inverted || disabled || G.stuckT > 3 || towOffer.offT > 5) && towOffer.hold <= 0) offerTow();
 }
 function tow(pv) {
-  if (G.state !== 'race' || G.towing || multiplayer.retired || (!inFreeRoam() && EV.isWrecked(pv.maxImpactEbs))) return;
+  if (G.state !== 'race' || G.towing || multiplayer.retired) return;
   G.towing = true; G.stuckT = 0; closeTowOffer(12);
   controls.releaseMouseLook(); document.body.classList.add('fading');
-  setTimeout(() => {
+  const raceId = multiplayer.lobby?.raceId;
+  setTimeout(async () => {
+    let recovery = null;
+    try { if (multiplayer.active) recovery = await multiplayer.recover(); }
+    catch (error) { G.towing = false; document.body.classList.remove('fading'); hud.message(error.message, 4); return; }
     G.towing = false;
-    if (G.state !== 'race' || player.veh !== pv || multiplayer.retired) { document.body.classList.remove('fading'); return; }
-    backOnRoad(pv);
+    if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
+    backOnRoad(pv, recovery);
     const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
-    if (hold) towOffer.hold = 5; else if (!inFreeRoam()) G.pen += 5;
+    if (hold) towOffer.hold = recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 5; else if (!inFreeRoam()) G.pen += 5;
     hud.message(inFreeRoam() ? '<i>TOWED</i> · BACK ON THE ROAD' : '<i>TOWED</i> · +5 s · BACK ON THE ROAD', 3);
     setTimeout(() => document.body.classList.remove('fading'), 120);
   }, 320);
+}
+
+function recoverFromCapture() {
+  if (G.state !== 'race' || G.towing || multiplayer.active) return;
+  if (G.ev?.def.type === 'pursuit') { finishRace('busted'); return; }
+  if (!inFreeRoam()) G.pen += 15;
+  police?.reset(police.enabled);
+  tow(player.veh);
+  hud.message(inFreeRoam() ? '<i>CAPTURED</i> · TOWING BACK TO THE ROAD' : '<i>CAPTURED</i> · +15 s · TOW +5 s', 4);
 }
 
 const inFreeRoam = () => !multiplayer.active && G.ev?.def.type === 'free';
@@ -579,14 +600,13 @@ function initFlow() {
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
-  // police pursuits (src/police.js): keep the latest state; busted ends any race as a DNF; shaking them off wins an escape
+  // Police captures recover with a time cost; shaking them off wins an escape.
   EV.events.on('pursuit', (p) => {
     G.pursuit = p;
     if (G.state !== 'race' || multiplayer.active || !G.ev) return;
     if (p.phase === 'busted') {
-      if (inFreeRoam()) { hud.message('<i>BUSTED</i> · PATROLS RESET', 3); police?.reset(police.enabled); }
-      else finishRace('busted');
-    } // a DNF in any race
+      recoverFromCapture();
+    }
     else if (p.phase === 'evaded' && G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'escape') finishRace('evaded');
   });
   EV.events.on('start', () => { G.pursuit = null; });
@@ -891,27 +911,26 @@ function raceGap() {
   const pp = prog(player.veh.s), pv = player.veh;
   const others = grid.map((c) => ({ c, d: prog(c.veh.s) - pp }));
   const ahead = others.filter((o) => o.d > 0).sort((a, b) => a.d - b.d)[0], behind = others.filter((o) => o.d <= 0).sort((a, b) => b.d - a.d)[0];
-  let gap = NaN, who = null;
+  let gap = NaN, gapUnit = 's', who = null;
   if (G.pFinish !== null) { const f = grid.filter((c) => c.finish !== null).sort((a, b) => a.finish - b.finish)[0]; if (f) { gap = G.pFinish - f.finish; who = f; } }
-  else if (ahead && pos > 1) { const c = ahead.c, t = c.tR[clamp(Math.floor(pp / 10), 0, c.tR.length - 1)]; gap = isNaN(t) ? ahead.d / Math.max(5, pv.vLong) : G.raceT - t; gap += G.pen - c.pen; who = c; }
-  else if (behind) { const c = behind.c, t = G.tP[clamp(Math.floor(prog(c.veh.s) / 10), 0, G.tP.length - 1)]; gap = isNaN(t) ? behind.d / Math.max(5, c.veh.vLong) : -(G.raceT - t); gap += G.pen - c.pen; who = c; }
+  else if (ahead && pos > 1) { const c = ahead.c, t = c.tR[clamp(Math.floor(pp / 10), 0, c.tR.length - 1)]; gapUnit = Number.isFinite(t) ? 's' : 'm'; gap = gapUnit === 'm' ? ahead.d : G.raceT - t + G.pen - c.pen; who = c; }
+  else if (behind) { const c = behind.c, t = G.tP[clamp(Math.floor(prog(c.veh.s) / 10), 0, G.tP.length - 1)]; gapUnit = Number.isFinite(t) ? 's' : 'm'; gap = gapUnit === 'm' ? behind.d : -(G.raceT - t) + G.pen - c.pen; who = c; }
   if (who && who !== G.gapWho) { G.gapWho = who; $('rivalName').textContent = who.name; }
-  return { pos, gap };
+  return { pos, gap, gapUnit };
 }
 
 /** how: 'finish' (crossed the line) | 'evaded' (shook the police in a pursuit-escape) | 'timeup' (survived a pursuit's
  *  clock) | 'busted' (caught) | 'wrecked' (100 km/h EBS impact); both are a DNF */
 function finishRace(how = 'finish') {
   if (how === true) how = 'timeup';
-  if (EV.isWrecked(player.veh.maxImpactEbs)) how = 'wrecked';
   G.state = 'finished'; G.finishedT = 0; G.postT = 0;
   const run = G.run, def = G.ev.def, r = G.ev.r;
-  const busted = how === 'busted', wrecked = how === 'wrecked', dnf = busted || wrecked;
+  const busted = how === 'busted', wrecked = how === 'wrecked', retired = how === 'retired', dnf = busted || wrecked || retired;
   if (how === 'timeup') G.pFinish = def.rules?.timeLimit || G.raceT;
   else if (how === 'evaded') G.pFinish = G.raceT + G.pen;
   if (dnf) G.pFinish = null;
   const pos = racePosition();
-  const res = run.finish({ time: G.pFinish, position: wrecked ? null : busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, wrecked, how, valid: !G.autodrive && !Q.has('s') && !dnf });
+  const res = run.finish({ time: G.pFinish, position: wrecked || retired ? null : busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, wrecked, retired, how, valid: !G.autodrive && !Q.has('s') && !dnf });
   G.result = res;
   G.won = !dnf && (isDrivingMode(def) ? res.completed > 0 : def.type === 'sprint' ? pos === 1 : !!res.medal);
   if (G.won) audio.win(); else audio.lose();
@@ -950,7 +969,10 @@ function showResults() {
   const info = [['TOP SPEED', top], ['AVG SPEED', avg], ['CRASHES', G.crashes], ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0']];
   if (res.laps > 1 && res.bestLap != null) info.unshift(['BEST LAP', T(res.bestLap)]);
   let title, sub, rows, field = null;
-  if (res.wrecked) {
+  if (res.retired) {
+    title = 'RETIRED'; sub = 'Did not finish.';
+    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], ['EVENT BEST', T(best)], ...info];
+  } else if (res.wrecked) {
     title = 'WRECKED'; sub = 'Did not finish.';
     rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], ['EVENT BEST', T(best)], ...info];
   } else if (res.busted) {
@@ -970,7 +992,7 @@ function showResults() {
     rows = [['YOUR TIME', T(res.time)], ['EVENT BEST', T(best), res.newBest], ...info];
   }
   if (def.type === 'sprint') {
-    const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: prog(player.veh.s), me: true, dnf: !!(res.busted || res.wrecked) }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: prog(c.veh.s), dnf: !!(c.dnf || c.retired || EV.isWrecked(c.veh.maxImpactEbs) || c.veh.engineStalled || c.veh.drivetrainBroken) }))];
+    const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: prog(player.veh.s), me: true, dnf: !!(res.busted || res.wrecked || res.retired) }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: prog(c.veh.s), dnf: !!(c.dnf || c.retired || EV.isWrecked(c.veh.maxImpactEbs) || c.veh.engineStalled || c.veh.drivetrainBroken) }))];
     // Finishers are ordered by time; a car a lap or more down on a circuit shows +N LAPS, others still driving RUNNING, retired DNF.
     const lapsDown = (f) => r.closed && r.lapLength ? Math.floor(Math.max(0, r.len - f.prog) / r.lapLength) : 0;
     field = EV.rankRacers(all).map((f, i) => ({ pos: i + 1, name: f.name, car: f.car, me: f.me, time: f.finish != null ? fmtTime(f.finish) : f.dnf ? 'DNF' : lapsDown(f) >= 1 ? `+${lapsDown(f)} ${lapsDown(f) === 1 ? 'LAP' : 'LAPS'}` : 'RUNNING', running: f.finish == null && !f.dnf }));
@@ -1296,6 +1318,7 @@ function finishCamera(dt, trackedRoot = player.model.root) {
     camera.fov = lerp(cameraBlend.fov, camera.fov, ease);
     if (t >= 1) cameraBlend.active = false;
   }
+  if (G.cam !== 'cockpit' && G.cam !== 'photo' && !window.__replay?.active) ground?.constrainCamera?.(camera.position, trackedRoot.position);
   // Apply the same angular response through the blend boundary, avoiding a one-frame change in turn speed.
   if (G.cameraReady && dt > 0) {
     const angle = previousCameraQuat.angleTo(camera.quaternion);
@@ -1424,7 +1447,11 @@ function frame(now) {
   if (splash) splash.update(dt);
   if (player) drivingHints.update({ state: G.state, device: activeInputDevice(), car: player.spec, manual: player.veh.manual, blocked: !!menu?.open || !multiplayer.panel.hidden || !!window.__replay?.active });
   if (input.handbrake) drivingHints.action('handbrake');
-  if (player) updateEngineHud(player.veh, { visible: G.state === 'race' && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active });
+  if (player) {
+    const watching = multiplayer.spectating(), selectedDriverVehicle = watching ? remoteCars.get(watching.id)?.veh ?? null : player.veh;
+    updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active, spectating: !!watching, towLabel: bindingLabel(controls.bindings, 'tow', activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
+    drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
+  }
   // adaptive resolution
   perfAcc += wallDt; perfN++; perfCool -= dt;
   if (perfN >= 40) {
@@ -1542,9 +1569,7 @@ function step(dt, draw = true) {
       if (pv.drift > 0.12 && pv.vLong > 14 && G.state === 'race') { G.driftAcc += dt * pv.vLong * pv.drift * 14; G.driftT = 0.7; }
       else if (G.driftT > 0) { G.driftT -= dt; if (G.driftT <= 0 && G.driftAcc > 60) { if (pv.spec.nitrous === true) pv.nitro = Math.min(1, pv.nitro + G.driftAcc / 2500); G.driftAcc = 0; /* a drift tops up the bottle; no points */ } else if (G.driftT <= 0) G.driftAcc = 0; }
       G.topSpeed = Math.max(G.topSpeed, pv.kmh);
-      if (G.state === 'race' && multiplayer.active) multiplayer.wreck(pv.maxImpactEbs);
-      // A fatal impact takes precedence over crossing a checkpoint or the finish line.
-      if (G.state === 'race' && !multiplayer.active && !inFreeRoam() && EV.isWrecked(pv.maxImpactEbs)) finishRace('wrecked');
+      // Wrecks remain in the race: the driver can tow/repair and pay the recovery cost.
       // ---- timing, positions, finish
       if (G.state === 'race' && !multiplayer.active) {
         if (!inFreeRoam()) { window.__replay?.tick(dt); raceTiming(dt); }
@@ -1607,22 +1632,27 @@ function step(dt, draw = true) {
   ENV.U.time.value = G.t;
   bootFrameLog('frame-visuals');
   // HUD
-  let gap = NaN, pos = 1;
-  if (!multiplayer.active && G.ev && !inFreeRoam()) ({ gap, pos } = raceGap());
+  let gap = NaN, pos = 1, gapUnit = 's';
+  if (!multiplayer.active && G.ev && !inFreeRoam()) ({ gap, pos, gapUnit = 's' } = raceGap());
   updateEventHud(dt);
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
   const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
-    manual: pv.manual, transmission: carTransmission(pv.spec), limiter: pv.limiter, canUpshift: !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
+    manual: pv.manual, transmission: carTransmission(pv.spec), limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
+  st.gapUnit = gapUnit;
   if (multiplayer.active) {
-    pos = multiplayer.ranking(pv.s).findIndex(p => p.id === multiplayer.id) + 1; st.pos = multiplayer.retired ? null : pos; st.time = G.pFinish ?? G.raceT; st.gap = remoteCars.size ? (rv.s - pv.s) * (multiplayer.lobby.event?.dir || 1) / Math.max(5, Math.abs(pv.vLong)) : NaN; st.pen = 0;
-    const other = multiplayer.lobby.players.find(p => p.id !== multiplayer.id);
-    if (G.pFinish !== null && other?.finish != null) st.gap = G.pFinish - other.finish;
+    const telemetry = multiplayer.telemetry(pv), watching = multiplayer.spectating(), selected = watching ? remoteCars.get(watching.id) : player;
+    pos = telemetry?.pos ?? null; st.pos = pos; st.time = telemetry?.time ?? G.raceT; st.gap = telemetry?.gap ?? NaN; st.gapUnit = telemetry?.gapUnit || 'm'; st.pen = 0;
+    if (telemetry?.comparison) $('rivalName').textContent = telemetry.comparison.name;
+    if (watching) {
+      const v = selected?.veh, spec = selected?.spec;
+      Object.assign(st, { s: v?.s ?? telemetry?.state.s ?? multiplayer.lobby.event.s0, rpm: v?.rpm ?? 0, redline: spec?.redline ?? 7000, kmh: speedIn(v?.kmh ?? 0), gearLabel: v ? v.reverse ? 'R' : String(v.gear) : '—', x: v?.x ?? 0, z: v?.z ?? 0, yaw: v?.yaw ?? 0, nitrous: spec?.nitrous === true, nitro: v?.nitro ?? 0, nitroOn: false, tc: false, abs: false, esc: false, damageLabel: '', shiftFlash: 0, limiter: false, canUpshift: false, manual: false, transmission: spec ? carTransmission(spec) : null, limit: v ? speedLimitAt(map, v.x, v.z, v.s) : 0 });
+    }
     st.remotes = [...remoteCars.values()].filter(c => c.model.root.visible).map(c => ({ x: c.veh.x, z: c.veh.z }));
-    document.querySelector('#posBox .of').textContent = multiplayer.retired ? '' : '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
+    document.querySelector('#posBox .of').textContent = telemetry?.member.dnf ? '' : '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
   }
   if (G.state === 'race' && G.raceT > 5) document.body.classList.add('started');
   document.body.classList.toggle('circuit-race', !!G.run?.r.closed && !multiplayer.active);
@@ -1630,9 +1660,10 @@ function step(dt, draw = true) {
   const objectiveDriver = multiplayer.active ? multiplayer.spectating?.() || multiplayer.me : null;
   st.objectiveTarget = st.objectiveMode ? drivingModeTarget(multiplayer.active ? objectiveDriver?.objective : G.run?.objective, multiplayer.active ? multiplayer.lobby.event?.objectiveRoutes : G.run?.routes) : null;
   hud.update(st);
+  if (st.gapUnit) $('gap').textContent = !Number.isFinite(st.gap) ? '—' : `${st.gap >= 0 ? '+' : '−'}${Math.abs(st.gap).toFixed(st.gapUnit === 'm' ? 0 : 2)} ${st.gapUnit}`;
   for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
-  if (multiplayer.retired) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
+  if (multiplayer.retired && !multiplayer.spectating()) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
   updateLapHud(G.run, !multiplayer.active && !isDrivingMode(G.ev?.def) && !MENU_STATES.includes(G.state));
   const onlineObjective = multiplayer.active && isDrivingMode(multiplayer.lobby?.mode || multiplayer.lobby?.event?.type);
   const watchedObjective = onlineObjective ? multiplayer.spectating?.() : null;
@@ -1732,7 +1763,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, paint: player.model.paintColor, decals: packDecalsForNetwork(player.model.decals || []), driver: { ...player.driver.appearance } });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, decals: packDecalsForNetwork(player.model.decals || []), driver: { ...player.driver.appearance } });
 function clearDriveInput() { controls.clear(); closeTowOffer(12); }
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
@@ -1786,6 +1817,7 @@ const multiplayer = new Multiplayer(CARS, {
     grid(player.veh, lobby.players.findIndex(p => p.id === id)); resetTowOffer();
     for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
     if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); Object.assign(v, resumeState); if (v.spec.nitrous !== true) { v.nitro = 0; v.nitroOn = false; } v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
+    if (resumeState?.recoveryUntil > multiplayer.now()) towOffer.hold = (resumeState.recoveryUntil - multiplayer.now()) / 1000;
     G.state = 'onlineCountdown'; G.cameraStarting = false; controls.requestMouseLock(); G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
     document.body.classList.add('counting');
     multiplayer.resumeState = null;
@@ -1796,6 +1828,7 @@ const multiplayer = new Multiplayer(CARS, {
       const peer = peers.get(id); if (!peer) continue;
       const member = multiplayer.lobby.players.find(p => p.id === id);
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
+      applySpectatorState(v, p);
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       applyCarDecals(c.model,unpackDecals(p.decals));
       if(p.driver)c.driver?.setAppearance?.(p.driver);
@@ -1805,7 +1838,8 @@ const multiplayer = new Multiplayer(CARS, {
   },
   wrecked() {
     clearDriveInput(); G.pFinish = null;
-    if (G.state !== 'onlineWrecked' && G.state !== 'onlineResults') hud.message('WRECKED · DNF · WAITING FOR OTHER DRIVERS', 8);
+    controls.releaseMouseLook();
+    if (G.state !== 'onlineWrecked' && G.state !== 'onlineResults') hud.message('RETIRED · DNF · CHOOSE A DRIVER TO WATCH', 8);
     if (G.state !== 'onlineResults') G.state = 'onlineWrecked';
     hud.count('');
   },
@@ -1816,9 +1850,9 @@ const multiplayer = new Multiplayer(CARS, {
       if (n !== G.countShown) { G.countShown = n; hud.count(n > 0 ? String(n) : 'GO!', n === 0); audio.beep(n === 0); }
       if (remaining <= 0) { G.state = 'race'; document.body.classList.remove('counting'); document.body.classList.add('racing'); }
     }
-    if (multiplayer.wrecked) multiplayer.hooks.wrecked();
+    if (multiplayer.retired) multiplayer.hooks.wrecked();
     else if (multiplayer.me?.finish !== null && multiplayer.me?.finish !== undefined) {
-      if (G.pFinish === null) { hud.message('FINISH · <i>' + fmtTime(multiplayer.me.finish) + '</i> · WAITING FOR OTHER DRIVERS', 8); audio.beep(true); }
+      if (G.pFinish === null) { hud.message('FINISH · <i>' + fmtTime(multiplayer.me.finish) + '</i> · WAITING FOR OTHER DRIVERS', 8); audio.beep(true); controls.releaseMouseLook(); }
       G.pFinish = multiplayer.me.finish; G.state = 'onlineFinished';
     }
     G.raceT = elapsed;

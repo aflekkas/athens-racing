@@ -6,6 +6,8 @@ function stationaryUnchanged(a, b) {
   if (a.paint !== b.paint || JSON.stringify(a.decals || []) !== JSON.stringify(b.decals || []) || JSON.stringify(a.driver || null) !== JSON.stringify(b.driver || null)) return false;
   for (const [key, tolerance] of Object.entries(tolerances)) if (Math.abs(a[key] - b[key]) > tolerance) return false;
   for (const zone of ['front', 'rear', 'left', 'right']) if (Math.abs((a.damage?.[zone] || 0) - (b.damage?.[zone] || 0)) > .001) return false;
+  for (const key of ['engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm']) if (a[key] !== b[key]) return false;
+  if (JSON.stringify(a.tyreTelemetry) !== JSON.stringify(b.tyreTelemetry)) return false;
   return true;
 }
 

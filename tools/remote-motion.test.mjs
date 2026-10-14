@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { StateSender } from '../src/multiplayer-state.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { RemoteTimeline, applyRemotePose, receiveRemoteSnapshot } from '../src/remote-timeline.js';
+import { applySpectatorState } from '../src/race-lifecycle.js';
 import { createGameCore } from '../server/core.mjs';
 
 const state = (t, extra = {}) => ({ x: 0, y: 0, z: -20*t/1000, s: 20*t/1000, u: 0, yaw: 0, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2, reverse: false, damage: { front: 0, rear: 0, left: 0, right: 0 }, ...extra });
@@ -14,8 +15,8 @@ const renderBody = main.slice(main.indexOf('  remote(peers, dt) {'), main.indexO
 function productionRender(client, clock) {
   const vehicle = state(0), car = { veh: vehicle, model: { root: {}, paintColor: '#123456' } };
   let draws = 0;
-  const remote = Function('remoteCars', 'multiplayer', 'applyRemotePose', 'performance', 'setPaint', 'applyCarDecals', 'unpackDecals', 'syncCar', `return ({${renderBody}}).remote`)(
-    new Map([['driver', car]]), client, applyRemotePose, { now: clock }, () => {}, () => {}, x => x, () => draws++);
+  const remote = Function('remoteCars', 'multiplayer', 'applyRemotePose', 'performance', 'setPaint', 'applyCarDecals', 'unpackDecals', 'syncCar', 'applySpectatorState', `return ({${renderBody}}).remote`)(
+    new Map([['driver', car]]), client, applyRemotePose, { now: clock }, () => {}, () => {}, x => x, () => draws++, applySpectatorState);
   return { remote, vehicle, car, get draws() { return draws; } };
 }
 

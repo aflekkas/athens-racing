@@ -1,0 +1,88 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { SpectatorSelection, recoveryPosition, rankDrivers, driverTelemetry, spectatorState, applySpectatorState } from '../src/race-lifecycle.js';
+import { Multiplayer } from '../src/multiplayer.js';
+import { StateSender } from '../src/multiplayer-state.js';
+import { readFileSync } from 'node:fs';
+
+test('chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets', () => {
+  const selection = new SpectatorSelection(), a = { id: 'a' }, b = { id: 'b' }, c = { id: 'c' };
+  selection.choose('b', 'race', [a, b]);
+  for (let i = 0; i < 100; i++) assert.equal(selection.target('race', [c, b, a]).id, 'b');
+  b.finish = 12; assert.equal(selection.target('race', [a, b]).id, 'b');
+  assert.equal(selection.step(1, 'race', [a, b]).id, 'a');
+  selection.choose('b', 'race', [a, b]); assert.equal(selection.target('race', [a, c]).id, 'a');
+  assert.equal(selection.target('new-race', [c, a]).id, 'c');
+  assert.equal(selection.target('new-race', []), null);
+});
+
+test('target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state', () => {
+  const m = Object.create(Multiplayer.prototype);
+  Object.assign(m, { id: 'me', peers: new Map(), offset: 0, lobby: { raceId: 'r', status: 'race', startAt: 1000, event: { s0: 100, s1: 0, dir: -1 }, players: [{ id: 'me', dnf: 'retired', finish: null }, { id: 'a', name: 'Alice', finish: null }, { id: 'b', name: 'Bob', finish: null }] } });
+  m.now = () => 21000;
+  m.peers.set('a', { state: { s: 30, vLong: 22, rpm: 5100, gear: 4 } });
+  m.peers.set('b', { state: { s: 50, vLong: 0, rpm: 900, gear: 1 } });
+  m.selectSpectator('b');
+  const hud = m.telemetry({ s: 0, vLong: 99, rpm: 7000, gear: 6 });
+  assert.equal(hud.member.id, 'b'); assert.equal(hud.state.rpm, 900); assert.equal(hud.state.gear, 1); assert.equal(hud.state.vLong, 0);
+  assert.equal(hud.progress, 50); assert.equal(hud.time, 20); assert.equal(hud.gap, 20); assert.equal(hud.gapUnit, 'm');
+  assert.equal(hud.ahead.id, 'a'); assert.equal(hud.leaderMetres, 20);
+  m.lobby.players[2].finish = 19; assert.equal(m.spectating().id, 'b'); assert.equal(m.telemetry({ s: 0 }).time, 19);
+  m.lobby.players[2].connected = false; assert.equal(m.spectating().id, 'a');
+  m.lobby.status = 'results'; assert.equal(m.spectating(), null);
+});
+
+test('finish order uses recorded times; running gaps never divide by speed', () => {
+  const drivers = [{ id: 'late', finish: 15 }, { id: 'fast', finish: 12 }, { id: 'running', finish: null }, { id: 'dnf', dnf: true, finish: null }];
+  const progress = p => ({ late: 100, fast: 100, running: 50, dnf: 500 })[p.id];
+  const ranked = rankDrivers(drivers, progress); assert.deepEqual(ranked.map(p => p.id), ['fast', 'late', 'running', 'dnf']);
+  const hud = driverTelemetry({ member: drivers[0], state: { s: 100, vLong: 0 }, event: { s0: 0, dir: 1 }, now: 50000, startAt: 0, ranked, progress });
+  assert.equal(hud.time, 15); assert.equal(hud.gap, 3); assert.equal(hud.gapUnit, 's');
+});
+
+test('recovery has no forward gift and cannot cross the next checkpoint in either direction', () => {
+  assert.equal(recoveryPosition(180, 140, 1, 150), 140);
+  assert.equal(recoveryPosition(140, 180, 1, 150), 140);
+  assert.equal(recoveryPosition(180, 170, 1, 150), 147);
+  assert.equal(recoveryPosition(20, 60, -1, 40), 60);
+  assert.equal(recoveryPosition(60, 20, -1, 40), 60);
+});
+
+test('a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock', async () => {
+  const m = Object.create(Multiplayer.prototype), starts = [];
+  Object.assign(m, { loaded: true, connected: true, mapId: 'riviera', peers: new Map(), id: 'me', offset: 0, panel: { hidden: true },
+    stateSender: new StateSender(() => {}), pendingResume: true, resumeState: { s: 10, motionEpoch: 40, recoveryUntil: Date.now() + 4000 },
+    lobby: { mapId: 'riviera', raceId: 'r', status: 'race', startAt: Date.now() - 1000, players: [{ id: 'me', finish: null }] },
+    hooks: { members() {}, remote() {}, clock() {}, start: (...args) => starts.push(args) }, renderRoom() {}, hidePanel() {} });
+  await m.syncLobby(); assert.equal(m.stateSender.motionEpoch, 41); assert.equal(starts[0][2].motionEpoch, 40); assert.ok(starts[0][2].recoveryUntil > Date.now());
+  m.stateSender.reset();
+});
+
+test('spectator relay is a small immutable axle summary and absence clears old engine telemetry', () => {
+  const axle = Object.freeze({ utilization: .6, slipDemand: .7, contact: true, saturated: false, sliding: false });
+  const source = { engineDamage: .3, engHealth: .7, coolantTemp: 108, engineFailureReason: null, tyreTelemetry: { front: axle, rear: axle, understeer: false, wheels: [{ force: 5000 }] } };
+  const packet = spectatorState(source); assert.equal(packet.tyreTelemetry.wheels, undefined); assert.notEqual(packet.tyreTelemetry.front, axle);
+  const remote = {}; applySpectatorState(remote, packet); assert.equal(remote.engHealth, .7); assert.equal(remote.remoteTyreTelemetry.front.contact, true);
+  applySpectatorState(remote, {}); assert.equal(remote.engHealth, undefined); assert.equal(remote.remoteTyreTelemetry, null); assert.equal(remote.remoteEngineTelemetry, false);
+});
+
+test('stationary engine changes relay on the existing capped state cadence', () => {
+  let now = 0; const packets = [];
+  const q = new StateSender(p => packets.push(p), { now: () => now });
+  const s = { x: 0, y: 0, z: 0, s: 0, u: 0, yaw: 0, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1, damage: {}, engHealth: 1, coolantTemp: 90 };
+  q.sample(s, 'r'); now = 50; q.sample({ ...s, engHealth: .5 }, 'r'); assert.equal(packets.length, 1);
+  now = 100; q.sample({ ...s, engHealth: .5 }, 'r'); assert.equal(packets.length, 2); assert.equal(packets[1].state.engHealth, .5);
+  now = 200; q.sample({ ...s, engHealth: .5 }, 'r'); assert.equal(packets.length, 2); q.reset();
+});
+
+test('actual main HUD override takes chosen vehicle instruments and target finish time', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const start = main.indexOf('    const telemetry = multiplayer.telemetry(pv)'), end = main.indexOf("  if (G.state === 'race' && G.raceT > 5)", start);
+  const body = main.slice(start, end).replace(/\n  }\s*$/, '');
+  const local = { s: 0, rpm: 7100, kmh: 250, gear: 6 }, target = { s: 70, rpm: 4200, kmh: 90, gear: 3, x: 1, z: 2, yaw: .4, reverse: false };
+  const car = { veh: target, spec: { redline: 6500, transmission: 'manual', nitrous: false }, model: { root: { visible: true } } };
+  const multiplayer = { telemetry: () => ({ pos: 2, time: 12.3, gap: 20, gapUnit: 'm', member: { id: 'target' }, comparison: { name: 'Ahead' } }), spectating: () => ({ id: 'target' }), lobby: { players: [{}, {}, {}], event: { s0: 0 } } };
+  const st = { rpm: local.rpm, kmh: local.kmh, gearLabel: '6', time: 99 }, element = {};
+  Function('multiplayer', 'pv', 'player', 'remoteCars', 'st', '$', 'document', 'speedIn', 'carTransmission', 'speedLimitAt', 'map', `let pos; ${body}`)(multiplayer, local, { veh: local }, new Map([['target', car]]), st, () => element, { querySelector: () => element }, v => v, s => s.transmission, () => 50, {});
+  assert.equal(st.rpm, 4200); assert.equal(st.kmh, 90); assert.equal(st.gearLabel, '3'); assert.equal(st.redline, 6500); assert.equal(st.time, 12.3); assert.equal(st.s, 70); assert.equal(st.transmission, 'manual'); assert.equal(st.gapUnit, 'm'); assert.equal(element.textContent, '/3');
+});
