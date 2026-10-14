@@ -172,8 +172,8 @@ export class Menu {
     if (this.screen === 'settings' && this.data.returnLobby) { this.pop() || this.hide(); const mp=window.__multiplayer;if(mp?.panel)mp.panel.hidden=false;return; }
     if (this.screen === 'pause') { this.h.resume(); return; }
     if (this.screen === 'results') { this.h.quit('events'); return; }
-    const cancel = this.screen === 'car' && !this.data.detail ? this.data.onCancel : null;
-    if (this.pop()) { cancel?.(); return; }
+    const cancel = this.screen === 'car' ? this.data.onCancel : null;
+    if (this.pop()) { if(this.screen!=='car')cancel?.(); return; }
     if (this.screen !== 'title') this.show('title');
     cancel?.();
   }

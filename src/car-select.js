@@ -21,11 +21,11 @@ export { listDecals, getCarDecals, setCarDecals };
 export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0 };
 import * as C from './ui/components.js';
 const { esc, icon } = C;
-export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, decal = {} } = {}) {
+export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, decal = {}, embedded = false } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id];
   if (!detail) {
     const list = filterCars(CARS, filters), attrs = { 'data-scope': 'catalog' };
-    return C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
+    const html = C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
       body: `<div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
       ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...CAR_CLASSES.map(x => [x, x.toUpperCase()])], attrs })}
       ${C.select({ key: 'drive', label: 'DRIVE', value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
@@ -40,6 +40,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
           text: `${carCategory(car).toUpperCase()} · ${transmissionLabel(car)}`,
           foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
+    return embedded ? html.slice(html.indexOf('<div class="scr__body">') + '<div class="scr__body">'.length, html.lastIndexOf('</div><footer class="scr__foot">')) : html;
   }
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
   const layer = { id: 'stripes', position: 'bonnet', color: '#ffffff', number: 7, ...decal }, designs = listDecals(), layers = getCarDecals(c.id), A = { 'data-scope': 'decal' };
