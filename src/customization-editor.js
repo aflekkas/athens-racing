@@ -8,6 +8,7 @@ import {decodeUserPhoto,renderPhotoSticker,savePhotoSticker,preparePhotoUrl,dele
 import {mountCustomizationPreview} from './customization-preview.js';
 const styleUrl=new URL('./customization-editor.css',import.meta.url).href;
 const option=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
+const designOptions=()=>{const groups=new Map();for(const d of listDecals()){const category=d.category||'Racing';if(!groups.has(category))groups.set(category,[]);groups.get(category).push(d);}return [...groups].map(([category,designs])=>`<optgroup label="${esc(category)}">${designs.map(d=>option(d.id,d.name)).join('')}</optgroup>`).join('');};
 const range=(key,label,min,max,step)=>`<label>${label}<input data-layer-field="${key}" type="range" min="${min}" max="${max}" step="${step}"><output data-output="${key}"></output></label>`;
 let opened;
 export async function openCustomizationEditor({spec,onChange}={}){
@@ -22,13 +23,13 @@ export async function openCustomizationEditor({spec,onChange}={}){
     <div class="customizer-row"><input data-name type="text" maxlength="40" placeholder="Name this preset" aria-label="Preset name"><button data-act="save" class="primary">SAVE & APPLY</button></div>
     <div class="customizer-row"><button data-act="rename">RENAME</button><button data-act="duplicate">DUPLICATE</button><button data-act="delete" class="danger">DELETE PRESET</button></div>
     <details open><summary>PAINT & STICKER LAYERS</summary><label>PAINT<input data-paint type="color" value="${draft.paint}"></label><div class="customizer-row"><select data-factory aria-label="Factory paint"><option value="">FACTORY PAINTS</option>${(PAINTS[spec.id]||[]).map(([name,value])=>option(value,name)).join('')}</select></div>
-    <div class="customizer-row"><select data-design aria-label="Sticker design">${listDecals().map(d=>option(d.id,d.name)).join('')}</select><button data-act="add">ADD STICKER</button><button data-act="photo">ADD YOUR PHOTO</button></div>
+    <div class="customizer-row"><select data-design aria-label="Sticker design">${designOptions()}</select><button data-act="add">ADD STICKER</button><button data-act="photo">ADD YOUR PHOTO</button></div>
     <input data-photo-file type="file" accept="image/png,image/jpeg,image/webp" hidden>
     <div class="customizer-photo" data-photo-crop hidden><h3>FRAME YOUR PHOTO</h3><p>Use a photo you supply, including a face. Only the finished sticker is kept.</p><div class="customizer-row"><select data-photo-mode aria-label="Photo framing"><option value="fit">FIT WHOLE PHOTO</option><option value="crop">SQUARE CROP</option></select></div><div data-photo-canvas></div>
     <label>FRAME X<input data-crop="x" type="range" min="-1" max="1" step=".01" value="0"></label><label>FRAME Y<input data-crop="y" type="range" min="-1" max="1" step=".01" value="0"></label><label>ZOOM<input data-crop="zoom" type="range" min="1" max="3" step=".05" value="1"></label><div class="customizer-row"><button data-act="photo-use" class="primary">USE PHOTO</button><button data-act="photo-cancel">CANCEL</button></div></div>
     <p data-layer-count></p><div class="customizer-layers" data-layers></div><div data-layer-controls hidden>
       <label>SURFACE<select data-layer-field="position">${['bonnet','doors','roof','rear'].map(v=>option(v,v.toUpperCase())).join('')}</select></label>
-      <label data-design-control>DESIGN<select data-layer-field="id">${listDecals().map(d=>option(d.id,d.name)).join('')}</select></label>
+      <label data-design-control>DESIGN<select data-layer-field="id">${designOptions()}</select></label>
       <label data-color-control>STICKER COLOR<input data-layer-field="color" type="color"></label>
       <label data-number-control>RACE NUMBER<input data-layer-field="number" type="number" min="0" max="999"></label>
       ${range('x','POSITION X',-1,1,.01)}${range('y','POSITION Y',-1,1,.01)}${range('scale','SIZE',.2,2,.05)}${range('rotation','ROTATE',-180,180,1)}

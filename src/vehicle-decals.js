@@ -20,6 +20,7 @@ import * as THREE from 'three';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { DECAL_LIBRARY,DECAL_POSITIONS,DECAL_COLORS,normalizeDecals,packDecals,unpackDecals } from './vehicle-decal-data.js';
 import { isPublicPhotoSticker } from './photo-stickers.js';
+import { drawTOE } from './graffiti-art.js';
 export { packDecals,unpackDecals };
 // Guest IndexedDB uploads cannot be resolved by peers. Omit them until the
 // asset service has confirmed a public upload/fetch; keep the local livery intact.
@@ -59,6 +60,8 @@ function art(d){
   }
   if(d.id==='apex'){c.beginPath();c.moveTo(80,380);c.lineTo(220,110);c.lineTo(360,380);c.lineTo(260,315);c.lineTo(220,240);c.lineTo(180,315);c.closePath();c.fill();c.font='900 italic 190px Arial';c.fillText('ASR',675,250,600);c.font='40px Arial';c.fillText('RACE WORKSHOP',660,378,560);}
   if(d.id==='ion'){c.lineWidth=28;c.beginPath();c.ellipse(210,255,125,155,.45,0,Math.PI*2);c.stroke();c.font='900 italic 245px Arial';c.fillText('COAST',640,255,580);c.font='40px Arial';c.fillText('WORKS',650,395,580);}
+  const graffiti=DECAL_LIBRARY.find(v=>v.id===d.id)?.graffitiStyle;
+  if(graffiti)drawTOE(c,{style:graffiti,color:d.color,seed:1,width:canvas.width,height:canvas.height});
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
   if(d.flipX){texture.repeat.x=-1;texture.offset.x=1;}
   return texture;

@@ -9,8 +9,13 @@ export const DECAL_LIBRARY = Object.freeze([
   {id:'flames',name:'Flames'},
   {id:'apex',name:'ASR Lab / original team mark'},
   {id:'ion',name:'Coast Works / original team mark'},
+  ...['bubble','throwup','tag','drip'].map(style=>({id:'toe_'+style,name:'TOE '+style,category:'Graffiti',graffitiStyle:style})),
 ].map(d=>Object.freeze(d)));
 export const MAX_DECALS=8;
+// Wire slot 7 belongs to photos; additional catalogue art starts at slot 8.
+const PHOTO_WIRE_ID=7;
+const artWireId=id=>{const i=DECAL_LIBRARY.findIndex(v=>v.id===id);return i>=PHOTO_WIRE_ID?i+1:i;};
+const artForWireId=i=>DECAL_LIBRARY[i>PHOTO_WIRE_ID?i-1:i]?.id;
 export const PHOTO_ASSET_ID=/^[a-f\d]{32}$/i;
 const transformDefaults={x:0,y:0,scale:1,rotation:0};
 const transformBounds={x:[-1,1],y:[-1,1],scale:[.2,2],rotation:[-180,180]};
@@ -34,12 +39,12 @@ export function normalizeDecals(list){
 // Legacy tuples stay unchanged. Extended: [art,preset,hex,number|null,x,y,scale,
 // rotation,flipX(0|1),assetId?]. Photo art index is 7; never carry URLs or image bytes.
 export function packDecals(list){return normalizeDecals(list).map(d=>{
-  const tuple=[d.id==='photo'?7:DECAL_LIBRARY.findIndex(v=>v.id===d.id),DECAL_POSITIONS.indexOf(d.position),d.color.slice(1)];
+  const tuple=[d.id==='photo'?PHOTO_WIRE_ID:artWireId(d.id),DECAL_POSITIONS.indexOf(d.position),d.color.slice(1)];
   if(d.id==='photo'||d.x!==undefined||d.y!==undefined||d.scale!==undefined||d.rotation!==undefined||d.flipX)tuple.push(d.number??null,d.x??0,d.y??0,d.scale??1,d.rotation??0,d.flipX?1:0,...(d.id==='photo'?[d.assetId]:[]));
   else if(d.id==='roundel')tuple.push(d.number);
   return tuple;
 });}
 export function unpackDecals(list){
   if(!Array.isArray(list))return [];
-  return normalizeDecals(list.slice(0,MAX_DECALS).filter(d=>Array.isArray(d)&&Number.isInteger(d[0])&&Number.isInteger(d[1])&&typeof d[2]==='string'&&/^[a-f\d]{6}$/i.test(d[2])).map(d=>({id:d[0]===7?'photo':DECAL_LIBRARY[d[0]]?.id,position:DECAL_POSITIONS[d[1]],color:'#'+d[2],number:d[3],x:d[4],y:d[5],scale:d[6],rotation:d[7],flipX:d[8]===1,assetId:d[9]})));
+  return normalizeDecals(list.slice(0,MAX_DECALS).filter(d=>Array.isArray(d)&&Number.isInteger(d[0])&&Number.isInteger(d[1])&&typeof d[2]==='string'&&/^[a-f\d]{6}$/i.test(d[2])).map(d=>({id:d[0]===PHOTO_WIRE_ID?'photo':artForWireId(d[0]),position:DECAL_POSITIONS[d[1]],color:'#'+d[2],number:d[3],x:d[4],y:d[5],scale:d[6],rotation:d[7],flipX:d[8]===1,assetId:d[9]})));
 }
