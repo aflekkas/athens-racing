@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><base href="/"><style>html,body{margin:0;background:#192b34}canvas{display:block;width:100vw;height:100vh}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script><canvas id="world"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import {loadMap} from '/src/map.js';
+import {RoadNetwork} from '/src/road-network-surface.js';
+import {buildRoadNetwork,buildNetworkParking} from '/src/road-network.js';
+import {buildTerrain} from '/src/terrain.js';
+import {buildRoad} from '/src/road.js';
+import {buildPenteliSurface} from '/src/maps/penteli-surface.js';
+import {buildBuildings,infillBuildings,LabelAtlas} from '/src/buildings.js';
+import {Ground} from '/src/ground.js';
+import {Vehicle} from '/src/physics.js';
+import {CarModel,CARS} from '/src/cars.js';
+import {loadTextures,uploadTextures} from '/src/tex.js';
+import {prepareSceneryLod,updateSceneryLod} from '/src/scenery.js';
+import {overlayView,osmHighways,drawHighwayOverlay} from '/tools/road-network-overlay.mjs';
+const W=1280,H=800,id=new URLSearchParams(location.search).get('map')||'riviera';
+const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#world'),antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(W,H);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#9bbccd');scene.add(new THREE.HemisphereLight('#fff5e5','#617048',2.2));const sun=new THREE.DirectionalLight('#fff4dc',2.5);sun.position.set(-200,600,300);scene.add(sun);
+await loadTextures();uploadTextures(renderer);
+const map=await loadMap(null,'/',id),network=new RoadNetwork(map);map.roadNetwork=network;
+const terrain=buildTerrain(map.terrain,map.route,[],scene,{coastal:id==='riviera',network});
+if(id==='riviera')buildRoad(map,scene,terrain.heightC,{network,furniture:false});else buildPenteliSurface(scene,map,terrain.heightC);
+const roads=buildRoadNetwork(network,scene),labels=new LabelAtlas();buildBuildings(map,scene,terrain.heightC,labels,id==='riviera'?infillBuildings(map,terrain.heightC):[]);
+if(id==='riviera'){const sea=new THREE.Mesh(new THREE.PlaneGeometry(30000,30000),new THREE.MeshStandardMaterial({color:'#398e9b',roughness:.75}));sea.rotation.x=-Math.PI/2;scene.add(sea);}
+const ground=new Ground(map,terrain.heightC,{network});ground.parked=buildNetworkParking(network,scene,ground);
+const spec=CARS.find(c=>c.id==='z4'),model=new CarModel(spec,{plate:'ROAD TEST',decals:[]});scene.add(model.root);model.root.visible=false;
+const raw=osmHighways(map.data,await (await fetch('/road-audit-osm.json?map='+id)).json()),networkIds=new Set(network.roads.map(r=>r.id));
+const lod=prepareSceneryLod(scene,'high');
+const overlay=document.createElement('canvas');overlay.width=W;overlay.height=H;const ctx=overlay.getContext('2d');
+function label(title,subtitle){ctx.fillStyle='rgba(12,24,29,.9)';ctx.fillRect(0,0,W,76);ctx.fillStyle='#fff';ctx.font='bold 21px sans-serif';ctx.fillText(title,20,28);ctx.font='16px sans-serif';ctx.fillText(subtitle,20,55);}
+function capture(camera){updateSceneryLod(lod,camera);renderer.render(scene,camera);renderer.getContext().finish();ctx.clearRect(0,0,W,H);ctx.drawImage(renderer.domElement,0,0);}
+window.roadAudit={map,network,ground,scene,renderer,roads,terrain};
+window.roadTop=(name,cx,cz,width,withOverlay=true)=>{const view=overlayView(cx,cz,width,W,H),camera=new THREE.OrthographicCamera(-width/2,width/2,view.worldHeight/2,-view.worldHeight/2,.1,8000);camera.up.set(0,0,-1);camera.position.set(cx,2200,cz);camera.lookAt(cx,0,cz);camera.updateMatrixWorld(true);model.root.visible=false;capture(camera);if(withOverlay)drawHighwayOverlay(ctx,view,raw,networkIds,map.data.route);label(name+': identical orthographic render / OSM extent',`${view.worldWidth.toFixed(1)} × ${view.worldHeight.toFixed(1)} m · north ↑ · cyan: rendered network · red: race route · amber dashed: paths/tracks · purple: bridge/tunnel`);return{png:overlay.toDataURL('image/png').split(',')[1],view,stats:network.stats};};
+window.driveStreet=(wayId=25419598,startIndex=15,seconds=8)=>{const street=network.roads.find(r=>r.id===wayId),ps=[];for(let i=0;i<street.p.length;i+=2)ps.push({x:street.p[i],z:street.p[i+1]});const p=ps[startIndex],next=ps[startIndex+1],q=network.project(p.x,p.z),v=new Vehicle({...spec},map.route);v.ground=ground;v.reset(q.s,q.u,0);v.x=p.x;v.z=p.z;v.y=network.height(p.x,p.z);v.yaw=Math.atan2(p.x-next.x,p.z-next.z);v._gx=v.x;v._gz=v.z;v._gy=v.y;v._network=true;ground.resolve(v,0);let travelled=0,asphalt=0,off=0,hits=0;const path=[];
+ function target(){let best=null,bd=Infinity;for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1],dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((v.x-a.x)*dx+(v.z-a.z)*dz)/(l*l))),d=(v.x-a.x-dx*t)**2+(v.z-a.z-dz*t)**2;if(d<bd){bd=d;best={i,t,l};}}let distance=7+Math.abs(v.vLong),i=best.i,t=best.t;for(;i<ps.length-1;i++){const a=ps[i],b=ps[i+1],l=Math.hypot(b.x-a.x,b.z-a.z),left=l*(1-t);if(distance<=left)return{x:a.x+(b.x-a.x)*(t+distance/l),z:a.z+(b.z-a.z)*(t+distance/l)};distance-=left;t=0;}return ps.at(-1);}
+ const frames=Math.round(seconds*60);for(let i=0;i<frames;i++){const t=target(),dx=t.x-v.x,dz=t.z-v.z,lat=dx*Math.cos(v.yaw)-dz*Math.sin(v.yaw),delta=Math.atan2(2*v.wb*lat,Math.max(1,dx*dx+dz*dz)),x=v.x,z=v.z;v.update(1/60,{throttle:Math.abs(v.vLong)<6?.25:0,brake:Math.abs(v.vLong)>6.3?.2:0,steer:Math.max(-.7,Math.min(.7,delta/v.lockAt(Math.abs(v.vLong))))});travelled+=Math.hypot(v.x-x,v.z-z);if(v.surf==='asphalt'&&v._network)asphalt++;if(v.offroad)off++;if(v.wallHit>.1)hits++;if(i%30===0)path.push({x:v.x,z:v.z,y:v.y,surf:v.surf,network:!!v._network});}
+ model.root.visible=true;model.root.position.set(v.x,v.y,v.z);model.root.rotation.set(Math.atan(v.grade||0),v.yaw,Math.atan(v.bank||0),'YXZ');model.update(0,v.vLong,v.steer,false,v.pose,v.corners,v.w);const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),camera=new THREE.PerspectiveCamera(70,W/H,.1,3000);camera.position.set(v.x-fx*10+Math.cos(v.yaw)*3,v.y+3.5,v.z-fz*10-Math.sin(v.yaw)*3);camera.lookAt(v.x+fx*12,v.y+.8,v.z+fz*12);capture(camera);label(`Driving on ${street.n||'mapped side road'} · Vouliagmeni · OSM way ${wayId}`,`Production Vehicle + Ground contacts · ${travelled.toFixed(1)} m driven in ${seconds}s · ${asphalt}/${frames} asphalt frames · ${hits} wall hits · scenery simplified`);return{png:overlay.toDataURL('image/png').split(',')[1],wayId,name:street.n,seconds,frames,travelled,asphalt,off,hits,final:{x:v.x,y:v.y,z:v.z,s:v.s,u:v.u,surf:v.surf},path};};
+window.ready=true;
+</script>

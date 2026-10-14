@@ -24,8 +24,7 @@ await new Promise(done=>app.server.listen(0,'127.0.0.1',done));const port=app.se
 console.log('Road verification HTTP port',port,'PID',process.pid);
 const browser=await pw.chromium.launch({headless:true,executablePath,args:['--no-sandbox','--enable-webgl','--ignore-gpu-blocklist','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 const report=[];
-// Reference captures use the saved OSM extract and the production-geometry inspection camera.
-for(const id of ids){const top=resolve(out,`${id}-top.png`),osm=resolve(out,`${id}-osm.svg`);if(!existsSync(top)||!existsSync(osm))continue;const p=await browser.newPage({viewport:{width:1400,height:475}});const png=(await fs.readFile(top)).toString('base64'),svg=(await fs.readFile(osm)).toString('base64');await p.setContent(`<body style="margin:0;background:#15221d;color:#fff;font:18px sans-serif"><div style="padding:14px">${id}: production road meshes and saved OpenStreetMap highways (red: race route)</div><div style="display:flex;gap:8px"><img style="width:696px" src="data:image/png;base64,${png}"><img style="width:696px" src="data:image/svg+xml;base64,${svg}"></div></body>`);await p.evaluate(()=>Promise.all([...document.images].map(i=>i.decode())));await p.screenshot({path:resolve(out,`${id}-osm-comparison.png`)});await p.close();}
+// Use roads-overlay-capture.mjs for orthographic OSM overlays; perspective collages distort terrain scale.
 
 try{for(const id of ids)for(const label of mode==='compare'?['before','final']:[mode]){
  const page=await browser.newPage({viewport:{width:640,height:400},deviceScaleFactor:1}),errors=[];

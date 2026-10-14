@@ -20,11 +20,11 @@ export function extractRoadNetwork(data, elements, {radius=550,excludeWays=[]}={
  }
  const roads=[],excluded=new Set(excludeWays),seen=new Set();
  for(const way of elements){const t=way.tags||{},width=ROAD_WIDTHS[t.highway];if(!width||seen.has(way.id))continue;seen.add(way.id);
-  if(t.tunnel==='yes'||t.bridge==='yes'||Number(t.layer)||t.access==='no'||['parking_aisle','drive-through'].includes(t.service))continue;
+  if(t.tunnel==='yes'||t.bridge==='yes'||Number(t.layer)||t.access==='no'||t.service==='drive-through')continue;
   // A route way can include an unused arm. Geometric suppression below keeps that arm while removing the raced portion.
   const ps=(way.geometry||way.nodes?.map(id=>nodes.get(id))||[]).filter(Boolean).map(project);if(ps.length<2)continue;
   let run=[],part=0;const sf=/^(unpaved|dirt|ground|gravel|compacted|fine_gravel|sand|grass|earth)$/.test(t.surface||'')?'gravel':'asphalt';
-  const finish=()=>{if(run.length>1){const p=run.flat().map(round);const length=run.slice(1).reduce((s,v,i)=>s+Math.hypot(v[0]-run[i][0],v[1]-run[i][1]),0);if(length>2){const urban=['residential','living_street'].includes(t.highway)||t.sidewalk&&t.sidewalk!=='no'?1:0,{v,src}=limitForWay(t,urban);roads.push({id:way.id,part:part++,h:t.highway,p,w:clamp(parseFloat(t.width)||width,3,14),sf,urban,v,vs:src,oneway:t.oneway==='yes'?1:0,n:t['name:en']||t.int_name||t.name||undefined});}}run=[];};
+  const finish=()=>{if(run.length>1){const p=run.flat().map(round);const length=run.slice(1).reduce((s,v,i)=>s+Math.hypot(v[0]-run[i][0],v[1]-run[i][1]),0);if(length>2){const urban=['residential','living_street'].includes(t.highway)||t.sidewalk&&t.sidewalk!=='no'?1:0,{v,src}=limitForWay(t,urban);roads.push({id:way.id,part:part++,h:t.highway,p,w:clamp(parseFloat(t.width)||(t.service==='parking_aisle'?3.5:width),3,14),sf,urban,v,vs:src,oneway:t.oneway==='yes'?1:0,n:t['name:en']||t.int_name||t.name||undefined});}}run=[];};
   for(let i=1;i<ps.length;i++){const a=ps[i-1],b=ps[i],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),count=Math.max(1,Math.ceil(L/16));
    for(let j=0;j<count;j++){const A=[a[0]+dx*j/count,a[1]+dz*j/count],B=[a[0]+dx*(j+1)/count,a[1]+dz*(j+1)/count],q=nearest((A[0]+B[0])/2,(A[1]+B[1])/2);
     const parallel=Math.abs((dx*q.dx+dz*q.dz)/(L||1))>.8;

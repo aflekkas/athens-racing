@@ -17,6 +17,7 @@ test('extraction preserves highway classes and widths, excludes tunnels and unpa
  const way=(id,h,x,z,t={})=>({type:'way',id,tags:{highway:h,...t},geometry:[{lon:x,lat:-z},{lon:x,lat:-z-40}]});
  const n=extractRoadNetwork(d,[way(1,'residential',20,0),way(2,'service',40,20,{surface:'gravel'}),way(3,'primary',60,10,{tunnel:'yes'}),way(4,'footway',80,20),way(5,'secondary',100,700)]);
  assert.equal(n.roads.length,2);assert.equal(n.roads[0].w,ROAD_WIDTHS.residential);assert.equal(n.roads[1].sf,'gravel');assert.equal(n.roads[0].id,1);});
+test('at-grade parking aisles are drivable service roads; elevated decks remain explicitly excluded',()=>{const d={proj:{lat0:0,lon0:0,mlon:1,mlat:1},route:{x:[0,20,40],z:[0,0,0],width:[6,6,6],step:20}},way=(id,tags)=>({type:'way',id,tags:{highway:'service',service:'parking_aisle',surface:'asphalt',...tags},geometry:[{lon:20,lat:-30},{lon:20,lat:-70}]}),n=extractRoadNetwork(d,[way(1,{}),way(2,{bridge:'yes',layer:'1'})]);assert.equal(n.roads.length,1);assert.equal(n.roads[0].w,3.5);assert.equal(n.roads[0].sf,'asphalt');assert.equal(n.roads[0].id,1);});
 // Freeze each saved map and its saved OSM once before the test callbacks run.
 // This exercises a repeatable build without allowing either pipeline to rewrite sources or routes.
 function freeze(value){if(value&&typeof value==='object'){for(const v of Object.values(value))freeze(v);Object.freeze(value);}return value;}
