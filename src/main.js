@@ -1010,16 +1010,18 @@ function crossedDir(prev, now, dir) {
 }
 
 // ---- the AI field, every step (offline only): equal physics, personalities, red lights, finishing
+const aiField = []; // every racer, reused each step; each RivalAI skips its own car
 function updateGrid(dt) {
   const len = G.ev.r.len;
+  aiField.length = 0; aiField.push(player); for (const c of grid) aiField.push(c);
   for (const c of grid) {
     const v = c.veh;
-    let pace = 1; // RivalAI applies each driver's 97–100% limit target; close racing is opt-in.
+    let pace = 1; // RivalAI applies each driver's pace and a mild gap-to-player band.
     if (c.finish !== null) pace = prog(v.s) > len + 120 ? 0 : 0.3;
-    const rin = aiInput(c, dt, pace, [player, ...grid.filter((o) => o !== c)]);
+    const rin = aiInput(c, dt, pace, aiField);
     if (pace === 0) { rin.throttle = 0; rin.brake = v.vLong > 1 ? 0.7 : 0; rin.handbrake = v.vLong <= 1; }
     c.lastBrake = rin.brake > 0.2;
-    v.dragMul = 1;
+    v.dragMul = 1 - 0.32 * (c.ai.controller?.draft || 0); // the same slipstream tow the player gets
     v.update(dt, rin);
     if (v.spec.nitrous === true && !v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
@@ -1206,13 +1208,25 @@ function updateEventHud(dt) {
 }
 
 // ------------------------------------------------------------------ rival AI
+// What every AI driver steers around, gathered once per step into reused records.
+const aiObs = [], aiObsPool = [];
+let aiObsT = NaN;
+function aiObstacles() {
+  if (aiObsT === G.t) return aiObs;
+  aiObsT = G.t; aiObs.length = 0;
+  let n = 0;
+  const rec = (s, u, hs, hu, a) => { const o = aiObsPool[n] || (aiObsPool[n] = {}); n++; o.s = s; o.u = u; o.hs = hs; o.hu = hu; o.vs = 0; o.a = a; aiObs.push(o); };
+  for (const c of traffic.cars) aiObs.push(c);
+  for (const p of people.onRoad) rec(p.s, p.u, 0.6, 0.5, p);
+  for (const s of traffic.sites) rec(s.s, s.u, s.len / 2, s.wid / 2, s);
+  return aiObs;
+}
 function aiInput(car, dt, pace, other) {
   const ai = car.ai, veh = car.veh;
   if (!ai.controller || ai.controller.route !== route || ai.controller.spec !== veh.spec || ai.controller.dir !== (car.dir || 1)) {
     Object.defineProperty(ai, 'controller', { configurable: true, writable: true, value: new RivalAI(route, veh, { driver: car.drv, dir: car.dir || 1, perfect: car === player, closedRoad: G.ev?.def.traffic === 0 }) });
   }
-  const obstacles = [...traffic.cars, ...people.onRoad.map((p) => ({ s: p.s, u: p.u, hs: 0.6, hu: 0.5, vs: 0 })),
-    ...traffic.sites.map((s) => ({ s: s.s, u: s.u, hs: s.len / 2, hu: s.wid / 2, vs: 0 }))];
+  const obstacles = aiObstacles();
   // AI owner: capability API now reports live wet grip. Refresh cached braking/corner profiles as it changes.
   const grip = veh.maxLatAccel(25);
   if (ai.wetGrip === undefined) ai.wetGrip = grip;
