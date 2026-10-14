@@ -11,6 +11,7 @@ import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-lif
 import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
+import { ENGINE_HOT_C } from './driving-feedback-model.js';
 import { inGarage } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
@@ -1861,7 +1862,7 @@ function step(dt, draw = true) {
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
-  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', aidsOff: !settings.aids, tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
+  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp >= ENGINE_HOT_C ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', aidsOff: !settings.aids, tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
     manual: pv.manual, limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };

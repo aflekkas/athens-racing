@@ -13,10 +13,13 @@ export function gripFeedback(telemetry) {
   return { available: true, front, rear, message, warning: !!telemetry.understeer || front.state !== 'GRIP' || rear.state !== 'GRIP' };
 }
 
+// ENGINE HOT only once the coolant reaches the temperature where physics starts wearing the engine (engine-abuse.js),
+// not on the ordinary warm-up after a knock or a long pull, which players read as a random warning.
+export const ENGINE_HOT_C = 125;
 export function damageFeedback(vehicle, { spectating = false, towLabel = 'TOW', repairAvailable = false, towCost = '5 seconds' } = {}) {
   if (!vehicle) return { visible: false };
   const damage = clamp(vehicle.engineDamage), health = Number.isFinite(vehicle.engHealth) ? clamp(vehicle.engHealth) : 1 - damage;
-  const hot = vehicle.coolantTemp >= 110, stopped = !!(vehicle.engineFailureReason || vehicle.engineStalled || vehicle.drivetrainBroken);
+  const hot = vehicle.coolantTemp >= ENGINE_HOT_C, stopped = !!(vehicle.engineFailureReason || vehicle.engineStalled || vehicle.drivetrainBroken);
   const bent = vehicle.cornerDamage?.some(d => d > .05);
   const body = !!vehicle.damageSignificant || Object.values(vehicle.damage || {}).some(d => d > .1);
   const impact = clamp(vehicle.impactMechanical);

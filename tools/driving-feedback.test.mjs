@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DrivingGuidance, curvature, brakingDistance, routeLineU, travelDirection } from '../src/driving-guidance.js';
-import { gripFeedback, damageFeedback } from '../src/driving-feedback-model.js';
+import { gripFeedback, damageFeedback, ENGINE_HOT_C } from '../src/driving-feedback-model.js';
 
 const spec = { grip: 1, brake: 1, vmax: 250 };
 const car = (s = 50, speed = 25) => ({ s, u: 1.75, vLong: speed, spec });
@@ -82,4 +82,10 @@ test('free roam follows actual heading and backing direction; explicit reverse r
   assert.equal(travelDirection({ ...car(), yaw: Math.PI, vLong: -5 }, route), -1);
   const g = new DrivingGuidance(); assert.ok(g.update({ ...car(500), yaw: 0 }, route).nodes[1].s < 500);
   assert.ok(g.update({ ...car(500), yaw: Math.PI }, route, { dir: -1 }).nodes[1].s < 500);
+});
+
+test('ENGINE HOT waits for a temperature that actually wears the engine', () => {
+  assert.equal(damageFeedback({ engHealth: 1, coolantTemp: 115 }).visible, false, 'ordinary warm-up stays quiet');
+  assert.notEqual(damageFeedback({ engHealth: 1, coolantTemp: 124 }).title, 'ENGINE HOT');
+  assert.equal(damageFeedback({ engHealth: 1, coolantTemp: ENGINE_HOT_C }).title, 'ENGINE HOT');
 });
