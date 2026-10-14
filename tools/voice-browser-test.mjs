@@ -57,4 +57,4 @@ try {
   assert.ok(result.played,JSON.stringify(result));smoke.push(result);await page.waitForTimeout(2800);
  }
  await writeFile(resolve(out,'browser-smoke.json'),JSON.stringify({smoke,errors},null,2));assert.deepEqual(errors,[]);console.log('All five categories played; zero console errors.');
-} catch(e) { await writeFile(resolve(out,'browser-failure.json'),JSON.stringify({error:String(e),errors,state:await page.evaluate(()=>({ready:!!window.__sim?.player,loaded:document.body.classList.contains('loaded'),text:document.body.innerText.slice(-2000)})).catch(()=>null)},null,2));throw e; } finally { await browser.close();await new Promise(r=>app.server.close(r)); }
+} catch(e) { await writeFile(resolve(out,'browser-failure.json'),JSON.stringify({error:String(e),errors,state:await page.evaluate(()=>({ready:!!window.__sim?.player,loaded:document.body.classList.contains('loaded'),text:document.body.innerText.slice(-2000)})).catch(()=>null)},null,2));throw e; } finally { await browser.close();await app.close(); }
