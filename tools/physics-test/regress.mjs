@@ -286,6 +286,7 @@ else {
     }
     if (r.scenario === 'uturn') check(`walking-speed U-turn/unwind: ${label}`, r.turn >= 180 && r.turn < 215 && Math.abs(r.yawRate) < 0.1 && Math.abs(r.finalBeta) < 1 && r.latch === 0,
       `turn ${f1(r.turn)} deg, final yaw rate ${f3(r.yawRate)}`);
+    if (r.scenario === 'halfBrake' && r.car === 'carrera') check(`911 half-pedal braking authority: ${label}`, r.distance < 54 && r.kmh < 0.3, `100-0 ${f1(r.distance)} m`);
     if (r.scenario === 'brake') check(`catalogue braking in ${label}`, r.distance < (r.wet ? 55 : 40) && r.kmh < 0.3,
       `100-0 ${f1(r.distance)} m`);
   }
