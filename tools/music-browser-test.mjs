@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Run exactly one job through tools/browser-slot.sh; exercises real settings and real media.
+// Run through tools/browser-slot.sh; real Menu/Audio/Input without the expensive 3D world.
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -22,6 +22,35 @@ app.server.on('request', async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     if (url.pathname.startsWith('/music-three/')) { res.setHeader('Content-Type', 'text/javascript'); res.end(await readFile(resolve(process.env.THREE_MODULE_ROOT || resolve(root, 'node_modules/three'), url.pathname.slice(13)))); return; }
+    if (url.pathname === '/music-settings-fixture') {
+      res.setHeader('Content-Type', 'text/html');
+      res.end(`<!doctype html><html><head><meta charset="utf-8"><title>Music source verification</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/src/ui/ui.css"><link rel="stylesheet" href="/src/menu.css"><script type="importmap">{"imports":{"three":"/music-three/build/three.module.js","three/addons/":"/music-three/examples/jsm/"}}</script></head><body><div id="ui"></div><script type="module">
+        import { Audio } from '/src/audio.js';
+        import { Menu } from '/src/menu.js';
+        import { Input } from '/src/input.js';
+        import { settings, setSetting, onSettings } from '/src/settings.js';
+        const audio = new Audio(), start = audio.start.bind(audio);
+        audio.start = options => start({ recordings: false, ...options });
+        const input = new Input();
+        const menu = new Menu(document.getElementById('ui'), { inputDevice: () => 'keyboard', ui: () => {}, cancelBindings: () => {} });
+        onSettings(s => { audio.setVolumes(s); if (menu.screen === 'settings') menu.refreshValues(); });
+        window.__flow = {
+          menu, openSettings() { menu.show('settings', { tab: 'audio', from: 'pause' }); },
+          resume() { menu.hide(); audio.menuRequested = false; audio.syncMenu(); },
+        };
+        setInterval(() => {
+          input.update(1 / 60, { inMenu: menu.open });
+          for (const action of input.actions) {
+            if (action === 'transmission') setSetting('transmission', settings.transmission === 'manual' ? 'auto' : 'manual');
+            else if (menu.open) menu.action(action);
+            else if (action === 'music') audio.toggleMusic();
+            else if (action === 'nextTrack') audio.nextTrack();
+          }
+        }, 1000 / 60);
+        window.__flow.openSettings();
+      </script></body></html>`);
+      return;
+    }
     if (url.pathname === '/') { res.setHeader('Content-Type', 'text/html'); res.end((await readFile(resolve(root, 'index.html'), 'utf8')).replaceAll('https://cdn.jsdelivr.net/npm/three@0.170.0/', '/music-three/')); return; }
     normal(req, res);
   } catch (error) { res.statusCode = 500; res.end(String(error)); }
@@ -30,14 +59,14 @@ await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${app.server.address().port}`;
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN || '/home/dev/.cache/puppeteer/chrome/linux-150.0.7871.24/chrome-linux64/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true });
-const errors = [], requests = [], evidence = { base, checks: [], errors };
+const errors = [], requests = [], evidence = { base, root, fixture: 'production Menu + Audio + Input, recorded world disabled', checks: [], errors };
 page.on('pageerror', error => errors.push(error.message));
 page.on('request', request => { if (/youtube|scdn|spotify|tracks\.json/.test(request.url())) requests.push(request.url()); });
 await page.addInitScript(() => { window.showOpenFilePicker = undefined; window.showDirectoryPicker = undefined; });
-const save = name => page.screenshot({ path: resolve(out, name + '.png'), fullPage: true });
+const save = name => page.screenshot({ path: resolve(out, name + '.png'), fullPage: true, timeout: 60000 });
 try {
-  await page.goto(base + '/?simhook&quality=low&car=mini&cam=chase', { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.waitForFunction(() => window.__sim?.player && document.body.classList.contains('loaded'), { timeout: 240000 });
+  await page.goto(base + '/music-settings-fixture', { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await page.waitForFunction(() => window.__flow?.menu && window.__music, null, { timeout: 60000 });
   await page.evaluate(() => { window.__flow.openSettings(); });
   await page.locator('#music-source-settings').waitFor({ timeout: 15000 });
   assert.equal(await page.getByLabel('Music source').inputValue(), 'off');
@@ -67,7 +96,9 @@ try {
   // Escape control/navigation focus before exercising the real game input mapping.
   await page.evaluate(() => { document.activeElement.blur(); __flow.resume(); });
   await page.keyboard.press('KeyJ'); await page.waitForFunction(() => __music.el.paused);
+  assert.equal(await page.evaluate(() => __settings.transmission), 'auto');
   await page.keyboard.press('KeyN'); await page.waitForFunction(() => !__music.el.paused);
+  assert.equal(await page.evaluate(() => __settings.transmission), 'auto');
   await page.keyboard.press('KeyM');
   const bindings = await page.evaluate(() => ({ transmission: __settings.transmission, source: __music.source, paused: __music.el.paused }));
   assert.equal(bindings.transmission, 'manual'); assert.equal(bindings.source, 'files'); assert.equal(bindings.paused, false);
@@ -83,7 +114,7 @@ try {
   await page.locator('[data-youtube-load]').click();
   await page.locator('.music-youtube iframe').waitFor({ timeout: 30000 });
   await page.locator('.music-youtube').scrollIntoViewIfNeeded();
-  await page.waitForFunction(() => document.querySelector('.music-status')?.textContent.includes('Press Play') || /could not play/.test(document.querySelector('.music-status')?.textContent), { timeout: 45000 });
+  await page.waitForFunction(() => document.querySelector('.music-status')?.textContent.includes('Press Play') || /could not play/.test(document.querySelector('.music-status')?.textContent), null, { timeout: 45000 });
   const iframe = page.locator('.music-youtube iframe'), box = await iframe.boundingBox();
   assert.ok(box.width >= 200 && box.height >= 200, JSON.stringify(box));
   evidence.youtube = { src: await iframe.getAttribute('src'), box, status: await page.locator('.music-status').innerText(), requests: requests.filter(url => /youtube/.test(url)).slice(0, 8) };
