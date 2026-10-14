@@ -422,7 +422,7 @@ export function infillBuildings(map, heightC) {
   const rng = new RNG(31);
   const C = 40, segs = new Map(), boxes = new Map();
   const put = (m, x, z, v) => { const k = Math.floor(x / C) * 100003 + Math.floor(z / C); let l = m.get(k); if (!l) m.set(k, l = []); l.push(v); };
-  for (const r of [...data.sideRoads, ...(data.roadNetwork?.roads || [])]) {
+  for (const r of data.sideRoads) {
     const p = r.p;
     for (let i = 0; i + 3 < p.length; i += 2) {
       const sg = [p[i], p[i + 1], p[i + 2], p[i + 3], r.w / 2];

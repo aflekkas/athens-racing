@@ -42,7 +42,6 @@ export class Ground {
   constructor(map, heightC, assets) {
     const { route, data, terrain } = map;
     this.route = route; this.terrain = terrain; this.heightC = heightC;
-    this.network = assets.network || null;
     this.circuit = data.circuit || {};
     this.pavedAreas = (this.circuit.pavedAreas || []).map(area => ({...area, p: Array.isArray(area.p[0]) ? area.p.flat() : area.p}));
     this.humps = data.humps || [];
@@ -51,7 +50,7 @@ export class Ground {
     for (const h of this.humps) this._put(this.hh, h[0], h[1], h[2] + 1, h);
     this.bh = new Map();
     for (const b of data.buildings) {
-      if (!this.network && Math.abs(b.u) > 160 || b.k === 'roof') continue;
+      if (Math.abs(b.u) > 160 || b.k === 'roof') continue;
       const p = b.p, n = p.length / 2;
       for (let i = 0; i < n; i++) {
         const j = (i + 1) % n, seg = [p[i * 2], p[i * 2 + 1], p[j * 2], p[j * 2 + 1]];
@@ -64,7 +63,6 @@ export class Ground {
       if (route.urban(s) < 0.4) continue;
       const u = route.div(s) > 0.6 && route.medHalf(s) > 1.2 ? 0 : route.edge(s) + ROAD.gutter + 0.6;
       const p = route.point(s, u), r = 0.15;
-      if (this.network?.sample(p.x, p.z)) continue;
       const q = [[-r, -r], [r, -r], [r, r], [-r, r]];
       for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this._put(this.bh, p.x, p.z, 2, [p.x + a[0], p.z + a[1], p.x + b[0], p.z + b[1]]); }
     }
@@ -227,13 +225,6 @@ export class Ground {
   at(x, z, s, u, out = this.out) {
     const route = this.route, au = Math.abs(u), side = u >= 0 ? 1 : -1;
     const sc = route.closed ? route.wrap(s) : clamp(s, 0, route.length);
-    out.network = false; out.networkStep = 0;
-    // Race progress stays in s/u; only the physical contact surface changes off the race carriageway.
-    if (au > route.edge(sc) + (route.closed ? 0 : ROAD.gutter) && this.network?.sample(x, z, this._net || (this._net = {}))) {
-      const n = this._net;
-      out.y = n.y; out.surf = n.surf; out.water = 0; out.hump = 0; out.trap = null;
-      out.network = true; out.networkStep = n.step; return out;
-    }
     if (route.closed) {
       const edge = route.edge(sc), beyond = au - edge;
       out.water = 0; out.hump = 0; out.trap = null;
@@ -283,9 +274,7 @@ export class Ground {
   /** hard u limits (car centre) from guard rails; elsewhere the edge of the drivable world */
   limits(s, halfW, out) {
     const i = clamp(Math.round((this.route.closed ? this.route.wrap(s) : s) / 2), 0, this.railR.length - 1);
-    const maxOff = this.network ? 800 : 140;
-    const mouthR = this.network?.mouth(s, 1, halfW), mouthL = this.network?.mouth(s, -1, halfW);
-    out.max = Math.min(mouthR ? Infinity : this.railR[i] - 0.25 - halfW, maxOff); out.min = -Math.min(mouthL ? Infinity : this.railL[i] - 0.25 - halfW, maxOff);
+    out.max = Math.min(this.railR[i] - 0.25 - halfW, 140); out.min = -Math.min(this.railL[i] - 0.25 - halfW, 140);
     return out;
   }
   /** push a circle (x, z, r) out of building walls; returns the wall normal of the deepest contact or null */
@@ -374,9 +363,7 @@ export class Ground {
     const t2 = v.track / 2;
     for (let i = 0; i < 4; i++) {
       const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2;
-      const u = v.u + cx * fr + cy * rr;
-      const wx = v.x + fx * cx + rx * cy, wz = v.z + fz * cx + rz * cy;
-      const z = this.network?.sample(wx, wz)?.step === 0 && Math.abs(u) > eA ? 0 : zone(u), was = prev[i];
+      const u = v.u + cx * fr + cy * rr, z = zone(u), was = prev[i];
       prev[i] = z;
       if (z === was || was === 9 || v.air) continue;
       const up = Math.abs(z) > Math.abs(was) || (z === 1 && was === 0); // onto the raised side
@@ -433,8 +420,7 @@ export class Ground {
     v.s = pr.s; v.u = pr.u;
     // guard rails (the only walls the road itself has)
     const lim = this.limits(v.s, v.halfW, v._lim || (v._lim = {}));
-    const exploring = v._network && this.network?.sample(v.x, v.z);
-    if (!exploring && (v.u > lim.max || v.u < lim.min)) {
+    if (v.u > lim.max || v.u < lim.min) {
       const f = route.frame(v.s, v._f || (v._f = {})), side = v.u > lim.max ? 1 : -1;
       this._hit(v, -f.rx * side, -f.rz * side, side > 0 ? v.u - lim.max : lim.min - v.u);
       v.u = side > 0 ? lim.max : lim.min;
@@ -452,7 +438,7 @@ export class Ground {
     const gy = g.y - g.hump, pgy = v._gt ?? gy;
     const tooHigh = gy - route.y((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length))) > MAX_ABOVE && gy > pgy;
     const tooFar = Math.abs(v.u) - route.edge((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length))) > MAX_OFF && Math.abs(v.u) > Math.abs(v._gu ?? 0);
-    if (d > 1e-4 && (this.blocked(pgy, gy, d) || !g.network && (tooHigh || tooFar))) {
+    if (d > 1e-4 && (this.blocked(pgy, gy, d) || tooHigh || tooFar)) {
       // wall normal from the terrain gradient
       const e = 0.8, q = this._q || (this._q = {});
       const hx = this.at(v.x + e, v.z, v.s, v.u, q).y - this.at(v.x - e, v.z, v.s, v.u, q).y;
@@ -528,7 +514,6 @@ export class Ground {
       v.wheelPeak[i] = W.peak ?? 1; v.wheelSlide[i] = W.slide ?? null; v.wheelSlideV[i] = W.slideV ?? null;
     }
     v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;
-    v._network = !!g.network;
     if (!paved) { // thick maquis up the hillside / far from the road
       const sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
       const ex = Math.max(0, gy - route.y(sc) - (MAX_ABOVE - 4)) + Math.max(0, (Math.abs(v.u) - route.edge(sc) - (MAX_OFF - 12)) / 3);

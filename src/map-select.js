@@ -48,8 +48,7 @@ export async function selectMap(menu, id) {
   try {
     await (menu.h.switchMap || window.__flow.switchMap)(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
-    if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
-    else if (menu.data.mode === 'quick') menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
+    if (menu.data.mode === 'quick') menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
     else menu.show('events', { mapId: id }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }

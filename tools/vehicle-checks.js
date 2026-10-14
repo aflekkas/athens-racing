@@ -34,20 +34,6 @@ export function runVehicleChecks(carIds=null) {
       if(spec.id==='cle'||spec.id==='gla45')check(spec.id+' AWD distribution',spec.drive==='awd'&&spec.awdRear>0&&spec.awdRear<1);
       else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
       if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
-      if(car.shape.suv){
-        const glass=car.body.getObjectByName('rear-glass');glass.geometry.computeBoundingBox();const b=glass.geometry.boundingBox;
-        check(spec.id+' hatch roof extends behind the rear axle',b.min.z>car.shape.wb/2+car.shape.axleOffset+.25);
-        check(spec.id+' short raised hatch glazing, no saloon backlight',b.min.y>1.14&&b.max.y-b.min.y>.24&&b.max.z-b.min.z<.45);
-        check(spec.id+' fixed rear quarter-light and complete hatch panel',!!car.body.getObjectByName('rear-quarter-glass')&&car.playerParts.boot.children.length>0);
-        check(spec.id+' rear axle uses its sourced track',car.wheels.filter(w=>!w.front).every(w=>Math.abs(Math.abs(w.pivot.position.x)*2-spec.trackRear)<.001));
-        const face=car.mercedesSurface.face,z=car.shape.L/2;
-        check(spec.id+' bumper rolls under and rounds its outer corners',face(0,z,.63)-face(0,z,.20)>.07&&face(0,z,.63)-face(.72,z,.63)>.07);
-        if(spec.id==='gla45'){
-          const side=car.mercedesSurface.side,axle=-car.shape.wb/2+car.shape.axleOffset;
-          check('AMG sculpted fender projects beyond door waist',side(axle,car.shape.r*2+.08)-side(0,.78)>.05);
-          check('AMG distinct dark wheels and fixed red calipers',car.materials.wheelMetal===car.materials.darkAlloy&&car.wheels.every(w=>w.caliper.material===car.materials.red));
-        }
-      }
     }
     if(spec.id==='z4'){
       const {top,side,deck}=car.playerSurface,R=car.dims.L/2;

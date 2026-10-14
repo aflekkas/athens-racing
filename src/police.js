@@ -109,9 +109,7 @@ export class Police {
       events.on('start', (p) => {
         const r = p.def?.rules || {};
         this.eventId = p.eventId;
-        // An explicit saved setup overrides the legacy preference and dev URL.
-        const on = p.def?.type === 'pursuit' || (typeof r.police === 'boolean' ? r.police : QS.has('police') || (!!settings.police && (p.def?.quick || p.type === 'free' || p.def?.free)));
-        this.traffic.allowClosedPolice = on && r.police === true; // explicit setup On permits track-map patrols
+        const on = !!r.police || QS.has('police') || (!!settings.police && (p.def?.quick || p.type === 'free' || p.def?.free));
         this.reset(on);
         if (on && r.startHeat) this.hm.begin(r.startHeat); // 'start' comes out of the next update (engage() needs the player)
       }),
@@ -128,8 +126,7 @@ export class Police {
   get cops() { return this.traffic.cars.filter((c) => c.active && c.cop); }
 
   reset(enabled = this.enabled) {
-    this.enabled = enabled && (this.traffic.allowClosedRoam || this.traffic.allowClosedPolice || !this.route.closed && !this.traffic.route?.closed); // free roam opts into patrols on every map
-    if (!this.enabled) this.traffic.allowClosedPolice = false;
+    this.enabled = enabled && !this.route.closed && !this.traffic.route?.closed; // no police on a closed circuit
     this.hm.reset(); this.t = 0;
     for (const c of this.traffic.cars) if (c.police) { c.active = false; c.m.root.visible = false; c.cop = null; c.crash = null; c.m.setStrobe?.(false, 0); }
     for (const b of this.blocks.slice()) this.clearBlock(b);
@@ -247,8 +244,7 @@ export class Police {
   // ---------------------------------------------------------------- units
   spawnCop(s, dir, opts = {}) {
     const tr = this.traffic, route = this.route;
-    const loop = route.closed && (tr.allowClosedRoam || tr.allowClosedPolice);
-    if (!loop && (route.closed || s < 30 || s > route.length - 30)) return null;
+    if (route.closed || s < 30 || s > route.length - 30) return null;
     let c = tr.cars.find((q) => q.police && !q.active && (opts.moto ? q.type.scooter : !q.type.scooter)) || tr.cars.find((q) => q.police && !q.active);
     // pool empty: recycle the furthest wreck / idle unit you can't see any more
     if (!c && this.P) {

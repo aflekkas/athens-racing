@@ -43,7 +43,7 @@ test('every event resolves inside the route with sane checkpoints', () => {
     if (e.type === 'sprint') { const g = EV.gridFor(e); assert.equal(g.length, EV.SP_RIVALS, e.id + ' grid of 3'); assert.equal(new Set(g.map((d) => d.id)).size, g.length, 'no duplicate drivers'); }
   }
   assert.equal(new Set(EV.EVENTS.map((e) => e.id)).size, EV.EVENTS.length, 'unique ids');
-  assert.deepEqual(Object.keys(EV.TYPES).sort(), ['free', 'pursuit', 'sprint', 'timetrial']);
+  assert.deepEqual(Object.keys(EV.TYPES).sort(), ['pursuit', 'sprint', 'timetrial']);
   for (const id of ['score-beach', 'score-varkiza', 'cameras-coast', 'cameras-riviera']) assert.equal(EV.getEvent(id), null, id + ' removed');
   assert.ok(!('traps' in EV.resolve(EV.QUICK_RACE, ctx)), 'no speed cameras');
 });

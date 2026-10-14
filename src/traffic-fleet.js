@@ -23,7 +23,7 @@ function buildCatalogueModel(type,color,rng,opts) {
   const selectLevel=lod=>{
     const selected=lod.levels[opts.low?lod.levels.length-1:Math.min(1,lod.levels.length-1)].object;
     const parent=lod.parent;selected.removeFromParent();lod.removeFromParent();
-    selected.visible=true;parent.add(selected);return selected;
+    selected.visible=true;parent.add(selected);
   };
   if(car.visualLOD)selectLevel(car.visualLOD);
   if(opts.low)for(const front of [true,false])for(const side of [-1,1]){
@@ -31,44 +31,8 @@ function buildCatalogueModel(type,color,rng,opts) {
     lamp.position.set(side*car.dims.W*.34,(car.shape.belt||.9)*.78,(front?-1:1)*(car.dims.L*.5-.025));
     lamp.userData.damagePart=front?'light_front':'light_rear';car.body.add(lamp);
   }
-  for(const w of car.wheels)for(const child of [...w.spin.children])if(child.isLOD){
-    const level=selectLevel(child);
-    if(!opts.low){
-      // Road-distance wheels retain the authored five-spoke layout with fewer
-      // circular segments than player wheels. Geometry is cached per model.
-      const rim=car.shape.rim||w.r*.72;
-      level.clear();
-      const tyre=new THREE.CylinderGeometry(w.r,w.r,.20,16);tyre.rotateZ(Math.PI/2);
-      level.add(new THREE.Mesh(tyre,car.materials.rubber));
-      const disc=new THREE.CircleGeometry(rim,16);disc.rotateY(Math.PI/2);
-      const face=new THREE.Mesh(disc,car.materials.darkAlloy);face.position.x=w.side*.102;level.add(face);
-      const r0=.03,r1=rim*.94;
-      for(let i=0;i<5;i++){
-        const angle=i*Math.PI*.4,spoke=new THREE.Mesh(new THREE.BoxGeometry(.022,r1-r0,.025),car.materials.alloy);
-        spoke.position.set(w.side*.108,Math.cos(angle)*(r0+r1)/2,Math.sin(angle)*(r0+r1)/2);spoke.rotation.x=angle;level.add(spoke);
-      }
-    }
-  }
-  // Cache only fleet data; discard player callbacks/part maps that retain the
-  // unused close-up cabin and high-detail geometry.
-  const {root,body,wheels,paint,tail,materials,dims,shape,modelKind,spec}=car;
-  return {root,body,wheels,paint,tail,materials,dims,shape,modelKind,spec};
-}
-function flattenMirrorScopes(car){
-  // Compaction moves painted body meshes into car.body. Mirror stalks must
-  // share that same support scope, including mirrors copied from player LODs.
-  car.body.updateWorldMatrix(true,true);const groups=[];
-  car.body.traverse(o=>{if(o.userData.mirrorAssembly)groups.push(o);});
-  for(const group of groups){
-    if(group.parent===car.body)continue;
-    const toBody=car.body.matrixWorld.clone().invert().multiply(group.parent.matrixWorld);
-    for(const key of ['mirrorRoot','mirrorCenter'])if(group.userData[key])group.userData[key]=new THREE.Vector3().fromArray(group.userData[key]).applyMatrix4(toBody).toArray();
-    if(group.userData.mirrorTipOffset){
-      const offset=new THREE.Vector3().fromArray(group.userData.mirrorTipOffset).applyMatrix4(toBody).sub(new THREE.Vector3().applyMatrix4(toBody));
-      group.userData.mirrorTipOffset=offset.toArray();
-    }
-    car.body.attach(group);
-  }
+  for(const w of car.wheels)for(const child of [...w.spin.children])if(child.isLOD)selectLevel(child);
+  return car;
 }
 function builder(type){return type.catalogueCar?buildCatalogueModel:type.police?buildPoliceModel:type.scooter?buildBikeModel:type.bus||type.id==='van'||type.id==='truck'?buildCommercialModel:buildPassengerModel;}
 function geometryOf(o,matrix,colored=false){
@@ -110,7 +74,6 @@ function template(type,low,parked){
   if(templates.has(key))return templates.get(key);
   const car=builder(type)(type,'#ffffff',new RNG(139),{low,parked});
   seatMirrors(car,car.body,{bike:!!type.scooter});
-  flattenMirrorScopes(car);
   compact(car.body,car,!low);
   for(const w of car.wheels){compact(w.spin,car,false);for(const child of [...w.pivot.children])if(child!==w.spin&&child.isGroup)compact(child,car,false);}
   let i=0;car.root.traverse(o=>{o.name=o.name||'fleet-node-'+i;o.userData.fleetNode=i++;if(o.geometry)o.geometry.userData.shared=true;

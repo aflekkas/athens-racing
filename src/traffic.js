@@ -167,13 +167,10 @@ export class Traffic {
   // ---------------------------------------------------------------- where we are
   // 'town' (Varkiza), 'beach' (Vouliagmeni bay, Astir, the lake: summer crowd), 'cliff' (open coast road),
   // 'cove' (Limanakia / Lomvarda: cars parked on the shoulders, swimmers crossing)
-  zone(s) {
-    // Mode/AI integration: map bundles use mountain/chapel/circuit districts; population tables use these four road classes.
-    const zone = this.route.district(s);
-    return zone === 'mountain' ? 'cliff' : zone === 'chapel' ? 'cove' : zone === 'circuit' && this.allowClosedRoam ? 'town' : zone;
-  }
-  /** Closed races default to no civilian population; free roam explicitly opts into traffic. */
-  get disabled() { return this._disabled || (!!this.route.closed && !this.allowClosedRoam); // mode owner: free roam can populate the circuit }
+  zone(s) { return this.route.district(s); }
+  /** a closed circuit (route.closed) never has civilian traffic, whatever a caller sets: no cars, no parked rows,
+   *  no road works, no cross traffic, no police */
+  get disabled() { return this._disabled || !!this.route.closed; }
   set disabled(v) { this._disabled = !!v; }
   /** vehicles per km per lane (each direction) */
   density(s) {
@@ -384,11 +381,9 @@ export class Traffic {
     let same = 0, onc = 0, parked = 0;
     for (const c of this.cars) {
       if (!c.active) continue;
-      // Mode wiring: a free session shares one lap with its traffic; configured track patrols can follow race laps.
-      if (route.closed && this.allowClosedRoam) c.s += Math.round((ps - c.s) / route.length) * route.length;
       const ahead = (c.s - ps) * this.dir;
-      if (c.cop && c.cop.keep) { if (!(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; } continue; }
-      if (ahead < -260 || ahead > 1150 || !(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
+      if (c.cop && c.cop.keep) { if (c.s < 5 || c.s > route.length - 5) { c.active = false; c.m.root.visible = false; } continue; }
+      if (ahead < -260 || ahead > 1150 || c.s < 5 || c.s > route.length - 5) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
       if (c.mode === 'parked') parked++; else if (c.dir > 0) same++; else onc++;
     }
     if (!this.disabled) {
@@ -932,7 +927,6 @@ export class Traffic {
     const totalWeight = types.reduce((sum, t) => sum + t.w, 0);
     const roots = [];
     for (const sp of spots) {
-      if (ground.network?.sample(sp.x, sp.z)) continue; // leave mapped street mouths and carriageways clear
       let draw = rng.next() * totalWeight, t = types[0];
       for (const candidate of types) { draw -= candidate.w; if (draw <= 0) { t = candidate; break; } }
       const m = trafficModel(t, rng.pick(t.colors), rng, { parked: true });

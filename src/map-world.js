@@ -5,8 +5,6 @@ import * as ENV from './env.js';
 import { Ground, Splash, buildHumps, buildBarriers, buildSandTraps } from './ground.js';
 import { buildTerrain } from './terrain.js';
 import { buildRoad } from './road.js';
-import { RoadNetwork } from './road-network-surface.js';
-import { buildRoadNetwork, buildNetworkParking } from './road-network.js';
 import { buildBuildings, infillBuildings, LabelAtlas } from './buildings.js';
 import { buildNature } from './nature.js';
 import { buildRoadside } from './roadside.js';
@@ -59,22 +57,18 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
   const group = new THREE.Group(); group.name = 'map-world:' + map.id;
   const coastal = !map.id || map.id === 'riviera';
   const route = map.route;
-  const network = map.data.roadNetwork && !new URLSearchParams(location.search).has('noroadnetwork') ? new RoadNetwork(map) : null;
-  map.roadNetwork = network;
   let water = null, custom = null;
   scene.add(group);
   try {
     progress('BUILDING TERRAIN', .25); await frameYield();
     const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
-    const ter = buildTerrain(map.terrain, route, [], group, { coastal, farmland: map.id === 'megara', network });
+    const ter = buildTerrain(map.terrain, route, [], group, { coastal, farmland: map.id === 'megara' });
     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
     if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
     const labels = new LabelAtlas();
     const assets = { labels, water, makeLabel: (t, w, h, bg, fg) => { const r = labels.add(t, bg, fg); return r ? labels.plane(r, w, h) : new THREE.Group(); } };
     progress(coastal ? 'PAVING POSEIDONOS AVENUE' : 'BUILDING ' + (map.definition?.name || map.id).toUpperCase(), .4); await frameYield();
     assets.junctions = coastal ? findJunctions(map) : [];
-    assets.network = network;
-    if (network) buildRoadNetwork(network, group);
     let road, natureGroup, signals;
     if (coastal) {
       road = buildRoad(map, group, ter.heightC, assets); assets.asphalt = road.asphalt;
@@ -111,8 +105,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     traffic.busStops = (assets.busStops || []).slice().sort((a, b) => a - b);
     const ground = custom?.ground || new Ground(map, ter.heightC, assets);
     if (coastal) traffic.buildParkedRows(group, ground);
-    const streetParking = network ? buildNetworkParking(network, group, ground) : [];
-    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], streetParking);
+    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || []);
     traffic.ground = ground;
     if (coastal) { buildHumps(map, group, ter.heightC); buildSandTraps(ground, group); buildBarriers(map, group); }
     const splash = new Splash(group), fx = new Fx(group, route, ground);
