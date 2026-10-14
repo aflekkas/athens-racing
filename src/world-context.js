@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CellInstances, RNG, pointInPoly, polyBounds } from './util.js';
 import { COND_STATE } from './env.js';
+import { buildHillsideCover } from './hillside-cover.js';
 
 function colored(g, color) {
   const c = new THREE.Color(color), a = new Float32Array(g.attributes.position.count * 3);
@@ -18,7 +19,7 @@ function template(parts) {
 function box(x, y, z, w, h, d, color) { return colored(new THREE.BoxGeometry(w, h, d).translate(x, y, z), color); }
 const inside = (x, z, list) => list.some(a => x >= a.b.x0 && x <= a.b.x1 && z >= a.b.z0 && z <= a.b.z1 && pointInPoly(x, z, a.p));
 
-export function buildWorldContext(map, scene, heightC) {
+export function buildWorldContext(map, scene, heightC, infill = []) {
   const { route, terrain, data } = map, rng = new RNG(81073), coastal = map.id === 'riviera', farm = map.id === 'megara';
   const group = new THREE.Group(); group.name = 'world-context:' + map.id; scene.add(group);
   const stats = { trees: 0, homes: 0, greenhouses: 0, plots: 0, umbrellas: 0, quarryPatches: 0, poles: 0 };
@@ -67,6 +68,7 @@ export function buildWorldContext(map, scene, heightC) {
     shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uContextDaylight;')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * (.32 * uContextDaylight);');
   };
+  buildHillsideCover(map, group, heightC, material, clear, infill);
   const buckets = [];
   const bucket = (g, far = 5200) => { const b = new CellInstances(g, material, { cell: 900, far, colors: true, shadow: false, receive: false }); buckets.push(b); return b; };
   const pine = bucket(template([
