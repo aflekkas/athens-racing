@@ -1,3 +1,66 @@
+# Athens Street Racers — real-game loudness audit
+
+2026-10-14. This section supersedes the historical offline targets below.
+
+## Current targets and defaults
+
+Normal moving race: **−20 to −18 LUFS integrated**, maximum 3-second loudness **≤ −14 LUFS**, true peak **≤ −3 dBTP**. Menus and loading music aim for **approximately −26 LUFS**. Stopped/idling segments and the closed taxi cabin can be quieter.
+
+Defaults: **master 0.60**, music 0.55, SFX 1.00, engine 0.85, tyres 0.80, ambience 0.50, traffic 0.65, UI 0.40. Only a saved master equal to the old 0.80 default migrates, once; other preferences and later explicit choices are retained.
+
+## Real-game captures
+
+The actual browser game runs `main.js`, vehicle physics, RivalAI, live traffic/police, camera/listener positioning, per-wheel tyre telemetry, ambience and the real radio track. No OfflineAudioContext or prescribed RPM/slip/Doppler fixtures are used. The non-audio game is pinned to `1fb320c` in a scratch copy so concurrent agents cannot change paired conditions. The after run applies the production Audio methods, source gains and default settings to the same live graph; synth banks, assets, compressor and simulation remain shared.
+
+Headless graphics are suppressed; decorative driver/dashboard/HUD updates are skipped. The production `__sim.step` path advances on the live AudioContext clock. This host can render audio slower than wall time, so each accepted WAV contains about 45 seconds of actual samples; its wall duration is also logged. Capture is lossless native MediaRecorder PCM from a stereo MediaStreamDestination after the compressor, decoded to float WAV at the context’s native 44.1 kHz. Bus meters explicitly upmix to stereo and measure both channels after each bus volume. Bus RMS is audio-time-weighted dBFS, not LUFS; meter sample peaks are not true peaks.
+
+The car/race settings are default: three rivals, standard traffic, radio on, automatic transmission and driving aids. Busy traffic starts in Varkiza at s=7900; camera comparisons use the closed Octavia taxi at s=4400. Police uses the normal three-rival grid plus a real oncoming dispatched unit and an enabled pursuit. Pause/title are reached through the game flow API; loading is an actual switch to Megara.
+
+| Scene | Integrated LUFS before → after | Maximum 3 s LUFS before → after | True peak dBTP before → after | WAV seconds before / after |
+|---|---:|---:|---:|---:|
+| grid | -17.1 → -19.3 | -11.9 → -16.2 | -1.4 → -4.4 | 45.0 / 44.6 |
+| traffic | -16.5 → -17.9 | -13.6 → -16.1 | -2.3 → -4.4 | 45.1 / 45.1 |
+| cockpit | -18.2 → -22.6 | -17.0 → -19.5 | -3.4 → -7.2 | 45.0 / 45.0 |
+| chase | -16.9 → -21.4 | -15.6 → -19.9 | -2.3 → -7.1 | 45.0 / 45.0 |
+| police | -14.7 → -21.4 | -12.8 → -17.4 | -1.5 → -4.3 | 45.0 / 45.0 |
+| pause | -22.0 → -25.1 | -20.4 → -23.4 | -9.4 → -12.5 | 45.2 / 45.0 |
+| menu | -21.9 → -25.0 | -20.3 → -23.4 | -9.4 → -12.3 | 45.1 / 45.0 |
+| loading | -21.9 → -25.1 | -20.3 → -23.4 | -9.0 → -12.0 | 45.2 / 45.1 |
+
+### Stereo bus RMS, moving traffic segment
+
+These are measured before the shared master/calibration/compressor stages. They describe layer balance, not overall output loudness.
+
+| Bus | Before dBFS | After dBFS |
+|---|---:|---:|
+| engine | -27.1 | -21.9 |
+| tyres | -35.2 | -31.3 |
+| traffic | -36.2 | -45.1 |
+| ambience | -45.4 | -47.5 |
+| music | -29.7 | -33.2 |
+| ui | silent | silent |
+
+## Causes and corrections
+
+- Separate rival and traffic pools could place up to sixteen engine voices in the mix. A shared distance-sorted budget keeps the nearest six at foreground detail and attenuates the remainder by 14.9 dB, in addition to their distance rolloff. Traffic selection sorts its own input defensively.
+- Traffic/rivals could exceed the player engine. The external bus changes from 0.60 to 0.32; rival source levels multiply by 0.65, and traffic per-source output changes from 0.90 to 0.70. Sirens and horns share the reduced external bus while retaining their spatial cues.
+- Wind’s quadratic speed rise reached 0.60. Its coefficient and ceiling now fall by a factor of three (9.5 dB); cabin whistle is also reduced. Tyre synthesis remains intact.
+- Player engine source gain changes from 0.55 to 0.75. Combined with the master/calibration reduction, the default player engine remains about 2.3 dB quieter while keeping feedback clear above surrounding vehicles.
+- The fixed 2× calibration plus compressor makeup lifted the entire mix. Calibration changes to 1.50, and first-run master to 0.60. Compressor threshold/knee/ratio/attack/release stay −5 dB / 6 dB / 8:1 / 3 ms / 160 ms. Source and bus balance supply the headroom.
+- Race radio source level changes from 0.50 to 0.35; menu source level is separately 0.62, with the existing −18 dB world duck. Music toggles use the current mode’s level.
+- Recorded grains already normalize coherent body amplitude and texture power. Doppler engines and sirens already have distance rolloff; neither required synthesis or distance changes. Existing ambience is subordinate and its assets/gains are retained.
+
+## Evidence and verification
+
+Accepted captures: `.scratch/audio-loudness/before-live-*-mix.wav` and `after-live-*-mix.wav`; matching `.webm` lossless source containers, per-scene telemetry JSON, per-scene loudness text and before/after spectrogram PNGs are retained. `loudness.json` combines integrated/short-term/true-peak and bus/voice telemetry; `bus-levels.json` retains bus measurements. Reproduce with `serve.mjs`, `paired-run.mjs`, `decode.py`, `measure.py` and `report.py` in that directory. Earlier `before-grid`, `before-native-*` and partial worklet recordings are diagnostic attempts, not the accepted paired measurements.
+
+Browser console errors: zero. All accepted captures are duration-checked. Audio preference migration and shared voice-budget tests pass. The 8 audio/preference tests pass (`audio-tests-verified.log`). Earlier shared-checkout runs passed npm test (91 tests) and the tool/physics suite (112 tests). Later concurrent changes introduced unrelated physics, handling, multiplayer and account test failures; latest evidence is in `npm-test-last.log` and `tools-tests-verified.log`. Those owners’ code and fixtures are not modified by this audio work. No audio asset or `.orig` file is changed or committed.
+
+---
+
+# Historical offline ambience audit
+
+The following is retained for source provenance and past ambience work; its defaults, targets and fixture loudness tables are superseded by the real-game audit above.
 # Athens Street Racers — audio mix and ambience
 
 Audit and lead-review correction: 2026-10-13. Default settings; 20-second stereo OfflineAudioContext scenes at 32 kHz.

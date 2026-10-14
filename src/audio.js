@@ -159,7 +159,9 @@ export class EngineVoice {
 }
 
 const MIDI = (n) => 440 * Math.pow(2, (n - 69) / 12);
-const MUSIC_LEVEL = 0.5;
+const PLAYER_ENGINE_LEVEL = 0.75;
+const MUSIC_LEVEL = 0.35;
+const MENU_MUSIC_LEVEL = 0.62;
 // police units drive and sound like the vehicle they are
 const POLICE = { police: 'car', police_moto: 'moto' };
 // traffic engine loops per vehicle class: [idle loop, its rpm, running loop, its rpm]. The car refs sit ~15% above the
@@ -173,6 +175,17 @@ const TRAFFIC_LOOPS = {
 export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
+/** One detail budget across rivals and traffic, so separate pools cannot each fill the foreground. */
+export function externalEngineWeights(rivals = [], traffic = []) {
+  const weights = { rivals: new Map(), traffic: new Map() };
+  const candidates = Object.entries({ rivals, traffic }).flatMap(([kind, list]) => list
+    .filter(source => Number.isFinite(source.d ?? source.dist) && (source.d ?? source.dist) < 260)
+    .map(source => ({ kind, source, distance: source.d ?? source.dist })));
+  candidates.sort((a, b) => a.distance - b.distance);
+  candidates.forEach(({ kind, source }, index) => weights[kind].set(source.id, index < 6 ? 1 : 0.18));
+  return weights;
+}
+
 export class AudioMix {
   constructor(ctx, volumes = AUDIO_DEFAULTS) {
     this.ctx = ctx;
@@ -181,8 +194,8 @@ export class AudioMix {
     this.limiter.threshold.value = -5; this.limiter.knee.value = 6; this.limiter.ratio.value = 8;
     this.limiter.attack.value = 0.003; this.limiter.release.value = 0.16;
     this.limiter.connect(ctx.destination);
-    // Fixed headroom calibration, measured by build_sound_audio.mjs with race + traffic + radio.
-    this.calibration = gain(2, this.limiter);
+    // Live race calibration: leave transients clear without continuously driving the limiter.
+    this.calibration = gain(1.5, this.limiter);
     this.master = gain(1, this.calibration);
     this.sfx = gain(1, this.master);
     this.worldDuck = gain(1, this.sfx);
@@ -336,14 +349,15 @@ export class Audio {
     this.sfx = ctx.createGain(); this.sfx.gain.value = 0.55; this.sfx.connect(this.mix.worldDuck);
     this.uiBus = this.mix.buses.ui;
     this.engineLP = ctx.createBiquadFilter(); this.engineLP.type = 'lowpass'; this.engineLP.frequency.value = 16000;
-    this.eng = ctx.createGain(); this.eng.gain.value = 0.55; this.eng.connect(this.engineLP); this.engineLP.connect(this.mix.buses.engine);
+    // Preserve engine feedback while the master/headroom stages and surrounding voices become quieter.
+    this.eng = ctx.createGain(); this.eng.gain.value = PLAYER_ENGINE_LEVEL; this.eng.connect(this.engineLP); this.engineLP.connect(this.mix.buses.engine);
     this.chassis = ctx.createGain(); this.chassis.gain.value = 0.7; this.chassis.connect(this.mix.buses.tyres);
     this.cabinLP = ctx.createBiquadFilter(); this.cabinLP.type = 'lowpass'; this.cabinLP.frequency.value = 14000; this.cabinLP.Q.value = 0.5;
     // Each external bus has its own cabin filter, preserving independent volume controls.
     this.ext = ctx.createGain(); this.ext.gain.value = 1; this.ext.connect(this.cabinLP); this.cabinLP.connect(this.mix.buses.traffic);
     this.ambLP = ctx.createBiquadFilter(); this.ambLP.type = 'lowpass'; this.ambLP.frequency.value = 14000;
     this.amb = ctx.createGain(); this.amb.gain.value = 0.45; this.amb.connect(this.ambLP); this.ambLP.connect(this.mix.buses.ambience);
-    this.trafficBus = ctx.createGain(); this.trafficBus.gain.value = 0.6; this.trafficBus.connect(this.ext);
+    this.trafficBus = ctx.createGain(); this.trafficBus.gain.value = 0.32; this.trafficBus.connect(this.ext);
     if (typeof document !== 'undefined' && !context) {
       this.menuObserver = new MutationObserver(() => this.syncMenu());
       this.menuObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
@@ -425,7 +439,7 @@ export class Audio {
     this.musicVol = this.mix.buses.music; // the music volume setting (setVolumes)
     chain(this.musicBus, this.musicDuck, this.musicLP, this.musicVol);
     this.radio = radio ? new Radio(ctx, this.musicBus, (track) => this.onTrack?.(track)) : { play() {}, pause() {}, next() {} };
-    if (this.musicOn) { this.radio.play(); this.musicBus.gain.setTargetAtTime(MUSIC_LEVEL, ctx.currentTime, 1.2); }
+    if (this.musicOn) { this.radio.play(); this.musicBus.gain.setTargetAtTime(this.mix.menu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL, ctx.currentTime, 1.2); }
 
     // --- recorded world sounds
     this.S = {};
@@ -517,7 +531,7 @@ export class Audio {
   toggleMusic() {
     this.musicOn = !this.musicOn;
     if (this.ctx) {
-      this.musicBus.gain.setTargetAtTime(this.musicOn ? MUSIC_LEVEL : 0, this.ctx.currentTime, 0.3);
+      this.musicBus.gain.setTargetAtTime(this.musicOn ? this.mix.menu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL : 0, this.ctx.currentTime, 0.3);
       if (this.musicOn) this.radio.play(); else setTimeout(() => { if (!this.musicOn) this.radio.pause(); }, 1200);
     }
     return this.musicOn;
@@ -610,10 +624,10 @@ export class Audio {
     if (p.bump > 0.05 && !p.muted) this.thump(p.bump, p.wb && v > 2 ? p.wb / v : 0.1);
     // ---- wind (roof down: the full blast; roof up: muffled with a mirror whistle)
     const open = p.open ? 1 : 0;
-    t.windG.gain.setTargetAtTime(mute * Math.min(0.6, v * v * 0.00009) * (0.45 + 0.55 * open), now, 0.25);
+    t.windG.gain.setTargetAtTime(mute * Math.min(0.2, v * v * 0.00003) * (0.45 + 0.55 * open), now, 0.25);
     t.windLP.frequency.setTargetAtTime(Math.min(12000, 450 + v * (open ? 110 : 45)), now, 0.3);
     t.wind?.playbackRate.setTargetAtTime(0.75 + Math.min(0.45, v / 110), now, 0.4);
-    t.whistleG.gain.setTargetAtTime(mute * (1 - open) * Math.max(0, v - 25) * 0.00035, now, 0.4);
+    t.whistleG.gain.setTargetAtTime(mute * (1 - open) * Math.max(0, v - 25) * 0.00015, now, 0.4);
     t.whistleBP.frequency.setTargetAtTime(1800 + v * 12, now, 0.4);
     // cabin: roof up filters the outside world
     this.cabinLP.frequency.setTargetAtTime(open ? 15000 : 2600, now, 0.2);
@@ -621,6 +635,7 @@ export class Audio {
     this.ambLP.frequency.setTargetAtTime(open ? 15000 : 2200, now, 0.2);
     this.engineLP.frequency.setTargetAtTime(open ? 15000 : 3800, now, 0.2);
 
+    this.engineBudget = externalEngineWeights(p.rivals, p.traffic);
     // ---- every AI / multiplayer car has its own model, spatial state and fade lifecycle.
     if (p.rivals) {
       this.rivalVoice?.set(p.rpm, 0, 0, now);
@@ -681,6 +696,10 @@ export class Audio {
   syncMenu(now = this.ctx?.currentTime || 0) {
     const classes = typeof document !== 'undefined' ? document.body?.classList : null;
     this.mix?.setMenu(this.menuRequested || ['menu', 'ui-open', 'loading', 'paused', 'results'].some(k => classes?.contains(k)), now);
+    if (this.musicBus && this.musicMenu !== this.mix.menu) {
+      this.musicMenu = this.mix.menu;
+      this.musicBus.gain.setTargetAtTime(this.musicOn ? this.musicMenu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL : 0, now, 0.4);
+    }
   }
 
   updateRivals(list, now) {
@@ -713,7 +732,8 @@ export class Audio {
         }).catch(() => {}); // procedural voice is already playing if a recording cannot load
       }
       const spatial = spatialAudio(v, r, now, 16);
-      v.voice.set(r.rpm || spec.idle, r.load ?? 0.3, spatial.gain, now, spatial.doppler, false, 0.05);
+      const budget = this.engineBudget?.rivals.get(r.id) ?? 1;
+      v.voice.set(r.rpm || spec.idle, r.load ?? 0.3, spatial.gain * 0.65 * budget, now, spatial.doppler, false, 0.05);
       v.pan.pan.setTargetAtTime(spatial.pan, now, 0.04);
       v.air.frequency.setTargetAtTime(spatial.cutoff, now, 0.08);
     }
@@ -721,7 +741,7 @@ export class Audio {
 
   updateTraffic(list, now, mute) {
     const V = this.voices;
-    const want = list.slice(0, V.length);
+    const want = [...list].sort((a, b) => a.d - b.d).slice(0, V.length);
     const wantIds = new Set(want.map((o) => o.id));
     for (const v of V) if (v.id >= 0 && !wantIds.has(v.id)) { v.id = -1; v.out.gain.setTargetAtTime(0, now, 0.08); }
     const have = new Set(V.map((v) => v.id));
@@ -773,7 +793,8 @@ export class Audio {
       const att = 1 / (1 + Math.pow(o.d / (9 * big), 1.6));
       v.eG.gain.setTargetAtTime(lvl * (v.electric ? 0.16 : 1), now, 0.08);
       v.nG.gain.setTargetAtTime(Math.min(0.5, sp * 0.018) * (K === 'scooter' || K === 'delivery' ? 0.3 : K === 'bus' ? 1.3 : 1), now, 0.08);
-      v.out.gain.setTargetAtTime(att * mute * 0.9, now, 0.06);
+      const budget = this.engineBudget?.traffic.get(o.id) ?? 1;
+      v.out.gain.setTargetAtTime(att * mute * 0.7 * budget, now, 0.06);
       v.air.frequency.setTargetAtTime(spatial.cutoff, now, 0.08);
       v.pan.pan.setTargetAtTime(Math.max(-0.95, Math.min(0.95, o.pan)), now, 0.05);
     }
@@ -1094,6 +1115,8 @@ Audio.prototype.levels = function () {
 /** volume settings (src/settings.js), each 0..1: master = everything, music = the radio, sfx = everything but the radio */
 Audio.prototype.setVolumes = function (volumes = {}) {
   for (const key of Object.keys(AUDIO_DEFAULTS)) if (key in volumes) this.vol[key] = clampAudio(volumes[key]);
+  if (this.eng) this.eng.gain.setTargetAtTime(PLAYER_ENGINE_LEVEL, this.ctx.currentTime, 0.04);
+  if (this.engineSpec) this.E = ENGINE_SOUND[this.engineSpec.engine] || this.E;
   this.mix?.setVolumes(this.vol);
 };
 // debug helper: RMS (dBFS) per bus, to keep the mix balanced
