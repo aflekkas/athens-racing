@@ -913,8 +913,11 @@ export class Vehicle {
     const wDes = clamp(vx * Math.tan(delta) / this.wb, -wGrip, wGrip);
     const over = this.w - wDes;
     let Mreq = 0;
-    // Let TC manage mild powered RWD rotation before allocating front brakes.
-    if (escK > 0 && Math.abs(beta) > 0.07 + 0.035 * powerRequest && Math.abs(this.w) > Math.abs(wDes) + 0.05) Mreq -= over * this.Iz * 14 * escK;
+    // Let TC manage mild powered RWD rotation. Fade yaw-catching brakes in
+    // above that envelope; a hard threshold abruptly washed out the nose
+    // while the rear was already regaining grip. Full catch returns by 10 deg.
+    const yawCatch = lerp(1, smoothstep(0.09, 0.17, Math.abs(beta)), powerRequest);
+    if (escK > 0 && Math.abs(beta) > 0.07 && Math.abs(this.w) > Math.abs(wDes) + 0.05) Mreq -= over * this.Iz * 14 * escK * yawCatch;
     // sideslip limiter: a car sliding sideways beyond what its driver can be expected to catch
     const bLim = 0.1 + 0.12 * (sp.drift ?? 1);
     if (escK > 0 && Math.abs(beta) > bLim) Mreq += (beta - Math.sign(beta) * bLim) * this.Iz * 30 * escK;
