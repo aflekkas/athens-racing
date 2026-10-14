@@ -284,6 +284,31 @@ test('objective rounds step on validated poses, snapshot live, and time up', (t)
   assert.equal(submissions.length, 0, 'objective modes never submit times');
 });
 
+test('objective results keep racer entries sorted by completed, never null', (t) => {
+  const { core, socket, lobbyOf, advance } = harness(t);
+  const a = socket(), b = socket();
+  core.connect(a, 'one'); core.connect(b, 'two');
+  const send = (ws, v) => core.message(ws, JSON.stringify(v));
+  send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
+  const code = lobbyOf(a).code;
+  send(b, { type: 'join', code });
+  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
+  send(a, { type: 'start' }); const raceId = lobbyOf(a).raceId;
+  advance(150); core.tick();
+  // Host runs the full fare (pickup then dropoff at the fixture origin).
+  const stop = { x: 0, y: 0, z: 0, yaw: 0, s: 1, u: 0, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1 };
+  for (let i = 0; i < 14; i++) { send(a, { type: 'state', raceId, state: stop }); advance(400); }
+  const hostId = lobbyOf(a).host;
+  assert.equal(lobbyOf(a).players.find((p) => p.id === hostId).objective.completed, 1);
+  // Guest idles past the deadline; the round ends with plain sorted results.
+  advance(25000); core.tick();
+  const done = lobbyOf(a);
+  assert.equal(done.status, 'results');
+  assert.equal(done.results.length, 2);
+  assert.ok(done.results.every((r) => r && typeof r.id === 'string' && r.objective), 'no null entries');
+  assert.deepEqual(done.results.map((r) => r.objective.completed), [1, 0], 'completed desc');
+});
+
 test('telemetry extras relay validated; violations without sites stay silent', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();

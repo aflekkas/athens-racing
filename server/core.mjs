@@ -36,7 +36,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     for (const p of l.players.values()) if (p.finish === null && !p.dnf && !objectiveRoundDone(l, p.id)) p.dnf = true;
     for (const p of l.racers.values()) if (p.finish === null && !p.dnf && !objectiveRoundDone(l, p.id)) p.dnf = true;
     for (const r of l.racers.values()) { const o = resultPlayerObjective(l, r.id); if (o) r.objective = o; }
-    if (l.objectives) l.racers = new Map([...l.racers.values()].sort((a, b) => ((b.objective?.completed || 0) - (a.objective?.completed || 0)) || ((a.objective?.bestTrip ?? Infinity) - (b.objective?.bestTrip ?? Infinity)) || ((a.objective?.elapsed ?? Infinity) - (b.objective?.elapsed ?? Infinity))));
+    if (l.objectives) l.racers = new Map([...l.racers.values()].sort((a, b) => ((b.objective?.completed || 0) - (a.objective?.completed || 0)) || ((a.objective?.bestTrip ?? Infinity) - (b.objective?.bestTrip ?? Infinity)) || ((a.objective?.elapsed ?? Infinity) - (b.objective?.elapsed ?? Infinity))).map((r) => [r.id, r]));
     // Server-authoritative multiplayer stats: placements come from the
     // validated finish times above, never from client claims.
     if (accounts) try {
