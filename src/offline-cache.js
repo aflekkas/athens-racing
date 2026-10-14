@@ -7,7 +7,9 @@ if ('serviceWorker' in navigator) {
     globalThis.caches?.keys().then(names => names.filter(n => n.startsWith('asr-')).forEach(n => caches.delete(n))).catch(() => {});
   } else {
     // After the game has loaded: the install step copies what this load already put in the HTTP cache.
-    const register = () => setTimeout(() => navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    // register() alone never re-checks an existing registration (and a worker's own update() is rate-limited), so
+    // every load asks for /sw.js (no-cache: a 304 unless a release shipped)
+    const register = () => setTimeout(() => navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(r => r.update())
       .catch(e => console.warn('Offline cache unavailable:', e.message)), 2500);
     const loaded = () => document.body.classList.contains('loaded');
     if (loaded()) register();

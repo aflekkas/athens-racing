@@ -37,6 +37,24 @@ test('routes only listed static files, the page and pinned CDN files', async () 
   assert.equal(await sw.hex16(new TextEncoder().encode('athens').buffer), hash16(Buffer.from('athens')));
 });
 
+test('navigations are checked against the worker release (skew, rollback, kill switch)', async () => {
+  const sw = await loadWorker({ build: 'abc123', files: {}, core: [] });
+  const page = (build) => `<html><head>${build ? `<meta name="asr-build" content="${build}" />` : ''}</head></html>`;
+  assert.equal(sw.releaseOf(page('abc123')), 'abc123');
+  assert.equal(sw.releaseOf(page(null)), null);
+  assert.equal(sw.verdictOf('https://asr.test/', page('abc123')), 'same');
+  assert.equal(sw.verdictOf('https://asr.test/?quality=low', page('def456')), 'newer'); // a deploy: bypass the cache, update
+  assert.equal(sw.verdictOf('https://asr.test/', page(null)), 'remove'); // rollback to a pre-cache build / kill switch
+  assert.equal(sw.verdictOf('https://asr.test/?nosw', page('abc123')), 'remove');
+  // the deploy build writes exactly the meta the worker reads
+  const dir = await mkdtemp(resolve(tmpdir(), 'asr-meta-'));
+  try {
+    await mkdir(resolve(dir, 'src'), { recursive: true }); await writeFile(resolve(dir, 'index.html'), '<html><head></head><body></body></html>'); await writeFile(resolve(dir, 'src/a.js'), '1');
+    const release = await buildRelease(dir); await publishRelease(root, dir, release);
+    assert.equal(sw.releaseOf(await readFile(resolve(dir, 'index.html'), 'utf8')), release.build);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
 test('a release publishes immutable content-addressed copies, a worker and the page hook', async () => {
   const dir = await mkdtemp(resolve(tmpdir(), 'asr-release-'));
   try {

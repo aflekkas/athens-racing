@@ -7,9 +7,14 @@
 //  - the pinned CDN modules (three.js) and font files: cache first (their URLs are versioned)
 //  - everything else (the /ws socket, /api, /auth, /health, music streams, uploads) is never touched
 // The page registers it from the deploy-only snippet in index.html; ?nosw unregisters it and clears the caches.
+// Release skew: every navigation is checked against this worker's release (<meta name="asr-build"> in the fresh
+// index.html). A newer release bypasses the cache (the network has the matching files) until the new worker takes
+// over (the page asks for it, src/offline-cache.js: a worker's own update() is rate-limited by Chrome); a page
+// without the meta (a rollback to a pre-cache build, or the kill switch) or ?nosw removes this worker.
 const RELEASE = self.ASR_RELEASE || { build: 'dev', files: {}, core: [] };
 const CONTENT = 'asr-content-v1', PAGES = 'asr-pages-v1', CDN = 'asr-cdn-v1';
 const CDN_HOSTS = new Set(['cdn.jsdelivr.net', 'fonts.gstatic.com']);
+let bypassUntil = 0; // ms: a newer (or unmanaged) release is loading; its files come from the network meanwhile
 
 const extOf = (path) => { const m = /\.[a-z0-9]+$/i.exec(path); return m ? m[0].toLowerCase() : ''; };
 /** the immutable, content-addressed URL path of a listed file (null when not listed) */
@@ -27,6 +32,19 @@ function routeOf(method, url, mode, hasRange, scope = self.location.origin, file
     return 'content';
   }
   return CDN_HOSTS.has(u.host) ? 'cdn' : null;
+}
+/** the release of a page: <meta name="asr-build" content="…"> (null: an unmanaged / pre-cache build) */
+function releaseOf(html) { return /<meta name="asr-build" content="([^"]+)"/.exec(html)?.[1] || null; }
+/** what a navigation means for this worker: 'same' | 'newer' (another release: bypass, update) | 'remove' */
+function verdictOf(url, html, build = RELEASE.build) {
+  if (new URL(url).searchParams.has('nosw')) return 'remove';
+  const page = releaseOf(html);
+  return !page ? 'remove' : page === build ? 'same' : 'newer';
+}
+async function removeSelf() {
+  bypassUntil = Infinity;
+  for (const name of await caches.keys()) if (name.startsWith('asr-')) await caches.delete(name);
+  await self.registration.unregister();
 }
 async function hex16(buffer) {
   const d = new Uint8Array(await crypto.subtle.digest('SHA-256', buffer));
@@ -50,7 +68,12 @@ async function fromPage(request) {
   const cache = await caches.open(PAGES);
   try {
     const res = await fetch(request);
-    if (res.ok) await cache.put('/', res.clone());
+    if (!res.ok) return res;
+    // read the release before the page asks for its modules (a few kB of HTML, already in flight)
+    const verdict = verdictOf(request.url, await res.clone().text());
+    if (verdict === 'remove') await removeSelf();
+    else if (verdict === 'newer') bypassUntil = Date.now() + 120000; // the page's update() installs the new worker (src/offline-cache.js)
+    else await cache.put('/', res.clone());
     return res;
   } catch (e) {
     const hit = await cache.match('/');
@@ -99,6 +122,8 @@ if (typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWo
   self.addEventListener('activate', (e) => e.waitUntil(prune().then(() => self.clients.claim())));
   self.addEventListener('fetch', (e) => {
     const r = e.request, route = routeOf(r.method, r.url, r.mode, r.headers.has('range'));
+    // another release is loading (the network has its files), or this worker removed itself: hands off
+    if (route && Date.now() < bypassUntil && (route !== 'page' || bypassUntil === Infinity)) return;
     if (route === 'content') e.respondWith(fromContent(r, new URL(r.url).pathname));
     else if (route === 'page') e.respondWith(fromPage(r));
     else if (route === 'cdn') e.respondWith(fromCdn(r));
@@ -106,4 +131,4 @@ if (typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWo
   self.addEventListener('message', (e) => { if (e.data === 'asr-build') e.source?.postMessage({ build: RELEASE.build }); });
 }
 // node tests (tools/service-worker.test.mjs) evaluate this file and call these
-self.ASR_SW = { contentPath, routeOf, hex16 };
+self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf };
