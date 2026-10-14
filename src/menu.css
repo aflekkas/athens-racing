@@ -477,3 +477,7 @@ body #limitSign { left: calc(-2.625rem - 34px); bottom: calc(16px + 7.8rem + 12p
 
 /* Keep district captions inside the touch minimap's bottom-left cut corner. */
 body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; padding: 2px 0; font-size: 9px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.car-stage { touch-action: none; cursor: grab; }
+.car-stage.dragging { cursor: grabbing; }
+.car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; color: #b5c2cf; font: 800 .7rem var(--f-cond); letter-spacing: .1em; }

@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint, carTransmission } from './cars.js';
+import { TurntableControl } from './turntable-control.js';
 import { account } from './account.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
@@ -135,14 +136,20 @@ export function mountCarSelect(root, index) {
     camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,.65,0); camera.updateProjectionMatrix();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
-  let last = performance.now();
-  renderer.setAnimationLoop(now => { updateCarDecals(model); model.root.rotation.y += Math.min(.05,(now-last)/1000)*.16; last=now; renderer.render(scene,camera); });
+  const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, last = performance.now();
+  const down = e => { if (pointer != null) return; e.preventDefault(); pointer=e.pointerId;pointerX=e.clientX;turntable.dragging=true;container.classList.add('dragging');container.setPointerCapture(pointer); };
+  const move = e => { if(e.pointerId!==pointer)return;model.root.rotation.y=turntable.drag(e.clientX-pointerX);pointerX=e.clientX;renderer.render(scene,camera); };
+  const up = e => { if(e.pointerId!==pointer)return;pointer=null;turntable.dragging=false;container.classList.remove('dragging'); };
+  container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
+  for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
+  const hint=document.createElement('span');hint.className='car-stage__hint';hint.textContent='DRAG TO ROTATE · 360°';container.append(hint);
+  renderer.setAnimationLoop(now => { updateCarDecals(model);model.root.rotation.y=turntable.advance((now-last)/1000);last=now;renderer.render(scene,camera); });
   return {
-    index,
+    index, get rotation() { return turntable.angle; },
     captureFrame() { renderer.setAnimationLoop(null); updateCarDecals(model); renderer.render(scene, camera); },
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {
-      renderer.setAnimationLoop(null); observer.disconnect(); model.disposeDamage?.();
+      renderer.setAnimationLoop(null); observer.disconnect();container.removeEventListener('pointerdown',down);container.removeEventListener('pointermove',move);for(const name of ['pointerup','pointercancel','lostpointercapture'])container.removeEventListener(name,up); model.disposeDamage?.();
       const geometry=new Set(), materials=new Set(), textures=new Set();
       scene.traverse(o=>{if(o.geometry && !o.geometry.userData.shared)geometry.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){materials.add(m);for(const v of Object.values(m))if(v?.isCanvasTexture)textures.add(v);}});
       for(const r of [...geometry,...materials,...textures])r.dispose();

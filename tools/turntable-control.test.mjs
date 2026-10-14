@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import{TurntableControl}from'../src/turntable-control.js';
+test('dragging crosses full revolutions in either direction',()=>{const t=new TurntableControl(0);assert.ok(t.drag(1200)>Math.PI*4);assert.ok(t.drag(-2400)<-Math.PI*4);});
+test('auto-spin completes a full revolution and pauses only during dragging',()=>{const t=new TurntableControl(0);for(let i=0;i<1200;i++)t.advance(1/60);assert.ok(t.angle>Math.PI*2);const at=t.angle;t.dragging=true;t.advance(.05);assert.equal(t.angle,at);t.dragging=false;t.advance(.05);assert.ok(t.angle>at);});
