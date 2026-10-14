@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
 import { MAPS } from '../src/map-catalog.js';
 import { resolveMap } from './map-definitions.mjs';
+import { readCarCapabilities } from './car-capabilities.mjs';
 import { createGameCore } from './core.mjs';
 import { createLeaderboard } from './leaderboard.mjs';
 
@@ -15,7 +16,8 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 
 export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, dataDir = resolve(root, '.data') } = {}) {
   const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8').catch(() => readFile(resolve(ROOT, 'src/cars.js'), 'utf8'));
-  const CARS = new Set([...catalogue.split('export const CARS = [')[1].split('\n];')[0].matchAll(/\bid:\s*'([^']+)'/g)].map(m => m[1]));
+  const capabilities = readCarCapabilities(catalogue);
+  const CARS = new Set(capabilities.cars), nitrousCars = new Set(capabilities.nitrousCars);
   const maps = new Map();
   for (const def of MAPS) {
     let data;
@@ -25,7 +27,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   }
   const { track, definitions } = maps.get('riviera');
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
-  const core = createGameCore({ maps, cars: CARS, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
+  const core = createGameCore({ maps, cars: CARS, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
   const { clients, lobbies, discover } = core;
   const postLimits = new Map();
   const server = http.createServer(async (req, res) => {

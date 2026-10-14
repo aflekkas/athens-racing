@@ -136,7 +136,7 @@ test('dropped driver rejoins the same live race with token, state, identity and 
   const rejoined = await env.client('Reloaded'); rejoined.send({ type: 'resume', token: a.token });
   const session = await rejoined.next(m => m.type === 'session'); assert.equal(session.resumed, true); assert.equal(session.id, a.id);
   const restored = await rejoined.next(m => m.type === 'lobby' && m.resume);
-  assert.equal(restored.lobby.raceId, l.raceId); assert.equal(restored.state.s, 5); assert.equal(restored.state.nitro, 0.07); assert.equal(restored.state.damage.front, 0.6); assert.equal(restored.lobby.players.find(p => p.id === a.id).name, 'Alice');
+  assert.equal(restored.lobby.raceId, l.raceId); assert.equal(restored.state.s, 5); assert.equal(restored.state.nitro, 0); assert.equal(restored.state.damage.front, 0.6); assert.equal(restored.lobby.players.find(p => p.id === a.id).name, 'Alice');
   rejoined.send({ type: 'state', raceId: l.raceId, state: state(15) });
   const finished = (await b.next(m => m.type === 'lobby' && m.lobby.players.some(p => p.id === a.id && p.finish != null))).lobby.players.find(p => p.id === a.id).finish;
   rejoined.send({ type: 'state', raceId: l.raceId, state: state(20) });

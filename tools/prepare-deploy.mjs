@@ -3,6 +3,7 @@ import './check-browser-imports.mjs';
 import { readdir, mkdir, readFile, writeFile, copyFile, rm, stat } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { MAPS } from '../src/map-catalog.js';
+import { readCarCapabilities } from '../server/car-capabilities.mjs';
 import { resolveMap } from '../server/map-definitions.mjs';
 const root = resolve(import.meta.dirname, '..'), out = resolve(root, '.deploy/assets');
 await rm(resolve(root, '.deploy'), { recursive: true, force: true });
@@ -27,6 +28,6 @@ for (const def of MAPS) {
   maps.push({ ...map, definitions: [...map.definitions] });
 }
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
-const cars = [...catalogue.split('export const CARS = [')[1].split('\n];')[0].matchAll(/\bid:\s*'([^']+)'/g)].map(m => m[1]);
-await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars }));
+const { cars, nitrousCars } = readCarCapabilities(catalogue);
+await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars }));
 console.log(JSON.stringify({ assets: count, bytes, largest, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));

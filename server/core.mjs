@@ -4,7 +4,7 @@ const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-
 const send = (ws, data) => { if (ws?.readyState === 1 && (ws.bufferedAmount || 0) < 65536) { try { ws.send(JSON.stringify(data)); } catch {} } };
 const randomUUID = () => crypto.randomUUID();
 const randomHex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(x => x.toString(16).padStart(2, '0')).join('');
-export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, idleLobbyMs = 1800000 }) {
+export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), leaderboard, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, idleLobbyMs = 1800000 }) {
   const handlers = new Map();
   const track = maps.get('riviera').track;
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
@@ -144,7 +144,7 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
           const prevS = c.state?.s ?? event.s0;
           const elapsed = (now - (c.stateAt ?? l.startAt)) / 1000;
           if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
-          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: s.nitro ?? c.state?.nitro ?? 0.4, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: s.decals === undefined ? c.state?.decals ?? [] : packDecals(unpackDecals(s.decals)) }; c.stateAt = now; l.dirty = true;
+          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: s.decals === undefined ? c.state?.decals ?? [] : packDecals(unpackDecals(s.decals)) }; c.stateAt = now; l.dirty = true;
           // Optional render clock only; progress checks and finishes use server receipt time.
           if (Number.isFinite(s.sampleTime) && s.sampleTime >= 0 && s.sampleTime <= 1e12) {
             c.state.sampleTime = s.sampleTime;
@@ -192,6 +192,7 @@ export function createGameCore({ maps, cars: CARS, leaderboard, countdownMs = 40
     for (const data of saved?.sessions || []) {
       const ws = sockets.get(data.token) || { readyState: 3, close() {} };
       const c = { ...data, ws, lobby: null, connected: sockets.has(data.token) };
+      if (c.state && !nitrousCars.has(c.car)) c.state = { ...c.state, nitro: 0 };
       sessions.set(c.token, c); if (c.connected) { clients.add(c); bind(c, ws, c.ip); }
     }
     const byId = new Map([...sessions.values()].map(c => [c.id, c]));
