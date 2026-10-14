@@ -1,5 +1,6 @@
 // UI-only engine condition and per-shift feedback. Physics owns every threshold and outcome.
-import { ui, icon, esc } from './ui/components.js';
+import { input } from './input.js';
+import { icon, esc } from './ui/components.js';
 import { damageFeedback } from './driving-feedback-model.js';
 let root, lastVehicle, lastSerial;
 const reasons={bounds:'NO GEAR IN THAT DIRECTION',cooldown:'SHIFT IN PROGRESS · WAIT',mode:'SHIFT UNAVAILABLE IN THIS GEARBOX MODE',reverse:'SHIFT UNAVAILABLE IN REVERSE',overrev_protection:'AUTO PROTECTION · LOWER GEAR WOULD OVER-REV'};
@@ -14,6 +15,6 @@ export function updateEngineHud(vehicle,{visible=true,spectating=false,towLabel=
   if(vehicle!==lastVehicle){lastVehicle=vehicle;lastSerial=undefined;}
   const f=vehicle?.shiftFeedback;if(!f||f.serial===lastSerial)return;lastSerial=f.serial;
   if(!visible)return;
-  if(f.accepted&&f.unsafe)ui.toast(`MECHANICAL OVER-REV${Number.isFinite(f.predictedRpm)?' · '+Math.round(f.predictedRpm).toLocaleString()+' RPM':''}`,{icon:'warning',tone:'bad',ms:3500});
-  else if(!f.accepted)ui.toast(reasons[f.reason]||`SHIFT REJECTED · ${String(f.reason||'UNAVAILABLE').replace(/[_-]/g,' ').toUpperCase()}`,{icon:'warning',tone:'bad',ms:2000});
+  if(f.accepted&&f.unsafe)input.toast(`MECHANICAL OVER-REV${Number.isFinite(f.predictedRpm)?' · '+Math.round(f.predictedRpm).toLocaleString()+' RPM':''}`,{icon:'warning',tone:'bad',ms:3500});
+  else if(!f.accepted)input.toast(reasons[f.reason]||`SHIFT REJECTED · ${String(f.reason||'UNAVAILABLE').replace(/[_-]/g,' ').toUpperCase()}`,{icon:'warning',tone:'bad',ms:2000});
 }

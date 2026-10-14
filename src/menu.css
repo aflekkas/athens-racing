@@ -472,3 +472,5 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 body #gearboxHud { box-sizing: border-box; left: calc(-5.25rem - 10px); bottom: 16px; width: 5.25rem; height: 7.8rem; display: flex; flex-direction: column; justify-content: center; }
 body #gearboxHud .gearbox-revs { width: 100%; flex-shrink: 0; }
 body #limitSign { left: calc(-2.625rem - 34px); bottom: calc(16px + 7.8rem + 12px); width: 48px; height: 48px; border-width: 6px; }
+
+@media(max-width:500px) { body.touch-driving #hud #dialBox { bottom: calc(208px + env(safe-area-inset-bottom)); } }

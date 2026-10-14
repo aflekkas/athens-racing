@@ -1,4 +1,4 @@
-#input-toast { position: fixed; z-index: 120; top: 18%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; background: rgba(16,22,28,.96); color: #fff; padding: 10px 18px 10px 14px; border: 1px solid rgba(255,255,255,.18); border-left: 3px solid #29d8ff; border-radius: 4px; box-shadow: 0 12px 30px rgba(0,0,0,.5); font: 800 15px/1 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
+#input-toast { position: fixed; z-index: 120; top: 232px; left: 12px; width: max-content; max-width: min(22rem, calc(100vw - 24px)); display: flex; align-items: center; gap: 10px; background: rgba(16,22,28,.96); color: #fff; padding: 10px 18px 10px 14px; border: 1px solid rgba(255,255,255,.18); border-left: 3px solid #29d8ff; border-radius: 4px; box-shadow: 0 12px 30px rgba(0,0,0,.5); font: 800 15px/1 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
 #input-toast::before { content: ''; flex: none; width: 18px; height: 18px; background: #29d8ff; -webkit-mask: url(../assets/icons/game-controller.svg) center / contain no-repeat; mask: url(../assets/icons/game-controller.svg) center / contain no-repeat; }
 #input-toast[hidden] { display: none; }
 .input-bindings { color: #fff; font: 14px system-ui; }
@@ -46,3 +46,17 @@ body.touch-driving #dialBox { right: 10px; bottom: 128px; width: 160px; height: 
 .touch-buttons { grid-template-columns: repeat(5,40px); gap: 4px; max-width: calc(100vw - 24px); }
 #touch-controls button[data-action=shiftUp], #touch-controls button[data-action=shiftDown] { border-color: #ffc35e; font-size: 11px; letter-spacing: .03em; }
 @media (max-width:500px) { .touch-buttons { grid-template-columns: repeat(5,34px); } .touch-buttons button { min-height: 32px; } }
+
+/* Gameplay notices stay in the left HUD lane, and cannot paint over another flow. */
+body.ui-open #input-toast, body[data-customizer="open"] #input-toast,
+body:has(#multiplayer:not([hidden])) #input-toast, body:has(.modal-scrim) #input-toast, body:has(#loading.open) #input-toast { display: none !important; }
+#input-toast[data-tone="bad"] { border-left-color: #ff655e; }
+#input-toast[data-tone="bad"]::before { background: #ff655e; -webkit-mask-image: url(../assets/icons/warning.svg); mask-image: url(../assets/icons/warning.svg); }
+body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw - 24px)); }
+@media(max-height:480px) { body.touch-driving #input-toast { top: 186px; max-width: 15rem; font-size: 12px; padding: 8px 10px; } }
+/* On phones, auxiliary actions have their own rows above steer and pedals. */
+@media(max-width:500px) {
+  #touch-controls { height: calc(200px + env(safe-area-inset-bottom)); }
+  .touch-buttons { left: 10px; right: 10px; width: auto; max-width: none; transform: none; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 93px); grid-template-columns: repeat(4,minmax(0,1fr)); grid-auto-rows: 38px; gap: 6px; }
+  .touch-buttons button { min-width: 0; width: 100%; overflow: hidden; letter-spacing: .04em; }
+}

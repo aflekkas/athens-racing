@@ -1,3 +1,4 @@
+import { GameplayToast } from './gameplay-toast.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
@@ -56,7 +57,7 @@ export class Input {
     for (const hint of this.document?.querySelectorAll?.('[data-nitrous]') || []) hint.hidden = !this.nitrousEnabled;
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
-  destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); clearTimeout(this.toastTimer); this.touchUI?.remove(); this.cancelCapture(); }
+  destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); this.gameplayToast = null; const toast = this.document?.getElementById?.('input-toast'); if (toast) toast.hidden = true; this.touchUI?.remove(); this.cancelCapture(); }
   load() {
     for (const kind of ['keyboard', 'gamepad']) {
       try {
@@ -146,14 +147,25 @@ export class Input {
     if (!pad || this.connected.get(pad.index) === pad.id) return;
     this.connected.set(pad.index, pad.id); this.toast('Controller connected');
   }
-  toast(message) {
-    if (!this.document?.body) return;
-    let el = this.document.getElementById('input-toast');
-    if (!el) { el = this.document.createElement('div'); el.id = 'input-toast'; el.setAttribute('role', 'status'); this.document.body.append(el); }
-    el.textContent = message; el.hidden = false; clearTimeout(this.toastTimer); this.toastTimer = setTimeout(() => { el.hidden = true; }, 2800);
+  toast(message, options = {}) {
+    this.gameplayToast ||= new GameplayToast(); this.gameplayToast.enqueue(message, options);
+    this.updateToast();
+  }
+  updateToast() {
+    const doc = this.document, body = doc?.body; if (!body || !this.gameplayToast) return;
+    const lobby = doc.getElementById('multiplayer'), loading = doc.getElementById('loading'), hud = doc.getElementById('hud');
+    const race = body.classList.contains('racing') || body.classList.contains('counting');
+    const loadingVisible = loading && (loading.classList.contains('open') || this.target?.getComputedStyle?.(loading)?.visibility === 'visible');
+    const active = race && (!hud || !hud.hidden && hud.style?.display !== 'none') && !this.inMenu && !this.blocked && !body.classList.contains('ui-open') && body.dataset.customizer !== 'open' && (!lobby || lobby.hidden) && !loadingVisible && !doc.querySelector?.('.modal-scrim');
+    const notice = this.gameplayToast.sample(active, globalThis.performance?.now?.() ?? Date.now());
+    let el = doc.getElementById('input-toast');
+    if (!notice) { if (el && !el.hidden) el.hidden = true; return; }
+    if (!el) { el = doc.createElement('div'); el.id = 'input-toast'; el.setAttribute('role', 'status'); body.append(el); }
+    if (el.textContent !== notice.message) el.textContent = notice.message;
+    el.dataset.tone = notice.tone; el.dataset.icon = notice.icon; if (el.hidden) el.hidden = false;
   }
   update(dt, { speed = 0, inMenu = false, blocked = false, retainMouseLock = false } = {}) {
-    this.inMenu = inMenu;
+    this.inMenu = inMenu; this.blocked = blocked; this.updateToast();
     const capturing = !!this.capture;
     dt = clamp(dt, 0, 0.5);
     let pads = [];
