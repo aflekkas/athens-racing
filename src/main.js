@@ -1192,20 +1192,37 @@ function updateLook(dt) {
   if (look.idleT > 1.5) { look.targetYaw = damp(look.targetYaw, 0, 5, dt); look.targetPitch = damp(look.targetPitch, 0, 5, dt); }
   spring(look, 'yaw', 'yawV', look.targetYaw, 14, dt); spring(look, 'pitch', 'pitchV', look.targetPitch, 14, dt);
 }
-const cameraBlend = { active: false, elapsed: 0, duration: 0.45, pos: new THREE.Vector3(), quat: new THREE.Quaternion(), fov: settings.cockpitFov };
+const cameraBlend = { active: false, elapsed: 0, duration: 0.45, pos: new THREE.Vector3(), quat: new THREE.Quaternion(), trackPos: new THREE.Vector3(), trackRoot: null, fov: settings.cockpitFov };
 function beginCameraBlend(duration = 0.45) {
   if (!G.cameraReady) return;
   Object.assign(cameraBlend, { active: true, elapsed: 0, duration, fov: camera.fov });
   cameraBlend.pos.copy(camera.position); cameraBlend.quat.copy(camera.quaternion);
+  cameraBlend.trackRoot = player.model.root; cameraBlend.trackPos.copy(player.model.root.position);
+  camState.retarget = true; post?.resetHistory?.();
 }
-function finishCamera(dt) {
+const previousCameraQuat = new THREE.Quaternion(), cameraHeadPoint = new THREE.Vector3();
+function finishCamera(dt, trackedRoot = player.model.root) {
   if (cameraBlend.active) {
+    // Keep a moving car framed while easing between views. A reset/swap rebases the anchor without moving it.
+    const delta = trackedRoot.position.clone().sub(cameraBlend.trackPos);
+    if (dt > 0 && cameraBlend.trackRoot === trackedRoot && delta.lengthSq() < 625) cameraBlend.pos.add(delta);
+    cameraBlend.trackRoot = trackedRoot; cameraBlend.trackPos.copy(trackedRoot.position);
     cameraBlend.elapsed += dt;
-    const t = clamp(cameraBlend.elapsed / cameraBlend.duration, 0, 1), ease = t * t * (3 - 2 * t);
+    const t = clamp(cameraBlend.elapsed / cameraBlend.duration, 0, 1), ease = t * t * t * (10 + t * (-15 + 6 * t)); // zero velocity and acceleration at each end
     camera.position.lerpVectors(cameraBlend.pos, camera.position.clone(), ease);
     camera.quaternion.slerpQuaternions(cameraBlend.quat, camera.quaternion.clone(), ease);
     camera.fov = lerp(cameraBlend.fov, camera.fov, ease);
     if (t >= 1) cameraBlend.active = false;
+  }
+  // Apply the same angular response through the blend boundary, avoiding a one-frame change in turn speed.
+  if (G.cameraReady && dt > 0) {
+    const angle = previousCameraQuat.angleTo(camera.quaternion);
+    const alpha = Math.min(-Math.expm1(-20 * dt), angle > 1e-6 ? 4.5 * dt / angle : 1);
+    camera.quaternion.slerpQuaternions(previousCameraQuat, camera.quaternion.clone(), alpha);
+  }
+  if (!window.__replay?.active) {
+    player.driver.head.getWorldPosition(cameraHeadPoint);
+    player.driver.head.visible = G.cam !== 'cockpit' && camera.position.distanceTo(cameraHeadPoint) > .55;
   }
   camera.updateProjectionMatrix(); G.cameraReady = true;
 }
@@ -1221,19 +1238,27 @@ function applyCamMode() {
 }
 function noise1(t) { return Math.sin(t * 1.7) * 0.5 + Math.sin(t * 3.1 + 1.3) * 0.3 + Math.sin(t * 7.3 + 0.7) * 0.2; }
 function updateCamera(dt, snap = false) {
-  if (window.__replay?.updateCamera(dt)) return;
+  previousCameraQuat.copy(camera.quaternion);
+  const replay = window.__replay, replayKey = replay?.active ? replay.kind + ':' + replay.cameraMode : null;
+  if (camState.replayKey !== replayKey && (camState.replayKey || replayKey)) beginCameraBlend(.65);
+  camState.replayKey = replayKey;
+  if (replay?.updateCamera(dt)) { finishCamera(dt); return; }
+  snap ||= !!camState.retarget; camState.retarget = false;
   const watching = multiplayer.spectating();
   const targetCar = watching && remoteCars.get(watching.id);
   if (targetCar?.model.root.visible) {
     if (G.cam !== 'spectate') { G.cam = 'spectate'; applyCamMode(); }
     if (G.spectateId && G.spectateId !== watching.id) beginCameraBlend();
-    const v = targetCar.veh, back = 7, target = _v1.set(v.x + Math.sin(v.yaw) * back, v.y + 2.8, v.z + Math.cos(v.yaw) * back);
+    // MP owner: keep remote visual pose sampling before this view; follow model.root rather than packet positions.
+    const v = targetCar.veh, visible = targetCar.model.root.position, back = 7;
+    const behind = _v2.set(0, 0, 1).applyQuaternion(targetCar.model.root.quaternion);
+    const target = _v1.copy(visible).addScaledVector(behind, back); target.y = visible.y + 2.8;
     const changed = G.spectateId !== watching.id; G.spectateId = watching.id;
     target.y = Math.max(target.y, route.surfaceY(v.s, v.u) + 0.6); springPosition(target, dt, snap || changed);
     camera.position.copy(camState.pos);
-    camera.lookAt(v.x, v.y + 0.9, v.z); camera.fov = settings.chaseFov; camera.updateProjectionMatrix();
+    camera.lookAt(visible.x, visible.y + 0.9, visible.z); camera.fov = settings.chaseFov; camera.updateProjectionMatrix();
     // Keep your driver's head and cockpit mirror out of the spectator view.
-    finishCamera(dt); return;
+    finishCamera(dt, targetCar.model.root); return;
   }
   G.spectateId = null;
   if (G.cam === 'spectate') { G.cam = G.userCam; applyCamMode(); }
@@ -1242,7 +1267,7 @@ function updateCamera(dt, snap = false) {
   const kmh = veh.kmh, sk = clamp(kmh / 260, 0, 1.2);
   G.shake = Math.max(0, G.shake - dt * 1.8);
   const rough = (veh.offroad ? 0.6 : 0.06) * sk + G.shake * 0.9;
-  const t = G.t;
+  const t = G.paused?.t ?? G.t;
   updateLook(dt);
   if (G.cam === 'cockpit') {
     const eye = player.cockpit.eye;
