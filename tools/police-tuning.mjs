@@ -5,7 +5,8 @@ import { events } from '../src/events.js';
 import { pathToFileURL } from 'node:url';
 export const scenarios = [
   { trigger: '120 km/h; no cops', kmh: 120 },
-  { trigger: '+40 km/h; cop 60 m', kmh: 90, cop: 60, star: 4 },
+  { trigger: '+40 km/h; cop 60 m', kmh: 90, cop: 60, star: 12.5 },
+  { trigger: '+60 km/h; cop 60 m', kmh: 110, cop: 60, star: 5 },
   { trigger: '+21 km/h; cop 60 m', kmh: 71, cop: 60 },
   { trigger: '+30 km/h; cop 60 m', kmh: 80, cop: 60 },
   { trigger: '+40 km/h; cop 130 m', kmh: 90, cop: 130 },
@@ -19,7 +20,7 @@ export const scenarios = [
   { trigger: 'traffic crash; cop 60 m', kind: 'crash', cop: 60 },
   { trigger: 'police bump', kind: 'bump', hitcop: true },
   { trigger: 'police crash', kind: 'crash', hitcop: true, star: 2 / 60 },
-  { trigger: 'wrong side; cop 60 m', wrong: true, cop: 60, star: 10 },
+  { trigger: 'wrong side; cop 60 m', wrong: true, cop: 60, star: 1 / .06 },
   { trigger: 'wrong side; no cop', wrong: true },
   { trigger: 'event speed camera; no cop', camera: true },
 ];

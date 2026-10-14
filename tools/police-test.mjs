@@ -32,12 +32,14 @@ test('a lawful pursuit never escalates just because time passes', () => {
   assert.equal(hm.state, 'pursuit'); assert.equal(hm.heat, 1.2); assert.equal(hm.level, 1);
 });
 
-test('a warning can be complied with; fleeing for six seconds gives one star', () => {
+test('a warning can be complied with; fleeing for ten seconds gives one star', () => {
   const hm = new HeatMachine(); hm.offence('bump', .15, true); hm.drain();
   const out = run(hm, HEAT.complyTime + .1, { seen: true, copNear: true, slow: true });
   assert.ok(phases(out).includes('released')); assert.equal(hm.state, 'idle'); assert.equal(hm.heat, 0);
-  hm.offence('red', .3, true); hm.drain();
-  run(hm, 5.9, { seen: true, fleeing: true }); assert.equal(hm.level, 0);
+  hm.offence('red', .3, true); assert.equal(hm.state, 'idle', 'released: minor offences ignored in the quiet spell'); hm.drain();
+  run(hm, HEAT.quietAfter * .5 + .1, { seen: false });
+  hm.offence('red', .3, true); hm.drain(); assert.equal(hm.state, 'warning');
+  run(hm, HEAT.fleeAfter - .1, { seen: true, fleeing: true }); assert.equal(hm.level, 0);
   const fled = run(hm, .2, { seen: true, fleeing: true });
   assert.ok(fled.some(e => e.phase === 'start' && e.kind === 'fleeing')); assert.equal(hm.level, 1);
 });
@@ -67,11 +69,13 @@ test('spotted again during the cooldown -> back in pursuit, evade meter halved',
   assert.ok(Math.abs(hm.evade - e * 0.5) < 0.05);
 });
 
-test('BUSTED: slow with a unit on you for bustTime; moving off drains the meter', () => {
+test('BUSTED: only in an established pursuit, slow with a unit on you for bustTime; moving off drains the meter', () => {
   const hm = new HeatMachine(); hm.begin(1.5); hm.drain();
-  run(hm, HEAT.bustTime * 0.6, { seen: true, copNear: true, slow: true });
-  assert.ok(hm.bust > 0.55 && hm.bust < 0.65);
-  run(hm, 0.5, { seen: true, copNear: true, slow: false }); // got moving: drains
+  run(hm, HEAT.bustAfter - 0.2, { seen: true, copNear: true, slow: true });
+  assert.equal(hm.bust, 0, 'a unit that just caught up cannot bust you');
+  run(hm, 0.2 + HEAT.bustTime * 0.6, { seen: true, copNear: true, slow: true });
+  assert.ok(hm.bust > 0.55 && hm.bust < 0.65, hm.bust);
+  run(hm, 0.3, { seen: true, copNear: true, slow: false }); // got moving: drains
   assert.ok(hm.bust < 0.35);
   run(hm, 0.5, { seen: true, copNear: false, slow: true }); // slow but nobody on you
   assert.ok(hm.bust < 0.05);
@@ -93,7 +97,7 @@ test('no bust meter outside a pursuit; takedowns add heat (no points)', () => {
 // ------------------------------------------------------------------ the runtime against a stub world
 import { world, step } from './police-fixture.mjs';
 
-test('runtime: off unless enabled; four seconds of witnessed speeding starts pursuit; events emitted', () => {
+test('runtime: off unless enabled; five seconds of witnessed flagrant speeding starts pursuit; events emitted', () => {
   const W = world(); W.player(1000, 1.9, 30);
   assert.deepEqual(step(W, 1), []); assert.equal(pursuit.state, 'off');
   W.police.reset(true);
@@ -106,7 +110,8 @@ test('runtime: off unless enabled; four seconds of witnessed speeding starts pur
   W.player(1000, 1.9, 30); // 108 km/h in a 50
   step(W, 1.5);
   assert.equal(W.police.hm.state, 'warning'); assert.equal(W.police.hm.level, 0);
-  step(W, 2.5);
+  step(W, 2.3); assert.equal(W.police.hm.level, 0, 'not yet sustained');
+  step(W, 1.3);
   assert.equal(W.police.hm.state, 'pursuit'); assert.ok(W.police.hm.level >= 1);
   assert.ok(seen.includes('start')); assert.equal(pursuit.state, 'pursuit');
   assert.ok(cop.cop.chase && cop.cop.siren, 'the witness joins the chase');
@@ -129,7 +134,9 @@ test('runtime: stopped next to a chasing unit -> BUSTED (no score event, everyon
   assert.ok(cops.length >= 1);
   const c = cops[0]; c.s = 1003; c.u = 1.9; c.dir = 1; c.v = 0; // right on your bumper (and it stays there)
   const scores = []; const off = events.on('score', (p) => scores.push(p));
-  const out = step(W, HEAT.bustTime + 0.5, {}, 1 / 30, () => { c.s = 1003; c.u = 1.9; c.v = 0; });
+  const pin = () => { c.s = 1003; c.u = 1.9; c.v = 0; };
+  assert.ok(!step(W, HEAT.bustAfter - 0.5, {}, 1 / 30, pin).some(e => e.phase === 'busted'), 'no bust in the first seconds of a chase');
+  const out = step(W, HEAT.bustTime + 1, {}, 1 / 30, pin);
   off();
   assert.ok(out.some((e) => e.phase === 'busted'), JSON.stringify(out.map((e) => e.phase)));
   assert.equal(scores.length, 0, 'no fines / score events');
@@ -202,4 +209,54 @@ test('explicit Police On setup enables circuit patrols and accepts unwrapped rac
   assert.equal(W.police.enabled, true); assert.equal(W.traffic.allowClosedPolice, true);
   assert.ok(W.police.spawnCop(W.route.length + 100, 1));
   W.police.reset(false); assert.equal(W.traffic.allowClosedPolice, false);
+});
+
+test('runtime: a little over the limit past a unit is tolerated; +35 km/h past it is only a warning', () => {
+  const W = world(); W.police.reset(true); const cop = W.police.spawnCop(1000, 1); cop.mode = 'parked'; cop.v = 0;
+  W.player(900, 1.9, 75 / 3.6); // +25 in a 50, drives right past the unit
+  step(W, 10, {}, 1 / 30, dt => { W.traffic.racers[0].s += 75 / 3.6 * dt; cop.s = 1000; });
+  assert.equal(W.police.hm.state, 'idle'); assert.equal(W.police.hm.heat, 0);
+  W.police.reset(true); const c2 = W.police.spawnCop(1000, 1); c2.mode = 'parked';
+  W.player(900, 1.9, 85 / 3.6); // +35: seen for ~150 m either side of the unit
+  step(W, 12, {}, 1 / 30, dt => { W.traffic.racers[0].s += 85 / 3.6 * dt; c2.s = 1000; c2.v = 0; });
+  assert.equal(W.police.hm.level, 0, 'a drive-past never gives a star');
+  assert.notEqual(W.police.hm.state, 'pursuit');
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+
+test('runtime: boxed in by two units busts faster than one; the cooldown never busts', () => {
+  const hm = new HeatMachine(); hm.begin(2); hm.drain();
+  run(hm, HEAT.bustAfter, { seen: true });
+  const t1 = run(hm, HEAT.boxedBustTime + 0.1, { seen: true, copNear: true, copsNear: 2, slow: true });
+  assert.ok(t1.some(e => e.phase === 'busted'));
+  hm.begin(2); hm.drain(); run(hm, HEAT.bustAfter, { seen: true });
+  assert.ok(!run(hm, HEAT.boxedBustTime + 0.1, { seen: true, copNear: true, copsNear: 1, slow: true }).some(e => e.phase === 'busted'));
+  hm.begin(2); hm.drain(); run(hm, HEAT.bustAfter, { seen: true }); run(hm, HEAT.lostAfter + .1, { seen: false });
+  assert.equal(hm.state, 'cooldown');
+  run(hm, 1, { seen: false, copNear: true, slow: true }); assert.equal(hm.bust, 0);
+});
+
+test('runtime: after a bust the police stay quiet and patrols do not respawn next to you', () => {
+  const W = world(); W.police.reset(true); W.player(1000, 1.9, 0);
+  W.police.hm.begin(1); step(W, 0.05);
+  const c = W.traffic.cars.find(q => q.active && q.cop?.chase); const pin = () => { c.s = 1003; c.u = 1.9; c.v = 0; };
+  const out = step(W, HEAT.bustAfter + HEAT.bustTime + 0.5, {}, 1 / 30, pin);
+  assert.ok(out.some(e => e.phase === 'busted'));
+  W.player(1000, 1.9, 30); // flooring it straight away in front of the same unit
+  step(W, 6, {}, 1 / 30, pin);
+  assert.equal(W.police.hm.state, 'idle', 'minor offences ignored in the quiet spell');
+});
+
+test('runtime: reinforcements are capped, slow and never spawn in view ahead', () => {
+  const W = world(); W.police.reset(true); W.player(5000, 1.9, 30);
+  W.police.rng = { next: () => 0.1, range: (a, b) => a, chance: () => true, int: (a) => a };
+  W.police.hm.begin(5); const spawned = [];
+  const spawn = W.police.spawnCop.bind(W.police); W.police.spawnCop = (s, ...a) => { spawned.push(s); return spawn(s, ...a); };
+  step(W, 60, {}, 1 / 30, dt => { W.traffic.racers[0].s += 30 * dt; for (const q of W.traffic.cars) if (q.cop?.chase && q.active) q.s = W.traffic.racers[0].s - 40; });
+  const chasing = W.traffic.cars.filter(q => q.active && q.cop?.chase && !q.cop.block).length;
+  assert.ok(chasing <= HEAT.maxChasers, `chasing ${chasing}`);
+  assert.ok(spawned.length <= 6, `spawned ${spawned.length} in a minute`);
+  // headless LOS is always clear, so every reinforcement came from behind
+  assert.ok(spawned.every((s, i) => s < 5000 + 30 * 60), JSON.stringify(spawned));
+  W.police.reset(false); W.police.offs.forEach(off => off());
 });

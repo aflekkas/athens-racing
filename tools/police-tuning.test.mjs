@@ -10,7 +10,8 @@ for (const scenario of scenarios) test(`trigger table: ${scenario.trigger}`, () 
     const row = measure(scenario, { dt });
     if (scenario.star === undefined) assert.equal(row.timeToStar, null, JSON.stringify(row));
     else assert.ok(Math.abs(row.timeToStar - scenario.star) <= dt + 1e-6, JSON.stringify(row));
-    if (scenario.trigger === '+40 km/h; cop 60 m') assert.ok(Math.abs(row.timeToWarning - 1) <= dt, JSON.stringify(row));
+    if (scenario.trigger === '+40 km/h; cop 60 m') assert.ok(Math.abs(row.timeToWarning - .25 / HEAT.speedHeat) <= dt, JSON.stringify(row));
+    if (scenario.trigger === '+60 km/h; cop 60 m') assert.ok(Math.abs(row.timeToWarning - .25 / HEAT.seriousSpeedHeat) <= dt, JSON.stringify(row));
   }
 });
 const fixture = t => { const W = world(); t.after(() => { W.police.reset(false); W.police.offs.forEach(off => off()); }); W.police.reset(true); return W; };
@@ -42,7 +43,7 @@ test('real LOS checks hills and walls even within 25 m and on the road', t => {
 });
 test('continued witnessed speeding takes 20 more seconds to the second star', t => {
   const W = fixture(t); W.player(1000, 2, 90 / 3.6); W.police.spawnCop(1060, 1);
-  step(W, 4, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
+  step(W, 12.5, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
   step(W, 19, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
   step(W, 1, {}, 1 / 60); assert.equal(W.police.hm.level, 2);
 });
@@ -74,9 +75,9 @@ test('map plans use real junction anchors, at most two roaming patrols and kilom
   const plan = patrolPlan(route, data, [{ s: 230 }, { s: 4650 }]);
   assert.equal(plan.find(p => p.id === 'vouliagmeni-junction').s, 230);
   assert.equal(plan.find(p => p.id === 'varkiza-junction').s, 4650);
-  assert.equal(plan.filter(p => !p.fixed).length, 2); assert.equal(plan.length, 6);
+  assert.equal(plan.filter(p => !p.fixed).length, 1); assert.equal(plan.length, 4);
   const fixed = plan.filter(p => p.fixed).map(p => p.s).sort((a,b) => a-b);
-  assert.ok(fixed[2] - fixed[1] > 3000);
+  assert.ok(fixed[1] - fixed[0] > 3000 && fixed[2] - fixed[1] > 800);
   const penteli = JSON.parse(readFileSync(new URL('../data/maps/penteli/map.json', import.meta.url)));
   const village = patrolPlan({ ...route, length: 10480 }, penteli);
   assert.equal(village.length, 2); assert.equal(village[0].id, 'dionysos-village');
@@ -89,7 +90,7 @@ test('fixed sites stream at their coordinates, not ahead of the player, and roam
   assert.equal(W.police.cops.find(c => c.cop.station === 'varkiza-junction').s, 4622);
   W.player(8000, 2, 45 / 3.6); step(W, 10);
   assert.equal(W.police.cops.filter(c => c.mode === 'parked').length, 0);
-  assert.equal(W.police.cops.length, 2);
+  assert.equal(W.police.cops.length, 1);
 });
 
 test('a police scrape itself identifies the officer even when visibility is blocked', t => {
@@ -100,7 +101,7 @@ test('a police scrape itself identifies the officer even when visibility is bloc
 });
 test('a minor contact never reduces existing suspicion; a witnessed severe impact is serious', t => {
   const W = fixture(t); W.player(1000, 2, 90 / 3.6); W.police.spawnCop(1060, 1);
-  step(W, 3.9, {}, 1 / 60); const heat = W.police.hm.heat;
+  step(W, 12.4, {}, 1 / 60); const heat = W.police.hm.heat;
   W.police.hm.offence('bump', .15, true); assert.ok(W.police.hm.heat >= heat); assert.equal(W.police.hm.level, 0);
   step(W, 1 / 60, { events: [{ who: 'player', kind: 'crash', car: {}, dv: 9 }] }, 1 / 60);
   assert.equal(W.police.hm.level, 1); assert.equal(W.police.hm.state, 'pursuit');

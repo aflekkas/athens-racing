@@ -4,9 +4,14 @@
 // pursuit. Heat below 1 has no stars; further stars require further offences.
 // Cameras only fine through enforcement.js. No camera dispatch or unseen heat.
 // Hook API: pursuit live status; events.emit('pursuit', {phase,heat,level,time,kind}).
+// Speeding: +30 km/h is tolerated; beyond it a unit warns after ~3 s and a star
+// needs ~12 s of witnessed speeding (+50 km/h: ~5 s). A drive-past is a warning.
 // Warning is lights/following with no wanted star. Stop nearby for 2 s to comply.
-// Losing sight drains suspicion. Pursuit: 3 s unseen -> cooldown, then 10 s at
+// Losing sight drains suspicion. Pursuit: 3 s unseen -> cooldown, then 8 s at
 // one star (+2 s per extra star) unseen -> evaded. No time-based escalation.
+// BUSTED needs a real pursuit (8 s in) and you held under ~9 km/h next to a unit
+// for 4 s (2.5 s boxed in by two). After any stop/escape the police stay quiet
+// for a while; reinforcements are capped at 3 and never appear in your view.
 import { events } from './events.js';
 import { settings } from './settings.js';
 import { routeLimitAt } from './speed-limit.js';
@@ -17,15 +22,22 @@ export const HEAT = {
   lostAfter: 3,      // s without any unit seeing you before the cooldown starts
   evadeBase: 8,        // base cooldown length (s), plus per-star time below
   evadePerLevel: 2,  // ... plus this per star
-  bustTime: 3,         // s slow with a unit on you = busted
-  bustDecay: 1.5,      // s to drain a full bust meter once you get moving
+  bustTime: 4,         // s slow with one unit on you = busted
+  boxedBustTime: 2.5,  // ... with two or more units on you (boxed in)
+  bustAfter: 8,        // s into a pursuit before the bust meter can fill at all
+  bustDecay: 1,        // s to drain a full bust meter once you get moving
   bustDist: 7.5,       // m centre to centre
-  bustSpeed: 3.5,      // m/s (~13 km/h)
+  bustSpeed: 2.5,      // m/s (~9 km/h)
   witnessRange: 75,    // m, for offences, including offences during a pursuit
   speedMargin: 30,     // km/h over the posted limit; exact +30 is tolerated
-  speedHeat: 0.25,     // four sustained witnessed seconds to the first star
+  speedHeat: 0.08,     // ~3 s to a warning, 12.5 sustained witnessed seconds to the first star
+  seriousMargin: 50,   // km/h over: flagrant speeding
+  seriousSpeedHeat: 0.2, // five sustained witnessed seconds to the first star
+  sustainedAfter: 8, seriousSustainedAfter: 4, // s of consecutive witnessed speeding before a star is possible
   pursuitSpeedHeat: 0.05, // 20 further seconds of witnessed speeding per extra star
-  warningHeat: 0.25, warningGrace: 3, complyTime: 2, fleeAfter: 6,
+  warningHeat: 0.25, warningGrace: 3, complyTime: 2, fleeAfter: 10, fleeMargin: 20,
+  quietAfter: 20,      // s after a bust / escape / release when minor offences are ignored and no patrol respawns
+  maxChasers: 3, maxUnits: 4, // reinforcement caps (roadblock cars excluded from maxUnits)
   suspicionDecay: 0.2, // heat/s outside sight, or after lawful driving in a warning
   contactCooldown: 1, // one contact per vehicle per second, not every physics frame
 };
@@ -36,14 +48,17 @@ export class HeatMachine {
   constructor(opts = {}) { this.cfg = { ...HEAT, ...opts }; this.reset(); }
   reset() {
     this.state = 'idle'; this.heat = 0;
-    this.bust = 0; this.evade = 0; this.time = 0; this.lostT = 0; this.warningT = 0; this.fleeT = 0; this.complyT = 0; this.out = [];
+    this.bust = 0; this.evade = 0; this.time = 0; this.lostT = 0; this.warningT = 0; this.fleeT = 0; this.complyT = 0; this.out = []; this.quiet = 0;
   }
+  /** an encounter is over: minor offences are ignored for quietAfter seconds */
+  settle() { this.state = 'idle'; this.heat = 0; this.bust = 0; this.evade = 0; this.lostT = 0; this.quiet = this.cfg.quietAfter; }
   get level() { return levelOf(this.heat); }
   get active() { return this.state === 'pursuit' || this.state === 'cooldown'; }
   push(phase, extra = {}) { this.out.push({ phase, heat: this.heat, level: this.level, time: this.time, ...extra }); }
   /** Only unit-witnessed offences count. Continuous offences warn at .25 heat. */
   offence(kind, amt, witnessed, { continuous = false, serious = false, sustained = true } = {}) {
     if (!witnessed || !(amt > 0)) return;
+    if (this.quiet > 0 && !serious && this.state === 'idle') return;
     const l0 = this.level;
     // A single minor offence cannot skip the warning, even a cluster of bumps.
     const cap = this.active || serious || continuous && sustained ? 5 : continuous ? 0.999 : 0.95;
@@ -66,6 +81,7 @@ export class HeatMachine {
   /** s: { seen (any unit sees you), copNear (a chasing unit within bustDist), slow (you are below bustSpeed) } */
   update(dt, s) {
     const C = this.cfg;
+    this.quiet = Math.max(0, this.quiet - dt);
     if (this.state === 'idle' || this.state === 'warning') {
       if (this.state === 'warning') {
         this.warningT += dt;
@@ -73,13 +89,13 @@ export class HeatMachine {
         this.fleeT = s.seen && s.fleeing ? this.fleeT + dt : 0;
         if (this.fleeT >= C.fleeAfter - 1e-6) this.offence('fleeing', Math.max(0.01, 1 - this.heat), true, { serious: true });
         else if (this.complyT >= C.complyTime - 1e-6) {
-          const out = this.drain(); this.reset(); out.push({ phase: 'released', heat: 0, level: 0, time: 0 }); return out;
+          const out = this.drain(); this.reset(); this.quiet = C.quietAfter * 0.5; out.push({ phase: 'released', heat: 0, level: 0, time: 0 }); return out;
         }
       }
       if (!this.active && (!s.seen || !s.offending && !s.fleeing && (this.state === 'idle' || this.warningT > C.warningGrace))) {
         this.heat = Math.max(0, this.heat - dt * C.suspicionDecay);
         if (this.state === 'warning' && this.heat <= 1e-6) {
-          this.push('released'); this.state = 'idle'; this.heat = 0;
+          this.push('released'); this.state = 'idle'; this.heat = 0; this.quiet = C.quietAfter * 0.5;
         }
       }
     }
@@ -96,20 +112,24 @@ export class HeatMachine {
         if (this.evade >= 1) {
           this.evade = 1;
           this.push('evaded');
-          this.state = 'idle'; this.heat = 0; this.evade = 0; this.bust = 0; this.lostT = 0;
+          this.settle();
           return this.drain();
         }
       }
     }
-    if (this.active) {
-      if (s.copNear && s.slow) this.bust += dt / C.bustTime;
+    // Only an established pursuit can end in a bust; a unit that just caught up, or one
+    // searching for you in the cooldown, cannot. Two units on you (boxed in) is quicker.
+    if (this.state === 'pursuit' && this.time >= C.bustAfter - 1e-6) {
+      const near = s.copsNear ?? (s.copNear ? 1 : 0);
+      if (near > 0 && s.slow) this.bust += dt / (near >= 2 ? C.boxedBustTime : C.bustTime);
       else this.bust = Math.max(0, this.bust - dt / C.bustDecay);
       if (this.bust >= 1) {
         this.bust = 1;
         this.push('busted');
-        this.state = 'idle'; this.heat = 0; this.bust = 0; this.evade = 0; this.lostT = 0;
+        this.settle();
       }
-    } else this.bust = 0;
+    } else if (this.state === 'cooldown') this.bust = Math.max(0, this.bust - dt / C.bustDecay);
+    else this.bust = 0;
     return this.drain();
   }
   drain() { const o = this.out; this.out = []; return o; }
@@ -148,10 +168,10 @@ export class Police {
   reset(enabled = this.enabled) {
     this.enabled = enabled && (this.traffic.allowClosedRoam || this.traffic.allowClosedPolice || !this.route.closed && !this.traffic.route?.closed); // free roam opts into patrols on every map
     if (!this.enabled) this.traffic.allowClosedPolice = false;
-    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.pedT = -Infinity;
+    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.flagrantT = 0; this.pedT = -Infinity;
     for (const c of this.traffic.cars) if (c.police) { c.active = false; c.m.root.visible = false; c.cop = null; c.crash = null; c.m.setStrobe?.(false, 0); }
     for (const b of this.blocks.slice()) this.clearBlock(b);
-    this.patrols = patrolPlan(this.route, this.traffic.data, this.traffic.signals?.J); this.reinT = 6; this.blockT = 10;
+    this.patrols = patrolPlan(this.route, this.traffic.data, this.traffic.signals?.J); this.reinT = 10; this.blockT = 30;
     this.publish();
   }
 
@@ -168,7 +188,7 @@ export class Police {
     if (ctx.eventId) this.eventId = ctx.eventId;
     const hm = this.hm;
     // ---- who can see the player
-    let seen = false, near = false, nearest = 1e9;
+    let seen = false, near = 0, nearest = 1e9;
     const lvl = hm.level, range = hm.active ? 150 + 20 * lvl : HEAT.witnessRange;
     for (const c of this.cops) {
       const k = c.cop;
@@ -177,16 +197,18 @@ export class Police {
       const d = this.distance(c, P);
       if (k.losT <= 0 || d > range) { k.losT = 0.2 + rng.range(0, 0.1); k.sees = d <= range && this.los(c, P); }
       if (k.sees) seen = true;
-      if (k.chase && d < HEAT.bustDist) near = true;
+      if (k.chase && d < HEAT.bustDist) near++;
       if (k.chase) nearest = Math.min(nearest, d);
     }
     // Fresh, short-range LOS for offences: pursuit tracking is not evidence.
     const witness = this.witnesses(P);
-    const lim = this.limitAt(P.s), speeding = witness && kmh > lim + HEAT.speedMargin;
+    const lim = this.limitAt(P.s), speeding = witness && kmh > lim + HEAT.speedMargin, flagrant = speeding && kmh > lim + HEAT.seriousMargin;
     const wrongSide = witness && kmh > 30 && P.u * D < -1.5;
     this.speedT = speeding ? this.speedT + dt : 0;
-    if (speeding) hm.offence('speeding', dt * (hm.active ? HEAT.pursuitSpeedHeat : HEAT.speedHeat), true, { continuous: true, sustained: this.speedT >= 4 - 1e-6 });
-    if (wrongSide) hm.offence('wrongside', dt * (hm.active ? 0.03 : 0.1), true, { continuous: true });
+    this.flagrantT = flagrant ? (this.flagrantT || 0) + dt : 0;
+    if (speeding) hm.offence('speeding', dt * (hm.active ? HEAT.pursuitSpeedHeat : flagrant ? HEAT.seriousSpeedHeat : HEAT.speedHeat), true,
+      { continuous: true, sustained: this.speedT >= HEAT.sustainedAfter - 1e-6 || this.flagrantT >= HEAT.seriousSustainedAfter - 1e-6 });
+    if (wrongSide) hm.offence('wrongside', dt * (hm.active ? 0.03 : 0.06), true, { continuous: true });
     // G.reds includes camera/history counts. Only the stop-line's actual
     // witness callback may add red-light heat; never infer it from a counter.
     for (const e of ctx.events || []) {
@@ -206,7 +228,7 @@ export class Police {
     for (const p of this.pending) hm.offence(p.kind, p.amt, p.witnessed ?? witness);
     this.pending.length = 0;
     // ---- the state machine
-    const tr0 = hm.update(dt, { seen, offending: speeding || wrongSide, fleeing: kmh > lim + 10, copNear: near, slow: Math.hypot(P.vs, P.vu) < HEAT.bustSpeed });
+    const tr0 = hm.update(dt, { seen, offending: speeding || wrongSide, fleeing: kmh > lim + HEAT.fleeMargin, copNear: near > 0, copsNear: near, slow: Math.hypot(P.vs, P.vu) < HEAT.bustSpeed });
     for (const e of tr0) {
       out.push(e);
       if (e.phase === 'warning') this.warn();
@@ -311,10 +333,15 @@ export class Police {
   enlist(c) { const k = c.cop; k.chase = true; k.keep = true; k.siren = true; k.wasChasing = true; c.mode = 'drive'; c.task = null; c.evade = null; c.ovt = null; c.hazard = false; c.blinkSide = 0; }
   engage(fromEvent) {
     const P = this.P, D = this.D;
-    for (const c of this.cops) if (!c.crash && !c.cop.block && (c.cop.sees || Math.abs(c.s - P.s) < 320)) this.enlist(c);
-    if (fromEvent) for (let i = 0; i < 2; i++) { const c = this.spawnCop(P.s - D * (150 + i * 60), D, { v: Math.max(10, P.vs * D) }); if (c) this.enlist(c); }
-    if (!this.cops.some((c) => c.cop.chase)) { const c = this.spawnCop(P.s - D * 160, D, { v: Math.max(10, P.vs * D + 5) }); if (c) this.enlist(c); }
+    // Units that can see you, or are close, join; at most the chase cap of them.
+    const free = this.cops.filter(c => !c.crash && !c.cop.block && (c.cop.sees || c.cop.chase || Math.abs(c.s - P.s) < 200)).sort((a, b) => Math.abs(a.s - P.s) - Math.abs(b.s - P.s));
+    for (const c of free.slice(0, HEAT.maxChasers)) this.enlist(c);
+    if (fromEvent) for (let i = 0; i < 2; i++) { const c = this.spawnBehind(P, D, 200 + i * 60, Math.max(10, P.vs * D)); if (c) this.enlist(c); }
+    if (!this.cops.some((c) => c.cop.chase)) { const c = this.spawnBehind(P, D, 220, Math.max(10, P.vs * D + 5)); if (c) this.enlist(c); }
   }
+  /** a unit can only appear where the player cannot see it pop in */
+  hidden(s, P = this.P) { return !P || !this.los({ s, u: 0 }, P); }
+  spawnBehind(P, D, gap, v, opts = {}) { return this.spawnCop(P.s - D * gap, D, { v, ...opts }); }
   /** after busted / evaded: everybody back to normal duties */
   standDown() {
     const tr = this.traffic;
@@ -331,12 +358,15 @@ export class Police {
     const cops = this.cops, chasing = cops.filter((c) => c.cop.chase && !c.crash);
     // Fixed sites stream at their map coordinates, never in front of a racer.
     if (!hm.active && hm.state !== 'warning') {
+      // Back to normal duties: no patrol pops in while you are close by, and none at all in the quiet spell.
+      const settling = this.t > 0.5;
       for (const site of this.patrols) {
         if (site.car && (!site.car.active || site.car.cop?.station !== site.id)) site.car = null;
         if (site.fixed && site.car && Math.abs(site.car.s - P.s) > 1100) {
           site.car.active = false; site.car.m.root.visible = false; site.car.cop = null; site.car = null;
         }
-        if (!site.car && (site.fixed ? Math.abs(site.s - P.s) < 900 : !site.started)) {
+        const gap = Math.abs(site.s - P.s);
+        if (!site.car && (site.fixed ? gap < 900 : !site.started) && (!settling || hm.quiet <= 0 && (gap > 350 || this.hidden(site.s, P)))) {
           const c = this.spawnCop(site.s, site.dir, { mode: site.fixed ? 'radar' : 'patrol', moto: site.moto });
           if (!c) continue;
           site.car = c; site.started = true; c.cop.station = site.id; c.cop.keep = true;
@@ -348,18 +378,21 @@ export class Police {
       // One following officer with lights. No reinforcements, PIT or roadblocks.
       for (const c of chasing) c.cop.tactic = 'tail';
     } else {
-      // ---- reinforcements: up to stars units, from behind, and from 2 stars also from ahead (they U-turn)
-      const want = Math.min(5, hm.level);
+      // ---- reinforcements: 1 unit at one star, 2 at two-three, 3 from four; slowly, from behind (out of
+      // the chase camera) and from 3 stars sometimes from far ahead, only where you can't see them appear
+      const want = Math.min(HEAT.maxChasers, [0, 1, 2, 2, 3, 3][hm.level]);
+      const units = cops.filter(c => !c.cop.block && !c.crash).length;
       this.reinT -= dt;
-      if (hm.state === 'pursuit' && chasing.length < want && this.reinT <= 0) {
-        this.reinT = rng.range(4, 8) / (0.6 + 0.25 * hm.level);
-        const ahead = hm.level >= 2 && rng.chance(0.4);
-        const c = ahead ? this.spawnCop(P.s + D * rng.range(320, 480), -D, { moto: rng.chance(0.2) }) : this.spawnCop(P.s - D * rng.range(170, 240), D, { v: Math.max(12, P.vs * D * 0.9 + 6), moto: rng.chance(0.25) });
+      if (hm.state === 'pursuit' && chasing.length < want && units < HEAT.maxUnits && this.reinT <= 0) {
+        this.reinT = rng.range(10, 16) / (0.7 + 0.15 * hm.level);
+        const sAhead = P.s + D * rng.range(450, 600);
+        const ahead = hm.level >= 3 && rng.chance(0.4) && this.hidden(sAhead, P);
+        const c = ahead ? this.spawnCop(sAhead, -D, { moto: rng.chance(0.2) }) : this.spawnBehind(P, D, rng.range(220, 300), Math.max(12, P.vs * D * 0.9 + 6), { moto: rng.chance(0.25) });
         if (c) this.enlist(c);
       }
-      // ---- roadblocks from 3 stars
+      // ---- roadblocks from 4 stars, rarely
       this.blockT -= dt;
-      if (hm.level >= 3 && hm.state === 'pursuit' && this.blockT <= 0 && !this.blocks.some((b) => !b.done)) { this.blockT = rng.range(30, 45); this.roadblock(); }
+      if (hm.level >= 4 && hm.state === 'pursuit' && this.blockT <= 0 && !this.blocks.some((b) => !b.done)) { this.blockT = rng.range(60, 90); this.roadblock(); }
       // ---- units fallen far behind or gone far ahead go back to other duties
       for (const c of chasing) { const g = (P.s - c.s) * D; if (g > 520 || g < -900) { c.active = false; c.m.root.visible = false; c.cop = null; } }
       // ---- tactics: rank the units by distance; the nearest does the PIT / ram, the next tries to box you in
