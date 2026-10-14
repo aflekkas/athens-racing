@@ -574,7 +574,7 @@ export function setWorldConditions(sample, { forceBake = false } = {}) {
   if (SUN) { SUN.color.copy(SUN_COLOR); SUN.intensity = SUN_INTENSITY; } if (FILL) updateFill();
   const hourDelta = bakeHour === null ? Infinity : Math.abs(((sample.hour - bakeHour + 12) % 24 + 24) % 24 - 12);
   const wxDelta = bakeWeather === null ? Infinity : Math.max(Math.abs(sample.atmosphere.over - bakeWeather.over), Math.abs(sample.atmosphere.rain - bakeWeather.rain));
-  if (BAKE.renderer && (forceBake || hourDelta >= 5 / 60 || wxDelta >= .08)) {
+  if (BAKE.renderer && !BAKE.renderer.getContext().isContextLost() && (forceBake || hourDelta >= 5 / 60 || wxDelta >= .08)) {
     const blend = blendResources(), fade = blend.ready && !BAKE.invalid && !forceBake;
     if (fade) for (const p of blend.targets) blitWorld(p.old, p.target.texture);
     bakeSky(BAKE.renderer, BAKE.sky);

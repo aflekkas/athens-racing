@@ -7,7 +7,7 @@ let applyAge = 0, broadcastAge = 0, lastWall = null, wasRunning = false;
 export function configureWorldLife(def, conditions = ENV.getConditions()) {
   const chosen = { ...conditions, ...def.conditions };
   // Dynamic starts at the session's chosen preset; choosing it never jumps to noon.
-  const hour = chosen.time === 'dynamic' ? conditions.hour ?? hourForTime(conditions.time) : hourForTime(chosen.time);
+  const hour = Number.isFinite(def.hour) ? def.hour : chosen.time === 'dynamic' ? conditions.hour ?? hourForTime(conditions.time) : hourForTime(chosen.time);
   const sample = worldLife.configure({ type: def.type, ...chosen, hour, dayMinutes: def.dayMinutes ?? new URLSearchParams(typeof location === 'undefined' ? '' : location.search).get('dayMinutes') ?? 30 });
   applyAge = broadcastAge = 0; lastWall = null; wasRunning = false;
   if (sample.dynamic) ENV.setWorldConditions(sample, { forceBake: true });

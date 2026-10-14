@@ -891,8 +891,10 @@ function switchRoamCar(carId) {
 }
 function setRoamConditions(conditions) {
   if (!inFreeRoam()) return;
+  const previous = window.__conditions();
   window.__setConditions(conditions); G.baseCond = window.__conditions();
-  configureWorldLife({ ...G.ev.def, conditions }, G.baseCond);
+  const hour = !conditions.time || conditions.time === previous.time ? previous.hour : undefined;
+  configureWorldLife({ ...G.ev.def, conditions, hour }, G.baseCond);
   G.ev.def.conditions = { ...G.baseCond };
 }
 function teleportLandmark(id) {

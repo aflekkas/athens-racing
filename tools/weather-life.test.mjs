@@ -4,7 +4,7 @@ import { WorldLife, FRONTS, trafficByHour, validWorldSnapshot } from '../src/wor
 import { WEATHER, advanceRoadWetness } from '../src/wet-grip.js';
 import * as ENV from '../src/env.js';
 import { applySetup } from '../src/race-setup.js';
-import { receiveWorldLife } from '../src/world-life-runtime.js';
+import { receiveWorldLife, configureWorldLife, worldLife } from '../src/world-life-runtime.js';
 
 test('free roam starts at chosen time and completes a configurable real-time day', () => {
   const world = new WorldLife({ dayMinutes: 30 }); world.configure({ type: 'free', time: 'dawn' });
@@ -48,4 +48,11 @@ test('continuous canonical lighting is smooth at midnight/dawn/dusk, with headli
 test('wetness builds in rain and dries gradually after clearing', () => {
   WEATHER.wet = 0; advanceRoadWetness(20, 1, 1); const wet = WEATHER.wet; assert.ok(wet > .5);
   advanceRoadWetness(20, 0, 1); assert.ok(WEATHER.wet < wet && WEATHER.wet > .3); advanceRoadWetness(1000, 0, 1); assert.ok(WEATHER.wet < .001);
+});
+test('a weather-only free-roam change can retain the exact running clock', () => {
+  configureWorldLife({ type: 'free', conditions: { time: 'afternoon', weather: 'clear' }, hour: 18.37 });
+  const hour = worldLife.hour;
+  configureWorldLife({ type: 'free', conditions: { time: 'afternoon', weather: 'rain' }, hour });
+  assert.ok(Math.abs(worldLife.hour - 18.37) < 1e-9); assert.equal(worldLife.front, 'rain');
+  configureWorldLife({ type: 'free', conditions: { time: 'dawn', weather: 'rain' } }); assert.equal(worldLife.hour, 6);
 });
