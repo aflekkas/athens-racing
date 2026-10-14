@@ -10,7 +10,7 @@
   "assets": {
     "directory": ".deploy/assets",
     "binding": "ASSETS",
-    "run_worker_first": ["/ws", "/api/*", "/auth/*", "/health", "/", "/index.html", "/robots.txt", "/sitemap.xml"]
+    "run_worker_first": ["/ws", "/api/*", "/health", "/", "/index.html", "/robots.txt", "/sitemap.xml"]
   },
   "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameArena"] }],

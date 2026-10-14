@@ -1,11 +1,10 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CHARACTER_PRESETS,characterPresetLook} from '../src/character-presets.js';
 import {normalizeDriverAppearance,DEFAULT_DRIVER_APPEARANCE} from '../src/driver-appearance-data.js';
 import {normalizeAppearance} from '../src/customization-data.js';
 import {createPresetRepository} from '../src/customization-repository.js';
-import {createCustomizationService} from '../server/customization.mjs';
-import {createMemoryCustomizationStore} from '../server/customization-store.mjs';
 import {createGameCore} from '../server/core.mjs';
 import {StateSender} from '../src/multiplayer-state.js';
 
@@ -26,16 +25,15 @@ test('bounded schema keeps tunable traits, enforces Jonia and strips executable/
   for(const p of CHARACTER_PRESETS)assert.deepEqual(normalizeAppearance({driver:p.look}).driver,normalizeDriverAppearance(p.look));
   assert(JSON.stringify(look).length<650);
 });
-test('all characters save/reload as per-car guest and signed-in appearance presets',async()=>{
-  for(const signed of [false,true]){
-    const service=createCustomizationService(createMemoryCustomizationStore(),{cars:new Set(['mini','z4'])});let disk={};
-    const make=()=>createPresetRepository(signed?{load:()=>service.get('owner'),write:v=>service.save('owner',v)}:{load:()=>disk,write:v=>disk={...v,revision:v.revision+1}});
+test('all characters save/reload as per-car local appearance presets',async()=>{
+  {
+    let disk={};
+    const make=()=>createPresetRepository({load:()=>disk,write:v=>disk={...v,revision:v.revision+1}});
     let repo=make();await repo.reload();const saved=[];
     for(const p of CHARACTER_PRESETS)saved.push(await repo.save('mini',p.name,{driver:p.look}));
     repo=make();await repo.reload();assert.equal(repo.forCar('mini').length,3);assert.deepEqual(repo.forCar('z4'),[]);
     for(let i=0;i<saved.length;i++){await repo.select('mini',saved[i].id);assert.deepEqual(repo.selected('mini').driver,normalizeDriverAppearance(CHARACTER_PRESETS[i].look));}
     const copy=await repo.duplicate(saved[2].id,'Vasilis Copy');await repo.rename(copy.id,'Paired Riders');await repo.delete(saved[2].id);repo=make();await repo.reload();assert.equal(repo.selected('mini').name,'Paired Riders');assert.equal(repo.selected('mini').driver.passenger.id,'jonia_peroti');
-    if(signed)assert.deepEqual(service.get('other').presets,[]);
   }
 });
 test('passenger changes transmit while parked without mutating a prior queued snapshot',()=>{
@@ -44,7 +42,7 @@ test('passenger changes transmit while parked without mutating a prior queued sn
 });
 test('multiplayer relays all character fields and preserves the paired passenger after hibernation',t=>{
   let now=100000;t.mock.method(Date,'now',()=>now);const maps=new Map([['riviera',{id:'riviera',track:{start:0,finish:1000,version:'fixture'},definitions:new Map([['quick',{id:'quick',type:'sprint',s0:0,s1:1000,dir:1,len:1000,routeKey:'0>1000'}]])}]]);
-  const opts={maps,cars:new Set(['mini']),countdownMs:100,leaderboard:{submit:async()=>({})}},core=createGameCore(opts),socket=()=>({readyState:1,messages:[],send(s){this.messages.push(JSON.parse(s));},close(){}}),a=socket(),b=socket();core.connect(a,'a');core.connect(b,'b');const send=(ws,m)=>core.message(ws,JSON.stringify(m));
+  const opts={maps,cars:new Set(['mini']),countdownMs:100,leaderboard:{submit:async()=>({})}},core=createGameCore(opts),socket=()=>({readyState:1,messages:[],send(s){this.messages.push(JSON.parse(s));},close(){}}),a=socket(),b=socket();core.connect(a,'a',{protocol:MULTIPLAYER_PROTOCOL});core.connect(b,'b',{protocol:MULTIPLAYER_PROTOCOL});const send=(ws,m)=>core.message(ws,JSON.stringify(m));
   send(a,{type:'create',mapId:'riviera'});send(b,{type:'join',code:a.messages.at(-1).lobby.code});for(const ws of [a,b])send(ws,{type:'ready',ready:true,version:'fixture'});send(a,{type:'start'});now+=101;core.tick();const raceId=a.messages.at(-1).lobby.raceId;
   for(const p of CHARACTER_PRESETS){send(a,{type:'state',raceId,state:{x:2,y:0,z:0,yaw:0,s:2,u:0,vLong:0,vLat:0,steer:0,rpm:900,gear:1,driver:p.look}});core.tick();assert.deepEqual(b.messages.at(-1).players.find(p=>p.state)?.state.driver,normalizeDriverAppearance(p.look));now+=110;}
   const restored=createGameCore(opts);restored.restore(JSON.parse(JSON.stringify(core.exportState())),new Map([...core.clients].map(c=>[c.token,c.ws])));assert.equal([...restored.clients].find(c=>c.state)?.state.driver.passenger.id,'jonia_peroti');

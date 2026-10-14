@@ -410,45 +410,6 @@ body #gearboxHud .gearbox-gear { font: italic 900 3rem/.95 var(--f-cond); }
 body #gearboxHud .gearbox-mode { color: #b9c8d6; letter-spacing: .1em; }
 @media (max-width: 650px), (max-height: 500px) { #drivingHints { bottom: 8.7rem; max-width: calc(100vw - 1.5rem); padding: .5rem; } #drivingHints .driving-controls { gap: .3rem .6rem; } #drivingHints .driving-controls > span:last-child { display: none; } #drivingTip { bottom: 9rem; font-size: .8rem; } .driving-dismiss { padding-inline: .4rem; } }
 
-/* Account and social presentation retains the account owner's data/behavior hooks. */
-#ui.s-account,#ui.s-friends { background: linear-gradient(140deg,#111c27,#080c12 70%); }
-.driver-layout { display: grid; grid-template-columns: minmax(16rem,1fr) minmax(0,2fr); gap: 1.3rem; flex: 1; min-height: 0; }
-.driver-identity { align-self: start; padding: 1.5rem; display: grid; gap: 1.3rem; }
-.driver-emblem .brand-mark { width: 4rem; height: 4rem; }
-.driver-identity h3 { font: italic 900 2.6rem/.95 var(--f-cond); margin: 0; }
-.driver-identity p { font: 500 .9rem/1.5 var(--f-sans); color: var(--c-text-2); margin: 0; }
-.driver-plate { display: flex; border: 3px solid #212731; border-radius: .45rem; background: #e9eae5; color: #10151d; overflow: hidden; box-shadow: 0 3px 9px #0005; min-height: 4rem; }
-.driver-plate > span { display: grid; place-items: center; background: #1b488d; color: white; padding: .5rem; font: 800 .8rem var(--f-sans); }
-.driver-plate > b { padding: .55rem; flex: 1; text-align: center; font: 900 clamp(1.2rem,2.5vw,2.2rem) var(--f-cond); letter-spacing: .04em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.driver-profile > .panel, [data-friends=root] { padding: 1.3rem; }
-.driver-profile p { font: 500 .9rem/1.5 var(--f-sans); color: #c7d0db; }
-.driver-profile .stats { grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 1.3rem; }
-.driver-profile .stat-tile__v { font-size: 1.7rem; overflow-wrap: anywhere; }
-.scr--social input { appearance: none; background: #080f18; border: 1px solid var(--c-line-2); border-radius: var(--r-2); padding: .8rem; color: white; font: 600 .95rem var(--f-sans); min-width: 0; outline: none; box-sizing: border-box; }
-.scr--social input:focus { border-color: var(--c-accent); box-shadow: var(--focus-ring); }
-.scr--social input[data-username] { width: 100%; text-transform: uppercase; }
-.scr--social .note { color: var(--c-text-3); font: 500 .8rem/1.5 var(--f-sans); }
-.best-times { padding: 0; list-style: none; margin: 1.2rem 0; }
-.best-times li { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid var(--c-line); font: 600 .8rem var(--f-sans); overflow-wrap: anywhere; }
-.best-times b { white-space: nowrap; color: var(--c-gold); }
-[data-friends=root] { overflow-y: auto; }
-.friend-search { display: flex; gap: .6rem; margin: 1rem 0; flex-wrap: wrap; }
-.friend-search input { flex: 1 1 12rem; }
-.friend-row { display: grid; grid-template-columns: minmax(9rem,1fr) minmax(6rem,.6fr) minmax(8rem,1fr) auto; gap: .7rem; align-items: center; padding: .9rem; margin: .3rem 0; background: var(--c-surface-2); border: 1px solid var(--c-line); border-radius: var(--r-2); }
-.friend-name { font: 800 1.15rem var(--f-cond); overflow-wrap: anywhere; }
-.friend-plate { font: 600 .75rem var(--f-sans); color: #94a6b8; }
-.friend-presence { display: flex; align-items: center; gap: .4rem; font: 800 .75rem var(--f-cond); letter-spacing: .02em; color: #80e1bb; }
-.friend-presence::before { content: ''; width: .5rem; height: .5rem; background: #80e1bb; border-radius: 50%; flex: none; }
-.friend-presence[data-presence=offline] { color: #93a0ad; }
-.friend-presence[data-presence=offline]::before { background: #93a0ad; }
-.friend-presence[data-presence=racing] { color: #ffc35e; }
-.friend-presence[data-presence=racing]::before { background: #ffc35e; }
-.friend-acts { display: flex; gap: .4rem; flex-wrap: wrap; }
-[data-friends] h4 { margin: 1.5rem 0 .5rem; color: #a6b9ca; letter-spacing: .1em; }
-.social-guest { padding: 2rem; max-width: 34rem; }
-@media (max-width: 800px) { .friend-row { grid-template-columns: minmax(0,1fr) auto; } .friend-plate { grid-column: 1; } .friend-presence { grid-column: 1; } .friend-acts { grid-column: 2; grid-row: 1 / 4; max-width: 10rem; } }
-@media (max-width: 650px) and (min-height:501px) { .driver-layout { display: flex; flex-direction: column; flex: none; } .driver-identity { padding: 1rem; gap: .8rem; } .driver-emblem { display: none; } .driver-identity h3 { font-size: 2rem; } .driver-profile { overflow: visible; } .driver-profile .stats { grid-template-columns: repeat(2,minmax(0,1fr)); } .friend-row { padding: .7rem; } }
-@media (max-height: 500px) { .driver-layout { grid-template-columns: minmax(12rem,1fr) minmax(0,2fr); } .driver-identity { padding: .75rem; gap: .6rem; } .driver-emblem { display: none; } .driver-identity h3 { font-size: 1.7rem; } .driver-identity p { font-size: .75rem; } .driver-plate { min-height: 3rem; } .driver-profile .stats { grid-template-columns: repeat(2,minmax(0,1fr)); } .title__col { width: min(34rem,100%); max-height: 100%; overflow-y: auto; } }
 /* The binding-aware strip replaces the legacy hardcoded driving footer. */
 #keys { display: none; }
 body.touch-driving #drivingHints { bottom: 8.7rem; }
@@ -526,7 +487,7 @@ body[data-customizer="open"] :is(#hud,#driving-feedback,#mp-board,#racer-markers
 @media(max-height:480px){#checkpoint-banner{left:228px;top:82px;transform:none;width:300px;padding:7px 10px}}
 @media(max-width:500px){#checkpoint-banner{left:122px;top:140px;transform:none;width:calc(100vw - 134px)}body[data-mode=taxi] #checkpoint-banner,body[data-mode=getaway] #checkpoint-banner{top:290px}#checkpoint-banner b{font-size:14px}}
 
-.account-recovery { border: 1px solid var(--accent, #d9fd4a); padding: 16px; margin: 16px 0; }
-.account-recovery code { display: block; font-size: 18px; line-height: 1.8; overflow-wrap: anywhere; user-select: all; letter-spacing: 1px; }
 
 .graphics-quality .field,.graphics-resolution .field{margin-bottom:14px}.graphics-resolution .select{border-left:3px solid var(--c-cyan,#29d8ff)}.graphics-live-note{font:700 12px/1.4 var(--f-cond);letter-spacing:.04em;color:#9fd8de;margin:0 0 4px}.graphics-quality .seg{flex-wrap:wrap}#render-resolution,#pixel-ratio-cap{display:none!important}
+
+#driver-name { display: block; width: min(100%, 24rem); padding: .8rem; margin-block: .8rem; border: 1px solid var(--c-line-2); background: var(--c-surface-2); color: var(--c-text); font: 600 1.1rem var(--f-sans); text-transform: uppercase; }

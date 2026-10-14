@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint } from './cars.js';
 import { TurntableControl } from './turntable-control.js';
-import { account } from './account.js';
+import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 import { CAR_CLASSES, carCategory, filterCars } from './car-catalog.js';
@@ -101,7 +101,7 @@ export function mountCarSelect(root, index) {
   const pmrem = new THREE.PMREMGenerator(renderer), room = new RoomEnvironment();
   const environment = pmrem.fromScene(room, .04); scene.environment = environment.texture;
   room.dispose(); pmrem.dispose();
-  const model = new CarModel(CARS[index], { plate: account.plate() });
+  const model = new CarModel(CARS[index], { plate: driverName.plate() });
   new Cockpit(CARS[index], model);
   model.root.rotation.y = -.5; scene.add(model.root);
   // Clone materials so the studio cannot change shared materials on the road.

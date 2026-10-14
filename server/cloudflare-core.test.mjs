@@ -4,9 +4,6 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { createGameCore } from './core.mjs';
 import { createSqlLeaderboard } from '../worker/leaderboard.mjs';
-import { createAccountService } from './accounts.mjs';
-import { createFriendService } from './friends.mjs';
-import { createMemorySocialStore } from './social-store.mjs';
 
 const map = (id, len, version, closed = false) => ({ id, name: id, track: { start: 0, finish: len, version }, definitions: new Map([[id === 'riviera' ? 'quick' : id + '-race', { id: id === 'riviera' ? 'quick' : id + '-race', name: id, type: 'sprint', s0: 0, s1: len, dir: 1, len, routeKey: `0>${len}`, traffic: false, closed }]]) });
 // Lobby fixtures use only enabled maps (Megara is retained in MAPS/data but not
@@ -126,80 +123,27 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   send(a, { type: 'rematch' }); assert.ok(a.messages.at(-1).lobby.players.every(p => p.dnf === false && p.finish === null));
 });
 
-// --- Username accounts, plate = username, lobby allow-lists, MP stats -------
-const cars3 = new Set(['mini', 'z4', 'carrera']);
-function socialCore(t, nowRef = { at: 500000 }) {
-  t.mock.method(Date, 'now', () => nowRef.at);
-  const store = createMemorySocialStore();
-  const accounts = createAccountService(store, { now: () => nowRef.at });
-  const friends = createFriendService(store, { now: () => nowRef.at });
-  const core = createGameCore({ maps, cars: cars3, leaderboard: { submit: async () => ({ saved: true }) }, accounts, friends, countdownMs: 100, raceLimitMs: 5000 });
-  const subs = ['one', 'two'].map(name => accounts.createAccount(name).sub);
-  const login = (ws) => { const sub = ws === sockets.a ? subs[0] : subs[1]; core.message(ws, JSON.stringify({ type: 'auth', ticket: accounts.createTicket(sub).ticket })); };
-  const sockets = { a: socket(), b: socket() };
-  core.connect(sockets.a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(sockets.b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
-  return { core, accounts, friends, subs, nowRef, ...sockets, login, send: (ws, m) => core.message(ws, JSON.stringify(m)) };
-}
-
-test('ticket auth links the username plate; allow-lists coerce and reject; stats and recent accrue', t => {
-  const { core, accounts, friends, subs, nowRef, a, b, login, send } = socialCore(t);
-  assert.match(a.messages.at(-1).type, /discovery/);
-  send(a, { type: 'auth', ticket: 'bogus' }); assert.match(a.messages.at(-1).message, /ticket/);
-  login(a); login(b);
-  assert.equal([...a.messages].reverse().find(m => m.type === 'account').account.username, 'ONE');
-  send(a, { type: 'create', name: 'Alice', car: 'carrera', allowedCars: ['mini', 'z4'] });
-  let lobby = a.messages.at(-1).lobby;
-  assert.equal(lobby.players[0].plate, 'ONE', 'plate is the username');
-  assert.deepEqual(lobby.allowedCars, ['mini', 'z4']);
-  assert.equal(lobby.players[0].car, 'mini', 'a disallowed create car is coerced');
-  send(b, { type: 'join', code: lobby.code, name: 'Bob', car: 'carrera' });
-  lobby = b.messages.at(-1).lobby;
-  assert.equal(lobby.players.find(p => p.name === 'Bob').car, 'mini', 'a disallowed join car is coerced');
-  assert.equal(lobby.players.find(p => p.name === 'Bob').plate, 'TWO');
-  send(b, { type: 'ready', ready: false, version: 'coast', car: 'carrera' });
-  assert.match(b.messages.at(-1).message, /not allowed/);
-  send(a, { type: 'options', allowedCars: [] }); assert.match(a.messages.at(-1).message, /at least one/);
-  send(a, { type: 'options', allowedCars: ['mini', 'nope'] });
-  assert.deepEqual(a.messages.at(-1).lobby.allowedCars, ['mini'], 'unknown ids are dropped, never stored');
-  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
-  send(a, { type: 'start' });
-  const race = a.messages.at(-1).lobby; assert.equal(race.status, 'countdown');
-  nowRef.at = 500000 + 101; core.tick();
-  send(a, { type: 'state', raceId: race.raceId, state: state(15) });
-  send(b, { type: 'state', raceId: race.raceId, state: state(15) });
-  const done = a.messages.at(-1).lobby;
-  assert.equal(done.status, 'results');
-  const s1 = accounts.get(subs[0]).stats;
-  assert.deepEqual([s1.started, s1.finished, s1.wins, s1.podiums, s1.km], [1, 1, 1, 0, 0.015]);
-  assert.equal(s1.best['riviera|quick|mini|0'], done.players.find(p => p.name === 'Alice').finish);
-  assert.deepEqual(friends.recent(subs[0]).map(u => u.username), ['TWO'], 'shared races make recent players');
-});
-
-test('presence rides lobby transitions: menu, lobby, racing, offline', t => {
-  const { core, friends, subs, a, b, login, send } = socialCore(t);
-  login(a); login(b);
-  friends.request(subs[0], 'two'); friends.accept(subs[1], 'one');
-  const lastFriends = () => [...a.messages].reverse().find(m => m.type === 'friends');
-  send(a, { type: 'create', name: 'Alice' });
-  const code = [...a.messages].reverse().find(m => m.type === 'lobby').lobby.code;
-  send(b, { type: 'join', code, name: 'Bob' });
-  let snap = lastFriends();
-  assert.equal(snap.friends[0].username, 'TWO');
-  assert.equal(snap.friends[0].presence.online, true);
-  assert.equal(snap.friends[0].presence.activity, 'lobby');
-  assert.equal(snap.friends[0].presence.lobbyCode, code);
-  assert.equal(snap.friends[0].presence.joinable, true);
-  for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'coast' });
-  send(a, { type: 'start' });
-  snap = lastFriends();
-  assert.equal(snap.friends[0].presence.activity, 'racing');
-  assert.equal(snap.friends[0].presence.joinable, false);
-  send(b, { type: 'leave' });
-  snap = lastFriends();
-  assert.equal(snap.friends[0].presence.activity, 'menu');
-  core.disconnect(b);
-  snap = lastFriends();
-  assert.equal(snap.friends[0].presence.online, false);
+test('local names are plates; duplicates work, names change live and allow-lists stay enforced', t => {
+  let now=500000; t.mock.method(Date,'now',()=>now);
+  const core=createGameCore({maps,cars:new Set(['mini','z4','carrera']),leaderboard:{submit:async()=>({saved:true})},countdownMs:100});
+  const a=socket(),b=socket();core.connect(a,'one',{protocol:MULTIPLAYER_PROTOCOL});core.connect(b,'two',{protocol:MULTIPLAYER_PROTOCOL});
+  const send=(ws,m)=>core.message(ws,JSON.stringify(m));
+  send(a,{type:'create',name:'ABC',car:'carrera',allowedCars:['mini','z4']});let lobby=a.messages.at(-1).lobby;
+  assert.equal(lobby.players[0].plate,'ABC');assert.equal(lobby.players[0].car,'mini');
+  send(b,{type:'join',code:lobby.code,name:'ABC',car:'carrera'});lobby=b.messages.at(-1).lobby;
+  assert.deepEqual(lobby.players.map(p=>p.name),['ABC','ABC']);assert.equal(new Set(lobby.players.map(p=>p.id)).size,2);
+  send(b,{type:'name',name:'a-wwwwwwwwwwww-z'});assert.equal(a.messages.at(-1).lobby.players[1].plate,'A-WWWWWWWWWWWW-Z');
+  send(b,{type:'name',name:'bad name'});assert.equal(b.messages.at(-1).type,'error');
+  send(b,{type:'ready',ready:false,version:'coast',car:'carrera'});assert.match(b.messages.at(-1).message,/not allowed/);
+  send(a,{type:'options',allowedCars:[]});assert.match(a.messages.at(-1).message,/at least one/);
+  send(a,{type:'options',allowedCars:['mini','nope']});assert.deepEqual(a.messages.at(-1).lobby.allowedCars,['mini']);
+  for(const ws of [a,b])send(ws,{type:'ready',ready:true,version:'coast'});send(a,{type:'start'});now+=101;core.tick();
+  const raceId=a.messages.at(-1).lobby.raceId;send(b,{type:'name',name:'COAST-V856ZGN'});
+  send(a,{type:'state',raceId,state:state(15)});send(b,{type:'state',raceId,state:state(15)});
+  assert.equal(a.messages.at(-1).lobby.status,'results');assert(a.messages.at(-1).lobby.results.some(p=>p.name==='COAST-V856ZGN'));
+  const saved=JSON.parse(JSON.stringify(core.exportState()));saved.sessions[0].accountSub='orphan';saved.sessions[0].accountName='OLD';saved.sessions[0].friendsSent='old';
+  const restored=createGameCore({maps,cars:new Set(['mini','z4','carrera'])});restored.restore(saved,new Map([...core.clients].map(c=>[c.token,c.ws])));
+  assert(!JSON.stringify(restored.exportState()).includes('orphan'));assert.equal([...restored.clients][1].plate,'COAST-V856ZGN');
 });
 
 test('accumulated big frontal crashes share the client mechanical wreck threshold',t=>{

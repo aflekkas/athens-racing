@@ -3,7 +3,7 @@ import { notifications, notificationText } from './notifications.js';
 import { input } from '../input.js';
 import { bindingLabel } from '../input-labels.js';
 import * as C from './components.js';
-import { account } from '../account.js';
+import { driverName } from '../driver-name.js';
 import { TipSchedule } from './tip-schedule.js';
 C.setHintBindings(() => input.bindings);
 const KEY='paraliaki.drivingTips.v2';
@@ -12,7 +12,7 @@ if(!profiles||typeof profiles!=='object'||Array.isArray(profiles))profiles={};
 if(!profiles.guest){try{profiles.guest=JSON.parse(localStorage.getItem('paraliaki.drivingTips.v1')||'{}');}catch{}}
 let profileId,saved={},schedule;
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(profiles));}catch{}};
-function profile(now){const id=account.cached()?.username||'guest';if(id===profileId)return;profileId=id;const value=profiles[id];saved=value&&typeof value==='object'&&!Array.isArray(value)?value:{};profiles[id]=saved;schedule=new TipSchedule(saved);schedule.startRace(now);drivingHints.saved=saved;drivingHints.tipId=null;drivingHints.until=0;}
+function profile(now){const id=driverName.get();if(id===profileId)return;profileId=id;const value=profiles[id];saved=value&&typeof value==='object'&&!Array.isArray(value)?value:{};profiles[id]=saved;schedule=new TipSchedule(saved);schedule.startRace(now);drivingHints.saved=saved;drivingHints.tipId=null;drivingHints.until=0;}
 export function controlsStrip({ device='keyboard', car, manual=false }={}) {
   const labels=[['handbrake','HANDBRAKE'],['tractionControl','TC / ESC'],['camera','CAMERA'],['tow','TOW']];
   labels.unshift(['shiftUp',manual?'SHIFT UP':'PADDLE UP'],['shiftDown',manual?'SHIFT DOWN':'PADDLE DOWN']);

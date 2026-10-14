@@ -9,6 +9,7 @@ import { installDamageSystem } from './damage.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clamp, lerp, canvasTex } from './util.js';
+import { formatPlate } from './plate.js';
 import { buildOriginalPlayerSkin, refineOriginalPlayer } from './player-original-surfaces.js';
 import { refineSportsPlayer } from './player-sports-surfaces.js';
 import { isPlayerVehicle, refinePlayerDetails, groupPlayerParts, installPlayerLOD } from './player-vehicle-details.js';
@@ -47,7 +48,28 @@ function ring(p,m,r,t,pos,rot=[0,0,0],arc=Math.PI*2) {return mesh(p,new THREE.To
 function textMaterial(text,bg='#15181c',fg='#d8dde0',w=512,h=96) {const map=canvasTex(w,h,(c,W,H)=>{if(bg){c.fillStyle=bg;c.fillRect(0,0,W,H);}c.fillStyle=fg;c.font=`600 ${H*.6}px Arial`;c.textAlign='center';c.textBaseline='middle';c.fillText(text,W/2,H/2);});return new THREE.MeshStandardMaterial({map,roughness:0.4,transparent:!bg,depthWrite:!!bg});}
 let registration=1000;
 export function nextRegistration(taxi=false) {const n=registration++;const letters='ABEZHIKMNOPTYX';return `${taxi?'TAA':'IK'+letters[Math.floor(n/9000)%letters.length]} ${1000+n%9000}`;}
-export function makePlateMaterial(number=nextRegistration()) {const map=canvasTex(512,112,(g,w,h)=>{g.fillStyle='#ecece4';g.fillRect(0,0,w,h);g.fillStyle='#154493';g.fillRect(0,0,48,h);g.fillStyle='#ffda42';for(let i=0;i<12;i++){const a=i*Math.PI/6;g.beginPath();g.arc(24+13*Math.cos(a),31+13*Math.sin(a),2,0,7);g.fill();}g.fillStyle='white';g.font='bold 23px Arial';g.textAlign='center';g.fillText('GR',24,93);g.fillStyle='#15191b';g.font='600 73px Arial';g.textBaseline='middle';g.fillText(number,278,59);g.strokeStyle='#394047';g.lineWidth=4;g.strokeRect(2,2,w-4,h-4);});return new THREE.MeshStandardMaterial({map,roughness:0.4});}
+export function makePlateMaterial(number=nextRegistration()) {
+  number=formatPlate(number)||nextRegistration();
+  const map=canvasTex(512,112,(g,w,h)=>{
+    g.fillStyle='#ecece4';g.fillRect(0,0,w,h);
+    g.fillStyle='#154493';g.fillRect(0,0,48,h);
+    g.fillStyle='#ffda42';
+    for(let i=0;i<12;i++){const a=i*Math.PI/6;g.beginPath();g.arc(24+13*Math.cos(a),31+13*Math.sin(a),2,0,7);g.fill();}
+    g.fillStyle='white';g.font='bold 23px Arial';g.textAlign='center';g.fillText('GR',24,93);
+    // Keep the whole username inside the white area, with padding for ink
+    // overhang and the border. Measure at full size before reducing the font.
+    const left=72,right=w-24,maxWidth=right-left;
+    let size=73;g.font=`600 ${size}px Arial`;
+    const metrics=g.measureText(number);
+    const inkWidth=Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight);
+    size=Math.min(size,Math.floor(size*maxWidth/Math.max(1,inkWidth)));
+    g.font=`600 ${size}px Arial`;g.fillStyle='#15191b';g.textBaseline='middle';
+    // The width argument also guards against browser/font metric differences.
+    g.fillText(number,(left+right)/2,59,maxWidth);
+    g.strokeStyle='#394047';g.lineWidth=4;g.strokeRect(2,2,w-4,h-4);
+  });
+  return new THREE.MeshStandardMaterial({map,roughness:0.4});
+}
 function emblem(kind) {const map=canvasTex(128,128,(g)=>{g.fillStyle='#14171a';g.beginPath();g.arc(64,64,61,0,7);g.fill();g.strokeStyle='#ccd0d5';g.lineWidth=5;g.stroke();if(kind==='z4'){for(let i=0;i<4;i++){g.beginPath();g.moveTo(64,64);g.arc(64,64,39,i*Math.PI/2,(i+1)*Math.PI/2);g.closePath();g.fillStyle=i%2?'#eef1f4':'#2478bc';g.fill();}g.fillStyle='white';g.font='bold 19px Arial';g.textAlign='center';g.fillText('B M W',64,24);}else{g.fillStyle='#eff1f2';g.textAlign='center';g.font=`bold ${kind==='mini'?23:19}px Arial`;g.fillText(({mini:'MINI',carrera:'PORSCHE',gr_yaris:'TOYOTA',gtv:'ALFA',golf:'VW',corolla:'TOYOTA',dolphin:'BYD',atto3:'BYD'}[kind]||'ŠKODA'),64,72);}});return new THREE.MeshStandardMaterial({map,metalness:.45,roughness:.24});}
 function palette(car,d) {const paint=car.paint||new THREE.MeshPhysicalMaterial({color:car.spec.color,metalness:.48,roughness:.26,clearcoat:1,clearcoatRoughness:.08});paint.side=THREE.DoubleSide;return {paint,black:mat('#15191c',.64),rubber:mat('#151718',.89),seam:mat('#25292c',.67),chrome:mat('#c5cbd1',.23,.94),alloy:mat('#818b97',.3,.9),darkAlloy:mat('#252d37',.32,.78),glass:new THREE.MeshPhysicalMaterial({color:'#71868f',roughness:.08,metalness:.12,transparent:true,opacity:d.open?.13:.43,side:THREE.DoubleSide,depthWrite:false}),head:mat('#17242d',.19,.6),led:new THREE.MeshStandardMaterial({color:'#e6f4ff',emissive:'#cfedff',emissiveIntensity:1.5,roughness:.18}),tail:car.tail||new THREE.MeshStandardMaterial({color:'#6c1015',emissive:'#f62022',emissiveIntensity:.55,roughness:.24}),red:mat('#820713',.24),seat:mat(d.leather,.68),cloth:mat('#242628',.95),badge:emblem(car.modelKind)};}
 function widthAt(d,z) {const e=Math.max(0,(Math.abs(z)/(d.L/2)-.73)/.27);return d.W/2*(1-.095*e*e);}

@@ -10,12 +10,7 @@ import { resolveMap } from './map-definitions.mjs';
 import { readCarCapabilities } from './car-capabilities.mjs';
 import { createGameCore } from './core.mjs';
 import { createLeaderboard } from './leaderboard.mjs';
-// NOTE: this Node server is guest-only. Username accounts, sessions, stats,
-// friends and presence live in the Cloudflare Worker (worker/index.mjs,
-// server/accounts.mjs, server/friends.mjs); the routes below say so with
-// 501. Multiplayer here works without accounts: plates are random and no
-// stats accrue. createGameCore mirrors the protocol with accounts/friends
-// left null, which core-level tests cover.
+// Both transports run the same account-free lobby/race protocol.
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -36,8 +31,6 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
   const core = createGameCore({ maps, cars: CARS, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
   const { clients, lobbies, discover } = core;
-  // Guest-only stubs: the Cloudflare Worker owns these paths.
-  const guestOnly = (json) => json(501, { error: 'Accounts and friends live on the Cloudflare game. This server is guest-only.' });
   const postLimits = new Map();
   const server = http.createServer(async (req, res) => {
     const headers = { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' };
@@ -45,8 +38,6 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const url = new URL(req.url, 'http://localhost');
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
-      if (path === '/api/me') { json(200, { guest: true }); return; }
-      if (path.startsWith('/api/accounts/') || path === '/auth/logout' || path === '/api/username' || path === '/api/auth/ticket' || path === '/api/friends' || path === '/api/recent' || path.startsWith('/api/friends/')) { guestOnly(json); return; }
       if (path === '/api/leaderboard') {
         if (req.method === 'GET') { json(200, leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, limit: url.searchParams.get('limit') })); return; }
         if (req.method !== 'POST') { json(405, { error: 'Use GET or POST.' }); return; }
@@ -62,6 +53,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       }
       if (path === '/health') { res.writeHead(200, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, clients: clients.size, lobbies: lobbies.size, track })); return; }
       if (path === '/api/lobbies') { res.writeHead(200, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(discover().lobbies)); return; }
+      if (path.startsWith('/api/') || path.startsWith('/auth/')) { json(404, { error: 'Not found.' }); return; }
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, headers); res.end(); return; }
       const allowed = path === '/' || path === '/index.html' || path === '/style.css' || /^\/(src|assets|data)\/[a-zA-Z0-9_./-]+$/.test(path);
       const file = resolve(root, '.' + (path === '/' ? '/index.html' : path));

@@ -94,30 +94,23 @@ SQLite's daily allowances are 5 million rows read and 100,000 rows written, with
 
 The P2P alternative and TURN fallback trade-off are in [docs/multiplayer-cost.md](../docs/multiplayer-cost.md). It is a future option, not part of this deployment.
 
-## Username accounts
+## Local drivers
 
-Players choose a unique case-insensitive plate (3–16 A–Z, 0–9 or hyphens),
-with a light profanity/staff-impersonation filter. Guests can play everything.
-No identity provider, redirect URI, client ID, client secret or external auth CSP
-allowlist is required. Accounts use the existing SQLite Durable Object only.
+Players go straight to the title screen. Settings → Driver sets a local driver
+name (3–16 A–Z, 0–9 or hyphens, with a light profanity/staff-name filter).
+Names do not need to be unique. The name appears on the plate and in multiplayer.
+A fresh browser generates a name such as `GR-1234` and stores it in localStorage.
+Paint and driver presets also stay in this browser. There are no accounts,
+sign-in screens, cookies, recovery codes, social APIs or account-owned uploads.
 
-`POST /api/accounts/create { username }` returns a profile, random device secret
-and a recovery code shown once. The browser stores the device secret locally;
-`POST /api/accounts/device { deviceSecret }` restores an expired cookie.
-`POST /api/accounts/recover { username, code }` signs in another device and
-returns its own device secret. `POST /api/accounts/recovery-code` requires a
-session and replaces the old recovery code. Save the new code before leaving
-the profile; it is never returned again. Regeneration leaves existing devices
-signed in. `POST /auth/logout { deviceSecret }` revokes this device and session.
-Sessions use HttpOnly Secure SameSite=Lax cookies; all credentials are hashed
-server-side. WebSockets retain their 60-second single-use `/api/auth/ticket`.
-Creation allows 5 attempts per IP/hour; recovery allows 10 per IP/15 minutes;
-device restore allows 60 per IP/15 minutes. Limits persist through hibernation.
+Multiplayer assigns an independent identity to each connection. A short-lived
+reconnect token in sessionStorage preserves a disconnected racer for 90 seconds;
+it is not a login. Best-time leaderboards remain available without accounts.
 
-Migration preserves old account records/stats as orphaned history, releases
-their plates, clears their old sessions/tickets and drops obsolete login states.
-New accounts never inherit an orphan's history or friendships. The Node server
-continues to support guests only and returns 501 for account writes.
+The existing SQLite Durable Object performs a one-time, transactional cleanup
+of retired identity/social/customization-owner tables and records a KV marker.
+It preserves the arena, live reconnect state and leaderboards, adds no service
+or paid binding, and does not scan tables or schedule background work.
 
-Local Worker integration checks: start `wrangler dev --local --port 19431`,
-then `ASR_TEST_BASE=http://127.0.0.1:19431 node --test worker/accounts.test.mjs`.
+Local Worker checks: start `wrangler dev --local --port 19631`, then run
+`ASR_TEST_BASE=http://127.0.0.1:19631 node --test worker/local-driver.test.mjs`.

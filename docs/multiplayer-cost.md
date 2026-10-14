@@ -11,3 +11,12 @@ For a rough bandwidth estimate, assume a 300-byte state sample at 10 Hz. Eight-p
 P2P adds ICE negotiation/restart, short-lived TURN credentials, unreliable/unordered channel design, host election and migration, peer privacy concerns, and inconsistent mobile/background-tab hosting. Expose only expiring TURN credentials to browsers and keep the long-term TURN key server-side, as Cloudflare's [credential guide](https://developers.cloudflare.com/realtime/turn/generate-credentials/) requires. A malicious host can delay/drop state or favour players, while WebSocket clients can already falsify their client-side physics. Maintaining server-owned start/finish timing and validating progress helps either design, but telemetry moved off the DO weakens its observation unless periodic evidence is retained.
 
 Keep the current DO architecture until measured use approaches its daily message quota. Revisit P2P if recurring concurrency consumes most of that allowance and the extra networking/testing burden is justified. This task does not implement WebRTC or provision TURN.
+
+## Local driver names
+
+Driver names, paint and driver presets are stored in the browser. Multiplayer
+uses independent connection identities and the existing short reconnect grace
+period. It makes no account, friend or presence requests and stores no identity
+or customization-owner rows. A one-time transactional cleanup drops the retired
+tables inside the existing SQLite DO, preserving arena state and leaderboards.
+The cleanup has a KV completion marker, no scan, new binding, timer or alarm.

@@ -1,7 +1,7 @@
 // Pure plate + lobby car-class helpers. No dependencies: safe in browsers,
 // the Node server, the Cloudflare Worker and plain node --test runs.
 //
-// formatPlate(text): normalize any string (a username or a default) to what
+// formatPlate(text): normalize any string (a local driver name or a default) to what
 // fits on the Greek plate texture: uppercase, letters/digits/space/hyphen,
 // collapsed whitespace, at most 16 characters. Returns '' when nothing fits.
 // makePlateMaterial() additionally shrinks the canvas font so the text fits.

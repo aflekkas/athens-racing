@@ -30,7 +30,7 @@ import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
 import { DrivingFeedback } from './driving-feedback.js';
-import { account } from './account.js';
+import { driverName } from './driver-name.js';
 import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
@@ -365,9 +365,9 @@ window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: s
 
 // ------------------------------------------------------------------ cars
 function makeCar(spec, isPlayer, plate) {
-  // The plate is the signed-in username (account.plate()), a remote driver's
+  // The plate is the local driver name (driverName.plate()), a remote driver's
   // lobby plate, or undefined for a random registration. Single player shows
-  // the owner's username; multiplayer shows every driver's username.
+  // the driver name; multiplayer shows every driver's name.
   const model = new CarModel(spec, { plate });
   scene.add(model.root);
   const driver = new Driver(isPlayer ? getDriverAppearance(spec.id) : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
@@ -402,7 +402,7 @@ function setCar(idx, keepPose = true) {
   G.carIdx = idx; G.selIdx = idx;
   if (old) beginCameraBlend();
   disposeCar(old);
-  const pc = makeCar(spec, true, account.plate());
+  const pc = makeCar(spec, true, driverName.plate());
   const veh = old ? old.veh : new Vehicle(spec, route);
   veh.setSpec(spec); veh.gear = Math.min(veh.gear, spec.gears.length);
   player = { spec, veh, ...pc };
@@ -724,7 +724,7 @@ const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event'
 function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 ? i : 0; } catch { return 0; } }
 function initFlow() {
   let plate = player.model.plate;
-  account.onChange(() => { const next = account.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
+  driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
   menu = new Menu($('ui'), {
     quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, switchMap,
     chooseCar: (index, def, garage) => {

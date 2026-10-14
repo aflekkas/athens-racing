@@ -5,9 +5,7 @@ import { MAPS } from './map-catalog.js';
 import { StateSender } from './multiplayer-state.js';
 import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
-import { account } from './account.js';
-import { friends } from './friends.js';
-import { createAddFriendButton } from './ui/friend-actions.js';
+import { driverName } from './driver-name.js';
 import { presetCars } from './plate.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
@@ -28,7 +26,7 @@ export class Multiplayer {
     this.panel.setAttribute('role', 'dialog'); this.panel.setAttribute('aria-modal', 'true');
     this.panel.innerHTML = `<div class="mp-card"><div class="mp-heading"><div><small>ATHENS RIVIERA · LIVE RACING</small><h2>MULTIPLAYER</h2></div><button id="mp-close" aria-label="Close multiplayer">×</button></div>
       <p id="mp-status" role="status">Connecting…</p>
-      <div id="mp-browser"><form id="mp-join-form" class="mp-join-hero"><div><small>HAVE AN INVITE?</small><h3>JOIN BY CODE</h3><p>Enter your friend’s six-character lobby code.</p></div><label>LOBBY CODE<input id="mp-code" maxlength="6" placeholder="ABC123" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button type="submit">JOIN LOBBY →</button></form><div class="mp-fields"><label>DRIVER NAME<input id="mp-name" maxlength="28" placeholder="Your name" autocomplete="nickname"></label><label>YOUR CAR<select id="mp-car"></select></label></div>
+      <div id="mp-browser"><form id="mp-join-form" class="mp-join-hero"><div><small>HAVE AN INVITE?</small><h3>JOIN BY CODE</h3><p>Enter the host’s six-character lobby code.</p></div><label>LOBBY CODE<input id="mp-code" maxlength="6" placeholder="ABC123" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button type="submit">JOIN LOBBY →</button></form><div class="mp-fields"><label>DRIVER NAME<input id="mp-name" maxlength="16" readonly aria-description="Change Driver name in Settings"></label><label>YOUR CAR<select id="mp-car"></select></label></div>
       <details class="mp-create-fold"><summary>HOST / CREATE GAME</summary><div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<select id="mp-create-map"></select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div></details>
       <div class="mp-section"><h3>BROWSE OPEN LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
       <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>TRACK<select id="mp-map"></select></label><label>MODE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
@@ -37,7 +35,7 @@ export class Multiplayer {
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
     this.board = document.createElement('aside'); this.board.id = 'mp-board'; this.board.hidden = true; this.board.setAttribute('aria-label', 'Race standings'); document.body.append(this.board);
     const $ = id => this.panel.querySelector('#' + id); this.$ = $;
-    try { $('mp-name').value = localStorage.getItem('paraliaki.driver') || ''; } catch {}
+    $('mp-name').value = driverName.get();
     for (const car of cars) { const o = document.createElement('option'); o.value = car.id; o.textContent = car.short; $('mp-car').append(o); $('mp-room-car').append(o.cloneNode(true)); }
     this.button.onclick = () => this.open(); $('mp-close').onclick = () => this.close();
     $('mp-refresh').onclick = () => this.send({ type: 'discover' });
@@ -57,16 +55,7 @@ export class Multiplayer {
     $('mp-map').onchange = () => this.send({ type: 'options', mapId: $('mp-map').value, traffic: $('mp-traffic').checked });
     $('mp-leaderboard').onclick = () => this.showLeaderboard();
     $('mp-copy').onclick = async () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('lobby', this.lobby.code); u.searchParams.set('map', this.lobby.mapId || 'riviera'); try { await navigator.clipboard.writeText(u.href); this.status('Invite link copied.'); } catch { this.status('Invite link: ' + u.href); } };
-    let identity = account.cached()?.username || '';
-    account.onChange(me => {
-      const next = me?.guest ? '' : me?.username || '';
-      if (identity === next) return;
-      identity = next;
-      if (this.connected) {
-        if (next) this.authSession();
-        else { this.account = null; this.send({ type: 'auth', logout: true }); }
-      }
-    });
+    driverName.onChange(name => { $('mp-name').value = name; if (this.connected) this.send({ type: 'name', name }); });
     this.connect();
     this.timer = setInterval(() => { if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping', sent: Date.now() }); }, 30000);
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }
@@ -137,8 +126,7 @@ export class Multiplayer {
   // behaves as before for the browser button.
   createLobby(opts = {}) {
     const draft = { ...(this.pendingDraft || {}), ...opts };
-    const name = this.$('mp-name').value.trim() || 'DRIVER';
-    try { localStorage.setItem('paraliaki.driver', name); } catch {}
+    const name = driverName.get();
     const msg = { type: 'create', name, driverId: this.driverIdValue(), car: this.$('mp-car').value };
     if (draft.lobbyName !== undefined) msg.lobbyName = draft.lobbyName;
     if (draft.private !== undefined) msg.private = draft.private;
@@ -171,20 +159,6 @@ export class Multiplayer {
     const { type, ...rest } = entry || {};
     this.send({ type: 'violation', at: Date.now(), raceId: this.lobby.raceId, generation: this.lobby.generation || 0, ...rest });
     return true;
-  }
-  async authSession() {
-    // Guests skip silently: multiplayer works without an account. Signed-in
-    // browsers usually link through the handshake cookie already; the ticket
-    // covers the rest (fresh logins, cookie-less contexts).
-    try {
-      const me = await account.get();
-      this.account = me.guest ? null : me;
-      if (me.guest) return;
-      const res = await fetch('/api/auth/ticket', { method: 'POST' });
-      if (!res.ok) return;
-      const { ticket } = await res.json();
-      if (ticket) this.send({ type: 'auth', ticket });
-    } catch {}
   }
   get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
@@ -239,8 +213,7 @@ export class Multiplayer {
   close() { this.hidePanel(); }
   send(data) { if (this.reloadRequired) return; if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(data)); else this.status('Multiplayer is offline. Reconnecting…'); }
   action(type, extra) {
-    const name = this.$('mp-name').value.trim() || 'DRIVER';
-    try { localStorage.setItem('paraliaki.driver', name); } catch {}
+    const name = driverName.get();
     this.send({ type, name, driverId: driverId(), car: this.$('mp-car').value, ...(type === 'create' ? { mapId: this.$('mp-create-map').value || 'riviera' } : {}), ...extra });
   }
   requireReload() {
@@ -285,7 +258,7 @@ export class Multiplayer {
         this.renderEvents(this.lobby?.mapId || 'riviera');
         if (this.token) this.send({ type: 'resume', token: this.token });
         else { this.id = m.id; this.saveToken(m.token); this.connected = true; this.status('Connected · find a lobby or create your own.'); }
-        this.authSession();
+        this.send({ type: 'name', name: driverName.get() });
       }
       else if (m.type === 'session') {
         this.id = m.id; this.saveToken(m.token);
@@ -297,9 +270,6 @@ export class Multiplayer {
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);
       else if (m.type === 'error') { this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left' || m.type === 'kicked') { this.left(); this.panel.hidden = false; if (m.message || m.reason) this.status(m.message || m.reason); if (m.type === 'kicked') { this.kickCooldown = { lobbyCode: m.lobbyCode, until: m.until }; this.hooks.kicked?.(m); } }
-      else if (m.type === 'account') { this.account = m.account; account.adopt(m.account); }
-      else if (m.type === 'friends') { friends.adopt(m); if (this.lobby) this.renderRoom(); }
-      else if (m.type === 'notify') { friends.notify(m); }
       else if (m.type === 'violation-ack') { this.hooks.fine?.({ id: m.id, kind: m.kind, label: m.label, siteId: m.siteId, penaltySec: m.penaltySec, penalty: m.penalty, raceId: m.raceId, generation: m.generation, now: Date.now() }); }
       else if (m.type === 'checkpoint') { if (m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.applyCheckpoint(m); }
       else if (m.type === 'lobby') {
@@ -393,7 +363,7 @@ export class Multiplayer {
   left() { this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.carPickerOpen = false; this.cancelRecovery(); this.selection?.reset(); this.retiredRace = null; this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.stateSender.reset(); this.wreckedRace = null; this.wreckSent = false; this.resumeState = null; this.pendingResume = false; this.failedMap = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
   renderDiscovery(lobbies) {
     const list = this.$('mp-list'); list.replaceChildren();
-    if (!lobbies.length) { const p = document.createElement('p'); p.textContent = 'No public lobbies yet. Create one and invite your friends.'; list.append(p); }
+    if (!lobbies.length) { const p = document.createElement('p'); p.textContent = 'No public lobbies yet. Create one and invite other drivers.'; list.append(p); }
     for (const l of lobbies) {
       const row=document.createElement('article');row.className='mp-lobby';row.dataset.state=l.status;
       const title=document.createElement('h4');title.textContent=l.name;
@@ -427,8 +397,6 @@ export class Multiplayer {
       const row = document.createElement('div'); row.className = 'mp-member';row.dataset.playerId=p.id;
       const label = document.createElement('span'); label.textContent = `${p.name}${p.id === this.id ? ' (YOU)' : ''}${p.id === l.host ? ' · HOST' : ''} · ${this.cars.find(c => c.id === p.car)?.short || p.car} · ${p.connected === false ? 'RECONNECTING' : p.ready ? 'READY' : 'NOT READY'}`;
       row.append(label);
-      const add = p.id !== this.id && createAddFriendButton(p.plate, message => this.status(message));
-      if (add) row.append(add);
       list.append(row);
     }
     this.$('mp-ready').disabled = !this.worldReady || l.status !== 'waiting'; this.$('mp-ready').textContent = me?.ready ? '✓ READY · UNREADY' : 'READY TO RACE';
@@ -452,9 +420,6 @@ export class Multiplayer {
       const title = document.createElement('h3'); title.textContent = this.objectiveMode ? `${this.objectiveMode.toUpperCase()} RESULTS` : 'RACE RESULTS'; results.append(title);
       this.ranking().forEach((p, i) => {
         const row = document.createElement('p'); row.textContent = this.resultRowText(p, i);
-        const username = p.plate || p.username || l.players.find(member => member.id === p.id)?.plate;
-        const add = p.id !== this.id && createAddFriendButton(username, message => this.status(message));
-        if (add) row.append(' ', add);
         results.append(row);
       });
     }

@@ -1,3 +1,0 @@
-// Existing manifest storage retains paint and driver looks; old asset tables remain untouched.
-export function createMemoryCustomizationStore(){const manifests=new Map();return{getManifest:id=>manifests.get(id),putManifest:(id,v)=>manifests.set(id,structuredClone(v))};}
-export function createSqlCustomizationStore(sql){sql.exec('CREATE TABLE IF NOT EXISTS customization_manifests (owner TEXT PRIMARY KEY, data TEXT NOT NULL)');return{getManifest:id=>{const row=[...sql.exec('SELECT data FROM customization_manifests WHERE owner = ?',id)][0];return row?JSON.parse(row.data):undefined;},putManifest:(id,v)=>sql.exec('INSERT INTO customization_manifests (owner,data) VALUES (?,?) ON CONFLICT(owner) DO UPDATE SET data=excluded.data',id,JSON.stringify(v))};}

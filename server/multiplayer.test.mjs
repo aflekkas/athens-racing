@@ -231,21 +231,19 @@ test('departing host hands control to a connected driver ahead of reserved disco
   assert.equal((await c.next(m => m.type === 'lobby' && m.lobby.eventId === 'quick' && m.lobby.config.reverse)).lobby.host, c.id);
 });
 
-test('guest-only identity endpoints; lobby allow-lists work without accounts', async t => {
+test('retired routes return 404; local plates and lobby allow-lists work', async t => {
   const env = await setup(t);
-  assert.deepEqual(await (await fetch(env.base + '/api/me')).json(), { guest: true });
+  assert.equal((await fetch(env.base + '/api/me')).status, 404);
   for (const [method, path, body] of [['GET', '/api/friends'], ['GET', '/api/recent'], ['POST', '/api/username', {}], ['POST', '/api/auth/ticket', {}], ['POST', '/api/friends/request', { username: 'ONE' }]]) {
     const res = await fetch(env.base + path, body !== undefined ? { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : { method });
-    assert.equal(res.status, 501, path);
-    assert.match((await res.json()).error, /guest-only/);
+    assert.equal(res.status, 404, path);
+    assert.equal(res.headers.get('set-cookie'), null);
   }
   const a = await env.client('Alice'), b = await env.client('Bob');
   a.send({ type: 'create', lobbyName: 'Allowlist', allowedCars: ['mini', 'z4'] });
   const created = (await room(a)).lobby;
   assert.deepEqual(created.allowedCars, ['mini', 'z4']);
-  assert.equal(created.players[0].plate, null, 'guests carry no username plate');
-  a.send({ type: 'auth', ticket: 'bogus' });
-  assert.match((await a.next(m => m.type === 'error')).message, /guest-only/);
+  assert.equal(created.players[0].plate, 'ALICE', 'the local name supplies the plate');
   b.send({ type: 'join', code: created.code, car: 'carrera' });
   const joined = (await room(b)).lobby;
   assert.equal(joined.players.find(p => p.id === b.id).car, 'mini', 'disallowed join car coerced');
