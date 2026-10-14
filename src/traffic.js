@@ -510,7 +510,17 @@ export class Traffic {
     const ev = !!c.evade;
     const latMax = ev ? Math.min(4.5, 0.1 + c.v * 0.5) : Math.min(d.latV, 0.06 + c.v * 0.32);
     // the phone driver drifts about in the lane
-    const uAim = c.uT + (d.wander && !c.task && !ev ? Math.sin(this.t * 0.37 + c.id * 1.7) * Math.sin(this.t * 0.11 + c.id) * d.wander : 0);
+    let uAim = c.uT + (d.wander && !c.task && !ev ? Math.sin(this.t * 0.37 + c.id * 1.7) * Math.sin(this.t * 0.11 + c.id) * d.wander : 0);
+    // Never steer into a racer alongside, whatever the manoeuvre (an escape, its
+    // end, a lane change): stop half a metre short of its flank, or hold.
+    for (const R of this.racers) {
+      if (R.a === c || Math.abs(R.s - c.s) > R.hs + c.len * 0.5 + 1.5) continue;
+      const side = Math.sign(R.u - c.u);
+      if (!side || Math.sign(uAim - c.u) !== side) continue;
+      const line = R.u - side * (R.hu + c.wid * 0.5 + 0.5);
+      uAim = side > 0 ? Math.min(uAim, Math.max(line, c.u)) : Math.max(uAim, Math.min(line, c.u));
+      if ((uAim - c.u) * side <= 0 && c.uv * side > 0) c.uv = 0;
+    }
     const want = clamp((uAim - c.u) * (ev ? 3.2 : 2.4), -latMax, latMax);
     c.uv += clamp(want - c.uv, -(ev ? 7.5 : 4) * dt, (ev ? 7.5 : 4) * dt);
     // Stop at the committed escape line; a rate-limited velocity alone can
