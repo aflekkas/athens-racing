@@ -60,14 +60,12 @@ function carrera(car,d,M,low){
     tube(front,M.led,[[s*.35,.414,F-.013],[s*.56,.43,F-.013],[s*.73,.42,F-.013]],.007,'carrera-drl');
     // Clear side repeater perched at the trailing edge of the headlamp wing.
     polygon(p,M.chrome,[[s*.801,.66,-1.70],[s*.835,.65,-1.56],[s*.842,.624,-1.57],[s*.805,.631,-1.69]],'carrera-wing-repeater');
-    polygon(p,M.red,[[s*.29,.79,R],[s*.745,.80,R],[s*.735,.712,R],[s*.38,.705,R]],'carrera-tail-housing');
+    // A continuous lens turns the corner; separate flat panels left a visible seam.
+    surface(p,M.red,(u,v)=>{const turn=smooth((u-.76)/.24);return[s*(.29+.55*u),.792+.078*turn-(.086-.050*turn)*v,R-.24*turn];},32,4,'carrera-tail-housing');
     tube(p,M.tail,[[s*.32,.778,R+.012],[s*.70,.786,R+.012],[s*.705,.735,R+.012],[s*.39,.725,R+.012]],.007,'carrera-tail-signature');
     box(p,M.chrome,[.27,.022,.006],[s*.52,.747,R+.014],'carrera-clear-tail-divider',.006);
     box(p,M.red,[.16,.017,.01],[s*.56,.36,R+.012],'carrera-rear-reflector',.006);
-    // 991.1 lenses continue around the outer rear shoulder, unlike a 964 light bar.
-    const wrap=(u,v)=>{const z=d.L/2-.24*u,x=d.W/2*(.98-.14*smooth((z-1.60)/(d.L/2-1.60)))-.004-.030*(1-u);return[s*x,.802+.071*u-(.085-.049*u)*v,z+.014];};
-    surface(p,M.red,(u,v)=>wrap(u,v),16,3,'carrera-tail-wrap');
-    tube(p,M.tail,Array.from({length:9},(_,i)=>wrap(i/8,.19)),.006,'carrera-tail-wrap-guide');
+    tube(p,M.tail,Array.from({length:13},(_,i)=>{const u=.7+.3*i/12,turn=smooth((u-.76)/.24);return[s*(.29+.55*u),.778+.078*turn,R+.006-.24*turn];}),.006,'carrera-tail-wrap-guide');
   }
   polygon(p,M.black,[[-.29,.345,F],[.29,.345,F],[.27,.235,F],[-.27,.235,F]],'carrera-central-radiator');
   if(!low)for(let i=0;i<7;i++)tube(p,M.darkAlloy,[[-.25,.245+i*.013,F-.009],[.25,.245+i*.013,F-.009]],.002,'carrera-radiator-fins');
