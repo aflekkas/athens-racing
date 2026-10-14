@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -18,7 +19,7 @@ const state = s => ({ x: s, y: 0, z: 0, yaw: 0, s, u: 0, vLong: 20, vLat: 0, ste
 test('shared core restores lobby, socket identity, race clock and state after hibernation; coalesces relays', t => {
   let now = 100000; t.mock.method(Date, 'now', () => now);
   const opts = { maps, cars, leaderboard: { submit: async () => ({ saved: true }) }, countdownMs: 100, raceLimitMs: 5000, reconnectGraceMs: 500 };
-  let core = createGameCore(opts); const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
+  let core = createGameCore(opts); const a = socket(), b = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const hello = a.messages.find(m => m.type === 'hello'); assert.equal(hello.maps.length, 2);
   assert.deepEqual(hello.maps.map((m) => m.id).sort(), ['penteli', 'riviera'], 'disabled maps leave the catalogue');
   const send = (ws, value) => core.message(ws, JSON.stringify(value));
@@ -44,7 +45,7 @@ test('shared core restores lobby, socket identity, race clock and state after hi
 
 test('disabled maps leave every lobby list: hello excludes Megara; create/switch/join reject it', () => {
   const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) } });
-  const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
+  const a = socket(), b = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, value) => core.message(ws, JSON.stringify(value));
   assert.deepEqual(a.messages.find((m) => m.type === 'hello').maps.map((m) => m.id).sort(), ['penteli', 'riviera']);
   send(a, { type: 'create', mapId: 'megara' });
@@ -62,7 +63,7 @@ test('disabled maps leave every lobby list: hello excludes Megara; create/switch
 test('idle lobbies expire without a repeating timer and map changes invalidate ready votes', t => {
   let now = 10000; t.mock.method(Date, 'now', () => now);
   const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) }, idleLobbyMs: 1000 });
-  const a = socket(); core.connect(a, 'one'); const send = value => core.message(a, JSON.stringify(value));
+  const a = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); const send = value => core.message(a, JSON.stringify(value));
   send({ type: 'create' }); send({ type: 'ready', ready: true, version: 'coast' });
   send({ type: 'options', mapId: 'penteli' }); const lobby = a.messages.at(-1).lobby;
   assert.equal(lobby.eventId, 'penteli-race'); assert.equal(lobby.players[0].ready, false);
@@ -88,7 +89,7 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   let now = 200000; t.mock.method(Date, 'now', () => now);
   const submissions = [], opts = { maps, cars, leaderboard: { submit: async r => submissions.push(r) }, countdownMs: 100 };
   let core = createGameCore(opts);
-  const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
+  const a = socket(), b = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const helloA = a.messages.find(m => m.type === 'hello'), helloB = b.messages.find(m => m.type === 'hello');
   assert.equal(helloA.features.wreckDnf, true);
   const send = (ws, m) => core.message(ws, JSON.stringify(m));
@@ -131,7 +132,7 @@ function socialCore(t, nowRef = { at: 500000 }) {
   for (const [sub, name] of [['g1', 'one'], ['g2', 'two']]) { accounts.upsertGoogleUser({ sub, displayName: name }); accounts.setUsername(sub, name); }
   const login = (ws) => { const sub = ws === sockets.a ? 'g1' : 'g2'; core.message(ws, JSON.stringify({ type: 'auth', ticket: accounts.createTicket(sub).ticket })); };
   const sockets = { a: socket(), b: socket() };
-  core.connect(sockets.a, 'one'); core.connect(sockets.b, 'two');
+  core.connect(sockets.a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(sockets.b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   return { core, accounts, friends, nowRef, ...sockets, login, send: (ws, m) => core.message(ws, JSON.stringify(m)) };
 }
 

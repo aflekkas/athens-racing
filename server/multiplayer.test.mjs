@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
@@ -15,7 +16,7 @@ async function setup(t, opts = {}) {
   const base = `http://127.0.0.1:${app.server.address().port}`;
   t.after(async () => { await app.close(); await rm(root, { recursive: true, force: true }); });
   async function client(name) {
-    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws'); const inbox = [], waiting = [];
+    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws?protocol='+MULTIPLAYER_PROTOCOL); const inbox = [], waiting = [];
     ws.on('message', data => { const m = JSON.parse(data); const i = waiting.findIndex(w => w.pred(m)); if (i >= 0) waiting.splice(i, 1)[0].resolve(m); else inbox.push(m); });
     const next = pred => new Promise((resolve, reject) => { const i = inbox.findIndex(pred); if (i >= 0) return resolve(inbox.splice(i, 1)[0]); const timer = setTimeout(() => reject(new Error('Message timeout')), 2000); waiting.push({ pred, resolve: m => { clearTimeout(timer); resolve(m); } }); });
     const hello = await next(m => m.type === 'hello');

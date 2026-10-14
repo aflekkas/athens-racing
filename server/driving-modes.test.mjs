@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 // Protocol proof over real road manifests. Poses/receipt time are synthetic:
 // these tests validate coordinator rules, not vehicle physics or route driving.
 import test from 'node:test';
@@ -34,7 +35,7 @@ function harness(t, mode, { camera = false } = {}) {
     accounts: { recordMpResults: (...args) => recorded.push(args) }, countdownMs: 100, reconnectGraceMs: 0 });
   function socket(name) {
     const ws = { readyState: 1, messages: [], send(data) { this.messages.push(JSON.parse(data)); }, close() { this.readyState = 3; } };
-    core.connect(ws, name);
+    core.connect(ws, name, { protocol: MULTIPLAYER_PROTOCOL });
     return ws;
   }
   const a = socket('host'), b = socket('guest');
@@ -199,7 +200,7 @@ test('two real WebSocket clients complete both real-manifest modes and receive a
   await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${app.server.address().port}`;
   async function client() {
-    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws'), inbox = [], waiting = [];
+    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws?protocol='+MULTIPLAYER_PROTOCOL), inbox = [], waiting = [];
     const c = { ws, send: m => ws.send(JSON.stringify(m)) }; clients.push(c);
     ws.on('message', bytes => {
       const m = JSON.parse(bytes), i = waiting.findIndex(w => w.pred(m));

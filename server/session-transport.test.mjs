@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 // Run against Node by default; MP_WORKER_BASE points this same contract suite
 // at wrangler dev's real SQLite Durable Object + WebSocket transport.
 import test from 'node:test';
@@ -12,7 +13,18 @@ test('session contract over real '+(process.env.MP_WORKER_BASE?'Worker':'Node')+
  let app,base=process.env.MP_WORKER_BASE;
  if(!base){const dataDir=await mkdtemp(join(tmpdir(),'mp-session-'));app=await createGameServer({countdownMs:100,dataDir});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));base='http://127.0.0.1:'+app.server.address().port;t.after(async()=>{await app.close();await rm(dataDir,{recursive:true,force:true})});}
  const sockets=[];t.after(()=>{for(const ws of sockets)ws.terminate()});
- async function client(name){const ws=new WebSocket(base.replace('http:','ws:')+'/ws');sockets.push(ws);const messages=[];ws.on('message',data=>messages.push(JSON.parse(data)));const wait=async pred=>{const end=Date.now()+12000;while(Date.now()<end){const at=messages.findIndex(pred);if(at>=0)return messages.splice(at,1)[0];await new Promise(r=>setTimeout(r,15))}throw new Error(name+': message timeout '+JSON.stringify(messages.slice(-3)))};const hello=await wait(m=>m.type==='hello');return {ws,hello,wait,send:m=>ws.send(JSON.stringify(m)),room:status=>wait(m=>m.type==='lobby'&&(!status||m.lobby.status===status))};}
+ async function client(name){const ws=new WebSocket(base.replace('http:','ws:')+'/ws?protocol='+MULTIPLAYER_PROTOCOL+'&build=compatible-other-release');sockets.push(ws);ws.on('open',()=>ws.send(JSON.stringify({type:'hello',protocol:MULTIPLAYER_PROTOCOL,build:'compatible-other-release'})));const messages=[];ws.on('message',data=>messages.push(JSON.parse(data)));const wait=async pred=>{const end=Date.now()+12000;while(Date.now()<end){const at=messages.findIndex(pred);if(at>=0)return messages.splice(at,1)[0];await new Promise(r=>setTimeout(r,15))}throw new Error(name+': message timeout '+JSON.stringify(messages.slice(-3)))};const hello=await wait(m=>m.type==='hello');return {ws,hello,wait,send:m=>ws.send(JSON.stringify(m)),room:status=>wait(m=>m.type==='lobby'&&(!status||m.lobby.status===status))};}
+ async function rejectsProtocol(search) {
+  const ws=new WebSocket(base.replace('http:','ws:')+'/ws'+search);sockets.push(ws);
+  const messages=[];ws.on('message',data=>messages.push(JSON.parse(data)));
+  const closed=await new Promise((resolve,reject)=>{
+   const timer=setTimeout(()=>{ws.terminate();reject(new Error('Protocol close timeout'))},5000);
+   ws.on('close',(code,reason)=>{clearTimeout(timer);resolve({code,reason:String(reason)})});
+   ws.on('error',error=>{clearTimeout(timer);reject(error)});
+  });
+  assert.deepEqual(messages,[{type:'reload',reason:'update'}]);assert.equal(closed.code,4001);
+ }
+ await rejectsProtocol('');await rejectsProtocol('?protocol=0');await rejectsProtocol('?protocol='+(MULTIPLAYER_PROTOCOL+1));
  const a=await client('host'),b=await client('guest');a.send({type:'create',name:'Contract host',private:true});const created=(await a.room()).lobby;const code=created.code;b.send({type:'join',code,name:'Contract guest',driverId:'contract-guest'});await b.room();await a.wait(m=>m.type==='lobby'&&m.lobby.players.length===2);
  b.send({type:'ready',ready:true,version:created.track.version});await b.wait(m=>m.type==='lobby'&&m.lobby.players.find(p=>p.id===b.hello.id)?.ready);b.send({type:'car',car:'z4'});await b.wait(m=>m.type==='lobby'&&m.lobby.players.find(p=>p.id===b.hello.id)?.car==='z4'&&!m.lobby.players.find(p=>p.id===b.hello.id)?.ready);
  a.send({type:'options',allowedCars:['mini']});await b.wait(m=>m.type==='lobby'&&m.lobby.allowedCars.length===1&&m.lobby.players.every(p=>p.car==='mini'));b.send({type:'car',car:'z4'});assert.match((await b.wait(m=>m.type==='error')).message,/allowed/);a.send({type:'options',allowedCars:['mini','z4']});await b.wait(m=>m.type==='lobby'&&m.lobby.allowedCars.length===2);

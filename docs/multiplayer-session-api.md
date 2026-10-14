@@ -71,3 +71,25 @@ descriptors. Paint and bounded driver appearance remain supported.
   checks every gate on both legal Riviera/Penteli lanes and two Megara laps in both directions.
 - `MP_WORKER_BASE=http://127.0.0.1:<private-port> node --test server/session-transport.test.mjs`
   runs the same socket contract on a local SQLite Durable Object via `wrangler dev`.
+
+## Connection protocol and release safety
+
+`src/multiplayer-protocol.js` exports `MULTIPLAYER_PROTOCOL` (currently **1**).
+Bump it only when an incompatible multiplayer wire format or message meaning
+changes. A new asset/build release with compatible packets keeps the same value.
+The build id from `<meta name="asr-build">`, when present, is informational;
+matching protocols with different builds are always accepted.
+
+The client sends `protocol` and optional `build` in `/ws` connection query metadata
+and in `{type:'hello',protocol,build}`. Node and the Worker Durable Object validate
+the connection before sending the normal greeting. Missing/invalid protocol is
+version **0**. A mismatch receives `{type:'reload',reason:'update'}` and closes with
+code **4001** (`Game updated, reload`), without allocating a lobby/session.
+Old hibernated sockets are checked on restore and before processing commands too.
+
+The client handles either the reload message or the update close code by stopping
+state sends, pings and reconnect timers. A small persistent `.mp-update-notice`
+shows **Game updated, reload** and a **Reload** button. `mp.reloadRequired` exposes
+this state; `hooks.reloadRequired({reason:'update'})` allows presentation adapters
+to respond. Build-id differences never trigger this notice. The service worker
+does not intercept `/ws`; this handshake is independent of static asset caching.

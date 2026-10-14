@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createGameCore } from './core.mjs';
@@ -10,7 +11,7 @@ function race(t, dir = 1) {
   const maps = new Map([['riviera', { track: { start: 0, finish: 200, version: 'test' }, definitions: new Map([['quick', event]]) }]]);
   const opts = { maps, cars: new Set(['mini']), leaderboard: { submit: async () => ({}) }, countdownMs: 10, raceLimitMs: 600000, reconnectGraceMs: 100 };
   const core = createGameCore(opts), a = socket(), b = socket(), c = socket();
-  for (const ws of [a, b, c]) core.connect(ws, 'test');
+  for (const ws of [a, b, c]) core.connect(ws, 'test', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, data) => core.message(ws, JSON.stringify(data));
   send(a, { type: 'create', name: 'Alice' }); const code = a.messages.at(-1).lobby.code;
   for (const [ws, name] of [[b, 'Bob'], [c, 'Charlie']]) send(ws, { type: 'join', code, name });

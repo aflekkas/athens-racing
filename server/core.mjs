@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion } from '../src/multiplayer-protocol.js';
 import { buildCourse, observeCourse, courseStatus } from '../src/checkpoints.js';
 import { defaultConfig, sanitizeConfig, effectiveEvent, configInvalidates, nextGeneration, cancelToWaiting, restartRace, startObjectiveRound, stepPlayerObjective, snapshotPlayerObjective, resultPlayerObjective, objectiveRoundDone, clearObjectiveHold, applyObjectivePenalty, raceLimitFor, isObjectiveMode, assertModeAllowed, validateStateExtras } from './mp-lifecycle.mjs';
 import { isMapEnabled } from '../src/enabled-maps.js';
@@ -138,17 +139,28 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     for (const other of clients) if (!other.lobby) send(other.ws, discover());
     presencePush([sub]);
   };
-  const connect = (ws, ip) => {
+  const reload = ws => {
+    send(ws, { type: 'reload', reason: 'update' });
+    try { ws.close(UPDATE_CLOSE_CODE, 'Game updated, reload'); } catch {}
+  };
+  const connect = (ws, ip, connection = {}) => {
+    const protocol = protocolVersion(connection.protocol);
+    if (protocol !== MULTIPLAYER_PROTOCOL) { reload(ws); return false; }
     if ([...clients].filter(c => c.ip === ip).length >= 24) { ws.close(1013, 'Too many connections'); return; }
-    let c = { ws, ip, token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: 'DRIVER', car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), accountSub: null, accountName: null, plate: null, friendsSent: null };
-    sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
-    bind(c, ws, ip);
+    let c = { ws, ip, protocol, build: clean(connection.build, null, 80), token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: 'DRIVER', car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), accountSub: null, accountName: null, plate: null, friendsSent: null };
+    sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
+    bind(c, ws, ip); return true;
   };
   const bind = (initial, ws, ip) => {
     let c = initial;
     handlers.set(ws, { pong: () => { c.alive = true; },
     message: bytes => {
       if (c.ws !== ws) return;
+      // Hibernated sockets from a prior release have no protocol (version 0).
+      // Reject them before parsing or executing a resume/state/lobby packet.
+      if (protocolVersion(c.protocol) !== MULTIPLAYER_PROTOCOL) {
+        reload(ws); leave(c); clients.delete(c); sessions.delete(c.token); c.connected = false; return;
+      }
       const now = Date.now(); if (now - c.window > 1000) { c.window = now; c.messages = 0; } if (++c.messages > 80) { ws.close(1008, 'Rate limit'); return; }
       const error = (message, extra = {}) => send(ws, { type: 'error', message, ...extra });
       const hostRate = (l, action) => {
@@ -158,6 +170,10 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
       };
       try {
         const m = JSON.parse(bytes); if (!m || typeof m !== 'object') return;
+        if (m.type === 'hello') {
+          if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { reload(ws); leave(c); clients.delete(c); sessions.delete(c.token); c.connected = false; return; }
+          c.build = clean(m.build, c.build, 80); return;
+        }
         // A packet carries up to two 10 Hz samples. Keep the legacy single-sample
         // protocol for old clients; apply identical validation and receipt-clock timing.
         if (m.type === 'states') {
@@ -170,7 +186,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           const prior = sessions.get(m.token);
           if (!prior || prior === c || (!prior.connected && Date.now() - prior.touched > reconnectGraceMs)) { send(ws, { type: 'session', id: c.id, token: c.token, resumed: false }); return; }
           sessions.delete(c.token); clients.delete(c);
-          const previousWs = prior.ws; c = prior; c.ws = ws; c.ip = ip; c.connected = true; c.alive = true; c.messages = 0; c.window = now; c.touched = now;
+          const previousWs = prior.ws, protocol = c.protocol, build = c.build; c = prior; c.protocol = protocol; c.build = build; c.ws = ws; c.ip = ip; c.connected = true; c.alive = true; c.messages = 0; c.window = now; c.touched = now;
           clients.add(c); if (previousWs !== ws) previousWs.close(1000, 'Session resumed elsewhere');
           const racer = c.lobby?.racers?.get(c.id); if (racer) racer.disconnected = false;
           send(ws, { type: 'session', id: c.id, token: c.token, resumed: true, lobby: !!c.lobby });
@@ -478,6 +494,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
   const restore = (saved, sockets = new Map()) => {
     for (const data of saved?.sessions || []) {
       const ws = sockets.get(data.token) || { readyState: 3, close() {} };
+      if (sockets.has(data.token) && protocolVersion(data.protocol) !== MULTIPLAYER_PROTOCOL) { reload(ws); continue; }
       const c = { ...data, ws, lobby: null, connected: sockets.has(data.token) };
       if (c.state) { const { decals, ...state } = c.state; c.state = state; }
       if (c.state && !nitrousCars.has(c.car)) c.state = { ...c.state, nitro: 0 };

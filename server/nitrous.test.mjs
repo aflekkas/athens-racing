@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -15,7 +16,7 @@ for (const car of ['mini', 'golf', 'corolla', 'ibiza']) test(`${car}: validated 
   const opts = { maps: new Map([['riviera', map]]), cars: new Set(capabilities.cars), nitrousCars: new Set(capabilities.nitrousCars), countdownMs: 0 };
   const core = createGameCore(opts);
   const socket = () => ({ readyState: 1, messages: [], send(bytes) { this.messages.push(JSON.parse(bytes)); }, close() {} });
-  const a = socket(), b = socket(); core.connect(a, 'a'); core.connect(b, 'b');
+  const a = socket(), b = socket(); core.connect(a, 'a', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'b', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, message) => core.message(ws, JSON.stringify(message));
   send(a, { type: 'create' }); send(b, { type: 'join', code: a.messages.at(-1).lobby.code });
   for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'v1', car });

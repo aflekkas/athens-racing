@@ -1,3 +1,4 @@
+import { connectionProtocol } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -73,12 +74,12 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const wss = new WebSocketServer({ noServer: true, maxPayload: 4096 });
   server.on('upgrade', (req, socket, head) => {
     try {
-      if (req.url !== '/ws' || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) || clients.size >= 256) { socket.destroy(); return; }
+      if (new URL(req.url, 'http://localhost').pathname !== '/ws' || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) || clients.size >= 256) { socket.destroy(); return; }
       wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req));
     } catch { socket.destroy(); }
   });
   wss.on('connection', (ws, req) => {
-    core.connect(ws, req.socket.remoteAddress);
+    if (!core.connect(ws, req.socket.remoteAddress, connectionProtocol(new URL(req.url, 'http://localhost')))) return;
     ws.on('pong', () => core.pong(ws));
     ws.on('message', bytes => core.message(ws, bytes));
     ws.on('close', () => core.disconnect(ws));

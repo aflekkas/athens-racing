@@ -222,3 +222,68 @@ test('race updates accept legacy events without checkpoints across modes, reconn
     m.lobby.status='results';assert.doesNotThrow(()=>m.update(1/60,state({s:110})),mode+' results');
   }
 });
+
+test('protocol hello carries the integer version and optional HTML build metadata', async () => {
+  const { clientHello, MULTIPLAYER_PROTOCOL } = await import('../src/multiplayer-protocol.js');
+  assert.deepEqual(clientHello({ querySelector: () => null }), { type: 'hello', protocol: MULTIPLAYER_PROTOCOL });
+  assert.deepEqual(clientHello({ querySelector: () => ({ content: 'release-abc' }) }), { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, build: 'release-abc' });
+});
+function protocolClient(t) {
+  const packets = [], timers = [], nodes = [];
+  const element = tag => ({ tag, children: [], setAttribute() {}, append(...items) { this.children.push(...items); }, replaceChildren() {} });
+  class Socket {
+    static OPEN = 1;
+    constructor(url) { this.url = new URL(url); this.readyState = 1; }
+    send(data) { packets.push(JSON.parse(data)); }
+    close(code, reason) { this.closed = { code, reason }; this.readyState = 3; }
+  }
+  let reloads = 0;
+  t.mock.method(globalThis, 'setTimeout', fn => { timers.push(fn); return 42; });
+  t.mock.method(globalThis, 'clearTimeout', () => {});
+  t.mock.method(globalThis, 'clearInterval', () => {});
+  const replaceGlobal = (key, value) => { const old = Object.getOwnPropertyDescriptor(globalThis, key); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value }); t.after(() => { if (old) Object.defineProperty(globalThis, key, old); else delete globalThis[key]; }); };
+  replaceGlobal('WebSocket', Socket);
+  replaceGlobal('location', { href: 'https://game.test/?map=penteli', protocol: 'https:', reload() { reloads++; } });
+  replaceGlobal('document', { querySelector: () => ({ content: 'tab-build' }), createElement: element, body: { append(node) { nodes.push(node); } } });
+  const m = Object.create(Multiplayer.prototype), controls = new Map();
+  Object.assign(m, { connected: false, loaded: false, token: null, hooks: { clearInput() {} }, peers: new Map(), stateSender: { reset() {} },
+    status(text) { this.lastStatus = text; }, cancelRecovery() {}, renderEvents() {}, saveToken(token) { this.token = token; }, authSession() {},
+    $(id) { if (!controls.has(id)) controls.set(id, element('select')); return controls.get(id); } });
+  m.connect(); m.ws.onopen();
+  return { m, packets, timers, nodes, reloads: () => reloads };
+}
+for (const protocol of [undefined, 0, 99]) {
+  test(`server hello protocol ${String(protocol)} shows Reload and stops reconnection`, async t => {
+    const { UPDATE_CLOSE_CODE } = await import('../src/multiplayer-protocol.js');
+    const q = protocolClient(t), { m } = q;
+    // No track/map fields: mismatch must be handled before interpreting the greeting.
+    m.ws.onmessage({ data: JSON.stringify({ type: 'hello', protocol }) });
+    assert.equal(m.reloadRequired, true); assert.equal(m.ws.closed.code, UPDATE_CLOSE_CODE);
+    m.ws.onclose({ code: UPDATE_CLOSE_CODE }); m.ws.onerror(); m.connect(); m.send({ type: 'create' });
+    assert.equal(q.timers.length, 0); assert.equal(m.lastStatus, 'Game updated, reload');
+    assert.equal(q.nodes.length, 1); const button = q.nodes[0].children[1];
+    assert.equal(button.textContent, 'Reload'); button.onclick(); assert.equal(q.reloads(), 1);
+  });
+}
+test('matching server protocol accepts a different build and sends versioned hello/connect metadata', async t => {
+  const { MULTIPLAYER_PROTOCOL } = await import('../src/multiplayer-protocol.js');
+  const { m, packets, nodes } = protocolClient(t);
+  assert.equal(m.ws.url.searchParams.get('protocol'), String(MULTIPLAYER_PROTOCOL));
+  assert.equal(m.ws.url.searchParams.get('build'), 'tab-build');
+  assert.deepEqual(packets[0], { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, build: 'tab-build' });
+  m.ws.onmessage({ data: JSON.stringify({ type: 'hello', protocol: MULTIPLAYER_PROTOCOL, build: 'server-other-build', track: { version: 'track' }, maps: [], events: [], now: Date.now(), id: 'driver', token: 'session' }) });
+  assert.equal(m.connected, true); assert.equal(m.id, 'driver'); assert.equal(m.reloadRequired, undefined); assert.equal(nodes.length, 0);
+});
+test('server reload message or update close code shows exactly one notice with no retry loop', async t => {
+  const { UPDATE_CLOSE_CODE } = await import('../src/multiplayer-protocol.js');
+  const { m, nodes, timers } = protocolClient(t);
+  m.ws.onmessage({ data: JSON.stringify({ type: 'reload', reason: 'update' }) });
+  m.ws.onclose({ code: UPDATE_CLOSE_CODE }); m.ws.onerror(); m.connect();
+  assert.equal(nodes.length, 1); assert.equal(timers.length, 0); assert.equal(m.connected, false);
+});
+test('update close code alone stops retry even if the reload frame was lost', async t => {
+  const { UPDATE_CLOSE_CODE } = await import('../src/multiplayer-protocol.js');
+  const { m, nodes, timers } = protocolClient(t);
+  m.ws.onclose({ code: UPDATE_CLOSE_CODE });
+  assert.equal(m.reloadRequired, true); assert.equal(nodes.length, 1); assert.equal(timers.length, 0);
+});

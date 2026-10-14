@@ -1,3 +1,4 @@
+import { connectionProtocol } from '../src/multiplayer-protocol.js';
 import { DurableObject } from 'cloudflare:workers';
 import { rewriteShareMetadata } from './share-metadata.mjs';
 import catalogue from '../.deploy/catalogue.json';
@@ -101,7 +102,8 @@ export class GameArena extends DurableObject {
       if (this.core.clients.size >= 256) return json({ error: 'Connection limit reached.' }, 503);
       const pair = new WebSocketPair(), [client, server] = Object.values(pair);
       this.ctx.acceptWebSocket(server);
-      this.core.connect(server, request.headers.get('CF-Connecting-IP') || 'unknown');
+      const accepted = this.core.connect(server, request.headers.get('CF-Connecting-IP') || 'unknown', connectionProtocol(url));
+      if (!accepted) return new Response(null, { status: 101, webSocket: client });
       // Same-origin browsers send the session cookie on the WS handshake,
       // so most clients arrive already linked (ticket auth covers the rest).
       const sid = readSessionCookie(request);

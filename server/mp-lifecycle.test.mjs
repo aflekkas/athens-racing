@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 // MP session/host lifecycle + shared mode settings (owner: mp-session-modes).
 // Unit coverage for server/mp-lifecycle.mjs + src/mp-setup.js, core-level
 // (Worker-like, fake sockets) lifecycle coverage, and a real-WebSocket
@@ -117,7 +118,7 @@ const stateAt = (s, u = 0) => ({ x: s, y: 0, z: 0, yaw: 0, s, u, vLong: 20, vLat
 test('create seeds shared config; pursuit and taxi accepted, closed and disabled maps rejected', (t) => {
   const { core, socket, lobbyOf, errOf, hello } = harness(t);
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
-  const a = socket(); core.connect(a, 'one');
+  const a = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL });
   assert.deepEqual(hello(a).maps.map((m) => m.id).sort(), ['riviera'], 'disabled maps leave the catalogue');
   send(a, { type: 'create', mapId: 'megara' });
   assert.match(errOf(a), /unavailable/);
@@ -131,7 +132,7 @@ test('create seeds shared config; pursuit and taxi accepted, closed and disabled
   assert.deepEqual([l.event.s0, l.event.s1, l.event.dir, l.event.routeKey], [15, 5, -1, '15>5'], 'reversed geometry is race-facing');
   send(a, { type: 'create', eventId: 'cab' });
   assert.match(errOf(a), /Leave your current lobby/);
-  const b = socket(); core.connect(b, 'two');
+  const b = socket(); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   send(b, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
   const cab = lobbyOf(b);
   assert.equal(cab.mode, 'taxi');
@@ -143,7 +144,7 @@ test('create seeds shared config; pursuit and taxi accepted, closed and disabled
 test('guests change cars while the host edits; readiness invalidates only when needed', (t) => {
   const { core, socket, lobbyOf, errOf } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const inbox = (ws) => ({ send: (v) => core.message(ws, JSON.stringify(v)), lobby: () => lobbyOf(ws), err: () => errOf(ws) });
   const A = inbox(a), B = inbox(b);
   A.send({ type: 'create', mapId: 'riviera' }); B.send({ type: 'join', code: A.lobby().code, car: 'z4' });
@@ -166,7 +167,7 @@ test('guests change cars while the host edits; readiness invalidates only when n
 test('allow-list shrinks unready only affected drivers; start stays authoritative', (t) => {
   const { core, socket, lobbyOf, errOf } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera', allowedCars: ['mini', 'z4'] });
   const code = lobbyOf(a).code;
@@ -184,7 +185,7 @@ test('allow-list shrinks unready only affected drivers; start stays authoritativ
 test('host restart/to-lobby/transfer keep the room code and bump generations', (t) => {
   const { core, socket, lobbyOf, errOf } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera' }); const code = lobbyOf(a).code;
   send(b, { type: 'join', code });
@@ -222,7 +223,7 @@ test('host restart/to-lobby/transfer keep the room code and bump generations', (
 test('results/rematch stay responsive to stale-client retries', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera' }); const code = lobbyOf(a).code;
   send(b, { type: 'join', code });
@@ -247,7 +248,7 @@ test('reversed runs finish at the mirrored line and skip the leaderboard', (t) =
   submissions.length = 0;
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera', config: { reverse: true } });
   const code = lobbyOf(a).code;
@@ -266,7 +267,7 @@ test('objective rounds step on validated poses, snapshot live, and time up', (t)
   submissions.length = 0;
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
   const code = lobbyOf(a).code;
@@ -287,7 +288,7 @@ test('objective rounds step on validated poses, snapshot live, and time up', (t)
 test('objective results keep racer entries sorted by completed, never null', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { sessionDuration: 30 } });
   const code = lobbyOf(a).code;
@@ -312,7 +313,7 @@ test('objective results keep racer entries sorted by completed, never null', (t)
 test('telemetry extras relay validated; violations without sites stay silent', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
-  core.connect(a, 'one'); core.connect(b, 'two');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera' }); const code = lobbyOf(a).code;
   send(b, { type: 'join', code });
@@ -336,7 +337,7 @@ test('telemetry extras relay validated; violations without sites stay silent', (
 test('hibernation preserves code, config, generation and objective rounds', (t) => {
   const { core, socket, lobbyOf } = harness(t);
   const a = socket();
-  core.connect(a, 'one');
+  core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   send(a, { type: 'create', mapId: 'riviera', eventId: 'cab', config: { rivals: 2 } });
   for (const ws of [a]) send(ws, { type: 'ready', ready: true, version: 'coast' });
@@ -364,7 +365,7 @@ async function wsSetup(t, opts = {}) {
   const base = `http://127.0.0.1:${app.server.address().port}`;
   t.after(async () => { await app.close(); await rm(root, { recursive: true, force: true }); });
   async function client(name) {
-    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws');
+    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws?protocol='+MULTIPLAYER_PROTOCOL);
     const inbox = [], waiting = [];
     ws.on('message', (data) => { const m = JSON.parse(data); const i = waiting.findIndex((w) => w.pred(m)); if (i >= 0) waiting.splice(i, 1)[0].resolve(m); else inbox.push(m); });
     const next = (pred) => new Promise((resolve, reject) => { const i = inbox.findIndex(pred); if (i >= 0) return resolve(inbox.splice(i, 1)[0]); const timer = setTimeout(() => reject(new Error('Message timeout')), 3000); waiting.push({ pred, resolve: (m) => { clearTimeout(timer); resolve(m); } }); });

@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion, clientHello } from './multiplayer-protocol.js';
 import { renderLiveBoard } from './ui/live-board.js';
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
@@ -220,21 +221,45 @@ export class Multiplayer {
   }
   hidePanel() { if (this.panel.contains(document.activeElement) || document.activeElement === this.button) document.activeElement.blur(); this.panel.hidden = true; this.hooks.clearInput(); this.hooks.panelClosed?.(); }
   close() { this.hidePanel(); }
-  send(data) { if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(data)); else this.status('Multiplayer is offline. Reconnecting…'); }
+  send(data) { if (this.reloadRequired) return; if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(data)); else this.status('Multiplayer is offline. Reconnecting…'); }
   action(type, extra) {
     const name = this.$('mp-name').value.trim() || 'DRIVER';
     try { localStorage.setItem('paraliaki.driver', name); } catch {}
     this.send({ type, name, driverId: driverId(), car: this.$('mp-car').value, ...(type === 'create' ? { mapId: this.$('mp-create-map').value || 'riviera' } : {}), ...extra });
   }
+  requireReload() {
+    if (this.reloadRequired) return;
+    this.reloadRequired = true; this.connected = false;
+    clearTimeout(this.reconnectTimer); clearInterval(this.timer);
+    this.hooks.clearInput(); this.stateSender.reset();
+    this.cancelRecovery('Game updated. Reload to reconnect.');
+    this.status('Game updated, reload'); this.showReloadNotice();
+    this.hooks.reloadRequired?.({ reason: 'update' });
+  }
+  showReloadNotice() {
+    if (this.reloadNotice) return;
+    const notice = this.reloadNotice = document.createElement('aside');
+    notice.className = 'mp-update-notice'; notice.setAttribute('role', 'alert');
+    const label = document.createElement('span'); label.textContent = 'Game updated, reload';
+    const button = document.createElement('button'); button.textContent = 'Reload';
+    button.onclick = () => location.reload();
+    notice.append(label, button); document.body.append(notice);
+  }
   connect() {
+    if (this.reloadRequired) return;
     const url = new URL('ws', location.href); url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'; url.pathname = '/ws'; url.search = ''; url.hash = '';
+    const hello = clientHello(document);
+    url.searchParams.set('protocol', String(hello.protocol));
+    if (hello.build) url.searchParams.set('build', hello.build);
     const ws = this.ws = new WebSocket(url);
-    ws.onopen = () => { this.connected = false; this.status('Connecting to your session…'); this.send({ type: 'ping', sent: Date.now() }); };
+    ws.onopen = () => { this.connected = false; this.status('Connecting to your session…'); this.send(hello); this.send({ type: 'ping', sent: Date.now() }); };
     ws.onmessage = e => {
-      if (this.ws !== ws) return;
+      if (this.ws !== ws || this.reloadRequired) return;
       if (e.data === 'alive') return;
       const m = JSON.parse(e.data);
+      if (m.type === 'reload' && m.reason === 'update') { this.requireReload(); return; }
       if (m.type === 'hello') {
+        if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { this.requireReload(); ws.close(UPDATE_CLOSE_CODE, 'Game updated, reload'); return; }
         this.stateBatching = m.features?.stateBatching === true;
         this.offset = m.now - Date.now(); if (!this.loaded) this.trackVersion = m.track.version;
         this.maps = getPlayableMaps(m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]);
@@ -289,6 +314,7 @@ export class Multiplayer {
     };
     ws.onclose = e => {
       if (this.ws !== ws) return;
+      if (this.reloadRequired || e.code === UPDATE_CLOSE_CODE) { this.requireReload(); return; }
       this.connected = false; this.hooks.clearInput();
       this.cancelRecovery('Connection lost before recovery completed.');
       this.stateSender.reset(); this.wreckSent = false;
@@ -296,9 +322,9 @@ export class Multiplayer {
       if (e.reason === 'Session resumed elsewhere') { this.left(); this.saveToken(null); this.status('This session is now open in another tab.'); return; }
       this.status(this.active ? 'Connection lost. Rejoining your race… (90-second reservation)' : 'Multiplayer is offline. Retrying…');
       if (this.active) this.panel.hidden = false;
-      setTimeout(() => this.connect(), 1000);
+      this.reconnectTimer = setTimeout(() => this.connect(), 1000);
     };
-    ws.onerror = () => this.status('Multiplayer unavailable. Run the game with npm start.');
+    ws.onerror = () => { if (!this.reloadRequired) this.status('Multiplayer unavailable. Run the game with npm start.'); };
   }
   renderEvents(mapId) {
     const select = this.$('mp-event'), previous = select.value;

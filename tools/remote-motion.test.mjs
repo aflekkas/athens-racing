@@ -1,3 +1,4 @@
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -27,7 +28,7 @@ function pipeline(t, { fps = 60, duration = 5000, jitter = false, loss = false, 
   const core = createGameCore({ maps: new Map([['riviera', map]]), cars: new Set(['mini']), leaderboard: { submit: async () => {} }, countdownMs: 0 });
   const queue = [], timers = new Map(); let serial = 0, packetCount = 0, relayAt = null, deliveries = 0;
   const socket = () => ({ readyState: 1, messages: [], send(bytes) { const m = JSON.parse(bytes); this.messages.push(m); if (m.type === 'snapshot') queue.push({ at: now + (jitter ? [0, 30, 80, 10][deliveries++ % 4] : 0), m }); }, close() {} });
-  const a = socket(), b = socket(); core.connect(a, 'a'); core.connect(b, 'b');
+  const a = socket(), b = socket(); core.connect(a, 'a', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'b', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, m) => core.message(ws, JSON.stringify(m));
   send(a, { type: 'create' }); const code = a.messages.at(-1).lobby.code; send(b, { type: 'join', code });
   for (const ws of [a,b]) send(ws, { type: 'ready', ready: true, version: 'v1' }); send(a, { type: 'start' }); core.tick();
