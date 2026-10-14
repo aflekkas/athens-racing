@@ -203,8 +203,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .car-specs { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .car-paints { margin-top: var(--s-5); }
 .car-paints__row { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-3); }
-.car-paints .paint, .car-decals .paint { width: 2rem; height: 2rem; border-radius: 50%; background: var(--paint); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,255,255,.25), 0 0 0 1px rgba(255,255,255,.2); transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
-.car-paints .paint.selected, .car-decals .paint.selected { box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 4px #fff; }
+.car-paints .paint { width: 2rem; height: 2rem; border-radius: 50%; background: var(--paint); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,255,255,.25), 0 0 0 1px rgba(255,255,255,.2); transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
+.car-paints .paint.selected { box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 4px #fff; }
 .car-paints .paint.focus, .car-decals .paint.focus { transform: scale(1.12); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 4px var(--hu-ice), 0 0 14px rgba(111,208,255,.5); }
 .car-paint-name { margin-top: var(--s-2); min-height: 1.2em; font-family: var(--f-sans); font-size: var(--t-xs); color: var(--c-text-3); }
 .car-actions { margin-top: var(--s-5); display: grid; gap: var(--s-2); }
@@ -528,7 +528,7 @@ body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; paddin
 #race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); cursor: pointer; }
 #race-settings .ico { width: 18px; height: 18px; }
 #race-settings:focus-visible { outline: 2px solid #ffc21a; }
-body:not(.racing):not(.counting) #race-settings,body.ui-open #race-settings,body:has(#multiplayer:not([hidden])) #race-settings,body[data-customizer="open"] #race-settings { display: none; }
+body:not(.racing):not(.counting) #race-settings,body.ui-open #race-settings,body:has(#multiplayer:not([hidden])) #race-settings { display: none; }
 body #mp-toggle { right: 118px; top: 14px; }
 #multiplayer .mp-heading [data-open-settings] { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 body.racing #hud #routeBox { right: 285px; }
@@ -561,8 +561,7 @@ body[data-mode="taxi"] #hud #routeBox,body[data-mode="getaway"] #hud #routeBox {
 /* Every detached race widget follows the same menu visibility policy as the main HUD. */
 body.ui-open :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
 body:has(#multiplayer:not([hidden])) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
-body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
-body[data-customizer="open"] :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone) { visibility: hidden !important; pointer-events: none !important; }
+body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone) { visibility: hidden !important; pointer-events: none !important; }
 
 #checkpoint-banner{position:absolute;top:94px;left:50%;transform:translateX(-50%);width:330px;padding:9px 14px;background:#311d16ed;border-left:3px solid #ffb277;box-sizing:border-box;color:#fff;font-family:var(--font-ui,sans-serif);pointer-events:none}
 #checkpoint-banner b{display:block;font-size:16px;letter-spacing:.08em;color:#ffb277}#checkpoint-banner span{font-size:11px;letter-spacing:.07em}#checkpoint-banner[hidden]{display:none}

@@ -9,7 +9,7 @@ export function notificationText(value) {
 export function raceNotificationsActive(doc=globalThis.document) {
   const body=doc?.body;if(!body)return false;
   const hud=doc.getElementById('hud'),lobby=doc.getElementById('multiplayer');
-  return (body.classList.contains('racing')||body.classList.contains('counting'))&&!body.classList.contains('ui-open')&&!body.classList.contains('menu')&&body.dataset.customizer!=='open'&&(!lobby||lobby.hidden)&&!doc.querySelector('#loading.open,.modal-scrim')&&(!hud||!hud.hidden&&hud.style.display!=='none');
+  return (body.classList.contains('racing')||body.classList.contains('counting'))&&!body.classList.contains('ui-open')&&!body.classList.contains('menu')&&(!lobby||lobby.hidden)&&!doc.querySelector('#loading.open,.modal-scrim')&&(!hud||!hud.hidden&&hud.style.display!=='none');
 }
 const OBSTACLES=['#posBox','#mapBox','#dialBox','#gearboxHud','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#driving-feedback','#touch-controls button','#touch-controls .touch-steer'];
 export class NotificationManager {
@@ -26,7 +26,7 @@ export class NotificationManager {
     this.root=document.createElement('section');this.root.id='notification-lane';this.root.hidden=true;this.root.setAttribute('aria-label','Race notifications');this.root.setAttribute('aria-live','polite');document.body.append(this.root);
     window.addEventListener('resize',()=>{this.dirty=true;this.update();});
     // Only visibility containers are observed; changing race clocks does not schedule layouts.
-    const watch=el=>{if(!el||el.__notificationWatch)return;el.__notificationWatch=true;new MutationObserver(()=>{this.dirty=true;this.update();}).observe(el,{attributes:true,attributeFilter:['class','hidden','data-customizer']});};
+    const watch=el=>{if(!el||el.__notificationWatch)return;el.__notificationWatch=true;new MutationObserver(()=>{this.dirty=true;this.update();}).observe(el,{attributes:true,attributeFilter:['class','hidden']});};
     watch(document.body);const containers=()=>{watch(document.getElementById('multiplayer'));watch(document.getElementById('loading'));};containers();new MutationObserver(()=>{containers();this.dirty=true;this.update();}).observe(document.body,{childList:true});
     this.timer=setInterval(()=>this.update(),100);
   }
@@ -58,7 +58,7 @@ export class NotificationManager {
   }
   menuFeedback(text,{tone='info',ms=3500}={}){
     if(typeof document==='undefined')return;this.mount();
-    const panel=document.querySelector('#multiplayer:not([hidden]) .mp-card')||document.querySelector('#ui .scr__head')||document.querySelector('#ui .scr')||document.querySelector('.customizer-controls');
+    const panel=document.querySelector('#multiplayer:not([hidden]) .mp-card')||document.querySelector('#ui .scr__head')||document.querySelector('#ui .scr');
     if(!panel)return this.toast(text,{tone});
     let row=panel.querySelector('[data-menu-feedback]');if(!row){row=document.createElement('p');row.dataset.menuFeedback='';row.className='menu-feedback';row.setAttribute('role','status');const heading=panel.querySelector('.mp-heading');if(heading)heading.after(row);else panel.append(row);}
     row.textContent=notificationText(text);row.dataset.tone=tone;clearTimeout(row.timer);row.timer=setTimeout(()=>row.remove(),ms);return row;

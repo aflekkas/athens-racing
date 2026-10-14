@@ -1,4 +1,4 @@
-// Original hand-drawn TOE paths. Shared by world atlases and the car decal editor.
+// Original hand-drawn TOE paths. Shared by the world atlases.
 // No images/fonts/network dependencies; colour belongs to the existing decal schema.
 export const TOE_STYLES = Object.freeze(['bubble', 'throwup', 'tag', 'drip']);
 export const TOE_COLORS = Object.freeze(['#ef57aa', '#69dfce', '#f1ca49', '#c7b6ff']);

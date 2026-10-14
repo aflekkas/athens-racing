@@ -101,34 +101,8 @@
 :root #evBox b.good { color: var(--tt-green); } :root #evBox b.bad { color: var(--tt-red); } :root #evBox b.sc { color: var(--tt-amber); }
 :root #evBox small { font-family: var(--f-cond); font-weight: 600; color: var(--hu-text-2); }
 
-/* ---------------------------------------------------------------- garage: pending studio thumbnails and the paint & driver editor.
-   src/customization-editor.css loads on first open, after this sheet, so every rule carries :root. */
+/* ---------------------------------------------------------------- garage: pending studio thumbnails stay invisible until rendered */
 :root img[data-car-thumb]:not([src]) { visibility: hidden; }
-:root .customizer { gap: 1.2rem; padding: 1.6rem 2rem; font-family: var(--f-sans); color: var(--hu-text);
-  background: radial-gradient(120% 90% at 72% 20%, #132029 0%, var(--hu-screen) 62%); }
-:root .customizer header p { margin: 0; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .2em; text-transform: uppercase; color: var(--hu-text-3); }
-:root .customizer h2 { font: 400 var(--t-2xl)/1.1 var(--f-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--hu-text); }
-:root .customizer h3 { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .2em; text-transform: uppercase; color: var(--hu-text-3); margin: 1.2rem 0 .5rem; }
-:root .customizer p { font: 500 var(--t-sm)/1.45 var(--f-sans); color: var(--hu-text-2); }
-:root .customizer label { font: 500 var(--t-sm) var(--f-sans); color: var(--hu-text-2); letter-spacing: .03em; }
-:root .customizer summary { font: 600 var(--t-sm) var(--f-cond); letter-spacing: .16em; text-transform: uppercase; color: var(--hu-text-2); }
-:root .customizer details { border-bottom: 1px solid var(--hu-hair); }
-:root .customizer button, :root .customizer select, :root .customizer input:not([type=range]):not([type=color]) {
-  min-height: 2.6rem; border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: rgba(255,255,255,.06); color: var(--hu-text);
-  font: 600 var(--t-sm) var(--f-cond); letter-spacing: .14em; text-transform: uppercase; }
-:root .customizer select, :root .customizer input:not([type=range]):not([type=color]):not([type=button]) { border-radius: var(--r-3); text-transform: none; font-family: var(--f-sans); font-weight: 500; letter-spacing: .02em; background: rgba(0,0,0,.35); }
-:root .customizer button:hover { background: rgba(255,255,255,.12); border-color: rgba(111,208,255,.5); }
-:root .customizer button:disabled { opacity: .4; }
-:root .customizer button:focus-visible, :root .customizer input:focus-visible, :root .customizer select:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-:root .customizer .primary { background: var(--hu-lit); color: var(--hu-lit-fg); border-color: transparent; font-weight: 700; }
-:root .customizer .primary:hover { background: #fff; }
-:root .customizer .danger { color: #ff9c92; }
-:root .customizer [data-act=close] { border-radius: var(--r-pill); }
-:root .customizer-preview { border: 1px solid var(--hu-hair-2); border-radius: var(--r-4); background: radial-gradient(ellipse at center, #1b2b36, var(--hu-screen)); box-shadow: var(--hu-shadow); }
-:root .customizer-status { font: 500 var(--t-sm) var(--f-sans); color: var(--hu-ice); }
-:root .customizer-status[data-error=true] { color: var(--tt-red); }
-:root .customizer footer { border-top: 1px solid var(--hu-hair); font: 500 var(--t-xs) var(--f-sans); color: var(--hu-text-3); }
-:root .customizer input[type=range] { accent-color: var(--hu-ice); }
 
 /* ---------------------------------------------------------------- multiplayer: the lobby owns the top-right corner.
    The corner MULTIPLAYER toggle only opens the lobby, so it steps aside while the lobby is open and the close button stays clear. */

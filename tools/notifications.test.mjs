@@ -24,10 +24,9 @@ test('bounded queue drops the lowest priority burst and reports shown notices on
  const q=new NotificationQueue({limit:4});let shown=0;for(let i=0;i<20;i++)q.post({id:String(i),priority:i,onShown:()=>shown++},0);
  assert.equal(q.items.size,4);commit(q,0);commit(q,10);assert.equal(shown,2);assert.deepEqual([...q.visible],['19','18']);
 });
-test('visibility policy rejects pause/settings/lobby/loading/customizer/modal contexts',()=>{
+test('visibility policy rejects pause/settings/lobby/loading/modal contexts',()=>{
  const body={classList:{contains:k=>k==='racing'},dataset:{}},doc={body,getElementById:()=>null,querySelector:()=>null};assert.equal(raceNotificationsActive(doc),true);
  for(const state of['ui-open','menu']){body.classList.contains=k=>k==='racing'||k===state;assert.equal(raceNotificationsActive(doc),false);}body.classList.contains=k=>k==='racing';
- body.dataset.customizer='open';assert.equal(raceNotificationsActive(doc),false);delete body.dataset.customizer;
  doc.getElementById=id=>id==='multiplayer'?{hidden:false}:null;assert.equal(raceNotificationsActive(doc),false);doc.getElementById=()=>null;
  for(const state of['loading','modal']){doc.querySelector=()=>({state});assert.equal(raceNotificationsActive(doc),false);}
 });

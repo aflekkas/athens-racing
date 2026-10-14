@@ -48,7 +48,7 @@ body.touch-driving #dialBox { right: 10px; bottom: 128px; width: 160px; height: 
 @media (max-width:500px) { .touch-buttons { grid-template-columns: repeat(5,34px); } .touch-buttons button { min-height: 32px; } }
 
 /* Gameplay notices stay in the left HUD lane, and cannot paint over another flow. */
-body.ui-open #input-toast, body[data-customizer="open"] #input-toast,
+body.ui-open #input-toast,
 body:has(#multiplayer:not([hidden])) #input-toast, body:has(.modal-scrim) #input-toast, body:has(#loading.open) #input-toast { display: none !important; }
 #input-toast[data-tone="bad"] { border-left-color: #ff655e; }
 #input-toast[data-tone="bad"]::before { background: #ff655e; -webkit-mask-image: url(../assets/icons/warning.svg); mask-image: url(../assets/icons/warning.svg); }

@@ -10,9 +10,9 @@ import * as ENV from './env.js';
 import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
 import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
+import { normalizeDriverAppearance } from './driver-appearance-data.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
-import { getDriverAppearance } from './customization-store.js';
 import { bindDriverToCar } from './driver-seating.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
@@ -223,9 +223,6 @@ onSettings((s, key) => {
 });
 
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
-window.addEventListener('customizationchange', ({detail}) => {
-  if (player?.model.spec.id === detail?.carId) player.driver.setAppearance(detail.appearance?.driver);
-});
 const keys = controls.keys; // retained for the simulation test hook
 const input = controls.state;
 
@@ -371,7 +368,7 @@ function makeCar(spec, isPlayer, plate) {
   // the driver name; multiplayer shows every driver's name.
   const model = new CarModel(spec, { plate });
   scene.add(model.root);
-  const driver = new Driver(isPlayer ? getDriverAppearance(spec.id) : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
+  const driver = new Driver(isPlayer ? normalizeDriverAppearance() : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   bindDriverToCar(driver,model);
   if (!isPlayer) for (const a of driver.arms) a.up.visible = a.fo.visible = a.hand.visible = false;
   return { model, driver };
@@ -966,7 +963,6 @@ function openGarage() {
 /** every named input action lands here (src/input.js -> readInput -> window.__flow.action) */
 function flowAction(name) {
   if (!menu || G.state === 'loading' && !menu.open && multiplayer.panel.hidden) return false;
-  if (document.body.dataset.customizer === 'open') return true;
   if (ui.action(name)) return true; // an open prompt / dropdown (src/ui/components.js) takes the input first
   if (!multiplayer.panel.hidden) return window.__lobbyUiAction?.(name) ?? true;
   if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
@@ -993,7 +989,7 @@ function flowAction(name) {
   }
   return false;
 }
-const inMenu = () => !!menu?.open || !multiplayer.panel.hidden || document.body.dataset.customizer === 'open' || MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
+const inMenu = () => !!menu?.open || !multiplayer.panel.hidden || MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
 window.__flow = {
   enforcement, finePhone,
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },

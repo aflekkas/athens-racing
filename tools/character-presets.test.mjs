@@ -3,8 +3,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CHARACTER_PRESETS,characterPresetLook} from '../src/character-presets.js';
 import {normalizeDriverAppearance,DEFAULT_DRIVER_APPEARANCE} from '../src/driver-appearance-data.js';
-import {normalizeAppearance} from '../src/customization-data.js';
-import {createPresetRepository} from '../src/customization-repository.js';
 import {createGameCore} from '../server/core.mjs';
 import {StateSender} from '../src/multiplayer-state.js';
 
@@ -22,19 +20,7 @@ test('bounded schema keeps tunable traits, enforces Jonia and strips executable/
   assert.equal(look.heightCm,210);assert.equal(look.hairVolume,.5);assert.equal(look.skin,'#aabbcc');assert.equal(look.passenger.heightCm,140);assert.equal(look.passenger.gender,'female');assert.equal(look.passenger.id,'jonia_peroti');assert(!JSON.stringify(look).includes('evil'));assert(!JSON.stringify(look).includes('private'));
   assert.equal(normalizeDriverAppearance({presetId:'vasilis_pefaltes',passenger:null}).passenger.id,'jonia_peroti');
   assert(!normalizeDriverAppearance({presetId:'jonia_peroti',passenger:look.passenger}).passenger);
-  for(const p of CHARACTER_PRESETS)assert.deepEqual(normalizeAppearance({driver:p.look}).driver,normalizeDriverAppearance(p.look));
   assert(JSON.stringify(look).length<650);
-});
-test('all characters save/reload as per-car local appearance presets',async()=>{
-  {
-    let disk={};
-    const make=()=>createPresetRepository({load:()=>disk,write:v=>disk={...v,revision:v.revision+1}});
-    let repo=make();await repo.reload();const saved=[];
-    for(const p of CHARACTER_PRESETS)saved.push(await repo.save('mini',p.name,{driver:p.look}));
-    repo=make();await repo.reload();assert.equal(repo.forCar('mini').length,3);assert.deepEqual(repo.forCar('z4'),[]);
-    for(let i=0;i<saved.length;i++){await repo.select('mini',saved[i].id);assert.deepEqual(repo.selected('mini').driver,normalizeDriverAppearance(CHARACTER_PRESETS[i].look));}
-    const copy=await repo.duplicate(saved[2].id,'Vasilis Copy');await repo.rename(copy.id,'Paired Riders');await repo.delete(saved[2].id);repo=make();await repo.reload();assert.equal(repo.selected('mini').name,'Paired Riders');assert.equal(repo.selected('mini').driver.passenger.id,'jonia_peroti');
-  }
 });
 test('passenger changes transmit while parked without mutating a prior queued snapshot',()=>{
   let now=0;const packets=[],sender=new StateSender(p=>packets.push(p),{now:()=>now});const state={x:0,y:0,z:0,s:0,u:0,yaw:0,steer:0,vLong:0,vLat:0,rpm:850,gear:1,damage:{},driver:characterPresetLook('vasilis_pefaltes')};

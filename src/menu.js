@@ -140,7 +140,6 @@ export class Menu {
   /** a named input action; true if the menu used it */
   action(name) {
     if (!this.screen) return false;
-    if (document.body.dataset.customizer === 'open') return true;
     if (C.ui.action(name)) return true;
     if (this.screen === 'maps' && this.mapView?.action(name)) return true;
     const cur = this.items()[this.focus];
@@ -203,7 +202,6 @@ export class Menu {
       case 'roamLandmarks': this.h.roamLandmarks?.(); break;
       case 'roamTow': this.h.roamTow?.(); break;
       case 'carDetail': this.show('car', { ...this.data, index: +el.dataset.carIndex, detail: true }, true); break;
-      case 'carCustomize': { const spec = CARS[this.data.index || 0]; import('./customization-editor.js').then(({ openCustomizationEditor }) => openCustomizationEditor({ spec, onChange: preset => { if (preset.paint) this.carView?.paint(preset.paint); this.refresh(); } })).catch(error => C.ui.toast(error.message || 'CUSTOMIZATION UNAVAILABLE', { icon: 'warning', tone: 'bad' })); break; }
       case 'carConfirm': this.confirmCar(); break;
       case 'paint': this.carView?.paint(el.dataset.color); for (const paint of this.root.querySelectorAll('.paint')) paint.classList.toggle('selected', paint === el); this.root.querySelector('.car-paint-name').textContent = el.title; break;
       case 'setupAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
@@ -263,7 +261,7 @@ export class Menu {
       <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
         ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · paint, driver looks and specs`, act: 'garage' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${CARS.length} cars · specs and paint`, act: 'garage' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
       </div><footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
