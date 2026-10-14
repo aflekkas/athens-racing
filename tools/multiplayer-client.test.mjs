@@ -212,3 +212,13 @@ test('UI session APIs send authoritative commands; car changes are available aft
   assert.equal(m.changeCar('z4'),true);assert.deepEqual(packets.pop(),{type:'car',car:'z4'});m.lobby.status='results';assert.equal(m.canChangeCar,true);assert.equal(m.changeCar('mini'),true);m.lobby.status='race';assert.equal(m.changeCar('z4'),false);m.lobby.host='guest';assert.equal(m.startRace({force:true}),false);assert.equal(m.kickPlayer('guest'),false);
 });
 test('checkpoint hook receives persistent warning and clear status',()=>{const {m}=lobbyClient('riviera'),statuses=[];m.hooks.checkpoint=s=>statuses.push(s);m.applyCheckpoint({missed:true,message:'MISSED CHECKPOINT — go back',next:{s:80},passed:0,total:3});assert.equal(m.checkpoint.missed,true);m.applyCheckpoint({missed:false,message:'',passed:1,total:3});assert.equal(statuses.length,2);assert.equal(m.checkpoint.message,'');});
+
+test('race updates accept legacy events without checkpoints across modes, reconnect and forced finish',()=>{
+  for(const mode of ['sprint','free','taxi','getaway'])for(const resumed of [false,true]){
+    const {m,packets}=lobbyClient('riviera');m.lobby.mode=mode;m.lobby.event={type:mode,s0:0,s1:100,dir:1};m.pendingResume=resumed;m.startedRace=resumed?'race':null;m.boardAt=Infinity;
+    let remoteDt;m.hooks.remote=(_peers,dt)=>remoteDt=dt;
+    assert.doesNotThrow(()=>m.update(1/60,state({s:10,vLong:10})),mode+' running');assert.equal(remoteDt,1/60);assert.equal(packets.at(-1).state.s,10);
+    assert.doesNotThrow(()=>m.update(1/60,state({s:110,vLong:10})),mode+' force finish');assert.equal(m.finishSent,'race');assert.equal(packets.at(-1).state.s,110);
+    m.lobby.status='results';assert.doesNotThrow(()=>m.update(1/60,state({s:110})),mode+' results');
+  }
+});

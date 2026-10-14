@@ -290,7 +290,7 @@ window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: s
 
 // ------------------------------------------------------------------ cars
 function makeCar(spec, isPlayer) {
-  const model = new CarModel(spec, isPlayer ? {} : {decals:[]});
+  const model = new CarModel(spec);
   scene.add(model.root);
   const driver = new Driver(isPlayer ? getDriverAppearance(spec.id) : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   bindDriverToCar(driver,model);
@@ -434,7 +434,7 @@ function offerTow() {
   el.innerHTML = '<strong>NEED A TOW?</strong><p>Repair the car and return to your last road position. ' + (inFreeRoam() ? 'Free recovery.' : 'Costs 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">TOW + REPAIR · ' + bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'camera' : 'tow', activeInputDevice()) + '</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
-  if (!inFreeRoam()) {
+  if (!inFreeRoam() && !multiplayer.active) {
     const retire = document.createElement('button'); retire.type = 'button'; retire.textContent = 'RETIRE · DNF';
     retire.onclick = () => { closeTowOffer(); if (multiplayer.active) multiplayer.retire(); else finishRace('retired'); };
     el.querySelector('.tow-actions').append(retire);
