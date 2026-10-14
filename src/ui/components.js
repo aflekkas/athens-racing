@@ -1,3 +1,4 @@
+import { notifications, raceNotificationsActive } from './notifications.js';
 // UI COMPONENTS: the ATHENS STREET RACERS kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
 //
 // Two ways to use it:
@@ -308,13 +309,8 @@ function prompt({ title = '', body = '', icon: ic = 'info', actions = [{ id: 'ok
     renderModalFocus();
   });
 }
-function toast(text, { icon: ic = 'info', tone = '', ms = 2600 } = {}) {
-  let host = document.querySelector('.toasts');
-  if (!host) { host = document.createElement('div'); host.className = 'toasts'; host.setAttribute('role', 'status'); host.setAttribute('aria-live', 'polite'); document.body.append(host); }
-  const t = document.createElement('div'); t.className = `toast ${tone ? 'toast--' + tone : ''}`; t.innerHTML = `${icon(ic)}<span>${esc(text)}</span>`;
-  host.append(t); while (host.children.length > 3) host.firstChild.remove();
-  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 320); }, ms);
-  return t;
+function toast(text, options = {}) {
+  return raceNotificationsActive()?notifications.toast(text,options):notifications.menuFeedback(text,options);
 }
 /** a named input action (main.js flowAction / src/menu.js). true = an overlay used it */
 function action(name) {

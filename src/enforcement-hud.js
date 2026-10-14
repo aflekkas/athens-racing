@@ -1,3 +1,4 @@
+import { notifications } from './ui/notifications.js';
 // ENFORCEMENT HUD — compact in-game phone-style fine notifications + history,
 // and a minimap camera-icon helper. Own DOM and styles; never touches
 // src/hud.js or src/police-hud.js. Reads FineLedger entries from
@@ -9,23 +10,6 @@
 //   import { drawCameraIcons } from './enforcement-hud.js';
 //   ... inside drawMini, after the junctions block, same transform:
 //   drawCameraIcons(g, route, st.cameras || [], 6.5 / sc);
-
-const CSS = `
-#fine-phone{position:fixed;right:14px;bottom:120px;z-index:32;pointer-events:none;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
-.fine-toast{pointer-events:auto;display:flex;gap:8px;align-items:center;max-width:280px;background:rgba(10,14,20,.92);border:1px solid rgba(255,255,255,.14);border-left:4px solid #ffb000;border-radius:10px;padding:8px 10px;color:#fff;font:600 13px/1.35 system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.5);animation:fine-in .25s ease-out}
-.fine-toast.red{border-left-color:#ff3b2f}.fine-toast.capture{border-left-color:#2f7bff}
-.fine-toast b{display:block;font-size:12px;letter-spacing:.08em;color:#ffb000}
-.fine-toast.red b{color:#ff6b5e}.fine-toast.capture b{color:#7fa8ff}
-.fine-toast small{color:#aeb6c2}
-@keyframes fine-in{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
-#fine-hist{pointer-events:auto;width:280px;max-height:220px;overflow:auto;display:none;background:rgba(10,14,20,.94);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;color:#fff;font:600 12px/1.5 system-ui,sans-serif}
-#fine-hist.open{display:block}
-#fine-hist h4{margin:0 0 4px;font-size:11px;letter-spacing:.12em;color:#8f99a6}
-#fine-hist .row{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.08);padding:3px 0}
-#fine-hist .row span:last-child{color:#ffb000}
-#fine-histBtn{pointer-events:auto;background:rgba(10,14,20,.85);border:1px solid rgba(255,255,255,.16);border-radius:8px;color:#cfd6df;font:700 11px/1 system-ui,sans-serif;letter-spacing:.1em;padding:7px 10px;cursor:pointer}
-body.racing:not(.ui-open) #fine-phone[data-enabled="true"]{display:flex}#fine-phone{display:none}
-`;
 
 /** Draw fixed-camera icons on the minimap canvas (call inside drawMini's transform). */
 export function drawCameraIcons(g, route, cameras, r = 6) {
@@ -45,46 +29,15 @@ export function drawCameraIcons(g, route, cameras, r = 6) {
 }
 
 export class FinePhone {
-  constructor() {
-    if (typeof document === 'undefined') return;
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
-    const el = this.el = document.createElement('div'); el.id = 'fine-phone';
-    el.innerHTML = `<div id="fine-hist"><h4>FINES · GAME TIME ONLY</h4><div class="rows"></div></div><button id="fine-histBtn" type="button">FINES · 0</button>`;
-    document.body.appendChild(el);
-    this.rows = el.querySelector('#fine-hist .rows');
-    this.btn = el.querySelector('#fine-histBtn');
-    this.hist = el.querySelector('#fine-hist');
-    this.btn.addEventListener('click', () => this.hist.classList.toggle('open'));
-    this.count = 0;
+  constructor(){this.entries=[];this.count=0;this.enabled=false;}
+  setEnabled(enabled){this.enabled=enabled===true;if(!this.enabled)for(const id of notifications.queue.items.keys())if(id.startsWith('fine:'))notifications.dismiss(id);}
+  reset(){this.entries=[];this.count=0;for(const id of notifications.queue.items.keys())if(id.startsWith('fine:'))notifications.dismiss(id);}
+  notify(entry){return this.show(entry);}
+  show(entry){
+    if(!entry)return;this.count++;
+    const title=entry.kind==='red'?'RED LIGHT':entry.kind==='capture'?'POLICE STOP':'SPEED CAMERA',seconds=Number(entry.penaltySec)||0;
+    const item={...entry,title,penaltySec:seconds};this.entries.push(item);if(this.entries.length>100)this.entries.shift();
+    if(this.enabled)notifications.post({id:'fine:'+(entry.id||this.count),title,text:(entry.label?entry.label+' · ':'')+'+'+seconds.toFixed(1)+' S',tone:entry.kind==='red'?'bad':'info',priority:80,ms:3200,staleAfter:10000});
   }
-  setEnabled(enabled) { if (this.el) this.el.dataset.enabled = String(enabled === true); }
-  reset() {
-    this.count = 0;
-    if (!this.el) return;
-    for (const toast of this.el.querySelectorAll('.fine-toast')) toast.remove();
-    this.rows.innerHTML = ''; this.hist.classList.remove('open');
-    this.btn.textContent = 'FINES · 0';
-  }
-  /** show a phone-style toast for a ledger entry { kind, label, penaltySec, site } */
-  notify(entry) { return this.show(entry); }
-  show(entry) {
-    if (!this.el || !entry) return;
-    this.count++;
-    this.btn.textContent = `FINES · ${this.count}`;
-    const cls = entry.kind === 'red' ? 'red' : entry.kind === 'capture' ? 'capture' : '';
-    const d = document.createElement('div');
-    d.className = `fine-toast ${cls}`.trim();
-    const title = entry.kind === 'red' ? 'RED LIGHT' : entry.kind === 'capture' ? 'POLICE STOP' : 'SPEED CAMERA';
-    const content = document.createElement('div'), heading = document.createElement('b'), label = document.createElement('span'), detail = document.createElement('small');
-    heading.textContent = title; label.textContent = entry.label; detail.textContent = `+${entry.penaltySec.toFixed(1)} S · race penalty`;
-    content.append(heading, label, document.createElement('br'), detail); d.appendChild(content);
-    this.el.insertBefore(d, this.hist);
-    setTimeout(() => d.remove(), 3200);
-    const row = document.createElement('div');
-    row.className = 'row';
-    const name = document.createElement('span'), seconds = document.createElement('span');
-    name.textContent = `${title} · ${entry.label}`; seconds.textContent = `+${entry.penaltySec.toFixed(1)}s`; row.append(name, seconds);
-    this.rows.appendChild(row);
-    while (this.rows.children.length > 100) this.rows.firstElementChild.remove();
-  }
+  history(){return this.entries.map(entry=>({...entry}));}
 }

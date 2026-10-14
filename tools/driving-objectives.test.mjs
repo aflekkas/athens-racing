@@ -105,7 +105,7 @@ test('HUD and result describe objective counts and stops without fake race posit
   const html = drivingModeHud(objectiveSnapshot(s), routes, poseAt(routes[0].pickup));
   assert.match(html, /0 MISSIONS/); assert.match(html, /5:00/); assert.match(html, /REACH BANK PICKUP/); assert.match(html, /STOP BELOW 8 KM\/H/);
   assert.doesNotMatch(html, /LAP|POINTS|XP/);
-  assert.match(drivingModeHud(objectiveSnapshot(s), routes, { x: 0, z: 0, s: routes[0].pickup.s + 80 }), /TURN BACK SAFELY/);
+  assert.match(drivingModeHud(objectiveSnapshot(s), routes, { x: 0, z: 0, s: routes[0].pickup.s + 80 }), /FOLLOW THE MARKED ROAD/);
   const results = drivingModeResults({ type: 'taxi' }, { completed: 2, time: 300, bestTrip: 40 }, String);
   assert.equal(results.title, '2 FARES COMPLETED'); assert.equal(results.field, null); assert.equal(results.splits, null);
 });

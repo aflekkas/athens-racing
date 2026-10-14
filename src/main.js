@@ -1,3 +1,5 @@
+import { notifications } from './ui/notifications.js';
+import { objectiveNotice } from './ui/objective-notice.js';
 import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
 // TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
@@ -395,6 +397,7 @@ function resetRace() {
 }
 /** offline reset onto the active event: the grid, traffic in the event's direction and density, timing */
 function resetEvent() {
+  notifications.clear();
   resetLaws();
   const { def, r } = G.ev, dir = r.dir;
   buildGrid();
@@ -439,6 +442,7 @@ const peopleS = (s) => (G.dir < 0 && !multiplayer.active ? s - 300 : s);
 // online races and pursuit-survive hold the car for five seconds while the authoritative clock runs.
 const towOffer = { element: null, cooldown: 0, offT: 0, safe: null, hold: 0, recovering: false, elapsed: 0, stuckT: 0, severeT: 0 };
 function closeTowOffer(delay = 0) {
+  notifications.dismiss('tow');
   if (towOffer.element) { towOffer.element.remove(); towOffer.element = null; }
   towOffer.cooldown = Math.max(towOffer.cooldown, delay);
 }
@@ -459,7 +463,7 @@ function offerTow() {
     el.querySelector('.tow-actions').append(retire);
   }
   const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.textContent = 'R: tow'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
-  towOffer.element = el; towOffer.elapsed = 0; document.body.append(el);
+  towOffer.element = el; towOffer.elapsed = 0; notifications.adopt('tow',el,{priority:60,persistent:true});
 }
 // Water still produces its splash, but recovery waits for the driver to accept the offer.
 function seaCheck(pv, dt) {
@@ -1117,18 +1121,22 @@ function updateEventHud(dt) {
   const box = $('evBox'), ww = $('wrongWay');
   if (!box || !G.ev || multiplayer.active) return;
   const pv = player.veh, run = G.run, def = G.ev.def;
-  if (inFreeRoam()) { box.classList.remove('on'); ww.classList.remove('on'); return; }
+  if (inFreeRoam()) { box.classList.remove('on'); notifications.dismiss('wrong-way'); return; }
   if (isDrivingMode(def)) {
-    ww.classList.remove('on');
+    notifications.dismiss('wrong-way');
     const html = run ? drivingModeHud(run.objective, run.routes, pv) : '';
+    objectiveNotice(run?.objective,run?.routes,pv);
     if (html !== G.evHtml) { G.evHtml = html; box.innerHTML = html; box.classList.toggle('on', !!html); }
     return;
   }
+  objectiveNotice(null,[],pv);
   // wrong way: nose against the event's direction of travel
   const hd = Math.atan2(-route.lin(route.TX, pv.s), -route.lin(route.TZ, pv.s)) + (G.dir < 0 ? Math.PI : 0);
   // only once racing (never on the grid or in the countdown), and the HUD class is forced, never toggled
   const wrong = G.state === 'race' && G.raceT > 1 && !!EV.wrongWay(G.wrong, dt, Math.cos(pv.yaw - hd), pv.vLong);
-  if (wrong !== G.wrongShown) { G.wrongShown = wrong; ww.classList.toggle('on', wrong); }
+  G.wrongShown = wrong;
+  if(wrong)notifications.banner('wrong-way','WRONG WAY','TURN BACK SAFELY · FOLLOW THE ROAD',{priority:85,tone:'bad',persistent:true});
+  else notifications.dismiss('wrong-way');
   if ((frameN & 3) !== 0 || !run) return;
   const left = run.timeLeft();
   const html = def.type === 'pursuit' && isFinite(left) ? `<div class="e-k">SURVIVE</div><b class="${left < 10 ? 'good' : ''}">${Math.max(0, left).toFixed(1)}</b>` : '';
@@ -1804,7 +1812,7 @@ function step(dt, draw = true) {
     for (const id of ['posBox', 'gapBox', 'timeBox']) { const el = $(id); if (el) { el.hidden = true; el.style.display = 'none'; } }
     if (onlineObjective) {
       const box = $('evBox'), selectedPose = watchedObjective ? remoteCars.get(watchedObjective.id)?.veh : pv;
-      box.innerHTML = drivingModeHud(objective, objectiveRoutes || [], selectedPose); box.classList.toggle('on', !!objective); $('wrongWay')?.classList.remove('on');
+      box.innerHTML = drivingModeHud(objective, objectiveRoutes || [], selectedPose); box.classList.toggle('on', !!objective); notifications.dismiss('wrong-way'); objectiveNotice(objective,objectiveRoutes||[],selectedPose);
     }
   }
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }

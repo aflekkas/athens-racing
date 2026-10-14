@@ -1,3 +1,4 @@
+import { notifications } from './ui/notifications.js';
 import { drawCameraIcons } from './enforcement-hud.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
@@ -346,23 +347,14 @@ export class Hud {
 
   // ------------------------------------------------------------------ messages
   pop(cls, text, sub = '', rot = 0) {
-    const d = document.createElement('div'); d.className = 'pop ' + cls;
-    d.innerHTML = `${text}${sub ? `<small>${sub}</small>` : ''}`;
-    if (rot) d.style.rotate = rot + 'deg';
-    this.el.pops.appendChild(d);
-    setTimeout(() => d.remove(), 1400);
+    const tone=cls.includes('bad')?'bad':cls.includes('good')?'good':'info';
+    notifications.post({title:text,text:sub,tone,priority:tone==='bad'?65:30,ms:2400,staleAfter:7000});
   }
-  banner(title, sub) {
-    const b = this.el.banner; b.querySelector('.b1').textContent = title; b.querySelector('.b2').textContent = sub;
-    b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
-  }
+  banner(title, sub) { notifications.post({title,text:sub,priority:15,ms:2600,staleAfter:6000}); }
   count(text, go = false) {
     const c = this.el.count; c.textContent = text; c.className = ''; void c.offsetWidth; c.className = go ? 'go' : 'tick';
   }
-  message(html, dur = 2.5) {
-    const m = this.el.msg; m.innerHTML = html; m.classList.add('on');
-    clearTimeout(this._mt); this._mt = setTimeout(() => m.classList.remove('on'), dur * 1000);
-  }
+  message(html, dur = 2.5) { notifications.toast(html,{ms:dur*1000,priority:40}); }
   // ------------------------------------------------------------------ menu
   showMenu(mode, info) {
     const el = this.el; el.menu.className = mode + (info.win === true ? ' win' : info.win === false ? ' lose' : '');
