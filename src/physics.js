@@ -22,6 +22,8 @@ import { ROAD } from './road.js';
 import { carTransmission, manualMode } from './transmission.js';
 import { ENGINE_ABUSE, resetEngineAbuse, predictedGearRpm, shiftFeedback, updateMechanicalOverrev, updateManualHeat, engineWearFactor } from './engine-abuse.js';
 import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
+import { suspensionRoadInput } from './suspension-road-input.js';
+import { tyreTelemetry } from './tyre-telemetry.js';
 
 const G = 9.81, RHO = 1.2;
 const POWER_MUL = 1;    // catalogue power / torque as quoted (spec.powerMul can override per car)
@@ -109,7 +111,7 @@ export class Vehicle {
     this.damageFx();
   }
   reset(s, u, speed = 0) {
-    const f = this.route.frame(s, {});
+    const f = this.route.contactFrame?.(s, u, {}) || this.route.frame(s, {});
     const p = this.route.point(s, u);
     this.x = p.x; this.z = p.z; this.y = p.y;
     this.yaw = Math.atan2(-f.tx, -f.tz); // forward = (-sin yaw, -cos yaw)
@@ -140,6 +142,7 @@ export class Vehicle {
     this.damage = { front: 0, rear: 0, left: 0, right: 0 }; this.smoke = false; this.lastDamage = null;
     this.damageFx();
   }
+  get tyreTelemetry() { return tyreTelemetry(this); }
   get speed() { return Math.hypot(this.vLong, this.vLat); }
   get kmh() { return Math.abs(this.vLong) * 3.6; }
   forward(out = new THREE.Vector3()) { return out.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw)); }
@@ -586,18 +589,14 @@ export class Vehicle {
     // (vertical curvature of the real road); each contact patch rides over the road texture plus whatever ground.js
     // found under that wheel (kerbs, humps: wheelBump)
     const DF = 0.5 * RHO * (sp.clA ?? 0) * vx * vx, aeroF = sp.aeroF ?? 0.45;
-    const y0 = route.y(this.s - 3), y1 = route.y(this.s), y2 = route.y(this.s + 3);
-    const vcurv = (y0 - 2 * y1 + y2) / 9;
-    const gEff = clamp(1 + vx * vx * vcurv / G, 0.15, 2.2);
+    const contact = suspensionRoadInput(this, ROAD), gEff = contact.effectiveGravity;
     const W = this.m * G * gEff;
     const C4 = this.corners, cx = this.cx, cy = this.cy;
     const rIn = this._rIn || (this._rIn = [0, 0, 0, 0]), wb = this.wheelBump;
-    for (let i = 0; i < 4; i++) rIn[i] = this.roadZ(this.s + cx[i], cy[i] < 0 ? -1 : 1) + (wb ? clamp(wb[i] || 0, -0.25, 0.3) : 0);
-    // (the body feels the specific force: parked on a hill the downhill axle carries more)
-    // grade along the body (+ uphill ahead): ground.js gives it directly off the road (gradeG); on the road it's the
-    // route's grade projected on the car's heading, so driving the route backwards climbs what the route descends
-    let gradeNow = this.gradeG;
-    if (gradeNow === undefined) { const fr = route.frame(this.s, this._fg || (this._fg = {})); gradeNow = route.lin(route.GR, this.s) * (-Math.sin(this.yaw) * fr.tx - Math.cos(this.yaw) * fr.tz); }
+    // Texture is tied to the actual wheel's route coordinate. Turning across
+    // the road must not march four wheels over fictitious fore/aft bumps.
+    for (let i = 0; i < 4; i++) rIn[i] = this.roadZ(this.s + cx[i] * contact.along + cy[i] * contact.across, cy[i] < 0 ? -1 : 1) + (wb ? clamp(wb[i] || 0, -0.25, 0.3) : 0);
+    const gradeNow = contact.grade;
     // first step after a reset / respawn / teleport: settle the car on the ground it was put on (wheels on their road
     // inputs, the body on the plane through them, at rest) instead of dropping it onto a kerb or median from flat.
     // With ground.js, wait until it has reported the wheels' ground (wheelBump)
