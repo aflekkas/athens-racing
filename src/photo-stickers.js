@@ -12,7 +12,7 @@ export async function resolvePhotoSticker(id){
   if(!['image/png','image/jpeg','image/webp'].includes(response.headers.get('Content-Type')?.split(';')[0])||Number(response.headers.get('Content-Length')||0)>L.assetBytes)return null;
   const blob=await response.blob();if(blob.size>L.assetBytes)return null;publicPhotos.add(id);return blob;
 }
-export async function preparePhotoUrl(id){if(urls.has(id))return urls.get(id);const blob=await resolvePhotoSticker(id);if(!blob)return null;const url=URL.createObjectURL(blob);urls.set(id,url);return url;}
+export async function preparePhotoUrl(id){if(urls.has(id))return urls.get(id);const blob=await resolvePhotoSticker(id);if(!blob)return null;const url=URL.createObjectURL(blob);urls.set(id,url);while(urls.size>32){const oldest=urls.keys().next().value;releasePhotoUrl(oldest);}return url;}
 export function releasePhotoUrl(id){const url=urls.get(id);if(url)URL.revokeObjectURL(url);urls.delete(id);}
 export async function savePhotoSticker(blob,{signedIn=false,width,height}={}){
   if(!['image/png','image/jpeg','image/webp'].includes(blob.type)||blob.size>L.assetBytes)throw new Error('Photo exceeds the rendering limit.');
@@ -32,6 +32,7 @@ export async function decodeUserPhoto(file){
   const header=new Uint8Array(await file.slice(0,65536).arrayBuffer());const view=new DataView(header.buffer);let w=0,h=0;
   if(file.type==='image/png'&&header.length>=24){w=view.getUint32(16);h=view.getUint32(20);}
   if(file.type==='image/jpeg'){let at=2;while(at+9<header.length){if(header[at++]!==255)break;while(header[at]===255)at++;const marker=header[at++],n=view.getUint16(at);if([192,193,194].includes(marker)){h=view.getUint16(at+3);w=view.getUint16(at+5);break;}if(n<2)break;at+=n;}}
+  if(file.type==='image/webp'&&header.length>=30){const tag=String.fromCharCode(...header.subarray(12,16));if(tag==='VP8X'){w=1+header[24]+(header[25]<<8)+(header[26]<<16);h=1+header[27]+(header[28]<<8)+(header[29]<<16);}else if(tag==='VP8L'&&header.length>=25){const bits=view.getUint32(21,true);w=(bits&16383)+1;h=((bits>>>14)&16383)+1;}else if(tag==='VP8 '){w=view.getUint16(26,true)&16383;h=view.getUint16(28,true)&16383;}}
   if(w>16384||h>16384||w*h>40e6)throw new Error('Photo dimensions are too large.');
   let image;try{image=await createImageBitmap(file,{imageOrientation:'from-image'});}catch{throw new Error('This photo could not be decoded.');}
   if(image.width>16384||image.height>16384||image.width*image.height>40e6){image.close();throw new Error('Photo dimensions are too large.');}return image;
