@@ -138,7 +138,7 @@ export class Vehicle {
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
     this.shiftEvent = 0; this.gearChangeEvent = null; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
-    this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0; this.powerT = 0; this.burnout = false; this.burnoutPrimed = false; this.handbrakeInput = false;
+    this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0; this.powerT = 0; this.burnout = false; this.burnoutPrimed = false; this.handbrakeInput = false; this.handbrakeTurn = false;
     this.damage = { front: 0, rear: 0, left: 0, right: 0 }; this.smoke = false; this.lastDamage = null;
     this.damageFx();
   }
@@ -535,7 +535,7 @@ export class Vehicle {
     const powerSlideAllowed = (sp.tc ?? 0.5) <= 0;
     const powerIntent = powerSlideAllowed && this.shareR > 0 && thrIn > 0.95 && Math.abs(sIn) > 0.9 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.0 && vt > 6;
     this.powerT = powerIntent ? (this.powerT ?? 0) + dt : 0;
-    if (inp.handbrake && slideMotion > 1.5) this.driftLatch = 1;
+    if (inp.handbrake && slideMotion > 1.5) { this.driftLatch = 1; this.handbrakeTurn = true; }
     else if (this.powerT > 0.4) this.driftLatch = Math.min(1, this.driftLatch + dt * 3);
     else if (powerSlideAllowed && rearAtLimit && thrIn > 0.8) this.driftLatch = Math.min(1, this.driftLatch + dt * 4);
     // Once deliberate, retain intent through the whole rotation, including
@@ -543,6 +543,7 @@ export class Vehicle {
     // or lifting power is not recovery while the car still has a large angle.
     else if (this.driftLatch > 0 && sliding) this.driftLatch = 1;
     else if (this.flickT <= 0) this.driftLatch = Math.max(0, this.driftLatch - dt * (sliding ? (thrIn > 0.2 ? 0.05 : 0.3) : 1.5));
+    if (this.driftLatch === 0) this.handbrakeTurn = false;
     // AWD slide assist: the electronically controlled coupling moves torque rearward once you're drifting (spec.awdDrift,
     // rear share), approximating the rear-biased end of a variable split such as the 2024 GR Yaris Track mode
     // (60:40 .. 30:70; Gravel 53:47), so throttle swings the tail instead of the fronts pulling it straight. It eases

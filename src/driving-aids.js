@@ -7,7 +7,13 @@ export function aidSpec(spec, preferences = settings) {
     ...(preferences.abs === false ? { abs: false } : {}) };
 }
 export function applyVehicleAids(vehicle, stock, preferences = settings) {
+  const wasDisabled = (vehicle.spec.tc ?? 0.5) <= 0 && (vehicle.spec.esc ?? 0.4) <= 0;
   vehicle.spec = aidSpec(stock, preferences);
+  // Enabling TC resumes intervention after a power slide; an ongoing deliberate
+  // handbrake turn keeps its exception until alignment. Never change motion/gear.
+  if (preferences.aids && wasDisabled && !vehicle.handbrakeTurn && !vehicle.handbrakeInput) {
+    vehicle.driftLatch = 0; vehicle.powerT = 0;
+  }
   if (!preferences.aids) {
     vehicle.tcCut = vehicle.escCut = 0; vehicle.tcOn = vehicle.escOn = false;
     for (const corner of vehicle.corners || []) corner.esc = corner.edl = 0;

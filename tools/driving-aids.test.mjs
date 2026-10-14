@@ -50,3 +50,13 @@ test('production aid settings preserve a live manual gear and a temporary paddle
  update({aids:false,abs:true},'aids');assert.equal(vehicle.spec.tc,0);assert.equal(vehicle.spec.abs,true);
  assert.deepEqual([vehicle.gear,vehicle.manual,vehicle.autoOverride,G.sessionManual],[2,true,2.8,true]);assert.equal(refresh,1);
 });
+
+test('live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin',()=>{
+ const stock={tc:.7,esc:.4,abs:true};
+ for(const handbrakeTurn of [false,true]){
+  const vehicle={spec:{...stock,tc:0,esc:0},driftLatch:1,powerT:1,handbrakeTurn,handbrakeInput:false,w:1.5,yaw:-5,vLong:8,vLat:-6,gear:2};
+  applyVehicleAids(vehicle,stock,{aids:true,abs:true});assert.equal(vehicle.driftLatch,handbrakeTurn?1:0);
+  assert.deepEqual([vehicle.w,vehicle.yaw,vehicle.vLong,vehicle.vLat,vehicle.gear],[1.5,-5,8,-6,2]);
+  assert.equal(vehicle.spec,stock);
+ }
+});

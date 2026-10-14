@@ -1,5 +1,7 @@
 ## 2026-10-14: deliberate spins, broad drifts and recovery
 
+The live TC/ESC toggle preserves gearbox/chassis state. Enabling it resumes intervention after a power slide, while a recorded ongoing handbrake turn retains its deliberate-spin exception; only policy fields change, never yaw/velocity/gear.
+
 The additional player reports revise the old drift-mode policy. Normal aided RWD power slides keep their existing bounded rotation. Deliberate handbrake/feint slides yield TC, EDL, ESC and automatic steering mapping until the car actually aligns; switching TC/ESC off never silently restores TC.
 
 Confirmed causes:
