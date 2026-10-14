@@ -2,17 +2,17 @@
 // Reference photographs/specifications: tools/models-more-notes.md.
 import * as THREE from 'three';
 export const ROAD_MODELS = {
- e36: {L:4.433,W:1.698,H:1.393,wb:2.700,track:1.408,r:.309,rim:.1905,tyreF:.205,tyreR:.205,belt:.91,front:.77,rear:.88,cowl:-.83,header:-.35,roofBack:.81,back:1.37,seatZ:.18,eyeY:1.10,leather:'#43474c',doors:4,brand:'BMW',stations:[[-2.2165,.74,.77],[-1.75,.82,.81],[-1.35,.849,.88],[-.83,.82,.91],[.5,.82,.91],[1.35,.849,.92],[1.80,.82,.89],[2.2165,.76,.88]]},
+ e36: {L:4.433,W:1.698,H:1.393,wb:2.700,track:1.408,r:.309,rim:.1905,tyreF:.205,tyreR:.205,belt:.91,front:.77,rear:.88,cowl:-.83,header:-.35,roofBack:.81,back:1.37,seatZ:.26,eyeY:1.06,leather:'#43474c',doors:4,brand:'BMW',stations:[[-2.2165,.74,.77],[-1.75,.82,.81],[-1.35,.849,.88],[-.83,.82,.91],[.5,.82,.91],[1.35,.849,.92],[1.80,.82,.89],[2.2165,.76,.88]]},
 
- yaris: {L:3.615,W:1.660,H:1.500,wb:2.370,track:1.440,r:.282,rim:.165,tyreF:.155,tyreR:.155,belt:.95,front:.76,rear:.98,cowl:-.89,header:-.34,roofBack:1.09,back:1.63,seatZ:.11,eyeY:1.20,leather:'#526779',doors:4,brand:'TOYOTA',stations:[[-1.8075,.66,.76],[-1.40,.80,.85],[-.90,.83,.95],[.4,.80,.97],[1.19,.83,1.0],[1.8075,.72,.98]]},
+ yaris: {L:3.615,W:1.660,H:1.500,wb:2.370,track:1.440,r:.282,rim:.165,tyreF:.155,tyreR:.155,belt:.95,front:.76,rear:.98,cowl:-.89,header:-.34,roofBack:1.09,back:1.63,seatZ:.19,eyeY:1.20,leather:'#526779',doors:4,brand:'TOYOTA',stations:[[-1.8075,.66,.76],[-1.40,.80,.85],[-.90,.83,.95],[.4,.80,.97],[1.19,.83,1.0],[1.8075,.72,.98]]},
 
  panda: {L:3.538,W:1.578,H:1.540,wb:2.299,track:1.366,r:.286,rim:.165,tyreF:.155,tyreR:.155,belt:.97,front:.84,rear:1.0,cowl:-.81,header:-.38,roofBack:1.28,back:1.61,seatZ:.10,eyeY:1.24,leather:'#535d70',doors:4,brand:'FIAT',archTrim:true,stations:[[-1.769,.68,.84],[-1.4,.77,.89],[-.81,.789,.97],[.4,.78,.98],[1.14,.789,1.00],[1.769,.71,1.0]]},
 
- ibiza: {L:3.813,W:1.640,H:1.414,wb:2.440,track:1.429,r:.289,rim:.165,tyreF:.155,tyreR:.155,belt:.91,front:.76,rear:.95,cowl:-.78,header:-.25,roofBack:1.10,back:1.63,seatZ:.19,eyeY:1.12,leather:'#686665',doors:4,brand:'SEAT',stations:[[-1.9065,.70,.76],[-1.5,.79,.82],[-1.0,.82,.89],[-.78,.80,.91],[.5,.80,.92],[1.23,.82,.96],[1.9065,.73,.95]]},
+ ibiza: {L:3.813,W:1.640,H:1.414,wb:2.440,track:1.429,r:.289,rim:.165,tyreF:.155,tyreR:.155,belt:.91,front:.76,rear:.95,cowl:-.78,header:-.25,roofBack:1.10,back:1.63,seatZ:.27,eyeY:1.08,leather:'#686665',doors:4,brand:'SEAT',stations:[[-1.9065,.70,.76],[-1.5,.79,.82],[-1.0,.82,.89],[-.78,.80,.91],[.5,.80,.92],[1.23,.82,.96],[1.9065,.73,.95]]},
 
  huracan: {L:4.520,W:1.933,H:1.165,wb:2.620,track:1.668,r:.338,rim:.254,tyreF:.245,tyreR:.305,belt:.79,front:.56,rear:.82,cowl:-.99,header:-.28,roofBack:.53,back:1.04,seatZ:.16,eyeY:.91,leather:'#282b2d',doors:2,seats:2,seatBase:.30,brand:'LAMBORGHINI',stations:[[-2.26,.77,.56],[-1.80,.925,.64],[-1.30,.9665,.79],[-.99,.91,.79],[.3,.86,.79],[1.28,.9665,.87],[1.90,.93,.86],[2.26,.83,.82]]},
 
-  mini_jcw: {L:3.874,W:1.727,H:1.414,wb:2.495,track:1.485,r:.316,rim:.216,tyreF:.205,tyreR:.205,belt:.96,front:.82,rear:.98,cowl:-.65,header:-.24,roofBack:1.25,back:1.67,seatZ:.22,eyeY:1.12,leather:'#292a2c',doors:2,blackRoof:true,archTrim:true,brand:'MINI',stations:[[-1.937,.76,.82],[-1.55,.85,.92],[-1.0,.864,.97],[-.65,.85,.96],[.55,.85,.96],[1.28,.864,.98],[1.937,.76,.98]]},
+  mini_jcw: {L:3.874,W:1.727,H:1.414,wb:2.495,track:1.485,r:.316,rim:.216,tyreF:.205,tyreR:.205,belt:.96,front:.82,rear:.98,cowl:-.65,header:-.24,roofBack:1.25,back:1.67,seatZ:.34,eyeY:1.10,leather:'#292a2c',doors:2,blackRoof:true,archTrim:true,brand:'MINI',stations:[[-1.937,.76,.82],[-1.55,.85,.92],[-1.0,.864,.97],[-.65,.85,.96],[.55,.85,.96],[1.28,.864,.98],[1.937,.76,.98]]},
 };
 const mix=(a,b,t)=>a+(b-a)*t;
 export function buildRoadCar(car,d,M,low,plate,H){
@@ -20,7 +20,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
   const F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0;
   const section=z=>{const a=d.stations;for(let i=1;i<a.length;i++)if(z<=a[i][0]){const t=Math.max(0,Math.min(1,(z-a[i-1][0])/(a[i][0]-a[i-1][0]))),q=t*t*(3-2*t);return [mix(a[i-1][1],a[i][1],q),mix(a[i-1][2],a[i][2],q)];}return a.at(-1).slice(1);};
   const side=(z,y)=>{const [w,h]=section(z),v=Math.max(0,Math.min(1,(y-.18)/(h-.18)));return w-.055*(1-v)**4-.024*v**7;};
-  const deck=(x,z)=>{const [w,h]=section(z),rise={mini_jcw:.20,ibiza:.062,panda:.12,yaris:.23,e36:.045}[id]||0;return h+.028*(1-(x/(w-.024))**2)+rise*(.8+.2*Math.exp(-(((Math.abs(x)-.55)/.36)**4)))*Math.exp(-(((z-F)/.46)**2));};
+  const deck=(x,z)=>{const [w,h]=section(z),rise={mini_jcw:.20,ibiza:.062,panda:.12,yaris:.23,e36:.045}[id]||0;return h+.028*(1-(x/(w-.024))**2)+rise*((id==='mini_jcw'?.25:.8)+(id==='mini_jcw'?.75:.2)*Math.exp(-(((Math.abs(x)-.60)/(id==='mini_jcw'?.16:.36))**4)))*Math.exp(-(((z-F)/.46)**2));};
   car.playerSurface={top:z=>section(z)[1],side,deck};
   for(const s of [-1,1]){
     const arch=d.r+.055;
@@ -120,13 +120,13 @@ export function buildRoadCar(car,d,M,low,plate,H){
         face(optic,[[s*.27,.79],[s*.72,.79],[s*.72,.64],[s*.27,.64]],F-.008,'front-lamp-housing');for(const x of [.37,.53]){disk(p,M.chrome,.060,[s*x,.715,F-.015],[0,Math.PI,0]);disk(p,M.led,.037,[s*x,.715,F-.018],[0,Math.PI,0]);}face(amber,[[s*.63,.79],[s*.73,.79],[s*.73,.64],[s*.63,.64]],F-.015,'indicator-lens');lamp(s,[[.36,.89],[.73,.89],[.73,.72],[.36,.72]],true);face(amber,[[s*.36,.89],[s*.73,.89],[s*.73,.835],[s*.36,.835]],R+.010,'rear-amber-lens');}
       badge('BMW',.085,.032,.82,F-.010);badge('325i',.17,.033,.87,R+.012);
     }
-    for(const end of [-1,1]){const z=end<0?F:R;face(M.black,[[-W*.88,.61],[W*.88,.61],[W*.87,.43],[-W*.87,.43]],z+end*.01,end<0?'front-bumper-rub-strip':'rear-bumper-rub-strip');}
+    for(const end of [-1,1]){const z=end<0?F:R,edge=W*(.87+.01*(.48-.43)/(.61-.43));face(M.black,[[-edge,.48],[edge,.48],[W*.87,.43],[-W*.87,.43]],z+end*.01,end<0?'front-bumper-rub-strip':'rear-bumper-rub-strip');face(M.black,[[-W*.88,.61],[W*.88,.61],[edge,.48],[-edge,.48]],z+end*.01,end<0?'attached-front-rub-strip':'attached-rear-rub-strip');}
     face(M.black,[[-.50,.36],[.50,.36],[.48,.25],[-.48,.25]],F-.012,'lower-cooling-slot');
     for(const s of [-1,1])line(p,M.black,[[s*(side(d.cowl+.10,.63)+.006),.63,d.cowl+.10],[s*(side(1.15,.63)+.006),.63,1.15]],.024);
     if(id==='ibiza'){const rust=new THREE.MeshStandardMaterial({color:'#795844',roughness:1,side:THREE.DoubleSide});for(const s of [-1,1])for(let i=0;i<6;i++){const z=.86+i*.044,y=.28+i%2*.012;box(p,rust,[.004,.008+i%3*.003,.023],[s*(side(z,y)+.003),y,z],.001,[0,0,0],'sill-patina');}const bottle=mesh(p,new THREE.CylinderGeometry(.075,.075,.38,16),new THREE.MeshStandardMaterial({color:'#206b98',metalness:.45,roughness:.25}),[.25,.52,1.14],[Math.PI/2,0,0],'nitrous-bottle');box(p,M.chrome,[.06,.04,.07],[.25,.52,.92],.006,[0,0,0],'nitrous-valve');}
   }
   M.plate=makePlateMaterial(plate);car.plate=plate;
-  for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?.465:.53,s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112),M.plate,[0,s<0?.465:.53,s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}
+  for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?.465:.53,s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112,12,2),M.plate,[0,s<0?.465:.53,s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}
   if(!car.exhaust)car.exhaust=[new THREE.Vector3(-W*.55,.245,R+.02)];
   for(const v of car.exhaust){const pipe=mesh(p,new THREE.CylinderGeometry(id==='huracan'?.070:.037,id==='huracan'?.070:.037,.16,16,1,true),M.chrome,v.toArray(),[Math.PI/2,0,0],'exhaust');disk(p,M.black,id==='huracan'?.060:.031,[v.x,v.y,v.z+.081]);}
   p.updateMatrixWorld(true);

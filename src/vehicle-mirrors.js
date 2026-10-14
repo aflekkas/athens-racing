@@ -39,6 +39,7 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     if(car.spec?.id==='mini')center.y=car.shape.belt+.065;
     if(car.spec?.id==='z4'){center.y=car.shape.belt+.185;center.z=car.shape.cowl-.26;}
     if(car.spec?.id==='taxi')center.z=car.shape.cowl-.14;
+    if(car.modelKind==='huracan'){center.y+=.08;center.z-=.10;}
     if(car.spec?.id==='golf')center.y=car.shape.belt+.045;
     if(car.spec?.id==='gr_yaris')center.y=car.shape.belt+.057;
     if(car.spec?.id==='carrera'){center.y=car.shape.belt+.137;center.z=car.shape.cowl-.26;}
