@@ -50,6 +50,7 @@ export function buildWorldContext(map, scene, heightC) {
   function clear(x, z, r = 5, corridor = 80) {
     if (x-r < terrain.minX+20 || x+r > terrain.maxX-20 || z-r < terrain.minZ+20 || z+r > terrain.maxZ-20) return false;
     if (heightC(x,z) < .8 || terrain.cls(x,z) === 0) return false;
+    if (map.roadNetwork?.sample(x,z)) return false; // Includes mapped pavements.
     for(const s of routeCells.get(`${Math.floor(x/C)},${Math.floor(z/C)}`)||[]){
       const t=Math.max(0,Math.min(1,((x-s.ax)*s.dx+(z-s.az)*s.dz)/s.l2));
       if(Math.hypot(x-s.ax-s.dx*t,z-s.az-s.dz*t)<s.edge+r+corridor)return false;

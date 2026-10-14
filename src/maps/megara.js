@@ -282,7 +282,7 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   const trees=[],trunks=[],leaf=flat(0x647452);let seed=70043234;
   const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   for(const [x0,z0,x1,z1] of [[310,1095,470,1280],[526,1097,618,1285],[791,1112,936,1260],[920,365,1045,452],[1220,330,1390,555],[1020,55,1215,295],[1355,523,1530,845]]){
-    for(let z=z0;z<z1;z+=24)for(let x=x0;x<x1;x+=24){const p=pixel(x+(rand()-.5)*5,z+(rand()-.5)*5);const r=2.2+rand()*1.1;trees.push([p[0],yAt(...p)+3,p[1],r]);trunks.push([p[0],yAt(...p)+1.2,p[1]]);}
+    for(let z=z0;z<z1;z+=24)for(let x=x0;x<x1;x+=24){const p=pixel(x+(rand()-.5)*5,z+(rand()-.5)*5);const r=2.2+rand()*1.1;if(map.roadNetwork?.sample(...p))continue;trees.push([p[0],yAt(...p)+3,p[1],r]);trunks.push([p[0],yAt(...p)+1.2,p[1]]);}
   }
   for(const t of trunks)batch.box(t[0],t[1],t[2],.3,2.4,.3,timber);
   if(trees.length){const g=new THREE.IcosahedronGeometry(1,1),m=new THREE.InstancedMesh(g,leaf,trees.length),d=new THREE.Object3D();trees.forEach((p,i)=>{d.position.set(p[0],p[1],p[2]);d.scale.set(p[3],p[3]*.7,p[3]);d.rotation.y=i*2.4;d.updateMatrix();m.setMatrixAt(i,d.matrix);m.setColorAt(i,new THREE.Color().setHSL(.20+rand()*.035,.12+rand()*.1,.29+rand()*.08));});m.receiveShadow=true;m.castShadow=true;m.computeBoundingSphere();group.add(m);}
