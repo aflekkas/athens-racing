@@ -99,9 +99,11 @@ test('capture: time penalty + hold in races, DNF only in pursuit events', () => 
 
 // ---- modes interface (taxi/getaway agreement) --------------------------------
 
-test('laws off: nothing enforces, nothing arms', () => {
+test('laws off: nothing enforces, nothing arms; laws defaults true with police', () => {
   assert.deepEqual(modeEnforcement({ mode: 'getaway', laws: false, police: true, pickup: true }), { enforce: false, wantedArmed: false });
   assert.deepEqual(modeEnforcement({ mode: 'sprint', laws: false, police: false }), { enforce: false, wantedArmed: false });
+  assert.deepEqual(modeEnforcement({ mode: 'getaway', police: true, pickup: true }), { enforce: true, wantedArmed: true });
+  assert.deepEqual(modeEnforcement({ mode: 'sprint', police: false }), { enforce: false, wantedArmed: false });
 });
 
 test('taxi never auto-wanted; getaway arms only after pickup with laws+police', () => {

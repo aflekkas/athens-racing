@@ -132,12 +132,13 @@ export function limitFor(speeds, s) {
  * Mode arming for the laws interaction (taxi/getaway owner interface):
  * ctx = { mode: 'taxi'|'getaway'|string, laws: bool, police: bool }.
  * Returns { enforce: bool, wantedArmed: bool }.
- * - laws off: nothing enforces, nothing arms.
+ * - laws off (or police off): nothing enforces, nothing arms. laws defaults
+ *   to true when police is on (matches the getaway hook's rules.laws ?? true).
  * - taxi: never auto-wanted (wantedArmed always false).
  * - getaway: wanted escalation only after pickup (pickup=true) with laws+police.
  */
 export function modeEnforcement(ctx = {}) {
-  const enforce = ctx.laws === true && ctx.police === true;
+  const enforce = ctx.police === true && ctx.laws !== false;
   const wantedArmed = enforce && ctx.mode === 'getaway' && ctx.pickup === true;
   return { enforce, wantedArmed };
 }
