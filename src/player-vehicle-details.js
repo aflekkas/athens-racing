@@ -12,7 +12,7 @@ function ring(p,m,r,t,x){const g=new THREE.TorusGeometry(r,t,4,32);g.rotateY(Mat
 function disc(p,m,r,x){const g=new THREE.CircleGeometry(r,r<.012?8:32);g.rotateY(Math.PI/2);return mesh(p,g,m,'',[x,0,0]);}
 function spoke(p,m,x,r0,r1,a0,a1,width){const a=v(x,Math.cos(a0)*r0,Math.sin(a0)*r0),b=v(x,Math.cos(a1)*r1,Math.sin(a1)*r1);const o=mesh(p,new THREE.BoxGeometry(.022,a.distanceTo(b),width),m,'wheel-spoke',a.clone().add(b).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(v(0,1,0),b.sub(a).normalize());}
 function wheelDetails(car,d,M){
-  const k=car.spec.id,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris'||d.amg;
+  const k=car.spec.id,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris'||k==='huracan'||d.amg;
   const rimMat=dark?M.darkAlloy:new THREE.MeshStandardMaterial({color:'#c1c6ca',metalness:.92,roughness:.25,side:THREE.DoubleSide});
   const rotorMat=new THREE.MeshStandardMaterial({color:'#64676b',metalness:.78,roughness:.48,side:THREE.DoubleSide});
   M.wheelMetal=rimMat;M.brakeSteel=rotorMat;
@@ -36,6 +36,7 @@ function wheelDetails(car,d,M){
       for(let i=0;i<n;i++){
         const a=i*2*Math.PI/n;
         if(d.sculpted&&d.doors===2){for(const b of [-1,1])spoke(w.spin,rimMat,x,.05,rim-.009,a+b*.045,a+b*.065,.010);}else if(k==='gr_yaris'||d.amg)spoke(w.spin,rimMat,x,.042,rim-.012,a,a+.035,.017);
+        else if(k==='huracan'){for(const b of [-1,1]){spoke(w.spin,M.darkAlloy,x,.046,rim*.48,a,a,.030);spoke(w.spin,M.darkAlloy,x,rim*.48,rim-.009,a,a+b*.30,.029);spoke(w.spin,M.chrome,x+s*.012,rim*.48,rim-.009,a,a+b*.30,.006);}}
         else if(k==='taxi')spoke(w.spin,rimMat,x,.045,rim-.012,a,a+.10,.045);
         else for(const b of [-1,1]){spoke(w.spin,rimMat,x,.046,rim*.59,a+b*.07,a+b*.075,k==='mini'?.025:.022);spoke(w.spin,rimMat,x,rim*.59,rim-.012,a+b*.075,a+b*(k==='mini'?.18:.12),.019);}
       }
