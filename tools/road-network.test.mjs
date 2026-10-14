@@ -20,5 +20,5 @@ test('extraction preserves highway classes and widths, excludes tunnels and unpa
 // Freeze each saved map and its saved OSM once before the test callbacks run.
 // This exercises a repeatable build without allowing either pipeline to rewrite sources or routes.
 function freeze(value){if(value&&typeof value==='object'){for(const v of Object.values(value))freeze(v);Object.freeze(value);}return value;}
-const saved=['riviera','megara'].map(id=>({id,data:freeze(JSON.parse(fs.readFileSync(id==='riviera'?'data/map.json':`data/maps/${id}/map.json`))),osm:freeze(readNetworkSource('.',id))}));
+const saved=['riviera','megara','penteli'].map(id=>({id,data:freeze(JSON.parse(fs.readFileSync(id==='riviera'?'data/map.json':`data/maps/${id}/map.json`))),osm:freeze(readNetworkSource('.',id))}));
 for(const {id,data:d,osm} of saved)test(id+' complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays',()=>{const before=JSON.stringify(d.route),n=extractRoadNetwork(d,osm);assert.deepEqual(JSON.parse(JSON.stringify(n)),d.roadNetwork);assert.equal(JSON.stringify(d.route),before);assert.ok(n.roads.length>10);assert.ok(n.length>1000);assert.ok(n.roads.every(r=>r.p.every(Number.isFinite)&&r.w>=3&&r.w<=14&&Number.isFinite(r.v)&&['osm','inferred'].includes(r.vs)));});
