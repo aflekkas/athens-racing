@@ -220,6 +220,7 @@ export class Menu {
       case 'account': this.show('account', {}, true); break;
       case 'friends': this.show('friends', {}, true); break;
       case 'garage': this.h.garage(); break;
+      case 'fines': this.show('fines',{},true);break;
       case 'settings': this.show('settings', { from: this.screen, tab: 'audio' }, true); break;
       case 'back': this.back(); break;
       case 'resume': this.h.resume(); break;
@@ -249,7 +250,8 @@ export class Menu {
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
-      if (key === 'graphics') { const g = this.h.graphicsControl; if (!g || g.disabled) return; if (g.value !== value) { g.value = value; setSetting('graphics', value); g.onchange?.(); } return; }
+      if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;return; }
+      if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));return;}
       setSetting(key, value);
       if (key === 'ghostEnabled') this.refresh();
       return;
@@ -392,7 +394,7 @@ export class Menu {
 
   // ---------------------------------------------------------------- settings
   r_settings(d) {
-    const tab = d.tab || 'audio', g = this.h.graphicsControl, locked = g?.disabled;
+    const tab = d.tab || 'audio';
     const tabsList = [['audio', 'SOUND', 'speaker-high'], ['video', 'GRAPHICS', 'monitor'], ['driving', 'DRIVING', 'steering-wheel'], ...(has('chaseFov') || has('mouseSensitivity') ? [['camera', 'CAMERA', 'camera']] : []), ['controls', 'CONTROLS', 'game-controller']];
     const v = (k) => String(this.valueFor(k));
     let body = '';
@@ -400,7 +402,9 @@ export class Menu {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
       body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'mildLanguage', label: 'MILD LANGUAGE', value: settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
-      body = `<div class="group"><h3 class="group__title">${icon('monitor')}QUALITY</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS', value: v('graphics'), options: [['auto', 'AUTO'], ['ultra', 'ULTRA'], ['high', 'HIGH'], ['med', 'MED'], ['low', 'LOW']], note: locked ? 'LOCKED WHILE ONLINE' : 'CHANGING IT RELOADS THE GAME', attrs: SET, cls: locked ? 'locked' : '' })}</div>
+      const resolution=has('renderScale')?C.select({key:'renderScale',label:'RENDER RESOLUTION',value:v('renderScale'),options:[['auto','AUTO · ADAPTIVE'],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'AUTO ADAPTS BETWEEN 50–100%. QUALITY AND RESOLUTION CHANGE INDEPENDENTLY.',attrs:SET}):'';
+      const cap=has('pixelRatioCap')?C.select({key:'pixelRatioCap',label:'PIXEL RATIO CAP',value:v('pixelRatioCap'),options:[[1,'1×'],[1.25,'1.25×'],[1.5,'1.5×'],[1.75,'1.75×'],[2,'2×']],note:'100% RESOLUTION USES YOUR SCREEN’S PIXEL RATIO, UP TO THIS CAP.',attrs:SET}):'';
+      body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}QUALITY</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS QUALITY', value: v('graphics'), options: [['auto', 'AUTO'], ['low', 'LOW'], ['med', 'MEDIUM'], ['high', 'HIGH'], ['ultra', 'ULTRA']], note:'LIGHTING & EFFECTS · APPLIES LIVE', attrs: SET })}</div>${resolution?`<div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${resolution}${cap}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>`:''}
         <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'AUTO'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'FULL DETAIL RANGE · LOW-DETAIL SCENERY STAYS VISIBLE TO THE HORIZON', attrs: SET })}
           ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}</div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
@@ -432,8 +436,13 @@ export class Menu {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${window.__flow?.finePhone?.count?C.option({icon:'list',title:'FINES · '+window.__flow.finePhone.count,act:'fines'}):''}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
+  }
+
+  r_fines() {
+    const entries=window.__flow?.finePhone?.history?.()||[];
+    return C.screen({title:'FINES',kick:'GAME TIME PENALTIES',hints:[['back','BACK']],body:C.panel('THIS SESSION',`<table class="r-table">${entries.map(e=>`<tr><td>${esc(e.title)}<small>${esc(e.label||'')}</small></td><td>+${Number(e.penaltySec).toFixed(1)} S</td></tr>`).join('')}</table>`)});
   }
 
   // Mode owner handlers; UI owner can restyle these with the rest of the pause menu.

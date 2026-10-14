@@ -528,3 +528,5 @@ body[data-customizer="open"] :is(#hud,#driving-feedback,#mp-board,#racer-markers
 
 .account-recovery { border: 1px solid var(--accent, #d9fd4a); padding: 16px; margin: 16px 0; }
 .account-recovery code { display: block; font-size: 18px; line-height: 1.8; overflow-wrap: anywhere; user-select: all; letter-spacing: 1px; }
+
+.graphics-quality .field,.graphics-resolution .field{margin-bottom:14px}.graphics-resolution .select{border-left:3px solid var(--c-cyan,#29d8ff)}.graphics-live-note{font:700 12px/1.4 var(--f-cond);letter-spacing:.04em;color:#9fd8de;margin:0 0 4px}.graphics-quality .seg{flex-wrap:wrap}#render-resolution,#pixel-ratio-cap{display:none!important}
