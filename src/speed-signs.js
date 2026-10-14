@@ -8,6 +8,8 @@
 // https://en.wikipedia.org/wiki/Road_signs_in_Greece (Ρ-32: white disc, red ring).
 import * as THREE from 'three';
 import { CellInstances, canvasTex } from './util.js';
+import { buildRoadSigns } from './road-signs.js';
+import { speedSignRecords } from './road-sign-layout.js';
 
 export const SIGN_D = 0.75; // disc diameter, m (Greek Ρ-32 is posted 600-900 mm)
 const POST_H = 2.7, FACE_Y = 2.2, CAM_H = 3.6;
@@ -35,10 +37,11 @@ function faceTexture(v) {
  */
 export function buildSpeedSigns(map, parent, heightC) {
   const group = new THREE.Group(); group.name = 'speed signs';
-  const obstacles = [];
+  const roadSigns = buildRoadSigns(map, group, heightC);
+  const obstacles = [...roadSigns.obstacles];
   const counts = { signs: 0, cameras: 0, meshes: 0 };
   const { route, data } = map;
-  const signs = data.speedSigns || [], cameras = data.speedCameras || [];
+  const signs = speedSignRecords(map), cameras = data.speedCameras || [];
   if (!signs.length && !cameras.length) { parent.add(group); return { group, obstacles, counts }; }
 
   const metal = new THREE.MeshStandardMaterial({ color: '#8f979b', roughness: 0.55, metalness: 0.5 });

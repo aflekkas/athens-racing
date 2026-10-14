@@ -262,7 +262,7 @@ export function buildRoad(map, scene, heightC, assets) {
 
 // ------------------------------------------------------------------ furniture
 function signTexture(route) {
-  // atlas of road signs (all English / Latin)
+  // Bilingual Greek / Latin atlas; geographic labels, not sign transcriptions.
   const W = 2048, H = 1024;
   const regions = {};
   const tex = canvasTex(W, H, (g) => {
@@ -276,23 +276,25 @@ function signTexture(route) {
       g.fillStyle = '#fff'; g.textBaseline = 'middle';
       lines.forEach(([txt, arrow, km], i) => {
         const yy = 60 + i * 70;
-        g.font = font(54); g.textAlign = 'left'; g.fillText(txt, 92, yy);
+        const [greek, latin] = txt.split(' / ');
+        g.font = font(31); g.textAlign = 'left'; g.fillText(greek, 92, yy - 17, w - 128);
+        g.font = font(27); g.fillText(latin || greek, 92, yy + 17, w - 128);
         if (km) { g.textAlign = 'right'; g.fillText(km, w - 34, yy); }
         g.save(); g.translate(52, yy); g.rotate(arrow); g.beginPath(); g.moveTo(0, -24); g.lineTo(18, 0); g.lineTo(6, 0); g.lineTo(6, 22); g.lineTo(-6, 22); g.lineTo(-6, 0); g.lineTo(-18, 0); g.closePath(); g.fill(); g.restore();
       });
     });
-    dirSign('d_start', [['ASTIR BEACH', Math.PI / 2, ''], ['VARKIZA', 0, '6'], ['SOUNIO', 0, '47']]);
-    dirSign('d_lake', [['LAKE VOULIAGMENI', -Math.PI / 2, ''], ['LIMANAKIA', 0, '1.5'], ['VARKIZA', 0, '5']]);
-    dirSign('d_astir', [['ASTIR BEACH', Math.PI / 2, ''], ['MARINA', Math.PI / 2, ''], ['VARKIZA', 0, '5']]);
-    dirSign('d_varkiza', [['VARI', -Math.PI / 2, '4'], ['LOMVARDA', 0, '3'], ['SOUNIO', 0, '42']]);
+    dirSign('d_start', [['ΑΣΤΕΡΑΣ / ASTIR BEACH', Math.PI / 2, ''], ['ΒΑΡΚΙΖΑ / VARKIZA', 0, '6'], ['ΣΟΥΝΙΟ / SOUNIO', 0, '47']]);
+    dirSign('d_lake', [['ΛΙΜΝΗ ΒΟΥΛΙΑΓΜΕΝΗΣ / LAKE VOULIAGMENI', -Math.PI / 2, ''], ['ΛΙΜΑΝΑΚΙΑ / LIMANAKIA', 0, '1.5'], ['ΒΑΡΚΙΖΑ / VARKIZA', 0, '5']]);
+    dirSign('d_astir', [['ΑΣΤΕΡΑΣ / ASTIR BEACH', Math.PI / 2, ''], ['ΜΑΡΙΝΑ / MARINA', Math.PI / 2, ''], ['ΒΑΡΚΙΖΑ / VARKIZA', 0, '5']]);
+    dirSign('d_varkiza', [['ΒΑΡΗ / VARI', -Math.PI / 2, '4'], ['ΛΟΜΒΑΡΔΑ / LOMVARDA', 0, '3'], ['ΣΟΥΝΙΟ / SOUNIO', 0, '42']]);
     // speed limits
     for (const v of [30, 40, 50, 60, 70]) panel('sl' + v, 256, 256, (w, h) => {
       g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.beginPath(); g.arc(128, 128, 118, 0, Math.PI * 2); g.fillStyle = '#d0141e'; g.fill();
       g.beginPath(); g.arc(128, 128, 92, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.fillStyle = '#111'; g.font = font(118, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(v), 128, 134);
     });
-    // place-name boards (white on blue, Greek style but Latin text)
-    for (const [k, t] of [['n_vouliagmeni', 'VOULIAGMENI'], ['n_limanakia', 'LIMANAKIA'], ['n_varkiza', 'VARKIZA'], ['n_lomvarda', 'LOMVARDA']]) panel(k, 512, 128, (w, h) => {
-      g.fillStyle = '#f4f4f0'; g.fillRect(0, 0, w, h); g.strokeStyle = blue; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16); g.fillStyle = blue; g.font = font(78, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, w / 2, h / 2 + 4);
+    // Greek and Latin village/place names on white boards.
+    for (const [k, t] of [['n_vouliagmeni', 'ΒΟΥΛΙΑΓΜΕΝΗ / VOULIAGMENI'], ['n_limanakia', 'ΛΙΜΑΝΑΚΙΑ / LIMANAKIA'], ['n_varkiza', 'ΒΑΡΚΙΖΑ / VARKIZA'], ['n_lomvarda', 'ΛΟΜΒΑΡΔΑ / LOMVARDA']]) panel(k, 512, 128, (w, h) => {
+      g.fillStyle = '#f4f4f0'; g.fillRect(0, 0, w, h); g.strokeStyle = blue; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16); g.fillStyle = blue; g.textAlign = 'center'; g.textBaseline = 'middle'; const [greek,latin]=t.split(' / '); g.font=font(45,800); g.fillText(greek,w/2,43,w-32); g.font=font(35,700); g.fillText(latin,w/2,94,w-32);
     });
     panel('bus', 256, 256, (w, h) => { g.fillStyle = '#0b4ea2'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = font(120, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('BUS', 128, 100); g.font = font(44, 700); g.fillText('OASA', 128, 196); });
     panel('chev', 256, 256, (w, h) => { g.fillStyle = '#ffd400'; g.fillRect(0, 0, w, h); g.fillStyle = '#111'; for (let i = 0; i < 2; i++) { g.beginPath(); const x = 50 + i * 90; g.moveTo(x, 30); g.lineTo(x + 70, 128); g.lineTo(x, 226); g.lineTo(x + 34, 226); g.lineTo(x + 104, 128); g.lineTo(x + 34, 30); g.closePath(); g.fill(); } });

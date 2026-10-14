@@ -90,5 +90,29 @@ export function buildPenteliSurface(scene,map,heightC) {
     geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingSphere();
     const mesh=new THREE.Mesh(geometry,asphalt);mesh.receiveShadow=true;mesh.layers.enable(REFLECT_LAYER);group.add(mesh);
   }
-  return {group,asphalt,dispose(){group.removeFromParent();group.traverse(o=>o.geometry?.dispose());asphalt.dispose();terrain.dispose();}};
+  // Tie the narrow gravel shoulder into the carved DEM: level verge, then a
+  // cut slope uphill or a fill slope downhill. Skip real junction mouths.
+  const earth=new THREE.MeshLambertMaterial({color:'#a49d82',...(TX.ground_diff?{map:TX.ground_diff}:{}),side:THREE.DoubleSide});
+  for(const side of [-1,1])for(let start=-60;start<route.length+60;start+=200){
+    const pos=[],uv=[],idx=[],valid=[],offsets=[.35,.8,3,6,10,16,22];let row=0;
+    for(let s=start;s<=Math.min(start+200,route.length+60);s+=2,row++){
+      const edge=route.edge(s);
+      for(const [j,d] of offsets.entries()){
+        const p=route.point(s,side*(edge+d)),ground=heightC(p.x,p.z),f=Math.min(1,Math.max(0,(d-3)/13));
+        const y=d<=3?p.y-.12:(p.y-.12)*(1-f)+ground*f;
+        const q=map.roadNetwork?.project(p.x,p.z)||route.project(p.x,p.z,null);
+        valid.push(Math.abs(q.s-s)<12&&!map.roadNetwork?.sample(p.x,p.z));
+        pos.push(p.x,y,p.z);uv.push(s*.2,d*.2);
+        if(row&&j&&!map.roadNetwork?.mouth(s-1,side,3)){
+          // Test all four corners against the global nearest leg. A local
+          // station hint misses the opposite side of a tight switchback.
+          const a=(row-1)*offsets.length+j-1,b=a+offsets.length;
+          if([a,a+1,b,b+1].every(k=>valid[k]))idx.push(a,a+1,b,a+1,b+1,b);
+        }
+      }
+    }
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
+    const mesh=new THREE.Mesh(g,earth);mesh.name='Penteli cut and fill verge';mesh.receiveShadow=true;group.add(mesh);
+  }
+  return {group,asphalt,dispose(){group.removeFromParent();group.traverse(o=>o.geometry?.dispose());asphalt.dispose();terrain.dispose();earth.dispose();}};
 }

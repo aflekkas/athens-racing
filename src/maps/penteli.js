@@ -7,6 +7,8 @@ import { CellInstances, RNG, M, clamp, pointInPoly, polyBounds } from '../util.j
 import { TX } from '../tex.js';
 import { COND_STATE } from '../env.js';
 import { buildPenteliSurface } from './penteli-surface.js';
+import { penteliGuardrail } from './penteli-roadside.js';
+import { PenteliGround } from './penteli-ground.js';
 
 const CHAPEL = [3023.3,880.68,3022.94,874.64,3007.82,875.52,3008.47,886.61,3013.55,886.31,3013.25,881.27];
 const TAU = Math.PI * 2;
@@ -63,6 +65,7 @@ function inside(x,z,polys) { return polys.some(a=>x>=a.b.x0&&x<=a.b.x1&&z>=a.b.z
 
 export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),assets={}}={}) {
   const {route,data,terrain}=map, rng=new RNG(2947);
+  const branchVerge=(x,z)=>[[0,0],[1.5,0],[-1.5,0],[0,1.5],[0,-1.5]].some(([dx,dz])=>map.roadNetwork?.sample(x+dx,z+dz));
   const road=buildPenteliSurface(scene,map,heightC);
   const group=new THREE.Group();group.name='penteli-mountain-scenery';scene.add(group);
   const geos=new Set(), mats=new Set(), ownedTextures=new Set();
@@ -115,7 +118,7 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   function plant(x,z,s,far=false) {
     const q=route.project(x,z);
     const roadGap=Math.abs(q.u);
-    if(roadGap<route.edge(q.s)+(far?17:7.5)||inside(x,z,quarries)||inside(x,z,buildings))return;
+    if(roadGap<route.edge(q.s)+(far?17:7.5)||branchVerge(x,z)||inside(x,z,quarries)||inside(x,z,buildings))return;
     const y=heightC(x,z);if(!Number.isFinite(y)||y<10)return;
     const steep=Math.hypot(terrain.height(x+5,z)-terrain.height(x-5,z),terrain.height(x,z+5)-terrain.height(x,z-5))/10;
     const wooded=forest.length?inside(x,z,forest):q.s<6100;
@@ -154,7 +157,7 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
       if(coverCells.has(key))continue;coverCells.add(key);
       if(coverRng.next()>(d<80?.87:.78))continue;
       const x=(cx+coverRng.range(.12,.88))*cell,z=(cz+coverRng.range(.12,.88))*cell,q=route.project(x,z);
-      if(Math.abs(q.u)<route.edge(q.s)+1.5||inside(x,z,buildings)||inside(x,z,quarries))continue;
+      if(Math.abs(q.u)<route.edge(q.s)+1.5||branchVerge(x,z)||inside(x,z,buildings)||inside(x,z,quarries))continue;
       const y=heightC(x,z);if(y<10)continue;
       const dry=coverRng.next()<.29,tint=dry?new THREE.Color(1.65,1.42,.78):new THREE.Color(coverRng.range(.95,1.35),coverRng.range(1.12,1.5),coverRng.range(.65,.98));
       const scale=coverRng.range(.60,1.65)*(d>80?1.45:1),height=coverRng.range(.48,1.18);
@@ -207,7 +210,7 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   for(const [from,to] of [[1200,5000],[7400,9300]])for(let s=from;s<to;s+=11)for(const side of [-1,1]){
     if(snagRng.next()>.82)continue;
     const p=route.point(s+snagRng.range(-10,10),side*snagRng.range(6.8,48)),q=route.project(p.x,p.z);
-    if(Math.abs(q.u)<route.edge(q.s)+2.2||inside(p.x,p.z,quarries)||inside(p.x,p.z,buildings))continue;
+    if(Math.abs(q.u)<route.edge(q.s)+2.2||branchVerge(p.x,p.z)||inside(p.x,p.z,quarries)||inside(p.x,p.z,buildings))continue;
     const h=heightC(p.x,p.z),scale=s>7400?snagRng.range(.95,2.05):snagRng.range(.62,1.45);if(h>0)snags.addTRS(p.x,h-.04,p.z,snagRng.range(0,TAU),scale,scale,scale);
   }
   // Exposures stay within mapped quarry polygons. DEM provides their true relief.
@@ -218,16 +221,15 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   }}
 
   const rails=[];
-  // These runs infer roadside engineering from DEM cut/drop; locations are not a survey.
+  // Only the photographed outer EP29 run; do not infer rails on every DEM drop.
   // Keep them beyond the generic road's 0.55 m gutter and 1.6 m shoulder.
   for(const side of [-1,1]){
     let run=null;
     for(let s=12;s<route.length-12;s+=2){
-      const edge=route.edge(s)+1.25, p=route.point(s,side*edge),outer=route.point(s,side*(edge+8));
-      const raw=terrain.height(outer.x,outer.z),drop=p.y-raw;
+      const reference=penteliGuardrail(s,side),edge=route.edge(s)+(reference?.offset||1.25), p=route.point(s,side*edge);
       const fork=data.marks?.find(m=>m.id==='agios-petros'||/fork/i.test(m.name||''))?.s??5744;
-      const nearJunction=Math.abs(s-fork)<42||s<180;
-      if((drop>2.8||(side===-1&&s>=4400&&s<=4760))&&!nearJunction){if(!run){run={side,pts:[]};rails.push(run);}run.pts.push({s,u:edge,p:p.clone()});
+      const nearJunction=Math.abs(s-fork)<42||s<180||map.roadNetwork?.mouth(s,side,5);
+      if(reference&&!nearJunction){if(!run){run={side,pts:[]};rails.push(run);}run.pts.push({s,u:edge,p:p.clone()});
         if(s%4===0)posts.addTRS(p.x,p.y+.43,p.z,route.heading(s),.11,.86,.09);
       }else run=null;
       if(s%40===12&&!nearJunction){reflectorPosts.addTRS(p.x,p.y+.50,p.z,route.heading(s),.13,1,.1);
@@ -252,7 +254,7 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
     const flush=()=>{sweep(ditch,[[0,.04],[.34,-.16],[.76,.07]],ditchMat,'cut-side-drain');ditch=[];sweep(wall,[[0,-.3],[.18,.65],[.46,1.1]],wallMat,'low-stone-cut-retaining');wall=[];};
     for(let s=start;s<=Math.min(route.length,start+240);s+=4){
       const u=route.edge(s)+2.18,p=route.point(s,side*u),o=route.point(s,side*(u+7)),rise=terrain.height(o.x,o.z)-p.y;
-      if(rise>.8&&s>220&&Math.abs(s-5744)>45){ditch.push({s,u,y:p.y,side});if(rise>3.2)wall.push({s,u:u+.86,y:p.y,side});else{if(wall.length)sweep(wall,[[0,-.3],[.18,.65],[.46,1.1]],wallMat,'low-stone-cut-retaining');wall=[];}}
+      if(rise>.8&&s>220&&Math.abs(s-5744)>45&&!map.roadNetwork?.mouth(s,side,6)){ditch.push({s,u,y:p.y,side});if(rise>3.2)wall.push({s,u:u+.86,y:p.y,side});else{if(wall.length)sweep(wall,[[0,-.3],[.18,.65],[.46,1.1]],wallMat,'low-stone-cut-retaining');wall=[];}}
       else flush();
     }flush();
   }
@@ -350,49 +352,14 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
     }
   }
 
-  // The actual EP29 continuation is deliberately visible at the Agios Petros fork.
-  // Bundle extraction supplies the unused part of OSM way 224029663 separately.
-  const marathonBranch=data.penteli?.marathonBranch||(data.sideRoads||[]).find(r=>String(r.id)==='224029663');
-  if(marathonBranch?.p?.length>=4){
-    const raw=marathonBranch.p,samples=[];
-    for(let i=0;i+3<raw.length;i+=2){
-      const ax=raw[i],az=raw[i+1],dx=raw[i+2]-ax,dz=raw[i+3]-az,L=Math.hypot(dx,dz),steps=Math.max(1,Math.ceil(L/5));
-      for(let j=0;j<steps;j++)samples.push([ax+dx*j/steps,az+dz*j/steps]);
-    }samples.push(raw.slice(-2));
-    const vertices=[],uvs=[],idx=[],width=marathonBranch.w||6.8,dist=[0];
-    for(let i=1;i<samples.length;i++)dist.push(dist[i-1]+Math.hypot(samples[i][0]-samples[i-1][0],samples[i][1]-samples[i-1][1]));
-    let branchY=samples.map(([x,z])=>heightC(x,z));
-    for(let pass=0;pass<3;pass++)branchY=branchY.map((_,i)=>{let total=0,n=0;for(let j=Math.max(0,i-4);j<=Math.min(branchY.length-1,i+4);j++){const w=5-Math.abs(i-j);total+=branchY[j]*w;n+=w;}return total/n;});
-    const anchor=route.y(data.penteli?.fork||5744);
-    branchY=branchY.map((y,i)=>{const t=clamp(dist[i]/75,0,1),smooth=t*t*(3-2*t);return anchor*(1-smooth)+y*smooth;});
-    for(let i=1;i<branchY.length;i++){const limit=(dist[i]-dist[i-1])*.16;branchY[i]=clamp(branchY[i],branchY[i-1]-limit,branchY[i-1]+limit);}
-    samples.forEach(([x,z],i)=>{
-      const prev=samples[Math.max(0,i-1)],next=samples[Math.min(samples.length-1,i+1)],dx=next[0]-prev[0],dz=next[1]-prev[1],len=Math.hypot(dx,dz)||1;
-      // Same smoothed centre height for both edges prevents projection switching
-      // between the fork's two racing legs from twisting this visual side road.
-      for(const side of [-1,1]){
-        const px=x-dz/len*width*.5*side,pz=z+dx/len*width*.5*side;
-        vertices.push(px,branchY[i]+.065,pz);uvs.push(side*.5,dist[i]*.3);
-      }if(i){const a=(i-1)*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}
-    });
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(idx);g.computeVertexNormals();
-    mesh(g,std('#73716c',{map:TX.asphalt_diff,normalMap:TX.asphalt_nor,side:THREE.DoubleSide}),'EP29 real branch toward Nea Makri');
-  }
-  // Direction labels are geographic reconstructions, not a transcription of a
-  // photographed sign. They explain the genuine fork without invented distances.
-  if(assets.makeLabel){
-    const s=(data.penteli?.fork||5744)-58,p=route.point(s,route.edge(s)+3.5),f=route.frame(s,{}),yaw=Math.atan2(-f.tx,-f.tz);
-    for(const dx of [-1.25,1.25])posts.addTRS(p.x+Math.cos(yaw)*dx,p.y+1.8,p.z-Math.sin(yaw)*dx,yaw,.09,3.6,.09);
-    for(const [j,text] of ['ΠΕΝΤΕΛΗ  /  PENTELI  →','ΝΕΑ ΜΑΚΡΗ  /  NEA MAKRI  ↑'].entries()){
-      const label=assets.makeLabel(text,3.2,.46,'#155180','#f3efdd');label.position.set(p.x,p.y+3.45-j*.48,p.z);label.rotation.y=yaw;group.add(label);
-    }
-  }
+  // All unused OSM arms are rendered and contacted by RoadNetwork. A second
+  // decorative EP29 strip would overlap that surface and bypass its contacts.
 
   for(const b of buckets){b.build(group);b.cells.clear();}
-  group.userData.reconstruction='OSM footprints; DEM-inferred roadside engineering; illustrative pine distribution';
+  group.userData.reconstruction='Street View roadside inventory; OSM footprints; reconstructed cuts and vegetation';
   group.userData.treeCount=pines.reduce((n,p)=>n+p.trunk.meshes.reduce((m,o)=>m+o.count,0),0);
   let disposed=false;
-  return {group,road,assets:{rails},dispose(){
+  return {group,road,ground:new PenteliGround(map,heightC,{...assets,rails},road),assets:{rails},dispose(){
     if(disposed)return;disposed=true;road.dispose?.();group.removeFromParent();
     // Shared TX textures and LabelAtlas materials belong to the application.
     for(const g of geos)g.dispose();for(const m of mats)m.dispose();for(const t of ownedTextures)t.dispose();group.clear();

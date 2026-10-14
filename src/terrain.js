@@ -4,6 +4,7 @@ import { REFLECT_LAYER } from './env.js';
 import { vnoise, fbm, smoothstep, clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 import { sampleTerrainHeight } from './terrain-contact.js';
+import { cutMountainRoads } from './road-cut.js';
 
 const C = (h) => new THREE.Color(h);
 const CLASS_COL = [C('#b9a985'), C('#dcc8a0'), C('#b7ab95'), C('#8a7d57'), C('#9a937f'), C('#738440'), C('#5c6435'), C('#6d6b57'), C('#9c8b63')];
@@ -182,6 +183,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     network.prepareTerrain(Hc, stamp, source);
   }
   route.localLayout?.carveTerrain(terrain, Hc, stamp);
+  if (!coastal && !farmland) cutMountainRoads(terrain, route, Hc, network);
   terrain.Hc = Hc;
 
   const cropGreen = C('#78864c'), cropDry = C('#b6ae72'), cropVerge = C('#929c5a');
@@ -245,7 +247,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   const fineGeo = build(1, inFine);
   // coarse outside: drop vertices that are deep inside the fine area so they hide under it
   const C4 = 4;
-  const coarseGeo = build(C4, (i, j, i2, j2) => !(inFine(i, j, i, j) && inFine(i2, j2, i2, j2) && inFine(i, j2, i, j2) && inFine(i2, j, i2, j)) || true,
+  const coarseGeo = build(C4, (i, j, i2, j2) => !(inFine(i, j, i, j) && inFine(i2, j2, i2, j2) && inFine(i, j2, i, j2) && inFine(i2, j, i2, j)),
     (i, j) => { let all = true; for (let dj = -C4; dj <= C4 && all; dj += C4) for (let di = -C4; di <= C4 && all; di += C4) { const a = Math.min(GX - 1, Math.max(0, i + di)), b = Math.min(GZ - 1, Math.max(0, j + dj)); if (!mask[b * GX + a]) all = false; } return all ? 3 : 0; });
   // split the fine mesh into tiles for culling
   const group = new THREE.Group();
