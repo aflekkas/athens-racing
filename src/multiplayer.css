@@ -120,3 +120,23 @@
 #multiplayer .car-card .card__text,#multiplayer .car-card .card__foot { font-size: .72rem; }
 #multiplayer .mp-fields:has(#mp-car) > label:first-child { grid-column: 1/-1; }
 @media(max-width:700px) { #multiplayer .car-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } #multiplayer .catalog-toolbar { grid-template-columns: repeat(2,minmax(0,1fr)); } .mp-garage { padding: .7rem; } .mp-garage-title { font-size: 1.3rem; } .mp-garage-title span { font-size: .65rem; } }
+/* Multiplayer starts with invites and discoverable rooms, followed by the shared garage. */
+#multiplayer .mp-join-hero { display: grid; grid-template-columns: 1.2fr 1fr auto; align-items: end; gap: 16px; padding: 20px; margin: 12px 0 20px; background: #192735; border: 2px solid #ffc21a; border-radius: 8px; }
+.mp-join-hero small { color: #ffc21a; font: 800 .7rem var(--f-cond); letter-spacing: .12em; }
+.mp-join-hero h3 { color: white; font: 900 1.8rem var(--f-cond); margin: 4px 0; }
+.mp-join-hero p { color: #b2c7d8; margin: 0; font-size: .85rem; }
+.mp-join-hero label { display: grid; gap: 6px; color: #ffc21a; font: 800 .7rem var(--f-cond); letter-spacing: .12em; }
+#multiplayer #mp-code { min-height: 52px; font-size: 26px; letter-spacing: .2em; text-transform: uppercase; width: 100%; }
+#multiplayer #mp-join-form button { min-height: 52px; font-size: 20px; border: 1px solid #ff8f88; box-shadow: 0 4px 0 #8e241d; }
+.mp-create-fold { padding: 12px; border: 1px solid #ffffff20; border-radius: 6px; }
+.mp-create-fold summary { cursor: pointer; color: #bdcddd; font: 800 .9rem var(--f-cond); letter-spacing: .08em; }
+#multiplayer #mp-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+#multiplayer .mp-lobby { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 16px; background: #111e29; border: 1px solid #ffffff25; border-radius: 7px; }
+.mp-lobby h4 { margin: 0; color: white; font: 800 1.4rem var(--f-cond); }
+.mp-lobby p { margin: 0; color: #b1c4d4; font-size: .8rem; }
+.mp-lobby-state { color: #73dbc2; font: 800 .75rem var(--f-cond); letter-spacing: .05em; }
+#multiplayer .mp-lobby button { min-height: 44px; color: white; background: #b53229; }
+#multiplayer .mp-actions { position: sticky; bottom: -1px; z-index: 7; display: flex; flex-wrap: wrap; gap: 8px; margin: 12px -8px 0; padding: 12px 8px; background: #0d151ffa; border-top: 1px solid #ffffff35; }
+#multiplayer #mp-ready,#multiplayer #mp-start { min-height: 52px; flex: 1 1 180px; font-size: 21px; border: 2px solid #ff8b82; box-shadow: 0 4px 0 #8e241d; }
+@media(max-width:700px) { #multiplayer .mp-join-hero { grid-template-columns: 1fr 1fr; padding: 14px; gap: 12px; } .mp-join-hero > div { grid-column: 1/-1; } #multiplayer #mp-list { grid-template-columns: 1fr; } }
+@media(max-width:420px) { #multiplayer .mp-join-hero { grid-template-columns: 1fr; } .mp-join-hero > div { grid-column: 1; } #multiplayer #mp-ready,#multiplayer #mp-start { flex-basis: 100%; } }
