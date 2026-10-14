@@ -1878,7 +1878,7 @@ function step(dt, draw = true) {
     if (telemetry?.comparison) $('rivalName').textContent = telemetry.comparison.name;
     if (watching) {
       const v = selected?.veh, spec = selected?.spec;
-      Object.assign(st, { s: v?.s ?? telemetry?.state.s ?? multiplayer.lobby.event.s0, rpm: v?.rpm ?? 0, redline: spec?.redline ?? 7000, kmh: speedIn(v?.kmh ?? 0), gearLabel: v ? v.reverse ? 'R' : String(v.gear) : '—', x: v?.x ?? 0, z: v?.z ?? 0, yaw: v?.yaw ?? 0, nitrous: spec?.nitrous === true, nitro: v?.nitro ?? 0, nitroOn: false, tc: false, abs: false, esc: false, damageLabel: '', shiftFlash: 0, limiter: false, canUpshift: false, manual: false, limit: v ? speedLimitAt(map, v.x, v.z, v.s) : 0 });
+      Object.assign(st, { s: v?.s ?? telemetry?.state.s ?? multiplayer.lobby.event.s0, rpm: v?.rpm ?? 0, redline: spec?.redline ?? 7000, kmh: speedIn(v?.kmh ?? 0), gearLabel: v ? v.reverse ? 'R' : String(v.gear) : '—', x: v?.x ?? 0, z: v?.z ?? 0, yaw: v?.yaw ?? 0, nitrous: spec?.nitrous === true, nitro: v?.nitro ?? 0, nitroOn: false, tc: false, abs: false, esc: false, damageLabel: '', shiftFlash: 0, limiter: false, canUpshift: false, manual: v?.manual === true, limit: v ? speedLimitAt(map, v.x, v.z, v.s) : 0 });
     }
     st.remotes = [...remoteCars.values()].filter(c => c.model.root.visible).map(c => ({ x: c.veh.x, z: c.veh.z }));
     document.querySelector('#posBox .of').textContent = telemetry?.member.dnf ? '' : '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
