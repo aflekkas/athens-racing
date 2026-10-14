@@ -481,3 +481,16 @@ body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; paddin
 .car-stage { touch-action: none; cursor: grab; }
 .car-stage.dragging { cursor: grabbing; }
 .car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; color: #b5c2cf; font: 800 .7rem var(--f-cond); letter-spacing: .1em; }
+
+#race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); cursor: pointer; }
+#race-settings .ico { width: 18px; height: 18px; }
+#race-settings:focus-visible { outline: 2px solid #ffc21a; }
+body:not(.racing):not(.counting) #race-settings,body.ui-open #race-settings,body:has(#multiplayer:not([hidden])) #race-settings,body[data-customizer="open"] #race-settings { display: none; }
+body #mp-toggle { right: 118px; top: 14px; }
+#multiplayer .mp-heading [data-open-settings] { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+body.racing #hud #routeBox { right: 285px; }
+@media(max-width:700px),(max-height:480px) { #race-settings,body #mp-toggle { top: 76px; } }
+@media(max-width:700px) { body.racing #hud #routeBox { top: 128px; right: 16px; } }
+
+#multiplayer .mp-heading { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 10px; }
+@media(max-width:500px) { #multiplayer .mp-heading { grid-template-columns: minmax(0,1fr) auto; } #multiplayer .mp-heading > div { grid-column: 1; grid-row: 1; } #multiplayer #mp-close { grid-column: 2; grid-row: 1; } #multiplayer [data-open-settings] { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-left: 0 !important; } }

@@ -11,6 +11,7 @@ import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid, getCarDecals, setCarDecals } from './car-select.js';
 import * as C from './ui/components.js';
+import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
@@ -45,7 +46,7 @@ export class Menu {
     this.filter = 'all'; this.participants = 'solo';
     this.accountUnsub = account.onChange(profile => { if (this.screen === 'title' && profile && !profile.guest && !profile.username) this.show('account', {}, true); else if (['account','friends'].includes(this.screen)) this.refresh(); });
     this.friendsUnsub = friends.onChange(() => { if (this.screen === 'friends') this.refresh(); });
-    C.bindRoot(root); root.tabIndex = -1;
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -168,6 +169,7 @@ export class Menu {
   }
   back() {
     this.h.ui?.(false);
+    if (this.screen === 'settings' && this.data.returnLobby) { this.pop() || this.hide(); const mp=window.__multiplayer;if(mp?.panel)mp.panel.hidden=false;return; }
     if (this.screen === 'pause') { this.h.resume(); return; }
     if (this.screen === 'results') { this.h.quit('events'); return; }
     const cancel = this.screen === 'car' && !this.data.detail ? this.data.onCancel : null;
@@ -223,6 +225,8 @@ export class Menu {
       case 'settings': this.show('settings', { from: this.screen, tab: 'audio' }, true); break;
       case 'back': this.back(); break;
       case 'resume': this.h.resume(); break;
+      case 'reset': window.__flow?.resetCar?.(); break;
+      case 'onlineLobby': this.hide();window.__multiplayer?.open();break;
       case 'restart': this.h.restart(); break;
       case 'quit': this.h.quit('title'); break;
       case 'retry': this.h.restart(); break;
@@ -430,7 +434,7 @@ export class Menu {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${d.online || !window.__replay?.photo ? '' : C.option({ icon: 'camera', title: 'PHOTO MODE', act: 'photo' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${d.online || !window.__replay?.photo ? '' : C.option({ icon: 'camera', title: 'PHOTO MODE', act: 'photo' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
   }
 
