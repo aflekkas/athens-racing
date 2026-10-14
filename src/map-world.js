@@ -105,7 +105,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
       natureGroup = new THREE.Group(); group.add(natureGroup);
     }
     const landmarks = coastal ? buildRivieraLandmarks(map, group) : null;
-    buildWorldContext(map, group, ter.heightC, infill);
+    buildWorldContext(map, group, ter.heightC, infill, quality);
     // Real speed-limit signs from the map data (all maps; a no-op without sign data).
     const speedSigns = buildSpeedSigns(map, group, ter.heightC);
     signals ||= new Signals(map, group, road.group, assets.junctions);
