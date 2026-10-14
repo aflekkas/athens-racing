@@ -39,3 +39,14 @@ test('production flow toggles live in solo/online racing, settings subscriber ru
     G.state = 'finished'; run('tractionControl'); assert.equal(settings.aids, true);
   } finally { unsubscribe(); setSetting('aids', original); }
 });
+
+test('production aid settings preserve a live manual gear and a temporary paddle override',()=>{
+ const source=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+ const body=source.slice(source.indexOf('function onFlowSettings(s, key)'),source.indexOf('// Direct simulation API'));
+ const stock={tc:.7,esc:.4,abs:true},vehicle={spec:stock,corners:[],gear:2,manual:true,autoOverride:2.8},player={veh:vehicle,spec:stock},G={sessionManual:true};
+ let refresh=0;
+ const update=Function('audio','G','player','applyVehicleAids','applyDriving','controls','menu','syncSteeringAssist',body+';return onFlowSettings;')(
+  {},G,player,applyVehicleAids,()=>assert.fail('TC must not reset gearbox policy'),{setAidsEnabled(){}},{screen:'settings',refreshValues(){refresh++;}},()=>{});
+ update({aids:false,abs:true},'aids');assert.equal(vehicle.spec.tc,0);assert.equal(vehicle.spec.abs,true);
+ assert.deepEqual([vehicle.gear,vehicle.manual,vehicle.autoOverride,G.sessionManual],[2,true,2.8,true]);assert.equal(refresh,1);
+});

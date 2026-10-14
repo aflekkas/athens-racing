@@ -838,7 +838,9 @@ function focusRival() {
 function onFlowSettings(s, key) {
   audio.setVolumes?.(s);
   if (key === 'transmission' && menu?.screen === 'settings') menu.refreshValues();
-  if (key === 'aids' || key === 'abs' || key === 'transmission' || !key) applyDriving();
+  if (key === 'aids' || key === 'abs') {
+    if (player) applyVehicleAids(player.veh, player.spec, s);
+  } else if (key === 'transmission' || !key) applyDriving();
   if (key === 'aids' || !key) {
     controls.setAidsEnabled(s.aids);
     if (!s.aids) G.lampTC = G.lampESC = 0;

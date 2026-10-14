@@ -66,7 +66,9 @@ export class Input {
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
   setAidsEnabled(enabled) {
     const button = this.touchUI?.querySelector('[data-action="tractionControl"]');
-    if (!button) return;
+    const value = String(!!enabled);
+    if (!button || button.dataset.aidsEnabled === value) return;
+    button.dataset.aidsEnabled = value;
     const label = enabled ? 'TC ON' : 'TC OFF';
     if (button.textContent !== label) button.textContent = label;
     button.setAttribute('aria-label', 'Toggle traction and stability control');
