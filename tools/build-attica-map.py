@@ -11,8 +11,8 @@ from shapely.ops import polygonize, unary_union
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / 'tools/maps/attica/source.json.gz'
-WEST, SOUTH, EAST, NORTH = 23.50, 37.775, 24.07, 38.205
-WIDTH = 1040
+WEST, SOUTH, EAST, NORTH = 23.40, 37.70, 24.50, 38.24
+WIDTH = 1500
 merc = lambda lat: math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
 SPAN = math.radians(EAST - WEST)
 HEIGHT = round(WIDTH * (merc(NORTH) - merc(SOUTH)) / SPAN)
@@ -37,20 +37,9 @@ def compact(elements):
     return out
 
 def fetch():
-    bbox='37.74,23.47,38.23,24.10'
-    queries=[f'way({bbox})[natural=coastline];',f'way({bbox})[highway~"^(motorway|trunk|primary|secondary|tertiary)$"];',f'way({bbox})[landuse~"^(residential|commercial|industrial|retail)$"];',f'node({bbox})[place~"^(city|town|suburb|village)$"];node({bbox})[natural=peak];']
-    raw_cache=ROOT/'.scratch/attica-map/osm.json'
-    if raw_cache.exists(): osm=json.loads(raw_cache.read_bytes())
-    else:
-        def extract(q):
-            for server in ['https://maps.mail.ru/osm/tools/overpass/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter']:
-                try:
-                    url=server+'?'+urllib.parse.urlencode({'data':'[out:json][timeout:60];('+q+');out geom;'})
-                    return json.loads(request(url))['elements']
-                except Exception as e: print(server,e,flush=True)
-            raise RuntimeError('OSM extract failed')
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool: osm={'elements':sum(pool.map(extract,queries),[])}
-        raw_cache.parent.mkdir(parents=True,exist_ok=True);raw_cache.write_text(json.dumps(osm))
+    import runpy
+    extract=runpy.run_path(str(ROOT/'tools/maps/attica/fetch-vector.py'))['extract']
+    elements,land=extract(ROOT,[WEST,SOUTH,EAST,NORTH],WIDTH,HEIGHT)
     # Zoom 11 elevation tiles; downsample to an approximately 200 m overview grid.
     zoom=11; n=2**zoom
     tx=lambda lon:(lon+180)/360*n
@@ -61,13 +50,13 @@ def fetch():
         if not cache.exists():cache.write_bytes(request(f'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{zoom}/{x}/{y}.png'))
         rgb=np.asarray(Image.open(cache)).astype(float); return xy,rgb[:,:,0]*256+rgb[:,:,1]+rgb[:,:,2]/256-32768
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool: rasters=dict(pool.map(tile,tiles))
-    gw,gh=240,round(240*HEIGHT/WIDTH); dem=np.zeros((gh,gw))
+    gw,gh=420,round(420*HEIGHT/WIDTH); dem=np.zeros((gh,gw))
     for j in range(gh):
         for i in range(gw):
             lon,lat=inverse(i/(gw-1)*WIDTH,j/(gh-1)*HEIGHT); xx,yy=tx(lon),ty(lat)
             dem[j,i]=rasters[(int(xx),int(yy))][min(255,int(yy%1*256)),min(255,int(xx%1*256))]
     SOURCE.parent.mkdir(parents=True,exist_ok=True)
-    source={'bounds':[WEST,SOUTH,EAST,NORTH],'size':[WIDTH,HEIGHT],'date':'2026-10-14','elements':compact(osm['elements']),'dem':{'width':gw,'height':gh,'h':np.rint(dem).astype(int).ravel().tolist()}}
+    source={'bounds':[WEST,SOUTH,EAST,NORTH],'size':[WIDTH,HEIGHT],'date':'2026-10-14','elements':elements,'land':land,'vectorExtension':'https://build.protomaps.com/20261013.pmtiles','dem':{'width':gw,'height':gh,'h':np.rint(dem).astype(int).ravel().tolist()}}
     SOURCE.write_bytes(gzip.compress(json.dumps(source,separators=(',',':')).encode(),mtime=0)); print('Source snapshot',SOURCE.stat().st_size,flush=True)
 
 def build():
@@ -86,21 +75,24 @@ def build():
         terrain.append((p,nx,nz,x0,z0,step,heights))
     # Coastline is directed with land on the left. Classify polygonized faces against
     # the nearest directed coastline segment, including small offshore islands.
-    clipped=[c.intersection(extent) for c in coasts if c.intersects(extent)]
-    faces=list(polygonize(unary_union(clipped+[extent.boundary])))
-    segments=[]
-    for c in coasts:
-        for a,b in zip(c.coords,list(c.coords)[1:]):
-            dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy)
-            if length < .05: continue
-            mx,my=(a[0]+b[0])/2,(a[1]+b[1])/2
-            segments.append((length,Point(mx+dy/length*.03,my-dx/length*.03),Point(mx-dy/length*.03,my+dx/length*.03)))
-    segments.sort(key=lambda s:s[0],reverse=True)
-    land=[]
-    for face in faces:
-        for _,left,right in segments:
-            if face.contains(left):land.append(face);break
-            if face.contains(right):break
+    if source.get('land'):
+        land=[Polygon(rings[0],rings[1:]) for rings in source['land']]
+    else:
+        clipped=[c.intersection(extent) for c in coasts if c.intersects(extent)]
+        faces=list(polygonize(unary_union(clipped+[extent.boundary])))
+        segments=[]
+        for c in coasts:
+            for a,b in zip(c.coords,list(c.coords)[1:]):
+                dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy)
+                if length < .05: continue
+                mx,my=(a[0]+b[0])/2,(a[1]+b[1])/2
+                segments.append((length,Point(mx+dy/length*.03,my-dx/length*.03),Point(mx-dy/length*.03,my+dx/length*.03)))
+        segments.sort(key=lambda s:s[0],reverse=True)
+        land=[]
+        for face in faces:
+            for _,left,right in segments:
+                if face.contains(left):land.append(face);break
+                if face.contains(right):break
     assert any(f.contains(Point(*project(23.73,37.98))) for f in land),'Athens must be land'
     assert not any(f.contains(Point(*project(23.65,37.85))) for f in land),'Saronic Gulf must be sea'
     land_path=''.join(path(f.exterior.coords,True)+''.join(path(r.coords,True) for r in f.interiors) for f in land)
@@ -115,10 +107,11 @@ def build():
                     a,b=int(xx),int(zz); fx,fz=xx-a,zz-b
                     h[j,i]=heights[b,a]*(1-fx)*(1-fz)+heights[b,a+1]*fx*(1-fz)+heights[b+1,a]*(1-fx)*fz+heights[b+1,a+1]*fx*fz
     # Hypsometric tint and a NW-lit normal field: true DEM relief, no fake rings.
-    dy,dx=np.gradient(h,200); shade=np.clip((-.65*dx+.65*dy+1)/np.sqrt(1+dx*dx+dy*dy),.25,1.3)
+    cell_meters=6371008.8*SPAN*math.cos(math.radians((NORTH+SOUTH)/2))/(gw-1)
+    dy,dx=np.gradient(h,cell_meters); shade=np.clip((-.65*dx+.65*dy+1)/np.sqrt(1+dx*dx+dy*dy),.25,1.3)
     elev=np.clip(h/1400,0,1)[:,:,None]; low=np.array([27,38,40]); high=np.array([62,79,78])
     rgb=np.clip((low+(high-low)*elev)*shade[:,:,None],0,255).astype('uint8')
-    raster=Image.fromarray(rgb).resize((1040,HEIGHT),Image.Resampling.BICUBIC); urban_mask=Image.new('L',raster.size); urban_draw=ImageDraw.Draw(urban_mask); minor_roads=[]
+    raster=Image.fromarray(rgb).resize((WIDTH,HEIGHT),Image.Resampling.BICUBIC); urban_mask=Image.new('L',raster.size); urban_draw=ImageDraw.Draw(urban_mask); minor_roads=[]
     roads={k:[] for k in ['primary','trunk','motorway']}
     for e in elements:
         t=e['t']; pts=e['p']

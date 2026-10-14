@@ -15,8 +15,10 @@ body.ui-open #lapTiming { display: none; }
 @media(max-width:700px) { .map-confirm { grid-template-columns: 1fr; gap: .8rem; } .map-confirm > img { max-height: 27vh; } .map-confirm .panel { padding: 1rem; } }
 /* Offline Athens navigation screen. Geographic scene preserves its projected aspect ratio. */
 #ui.s-maps .attica-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(18rem, .82fr); gap: var(--s-4, 16px); flex: 1; min-height: 0; }
-#ui.s-maps .attica-map { position: relative; overflow: hidden; min-height: 18rem; border: 1px solid var(--c-line-2, #304550); border-radius: var(--r-3, 16px); background: #10222e; box-shadow: inset 0 0 90px #040b1466; touch-action: none; cursor: grab; isolation: isolate; }
-#ui.s-maps .attica-map.dragging { cursor: grabbing; }
+#ui.s-maps .attica-map { display: grid; grid-template-rows: minmax(0, 1fr) auto; position: relative; overflow: clip; min-height: 18rem; border: 1px solid var(--c-line-2, #304550); border-radius: var(--r-3, 16px); background: #10222e; box-shadow: inset 0 0 90px #040b1466; touch-action: none; cursor: grab; isolation: isolate; }
+#ui.s-maps .attica-viewport { position: relative; overflow: clip; min-height: 0; touch-action: none; }
+#ui.s-maps .attica-viewport.dragging { cursor: grabbing; }
+#ui.s-maps .attica-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--hu-hair, #bfd8eb1a); background: linear-gradient(0deg, #0a1520f5, #0a1520c9); cursor: default; }
 #ui.s-maps .attica-layer { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); transform-origin: center; will-change: transform; }
 #ui.s-maps .attica-art, #ui.s-maps .attica-routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #ui.s-maps .attica-routes { overflow: visible; }
@@ -42,12 +44,12 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .map-status-dot { width: 5px; height: 5px; background: #75bfcd; box-shadow: 0 0 8px #75bfcd; border-radius: 50%; }
 #ui.s-maps .map-north { position: absolute; right: 1.25rem; top: 1.2rem; display: grid; gap: 2px; text-align: center; color: #b7d0db; font: 600 10px var(--f-sans, sans-serif); pointer-events: none; }
 #ui.s-maps .map-north span { font-size: 25px; line-height: 1; }
-#ui.s-maps .map-scale { position: absolute; left: 1.25rem; bottom: 4.5rem; display: grid; gap: 4px; pointer-events: none; }
+#ui.s-maps .map-scale { position: absolute; left: 1.25rem; bottom: 1rem; display: grid; gap: 4px; pointer-events: none; }
 #ui.s-maps .map-scale span { height: 6px; border: 1px solid #b1cbd4; border-top: 0; }
 #ui.s-maps .map-scale small { color: #b1cbd4; font: 10px var(--f-sans, sans-serif); }
-#ui.s-maps .map-tools { position: absolute; right: 1rem; bottom: 3.9rem; display: flex; gap: 4px; }
+#ui.s-maps .map-tools { display: flex; flex: none; gap: 4px; }
 #ui.s-maps .map-tools .btn { min-width: 2.3rem; background: #0b1824eb; border-color: #335063; color: #c9dfe9; }
-#ui.s-maps .attica-caption { position: absolute; left: 0; bottom: 0; right: 0; padding: .8rem 1.25rem; background: linear-gradient(0deg, #0a1520f5, #0a1520c9); color: #7696a7; font: 10px/1.6 var(--f-sans, sans-serif); letter-spacing: .06em; cursor: default; }
+#ui.s-maps .attica-caption { flex: 1; min-width: 0; color: #7696a7; font: 10px/1.6 var(--f-sans, sans-serif); letter-spacing: .06em; cursor: default; }
 #ui.s-maps .attica-caption small { display: block; font-size: 9px; letter-spacing: 0; }
 #ui.s-maps .attica-caption a { color: #8dabba; text-decoration: none; }
 #ui.s-maps .attica-caption a:hover, #ui.s-maps .attica-caption a:focus-visible { color: #deefff; text-decoration: underline; }
@@ -97,11 +99,11 @@ body.ui-open #lapTiming { display: none; }
   #ui.s-maps .track-pin > span { padding: .4rem; font-size: 8px; letter-spacing: .02em; }
   #ui.s-maps .map-region { left: .8rem; top: .8rem; font-size: 10px; }
   #ui.s-maps .map-region small { display: none; }
-  #ui.s-maps .map-tools { right: .5rem; bottom: 3.5rem; }
+  #ui.s-maps .attica-footer { gap: 8px; padding: 10px; }
   #ui.s-maps .map-tools .btn { min-width: 2rem; min-height: 2rem; font-size: 10px; padding: .35rem .5rem; }
-  #ui.s-maps .attica-caption { padding: .65rem .8rem; font-size: 8px; }
+  #ui.s-maps .attica-caption { font-size: 8px; }
   #ui.s-maps .attica-caption small { font-size: 7px; }
-  #ui.s-maps .map-scale { left: .8rem; bottom: 3.6rem; }
+  #ui.s-maps .map-scale { left: .8rem; bottom: .8rem; }
 }
 @media (max-height: 500px) {
   #ui.s-maps .attica-layout { grid-template-columns: minmax(0, 1.8fr) minmax(14rem, 1fr); }
