@@ -10,7 +10,7 @@ export function raceNotificationsActive(doc=globalThis.document) {
   const hud=doc.getElementById('hud'),lobby=doc.getElementById('multiplayer');
   return (body.classList.contains('racing')||body.classList.contains('counting'))&&!body.classList.contains('ui-open')&&!body.classList.contains('menu')&&body.dataset.customizer!=='open'&&(!lobby||lobby.hidden)&&!doc.querySelector('#loading.open,.modal-scrim')&&(!hud||!hud.hidden&&hud.style.display!=='none');
 }
-const OBSTACLES=['#posBox','#mapBox','#dialBox','#gearboxHud','#limitSign','#evBox.on','#mp-board','#race-settings','#mp-toggle','#sigBox','#driving-feedback','#touch-controls button','#touch-controls .touch-steer'];
+const OBSTACLES=['#posBox','#mapBox','#dialBox','#gearboxHud','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#driving-feedback','#touch-controls button','#touch-controls .touch-steer'];
 export class NotificationManager {
   constructor(){this.queue=new NotificationQueue();this.cards=new Map();this.nextAt=0;this.dirty=true;}
   post(value){const key=value.id||`${value.slot||'toast'}:${notificationText(value.title)}:${notificationText(value.text)}`,before=this.queue.items.get(key);const id=this.queue.post({...value,title:notificationText(value.title),text:notificationText(value.text)},now());if(before&&this.queue.items.get(id)===before)return id;this.dirty=true;this.mount();this.update();return id;}
@@ -33,7 +33,7 @@ export class NotificationManager {
     let card=this.cards.get(item.id);
     if(!card){card=document.createElement('article');card.className='race-notice';card.dataset.notificationId=item.id;card.setAttribute('role',item.slot==='banner'?'alert':'status');this.cards.set(item.id,card);}
     const signature=item.signature+'|'+(item.node?'node':'text');
-    if(card.dataset.signature!==signature){card.dataset.signature=signature;card.replaceChildren();if(item.node)card.append(item.node);else{if(item.title){const title=document.createElement('b');title.textContent=item.title;card.append(title);}if(item.text){const text=document.createElement('span');text.textContent=item.text;card.append(text);}if(item.actions?.length){const row=document.createElement('div');row.className='notice-actions';for(const action of item.actions){const button=document.createElement('button');button.type='button';button.textContent=action.label;button.onclick=()=>{this.dismiss(item.id);action.run?.();};row.append(button);}card.append(row);}}}
+    if(card.dataset.signature!==signature||(item.node&&card.firstElementChild!==item.node)){card.dataset.signature=signature;card.replaceChildren();if(item.node)card.append(item.node);else{if(item.title){const title=document.createElement('b');title.textContent=item.title;card.append(title);}if(item.text){const text=document.createElement('span');text.textContent=item.text;card.append(text);}if(item.actions?.length){const row=document.createElement('div');row.className='notice-actions';for(const[index,action]of item.actions.entries()){const button=document.createElement('button');button.type='button';button.textContent=action.label;button.onclick=()=>{const current=this.queue.items.get(item.id)?.actions?.[index];this.dismiss(item.id);current?.run?.();};row.append(button);}card.append(row);}}}
     card.dataset.slot=item.slot;card.dataset.tone=item.tone||'info';return card;
   }
   update(){

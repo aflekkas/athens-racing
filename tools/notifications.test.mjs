@@ -43,3 +43,8 @@ test('five viewport placements never overlap timer/minimap/dial/touch/route obst
   assert.ok(p.shown.length>0,`${width}x${height} has a safe lane`);
  }
 });
+test('a renewed actionable warning replaces its old DOM node after dismissal',()=>{
+ const oldDocument=globalThis.document;class Element{constructor(){this.dataset={};this.children=[];}setAttribute(){}append(...els){this.children.push(...els);}replaceChildren(...els){this.children=els;}get firstElementChild(){return this.children[0];}}
+ globalThis.document={createElement:()=>new Element()};
+ try{const manager=Object.create(notifications.constructor.prototype);manager.cards=new Map();const first=new Element(),second=new Element();const value={id:'tow',slot:'toast',signature:'same',node:first};const card=manager.card(value);assert.equal(card.firstElementChild,first);assert.equal(manager.card({...value,node:second}),card);assert.equal(card.firstElementChild,second,'renewed repair callback lives on the current node');}finally{globalThis.document=oldDocument;}
+});
