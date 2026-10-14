@@ -339,6 +339,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
           const recovery = requestRecovery(c, publicLobby(l).event, l.raceId, m.motionEpoch, now);
           if (!recovery) return error('Recovery needs a current race position.');
+          clearObjectiveHold(l, c.id);
           l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
         }
         if (m.type === 'dnf') {
