@@ -9,7 +9,7 @@ function sync() {
   const browser=mp.panel.querySelector('#mp-browser');let draft=browser.querySelector('[data-setup-draft]');
   if(mp.pendingDraft&&!mp.lobby){if(!draft){draft=document.createElement('p');draft.dataset.setupDraft='';draft.className='mp-session-summary';browser.prepend(draft);}const text=describeMode(mp.pendingDraft.mode)+' · YOUR SELECTED SESSION SETTINGS';if(draft.textContent!==text)draft.textContent=text;}else draft?.remove();
   if(!mp.lobby)return;
-  let section=room.querySelector('[data-lobby-setup]');if(!section){section=document.createElement('section');section.dataset.lobbySetup='';section.className='mp-session-settings';room.querySelector('#mp-members').before(section);}
+  let section=room.querySelector('[data-lobby-setup]');if(!section){section=document.createElement('section');section.dataset.lobbySetup='';section.className='mp-session-settings';room.querySelector('#mp-car-toggles').before(section);}
   const lobby=mp.lobby,config=mp.getLobbyConfig?.()||configFromLobby(lobby),host=lobby.host===mp.id,editable=host&&lobby.status==='waiting';
   const cars=room.querySelector('#mp-car-toggles');
   if(cars){let fold=room.querySelector('[data-car-rules]');if(!fold){fold=document.createElement('details');fold.dataset.carRules='';fold.className='mp-settings-advanced';const summary=document.createElement('summary');summary.textContent='ALLOWED CAR FILTERS';fold.append(summary);cars.before(fold);fold.append(cars);}const hide=!host||lobby.status!=='waiting';if(fold.hidden!==hide)fold.hidden=hide;}
