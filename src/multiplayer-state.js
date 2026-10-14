@@ -30,7 +30,7 @@ export class StateSender {
     if (!force && now - this.lastAt < 100) return false;
     this.lastAt = now;
     if (!force && stationaryUnchanged(state, this.last)) return false;
-    const snapshot = { ...state, sampleTime: now, sampleAge: 0, motionEpoch: this.motionEpoch, damage: { ...state.damage }, ...(state.decals ? {decals:state.decals.map(d=>[...d])} : {}), ...(state.driver ? {driver:{...state.driver}} : {}) };
+    const snapshot = { ...state, sampleTime: now, sampleAge: 0, motionEpoch: this.motionEpoch, damage: { ...state.damage }, ...(state.decals ? {decals:state.decals.map(d=>[...d])} : {}), ...(state.driver ? {driver:structuredClone(state.driver)} : {}) };
     this.last = snapshot;
     if (!batching) { this.send({ type: 'state', raceId, state: snapshot }); return true; }
     this.pending.push(snapshot);

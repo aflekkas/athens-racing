@@ -6,6 +6,8 @@ import {normalizeAppearance,referencedAssets} from './customization-data.js';
 import {getCustomizationRepository,currentCarAppearance,applyCustomization} from './customization-store.js';
 import {decodeUserPhoto,renderPhotoSticker,savePhotoSticker,preparePhotoUrl,deletePhotoSticker,listLocalPhotos,resolvePhotoSticker,isPublicPhotoSticker} from './photo-stickers.js';
 import {mountCustomizationPreview} from './customization-preview.js';
+import {CHARACTER_PRESETS,characterPresetLook} from './character-presets.js';
+import {DRIVER_HAIR_STYLES,DRIVER_BUILDS} from './driver-appearance-data.js';
 const styleUrl=new URL('./customization-editor.css',import.meta.url).href;
 const option=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
 const designOptions=()=>{const groups=new Map();for(const d of listDecals()){const category=d.category||'Racing';if(!groups.has(category))groups.set(category,[]);groups.get(category).push(d);}return [...groups].map(([category,designs])=>`<optgroup label="${esc(category)}">${designs.map(d=>option(d.id,d.name)).join('')}</optgroup>`).join('');};
@@ -35,14 +37,15 @@ export async function openCustomizationEditor({spec,onChange}={}){
       ${range('x','POSITION X',-1,1,.01)}${range('y','POSITION Y',-1,1,.01)}${range('scale','SIZE',.2,2,.05)}${range('rotation','ROTATE',-180,180,1)}
       <label>FLIP HORIZONTALLY<input data-layer-field="flipX" type="checkbox"></label><div class="customizer-row"><button data-act="layer-up">MOVE UP</button><button data-act="layer-down">MOVE DOWN</button><button data-act="layer-remove" class="danger">REMOVE LAYER</button></div>
     </div></details>
-    <details open><summary>DRIVER APPEARANCE</summary>${[['skin','SKIN'],['shirt','SHIRT'],['hair','HAIR']].map(([k,n])=>`<label>${n}<input data-driver="${k}" type="color" value="${draft.driver[k]}"></label>`).join('')}<label>HAIRSTYLE<select data-driver="hairStyle">${['short','curly','none'].map(v=>option(v,v.toUpperCase())).join('')}</select></label><label>HELMET<input data-driver="helmet" type="checkbox"></label></details>
+    <details open><summary>DRIVER APPEARANCE</summary><label>PRESETS<select data-character-preset aria-label="Character preset">${option('','CUSTOM LOOK')}${CHARACTER_PRESETS.map(p=>option(p.id,p.name)).join('')}</select></label><p data-character-note></p><label>HEIGHT (CM)<input data-driver="heightCm" type="number" min="140" max="210" value="175"></label><label>BUILD<select data-driver="build">${DRIVER_BUILDS.map(v=>option(v,v.toUpperCase())).join('')}</select></label>${[['skin','SKIN'],['shirt','SHIRT'],['hair','HAIR']].map(([k,n])=>`<label>${n}<input data-driver="${k}" type="color" value="${draft.driver[k]}"></label>`).join('')}<label>HAIRSTYLE<select data-driver="hairStyle">${DRIVER_HAIR_STYLES.map(v=>option(v,v.toUpperCase())).join('')}</select></label><label>HAIR VOLUME<input data-driver="hairVolume" type="range" min=".5" max="1.8" step=".05" value="1"></label><label>ACCESSORY<select data-driver="accessory">${option('none','NONE')}${option('sprayCan','SPRAY CAN')}</select></label><label>HELMET<input data-driver="helmet" type="checkbox"></label></details>
     <details><summary>YOUR PHOTO LIBRARY</summary><p>Saved photos are visible to other racers when used on your car. Remove them from presets before deleting.</p><div data-asset-list></div></details>
     <div class="customizer-account" data-account-host>${renderAccountCard()}</div></div></div>
     <footer><span data-status class="customizer-status" role="status" aria-live="polite"></span><span>8 layers · 16 presets per car · Photos resized to 512 px</span></footer>`;
   document.body.append(root);document.body.dataset.customizer='open';root.querySelector('[data-act=close]').focus();
   const q=s=>root.querySelector(s),say=(text,error=false)=>{q('[data-status]').textContent=text;q('[data-status]').dataset.error=String(error);};
   const safely=async fn=>{if(busy||closed)return;busy=true;root.setAttribute('aria-busy','true');try{await fn();}catch(e){say(e.message||String(e),true);}finally{busy=false;root.removeAttribute('aria-busy');}};
-  const refresh=()=>{if(closed)return;q('[data-paint]').value=draft.paint;for(const input of root.querySelectorAll('[data-driver]')){if(input.type==='checkbox')input.checked=draft.driver[input.dataset.driver];else input.value=draft.driver[input.dataset.driver];}
+  const refresh=()=>{if(closed)return;q('[data-paint]').value=draft.paint;for(const input of root.querySelectorAll('[data-driver]')){if(input.type==='checkbox')input.checked=draft.driver[input.dataset.driver];else input.value=draft.driver[input.dataset.driver]??({heightCm:175,build:'average',hairVolume:1,accessory:'none'}[input.dataset.driver]??'');}
+    q('[data-character-preset]').value=draft.driver.presetId||'';const character=CHARACTER_PRESETS.find(p=>p.id===draft.driver.presetId);q('[data-character-note]').textContent=character?.appearanceTODO?'Jonia Peroti rides in the passenger seat. Appearance details pending.':character?.id==='alex_adelman'?'One-handed steering with a spray can in the free hand.':'';
     const layers=draft.decals;q('[data-layer-count]').textContent=`${layers.length} / 8 STICKER LAYERS`;
     q('[data-layers]').innerHTML=layers.map((d,i)=>`<button data-layer="${i}" aria-pressed="${layerIndex===i}"><span>${i+1}. ${esc(d.id==='photo'?'Your photo':listDecals().find(v=>v.id===d.id)?.name||d.id)} · ${esc(d.position)}</span></button>`).join('');
     const d=layers[layerIndex];q('[data-layer-controls]').hidden=!d;if(d){for(const input of root.querySelectorAll('[data-layer-field]')){const k=input.dataset.layerField;if(input.type==='checkbox')input.checked=!!d[k];else input.value=d[k]??({x:0,y:0,scale:1,rotation:0,number:7}[k]??'');}
@@ -84,12 +87,13 @@ export async function openCustomizationEditor({spec,onChange}={}){
   root.addEventListener('input',e=>{const el=e.target;
     if(el.dataset.crop){updatePhoto().catch(err=>say(err.message,true));return;}
     if(el.matches('[data-paint]'))draft.paint=el.value;
-    else if(el.dataset.driver){draft.driver[el.dataset.driver]=el.type==='checkbox'?el.checked:el.value;}
+    else if(el.dataset.driver){draft.driver[el.dataset.driver]=el.type==='checkbox'?el.checked:['heightCm','hairVolume'].includes(el.dataset.driver)?Number(el.value):el.value;}
     else if(el.dataset.layerField&&draft.decals[layerIndex]){const k=el.dataset.layerField;draft.decals[layerIndex][k]=el.type==='checkbox'?el.checked:['number','x','y','scale','rotation'].includes(k)?Number(el.value):el.value;}
     else return;refresh();
   });
   root.addEventListener('change',e=>{const el=e.target;
-    if(el.matches('[data-preview-angle]'))preview?.setAngle(el.value);
+    if(el.matches('[data-character-preset]')){const look=characterPresetLook(el.value);if(look)draft.driver=look;else {delete draft.driver.presetId;delete draft.driver.passenger;}refresh();say(look?'Character preset selected. Save & Apply keeps this look.':'Custom character look.');}
+    else if(el.matches('[data-preview-angle]'))preview?.setAngle(el.value);
     else if(el.matches('[data-presets]'))safely(async()=>{if(!el.value){selectedId='';refreshPresets();return;}const p=await repository.select(spec.id,el.value);selectedId=p.id;draft=normalizeAppearance(p);q('[data-name]').value=p.name;applyCustomization(spec,p,{onChange});refreshPresets();refresh();say('Preset loaded and applied.');});
     else if(el.matches('[data-factory]')&&el.value){draft.paint=el.value;refresh();}
     else if(el.matches('[data-photo-mode]')){photoMode=el.value;updatePhoto().catch(err=>say(err.message,true));}

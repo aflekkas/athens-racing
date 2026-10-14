@@ -1,10 +1,11 @@
 // Bounded JSON only. Image bytes live separately; no identity or external URLs.
 import { normalizeDecals } from './vehicle-decal-data.js';
+import { DEFAULT_DRIVER_APPEARANCE, normalizeDriverAppearance } from './driver-appearance-data.js';
 export const CUSTOMIZATION_LIMITS = Object.freeze({ presets:64, presetsPerCar:16, assets:16, assetBytes:96*1024, accountBytes:1536*1024, imageEdge:512, uploadBytes:8*1024*1024, manifestBytes:128*1024 });
 export const ASSET_ID_RE=/^[a-f0-9]{32}$/;
-export const DEFAULT_DRIVER=Object.freeze({skin:'#b67c56',shirt:'#16181c',hair:'#30231c',hairStyle:'curly',helmet:false});
+export const DEFAULT_DRIVER=DEFAULT_DRIVER_APPEARANCE;
 export const color=(v,fallback)=>typeof v==='string'&&/^#[a-f\d]{6}$/i.test(v)?v.toLowerCase():fallback;
-export function normalizeDriver(d={}){return {skin:color(d?.skin,DEFAULT_DRIVER.skin),shirt:color(d?.shirt,DEFAULT_DRIVER.shirt),hair:color(d?.hair,DEFAULT_DRIVER.hair),hairStyle:['short','curly','none'].includes(d?.hairStyle)?d.hairStyle:DEFAULT_DRIVER.hairStyle,helmet:d?.helmet===true};}
+export const normalizeDriver=normalizeDriverAppearance;
 const clamp=(v,min,max,fallback)=>Number.isFinite(v)?Math.round(Math.max(min,Math.min(max,v))*1000)/1000:fallback;
 // Preserve the existing library API and extend only validated fields until its
 // rendering owner lands the same extension in normalizeDecals.

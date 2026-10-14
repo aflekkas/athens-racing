@@ -10,6 +10,7 @@ import { toggleTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { applyCarDecals, packDecalsForNetwork, unpackDecals } from './vehicle-decals.js';
 import { getDriverAppearance } from './customization-store.js';
+import { bindDriverToCar } from './driver-seating.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
@@ -288,12 +289,7 @@ function makeCar(spec, isPlayer) {
   const model = new CarModel(spec, isPlayer ? {} : {decals:[]});
   scene.add(model.root);
   const driver = new Driver(isPlayer ? getDriverAppearance(spec.id) : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
-  driver.root.position.copy(model.seat).add(new THREE.Vector3(0, -0.195, 0.1));
-  model.body.add(driver.root);
-  if (!spec.convertible && driver.curlMesh) {
-    driver.curlMesh.scale.setScalar(.38); driver.hairBase.scale.multiplyScalar(.55);
-    driver.hairY = .015; driver.hairBase.position.y = driver.hairY; // closed-car roof clearance
-  } else if (spec.body !== 'mini' && driver.curlMesh) { driver.curlMesh.scale.setScalar(0.82); driver.hairBase.scale.multiplyScalar(0.85); }
+  bindDriverToCar(driver,model);
   if (!isPlayer) for (const a of driver.arms) a.up.visible = a.fo.visible = a.hand.visible = false;
   return { model, driver };
 }
@@ -1897,6 +1893,7 @@ const multiplayer = new Multiplayer(CARS, {
       if(p.driver)c.driver?.setAppearance?.(p.driver);
       c.lastBrake = false; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
+      c.driver.update(dt,G.t,v.vLong,{x:v.ay||0,y:0,z:-(v.ax||0)},c.cockpit?.wheelInfo,v.steer||0,0);
     }
   },
   wrecked() {

@@ -4,6 +4,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { trimMat } from './cockpit.js';
 import { clamp, RNG } from './util.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
+import { createCharacterRig } from './character-driver.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const SPHERE = new THREE.SphereGeometry(1, 18, 12);
@@ -173,6 +174,7 @@ export class Driver {
     // Merge rigid facial details and fingers by material; retain the animated public meshes.
     mergeRigidMeshes(head, this.hairBase);
     mergeRigidMeshes(this.helmetGroup);
+    this.characterRig=createCharacterRig(this,{seatRole:options.seatRole,passengerFactory:look=>new Driver(look)});
     this.setAppearance(appearance);
     for (const a of this.arms) mergeRigidMeshes(a.hand);
     root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
@@ -196,11 +198,13 @@ export class Driver {
     const color=new THREE.Color(next.hair);
     this.curls.forEach((c,i)=>this.curlMesh.setColorAt(i,color.clone().multiplyScalar(c.shade)));
     this.curlMesh.instanceColor.needsUpdate=true;
+    this.characterRig.setAppearance(next);
     return {...next};
   }
 
   dispose(){
     if(this.disposed)return;this.disposed=true;this.root.removeFromParent();
+    this.characterRig.dispose();
     this.curlMesh.dispose();
     for(const resource of [...this._ownedGeometries,...this._ownedMaterials,...this._ownedTextures])resource.dispose();
     this._ownedGeometries.clear();this._ownedMaterials.clear();this._ownedTextures.clear();
@@ -214,6 +218,7 @@ export class Driver {
 
   /** Wheel position is in driver-parent space, before the driver's placement transform. */
   update(dt,t,speed,acc,wheel,steer=0,heaveV=0) {
+    wheel ||= this.characterRig.wheelFor(steer);
     const h=clamp(dt,0,1/30),ax=acc?.x||0,ay=acc?.y||0,az=acc?.z||0;
     const control=wheel?.controls;
     if(control){
@@ -223,22 +228,26 @@ export class Driver {
     this.shiftHold=Math.max(0,this.shiftHold-h);
     this.controlReach+=((control?.held?1:0)-this.controlReach)*(1-Math.exp(-16*h));
     this.shiftReach+=((control?.manual&&this.shiftHold>0&&!control.held?1:0)-this.shiftReach)*(1-Math.exp(-22*h));
-    if(wheel)for(const a of this.arms) {
+    this.characterRig.update(h,t,speed,acc,wheel,steer,heaveV);
+    if(wheel||this.characterRig.passengerRole)for(const a of this.arms) {
       const shoulder=this._shoulder.set(a.sx*.18,-.10,.035);
-      const ang=(a.sx>0?.25:Math.PI-.25)+(wheel.angle||0);
-      const hand=this._hand.set(Math.cos(ang)*wheel.r,Math.sin(ang)*wheel.r,0).applyEuler(wheel.euler).add(wheel.pos).sub(this.root.position);
-      if(a.sx>0&&control){
+      const ang=(a.sx>0?.25:Math.PI-.25)+(wheel?.angle||0);
+      const hand=this._hand;
+      if(wheel)hand.set(Math.cos(ang)*wheel.r,Math.sin(ang)*wheel.r,0).applyEuler(wheel.euler).add(wheel.pos).sub(this.root.position).divide(this.root.scale);
+      this.characterRig.adjustHand(a,hand,wheel);
+      if(a.sx>0&&control&&!this.characterRig.usesFreeHand()){
         // Positive X is the right hand in our LHD, nose -Z cabin coordinates.
         const reach=this.controlReach,shift=this.shiftReach*(1-reach);
-        hand.lerp(this._controlTarget.copy(control.shifter).sub(this.root.position),shift);
-        hand.lerp(this._controlTarget.copy(control.handbrake).sub(this.root.position),reach);
+        hand.lerp(this._controlTarget.copy(control.shifter).sub(this.root.position).divide(this.root.scale),shift);
+        hand.lerp(this._controlTarget.copy(control.handbrake).sub(this.root.position).divide(this.root.scale),reach);
       }
       const elbow=this._elbow.copy(shoulder).lerp(hand,.5);elbow.x+=a.sx*.064;elbow.y-=.115;elbow.z+=.045;
       beam(a.up,shoulder,elbow,.098,this._delta);beam(a.fo,elbow,hand,.071,this._delta);a.hand.position.copy(hand);
-      const tan=this._tan.set(-Math.sin(ang),Math.cos(ang),0).applyEuler(wheel.euler);
-      const out=this._out.set(Math.cos(ang),Math.sin(ang),0).applyEuler(wheel.euler);
+      const tan=this._tan.set(-Math.sin(ang),Math.cos(ang),0);if(wheel)tan.applyEuler(wheel.euler);
+      const out=this._out.set(Math.cos(ang),Math.sin(ang),0);if(wheel)out.applyEuler(wheel.euler);
       this._normal.crossVectors(tan,out);a.hand.quaternion.setFromRotationMatrix(this._m.makeBasis(out,this._normal,tan));
-      if(a.sx>0&&control)a.hand.quaternion.slerp(this._controlRotation,Math.max(this.controlReach,this.shiftReach));
+      if(a.sx>0&&control&&!this.characterRig.usesFreeHand())a.hand.quaternion.slerp(this._controlRotation,Math.max(this.controlReach,this.shiftReach));
+      this.characterRig.orientHand(a);
     }
     const hw=this.hw;
     hw.vx+=(-hw.x*100-hw.vx*15+az*.010)*h;
@@ -260,12 +269,12 @@ export class Driver {
 
   _writeHair() {
     let x=0,y=0,z=0;
-    this.curls.forEach((c,i)=>{this._v.copy(c.rest).add(c.off);this._s.setScalar(c.s);this._m.compose(this._v,c.rot,this._s);this.curlMesh.setMatrixAt(i,this._m);x+=c.off.x;y+=c.off.y;z+=c.off.z;});
+    this.curls.forEach((c,i)=>{this._v.copy(c.rest).add(c.off);this.characterRig?.adjustHairPosition(this._v);this._s.setScalar(c.s*(this.characterRig?.hairThickness??1));this._m.compose(this._v,c.rot,this._s);this.curlMesh.setMatrixAt(i,this._m);x+=c.off.x;y+=c.off.y;z+=c.off.z;});
     const n=this.curls.length;
     this.hairBase.position.set(x/n*.3,(this.hairY??this._hairRestY)+y/n*.3,.019+z/n*.3);
     this.curlMesh.instanceMatrix.needsUpdate=true;
     // Conservative fixed bound includes short hair's maximum spring displacement.
-    this.curlMesh.boundingSphere ||= new THREE.Sphere(new THREE.Vector3(0,.06,.015),.18);
+    this.curlMesh.boundingSphere ||= new THREE.Sphere(new THREE.Vector3(0,.06,.015),.23);
   }
 }
 
