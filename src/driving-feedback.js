@@ -42,7 +42,7 @@ export class DrivingFeedback {
     const material = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: .78, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
     this.line = new THREE.Mesh(geometry, material); this.line.name = 'driving-braking-assist'; this.line.frustumCulled = false; this.line.renderOrder = 2; this.scene.add(this.line);
   }
-  update({ vehicle, route = vehicle?.route, dir = 1, visible = true, spectating = false, driverName = '', units = 'kmh', wetGrip = 1, endS } = {}) {
+  update({ vehicle, route = vehicle?.route, dir, visible = true, spectating = false, driverName = '', units = 'kmh', wetGrip = 1, endS } = {}) {
     if (this.root) this.root.hidden = !visible;
     if (!visible || !vehicle) { this.nextUpdate = 0; if (this.line) this.line.visible = false; if (this.root && visible) this.showGrip(null); if (this.cue) this.cue.hidden = true; return; }
     const now = globalThis.performance?.now?.() || Date.now();

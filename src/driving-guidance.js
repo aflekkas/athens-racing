@@ -4,6 +4,12 @@ const G = 9.81;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const point = () => ({ x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; } });
 const finite = (v, fallback) => Number.isFinite(v) ? v : fallback;
+export function travelDirection(vehicle, route) {
+  if (!Number.isFinite(vehicle?.yaw) || !route?.frame) return 1;
+  const frame = {}; route.frame(vehicle.s, frame);
+  const alignment = -Math.sin(vehicle.yaw) * frame.tx - Math.cos(vehicle.yaw) * frame.tz;
+  return (alignment < 0 ? -1 : 1) * (vehicle.vLong < -.5 || Math.abs(vehicle.vLong || 0) <= .5 && vehicle.reverse ? -1 : 1);
+}
 export function routeLineU(route, s, dir = 1, lane = 0) {
   const edge = Math.max(.2, finite(route.edge?.(s), 3.5) - .6);
   if (route.closed) return clamp(finite(route.racingU?.(s), 0), -edge, edge);
@@ -26,10 +32,10 @@ export class DrivingGuidance {
     this.a = point(); this.b = point(); this.c = point();
     this.result = { available: false, nodes: this.nodes, count: 0 };
   }
-  update(vehicle, route, { dir = 1, wetGrip = 1, endS } = {}) {
+  update(vehicle, route, { dir, wetGrip = 1, endS } = {}) {
     const result = this.result; result.available = false; result.count = 0;
     if (!vehicle || !route?.point || !Number.isFinite(vehicle.s) || vehicle._network || Math.abs(vehicle.u || 0) > finite(route.edge?.(vehicle.s), 5) + 1) return result;
-    dir = dir < 0 ? -1 : 1;
+    dir = dir == null ? travelDirection(vehicle, route) : dir < 0 ? -1 : 1;
     const speed = Math.abs(finite(vehicle.vLong, finite(vehicle.kmh, 0) / 3.6));
     const spec = vehicle.spec || {}, top = Math.max(15, finite(spec.vmax, 250) / 3.6);
     // The live capability API already includes weather. Fallback remote snapshots use catalogue grip + wetness.

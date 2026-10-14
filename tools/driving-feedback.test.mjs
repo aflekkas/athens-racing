@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DrivingGuidance, curvature, brakingDistance, routeLineU } from '../src/driving-guidance.js';
+import { DrivingGuidance, curvature, brakingDistance, routeLineU, travelDirection } from '../src/driving-guidance.js';
 import { gripFeedback, damageFeedback } from '../src/driving-feedback-model.js';
 
 const spec = { grip: 1, brake: 1, vmax: 250 };
@@ -74,4 +74,12 @@ test('closed circuit wraps and clamps surveyed racing line without terrain chord
   const g = new DrivingGuidance(), r = g.update(car(length - 8, 15), route);
   assert.equal(r.available, true); assert.ok(r.nodes[3].s < 8);
   for (const n of r.nodes.slice(0, r.count)) { assert.ok(Math.abs(n.u) <= 2.4); assert.ok(Math.abs(Math.hypot(n.x, n.z) - 27.6) < 1e-6); }
+});
+test('free roam follows actual heading and backing direction; explicit reverse race stays fixed', () => {
+  const route = { ...straight(), frame: (_, o) => Object.assign(o, { tx: 0, tz: 1 }) };
+  assert.equal(travelDirection({ ...car(), yaw: Math.PI }, route), 1);
+  assert.equal(travelDirection({ ...car(), yaw: 0 }, route), -1);
+  assert.equal(travelDirection({ ...car(), yaw: Math.PI, vLong: -5 }, route), -1);
+  const g = new DrivingGuidance(); assert.ok(g.update({ ...car(500), yaw: 0 }, route).nodes[1].s < 500);
+  assert.ok(g.update({ ...car(500), yaw: Math.PI }, route, { dir: -1 }).nodes[1].s < 500);
 });
