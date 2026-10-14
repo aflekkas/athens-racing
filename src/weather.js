@@ -1,7 +1,7 @@
 // Conditions in the world: what the time of day and the weather (env.js) mean for everything that isn't sky.
 //  - night: street lamps lit with light pools on the road (analytic, in the road / pavement shaders: no real
-//    lights), lit windows, car head / tail lamps (emissive + glow sprites; the player gets one real spot light on
-//    HIGH), headlight pools on the road for the rival and nearby traffic
+//    lights), lit windows, car head / tail lamps (emissive + glow sprites; the player gets one real shadowless spot
+//    light, every tier), shaped low-beam patterns on the road for the player, the rival and the nearest traffic
 //  - rain: instanced streaks around the camera, a wet road (darker, glossy, puddles that mirror the sky and the
 //    lamps), spray behind cars, drops and wipers on the cockpit windscreen, less grip (ground.js WEATHER)
 // API: setConditions({time, weather}) / getConditions() (plain data: events and multiplayer exchange it),
@@ -73,14 +73,23 @@ if (wxNight > 0.0) {
     reflectedLight.directDiffuse += E * BRDF_Lambert(material.diffuseColor);
     reflectedLight.directSpecular += E * BRDF_GGX(Ln, Vw, Nw, material);
   }
+  // low beams, drawn as the pattern a real lamp throws on the road (a point light grazing the asphalt would be a
+  // blinding blob at the bumper and nothing at 30 m): dark under the nose, an even wide fan from ~6 m, a brighter
+  // centre further out, fading past ~70 m. cp: lamp centre + strength (irradiance), cd: forward (xz) + reach (m)
   for (int i = 0; i < WX_NC; i++) {
     vec4 cp = wxCarP[i]; if (cp.w <= 0.0) continue;
-    vec3 Lv = cp.xyz - vWxP; float d2 = dot(Lv, Lv); vec3 Ln = Lv * inversesqrt(d2);
-    float ca = dot(-Ln, wxCarD[i].xyz);
-    float cone = smoothstep(0.86, 0.97, ca) * (0.6 + 0.4 * smoothstep(0.97, 0.995, ca));
-    vec3 E = wxCarC * (cp.w * cone * saturate(dot(Nw, Ln)) / (d2 + 1.0));
+    vec4 cd = wxCarD[i];
+    vec3 rel = vWxP - cp.xyz; vec2 Fw = cd.xz, Rw = vec2(-Fw.y, Fw.x);
+    float x = dot(rel.xz, Fw), y = dot(rel.xz, Rw), dh = -rel.y;
+    if (x <= 0.5 || dh < -1.0 - 0.12 * x || dh > 3.0 + 0.12 * x) continue;
+    float w = 1.3 + x * 0.5, ay = abs(y);
+    float lat = 1.0 - smoothstep(0.3 * w, 1.15 * w, ay);
+    float hot = exp(-ay * ay / (0.25 * w * w)) * smoothstep(5.0, 25.0, x);
+    float prof = smoothstep(1.0, 6.0, x) * (1.0 - smoothstep(cd.w * 0.4, cd.w, x)) * (0.55 + 0.45 * smoothstep(4.0, 30.0, x));
+    vec3 Ln = normalize(cp.xyz - vWxP);
+    vec3 E = wxCarC * (cp.w * prof * lat * (0.65 + 0.45 * hot) * smoothstep(0.2, 0.6, Nw.y));
     reflectedLight.directDiffuse += E * BRDF_Lambert(material.diffuseColor);
-    reflectedLight.directSpecular += E * BRDF_GGX(Ln, Vw, Nw, material);
+    reflectedLight.directSpecular += E * BRDF_GGX(Ln, Vw, Nw, material) * 0.05;
   }
 }`;
 
@@ -303,7 +312,7 @@ export function initWeather(ctx) {
     for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) {
       if (seen.has(m)) continue; seen.add(m);
       const key = m.customProgramCacheKey && m.customProgramCacheKey !== THREE.Material.prototype.customProgramCacheKey ? m.customProgramCacheKey() : '';
-      if (/^(asphalt|paving|concrete)/.test(key)) wrap(m, 'wx-road', roadHook);
+      if (/^(asphalt|paving|concrete|penteli-double-solid)/.test(key)) wrap(m, 'wx-road', roadHook); // Riviera road kit, Penteli's painted road
       else if (/^facade/.test(key)) wrap(m, 'wx-facade', facadeHook);
       else if (/^(leaf|frond)/.test(key) || (m.onBeforeCompile && /totalEmissiveRadiance \+= (leafT|diffuseColor\.rgb)/.test(m.onBeforeCompile.toString()))) wrap(m, 'wx-leaf', leafHook);
       // street-lamp heads (road.js): emissive '#fff2d6'
@@ -324,9 +333,10 @@ export function initWeather(ctx) {
   W.lampGlow.g.attributes.position.needsUpdate = true; W.lampGlow.g.attributes.aSize.needsUpdate = true;
   W.lampGlow.p.visible = false; scene.add(W.lampGlow.p);
   W.carGlow = pointsOf(4 * 72, W.glowMat); W.carGlow.p.visible = false; scene.add(W.carGlow.p);
-  // -- the player's headlights: one real spot light on HIGH (always in the scene so switching never recompiles)
+  // -- the player's headlights: one real shadowless spot light on every tier (always in the scene so switching never
+  // recompiles), aimed level: it lights what stands in the beam (walls, signs, cars); the road pattern is analytic
   {
-    W.spot = new THREE.SpotLight(0xfff1dc, 0, 0, 0.62, 0.55, 2);
+    W.spot = new THREE.SpotLight(0xfff1dc, 0, 0, 0.34, 0.75, 2);
     W.spot.castShadow = false; scene.add(W.spot); scene.add(W.spot.target);
   }
   // -- rain, spray
@@ -409,7 +419,7 @@ export function updateWeather(dt) {
   let nc = 0;
   const on = W.lightsOn;
   const camIn = W.cam() === 'cockpit';
-  const pushCar = (root, wid, len, hy, brake, self, poolOK) => {
+  const pushCar = (root, wid, len, hy, brake, self) => {
     root.updateMatrixWorld();
     const e = root.matrixWorld.elements;
     _f.set(-e[8], -e[9], -e[10]).normalize(); // nose is -Z
@@ -427,33 +437,34 @@ export function updateWeather(dt) {
       _v.set(sx * wid * 0.38, hy + 0.06, len / 2 + 0.1).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.3;
       G.col.set([tb * back, tb * back * 0.04, tb * back * 0.02], n * 3); n++;
     }
-    if (on && poolOK && nc < W.nc && dist < 220) {
+    if (on && nc < W.nc && dist < 260) {
       _v.set(0, hy, -len / 2).applyMatrix4(root.matrixWorld);
-      cp.set([_v.x, _v.y, _v.z, 70], nc * 4);
-      cd.set([_f.x, _f.y - 0.07, _f.z, 0], nc * 4); nc++;
+      const h = Math.hypot(_f.x, _f.z) || 1;
+      cp.set([_v.x, _v.y, _v.z, self ? 1.0 : 0.65], nc * 4);
+      cd.set([_f.x / h, 0, _f.z / h, self ? 95 : 65], nc * 4); nc++;
     }
   };
   if (on || f % 2 === 0) {
     for (let i = 0; i < cars.length; i++) {
       const c = cars[i], m = c.model; if (!m.root.visible) continue;
-      pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0, i > 0 || W.q !== 'high');
+      pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0);
     }
     if (W.traffic) {
       carList.length = 0;
       for (const c of W.traffic.cars) if (c.active && c.m.root.visible && c.mode !== 'parked') carList.push([c.m.root.position.distanceToSquared(cam.position), c]);
       carList.sort((a, b) => a[0] - b[0]);
-      for (const [, c] of carList) pushCar(c.m.root, c.wid, c.len, c.type.bus ? 0.9 : 0.66, c.braking && !c.crash, false, true);
+      for (const [, c] of carList) pushCar(c.m.root, c.wid, c.len, c.type.bus ? 0.9 : 0.66, c.braking && !c.crash, false);
     }
     for (let i = n; i < G.n; i++) G.col.fill(0, i * 3, i * 3 + 3);
     G.p.visible = n > 0;
     for (const a of ['position', 'aSize', 'aCol']) G.g.attributes[a].needsUpdate = true;
   }
   if (W.spot && player) {
-    W.spot.intensity = on && W.q === 'high' ? 90 : 0;
+    W.spot.intensity = on ? 160 : 0;
     if (on) {
       const r = player.model.root; r.updateMatrixWorld();
       W.spot.position.set(0, 0.72, -player.model.dims.L / 2 + 0.2).applyMatrix4(r.matrixWorld);
-      W.spot.target.position.set(0, -0.4, -player.model.dims.L / 2 - 14).applyMatrix4(r.matrixWorld); W.spot.target.updateMatrixWorld();
+      W.spot.target.position.set(0, 0.5, -player.model.dims.L / 2 - 30).applyMatrix4(r.matrixWorld); W.spot.target.updateMatrixWorld();
     }
   }
   // ---- rain
