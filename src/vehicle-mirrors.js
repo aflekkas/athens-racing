@@ -44,7 +44,7 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     // Builders put groups directly under scope; attach also supports nested player parts.
     scope.attach(group);group.position.set(0,0,0);group.quaternion.identity();group.scale.set(1,1,1);
     group.userData.damagePart=group.name;group.userData.mirrorAssembly=true;
-    const desired=center.clone();desired.x=side*(bike?car.dims.W*.32:car.dims.W/2-.055);desired.y-=bike?.21:Math.min(.12,height*.7);desired.z+=bike?.11:0;if(modern)desired.z=car.shape.cowl+(car.modelKind==='huracan'?.28:.08);
+    const desired=center.clone();desired.x=side*(bike?car.dims.W*.32:car.dims.W/2-.055);desired.y-=bike?.21:Math.min(.12,height*.7);desired.z+=bike?.11:0;if(modern)desired.z=car.shape.cowl+(car.shape.mirrorSetback??(car.modelKind==='huracan'?.28:.08));
     const hit=nearestSurface(desired,supports,scope);if(!hit)throw new Error('No body surface for '+group.name);
     // Position the housing from actual door metal, so narrow upper bodies and
     // coarse LOD shells cannot produce a long bridge from nominal car width.

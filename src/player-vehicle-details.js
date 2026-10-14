@@ -32,10 +32,10 @@ function wheelDetails(car,d,M){
       for(let i=0;i<16;i++){const a=i*Math.PI/8;spoke(w.spin,M.alloy,x,.072,rim-.011,a,a+.14,.025);}
       disc(w.spin,M.chrome,.068,x+s*.013);ring(w.spin,M.chrome,.063,.004,x+s*.014);
     }else{
-      const n=k==='taxi'?5:k==='gr_yaris'||d.amg?10:5;
+      const n=d.sculpted&&d.doors===2?10:k==='taxi'?5:k==='gr_yaris'||d.amg?10:5;
       for(let i=0;i<n;i++){
         const a=i*2*Math.PI/n;
-        if(k==='gr_yaris'||d.amg)spoke(w.spin,rimMat,x,.042,rim-.012,a,a+.035,.017);
+        if(d.sculpted&&d.doors===2){for(const b of [-1,1])spoke(w.spin,rimMat,x,.05,rim-.009,a+b*.045,a+b*.065,.010);}else if(k==='gr_yaris'||d.amg)spoke(w.spin,rimMat,x,.042,rim-.012,a,a+.035,.017);
         else if(k==='taxi')spoke(w.spin,rimMat,x,.045,rim-.012,a,a+.10,.045);
         else for(const b of [-1,1]){spoke(w.spin,rimMat,x,.046,rim*.59,a+b*.07,a+b*.075,k==='mini'?.025:.022);spoke(w.spin,rimMat,x,rim*.59,rim-.012,a+b*.075,a+b*(k==='mini'?.18:.12),.019);}
       }
