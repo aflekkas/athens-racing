@@ -70,6 +70,21 @@ for (const spec of CARS) {
     if (name === 'handbrake' && best) hbBest = best;
     lines.push(`  ${na ? 'n/a ' : ok ? 'PASS' : 'FAIL'} ${name.padEnd(9)} entry b ${(b0 * 57.3).toFixed(0)}°` + (best ? `  0.3 rad after ${best.tIn === null ? '-' : best.tIn.toFixed(2) + ' s'}, held ${best.best.toFixed(1)} s in 0.3-0.6 rad, avg ${(best.avgB * 57.3).toFixed(0)}°, min ${best.minV === 1e9 ? '-' : best.minV.toFixed(0)} km/h${best.spun ? ' (spun in some runs)' : ''}  [thr ${best.thr} kS ${best.kS} kW ${best.kW} tgt ${best.tgt}]` : '  (no slide)'));
   }
+  // Playtest #2 revises only normal RWD power-on: allow a few degrees of
+  // rear slip with TC/ESC on, retain full aids-off powerOver above. A normal
+  // powered corner must never engage the sustained-drift latch/brake helper.
+  if (spec.drive === 'rwd') {
+    const c = rolling(spec, 60); c.manual = true; c.gear = 2;
+    let maxBeta = 0, maxRear = 0, latched = false;
+    for (let i = 0; i < 240; i++) {
+      c.update(dt, { throttle: i < 45 ? 0.2 : 1, brake: 0, steer: 1, handbrake: false });
+      maxBeta = Math.max(maxBeta, Math.abs(B(c))); maxRear = Math.max(maxRear, c.wheel[1].sN);
+      latched ||= c.driftLatch > 0;
+    }
+    const ok = maxBeta > 0.04 && maxBeta < 11 / 57.3 && maxRear > 1.05 && !latched;
+    allOk &&= ok;
+    lines.push(`  ${ok ? 'PASS' : 'FAIL'} aided power rotation: beta ${(maxBeta * 57.3).toFixed(1)}°, rear ${maxRear.toFixed(2)} peak, latch ${latched}`);
+  }
   // transition: handbrake drift one way for 3 s, then the driver swaps the target side (flick into the next bend);
   // the car should swing through into the opposite drift and hold it
   { let r = null;

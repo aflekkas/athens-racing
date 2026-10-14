@@ -14,12 +14,12 @@ for (const { def, route } of routes) test(`${def.id}: real keyboard corners, all
   }
 });
 
-test('held W+steer stays gripped on every car at 60/90/120 km/h', () => {
+test('held W+steer permits bounded RWD rotation and preserves FWD/AWD grip', () => {
   for (const spec of CARS) for (const kmh of [60, 90, 120]) {
     const power = driveCorner(spec, routes[0].route, kmh, { throttle: 1, seconds: 4 });
     const heldSpeed = driveCorner(spec, routes[0].route, kmh);
     const label = `${spec.id} at ${kmh}`;
-    assert.ok(power.trace.every(t => Math.abs(t.betaDeg) < 8), `${label}: W+steer spins or slides`);
+    assert.ok(power.trace.every(t => Math.abs(t.betaDeg) < (spec.drive === 'rwd' ? 11 : 8)), `${label}: W+steer escapes the aided slip envelope`);
     assert.ok(power.trace.every(t => t.driftLatch === 0), `${label}: ordinary throttle entered drift mode`);
     assert.ok(power.maxG >= 0.9, `${label}: attainable sustained lateral g ${power.maxG}`);
     if (spec.drive === 'fwd') assert.ok(power.pathRadius < heldSpeed.pathRadius * 1.15, `${label}: power radius ${power.pathRadius} vs held-speed ${heldSpeed.pathRadius}`);
@@ -71,5 +71,39 @@ test('keyboard turn-in develops useful force during a 150 ms corner-entry tap', 
   for (const spec of CARS) {
     const r = driveCorner(spec, routes[0].route, 90);
     assert.ok(r.trace[8].lateralG >= 0.55, `${spec.id}: the input ramp swallows the steering tap`);
+  }
+});
+
+// The revised product contract permits RWD rear slip beyond peak without
+// latching the sustained-drift aids. FWD/AWD keep their lateral reserve.
+test('RWD second-gear power-on rotates on both actual routes without spinning', () => {
+  for (const { def, route } of routes.filter(r => r.def.id !== 'megara')) {
+    const s = def.id === 'penteli' ? 1106 : 1577;
+    const bend = { s, k: route.curv(s), radius: 1 / Math.abs(route.curv(s)) };
+    for (const spec of CARS.filter(c => c.drive === 'rwd')) for (const kmh of [50, 60, 70]) {
+      const r = driveCorner(spec, route, kmh, { bend, gear: 2, throttle: 1, powerAt: 0.75, seconds: 4 });
+      const powered = r.trace.filter(t => t.t >= 1.2 && t.t <= 2);
+      const mean = key => powered.reduce((s, r) => s + r[key], 0) / powered.length;
+      assert.ok(Math.max(...r.trace.filter(t => t.t > 0.75).map(t => t.rearSlip)) > 1.05, `${def.id}/${spec.id}/${kmh}: rear never reaches power slip`);
+      assert.ok(Math.max(...r.trace.map(t => Math.abs(t.betaDeg))) < 11, `${def.id}/${spec.id}/${kmh}: power rotation spins`);
+      assert.ok(r.trace.every(t => t.driftLatch === 0), 'aided power rotation must not latch sustained drift');
+      assert.ok(mean('tcCut') > 0, 'TC must cap power slip');
+    }
+  }
+});
+
+test('low-gear lift transfers more load and gives more rotation than a low-rev lift', async () => {
+  const { liftOff } = await import('./lift-off.mjs');
+  for (const spec of CARS) {
+    const gear = spec.gears.findIndex(g => 60 / 3.6 / spec.wheelR * g * spec.final * 30 / Math.PI < spec.redline * 0.94) + 1;
+    const high = liftOff(spec, gear), low = liftOff(spec, 4), disconnected = liftOff(spec, gear, { declutch: true });
+    assert.equal(high.before.kmh, low.before.kmh, 'matched speed/chassis before the lift');
+    assert.ok(high.mean.torque < low.mean.torque * 1.4, `${spec.id}: rev-dependent drag torque`);
+    assert.ok(high.mean.ax < low.mean.ax - 0.15, `${spec.id}: gearing must multiply engine drag`);
+    assert.ok(high.mean.frontLoad > low.mean.frontLoad + 30, `${spec.id}: missing forward load transfer`);
+    assert.ok(high.mean.rearLoad < low.mean.rearLoad - 30, `${spec.id}: rear must unload`);
+    assert.ok(high.mean.yaw > low.mean.yaw, `${spec.id}: high-rev lift should tighten the line`);
+    assert.ok(Math.abs(disconnected.mean.torque) < 1e-9, 'clutch-open engine must not brake the wheels');
+    assert.ok(high.trace.every(t => t.latch === 0 && Math.abs(t.beta) < 11), 'ordinary lift is controlled and does not enter drift');
   }
 });

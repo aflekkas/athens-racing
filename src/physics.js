@@ -526,9 +526,10 @@ export class Vehicle {
       if (Math.sign(sIn) !== this.bigSteerSide && this.bigSteerT < 0.8 && vt > 12 && thrIn < 0.3 && Math.abs(this.ay) > 4) { this.driftLatch = 1; this.flickT = 0.7; }
       this.bigSteerSide = Math.sign(sIn); this.bigSteerT = 0;
     }
-    // With aids on, throttle plus steering is a grip request. Power-only drift
+    // With aids on, RWD throttle permits bounded power rotation through the
+    // rear tyres, without entering sustained drift mode. Power-only drift
     // entry requires TC off; handbrake and lift-off feints remain explicit entries.
-    const rearAtLimit = this.shareR > 0 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.1 && Math.abs(beta) > 0.12 && vt > 6;
+    const rearAtLimit = this.shareR > 0 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.1 && Math.abs(beta) > 0.1 && vt > 6;
     // With TC off, holding full power/lock for 0.4 s commits to power-over.
     const powerSlideAllowed = (sp.tc ?? 0.5) <= 0;
     const powerIntent = powerSlideAllowed && this.shareR > 0 && thrIn > 0.95 && Math.abs(sIn) > 0.9 && Math.max(this.corners[2].sN, this.corners[3].sN) > 1.0 && vt > 6;
@@ -676,8 +677,12 @@ export class Vehicle {
     // traction control trims torque while the driven wheels spin
     const thr = thrRaw * (1 - this.tcCut) * (1 - this.escCut);
     let Te = this.torqueMax(this.rpm) * thr;
-    // engine braking (pumping + friction) opposes the crank's rotation, whichever way the wheels drive it
-    const Teb = sp.torque * (sp.ebrake ?? 0.15) * (0.25 + 0.75 * e_r) * Math.max(0, 1 - (this.manual && this.limiter ? 0 : thrRaw) * 4) * (wheelRpm < 0 ? -1 : 1);
+    // Pumping/friction drag grows with current crank speed. Gearing multiplies
+    // it at the driven tyres; their negative longitudinal force goes through
+    // axRaw into stepSuspension, transferring load forward without a yaw kick.
+    // The clutch-open branch below disconnects this drag from the wheels.
+    const brakeRevs = clamp(this.rpm / red, 0, 1.15);
+    const Teb = sp.torque * (sp.ebrake ?? 0.15) * (0.2 + 1.1 * brakeRevs ** 1.5) * Math.max(0, 1 - (this.manual && this.limiter ? 0 : thrRaw) * 4) * (wheelRpm < 0 ? -1 : 1);
     // A manual fuel cut closes the throttle for engine braking, letting revs fall
     // through hysteresis and bounce instead of hanging at the cut indefinitely.
     if (this.limiter) Te = 0;
@@ -855,6 +860,12 @@ export class Vehicle {
     // own combined slip rather than pairing max wheelspin with another tyre's
     // lateral demand. Applies to FWD, AWD and RWD; straight launches and explicit
     // handbrake/feint/aids-off drifts retain their existing slip thresholds.
+    // Only a driven rear in RWD gets a power-slide allowance. Fade it out
+    // as sideslip reaches 3-6 degrees: TC restores rear lateral reserve before
+    // ESC has to catch a spin. Fade the allowance at high road speed as well.
+    // No yaw force or drift latch is introduced.
+    const powerRequest = sp.drive === 'rwd' && vx > 0 ? smoothstep(0.5, 0.95, thrIn) * smoothstep(5, 10, vt) * (1 - smoothstep(25, 35, vt)) : 0;
+    const powerRotate = powerRequest * (1 - smoothstep(0.055, 0.11, Math.abs(beta)));
     let combOver = 0, cornerDemand = 0;
     for (let i = 0; i < 4; i++) {
       const Wc = C4[i];
@@ -865,17 +876,22 @@ export class Vehicle {
       // Slip angle is not force-linear: 0.6 of peak angle already asks for
       // ~0.94 of lateral peak. Reserve that force, not just the angle fraction.
       const fyDemand = Math.sin(this.mfC * Math.atan(this.mfB * Math.min(1, Math.abs(Wc.sy))));
-      const sxBudget = Math.sqrt(Math.max(0.09, 1.05 ** 2 - fyDemand ** 2));
+      const slipLimit = 1.05 + (i >= 2 ? 0.4 * powerRotate : 0);
+      const sxBudget = Math.sqrt(Math.max(0.09, slipLimit ** 2 - fyDemand ** 2));
       const reserveOver = (Wc.sx * dirD - sxBudget) * smoothstep(0.9, 1.05, Wc.sN);
-      combOver = Math.max(combOver, Math.max(Wc.sN - 1.05, reserveOver) * lateral);
+      combOver = Math.max(combOver, Math.max(Wc.sN - slipLimit, reserveOver) * lateral);
     }
     const spinOver = Math.max(0, maxSpin - lerp(1.6, sp.driftSpin ?? 4.5, this.driftLatch), combOver * (1 - this.driftLatch));
     // Strength controls attack rate. In grip cornering TC must be able to cut
     // enough torque to keep a high-power rear gripped; the former 64% ceiling
     // on the Z4 could never reserve its lateral force in a low gear.
     const tcMax = tcK > 0 ? lerp(0.95 * Math.sqrt(tcK), 0.95, cornerDemand * (1 - this.driftLatch)) : 0;
-    const tcAttack = combOver > 0 && this.driftLatch < 0.1 ? 10 : 6;
-    this.tcCut = clamp(this.tcCut + (spinOver > 0 ? spinOver * tcK * tcAttack : -3) * dt, 0, tcMax);
+    // Fast attack and slower recovery avoid repeatedly dumping torque back
+    // into the sliding rear while its lateral grip is still recovering.
+    const poweredCorner = powerRequest * cornerDemand * (1 - this.driftLatch);
+    const tcAttack = combOver > 0 && this.driftLatch < 0.1 ? lerp(10, 20, poweredCorner) : 6;
+    const tcRelease = lerp(3, 0.8, poweredCorner);
+    this.tcCut = clamp(this.tcCut + (spinOver > 0 ? spinOver * tcK * tcAttack : -tcRelease) * dt, 0, tcMax);
     // crawling in soft sand the traction control cuts as hard as it can, as real systems do on low grip (it's what
     // lets a car with its wheels spinning claw its way out rather than dig itself in)
     const tcSand = (this.surfSoft ?? 0) * (1 - smoothstep(3, 8, av));
@@ -897,7 +913,8 @@ export class Vehicle {
     const wDes = clamp(vx * Math.tan(delta) / this.wb, -wGrip, wGrip);
     const over = this.w - wDes;
     let Mreq = 0;
-    if (escK > 0 && Math.abs(beta) > 0.07 && Math.abs(this.w) > Math.abs(wDes) + 0.05) Mreq -= over * this.Iz * 14 * escK;
+    // Let TC manage mild powered RWD rotation before allocating front brakes.
+    if (escK > 0 && Math.abs(beta) > 0.07 + 0.035 * powerRequest && Math.abs(this.w) > Math.abs(wDes) + 0.05) Mreq -= over * this.Iz * 14 * escK;
     // sideslip limiter: a car sliding sideways beyond what its driver can be expected to catch
     const bLim = 0.1 + 0.12 * (sp.drift ?? 1);
     if (escK > 0 && Math.abs(beta) > bLim) Mreq += (beta - Math.sign(beta) * bLim) * this.Iz * 30 * escK;

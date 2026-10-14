@@ -42,9 +42,10 @@ export function cornerAt(route, kmh, targetG = 0.85) {
   return best;
 }
 
-export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = false, assist, throttle, seconds = 2, cornerG = 0.85, powerAt = 0, initialBeta = 0, inputScale = 1 } = {}) {
-  const bend = cornerAt(route, kmh, cornerG), side = Math.sign(bend.k);
-  const vehicle = new Vehicle(spec, route);
+export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = false, assist, throttle, seconds = 2, cornerG = 0.85, powerAt = 0, initialBeta = 0, inputScale = 1, bend: selectedBend, gear, aids = true } = {}) {
+  const bend = selectedBend ?? cornerAt(route, kmh, cornerG), side = Math.sign(bend.k);
+  const vehicle = new Vehicle(aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0 }, route);
+  if (gear) { vehicle.manual = true; vehicle.gear = gear; }
   const pad = { id: 'driver-feel', index: 0, connected: true, axes: [side * (0.15 + 0.85 * inputScale), 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ value: 0 })) };
   const controls = new Input({ target: null, navigator: { getGamepads: () => device === 'gamepad' ? [pad] : [] }, document: null, storage: null });
   vehicle.steerAssist = assist ?? (device === 'gamepad' ? 0.35 : 1);
@@ -57,6 +58,7 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
     v.offroad = 0; v.surfMu = 1;
   } };
   vehicle.reset(bend.s, route.closed ? 0 : route.laneU(bend.s, 0), kmh / 3.6);
+  if (gear) vehicle.gear = gear;
   // Settle the rolling driveline before the keydown, rather than starting in
   // first gear at 120 km/h. Only this preparation holds longitudinal speed.
   for (let i = 0; i < 90; i++) {
@@ -71,7 +73,8 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
   vehicle.vLat = Math.tan(initialBeta) * vehicle.vLong;
   vehicle.w = vehicle.steer = 0;
   for (const c of vehicle.corners) c.aDyn = 0;
-  let integral = 0.2, prevBeta = 0;
+  vehicle.syncWheels();
+  let integral = 0.2, prevBeta = initialBeta;
   if (device === 'keyboard') controls.keyDown({ code: side > 0 ? 'KeyD' : 'KeyA' });
   const trace = [];
   for (let i = 0; i < seconds / DT; i++) {
@@ -97,7 +100,12 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
       drivenCombined: Math.max(...vehicle.corners.map((c, j) => (j < 2 ? 1 - vehicle.shareR : vehicle.shareR) > 0 ? c.sN : 0)),
       drivenSy: Math.max(...vehicle.corners.map((c, j) => (j < 2 ? 1 - vehicle.shareR : vehicle.shareR) > 0 ? Math.abs(c.sy) : 0)),
       wheelspin: vehicle.wheelspin, rearWheels: vehicle.corners.slice(2).map(c => ({ sx: c.sx, sy: c.sy })),
-      betaDeg: beta * DEG, tcCut: vehicle.tcCut, escCut: vehicle.escCut,
+      betaDeg: beta * DEG, rpm: vehicle.rpm, gear: vehicle.gear, throttle: pedal,
+      engineTorque: vehicle.engT, ax: vehicle.axRaw, frontLoad: vehicle.wheel[0].Fz,
+      rearLoad: vehicle.wheel[1].Fz, effectiveGravity: vehicle.contactFrame.effectiveGravity,
+      grade: vehicle.contactFrame.grade, bank: vehicle.contactFrame.bank,
+      travel: vehicle.sus.d.slice(), travelLimit: vehicle.travel, toePull: vehicle.toePull,
+      tcCut: vehicle.tcCut, escCut: vehicle.escCut,
       driftLatch: vehicle.driftLatch, x: vehicle.x, z: vehicle.z, s: vehicle.s, u: vehicle.u });
   }
   controls.destroy();
@@ -106,8 +114,8 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
   const reach = trace.find(r => r.yawRate >= yaw * 0.9);
   const steer90 = trace.find(r => Math.abs(r.steerInput) >= 0.9);
   const peakG = Math.max(...trace.slice(14).map((_, j) => mean(trace.slice(j, j + 15), 'lateralG')));
-  return { car: spec.id, kmh, corner: { s: bend.s, radius: bend.radius, requiredG: (kmh / 3.6) ** 2 / (bend.radius * G) },
-    device, instant, assist: vehicle.steerAssist, yaw90: reach?.t ?? null, input90: steer90?.t ?? null,
+  return { car: spec.id, kmh, corner: { s: bend.s, k: bend.k, radius: bend.radius, requiredG: (kmh / 3.6) ** 2 / (bend.radius * G) },
+    device, instant, gear, aids, assist: vehicle.steerAssist, yaw90: reach?.t ?? null, input90: steer90?.t ?? null,
     yawGain: yaw / (speed * Math.tan(Math.abs(mean(settled, 'rackDeg')) / DEG) / vehicle.wb),
     achievedG: mean(settled, 'lateralG'), maxG: peakG,
     pathRadius: speed / Math.max(0.001, mean(settled, 'pathYawRate')),
