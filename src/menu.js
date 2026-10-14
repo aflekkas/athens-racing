@@ -14,6 +14,7 @@ import * as C from './ui/components.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
+import { lobbyConfigToRaceSetup } from './mp-setup.js';
 import './ui/hosts.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 
@@ -38,7 +39,7 @@ export class Menu {
    */
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
-    this.filter = 'all';
+    this.filter = 'all'; this.participants = 'solo';
     C.bindRoot(root); root.tabIndex = -1;
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
@@ -88,7 +89,7 @@ export class Menu {
     let f = this.focus;
     if (f == null) { f = it.findIndex((el) => el.dataset.default != null); if (f < 0) f = it.findIndex((el) => el.dataset.kind !== 'tabs'); }
     if (this.data.keepScroll && keep != null) { const b = this.root.querySelector('.scr__body .scroll-y, .scr__body'); if (b) b.scrollTop = keep; }
-    this.setFocus(Math.min(Math.max(0, f), Math.max(0, it.length - 1)), !this.data.keepScroll);
+    this.setFocus(Math.min(Math.max(0, f), Math.max(0, it.length - 1)), !this.data.keepScroll && !(this.screen === 'car' && this.data.detail));
     this.data.keepScroll = false;
   }
   /** re-render in place (a value changed that other rows depend on); focus stays on the same item even when others
@@ -226,6 +227,7 @@ export class Menu {
   /** a component value changed (keyboard, gamepad, mouse or touch) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
+    if (scope === 'participants') { this.participants = value; this.refresh(); return; }
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
     if (scope === 'decal') { this.data.decal = { ...this.data.decal, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {
@@ -263,10 +265,11 @@ export class Menu {
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
       </div><footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
+  participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {
     const tile = (act, ic, title, desc) => `<div class="mi mode-tile" role="button" data-act="${act}"><span class="mode-tile__ico">${icon(ic)}</span><b class="mode-tile__title">${title}</b><span class="mode-tile__desc">${desc}</span></div>`;
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('events', 'trophy', 'EVENTS', 'Sprints, time trials and police pursuits. Medals for time and position.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('taxi', 'car', 'TAXI', 'Five minutes of pickups and drop-offs. Any car; taxi suggested.')}${tile('getaway', 'siren', 'GETAWAY DRIVER', 'Pick up a bank crew, escape and stop at the drop-off. Five minutes; no combat.')}${tile('tt', 'timer', 'TIME TRIAL', 'You, the road and the clock. Race your best ghost.')}${tile('mp', 'users-three', 'MULTIPLAYER', 'Public lobbies or a private code. Up to eight drivers.')}</div>` });
+      body: `<div class="mode-select">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('events', 'trophy', 'EVENTS', 'Sprints, time trials and police pursuits. Medals for time and position.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('taxi', 'car', 'TAXI', 'Five minutes of pickups and drop-offs. Any car; taxi suggested.')}${tile('getaway', 'siren', 'GETAWAY DRIVER', 'Pick up a bank crew, escape and stop at the drop-off. Five minutes; no combat.')}${tile('tt', 'timer', 'TIME TRIAL', 'You, the road and the clock. Race your best ghost.')}</div></div>`, foot: C.button({ label: 'FIND A LOBBY / JOIN BY CODE', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
 
   // ---------------------------------------------------------------- maps
@@ -361,11 +364,12 @@ export class Menu {
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${this.eventSummary(runDef, r, runDef.id)}</aside>
         <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}YOUR RACE</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
-          <div class="setup__fields scroll-y">${rows.filter(row => /data-key="(?:rivals|traffic|time|police)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police)"/.test(row)).join('') : ''}</div>${note}
-          <div class="setup__go">${C.button({ label: 'CHOOSE CAR', icon: 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
+          <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police)"/.test(row)).join('') : ''}</div>${note}
+          <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'OPEN MULTIPLAYER LOBBY' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
+    if (this.participants === 'multiplayer') { window.__multiplayer.open({ mapId: this.h.ctx().mapId, eventId: def.id, mode: def.type, config: lobbyConfigToRaceSetup(resolveSetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() })) }); return; }
     this.h.openEvent(runDef);
   }
 

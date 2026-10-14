@@ -90,3 +90,18 @@
 #multiplayer .mp-car-preview .car-grid { display: block; height: 7rem; overflow: hidden; margin: 0; padding: 0; }
 #multiplayer .mp-car-preview img { width: 100%; height: 100%; object-fit: contain; }
 #multiplayer .mp-car-preview > span { display: block; padding: .45rem .6rem; color: #b5c6d6; font: 700 .65rem var(--f-cond); letter-spacing: .02em; }
+.mp-session-settings { margin-top: 1rem; border-top: 1px solid #ffffff18; padding-top: 1rem; }
+.mp-session-settings h3 { margin: 0; color: var(--c-accent); font: 800 .85rem var(--f-cond); letter-spacing: .12em; }
+.mp-session-summary { color: #aab8c8; font: 700 .7rem var(--f-cond); line-height: 1.6; letter-spacing: .05em; }
+.mp-settings-primary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .7rem; }
+.mp-settings-primary label { display: grid; gap: .4rem; font: 700 .75rem var(--f-cond); letter-spacing: .07em; }
+.mp-settings-primary .mp-toggle-field { display: flex; align-items: center; gap: .5rem; }
+.mp-settings-advanced { margin-top: .8rem; }
+.mp-settings-advanced summary { padding: .65rem 0; cursor: pointer; color: #aab8c8; font: 800 .75rem var(--f-cond); letter-spacing: .08em; }
+.mp-settings-advanced[open] summary { color: white; }
+@media(max-width:500px) { .mp-settings-primary { grid-template-columns: 1fr; } }
+
+.mp-fields label { align-content: start; }
+#mp-room label:has(#mp-traffic) { display: none; }
+#multiplayer #mp-restart { --glyph: url(../assets/icons/arrow-counter-clockwise.svg); }
+#multiplayer #mp-tolobby { --glyph: url(../assets/icons/users-three.svg); }

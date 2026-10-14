@@ -558,7 +558,7 @@ addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch'
 
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();
-  const blocked = G.ctxLost || document.hidden || !multiplayer.panel.hidden || G.state === 'loading';
+  const blocked = G.ctxLost || document.hidden || G.state === 'loading' && !menu?.open && multiplayer.panel.hidden;
   controls.setNitrousEnabled(player?.veh.spec.nitrous === true);
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked, retainMouseLock: !!G.cameraStarting });
   const pad = controls.pad;
@@ -816,8 +816,10 @@ function openGarage() {
 
 /** every named input action lands here (src/input.js -> readInput -> window.__flow.action) */
 function flowAction(name) {
-  if (G.state === 'loading' || !menu) return false;
+  if (!menu || G.state === 'loading' && !menu.open && multiplayer.panel.hidden) return false;
+  if (document.body.dataset.customizer === 'open') return true;
   if (ui.action(name)) return true; // an open prompt / dropdown (src/ui/components.js) takes the input first
+  if (!multiplayer.panel.hidden) return window.__lobbyUiAction?.(name) ?? true;
   if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
   if (towOffer.element && !menu.open && G.state === 'race' && (name === 'restart' || name === 'camera' && input.camera && (controls.pad?.buttons?.[3]?.value || 0) > 0.55)) { tow(player.veh); return true; }
@@ -839,7 +841,7 @@ function flowAction(name) {
   }
   return false;
 }
-const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
+const inMenu = () => !!menu?.open || !multiplayer.panel.hidden || document.body.dataset.customizer === 'open' || MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
 window.__flow = {
   enforcement, finePhone,
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
