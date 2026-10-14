@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { REFLECT_LAYER } from './env.js';
 import { RNG, CellInstances, GeoBatch, M, canvasTex, pointInPoly, polyArea, clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
+import { infillStreetIndex } from './infill-streets.js';
 
 const KIND = { apt: 0, villa: 1, hotel: 2, shop: 3, church: 4, roof: 5, shed: 6 };
 
@@ -420,35 +421,14 @@ const SIGN_STYLE = (k, n) => {
 export function infillBuildings(map, heightC) {
   const { data, route, terrain } = map;
   const rng = new RNG(31);
-  const C = 40, segs = new Map(), boxes = new Map();
-  const put = (m, x, z, v) => { const k = Math.floor(x / C) * 100003 + Math.floor(z / C); let l = m.get(k); if (!l) m.set(k, l = []); l.push(v); };
-  for (const r of [...data.sideRoads, ...(data.roadNetwork?.roads || [])]) {
-    const p = r.p;
-    for (let i = 0; i + 3 < p.length; i += 2) {
-      const sg = [p[i], p[i + 1], p[i + 2], p[i + 3], r.w / 2];
-      const L = Math.hypot(sg[2] - sg[0], sg[3] - sg[1]);
-      for (let t = 0; t <= L; t += C * 0.5) put(segs, sg[0] + (sg[2] - sg[0]) * t / (L || 1), sg[1] + (sg[3] - sg[1]) * t / (L || 1), sg);
-    }
-  }
+  const C = 40, boxes = new Map();
+  const nearSeg = infillStreetIndex(data);
   const blockers = [...data.buildings.map((b) => [b.p, false]), ...['park', 'pitch', 'parking', 'pool', 'marina', 'fuel', 'golf', 'beach', 'wood'].flatMap((k) => (data.areas[k] || []).filter((a) => a.c).map((a) => [a.p, true]))];
   for (const [p, area] of blockers) {
     let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < p.length; i += 2) { x0 = Math.min(x0, p[i]); x1 = Math.max(x1, p[i]); z0 = Math.min(z0, p[i + 1]); z1 = Math.max(z1, p[i + 1]); }
     const rec = { p, area, x0: x0 - 4, x1: x1 + 4, z0: z0 - 4, z1: z1 + 4 };
     for (let i = Math.floor(rec.x0 / C); i <= Math.floor(rec.x1 / C); i++) for (let j = Math.floor(rec.z0 / C); j <= Math.floor(rec.z1 / C); j++) { const k = i * 100003 + j; let l = boxes.get(k); if (!l) boxes.set(k, l = []); l.push(rec); }
   }
-  const nearSeg = (x, z, R) => {
-    let best = null, bd = R;
-    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
-      const l = segs.get((Math.floor(x / C) + di) * 100003 + Math.floor(z / C) + dj); if (!l) continue;
-      for (const sg of l) {
-        const dx = sg[2] - sg[0], dz = sg[3] - sg[1], L2 = dx * dx + dz * dz || 1;
-        const t = clamp(((x - sg[0]) * dx + (z - sg[1]) * dz) / L2, 0, 1);
-        const d = Math.hypot(sg[0] + dx * t - x, sg[1] + dz * t - z) - sg[4];
-        if (d < bd) { bd = d; best = sg; }
-      }
-    }
-    return best ? { d: bd, sg: best } : null;
-  };
   const blocked = (x, z) => {
     const l = boxes.get(Math.floor(x / C) * 100003 + Math.floor(z / C)); if (!l) return false;
     for (const r of l) if (x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1 && (!r.area || pointInPoly(x, z, r.p))) return true;
@@ -466,11 +446,11 @@ export function infillBuildings(map, heightC) {
       if (!okCls(c.x, c.z)) continue;
       const lim = route.edge(ss) + ROAD_CLEAR;
       if (Math.abs(u) < lim) continue;
-      // orientation from the nearest street, else the avenue
-      const ns = nearSeg(c.x, c.z, 45);
-      let tx, tz;
-      if (ns) { const dx = ns.sg[2] - ns.sg[0], dz = ns.sg[3] - ns.sg[1], L = Math.hypot(dx, dz) || 1; tx = dx / L; tz = dz / L; }
-      else { const f = route.frame(ss, {}); tx = f.tx; tz = f.tz; }
+      // Urban land cover alone does not establish house access (e.g. the lake hillside).
+      const ns = nearSeg(c.x, c.z, 45, true);
+      if (!ns) continue;
+      const dx = ns.sg[2] - ns.sg[0], dz = ns.sg[3] - ns.sg[1], L = Math.hypot(dx, dz) || 1;
+      const tx = dx / L, tz = dz / L;
       const W = rng.range(11, 19), D = rng.range(10, 16);
       const nx = -tz, nz = tx;
       const P = [];
