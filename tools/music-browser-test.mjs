@@ -122,9 +122,26 @@ try {
   evidence.youtube = { src: await iframe.getAttribute('src'), box, status: await page.locator('.music-status').innerText(), requests: requests.filter(url => /youtube/.test(url)).slice(0, 8) };
   const { parseYouTubeURL } = await import('../src/music-youtube.js');
   assert.ok(evidence.youtube.src.includes(parseYouTubeURL(youtubeURL).video));
-  await save('04-youtube-player'); evidence.checks.push('Real IFrame API + public livestream loaded; visible minimum-size player');
+  const youtubeFrame = page.frameLocator('.music-youtube iframe');
+  await youtubeFrame.getByRole('button', { name: /^Play/ }).first().click({ timeout: 30000 });
+  await youtubeFrame.locator('video').evaluate(video => new Promise((resolve, reject) => {
+    const started = performance.now(), poll = () => {
+      if (video.readyState >= 2 && video.videoWidth > 0 && !video.paused) resolve();
+      else if (performance.now() - started > 30000) reject(Error('YouTube video did not start after native Play.'));
+      else setTimeout(poll, 100);
+    }; poll();
+  }));
+  evidence.youtube.nativePlayback = await youtubeFrame.locator('video').evaluate(video => ({ readyState: video.readyState, paused: video.paused, width: video.videoWidth, height: video.videoHeight }));
+  await iframe.hover();
+  await save('04-youtube-player'); evidence.checks.push('Real IFrame API + public livestream plays after native user gesture; visible minimum-size player');
   await page.getByLabel('Music source').selectOption('off'); assert.equal(await page.locator('.music-youtube iframe').count(), 0);
-  evidence.checks.push('Changing source destroys YouTube; leaving Sound settings also disposes it');
+  evidence.checks.push('Changing source destroys YouTube');
+  await page.getByLabel('Music source').selectOption('youtube');
+  await page.locator('[data-youtube-load]').click();
+  await page.locator('.music-youtube iframe').waitFor({ timeout: 30000 });
+  await page.evaluate(() => __flow.menu.show('settings', { tab: 'video' }));
+  assert.equal(await page.locator('.music-youtube iframe').count(), 0);
+  evidence.checks.push('Leaving Sound settings removes the YouTube player');
   assert.deepEqual(errors, []);
   console.log(JSON.stringify(evidence, null, 2));
 } catch (error) {
