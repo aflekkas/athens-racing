@@ -37,3 +37,12 @@ test('YouTube video, live and playlist URLs parse; non-YouTube/script origins ar
   for (const url of ['javascript:alert(1)', 'https://youtube.com.evil.test/watch?v=jfKfPfyJRdk', 'https://www.youtube.com/watch?v=bad']) assert.throws(() => parseYouTubeURL(url));
   assert.equal(isMusicFile({ name: 'song.MP3' }), true); assert.equal(isMusicFile({ name: 'cover.jpg' }), false);
 });
+
+test('an old media play promise does not pause a newer file source', async () => {
+  const { source, audio } = setup(); let release, calls = 0;
+  source.source = 'files'; source.files = [new File(['a'], 'a.wav', { type: 'audio/wav' })]; audio.musicOn = true;
+  source.el.play = function() { this.paused = false; return ++calls === 1 ? new Promise(resolve => { release = resolve; }) : Promise.resolve(); };
+  const old = source.play(); await new Promise(resolve => setImmediate(resolve));
+  source.select('files'); await new Promise(resolve => setImmediate(resolve)); assert.equal(source.el.paused, false);
+  release(); await old; assert.equal(source.el.paused, false); source.releaseURL();
+});

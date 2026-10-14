@@ -76,10 +76,14 @@ export class MusicSources {
       await this.audio.ctx.resume();
       if (revision !== this.revision || !this.audio.musicOn) return;
       await el.play();
-      if (revision !== this.revision || !this.audio.musicOn) { el.pause(); return; }
+      if (revision !== this.revision || !this.audio.musicOn) {
+        // A newer source owns the same element; an old play promise must not pause it.
+        if (!this.audio.musicOn) el.pause();
+        return;
+      }
       this.message(this.source === 'files' ? track.name : track.title + ' · ' + track.artist);
       if (this.source === 'builtin') this.audio.onTrack?.(track);
-    } catch { this.message('Press Play to start music. Your browser may require a click.'); }
+    } catch { if (revision === this.revision) this.message('Press Play to start music. Your browser may require a click.'); }
   }
   pause() { this.el?.pause(); }
   async next(direction = 1) {
