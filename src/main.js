@@ -1834,7 +1834,10 @@ const multiplayer = new Multiplayer(CARS, {
     traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); quitToMenu();
   },
   members: onlineMembers,
-  fine(entry) { const fine = enforcement.record({ ...entry, now: G.t }); if (fine) finePhone.show(fine); },
+  fine(entry) {
+    if (entry.raceId !== multiplayer.lobby?.raceId || entry.generation !== multiplayer.lobby?.generation) return;
+    const fine = enforcement.record({ ...entry, now: G.t }); if (fine) finePhone.show(fine);
+  },
   start(lobby, id, resumeState = null) {
     if (!multiplayer.loaded) return;
     beginCameraBlend();

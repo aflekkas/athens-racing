@@ -5,7 +5,7 @@ import { collectCameras, collectRedLightSites } from './enforcement-data.js';
 // emit receives a candidate; multiplayer records only the server's ack.
 export class EnforcementRuntime {
   constructor(emit = () => {}) { this.emit = emit; this.watch = new CameraWatch(); this.ledger = new FineLedger(); this.reset(); }
-  reset() { this.watch.reset(); this.ledger.reset(); this.seq = 0; this.redPass = new Map(); this.prevS = null; }
+  reset() { this.watch.reset(); this.ledger.reset(); this.seq = 0; this.claimPrefix = globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2); this.redPass = new Map(); this.prevS = null; }
   setMap(map) { this.mapId = map?.id; this.cameras = collectCameras(map); this.redSites = collectRedLightSites(map); this.reset(); }
   configure({ enabled, rules = {}, raceId = 'solo', generation = 0, online = false } = {}) {
     if (raceId !== this.raceId || generation !== this.generation) this.reset();
@@ -15,7 +15,7 @@ export class EnforcementRuntime {
     const requested = kind === 'camera' ? this.rules.cameraPenalty : this.rules.penalty;
     const fallback = kind === 'camera' ? ENF.cameraPenaltySec : ENF.redPenaltySec;
     const penaltySec = Number.isFinite(requested) && requested >= 0 && requested <= 60 ? requested : fallback;
-    const entry = { id: `fine:${++this.seq}`, kind, label: site.label || (kind === 'camera' ? 'Mapped speed camera' : 'Witnessed traffic offence'), site: site.id, siteId: site.id,
+    const entry = { id: `fine:${this.claimPrefix}:${++this.seq}`, kind, label: site.label || (kind === 'camera' ? 'Mapped speed camera' : 'Witnessed traffic offence'), site: site.id, siteId: site.id,
       penaltySec, s: st.s, kmh: st.kmh, dir: st.dir, at: st.at, now: st.now, raceId: this.raceId, generation: this.generation };
     this.emit(entry);
     return entry;
@@ -42,6 +42,6 @@ export class EnforcementRuntime {
   }
   // Ledger only. Recovery owns penalty seconds/roadside hold.
   recordCapture(now, penaltySec = ENF.capturePenaltySec) {
-    return this.record({ id: `capture:${++this.seq}`, kind: 'capture', label: 'Roadside police stop', penaltySec, site: 'capture', now });
+    return this.record({ id: `capture:${this.claimPrefix}:${++this.seq}`, kind: 'capture', label: 'Roadside police stop', penaltySec, site: 'capture', now });
   }
 }

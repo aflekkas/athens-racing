@@ -121,3 +121,8 @@ test('actual main hook: player visibility never becomes an AI witness',()=>{
 test('actual main hook: online player witness cannot self-certify MP fine',()=>{
  const x=gameStopLine({witness:true,online:true});x.fn({s:1000,i:1,main:'R',redT:2,toGreen:3},'player');assert.equal(x.G.pen,0);
 });
+
+test('client race reset/resume never reuses claim ids',()=>{
+ const a=[],r=new EnforcementRuntime(e=>a.push(e));r.setMap(map);r.configure({enabled:true,raceId:'r1'});r.step(st());r.reset();r.step(st());
+ assert.notEqual(a[0].id,a[1].id);assert.ok(a.every(e=>e.id.length<=64));
+});
