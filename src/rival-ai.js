@@ -93,7 +93,15 @@ export class RacingLine {
     this.n = Math.ceil(route.length / spacing) + (this.closed ? 0 : 1);
     this.step = route.length / (this.closed ? this.n : this.n - 1);
     this.u = new Float64Array(this.n); this.x = new Float64Array(this.n); this.z = new Float64Array(this.n);
-    const lo = new Float64Array(this.n), hi = new Float64Array(this.n), frames = [];
+    const lo = new Float64Array(this.n), hi = new Float64Array(this.n), frames = [], merged = [];
+    const setPoint = (i, u) => {
+      if (merged[i]) {
+        const p = route.point(i * this.step, u, pointOut());
+        this.x[i] = p.x; this.z[i] = p.z;
+      } else {
+        const f = frames[i]; this.x[i] = f.x + f.rx * u; this.z[i] = f.z + f.rz * u;
+      }
+    };
     for (let i = 0; i < this.n; i++) {
       const s = i * this.step, b = this.bounds(s), f = route.frame(s, {});
       // A mapped carriageway can curve away from the race centre road.
@@ -108,8 +116,12 @@ export class RacingLine {
         f.uScale2 = f.rx * f.rx + f.rz * f.rz;
       }
       lo[i] = b.min; hi[i] = b.max; frames.push(f);
+      // Across a merging median the two mapped carriageways and their connector
+      // are piecewise affine. Evaluate actual points and refresh the tangent
+      // when relaxation crosses branches instead of extrapolating the median.
+      merged[i] = !!route.localLayout?.contains(s) && b.min < 0 && b.max > 0;
       this.u[i] = clamp(route.closed ? route.racingU?.(s) ?? 0 : (b.min + b.max) / 2, b.min, b.max);
-      this.x[i] = f.x + f.rx * this.u[i]; this.z[i] = f.z + f.rz * this.u[i];
+      setPoint(i, this.u[i]);
     }
     // Projected multiscale relaxation minimises the squared second derivative
     // of the world path. Larger stencils establish turn-in/apex/exit; smaller
@@ -118,11 +130,18 @@ export class RacingLine {
       for (let i = 0; i < this.n; i++) {
         if (!this.closed && (i < stride * 2 || i >= this.n - stride * 2)) continue;
         const a = this.index(i - stride), b = this.index(i + stride), c = this.index(i - 2 * stride), d = this.index(i + 2 * stride), f = frames[i];
+        if (merged[i]) {
+          const s = i * this.step, u = this.u[i], p = route.point(s, u, pointOut());
+          const l = route.point(s, u - 0.001, pointOut()), r = route.point(s, u + 0.001, pointOut());
+          f.rx = (r.x - l.x) / 0.002; f.rz = (r.z - l.z) / 0.002;
+          f.x = p.x - f.rx * u; f.z = p.z - f.rz * u;
+          f.uScale2 = f.rx * f.rx + f.rz * f.rz;
+        }
         const target = ((4 * (this.x[a] + this.x[b]) - this.x[c] - this.x[d]) / 6 - f.x) * f.rx +
           ((4 * (this.z[a] + this.z[b]) - this.z[c] - this.z[d]) / 6 - f.z) * f.rz;
         const projected = target / (f.uScale2 || 1);
         this.u[i] = clamp(mix(this.u[i], projected, 0.28), lo[i], hi[i]);
-        this.x[i] = f.x + f.rx * this.u[i]; this.z[i] = f.z + f.rz * this.u[i];
+        setPoint(i, this.u[i]);
       }
     }
     // Refine with actual geometric curvature, weighted by path length. Route s
@@ -138,15 +157,15 @@ export class RacingLine {
     };
     for (const delta of [0.6, 0.25, 0.08]) for (let pass = 0; pass < 24; pass++) {
       for (let i = this.closed ? 0 : 2; i < this.n - (this.closed ? 0 : 2); i++) {
-        const f = frames[i], original = this.u[i];
+        const original = this.u[i];
         const score = () => curvatureCost(i - 1) + curvatureCost(i) + curvatureCost(i + 1);
         let bestU = original, bestScore = score();
         for (const u of [clamp(original - delta, lo[i], hi[i]), clamp(original + delta, lo[i], hi[i])]) {
-          this.x[i] = f.x + f.rx * u; this.z[i] = f.z + f.rz * u;
+          setPoint(i, u);
           const cost = score();
           if (cost < bestScore) { bestScore = cost; bestU = u; }
         }
-        this.u[i] = bestU; this.x[i] = f.x + f.rx * bestU; this.z[i] = f.z + f.rz * bestU;
+        this.u[i] = bestU; setPoint(i, bestU);
       }
     }
     this.k = new Float64Array(this.n); this.grade = new Float64Array(this.n); this.vertical = new Float64Array(this.n);
@@ -156,7 +175,7 @@ export class RacingLine {
       const ax = this.x[i] - this.x[a], az = this.z[i] - this.z[a], bx = this.x[b] - this.x[i], bz = this.z[b] - this.z[i];
       const denom = Math.hypot(ax, az) * Math.hypot(bx, bz) * Math.hypot(ax + bx, az + bz);
       this.k[i] = denom > 0.01 ? 2 * (ax * bz - az * bx) / denom : route.curv?.(i * this.step) || 0;
-      this.grade[i] = frames[i].grade || 0;
+      this.grade[i] = (merged[i] ? route.contactFrame(i * this.step, this.u[i], {}).grade : frames[i].grade) || 0;
       const s = i * this.step;
       this.vertical[i] = route.y ? (route.y(s - 3) - 2 * route.y(s) + route.y(s + 3)) / 9 : 0;
     }
