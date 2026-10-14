@@ -13,6 +13,7 @@ import { buildRoadside } from './roadside.js';
 import { buildSpeedSigns } from './speed-signs.js';
 import { buildWorldContext } from './world-context.js';
 import { buildRivieraLandmarks } from './riviera-landmarks.js';
+import { buildStreetLife } from './street-life.js';
 import { Traffic } from './traffic.js';
 import { Signals, findJunctions } from './signals.js';
 import { People } from './people.js';
@@ -109,6 +110,9 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const speedSigns = buildSpeedSigns(map, group, ter.heightC);
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
+    const streetLife = buildStreetLife(map, group, ter.heightC, coastal ? custom : null);
+    people.streetLife = streetLife;
+    people.anchors.push(...streetLife.artists); people.anchors.sort((a, b) => a.s - b.s);
     if (route.closed) { people.dens = () => 0; people.anchors.length = 0; }
     progress('FUELLING THE CARS', .85); await frameYield();
     const traffic = new Traffic(group, route, map.data);
@@ -117,7 +121,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const ground = custom?.ground || new Ground(map, ter.heightC, assets);
     if (coastal) traffic.buildParkedRows(group, ground);
     const streetParking = network ? buildNetworkParking(network, group, ground) : [];
-    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], speedSigns.obstacles, streetParking, landmarks?.obstacles || []);
+    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], speedSigns.obstacles, streetParking, landmarks?.obstacles || [], streetLife.obstacles);
     ground.constrainCamera = landmarks?.constrainCamera;
     traffic.ground = ground;
     if (coastal) { buildHumps(map, group, ter.heightC); buildSandTraps(ground, group); buildBarriers(map, group); }

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { trimMat } from './cockpit.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { lerp, clamp, RNG } from './util.js';
+import { sprayCanGeometry } from './spray-can.js';
 
 const V2 = THREE.Vector2;
 // reference body (1.75 m adult), metres
@@ -283,6 +284,7 @@ export class Crowd {
     const hair = hairGeos(), hats = hatGeos();
     const def = {
       bicycle: [bicycleGeo(), matV, 1],
+      sprayCan: [sprayCanGeometry(), matV, 1],
       farBody: [new THREE.CylinderGeometry(0.17, 0.14, 0.5, 5), mat, 1], farHead: [new THREE.IcosahedronGeometry(0.11, 0), mat, 1],
       farLimb: [limb(0.8,0.055,0.031,0,0.3,4), mat, 2], farArm: [limb(0.52,0.044,0.025,0,0.3,4), mat, 2],
       pelvis: [pelvisGeo(), mat, 1], torsoM: [torsoGeo(false), mat, 1], torsoF: [torsoGeo(true), mat, 1],
@@ -310,7 +312,7 @@ export class Crowd {
   /** which parts a look uses (cached on the look) */
   uses(L) {
     if (L.u) return L.u;
-    const u = { torso: L.female ? 'torsoF' : 'torsoM', hair: L.hair >= 0 && L.hat !== 'scarf' ? 'hair' + L.hair : null, hat: L.hat, glasses: L.glasses, skirt: L.skirt, cup: L.cup };
+    const u = { torso: L.female ? 'torsoF' : 'torsoM', hair: L.hair >= 0 && L.hat !== 'scarf' ? 'hair' + L.hair : null, hat: L.hat, glasses: L.glasses, skirt: L.skirt, cup: L.cup, sprayCan: L.sprayCan };
     if (L.hat === 'cap' && L.hair === 1) u.hair = 'hair0';
     return (L.u = u);
   }
@@ -379,6 +381,7 @@ export class Crowd {
       const Wha = this._bone(this.Wha, Wfa, 0, -FARM, 0, 0, sx * 0.25, 0, 'XYZ');
       this._put('hand', i, Wha, c.skin);
       if (i === 1 && u.cup) this._put('cup', 0, Wha, c.cup);
+      if (i === 1 && u.sprayCan) this._put('sprayCan', 0, Wha, this.nearMaterial.color);
     }
   }
   _far(P, L) {
@@ -565,6 +568,7 @@ function createHumanRig(L, material) {
     if(!L.sleeveless && !L.swim && !L.longSleeve) add(rigLimb(0.15,0.058,0.05,0,0.3,10),upper,c.top,[L.wL,1,L.wL],true);
     add(rigTemplate('hand:' + i, () => handGeo(i === 0 ? -1 : 1)),hand,c.skin,[1,1,1],true);
     if(i===1&&L.cup) add(rigTemplate('cup', cupGeo),hand,c.cup);
+    if(i===1&&L.sprayCan) add(rigTemplate('sprayCan', sprayCanGeometry),hand,new THREE.Color('#ffffff'));
     if(i===1&&L.phone) { add(box(0.054,0.097,0.009,0,-0.04,0.027),hand,dark); add(box(0.045,0.078,0.002,0,-0.039,0.033),hand,new THREE.Color('#49727e')); }
   }
   if(L.bag) {

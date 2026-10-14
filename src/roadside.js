@@ -302,7 +302,7 @@ export function buildRoadside(map, scene, heightC, assets = {}) {
       obstacles.push({ x: x + lx * Math.cos(yaw) + lz * Math.sin(yaw), z: z - lx * Math.sin(yaw) + lz * Math.cos(yaw), yaw: yaw + o.yaw, hl: o.hl * sz, hw: o.hw * sx });
     }
     stats.counts[model.name] = (stats.counts[model.name] || 0) + 1;
-    placements.push({ model: model.name, x, y, z, yaw });
+    placements.push({ model: model.name, x, y, z, yaw, sx, sy, sz });
   }
   function place(name, s, u, options = {}) {
     if (!Number.isFinite(s) || s < 0 || s > route.length) return null;

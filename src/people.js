@@ -188,14 +188,15 @@ export class People {
   }
   spawnAnchor(a) {
     const p = this.free(); if (!p) return;
-    const ctx = a.kind === 'cafe' || a.kind === 'stop' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
+    const ctx = a.kind === 'artist' ? 'jogger' : a.kind === 'cafe' || a.kind === 'stop' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
     const look = makeLook(this.rng, ctx);
+    if (a.kind === 'artist') { look.role = 'artist'; look.cup = look.phone = look.bag = look.umbrella = look.towel = false; look.sprayCan = true; }
     if (a.kind === 'swim' || a.kind === 'lie') { look.cup = false; look.towel = false; look.bag = false; look.umbrella = false; look.phone = false; look.glasses = a.kind === 'lie' && look.glasses; if (a.kind === 'swim') look.hat = null; }
     if (a.kind === 'stop' || a.kind === 'beach' || a.kind === 'wander') look.cup = look.cup && this.rng.chance(0.5);
     this.init(p, a.kind, look);
     a.ped = p; p.anchor = a;
     p.x = a.x; p.z = a.z; p.y = a.y; p.yaw = a.yaw; p.home = { x: a.x, z: a.z, y: a.y, yaw: a.yaw };
-    p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand' }[a.kind];
+    p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand', artist: 'stand' }[a.kind];
     p.variant = a.kind === 'stop' ? this.rng.pick(['idle', 'phone', 'look', 'cross']) : a.kind === 'beach' ? this.rng.pick(['chat', 'idle', 'hips', 'chat', 'phone']) : 'idle';
     look.phone = p.variant === 'phone';
     p.target = null; p.speed = p.look.speed * 0.7;
@@ -205,6 +206,7 @@ export class People {
     for (const p of this.peds) if (p.active) this.despawn(p);
     for (const a of this.anchors) a.ped = null;
     this.t = 0;
+    this.streetLife?.reset();
     for (let i = 0; i < 60; i++) this.spawnWalker(ps, true);
     this.updateAnchors(ps);
   }
@@ -280,6 +282,7 @@ export class People {
       this.crowd.draw(p.P, p.look, Math.sqrt(d2));
     }
     this.crowd.end();
+    this.streetLife?.update(dt, camPos);
   }
 
   walkY(s, u) {
@@ -361,6 +364,15 @@ export class People {
     const h = p.home;
     const away = Math.hypot(p.x - h.x, p.z - h.z);
     p.moving = false;
+    if (p.kind === 'artist') {
+      // Slow cars also make artists back away. Avoid returning into a parked car.
+      const nearby = this.acts.find(a => a.kind !== undefined && Math.abs((a.veh.y ?? p.y) - p.y) < 2.5 && Math.hypot(p.x - a.x, p.z - a.z) < Math.max(a.halfL, a.halfW) + 1.25);
+      if (nearby) {
+        const dx = p.x - nearby.x, dz = p.z - nearby.z, d = Math.hypot(dx, dz) || 1;
+        this.walkTo(p, p.x + dx / d, p.z + dz / d, dt, 1.4); p.y = h.y;
+        return;
+      }
+    }
     if (p.mode === 'swim') {
       // lazy breaststroke back and forth
       const a = p.yaw, v = 0.35;
@@ -480,6 +492,12 @@ export class People {
     else if (m === 'lie' && !(p.home && Math.hypot(p.x - p.home.x, p.z - p.home.z) > 0.15)) { poseLie(P, t, p.sd); P.pitch = -Math.PI / 2; }
     else if (m === 'swim') { poseSwim(P, t); P.pitch = 1.2; }
     else poseStand(P, t, p.sd, m === 'wait' ? 'look' : p.variant);
+    if (p.kind === 'artist' && p.sprayActive !== false && !p.moving && !p.react && !p.air) {
+      // Small shoulder/elbow passes, directed at the bin rather than the driver.
+      P.shA[1] = .74 + .12 * Math.sin(t * 2.8); P.shR[1] = .08 + .09 * Math.sin(t * 1.7);
+      P.elb[1] = .52 + .13 * Math.sin(t * 2.8 + .7); P.hYaw = -.12; P.hPitch = .2;
+      P.tPitch = .18; P.tYaw = -.12;
+    }
     if (p.react && !(p.air && !p.air.hop)) {
       const rt = p.react.t;
       if (p.react.type === 'panic') armsPanic(P, rt);
