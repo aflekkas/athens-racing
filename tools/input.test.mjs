@@ -187,3 +187,21 @@ test('legacy M music bindings migrate and music cannot share the mode key', () =
   assert.equal(next.bind('keyboard', 'transmission', ['KeyJ']), false);
   input.destroy(); next.destroy();
 });
+
+test('a pointer lock granted after pause/quit is released without reopening pause', async () => {
+  const { input } = setup(), doc = new EventTarget();
+  let grant, unlocks = 0;
+  doc.pointerLockElement = null;
+  doc.exitPointerLock = () => { doc.pointerLockElement = null; doc.dispatchEvent(new Event('pointerlockchange')); };
+  const canvas = { requestPointerLock: () => new Promise(resolve => { grant = () => { doc.pointerLockElement = canvas; doc.dispatchEvent(new Event('pointerlockchange')); resolve(); }; }) };
+  input.document = doc;
+  input.mountMouseLook(canvas, { enabled: () => true, unlock: () => unlocks++ });
+  input.requestMouseLock(); input.clear();
+  grant(); await Promise.resolve();
+  assert.equal(doc.pointerLockElement, null);
+  assert.equal(unlocks, 0);
+  assert.equal(input.lookRequestPending, false);
+  input.requestMouseLock(); grant(); await Promise.resolve();
+  assert.equal(doc.pointerLockElement, canvas, 'a new driving request can still acquire lock');
+  input.destroy(); assert.equal(unlocks, 0);
+});

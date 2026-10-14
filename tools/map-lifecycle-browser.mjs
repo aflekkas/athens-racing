@@ -19,12 +19,12 @@ await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',async route=>{c
 await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__holdFrame&&cb.name==='frame'?0:raf(cb);});
 async function evalRun(fn,arg){return page.evaluate(fn,arg);}
 async function draw(label){paths.push(label);await evalRun(()=>{window.__sim.step(1,1/60);window.__sim.render();}); console.log('PATH',label,await evalRun(()=>({state:__game.state,screen:__flow.menu.screen,runtime:__mapRuntime()})));}
-async function click(act){await page.locator(`[data-act="${act}"]`).first().click({force:true});}
+async function click(act){await page.waitForFunction(()=>!document.pointerLockElement);await page.locator(`[data-act="${act}"]`).first().click();}
 async function assertMenu(){const state=await evalRun(()=>({state:__game.state,cam:__game.cam,paused:__game.paused,locked:!!document.pointerLockElement,racing:document.body.classList.contains('racing'),worlds:__mapRuntime().worlds}));assert.equal(state.state,'menu');assert.equal(state.cam,'orbit');assert.equal(state.paused,null);assert.equal(state.locked,false);assert.equal(state.racing,false);assert.equal(state.worlds.length,1);}
 async function startRoam(){await evalRun(()=>__flow.startEvent(__flow.freeRoamDef()));await page.waitForTimeout(350);await evalRun(()=>{__game.countWall=performance.now()-2000;__sim.step(1,.05);});await draw('start-roam');}
 try {
  await page.goto(`http://127.0.0.1:${app.server.address().port}/?menu&simhook&quality=low&fixedres&map=penteli`,{waitUntil:'domcontentloaded',timeout:120000});
- await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:600000});await evalRun(()=>{window.__holdFrame=true;});console.log('READY');
+ await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:600000});if(await page.locator('[data-act="continue-play"]').count())await click('continue-play');await evalRun(()=>{window.__holdFrame=true;});console.log('READY');
  for(const map of ['penteli','riviera']){
   await evalRun(id=>__flow.switchMap(id),map);await startRoam();
   for(const action of ['roamCar','roamConditions','roamLandmarks','roamTow','reset','settings']){

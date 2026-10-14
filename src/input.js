@@ -153,6 +153,7 @@ export class Input {
     });
     this.lookLockChange = () => {
       const locked = this.document?.pointerLockElement === canvas;
+      if (locked && !this.lookLockWanted) { this.mouseWasLocked = false; this.releaseMouseLook(); return; }
       if (this.mouseWasLocked && !locked && !this.lookReleaseExpected) unlock?.();
       this.mouseWasLocked = locked; this.lookReleaseExpected = false;
     };
@@ -161,13 +162,14 @@ export class Input {
   requestMouseLock() {
     if (!this.lookCanvas || this.lookRequestPending || this.document?.pointerLockElement === this.lookCanvas || this.navigator?.userActivation?.isActive === false) return;
     try {
-      this.lookRequestPending = true;
+      this.lookLockWanted = true; this.lookRequestPending = true;
       const request = this.lookCanvas.requestPointerLock?.();
-      if (request?.then) request.then(() => { this.lookRequestPending = false; }, () => { this.lookRequestPending = false; });
+      if (request?.then) request.then(() => { this.lookRequestPending = false; if (!this.lookLockWanted) this.releaseMouseLook(); }, () => { this.lookRequestPending = false; });
       else this.lookRequestPending = false;
     } catch { this.lookRequestPending = false; }
   }
   releaseMouseLook() {
+    this.lookLockWanted = false;
     if (this.lookCanvas && this.document?.pointerLockElement === this.lookCanvas) { this.lookReleaseExpected = true; this.document.exitPointerLock?.(); }
   }
   connect(pad) {
