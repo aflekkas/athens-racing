@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { DrivingGuidance } from './driving-guidance.js';
+import { settings as preferences, setSetting, onSettings } from './settings.js';
 import { gripFeedback } from './driving-feedback-model.js';
 
 const colors = { go: [0.15, .95, .48], prepare: [1, .68, .12], brake: [1, .18, .16] };
@@ -8,8 +9,9 @@ const preferencesKey = 'paraliaki.driving-feedback';
 export class DrivingFeedback {
   constructor({ scene, input, document: doc = globalThis.document } = {}) {
     this.doc = doc; this.scene = scene; this.input = input; this.guidance = new DrivingGuidance(); this.nextUpdate = 0;
-    this.options = { grip: true, line: false };
-    try { const saved = JSON.parse(globalThis.localStorage?.getItem(preferencesKey) || '{}'); for (const k of ['grip', 'line']) if (typeof saved[k] === 'boolean') this.options[k] = saved[k]; } catch {}
+    this.options = { grip: preferences.showTyreGrip === true, line: false };
+    this.unsubscribe = onSettings(st => { this.options.grip=st.showTyreGrip===true;this.nextUpdate=0;const box=this.root?.querySelector('[data-option=grip]');if(box)box.checked=this.options.grip; });
+    try { const saved = JSON.parse(globalThis.localStorage?.getItem(preferencesKey) || '{}'); for (const k of ['line']) if (typeof saved[k] === 'boolean') this.options[k] = saved[k]; } catch {}
     if (doc) this.mount();
   }
   mount() {
@@ -26,7 +28,8 @@ export class DrivingFeedback {
     button.addEventListener('click', () => { settings.hidden = !settings.hidden; button.setAttribute('aria-expanded', String(!settings.hidden)); });
     for (const checkbox of root.querySelectorAll('[data-option]')) {
       checkbox.checked = this.options[checkbox.dataset.option]; checkbox.addEventListener('change', () => {
-        this.options[checkbox.dataset.option] = checkbox.checked; this.nextUpdate = 0;
+        this.options[checkbox.dataset.option] = checkbox.checked;
+        if(checkbox.dataset.option==='grip')setSetting('showTyreGrip',checkbox.checked); this.nextUpdate = 0;
         this.grip.hidden = !this.options.grip; this.cue.hidden = !this.options.line;
         if (!this.options.line && this.line) this.line.visible = false;
         try { globalThis.localStorage?.setItem(preferencesKey, JSON.stringify(this.options)); } catch {}
@@ -43,6 +46,7 @@ export class DrivingFeedback {
     this.line = new THREE.Mesh(geometry, material); this.line.name = 'driving-braking-assist'; this.line.frustumCulled = false; this.line.renderOrder = 2; this.scene.add(this.line);
   }
   update({ vehicle, route = vehicle?.route, dir, visible = true, spectating = false, driverName = '', units = 'kmh', wetGrip = 1, endS } = {}) {
+    visible = visible && (this.options.grip || this.options.line);
     if (this.root) this.root.hidden = !visible;
     if (!visible || !vehicle) { this.nextUpdate = 0; if (this.line) this.line.visible = false; if (this.root && visible) this.showGrip(null); if (this.cue) this.cue.hidden = true; return; }
     const now = globalThis.performance?.now?.() || Date.now();
@@ -85,5 +89,5 @@ export class DrivingFeedback {
     ['front', 'rear'].forEach((k, i) => { const a = model[k], { row, meter, value } = this.axles[i]; meter.value = a?.percent || 0;
       row.dataset.state = a?.state || 'UNAVAILABLE'; value.textContent = a ? `${a.percent}% · ${a.state}` : '—'; meter.setAttribute('aria-valuetext', a ? `${a.percent}% force used, ${a.state.toLowerCase()}` : 'Unavailable'); });
   }
-  dispose() { this.root?.remove(); if (this.line) { this.line.removeFromParent(); this.line.geometry.dispose(); this.line.material.dispose(); } }
+  dispose() { this.unsubscribe?.();this.root?.remove(); if (this.line) { this.line.removeFromParent(); this.line.geometry.dispose(); this.line.material.dispose(); } }
 }

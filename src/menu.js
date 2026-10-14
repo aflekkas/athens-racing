@@ -409,7 +409,7 @@ export class Menu {
           ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}</div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
     } else if (tab === 'driving') {
-      body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key: 'aids', label: 'DRIVER AIDS · TC ABS ESC', value: settings.aids, attrs: SET })}
+      body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key:'showTyreGrip',label:'SHOW TYRE GRIP',value:settings.showTyreGrip,attrs:SET })}${C.toggle({ key: 'aids', label: 'DRIVER AIDS · TC ABS ESC', value: settings.aids, attrs: SET })}
           ${C.segmented({ key: 'steeringAssist', label: 'STEERING ASSIST', value: v('steeringAssist'), options: [['off', 'OFF'], ['light', 'LIGHT'], ['full', 'FULL']], attrs: SET, note: settings.steeringAssist === null ? 'FOLLOWS YOUR DEVICE UNTIL YOU CHOOSE' : '' })}
           ${C.segmented({ key: 'transmission', label: 'GEARBOX', value: v('transmission'), options: [['auto', 'AUTO'], ['manual', 'MANUAL']], attrs: SET, note: C.keyHints([['tabs', 'SHIFT DOWN / UP']]) })}</div>
         <div class="group"><h3 class="group__title">${icon('police-car')}WORLD</h3>${C.toggle({ key: 'police', label: 'POLICE & LAWS', value: settings.police, attrs: SET })}</div>

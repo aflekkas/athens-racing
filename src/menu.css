@@ -514,3 +514,9 @@ body[data-mode="taxi"] #hud #routeBox,body[data-mode="getaway"] #hud #routeBox {
 .objective-hold i { display: block; height: 100%; background: #62e9bf; }
 @media(max-height:480px) { #evBox:has(.objective-card) { top: 8px; left: 228px; width: 300px; } .objective-card { padding: 8px; } }
 @media(max-width:500px) { #evBox:has(.objective-card) { top: 128px; left: 122px; width: calc(100vw - 134px); } .objective-card { padding: 9px; } .objective-card header { gap: 6px; font-size: 11px; } .objective-card header small { display: none; } .objective-body h3 { font-size: 14px; } body[data-mode="taxi"] #input-toast,body[data-mode="getaway"] #input-toast { top: 316px; } }
+
+/* Every detached race widget follows the same menu visibility policy as the main HUD. */
+body.ui-open :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
+body:has(#multiplayer:not([hidden])) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
+body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
+body[data-customizer="open"] :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone) { visibility: hidden !important; pointer-events: none !important; }
