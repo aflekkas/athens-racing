@@ -30,13 +30,15 @@
 import * as THREE from 'three';
 import { clamp, lerp, smoothstep } from './util.js';
 import { getMap } from './map-catalog.js';
+import { LocalCarriageways } from './local-carriageways.js';
+import { RIVIERA_TUNNELS } from './maps/riviera-tunnels.js';
 import { registerMapEvents, getEvents } from './events.js';
 export { MAPS, getMap } from './map-catalog.js';
 
 export const LANE_W = 3.3; // Greek urban/coastal arterial lanes run 3.0-3.5 m (EO91 bends design: 3.00 / 3.25)
 
 export class Route {
-  constructor(r) {
+  constructor(r, { corridors = [] } = {}) {
     this.step = r.step;
     this.closed = !!r.closed;
     const N = this.N = r.x.length;
@@ -77,7 +79,10 @@ export class Route {
       const a = (i - 1 + N - 1) % (N - 1), b = (i + 1) % (N - 1);
       this.GR[i] = (this.Y[b] - this.Y[a]) / (2 * this.step);
     }
+    this.setLocalCorridors(corridors);
   }
+  setLocalCorridors(metadata) { this.localLayout = metadata.length ? new LocalCarriageways(this, metadata) : null; this.localCorridors = this.localLayout?.bores || []; }
+  contactFrame(s, u, out = {}) { if (this.localLayout?.contains(s)) return this.localLayout.frame(s,u,out); this.frame(s,out); out.mapped=false; return out; }
   wrap(s) { return this.closed ? ((s % this.length) + this.length) % this.length : s; }
   _i(s) { const f = clamp(this.wrap(s) / this.step, 0, this.N - 1.0001); const i = Math.floor(f); return [i, f - i]; }
   lin(A, s) { const [i, t] = this._i(s); return A[i] + (A[i + 1] - A[i]) * t; }
@@ -98,7 +103,7 @@ export class Route {
   laneU(s, lane) { return this.medHalf(s) + (lane + 0.5) * LANE_W; } // lane 0 = fast lane (next to the median); negative u for oncoming via -laneU
   curv(s) { return this.lin(this.K, s); }
   bank(s) { return this.lin(this.B, s); }
-  heading(s) { const tx = this.lin(this.TX, s), tz = this.lin(this.TZ, s); return Math.atan2(tx, -tz); }
+  heading(s, u = 0) { if (Math.abs(u) >= this.medHalf(s) && this.localLayout?.contains(s)) { const f=this.contactFrame(s,u,{}); return Math.atan2(f.tx,-f.tz); } const tx = this.lin(this.TX, s), tz = this.lin(this.TZ, s); return Math.atan2(tx, -tz); }
   /** world point at (s,u) on the road surface */
   point(s, u, out = new THREE.Vector3()) {
     const [i, t] = this._i(s);
@@ -108,6 +113,7 @@ export class Route {
     const L = Math.hypot(tx, tz) || 1;
     const rx = -tz / L, rz = tx / L;
     out.set(x + rx * u + tx / L * ex, this.y(s) + u * this.bank(s), z + rz * u + tz / L * ex);
+    if (this.localLayout?.contains(s)) this.localLayout.map(s,u,out);
     return out;
   }
   frame(s, out) {
@@ -126,7 +132,8 @@ export class Route {
     for (let i = 0; i < this.N; i++) { const k = Math.floor(this.X[i] / C) * 100003 + Math.floor(this.Z[i] / C); let b = h.get(k); if (!b) { b = []; h.set(k, b); } b.push(i); }
     return h;
   }
-  project(x, z, hint = null, range = 40) {
+  project(x, z, hint = null, range = 40) { const q=this._projectBase(x,z,hint,range); return this.localLayout?.contains(q.s) ? this.localLayout.inverse(x,z,q,hint) : q; }
+  _projectBase(x, z, hint = null, range = 40) {
     if (this.closed) return this._projectLoop(x, z, hint, range);
     if (hint === null) {
       // spatial-hash search, growing rings
@@ -219,7 +226,7 @@ export async function loadMap(onProgress, base = './', mapId = 'riviera') {
   if (!mapRes.ok || !terRes.ok) throw new Error('map data missing');
   const [data, buf] = await Promise.all([mapRes.json(), terRes.arrayBuffer()]);
   onProgress && onProgress('map');
-  const route = new Route(data.route);
+  const route = new Route(data.route, { corridors: mapId === 'riviera' ? RIVIERA_TUNNELS : [] });
   const terrain = new Terrain(buf);
   // which side is the sea, how far, per 20 m of route (used for promenades, guard rails, barriers)
   const side = [];

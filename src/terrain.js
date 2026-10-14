@@ -181,6 +181,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     for (let i = 0; i < source.length; i++) if (rug[i] > 0) source[i] = H0[i];
     network.prepareTerrain(Hc, stamp, source);
   }
+  route.localLayout?.carveTerrain(terrain, Hc, stamp);
   terrain.Hc = Hc;
 
   const cropGreen = C('#78864c'), cropDry = C('#b6ae72'), cropVerge = C('#929c5a');

@@ -225,7 +225,9 @@ export class Ground {
   }
   /** ground under a world point; s/u its route coordinates */
   at(x, z, s, u, out = this.out) {
-    const route = this.route, au = Math.abs(u), side = u >= 0 ? 1 : -1;
+    const route = this.route;
+    if (route.localLayout?.contains(s)) { const q=route.project(x,z,s,8); s=q.s; u=q.u; }
+    const au = Math.abs(u), side = u >= 0 ? 1 : -1;
     const sc = route.closed ? route.wrap(s) : clamp(s, 0, route.length);
     out.network = false; out.networkStep = 0;
     // Race progress stays in s/u; only the physical contact surface changes off the race carriageway.
@@ -363,7 +365,7 @@ export class Ground {
   _curbs(v) {
     if (this.route.closed) return; // low, rounded circuit kerbs are sampled per wheel in at()
     const route = this.route, sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
-    const f = route.frame(sc, v._f || (v._f = {}));
+    const f = route.contactFrame?.(sc, v.u, v._f || (v._f = {})) || route.frame(sc, v._f || (v._f = {}));
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);
     const fr = fx * f.rx + fz * f.rz, rr = rx * f.rx + rz * f.rz; // the car's axes across the road
     const eA = route.edge(sc) + ROAD.gutter, chE = ROAD.curbH(route, sc);
@@ -374,8 +376,9 @@ export class Ground {
     const t2 = v.track / 2;
     for (let i = 0; i < 4; i++) {
       const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2;
-      const u = v.u + cx * fr + cy * rr;
+      let u = v.u + cx * fr + cy * rr;
       const wx = v.x + fx * cx + rx * cy, wz = v.z + fz * cx + rz * cy;
+      if (route.localLayout?.contains(sc)) u=route.project(wx,wz,sc,8).u;
       const z = this.network?.sample(wx, wz)?.step === 0 && Math.abs(u) > eA ? 0 : zone(u), was = prev[i];
       prev[i] = z;
       if (z === was || was === 9 || v.air) continue;
@@ -435,7 +438,7 @@ export class Ground {
     const lim = this.limits(v.s, v.halfW, v._lim || (v._lim = {}));
     const exploring = v._network && this.network?.sample(v.x, v.z);
     if (!exploring && (v.u > lim.max || v.u < lim.min)) {
-      const f = route.frame(v.s, v._f || (v._f = {})), side = v.u > lim.max ? 1 : -1;
+      const f = route.contactFrame?.(v.s, v.u, v._f || (v._f = {})) || route.frame(v.s, v._f || (v._f = {})), side = v.u > lim.max ? 1 : -1;
       this._hit(v, -f.rx * side, -f.rz * side, side > 0 ? v.u - lim.max : lim.min - v.u);
       v.u = side > 0 ? lim.max : lim.min;
     }
@@ -468,7 +471,7 @@ export class Ground {
     // the ground under each wheel: a car astride a kerb sits on all four, tilted
     const q = this._q || (this._q = {}), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw), t2 = v.track / 2;
     const wy = v._wy || (v._wy = [0, 0, 0, 0]), ws = v._wsurf || (v._wsurf = ['', '', '', '']); // per car: fx reads them later
-    const fw = route.frame((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length)), v._f || (v._f = {}));
+    const fw = route.contactFrame?.(v.s, v.u, v._f || (v._f = {})) || route.frame((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length)), v._f || (v._f = {}));
     const ft = fx * fw.tx + fz * fw.tz, fr = fx * fw.rx + fz * fw.rz, rt = rx * fw.tx + rz * fw.tz, rr = rx * fw.rx + rz * fw.rz;
     // Each wheel's ground splits into a smooth plane (the road surface carried on under a kerb, or the terrain) and a
     // step on top of it (kerb, median island, dirt hump, sand pile): the car is placed on the plane, and each step is
@@ -478,7 +481,8 @@ export class Ground {
     let nPaved = 0;
     for (let i = 0; i < 4; i++) { // each wheel's own road coordinates: it can be on the kerb while the centre isn't
       const cx = i < 2 ? v.a : -v.b, cy = i & 1 ? t2 : -t2;
-      const si = v.s + cx * ft + cy * rt, ui = v.u + cx * fr + cy * rr;
+      let si = v.s + cx * ft + cy * rt, ui = v.u + cx * fr + cy * rr;
+      if (route.localLayout?.contains(v.s)) { const p=route.project(v.x+fx*cx+rx*cy,v.z+fz*cx+rz*cy,si,8); si=p.s; ui=p.u; }
       const a = this.at(v.x + fx * cx + rx * cy, v.z + fz * cx + rz * cy, si, ui, q);
       wy[i] = a.y; ws[i] = a.surf;
       const wg = wheelGround(route, ROAD, a, si, ui, this._wg || (this._wg = {}));
@@ -492,15 +496,16 @@ export class Ground {
     const sv = route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length);
     const onRoad = nPaved === 4 && Math.abs(v.u) <= route.edge(sv) + ROAD.gutter;
     v.wheelSurf = ws;
-    v.gradeG = onRoad ? undefined : clamp((yF - yB) / v.wb, -0.8, 0.8);
-    v.grade = onRoad ? route.frame(v.s, v._f || (v._f = {})).grade : v.gradeG;
-    v.bank = onRoad ? route.bank(v.s) : clamp((yR - yL) / v.track, -0.6, 0.6);
+    const mapped = !!route.localLayout?.contains(v.s);
+    v.gradeG = onRoad && !mapped ? undefined : clamp((yF - yB) / v.wb, -0.8, 0.8);
+    v.grade = onRoad && !mapped ? route.frame(v.s, v._f || (v._f = {})).grade : v.gradeG;
+    v.bank = onRoad && !mapped ? route.bank(v.s) : clamp((yR - yL) / v.track, -0.6, 0.6);
     // crests launch you: off the tarmac, when the ground falls away under the car faster than gravity could follow
     // (vertical speed from the ground slope under the wheelbase, so curbs and steps don't count as ramps)
     // The centre sample must use the same plane/step split as the wheels: using its full pavement height here
     // would add the kerb twice once all four wheels have climbed onto the pavement.
     const centrePlane = wheelGround(route, ROAD, g, v.s, v.u, this._wg).plane;
-    const yG = onRoad ? route.surfaceY(sv, v.u) : astride ? (yF + yB) / 2 : Math.max(centrePlane, (yF + yB) / 2);
+    const yG = onRoad && !mapped ? route.surfaceY(sv, v.u) : astride ? (yF + yB) / 2 : Math.max(centrePlane, (yF + yB) / 2);
     if (v.air === undefined) { v.air = 0; v.vy = 0; v.yAir = yG; }
     const paved = onRoad || g.surf === 'pavement' || g.surf === 'asphalt' || g.surf === 'verge';
     const vyS = paved ? 0 : clamp((yF - yB) / v.wb * v.vLong, -20, 20);

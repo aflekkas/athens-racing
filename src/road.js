@@ -174,7 +174,7 @@ class Strip {
     for (const q of points) { this.pos.push(q.p.x, q.p.y, q.p.z); this.su.push(q.s, q.u); if (q.em) this.em.push(...q.em); if (q.c) this.col.push(q.c.r, q.c.g, q.c.b); }
     this.rows++;
   }
-  build(flipU = false, enabledRows = null) {
+  build(flipU = false, enabledRows = null, enabledCells = null) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
     g.setAttribute('aSU', new THREE.Float32BufferAttribute(this.su, 2));
@@ -182,6 +182,7 @@ class Strip {
     if (this.col.length) g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
     const idx = [], C = this.cols;
     for (let r = 0; r + 1 < this.rows; r++) for (let c = 0; c + 1 < C; c++) {
+      if (enabledCells && !enabledCells(r,c)) continue;
       if (enabledRows && (!enabledRows[r] || !enabledRows[r + 1])) continue;
       const a = r * C + c, b = a + 1, d = a + C, e = d + 1;
       if (!flipU) idx.push(a, b, d, b, e, d); else idx.push(a, d, b, b, d, e);
@@ -210,7 +211,7 @@ export function buildRoad(map, scene, heightC, assets) {
     const sideRows = { '-1': [], '1': [] };
     for (let s = c0; s <= c1 + 0.001; s += STEP) {
       const e = route.edge(s), mh = route.medHalf(s), nl = route.lanesF(s), dv = route.div(s);
-      medianRows.push(legacyMedian || dv > .01);
+      medianRows.push((legacyMedian || dv > .01) && !route.localLayout?.portal(s));
       const eA = e + ROAD.gutter;
       const em = [e, mh, nl, dv];
       const us = [-eA, -e, -mh, 0, mh, e, eA];
@@ -248,8 +249,8 @@ export function buildRoad(map, scene, heightC, assets) {
       }
     }
     const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); return m; };
-    add(road.build(), asphalt, false, true);
-    if (medianRows.some(Boolean)) add(med.build(false, legacyMedian ? null : medianRows), vergeMat, true);
+    add(road.build(false, null, (r,c) => (c !== 2 && c !== 3) || !route.localLayout?.contains(c0 + (r + .5) * STEP)), asphalt, false, true);
+    if (medianRows.some(Boolean)) add(med.build(false, legacyMedian && !route.localLayout ? null : medianRows), vergeMat, true);
     add(curbR.build(false, sideRows[1]), curbMat); add(curbL.build(true, sideRows[-1]), curbMat);
     add(walkR.build(false, sideRows[1]), paving, false, true); add(walkL.build(true, sideRows[-1]), paving, false, true);
     add(skR.build(false, sideRows[1]), vergeMat); add(skL.build(true, sideRows[-1]), vergeMat);

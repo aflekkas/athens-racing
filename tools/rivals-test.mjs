@@ -26,6 +26,7 @@ register('data:text/javascript,' + encodeURIComponent(hookSource), import.meta.u
 const physicsURL = new URL(process.env.PHYS || '../src/physics.js', import.meta.url);
 const { Vehicle } = await import(physicsURL.href);
 const { Route } = await import('../src/map.js');
+const { RIVIERA_TUNNELS } = await import('../src/maps/riviera-tunnels.js');
 const EV = await import('../src/events.js');
 const { DRIVERS } = EV;
 const { clamp, damp, smoothstep } = await import('../src/util.js');
@@ -44,7 +45,7 @@ const physicsHash = createHash('sha256').update(physicsSource).digest('hex');
 writeFileSync(new URL(`${prefix}-physics.js`, artifacts), physicsSource);
 const data = JSON.parse(readFileSync(new URL('data/map.json', root)));
 function makeRoute(map) {
-  const r = new Route(map.route);
+  const r = new Route(map.route, { corridors: map.route.from === 'Vouliagmeni' ? RIVIERA_TUNNELS : [] });
   r.urban = (s) => {
     let urban = map.zones[0].urban;
     for (let i = 1; i < map.zones.length; i++) urban += (map.zones[i].urban - map.zones[i - 1].urban) * smoothstep(map.zones[i].s - 120, map.zones[i].s + 130, s);
