@@ -15,6 +15,11 @@ export class StateSender {
   reset() {
     if (this.timer != null) this.cancel(this.timer);
     this.timer = null; this.pending = []; this.raceId = null; this.lastAt = -Infinity; this.last = null;
+    this.motionEpoch = (this.motionEpoch || 0) + 1;
+  }
+  discontinuity() {
+    if (this.timer != null) this.cancel(this.timer);
+    this.timer = null; this.pending = []; this.lastAt = -Infinity; this.last = null; this.motionEpoch++;
   }
   sample(state, raceId, { batching = false, force = false } = {}) {
     if (this.raceId !== raceId) { this.reset(); this.raceId = raceId; }
@@ -22,7 +27,7 @@ export class StateSender {
     if (!force && now - this.lastAt < 100) return false;
     this.lastAt = now;
     if (!force && stationaryUnchanged(state, this.last)) return false;
-    const snapshot = { ...state, damage: { ...state.damage } };
+    const snapshot = { ...state, sampleTime: now, sampleAge: 0, motionEpoch: this.motionEpoch, damage: { ...state.damage } };
     this.last = snapshot;
     if (!batching) { this.send({ type: 'state', raceId, state: snapshot }); return true; }
     this.pending.push(snapshot);
@@ -35,6 +40,7 @@ export class StateSender {
     this.timer = null;
     if (!this.pending.length) return;
     const states = this.pending; this.pending = [];
+    for (const state of states) state.sampleAge = Math.max(0, Math.min(1000, this.now() - state.sampleTime));
     this.send({ type: 'states', raceId: this.raceId, states });
   }
 }

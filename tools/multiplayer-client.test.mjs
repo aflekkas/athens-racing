@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { StateSender } from '../src/multiplayer-state.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { getLeaderboard, submitResult } from '../src/leaderboard.js';
+import './remote-motion.test.mjs';
 
 const state = (extra = {}) => ({ x: 0, y: 0, z: 0, s: 0, u: 0, yaw: 0, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1, nitro: 1, reverse: false, damage: { front: 0, rear: 0, left: 0, right: 0 }, ...extra });
 function sender() {

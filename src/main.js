@@ -20,6 +20,7 @@ import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
+import { applyRemotePose } from './remote-timeline.js';
 import * as EV from './events.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
@@ -388,6 +389,7 @@ function backOnRoad(pv) {
   const u = route.closed ? clamp(sf.u, -route.edge(s) + 1.5, route.edge(s) - 1.5) : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1));
   const nitro = pv.nitro; beginCameraBlend();
   pv.reset(s, u, 0); if (dir < 0) pv.yaw += Math.PI;
+  if (online) multiplayer.stateSender.discontinuity();
   pv.nitro = nitro; pv.safe = { s, u }; towOffer.safe = { s, u };
   // reset() clears contact history and marks the suspension fresh; the next update settles each wheel.
   G.sinkT = 0; G.sinkFade = false; look.yaw = look.pitch = look.targetYaw = look.targetPitch = look.yawV = look.pitchV = 0;
@@ -1630,11 +1632,9 @@ const multiplayer = new Multiplayer(CARS, {
   remote(peers, dt) {
     for (const [id, c] of remoteCars) {
       const peer = peers.get(id); if (!peer) continue;
-      const p = peer.state, v = c.veh;
-      const k = Math.hypot(v.x - p.x, v.z - p.z) > 30 ? 1 : 1 - Math.exp(-18 * dt);
-      for (const key of ['x', 'y', 'z', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm']) v[key] += (p[key] - v[key]) * k;
-      v.yaw += Math.atan2(Math.sin(p.yaw - v.yaw), Math.cos(p.yaw - v.yaw)) * k; v.gear = p.gear;
-      c.lastBrake = false; c.model.root.visible = multiplayer.lobby.players.find(p => p.id === id)?.connected !== false || performance.now() - peer.at < 3000;
+      const member = multiplayer.lobby.players.find(p => p.id === id);
+      const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
+      c.lastBrake = false; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
     }
   },
