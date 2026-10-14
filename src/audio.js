@@ -1113,19 +1113,38 @@ export class Audio {
     if (!this.ctx) return;
     [[311, 0.42], [294, 0.42], [277, 0.42], [262, 1.3]].forEach(([f, d], i) => this.tone({ f, dur: d, gain: 0.12, type: 'sawtooth', at: 0.2 + i * 0.45, lp: 1100, vib: i === 3 ? 7 : 0, vibF: 5.5, attack: 0.04 }));
   }
-  /** glide the radio's speed (and pitch) to `rate` over `secs` */
+  /** Only local/built-in sources own a media element; other sources can retain an old one. */
+  musicElement() {
+    const radio = this.radio;
+    return radio && (!radio.source || ['files', 'builtin'].includes(radio.source)) ? radio.el : null;
+  }
+  /** Glide an existing local music element's speed (and pitch). */
   tapeStop(rate, secs) {
-    clearInterval(this.tapeT);
-    const r0 = this.radio.el.playbackRate, t0 = performance.now();
-    this.tapeT = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / 1000 / secs); this.radio.rate = r0 + (rate - r0) * k; if (k >= 1) clearInterval(this.tapeT); }, 50);
+    clearInterval(this.tapeT); this.tapeT = null;
+    const element = this.musicElement();
+    if (!element) return;
+    const radio = this.radio, revision = radio.revision;
+    const r0 = element.playbackRate, t0 = performance.now();
+    const timer = setInterval(() => {
+      // A source/file switch cancels the effect; never animate a replacement track.
+      if (this.musicElement() !== element || radio.revision !== revision) {
+        clearInterval(timer); if (this.tapeT === timer) this.tapeT = null; return;
+      }
+      const k = Math.min(1, (performance.now() - t0) / 1000 / secs);
+      element.playbackRate = r0 + (rate - r0) * k;
+      if (k >= 1) { clearInterval(timer); if (this.tapeT === timer) this.tapeT = null; }
+    }, 50);
+    this.tapeT = timer;
   }
   restart() {
     if (!this.ctx) return;
     this.nextExhaustRattle = 0;
     this.lastSpeed = 0; this.requestIgnition();
     const now = this.ctx.currentTime;
-    this.tapeStop(1, 0.3);
-    this.musicLP.frequency.setTargetAtTime(12000, now, 0.4);
+    if (this.musicElement()) {
+      this.tapeStop(1, 0.3);
+      this.musicLP?.frequency.setTargetAtTime(12000, now, 0.4);
+    } else { clearInterval(this.tapeT); this.tapeT = null; }
     this.duckEv = 0;
   }
 }
