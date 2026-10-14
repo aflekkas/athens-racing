@@ -60,5 +60,5 @@ export function resolveMap(meta, data) {
       definitions.set(def.id, { id: def.id, mapId: meta.id, type: def.type, name: def.name, ...r, routeKey: `${r.s0}>${r.s1}`, traffic: def.traffic > 0, trafficLevel: def.traffic > 0 ? def.traffic : 0, conditions: def.conditions || null, police: def.rules?.police === true, rules: def.rules || null });
     } catch { /* Unresolvable road geometry hosts no missions. */ }
   }
-  return { id: meta.id, name: meta.name, track, closed: route.closed === true, trips, enforcement: { cameras: collectCameras({ id: meta.id, data }), redSites: collectRedLightSites({ id: meta.id, data }) }, definitions };
+  return { id: meta.id, name: meta.name, track, geometry: route, closed: route.closed === true, trips, enforcement: { cameras: collectCameras({ id: meta.id, data }), redSites: collectRedLightSites({ id: meta.id, data }) }, definitions };
 }

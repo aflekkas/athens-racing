@@ -1,3 +1,4 @@
+import { buildCourse, observeCourse, courseStatus } from './checkpoints.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
 // Pure logic, no DOM or three.js: node can import and test it (tools/events-test.mjs).
@@ -261,13 +262,14 @@ export function wrongWay(state, dt, heading, speed) {
 export class EventRun {
   /** def: an event definition; ctx: see resolve(); opts: { car, storage } */
   constructor(def, ctx, opts = {}) {
-    this.def = def; this.r = resolve(def, ctx); this.car = opts.car || null; this.st = opts.storage || store();
+    this.def = def; this.r = resolve(def, ctx); this.courseRoute = ctx.route; this.car = opts.car || null; this.st = opts.storage || store();
     this.best = loadRecord(def.id, this.st);
     this.reset();
   }
   reset() {
     this.t = 0; this.started = false; this.done = false; this.result = null;
     this.lapTimes = []; this.lapStart = 0;
+    this.course = buildCourse(this.r, this.courseRoute); this.checkpointClock = 0; this.checkpoint = courseStatus(this.course);
     this.cpIdx = 0; this.splits = []; this.lastProg = 0; this.maxProg = 0; this.ww = {};
   }
   get type() { return this.def.type; }
@@ -292,8 +294,15 @@ export class EventRun {
     this.t = p.t;
     const prog = this.progress(p.s);
     this.maxProg = Math.max(this.maxProg, prog);
+    this.checkpointClock += dt;
+    const previousStatus = this.checkpoint;
+    this.checkpoint = observeCourse(this.course, p, this.checkpointClock);
+    if (this.checkpoint.missed !== previousStatus.missed || this.checkpoint.passed !== previousStatus.passed) {
+      const e = { kind: 'checkpoint', ...this.checkpoint }; events.emit('checkpoint', e); out.push(e);
+    }
+    const validated = this.course.gates[this.course.passed - 1]?.d ?? 0;
     // checkpoints (only when crossed forwards: driving back and forth across a line doesn't count twice)
-    while (this.cpIdx < this.r.checkpoints.length && prog >= this.r.checkpoints[this.cpIdx].d) {
+    while (this.cpIdx < this.r.checkpoints.length && validated >= this.r.checkpoints[this.cpIdx].d) {
       const cp = this.r.checkpoints[this.cpIdx], i = this.cpIdx++;
       this.splits.push(p.t);
       if (cp.lapEnd) {

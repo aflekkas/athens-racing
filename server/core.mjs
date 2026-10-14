@@ -1,9 +1,8 @@
-import { packDecals, unpackDecals } from '../src/vehicle-decal-data.js';
+import { buildCourse, observeCourse, courseStatus } from '../src/checkpoints.js';
 import { defaultConfig, sanitizeConfig, effectiveEvent, configInvalidates, nextGeneration, cancelToWaiting, restartRace, startObjectiveRound, stepPlayerObjective, snapshotPlayerObjective, resultPlayerObjective, objectiveRoundDone, clearObjectiveHold, applyObjectivePenalty, raceLimitFor, isObjectiveMode, assertModeAllowed, validateStateExtras } from './mp-lifecycle.mjs';
 import { isMapEnabled } from '../src/enabled-maps.js';
 import { validateViolation, penaltyFor, createEnforcementState, observeEnforcementState } from './enforcement.mjs';
 import { normalizeDriverAppearance } from '../src/driver-appearance-data.js';
-import { stripUnownedPhotos } from './appearance-state.mjs';
 import { rememberRecoveryRoad, requestRecovery, recoveryStateAllowed } from './race-recovery.mjs';
 // Shared lobby/race protocol. Transports own sockets, persistence and wake-up scheduling.
 const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-\x1f<>]/g, '').trim().slice(0, n) || fallback : fallback;
@@ -23,7 +22,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
   const publicLobby = (l, manifest = true) => {
     const def = lobbyEvent(l), event = effectiveEvent(def, l.config);
     const trips = manifest && isObjectiveMode(event?.type) ? (maps.get(l.mapId).trips || {})[event.type] || null : null;
-    return { code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, objective: snapshotPlayerObjective(l, p.id) })), eventId: l.eventId, traffic: l.traffic, event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)] };
+    return { code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null })), blockedPlayers: manifest ? (l.blocks || []).filter(b => b.until > Date.now()).map(({ id, name, until }) => ({ id, name, until })) : undefined, eventId: l.eventId, traffic: l.traffic, event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)] };
   };
   const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId)).map(l => publicLobby(l, false)) });
   const publish = (l) => { l.touched = Date.now(); for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby: publicLobby(l) }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
@@ -151,7 +150,12 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     message: bytes => {
       if (c.ws !== ws) return;
       const now = Date.now(); if (now - c.window > 1000) { c.window = now; c.messages = 0; } if (++c.messages > 80) { ws.close(1008, 'Rate limit'); return; }
-      const error = message => send(ws, { type: 'error', message });
+      const error = (message, extra = {}) => send(ws, { type: 'error', message, ...extra });
+      const hostRate = (l, action) => {
+        l.hostActions ||= {};
+        if (now - (l.hostActions[action] ?? -Infinity) < 1000) { error('Please wait before repeating this host action.'); return false; }
+        l.hostActions[action] = now; return true;
+      };
       try {
         const m = JSON.parse(bytes); if (!m || typeof m !== 'object') return;
         // A packet carries up to two 10 Hz samples. Keep the legacy single-sample
@@ -215,6 +219,9 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           } else {
             dest = lobbies.get(String(m.code).trim().toUpperCase());
             if (!dest) return error('Lobby not found. Check the code or refresh the list.');
+            dest.blocks = (dest.blocks || []).filter(b => b.until > now);
+            const block = dest.blocks.find(b => b.token === c.token || b.driverId === c.driverId || c.accountSub && b.accountSub === c.accountSub || b.ip === c.ip);
+            if (block) return error('You were kicked from this lobby. Wait for the cooldown or ask the host to unblock you.', { code: 'KICK_COOLDOWN', until: block.until, lobbyCode: dest.code });
             if (dest.status !== 'waiting') return error('This lobby is already racing.');
             if (dest.players.size >= 8) return error('This lobby is full.');
             if (!isMapEnabled(dest.mapId)) return error('Map unavailable.');
@@ -240,12 +247,16 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
             const list = sanitizeCarList(m.allowedCars);
             if (!list) return error('Allow at least one car.');
             for (const p of l.players.values()) if (!list.includes(p.car)) newlyDisallowed.push(p.id);
-            l.allowedCars = list; allowedChanged = true;
+            allowedChanged = list;
           }
           const incoming = { ...(m.config || {}) };
           if (m.traffic !== undefined && incoming.traffic === undefined) incoming.traffic = m.traffic === true ? 1 : 0;
           const cfg = sanitizeConfig(incoming);
           if (cfg.error) return error(cfg.error);
+          if (allowedChanged) {
+            l.allowedCars = allowedChanged;
+            for (const id of newlyDisallowed) { const p = l.players.get(id); p.car = l.allowedCars[0]; p.ready = false; }
+          }
           const prevConfig = l.config || {};
           const nextConfig = { ...prevConfig, ...cfg.config };
           const mapChanged = mapId !== l.mapId, eventChanged = eventId !== l.eventId;
@@ -261,15 +272,33 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           else if (allowedChanged) for (const id of newlyDisallowed) { const p = l.players.get(id); if (p) p.ready = false; }
           publish(l); return;
         }
-        if (m.type === 'ready') {
-          if (l.status !== 'waiting') return error('The race has already started.');
+        if (m.type === 'car' || m.type === 'ready') {
+          const carOnly = m.type === 'car' || m.car !== undefined && m.ready !== true;
+          if (l.status !== 'waiting' && !(l.status === 'results' && carOnly)) return error('The race has already started.');
           // Car-only updates (ready:false/undefined) never need the track
           // version, so guests keep choosing cars while the lobby track loads.
           if (m.ready === true && ((m.mapId !== undefined && m.mapId !== l.mapId) || m.version !== maps.get(l.mapId).track.version)) return error('The track changed. Reload the game to join this race.');
-          if (m.car !== undefined && CARS.has(m.car) && !l.allowedCars.includes(m.car)) return error('That car is not allowed in this lobby.');
+          if (m.car !== undefined && !CARS.has(m.car)) return error('Unknown car.');
+          if (m.car !== undefined && !l.allowedCars.includes(m.car)) return error('That car is not allowed in this lobby.');
           if (CARS.has(m.car)) c.car = m.car;
           if (m.ready === true && !l.allowedCars.includes(c.car)) return error('Your car is not allowed in this lobby. Pick an allowed car.');
           c.ready = m.ready === true; publish(l); return;
+        }
+        if (m.type === 'kick' || m.type === 'unblock') {
+          if (l.host !== c.id) return error('Only the host can moderate the lobby.');
+          if (!['waiting', 'results'].includes(l.status)) return error('Return to the lobby before removing a driver.');
+          if (m.type === 'unblock') {
+            if (!hostRate(l, 'unblock')) return;
+            l.blocks = (l.blocks || []).filter(b => b.id !== m.id && b.until > now); publish(l); return;
+          }
+          const target = l.players.get(m.id);
+          if (!target || target === c) return error('Choose another lobby driver.');
+          if (!hostRate(l, 'kick')) return;
+          const until = now + 30000;
+          l.blocks = (l.blocks || []).filter(b => b.until > now && b.id !== target.id).slice(-63);
+          l.blocks.push({ id: target.id, name: target.name, until, token: target.token, driverId: target.driverId, accountSub: target.accountSub, ip: target.ip });
+          leave(target); send(target.ws, { type: 'kicked', lobbyCode: l.code, until, message: 'The host removed you from this lobby. You can rejoin in 30 seconds, or when the host unblocks you.' });
+          publish(l); return;
         }
         if (m.type === 'start') {
           if (l.host !== c.id) return error('Only the host can start the race.');
@@ -277,10 +306,14 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           // instead of erroring: the host presses start again to launch.
           if (l.status === 'results') { cancelToWaiting(l); publish(l); return; }
           if (![...l.players.values()].every(p => l.allowedCars.includes(p.car))) return error('A driver picked a car the host disallowed.');
-          if (l.status !== 'waiting' || l.players.size < 2 || ![...l.players.values()].every(p => p.ready && p.connected)) return error('At least two drivers must be ready.');
+          const connected = [...l.players.values()].filter(p => p.connected);
+          if (l.status !== 'waiting' || connected.length < 2 || m.force !== true && ![...l.players.values()].every(p => p.ready && p.connected)) return error('At least two drivers must be ready, or the host can force start two connected drivers.');
+          if (m.force === true && !hostRate(l, 'start')) return;
+          // Force start pulls in connected drivers; stale reservations leave the room.
+          if (m.force === true) for (const p of [...l.players.values()]) { if (!p.connected) leave(p); else p.ready = true; }
           l.status = 'countdown'; l.startAt = now + countdownMs; l.raceId = randomUUID(); nextGeneration(l);
           presencePush([...l.players.values()].map(p => p.accountSub));
-          for (const p of l.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.enfPenalty = 0; p.enfSeen = null; }
+          for (const p of l.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.enfPenalty = 0; p.enfSeen = null; p.course = null; }
           l.racers = new Map([...l.players.values()].map(p => [p.id, { id: p.id, name: p.name, car: p.car, finish: null, dnf: false, disconnected: false }]));
           if (isObjectiveMode(lobbyEvent(l)?.type)) { l.objectiveTrips = (maps.get(l.mapId).trips || {})[lobbyEvent(l).type] || null; startObjectiveRound(l, { mode: lobbyEvent(l).type, raceId: l.raceId, startAtMs: l.startAt }); } else { l.objectives = null; l.objectiveTrips = null; }
           publish(l); return;
@@ -337,7 +370,10 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
         }
         if (m.type === 'recover') {
           if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
-          const recovery = requestRecovery(c, publicLobby(l).event, l.raceId, m.motionEpoch, now);
+          const nextGate = c.course?.gates[c.course.passed], event = publicLobby(l).event;
+          // Recovery must not place the car beyond an unpassed gate.
+          if (nextGate && c.recoveryRoad && (c.recoveryRoad.s - nextGate.s) * event.dir >= 0) c.recoveryRoad = { s: nextGate.s - event.dir * 3, u: 0 };
+          const recovery = requestRecovery(c, event, l.raceId, m.motionEpoch, now);
           if (!recovery) return error('Recovery needs a current race position.');
           clearObjectiveHold(l, c.id);
           l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
@@ -352,7 +388,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
           return;
         }
-        if (m.type === 'state' && !c.dnf && ['countdown', 'race'].includes(l.status) && now >= l.startAt && m.raceId === l.raceId ) {
+        if (m.type === 'state' && !c.dnf && ['countdown', 'race'].includes(l.status) && now >= l.startAt && m.raceId === l.raceId && (m.generation === undefined || m.generation === l.generation)) {
           const fields = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'];
           if (!m.state || fields.some(k => !Number.isFinite(m.state[k]))) return;
           const s = m.state, event = effectiveEvent(lobbyEvent(l), l.config);
@@ -364,8 +400,22 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           // Client physics with bounded progress; the server owns race timing/results.
           const prevS = c.state?.s ?? event.s0;
           const elapsed = Math.max(0, (now - Math.max(c.stateAt ?? l.startAt, c.recovery?.raceId === l.raceId ? c.recovery.until : l.startAt)) / 1000);
-          if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
-          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: packDecals(stripUnownedPhotos(unpackDecals(s.decals === undefined ? c.state?.decals : s.decals), appearance, c.accountSub)), driver: normalizeDriverAppearance(s.driver === undefined ? c.state?.driver : s.driver) }; c.stateAt = now; l.dirty = true;
+          const courseEnabled = !isObjectiveMode(event.type) && event.type !== 'free';
+          if (courseEnabled && c.course?.raceId !== l.raceId) c.course = { ...buildCourse(event, maps.get(l.mapId).geometry), raceId: l.raceId };
+          const recovered = c.recovery?.raceId === l.raceId && now <= c.recovery.until;
+          const previousPose = c.state || c.course?.previous;
+          const discontinuous = Math.abs(s.s - prevS) > 30 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed) || !recovered && previousPose && Math.hypot(s.x - previousPose.x, s.z - previousPose.z) > 15 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed);
+          if (discontinuous) {
+            if (c.course && !c.course.missed) { c.course.missed = true; send(c.ws, { type: 'checkpoint', raceId: l.raceId, generation: l.generation, ...courseStatus(c.course) }); }
+            return;
+          }
+          if (courseEnabled) {
+            const before = JSON.stringify(courseStatus(c.course));
+            observeCourse(c.course, s, now / 1000, { initialTime: l.startAt / 1000, recovery: recovered });
+            const status = courseStatus(c.course);
+            if (JSON.stringify(status) !== before) send(c.ws, { type: 'checkpoint', raceId: l.raceId, generation: l.generation, ...status });
+          }
+          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), driver: normalizeDriverAppearance(s.driver === undefined ? c.state?.driver : s.driver) }; c.stateAt = now; l.dirty = true;
           Object.assign(c.state, validateStateExtras(s));
           if (c.enforcement?.raceId !== l.raceId || c.enforcement?.generation !== (l.generation || 0) || !(c.enforcement?.claims instanceof Map)) c.enforcement = createEnforcementState(l.raceId, l.generation || 0);
           observeEnforcementState(c.enforcement, c.state, [...((maps.get(l.mapId).enforcement || {}).cameras || []), ...((maps.get(l.mapId).enforcement || {}).redSites || [])], now);
@@ -379,7 +429,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           rememberRecoveryRoad(c, event, l.raceId);
           // Objective modes never take the crossing finish; reversed runs keep
           // their time but stay off the leaderboard. Fines add into the finish.
-          if (c.finish === null && !isObjectiveMode(event.type) && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
+          if (c.finish === null && !isObjectiveMode(event.type) && c.course?.passed === c.course?.gates.length && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = (now - l.startAt) / 1000 + (c.enfPenalty || 0); l.racers.get(c.id).finish = c.finish; publish(l);
             if (!l.config?.reverse) leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
             if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
@@ -418,7 +468,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           if ([...l.objectives.values()].every(o => o.done)) { results(l); continue; }
         }
         if (!l.dirty) continue; l.dirty = false;
-        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, stateAt: p.stateAt, finish: p.finish, dnf: p.dnf, objective: snapshotPlayerObjective(l, p.id) }));
+        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, stateAt: p.stateAt, finish: p.finish, dnf: p.dnf, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null }));
         for (const p of l.players.values()) send(p.ws, { type: 'snapshot', raceId: l.raceId, generation: l.generation || 0, now, players });
       }
     }
@@ -429,6 +479,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     for (const data of saved?.sessions || []) {
       const ws = sockets.get(data.token) || { readyState: 3, close() {} };
       const c = { ...data, ws, lobby: null, connected: sockets.has(data.token) };
+      if (c.state) { const { decals, ...state } = c.state; c.state = state; }
       if (c.state && !nitrousCars.has(c.car)) c.state = { ...c.state, nitro: 0 };
       sessions.set(c.token, c); if (c.connected) { clients.add(c); bind(c, ws, c.ip); }
     }

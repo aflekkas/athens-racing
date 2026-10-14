@@ -176,9 +176,9 @@ test('allow-list shrinks unready only affected drivers; start stays authoritativ
   const l = lobbyOf(a);
   assert.equal(l.players.find((p) => p.id !== l.host).ready, false, 'disallowed driver unreadied');
   assert.equal(l.players.find((p) => p.id === l.host).ready, true, 'unaffected host stays ready');
-  assert.equal(l.players.find((p) => p.id !== l.host).car, 'z4', 'car is never silently coerced');
+  assert.equal(l.players.find((p) => p.id !== l.host).car, 'mini', 'disallowed car falls back to the first allowed car');
   send(a, { type: 'start' });
-  assert.match(errOf(a), /disallowed/, 'start blocked while a car is disallowed');
+  assert.match(errOf(a), /ready/, 'start requires a new ready vote after the fallback');
 });
 
 test('host restart/to-lobby/transfer keep the room code and bump generations', (t) => {
@@ -408,7 +408,7 @@ test('three real clients converge on one room through concurrent create/edit/joi
   assert.equal(hg.lobby.config.rivals, 5);
   assert.deepEqual(hg.lobby.allowedCars, ['mini']);
   const gus = hg.lobby.players.find((p) => p.id === g1.id);
-  assert.equal(gus.car, 'z4', 'guest car never coerced by host edits');
+  assert.equal(gus.car, 'mini', 'guest gets an allowed car after host filter edits');
   assert.equal(gus.ready, false, 'disallowed guest deterministically unreadied');
   assert.equal(hg.lobby.players.find((p) => p.id === host.id).ready, false);
   assert.equal(hg.lobby.generation, 0, 'waiting-room edits do not burn generations');

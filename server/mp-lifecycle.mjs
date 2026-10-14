@@ -145,7 +145,7 @@ export function isStaleGeneration(lobby, message) {
 }
 
 const clearRun = (lobby) => {
-  for (const p of lobby.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.enfPenalty = 0; p.enfSeen = null; }
+  for (const p of lobby.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.enfPenalty = 0; p.enfSeen = null; p.course = null; }
 };
 
 // Host cancels an active or finished race back to a waiting lobby.

@@ -948,8 +948,9 @@ function raceTiming(dt) {
     G.lastPos = pos;
   }
   // splits (a brief delta pop in time trials only), the finish, the pursuit survive clock
-  for (const e of run.update(dt, { t: def.type === 'pursuit' && def.rules?.goal === 'survive' ? G.raceT : G.raceT + G.pen, s: pv.s, kmh: pv.kmh })) {
-    if (e.kind === 'split' && !e.last) {
+  for (const e of run.update(dt, { t: def.type === 'pursuit' && def.rules?.goal === 'survive' ? G.raceT : G.raceT + G.pen, s: pv.s, u: pv.u, x: pv.x, y: pv.y, z: pv.z, kmh: pv.kmh })) {
+    if (e.kind === 'checkpoint' && e.missed) hud.message(e.message, 3);
+    else if (e.kind === 'split' && !e.last) {
       const dl = e.delta;
       if (def.type === 'timetrial') hud.pop('split ' + (dl === null ? '' : dl <= 0 ? 'good' : 'bad'), e.name, fmtTime(e.time) + (dl === null ? '' : ` · ${dl <= 0 ? '−' : '+'}${Math.abs(dl).toFixed(2)}`));
     } else if (e.kind === 'finish') { G.pFinish = G.raceT + G.pen; finishRace(); return; }
@@ -1879,6 +1880,8 @@ function onlineMembers(members) {
   $('rivalName').textContent = first?.name || 'WAITING';
 }
 const multiplayer = new Multiplayer(CARS, {
+  inputOverlayOpen: () => menu?.screen === 'car' && !!menu.data?.onPick,
+  checkpoint(status) { if (status.missed && status.message) hud?.message(status.message, 3); },
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   async mapChanged(id) { await window.__flow.switchMap(id); if (multiplayer.active) onlineWait(); else window.__flow.quit(); },
   panelClosed() { G.countWall = performance.now(); if (G.state === 'race') controls.requestMouseLock(); },

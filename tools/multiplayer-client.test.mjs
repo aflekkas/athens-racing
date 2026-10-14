@@ -204,3 +204,11 @@ test('objective results subtitle says round complete and avoids repeating the ev
   m.lobby.host = 'host'; m.lobby.mode = 'sprint'; m.lobby.event = { name: 'COAST RUN', type: 'sprint' };
   assert.equal(m.roomHelpText(), 'Race complete. The host can prepare a rematch. ATHENS RIVIERA · COAST RUN · SPRINT');
 });
+
+test('UI session APIs send authoritative commands; car changes are available after results and picker survives publishes', async () => {
+  const { m, packets } = lobbyClient('riviera'); m.lobby.host='me'; m.lobby.status='waiting'; m.lobby.allowedCars=['mini','z4'];m.cars=[{id:'mini'},{id:'z4'}];m.send=p=>packets.push(p);
+  assert.equal(m.startRace({force:true}),true);assert.deepEqual(packets.pop(),{type:'start',force:true});assert.equal(m.kickPlayer('guest'),true);assert.deepEqual(packets.pop(),{type:'kick',id:'guest'});assert.equal(m.kickPlayer('me'),false);m.unblockPlayer('guest');assert.deepEqual(packets.pop(),{type:'unblock',id:'guest'});
+  m.lobby.raceId=null;m.setCarPickerOpen(true);m.panel.hidden=true;await m.syncLobby();assert.equal(m.panel.hidden,true);m.setCarPickerOpen(false);await m.syncLobby();assert.equal(m.panel.hidden,false);
+  assert.equal(m.changeCar('z4'),true);assert.deepEqual(packets.pop(),{type:'car',car:'z4'});m.lobby.status='results';assert.equal(m.canChangeCar,true);assert.equal(m.changeCar('mini'),true);m.lobby.status='race';assert.equal(m.changeCar('z4'),false);m.lobby.host='guest';assert.equal(m.startRace({force:true}),false);assert.equal(m.kickPlayer('guest'),false);
+});
+test('checkpoint hook receives persistent warning and clear status',()=>{const {m}=lobbyClient('riviera'),statuses=[];m.hooks.checkpoint=s=>statuses.push(s);m.applyCheckpoint({missed:true,message:'MISSED CHECKPOINT — go back',next:{s:80},passed:0,total:3});assert.equal(m.checkpoint.missed,true);m.applyCheckpoint({missed:false,message:'',passed:1,total:3});assert.equal(statuses.length,2);assert.equal(m.checkpoint.message,'');});
