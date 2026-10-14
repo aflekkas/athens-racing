@@ -9,6 +9,12 @@ import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
 import { MirrorCadence } from './mirror-cadence.js';
+import { COND_STATE } from './env.js';
+// Night in the cabin: a faint instrument / street-light spill on the cockpit's own trim (emissive, no extra light)
+// and door / rear-view glass that darkens with the scene. Both are display-referred, so they divide out the
+// exposure the night brings up everything else by (env.js COND_STATE).
+const CABIN_GLOW = { value: 0 };
+const sceneLight = () => clamp(COND_STATE.ambient ?? 1, 0.03, 1) / Math.max(COND_STATE.exposure || 1, 0.05);
 const MIRROR_FLIP=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
 
 /**
@@ -19,10 +25,10 @@ export function trimMat(color, { rough = 0.7, scale = 0.12, nk = 0.7, metal = 0,
   const m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, side });
   m.customProgramCacheKey = () => `trim6_${scale}_${nk}_${stitch}_${sheen}`;
   m.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, { tLN: { value: TX.leather_nor }, tLR: { value: TX.leather_arm } });
+    Object.assign(sh.uniforms, { tLN: { value: TX.leather_nor }, tLR: { value: TX.leather_arm }, uCabinGlow: { get value() { return m.userData.cabinGlow ? CABIN_GLOW.value : 0; } } });
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vOP; varying vec3 vON;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvOP = position; vON = normal;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      uniform sampler2D tLN; uniform sampler2D tLR; varying vec3 vOP; varying vec3 vON; vec2 iUV; vec3 iN; float iR;
+      uniform sampler2D tLN; uniform sampler2D tLR; uniform float uCabinGlow; varying vec3 vOP; varying vec3 vON; vec2 iUV; vec3 iN; float iR;
       ${GLSL_HELPERS}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
       {
@@ -33,7 +39,8 @@ export function trimMat(color, { rough = 0.7, scale = 0.12, nk = 0.7, metal = 0,
         diffuseColor.rgb *= 0.9 + 0.2 * texture2D(tLR, iUV * 0.37).r;
       }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\nroughnessFactor = clamp(roughnessFactor * (0.75 + 0.5 * iR), 0.05, 1.0);`)
-      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, iUV, iN, ${nk.toFixed(2)});`);
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, iUV, iN, ${nk.toFixed(2)});`)
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += (diffuseColor.rgb + 0.035) * vec3(0.85, 0.92, 1.0) * uCabinGlow;');
     // suede-like fabrics: a soft rim sheen
     if (sheen > 0) sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
       { float nv = abs(dot(normalize(normal), normalize(vViewPosition))); totalEmissiveRadiance += diffuseColor.rgb * pow(1.0 - nv, 3.0) * ${sheen.toFixed(2)}; }`);
@@ -331,6 +338,8 @@ export class Cockpit {
     compactCockpit(spin);
     compactCockpit(wheel);
     compactCockpit(g,new Set([lever,knob,mirror,stem,mount,this.shell]));
+    // only the cabin's own trim takes the night instrument glow (trimMat also dresses drivers and pedestrians)
+    g.traverse(o=>{for(const m of [].concat(o.material||[]))if(/^trim6_/.test(m.customProgramCacheKey?.()||''))m.userData.cabinGlow=true;});
     const cockpitLOD=this.lod=new THREE.LOD();cockpitLOD.name='cockpit-lod';
     const nearParent=g.parent;nearParent.add(cockpitLOD);cockpitLOD.addLevel(g,0);
     const distantDash=model.exteriorDash||new THREE.Group();
@@ -342,6 +351,7 @@ export class Cockpit {
   }
   /** steer: front wheel angle (rad) */
   update(dt, st) {
+    CABIN_GLOW.value = 0.3 * clamp(1 - (COND_STATE.ambient ?? 1) * 1.6, 0, 1) / Math.max(COND_STATE.exposure || 1, 0.05);
     const ang = -st.steerInput * 2.35;
     this.wheelSpin.rotation.z = ang; this.wheelInfo.angle = ang;
     const controls=this.controlTargets;
@@ -432,7 +442,8 @@ export class Cockpit {
     if(!enabled){
       cadence.reset();
       // Low quality shows an inert dark surface, never a stale traffic image.
-      for(const m of this.mirrors){if(m.material.map){m.material.map=null;m.material.needsUpdate=true;}m.material.color.set('#485158');}
+      // (unlit, so it follows the scene's light: dark glass at night rather than a daylight grey under night exposure)
+      const k=sceneLight();for(const m of this.mirrors){if(m.material.map){m.material.map=null;m.material.needsUpdate=true;}m.material.color.set('#485158').multiplyScalar(k);}
       return;
     }
     if(!cadence.due(now))return;
