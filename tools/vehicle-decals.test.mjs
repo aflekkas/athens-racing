@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { normalizeDecals, packDecals, unpackDecals, MAX_DECALS } from '../src/vehicle-decal-data.js';
 import { StateSender } from '../src/multiplayer-state.js';
 import { createGameCore } from '../server/core.mjs';
+import { normalizeDriverAppearance, DEFAULT_DRIVER_APPEARANCE } from '../src/driver-appearance-data.js';
 const livery=[{id:'roundel',position:'doors',color:'#FFFFFF',number:42},{id:'greek_flag',position:'bonnet',color:'#168bda'}];
 test('decal descriptors are bounded, canonical and round-trip without executable art',()=>{
   const expected=normalizeDecals(livery);
@@ -11,6 +12,27 @@ test('decal descriptors are bounded, canonical and round-trip without executable
   assert.deepEqual(unpackDecals([[999,0,'ffffff'],[0,99,'ffffff'],[0,0,'url(x)'],null]),[]);
   assert.deepEqual(normalizeDecals([{id:'roundel',position:'doors',number:99999,color:'bad',url:'evil'}]),[{id:'roundel',position:'doors',number:999,color:'#ffffff'}]);
   assert.deepEqual(unpackDecals(null),[]);assert.deepEqual(normalizeDecals({length:100}),[]);
+});
+test('transforms and photo references round-trip; URLs, bytes and unbounded fields are stripped',()=>{
+  const photo={id:'photo',assetId:'A'.repeat(32),position:'doors',color:'#FFFFFF',x:8,y:-5,scale:99,rotation:360,flipX:true,url:'https://untrusted.invalid/photo'};
+  const expected={id:'photo',assetId:'a'.repeat(32),position:'doors',color:'#ffffff',x:1,y:-1,scale:2,rotation:180,flipX:true};
+  assert.deepEqual(normalizeDecals([photo]),[expected]);
+  assert.deepEqual(unpackDecals(packDecals([photo])),[expected]);
+  for(const assetId of ['https://x.invalid/a','data:image/png;base64,AAAA','../a','a'.repeat(33),null])assert.deepEqual(normalizeDecals([{...photo,assetId}]),[]);
+  const art={id:'roundel',position:'roof',number:23,x:NaN,y:Infinity,scale:-1,rotation:-300,flipX:'true'};
+  assert.deepEqual(unpackDecals(packDecals([art])),[{id:'roundel',position:'roof',color:'#ffffff',number:23,scale:.2,rotation:-180}]);
+  assert.deepEqual(packDecals(livery),[[1,1,'ffffff',42],[3,0,'168bda']]);
+  assert.deepEqual(unpackDecals([[7,1,'ffffff',null,0,0,1,0,0,'https://x.invalid']]),[]);
+});
+test('driver appearance is bounded and parked edits retain snapshot isolation',()=>{
+  assert.deepEqual(normalizeDriverAppearance({skin:'red',shirt:'url(x)',hairStyle:'remote-script',helmet:1,url:'evil'}),DEFAULT_DRIVER_APPEARANCE);
+  const driver=normalizeDriverAppearance({skin:'#DDAA88',shirt:'#123ABC',hair:'#FFFFFF',hairStyle:'none',helmet:true,identity:'private'});
+  assert.deepEqual(driver,{skin:'#ddaa88',shirt:'#123abc',hair:'#ffffff',hairStyle:'none',helmet:true});
+  let now=0;const packets=[],sender=new StateSender(p=>packets.push(p),{now:()=>now});
+  const state={x:0,y:0,z:0,s:0,u:0,yaw:0,steer:0,vLong:0,vLat:0,rpm:850,nitro:0,gear:1,damage:{},driver};
+  sender.sample(state,'race');now+=100;assert.equal(sender.sample(state,'race'),false);
+  state.driver.helmet=false;now+=100;assert.equal(sender.sample(state,'race'),true);
+  assert.equal(packets[0].state.driver.helmet,true);assert.equal(packets[1].state.driver.helmet,false);
 });
 test('parked livery edits and removal transmit, with snapshot isolation',()=>{
   let now=0;const packets=[],sender=new StateSender(p=>packets.push(p),{now:()=>now});
@@ -23,14 +45,21 @@ test('parked livery edits and removal transmit, with snapshot isolation',()=>{
 test('shared multiplayer server relays and restores only validated decal tuples',t=>{
   let now=100000;t.mock.method(Date,'now',()=>now);
   const maps=new Map([['riviera',{id:'riviera',name:'Test',track:{start:0,finish:1000,version:'test'},definitions:new Map([['quick',{id:'quick',type:'sprint',s0:0,s1:1000,dir:1,len:1000,routeKey:'0>1000'}]])}]]);
-  const opts={maps,cars:new Set(['mini']),leaderboard:{submit:async()=>({})},countdownMs:100};
+  const opts={maps,cars:new Set(['mini']),appearance:{owns:(owner,id)=>owner==='photo-owner'&&id==='a'.repeat(32)},leaderboard:{submit:async()=>({})},countdownMs:100};
   const core=createGameCore(opts),socket=()=>({readyState:1,messages:[],send(s){this.messages.push(JSON.parse(s));},close(){}}),a=socket(),b=socket();core.connect(a,'a');core.connect(b,'b');
+  [...core.clients].find(c=>c.ws===a).accountSub='photo-owner';
   const send=(ws,m)=>core.message(ws,JSON.stringify(m));send(a,{type:'create',mapId:'riviera'});const lobby=a.messages.at(-1).lobby;send(b,{type:'join',code:lobby.code});
   for(const ws of [a,b])send(ws,{type:'ready',ready:true,version:'test'});send(a,{type:'start'});now+=101;core.tick();const raceId=a.messages.at(-1).lobby.raceId;
-  const state={x:2,y:0,z:0,yaw:0,s:2,u:0,vLong:0,vLat:0,steer:0,rpm:900,gear:1,paint:'#aBcDeF',decals:[...packDecals(livery),[99,0,'ffffff']]};
+  const extended=[...livery,{id:'photo',assetId:'a'.repeat(32),position:'doors',x:.5,rotation:30,flipX:true}];
+  const driver={skin:'#DDAA88',shirt:'#123ABC',hair:'#FFFFFF',hairStyle:'short',helmet:true,identity:'private',url:'https://bad.invalid'};
+  const state={x:2,y:0,z:0,yaw:0,s:2,u:0,vLong:0,vLat:0,steer:0,rpm:900,gear:1,paint:'#aBcDeF',driver,decals:[...packDecals(extended),[99,0,'ffffff']]};
   send(a,{type:'state',raceId,state});core.tick();const received=b.messages.at(-1).players.find(p=>p.state)?.state;
-  assert.deepEqual(received.decals,packDecals(livery));assert.equal(received.paint,'#abcdef');
+  assert.deepEqual(received.decals,packDecals(extended));assert.equal(received.paint,'#abcdef');assert.deepEqual(received.driver,normalizeDriverAppearance(driver));
   const saved=JSON.parse(JSON.stringify(core.exportState())),restored=createGameCore(opts);restored.restore(saved,new Map([...core.clients].map(c=>[c.token,c.ws])));
-  assert.deepEqual([...restored.clients].find(c=>c.state)?.state.decals,packDecals(livery));
+  assert.deepEqual([...restored.clients].find(c=>c.state)?.state.decals,packDecals(extended));
+  assert.deepEqual([...restored.clients].find(c=>c.state)?.state.driver,normalizeDriverAppearance(driver));
+  now+=100;const legacy={...state};delete legacy.driver;delete legacy.decals;delete legacy.paint;send(a,{type:'state',raceId,state:legacy});core.tick();const preserved=b.messages.at(-1).players.find(p=>p.state)?.state;
+  assert.deepEqual(preserved.driver,normalizeDriverAppearance(driver));assert.deepEqual(preserved.decals,packDecals(extended));assert.equal(preserved.paint,'#abcdef');
+  [...core.clients].find(c=>c.ws===a).accountSub=null;now+=100;send(a,{type:'state',raceId,state});core.tick();assert.deepEqual(b.messages.at(-1).players.find(p=>p.state)?.state.decals,packDecals(livery));
   now+=100;send(a,{type:'state',raceId,state:{...state,decals:[]}});core.tick();assert.deepEqual(b.messages.at(-1).players.find(p=>p.state)?.state.decals,[]);
 });

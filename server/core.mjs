@@ -1,4 +1,6 @@
 import { packDecals, unpackDecals } from '../src/vehicle-decal-data.js';
+import { normalizeDriverAppearance } from '../src/driver-appearance-data.js';
+import { stripUnownedPhotos } from './appearance-state.mjs';
 import { rememberRecoveryRoad, requestRecovery, recoveryStateAllowed } from './race-recovery.mjs';
 // Shared lobby/race protocol. Transports own sockets, persistence and wake-up scheduling.
 const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-\x1f<>]/g, '').trim().slice(0, n) || fallback : fallback;
@@ -152,7 +154,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           const prevS = c.state?.s ?? event.s0;
           const elapsed = Math.max(0, (now - Math.max(c.stateAt ?? l.startAt, c.recovery?.raceId === l.raceId ? c.recovery.until : l.startAt)) / 1000);
           if (Math.abs(s.s - prevS) > 30 + 150 * elapsed) return;
-          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: s.decals === undefined ? c.state?.decals ?? [] : packDecals(unpackDecals(s.decals)) }; c.stateAt = now; l.dirty = true;
+          c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), decals: packDecals(stripUnownedPhotos(unpackDecals(s.decals === undefined ? c.state?.decals : s.decals), appearance, c.accountSub)), driver: normalizeDriverAppearance(s.driver === undefined ? c.state?.driver : s.driver) }; c.stateAt = now; l.dirty = true;
           // Optional render clock only; progress checks and finishes use server receipt time.
           if (Number.isFinite(s.sampleTime) && s.sampleTime >= 0 && s.sampleTime <= 1e12) {
             c.state.sampleTime = s.sampleTime;
