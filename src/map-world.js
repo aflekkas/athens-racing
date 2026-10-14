@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import * as ENV from './env.js';
 import { Ground, Splash, buildHumps, buildBarriers, buildSandTraps } from './ground.js';
 import { buildTerrain } from './terrain.js';
+import { loadBakedWorld, restoreBakedTerrain, restoreBakedRoads } from './baked-world.js';
 import { buildRoad } from './road.js';
 import { RoadNetwork } from './road-network-surface.js';
 import { buildRoadNetwork, buildNetworkParking } from './road-network.js';
@@ -71,7 +72,9 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
   try {
     progress('BUILDING TERRAIN', .25); await frameYield();
     const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
-    const ter = still(() => buildTerrain(map.terrain, route, [], group, { coastal, farmland: map.id === 'megara', network }), 'terrain');
+    const baked = await loadBakedWorld(map, network);
+    const terrainOptions = { coastal, farmland: map.id === 'megara', network };
+    const ter = still(() => baked ? restoreBakedTerrain(baked.terrain, map.terrain, network, group, terrainOptions) : buildTerrain(map.terrain, route, [], group, terrainOptions), 'terrain');
     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
     if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
     const labels = new LabelAtlas();
@@ -79,7 +82,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     progress(coastal ? 'PAVING POSEIDONOS AVENUE' : 'BUILDING ' + (map.definition?.name || map.id).toUpperCase(), .4); await frameYield();
     assets.junctions = coastal ? findJunctions(map) : [];
     assets.network = network;
-    if (network) still(() => buildRoadNetwork(network, group), 'road-network');
+    if (network) still(() => baked ? restoreBakedRoads(baked.roads, network, group) : buildRoadNetwork(network, group), 'road-network');
     let road, natureGroup, signals;
     if (coastal) {
       road = still(() => buildRoad(map, group, ter.heightC, assets), 'road'); assets.asphalt = road.asphalt;

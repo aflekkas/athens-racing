@@ -6,6 +6,7 @@ import { MAPS } from '../src/map-catalog.js';
 import { readCarCapabilities } from '../server/car-capabilities.mjs';
 import { resolveMap } from '../server/map-definitions.mjs';
 import { PLAYABLE_MAPS } from '../src/enabled-maps.js';
+import { bakeWorlds } from './bake-world.mjs';
 import { buildRelease, publishRelease, CACHE_HEADERS } from './release-cache.mjs';
 const root = resolve(import.meta.dirname, '..'), out = resolve(root, '.deploy/assets');
 await rm(resolve(root, '.deploy'), { recursive: true, force: true });
@@ -20,6 +21,7 @@ async function copy(path) {
   count++; bytes += info.size; if (info.size > largest.size) largest = { path: rel, size: info.size };
 }
 for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src', 'assets', 'data']) await copy(resolve(root, path));
+await bakeWorlds(root, out, PLAYABLE_MAPS);
 await writeFile(resolve(out, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/assets/share/*\n  Cache-Control: public, max-age=86400, stale-while-revalidate=604800\n  Content-Type: image/jpeg\n' + CACHE_HEADERS);
 const maps = [];
 for (const def of MAPS) {
