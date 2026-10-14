@@ -8,7 +8,7 @@ const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-
 const send = (ws, data) => { if (ws?.readyState === 1 && (ws.bufferedAmount || 0) < 65536) { try { ws.send(JSON.stringify(data)); } catch {} } };
 const randomUUID = () => crypto.randomUUID();
 const randomHex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(x => x.toString(16).padStart(2, '0')).join('');
-export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), leaderboard, appearance = null, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, idleLobbyMs = 1800000 }) {
+export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), leaderboard, accounts = null, friends = null, appearance = null, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, idleLobbyMs = 1800000 }) {
   const handlers = new Map();
   const track = maps.get('riviera').track;
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
@@ -16,7 +16,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
   const onlineEvent = (id, mapId = 'riviera') => ['sprint', 'timetrial'].includes(maps.get(mapId)?.definitions.get(id)?.type);
   const options = (mapId = 'riviera') => [...maps.get(mapId).definitions.values()].filter(e => onlineEvent(e.id, mapId)).map(({ id, name, s0, s1, dir, len, routeKey }) => ({ id, name, mapId, s0, s1, dir, len, routeKey }));
   const catalogue = () => [...maps].filter(([id]) => isMapEnabled(id)).map(([id, m]) => ({ id, name: m.name, track: m.track, events: options(id) }));
-  const publicLobby = (l) => ({ code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected })), eventId: l.eventId, traffic: l.traffic, event: lobbyEvent(l), results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track });
+  const publicLobby = (l) => ({ code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null })), eventId: l.eventId, traffic: l.traffic, event: lobbyEvent(l), results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)] });
   const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId)).map(publicLobby) });
   const publish = (l) => { l.touched = Date.now(); for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby: publicLobby(l) }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
   const results = (l) => {
@@ -24,10 +24,99 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     l.status = 'results';
     for (const p of l.players.values()) if (p.finish === null && !p.dnf) p.dnf = true;
     for (const p of l.racers.values()) if (p.finish === null && !p.dnf) p.dnf = true;
+    // Server-authoritative multiplayer stats: placements come from the
+    // validated finish times above, never from client claims.
+    if (accounts) try {
+      const event = lobbyEvent(l);
+      const order = [...l.racers.values()].filter(p => p.finish !== null).sort((a, b) => a.finish - b.finish);
+      const place = new Map(order.map((p, i) => [p.id, i + 1]));
+      const subs = [...l.racers.values()].map(p => l.players.get(p.id)?.accountSub || null);
+      accounts.recordMpResults([...l.racers.values()].map((p, i) => ({ sub: subs[i], car: p.car, finish: p.finish, placement: place.get(p.id) || null })), { mapId: l.mapId, eventId: l.eventId, traffic: l.traffic, km: (event?.len || 0) / 1000 });
+      if (friends) try { friends.recordMatch(subs); } catch (e) { console.error('Recent-players save failed:', e.message); }
+      presencePush(subs);
+    } catch (e) { console.error('Account stats save failed:', e.message); }
     publish(l);
+  };
+  // A verified login links the connection to its Google identity. The
+  // USERNAME becomes the license plate (p.plate) broadcast in lobby state;
+  // connections without a username keep a random plate and accrue no stats.
+  const linkAccount = (c, ticket) => {
+    if (!accounts || typeof ticket !== 'string' || !ticket) return null;
+    const a = accounts.verifyTicket(ticket);
+    if (!a) return null;
+    c.accountSub = a.sub; c.accountName = a.username || null; c.plate = a.username || null;
+    return a;
+  };
+  const linkSession = (ws, id) => {
+    const c = [...clients].find(c => c.ws === ws);
+    if (!c || !accounts) return null;
+    const a = accounts.verifySession(id);
+    if (!a) return null;
+    c.accountSub = a.sub; c.accountName = a.username || null; c.plate = a.username || null;
+    return a;
+  };
+  // Presence is derived live from connections: online/menu/in-lobby/racing
+  // plus a joinable lobby code. Nothing is stored or polled; snapshots are
+  // pushed only when they change (see presencePush).
+  const presenceOf = (subs) => {
+    const out = new Map();
+    for (const sub of subs || []) {
+      const c = [...clients].find(c => c.connected && c.accountSub === sub);
+      if (!c) { out.set(sub, { online: false }); continue; }
+      const l = c.lobby;
+      out.set(sub, {
+        online: true, activity: !l ? 'menu' : l.status === 'waiting' || l.status === 'results' ? 'lobby' : 'racing',
+        lobbyCode: l ? l.code : null, lobbyName: l ? l.name : null, mapId: l ? l.mapId : null,
+        joinable: !!l && l.status === 'waiting' && !l.private && l.players.size < 8,
+      });
+    }
+    return out;
+  };
+  const friendSnapshot = (sub) => ({ type: 'friends', self: sub, ...friends.list(sub, presenceOf(friends.peers(sub).concat([sub]))) });
+  // Push fresh friend/presence snapshots to `subs` and everyone sharing a
+  // friend edge with them (their snapshot embeds the changed presence).
+  // Per-connection caching keeps repeated calls (e.g. lobby publishes)
+  // silent unless something actually changed.
+  const presencePush = (subs) => {
+    if (!friends) return;
+    const todo = new Set((subs || []).filter(Boolean));
+    for (const sub of [...todo]) for (const peer of friends.peers(sub)) todo.add(peer);
+    for (const sub of todo) {
+      let snap;
+      try { snap = friendSnapshot(sub); } catch { continue; }
+      const text = JSON.stringify(snap);
+      for (const c of clients) {
+        if (!c.connected || c.accountSub !== sub || c.friendsSent === text) continue;
+        c.friendsSent = text; send(c.ws, snap);
+      }
+    }
+  };
+  const notify = (sub, data) => {
+    for (const c of clients) if (c.connected && c.accountSub === sub) send(c.ws, { type: 'notify', ...data });
+  };
+  // A username claim/rename refreshes plates in every lobby view showing
+  // this connection, then re-pushes friends snapshots carrying the name.
+  const refreshAccount = (sub) => {
+    if (!accounts) return;
+    const row = accounts.get(sub);
+    for (const c of clients) {
+      if (c.accountSub !== sub) continue;
+      c.accountName = row?.username || null; c.plate = row?.username || null;
+      if (c.lobby) publish(c.lobby);
+    }
+    presencePush([sub]);
+  };
+  // Host-submitted car lists must be a non-empty deduped subset of the
+  // Host-submitted car lists must be a non-empty deduped subset of the
+  // server catalogue; anything else is rejected, never coerced silently.
+  const sanitizeCarList = (ids) => {
+    if (!Array.isArray(ids)) return null;
+    const list = [...new Set(ids.filter(id => CARS.has(id)))].slice(0, 64);
+    return list.length ? list : null;
   };
   const leave = (c) => {
     const l = c.lobby; if (!l) return;
+    const sub = c.accountSub;
     const racer = l.racers?.get(c.id); if (racer) { racer.disconnected = true; if (racer.finish === null && !racer.dnf) racer.dnf = true; }
     l.players.delete(c.id); c.lobby = null; c.ready = false; c.state = null; c.stateAt = null;
     if (!l.players.size) lobbies.delete(l.code);
@@ -35,10 +124,11 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
       if (l.status === 'countdown' && [...l.players.values()].filter(p => p.connected).length < 2) { l.status = 'waiting'; l.startAt = null; l.raceId = null; l.racers = null; for (const p of l.players.values()) p.ready = false; }
       if (l.host === c.id) l.host = [...l.players.values()].find(p => p.connected)?.id || l.players.keys().next().value; if (['countdown', 'race'].includes(l.status) && [...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l); publish(l); }
     for (const other of clients) if (!other.lobby) send(other.ws, discover());
+    presencePush([sub]);
   };
   const connect = (ws, ip) => {
     if ([...clients].filter(c => c.ip === ip).length >= 24) { ws.close(1013, 'Too many connections'); return; }
-    let c = { ws, ip, token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: 'DRIVER', car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now() };
+    let c = { ws, ip, token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: 'DRIVER', car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), accountSub: null, accountName: null, plate: null, friendsSent: null };
     sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
     bind(c, ws, ip);
   };
@@ -73,12 +163,22 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
         const l = c.lobby;
         if (m.type === 'ping') { send(ws, { type: 'pong', now, sent: m.sent }); return; }
         if (m.type === 'discover') { send(ws, discover()); return; }
+        if (m.type === 'auth') {
+          if (!accounts) return error('This server is guest-only. Sign in on the Cloudflare game.');
+          const a = linkAccount(c, m.ticket);
+          if (!a) return error('Unknown or expired login ticket. Fetch a new one.');
+          send(ws, { type: 'account', account: { username: a.username, displayName: a.displayName } });
+          if (c.lobby) publish(c.lobby);
+          presencePush([c.accountSub]);
+          return;
+        }
         if (m.type === 'leave') { leave(c); send(ws, { type: 'left' }); return; }
         if (m.type === 'create' || m.type === 'join') {
           if (l) return error('Leave your current lobby first.');
           c.name = clean(m.name, 'DRIVER'); c.car = CARS.has(m.car) ? m.car : 'mini';
           c.ready = false; c.finish = null; c.dnf = false; c.state = null; c.stateAt = null;
           c.driverId = /^[a-zA-Z0-9_-]{8,64}$/.test(m.driverId || '') ? m.driverId : c.id;
+          linkAccount(c, m.ticket);
           let dest;
           if (m.type === 'create') {
             if (m.mapId !== undefined && !maps.has(m.mapId)) return error('Unknown map.');
@@ -87,7 +187,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
             if (!isMapEnabled(mapId)) return error('Map unavailable.');
             if (lobbies.size >= 64) return error('Lobby limit reached. Join an existing lobby.');
             let code; do { code = randomHex(3).toUpperCase(); } while (lobbies.has(code));
-            dest = { code, name: clean(m.lobbyName, `${c.name}'S RACE`), host: c.id, private: m.private === true, players: new Map(), status: 'waiting', startAt: null, raceId: null, mapId, eventId: m.eventId || options(mapId)[0]?.id, traffic: m.traffic === true };
+            dest = { code, name: clean(m.lobbyName, `${c.name}'S RACE`), host: c.id, private: m.private === true, players: new Map(), status: 'waiting', startAt: null, raceId: null, mapId, eventId: m.eventId || options(mapId)[0]?.id, traffic: m.traffic === true, allowedCars: sanitizeCarList(m.allowedCars) || [...CARS] };
             lobbies.set(code, dest);
           } else {
             dest = lobbies.get(String(m.code).trim().toUpperCase());
@@ -96,7 +196,9 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
             if (dest.players.size >= 8) return error('This lobby is full.');
             if (!isMapEnabled(dest.mapId)) return error('Map unavailable.');
           }
-          c.lobby = dest; dest.players.set(c.id, c); publish(dest); return;
+          if (!Array.isArray(dest.allowedCars)) dest.allowedCars = [...CARS];
+          if (!dest.allowedCars.includes(c.car)) c.car = dest.allowedCars[0];
+          c.lobby = dest; dest.players.set(c.id, c); publish(dest); presencePush([c.accountSub]); return;
         }
         if (!l) return error('Join a lobby first.');
         if (m.type === 'options') {
@@ -106,6 +208,11 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           const eventId = m.eventId ?? (mapId === l.mapId ? l.eventId : options(mapId)[0]?.id);
           if (!onlineEvent(eventId, mapId)) return error('Unknown race route for this map.');
           if (!isMapEnabled(mapId)) return error('Map unavailable.');
+          if (m.allowedCars !== undefined) {
+            const list = sanitizeCarList(m.allowedCars);
+            if (!list) return error('Allow at least one car.');
+            l.allowedCars = list;
+          }
           l.mapId = mapId; l.eventId = eventId; l.traffic = m.traffic === true;
           for (const p of l.players.values()) p.ready = false;
           publish(l); return;
@@ -113,12 +220,17 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
         if (m.type === 'ready') {
           if (l.status !== 'waiting') return error('The race has already started.');
           if ((m.mapId !== undefined && m.mapId !== l.mapId) || m.version !== maps.get(l.mapId).track.version) return error('The track changed. Reload the game to join this race.');
-          c.ready = m.ready === true; if (CARS.has(m.car)) c.car = m.car; publish(l); return;
+          if (m.car !== undefined && CARS.has(m.car) && !l.allowedCars.includes(m.car)) return error('That car is not allowed in this lobby.');
+          if (CARS.has(m.car)) c.car = m.car;
+          if (m.ready === true && !l.allowedCars.includes(c.car)) return error('Your car is not allowed in this lobby. Pick an allowed car.');
+          c.ready = m.ready === true; publish(l); return;
         }
         if (m.type === 'start') {
           if (l.host !== c.id) return error('Only the host can start the race.');
+          if (![...l.players.values()].every(p => l.allowedCars.includes(p.car))) return error('A driver picked a car the host disallowed.');
           if (l.status !== 'waiting' || l.players.size < 2 || ![...l.players.values()].every(p => p.ready && p.connected)) return error('At least two drivers must be ready.');
           l.status = 'countdown'; l.startAt = now + countdownMs; l.raceId = randomUUID();
+          presencePush([...l.players.values()].map(p => p.accountSub));
           for (const p of l.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; }
           l.racers = new Map([...l.players.values()].map(p => [p.id, { id: p.id, name: p.name, car: p.car, finish: null, dnf: false, disconnected: false }]));
           publish(l); return;
@@ -177,6 +289,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     close: () => {
       if (c.ws !== ws) return;
       clients.delete(c); c.connected = false; c.touched = Date.now();
+      presencePush([c.accountSub]);
       if (reconnectGraceMs === 0) { leave(c); sessions.delete(c.token); return; }
       const l = c.lobby;
       if (l) {
@@ -214,6 +327,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     for (const data of saved?.lobbies || []) {
       if (!maps.has(data.mapId) || !maps.get(data.mapId).definitions.has(data.eventId)) continue;
       const l = { ...data, players: new Map(), racers: data.racers ? new Map(data.racers) : null };
+      if (!Array.isArray(l.allowedCars)) l.allowedCars = [...CARS];
       for (const id of data.playerIds) { const c = byId.get(id); if (c) { l.players.set(id, c); c.lobby = l; } }
       if (l.players.size) lobbies.set(l.code, l);
     }
@@ -228,5 +342,5 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     }
     return Number.isFinite(at) ? at : null;
   };
-  return { connect, message: (ws, bytes) => handlers.get(ws)?.message(bytes), disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
+  return { connect, message: (ws, bytes) => handlers.get(ws)?.message(bytes), disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, linkSession, refreshAccount, presenceOf, presencePush, notify, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
 }
