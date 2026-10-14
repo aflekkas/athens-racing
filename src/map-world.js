@@ -12,6 +12,7 @@ import { buildNature } from './nature.js';
 import { buildRoadside } from './roadside.js';
 import { buildSpeedSigns } from './speed-signs.js';
 import { buildWorldContext } from './world-context.js';
+import { buildRivieraLandmarks } from './riviera-landmarks.js';
 import { Traffic } from './traffic.js';
 import { Signals, findJunctions } from './signals.js';
 import { People } from './people.js';
@@ -102,6 +103,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
       if (road.asphalt) assets.asphalt = road.asphalt;
       natureGroup = new THREE.Group(); group.add(natureGroup);
     }
+    const landmarks = coastal ? buildRivieraLandmarks(map, group) : null;
     buildWorldContext(map, group, ter.heightC);
     // Real speed-limit signs from the map data (all maps; a no-op without sign data).
     const speedSigns = buildSpeedSigns(map, group, ter.heightC);
@@ -115,7 +117,8 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const ground = custom?.ground || new Ground(map, ter.heightC, assets);
     if (coastal) traffic.buildParkedRows(group, ground);
     const streetParking = network ? buildNetworkParking(network, group, ground) : [];
-    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], speedSigns.obstacles, streetParking);
+    ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], speedSigns.obstacles, streetParking, landmarks?.obstacles || []);
+    ground.constrainCamera = landmarks?.constrainCamera;
     traffic.ground = ground;
     if (coastal) { buildHumps(map, group, ter.heightC); buildSandTraps(ground, group); buildBarriers(map, group); }
     const splash = new Splash(group), fx = new Fx(group, route, ground);
