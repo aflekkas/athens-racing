@@ -492,11 +492,12 @@ export function bakeSky(renderer, sky) {
   const oldAuto = renderer.shadowMap.autoUpdate, oldNeeds = renderer.shadowMap.needsUpdate;
   renderer.shadowMap.autoUpdate = renderer.shadowMap.needsUpdate = false;
   try {
-  new THREE.CubeCamera(0.1, 100, BAKE.atmoRT).update(renderer, BAKE.s1);
+  // one camera rig per target, kept: a new CubeCamera per bake allocated six cameras each time
+  (BAKE.atmoCam ||= new THREE.CubeCamera(0.1, 100, BAKE.atmoRT)).update(renderer, BAKE.s1);
   const su = BAKE.skyMat.uniforms;
   su.uAtmo.value = BAKE.atmoRT.texture;
   su.uEnv.value = 1;
-  new THREE.CubeCamera(1, 20000, BAKE.envRT).update(renderer, BAKE.s2);
+  (BAKE.envCam ||= new THREE.CubeCamera(1, 20000, BAKE.envRT)).update(renderer, BAKE.s2);
   su.uEnv.value = 0;
   // A fresh PMREMGenerator cannot reuse an output target: fromCubemap skips allocating its
   // private blur buffers in that path. Keep the initialized generator for this fixed cube size.
@@ -630,13 +631,17 @@ function blitWorld(target, a, b = a, t = 0) {
   const mat = cube ? blend.cube : blend.plane;
   Object.assign(mat.uniforms.a, { value: a }); mat.uniforms.b.value = b; mat.uniforms.t.value = t;
   try {
-    if (cube) new THREE.CubeCamera(.1, 10, target).update(r, blend.cs);
+    if (cube) { const cams = blend.cams ||= new Map(); let cam = cams.get(target); if (!cam) cams.set(target, cam = new THREE.CubeCamera(.1, 10, target)); cam.update(r, blend.cs); }
     else { target.scissorTest = false; r.setRenderTarget(target); r.render(blend.ps, blend.camera); }
   } finally { r.setRenderTarget(old.target, old.face, old.mip); r.shadowMap.autoUpdate = old.auto; r.shadowMap.needsUpdate = old.needs; r.autoClear = old.clear; }
 }
 export function updateWorldBlend(dt) {
   if (!worldBlend?.ready || worldBlend.progress >= 1 || BAKE.renderer.getContext().isContextLost()) return;
-  worldBlend.progress = Math.min(1, worldBlend.progress + Math.max(0, dt) / 1.5);
+  // every other frame: each step re-renders two cube targets (12 faces) and the PMREM plane
+  worldBlend.acc = (worldBlend.acc || 0) + Math.max(0, dt);
+  if ((worldBlend.skip = !worldBlend.skip) && worldBlend.progress > 0) return;
+  dt = worldBlend.acc; worldBlend.acc = 0;
+  worldBlend.progress = Math.min(1, worldBlend.progress + dt / 1.5);
   const t = worldBlend.progress * worldBlend.progress * (3 - 2 * worldBlend.progress);
   for (const p of worldBlend.targets) blitWorld(p.target, p.old.texture, p.next.texture, t);
 }
@@ -648,7 +653,10 @@ export function setWorldConditions(sample, { forceBake = false } = {}) {
   if (SUN) { SUN.color.copy(SUN_COLOR); SUN.intensity = SUN_INTENSITY; } if (FILL) updateFill();
   const hourDelta = bakeHour === null ? Infinity : Math.abs(((sample.hour - bakeHour + 12) % 24 + 24) % 24 - 12);
   const wxDelta = bakeWeather === null ? Infinity : Math.max(Math.abs(sample.atmosphere.over - bakeWeather.over), Math.abs(sample.atmosphere.rain - bakeWeather.rain));
-  if (BAKE.renderer && !BAKE.renderer.getContext().isContextLost() && (forceBake || hourDelta >= 5 / 60 || wxDelta >= .08)) {
+  // A full re-bake (atmosphere + sky cubes + PMREM) is one of the heaviest GPU jobs in the game. At the default
+  // 30 min day, 5 game-minutes meant a bake every ~6 s (plus 1.5 s of cross-fade blits). The sun moves under 4° in
+  // 15 game-minutes, which the cross-fade hides.
+  if (BAKE.renderer && !BAKE.renderer.getContext().isContextLost() && (forceBake || hourDelta >= 15 / 60 || wxDelta >= .08)) {
     const blend = blendResources(), fade = blend.ready && !BAKE.invalid && !forceBake;
     if (fade) for (const p of blend.targets) blitWorld(p.old, p.target.texture);
     bakeSky(BAKE.renderer, BAKE.sky);
