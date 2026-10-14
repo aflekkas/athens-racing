@@ -56,6 +56,16 @@ export class Multiplayer {
     $('mp-map').onchange = () => this.send({ type: 'options', mapId: $('mp-map').value, traffic: $('mp-traffic').checked });
     $('mp-leaderboard').onclick = () => this.showLeaderboard();
     $('mp-copy').onclick = async () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('lobby', this.lobby.code); u.searchParams.set('map', this.lobby.mapId || 'riviera'); try { await navigator.clipboard.writeText(u.href); this.status('Invite link copied.'); } catch { this.status('Invite link: ' + u.href); } };
+    let identity = account.cached()?.username || '';
+    account.onChange(me => {
+      const next = me?.guest ? '' : me?.username || '';
+      if (identity === next) return;
+      identity = next;
+      if (this.connected) {
+        if (next) this.authSession();
+        else { this.account = null; this.send({ type: 'auth', logout: true }); }
+      }
+    });
     this.connect();
     this.timer = setInterval(() => { if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping', sent: Date.now() }); }, 30000);
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }

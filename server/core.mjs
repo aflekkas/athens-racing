@@ -50,7 +50,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     } catch (e) { console.error('Account stats save failed:', e.message); }
     publish(l);
   };
-  // A verified login links the connection to its Google identity. The
+  // A verified login links the connection to its account identity. The
   // USERNAME becomes the license plate (p.plate) broadcast in lobby state;
   // connections without a username keep a random plate and accrue no stats.
   const linkAccount = (c, ticket) => {
@@ -197,6 +197,12 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
         if (m.type === 'ping') { send(ws, { type: 'pong', now, sent: m.sent }); return; }
         if (m.type === 'discover') { send(ws, discover()); return; }
         if (m.type === 'auth') {
+          if (m.logout === true) {
+            const sub = c.accountSub;
+            c.accountSub = null; c.accountName = null; c.plate = null; c.friendsSent = null;
+            if (c.lobby) publish(c.lobby);
+            presencePush([sub]); return;
+          }
           if (!accounts) return error('This server is guest-only. Sign in on the Cloudflare game.');
           const a = linkAccount(c, m.ticket);
           if (!a) return error('Unknown or expired login ticket. Fetch a new one.');

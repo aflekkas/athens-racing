@@ -1,42 +1,18 @@
-// User accounts, server sessions and per-account stats. Shared by the Node
-// VPS server (guest-only stub) and the Cloudflare Worker (full Google
-// sign-in); runs in both, so: no node: imports, no async crypto, no
-// filesystem here. Storage lives behind server/social-store.mjs:
-//
-//   users    getUserBySub / getUserByKey (USERNAME) / saveUser / searchUsers
-//   sessions saveSession / getSession / deleteSession / pruneSessions
-//   tickets  saveTicket / consumeTicket (single-use WS login tickets)
-//
-// Identity model (passwordless by construction):
-// - Google OpenID Connect is the only credential. The Worker verifies the
-//   ID token against Google's JWKS (worker/oidc.mjs), keyed by `sub`.
-// - Users are keyed by Google `sub` (stable). The USERNAME (the license
-//   plate) is picked after first sign-in, is unique case-insensitively
-//   (3-16 chars [A-Z0-9-]), and may be changed later without touching the
-//   friend graph, which references `sub` everywhere.
-// - Only the minimal profile is stored: sub, username, display name, avatar
-//   URL. No email is displayed anywhere.
-// - Sessions are random 256-bit ids, SHA-256 hashed server-side, carried in
-//   an HttpOnly Secure SameSite=Lax cookie. The WebSocket handshake reads
-//   the cookie; clients without cookie support fetch a 60-second single-use
-//   ticket over HTTPS and pass it in { type: 'auth', ticket }.
-// - Guests (no session) can always play: guest plates are random and no
-//   stats or friends accrue.
-//
-// Stats (counts and best times only; NO XP/levels/points/progression):
-//   started/finished/wins/podiums/dnfs count MULTIPLAYER races only and are
-//   written server-side from validated race results (core results(), whose
-//   finishes come from the existing server finish validation).
-//   best: best time per "mapId|eventId|car|traffic", from multiplayer and
-//   from solo leaderboard submissions that carry a session (those go through
-//   the existing leaderboard/finish validation first).
-//   km: total event kilometres. cars: finishes per car id; favouriteCar
-//   derives from it (most finishes). Wins need placement 1 of a 2+ driver
-//   field; podiums need top 3 of a 3+ field.
+// Username accounts use stable random internal IDs. Device secrets, recovery
+// codes, sessions and single-use WebSocket tickets are hashed at rest.
+// Friends and stats reference the internal ID, so renames preserve them.
 export const USERNAME_RE = /^[A-Z0-9-]{3,16}$/;
 
 export const normalizeUsername = (v) => String(v ?? '').trim().toUpperCase();
+// Deliberately light: block obvious profanity and staff impersonation, not ordinary names.
 export const validUsername = (v) => USERNAME_RE.test(normalizeUsername(v));
+export function checkUsername(v) {
+  const key = normalizeUsername(v);
+  if (!validUsername(v)) fail('Username must be 3-16 characters: A-Z, 0-9, hyphen.', 400);
+  const letters = key.replace(/-/g, '').replace(/0/g, 'O').replace(/1/g, 'I').replace(/3/g, 'E').replace(/4/g, 'A').replace(/5/g, 'S').replace(/7/g, 'T');
+  if (/FUCK|SHIT|CUNT|NIGGER|NAZI/.test(letters) || /^(ADMIN|ADMINISTRATOR|MODERATOR|SUPPORT|OFFICIAL|SYSTEM|ATHENSSTREETRACERS|ASRSTAFF)/.test(letters)) fail('Please choose another username.', 400);
+  return key;
+}
 
 export function cleanDisplayName(v, fallback) {
   const s = String(v ?? '').replace(/[	-\r<>]/g, '').trim().slice(0, 28);
@@ -121,35 +97,58 @@ export function createAccountService(store, { now = () => Date.now(), sessionTtl
   });
 
   return {
-    // First sign-in creates the row; later sign-ins refresh the Google
-    // profile but never overwrite a claimed username.
-    upsertGoogleUser({ sub, displayName, avatarUrl }) {
-      if (typeof sub !== 'string' || !sub) fail('Unknown Google identity.', 400);
-      const at = now();
-      let row = store.getUserBySub(sub);
-      if (!row) {
-        row = { sub, username: '', displayName: cleanDisplayName(displayName, 'DRIVER'), avatarUrl: String(avatarUrl || ''), createdAt: at, stats: blankStats() };
-      } else {
-        row.displayName = cleanDisplayName(displayName, row.displayName);
-        if (avatarUrl) row.avatarUrl = String(avatarUrl);
-      }
+    createAccount(username) {
+      const key = checkUsername(username);
+      if (store.getUserByKey(key)) fail('That username is taken.', 409);
+      const sub = 'driver-' + randomHex(16), at = now();
+      const recoveryCode = randomHex(16).toUpperCase().match(/.{4}/g).join('-');
+      const row = { sub, username: key, displayName: key, avatarUrl: '', createdAt: at, stats: blankStats() };
       store.saveUser(row);
-      return publicUser(row);
+      store.saveCredential({ sub, recoveryHash: sha256Hex('recovery-v1:' + recoveryCode.replace(/-/g, '')) });
+      const deviceSecret = randomHex(32);
+      store.saveDevice({ hash: sha256Hex('device-v1:' + deviceSecret), sub });
+      return { sub, user: publicUser(row), deviceSecret, recoveryCode };
+    },
+    signInDevice(secret) {
+      if (typeof secret !== 'string' || !/^[a-f0-9]{64}$/.test(secret)) fail('Device sign-in expired. Use your recovery code.', 401);
+      const device = store.getDevice(sha256Hex('device-v1:' + secret));
+      if (!device || !store.getCredential(device.sub)) fail('Device sign-in expired. Use your recovery code.', 401);
+      return { sub: device.sub, user: publicUser(store.getUserBySub(device.sub)) };
+    },
+    recover(username, code) {
+      const row = store.getUserByKey(normalizeUsername(username));
+      const credential = row && store.getCredential(row.sub);
+      const normalized = typeof code === 'string' ? code.toUpperCase().replace(/[ -]/g, '') : '';
+      const hash = sha256Hex('recovery-v1:' + normalized);
+      if (!credential || !/^[A-F0-9]{32}$/.test(normalized) || credential.recoveryHash !== hash) fail('Username or recovery code is incorrect.', 401);
+      const deviceSecret = randomHex(32);
+      store.saveDevice({ hash: sha256Hex('device-v1:' + deviceSecret), sub: row.sub });
+      return { sub: row.sub, user: publicUser(row), deviceSecret };
+    },
+    regenerateRecovery(sub) {
+      if (!store.getCredential(sub)) fail('Sign in first.', 401);
+      const recoveryCode = randomHex(16).toUpperCase().match(/.{4}/g).join('-');
+      store.saveCredential({ sub, recoveryHash: sha256Hex('recovery-v1:' + recoveryCode.replace(/-/g, '')) });
+      return { recoveryCode };
+    },
+    revokeDevice(secret) {
+      if (typeof secret === 'string') store.deleteDevice(sha256Hex('device-v1:' + secret));
     },
     // Usernames are unique case-insensitively and may be changed; the
     // friend graph keys on `sub`, so renames orphan nothing.
     setUsername(sub, username) {
-      const key = normalizeUsername(username);
-      if (!validUsername(username)) fail('Username must be 3-16 characters: A-Z, 0-9, hyphen.', 400);
+      const key = checkUsername(username);
       const row = store.getUserBySub(sub);
-      if (!row) fail('Sign in with Google first.', 401);
+      if (!row) fail('Sign in first.', 401);
       const taken = store.getUserByKey(key);
       if (taken && taken.sub !== sub) fail('That username is taken.', 409);
-      row.username = key;
+      row.username = key; row.displayName = key;
       store.saveUser(row);
       return publicUser(row);
     },
     createSession(sub) {
+      if (!store.getCredential(sub)) fail('Sign in first.', 401);
+      store.pruneSessions(now());
       const id = randomHex(32), at = now();
       store.saveSession({ hash: sha256Hex('session-v1:' + id), sub, createdAt: at, expiresAt: at + sessionTtlMs });
       return { id, expiresAt: at + sessionTtlMs };
@@ -159,7 +158,7 @@ export function createAccountService(store, { now = () => Date.now(), sessionTtl
       const s = store.getSession(sha256Hex('session-v1:' + id));
       if (!s || s.expiresAt <= now()) return null;
       const row = store.getUserBySub(s.sub);
-      return row ? { sub: row.sub, username: row.username, displayName: row.displayName, avatarUrl: row.avatarUrl } : null;
+      return row && store.getCredential(row.sub) ? { sub: row.sub, username: row.username, displayName: row.displayName, avatarUrl: row.avatarUrl } : null;
     },
     revokeSession(id) {
       if (typeof id !== 'string' || !id) return false;
@@ -170,6 +169,8 @@ export function createAccountService(store, { now = () => Date.now(), sessionTtl
     },
     // Short-lived single-use ticket binding a WebSocket to a session.
     createTicket(sub) {
+      if (!store.getCredential(sub)) fail('Sign in first.', 401);
+      store.pruneSessions(now());
       const ticket = randomHex(16), at = now();
       store.saveTicket({ hash: sha256Hex('ticket-v1:' + ticket), sub, expiresAt: at + ticketTtlMs });
       return { ticket, expiresIn: Math.round(ticketTtlMs / 1000) };
@@ -179,11 +180,11 @@ export function createAccountService(store, { now = () => Date.now(), sessionTtl
       const t = store.consumeTicket(sha256Hex('ticket-v1:' + ticket));
       if (!t || t.expiresAt <= now()) return null;
       const row = store.getUserBySub(t.sub);
-      return row ? { sub: row.sub, username: row.username, displayName: row.displayName, avatarUrl: row.avatarUrl } : null;
+      return row && store.getCredential(row.sub) ? { sub: row.sub, username: row.username, displayName: row.displayName, avatarUrl: row.avatarUrl } : null;
     },
     get(subOrUsername) {
       const row = store.getUserBySub(subOrUsername) || store.getUserByKey(subOrUsername);
-      return row ? publicUser(row) : null;
+      return row && store.getCredential(row.sub) ? publicUser(row) : null;
     },
     // Server-authoritative multiplayer results. entries: [{ sub, car,
     // finish (seconds | null), placement (1-based among finishers | null) }];

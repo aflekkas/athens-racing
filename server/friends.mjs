@@ -1,4 +1,4 @@
-// Friends, blocks and recent players. Keyed by Google `sub` everywhere, so
+// Friends, blocks and recent players. Keyed by stable internal ID everywhere, so
 // renames never orphan the graph; usernames resolve at the edges for
 // display, plates and search. Presence itself is NOT stored: the caller
 // injects presenceOf(subs) — in production the arena core derives it live
@@ -17,7 +17,7 @@ const profileOf = (row) => ({ username: row.username, displayName: row.displayNa
 export function createFriendService(store, { now = () => Date.now(), presenceOf = () => new Map() } = {}) {
   const named = (sub) => {
     const row = sub ? store.getUserBySub(sub) : null;
-    if (!row) fail('Sign in with Google first.', 401);
+    if (!row) fail('Sign in first.', 401);
     if (!row.username) fail('Pick a username first.', 403);
     return row;
   };

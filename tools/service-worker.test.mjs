@@ -23,7 +23,7 @@ test('routes only listed static files, the page and pinned CDN files', async () 
   assert.equal(route('https://asr.test/data/map.json'), 'content');
   assert.equal(route('https://asr.test/data/map.json', { method: 'POST' }), null);
   assert.equal(route('https://asr.test/data/map.json', { range: true }), null);
-  for (const p of ['/ws', '/api/lobbies', '/api/me', '/api/customization/assets/x', '/auth/google/callback', '/health', '/assets/audio/music/a.mp3', '/src/unlisted.js'])
+  for (const p of ['/ws', '/api/lobbies', '/api/me', '/api/customization/assets/x', '/auth/logout', '/health', '/assets/audio/music/a.mp3', '/src/unlisted.js'])
     assert.equal(route('https://asr.test' + p, { mode: p.startsWith('/auth') ? 'navigate' : 'cors' }), null, p);
   assert.equal(route('https://asr.test/', { mode: 'navigate' }), 'page');
   assert.equal(route('https://asr.test/index.html?quality=low', { mode: 'navigate' }), 'page');

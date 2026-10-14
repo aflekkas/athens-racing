@@ -413,6 +413,16 @@ export class CarModel {
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());
     blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03; blob.renderOrder = 1; blob.castShadow = false; this.root.add(blob);
   }
+  setPlate(text) {
+    const old = this.materials.plate, next = makePlateMaterial(text || undefined);
+    this.root.traverse(o => {
+      if (!o.isMesh) return;
+      if (Array.isArray(o.material)) o.material = o.material.map(m => m === old ? next : m);
+      else if (o.material === old) o.material = next;
+    });
+    this.materials.plate = next; this.plate = text || '';
+    old.map?.dispose(); old.dispose();
+  }
   update(dt, speed, steer, brake, pose, axles = null, yawRate = 0) {
     animateDetailedCar(this, dt, speed, steer, brake, pose, axles, yawRate);
   }

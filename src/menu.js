@@ -45,7 +45,7 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all'; this.participants = 'solo';
-    this.accountUnsub = account.onChange(profile => { if (this.screen === 'title' && profile && !profile.guest && !profile.username) this.show('account', {}, true); else if (['account','friends'].includes(this.screen)) this.refresh(); });
+    this.accountUnsub = account.onChange(profile => { if (this.screen === 'title' && profile && account.needsOnboarding()) this.show('account', {}, true); else if (['account','friends'].includes(this.screen)) this.refresh(); });
     this.friendsUnsub = friends.onChange(() => { if (this.screen === 'friends') this.refresh(); });
     C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
@@ -60,7 +60,7 @@ export class Menu {
   // ---------------------------------------------------------------- show / hide
   show(screen, data = {}, push = false) {
     const profile = account.cached();
-    if (screen === 'title' && profile && !profile.guest && !profile.username) screen = 'account';
+    if (screen === 'title' && account.needsOnboarding()) screen = 'account';
     if (screen === 'events' && this.screen === 'maps') data = { ...data, mode: this.data.mode };
     this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });

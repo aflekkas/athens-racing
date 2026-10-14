@@ -525,3 +525,6 @@ body[data-customizer="open"] :is(#hud,#driving-feedback,#mp-board,#racer-markers
 #checkpoint-banner b{display:block;font-size:16px;letter-spacing:.08em;color:#ffb277}#checkpoint-banner span{font-size:11px;letter-spacing:.07em}#checkpoint-banner[hidden]{display:none}
 @media(max-height:480px){#checkpoint-banner{left:228px;top:82px;transform:none;width:300px;padding:7px 10px}}
 @media(max-width:500px){#checkpoint-banner{left:122px;top:140px;transform:none;width:calc(100vw - 134px)}body[data-mode=taxi] #checkpoint-banner,body[data-mode=getaway] #checkpoint-banner{top:290px}#checkpoint-banner b{font-size:14px}}
+
+.account-recovery { border: 1px solid var(--accent, #d9fd4a); padding: 16px; margin: 16px 0; }
+.account-recovery code { display: block; font-size: 18px; line-height: 1.8; overflow-wrap: anywhere; user-select: all; letter-spacing: 1px; }

@@ -28,6 +28,7 @@ import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
 import { DrivingFeedback } from './driving-feedback.js';
+import { account } from './account.js';
 import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
@@ -299,8 +300,11 @@ window.__switchMap = switchMap;
 window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: scene.children.filter(o => o.name.startsWith('map-world:')).map(o => o.name), lastDisposal: lastMapDisposal, memory: { ...renderer.info.memory }, weatherWidgets: document.querySelectorAll('#police-hud, #replay-controls').length });
 
 // ------------------------------------------------------------------ cars
-function makeCar(spec, isPlayer) {
-  const model = new CarModel(spec);
+function makeCar(spec, isPlayer, plate) {
+  // The plate is the signed-in username (account.plate()), a remote driver's
+  // lobby plate, or undefined for a random registration. Single player shows
+  // the owner's username; multiplayer shows every driver's username.
+  const model = new CarModel(spec, { plate });
   scene.add(model.root);
   const driver = new Driver(isPlayer ? getDriverAppearance(spec.id) : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   bindDriverToCar(driver,model);
@@ -334,7 +338,7 @@ function setCar(idx, keepPose = true) {
   G.carIdx = idx; G.selIdx = idx;
   if (old) beginCameraBlend();
   disposeCar(old);
-  const pc = makeCar(spec, true);
+  const pc = makeCar(spec, true, account.plate());
   const veh = old ? old.veh : new Vehicle(spec, route);
   veh.setSpec(spec); veh.gear = Math.min(veh.gear, spec.gears.length);
   player = { spec, veh, ...pc };
@@ -653,6 +657,8 @@ function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].i
 const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some((k) => Q.has(k));
 function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 ? i : 0; } catch { return 0; } }
 function initFlow() {
+  let plate = player.model.plate;
+  account.onChange(() => { const next = account.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
   menu = new Menu($('ui'), {
     quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, switchMap,
     chooseCar: (index, def, garage) => {
@@ -1897,12 +1903,12 @@ function onlineMembers(members) {
     let c = remoteCars.get(p.id);
     if (!c) {
       const spec = CARS.find(c => c.id === p.car) || CARS[0];
-      if (![...remoteCars.values()].includes(rival)) { c = rival; c.spec = spec; c.veh.setSpec(spec); disposeCar(c); const built = makeCar(spec, false); c.model = built.model; c.driver = built.driver; }
-      else c = { spec, veh: new Vehicle(spec, route), ...makeCar(spec, false) };
-      c.ai = c.ai || { lane: 0, cool: 0 };
+      if (![...remoteCars.values()].includes(rival)) { c = rival; c.spec = spec; c.veh.setSpec(spec); disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; c.driver = built.driver; }
+      else c = { spec, veh: new Vehicle(spec, route), ...makeCar(spec, false, p.plate) };
+      c.ai = c.ai || { lane: 0, cool: 0 }; c.plate = p.plate || null;
       c.veh.reset(startS, route.laneU(startS, 0)); remoteCars.set(p.id, c);
     }
-    if (c.spec.id !== p.car) { const spec = CARS.find(s => s.id === p.car) || CARS[0]; disposeCar(c); const built = makeCar(spec, false); c.model = built.model; c.driver = built.driver; c.spec = spec; c.veh.setSpec(spec); c.veh.reset(startS, route.laneU(startS, 0)); }
+    if (c.spec.id !== p.car || c.plate !== (p.plate || null)) { const spec = CARS.find(s => s.id === p.car) || CARS[0]; disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; c.driver = built.driver; c.spec = spec; c.plate = p.plate || null; c.veh.setSpec(spec); c.veh.reset(startS, route.laneU(startS, 0)); }
     c.networkName = p.name; c.model.root.visible = ['countdown', 'race'].includes(multiplayer.lobby.status);
   }
   const first = members[0];

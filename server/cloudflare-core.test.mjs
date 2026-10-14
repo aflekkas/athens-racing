@@ -121,7 +121,7 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   send(a, { type: 'rematch' }); assert.ok(a.messages.at(-1).lobby.players.every(p => p.dnf === false && p.finish === null));
 });
 
-// --- Google sign-in, plate = username, lobby allow-lists, MP stats -------
+// --- Username accounts, plate = username, lobby allow-lists, MP stats -------
 const cars3 = new Set(['mini', 'z4', 'carrera']);
 function socialCore(t, nowRef = { at: 500000 }) {
   t.mock.method(Date, 'now', () => nowRef.at);
@@ -129,15 +129,15 @@ function socialCore(t, nowRef = { at: 500000 }) {
   const accounts = createAccountService(store, { now: () => nowRef.at });
   const friends = createFriendService(store, { now: () => nowRef.at });
   const core = createGameCore({ maps, cars: cars3, leaderboard: { submit: async () => ({ saved: true }) }, accounts, friends, countdownMs: 100, raceLimitMs: 5000 });
-  for (const [sub, name] of [['g1', 'one'], ['g2', 'two']]) { accounts.upsertGoogleUser({ sub, displayName: name }); accounts.setUsername(sub, name); }
-  const login = (ws) => { const sub = ws === sockets.a ? 'g1' : 'g2'; core.message(ws, JSON.stringify({ type: 'auth', ticket: accounts.createTicket(sub).ticket })); };
+  const subs = ['one', 'two'].map(name => accounts.createAccount(name).sub);
+  const login = (ws) => { const sub = ws === sockets.a ? subs[0] : subs[1]; core.message(ws, JSON.stringify({ type: 'auth', ticket: accounts.createTicket(sub).ticket })); };
   const sockets = { a: socket(), b: socket() };
   core.connect(sockets.a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(sockets.b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
-  return { core, accounts, friends, nowRef, ...sockets, login, send: (ws, m) => core.message(ws, JSON.stringify(m)) };
+  return { core, accounts, friends, subs, nowRef, ...sockets, login, send: (ws, m) => core.message(ws, JSON.stringify(m)) };
 }
 
 test('ticket auth links the username plate; allow-lists coerce and reject; stats and recent accrue', t => {
-  const { core, accounts, friends, nowRef, a, b, login, send } = socialCore(t);
+  const { core, accounts, friends, subs, nowRef, a, b, login, send } = socialCore(t);
   assert.match(a.messages.at(-1).type, /discovery/);
   send(a, { type: 'auth', ticket: 'bogus' }); assert.match(a.messages.at(-1).message, /ticket/);
   login(a); login(b);
@@ -164,16 +164,16 @@ test('ticket auth links the username plate; allow-lists coerce and reject; stats
   send(b, { type: 'state', raceId: race.raceId, state: state(15) });
   const done = a.messages.at(-1).lobby;
   assert.equal(done.status, 'results');
-  const s1 = accounts.get('g1').stats;
+  const s1 = accounts.get(subs[0]).stats;
   assert.deepEqual([s1.started, s1.finished, s1.wins, s1.podiums, s1.km], [1, 1, 1, 0, 0.015]);
   assert.equal(s1.best['riviera|quick|mini|0'], done.players.find(p => p.name === 'Alice').finish);
-  assert.deepEqual(friends.recent('g1').map(u => u.username), ['TWO'], 'shared races make recent players');
+  assert.deepEqual(friends.recent(subs[0]).map(u => u.username), ['TWO'], 'shared races make recent players');
 });
 
 test('presence rides lobby transitions: menu, lobby, racing, offline', t => {
-  const { core, friends, a, b, login, send } = socialCore(t);
+  const { core, friends, subs, a, b, login, send } = socialCore(t);
   login(a); login(b);
-  friends.request('g1', 'two'); friends.accept('g2', 'one');
+  friends.request(subs[0], 'two'); friends.accept(subs[1], 'one');
   const lastFriends = () => [...a.messages].reverse().find(m => m.type === 'friends');
   send(a, { type: 'create', name: 'Alice' });
   const code = [...a.messages].reverse().find(m => m.type === 'lobby').lobby.code;

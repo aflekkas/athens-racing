@@ -140,6 +140,23 @@ test('wrecked drivers rank behind active racers and spectate only remaining driv
   m.me.finish = 1; assert.equal(m.wreck(120 / 3.6), false);
 });
 
+test('plate text normalizes usernames to fit the texture', async () => {
+  const { formatPlate, carClass, presetCars } = await import('../src/plate.js');
+  assert.equal(formatPlate('speed-queen-99'), 'SPEED-QUEEN-99');
+  assert.equal(formatPlate('  z4-racer  '), 'Z4-RACER');
+  assert.equal(formatPlate('a'.repeat(20)).length, 16);
+  assert.equal(formatPlate('<x>'), 'X');
+  assert.equal(formatPlate(''), '');
+  assert.equal(carClass({ power: 257 }), 'supercar');
+  assert.equal(carClass({ power: 141 }), 'normal');
+  assert.equal(carClass({}), 'normal');
+  const cars = [{ id: 'mini', power: 141 }, { id: 'z4', power: 250 }, { id: 'carrera', power: 257 }, { id: 'golf', power: 103 }, { id: 'gr_yaris', power: 206 }];
+  assert.deepEqual(presetCars(cars, 'all'), ['mini', 'z4', 'carrera', 'golf', 'gr_yaris']);
+  assert.deepEqual(presetCars(cars, 'normal'), ['mini', 'golf']);
+  assert.deepEqual(presetCars(cars, 'supercar'), ['z4', 'carrera', 'gr_yaris']);
+  assert.deepEqual(presetCars(cars, 'bogus'), ['mini', 'z4', 'carrera', 'golf', 'gr_yaris']);
+});
+
 test('lobby map picker offers only enabled maps (Megara retained, not selectable)', () => {
   // The hello handler assigns this.maps through getPlayableMaps, so the
   // lobby pickers and the solo selector share one registry.

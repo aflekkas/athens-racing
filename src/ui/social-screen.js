@@ -21,7 +21,7 @@ export function renderSocial(state = {}) {
 export function mountSocial(menu) {
   const root=menu.root;
   const accountRoot=root.querySelector('[data-account=root]');
-  if(accountRoot)bindAccountCard(accountRoot);
+  if(accountRoot)bindAccountCard(accountRoot, {onContinue(){menu.show('title');}});
   const friendsRoot=root.querySelector('[data-friends=root]');
   if(friendsRoot)bindFriendsCard(friendsRoot,{onJoin(username){const code=friends.joinableCode(username);if(!code)return C.ui.toast('LOBBY IS NO LONGER JOINABLE',{tone:'bad',icon:'warning'});const mp=window.__multiplayer;mp?.open();mp?.action('join',{code});}});
   const styleButtons=()=>{

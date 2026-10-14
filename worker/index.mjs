@@ -10,13 +10,13 @@ import { createSqlSocialStore } from '../server/social-store.mjs';
 import { createCustomizationService, handleCustomizationRequest } from '../server/customization.mjs';
 import { createSqlCustomizationStore } from '../server/customization-store.mjs';
 import { createFriendService } from '../server/friends.mjs';
-import { GOOGLE_AUTH_URL, GOOGLE_TOKEN_URL, GOOGLE_JWKS_URL, newSecret, codeChallenge, buildAuthUrl, exchangeCode, verifyIdTokenLive } from './oidc.mjs';
+import { sha256Hex } from '../server/accounts.mjs';
 
 const SESSION_COOKIE = 'asr_session';
 const readSessionCookie = (request) => {
   const h = request.headers.get('Cookie') || '';
   const m = h.match(/(?:^|;\s*)asr_session=([^;]*)/);
-  return m ? decodeURIComponent(m[1]) : '';
+  return m && /^[a-f0-9]{64}$/.test(m[1]) ? m[1] : '';
 };
 const sessionCookie = (id, maxAge) => `${SESSION_COOKIE}=${encodeURIComponent(id)}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
 
@@ -30,6 +30,24 @@ const noStore = (response) => {
 };
 const json = (value, status = 200) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
+// Drain bounded bodies before replying: streamed Worker -> DO requests must
+// finish reading even when the attempt is rate limited.
+async function readAuthJson(request) {
+  let body = '', size = 0;
+  if (request.body) {
+    const reader = request.body.getReader(), decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      size += value.byteLength;
+      if (size > 1024) { await reader.cancel(); throw Object.assign(new Error('Request too large.'), { status: 413 }); }
+      body += decoder.decode(value, { stream: true });
+    }
+    body += decoder.decode();
+  }
+  try { return body ? JSON.parse(body) : {}; }
+  catch { throw Object.assign(new Error('Invalid JSON.'), { status: 400 }); }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -38,12 +56,13 @@ export default {
       if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
       return noStore(await env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request));
     }
-    if (['/ws', '/health', '/api/lobbies', '/api/leaderboard', '/api/me', '/api/username', '/api/auth/ticket', '/api/friends', '/api/friends/search', '/api/friends/request', '/api/friends/accept', '/api/friends/decline', '/api/friends/remove', '/api/friends/block', '/api/friends/unblock', '/api/recent', '/auth/google/start', '/auth/google/callback', '/auth/logout'].includes(url.pathname)) {
+    if (url.pathname.startsWith('/api/accounts/') || ['/ws', '/health', '/api/lobbies', '/api/leaderboard', '/api/me', '/api/username', '/api/auth/ticket', '/api/friends', '/api/friends/search', '/api/friends/request', '/api/friends/accept', '/api/friends/decline', '/api/friends/remove', '/api/friends/block', '/api/friends/unblock', '/api/recent', '/auth/logout'].includes(url.pathname)) {
       const origin = request.headers.get('Origin');
-      if (origin && new URL(origin).host !== url.host) return json({ error: 'Origin mismatch.' }, 403);
+      if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
       // One arena shares discovery and connections. Idle rooms hibernate; games share duration.
       return noStore(await env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request));
     }
+    if (url.pathname.startsWith('/auth/')) return json({ error: 'Not found.' }, 404);
     return rewriteShareMetadata(request, await env.ASSETS.fetch(request));
   }
 };
@@ -76,6 +95,10 @@ export class GameArena extends DurableObject {
         if (client) for (const key of ['state', 'stateAt', 'messages', 'window']) client[key] = attachment[key];
       }
       this.core.restore(saved, sockets);
+      // Hibernated sockets must not retain an identity whose provider was removed.
+      for (const client of this.core.sessions.values()) if (client.accountSub && !this.accounts.get(client.accountSub)) {
+        client.accountSub = null; client.accountName = null; client.plate = null;
+      }
       // Connections absent from saved metadata cannot be recovered safely.
       for (const [token, ws] of sockets) if (!this.core.sessions.has(token)) ws.close(1012, 'Please reconnect');
     });
@@ -127,11 +150,11 @@ export class GameArena extends DurableObject {
     const sessionId = readSessionCookie(request);
     const me = () => {
       const who = sessionId && this.accounts.verifySession(sessionId);
-      if (!who) throw Object.assign(new Error('Sign in with Google first.'), { status: 401 });
+      if (!who) throw Object.assign(new Error('Sign in first.'), { status: 401 });
       return who;
     };
     if (path === '/api/customization' || path.startsWith('/api/customization/')) return handleCustomizationRequest(request, { service: this.customization, who: me });
-    if (path === '/auth/google/start' || path === '/auth/google/callback' || path === '/auth/logout') return this.auth(request, url);
+    if (path.startsWith('/api/accounts/') || path === '/auth/logout') return this.auth(request, url);
     if (path === '/api/me') {
       if (request.method !== 'GET') return json({ error: 'Use GET.' }, 405);
       const who = sessionId && this.accounts.verifySession(sessionId);
@@ -153,7 +176,7 @@ export class GameArena extends DurableObject {
     }
     if (path === '/api/auth/ticket') {
       if (request.method !== 'POST') return json({ error: 'Use POST.' }, 405);
-      try { return json({ ok: true, ...this.accounts.createTicket(me().sub) }); }
+      try { await readAuthJson(request); return json({ ok: true, ...this.accounts.createTicket(me().sub) }); }
       catch (e) { return json({ error: e.message }, e.status || 401); }
     }
     if (path === '/api/friends' || path === '/api/friends/search' || path === '/api/recent' || path.startsWith('/api/friends/')) {
@@ -210,41 +233,41 @@ export class GameArena extends DurableObject {
     }
     return json({ error: 'Method not allowed.' }, 405);
   }
-  // Google sign-in: /auth/google/start -> Google -> /auth/google/callback.
-  // GOOGLE_CLIENT_ID is a wrangler var, GOOGLE_CLIENT_SECRET a wrangler
-  // secret (never committed); setup steps live in deploy/README.md.
   async auth(request, url) {
-    const env = this.env;
-    if (url.pathname === '/auth/logout') {
-      const id = readSessionCookie(request);
-      if (id) this.accounts.revokeSession(id);
-      await this.persist();
-      return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Set-Cookie': sessionCookie('expired', 0) } });
-    }
-    if (!env.GOOGLE_CLIENT_ID) return json({ error: 'Google sign-in is not configured yet. See deploy/README.md.' }, 501);
-    if (url.pathname === '/auth/google/start') {
-      const next = url.searchParams.get('next') || '/';
-      const redirect = next.startsWith('/') && !next.startsWith('//') ? next : '/';
-      const verifier = newSecret(32), state = newSecret(16), nonce = newSecret(16);
-      this.store.pruneStates();
-      this.store.saveState({ state, verifier, nonce, redirect, createdAt: Date.now(), expiresAt: Date.now() + 10 * 60 * 1000 });
-      const challenge = await codeChallenge(verifier);
-      return Response.redirect(buildAuthUrl({ authEndpoint: env.GOOGLE_AUTH_URL || GOOGLE_AUTH_URL, clientId: env.GOOGLE_CLIENT_ID, redirectUri: new URL('/auth/google/callback', url).href, state, nonce, challenge }), 302);
-    }
-    const fail = (reason) => Response.redirect(new URL('/?login=' + reason, url).href, 302);
-    const saved = url.searchParams.get('state') && this.store.consumeState(url.searchParams.get('state'));
-    if (url.searchParams.get('error') || !url.searchParams.get('code') || !saved || saved.expiresAt <= Date.now()) return fail('cancelled');
+    if (request.method !== 'POST') return json({ error: 'Use POST.' }, 405);
+    const path = url.pathname;
+    if (!['/api/accounts/create', '/api/accounts/device', '/api/accounts/recover', '/api/accounts/recovery-code', '/auth/logout'].includes(path)) return json({ error: 'Not found.' }, 404);
     try {
-      const redirectUri = new URL('/auth/google/callback', url).href;
-      const { id_token } = await exchangeCode({ tokenEndpoint: env.GOOGLE_TOKEN_URL || GOOGLE_TOKEN_URL, clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET, code: url.searchParams.get('code'), redirectUri, verifier: saved.verifier });
-      const claims = await verifyIdTokenLive({ idToken: id_token, jwksUri: env.GOOGLE_JWKS_URL || GOOGLE_JWKS_URL, clientId: env.GOOGLE_CLIENT_ID, nonce: saved.nonce });
-      this.accounts.upsertGoogleUser({ sub: claims.sub, displayName: claims.name, avatarUrl: claims.picture });
-      const session = this.accounts.createSession(claims.sub);
-      await this.persist();
-      // NOTE: Response.redirect() carries immutable headers in workerd, so
-      // the session cookie needs a manually constructed redirect.
-      return new Response(null, { status: 302, headers: { Location: new URL(saved.redirect || '/', url).href, 'Set-Cookie': sessionCookie(session.id, 30 * 24 * 3600) } });
-    } catch (e) { console.error('Google sign-in failed:', e.message); return fail('error'); }
+      let allowed = true;
+      const limited = { '/api/accounts/create': [5, 3600000], '/api/accounts/recover': [10, 900000], '/api/accounts/device': [60, 900000] }[path];
+      if (limited) {
+        const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+        allowed = this.store.authLimit(sha256Hex(path + ':' + ip), Date.now(), ...limited);
+      }
+      const data = await readAuthJson(request);
+      if (!allowed) return json({ error: 'Too many attempts. Please try again later.' }, 429);
+      const sid = readSessionCookie(request), who = sid && this.accounts.verifySession(sid);
+      if (path === '/auth/logout') {
+        if (who && data?.deviceSecret) {
+          try { if (this.accounts.signInDevice(data.deviceSecret).sub === who.sub) this.accounts.revokeDevice(data.deviceSecret); } catch {}
+        }
+        if (sid) this.accounts.revokeSession(sid);
+        await this.persist();
+        const response = json({ ok: true }); response.headers.set('Set-Cookie', sessionCookie('expired', 0)); return response;
+      }
+      if (path === '/api/accounts/recovery-code') {
+        if (!who) return json({ error: 'Sign in first.' }, 401);
+        return json({ ok: true, ...this.accounts.regenerateRecovery(who.sub) });
+      }
+      const out = path === '/api/accounts/create' ? this.accounts.createAccount(data?.username)
+        : path === '/api/accounts/recover' ? this.accounts.recover(data?.username, data?.code)
+        : this.accounts.signInDevice(data?.deviceSecret);
+      const session = this.accounts.createSession(out.sub);
+      if (sid) this.accounts.revokeSession(sid);
+      const response = json({ ok: true, ...out.user, ...(out.deviceSecret ? { deviceSecret: out.deviceSecret } : {}), ...(out.recoveryCode ? { recoveryCode: out.recoveryCode } : {}) });
+      response.headers.set('Set-Cookie', sessionCookie(session.id, 30 * 24 * 3600));
+      return response;
+    } catch (e) { return json({ error: e.message }, e.status || 500); }
   }
   async webSocketMessage(ws, message) {
     if (typeof message !== 'string' || new TextEncoder().encode(message).byteLength > 4096) { ws.close(1009, 'Message too large'); return; }

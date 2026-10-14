@@ -3,7 +3,7 @@
 //
 // formatPlate(text): normalize any string (a username or a default) to what
 // fits on the Greek plate texture: uppercase, letters/digits/space/hyphen,
-// collapsed whitespace, at most 12 characters. Returns '' when nothing fits.
+// collapsed whitespace, at most 16 characters. Returns '' when nothing fits.
 // makePlateMaterial() additionally shrinks the canvas font so the text fits.
 //
 // carClass(car): 'supercar' when the catalogue entry makes >= 200 power,
@@ -16,9 +16,8 @@ export function formatPlate(text) {
     .toUpperCase()
     .replace(/[^\p{L}0-9 \-]/gu, '')
     .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/-{2,}/g, '-');
-  return s.slice(0, 12);
+    .trim();
+  return s.slice(0, 16);
 }
 
 export function carClass(car) {

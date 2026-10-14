@@ -1,22 +1,6 @@
-// Social storage: users (Google sub -> profile + stats), server sessions,
-// single-use WS tickets, OAuth login states, friend graph, blocks, recent
-// players. One synchronous interface with two implementations:
-//
-// - createMemorySocialStore(): unit tests and ephemeral use.
-// - createSqlSocialStore(sql): Cloudflare Durable Object SQLite. `sql` is
-//   { exec(query, ...args) } (ctx.storage.sql in the Worker, node:sqlite
-//   shim in tests). Small tables, indexed lookups, no KV/D1/R2.
-//
-// The friend graph is keyed by Google `sub` (stable), never by username, so
-// renaming never orphans friendships. User rows carry the username for
-// display, plates and search; '' means "signed in, username not picked yet".
-//
-// User row: { sub, username, displayName, avatarUrl, createdAt, stats }
-// Stats shape is defined in server/accounts.mjs (counts + bests, no XP).
-const nowSec = () => Math.floor(Date.now() / 1000);
-
+// Account and social stores share the arena SQLite database. All times are milliseconds.
 export function createMemorySocialStore() {
-  const users = new Map(), sessions = new Map(), tickets = new Map(), states = new Map();
+  const users = new Map(), sessions = new Map(), tickets = new Map(), credentials = new Map(), devices = new Map(), limits = new Map();
   const requests = new Map(), blocks = new Set(), recent = new Map();
   const reqKey = (a, b) => a + '\n' + b;
   return {
@@ -35,12 +19,19 @@ export function createMemorySocialStore() {
     saveSession: (s) => { sessions.set(s.hash, s); },
     getSession: (hash) => sessions.get(hash),
     deleteSession: (hash) => sessions.delete(hash),
-    pruneSessions: (at = nowSec()) => { for (const [h, s] of sessions) if (s.expiresAt <= at) sessions.delete(h); },
+    pruneSessions: (at = Date.now()) => { for (const [h, s] of sessions) if (s.expiresAt <= at) sessions.delete(h); for (const [h, t] of tickets) if (t.expiresAt <= at) tickets.delete(h); },
     saveTicket: (t) => { tickets.set(t.hash, t); },
     consumeTicket: (hash) => { const t = tickets.get(hash); if (t) tickets.delete(hash); return t; },
-    saveState: (s) => { states.set(s.state, s); },
-    consumeState: (state) => { const s = states.get(state); if (s) states.delete(state); return s; },
-    pruneStates: (at = Date.now()) => { for (const [k, s] of states) if (s.expiresAt <= at) states.delete(k); },
+    saveCredential: (c) => credentials.set(c.sub, c),
+    getCredential: (sub) => credentials.get(sub),
+    saveDevice: (d) => devices.set(d.hash, d),
+    getDevice: (hash) => devices.get(hash),
+    deleteDevice: (hash) => devices.delete(hash),
+    authLimit: (key, at, max, windowMs) => {
+      for (const [k, l] of limits) if (l.until <= at) limits.delete(k);
+      const l = limits.get(key) || { count: 0, until: at + windowMs };
+      l.count++; limits.set(key, l); return l.count <= max;
+    },
     getRequest: (from, to) => requests.get(reqKey(from, to)),
     saveRequest: (r) => { requests.set(reqKey(r.from, r.to), r); },
     deleteRequest: (from, to) => { requests.delete(reqKey(from, to)); },
@@ -59,10 +50,23 @@ export function createSqlSocialStore(sql) {
     CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, sub TEXT NOT NULL, createdAt INTEGER NOT NULL, expiresAt INTEGER NOT NULL);
     CREATE INDEX IF NOT EXISTS sessions_sub ON sessions(sub);
     CREATE TABLE IF NOT EXISTS tickets (hash TEXT PRIMARY KEY, sub TEXT NOT NULL, expiresAt INTEGER NOT NULL);
-    CREATE TABLE IF NOT EXISTS oauth_states (state TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS account_credentials (sub TEXT PRIMARY KEY, recoveryHash TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS account_devices (hash TEXT PRIMARY KEY, sub TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS auth_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, until INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS social_migrations (version INTEGER PRIMARY KEY);
     CREATE TABLE IF NOT EXISTS friend_requests (fromUser TEXT NOT NULL, toUser TEXT NOT NULL, status TEXT NOT NULL, updatedAt INTEGER NOT NULL, PRIMARY KEY (fromUser, toUser));
     CREATE TABLE IF NOT EXISTS blocks (blocker TEXT NOT NULL, blocked TEXT NOT NULL, PRIMARY KEY (blocker, blocked));
     CREATE TABLE IF NOT EXISTS recent (user TEXT NOT NULL, peer TEXT NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (user, peer));`);
+  // One-time migration: preserve historical profiles/stats and graph under their
+  // old IDs, but release plates and invalidate credentials from the retired provider.
+  // Re-runnable statements make an interrupted migration safe to finish.
+  if (![...sql.exec('SELECT version FROM social_migrations WHERE version = 1')].length) {
+    sql.exec("UPDATE users SET username = NULL, displayName = 'ORPHANED DRIVER', avatarUrl = '' WHERE sub NOT IN (SELECT sub FROM account_credentials)");
+    sql.exec('DELETE FROM sessions WHERE sub NOT IN (SELECT sub FROM account_credentials)');
+    sql.exec('DELETE FROM tickets WHERE sub NOT IN (SELECT sub FROM account_credentials)');
+    sql.exec('DROP TABLE IF EXISTS oauth_states');
+    sql.exec('INSERT INTO social_migrations VALUES (1)');
+  }
   const decodeUser = (row) => row && { sub: row.sub, username: row.username || '', displayName: row.displayName, avatarUrl: row.avatarUrl || '', createdAt: row.createdAt, stats: JSON.parse(row.data) };
   const encodeUser = (u) => [u.sub, u.username || null, u.displayName, u.avatarUrl || '', u.createdAt, JSON.stringify(u.stats)];
   // Decoded to { from, to, status, updatedAt } like the memory store, so
@@ -71,17 +75,24 @@ export function createSqlSocialStore(sql) {
   return {
     getUserBySub: (sub) => decodeUser([...sql.exec('SELECT * FROM users WHERE sub = ?', sub)][0]),
     getUserByKey: (key) => decodeUser([...sql.exec('SELECT * FROM users WHERE username = ?', String(key || '').toUpperCase())][0]),
-    saveUser: (u) => { sql.exec('INSERT OR REPLACE INTO users VALUES (?, ?, ?, ?, ?, ?)', ...encodeUser(u)); },
+    saveUser: (u) => { sql.exec('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(sub) DO UPDATE SET username=excluded.username, displayName=excluded.displayName, avatarUrl=excluded.avatarUrl, data=excluded.data', ...encodeUser(u)); },
     searchUsers: (prefix, limit = 20) => [...sql.exec('SELECT * FROM users WHERE username LIKE ? ORDER BY username LIMIT ?', String(prefix || '').toUpperCase() + '%', Math.max(1, Math.min(50, limit || 20)))].map(decodeUser).filter((u) => u.username),
     saveSession: (s) => { sql.exec('INSERT OR REPLACE INTO sessions VALUES (?, ?, ?, ?)', s.hash, s.sub, s.createdAt, s.expiresAt); },
     getSession: (hash) => [...sql.exec('SELECT * FROM sessions WHERE hash = ?', hash)][0],
     deleteSession: (hash) => { sql.exec('DELETE FROM sessions WHERE hash = ?', hash); },
-    pruneSessions: (at = nowSec()) => { sql.exec('DELETE FROM sessions WHERE expiresAt <= ?', at); sql.exec('DELETE FROM tickets WHERE expiresAt <= ?', at); },
+    pruneSessions: (at = Date.now()) => { sql.exec('DELETE FROM sessions WHERE expiresAt <= ?', at); sql.exec('DELETE FROM tickets WHERE expiresAt <= ?', at); },
     saveTicket: (t) => { sql.exec('INSERT OR REPLACE INTO tickets VALUES (?, ?, ?)', t.hash, t.sub, t.expiresAt); },
     consumeTicket: (hash) => { const t = [...sql.exec('SELECT * FROM tickets WHERE hash = ?', hash)][0]; if (t) sql.exec('DELETE FROM tickets WHERE hash = ?', hash); return t; },
-    saveState: (s) => { sql.exec('INSERT OR REPLACE INTO oauth_states VALUES (?, ?)', s.state, JSON.stringify(s)); },
-    consumeState: (state) => { const row = [...sql.exec('SELECT data FROM oauth_states WHERE state = ?', state)][0]; if (row) sql.exec('DELETE FROM oauth_states WHERE state = ?', state); return row && JSON.parse(row.data); },
-    pruneStates: (at = Date.now()) => { for (const row of [...sql.exec('SELECT state, data FROM oauth_states')]) { try { if (JSON.parse(row.data).expiresAt <= at) sql.exec('DELETE FROM oauth_states WHERE state = ?', row.state); } catch {} } },
+    saveCredential: (c) => { sql.exec('INSERT OR REPLACE INTO account_credentials VALUES (?, ?)', c.sub, c.recoveryHash); },
+    getCredential: (sub) => [...sql.exec('SELECT * FROM account_credentials WHERE sub = ?', sub)][0],
+    saveDevice: (d) => { sql.exec('INSERT INTO account_devices VALUES (?, ?)', d.hash, d.sub); },
+    getDevice: (hash) => [...sql.exec('SELECT * FROM account_devices WHERE hash = ?', hash)][0],
+    deleteDevice: (hash) => { sql.exec('DELETE FROM account_devices WHERE hash = ?', hash); },
+    authLimit: (key, at, max, windowMs) => {
+      sql.exec('DELETE FROM auth_limits WHERE until <= ?', at);
+      sql.exec('INSERT INTO auth_limits VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count=count+1', key, at + windowMs);
+      return [...sql.exec('SELECT count FROM auth_limits WHERE key = ?', key)][0].count <= max;
+    },
     getRequest: (from, to) => decodeRequest([...sql.exec('SELECT * FROM friend_requests WHERE fromUser = ? AND toUser = ?', from, to)][0]),
     saveRequest: (r) => { sql.exec('INSERT OR REPLACE INTO friend_requests VALUES (?, ?, ?, ?)', r.from, r.to, r.status, r.updatedAt); },
     deleteRequest: (from, to) => { sql.exec('DELETE FROM friend_requests WHERE fromUser = ? AND toUser = ?', from, to); },
