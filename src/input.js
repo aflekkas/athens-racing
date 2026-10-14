@@ -7,18 +7,18 @@ const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
-    handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['KeyR', 'Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyT'], transmission: ['KeyM'], music: ['KeyJ'], nextTrack: ['KeyN'],
+    handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyM'], music: ['KeyJ'], nextTrack: ['KeyN'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], photo: ['KeyP'], replayPlay: ['Space'],
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
-    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], music: [], nextTrack: [],
+    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], music: [], nextTrack: [],
     up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], photo: ['b10'], replayPlay: ['b0'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'transmission', 'music', 'nextTrack', 'photo', 'replayPlay',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'music', 'nextTrack', 'photo', 'replayPlay',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
@@ -43,7 +43,7 @@ export class Input {
     this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
     this.nitrousEnabled = false; this.transmissionEnabled = false;
     this.load();
-    this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => this.keys.delete(e.code));
+    this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => { if (e.code === 'KeyR' && this.keys.has('KeyR') && !this.inMenu && !this.resetHeld) this.pending.add('tow'); this.keys.delete(e.code); });
     this.listen('blur', () => this.clear());
     this.listen('gamepadconnected', e => this.connect(e.gamepad));
     this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; });
@@ -61,7 +61,7 @@ export class Input {
   // Production polls the selected spec every frame, including car switches and menu resumes.
   setCarSpec(spec) {
     this.setNitrousEnabled(spec?.nitrous === true);
-    this.transmissionEnabled = !!spec && carTransmission(spec) === 'both';
+    this.transmissionEnabled = !!spec && carTransmission(spec) !== 'manual';
     const button = this.touchUI?.querySelector('[data-action="transmission"]');
     if (button && button.hidden !== !this.transmissionEnabled) button.hidden = !this.transmissionEnabled;
     if (!this.transmissionEnabled && this.touch.transmission) { this.touch.transmission = 0; this.pending.delete('transmission'); }
@@ -75,6 +75,8 @@ export class Input {
     for (const kind of ['keyboard', 'gamepad']) {
       try {
         const saved = JSON.parse(this.storage?.getItem('paraliaki.input.' + kind) || 'null');
+        // M selects gearbox mode; R taps tow and holds reset instead of restarting.
+        if (kind === 'keyboard' && saved?.restart?.join(',') === 'KeyR,Enter') saved.restart = ['Enter'];
         // M now selects gearbox mode; migrate the old default music binding to J.
         if (kind === 'keyboard' && !saved?.transmission && saved?.music?.length === 1 && saved.music[0] === 'KeyM') saved.music = ['KeyJ'];
         for (const [a, bs] of Object.entries(saved || {})) if (a in this.bindings[kind] && Array.isArray(bs) && bs.every(b => typeof b === 'string' && (kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b)))) this.bindings[kind][a] = bs;
@@ -112,12 +114,12 @@ export class Input {
     e.preventDefault?.(); e.stopPropagation?.();
     // A menu/blur may clear a held key; OS repeats must not press it again until a real release/press.
     if (e.repeat && !this.keys.has(e.code)) return;
-    if (!e.repeat && !this.keys.has(e.code)) for (const [a] of matched) if (EDGE_ACTIONS.includes(a)) this.pending.add(a);
+    if (!e.repeat && !this.keys.has(e.code)) for (const [a] of matched) if (EDGE_ACTIONS.includes(a) && !(e.code === 'KeyR' && (a === 'reset' || a === 'tow'))) this.pending.add(a);
     this.keys.add(e.code);
   }
   clear() {
     // Preserve edge latches for a held controller button when pause/menu code clears driving.
-    this.keys.clear(); this.pending.clear(); this.touch = {};
+    this.keys.clear(); this.pending.clear(); this.touch = {}; this.resetHoldT = 0; this.resetHeld = false;
     this.actions = [];
     this.keyThrottle = this.keyBrake = 0;
     Object.assign(this.state, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false });
@@ -193,7 +195,11 @@ export class Input {
       else if (this.capture.ready) { const { action, done } = this.capture; this.capture = null; this.bind('gamepad', action, [active[0]]); done?.(); }
     }
     const k = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c));
-    const held = a => k(a) || gp(a) > 0.55 || !!this.touch[a];
+    const held = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c) && !(c === 'KeyR' && (a === 'reset' || a === 'tow'))) || gp(a) > 0.55 || !!this.touch[a];
+    if (!inMenu && !blocked && !capturing && this.keys.has('KeyR')) {
+      this.resetHoldT = (this.resetHoldT || 0) + dt;
+      if (this.resetHoldT >= 0.75 && !this.resetHeld) { this.pending.add('reset'); this.resetHeld = true; }
+    } else { this.resetHoldT = 0; this.resetHeld = false; }
     for (const a of EDGE_ACTIONS) {
       const down = a === 'left' || a === 'right' ? k(a) || gp('menu' + (a === 'left' ? 'Left' : 'Right')) > 0.55 : held(a);
       this.state[a] = !capturing && !blocked && (this.pending.has(a) || (down && !this.previous[a]));
@@ -235,7 +241,7 @@ export class Input {
   openBindings(containerEl) {
     this.cancelCapture(); this.clear();
     const doc = containerEl.ownerDocument, panel = doc.createElement('div'); panel.className = 'input-bindings';
-    const help = doc.createElement('p'); help.textContent = 'Choose a binding, then press a key or controller button / move an axis. Escape cancels. E / Q shift in manual mode.'; panel.append(help);
+    const help = doc.createElement('p'); help.textContent = 'Choose a binding, then press a key or controller button / move an axis. Escape cancels. E / Q selects manual and shifts. M returns to auto.'; panel.append(help);
     const cameraTitle = doc.createElement('h3'); cameraTitle.textContent = 'CAMERA & PLAYER TAGS'; panel.append(cameraTitle);
     for (const [key, label, min, max, step] of [['mouseSensitivity', 'Look sensitivity', 0.25, 3, 0.05], ['chaseFov', 'Chase FOV (vertical degrees)', 45, 75, 1], ['cockpitFov', 'Cockpit FOV (vertical degrees)', 45, 90, 1]]) {
       const row = doc.createElement('label'), slider = doc.createElement('input'), value = doc.createElement('output'); row.textContent = label;

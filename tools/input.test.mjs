@@ -49,9 +49,9 @@ test('keyboard and controller action edges fire once, including short key taps a
   const { input, key, pads, target } = setup(), pad = gamepad();
   key('keydown', 'KeyC'); key('keyup', 'KeyC'); input.update(1 / 60); assert.equal(input.state.camera, true);
   input.update(1 / 60); assert.equal(input.state.camera, false);
-  key('keydown', 'KeyR'); input.update(1 / 60); assert.equal(input.state.restart, true);
-  key('keydown', 'KeyR', true); input.update(1 / 60); assert.equal(input.state.restart, false);
-  key('keyup', 'KeyR'); input.update(1 / 60); pads([pad]); pad.buttons[9].value = 1;
+  key('keydown', 'Enter'); input.update(1 / 60); assert.equal(input.state.restart, true);
+  key('keydown', 'Enter', true); input.update(1 / 60); assert.equal(input.state.restart, false);
+  key('keyup', 'Enter'); input.update(1 / 60); pads([pad]); pad.buttons[9].value = 1;
   input.update(1 / 60); assert.equal(input.state.pause, true); input.update(1 / 60); assert.equal(input.state.pause, false);
   pad.buttons[9].value = 0; input.update(1 / 60); pad.buttons[9].value = 1; input.update(1 / 60); assert.equal(input.state.pause, true);
   pads([]); input.update(1 / 60); assert.equal(input.connected.size, 0); assert.equal(input.state.throttle, 0);
@@ -141,4 +141,16 @@ test('M selects gearbox mode, J selects music, and E/Q remain edge-triggered shi
     key('keyup', code); input.update(1 / 60);
   }
   input.destroy();
+});
+
+
+test('R tap tows once; R hold resets once without restarting or towing; Backspace resets', () => {
+  const { input, key } = setup();
+  key('keydown', 'KeyR'); input.update(.2); assert.equal(input.state.tow, false); assert.equal(input.state.restart, false);
+  key('keyup', 'KeyR'); input.update(.01); assert.equal(input.state.tow, true);
+  input.update(.01); assert.equal(input.state.tow, false);
+  key('keydown', 'KeyR'); input.update(.5); input.update(.3); assert.equal(input.state.reset, true);
+  input.update(.5); assert.equal(input.state.reset, false); key('keyup', 'KeyR'); input.update(.01); assert.equal(input.state.tow, false);
+  key('keydown', 'Backspace'); key('keyup', 'Backspace'); input.update(.01); assert.equal(input.state.reset, true);
+  input.update(.01); input.clear(); key('keydown', 'KeyR'); input.update(.5, { inMenu: true }); input.update(.5, { inMenu: true }); assert.equal(input.state.reset, false); input.destroy();
 });

@@ -94,7 +94,7 @@ test('cooldown/bounds/reverse/mode explain themselves; auto paddles reject only 
   v.reverse = true; assert.equal(v.shiftManual(1), false); assert.equal(v.shiftFeedback.reason, 'reverse');
   v.reset(0, 0, 0); v.gear = 2;
   assert.equal(v.shiftManual(NaN), false); assert.equal(v.shiftFeedback.reason, 'bounds'); assert.equal(v.gear, 2);
-  const auto = mk('z4', 100); assert.equal(auto.manual, false);
+  const auto = mk('superb', 100); auto.setManual(false); assert.equal(auto.manual, false);
   assert.equal(auto.shiftManual(-1), false); assert.equal(auto.shiftFeedback.reason, 'overrev_protection');
   auto.reset(0, 0, 8); auto.gear = 2; auto.syncWheels(); assert.equal(auto.shiftManual(-1), true);
   const choice = new Vehicle({ ...v.spec, transmission: 'both' }, route);
@@ -132,6 +132,7 @@ test('tow/reset clears every abuse consequence and pending shift feedback withou
 
 test('AI and automatic retain clean cooling and never gain manual abuse wear', () => {
   for (const v of [mk('mini', 0, 1, false), mk('z4', 0, 1)]) {
+    if (v.spec.id === 'z4') v.setManual(false);
     thermal(v, 180); assert.equal(v.coolantTemp, 90); assert.equal(v.engineDamage, 0); assert.equal(v.engHealth, 1);
     run(v, 6, { throttle: 1, brake: 0, steer: 0 }); assert.equal(v.engineDamage, 0); assert.ok(v.gear > 1);
   }

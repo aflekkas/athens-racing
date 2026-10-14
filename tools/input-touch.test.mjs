@@ -26,9 +26,9 @@ test('production selected-car polling shows SEAT nitrous, hides MINI nitrous and
  try{
   const seat=cars.find(c=>c.id==='ibiza'),mini=cars.find(c=>c.id==='mini');
   assert.equal(seat.nitrous,true);assert.equal(mini.transmission,'manual');
-  frame(seat);assert.equal(button('nitro').hidden,false);assert.equal(button('transmission').hidden,true);assert.equal(input.touchUI.dataset.auxColumns,'4');
+  frame(seat);assert.equal(button('nitro').hidden,false);assert.equal(button('transmission').hidden,false);assert.equal(input.touchUI.dataset.auxColumns,'4');
   frame(mini);assert.equal(button('nitro').hidden,true);assert.equal(button('transmission').hidden,true);assert.equal(input.touchUI.dataset.auxColumns,'3');
-  for(const car of cars){frame(car);assert.equal(button('nitro').hidden,car.nitrous!==true,car.id);assert.equal(button('transmission').hidden,['manual','auto'].includes(car.transmission),car.id);}
+  for(const car of cars){frame(car);assert.equal(button('nitro').hidden,car.nitrous!==true,car.id);assert.equal(button('transmission').hidden,car.transmission==='manual',car.id);}
  }finally{input.destroy();}
 });
 test('car switch while paused and resume discard stale touch nitrous and MODE presses',()=>{

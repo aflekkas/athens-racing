@@ -59,8 +59,8 @@ test('manual-only player ignores auto preference, holds the limiter and emits sh
 test('auto-only rejects the M toggle and manual preference, but accepts safe paddle shifts', async () => {
   const { toggleTransmission } = await import('../../src/transmission.js');
   const v = new Vehicle({ ...spec, transmission: 'auto' }, route);
-  assert.equal(v.setManual(true), false);
-  const gear = v.gear; assert.equal(toggleTransmission(v).locked, true);
+  assert.equal(v.setManual(true), true); v.setManual(false);
+  const gear = v.gear; assert.equal(toggleTransmission(v).locked, false); v.setManual(false);
   assert.equal(v.manual, false); assert.equal(v.gear, gear);
   assert.equal(v.shiftManual(1), true); run(v, 45, { throttle: 0, brake: 0, steer: 0 });
   assert.equal(v.gear, 2); assert.equal(v.manual, false);
@@ -80,11 +80,29 @@ test('choice mode toggles; switching chassis reapplies locks; HUD cue respects r
   const { carTransmission, toggleTransmission, gearFeedback } = await import('../../src/transmission.js');
   const v = new Vehicle(spec, route); v.setManual(false);
   assert.equal(carTransmission(spec), 'both'); assert.equal(toggleTransmission(v).locked, false); assert.equal(v.manual, true);
-  v.setSpec({ ...spec, transmission: 'auto' }); assert.equal(v.manual, false);
+  v.setManual(false); v.setSpec({ ...spec, transmission: 'auto' }); assert.equal(v.manual, false);
   v.setSpec({ ...spec, transmission: 'manual' }); assert.equal(v.manual, true);
   const st = { manual: true, rpm: 6900, redline: 7000, gearLabel: '1', canUpshift: true };
   assert.equal(gearFeedback(st).band, 'red'); assert.equal(gearFeedback(st).upshift, true);
   assert.equal(gearFeedback({ ...st, gearLabel: 'R' }).upshift, false);
   assert.equal(gearFeedback({ ...st, canUpshift: false }).upshift, false);
   assert.equal(gearFeedback({ ...st, rpm: 5500 }).band, 'green');
+});
+
+
+test('paddles instantly select persistent manual for choice and DSG cars; M restores auto', async () => {
+  const { shiftTransmission, toggleTransmission } = await import('../../src/transmission.js');
+  for (const transmission of ['both', 'auto', 'manual']) {
+    const v = new Vehicle({ ...spec, transmission }, route); v.setManual(false);
+    const result = shiftTransmission(v, 1); assert.equal(result.switched, transmission !== 'manual'); assert.equal(result.shifted, true); assert.equal(v.manual, true);
+    if (result.switched) assert.equal(result.message, 'MANUAL — press M for auto');
+    run(v, 60, { throttle: 0, brake: 0, steer: 0 }); assert.equal(v.gear, 2); assert.equal(v.manual, true);
+    assert.equal(toggleTransmission(v).locked, transmission === 'manual'); assert.equal(v.manual, transmission === 'manual');
+  }
+});
+
+test('only Cooper S, taxi and classic GTV lock the player gearbox', () => {
+  const cars = Function('return '+readFileSync(new URL('../../src/cars.js', import.meta.url),'utf8').split('export const CARS = ')[1].split('\n];')[0]+'\n];')();
+  assert.deepEqual(cars.filter(c => c.transmission === 'manual').map(c => c.id).sort(), ['gtv','mini','taxi']);
+  for (const c of cars) if (c.id.startsWith('gl') || ['cla','cle','huracan'].includes(c.id)) assert.equal(c.transmission, 'both', c.id);
 });

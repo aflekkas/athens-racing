@@ -1,0 +1,12 @@
+/* A corner offer occupies only its own buttons and never captures driving input. */
+body #tow-prompt { position: fixed; top: auto; left: 16px; right: auto; bottom: 110px; transform: none; width: min(260px, calc(100vw - 32px)); padding: 12px; z-index: 45; animation: none; font-size: 12px; }
+body #tow-prompt strong { font-size: 17px; }
+body #tow-prompt p { margin: 6px 0 8px; }
+body #tow-prompt .tow-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+body #tow-prompt .tow-actions button { min-height: 30px; padding: 6px 9px; font-size: 11px; }
+body #tow-prompt .tow-chip { display: none; }
+body #tow-prompt.minimised { width: auto; padding: 0; border: 1px solid #ffffff45; border-radius: 6px; box-shadow: none; }
+body #tow-prompt.minimised > :not(.tow-chip) { display: none; }
+body #tow-prompt.minimised .tow-chip { display: block; padding: 7px 10px; background: transparent; color: #fff; border: 0; font: 700 12px system-ui; }
+body #tow-prompt[hidden] { display: none; }
+@media (max-width: 700px), (pointer: coarse) { body #tow-prompt { bottom: 220px; } }

@@ -61,7 +61,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       <div class="car-actions">${C.button({ label: 'CUSTOMIZE', icon: 'sliders-horizontal', act: 'carCustomize', block: true })}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
 }
-export const transmissionLabel = c => carTransmission(c) === 'both' ? 'MANUAL / AUTO' : carTransmission(c).toUpperCase() + ' ONLY';
+export const transmissionLabel = c => carTransmission(c) === 'both' ? 'AUTO / MANUAL' : carTransmission(c) === 'auto' ? 'AUTO / PADDLES' : 'MANUAL ONLY';
 
 // A single disposable renderer renders visible catalogue thumbnails; no per-card WebGL contexts.
 const thumbs = new Map();
