@@ -1,7 +1,8 @@
 // Builds assets/icons/sprite.svg from the vendored Phosphor icons (bold weight, MIT, assets/icons/LICENSE).
 // Add an icon: copy <name>-bold.svg from @phosphor-icons/core/assets/bold to assets/icons/<name>.svg and re-run
 //   node tools/build-icon-sprite.mjs
-// The UI references icons as <svg><use href="assets/icons/sprite.svg#name"/></svg> (src/ui/components.js icon()).
+// The UI inlines the sprite once (symbol ids prefixed ico-) and references icons as <svg><use href="#ico-name"/></svg>
+// (src/ui/components.js icon()); until then it falls back to assets/icons/sprite.svg#name.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const dir = new URL('../assets/icons/', import.meta.url);

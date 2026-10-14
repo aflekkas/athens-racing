@@ -16,8 +16,11 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 /* ---------------------------------------------------------------- the screen frame */
 .scr { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: var(--s-3);
   padding: max(var(--pad-screen-y), env(safe-area-inset-top)) max(var(--pad-screen-x), env(safe-area-inset-right)) max(calc(var(--pad-screen-y) * .5), env(safe-area-inset-bottom)) max(var(--pad-screen-x), env(safe-area-inset-left));
-  animation: hu-enter .26s var(--ease) both; }
-@keyframes hu-enter { from { opacity: 0; transform: translateY(8px); } }
+ }
+/* a new screen slides up a touch; it never fades, so the road view behind cannot flash through between screens */
+#ui.is-entering .scr { animation: hu-enter .22s var(--ease) both; }
+@keyframes hu-enter { from { transform: translateY(6px); } }
+#ui.is-settling *, #ui.is-settling *::before, #ui.is-settling *::after { transition: none !important; }
 /* status bar: Back owns the first slot; titles never share its row */
 .hu-status { display: flex; align-items: center; gap: var(--s-3); min-width: 0; min-height: 2.75rem; }
 .hu-status .scr__back { flex: none; gap: var(--s-2); padding: 0 var(--s-4) 0 .3rem; min-height: 2.5rem; color: var(--hu-text-2); font-weight: 600; letter-spacing: .16em; }
@@ -156,8 +159,9 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 
 /* ---------------------------------------------------------------- pause: a quick-settings sheet over the frozen road view */
 .scr--pause { grid-template-rows: minmax(0, 1fr) auto; }
-.pause-card { align-self: stretch; justify-self: start; width: min(26rem, 100%); max-height: 100%; overflow-y: auto; padding: var(--s-6) var(--s-4) var(--s-4); border-radius: var(--r-4); animation: hu-sheet .28s var(--ease) both; }
-@keyframes hu-sheet { from { opacity: 0; transform: translateX(-16px); } }
+.pause-card { align-self: stretch; justify-self: start; width: min(26rem, 100%); max-height: 100%; overflow-y: auto; padding: var(--s-6) var(--s-4) var(--s-4); border-radius: var(--r-4); }
+#ui.is-entering .pause-card { animation: hu-sheet .24s var(--ease) both; }
+@keyframes hu-sheet { from { transform: translateX(-12px); } }
 .pause-card > .kick { padding: 0 var(--s-3); }
 .pause-card .title-xl { margin-top: var(--s-2); padding: 0 var(--s-3); font-size: var(--t-2xl); letter-spacing: .14em; }
 .pause__sub { margin-top: var(--s-2); padding: 0 var(--s-3); display: flex; align-items: center; gap: var(--s-2); font: 500 var(--t-lg) var(--f-sans); letter-spacing: .06em; color: var(--tt-amber); font-variant-numeric: tabular-nums; }

@@ -11,11 +11,11 @@ export function installMusicSettings(menu) {
   function clear() { unsubscribe?.(); unsubscribe = null; youtube?.destroy(); youtube = null; mounted = null; }
   function mount() {
     if (mounted && !mounted.isConnected) clear();
-    if (menu.screen !== 'settings' || (menu.data.tab || 'audio') !== 'audio') { if (mounted) clear(); return; }
+    if (menu.screen !== 'settings' || (menu.data.tab || 'audio') !== 'audio') { if (mounted) { mounted.remove(); clear(); } return; }
     const panel = menu.root.querySelector('.set-panel');
     music = window.__music;
     if (!panel || !music || mounted?.isConnected) return;
-    const section = mounted = document.createElement('section'); section.className = 'group music-settings'; section.id = 'music-source-settings';
+    const section = mounted = document.createElement('section'); section.className = 'group music-settings'; section.id = 'music-source-settings'; section.dataset.uiKeep = ''; // the menu patches screens in place; this section is ours
     section.innerHTML = `<h3 class="group__title">${icon('music-notes')}MUSIC SOURCE</h3>
       <label>LISTEN TO<select aria-label="Music source"><option value="off">Off</option><option value="files">Your music files</option><option value="youtube">YouTube stream / playlist URL</option><option value="builtin">Built-in radio</option></select></label>
       <div data-source="off"><p>Music is off. Choose a source whenever you want.</p></div>

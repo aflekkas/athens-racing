@@ -39,7 +39,16 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 const attrStr = (o = {}) => Object.entries(o).filter(([, v]) => v != null && v !== false).map(([k, v]) => v === true ? ` ${k}` : ` ${k}="${esc(v)}"`).join('');
 
-export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hidden="true" focusable="false"><use href="${SPRITE}#${name}"/></svg>` : '';
+// Chromium resolves an external <use href="sprite.svg#…"> asynchronously for every newly inserted icon, so each freshly
+// rendered screen showed blank icons for a frame or two. The sprite is inlined into the page once (ids prefixed ico-)
+// and icons rendered after that reference it in-document.
+let spriteInline = false;
+if (typeof document !== 'undefined' && typeof fetch === 'function') fetch(SPRITE).then((r) => (r.ok ? r.text() : Promise.reject(new Error(r.status)))).then((text) => {
+  const put = () => { const t = document.createElement('template'); t.innerHTML = text.replace(/<symbol id="/g, '<symbol id="ico-'); const svg = t.content.querySelector('svg'); if (!svg) return;
+    svg.setAttribute('aria-hidden', 'true'); svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden'; document.body.prepend(svg); spriteInline = true; };
+  if (document.body) put(); else document.addEventListener('DOMContentLoaded', put, { once: true });
+}).catch(() => {});
+export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hidden="true" focusable="false"><use href="${spriteInline ? '#ico-' : SPRITE + '#'}${name}"/></svg>` : '';
 export function iconEl(name, cls = '') { const t = document.createElement('template'); t.innerHTML = icon(name, cls); return t.content.firstChild; }
 
 // ------------------------------------------------------------------ value formats (sliders / steppers)
@@ -248,6 +257,35 @@ function dragSlider(e, el, track, onValue, onDone) {
   track.addEventListener('pointermove', move); track.addEventListener('pointerup', up); track.addEventListener('pointercancel', up);
 }
 /** once per container that renders builder markup (the menu root) */
+// ------------------------------------------------------------------ morph (in-place re-render)
+/** Patch `root`'s children to match `html` without rebuilding unchanged nodes, so a value change only touches the
+ *  rows that differ: focus, scroll, running transitions and loaded images stay put. Kept as they are: the `focus`
+ *  class (Menu.setFocus owns it), an <img> src set at runtime, and any subtree marked data-ui-keep (mounted by
+ *  another module). */
+export function morph(root, html) {
+  const t = document.createElement('template'); t.innerHTML = html; patchChildren(root, t.content);
+}
+function patchChildren(from, to) {
+  const next = [...to.childNodes], keep = [...from.childNodes].filter((n) => n.nodeType === 1 && n.hasAttribute('data-ui-keep'));
+  let cur = [...from.childNodes].filter((n) => !keep.includes(n));
+  next.forEach((n, i) => {
+    const old = cur[i];
+    if (!old) { from.append(n); return; }
+    if (old.nodeType !== n.nodeType || old.nodeName !== n.nodeName || (old.nodeType === 1 && (old.id !== n.id || old.getAttribute('data-car-thumb') !== n.getAttribute('data-car-thumb')))) { from.replaceChild(n, old); return; }
+    if (old.nodeType === 3 || old.nodeType === 8) { if (old.nodeValue !== n.nodeValue) old.nodeValue = n.nodeValue; return; }
+    patchAttrs(old, n); patchChildren(old, n);
+  });
+  for (const n of cur.slice(next.length)) n.remove();
+}
+function patchAttrs(old, n) {
+  for (const { name } of [...old.attributes]) if (!n.hasAttribute(name) && !(name === 'src' && old.nodeName === 'IMG')) old.removeAttribute(name);
+  for (const { name, value } of [...n.attributes]) {
+    if (name === 'class') { const v = old.classList.contains('focus') && !n.classList.contains('focus') ? value + ' focus' : value; if (old.getAttribute('class') !== v) old.setAttribute('class', v); }
+    else if (old.getAttribute(name) !== value) old.setAttribute(name, value);
+  }
+  if (old.nodeName === 'INPUT' && old !== document.activeElement && old.value !== (n.getAttribute('value') ?? '')) old.value = n.getAttribute('value') ?? '';
+}
+
 export function bindRoot(root) {
   if (root.__uiBound) return; root.__uiBound = true;
   root.addEventListener('pointerdown', (e) => {

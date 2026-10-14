@@ -50,7 +50,7 @@ export class Menu {
     root.addEventListener('click', (e) => this.onClick(e));
     root.addEventListener('pointermove', (e) => { const it = e.target.closest?.('.mi'); if (it && !it.classList.contains('focus')) { const i = this.items().indexOf(it); if (i >= 0) this.setFocus(i, false); } });
     root.addEventListener('ui:change', (e) => this.onChange(e.detail));
-    root.addEventListener('input', e => { if (!e.target.matches('[data-car-search]')) return; const value = e.target.value, pos = e.target.selectionStart; this.data.filters = { ...this.data.filters, search: value }; this.render(); const search = root.querySelector('[data-car-search]'); search.focus(); search.setSelectionRange?.(pos, pos); });
+    root.addEventListener('input', e => { if (!e.target.matches('[data-car-search]')) return; const value = e.target.value, pos = e.target.selectionStart; this.data.filters = { ...this.data.filters, search: value }; this.render({ morph: true }); const search = root.querySelector('[data-car-search]'); search.focus(); search.setSelectionRange?.(pos, pos); });
   }
   get open() { return !!this.screen; }
 
@@ -73,17 +73,24 @@ export class Menu {
   }
   hide() {
     this.leaving(); this.mapView?.dispose(); this.mapView = null;
-    this.screen = null; this.stack.length = 0; this.root.innerHTML = '';
+    this.screen = this.shown = null; this.stack.length = 0; this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
   }
-  render() {
+  /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
+  render({ morph = false } = {}) {
+    const entering = this.screen !== this.shown;
+    if (morph && !entering && this.root.firstElementChild && this.screen !== 'maps' && !(this.screen === 'car' && this.data.detail)) return this.patch();
     const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
     const stage = keepCar ? this.root.querySelector('#carStage') : null;
     if (!keepCar) { this.carView?.dispose(); this.carView = null; } this.mapView?.dispose(); this.mapView = null;
     C.closeListbox();
     const keep = this.root.querySelector('.scr__body .scroll-y, .scr__body')?.scrollTop;
+    // Only a real screen change slides in; refreshes (a toggle, a tab) swap in place. Transitions stay off until the
+    // new DOM has its focus state, so nothing visibly animates from an unfocused, unstyled first frame.
+    this.shown = this.screen;
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
-    this.root.className = 's-' + this.screen;
+    this.root.className = 's-' + this.screen + ' is-settling' + (entering ? ' is-entering' : '');
+    cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
     if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
@@ -96,12 +103,22 @@ export class Menu {
     this.setFocus(Math.min(Math.max(0, f), Math.max(0, it.length - 1)), !this.data.keepScroll && !(this.screen === 'car' && this.data.detail));
     this.data.keepScroll = false;
   }
+  /** the morph path of render(): only nodes whose markup changed are touched, so focus, scroll and the garage
+   *  thumbnails survive and nothing flashes */
+  patch() {
+    C.closeListbox();
+    const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
+    if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
+    if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
+    const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
+    this.data.keepScroll = false;
+  }
   /** re-render in place (a value changed that other rows depend on); focus stays on the same item even when others
    *  appear or disappear (e.g. DEFAULTS becomes available) */
   refresh() {
     const id = (el) => el && ['key', 'act', 'ev', 'mapId', 'action', 'color'].map((k) => el.dataset[k]).find((v) => v != null);
     const want = id(this.items()[this.focus]);
-    this.data.keepScroll = true; this.render();
+    this.data.keepScroll = true; this.render({ morph: true });
     if (want != null) { const i = this.items().findIndex((el) => id(el) === want); if (i >= 0 && i !== this.focus) this.setFocus(i, false); }
   }
   items() { return [...this.root.querySelectorAll('.mi:not(.off)')].filter((el) => el.offsetParent !== null || el.getClientRects().length); }
@@ -233,7 +250,7 @@ export class Menu {
     if (scope === 'participants') { this.participants = value; this.refresh(); return; }
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {
-      if (key === 'settingsTab') { this.h.cancelBindings?.(); this.data.tab = value; this.focus = 0; this.render(); }
+      if (key === 'settingsTab') { this.h.cancelBindings?.(); this.data.tab = value; this.render({ morph: true }); const scroll = this.root.querySelector('.set-panel'); if (scroll) scroll.scrollTop = 0; }
       return;
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
@@ -310,7 +327,7 @@ export class Menu {
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users-three', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
         note: cur.rivals > PERF_RIVALS ? `${icon('warning')} MORE THAN ${PERF_RIVALS} RIVALS CAN LOWER THE FRAME RATE` : f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: cur.rivals > PERF_RIVALS ? 'warn' : '' }));
-      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'shield', value: String(cur.police), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['false', 'OFF'], ['true', 'ON']] }));
+      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'police-car', value: String(cur.police), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['false', 'OFF'], ['true', 'ON']] }));
       if (f.key === 'traffic') rows.push(C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: cur.traffic, type: 'num', dflt: f.dflt, attrs: A, options: f.levels.map(([, v, l]) => [v, l]) }));
       if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'arrows-clockwise', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len)} IN TOTAL` }));
       if (f.key === 'reverse') rows.push(C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: String(cur.reverse), type: 'bool', dflt: 'false', attrs: A, options: [['false', closed ? 'CLOCKWISE' : 'FORWARD'], ['true', closed ? 'ANTI-CLOCKWISE' : 'REVERSE']] }));
