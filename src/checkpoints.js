@@ -53,7 +53,7 @@ function carriageways(route) {
   const mapped = { layout: new LocalCarriageways(adapter, route.corridors), route: adapter };
   layouts.set(route, mapped); return mapped;
 }
-function gateFrame(route, s, dir) {
+export function checkpointFrame(route, s, dir) {
   const mapped = carriageways(route);
   if (!mapped?.layout.contains(s)) return roadFrame(route, s);
   const lanes = [1, -1].map(direction => {
@@ -73,7 +73,7 @@ export function buildCourse(event, route) {
   const distances = new Set([len]);
   for (let d = GATE_SPACING; d < len; d += GATE_SPACING) distances.add(d);
   for (const cp of event.checkpoints || []) { const d = (cp.s - event.s0) * dir; if (d > 0 && d < len) distances.add(d); }
-  const gates = [...distances].sort((a, b) => a - b).map((d, i) => ({ id: `gate-${i + 1}`, d, s: event.s0 + dir * d, ...gateFrame(route, event.s0 + dir * d, dir) }));
+  const gates = [...distances].sort((a, b) => a - b).map((d, i) => ({ id: `gate-${i + 1}`, d, s: event.s0 + dir * d, ...checkpointFrame(route, event.s0 + dir * d, dir) }));
   const start = roadFrame(route, event.s0);
   return { s0: event.s0, dir, gates, passed: 0, missed: false, previous: { s: event.s0, u: 0, x: start.x, y: start.y, z: start.z }, previousTime: null };
 }
