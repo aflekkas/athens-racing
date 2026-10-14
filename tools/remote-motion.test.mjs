@@ -96,14 +96,14 @@ const push = (timeline, time, extra = {}, options = {}) => timeline.push(state(t
 test('accelerating positions use endpoint velocities; yaw crosses ±pi along the short arc', () => {
   const timeline = new RemoteTimeline();
   push(timeline, 0, { z: 0, vLong: 0 }); push(timeline, 200, { z: -.4, vLong: 4 });
-  const middle = timeline.sample(450); close(middle.z, -.1); close(middle.vLong, 2);
+  const middle = timeline.sample(220); close(middle.z, -.1); close(middle.vLong, 2);
   const turn = new RemoteTimeline(); push(turn, 0, { yaw: Math.PI-.1 }); push(turn, 200, { yaw: -Math.PI+.1 });
-  close(Math.abs(turn.sample(450).yaw), Math.PI);
+  close(Math.abs(turn.sample(220).yaw), Math.PI);
 });
 
-test('a parked/finished/wrecked car cannot extrapolate; a missing stream coasts at most 120ms then freezes wheels', () => {
+test('a parked/finished/wrecked car cannot extrapolate; a missing stream coasts at most 350ms then freezes wheels', () => {
   const timeline = new RemoteTimeline(); push(timeline, 0); push(timeline, 200);
-  const end = timeline.sample(1000); const later = timeline.sample(5000); close(end.z, later.z); close(end.z, -6.4); close(later.vLong, 0);
+  const end = timeline.sample(1000); const later = timeline.sample(5000); close(end.z, later.z); close(end.z, -11); close(later.vLong, 0);
   const parked = new RemoteTimeline(); push(parked, 0, { z: 0, vLong: 0 }); push(parked, 200, { z: 0, vLong: 0 }); close(parked.sample(2000).z, 0);
   for (const flag of [{ finish: 3 }, { dnf: 'wrecked' }]) {
     const peers = new Map(); receiveRemoteSnapshot(peers, { now: 0, players: [{ id: 'p', state: state(0, { sampleTime: 0 }), stateAt: 0 }] }, { receivedAt: 100 });
@@ -140,9 +140,9 @@ test('sender tow epoch cancels the pending pre-tow sample and preserves bounded 
 test('legacy snapshots without timing metadata still interpolate, suppress repeated held poses and freeze', () => {
   const peers = new Map();
   for (const time of [0,200,400]) receiveRemoteSnapshot(peers, { now: 100000+time, players: [{ id: 'p', state: state(time) }] }, { receivedAt: time+100 });
-  const peer = peers.get('p'), v = {}; applyRemotePose(peer,v,650); close(v.z,-6);
+  const peer = peers.get('p'), v = {}; applyRemotePose(peer,v,650); close(v.z,-10.6);
   receiveRemoteSnapshot(peers, { now: 100800, players: [{ id: 'p', state: state(400) }] }, { receivedAt: 900 });
-  assert.equal(peer.at,500); applyRemotePose(peer,v,2000); close(v.z,-10.4); applyRemotePose(peer,v,4000); close(v.z,-10.4); close(v.vLong,0);
+  assert.equal(peer.at,500); applyRemotePose(peer,v,2000); close(v.z,-15); applyRemotePose(peer,v,4000); close(v.z,-15); close(v.vLong,0);
 });
 
 test('production lobby handler clears race history and resets car/rejoin timelines; socket close preserves authoritative state', t => {
@@ -180,7 +180,7 @@ test('recorded ~4.78Hz Worker arrivals survive queued receiver bursts without re
   assert.equal(timeline.resetCount, 0, 'continuous source samples must survive >1.5sec receiver stalls');
   assert.ok(stats.cv < .04, 'recorded burst timing must not cause the old clock-reset oscillations');
   assert.ok(stats.max <= 20.001, 'recovery must not accelerate the car to chase its target');
-  assert.ok(timeline.samples.length <= 16); assert.ok(timeline.delay >= 200 && timeline.delay <= 400);
+  assert.ok(timeline.samples.length <= 16); assert.ok(timeline.delay >= 20 && timeline.delay <= 100);
 });
 
 test('4.78Hz snapshots with measured-scale arrival jitter and two dropped batches freeze and resume at normal speed', () => {
@@ -210,7 +210,7 @@ test('4.78Hz snapshots with measured-scale arrival jitter and two dropped batche
 test('a frozen playhead stays at the prediction horizon and resumes without a 1.5x catch-up phase', () => {
   const timeline = new RemoteTimeline(); push(timeline, 0); push(timeline, 200);
   const frozen = timeline.sample(1000), head = timeline.playhead;
-  close(head, 320); close(timeline.sample(1016).z, frozen.z); close(timeline.playhead, head);
+  close(head, 550); close(timeline.sample(1016).z, frozen.z); close(timeline.playhead, head);
   push(timeline, 600, {}, { receivedAt: 1030 });
   const resumed = timeline.sample(1032); close(Math.abs(resumed.z - frozen.z), 20 * .016, .0001);
   assert.equal(timeline.resetCount, 0); assert.equal(timeline.mode, 'interpolate');

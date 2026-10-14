@@ -70,9 +70,9 @@ test('private rooms, track mismatch, countdown cancellation, host transfer and c
   assert.equal(transferred.players.length, 1);
   b.send({ type: 'leave' }); await b.next(m => m.type === 'left'); assert.equal(env.app.lobbies.size, 0);
 });
-test('rejects live joins, stale race packets and teleports; expires unfinished races', async t => {
+test('accepts live joins; rejects stale race packets and teleports; expires unfinished races', async t => {
   const env = await setup(t); const { a, b, code } = await pair(env); const outsider = await env.client('Chris');
-  const l = await readyAndStart(a, b); outsider.send({ type: 'join', code }); assert.match((await outsider.next(m => m.type === 'error')).message, /already racing/);
+  const l = await readyAndStart(a, b); outsider.send({ type: 'join', code }); const late = (await outsider.next(m => m.type === 'lobby')).lobby; assert.equal(late.players.at(-1).ready, false); assert.equal(late.players.at(-1).loaded, false);
   await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
   a.send({ type: 'state', raceId: 'old-race', state: state(15) }); a.send({ type: 'state', raceId: l.raceId, state: state(400) });
   const r = (await a.next(m => m.type === 'lobby' && m.lobby.status === 'results')).lobby;
@@ -166,7 +166,7 @@ test('host route/traffic choices clear ready votes; reverse finish follows event
   a.send({ type: 'ready', ready: true, version: a.version }); await room(a); await room(b);
   a.send({ type: 'options', eventId: 'quick', traffic: true, config: { reverse: true } });
   const changed = (await room(a)).lobby; await room(b);
-  assert.equal(changed.event.dir, -1); assert.equal(changed.traffic, true); assert.ok(changed.players.every(p => !p.ready));
+  assert.equal(changed.event.dir, -1); assert.equal(changed.traffic, false); assert.ok(changed.players.every(p => !p.ready));
   const l = await readyAndStart(a, b); await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
   a.send({ type: 'state', raceId: l.raceId, state: state(10) });
   await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === a.id && p.state?.s === 10));

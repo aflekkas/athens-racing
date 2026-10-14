@@ -8,7 +8,7 @@ const valid = p => p && [...fields, 'yaw'].every(k => Number.isFinite(p[k]));
 const samePose = (a, b) => [...fields, 'yaw', 'gear', 'reverse'].every(k => a[k] === b[k]);
 
 export class RemoteTimeline {
-  constructor() { this.samples = []; this.delay = 250; this.jitter = 0; this.cadence = 200; this.offset = null; this.playhead = null; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; }
+  constructor() { this.samples = []; this.delay = 40; this.jitter = 0; this.cadence = 200; this.offset = null; this.playhead = null; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; }
   push(state, { receivedAt, serverNow, stateAt, car, stopped = false } = {}) {
     if (!valid(state)) return false;
     const previous = this.samples.at(-1);
@@ -25,7 +25,7 @@ export class RemoteTimeline {
     // player's sample clock signals a stalled stream; receipt gaps cannot reset
     // the clock to the oldest packet in a queued burst.
     const discontinuity = previous && (restart || car !== previous.car || state.motionEpoch !== previous.state.motionEpoch || gap > 1.5 || distance > 3 + Math.max(speed(state), speed(previous.state)) * Math.max(0, gap) * 1.6);
-    if (discontinuity) { this.samples = []; this.playhead = this.renderAt = null; this.offset = null; this.delay = 250; this.jitter = 0; this.cadence = 200; this.resetCount++; }
+    if (discontinuity) { this.samples = []; this.playhead = this.renderAt = null; this.offset = null; this.delay = 40; this.jitter = 0; this.cadence = 200; this.resetCount++; }
     const last = this.samples.at(-1);
     const candidate = local - source;
     if (this.offset === null) this.offset = candidate;
@@ -38,7 +38,7 @@ export class RemoteTimeline {
       if (interval <= 600) this.cadence += (interval - this.cadence) * .1;
       const variation = Math.abs((local - last.local) - interval);
       this.jitter += (variation - this.jitter) * .1;
-      this.delay = clamp(this.cadence + 50 + 2 * this.jitter, 200, 400);
+      this.delay = clamp(20 + 1.5 * this.jitter, 20, 100);
     }
     this.samples.push({ state: { ...state }, time: source, local, receivedAt, receipt, car, stopped });
     if (this.samples.length > 16) this.samples.shift();
@@ -57,7 +57,7 @@ export class RemoteTimeline {
     // speed. Growing jitter delay may slow the clock by 10%; it never speeds up.
     if (this.playhead === null) this.playhead = target;
     else { const dt = Math.max(0, now - this.renderAt); this.playhead += dt * clamp(1 + (target - this.playhead - dt) / 1000, .9, 1); }
-    this.playhead = Math.min(this.playhead, latest.time + (moving ? 120 : 0));
+    this.playhead = Math.min(this.playhead, latest.time + (moving ? 350 : 0));
     this.renderAt = now;
     const time = this.playhead;
     while (this.samples.length > 2 && this.samples[1].time <= time) this.samples.shift();
@@ -83,9 +83,9 @@ export class RemoteTimeline {
     }
     const p = { ...latest.state };
     if (!moving) { this.mode = 'stopped'; p.vLong = p.vLat = 0; return p; }
-    // One missed packet can coast briefly. After 120ms the pose AND wheel speed freeze.
-    const late = Math.max(0, time - latest.time), dt = Math.min(late, 120) / 1000;
-    this.mode = late >= 120 ? 'freeze' : 'extrapolate';
+    // One missed packet can coast briefly. After 350ms the pose AND wheel speed freeze.
+    const late = Math.max(0, time - latest.time), dt = Math.min(late, 350) / 1000;
+    this.mode = late >= 350 ? 'freeze' : 'extrapolate';
     const vel = velocity(p), span = (latest.time - previous.time) / 1000;
     const yawRate = clamp(angle(p.yaw - previous.state.yaw) / span, -3, 3);
     const half = yawRate * dt / 2;
@@ -94,7 +94,7 @@ export class RemoteTimeline {
     p.yaw += yawRate * dt;
     p.s += clamp((p.s - previous.state.s) / span, -150, 150) * dt;
     p.u += clamp((p.u - previous.state.u) / span, -50, 50) * dt;
-    if (late >= 120) p.vLong = p.vLat = 0;
+    if (late >= 350) p.vLong = p.vLat = 0;
     return p;
   }
 }

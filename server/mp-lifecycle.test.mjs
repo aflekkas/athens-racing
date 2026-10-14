@@ -131,7 +131,7 @@ test('create seeds configurable Quick Race; removed modes and disabled maps reje
   send(a, { type: 'create', eventId: 'quick', config: { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true } });
   const l = lobbyOf(a);
   assert.equal(l.mode, 'sprint');
-  assert.deepEqual(l.config, { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
+  assert.deepEqual(l.config, { rivals: 11, traffic: 0, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
   assert.deepEqual([l.event.s0, l.event.s1, l.event.dir, l.event.routeKey], [15, 0, -1, '15>0']);
   send(a, { type: 'options', eventId: 'cab' });
   assert.match(errOf(a), /Mode unavailable/);

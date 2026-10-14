@@ -28,6 +28,7 @@ import { VoiceReactions } from './voice.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
+import { resolvePlayerContacts, containOnlineVehicle } from './multiplayer-contact.js';
 import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
@@ -1672,8 +1673,8 @@ function step(dt, draw = true) {
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
   const simulate = !window.__replay?.active && G.state !== 'menu' && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && !(multiplayer.active && inMenu()) && (multiplayer.active || multiplayer.panel.hidden);
-  tickWorldLife(dt, { running: simulate, online: multiplayer.active ? multiplayer : null });
-  if (simulate) updateRoadWeather(dt);
+  if (!multiplayer.active) tickWorldLife(dt, { running: simulate });
+  if (simulate && !multiplayer.active) updateRoadWeather(dt);
   if (simulate) signals.update(dt, pv.s, camera.position);
   if (simulate) {
     // ---- state machine
@@ -1702,7 +1703,7 @@ function step(dt, draw = true) {
           const ahead = route.point(route.closed ? pv.s + dir * Math.max(8, Math.abs(pv.vLong)) : clamp(pv.s + dir * Math.max(8, Math.abs(pv.vLong)), 0, route.length), pv.u);
           const dx = ahead.x - pv.x, dz = ahead.z - pv.z, lat = dx * Math.cos(pv.yaw) - dz * Math.sin(pv.yaw);
           const lon = Math.max(1, -dx * Math.sin(pv.yaw) - dz * Math.cos(pv.yaw));
-          pin = { throttle: 0, brake: Math.abs(pv.vLong) > 1 ? 0.15 : 0, steer: clamp(Math.atan(pv.wb * 2 * lat / (lon * lon + lat * lat)) / pv.lockAt(Math.abs(pv.vLong)), -1, 1), handbrake: Math.abs(pv.vLong) <= 1, nitro: false };
+          pin = { throttle: 0, brake: Math.abs(pv.vLong) > 1 ? 0.6 : 0, steer: clamp(Math.atan(pv.wb * 2 * lat / (lon * lon + lat * lat)) / pv.lockAt(Math.abs(pv.vLong)), -1, 1), handbrake: Math.abs(pv.vLong) <= 1, nitro: false };
         } else { player.ai = player.ai || { lane: 1, u: pv.u, cool: 0 }; pin = aiInput(player, dt, 0.25, grid); pin.nitro = false; if (prog(pv.s) > G.ev.r.len + 120) { pin.throttle = 0; pin.brake = pv.vLong > 1 ? 0.6 : 0; pin.handbrake = pv.vLong <= 1; } }
       }
       if (G.autodrive && Q.has('nantrap')) {
@@ -1746,6 +1747,15 @@ function step(dt, draw = true) {
       // out of sight a rival is not held up by traffic (they know these roads); in sight they race for real (updateGrid)
       if (!multiplayer.active) for (const c of grid) if (!c.ghost) { const n0 = events.length; traffic.collide(c.actor, events, G.t); for (let k = n0; k < events.length; k++) events[k].racer = c; }
       if (!multiplayer.active) racerCollide(dt);
+      else {
+        multiplayer.contacts ||= new Map();
+        const now = performance.now();
+        multiplayer.lastContacts = G.state === 'race' && !holdingRecovery ? resolvePlayerContacts(pv, [...remoteCars].map(([id, car]) => {
+          const peer = multiplayer.peers.get(id), member = multiplayer.lobby.players.find(p => p.id === id);
+          return { id, vehicle: car.veh, age: peer ? now - peer.at : Infinity, ghost: !member?.loaded || member.connected === false || member.dnf || member.finish != null || !peer?.state || peer.state.recoveryUntil > multiplayer.now() };
+        }), dt, now, multiplayer.contacts) : [];
+        containOnlineVehicle(pv, route);
+      }
       if (police && !multiplayer.active) for (const e of police.update(dt, { events, reds: G.reds, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
@@ -2005,7 +2015,7 @@ function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN
 function onlineWait() {
   if (!player || !multiplayer.loaded) return;
   clearDriveInput(); hud.hideMenu(); hud.count(''); G.state = 'lobby'; G.cam = G.userCam; applyCamMode();
-  G.trafficMul = multiplayer.lobby?.traffic ? 1 : 0; traffic.disabled = !multiplayer.lobby?.traffic; resetRace(); rival.model.root.visible = false;
+  G.trafficMul = 0; traffic.disabled = true; resetRace(); rival.model.root.visible = false;
   document.body.classList.remove('racing', 'counting');
 }
 function onlineMembers(members) {
@@ -2022,6 +2032,8 @@ function onlineMembers(members) {
       c.veh.reset(startS, route.laneU(startS, 0)); remoteCars.set(p.id, c);
     }
     if (c.spec.id !== p.car || c.plate !== (p.plate || null)) { const spec = CARS.find(s => s.id === p.car) || CARS[0]; disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; c.driver = built.driver; c.spec = spec; c.plate = p.plate || null; c.veh.setSpec(spec); c.veh.reset(startS, route.laneU(startS, 0)); }
+    if (p.paint && p.paint !== c.model.paintColor) setPaint(c.model, p.paint);
+    if (p.driver) c.driver?.setAppearance?.(p.driver);
     c.networkName = p.name; c.model.root.visible = ['countdown', 'race'].includes(multiplayer.lobby.status);
   }
   const first = members[0];
@@ -2029,6 +2041,7 @@ function onlineMembers(members) {
   $('rivalName').textContent = first?.name || 'WAITING';
 }
 const multiplayer = new Multiplayer(CARS, {
+  appearance: () => player ? { paint: player.model.paintColor, driver: { ...player.driver.appearance } } : {},
   inputOverlayOpen: () => menu?.screen === 'car' && !!menu.data?.onPick,
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   async mapChanged(id) { await window.__flow.switchMap(id); if (multiplayer.active) onlineWait(); else window.__flow.quit(); },
@@ -2055,13 +2068,13 @@ const multiplayer = new Multiplayer(CARS, {
     if (!multiplayer.loaded) return;
     if (!resumeState) { applyDriving(); }
     beginCameraBlend();
-    window.__flow?.prepareEvent(lobby.eventId || 'quick');
+    window.__flow?.prepareEvent({ ...lobby.event, id: lobby.eventId, traffic: 0, police: lobby.config.police === true, rules: { ...lobby.event.rules, police: lobby.config.police === true }, conditions: { time: lobby.config.time, weather: lobby.config.weather } });
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));
-    configureWorldLife({ type: lobby.event?.type, conditions: lobby.event?.conditions }, G.baseCond || window.__conditions());
+    configureWorldLife({ type: lobby.event?.type, conditions: { time: lobby.config.time, weather: lobby.config.weather } }, G.baseCond || window.__conditions());
     if (lobby.world?.raceId === lobby.raceId && lobby.world.generation === lobby.generation) receiveWorldLife(lobby.world.state, Math.max(0, (multiplayer.now() - lobby.world.at) / 1000));
     const grid = (v, i) => { const slot = window.__flow?.gridSlot(i); const s = slot?.s ?? startS - Math.floor(i / 2) * 8; v.reset(s, slot?.u ?? route.laneU(s, Math.min(i % 2, route.lanes(s) - 1)), 0); if (slot) v.yaw = slot.yaw; };
-    grid(player.veh, lobby.players.findIndex(p => p.id === id)); resetTowOffer();
-    for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, i); syncCar(c, 0); } }
+    grid(player.veh, lobby.players.find(p => p.id === id)?.gridSlot ?? lobby.players.findIndex(p => p.id === id)); resetTowOffer();
+    for (let i = 0; i < lobby.players.length; i++) { const c = remoteCars.get(lobby.players[i].id); if (c) { grid(c.veh, lobby.players[i].gridSlot ?? i); syncCar(c, 0); } }
     if (resumeState) { const v = new Vehicle(player.veh.spec, route); v.ground = ground; v.reset(resumeState.s, resumeState.u, resumeState.vLong); restoreVehicleState(v, resumeState); if (v.spec.nitrous !== true) { v.nitro = 0; v.nitroOn = false; } v.damageFx(); v.syncWheels(); v.lastV = v.vLong; player.veh = v; }
     if (resumeState?.recoveryUntil > multiplayer.now()) { towOffer.recovering = true; towOffer.hold = (resumeState.recoveryUntil - multiplayer.now()) / 1000; }
     G.state = 'onlineCountdown'; G.cameraStarting = false; controls.requestMouseLock(); G.countShown = -1; G.cam = G.userCam; applyCamMode(); audio.restart(); updateCamera(0, true);
@@ -2101,10 +2114,11 @@ const multiplayer = new Multiplayer(CARS, {
       if (G.pFinish === null) { hud.message('FINISH · <i>' + fmtTime(multiplayer.me.finish) + '</i> · WAITING FOR OTHER DRIVERS', 8); audio.beep(true); controls.releaseMouseLook(); }
       G.pFinish = multiplayer.me.finish; G.state = 'onlineFinished';
     }
-    G.raceT = elapsed;
+    G.raceT = G.pFinish ?? elapsed;
   },
   results() {
     G.pFinish = multiplayer.me?.finish ?? null;
+    G.raceT = G.pFinish ?? G.raceT;
     if (G.state !== 'onlineResults') { const won = G.pFinish !== null && multiplayer.ranking()[0]?.id === multiplayer.id; if (won) audio.win(); else audio.lose(); }
     G.state = 'onlineResults'; hud.count('');
     document.body.classList.remove('racing', 'counting');

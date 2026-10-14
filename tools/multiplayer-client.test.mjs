@@ -128,7 +128,7 @@ test('explicit retirement persists through reconnect and a new race clears it', 
   assert.equal(m.retire(), true); assert.equal(packets.length, 1);
   m.connected = false; m.wreckSent = false; assert.equal(m.retired, true);
   m.connected = true; m.pendingResume = true; await m.syncLobby();
-  assert.equal(m.retired, true); assert.equal(packets.length, 2);
+  assert.equal(m.retired, true); assert.equal(packets.filter(p => p.type === 'dnf').length, 2);
   m.lobby.raceId = 'next'; await m.syncLobby(); assert.equal(m.wrecked, false); assert.equal(m.retired, false);
 });
 

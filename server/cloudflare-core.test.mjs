@@ -123,7 +123,7 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   send(a, { type: 'rematch' }); assert.ok(a.messages.at(-1).lobby.players.every(p => p.dnf === false && p.finish === null));
 });
 
-test('local names are plates; duplicates work, names change live and allow-lists stay enforced', t => {
+test('local names are unique; duplicates receive suffixes, names change live and allow-lists stay enforced', t => {
   let now=500000; t.mock.method(Date,'now',()=>now);
   const core=createGameCore({maps,cars:new Set(['mini','z4','carrera']),leaderboard:{submit:async()=>({saved:true})},countdownMs:100});
   const a=socket(),b=socket();core.connect(a,'one',{protocol:MULTIPLAYER_PROTOCOL});core.connect(b,'two',{protocol:MULTIPLAYER_PROTOCOL});
@@ -131,7 +131,7 @@ test('local names are plates; duplicates work, names change live and allow-lists
   send(a,{type:'create',name:'ABC',car:'carrera',allowedCars:['mini','z4']});let lobby=a.messages.at(-1).lobby;
   assert.equal(lobby.players[0].plate,'ABC');assert.equal(lobby.players[0].car,'mini');
   send(b,{type:'join',code:lobby.code,name:'ABC',car:'carrera'});lobby=b.messages.at(-1).lobby;
-  assert.deepEqual(lobby.players.map(p=>p.name),['ABC','ABC']);assert.equal(new Set(lobby.players.map(p=>p.id)).size,2);
+  assert.deepEqual(lobby.players.map(p=>p.name),['ABC','ABC#2']);assert.equal(new Set(lobby.players.map(p=>p.id)).size,2);
   send(b,{type:'name',name:'a-wwwwwwwwwwww-z'});assert.equal(a.messages.at(-1).lobby.players[1].plate,'A-WWWWWWWWWWWW-Z');
   send(b,{type:'name',name:'bad name'});assert.equal(b.messages.at(-1).type,'error');
   send(b,{type:'ready',ready:false,version:'coast',car:'carrera'});assert.match(b.messages.at(-1).message,/not allowed/);

@@ -51,7 +51,7 @@ export class GameArena extends DurableObject {
         if (!attachment?.token) { ws.close(1011, 'Missing session'); continue; }
         sockets.set(attachment.token, ws);
         const client = saved?.sessions?.find(c => c.token === attachment.token);
-        if (client) for (const key of ['state', 'stateAt', 'messages', 'window']) client[key] = attachment[key];
+        if (client) for (const key of ['state', 'stateAt', 'messages', 'window', 'finish', 'dnf', 'loaded', 'courseCursor']) if (attachment[key] !== undefined) client[key] = attachment[key];
       }
       this.core.restore(saved, sockets);
       // Connections absent from saved metadata cannot be recovered safely.
@@ -141,6 +141,7 @@ export class GameArena extends DurableObject {
     this.relay();
   }
   async webSocketClose(ws, code, reason) {
+    console.info('Multiplayer socket closed', { code, reason });
     this.core.disconnect(ws);
     try { ws.close(code === 1005 ? 1000 : code, reason); } catch {}
     await this.persist();
