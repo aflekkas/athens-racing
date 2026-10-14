@@ -1,4 +1,5 @@
-import { connectionProtocol } from '../src/multiplayer-protocol.js';
+import { socketAttachment } from './socket-attachment.mjs';
+import { connectionProtocol, MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { DurableObject } from 'cloudflare:workers';
 import { rewriteShareMetadata } from './share-metadata.mjs';
 import catalogue from '../.deploy/catalogue.json';
@@ -81,7 +82,7 @@ export class GameArena extends DurableObject {
   }
   attach(ws) {
     const data = this.core.clientData(ws);
-    if (data) ws.serializeAttachment(data);
+    if (data) ws.serializeAttachment(socketAttachment(data));
   }
   async persist() {
     for (const ws of this.ctx.getWebSockets()) this.attach(ws);
@@ -101,9 +102,17 @@ export class GameArena extends DurableObject {
       if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return json({ error: 'WebSocket upgrade required.' }, 426);
       if (this.core.clients.size >= 256) return json({ error: 'Connection limit reached.' }, 503);
       const pair = new WebSocketPair(), [client, server] = Object.values(pair);
+      const connection = connectionProtocol(url);
+      if (connection.protocol !== MULTIPLAYER_PROTOCOL) {
+        // Rejected upgrades have no session/attachment to hibernate. Use an
+        // ordinary socket to complete its close handshake before releasing it.
+        server.accept();
+        server.addEventListener('close', event => { try { server.close(event.code, event.reason); } catch {} });
+        this.core.connect(server, request.headers.get('CF-Connecting-IP') || 'unknown', connection);
+        return new Response(null, { status: 101, webSocket: client });
+      }
       this.ctx.acceptWebSocket(server);
-      const accepted = this.core.connect(server, request.headers.get('CF-Connecting-IP') || 'unknown', connectionProtocol(url));
-      if (!accepted) return new Response(null, { status: 101, webSocket: client });
+      this.core.connect(server, request.headers.get('CF-Connecting-IP') || 'unknown', connection);
       // Same-origin browsers send the session cookie on the WS handshake,
       // so most clients arrive already linked (ticket auth covers the rest).
       const sid = readSessionCookie(request);
