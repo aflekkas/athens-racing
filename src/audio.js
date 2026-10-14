@@ -1,5 +1,6 @@
+import { MusicSources } from './music-sources.js';
 import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } from './engine-recordings.js';
-import { loadWorldSounds, loopSource, Radio, spatialAudio } from './world-sounds.js';
+import { loadWorldSounds, loopSource, spatialAudio } from './world-sounds.js';
 import { WeatherAudio } from './weather-audio.js';
 import { Sirens } from './sirens.js';
 
@@ -359,7 +360,7 @@ export class TyreVoice {
 }
 
 export class Audio {
-  constructor() { this.ctx = null; this.musicOn = true; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); }
+  constructor() { this.ctx = null; this.musicOn = false; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.musicSources = new MusicSources(this); }
 
   start({ context, recordings = true, radio = true } = {}) {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
@@ -466,7 +467,7 @@ export class Audio {
     this.musicDuck = gain(1);
     this.musicVol = this.mix.buses.music; // the music volume setting (setVolumes)
     chain(this.musicBus, this.musicDuck, this.musicLP, this.musicVol);
-    this.radio = radio ? new Radio(ctx, this.musicBus, (track) => this.onTrack?.(track)) : { play() {}, pause() {}, next() {} };
+    this.radio = this.musicSources; this.musicSources.attach(radio);
     if (this.musicOn) { this.radio.play(); this.musicBus.gain.setTargetAtTime(this.mix.menu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL, ctx.currentTime, 1.2); }
 
     // --- recorded world sounds
@@ -556,20 +557,9 @@ export class Audio {
     return Math.max(0, Math.min(1, (now - this.ignitionAt - this.recordedBank.catchAt) / .6));
   }
 
-  toggleMusic() {
-    this.musicOn = !this.musicOn;
-    if (this.ctx) {
-      this.musicBus.gain.setTargetAtTime(this.musicOn ? this.mix.menu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL : 0, this.ctx.currentTime, 0.3);
-      if (this.musicOn) this.radio.play(); else setTimeout(() => { if (!this.musicOn) this.radio.pause(); }, 1200);
-    }
-    return this.musicOn;
-  }
-  /** skip to the next song (turns the radio on) */
-  nextTrack() {
-    if (!this.ctx) return;
-    if (!this.musicOn) this.toggleMusic();
-    this.radio.next();
-  }
+  toggleMusic() { return this.musicSources.toggle(); }
+  /** Skip only the chosen local/built-in source; Off never starts the radio. */
+  nextTrack() { if (this.ctx) void this.musicSources.next(); }
 
   /** hook a recorded sound into the graph built in start() */
   attach(name, snd) {
@@ -735,6 +725,7 @@ export class Audio {
       this.musicMenu = this.mix.menu;
       this.musicBus.gain.setTargetAtTime(this.musicOn ? this.musicMenu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL : 0, now, 0.4);
     }
+    this.musicSources.syncMenu();
   }
 
   updateRivals(list, now) {

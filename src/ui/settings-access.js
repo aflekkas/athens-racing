@@ -1,3 +1,4 @@
+import { installMusicSettings } from '../music-settings.js';
 import { icon } from './components.js';
 export function openSettings(menu, fromLobby = false) {
   const flow=window.__flow,mp=window.__multiplayer;
@@ -7,6 +8,7 @@ export function openSettings(menu, fromLobby = false) {
   if(fromLobby)menu.data.returnLobby=true;
 }
 export function installSettingsAccess(menu) {
+  installMusicSettings(menu);
   let button=document.getElementById('race-settings');
   if(!button){button=document.createElement('button');button.id='race-settings';button.type='button';button.innerHTML=icon('gear-six')+'<span>SETTINGS</span>';document.body.append(button);}
   button.onclick=()=>openSettings(menu);
