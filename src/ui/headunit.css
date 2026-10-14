@@ -129,3 +129,11 @@
 :root .customizer-status[data-error=true] { color: var(--tt-red); }
 :root .customizer footer { border-top: 1px solid var(--hu-hair); font: 500 var(--t-xs) var(--f-sans); color: var(--hu-text-3); }
 :root .customizer input[type=range] { accent-color: var(--hu-ice); }
+
+/* ---------------------------------------------------------------- multiplayer: the lobby owns the top-right corner.
+   The corner MULTIPLAYER toggle only opens the lobby, so it steps aside while the lobby is open and the close button stays clear. */
+:root body:has(#multiplayer:not([hidden])) #mp-toggle { display: none; }
+/* results: a stat value wraps rather than truncating on a phone ("212 KM/H" stays whole) */
+:root .res-stats .stat-tile__v { white-space: normal; overflow: visible; text-overflow: clip; }
+/* the lobby's SETTINGS pill sits left of the close button rather than under it */
+:root #multiplayer .mp-heading [data-open-settings] { margin-right: 2.8rem; }
