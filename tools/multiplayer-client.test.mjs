@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { StateSender } from '../src/multiplayer-state.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { getLeaderboard, submitResult } from '../src/leaderboard.js';
+import { getPlayableMaps } from '../src/enabled-maps.js';
 import './remote-motion.test.mjs';
 
 const state = (extra = {}) => ({ x: 0, y: 0, z: 0, s: 0, u: 0, yaw: 0, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1, nitro: 1, reverse: false, damage: { front: 0, rear: 0, left: 0, right: 0 }, ...extra });
@@ -137,4 +138,11 @@ test('wrecked drivers rank behind active racers and spectate only remaining driv
   m.peers.set('active', { state: state({ s: 10 }) }); m.peers.set('retired', { state: state({ s: 99 }) });
   assert.equal(m.ranking(100)[0].id, 'active'); assert.equal(m.spectating().id, 'active');
   m.me.finish = 1; assert.equal(m.wreck(120 / 3.6), false);
+});
+
+test('lobby map picker offers only enabled maps (Megara retained, not selectable)', () => {
+  // The hello handler assigns this.maps through getPlayableMaps, so the
+  // lobby pickers and the solo selector share one registry.
+  assert.deepEqual(getPlayableMaps([{ id: 'riviera' }, { id: 'megara' }, { id: 'penteli' }]).map((m) => m.id), ['riviera', 'penteli']);
+  assert.deepEqual(getPlayableMaps([]), []);
 });

@@ -5,7 +5,9 @@ import { createGameCore } from './core.mjs';
 import { createSqlLeaderboard } from '../worker/leaderboard.mjs';
 
 const map = (id, len, version, closed = false) => ({ id, name: id, track: { start: 0, finish: len, version }, definitions: new Map([[id === 'riviera' ? 'quick' : id + '-race', { id: id === 'riviera' ? 'quick' : id + '-race', name: id, type: 'sprint', s0: 0, s1: len, dir: 1, len, routeKey: `0>${len}`, traffic: false, closed }]]) });
-const maps = new Map([['riviera', map('riviera', 15, 'coast')], ['megara', map('megara', 40, 'circuit', true)]]), cars = new Set(['mini']);
+// Lobby fixtures use only enabled maps for live flows (Megara stays in the
+// fixture so the registry exclusion is covered, not offered).
+const maps = new Map([['riviera', map('riviera', 15, 'coast')], ['penteli', map('penteli', 40, 'circuit')], ['megara', map('megara', 40, 'circuit', true)]]), cars = new Set(['mini']);
 const socket = () => ({ readyState: 1, messages: [], send(data) { this.messages.push(JSON.parse(data)); }, close() { this.readyState = 3; } });
 const state = s => ({ x: s, y: 0, z: 0, yaw: 0, s, u: 0, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
 
@@ -14,9 +16,10 @@ test('shared core restores lobby, socket identity, race clock and state after hi
   const opts = { maps, cars, leaderboard: { submit: async () => ({ saved: true }) }, countdownMs: 100, raceLimitMs: 5000, reconnectGraceMs: 500 };
   let core = createGameCore(opts); const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
   const hello = a.messages.find(m => m.type === 'hello'); assert.equal(hello.maps.length, 2);
+  assert.deepEqual(hello.maps.map((m) => m.id).sort(), ['penteli', 'riviera'], 'disabled maps leave the catalogue');
   const send = (ws, value) => core.message(ws, JSON.stringify(value));
-  send(a, { type: 'create', mapId: 'megara', eventId: 'quick' }); assert.match(a.messages.at(-1).message, /route/);
-  send(a, { type: 'create', mapId: 'megara' }); const lobby = a.messages.at(-1).lobby; assert.equal(lobby.track.version, 'circuit');
+  send(a, { type: 'create', mapId: 'penteli', eventId: 'quick' }); assert.match(a.messages.at(-1).message, /route/);
+  send(a, { type: 'create', mapId: 'penteli' }); const lobby = a.messages.at(-1).lobby; assert.equal(lobby.track.version, 'circuit');
   send(b, { type: 'join', code: lobby.code });
   send(a, { type: 'ready', ready: true, version: 'coast' }); assert.match(a.messages.at(-1).message, /track changed/);
   for (const ws of [a, b]) send(ws, { type: 'ready', ready: true, version: 'circuit' });
@@ -40,8 +43,8 @@ test('idle lobbies expire without a repeating timer and map changes invalidate r
   const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) }, idleLobbyMs: 1000 });
   const a = socket(); core.connect(a, 'one'); const send = value => core.message(a, JSON.stringify(value));
   send({ type: 'create' }); send({ type: 'ready', ready: true, version: 'coast' });
-  send({ type: 'options', mapId: 'megara' }); const lobby = a.messages.at(-1).lobby;
-  assert.equal(lobby.eventId, 'megara-race'); assert.equal(lobby.players[0].ready, false);
+  send({ type: 'options', mapId: 'penteli' }); const lobby = a.messages.at(-1).lobby;
+  assert.equal(lobby.eventId, 'penteli-race'); assert.equal(lobby.players[0].ready, false);
   assert.equal(core.nextWake(), now + 1001); now += 1002; core.tick(); assert.equal(core.lobbies.size, 0);
   assert.ok(a.messages.some(m => m.type === 'left'));
 });
@@ -94,4 +97,21 @@ test('wreck DNF is authoritative, never records a time, ignores fake finish and 
   // Later duplicate declarations or fake progress cannot mutate either result.
   send(a, { type: 'state', raceId, state: state(15) }); assert.equal(submissions.length, 1);
   send(a, { type: 'rematch' }); assert.ok(a.messages.at(-1).lobby.players.every(p => p.dnf === false && p.finish === null));
+});
+
+test('disabled maps leave every lobby list: hello excludes Megara; create/switch/join reject it', () => {
+  const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) } });
+  const a = socket(), b = socket(); core.connect(a, 'one'); core.connect(b, 'two');
+  const send = (ws, value) => core.message(ws, JSON.stringify(value));
+  assert.deepEqual(a.messages.find((m) => m.type === 'hello').maps.map((m) => m.id).sort(), ['penteli', 'riviera']);
+  send(a, { type: 'create', mapId: 'megara' });
+  assert.match(a.messages.at(-1).message, /unavailable/);
+  send(a, { type: 'create', mapId: 'riviera' });
+  const code = a.messages.at(-1).lobby.code;
+  send(a, { type: 'options', mapId: 'megara' });
+  assert.match(a.messages.at(-1).message, /unavailable/);
+  assert.equal(core.lobbies.get(code).mapId, 'riviera', 'rejected switch keeps the lobby');
+  core.lobbies.set('MEG', { code: 'MEG', status: 'waiting', players: new Map(), mapId: 'megara' });
+  send(b, { type: 'join', code: 'meg' });
+  assert.match(b.messages.at(-1).message, /unavailable/);
 });

@@ -2,6 +2,7 @@ import { packDecals, unpackDecals } from '../src/vehicle-decal-data.js';
 import { normalizeDriverAppearance } from '../src/driver-appearance-data.js';
 import { stripUnownedPhotos } from './appearance-state.mjs';
 import { rememberRecoveryRoad, requestRecovery, recoveryStateAllowed } from './race-recovery.mjs';
+import { isMapEnabled } from '../src/enabled-maps.js';
 // Shared lobby/race protocol. Transports own sockets, persistence and wake-up scheduling.
 const clean = (v, fallback, n = 28) => typeof v === 'string' ? v.replace(/[\x00-\x1f<>]/g, '').trim().slice(0, n) || fallback : fallback;
 const send = (ws, data) => { if (ws?.readyState === 1 && (ws.bufferedAmount || 0) < 65536) { try { ws.send(JSON.stringify(data)); } catch {} } };
@@ -14,9 +15,9 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
   const lobbyEvent = l => maps.get(l.mapId).definitions.get(l.eventId);
   const onlineEvent = (id, mapId = 'riviera') => ['sprint', 'timetrial'].includes(maps.get(mapId)?.definitions.get(id)?.type);
   const options = (mapId = 'riviera') => [...maps.get(mapId).definitions.values()].filter(e => onlineEvent(e.id, mapId)).map(({ id, name, s0, s1, dir, len, routeKey }) => ({ id, name, mapId, s0, s1, dir, len, routeKey }));
-  const catalogue = () => [...maps].map(([id, m]) => ({ id, name: m.name, track: m.track, events: options(id) }));
+  const catalogue = () => [...maps].filter(([id]) => isMapEnabled(id)).map(([id, m]) => ({ id, name: m.name, track: m.track, events: options(id) }));
   const publicLobby = (l) => ({ code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => ({ id: p.id, name: p.name, car: p.car, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected })), eventId: l.eventId, traffic: l.traffic, event: lobbyEvent(l), results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track });
-  const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private).map(publicLobby) });
+  const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId)).map(publicLobby) });
   const publish = (l) => { l.touched = Date.now(); for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby: publicLobby(l) }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
   const results = (l) => {
     if (l.status === 'results') return;
@@ -83,6 +84,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
             if (m.mapId !== undefined && !maps.has(m.mapId)) return error('Unknown map.');
             const mapId = m.mapId || 'riviera';
             if (m.eventId !== undefined && !onlineEvent(m.eventId, mapId)) return error('Unknown race route for this map.');
+            if (!isMapEnabled(mapId)) return error('Map unavailable.');
             if (lobbies.size >= 64) return error('Lobby limit reached. Join an existing lobby.');
             let code; do { code = randomHex(3).toUpperCase(); } while (lobbies.has(code));
             dest = { code, name: clean(m.lobbyName, `${c.name}'S RACE`), host: c.id, private: m.private === true, players: new Map(), status: 'waiting', startAt: null, raceId: null, mapId, eventId: m.eventId || options(mapId)[0]?.id, traffic: m.traffic === true };
@@ -92,6 +94,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
             if (!dest) return error('Lobby not found. Check the code or refresh the list.');
             if (dest.status !== 'waiting') return error('This lobby is already racing.');
             if (dest.players.size >= 8) return error('This lobby is full.');
+            if (!isMapEnabled(dest.mapId)) return error('Map unavailable.');
           }
           c.lobby = dest; dest.players.set(c.id, c); publish(dest); return;
         }
@@ -102,6 +105,7 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
           if (!maps.has(mapId)) return error('Unknown map.');
           const eventId = m.eventId ?? (mapId === l.mapId ? l.eventId : options(mapId)[0]?.id);
           if (!onlineEvent(eventId, mapId)) return error('Unknown race route for this map.');
+          if (!isMapEnabled(mapId)) return error('Map unavailable.');
           l.mapId = mapId; l.eventId = eventId; l.traffic = m.traffic === true;
           for (const p of l.players.values()) p.ready = false;
           publish(l); return;

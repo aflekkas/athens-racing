@@ -1,5 +1,6 @@
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
+import { getPlayableMaps } from './enabled-maps.js';
 import { StateSender } from './multiplayer-state.js';
 import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
@@ -104,7 +105,7 @@ export class Multiplayer {
       if (m.type === 'hello') {
         this.stateBatching = m.features?.stateBatching === true;
         this.offset = m.now - Date.now(); if (!this.loaded) this.trackVersion = m.track.version;
-        this.maps = m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }];
+        this.maps = getPlayableMaps(m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]);
         this.events = m.events || this.maps.flatMap(map => (map.events || []).map(e => ({ ...e, mapId: map.id })));
         for (const id of ['mp-create-map', 'mp-map']) { this.$(id).replaceChildren(); for (const map of this.maps) { const option = document.createElement('option'); option.value = map.id; option.textContent = map.name; this.$(id).append(option); } }
         if (this.maps.some(map => map.id === this.mapId)) this.$('mp-create-map').value = this.mapId;
