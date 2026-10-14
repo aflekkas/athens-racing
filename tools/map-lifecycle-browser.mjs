@@ -37,10 +37,10 @@ try {
   await evalRun(()=>__flow.pause());await page.screenshot({path:resolve(out,map+'-pause.png')});await click('quit');await page.waitForTimeout(350);await draw(map+'-quit');await assertMenu();await page.screenshot({path:resolve(out,map+'-menu.png')});
  }
  for(let i=0;i<3;i++)for(const id of ['penteli','riviera']){await evalRun(id=>__flow.switchMap(id),id);await startRoam();await evalRun(()=>__flow.pause());await click('quit');await page.waitForTimeout(350);await draw(`cycle-${i}-${id}`);await assertMenu();}
- await evalRun(()=>__flow.startEvent('quick'));await page.waitForTimeout(350);await evalRun(()=>{__game.countWall=performance.now()-2000;__sim.step(1,.05);const v=__sim.player.veh;v.s=__game.ev.r.s1+10;v.vLong=20;__sim.step(1,.05);});await draw('race-finish');await evalRun(()=>{__game.finishedT=3;__sim.step(1,.05);});await draw('race-results');await click('quit');await page.waitForTimeout(350);await draw('race-quit');await assertMenu();await page.screenshot({path:resolve(out,'race-menu.png')});
+ await evalRun(()=>__flow.startEvent('quick'));await page.waitForTimeout(350);await evalRun(()=>{__game.countWall=performance.now()-2000;__sim.step(1,.05);const v=__sim.player.veh;v.s=__game.ev.r.s1+10;v.vLong=20;__sim.step(1,.05);});await draw('race-finish');await evalRun(()=>{__game.finishedT=3;__sim.step(1,.05);});await draw('race-results');await click('list');await page.waitForTimeout(350);await draw('race-quit');await assertMenu();await page.screenshot({path:resolve(out,'race-menu.png')});
  // The reported exception also arises after damage, when far-traffic batching removes mirror children.
  await evalRun(()=>setTimeout(()=>{for(const c of __sim.traffic.cars)c.m.setDamage('front',.5);},0));await page.waitForTimeout(150);await draw('traffic-damage');
- assert.equal(await evalRun(()=>__flow.menu.screen),'title');assert.equal(errors.length,0,errors.join('\n'));
+ assert.equal(await evalRun(()=>__flow.menu.screen),'events');assert.equal(errors.length,0,errors.join('\n'));
  // A queued start followed immediately by quit must not revive the race.
  await evalRun(()=>{__flow.startEvent(__flow.freeRoamDef());__flow.quit();});await page.waitForTimeout(400);await draw('quit-during-restart');await assertMenu();
  await evalRun(()=>__flow.startEvent(__flow.freeRoamDef()));await page.waitForTimeout(350);await evalRun(()=>{__flow.resetCar();__flow.quit();});await page.waitForTimeout(500);await draw('quit-during-tow');await assertMenu();
