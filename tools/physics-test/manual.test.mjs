@@ -56,7 +56,7 @@ test('manual-only player ignores auto preference, holds the limiter and emits sh
   v.setManual(false); assert.equal(v.manual, true);
 });
 
-test('auto-only rejects the M toggle and manual preference, but accepts safe paddle shifts', async () => {
+test('automatic chassis accept manual preference, M toggles, and paddle shifts', async () => {
   const { toggleTransmission } = await import('../../src/transmission.js');
   const v = new Vehicle({ ...spec, transmission: 'auto' }, route);
   assert.equal(v.setManual(true), true); v.setManual(false);
