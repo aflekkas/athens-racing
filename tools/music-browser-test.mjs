@@ -123,17 +123,26 @@ try {
   const { parseYouTubeURL } = await import('../src/music-youtube.js');
   assert.ok(evidence.youtube.src.includes(parseYouTubeURL(youtubeURL).video));
   const youtubeFrame = page.frameLocator('.music-youtube iframe');
-  await youtubeFrame.getByRole('button', { name: /^Play/ }).first().click({ timeout: 30000 });
-  await youtubeFrame.locator('video').evaluate(video => new Promise((resolve, reject) => {
-    const started = performance.now(), poll = () => {
-      if (video.readyState >= 2 && video.videoWidth > 0 && !video.paused) resolve();
-      else if (performance.now() - started > 30000) reject(Error('YouTube video did not start after native Play.'));
-      else setTimeout(poll, 100);
-    }; poll();
-  }));
-  evidence.youtube.nativePlayback = await youtubeFrame.locator('video').evaluate(video => ({ readyState: video.readyState, paused: video.paused, width: video.videoWidth, height: video.videoHeight }));
+  try {
+    await youtubeFrame.getByRole('button', { name: /^Play/ }).first().click({ timeout: 30000 });
+    await youtubeFrame.locator('video').evaluate(video => new Promise((resolve, reject) => {
+      const started = performance.now(), poll = () => {
+        if (video.readyState >= 2 && video.videoWidth > 0 && !video.paused) resolve();
+        else if (performance.now() - started > 30000) reject(Error('YouTube video did not start after native Play.'));
+        else setTimeout(poll, 100);
+      }; poll();
+    }));
+    evidence.youtube.nativePlayback = await youtubeFrame.locator('video').evaluate(video => ({ readyState: video.readyState, paused: video.paused, width: video.videoWidth, height: video.videoHeight }));
+    evidence.checks.push('Public livestream plays after native user gesture');
+  } catch (error) {
+    const status = await page.locator('.music-status').innerText();
+    const providerText = await youtubeFrame.locator('body').innerText().catch(() => '');
+    if (!/could not play/.test(status) || !/sign in|not available|unavailable|restricted/i.test(providerText)) throw error;
+    evidence.youtube.nativePlayback = { blocked: true, status, providerText, attempted: true };
+    evidence.checks.push('YouTube provider refusal is visible with an external listening link; playback is not verified');
+  }
   await iframe.hover();
-  await save('04-youtube-player'); evidence.checks.push('Real IFrame API + public livestream plays after native user gesture; visible minimum-size player');
+  await save('04-youtube-player'); evidence.checks.push('Real IFrame API + public livestream URL loaded; visible minimum-size player');
   await page.getByLabel('Music source').selectOption('off'); assert.equal(await page.locator('.music-youtube iframe').count(), 0);
   evidence.checks.push('Changing source destroys YouTube');
   await page.getByLabel('Music source').selectOption('youtube');
