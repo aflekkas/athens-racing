@@ -8,6 +8,7 @@
 //     `custom: true` keeps it off the online leaderboard. Time of day and weather never change the id.
 // Saved in localStorage['paraliaki.raceSetup'] = { [eventId]: setup }.
 import { rivalCount, MAX_RIVALS, SP_RIVALS } from './events.js';
+import { isDrivingMode } from './driving-objectives.js';
 
 export { MAX_RIVALS };
 /** above this many AI cars the frame rate can suffer on modest machines: the menu shows a warning, not a limit */
@@ -35,9 +36,9 @@ export function setupFields(def, { closed = false } = {}) {
   if (def.type === 'sprint') out.push({ key: 'rivals', dflt: rivalCount(def), min: 0, max: MAX_RIVALS });
   // UI owner: saved race-setup key is `police` (boolean); style its Off / On segmented control.
   if (def.type !== 'pursuit') out.push({ key: 'police', dflt: def.rules?.police === true });
-  if (!closed || def.type === 'free') out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
-  if (closed && def.type !== 'free') out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
-  if (!['pursuit', 'free'].includes(def.type)) out.push({ key: 'reverse', dflt: false });
+  if (!closed || def.type === 'free' || isDrivingMode(def)) out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
+  if (closed && def.type !== 'free' && !isDrivingMode(def)) out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
+  if (!['pursuit', 'free'].includes(def.type) && !isDrivingMode(def)) out.push({ key: 'reverse', dflt: false });
   out.push({ key: 'time', dflt: def.conditions?.time || 'afternoon' }, { key: 'weather', dflt: def.conditions?.weather || 'clear' });
   return out;
 }

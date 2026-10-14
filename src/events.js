@@ -38,6 +38,7 @@
 //     car: id | null }       forced car (otherwise your garage pick)
 
 // ------------------------------------------------------------------ emitter
+import { DRIVING_MODES, isDrivingMode, drivingModeDefinition, resolveDrivingMode } from './driving-objectives.js';
 const listeners = new Map();
 export const events = {
   on(name, fn) { let s = listeners.get(name); if (!s) listeners.set(name, (s = new Set())); s.add(fn); return () => s.delete(fn); },
@@ -102,6 +103,7 @@ export function driverCar(d, carIds, avoid) {
 
 // ------------------------------------------------------------------ the events
 export const TYPES = {
+  ...DRIVING_MODES,
   free: { label: 'FREE ROAM', short: 'FREE', desc: 'Drive anywhere in traffic. No clock, rivals or finish.' },
   sprint: { label: 'SPRINT', short: 'SPRINT', desc: 'Beat three locals to the line.' },
   timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock.' },
@@ -136,7 +138,7 @@ export function registerMapEvents(mapId, defs) {
   mapEvents.set(mapId, defs.map(def => ({ ...def, mapId })));
 }
 export function getEvents(mapId = 'riviera') { return mapEvents.get(mapId) || (mapId === 'riviera' ? EVENTS : []); }
-export const getEvent = (id) => (id?.startsWith('free:') ? freeRoam(id.slice(5)) : id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || [...mapEvents.values()].flat().find(e => e.id === id) || null);
+export const getEvent = (id) => (isDrivingMode(id?.split(':')[0]) ? drivingModeDefinition(id.split(':')[0], id.split(':')[1]?.split('~')[0] || 'riviera') : id?.startsWith('free:') ? freeRoam(id.slice(5)) : id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || [...mapEvents.values()].flat().find(e => e.id === id) || null);
 
 // ------------------------------------------------------------------ resolving a definition onto the route
 /** ctx = { route: {start, finish, length, from, to, curv?}, marks: [{id, name, sub, s}] } */
@@ -151,6 +153,7 @@ export function locate(loc, ctx) {
 function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for (const m of ctx.marks) if (s >= m.s - 1) n = m.name; return n; }
 
 export function resolve(def, ctx) {
+  if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
   if (def.type === 'free') return { s0: a.s, s1: b.s, dir: 1, len: ctx.route.length, fromName: a.name, toName: b.name, checkpoints: [], reverse: false, timeLimit: 0, targetTimes: null, free: true };
   if (ctx.route.closed) {
@@ -196,7 +199,7 @@ export function medalFor(def, res, r) {
 }
 /** human-readable targets: [['gold', 'WIN'], ...] (all times, or positions for sprints) */
 export function targetLabels(def, r, fmtTime) {
-  if (def.type === 'free') return [];
+  if (def.type === 'free' || isDrivingMode(def)) return [];
   const t = def.targets || {};
   if (def.type === 'pursuit' && def.rules?.goal === 'survive') return [['gold', 'SURVIVE ' + fmtTime(def.rules.timeLimit)]];
   return ['gold', 'silver', 'bronze'].map((m) => [m,

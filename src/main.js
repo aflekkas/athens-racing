@@ -24,6 +24,8 @@ import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
 import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import * as EV from './events.js';
+import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults } from './driving-modes.js';
+import { DrivingModeView } from './driving-mode-view.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
@@ -94,6 +96,7 @@ window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
+let drivingModeView = null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
 const lodList = [];
 const lodAt = new THREE.Vector3(1e9, 0, 0);
@@ -173,6 +176,7 @@ async function boot() {
 function bindMapWorld(next) {
   ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next); applyDrawDistance();
   route = map.route; startS = route.start;
+  drivingModeView?.dispose(); drivingModeView = new DrivingModeView(scene, route);
   lodList.splice(0, lodList.length, ...next.lod);
   traffic.disabled = Q.has('notraffic') || route.closed;
   { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
@@ -458,7 +462,7 @@ function startCountdown() {
   menu?.hide();
   if (!multiplayer.active && G.ev) {
     if (G.run && !G.run.done) G.run.abort('restart');
-    G.run = new EV.EventRun(G.ev.def, evCtx(), { car: player.spec.id });
+    G.run = isDrivingMode(G.ev.def) ? new DrivingModeRun(G.ev.def, evCtx(), { car: player.spec.id, map }) : new EV.EventRun(G.ev.def, evCtx(), { car: player.spec.id });
     if (inFreeRoam()) {
       G.state = 'race'; G.run.start({ field: 1, grid: [] }); hud.count('');
       document.body.classList.remove('counting'); document.body.classList.add('racing', 'started');
@@ -588,6 +592,7 @@ function initFlow() {
 function mapEvent(id) {
   if (id && typeof id === 'object') return id;
   if (id === 'free') return EV.freeRoam(map.id);
+  if (isDrivingMode(id)) return drivingModeDefinition(id, map.id);
   const list = map.events || [];
   if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
   return list.find(e => e.id === id) || EV.getEvent(id);
@@ -601,8 +606,8 @@ function prepareEvent(e) {
   traffic.dir = r.dir;
   hud.setRange(r.s0, r.s1);
   traffic.allowClosedRoam = def.type === 'free';
-  markers.group.visible = def.type !== 'free';
-  if (def.type !== 'free') markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });
+  markers.group.visible = def.type !== 'free' && !isDrivingMode(def);
+  if (def.type !== 'free' && !isDrivingMode(def)) markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });
   document.body.dataset.mode = def.type;
   // time of day / weather (the conditions system, when it is there)
   const sc = window.__setConditions, gc = window.__conditions;
@@ -791,7 +796,7 @@ const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active 
 window.__flow = {
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
-  pause: pauseGame, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(map.id), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
+  pause: pauseGame, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(map.id), drivingModeDef: mode => drivingModeDefinition(mode, map.id), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !multiplayer.active && (G.state === 'race' || G.state === 'countdown')) pauseGame(); });
 
@@ -826,6 +831,16 @@ function updateGrid(dt) {
 // ---- timing, positions, splits, cameras, the finish (offline, state 'race')
 function raceTiming(dt) {
   const pv = player.veh, run = G.run, r = G.ev.r, def = G.ev.def, pp = prog(pv.s);
+  if (isDrivingMode(def)) {
+    for (const e of run.update(dt, pv)) {
+      if (e.kind === 'objective-pickup') {
+        hud.message(def.type === 'taxi' ? 'PASSENGER ON BOARD · FOLLOW THE ROAD TO THE DESTINATION' : 'PICKUP COMPLETE · DRIVE TO THE ESCAPE DROPOFF', 3);
+        if (def.type === 'getaway' && def.rules?.police === true && (def.rules?.laws ?? true) && police?.enabled) police.hm.begin(1);
+      } else if (e.kind === 'objective-complete') hud.message(`${e.completed} ${def.type === 'taxi' ? 'FARES' : 'MISSIONS'} COMPLETED`, 3);
+      else if (e.kind === 'timeup') { finishRace('timeup'); return; }
+    }
+    return;
+  }
   const iP = Math.floor(pp / 10);
   if (iP >= 0 && iP < G.tP.length && isNaN(G.tP[iP])) for (let i = iP; i >= 0 && isNaN(G.tP[i]); i--) G.tP[i] = G.raceT;
   for (const c of grid) {
@@ -893,11 +908,11 @@ function finishRace(how = 'finish') {
   const pos = racePosition();
   const res = run.finish({ time: G.pFinish, position: wrecked ? null : busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, wrecked, how, valid: !G.autodrive && !Q.has('s') && !dnf });
   G.result = res;
-  G.won = !dnf && (def.type === 'sprint' ? pos === 1 : !!res.medal);
+  G.won = !dnf && (isDrivingMode(def) ? res.completed > 0 : def.type === 'sprint' ? pos === 1 : !!res.medal);
   if (G.won) audio.win(); else audio.lose();
-  hud.pop(G.won ? 'info good' : 'info bad', wrecked ? 'WRECKED' : busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', res.medal ? res.medal.toUpperCase() + ' MEDAL' : '');
+  hud.pop(G.won ? 'info good' : 'info bad', isDrivingMode(def) ? 'SESSION COMPLETE' : wrecked ? 'WRECKED' : busted ? 'BUSTED!' : how === 'evaded' ? 'LOST THEM!' : how === 'timeup' ? 'SURVIVED!' : def.type === 'sprint' ? (pos === 1 ? 'FINISH!' : 'P' + pos) : 'FINISH!', res.medal ? res.medal.toUpperCase() + ' MEDAL' : '');
   // the per-car best of the full route (garage card)
-  if (G.pFinish !== null && def.type !== 'pursuit' && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
+  if (G.pFinish !== null && !isDrivingMode(def) && def.type !== 'pursuit' && Math.round(r.s0) === Math.round(route.start) && Math.round(r.s1) === Math.round(route.finish)) {
     const key = 'paraliaki.best.' + player.spec.id; const prev = +localStorage.getItem(key) || 0;
     if (!prev || G.pFinish < prev) localStorage.setItem(key, G.pFinish.toFixed(3));
   }
@@ -906,6 +921,7 @@ function finishRace(how = 'finish') {
 function showResults() {
   G.state = 'results'; G.cam = 'orbit'; applyCamMode(); G.selIdx = G.carIdx;
   const res = G.result, def = G.ev.def, r = G.ev.r, run = G.run, prev = run.best || {};
+  if (isDrivingMode(def)) { menu.show('results', { result: res, def, r, mapName: map.definition?.name, ...drivingModeResults(run, res, fmtTime) }); return; }
   // Rivals may finish during the post-race coast. Their actual penalized times decide the classification.
   if (def.type === 'sprint' && !res.busted && !res.wrecked) {
     const pos = racePosition();
@@ -964,6 +980,12 @@ function updateEventHud(dt) {
   if (!box || !G.ev || multiplayer.active) return;
   const pv = player.veh, run = G.run, def = G.ev.def;
   if (inFreeRoam()) { box.classList.remove('on'); ww.classList.remove('on'); return; }
+  if (isDrivingMode(def)) {
+    ww.classList.remove('on');
+    const html = run ? drivingModeHud(run.objective, run.routes, pv) : '';
+    if (html !== G.evHtml) { G.evHtml = html; box.innerHTML = html; box.classList.toggle('on', !!html); }
+    return;
+  }
   // wrong way: nose against the event's direction of travel
   const hd = Math.atan2(-route.lin(route.TX, pv.s), -route.lin(route.TZ, pv.s)) + (G.dir < 0 ? Math.PI : 0);
   // only once racing (never on the grid or in the countdown), and the HUD class is forced, never toggled
@@ -1603,7 +1625,19 @@ function step(dt, draw = true) {
   for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
   if (multiplayer.retired) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
-  updateLapHud(G.run, !multiplayer.active && !MENU_STATES.includes(G.state));
+  updateLapHud(G.run, !multiplayer.active && !isDrivingMode(G.ev?.def) && !MENU_STATES.includes(G.state));
+  const onlineObjective = multiplayer.active && isDrivingMode(multiplayer.lobby?.mode || multiplayer.lobby?.event?.type);
+  const watchedObjective = onlineObjective ? multiplayer.spectating?.() : null;
+  const objective = onlineObjective ? (watchedObjective || multiplayer.me)?.objective : G.run?.objective;
+  const objectiveRoutes = onlineObjective ? multiplayer.lobby.event?.objectiveRoutes : G.run?.routes;
+  drivingModeView?.update(objective, objectiveRoutes, ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active);
+  if (isDrivingMode(G.ev?.def) || onlineObjective) {
+    for (const id of ['posBox', 'gapBox', 'timeBox']) { const el = $(id); if (el) { el.hidden = true; el.style.display = 'none'; } }
+    if (onlineObjective) {
+      const box = $('evBox'), selectedPose = watchedObjective ? remoteCars.get(watchedObjective.id)?.veh : pv;
+      box.innerHTML = drivingModeHud(objective, objectiveRoutes || [], selectedPose); box.classList.toggle('on', !!objective); $('wrongWay')?.classList.remove('on');
+    }
+  }
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
   bootFrameLog('frame-hud');
   // audio
