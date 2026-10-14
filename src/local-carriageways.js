@@ -31,7 +31,13 @@ export class LocalCarriageways {
     // Match the portal tangent locally; bounded decay prevents a long Hermite join from crossing the other bore.
     const du=w*(U+mu*dt*Math.exp(-Math.abs(dt)/24)),dtan=w*(T+mt*dt*Math.exp(-Math.abs(dt)/24));base.x+=du*now.rx+dtan*now.tx;base.z+=du*now.rz+dtan*now.tz;return base;
    }let i=0;while(i+1<points.length-1&&s>points[i+1].s)i++;const A=points[i],B=points[i+1],span=B.s-A.s,t=clamp((s-A.s)/span,0,1);out.x=hermite(A.x,B.x,A.mx,B.mx,t,span);out.z=hermite(A.z,B.z,A.mz,B.mz,t,span);out.y=route.surfaceY(s,this.centreU(s,dir));return out;};
-  const point=(s,lateral=0,out={})=>{const p=axis(s,out),L=axis(s-.1,{}),R=axis(s+.1,{}),dx=R.x-L.x,dz=R.z-L.z,len=Math.hypot(dx,dz)||1;const f=route.frame(s,{}),w=this.weight(meta,s),nx=f.rx*(1-w)-dz/len*w,nz=f.rz*(1-w)+dx/len*w,N=Math.hypot(nx,nz)||1;p.x+=nx/N*lateral;p.z+=nz/N*lateral;p.y=route.surfaceY(s,this.centreU(s,dir)+lateral/this.scale(meta,s));return p;};
+  // The exit join costs ~16 route frames per axis call (a point needs three), and every wheel, car, pedestrian and
+  // inverse projection past the bores queries it each frame: that froze the game right after the tunnel. Sample that
+  // span once on a 5 cm table (error far under a millimetre); the knots and the rest stay exact.
+  const exact=axis,t0=stations[stations.length-1],count=Math.ceil((hi-t0)/.05)+1,step=(hi-t0)/(count-1),AX=new Float64Array(count),AZ=new Float64Array(count);
+  for(let i=0;i<count;i++){const q=exact(i===0?t0+1e-9:i===count-1?hi-1e-9:t0+i*step,{});AX[i]=q.x;AZ[i]=q.z;}
+  const table=(s,out={})=>{if(s<=t0||s>=hi)return exact(s,out);const f=(s-t0)/step,i=Math.min(count-2,Math.floor(f)),t=f-i;out.x=AX[i]+(AX[i+1]-AX[i])*t;out.z=AZ[i]+(AZ[i+1]-AZ[i])*t;out.y=route.surfaceY(s,this.centreU(s,dir));return out;};
+  const point=(s,lateral=0,out={})=>{const p=table(s,out),L=table(s-.1,{}),R=table(s+.1,{}),dx=R.x-L.x,dz=R.z-L.z,len=Math.hypot(dx,dz)||1;const f=route.frame(s,{}),w=this.weight(meta,s),nx=f.rx*(1-w)-dz/len*w,nz=f.rz*(1-w)+dx/len*w,N=Math.hypot(nx,nz)||1;p.x+=nx/N*lateral;p.z+=nz/N*lateral;p.y=route.surfaceY(s,this.centreU(s,dir)+lateral/this.scale(meta,s));return p;};
   const frame=(s,out={})=>{const p=point(s,0,{}),L=point(s-.25,0,{}),R=point(s+.25,0,{}),dx=R.x-L.x,dz=R.z-L.z,len=Math.hypot(dx,dz)||1;Object.assign(out,p,{tx:dx/len,tz:dz/len,rx:-dz/len,rz:dx/len,grade:(R.y-L.y)/len});return out;};
   return {...meta,stations,axis3D:meta.axis.map(([x,z],i)=>[x,route.surfaceY(stations[i],this.centreU(stations[i],dir)),z]),point,frame,floorY:(s,lateral=0)=>point(s,lateral,{}).y};
  }
