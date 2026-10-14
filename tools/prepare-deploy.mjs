@@ -6,6 +6,7 @@ import { MAPS } from '../src/map-catalog.js';
 import { readCarCapabilities } from '../server/car-capabilities.mjs';
 import { resolveMap } from '../server/map-definitions.mjs';
 import { PLAYABLE_MAPS } from '../src/enabled-maps.js';
+import { bundleBrowser } from './bundle-browser.mjs';
 import { bakeWorlds } from './bake-world.mjs';
 import { buildRelease, publishRelease, CACHE_HEADERS } from './release-cache.mjs';
 const root = resolve(import.meta.dirname, '..'), out = resolve(root, '.deploy/assets');
@@ -22,6 +23,7 @@ async function copy(path) {
 }
 for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src', 'assets', 'data']) await copy(resolve(root, path));
 await bakeWorlds(root, out, PLAYABLE_MAPS);
+await bundleBrowser(root, out);
 await writeFile(resolve(out, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/assets/share/*\n  Cache-Control: public, max-age=86400, stale-while-revalidate=604800\n  Content-Type: image/jpeg\n' + CACHE_HEADERS);
 const maps = [];
 for (const def of MAPS) {
@@ -36,7 +38,15 @@ for (const def of MAPS) {
 const release = await buildRelease(out, { core: ['/src/', '/style.css', '/assets/tex/', '/assets/icons/', '/assets/maps/', '/assets/audio/engines/', '/assets/audio/world/',
   ...MAPS.filter(m => PLAYABLE_MAPS.includes(m.id)).flatMap(m => [m.dataUrl, m.terrainUrl]).map(p => '/' + p.replace(/^\.?\//, ''))] });
 const swBytes = await publishRelease(root, out, release);
-count += release.copies + 1;
+count = 0; bytes = 0; largest = { size: 0, path: '' };
+async function inventory(dir) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = resolve(dir, entry.name);
+    if (entry.isDirectory()) await inventory(path);
+    else { const info = await stat(path); count++; bytes += info.size; if (info.size > largest.size) largest = { path: relative(out, path), size: info.size }; }
+  }
+}
+await inventory(out);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
 const { cars, nitrousCars } = readCarCapabilities(catalogue);
 await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars }));

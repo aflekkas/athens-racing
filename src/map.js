@@ -31,6 +31,7 @@ import * as THREE from 'three';
 import { clamp, lerp, smoothstep } from './util.js';
 import { getMap } from './map-catalog.js';
 import { LocalCarriageways } from './local-carriageways.js';
+import { loadBakedWorldData } from './baked-world-data.js';
 import { RIVIERA_TUNNELS } from './maps/riviera-tunnels.js';
 import { registerMapEvents, getEvents } from './events.js';
 export { MAPS, getMap } from './map-catalog.js';
@@ -257,7 +258,8 @@ export async function loadMap(onProgress, base = './', mapId = 'riviera') {
   let disposed = false;
   const bundle = { id: mapId, definition, data, route, terrain, events: getEvents(mapId),
     get disposed() { return disposed; },
-    dispose() { if (disposed) return; disposed = true; route._h?.clear(); route._h = null; bundle.data = null; bundle.route = null; bundle.terrain = null; bundle.events = []; }
+    dispose() { if (disposed) return; disposed = true; route._h?.clear(); route._h = null; bundle.data = null; bundle.route = null; bundle.terrain = null; bundle.bakedWorld = null; bundle.events = []; }
   };
+  bundle.bakedWorld = loadBakedWorldData(bundle);
   return bundle;
 }

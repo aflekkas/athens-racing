@@ -6,6 +6,7 @@ import { gzipSync, gunzipSync } from 'node:zlib';
 import { generateMapBake } from './bake-world.mjs';
 import { encodeGeometryPack, decodeGeometryPack } from '../src/baked-geometry.js';
 import { restoreBakedTerrain, restoreBakedRoads } from '../src/baked-world.js';
+import { loadBakedWorldData } from '../src/baked-world-data.js';
 import { RoadNetwork } from '../src/road-network-surface.js';
 const root = resolve(import.meta.dirname, '..');
 function roundTrip(buffer) {
@@ -52,4 +53,20 @@ for (const id of ['riviera', 'penteli']) test(`baked ${id} exactly equals genera
       assert.equal(network.height(x, z), bake.network.height(x, z));
     }
   }
+});
+
+test('missing, disabled and corrupt baked downloads fall back without installing partial state', async () => {
+  const previousFetch = globalThis.fetch, previousLocation = globalThis.location, warn = console.warn;
+  const map = { id: 'riviera', data: { roadNetwork: {}, bakedWorld: { version: 1, compression: 'gzip', terrain: '/terrain', roads: '/roads' } }, terrain: { GX: 1, GZ: 1 } };
+  let requests = 0;
+  try {
+    console.warn = () => {}; globalThis.location = { search: '?nobake' };
+    globalThis.fetch = async () => { requests++; return new Response('missing', { status: 404 }); };
+    assert.equal(await loadBakedWorldData(map), null); assert.equal(requests, 0);
+    globalThis.location.search = '?noroadnetwork'; assert.equal(await loadBakedWorldData(map), null); assert.equal(requests, 0);
+    globalThis.location.search = ''; assert.equal(await loadBakedWorldData(map), null); assert.equal(requests, 2);
+    globalThis.fetch = async () => new Response(gzipSync(Buffer.from('invalid binary')));
+    assert.equal(await loadBakedWorldData(map), null); assert.equal(map.terrain.Hc, undefined);
+    delete map.data.bakedWorld; assert.equal(await loadBakedWorldData(map), null);
+  } finally { globalThis.fetch = previousFetch; console.warn = warn; if (previousLocation === undefined) delete globalThis.location; else globalThis.location = previousLocation; }
 });
