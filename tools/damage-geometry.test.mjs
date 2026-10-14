@@ -1,0 +1,32 @@
+// node --import ./tools/damage-test-register.mjs --test tools/damage-geometry.test.mjs
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import { installDamageSystem } from '../src/damage.js';
+import { Vehicle } from '../src/physics.js';
+const route = { frame: () => ({ tx: 0, tz: -1 }), point: (s,u) => ({ x:u,y:0,z:-s }) };
+const spec = { mass:1500,wheelbase:2.6,width:1.84,length:4.4,wheelR:.33,drive:'fwd',engine:'turbo4',idle:800,gears:[3.5,2,1],final:4.1 };
+function model({ bakedMirror = false } = {}) {
+  const root=new THREE.Group(),body=new THREE.Group();root.add(body);
+  const paint=new THREE.MeshStandardMaterial(),panel=new THREE.Mesh(new THREE.BoxGeometry(1.8,.6,4.4,8,4,24),paint);panel.position.y=.55;body.add(panel);
+  const bumper=new THREE.Group();bumper.name='bumper_f';bumper.position.set(0,.5,-2.15);bumper.add(new THREE.Mesh(new THREE.BoxGeometry(1.6,.2,.15,8,4,4),paint));body.add(bumper);
+  if(bakedMirror){const tag=new THREE.Group();tag.userData.mirrorAssembly=true;tag.userData.mirrorRoot=[-.9,.8,-.5];tag.userData.mirrorTipOffset=[0,0,0];body.add(tag);}
+  return installDamageSystem({ root,body,paint,dims:{L:4.4,W:1.84,H:1.5},wheels:[] });
+}
+test('a physical wall crash produces visible deformation, broken parts and repairable state', () => {
+  const car=model(),v=new Vehicle(spec,route),rest=car.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());
+  v.addDamage('front',60/3.6,{kind:'wall'});
+  assert.ok(v.damage.front>.2);assert.ok(v.lastDamage);
+  assert.doesNotThrow(()=>car.setDamage('front',v.damage.front,v.lastDamage));
+  assert.ok(car.damageMeshes.some((m,k)=>m.geometry.attributes.position.array.some((n,i)=>Math.abs(n-rest[k][i])>1e-5)),'crash cannot silently stop deforming the rendered car');
+  assert.notEqual(car.damageParts.find(p=>p.id==='bumper_f').state,'intact');
+  v.reset(0,0);car.setDamage('front',0);
+  assert.equal(v.engHealth,1);assert.ok(car.damageMeshes.every((m,k)=>m.geometry.attributes.position.array.every((n,i)=>Math.abs(n-rest[k][i])<1e-6)));
+  car.disposeDamage();
+});
+test('far traffic baked mirror tags cannot throw and interrupt damage/repair', () => {
+  const car=model({bakedMirror:true});
+  assert.doesNotThrow(()=>car.setDamage('rear',.5));
+  assert.ok(car.damageMeshes.some(m=>m.geometry.attributes.position.needsUpdate || m.geometry.attributes.position.version>0));
+  assert.doesNotThrow(()=>car.setDamage('rear',0));car.disposeDamage();
+});

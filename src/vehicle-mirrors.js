@@ -69,12 +69,15 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
 export function refreshMirrorAttachments(car){
   const scopes=[];car.body.traverse(o=>{if(o.userData.mirrorAssembly)scopes.push(o);});
   for(const group of scopes){
+    // Far traffic batches can bake the housing/stalk into the shell. Such a tag
+    // is no longer an articulated assembly and must not abort crash processing.
+    const housing=group.getObjectByName('mirror-housing'),arm=group.getObjectByName('mirror-stalk');
+    if(!group.parent||!housing||!arm?.geometry||!group.userData.mirrorRoot||!group.userData.mirrorTipOffset)continue;
     const scope=group.parent,supports=mirrorSurfaces(car,scope),root=V().fromArray(group.userData.mirrorRoot);
     // All mirror groups and support triangles use the same body-local frame.
     const bodyPoint=car.body.worldToLocal(scope.localToWorld(root.clone()));
     car.damageLattice?.sample(bodyPoint.x,bodyPoint.y,bodyPoint.z,bodyPoint);
     root.add(bodyPoint);const hit=nearestSurface(root,supports,scope);if(!hit)continue;
-    const housing=group.getObjectByName('mirror-housing'),arm=group.getObjectByName('mirror-stalk');
     const center=new THREE.Box3().setFromObject(housing).getCenter(V());scope.worldToLocal(center);center.add(new THREE.Vector3().fromArray(group.userData.mirrorTipOffset));
     arm.geometry.dispose();arm.geometry=armGeometry(hit.point,center,group.userData.mirrorRadius);
     arm.userData.attachmentRoot=hit.point.toArray();arm.userData.attachmentTip=center.toArray();
