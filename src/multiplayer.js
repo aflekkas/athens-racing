@@ -27,7 +27,7 @@ export class Multiplayer {
     this.panel.setAttribute('role', 'dialog'); this.panel.setAttribute('aria-modal', 'true');
     this.panel.innerHTML = `<div class="mp-card"><div class="mp-heading"><div><small>ATHENS RIVIERA · LIVE RACING</small><h2>MULTIPLAYER</h2></div><button id="mp-close" aria-label="Close multiplayer">×</button></div>
       <p id="mp-status" role="status">Connecting…</p>
-      <div id="mp-browser"><form id="mp-join-form" class="mp-join-hero"><div><small>HAVE AN INVITE?</small><h3>JOIN BY CODE</h3><p>Enter the host’s six-character lobby code.</p></div><label>LOBBY CODE<input id="mp-code" maxlength="6" placeholder="ABC123" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button type="submit">JOIN LOBBY →</button></form><div class="mp-fields"><label>DRIVER NAME<input id="mp-name" maxlength="16" readonly aria-description="Change Driver name in Settings"></label><label>YOUR CAR<select id="mp-car"></select></label></div>
+      <div id="mp-browser"><form id="mp-join-form" class="mp-join-hero"><div><small>HAVE AN INVITE?</small><h3>JOIN BY CODE</h3><p>Enter the host’s six-character lobby code.</p></div><label>LOBBY CODE<input id="mp-code" maxlength="6" placeholder="ABC123" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button type="submit">JOIN LOBBY →</button></form><input type="hidden" id="mp-car">
       <details class="mp-create-fold"><summary>HOST / CREATE GAME</summary><div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<select id="mp-create-map"></select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div></details>
       <div class="mp-section"><h3>BROWSE OPEN LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
       <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>TRACK<select id="mp-map"></select></label><label>MODE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
@@ -36,8 +36,7 @@ export class Multiplayer {
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
     this.board = document.createElement('aside'); this.board.id = 'mp-board'; this.board.hidden = true; this.board.setAttribute('aria-label', 'Race standings'); document.body.append(this.board);
     const $ = id => this.panel.querySelector('#' + id); this.$ = $;
-    $('mp-name').value = driverName.get();
-    for (const car of cars) { const o = document.createElement('option'); o.value = car.id; o.textContent = car.short; $('mp-car').append(o); $('mp-room-car').append(o.cloneNode(true)); }
+    for (const car of cars) { const o = document.createElement('option'); o.value = car.id; o.textContent = car.short; $('mp-room-car').append(o); }
     this.button.onclick = () => this.open(); $('mp-close').onclick = () => this.close();
     $('mp-refresh').onclick = () => this.send({ type: 'discover' });
     // Double CREATE clicks used to race the first lobby join and surface a
@@ -56,7 +55,7 @@ export class Multiplayer {
     $('mp-map').onchange = () => this.send({ type: 'options', mapId: $('mp-map').value, traffic: $('mp-traffic').checked });
     $('mp-leaderboard').onclick = () => this.showLeaderboard();
     $('mp-copy').onclick = async () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('lobby', this.lobby.code); u.searchParams.set('map', this.lobby.mapId || 'riviera'); try { await navigator.clipboard.writeText(u.href); this.status('Invite link copied.'); } catch { this.status('Invite link: ' + u.href); } };
-    driverName.onChange(name => { $('mp-name').value = name; if (this.connected) this.send({ type: 'name', name }); });
+    driverName.onChange(name => { if (this.connected) this.send({ type: 'name', name }); });
     this.connect();
     this.timer = setInterval(() => { if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping', sent: Date.now() }); }, 30000);
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }

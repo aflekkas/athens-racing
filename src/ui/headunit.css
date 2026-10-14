@@ -53,9 +53,9 @@
 :root #multiplayer .mp-lobby button { background: var(--hu-lit); color: var(--hu-lit-fg); border: 0; font-weight: 700; }
 :root #multiplayer .mp-actions { background: linear-gradient(0deg, rgba(10,14,19,.98), rgba(10,14,19,.9)); border-top: 1px solid var(--hu-hair); }
 :root #multiplayer .mp-garage { border-radius: var(--r-4); border-color: var(--hu-hair); background: rgba(255,255,255,.03); }
-:root #multiplayer .mp-garage-title { font: 400 var(--t-xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; }
-:root #multiplayer .mp-garage-title span { color: var(--hu-ice); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .18em; }
-:root #multiplayer .car-card:focus-visible { outline: none; border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14); }
+:root #multiplayer .mp-car-row__label { color: var(--hu-text-3); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .2em; }
+:root #multiplayer .mp-car-row b { font: 400 var(--t-xl) var(--f-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--hu-text); }
+:root #multiplayer .mp-car-row small { color: var(--hu-ice); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .18em; }
 
 /* ---------------------------------------------------------------- race corner buttons (settings / multiplayer) */
 :root #race-settings, :root body #mp-toggle { border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: var(--hu-sheen), rgba(10,14,19,.78); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);

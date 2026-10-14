@@ -105,21 +105,12 @@
 #multiplayer #mp-restart { --glyph: url(../assets/icons/arrow-counter-clockwise.svg); }
 #multiplayer #mp-tolobby { --glyph: url(../assets/icons/users-three.svg); }
 
-/* The lobby garage uses the same cards, thumbnails and filters as the solo catalogue. */
+/* The lobby room names the chosen car in one row; CHANGE CAR opens the normal garage. */
 #multiplayer .mp-card { max-width: 1100px; width: min(1100px,calc(100vw - 24px)); }
-.mp-garage { margin: 1rem 0; padding: 1rem; border: 1px solid #ffffff20; border-radius: 8px; background: #0b121b; }
-.mp-garage-title { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 .8rem; color: white; font: 900 1.6rem var(--f-cond); }
-.mp-garage-title span { font-size: .8rem; color: #ffc21a; }
-#multiplayer .catalog-toolbar { grid-template-columns: repeat(4,minmax(0,1fr)); gap: .6rem; }
-#multiplayer .catalog-search { grid-column: 1/-1; }
-#multiplayer .car-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .7rem; max-height: 36vh; overflow: auto; margin-top: .8rem; }
-#multiplayer .car-card { min-width: 0; cursor: pointer; }
-#multiplayer .car-card:focus-visible { outline: 3px solid #ffc21a; outline-offset: -3px; }
-#multiplayer .car-card .card__title { font-size: 1.05rem; }
-#multiplayer .car-card .card__text,#multiplayer .car-card .card__foot { font-size: .72rem; }
-#multiplayer .mp-fields:has(#mp-car) > label:first-child { grid-column: 1/-1; }
-@media(max-width:700px) { #multiplayer .car-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } #multiplayer .catalog-toolbar { grid-template-columns: repeat(2,minmax(0,1fr)); } .mp-garage { padding: .7rem; } .mp-garage-title { font-size: 1.3rem; } .mp-garage-title span { font-size: .65rem; } }
-/* Multiplayer starts with invites and discoverable rooms, followed by the shared garage. */
+.mp-garage { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0; padding: .8rem 1rem; border: 1px solid #ffffff20; border-radius: 8px; background: #0b121b; }
+.mp-car-row { display: grid; gap: .15rem; min-width: 0; }
+.mp-car-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Multiplayer starts with invites and discoverable rooms. */
 #multiplayer .mp-join-hero { display: grid; grid-template-columns: 1.2fr 1fr auto; align-items: end; gap: 16px; padding: 20px; margin: 12px 0 20px; background: #192735; border: 2px solid #ffc21a; border-radius: 8px; }
 .mp-join-hero small { color: #ffc21a; font: 800 .7rem var(--f-cond); letter-spacing: .12em; }
 .mp-join-hero h3 { color: white; font: 900 1.8rem var(--f-cond); margin: 4px 0; }
