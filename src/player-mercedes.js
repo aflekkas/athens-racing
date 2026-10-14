@@ -53,7 +53,7 @@ function sculptedContour(d){
       rw:W-.25,bw:W-.078,archGap:.020,grilleY:.594,grilleWidth:.53,grilleHeight:.121,
     };
   }
-  const belt=z=>contour([[d.cowl,1.055],[0,1.095],[1.15,1.165],[d.back,d.hatchGlassY]],z);
+  const belt=z=>contour([[d.cowl,1.055],[0,1.140],[1.15,1.240],[1.55,1.290],[d.back,d.hatchGlassY]],z);
   const rail=z=>contour([[d.header,1.435],[.12,1.545],[.65,1.545],[1.1,1.505],[d.roofBack,1.43]],z);
   const top=z=>contour([[F,d.front],[F+.28,.955],[d.cowl,1.04],[.15,1.075],[d.wb/2,1.15],[R,d.rear]],z);
   const width=z=>contour([[F,W*.91],[F+.44,W*.985],[-d.wb/2,W],[0,W*.975],[d.wb/2,W],[R-.30,W*.985],[R,W*.88]],z);
@@ -69,9 +69,9 @@ export function mercedesSurface(d){
   // https://content.presspage.com/uploads/1896/20c0325-008.jpg (side)
   // https://content.presspage.com/uploads/1896/20c0325-002.jpg (rear)
   const flare=(z,y)=>d.amg?.052*Math.max(...[-d.wb/2+(d.axleOffset||0),d.wb/2+(d.axleOffset||0)].map(a=>Math.exp(-(((Math.hypot(z-a,y-d.r)-(d.r+.085))/.12)**2)))):0;
-  const side=(z,y)=>{const t=clamp((y-.19)/(top(z)-.19),0,1);if(C)return width(z)-.050*(1-t)**3-.042*t**5-.035*Math.exp(-(((t-.42)/.19)**2))+.027*Math.exp(-(((z-(d.wb/2+ (d.axleOffset||0)))/.5)**2))*Math.sin(Math.PI*t)+flare(z,y)*.64;return width(z)-.060*(1-t)**4-.018*t**6-.021*Math.sin(t*Math.PI*2)-(d.amg?.036:0)+flare(z,y);};
+  const side=(z,y)=>{const t=clamp((y-.19)/(top(z)-.19),0,1);if(C)return width(z)-.075*(1-t)**3-.062*t**5-.065*Math.exp(-(((t-.42)/.19)**2))+.027*Math.exp(-(((z-(d.wb/2+ (d.axleOffset||0)))/.5)**2))*Math.sin(Math.PI*t)+flare(z,y)*.64;return width(z)-.060*(1-t)**4-.018*t**6-.021*Math.sin(t*Math.PI*2)-(d.amg?.036:0)+flare(z,y);};
   const deck=(x,z)=>{const t=x/width(z),bulge=z<d.cowl?(d.sculpted&&d.doors===2?.032*Math.sin(Math.PI*clamp((z-F)/(d.cowl-F),0,1))**.5*Math.exp(-(((Math.abs(t)-.45)/.13)**2)):.012*Math.exp(-(((Math.abs(t)-.58)/.10)**2))):0;return top(z)+.036*(1-t*t)+bulge;};
-  const face=(x,z,y)=>z+Math.sign(-z)*((C&&!d.suv?.22:.13)*(Math.abs(x)/(W*.88))**3+((d.suv||C)?
+  const face=(x,z,y)=>z+Math.sign(-z)*((C?.22:.13)*(Math.abs(x)/(W*.88))**3+((d.suv||C)?
     sample([[.19,C&&!d.suv?.30:.18],[.36,C&&!d.suv?.10:.045],[.63,0],[.83,.025],[top(z),.105]],y):.025*(1-clamp((y-.18)/.5,0,1))));
   const longitudinal=(x,z,y)=>mix(z,face(x,z,y),clamp((Math.abs(z)-(d.L/2-.36))/.36,0,1)**2);
   // Upper lamp lenses sweep back onto the curved bonnet instead of floating over its edge.
@@ -88,7 +88,7 @@ export function buildMercedes(car,d,M,low,plate,H){
   const p=car.body,F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0,S=mercedesSurface(d),C=S.contour,arch=d.r+(C?.archGap||.055);
   const suv=!!d.suv,amg=!!d.amg,cla=!!d.cla;
   car.mercedesSurface=S;
-  const rearGlass=suv?M.glass.clone():M.glass;if(suv){rearGlass.color.set('#182b35');rearGlass.opacity=.72;rearGlass.metalness=.02;rearGlass.envMapIntensity=.45;}
+  const rearGlass=(suv||C)?M.glass.clone():M.glass;if(suv||C){rearGlass.color.set('#182b35');rearGlass.opacity=.78;rearGlass.metalness=.02;rearGlass.envMapIntensity=.25;rearGlass.userData.playerGlass=true;}
   const windowBelt=C?.belt||(z=>suv?sample([[d.cowl,d.belt+.024],[.35,d.belt+.038],[1.5,d.hatchGlassY-.016],[d.back,d.hatchGlassY]],z):d.belt+.024);
   for(const s of [-1,1]){
     surface(p,M.paint,(u,v)=>{const z=mix(F,R,u);let bottom=.19;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=mix(bottom,S.top(z),v);const x=s*S.side(z,y);return[x,y,S.longitudinal(x,z,y)];},C?128:suv?128:160,(suv||C)?10:12,'body-side');
@@ -103,7 +103,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     for(const end of ends){
       const curve=new THREE.CatmullRomCurve3([[end,d.belt-.01],[end+.025,.66],[end-.035,.31],[end-.19,.285]].map(([z,y])=>new THREE.Vector3(0,y,z)));
       line(p,M.seam,curve.getPoints(32).map(q=>[s*(S.side(q.z,q.y)+.002),q.y,q.z]),.0022);
-      box(p,cla?M.paint:M.chrome,[.023,.030,.16],[s*(S.side(end-.17,d.belt-.12)+.008),d.belt-.12,end-.17],.009,[0,0,0],'door-handle');
+      const handleY=C?windowBelt(end-.17)-.12:d.belt-.12;box(p,cla?M.paint:M.chrome,[.023,.030,.16],[s*(S.side(end-.17,handleY)+.008),handleY,end-.17],.009,[0,0,0],'door-handle');
     }
     const sill=[];for(let i=0;i<=24;i++){const z=mix(-d.wb/2+ax+.40,d.wb/2+ax-.40,i/24);sill.push([s*(S.side(z,.25)+.004),.25,z]);}line(p,M.black,sill,suv?.039:.024);
     // Taut upper character line dissolves into the long coupe door.
