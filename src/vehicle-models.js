@@ -64,7 +64,7 @@ function skin(car,d,M,low) {
   const p=car.body, arch=d.r+.06;
   // Actual open wheel wells: the lower edge follows the tyre envelope at both axles.
   for(const s of [-1,1]) {
-    surface(p,M.paint,(u,v)=>{const z=lerp(-d.L/2,d.L/2,u),w=widthAt(d,z);let y0=.19;for(const axle of [-d.wb/2,d.wb/2]){const dz=z-axle;if(Math.abs(dz)<arch)y0=Math.max(y0,d.r+Math.sqrt(arch*arch-dz*dz));}const y=lerp(y0,topAt(d,z),v);return [s*sideSkinX(d,z,y),y,z];},low?80:160,12,'body-side');
+    surface(p,M.paint,(u,v)=>{const z=lerp(-d.L/2,d.L/2,u),w=widthAt(d,z);let y0=.19;for(const axle of [-d.wb/2,d.wb/2]){const dz=z-axle;if(Math.abs(dz)<arch)y0=Math.max(y0,d.r+Math.sqrt(arch*arch-dz*dz));}const y=lerp(y0,topAt(d,z),v);return [s*sideSkinX(d,z,y),y,z];},low?64:160,12,'body-side');
     for(const z of [-d.wb/2,d.wb/2]) {
       const pts=[];for(let i=0;i<=32;i++){const a=Math.PI*i/32;const zz=z+Math.cos(a)*arch;const yy=d.r+Math.sin(a)*arch;pts.push([s*(sideSkinX(d,zz,yy)+.004),yy,zz]);}
       line(p,car.modelKind==='mini'||d.ev?M.black:M.paint,pts,car.modelKind==='mini'?.024:.012);
@@ -115,7 +115,7 @@ function deckY(d,x,z){
 function shapedSkin(car,d,M,low){
   const p=car.body,F=-d.L/2,R=d.L/2,ax=d.axleOffset||0,arch=d.r+.055;
   for(const s of [-1,1]){
-    surface(p,M.paint,(u,v)=>{const z=lerp(F,R,u);let bottom=.18;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=lerp(bottom,shoulderY(d,z),v);return [s*shapedWidth(d,z,y),y,z];},low?100:180,16,'body-side');
+    surface(p,M.paint,(u,v)=>{const z=lerp(F,R,u);let bottom=.18;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=lerp(bottom,shoulderY(d,z),v);return [s*shapedWidth(d,z,y),y,z];},low?64:180,16,'body-side');
     for(const a of [-d.wb/2+ax,d.wb/2+ax]){
       const pts=[];for(let i=0;i<=40;i++){const t=Math.PI*i/40,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);pts.push([s*(shapedWidth(d,z,y)+.001),y,z]);}line(p,M.paint,pts,d.profile==='yaris'?.018:.008);
       surface(p,M.black,(u,v)=>{const t=u*Math.PI,z=a+(arch-.006)*Math.cos(t),y=d.r+(arch-.006)*Math.sin(t);return[s*lerp(d.track/2-.12,shapedWidth(d,z,y)-.008,v),y,z];},40,4);
