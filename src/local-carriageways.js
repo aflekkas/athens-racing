@@ -49,17 +49,20 @@ export class LocalCarriageways {
   return b.point(s,(u-this.centreU(s,dir))*this.scale(b,s),out);
  }
  inverse(x,z,guess,hint=null){
+  // Wheels, traffic and pedestrians project every frame across the whole 400 m transition. Try the carriageway the
+  // base projection lands on first and stop at 1 µm (was 10 nm, both sides always): ~5x fewer surface evaluations.
   const seeds=[guess.s];if(hint!==null&&this.contains(hint))seeds.unshift(hint);let result=guess,bestError=Infinity;
-  for(const start of seeds)for(const dir of [-1,1]){let s=start;const centre=this.centreU(s,dir),f=this.map(s,centre,{}),normal=this.map(s,centre+1,{}),nx=normal.x-f.x,nz=normal.z-f.z;
+  const sides=guess.u<0?[-1,1]:[1,-1];
+  for(const start of seeds)for(const dir of sides){let s=start;const centre=this.centreU(s,dir),f=this.map(s,centre,{}),normal=this.map(s,centre+1,{}),nx=normal.x-f.x,nz=normal.z-f.z;
    let u=centre+((x-f.x)*nx+(z-f.z)*nz)/(nx*nx+nz*nz);
    for(let i=0;i<20;i++){
     const mh=this.route.medHalf(s);u=dir>0?Math.max(mh,u):Math.min(-mh,u);
-    const p=this.map(s,u,{}),dx=x-p.x,dz=z-p.z;if(dx*dx+dz*dz<1e-16)break;
+    const p=this.map(s,u,{}),dx=x-p.x,dz=z-p.z;if(dx*dx+dz*dz<1e-12)break;
     const S0=this.map(s-.01,u,{}),S1=this.map(s+.01,u,{}),U0=this.map(s,u-.001,{}),U1=this.map(s,u+.001,{}),sx=(S1.x-S0.x)/.02,sz=(S1.z-S0.z)/.02,ux=(U1.x-U0.x)/.002,uz=(U1.z-U0.z)/.002,det=sx*uz-sz*ux;
     if(Math.abs(det)<1e-9)break;s=clamp(s+clamp((dx*uz-dz*ux)/det,-8,8),this.min-.1,this.max+.1);u+=clamp((sx*dz-sz*dx)/det,-8,8);
    }
    const p=this.map(s,u,{}),error=(p.x-x)**2+(p.z-z)**2;
-   if(error<bestError){result={s,u};bestError=error;}if(error<1e-16)return result;
+   if(error<bestError){result={s,u};bestError=error;}if(error<1e-12)return result;
   }
   return result;
  }
