@@ -1,3 +1,4 @@
+import { drawCameraIcons } from './enforcement-hud.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
@@ -241,6 +242,7 @@ export class Hud {
       g.fillStyle = j.main === 'R' ? '#ff2a14' : j.main === 'A' ? '#ffb000' : '#22ff74'; g.strokeStyle = '#000'; g.lineWidth = 2.5 / sc;
       g.beginPath(); g.arc(j.x, j.z, 6.5 / sc, 0, 7); g.fill(); g.stroke();
     }
+    drawCameraIcons(g, route, st.cameras, 6.5 / sc);
     // traffic dots
     if (st.traffic) { g.fillStyle = 'rgba(255,255,255,.75)'; for (const c of st.traffic) { if (!c.active || c.cop || Math.abs(c.s - st.s) > R) continue; const p = route.point(c.s, c.u); g.fillRect(p.x - 2.2 / sc * 1.2, p.z - 2.2 / sc * 1.2, 4.4 / sc * 1.2, 4.4 / sc * 1.2); } }
     // police: bigger dots, flashing blue / red while their lights are on (src/police.js)

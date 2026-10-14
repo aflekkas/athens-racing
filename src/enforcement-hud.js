@@ -24,7 +24,7 @@ const CSS = `
 #fine-hist .row{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.08);padding:3px 0}
 #fine-hist .row span:last-child{color:#ffb000}
 #fine-histBtn{pointer-events:auto;background:rgba(10,14,20,.85);border:1px solid rgba(255,255,255,.16);border-radius:8px;color:#cfd6df;font:700 11px/1 system-ui,sans-serif;letter-spacing:.1em;padding:7px 10px;cursor:pointer}
-body.racing #fine-phone{display:flex}#fine-phone{display:none}
+body.racing:not(.ui-open) #fine-phone[data-enabled="true"]{display:flex}#fine-phone{display:none}
 `;
 
 /** Draw fixed-camera icons on the minimap canvas (call inside drawMini's transform). */
@@ -57,14 +57,17 @@ export class FinePhone {
     this.btn.addEventListener('click', () => this.hist.classList.toggle('open'));
     this.count = 0;
   }
+  setEnabled(enabled) { if (this.el) this.el.dataset.enabled = String(enabled === true); }
   reset() {
     this.count = 0;
     if (!this.el) return;
+    for (const toast of this.el.querySelectorAll('.fine-toast')) toast.remove();
     this.rows.innerHTML = ''; this.hist.classList.remove('open');
     this.btn.textContent = 'FINES · 0';
   }
   /** show a phone-style toast for a ledger entry { kind, label, penaltySec, site } */
-  notify(entry) {
+  notify(entry) { return this.show(entry); }
+  show(entry) {
     if (!this.el || !entry) return;
     this.count++;
     this.btn.textContent = `FINES · ${this.count}`;
@@ -72,12 +75,16 @@ export class FinePhone {
     const d = document.createElement('div');
     d.className = `fine-toast ${cls}`.trim();
     const title = entry.kind === 'red' ? 'RED LIGHT' : entry.kind === 'capture' ? 'POLICE STOP' : 'SPEED CAMERA';
-    d.innerHTML = `<div><b>${title}</b>${entry.label}<br><small>+${entry.penaltySec.toFixed(1)} S · game time, not a real fine</small></div>`;
+    const content = document.createElement('div'), heading = document.createElement('b'), label = document.createElement('span'), detail = document.createElement('small');
+    heading.textContent = title; label.textContent = entry.label; detail.textContent = `+${entry.penaltySec.toFixed(1)} S · race penalty`;
+    content.append(heading, label, document.createElement('br'), detail); d.appendChild(content);
     this.el.insertBefore(d, this.hist);
     setTimeout(() => d.remove(), 3200);
     const row = document.createElement('div');
     row.className = 'row';
-    row.innerHTML = `<span>${title} · ${entry.label}</span><span>+${entry.penaltySec.toFixed(1)}s</span>`;
+    const name = document.createElement('span'), seconds = document.createElement('span');
+    name.textContent = `${title} · ${entry.label}`; seconds.textContent = `+${entry.penaltySec.toFixed(1)}s`; row.append(name, seconds);
     this.rows.appendChild(row);
+    while (this.rows.children.length > 100) this.rows.firstElementChild.remove();
   }
 }

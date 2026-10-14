@@ -37,6 +37,9 @@ import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from '.
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
 import { speedLimitAt } from './speed-limit.js';
+import { EnforcementRuntime } from './enforcement-runtime.js';
+import { FinePhone } from './enforcement-hud.js';
+import { redViolation } from './enforcement.js';
 import { updateSceneryLod, setDrawDistance, drawDistanceFor, drawDistance } from './scenery.js';
 import { GRAPHICS_TIERS, detectQuality } from './graphics.js';
 import { initReplay } from './replay-mode.js';
@@ -48,6 +51,22 @@ import { gearboxMessage, bindingLabel } from './input-labels.js';
 
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
+const finePhone = new FinePhone();
+const enforcement = new EnforcementRuntime(entry => {
+  if (multiplayer.active) { multiplayer.sendViolation?.(entry); return; }
+  const fine = enforcement.record(entry);
+  if (fine) { G.pen += fine.penaltySec; if (fine.kind === 'red') G.reds++; finePhone.show(fine); }
+});
+let lawsRound = 0;
+function resetLaws() { lawsRound++; enforcement.reset(); finePhone.reset(); finePhone.setEnabled(false); }
+function lawsEnabled() { return (multiplayer.active ? (multiplayer.lobby?.config?.police ?? multiplayer.lobby?.event?.police) === true : police?.enabled === true) && G.ev?.def.rules?.laws !== false && (!multiplayer.active || multiplayer.lobby?.config?.enforcement?.enabled !== false); }
+function lawState(v = player.veh) { return { s: v.s, u: v.u, dir: (G.dir || 1) * (v.reverse ? -1 : 1), kmh: v.kmh, now: G.t, at: multiplayer.active ? multiplayer.now() : Date.now() }; }
+function updateLaws() {
+  if (enforcement.mapId !== map.id) enforcement.setMap(map);
+  enforcement.configure({ enabled: lawsEnabled(), rules: G.ev?.def.rules, raceId: multiplayer.active ? multiplayer.lobby?.raceId : `solo:${lawsRound}`, generation: multiplayer.lobby?.generation ?? 0, online: multiplayer.active });
+  finePhone.setEnabled(enforcement.enabled);
+  if (G.state === 'race' && !multiplayer.spectating?.()) enforcement.step(lawState());
+}
 const RIVAL_NAME = 'STAVROS';
 const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
 
@@ -314,6 +333,7 @@ function setCar(idx, keepPose = true) {
 }
 
 function resetRace() {
+  resetLaws();
   if (!G.ev) prepareEvent(EV.QUICK_RACE);
   if (!multiplayer.active) { resetEvent(); return; }
   const s0 = Q.has('s') ? +Q.get('s') : startS;
@@ -336,6 +356,7 @@ function resetRace() {
 }
 /** offline reset onto the active event: the grid, traffic in the event's direction and density, timing */
 function resetEvent() {
+  resetLaws();
   const { def, r } = G.ev, dir = r.dir;
   buildGrid();
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
@@ -605,6 +626,7 @@ function initFlow() {
     G.pursuit = p;
     if (G.state !== 'race' || multiplayer.active || !G.ev) return;
     if (p.phase === 'busted') {
+      if (G.ev.def.type !== 'pursuit') finePhone.show(enforcement.recordCapture(G.t, inFreeRoam() ? 0 : 15));
       recoverFromCapture();
     }
     else if (p.phase === 'evaded' && G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'escape') finishRace('evaded');
@@ -819,6 +841,7 @@ function flowAction(name) {
 }
 const inMenu = () => MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
 window.__flow = {
+  enforcement, finePhone,
   switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
   pause: pauseGame, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(map.id), drivingModeDef: mode => drivingModeDefinition(mode, map.id), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
@@ -1045,23 +1068,22 @@ function aiInput(car, dt, pace, other) {
 }
 
 function onStopLine(j, who, rc = rival) {
-  const red = j.main === 'R' && j.redT > 0.3 && j.toGreen > 0.3; // a little grace at both ends of the red
-  if (red && Q.has('redlog')) { const c = who === 'rival' ? rc : player; (G.redLog = G.redLog || []).push([who, Math.round(j.s), +j.redT.toFixed(1), c.ai && c.ai.sigJ === j.i, c.ai && c.ai.sigRun, Math.round(c.veh.kmh), c.ghost || false]); }
+  if (!lawsEnabled()) return;
   if (who === 'rival') {
-    if (!red) return;
-    G.rPen += 2; G.rReds++; rc.pen = (rc.pen || 0) + 2; rc.reds = (rc.reds || 0) + 1;
-    if (Math.abs(rc.veh.s - player.veh.s) < 450) { hud.pop('info cyan', (rc.name || RIVAL_NAME) + ' RAN A RED!', '+2.0 S PENALTY'); if (Math.abs(rc.veh.s - player.veh.s) < 120) audio.whistle(); }
-    people.redRun(j);
-    return;
+    const site = enforcement.redSites?.find(c => Math.abs(c.s - j.s) < 30 && (c.dir === 0 || c.dir === (rc.dir || G.dir)));
+    if (!redViolation(j, { camera: !!site })) return;
+    const penalty = G.ev?.def.rules?.penalty ?? 2;
+    G.rPen += penalty; G.rReds++; rc.pen = (rc.pen || 0) + penalty; rc.reds = (rc.reds || 0) + 1;
+    people.redRun(j); return;
   }
-  if (red) {
-    G.pen += 2; G.reds++;
-    hud.pop('redlight', 'RED LIGHT!', '+2.0 S');
-    hud.flashCam(); audio.shutter(); setTimeout(() => audio.whistle(), 260);
-    for (const c of traffic.cars) if (c.active && c.cross && Math.abs(c.s - j.s) < 40) { audio.horn(false, 0.9, clamp((c.u - player.veh.u) / 12, -1, 1), Math.random() * 0.2); break; }
-    people.redRun(j);
+  // cop.sees is visibility of the player, computed by patrol AI. It is never
+  // used as evidence about a rival or another multiplayer connection.
+  const witnessed = police?.enabled && police.cops.some(c => c.cop.sees && !c.crash);
+  if (enforcement.red(j, lawState(), witnessed)) {
+    hud.flashCam(); audio.shutter(); people.redRun(j);
   }
 }
+
 function handleHonk(h) {
   const c = h.c;
   const p = traffic.route.point(c.s, c.u, _v1);
@@ -1535,9 +1557,10 @@ function step(dt, draw = true) {
       if (!multiplayer.active) {
       updateGrid(dt); // the AI field: racing lines, traffic, red lights (offline)
       }
-      // ---- stop lines: running a red costs time
+      updateLaws();
+      // ---- stop lines: camera or police witness, with optional game-time laws
       const D = G.dir || 1, pf = pv.s + D * pv.halfL, rf = rv.s + rv.halfL;
-      if (!multiplayer.active && G.state === 'race' && G.pFront !== null && pv.vLong > 0) { const j = crossedDir(G.pFront, pf, D); if (j) onStopLine(j, 'player'); }
+      if (G.state === 'race' && G.pFront !== null && pv.vLong > 0) { const j = crossedDir(G.pFront, pf, D); if (j) onStopLine(j, 'player'); }
       G.pFront = D > 0 ? Math.max(G.pFront ?? pf, pf) : Math.min(G.pFront ?? pf, pf); G.rFront = Math.max(G.rFront ?? rf, rf);
       // ---- traffic + collisions
       const actors = multiplayer.active ? [{ veh: pv, kind: 'player' }] : [{ veh: pv, kind: 'player' }, ...grid.map((c) => c.actor)];
@@ -1642,6 +1665,7 @@ function step(dt, draw = true) {
     manual: pv.manual, transmission: carTransmission(pv.spec), limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
+  st.cameras = enforcement.enabled ? [...(enforcement.cameras || []), ...(enforcement.redSites || [])] : [];
   st.gapUnit = gapUnit;
   if (multiplayer.active) {
     const telemetry = multiplayer.telemetry(pv), watching = multiplayer.spectating(), selected = watching ? remoteCars.get(watching.id) : player;
@@ -1808,6 +1832,7 @@ const multiplayer = new Multiplayer(CARS, {
     traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); quitToMenu();
   },
   members: onlineMembers,
+  fine(entry) { const fine = enforcement.record({ ...entry, now: G.t }); if (fine) finePhone.show(fine); },
   start(lobby, id, resumeState = null) {
     if (!multiplayer.loaded) return;
     beginCameraBlend();

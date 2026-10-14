@@ -48,11 +48,12 @@ export const ENF = {
 
 /**
  * A fixed speed camera. dir: +1 enforces travel direction +s, -1 enforces -s,
- * 0 (or undefined) enforces both. limitKmh: posted limit at the post.
+ * 0 explicitly enforces both; unknown direction is never enforced. limitKmh: posted limit.
  */
 export function cameraFires(cam, vehS, dir, kmh, now, margin = ENF.cameraMarginKmh) {
-  if (cam.dir !== undefined && cam.dir !== 0 && dir !== 0 && cam.dir !== dir) return false;
-  return kmh > (cam.limitKmh ?? 50) + margin;
+  if (![1, -1].includes(dir) || ![1, -1, 0].includes(cam.dir) || !Number.isFinite(kmh) || !Number.isFinite(cam.limitKmh)) return false;
+  if (cam.dir !== 0 && cam.dir !== dir) return false;
+  return kmh > cam.limitKmh + margin;
 }
 
 /** Per-camera trigger state: directional, thresholded, single fine per pass. */
@@ -68,7 +69,9 @@ export class CameraWatch {
    * st: { s (route s), dir (+1/-1), kmh, now (s), limitKmh }.
    */
   step(i, cam, st) {
-    const near = Math.abs(st.s - cam.s) < this.cfg.cameraRadiusM;
+    if (![st.s, st.now, cam.s].every(Number.isFinite) || Math.abs(st.u ?? 0) > 25) return 'absent';
+    const swept = Number.isFinite(st.prevS) && Math.abs(st.s - st.prevS) < 100 && (st.prevS - cam.s) * (st.s - cam.s) <= 0;
+    const near = Math.abs(st.s - cam.s) < this.cfg.cameraRadiusM || swept;
     if (!near) { this.inside.delete(i); return 'absent'; }
     const wasInside = this.inside.has(i);
     this.inside.add(i);
@@ -106,7 +109,9 @@ export class FineLedger {
     const last = this.fines[this.fines.length - 1];
     if (last && last.kind === kind && last.site === site && now - last.now < 2) return last;
     const entry = { kind, label, penaltySec, site, now };
+    if (!Number.isFinite(penaltySec) || penaltySec < 0 || penaltySec > 60 || !Number.isFinite(now)) return null;
     this.fines.push(entry);
+    if (this.fines.length > 100) this.fines.shift();
     this.totalSec += penaltySec;
     return entry;
   }
