@@ -25,13 +25,19 @@ async function save(id, version, buffers) {
       const tx = db.transaction('maps', 'readwrite'); tx.objectStore('maps').put({ version, buffers }, id);
       tx.oncomplete = resolve; tx.onerror = tx.onabort = () => reject(tx.error);
     });
-  } catch { /* Private browsing / storage pressure: generate again next visit. */ } finally { db?.close(); }
+    return true;
+  } catch { return false; /* Private browsing / storage pressure: generate again next visit. */ } finally { db?.close(); }
 }
 export async function generatedWorld(map) {
   const def = map.data.bakedWorld;
   if (!def.worker || typeof Worker === 'undefined') return null;
   const version = `${def.terrain}|${def.roads}`;
-  const cached = await read(map.id, version);
+  const marker = `asr-world-version.${map.id}`;
+  let known = false;
+  try { known = localStorage.getItem(marker) === version; } catch {}
+  // A cold miss must start synchronously, before main.js blocks on HUD/sky work.
+  // The small marker is written only after the IndexedDB transaction commits.
+  const cached = known ? await read(map.id, version) : null;
   if (cached) { if (new URLSearchParams(location.search).has('debug')) console.log('world-cache', map.id, 'hit'); return cached; }
   const buffers = await new Promise((resolve, reject) => {
     const worker = new Worker(def.worker, { type: 'module', name: `world:${map.id}` });
@@ -42,7 +48,7 @@ export async function generatedWorld(map) {
     worker.postMessage({ id: map.id });
   });
   // Storage is optional and must not hold up the first drive. Writes complete while shaders/textures warm up.
-  void save(map.id, version, buffers);
+  void save(map.id, version, buffers).then(saved => { if (saved) try { localStorage.setItem(marker, version); } catch {} });
   if (new URLSearchParams(location.search).has('debug')) console.log('world-cache', map.id, 'generated');
   return buffers;
 }
