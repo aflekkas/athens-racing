@@ -172,7 +172,7 @@ const TRAFFIC_LOOPS = {
 };
 
 // Mix controls are independent of legacy sfx (which still scales every non-music bus).
-export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, ui: 0.4 });
+export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.8, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
 /** One detail budget across rivals and traffic, so separate pools cannot each fill the foreground. */
@@ -200,7 +200,7 @@ export class AudioMix {
     this.sfx = gain(1, this.master);
     this.worldDuck = gain(1, this.sfx);
     this.buses = {};
-    for (const name of ['engine', 'tyres', 'ambience', 'traffic', 'ui', 'music']) {
+    for (const name of ['engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui', 'music']) {
       this.buses[name] = gain(1, name === 'music' ? this.master : name === 'ui' ? this.sfx : this.worldDuck);
     }
     this.setVolumes(volumes, 0);

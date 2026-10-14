@@ -29,7 +29,7 @@ const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}`
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
 C.registerFormat('laps', (v) => `${v} ${+v === 1 ? 'LAP' : 'LAPS'}`);
 C.registerFormat('deg', (v) => Math.round(v) + '°');
-const VOLUMES = { master: 'MASTER', music: 'MUSIC', sfx: 'EFFECTS', engine: 'ENGINE', tyres: 'TYRES', ambience: 'AMBIENCE', traffic: 'TRAFFIC', ui: 'MENU SOUNDS' };
+const VOLUMES = { master: 'MASTER', music: 'MUSIC', sfx: 'EFFECTS', engine: 'ENGINE', tyres: 'TYRES', ambience: 'AMBIENCE', traffic: 'TRAFFIC', voice: 'VOICES', ui: 'MENU SOUNDS' };
 const has = (k) => k in settings;
 const SET = { 'data-scope': 'setting' };
 
@@ -396,7 +396,7 @@ export class Menu {
     let body = '';
     if (tab === 'audio') {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
-      body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}</div>`;
+      body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'mildLanguage', label: 'MILD LANGUAGE', value: settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
       body = `<div class="group"><h3 class="group__title">${icon('monitor')}QUALITY</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS', value: v('graphics'), options: [['auto', 'AUTO'], ['ultra', 'ULTRA'], ['high', 'HIGH'], ['med', 'MED'], ['low', 'LOW']], note: locked ? 'LOCKED WHILE ONLINE' : 'CHANGING IT RELOADS THE GAME', attrs: SET, cls: locked ? 'locked' : '' })}</div>
         <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'AUTO'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'FULL DETAIL RANGE · LOW-DETAIL SCENERY STAYS VISIBLE TO THE HORIZON', attrs: SET })}

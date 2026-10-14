@@ -1,0 +1,35 @@
+Athens Street Racers — offline synthetic Greek voice reactions (2026-10-14)
+
+Greek scripts, transliterations, English meanings: project contribution.
+50 phrases × 4 character profiles = 200 mono Ogg Vorbis clips.
+Two independent neural speaker models; young/older names describe pitch/rate
+character treatments, not four distinct recorded actors or verified ages.
+No cloned player voices. No hosted inference or runtime model downloads.
+
+Female profiles: Piper el_GR-rapunzelina-low, Rhasspy / Michael Hansen.
+https://huggingface.co/rhasspy/piper-voices
+Repository declares MIT; individual voice card identifies its dataset as CC0.
+https://huggingface.co/rhasspy/piper-voices/blob/main/el/el_GR/rapunzelina/low/MODEL_CARD
+https://www.kaggle.com/datasets/bryanpark/greek-single-speaker-speech-dataset
+Model card: fine-tuned from US English Ryan low; 16 kHz single speaker.
+
+Male profiles: Chreece/el_GR-chreece-high, Chreece.
+https://huggingface.co/Chreece/el_GR-chreece-high
+Model declared Apache-2.0. Author recordings, fine-tuned from lessac/high.
+The author cautions that recording quality is low, despite the 'high' model name.
+
+These permissive model declarations do not state a separate output licence
+or noncommercial restriction. We do not claim the datasets' licences are
+automatically licences for generated audio. Project rights in the scripts and
+generated/processed clips, to the extent any exist, are dedicated under CC0-1.0:
+https://creativecommons.org/publicdomain/zero/1.0/
+Upstream identity/publicity rights are not granted by a software licence.
+
+Renderer: Piper TTS (GPL-3.0), eSpeak NG phonemizer; ONNX Runtime (MIT).
+Only rendered audio ships; models, renderer and phonemizer are not redistributed.
+Model hashes, file hashes and exact generation settings: sources.json.
+Maintainable scripts and translations: lines.json. Runtime contains no subtitles.
+
+MMS (CC-BY-NC-4.0) evaluation audio remains in .scratch/voice/mms only.
+XTTS-v2 CPML explicitly restricts both model and output to noncommercial use;
+no XTTS or MMS output is included in shipped assets.

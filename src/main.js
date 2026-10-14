@@ -19,6 +19,7 @@ import { PoliceHud } from './police-hud.js';
 import { Cockpit } from './cockpit.js';
 import { Hud, RacerMarkers, fmtTime } from './hud.js';
 import { Audio } from './audio.js';
+import { VoiceReactions } from './voice.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
@@ -103,6 +104,23 @@ const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 const audio = new Audio();
+const voices = new VoiceReactions(audio, { settings });
+const voicePoint = new THREE.Vector3(), voiceRotation = new THREE.Quaternion();
+function voiceRelative(p) {
+  return voicePoint.set(p.x, p.y, p.z).sub(camera.position).applyQuaternion(voiceRotation.copy(camera.quaternion).invert()).clone();
+}
+function pedestrianVoice(p, category) {
+  return voices.trigger(category, p, () => p.active ? { x: p.x, y: (p.wy ?? p.y) + (p.look?.h || 1.7) * .9, z: p.z } : null);
+}
+function driverVoice(c, category = 'driver') {
+  if (!c) return;
+  return voices.trigger(category, c, () => {
+    if (c.active === false) return null;
+    const v = c.veh;
+    if (v) return { x: v.x, y: v.y + 1.25, z: v.z };
+    const p = traffic.route.point(c.s, c.u, new THREE.Vector3()); p.y += 1.25; return p;
+  }, { enclosed: category !== 'police' && !(c.windowOpen || c.spec?.convertible || c.type?.scooter || c.type?.moto) });
+}
 audio.onTrack = (t) => hud.message(`${icon('music-notes')} <i>${t.title}</i> · ${t.artist}`, 3);
 
 // ------------------------------------------------------------------ game state
@@ -114,6 +132,7 @@ const G = {
 canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); G.ctxLost = true; clearDriveInput(); });
 canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; });
 window.__game = G;
+window.__voice = { voices, pedestrianVoice, driverVoice };
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
@@ -346,7 +365,7 @@ function resetRace() {
   if (player.ai) player.ai.sigJ = -1;
   signals.reset();
   traffic.reset(s0);
-  people.reset(s0);
+  people.reset(s0); voices.reset();
   Object.assign(G, { raceT: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
     pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1 });
   const n = Math.ceil((route.finish - startS) / 10) + 2;
@@ -380,7 +399,7 @@ function resetEvent() {
   if (player.ai) { player.ai.sigJ = -1; player.ai.lane = undefined; }
   signals.reset();
   traffic.reset(player.veh.s);
-  people.reset(peopleS(player.veh.s));
+  people.reset(peopleS(player.veh.s)); voices.reset();
   Object.assign(G, { raceT: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
     pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1,
     lastPos: 0, gapWho: null, lastSplit: null, lastTrap: null, wrong: {}, wrongShown: null, evHtml: null, result: null });
@@ -1088,6 +1107,7 @@ function onStopLine(j, who, rc = rival) {
 
 function handleHonk(h) {
   const c = h.c;
+  if (h.player && ['cutoff', 'blocking', 'shaken', 'angry'].includes(h.reason)) driverVoice(c);
   const p = traffic.route.point(c.s, c.u, _v1);
   const dx = p.x - camera.position.x, dz = p.z - camera.position.z, dist = Math.hypot(dx, dz);
   if (dist > 260) return;
@@ -1098,8 +1118,9 @@ function handleHonk(h) {
 function handlePeople() {
   for (const e of people.events) {
     const p = e.p;
-    if (G.state !== 'race') continue; // pedestrians react with body language only (no speech)
-    else if (e.kind === 'dive' && e.who === 'player') { G.scared++; hud.pop('info bad', 'WATCH THE PAVEMENT!'); }
+    if (G.state !== 'race') continue;
+    if (e.who === 'player' && ['hit', 'dive', 'startle'].includes(e.kind)) pedestrianVoice(p, p.kind === 'artist' ? 'artist' : e.kind === 'startle' ? 'near' : 'pedestrian');
+    if (e.kind === 'dive' && e.who === 'player') { G.scared++; hud.pop('info bad', 'WATCH THE PAVEMENT!'); }
 
   }
   people.events.length = 0;
@@ -1158,6 +1179,10 @@ function racerPair(a, b, mine) {
 
 /** pursuit transitions (src/police.js): call-outs, sounds. In a pursuit event BUSTED ends the run (events flow) */
 function onPolice(e) {
+  if (['start', 'resume', 'busted'].includes(e.phase)) {
+    const cop = police?.cops.filter(c => c.active).sort((a, b) => Math.abs(a.s - player.veh.s) - Math.abs(b.s - player.veh.s))[0];
+    driverVoice(cop, 'police');
+  }
   // no points, no money: the stars and these call-outs are all the pursuit says
   if (e.phase === 'start') { hud.pop('info bad', 'POLICE!'); audio.copRadio?.(); }
   else if (e.phase === 'heat') audio.copRadio?.();
@@ -1169,6 +1194,10 @@ function handleEvents(events) {
   for (const e of events) {
     // damage where it hit (front / rear / left / right), scaled by the car's own change of velocity
     const rc = e.racer || rival;
+    if (['near', 'crash', 'bump'].includes(e.kind)) {
+      if (e.who === 'player') driverVoice(e.car, e.kind === 'near' ? 'near' : 'driver');
+      else if (e.who === 'rival' && Math.random() < .25) driverVoice(rc);
+    }
     if (e.zone && e.dv > 0) {
       const hit = e.who === 'rival' ? rc : player;
       if (hit.veh.addDamage?.(e.zone, e.dv, e) > 0) {
@@ -1230,6 +1259,10 @@ function handleTrafficSounds() {
   traffic.sounds.length = 0;
 }
 function updateAudio(dt) {
+  voices.update({ enabled: ['race', 'onlineRace'].includes(G.state), cockpit: G.cam === 'cockpit' && !player.spec.convertible, relative: voiceRelative });
+  if (G.state === 'race' && Math.abs(player.veh.vLong) > 3) for (const a of people.streetLife?.artists || []) {
+    if (a.ped?.active && Math.hypot(a.ped.x - player.veh.x, a.ped.z - player.veh.z) < 7) pedestrianVoice(a.ped, 'artist');
+  }
   if (!audio.ctx) return;
   const pv = player.veh, rv = rival.veh;
   const cp = camera.position, al = audioListener, moved = Math.hypot(cp.x - al.x, cp.z - al.z);

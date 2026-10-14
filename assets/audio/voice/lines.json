@@ -1,0 +1,431 @@
+{
+  "language": "el-GR",
+  "profiles": [
+    {
+      "id": "female-young",
+      "model": "rapunzelina",
+      "pitch": 1.04,
+      "rate": 1.08
+    },
+    {
+      "id": "female-older",
+      "model": "rapunzelina",
+      "pitch": 0.94,
+      "rate": 0.99
+    },
+    {
+      "id": "male-young",
+      "model": "chreece",
+      "pitch": 1.04,
+      "rate": 1.08
+    },
+    {
+      "id": "male-older",
+      "model": "chreece",
+      "pitch": 0.93,
+      "rate": 1.0
+    }
+  ],
+  "lines": [
+    {
+      "id": "pedestrian-00",
+      "category": "pedestrian",
+      "text": "Ρε μαλάκα!",
+      "transliteration": "Re malaka!",
+      "meaning": "You asshole!",
+      "strong": true
+    },
+    {
+      "id": "pedestrian-01",
+      "category": "pedestrian",
+      "text": "Τι κάνεις ρε;",
+      "transliteration": "Ti kaneis re?",
+      "meaning": "What are you doing?",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-02",
+      "category": "pedestrian",
+      "text": "Πρόσεχε ρε!",
+      "transliteration": "Proseche re!",
+      "meaning": "Watch it!",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-03",
+      "category": "pedestrian",
+      "text": "Είσαι τρελός;",
+      "transliteration": "Eisai trelos?",
+      "meaning": "Are you crazy?",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-04",
+      "category": "pedestrian",
+      "text": "Άντε γαμήσου!",
+      "transliteration": "Ante gamisou!",
+      "meaning": "Fuck off!",
+      "strong": true
+    },
+    {
+      "id": "pedestrian-05",
+      "category": "pedestrian",
+      "text": "Γαμώ το κέρατό μου!",
+      "transliteration": "Gamo to kerato mou!",
+      "meaning": "Fucking hell!",
+      "strong": true
+    },
+    {
+      "id": "pedestrian-06",
+      "category": "pedestrian",
+      "text": "Ρε παπάρα!",
+      "transliteration": "Re papara!",
+      "meaning": "You dickhead!",
+      "strong": true
+    },
+    {
+      "id": "pedestrian-07",
+      "category": "pedestrian",
+      "text": "Τι μαλακίες κάνεις;",
+      "transliteration": "Ti malakies kaneis?",
+      "meaning": "What the fuck are you doing?",
+      "strong": true
+    },
+    {
+      "id": "pedestrian-08",
+      "category": "pedestrian",
+      "text": "Στραβός είσαι;",
+      "transliteration": "Stravos eisai?",
+      "meaning": "Can't you see?",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-09",
+      "category": "pedestrian",
+      "text": "Κοίτα μπροστά σου!",
+      "transliteration": "Koita brosta sou!",
+      "meaning": "Look ahead!",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-10",
+      "category": "pedestrian",
+      "text": "Εδώ περπατάμε!",
+      "transliteration": "Edo perpatame!",
+      "meaning": "People walk here!",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-11",
+      "category": "pedestrian",
+      "text": "Σιγά ρε φίλε!",
+      "transliteration": "Siga re file!",
+      "meaning": "Easy, mate!",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-12",
+      "category": "pedestrian",
+      "text": "Θα μας πατήσεις!",
+      "transliteration": "Tha mas patiseis!",
+      "meaning": "You'll run us over!",
+      "strong": false
+    },
+    {
+      "id": "pedestrian-13",
+      "category": "pedestrian",
+      "text": "Πού κοιτάς;",
+      "transliteration": "Pou koitas?",
+      "meaning": "Where are you looking?",
+      "strong": false
+    },
+    {
+      "id": "driver-00",
+      "category": "driver",
+      "text": "Ρε φίλε τι κάνεις;",
+      "transliteration": "Re file ti kaneis?",
+      "meaning": "Mate, what are you doing?",
+      "strong": false
+    },
+    {
+      "id": "driver-01",
+      "category": "driver",
+      "text": "Πού πας ρε ηλίθιε;",
+      "transliteration": "Pou pas re ilithie?",
+      "meaning": "Where are you going, idiot?",
+      "strong": true
+    },
+    {
+      "id": "driver-02",
+      "category": "driver",
+      "text": "Μάθε να οδηγάς!",
+      "transliteration": "Mathe na odigas!",
+      "meaning": "Learn to drive!",
+      "strong": false
+    },
+    {
+      "id": "driver-03",
+      "category": "driver",
+      "text": "Ρε μαλάκα, το αμάξι!",
+      "transliteration": "Re malaka, to amaksi!",
+      "meaning": "Asshole, my car!",
+      "strong": true
+    },
+    {
+      "id": "driver-04",
+      "category": "driver",
+      "text": "Τι σκατά κάνεις;",
+      "transliteration": "Ti skata kaneis?",
+      "meaning": "What the shit are you doing?",
+      "strong": true
+    },
+    {
+      "id": "driver-05",
+      "category": "driver",
+      "text": "Κράτα απόσταση!",
+      "transliteration": "Krata apostasi!",
+      "meaning": "Keep your distance!",
+      "strong": false
+    },
+    {
+      "id": "driver-06",
+      "category": "driver",
+      "text": "Κοίτα τον δρόμο!",
+      "transliteration": "Koita ton dromo!",
+      "meaning": "Watch the road!",
+      "strong": false
+    },
+    {
+      "id": "driver-07",
+      "category": "driver",
+      "text": "Βγάλε φλας!",
+      "transliteration": "Vgale flas!",
+      "meaning": "Use your indicator!",
+      "strong": false
+    },
+    {
+      "id": "driver-08",
+      "category": "driver",
+      "text": "Πού χωράς εκεί;",
+      "transliteration": "Pou choras ekei?",
+      "meaning": "How do you fit there?",
+      "strong": false
+    },
+    {
+      "id": "driver-09",
+      "category": "driver",
+      "text": "Σιγά, θα τρακάρουμε!",
+      "transliteration": "Siga, tha trakaroume!",
+      "meaning": "Easy, we'll crash!",
+      "strong": false
+    },
+    {
+      "id": "driver-10",
+      "category": "driver",
+      "text": "Έχεις καθρέφτες;",
+      "transliteration": "Echeis kathreftes?",
+      "meaning": "Do you have mirrors?",
+      "strong": false
+    },
+    {
+      "id": "driver-11",
+      "category": "driver",
+      "text": "Με έκλεισες ρε!",
+      "transliteration": "Me ekleises re!",
+      "meaning": "You cut me off!",
+      "strong": false
+    },
+    {
+      "id": "near-00",
+      "category": "near",
+      "text": "Ωχ!",
+      "transliteration": "Och!",
+      "meaning": "Whoa!",
+      "strong": false
+    },
+    {
+      "id": "near-01",
+      "category": "near",
+      "text": "Παναγία μου!",
+      "transliteration": "Panagia mou!",
+      "meaning": "Mother of God!",
+      "strong": false
+    },
+    {
+      "id": "near-02",
+      "category": "near",
+      "text": "Πω πω!",
+      "transliteration": "Po po!",
+      "meaning": "Oh wow!",
+      "strong": false
+    },
+    {
+      "id": "near-03",
+      "category": "near",
+      "text": "Ώπα ρε!",
+      "transliteration": "Opa re!",
+      "meaning": "Whoa there!",
+      "strong": false
+    },
+    {
+      "id": "near-04",
+      "category": "near",
+      "text": "Παραλίγο!",
+      "transliteration": "Paraligo!",
+      "meaning": "That was close!",
+      "strong": false
+    },
+    {
+      "id": "near-05",
+      "category": "near",
+      "text": "Με τρόμαξες!",
+      "transliteration": "Me tromakses!",
+      "meaning": "You scared me!",
+      "strong": false
+    },
+    {
+      "id": "near-06",
+      "category": "near",
+      "text": "Σιγά λιγάκι!",
+      "transliteration": "Siga ligaki!",
+      "meaning": "Slow down a bit!",
+      "strong": false
+    },
+    {
+      "id": "near-07",
+      "category": "near",
+      "text": "Έλα τώρα!",
+      "transliteration": "Ela tora!",
+      "meaning": "Come on!",
+      "strong": false
+    },
+    {
+      "id": "police-00",
+      "category": "police",
+      "text": "Σταμάτα!",
+      "transliteration": "Stamata!",
+      "meaning": "Stop!",
+      "strong": false
+    },
+    {
+      "id": "police-01",
+      "category": "police",
+      "text": "Τράβα δεξιά!",
+      "transliteration": "Trava dexia!",
+      "meaning": "Pull over right!",
+      "strong": false
+    },
+    {
+      "id": "police-02",
+      "category": "police",
+      "text": "Στην άκρη!",
+      "transliteration": "Stin akri!",
+      "meaning": "Pull aside!",
+      "strong": false
+    },
+    {
+      "id": "police-03",
+      "category": "police",
+      "text": "Σβήσε τη μηχανή!",
+      "transliteration": "Svise ti michani!",
+      "meaning": "Switch off the engine!",
+      "strong": false
+    },
+    {
+      "id": "police-04",
+      "category": "police",
+      "text": "Αστυνομία, σταμάτα!",
+      "transliteration": "Astynomia, stamata!",
+      "meaning": "Police, stop!",
+      "strong": false
+    },
+    {
+      "id": "police-05",
+      "category": "police",
+      "text": "Μείνε στο όχημα!",
+      "transliteration": "Meine sto ochima!",
+      "meaning": "Stay in the vehicle!",
+      "strong": false
+    },
+    {
+      "id": "police-06",
+      "category": "police",
+      "text": "Κόψε ταχύτητα!",
+      "transliteration": "Kopse tachytita!",
+      "meaning": "Slow down!",
+      "strong": false
+    },
+    {
+      "id": "police-07",
+      "category": "police",
+      "text": "Δεξιά και στάση!",
+      "transliteration": "Dexia kai stasi!",
+      "meaning": "Right and stop!",
+      "strong": false
+    },
+    {
+      "id": "artist-00",
+      "category": "artist",
+      "text": "Ε! Πρόσεχε!",
+      "transliteration": "E! Proseche!",
+      "meaning": "Hey! Watch it!",
+      "strong": false
+    },
+    {
+      "id": "artist-01",
+      "category": "artist",
+      "text": "Ρε, βάφω εδώ!",
+      "transliteration": "Re, vafo edo!",
+      "meaning": "Hey, I'm painting here!",
+      "strong": false
+    },
+    {
+      "id": "artist-02",
+      "category": "artist",
+      "text": "Μακριά απ' τον τοίχο!",
+      "transliteration": "Makria ap ton toicho!",
+      "meaning": "Away from the wall!",
+      "strong": false
+    },
+    {
+      "id": "artist-03",
+      "category": "artist",
+      "text": "Σιγά ρε φίλε!",
+      "transliteration": "Siga re file!",
+      "meaning": "Easy, mate!",
+      "strong": false
+    },
+    {
+      "id": "artist-04",
+      "category": "artist",
+      "text": "Θα με λερώσεις!",
+      "transliteration": "Tha me leroseis!",
+      "meaning": "You'll splash me!",
+      "strong": false
+    },
+    {
+      "id": "artist-05",
+      "category": "artist",
+      "text": "Άσε λίγο χώρο!",
+      "transliteration": "Ase ligo choro!",
+      "meaning": "Leave some room!",
+      "strong": false
+    },
+    {
+      "id": "artist-06",
+      "category": "artist",
+      "text": "Πρόσεχε το σπρέι!",
+      "transliteration": "Proseche to sprei!",
+      "meaning": "Watch the spray can!",
+      "strong": false
+    },
+    {
+      "id": "artist-07",
+      "category": "artist",
+      "text": "Πού πας έτσι;",
+      "transliteration": "Pou pas etsi?",
+      "meaning": "Where are you going like that?",
+      "strong": false
+    }
+  ]
+}
