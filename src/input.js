@@ -7,17 +7,17 @@ export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyM'], tractionControl: ['KeyV'], music: ['KeyJ'], nextTrack: ['KeyN'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyV'], music: ['KeyJ'], nextTrack: ['KeyN'], map: ['KeyM'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], replayPlay: ['Space'],
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
-    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], music: [], nextTrack: [],
+    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], music: [], nextTrack: [], map: [],
     up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], replayPlay: ['b0'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'music', 'nextTrack', 'replayPlay',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'music', 'nextTrack', 'map', 'replayPlay',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
@@ -81,7 +81,8 @@ export class Input {
         const saved = JSON.parse(this.storage?.getItem('paraliaki.input.' + kind) || 'null');
         // M selects gearbox mode; R taps tow and holds reset instead of restarting.
         if (kind === 'keyboard' && saved?.restart?.join(',') === 'KeyR,Enter') saved.restart = ['Enter'];
-        // M now selects gearbox mode; migrate the old default music binding to J.
+        // M is the big map now; the gearbox mode moved to L. Migrate the old default music (M) and gearbox (M) bindings.
+        if (kind === 'keyboard' && saved?.transmission?.join(',') === 'KeyM') saved.transmission = [...DEFAULT_BINDINGS.keyboard.transmission];
         if (kind === 'keyboard') for (const action of ['music', 'nextTrack']) {
           if (saved?.[action]?.includes('KeyM') || saved?.[action]?.some(key => saved?.transmission?.includes(key))) saved[action] = [...DEFAULT_BINDINGS.keyboard[action]];
         }
@@ -89,7 +90,7 @@ export class Input {
       } catch {}
     }
     for (const kind of ['keyboard', 'gamepad']) for (const action of ['music', 'nextTrack']) {
-      const conflicts = key => this.bindings[kind].transmission.includes(key) || kind === 'keyboard' && key === 'KeyM';
+      const conflicts = key => this.bindings[kind].transmission.includes(key) || this.bindings[kind].map.includes(key);
       if (this.bindings[kind][action].some(conflicts)) this.bindings[kind][action] = DEFAULT_BINDINGS[kind][action].filter(key => !conflicts(key));
     }
     try { this.configure(JSON.parse(this.storage?.getItem('paraliaki.input.settings') || 'null') || {}, false); } catch {}
@@ -102,9 +103,11 @@ export class Input {
   }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
-    if (['music', 'nextTrack', 'transmission'].includes(action)) {
-      const others = action === 'transmission' ? ['music', 'nextTrack'] : ['transmission'];
-      if ((kind === 'keyboard' && action !== 'transmission' && bindings.includes('KeyM')) || others.some(other => bindings.some(key => this.bindings[kind][other].includes(key)))) return false;
+    // Single-key toggles that must never share a key: music / next track, gearbox mode and the big map.
+    const TOGGLES = ['music', 'nextTrack', 'transmission', 'map'];
+    if (TOGGLES.includes(action)) {
+      const others = TOGGLES.filter(other => other !== action && !(['music', 'nextTrack'].includes(other) && ['music', 'nextTrack'].includes(action)));
+      if (others.some(other => bindings.some(key => this.bindings[kind][other].includes(key)))) return false;
     }
     this.bindings[kind][action] = [...bindings]; this.save(kind, this.bindings[kind]); this.clear(); return true;
   }

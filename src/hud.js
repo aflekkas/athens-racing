@@ -188,7 +188,12 @@ export class Hud {
     this.setLimit(st.limit);
     this.drawTacho(st);
     this.gearbox.update(st);
-    if ((this.frame & 1) === 0) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, 2.2);
+    if ((this.frame & 1) === 0 || this.bigMap) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2);
+  }
+  /** M: the minimap grows into a wide-area map (about 0.8 km around you) so the other drivers are in view */
+  toggleBigMap(on = !this.bigMap) {
+    this.bigMap = on; this.mini.width = this.mini.height = on ? 640 : 300;
+    this.mini.parentElement?.classList.toggle('is-big', on); return on;
   }
 
   drawMinimap(g, W, H, st, zoom = 2.2, nav = false) {

@@ -101,10 +101,10 @@ try {
   assert.equal(await page.evaluate(() => __settings.transmission), 'auto');
   await page.keyboard.press('KeyN'); await page.waitForFunction(() => !__music.el.paused);
   assert.equal(await page.evaluate(() => __settings.transmission), 'auto');
-  await page.keyboard.press('KeyM');
+  await page.keyboard.press('KeyL');
   const bindings = await page.evaluate(() => ({ transmission: __settings.transmission, source: __music.source, paused: __music.el.paused }));
   assert.equal(bindings.transmission, 'manual'); assert.equal(bindings.source, 'files'); assert.equal(bindings.paused, false);
-  evidence.checks.push('J mute, N next, M toggles transmission without changing music');
+  evidence.checks.push('J mute, N next, L toggles transmission without changing music');
   await page.evaluate(() => __flow.openSettings()); await page.locator('#music-source-settings').waitFor();
   assert.equal(await page.locator('#music-source-settings option[value=spotify]').count(), 0);
   evidence.checks.push('No Spotify source is offered');

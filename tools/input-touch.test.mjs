@@ -55,7 +55,7 @@ test('every car accepts keyboard MODE taps',()=>{
  const{input,frame}=setup();
  try{
   const mini=cars.find(c=>c.id==='mini');frame(mini);
-  for(const type of ['keydown','keyup']){const event=new Event(type,{cancelable:true});Object.assign(event,{code:'KeyM',repeat:false});input.target.dispatchEvent(event);}
+  for(const type of ['keydown','keyup']){const event=new Event(type,{cancelable:true});Object.assign(event,{code:'KeyL',repeat:false});input.target.dispatchEvent(event);}
   frame(mini);assert.equal(input.state.transmission,true);frame(mini);assert.equal(input.state.transmission,false);
  }finally{input.destroy();}
 });

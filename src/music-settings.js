@@ -23,7 +23,7 @@ export function installMusicSettings(menu) {
       <div data-source="youtube"><p>Menu-only video player. Keep it visible; playback pauses when hidden, scrolled away or when you return to driving. Use the player’s own controls.</p><label>YOUTUBE URL<input type="url" placeholder="https://www.youtube.com/watch?v=…" data-youtube-url></label><div class="music-actions"><button type="button" data-youtube-load>Load player</button><a data-youtube-link target="_blank" rel="noopener" hidden>Open on YouTube</a></div><p>Loading connects to YouTube and is subject to <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube’s terms</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google’s privacy policy</a>.</p><div class="music-youtube" hidden></div></div>
       <div data-source="builtin"><p>The original bundled tracks, available by choice.</p></div>
       <div class="music-actions" data-transport><button type="button" data-prev>Previous</button><button type="button" data-play>Play</button><button type="button" data-next>Next · N</button><button type="button" data-shuffle aria-pressed="false">Shuffle</button></div>
-      <p class="music-status" role="status" aria-live="polite"></p><p data-key-note>J: music mute · N: next track · M: transmission</p>`;
+      <p class="music-status" role="status" aria-live="polite"></p><p data-key-note>J: music mute · N: next track · L: gearbox mode · M: big map</p>`;
     // These native controls keep browser file/iframe gestures; do not bubble into menu navigation.
     section.addEventListener('click', e => e.stopPropagation());
     section.addEventListener('keydown', e => { if (e.code !== 'Escape') e.stopPropagation(); });

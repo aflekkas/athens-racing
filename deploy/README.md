@@ -122,7 +122,7 @@ local files/folders, optional Built-in radio and a visible **menu-only** YouTube
 stream/playlist player. Files never leave the device.
 Chromium can save chosen file/folder handles in IndexedDB; Restore may request
 read permission again. Other browsers require selecting files again next visit.
-Use J for local music mute and N for next track. M remains transmission.
+Use J for local music mute and N for next track. L switches the gearbox mode, M opens the big map.
 See [current research and official links](../docs/music-sources.md).
 
 YouTube embeds need no Data API key. Users explicitly load an embeddable URL and

@@ -981,6 +981,7 @@ function flowAction(name) {
   switch (name) {
     case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
+    case 'map': hud?.toggleBigMap(); return true;
     case 'tractionControl':
       if (G.state === 'race' || G.state === 'countdown' || G.state === 'onlineCountdown')
         toggleTractionControl({ toast: (text, options) => controls.toast(text, options) });

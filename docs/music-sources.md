@@ -34,4 +34,4 @@ The [SoundCloud Widget API](https://developers.soundcloud.com/docs/api/html5-wid
 
 ## Delivered scope and owner action
 
-Settings → Sound → MUSIC SOURCE: Off (fresh default), Your music files, YouTube stream/playlist URL (visible menu-only), optional Built-in radio. **J mute, N next; M remains transmission.** Existing rebinding protections remain in src/input.js. There is no streaming-service account integration.
+Settings → Sound → MUSIC SOURCE: Off (fresh default), Your music files, YouTube stream/playlist URL (visible menu-only), optional Built-in radio. **J mute, N next; L gearbox mode, M big map.** Existing rebinding protections remain in src/input.js. There is no streaming-service account integration.

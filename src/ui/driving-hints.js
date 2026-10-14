@@ -14,7 +14,7 @@ let profileId,saved={},schedule;
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(profiles));}catch{}};
 function profile(now){const id=driverName.get();if(id===profileId)return;profileId=id;const value=profiles[id];saved=value&&typeof value==='object'&&!Array.isArray(value)?value:{};profiles[id]=saved;schedule=new TipSchedule(saved);schedule.startRace(now);drivingHints.saved=saved;drivingHints.tipId=null;drivingHints.until=0;}
 export function controlsStrip({ device='keyboard', car, manual=false }={}) {
-  const labels=[['handbrake','HANDBRAKE'],['tractionControl','TC / ESC'],['camera','CAMERA'],['tow','TOW']];
+  const labels=[['handbrake','HANDBRAKE'],['tractionControl','TC / ESC'],['camera','CAMERA'],['tow','TOW'],['map','BIG MAP']];
   labels.unshift(['shiftUp',manual?'SHIFT UP':'PADDLE UP'],['shiftDown',manual?'SHIFT DOWN':'PADDLE DOWN']);
   labels.unshift(['transmission','MANUAL / AUTO']);
   return `<div class="driving-controls">${labels.map(([act,label])=>`<span>${C.kbd(C.esc(bindingLabel(input.bindings,act,device)),device==='gamepad')}<b>${label}</b></span>`).join('')}${device==='keyboard'?'<span>'+C.kbd('MOUSE')+'<b>LOOK · CLICK ROAD TO CAPTURE</b></span>':''}</div>`;

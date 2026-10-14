@@ -147,11 +147,11 @@ test('nitrous controls are inactive until the selected car permits them', () => 
   input.destroy();
 });
 
-test('M selects gearbox mode, J selects music, and E/Q remain edge-triggered shifts', () => {
+test('M opens the big map, L selects gearbox mode, J selects music, and E/Q remain edge-triggered shifts', () => {
   const { input, key } = setup();
-  for (const [code, action] of [['KeyM', 'transmission'], ['KeyJ', 'music'], ['KeyN', 'nextTrack'], ['KeyE', 'shiftUp'], ['KeyQ', 'shiftDown']]) {
+  for (const [code, action] of [['KeyM', 'map'], ['KeyL', 'transmission'], ['KeyJ', 'music'], ['KeyN', 'nextTrack'], ['KeyE', 'shiftUp'], ['KeyQ', 'shiftDown']]) {
     key('keydown', code); input.update(1 / 60); assert.equal(input.state[action], true);
-    if (code === 'KeyM') { assert.equal(input.state.music, false); assert.equal(input.state.nextTrack, false); }
+    if (code === 'KeyL') { assert.equal(input.state.music, false); assert.equal(input.state.map, false); }
     else assert.equal(input.state.transmission, false);
     input.update(1 / 60); assert.equal(input.state[action], false);
     key('keyup', code); input.update(1 / 60);
@@ -178,13 +178,17 @@ test('gamepad left stick click toggles mode independently of bumpers and music',
   input.update(1/60); assert.equal(input.state.transmission, false); input.destroy();
 });
 
-test('legacy M music bindings migrate and music cannot share the mode key', () => {
+test('legacy M music and gearbox bindings migrate; music, gearbox mode and the map never share a key', () => {
   const { input, storage } = setup();
   storage.setItem('paraliaki.input.keyboard', JSON.stringify({ transmission: ['KeyM'], music: ['KeyM'], nextTrack: ['KeyM'] }));
   const next = new Input({ target: null, navigator: null, storage, document: null });
   assert.deepEqual(next.bindings.keyboard.music, ['KeyJ']); assert.deepEqual(next.bindings.keyboard.nextTrack, ['KeyN']);
+  assert.deepEqual(next.bindings.keyboard.transmission, ['KeyL']); assert.deepEqual(next.bindings.keyboard.map, ['KeyM']);
   assert.equal(next.bind('keyboard', 'music', ['KeyM']), false);
   assert.equal(next.bind('keyboard', 'transmission', ['KeyJ']), false);
+  assert.equal(next.bind('keyboard', 'transmission', ['KeyM']), false);
+  assert.equal(next.bind('keyboard', 'map', ['KeyL']), false);
+  assert.equal(next.bind('keyboard', 'map', ['KeyK']), true);
   input.destroy(); next.destroy();
 });
 
