@@ -25,17 +25,23 @@
 import * as THREE from 'three';
 import { settings } from './settings.js';
 
-export const DRAW_DISTANCES = [500, 1000, 2000, 4000];
+export const DRAW_DISTANCES = [300, 500, 1000, 2000, 4000];
 const REF_DISTANCE = 2000;
 // drawDistance: the tier's default · building: riviera facade detail range (at 2 km) · horizon: impostors' far edge
 export const SCENERY_TIERS = {
+  potato: { drawDistance: 500, building: 1800, horizon: 2600, pixelRatio: 0.6 },
   low: { drawDistance: 1000, building: 1800, horizon: 5200, pixelRatio: 0.8 },
   med: { drawDistance: 1000, building: 1800, horizon: 7200, pixelRatio: 1.1 },
   high: { drawDistance: 2000, building: 1800, horizon: 9000, pixelRatio: 1.5 },
   ultra: { drawDistance: 4000, building: 1800, horizon: 12000, pixelRatio: 2 },
 };
 const Q = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
-const STATE = { tier: SCENERY_TIERS.high, drawDistance: REF_DISTANCE, scale: 1, horizon: SCENERY_TIERS.high.horizon, ready: false };
+const STATE = { tier: SCENERY_TIERS.high, drawDistance: REF_DISTANCE, scale: 1, horizon: SCENERY_TIERS.high.horizon, detail: 1, ready: false };
+// Small props (authored far up to ~1 km: bins, chairs, bushes, signs, kerb clutter) draw out to `detail` × their range
+// on the lower presets (graphics.js PRESETS.detail), easing back to the full range for big things (trees, buildings).
+// An LOD pair's coarse level uses the factor of its detail level (near / 0.78), so the cross-fade stays matched.
+const detailK = (far) => STATE.detail + (1 - STATE.detail) * smoothstep01((far - 400) / 1200);
+const smoothstep01 = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
 /** the draw distance a tier starts with, after the player's setting and the ?draw= override */
 export function drawDistanceFor(quality = 'high') {
   const tier = SCENERY_TIERS[quality] || SCENERY_TIERS.high, q = +Q.get('draw'), s = +settings.drawDistance;
@@ -48,13 +54,14 @@ export const horizonDistance = () => STATE.horizon;
 const fades = new Set(); // every fade material's range uniform (+ its authored distances)
 function applyRanges() {
   for (const f of fades) {
-    const k = STATE.scale, near = f.near * k, far = f.horizon ? STATE.horizon : f.far * k;
+    const k = STATE.scale, near = f.near * k * detailK(f.near / 0.78), far = f.horizon ? STATE.horizon : f.far * k * detailK(f.far);
     f.uniform.value.set(near, near / 0.78, far * 0.78, far);
   }
 }
-/** set the scene's draw distance (metres) and the tier the horizon comes from; applies live */
-export function setDrawDistance(metres, quality) {
+/** set the scene's draw distance (metres), the tier the horizon comes from and the small-prop range factor; applies live */
+export function setDrawDistance(metres, quality, detail = STATE.detail) {
   if (quality) STATE.tier = SCENERY_TIERS[quality] || SCENERY_TIERS.high;
+  STATE.detail = Math.max(0.3, Math.min(1, +detail || 1));
   STATE.drawDistance = Math.max(200, +metres || STATE.tier.drawDistance);
   STATE.scale = Math.pow(STATE.drawDistance / REF_DISTANCE, 0.75);
   STATE.horizon = Math.max(STATE.tier.horizon, STATE.drawDistance * 2.5); STATE.ready = true;
@@ -260,7 +267,7 @@ export function updateSceneryLod(list, camera) {
   for (const mesh of list) {
     center.copy(mesh.boundingSphere.center).applyMatrix4(mesh.matrixWorld);
     const d = Math.hypot(center.x-camera.position.x, center.z-camera.position.z), r = mesh.boundingSphere.radius;
-    const u = mesh.userData, far = u.horizon ? horizon : u.far * k, near = (u.near || 0) * k;
+    const u = mesh.userData, far = u.horizon ? horizon : u.far * k * detailK(u.far), near = (u.near || 0) * k * detailK((u.near || 0) / 0.78);
     mesh.visible = d-r < far+20 && (!near || d+r > near-20);
   }
 }

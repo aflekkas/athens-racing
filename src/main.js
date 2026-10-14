@@ -52,9 +52,8 @@ import { speedLimitAt } from './speed-limit.js';
 import { EnforcementRuntime } from './enforcement-runtime.js';
 import { FinePhone } from './enforcement-hud.js';
 import { redViolation } from './enforcement.js';
-import { updateSceneryLod, setDrawDistance, drawDistanceFor, drawDistance } from './scenery.js';
-import { GRAPHICS_TIERS, detectQuality, applyQualityTier, applyRenderResolution, resolutionRatio, applySceneryQuality, releaseSceneryVariants } from './graphics.js';
-import { RenderScale } from './render-scale.js';
+import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
+import { PRESETS, PRESET_IDS, PRESET_LABELS, detectQuality, resolveGraphics, applyQualityTier, applyRenderResolution, applySceneryQuality, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE } from './traffic-fleet.js';
 import { initReplay } from './replay-mode.js';
@@ -100,33 +99,27 @@ try { if (!Q.has('quality')) graphicsPreference = localStorage.getItem('paraliak
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 graphicsPreference = await firstQualityPreference(graphicsPreference, { gpuName });
-// the post chain runs the full tier (graphics.js); the world, weather and LOD code use its scenery tier (ultra = high)
-let quality = detectQuality(graphicsPreference, gpuName, navigator.userAgent), sceneryQuality = GRAPHICS_TIERS[quality].scenery;
-let lowGraphics = quality === 'low';
+// One fixed preset, chosen once: an unset (or legacy 'auto') preference settles on the device heuristic's pick and is
+// stored, so Settings always shows the preset that is actually running. Nothing adapts behind the player's back.
+if (!PRESETS[graphicsPreference]) graphicsPreference = detectQuality('auto', gpuName, navigator.userAgent);
 setSetting('graphics', graphicsPreference);
-window.__renderInfo = () => ({ gpu: gpuName, quality, lowGraphics, pixelRatio, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale, pixelRatioCap: settings.pixelRatioCap });
-let DPR = resolutionRatio(window.devicePixelRatio);
-const graphicsControl = document.createElement('select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics quality');
-for (const [value, label] of [['auto', 'GRAPHICS: AUTO'], ['ultra', 'GRAPHICS: ULTRA'], ['high', 'GRAPHICS: HIGH'], ['med', 'GRAPHICS: MED'], ['low', 'GRAPHICS: LOW']]) { const option = document.createElement('option'); option.value = value; option.textContent = label; graphicsControl.append(option); }
+// GFX: what the preset + the Lighting / Effects / Resolution / Draw distance overrides resolve to (graphics.js)
+let GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
+// the post chain runs the effects level; the world, weather and LOD code use the preset's scenery tier
+let quality = GFX.preset, sceneryQuality = GFX.scenery;
+let lowGraphics = GFX.E.simple;
+window.__renderInfo = () => ({ gpu: gpuName, quality, preset: GFX.preset, lighting: GFX.lighting, effects: GFX.effects, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
+const graphicsControl = document.createElement('select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics preset');
+for (const value of [...PRESET_IDS].reverse()) { const option = document.createElement('option'); option.value = value; option.textContent = 'GRAPHICS: ' + PRESET_LABELS[value]; graphicsControl.append(option); }
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
 graphicsControl.onchange = () => applyQualityTier(graphicsControl.value);
-// Minimal controls remain usable until Settings mounts its styled controls.
-const resolutionControl = document.createElement('select'); resolutionControl.id = 'render-resolution'; resolutionControl.setAttribute('aria-label', 'Render resolution');
-for (const value of ['auto', ...Array.from({ length: 11 }, (_, i) => Number((.5 + i * .05).toFixed(2)))]) { const o = document.createElement('option'); o.value = value; o.textContent = value === 'auto' ? 'RESOLUTION: AUTO' : `RESOLUTION: ${Math.round(value * 100)}%`; resolutionControl.append(o); }
-resolutionControl.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:90';
-resolutionControl.value = settings.renderScale; resolutionControl.onchange = () => applyRenderResolution(resolutionControl.value); document.body.append(resolutionControl);
-const capControl = document.createElement('select'); capControl.id = 'pixel-ratio-cap'; capControl.setAttribute('aria-label', 'Pixel ratio cap');
-for (const value of [1, 1.5, 2]) { const o = document.createElement('option'); o.value = value; o.textContent = `PIXEL RATIO CAP: ${value}`; capControl.append(o); }
-capControl.style.cssText = 'position:fixed;right:12px;bottom:44px;z-index:90';
-capControl.value = settings.pixelRatioCap; capControl.onchange = () => applyRenderResolution(settings.renderScale, { pixelRatioCap: capControl.value }); document.body.append(capControl);
-let pixelRatio = DPR;
-let renderScale = new RenderScale({ max: resolutionRatio(window.devicePixelRatio, 'auto'), min: resolutionRatio(window.devicePixelRatio, .5) });
+let pixelRatio = GFX.pixelRatio;
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping; // tone mapping happens in the post pipeline (post.js)
 ENV.installAerial(ENV.AP_K); // aerial perspective replaces three's fog in every material
-renderer.shadowMap.enabled = !lowGraphics;
+renderer.shadowMap.enabled = !!GFX.L.shadow;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.matrixAutoUpdate = false; // never moves; its children update themselves (static world: batch.js freezeStatic)
@@ -200,31 +193,27 @@ const lodList = [];
 const lodAt = new THREE.Vector3(1e9, 0, 0);
 function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
 // render distance (scenery.js): the setting applies live; traffic is drawn out to about half of it
-setDrawDistance(drawDistanceFor(quality), quality);
-// med / low cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
-const applyDrawDistance = () => { const T = GRAPHICS_TIERS[quality]; if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(T.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 450, 1150)); if (people) people.drawRadius = T.crowd; };
-onSettings((s, key) => { if (key === 'drawDistance') { setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); } });
-
-onSettings((s, key) => {
-  if (key === 'graphics') {
-    graphicsPreference = s.graphics; graphicsControl.value = s.graphics;
-    const next = detectQuality(s.graphics, gpuName, navigator.userAgent);
-    const url = new URL(location.href); if (url.searchParams.has('quality')) { url.searchParams.set('quality', s.graphics); history.replaceState(null, '', url); }
-    if (next === quality) return;
-    quality = next; sceneryQuality = GRAPHICS_TIERS[next].scenery; lowGraphics = next === 'low';
-    if (!post) return; // boot reads the current tier below
-    post.setQuality(next);
-    renderer.shadowMap.enabled = !lowGraphics; renderer.shadowMap.autoUpdate = true; renderer.shadowMap.needsUpdate = true;
-    if (GRAPHICS_TIERS[next].shadow) ENV.setShadowRange(...GRAPHICS_TIERS[next].shadow);
-    applySceneryQuality(sky, probeSeed, water, world?.group, lowGraphics); applyWeatherQuality(sceneryQuality);
-    setDrawDistance(drawDistanceFor(quality), quality); applyDrawDistance(); updateLod(); guardLighting(true);
-  } else if (key === 'renderScale' || key === 'pixelRatioCap') {
-    DPR = resolutionRatio(window.devicePixelRatio); pixelRatio = DPR;
-    renderScale = new RenderScale({ max: resolutionRatio(window.devicePixelRatio, 'auto'), min: resolutionRatio(window.devicePixelRatio, .5) });
-    resolutionControl.value = s.renderScale; capControl.value = s.pixelRatioCap;
-    onResize(); post?.resetHistory();
+setDrawDistance(+Q.get('draw') || GFX.drawDistance, GFX.horizon, GFX.detail);
+// lower presets cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
+const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
+const GRAPHICS_KEYS = new Set(['graphics', 'lighting', 'effects', 'renderScale', 'drawDistance']);
+/** re-resolve the graphics settings and apply whatever changed, live (no reload, the world is kept) */
+function applyGraphics(key) {
+  const prev = GFX; GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
+  graphicsPreference = GFX.preset; graphicsControl.value = GFX.preset;
+  if (key === 'graphics') { const url = new URL(location.href); if (url.searchParams.has('quality')) { url.searchParams.set('quality', GFX.preset); history.replaceState(null, '', url); } }
+  quality = GFX.preset; sceneryQuality = GFX.scenery; lowGraphics = GFX.E.simple;
+  if (GFX.pixelRatio !== pixelRatio) { pixelRatio = GFX.pixelRatio; onResize(); post?.resetHistory(); }
+  setDrawDistance(+Q.get('draw') || GFX.drawDistance, GFX.horizon, GFX.detail); applyDrawDistance(); updateLod();
+  if (!post) return; // boot reads the current settings below
+  if (GFX.effects !== prev.effects) { post.setEffects(GFX.effects); applySceneryQuality(sky, probeSeed, water, world?.group, lowGraphics); applyWeatherQuality(GFX.E.particles); }
+  if (GFX.lighting !== prev.lighting) {
+    renderer.shadowMap.enabled = !!GFX.L.shadow; renderer.shadowMap.autoUpdate = true; renderer.shadowMap.needsUpdate = true;
+    if (GFX.L.shadow) ENV.setShadowRange(...GFX.L.shadow);
   }
-});
+  guardLighting(true);
+}
+onSettings((s, key) => { if (GRAPHICS_KEYS.has(key)) applyGraphics(key); });
 
 let player = null, rival = null; // {veh, model, driver, cockpit, spec}
 const keys = controls.keys; // retained for the simulation test hook
@@ -248,11 +237,11 @@ async function boot() {
   sky = ENV.createSky(); scene.add(sky);
   const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube;
   scene.environment = baked.env;
-  ({ sun } = ENV.createLights(scene)); if (GRAPHICS_TIERS[quality].shadow) ENV.setShadowRange(...GRAPHICS_TIERS[quality].shadow);
+  ({ sun } = ENV.createLights(scene)); if (GFX.L.shadow) ENV.setShadowRange(...GFX.L.shadow);
   world = await buildMapWorld(map, { scene, sky, skyCube: baked.cube, lowGraphics, quality: sceneryQuality, progress: lstat });
   bindMapWorld(world);
   policeHud = new PoliceHud();
-  post = createPost(renderer, scene, camera, { quality }); window.__post = post;
+  post = createPost(renderer, scene, camera, { effects: GFX.effects }); window.__post = post;
   probe = createProbe();
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
@@ -296,6 +285,7 @@ async function boot() {
 // Map scene ownership is separate from persistent rendering, input and menu state.
 function bindMapWorld(next) {
   ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next); applyDrawDistance();
+  for (const c of traffic.cars || []) if (c.m?.root && !c.m.root.userData.shadowTrimmed) { trimShadowCasters(c.m.root); c.m.root.userData.shadowTrimmed = true; }
   route = map.route; startS = route.start;
   drivingModeView?.dispose(); drivingModeView = new DrivingModeView(scene, route);
   lodList.splice(0, lodList.length, ...next.lod);
@@ -307,7 +297,7 @@ function bindMapWorld(next) {
   G.mapId = map.id || 'riviera';
 }
 function bindMapWeather() {
-  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: sceneryQuality, cars: () => [player, rival], cam: () => G.cam });
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: GFX.E.particles, cars: () => [player, rival], cam: () => G.cam });
 }
 /** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
 async function switchMap(id = 'riviera') {
@@ -375,6 +365,8 @@ function makeCar(spec, isPlayer, plate) {
   const driver = new Driver(isPlayer ? normalizeDriverAppearance() : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   bindDriverToCar(driver,model);
   if (!isPlayer) for (const a of driver.arms) a.up.visible = a.fo.visible = a.hand.visible = false;
+  // graphics.js: fewer, cheaper shadow draws; a rival's driver is hidden in its body's shadow anyway
+  trimShadowCasters(model.root); if (driver.root) { if (isPlayer || spec.convertible) trimShadowCasters(driver.root); else driver.root.traverse(o => { o.castShadow = false; }); }
   return { model, driver };
 }
 function disposeCar(c) {
@@ -1291,7 +1283,16 @@ function syncCar(c, dt) {
   c.model.steamAmount = v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
   c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
-  if (c !== player) (c.model.detail ??= new DistanceDetail(c.model.root)).update(camera.position.distanceTo(c.model.root.position)); // batch.js
+  if (c !== player) {
+    const distance = camera.position.distanceTo(c.model.root.position);
+    (c.model.detail ??= new DistanceDetail(c.model.root)).update(distance); // batch.js
+    // rivals' and remote drivers' figures are behind tinted glass: not drawn beyond 60 m (20+ draws each)
+    const d = c.driver, far = distance > (d?.lodFar ? 55 : 60);
+    if (d?.root && far !== !!d.lodFar) {
+      d.lodFar = far;
+      for (const who of [d, d.passenger]) if (who?.root) { if (far) { who.lodWasVisible = who.root.visible; who.root.visible = false; } else who.root.visible = who.lodWasVisible ?? true; }
+    }
+  }
   const impact = v.lastDamage && v.lastDamage.serial !== c.damageSerial ? v.lastDamage : null;
   for (const zone of ['front', 'rear', 'left', 'right']) c.model.setDamage?.(zone, v.damage?.[zone] || 0, impact?.zone === zone ? impact : undefined);
   if (impact?.kind === 'wall' && c === player && impact.ebs > 3.3 && G.t - (c.damageSoundT ?? -1) > .18) {
@@ -1656,6 +1657,10 @@ function frame(now) {
   requestAnimationFrame(frame);
   // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
   if (multiplayer.active && (document.hidden || now < last)) return;
+  // Frame rate limit (Settings > Graphics, default 60): skip vsync callbacks that arrive early, so a 120 Hz laptop
+  // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery).
+  const cap = settings.frameCap;
+  if (cap > 0 && !Q.has('fixeddt') && now >= last && now - last < 800 / cap) return;
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;
   if (Q.has('fixeddt')) dt = 1 / 60;
@@ -1671,11 +1676,6 @@ function frame(now) {
     const watching = multiplayer.spectating(), selectedDriverVehicle = watching ? remoteCars.get(watching.id)?.veh ?? null : player.veh;
     updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active, spectating: !!watching, towLabel: bindingLabel(controls.bindings, 'tow', activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !window.__replay?.active && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
-  }
-  // adaptive resolution (render-scale.js): only while driving, where a steady frame rate matters
-  if (!Q.has('fixeddt') && !Q.has('fixedres') && settings.renderScale === 'auto' && G.state === 'race' && !document.hidden) {
-    const next = renderScale.sample(wallDt * 1000);
-    if (next) { pixelRatio = next; onResize(); }
   }
 }
 
@@ -1979,16 +1979,15 @@ function render() {
   ENV.updateWorldBlend(G.lastDt || 1 / 60);
   updateWeather(G.lastDt || 1 / 60);
   // Auxiliary views must never consume a pending main-view shadow update (mirrors hide the player).
-  const shadowEnabled = !lowGraphics, pendingShadow = renderer.shadowMap.needsUpdate;
+  const L = GFX.L, E = GFX.E, shadowEnabled = !!L.shadow, pendingShadow = renderer.shadowMap.needsUpdate;
   renderer.shadowMap.enabled = false;
-  if (!lowGraphics && (quality === 'med' ? frameN % 4 === 0 : (frameN & 1))) updateProbe();
+  if (L.probeEvery && frameN % L.probeEvery === 0) updateProbe();
   if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
-  if (water && !lowGraphics && (frameN % (quality === 'med' ? 6 : 3)) === 0) water.renderReflection(renderer, scene, camera);
-  // med: mirrors at half cadence with a shorter far plane, shadow map every 2nd frame (graphics.js)
-  const T = GRAPHICS_TIERS[quality];
+  if (water && E.waterEvery && frameN % E.waterEvery === 0) water.renderReflection(renderer, scene, camera);
+  // lower levels: mirrors at a lower cadence with a shorter far plane, shadow map every n-th frame (graphics.js)
 
-  if (G.cam === 'cockpit' && (!T.mirrorEvery || frameN % T.mirrorEvery === 0)) player.cockpit.renderMirrors(renderer, scene, { enabled: T.mirrorEvery > 0, frame: frameN, far: T.mirrorFar });
+  if (G.cam === 'cockpit' && (!E.mirrorEvery || frameN % E.mirrorEvery === 0)) player.cockpit.renderMirrors(renderer, scene, { enabled: E.mirrorEvery > 0, frame: frameN, far: E.mirrorFar });
   // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
   post.blur = orbit ? 0.35 : 0.5;
@@ -2000,8 +1999,8 @@ function render() {
   post.comp.uDof.value = orbit ? 5.5 : 0;
   if (orbit) post.comp.uFocus.value = camera.position.distanceTo(_v1.set(player.veh.x, player.veh.y + 0.7, player.veh.z));
   renderer.shadowMap.enabled = shadowEnabled;
-  renderer.shadowMap.autoUpdate = T.shadowEvery === 1;
-  renderer.shadowMap.needsUpdate = pendingShadow || !sun.shadow.map || frameN % T.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
+  renderer.shadowMap.autoUpdate = L.shadowEvery === 1;
+  renderer.shadowMap.needsUpdate = pendingShadow || !sun.shadow.map || frameN % L.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
   post.render(G.lastDt || 1 / 60);
 }
 

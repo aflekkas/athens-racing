@@ -7,19 +7,25 @@
 //   settings.abs              ABS as fitted; independent of the live TC/ESC toggle
 //   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
-//   settings.graphics         'auto' | 'ultra' | 'high' | 'med' | 'low' (applied live)
-//   settings.renderScale      'auto' | 0.5..1 (live, independent of quality)
-//   settings.pixelRatioCap    1..2 (caps device DPR before multiplying renderScale)
-//   settings.drawDistance     'auto' (the tier's default) | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
+//   settings.graphics         preset 'potato' | 'low' | 'med' | 'high' | 'ultra' ('auto' = not chosen yet; graphics.js)
+//   settings.lighting         'preset' | 'off' | 'low' | 'med' | 'high' | 'ultra' (shadows, reflection probe)
+//   settings.effects          'preset' | 'off' | 'low' | 'med' | 'high' | 'ultra' (post-processing, mirrors, sea reflections, particles)
+//   settings.renderScale      'auto' (the preset's resolution) | 0.5..1 of the screen's pixels (fixed, never adaptive)
+//   settings.pixelRatioCap    legacy, unused
+//   settings.frameCap         frame rate limit: 30 | 60 | 120 | 0 (unlimited); high-refresh screens otherwise draw every vsync
+//   settings.drawDistance     'auto' (the preset's) | 300 | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
 //   settings.motionBlur       camera motion blur on / off (src/post.js)
 //   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
 const KEY = 'paraliaki.settings';
+const GRAPHICS_VALUES = ['auto', 'potato', 'low', 'med', 'high', 'ultra'];
+const GRAPHICS_LEVELS = ['preset', 'off', 'low', 'med', 'high', 'ultra'];
+export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', renderScale: 'auto', pixelRatioCap: 1.5, drawDistance: 'auto', motionBlur: true, ghostEnabled: true,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', lighting: 'preset', effects: 'preset', renderScale: 'auto', pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', motionBlur: true, ghostEnabled: true,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
@@ -68,8 +74,10 @@ function load() {
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
   if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
-  if (!['auto', 'low', 'med', 'high', 'ultra'].includes(out.graphics)) out.graphics = 'auto';
+  if (!GRAPHICS_VALUES.includes(out.graphics)) out.graphics = 'auto';
+  for (const k of ['lighting', 'effects']) if (!GRAPHICS_LEVELS.includes(out[k])) out[k] = 'preset';
   out.renderScale = resolutionValue(out.renderScale);
+  out.frameCap = FRAME_CAPS.includes(+out.frameCap) ? +out.frameCap : DEFAULTS.frameCap;
   out.pixelRatioCap = pixelRatioCapValue(out.pixelRatioCap);
   out.aids = out.aids !== false;
   out.abs = out.abs !== false;
@@ -78,7 +86,7 @@ function load() {
   out.mildLanguage = out.mildLanguage === true;
   out.showTyreGrip = out.showTyreGrip === true;
   out.motionBlur = out.motionBlur !== false;
-  if (![500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
+  if (![300, 500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
   for (const key of [...Object.keys(CAMERA_RANGES), ...CAMERA_FLAGS]) out[key] = cameraValue(key, out[key]);
   return out;
 }
@@ -87,8 +95,10 @@ export const settings = load();
 const subs = new Set();
 export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
-  if (key === 'graphics' && !['auto', 'low', 'med', 'high', 'ultra'].includes(value)) return;
+  if (key === 'graphics' && !GRAPHICS_VALUES.includes(value)) return;
+  if ((key === 'lighting' || key === 'effects') && !GRAPHICS_LEVELS.includes(value)) return;
   if (key === 'renderScale') value = resolutionValue(value);
+  if (key === 'frameCap') { value = +value; if (!FRAME_CAPS.includes(value)) return; }
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
   if (key === 'mildLanguage' || key === 'showTyreGrip' || key === 'aids' || key === 'abs') value = value === true;
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);

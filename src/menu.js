@@ -13,6 +13,7 @@ import { GARAGE_CARS } from './car-catalog.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
 import * as C from './ui/components.js';
 import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
+import { resolveGraphics, PRESETS, PRESET_IDS, PRESET_LABELS, LEVEL_IDS } from './graphics.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
@@ -255,8 +256,9 @@ export class Menu {
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
-      if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;return; }
-      if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));return;}
+      if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;if(this.root)this.refresh();return; }
+      if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));if(this.root)this.refresh();return;}
+      if(key==='drawDistance'){setSetting(key,value==='auto'?'auto':Number(value));return;}
       setSetting(key, value);
       return;
     }
@@ -361,11 +363,16 @@ export class Menu {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
       body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'mildLanguage', label: 'MILD LANGUAGE', value: settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
-      const resolution=has('renderScale')?C.select({key:'renderScale',label:'RENDER RESOLUTION',value:v('renderScale'),options:[['auto','AUTO · ADAPTIVE'],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'AUTO ADAPTS BETWEEN 50–100%. QUALITY AND RESOLUTION CHANGE INDEPENDENTLY.',attrs:SET}):'';
-      const cap=has('pixelRatioCap')?C.select({key:'pixelRatioCap',label:'PIXEL RATIO CAP',value:v('pixelRatioCap'),options:[[1,'1×'],[1.25,'1.25×'],[1.5,'1.5×'],[1.75,'1.75×'],[2,'2×']],note:'100% RESOLUTION USES YOUR SCREEN’S PIXEL RATIO, UP TO THIS CAP.',attrs:SET}):'';
-      body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}QUALITY</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS QUALITY', value: v('graphics'), options: [['auto', 'AUTO'], ['low', 'LOW'], ['med', 'MEDIUM'], ['high', 'HIGH'], ['ultra', 'ULTRA']], note:'LIGHTING & EFFECTS · APPLIES LIVE', attrs: SET })}</div>${resolution?`<div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${resolution}${cap}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>`:''}
-        <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'AUTO'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'FULL DETAIL RANGE · LOW-DETAIL SCENERY STAYS VISIBLE TO THE HORIZON', attrs: SET })}
-          ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}</div>
+      // Graphics: one preset, plus Lighting / Effects / Resolution / Draw distance overrides (src/graphics.js). All fixed, all live.
+      const gfx=resolveGraphics(settings),P=PRESETS[gfx.preset],L=PRESET_LABELS,pct=r=>Math.round(r*100)+'%';
+      const presetNote={potato:'NO SHADOWS · NO POST-PROCESSING · LOW RESOLUTION · SHORT DRAW DISTANCE',low:'NO SHADOWS · LIGHT POST-PROCESSING · REDUCED RESOLUTION',med:'SOFT SHADOWS · CORE EFFECTS · FOR LAPTOPS',high:'FULL SHADOWS · ALL EFFECTS · FOR GAMING PCS',ultra:'LONGEST SHADOWS AND DRAW DISTANCE · HIGH-END GPUS'}[gfx.preset];
+      const level=(key,title,note)=>C.segmented({key,label:title,value:v(key),options:[['preset','PRESET · '+L[P[key]]],...LEVEL_IDS.map(id=>[id,id==='med'?'MED':L[id]])],note,attrs:SET});
+      const screen=Math.min(globalThis.devicePixelRatio||1,2),presetRes=Math.min(screen,P.pixelRatio)/screen;
+      body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}PRESET</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS PRESET', value: gfx.preset, options: PRESET_IDS.map(id=>[id,L[id]]), note:presetNote+' · APPLIES LIVE', attrs: SET })}</div>
+        <div class="group graphics-detail"><h3 class="group__title">${icon('sun')}LIGHTING & EFFECTS</h3>${level('lighting','LIGHTING','SHADOWS AND SHINY CAR REFLECTIONS · OFF IS FASTEST')}${level('effects','EFFECTS','SMOOTH EDGES, GLOW, MOTION BLUR, SOFT CORNER SHADING, WORKING MIRRORS, SEA REFLECTIONS, RAIN DETAIL · OFF IS FASTEST')}</div>
+        <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · NEVER CHANGES BY ITSELF',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
+        <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'PRESET · '+(P.drawDistance>=1000?P.drawDistance/1000+' KM':P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
+          ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
     } else if (tab === 'driving') {
       body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key:'showTyreGrip',label:'SHOW TYRE GRIP',value:settings.showTyreGrip,attrs:SET })}${C.toggle({ key: 'aids', label: 'TRACTION / STABILITY · TC ESC', value: settings.aids, attrs: SET })}${C.toggle({ key: 'abs', label: 'BRAKING ASSIST · ABS', value: settings.abs, attrs: SET })}

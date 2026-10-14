@@ -24,8 +24,8 @@ export function mountGraphicsOnboarding(menu) {
     if(!pending||menu.screen!=='title'||document.querySelector('#loading.open')||document.querySelector('#multiplayer:not([hidden])'))return;
     const result=pending;pending=null;observer.disconnect();
     try {localStorage.setItem(QUALITY_PROMPT_KEY,'seen');}catch{}
-    const labels={low:'Low',med:'Medium',high:'High'};
-    const chosen=await ui.prompt({title:'Graphics set to '+labels[result.tier],body:'Picked for this device. Change anytime in Settings.',icon:'monitor',dismissible:false,actions:['low','med','high'].map(id=>({id,label:labels[id],default:id===result.tier,variant:id===result.tier?'primary':'secondary'}))});
+    const labels={potato:'Potato',low:'Low',med:'Medium',high:'High'};
+    const chosen=await ui.prompt({title:'Graphics preset: '+labels[result.tier],body:'Picked once for this device and kept fixed. Change it, or fine-tune lighting, effects and resolution, anytime in Settings › Graphics.',icon:'monitor',dismissible:false,actions:['potato','low','med','high'].map(id=>({id,label:labels[id],default:id===result.tier,variant:id===result.tier?'primary':'secondary'}))});
     if(chosen)graphics.applyQualityTier(chosen,{current:result.tier});
   };
   const observer=new MutationObserver(show);observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden','data-ui']});setTimeout(show,0);

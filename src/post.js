@@ -1,4 +1,4 @@
-// HDR post pipeline (the passes each quality tier runs come from GRAPHICS_TIERS in graphics.js):
+// HDR post pipeline (the passes each effects level runs come from EFFECTS in graphics.js):
 //  scene (MSAA, half-float colour + resolved depth)
 //  -> ambient occlusion (half res, Alchemy-style from depth, bilateral blur)                              med+
 //  -> composite: AO, per-pixel camera motion blur by depth reprojection (the cars themselves are masked out),
@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 import * as ENV from './env.js';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
-import { GRAPHICS_TIERS } from './graphics.js';
+import { EFFECTS, PRESETS } from './graphics.js';
 import { settings } from './settings.js';
 
 const Q = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
@@ -65,6 +65,9 @@ const AOShader = {
       }
       float ao = max(0.0, 1.0 - 2.0 * 0.6 * sum / float(NS));
       ao = pow(ao, 1.4);
+      // far away the depth buffer is too coarse to rebuild normals from (24-bit on some GPUs): AO there turns into
+      // contour stripes, and it is sub-pixel anyway. Fade it out by 450 m.
+      ao = mix(ao, 1.0, smoothstep(220.0, 450.0, -P.z));
       gl_FragColor = vec4(ao, -P.z, 0.0, 1.0);
     }`,
 };
@@ -387,9 +390,11 @@ function gradeFor(time, weather) {
 }
 
 export const PHOTO_FILTERS = ['neutral', 'warm', 'cool', 'mono', 'film', 'sunset'];
-export function createPost(renderer, scene, camera, { lowQuality = false, quality = lowQuality ? 'low' : 'high' } = {}) {
-  let tier = GRAPHICS_TIERS[quality] || GRAPHICS_TIERS.high;
-  lowQuality = quality === 'low';
+/** effects: an EFFECTS level ('off' | 'low' | 'med' | 'high' | 'ultra'); quality (a preset id) is the legacy form */
+export function createPost(renderer, scene, camera, { lowQuality = false, quality = lowQuality ? 'low' : 'high', effects = PRESETS[quality]?.effects || 'high' } = {}) {
+  if (!EFFECTS[effects]) effects = 'high';
+  let tier = EFFECTS[effects];
+  lowQuality = !tier.ao && !tier.blurTaps;
   const gl = renderer.getContext();
   const size = renderer.getSize(new THREE.Vector2());
   let pr = renderer.getPixelRatio();
@@ -434,7 +439,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
     grade.exposure += (grade.exposureTarget - grade.exposure) * k;
   };
   const post = {
-    u, comp: compMat.uniforms, sceneRT, quality, tier,
+    u, comp: compMat.uniforms, sceneRT, effects, tier,
     aoOn: tier.ao > 0 && !NOAO,
     /** per-feature switches the game may flip (settings, adaptive fallback) */
     motionBlur: true, sharpen: tier.sharpen,
@@ -518,9 +523,12 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
       mips.forEach((m, i) => m.setSize(Math.max(1, ww >> (i + 1)), Math.max(1, hh >> (i + 1))));
     },
     /** Keep this object (replay/weather reference it); rebuild only changed GPU resources. */
-    setQuality(next) {
-      if (!GRAPHICS_TIERS[next] || next === post.quality) return;
-      tier = GRAPHICS_TIERS[next]; post.quality = quality = next; lowQuality = next === 'low'; post.tier = tier;
+    /** switch effects level live (an EFFECTS id; a preset id is accepted for older callers) */
+    setQuality(next) { post.setEffects(EFFECTS[next] ? next : PRESETS[next]?.effects); },
+    setEffects(next) {
+      if (!EFFECTS[next] || next === post.effects) return;
+      tier = EFFECTS[next]; post.effects = next; lowQuality = !tier.ao && !tier.blurTaps; post.tier = tier;
+      if (finalMat.defines.FXAA !== (tier.fxaa ? 1 : 0)) { finalMat.defines.FXAA = tier.fxaa ? 1 : 0; finalMat.needsUpdate = true; }
       const nextSamples = Math.min(tier.msaa, gl.getParameter(gl.MAX_SAMPLES) || 0);
       if (sceneRT.samples !== nextSamples) { sceneRT.dispose(); sceneRT.samples = nextSamples; }
       for (const [mat, defs] of [[aoMat, { NS: Math.max(1, tier.ao) }], [compMat, { BLUR_TAPS: tier.blurTaps, DOF_TAPS: tier.dofTaps }]]) {
@@ -576,7 +584,8 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
     setConditions(st) {
       const first = !grade.target;
       post.baseExposure = st.exposure; grade.exposureTarget = st.exposure;
-      u.uWB.value.fromArray(st.wb); u.uGlare.value = st.glare; u.uRainLens.value = st.rain;
+      // effects off: tone map only (no sun glare / lens ghosts, no rain on the lens)
+      u.uWB.value.fromArray(st.wb); u.uGlare.value = tier.grade ? st.glare : 0; u.uRainLens.value = tier.grade ? st.rain : 0;
       grade.target = gradeFor(ENV.COND.time, ENV.COND.weather);
       if (first) { grade.cur = structuredClone(grade.target); grade.exposure = st.exposure; }
       post.lastConditions = st;
