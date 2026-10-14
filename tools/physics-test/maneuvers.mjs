@@ -60,12 +60,13 @@ export function lateralCurve(){
   v.update(1/240,{throttle:0,steer:0,brake:0});return{angle,lateralG:v.ayRaw/G};
  });
 }
-export function lowSpeedYawMoment(){
+export function lowSpeedYawMoment(coast=false){
  const v=vehicle('carrera',8,false),step=1/240;v.vLong=.5;v.vLat=0;v.w=1.2;v.steer=.6;v.driftLatch=1;
- const before=v.w;v.update(step,{throttle:1,steer:1,handbrake:true,brake:0});
+ if(coast){v.vLong=v.vLat=0;v.syncWheels();}
+ const before=v.w;v.update(step,{throttle:coast?0:1,steer:1,handbrake:true,brake:0});
  let moment=0;
  for(let i=0;i<4;i++){const c=v.corners[i],s=v._S[i],fx=c.Fx*s.c-c.Fy*s.s,fy=c.Fx*s.s+c.Fy*s.c;moment+=v.cx[i]*fy-v.cy[i]*fx;}
- return{burnout:v.burnout,delta:v.w-before,expected:moment/v.Iz*step};
+ return{burnout:v.burnout,delta:v.w-before,expected:moment/v.Iz*step,frontRolling:Math.abs(v.corners[0].vw)+Math.abs(v.corners[1].vw)};
 }
 export function runManeuvers(){
  const results={donuts:[],handbrakeSpins:[],holds:[],recoveries:[],lateralCurve:lateralCurve()};

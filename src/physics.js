@@ -17,9 +17,9 @@
 //  - crash damage per zone (front / rear / left / right) from the equivalent barrier speed of each impact
 import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
-import { damageIncrement, equivalentBarrierSpeed, isGroundContact, frontalBarrierSpeed, mechanicalIncrement, impactPowerFactor, isTerminalImpact } from './damage-math.js';
+import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 import { ROAD } from './road.js';
-import { manualMode } from './transmission.js';
+import { carTransmission, manualMode } from './transmission.js';
 import { ENGINE_ABUSE, resetEngineAbuse, predictedGearRpm, shiftFeedback, updateMechanicalOverrev, updateManualHeat, engineWearFactor } from './engine-abuse.js';
 import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 import { suspensionRoadInput } from './suspension-road-input.js';
@@ -250,7 +250,7 @@ export class Vehicle {
     dv = +(dv ?? e.dv);
     const vc = typeof e.sev === 'number' ? e.sev : dv;
     if (!Number.isFinite(dv) || !(dv > 0) || !Number.isFinite(vc) || !(vc > 0) ||
-        !Object.hasOwn(this.damage, zone) || isGroundContact(e.kind)) return 0;
+        !Object.hasOwn(this.damage, zone)) return 0;
     const ebs = equivalentBarrierSpeed(vc, this.m,
       e.car ? (e.car.mass ?? (e.heavy ? 12000 : this.m)) : undefined, { rigid: e.kind === 'wall' });
     const inc = damageIncrement(ebs, zone);
@@ -260,10 +260,7 @@ export class Vehicle {
     const vector = (v) => v && Number.isFinite(v.x) && Number.isFinite(v.z)
       ? { x: v.x, y: Number.isFinite(v.y) ? v.y : 0, z: v.z } : undefined;
     const point = vector(e.localPoint), normal = vector(e.localNormal);
-    const frontalEbs = frontalBarrierSpeed(ebs, zone, e);
-    const mechanical = mechanicalIncrement(frontalEbs);
-    this.impactMechanical = Math.min(1, this.impactMechanical + mechanical);
-    const bend = mechanical * 0.4; // dents and side-swipes never bend the steering rack
+    const bend = smoothstep(5, 22, ebs); // ordinary parking taps never bend suspension
     for (let i = 0; i < 4; i++) {
       let exposure;
       if (point) {
@@ -275,13 +272,15 @@ export class Vehicle {
       }
       this.cornerDamage[i] = Math.min(1, this.cornerDamage[i] + bend * exposure);
     }
-    this.maxImpactEbs = Math.max(this.maxImpactEbs, frontalEbs);
-    if (isTerminalImpact(this.maxImpactEbs, this.impactMechanical)) this.engineStalled = true;
+    this.maxImpactEbs = Math.max(this.maxImpactEbs, ebs);
+    const engineZone = this.spec.engineZone || 'front';
+    // A very large engine-bay strike can stall; a 100 km/h barrier impact ends the race in any direction.
+    if ((zone === engineZone && ebs >= 75 / 3.6) || ebs >= 100 / 3.6) this.engineStalled = true;
     // No random source: an uncommon structural failure on enormous impacts remains deterministic in replay.
     const failureKey = Math.round(ebs * 10) + Math.round((point?.x || 0) * 100) * 3 +
       { front: 11, rear: 23, left: 37, right: 53 }[zone];
-    if (frontalEbs >= 115 / 3.6 && hash(failureKey) < 0.12) this.drivetrainBroken = true;
-    this.lastDamage = { zone, inc, ebs, frontalEbs, mechanical, kind: e.kind, localPoint: point, localNormal: normal,
+    if (ebs >= 115 / 3.6 && hash(failureKey) < 0.12) this.drivetrainBroken = true;
+    this.lastDamage = { zone, inc, ebs, kind: e.kind, localPoint: point, localNormal: normal,
       serial: this._damageSerial = (this._damageSerial || 0) + 1 };
     this.damageFx();
     return inc;
@@ -293,8 +292,9 @@ export class Vehicle {
     const d = this.damage || { front: 0, rear: 0, left: 0, right: 0 };
     if (this._damageState !== this.damage || !this.cornerDamage) {
       this._damageState = this.damage;
-      // Cosmetic replay totals cannot reconstruct mechanical impact history.
-      this.cornerDamage = [0, 0, 0, 0]; this.impactMechanical = 0;
+      // Legacy/replay totals have no contact history; give them a conservative axle/side reconstruction.
+      this.cornerDamage = [0, 1, 2, 3].map(i => clamp((i < 2 ? d.front : d.rear) * 0.25 +
+        (i % 2 ? d.right : d.left) * 0.3, 0, 1));
       this.coolantTemp = 90; this.radiatorDamage = 0; this.maxImpactEbs = 0;
       this.engineStalled = false; this.drivetrainBroken = false;
       resetEngineAbuse(this); // Vehicle.reset/tow replaces damage and fully repairs engine abuse too.
@@ -304,7 +304,7 @@ export class Vehicle {
     const av = Number.isFinite(this.vLong) ? Math.abs(this.vLong) : 0;
     this._damageClock += h;
     this._damageWheelPhase = (this._damageWheelPhase + h * av / Math.max(0.2, this.spec.wheelR || 0.33)) % (Math.PI * 2);
-    this.radiatorDamage = Math.max(this.radiatorDamage, 0.8 * smoothstep(0.65, 1, this.impactMechanical));
+    this.radiatorDamage = Math.max(this.radiatorDamage, smoothstep(0.42, 0.95, d.front));
     const heatRate = this.engineStalled ? -0.6 : this.radiatorDamage * (1.2 + 0.9 * clamp(this.load || 0, 0, 1));
     this.coolantTemp = clamp(this.coolantTemp + h * (heatRate - (1 - this.radiatorDamage) *
       Math.max(0, this.coolantTemp - 90) * (0.025 + av * 0.001)), 90, 145);
@@ -312,18 +312,19 @@ export class Vehicle {
     const thermalLoss = smoothstep(112, 140, this.coolantTemp);
     if (this.coolantTemp >= 142) this.engineStalled = true;
     const wearFactor = engineWearFactor(this);
-    this.engHealth = this.engineStalled || this.drivetrainBroken ? 0 : impactPowerFactor(this.impactMechanical) * clamp(1 - 0.65 * thermalLoss, 0.08, 1) * wearFactor;
+    this.engHealth = this.engineStalled || this.drivetrainBroken ? 0 : clamp(1 -
+      0.45 * smoothstep(0.35, 1, d[this.spec.engineZone || 'front']) - 0.65 * thermalLoss, 0.08, 1) * wearFactor;
     const c = this.cornerDamage;
     this.wheelWobble = 0.002 * Math.max(c[0], c[1]) * Math.sin(this._damageWheelPhase) * smoothstep(1, 8, av);
     this.toePull = clamp(0.04 * (c[1] - c[0]) + 0.015 * (c[3] - c[2]) + this.wheelWobble, -0.055, 0.055);
     this.wheelCamber ||= [0, 0, 0, 0];
     for (let i = 0; i < 4; i++) this.wheelCamber[i] = (i % 2 ? -1 : 1) * c[i] * 0.22;
-    this.dmgDrag = 1 + 0.04 * Math.max(d.front, d.rear) + 0.03 * Math.max(d.left, d.right) + 0.06 * Math.max(...c);
+    this.dmgDrag = 1 + 0.14 * Math.max(d.front, d.rear) + 0.08 * Math.max(d.left, d.right) + 0.1 * Math.max(...c);
     // A ruptured hot radiator emits little intermittent vapour, never a perpetual white exhaust plume.
     const pulse = Math.max(0, Math.sin(this._damageClock * 2.3) - 0.3) / 0.7;
     this.steamAmount = 0.18 * this.radiatorDamage * smoothstep(104, 120, this.coolantTemp) * pulse;
     this.smoke = this.steamAmount > 0.005;
-    this.damageSignificant = Math.max(d.front, d.rear, d.left, d.right) > 0.10;
+    this.damageSignificant = Math.max(d.front, d.rear, d.left, d.right) > 0.24;
   }
 
   /**
@@ -630,8 +631,7 @@ export class Vehicle {
     // turbo spool
     const e_r = this.rpm / red;
     if (e.lag) { const tgt = thrRaw * smoothstep(0.12, 0.42, e_r); const tau = e.lag * (sp.turbo ?? 1) * (tgt > this.boost ? 1 : 0.35); this.boost += (tgt - this.boost) * Math.min(1, dt / Math.max(0.05, tau)); }
-    this.autoOverride = Math.max(0, (this.autoOverride || 0) - dt);
-    if (!this.manual && !this.autoOverride) {
+    if (!this.manual) {
     // automatic sequential box: shift points follow the throttle; kick-down; rev-matched downshifts when braking
     // mid-drift it holds the gear (a locked or spinning axle says nothing about road speed): no shifts on the
     // handbrake, and while latched only an upshift at the limiter or a downshift once the car has really slowed
@@ -982,7 +982,7 @@ export class Vehicle {
     this.w += Mz / this.Iz * dt;
     if (!this.reverse && Math.abs(this.vLong) < 0.05 && thrIn < 0.05 && brk > 0) this.vLong = 0;
     // at rest (|vLat| gate: a car sliding sideways passes through vLong = 0 and must not be stopped dead)
-    if (Math.abs(this.vLong) < 0.03 && Math.abs(this.vLat) < 0.4 && thrRaw < 0.05) { this.vLong = 0; this.vLat *= 0.9; for (const Wc of C4) Wc.vw = 0; this.wheel[0].vw = this.wheel[1].vw = 0; }
+    if (Math.abs(this.vLong) < 0.03 && Math.abs(this.vLat) < 0.4 && Math.abs(this.w) < 0.1 && thrRaw < 0.05) { this.vLong = 0; this.vLat *= 0.9; for (const Wc of C4) Wc.vw = 0; this.wheel[0].vw = this.wheel[1].vw = 0; }
     this.ax = damp(this.ax, ax, 10, dt); this.ay = damp(this.ay, ay, 10, dt);
     this.drift = Math.abs(beta) > 0.16 && vt > 12 ? Math.abs(beta) : 0;
     this.slipF = Math.abs(this.wheel[0].aDyn); this.slipR = Math.abs(this.wheel[1].aDyn);
@@ -1044,11 +1044,12 @@ export class Vehicle {
   /** Player policy is opt-in here; AI vehicles keep the automatic box on every chassis.
    *  ai=true is also used by the browser's autodrive verification mode. */
   setManual(enabled, { ai = false } = {}) {
-    this.playerGearbox = !ai; this.manualPreference = !!enabled; this.autoOverride = 0;
+    this.playerGearbox = !ai; this.manualPreference = !!enabled;
     this.manual = ai ? false : manualMode(this.spec, enabled);
     return this.manual;
   }
   shiftManual(direction) {
+    if (!this.manual && carTransmission(this.spec) !== 'auto') return shiftFeedback(this, false, 'mode');
     if (this.reverse) return shiftFeedback(this, false, 'reverse');
     if (this.shiftT > 0 || this.shiftCool > 0) return shiftFeedback(this, false, 'cooldown');
     if (!Number.isFinite(direction) || !direction) return shiftFeedback(this, false, 'bounds');
@@ -1057,7 +1058,6 @@ export class Vehicle {
     const rpm = predictedGearRpm(this, g), unsafe = g < this.gear && rpm > sp.redline;
     // A stick accepts a money shift. Automated/paddle boxes still protect their engine.
     if (unsafe && !this.manual) return shiftFeedback(this, false, 'overrev_protection', g, rpm);
-    if (!this.manual) this.autoOverride = 3;
     this._unsafeShift = this.manual && g < this.gear ? { gear: g, from: this.gear, unsafe } : null;
     this.shift(g, (sp.shiftT ?? 0.15) * (g < this.gear ? 0.7 : 1));
     return shiftFeedback(this, true, unsafe ? 'mechanical_overrev' : 'shifted', g, rpm, unsafe);

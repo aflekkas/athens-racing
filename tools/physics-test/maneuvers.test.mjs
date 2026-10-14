@@ -22,3 +22,8 @@ test('a slow handbrake pivot uses rear brakes and integrates only actual tyre ya
  const r=lowSpeedYawMoment();assert.equal(r.burnout,false,'turning is not a front line-lock brake stand');
  assert.ok(Math.abs(r.delta-r.expected)<1e-12,`yaw step ${r.delta} differs from tyre moment ${r.expected}`);
 });
+
+test('a coasting pivot does not silently pin the free front wheels at a stationary CG',()=>{
+ const r=lowSpeedYawMoment(true);assert.ok(r.frontRolling>.1,'free front tyres continue rolling during rotation');
+ assert.ok(Math.abs(r.delta-r.expected)<1e-12);
+});
