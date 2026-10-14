@@ -11,7 +11,8 @@ test('the garage lineup is grouped by class, names only real catalogue cars and 
   for(const id of GARAGE_CARS)assert(ids.has(id),id+' is in CARS');
   assert.equal(new Set(GARAGE_CARS).size,GARAGE_CARS.length);
   assert(inGarage(CARS[0]),'the default car (CARS[0]) is offered in the garage');
-  for(const id of ['cla','gla','superb','corolla','mini_jcw','police_octavia'])assert(!inGarage(id),id+' left the garage');
+  for(const id of ['cla','gla','superb','mini_jcw','police_octavia'])assert(!inGarage(id),id+' left the garage');
+  assert(inGarage('corolla'),'the Corolla stays: playtesters race it');
   const listed=filterCars(CARS).map(x=>x.car.id);assert.deepEqual(listed,GARAGE_CARS,'default order follows the grouped lineup');
   for(const {car,index} of filterCars(CARS))assert.equal(CARS[index],car);
 });

@@ -1,8 +1,8 @@
 // The garage lineup, grouped by class in display order. Catalogue cars left out of it (near-duplicates such as the
-// extra Mercedes trims, the Corolla, Superb and the police Octavia) stay in CARS: traffic, AI rivals, remote players
+// extra Mercedes trims, the Superb, the MINI JCW and the police Octavia) stay in CARS: traffic, AI rivals, remote players
 // and old links still drive them, they just are not offered in the garage.
 export const GARAGE_CLASSES = [
-  ['city', 'CITY', ['panda', 'yaris', 'ibiza', 'golf', 'taxi']],
+  ['city', 'CITY', ['panda', 'yaris', 'ibiza', 'golf', 'corolla', 'taxi']],
   ['hot hatch', 'HOT HATCH', ['mini', 'gr_yaris']],
   ['sports', 'SPORTS', ['z4', 'carrera', 'cle']],
   ['super', 'SUPER', ['huracan', 'gla45']],
