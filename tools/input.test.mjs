@@ -96,9 +96,10 @@ test('gamepad rebinding waits for neutral and does not dispatch the captured pre
   input.capture = { kind: 'gamepad', action: 'camera', ready: false }; key('keydown', 'Escape'); assert.equal(input.capture, null); input.destroy();
 });
 
-test('photo/replay edges preserve Space handbrake and menu confirm defaults', () => {
-  const { input, key } = setup(); key('keydown', 'KeyP'); input.update(1 / 60); assert.ok(input.actions.includes('photo'));
-  input.update(1 / 60); assert.equal(input.state.photo, false);
+test('photo shortcut is removed and replay preserves Space handbrake/menu confirm', () => {
+  const { input, key } = setup(); key('keydown', 'KeyP'); input.update(1 / 60); assert.equal(input.actions.includes('photo'), false);
+  assert.equal('photo' in input.bindings.keyboard, false);
+  input.update(1 / 60); assert.equal(input.state.photo, undefined);
   key('keydown', 'Space'); input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.confirm, true); assert.equal(input.state.replayPlay, true);
   input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.replayPlay, false); input.destroy();
 });

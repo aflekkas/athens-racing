@@ -9,16 +9,16 @@ export const DEFAULT_BINDINGS = {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
     garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyM'], tractionControl: ['KeyV'], music: ['KeyJ'], nextTrack: ['KeyN'],
-    up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], photo: ['KeyP'], replayPlay: ['Space'],
+    up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'], replayPlay: ['Space'],
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
     restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], music: [], nextTrack: [],
-    up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], photo: ['b10'], replayPlay: ['b0'],
+    up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], replayPlay: ['b0'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'music', 'nextTrack', 'photo', 'replayPlay',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'music', 'nextTrack', 'replayPlay',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');

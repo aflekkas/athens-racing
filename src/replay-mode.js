@@ -165,13 +165,12 @@ class ReplayMode {
       <div class="replay-timeline"><button data-play>PAUSE</button><output data-time></output><input aria-label="Replay timeline" data-scrub type="range" min="0" max="${this.last.duration}" step="0.01" value="${this.time}"></div>
       <div class="replay-options"><label>SPEED <select data-speed aria-label="Replay speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option selected value="1">1×</option><option value="2">2×</option></select></label>
       <label>CAMERA <select data-camera aria-label="Replay camera"><option value="director">AUTO DIRECTOR</option><option value="chase">CHASE</option><option value="cockpit">COCKPIT</option><option value="orbit">FREE ORBIT</option><option value="helicopter">HELICOPTER</option><option value="bumper">LOW BUMPER</option><option value="tv">TRACKSIDE TV</option></select></label>
-      <button data-hud>SHOW HUD</button><button data-photo>PHOTO MODE</button></div>`;
+      <button data-hud>SHOW HUD</button></div>`;
     this.ui.querySelector('[data-close]').onclick = () => this.close(); this.ui.querySelector('[data-play]').onclick = () => this.togglePlay();
     this.ui.querySelector('[data-scrub]').oninput = ev => this.scrub(+ev.target.value);
     this.ui.querySelector('[data-speed]').value = String(this.rate); this.ui.querySelector('[data-speed]').onchange = ev => { this.rate = +ev.target.value; };
     this.ui.querySelector('[data-camera]').value = this.cameraMode; this.ui.querySelector('[data-camera]').onchange = ev => { this.cameraMode = ev.target.value; };
     this.ui.querySelector('[data-hud]').onclick = ev => { this.setHud(!this.hudVisible); ev.target.textContent = this.hudVisible ? 'HIDE HUD' : 'SHOW HUD'; };
-    this.ui.querySelector('[data-photo]').onclick = () => this.photo();
   }
   togglePlay() { this.playing = !this.playing; const b = this.ui.querySelector('[data-play]'); if (b) b.textContent = this.playing ? 'PAUSE' : 'PLAY'; }
   scrub(time) { this.time = clamp(time, 0, this.last.duration); this.playing = false; this.ctx.post.resetHistory?.(); this.visual(0); }
@@ -227,7 +226,6 @@ class ReplayMode {
     window.__flow.menu.show(this.returnState.screen || 'results', this.returnState.payload);
   }
   action(name) {
-    if (name === 'photo' && (this.active || this.ctx.G.state === 'paused')) return this.photo();
     if (!this.active) return false;
     if (name === 'pause' || name === 'back') this.close();
     else if (this.kind === 'replay' && name === 'replayPlay') this.togglePlay();

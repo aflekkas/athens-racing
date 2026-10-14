@@ -3,8 +3,10 @@
 import * as THREE from 'three';
 const V=()=>new THREE.Vector3();
 export function nearestSurface(point,meshes,space){
+  if(!space?.updateWorldMatrix)return null;
   space.updateWorldMatrix(true,true);const inverse=space.matrixWorld.clone().invert(),tri=new THREE.Triangle(),q=V();let best=null;
-  for(const mesh of meshes){
+  for(const mesh of meshes||[]){
+    if(!mesh?.geometry?.attributes?.position)continue;
     const a=mesh.geometry.attributes.position,index=mesh.geometry.index,m=inverse.clone().multiply(mesh.matrixWorld);
     for(let i=0;i<(index?.count||a.count);i+=3){
       for(const [j,v]of [[0,tri.a],[1,tri.b],[2,tri.c]])v.fromBufferAttribute(a,index?index.getX(i+j):i+j).applyMatrix4(m);
@@ -67,6 +69,7 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
 // Mirror stalks remain separate from body batches and are re-seated after each
 // impact. Detached assemblies stay hidden; repair restores the same rest root.
 export function refreshMirrorAttachments(car){
+  if(!car?.body?.traverse)return;
   const scopes=[];car.body.traverse(o=>{if(o.userData.mirrorAssembly)scopes.push(o);});
   for(const group of scopes){
     // Far traffic batches can bake the housing/stalk into the shell. Such a tag

@@ -40,6 +40,7 @@ import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
+import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { EnforcementRuntime } from './enforcement-runtime.js';
 import { FinePhone } from './enforcement-hud.js';
@@ -152,6 +153,7 @@ let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, pe
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
 let drivingModeView = null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
+const sessionTransitions = new SessionTransitions();
 const lodList = [];
 const lodAt = new THREE.Vector3(1e9, 0, 0);
 function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
@@ -253,14 +255,16 @@ async function switchMap(id = 'riviera') {
   if (map?.id === id) return map;
   loading.show(id);
   mapSwitch = (async () => {
-    const priorState = G.state;
+    const priorState = G.state, priorPaused = G.paused;
     if (window.__replay?.active) { window.__replay.close(); if (window.__replay.active) window.__replay.close(); }
-    controls.clear(); G.state = 'loading';
+    sessionTransitions.cancel(); controls.clear(); G.cameraStarting = false; G.towing = false; G.paused = null;
+    document.body.classList.remove('fading');
+    voices.reset(); audio.menuRequested = true; audio.syncMenu(); audio.cancelIgnition?.(); G.state = 'loading';
     let nextMap, nextWorld;
     try {
       nextMap = await loadMap(undefined, './', id);
       nextWorld = await buildMapWorld(nextMap, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
-    } catch (error) { nextMap?.dispose?.(); G.state = priorState; throw error; }
+    } catch (error) { nextMap?.dispose?.(); G.state = priorState; G.paused = priorPaused; throw error; }
     if (G.run && !G.run.done) G.run.abort('map-change');
     window.__replay?.hideGhost();
     if (window.__replay?.ghost) window.__replay.disposeGhost();
@@ -516,10 +520,11 @@ function tow(pv, { reset = false } = {}) {
   G.towing = true; G.stuckT = 0; closeTowOffer(TOW_PROMPT_COOLDOWN);
   controls.releaseMouseLook(); document.body.classList.add('fading');
   const raceId = multiplayer.lobby?.raceId;
-  setTimeout(async () => {
+  sessionTransitions.after(320, async current => {
     let recovery = null;
     try { if (multiplayer.active) recovery = await multiplayer.recover(); }
-    catch (error) { G.towing = false; document.body.classList.remove('fading'); hud.message(error.message, 4); return; }
+    catch (error) { if (current()) { G.towing = false; document.body.classList.remove('fading'); hud.message(error.message, 4); } return; }
+    if (!current()) return;
     G.towing = false;
     if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
     // Reset uses the current road projection; multiplayer keeps the server's checkpoint-safe anchor.
@@ -529,8 +534,8 @@ function tow(pv, { reset = false } = {}) {
     towOffer.recovering = hold;
     if (hold) towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 5; else if (!inFreeRoam()) G.pen += 5;
     hud.message(`<i>${reset ? 'RESET' : 'TOWED'}</i> · ${inFreeRoam() ? '' : '+5 s · '}BACK ON THE ROAD`, 3);
-    setTimeout(() => document.body.classList.remove('fading'), 120);
-  }, 320);
+    sessionTransitions.after(120, () => document.body.classList.remove('fading'));
+  });
 }
 
 function resetCar() {
@@ -570,9 +575,10 @@ function startCountdown() {
 
 function restart(idx = G.carIdx) {
   if (multiplayer.active) return;
+  sessionTransitions.cancel(); G.towing = false;
   G.cameraStarting = true; controls.requestMouseLock(); beginCameraBlend();
   document.body.classList.add('fading');
-  setTimeout(() => {
+  sessionTransitions.after(280, () => {
     if (multiplayer.active) { document.body.classList.remove('fading'); return; }
     // Capture at the actual reset, after the fade delay; the old blend has already elapsed.
     beginCameraBlend(.65);
@@ -585,7 +591,7 @@ function restart(idx = G.carIdx) {
     updateCamera(0, true);
     startCountdown();
     document.body.classList.remove('fading');
-  }, 280);
+  });
 }
 
 // ------------------------------------------------------------------ input
@@ -852,17 +858,30 @@ function openSettings() {
 
 function quitToMenu(screen = 'title') {
   if (multiplayer.active) return;
+  sessionTransitions.cancel();
+  if (window.__replay?.active) { window.__replay.close(); if (window.__replay.active) window.__replay.close(); }
+  window.__replay?.hideGhost();
   if (G.run && !G.run.done) G.run.abort('quit');
+  // Stop simulation/input before the fade. A pending restart/tow cannot revive it.
+  G.state = 'menu'; G.paused = null; G.cameraStarting = false; G.towing = false;
+  G.pendingEvent = null; G.run = null; G.result = null; G.pursuit = null; G.shake = G.flash = 0;
+  controls.clear(); resetTowOffer(); voices.reset(); resetLaws(); police?.reset(false);
+  hideGrid(); rival.model.root.visible = false;
+  for (const c of [player, rival]) { c.veh.vLong = c.veh.vLat = c.veh.w = 0; c.veh.nitroOn = false; for (const zone of Object.keys(c.model.damage || {})) c.model.setDamage(zone, 0); }
+  traffic.reset(player.veh.s);
+  fx?.clearMarks(); hud.hideMenu(); hud.count('');
+  clearTimeout(hud._mt); hud.el.msg.classList.remove('on'); hud.el.banner.classList.remove('show'); hud.el.pops.replaceChildren();
+  $('evBox')?.classList.remove('on'); $('wrongWay')?.classList.remove('on');
+  document.body.classList.remove('racing', 'counting', 'started', 'circuit-race');
+  audio.menuRequested = true; audio.syncMenu(); audio.cancelIgnition?.();
+  G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4; updateCamera(0, true); post.resetHistory?.();
+  // The live map owns the title background until switchMap installs its replacement,
+  // unbinds weather/police, and disposes the old world. Never render a disposed root.
   document.body.classList.add('fading');
-  setTimeout(() => {
-    hud.hideMenu(); hud.count('');
-    document.body.classList.remove('racing', 'counting');
-    G.state = 'menu'; G.paused = null; G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4;
-    resetRace(); audio.restart?.();
-    updateCamera(0, true);
+  sessionTransitions.after(260, () => {
     menu.show(screen === 'events' ? 'events' : 'title');
     document.body.classList.remove('fading');
-  }, 260);
+  });
 }
 function showTitle() {
   G.state = 'menu'; G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4;
@@ -1583,7 +1602,7 @@ function step(dt, draw = true) {
   if (!multiplayer.active && grid.length) rival = focusRival(); // the car the HUD gap, audio and slipstream follow
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
-  const simulate = !window.__replay?.active && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && !(multiplayer.active && inMenu()) && (multiplayer.active || multiplayer.panel.hidden);
+  const simulate = !window.__replay?.active && G.state !== 'menu' && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && !(multiplayer.active && inMenu()) && (multiplayer.active || multiplayer.panel.hidden);
   if (simulate) updateRoadWeather(dt);
   if (simulate) signals.update(dt, pv.s, camera.position);
   if (simulate) {

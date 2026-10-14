@@ -17,7 +17,6 @@ const TIPS = [
   'Pavements and dirt lay-bys are drivable. Kerbs and humps will unsettle the car.',
   'In a time trial you race your best ghost. Turn it off under Settings, Driving.',
   () => 'Manual gearbox: ' + gearboxMessage('manual', true, input.bindings, document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard'),
-  () => 'Pause with ' + bindingLabel(input.bindings, 'pause') + ', then ' + bindingLabel(input.bindings, 'photo') + ' for photo mode: free camera, depth of field and exposure.',
   'Multiplayer: share a six-character lobby code and race up to seven friends.',
   'Steering assist adapts to your device. Set it to OFF for full control.',
   'Medals are for time and position only. Every second counts.',

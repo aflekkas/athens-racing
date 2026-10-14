@@ -78,12 +78,12 @@ const HINT_KEYS = {
   confirm: [KB('ENTER'), PAD('A', 'pa')], back: [KB('ESC'), PAD('B', 'pb')], select: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD('D-PAD')],
   updown: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD(icon('caret-up')) + PAD(icon('caret-down'))],
   leftright: [KB(icon('caret-left')) + KB(icon('caret-right')), PAD(icon('caret-left')) + PAD(icon('caret-right'))],
-  tabs: [KB('Q') + KB('E'), PAD('LB') + PAD('RB')], restart: [KB('R'), PAD('VIEW')], photo: [KB('P'), PAD('LS')], garage: [KB('G'), null],
+  tabs: [KB('Q') + KB('E'), PAD('LB') + PAD('RB')], restart: [KB('R'), PAD('VIEW')], garage: [KB('G'), null],
 };
 export function keyHints(list, cls = '') {
   return `<div class="hints ${cls}">${list.map(([k, label, padKey]) => {
     let [kb, pad] = HINT_KEYS[k] || [KB(k), padKey ? PAD(padKey) : null];
-    const actions = ({ confirm:['confirm'], back:['back'], select:['up','down'], updown:['up','down'], leftright:['menuLeft','menuRight'], tabs:['shiftDown','shiftUp'], restart:['restart'], photo:['photo'], garage:['garage'] })[k];
+    const actions = ({ confirm:['confirm'], back:['back'], select:['up','down'], updown:['up','down'], leftright:['menuLeft','menuRight'], tabs:['shiftDown','shiftUp'], restart:['restart'], garage:['garage'] })[k];
     const bindings = hintBindings?.();
     if (bindings && actions) {
       kb = actions.map(a => KB(esc(bindingLabel(bindings, a === 'menuLeft' ? 'left' : a === 'menuRight' ? 'right' : a, 'keyboard')))).join('');
