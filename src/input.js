@@ -1,5 +1,4 @@
 import { notifications } from './ui/notifications.js';
-import { carTransmission } from './transmission.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
@@ -13,7 +12,7 @@ export const DEFAULT_BINDINGS = {
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
-    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], music: [], nextTrack: [],
+    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], music: [], nextTrack: [],
     up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'], replayPlay: ['b0'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
@@ -41,7 +40,7 @@ export class Input {
     this.state = { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false,
       ...Object.fromEntries(EDGE_ACTIONS.map(a => [a, false])) };
     this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
-    this.nitrousEnabled = false; this.transmissionEnabled = false;
+    this.nitrousEnabled = false;
     this.load();
     this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => { if (e.code === 'KeyR' && this.keys.has('KeyR') && !this.inMenu && !this.resetHeld) this.pending.add('tow'); this.keys.delete(e.code); });
     this.listen('blur', () => this.clear());
@@ -62,13 +61,7 @@ export class Input {
   setCarSpec(spec) {
     this.setAidsEnabled(preferences.aids);
     this.setNitrousEnabled(spec?.nitrous === true);
-    this.transmissionEnabled = !!spec && carTransmission(spec) !== 'manual';
-    const button = this.touchUI?.querySelector('[data-action="transmission"]');
-    if (button && button.hidden !== !this.transmissionEnabled) button.hidden = !this.transmissionEnabled;
-    if (!this.transmissionEnabled && this.touch.transmission) { this.touch.transmission = 0; this.pending.delete('transmission'); }
-    if (!this.transmissionEnabled && button?.classList.contains('held')) button.classList.remove('held');
-    const columns = String(this.nitrousEnabled || this.transmissionEnabled ? 5 : 4);
-    if (this.touchUI && this.touchUI.dataset.auxColumns !== columns) this.touchUI.dataset.auxColumns = columns;
+    if (this.touchUI && this.touchUI.dataset.auxColumns !== '5') this.touchUI.dataset.auxColumns = '5';
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
   setAidsEnabled(enabled) {
@@ -87,9 +80,15 @@ export class Input {
         // M selects gearbox mode; R taps tow and holds reset instead of restarting.
         if (kind === 'keyboard' && saved?.restart?.join(',') === 'KeyR,Enter') saved.restart = ['Enter'];
         // M now selects gearbox mode; migrate the old default music binding to J.
-        if (kind === 'keyboard' && !saved?.transmission && saved?.music?.length === 1 && saved.music[0] === 'KeyM') saved.music = ['KeyJ'];
+        if (kind === 'keyboard') for (const action of ['music', 'nextTrack']) {
+          if (saved?.[action]?.includes('KeyM') || saved?.[action]?.some(key => saved?.transmission?.includes(key))) saved[action] = [...DEFAULT_BINDINGS.keyboard[action]];
+        }
         for (const [a, bs] of Object.entries(saved || {})) if (a in this.bindings[kind] && Array.isArray(bs) && bs.every(b => typeof b === 'string' && (kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b)))) this.bindings[kind][a] = bs;
       } catch {}
+    }
+    for (const kind of ['keyboard', 'gamepad']) for (const action of ['music', 'nextTrack']) {
+      const conflicts = key => this.bindings[kind].transmission.includes(key) || kind === 'keyboard' && key === 'KeyM';
+      if (this.bindings[kind][action].some(conflicts)) this.bindings[kind][action] = DEFAULT_BINDINGS[kind][action].filter(key => !conflicts(key));
     }
     try { this.configure(JSON.parse(this.storage?.getItem('paraliaki.input.settings') || 'null') || {}, false); } catch {}
   }
@@ -101,6 +100,10 @@ export class Input {
   }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
+    if (['music', 'nextTrack', 'transmission'].includes(action)) {
+      const others = action === 'transmission' ? ['music', 'nextTrack'] : ['transmission'];
+      if ((kind === 'keyboard' && action !== 'transmission' && bindings.includes('KeyM')) || others.some(other => bindings.some(key => this.bindings[kind][other].includes(key)))) return false;
+    }
     this.bindings[kind][action] = [...bindings]; this.save(kind, this.bindings[kind]); this.clear(); return true;
   }
   resetBindings() {
@@ -176,6 +179,9 @@ export class Input {
   }
   updateToast() { notifications.update(); }
   update(dt, { speed = 0, inMenu = false, blocked = false, retainMouseLock = false } = {}) {
+    if ((inMenu || blocked) && Object.values(this.touch).some(Boolean)) {
+      for (const action of Object.keys(this.touch)) if (this.touch[action]) { this.pending.delete(action); this.touch[action] = 0; }
+    }
     this.inMenu = inMenu; this.blocked = blocked; this.updateToast();
     const capturing = !!this.capture;
     dt = clamp(dt, 0, 0.5);
@@ -301,13 +307,13 @@ export class Input {
       const actions = doc.createElement('div'); actions.className = 'touch-actions';
       const gears = doc.createElement('div'); gears.className = 'touch-gears'; gears.setAttribute('role', 'group'); gears.setAttribute('aria-label', 'Gear shifts');
       for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
-        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled; if (action === 'transmission') button.hidden = !this.transmissionEnabled;
+        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });
         (action === 'throttle' || action === 'brake' ? pedals : action === 'shiftUp' || action === 'shiftDown' ? gears : actions).append(button);
       }
-      root.dataset.auxColumns = String(this.nitrousEnabled || this.transmissionEnabled ? 5 : 4);
+      root.dataset.auxColumns = '5';
       aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
       this.setAidsEnabled(preferences.aids);
     };

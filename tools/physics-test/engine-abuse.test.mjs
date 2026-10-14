@@ -85,7 +85,7 @@ test('a safe request that becomes unsafe during the shift reports the original g
   assert.ok(v.shiftFeedback.predictedRpm > v.spec.redline); assert.ok(v.engineDamage > 0);
 });
 
-test('cooldown/bounds/reverse/mode explain themselves; auto paddles reject only the unsafe target', () => {
+test('cooldown/bounds/reverse explain themselves; auto paddles reject only the unsafe target', () => {
   const v = mk('mini', 60);
   assert.equal(v.shiftManual(-1), true); const serial = v.shiftFeedback.serial;
   assert.equal(v.shiftManual(-1), false); assert.equal(v.shiftFeedback.reason, 'cooldown');
@@ -97,8 +97,9 @@ test('cooldown/bounds/reverse/mode explain themselves; auto paddles reject only 
   const auto = mk('superb', 100); auto.setManual(false); assert.equal(auto.manual, false);
   assert.equal(auto.shiftManual(-1), false); assert.equal(auto.shiftFeedback.reason, 'overrev_protection');
   auto.reset(0, 0, 8); auto.gear = 2; auto.syncWheels(); assert.equal(auto.shiftManual(-1), true);
-  const choice = new Vehicle({ ...v.spec, transmission: 'both' }, route);
-  assert.equal(choice.shiftManual(1), false); assert.equal(choice.shiftFeedback.reason, 'mode');
+  const choice = new Vehicle(v.spec, route);
+  assert.equal(choice.shiftManual(1), true); assert.equal(choice.manual, false);
+  assert.equal(choice.autoOverride, 3);
 });
 
 test('brief ordinary limiter use has no mechanical damage; sustained low-airflow abuse overheats', () => {

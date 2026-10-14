@@ -84,7 +84,7 @@ const HINT_KEYS = {
 export function keyHints(list, cls = '') {
   return `<div class="hints ${cls}">${list.map(([k, label, padKey]) => {
     let [kb, pad] = HINT_KEYS[k] || [KB(k), padKey ? PAD(padKey) : null];
-    const actions = ({ confirm:['confirm'], back:['back'], select:['up','down'], updown:['up','down'], leftright:['menuLeft','menuRight'], tabs:['shiftDown','shiftUp'], restart:['restart'], garage:['garage'] })[k];
+    const actions = ({ transmission:['transmission'], shiftUp:['shiftUp'], shiftDown:['shiftDown'], confirm:['confirm'], back:['back'], select:['up','down'], updown:['up','down'], leftright:['menuLeft','menuRight'], tabs:['shiftDown','shiftUp'], restart:['restart'], garage:['garage'] })[k];
     const bindings = hintBindings?.();
     if (bindings && actions) {
       kb = actions.map(a => KB(esc(bindingLabel(bindings, a === 'menuLeft' ? 'left' : a === 'menuRight' ? 'right' : a, 'keyboard')))).join('');

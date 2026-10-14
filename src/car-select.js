@@ -1,7 +1,7 @@
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { CARS, CarModel, setPaint, carTransmission } from './cars.js';
+import { CARS, CarModel, setPaint } from './cars.js';
 import { TurntableControl } from './turntable-control.js';
 import { account } from './account.js';
 import { Cockpit } from './cockpit.js';
@@ -35,7 +35,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
         return C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
           attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR AND CUSTOMISE', ...(i === index && !locked ? { 'data-default': '' } : {}) },
           media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(car.name),
-          text: `${carCategory(car).toUpperCase()} · ${transmissionLabel(car)}`,
+          text: `${carCategory(car).toUpperCase()}`,
           foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
     return embedded ? html.slice(html.indexOf('<div class="scr__body">') + '<div class="scr__body">'.length, html.lastIndexOf('</div><footer class="scr__foot">')) : html;
@@ -43,15 +43,14 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
   return C.screen({ cls: 'scr--car', kick: carCategory(c).toUpperCase(), title: c.name,
     hints: [['select', 'CUSTOMISE'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
-    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count">${C.badge(c.drive.toUpperCase())}${C.badge(transmissionLabel(c))}</span></div>
+    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count">${C.badge(c.drive.toUpperCase())}</span></div>
     <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
-      <div class="car-transmission label" data-transmission="${carTransmission(c)}">${transmissionLabel(c)} · ${c.gears.length}-SPEED</div>
+      <div class="car-transmission label">${c.gears.length}-SPEED</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
       <div class="car-actions">${C.button({ label: 'CUSTOMIZE', icon: 'sliders-horizontal', act: 'carCustomize', block: true })}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
 }
-export const transmissionLabel = c => carTransmission(c) === 'both' ? 'AUTO / MANUAL' : carTransmission(c) === 'auto' ? 'AUTO / PADDLES' : 'MANUAL ONLY';
 
 // A single disposable renderer renders visible catalogue thumbnails; no per-card WebGL contexts.
 const thumbs = new Map();

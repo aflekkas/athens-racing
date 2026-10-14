@@ -149,9 +149,10 @@ test('nitrous controls are inactive until the selected car permits them', () => 
 
 test('M selects gearbox mode, J selects music, and E/Q remain edge-triggered shifts', () => {
   const { input, key } = setup();
-  for (const [code, action] of [['KeyM', 'transmission'], ['KeyJ', 'music'], ['KeyE', 'shiftUp'], ['KeyQ', 'shiftDown']]) {
+  for (const [code, action] of [['KeyM', 'transmission'], ['KeyJ', 'music'], ['KeyN', 'nextTrack'], ['KeyE', 'shiftUp'], ['KeyQ', 'shiftDown']]) {
     key('keydown', code); input.update(1 / 60); assert.equal(input.state[action], true);
-    if (code === 'KeyM') assert.equal(input.state.music, false);
+    if (code === 'KeyM') { assert.equal(input.state.music, false); assert.equal(input.state.nextTrack, false); }
+    else assert.equal(input.state.transmission, false);
     input.update(1 / 60); assert.equal(input.state[action], false);
     key('keyup', code); input.update(1 / 60);
   }
@@ -168,4 +169,21 @@ test('R tap tows once; R hold resets once without restarting or towing; Backspac
   input.update(.5); assert.equal(input.state.reset, false); key('keyup', 'KeyR'); input.update(.01); assert.equal(input.state.tow, false);
   key('keydown', 'Backspace'); key('keyup', 'Backspace'); input.update(.01); assert.equal(input.state.reset, true);
   input.update(.01); input.clear(); key('keydown', 'KeyR'); input.update(.5, { inMenu: true }); input.update(.5, { inMenu: true }); assert.equal(input.state.reset, false); input.destroy();
+});
+
+test('gamepad left stick click toggles mode independently of bumpers and music', () => {
+  const { input, pads } = setup(), pad = gamepad(); pads([pad]);
+  pad.buttons[10].value = 1; input.update(1/60);
+  assert.equal(input.state.transmission, true); assert.equal(input.state.shiftUp, false); assert.equal(input.state.shiftDown, false); assert.equal(input.state.music, false);
+  input.update(1/60); assert.equal(input.state.transmission, false); input.destroy();
+});
+
+test('legacy M music bindings migrate and music cannot share the mode key', () => {
+  const { input, storage } = setup();
+  storage.setItem('paraliaki.input.keyboard', JSON.stringify({ transmission: ['KeyM'], music: ['KeyM'], nextTrack: ['KeyM'] }));
+  const next = new Input({ target: null, navigator: null, storage, document: null });
+  assert.deepEqual(next.bindings.keyboard.music, ['KeyJ']); assert.deepEqual(next.bindings.keyboard.nextTrack, ['KeyN']);
+  assert.equal(next.bind('keyboard', 'music', ['KeyM']), false);
+  assert.equal(next.bind('keyboard', 'transmission', ['KeyJ']), false);
+  input.destroy(); next.destroy();
 });

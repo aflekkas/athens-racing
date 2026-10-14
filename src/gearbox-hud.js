@@ -28,8 +28,8 @@ export class GearboxHud {
   update(st) {
     const f = gearFeedback(st);
     this.gear.textContent = st.gearLabel || 'N'; this.mode.textContent = st.manual ? 'MANUAL' : 'AUTO';
-    this.element.dataset.transmission = st.transmission || 'both';
-    this.mode.title = st.transmission === 'manual' ? 'Manual only' : st.manual ? 'Press M for auto' : 'E / Q switches to manual';
+    this.element.dataset.transmission = st.manual ? 'manual' : 'auto';
+    this.mode.title = st.manual ? 'Press M for auto' : 'Press M for manual · E / Q temporarily override auto';
     this.element.dataset.band = f.band; this.element.dataset.limiter = String(f.limiter);
     this.fill.style.width = `${f.rev * 100}%`; this.revs.setAttribute('aria-valuenow', Math.round(f.rev * 100));
     this.cue.hidden = !f.upshift;

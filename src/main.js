@@ -8,8 +8,8 @@ import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
 import * as ENV from './env.js';
 import { ROAD } from './road.js';
-import { CARS, CarModel, Driver, setCarEnv, setPaint, carTransmission } from './cars.js';
-import { toggleTransmission, shiftTransmission } from './transmission.js';
+import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
+import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { getDriverAppearance } from './customization-store.js';
 import { bindDriverToCar } from './driver-seating.js';
@@ -336,7 +336,7 @@ function disposeCar(c) {
 
 
 function announceGearbox(spec) {
-  controls.toast(gearboxMessage(carTransmission(spec), player?.veh.manual, controls.bindings, activeInputDevice()));
+  controls.toast(gearboxMessage(null, player?.veh.manual, controls.bindings, activeInputDevice()));
 }
 
 function setCar(idx, keepPose = true) {
@@ -373,7 +373,7 @@ function setCar(idx, keepPose = true) {
 }
 
 function resetRace() {
-  G.sessionManual = null; applyDriving();
+  applyDriving();
   resetLaws();
   if (!G.ev) prepareEvent(EV.QUICK_RACE);
   if (!multiplayer.active) { resetEvent(); return; }
@@ -633,8 +633,7 @@ function readInput(dt) {
     if (!inMenu) drivingHints.action(name);
     flowAction(name);
     if (!inMenu && !G.autodrive && G.state === 'race' && (name === 'shiftUp' || name === 'shiftDown')) {
-      const result = shiftTransmission(player.veh, name === 'shiftUp' ? 1 : -1, { bindings: controls.bindings, device: activeInputDevice() });
-      if (result.switched) { G.sessionManual = true; controls.toast(result.message); }
+      shiftTransmission(player.veh, name === 'shiftUp' ? 1 : -1);
     }
   }
   // An action can open a menu during this very poll; zero driving immediately.
@@ -659,7 +658,7 @@ function syncSteeringAssist() {
 function applyDriving() {
   if (!player) return;
   applyVehicleAids(player.veh, player.spec);
-  player.veh.setManual?.(G.sessionManual ?? settings.transmission === 'manual', { ai: G.autodrive });
+  player.veh.setManual?.(settings.transmission === 'manual', { ai: G.autodrive });
   syncSteeringAssist();
 }
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
@@ -779,7 +778,7 @@ function focusRival() {
 
 function onFlowSettings(s, key) {
   audio.setVolumes?.(s);
-  if (key === 'transmission') G.sessionManual = s.transmission === 'manual';
+  if (key === 'transmission' && menu?.screen === 'settings') menu.refreshValues();
   if (key === 'aids' || key === 'abs' || key === 'transmission' || !key) applyDriving();
   if (key === 'aids' || !key) {
     controls.setAidsEnabled(s.aids);
@@ -908,6 +907,10 @@ function flowAction(name) {
   if (!multiplayer.panel.hidden) return window.__lobbyUiAction?.(name) ?? true;
   if (window.__replay?.action?.(name)) return true; // replay / photo mode take the input while they're up
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
+  if (name === 'transmission') {
+    setSetting('transmission', settings.transmission === 'manual' ? 'auto' : 'manual');
+    controls.toast(settings.transmission === 'manual' ? 'MANUAL' : 'AUTOMATIC', { id: 'gearbox-mode', ms: 1400 }); return true;
+  }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
   switch (name) {
@@ -920,11 +923,6 @@ function flowAction(name) {
     case 'reset': resetCar(); return true;
     case 'restart': if (G.state === 'race' || G.state === 'countdown' || G.state === 'finished') openEvent(G.ev.def); return true;
     case 'pause': pauseGame(); return true;
-    case 'transmission': {
-      const result = toggleTransmission(player.veh, { bindings: controls.bindings, device: activeInputDevice() });
-      if (!result.locked) G.sessionManual = player.veh.manual;
-      controls.toast(result.message); return true;
-    }
     case 'music': hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2); return true;
     case 'nextTrack': audio.nextTrack(); return true;
     case 'garage': if (multiplayer.active) multiplayer.open(); else pauseGame(); return true; // the garage lives in the menus; mid-race G pauses
@@ -1776,7 +1774,7 @@ function step(dt, draw = true) {
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
   const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp > 115 ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', aidsOff: !settings.aids, tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
-    manual: pv.manual, transmission: carTransmission(pv.spec), limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
+    manual: pv.manual, limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
   st.cameras = enforcement.enabled ? [...(enforcement.cameras || []), ...(enforcement.redSites || [])] : [];
@@ -1787,7 +1785,7 @@ function step(dt, draw = true) {
     if (telemetry?.comparison) $('rivalName').textContent = telemetry.comparison.name;
     if (watching) {
       const v = selected?.veh, spec = selected?.spec;
-      Object.assign(st, { s: v?.s ?? telemetry?.state.s ?? multiplayer.lobby.event.s0, rpm: v?.rpm ?? 0, redline: spec?.redline ?? 7000, kmh: speedIn(v?.kmh ?? 0), gearLabel: v ? v.reverse ? 'R' : String(v.gear) : '—', x: v?.x ?? 0, z: v?.z ?? 0, yaw: v?.yaw ?? 0, nitrous: spec?.nitrous === true, nitro: v?.nitro ?? 0, nitroOn: false, tc: false, abs: false, esc: false, damageLabel: '', shiftFlash: 0, limiter: false, canUpshift: false, manual: false, transmission: spec ? carTransmission(spec) : null, limit: v ? speedLimitAt(map, v.x, v.z, v.s) : 0 });
+      Object.assign(st, { s: v?.s ?? telemetry?.state.s ?? multiplayer.lobby.event.s0, rpm: v?.rpm ?? 0, redline: spec?.redline ?? 7000, kmh: speedIn(v?.kmh ?? 0), gearLabel: v ? v.reverse ? 'R' : String(v.gear) : '—', x: v?.x ?? 0, z: v?.z ?? 0, yaw: v?.yaw ?? 0, nitrous: spec?.nitrous === true, nitro: v?.nitro ?? 0, nitroOn: false, tc: false, abs: false, esc: false, damageLabel: '', shiftFlash: 0, limiter: false, canUpshift: false, manual: false, limit: v ? speedLimitAt(map, v.x, v.z, v.s) : 0 });
     }
     st.remotes = [...remoteCars.values()].filter(c => c.model.root.visible).map(c => ({ x: c.veh.x, z: c.veh.z }));
     document.querySelector('#posBox .of').textContent = telemetry?.member.dnf ? '' : '/' + (multiplayer.lobby.results || multiplayer.lobby.players).length;
@@ -1977,7 +1975,7 @@ const multiplayer = new Multiplayer(CARS, {
   },
   start(lobby, id, resumeState = null) {
     if (!multiplayer.loaded) return;
-    if (!resumeState) { G.sessionManual = null; applyDriving(); }
+    if (!resumeState) { applyDriving(); }
     beginCameraBlend();
     window.__flow?.prepareEvent(lobby.eventId || 'quick');
     onlineWait(); onlineMembers(lobby.players.filter(p => p.id !== id));

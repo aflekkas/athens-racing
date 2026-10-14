@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
 import { damageIncrement, equivalentBarrierSpeed, isGroundContact, frontalBarrierSpeed, mechanicalIncrement, impactPowerFactor, isTerminalImpact } from './damage-math.js';
 import { ROAD } from './road.js';
-import { carTransmission, manualMode } from './transmission.js';
+import { manualMode } from './transmission.js';
 import { ENGINE_ABUSE, resetEngineAbuse, predictedGearRpm, shiftFeedback, updateMechanicalOverrev, updateManualHeat, engineWearFactor } from './engine-abuse.js';
 import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 import { suspensionRoadInput } from './suspension-road-input.js';
@@ -628,7 +628,8 @@ export class Vehicle {
     // turbo spool
     const e_r = this.rpm / red;
     if (e.lag) { const tgt = thrRaw * smoothstep(0.12, 0.42, e_r); const tau = e.lag * (sp.turbo ?? 1) * (tgt > this.boost ? 1 : 0.35); this.boost += (tgt - this.boost) * Math.min(1, dt / Math.max(0.05, tau)); }
-    if (!this.manual) {
+    this.autoOverride = Math.max(0, (this.autoOverride || 0) - dt);
+    if (!this.manual && !this.autoOverride) {
     // automatic sequential box: shift points follow the throttle; kick-down; rev-matched downshifts when braking
     // mid-drift it holds the gear (a locked or spinning axle says nothing about road speed): no shifts on the
     // handbrake, and while latched only an upshift at the limiter or a downshift once the car has really slowed
@@ -1040,12 +1041,11 @@ export class Vehicle {
   /** Player policy is opt-in here; AI vehicles keep the automatic box on every chassis.
    *  ai=true is also used by the browser's autodrive verification mode. */
   setManual(enabled, { ai = false } = {}) {
-    this.playerGearbox = !ai; this.manualPreference = !!enabled;
+    this.playerGearbox = !ai; this.manualPreference = !!enabled; this.autoOverride = 0;
     this.manual = ai ? false : manualMode(this.spec, enabled);
     return this.manual;
   }
   shiftManual(direction) {
-    if (!this.manual && carTransmission(this.spec) !== 'auto') return shiftFeedback(this, false, 'mode');
     if (this.reverse) return shiftFeedback(this, false, 'reverse');
     if (this.shiftT > 0 || this.shiftCool > 0) return shiftFeedback(this, false, 'cooldown');
     if (!Number.isFinite(direction) || !direction) return shiftFeedback(this, false, 'bounds');
@@ -1054,6 +1054,7 @@ export class Vehicle {
     const rpm = predictedGearRpm(this, g), unsafe = g < this.gear && rpm > sp.redline;
     // A stick accepts a money shift. Automated/paddle boxes still protect their engine.
     if (unsafe && !this.manual) return shiftFeedback(this, false, 'overrev_protection', g, rpm);
+    if (!this.manual) this.autoOverride = 3;
     this._unsafeShift = this.manual && g < this.gear ? { gear: g, from: this.gear, unsafe } : null;
     this.shift(g, (sp.shiftT ?? 0.15) * (g < this.gear ? 0.7 : 1));
     return shiftFeedback(this, true, unsafe ? 'mechanical_overrev' : 'shifted', g, rpm, unsafe);
