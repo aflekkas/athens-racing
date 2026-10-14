@@ -542,7 +542,7 @@ function backOnRoad(pv, recovery = null) {
   // Road projection gives the nearest point on all maps, including unwrapped circuit laps.
   // Online recovery uses the last valid road progress, never the off-road projection or a forward jump.
   let s = recovery?.s ?? recoveryPosition(pv.s, sf.s, dir);
-  if (!online && G.run) {
+  if (!online && G.run && !recovery) {
     const next = G.run.r.checkpoints[G.run.cpIdx];
     if (next) s = G.run.r.s0 + dir * Math.min(G.run.progress(s), next.d - 3);
   }
