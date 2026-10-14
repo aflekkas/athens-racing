@@ -8,6 +8,10 @@ function setup() {
   source.el = { paused: true, play: async function() { this.paused = false; }, pause() { this.paused = true; } };
   return { source, audio, levels };
 }
+test('Spotify is gone and a saved Spotify choice falls back to Off', () => {
+  globalThis.localStorage = { getItem: () => 'spotify', setItem() {} };
+  try { const { source } = setup(); assert.equal(source.source, 'off'); source.select('spotify'); assert.equal(source.source, 'off'); } finally { delete globalThis.localStorage; }
+});
 test('Off is the fresh default and next/mute do not start bundled music', async () => {
   const { source, audio } = setup(); assert.equal(source.source, 'off'); await source.next(); assert.equal(source.toggle(), false); assert.equal(audio.musicOn, false); assert.equal(source.el.paused, true);
 });
@@ -16,7 +20,7 @@ test('local playlist uses files, wraps next/previous and pauses on source change
   const files = [new File(['a'], 'a.wav', { type: 'audio/wav' }), new File(['b'], 'b.wav', { type: 'audio/wav' })];
   await source.loadFiles(files); assert.equal(source.files.length, 2); assert.equal(source.el.paused, false);
   assert.match(source.el.src, /^blob:/); assert.equal(source.index, 0); await source.next(); assert.equal(source.index, 1); await source.next(-1); assert.equal(source.index, 0);
-  source.select('spotify'); assert.equal(source.el.paused, true); assert.equal(audio.musicOn, false); assert.equal(levels.at(-1), 0); source.releaseURL();
+  source.select('youtube'); assert.equal(source.el.paused, true); assert.equal(audio.musicOn, false); assert.equal(levels.at(-1), 0); source.releaseURL();
 });
 test('late playlist fetch cannot restart an old source after selecting Off', async () => {
   const { source } = setup(); let resolve;

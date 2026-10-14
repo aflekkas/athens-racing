@@ -115,54 +115,15 @@ or paid binding, and does not scan tables or schedule background work.
 Local Worker checks: start `wrangler dev --local --port 19631`, then run
 `ASR_TEST_BASE=http://127.0.0.1:19631 node --test worker/local-driver.test.mjs`.
 
-## Music sources and conditional Spotify setup
+## Music sources
 
 Fresh players start with **Music Off**. Settings → Sound → MUSIC SOURCE provides
-local files/folders, optional Built-in radio, an external Spotify link, and a
-visible **menu-only** YouTube stream/playlist player. Files never leave the device.
+local files/folders, optional Built-in radio and a visible **menu-only** YouTube
+stream/playlist player. Files never leave the device.
 Chromium can save chosen file/folder handles in IndexedDB; Restore may request
 read permission again. Other browsers require selecting files again next visit.
 Use J for local music mute and N for next track. M remains transmission.
-
-Current official Spotify policy prohibits games and overlapping Spotify audio
-with other audio. **The Web Playback SDK, OAuth/PKCE and Connect control are not
-implemented or enabled in this release.** A client ID alone does not enable them.
-The public reserved config is `SPOTIFY_CLIENT_ID = ''` in `src/music-config.js`;
-no ID is invented and no secret should ever be added. External listening uses
-Spotify's own app/site and is independent of game audio volume and controls.
 See [current research and official links](../docs/music-sources.md).
-
-If Spotify grants specific written permission for this game and its sound mix,
-the owner’s setup for a future approved SDK implementation is:
-
-1. Sign into [Spotify for Developers](https://developer.spotify.com/dashboard)
-   using a Premium account. Create app, supply truthful game description/site,
-   select Web API and Web Playback SDK, and accept the applicable terms.
-2. App Settings → Redirect URIs: register these **exact** URLs, including `/`:
-   - `https://athens-street-racers-staging.aflekkas.workers.dev/`
-   - `https://athens-street-racers.aflekkas.workers.dev/`
-   The reserved redirect path is `/` in `src/music-config.js`. A future OAuth
-   handler must consume/validate `code`/`state`, then remove those query params.
-   Local development may use `http://127.0.0.1:PORT/`; Spotify rejects `localhost`
-   and public HTTP redirects. Register each environment URI explicitly.
-3. Copy the public Client ID into `src/music-config.js` (`SPOTIFY_CLIENT_ID`).
-   Never copy Client Secret into browser code, Git or a public Worker variable.
-   This setting remains informational until a separately reviewed integration
-   exists; setting it now does not initiate OAuth or load the SDK.
-4. App Settings → Users Management → Add new user: add each tester’s Spotify
-   name/email. Current Development Mode permits **5 authenticated users**, not
-   the historical 25. Unlisted users may authenticate but receive API 403.
-   The owner must maintain Premium. Each SDK listener also needs Premium.
-5. Implement Authorization Code **PKCE S256**, random state/verifier, token
-   refresh and disconnect cleanup; request only the approved scopes. Display
-   Spotify attribution, cover art and metadata, with links. A client secret is
-   unnecessary for PKCE. Keep Spotify out of the game WebAudio duck/mix unless
-   Spotify’s specific permission explicitly covers that behaviour.
-6. Wider access needs extended-quota review, not a switch in Wrangler. Current
-   partner criteria include a registered organization and at least 250k MAU.
-   Ordinary Web API playback/Spotify Connect control also requires Premium;
-   **do not advertise remote control as a Free-account fallback**. Offer the
-   official external Spotify link on account/device/auth/quota failures.
 
 YouTube embeds need no Data API key. Users explicitly load an embeddable URL and
 press native Play. Preserve visible controls, ads and branding; do not enable

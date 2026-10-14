@@ -1,6 +1,6 @@
 // Local/built-in music shares the existing music graph, volume and action duck.
 const KEY = 'paraliaki.music-source';
-export const MUSIC_SOURCES = ['off', 'files', 'spotify', 'youtube', 'builtin'];
+export const MUSIC_SOURCES = ['off', 'files', 'youtube', 'builtin'];
 export const isMusicFile = file => /^audio\//.test(file.type || '') || /\.(mp3|m4a|aac|ogg|opus|wav|flac|webm)$/i.test(file.name || '');
 const savedSource = () => { try { const s = localStorage.getItem(KEY); return MUSIC_SOURCES.includes(s) ? s : 'off'; } catch { return 'off'; } };
 export class MusicSources {

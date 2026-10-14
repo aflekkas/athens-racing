@@ -124,3 +124,9 @@ test('resolution values are bounded on load and live writes', async () => {
   module.setSetting('renderScale', 'invalid'); assert.equal(module.settings.renderScale, 'auto');
   module.setSetting('graphics', 'invalid'); assert.equal(module.settings.graphics, 'auto');
 });
+
+test('fresh players start with the tyre grip display off', async () => {
+  const module = await preferences(memory());
+  assert.equal(module.settings.showTyreGrip, false);
+  assert.equal(module.DEFAULTS.showTyreGrip, false);
+});

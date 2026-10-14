@@ -63,7 +63,7 @@ const browser = await chromium.launch({ headless: true, executablePath: process.
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true });
 const errors = [], requests = [], evidence = { base, root, fixture: 'production Menu + Audio + Input, recorded world disabled', checks: [], errors };
 page.on('pageerror', error => errors.push(error.message));
-page.on('request', request => { if (/youtube|scdn|spotify|tracks\.json/.test(request.url())) requests.push(request.url()); });
+page.on('request', request => { if (/youtube|tracks\.json/.test(request.url())) requests.push(request.url()); });
 await page.addInitScript(() => { window.showOpenFilePicker = undefined; window.showDirectoryPicker = undefined; });
 const save = name => page.screenshot({ path: resolve(out, name + '.png'), fullPage: true, timeout: 60000 });
 try {
@@ -106,11 +106,8 @@ try {
   assert.equal(bindings.transmission, 'manual'); assert.equal(bindings.source, 'files'); assert.equal(bindings.paused, false);
   evidence.checks.push('J mute, N next, M toggles transmission without changing music');
   await page.evaluate(() => __flow.openSettings()); await page.locator('#music-source-settings').waitFor();
-  await page.getByLabel('Music source').selectOption('spotify');
-  assert.match(await page.locator('[data-spotify-setup]').innerText(), /No client ID/);
-  assert.match(await page.locator('[data-source=spotify]').innerText(), /Premium required/);
-  assert.equal(requests.some(url => /spotify|scdn/.test(url)), false);
-  evidence.checks.push('Spotify no-ID setup, Premium note, external link; no OAuth/SDK requests'); await save('03-spotify-setup');
+  assert.equal(await page.locator('#music-source-settings option[value=spotify]').count(), 0);
+  evidence.checks.push('No Spotify source is offered');
   await page.getByLabel('Music source').selectOption('youtube');
   await page.locator('[data-youtube-url]').fill(youtubeURL);
   await page.locator('[data-youtube-load]').click();

@@ -20,7 +20,7 @@ for (const source of MUSIC_SOURCES) test(`restart/tapeStop are safe with ${sourc
   assert.equal(ticks.length, 0); assert.equal(filters(), 0); assert.equal(audio.tapeT, null);
   assert.equal(ignitions(), 1, 'engine restart remains independent of music availability');
 });
-for (const source of ['off', 'youtube', 'spotify']) test(`${source} ignores a cached element from an earlier local source`, t => {
+for (const source of ['off', 'youtube']) test(`${source} ignores a cached element from an earlier local source`, t => {
   const element = { playbackRate: .45 }, { audio, ticks, filters } = setup(t, source, element);
   audio.tapeStop(.2, 1); audio.restart();
   assert.equal(ticks.length, 0); assert.equal(filters(), 0); assert.equal(element.playbackRate, .45);

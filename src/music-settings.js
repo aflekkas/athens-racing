@@ -1,6 +1,5 @@
 import { icon } from './ui/components.js';
 import { settings, onSettings } from './settings.js';
-import { SPOTIFY_CLIENT_ID } from './music-config.js';
 import { savedHandles, filesFromHandles } from './music-library.js';
 import { MenuYouTube, parseYouTubeURL } from './music-youtube.js';
 
@@ -18,10 +17,9 @@ export function installMusicSettings(menu) {
     if (!panel || !music || mounted?.isConnected) return;
     const section = mounted = document.createElement('section'); section.className = 'group music-settings'; section.id = 'music-source-settings';
     section.innerHTML = `<h3 class="group__title">${icon('music-notes')}MUSIC SOURCE</h3>
-      <label>LISTEN TO<select aria-label="Music source"><option value="off">Off</option><option value="files">Your music files</option><option value="spotify">Spotify</option><option value="youtube">YouTube stream / playlist URL</option><option value="builtin">Built-in radio</option></select></label>
+      <label>LISTEN TO<select aria-label="Music source"><option value="off">Off</option><option value="files">Your music files</option><option value="youtube">YouTube stream / playlist URL</option><option value="builtin">Built-in radio</option></select></label>
       <div data-source="off"><p>Music is off. Choose a source whenever you want.</p></div>
       <div data-source="files"><p>Your files stay on this device. Music volume and the car’s audio mix apply.</p><div class="music-actions"><button type="button" data-files>Choose files</button><button type="button" data-folder>Choose folder</button><button type="button" data-restore>Restore saved files</button><button type="button" data-forget>Forget saved files</button></div><input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac,.webm" multiple hidden data-file-input><input type="file" webkitdirectory multiple hidden data-folder-input></div>
-      <div data-source="spotify"><p>Premium required for in-browser playback and Spotify Connect API control. Spotify’s current policy prevents integration into games. Use Spotify separately.</p><p data-spotify-setup></p><div class="music-actions"><a href="https://open.spotify.com/" target="_blank" rel="noopener">Open Spotify</a></div><p>Control listening in Spotify. The game’s music volume and keys do not control the external app.</p></div>
       <div data-source="youtube"><p>Menu-only video player. Keep it visible; playback pauses when hidden, scrolled away or when you return to driving. Use the player’s own controls.</p><label>YOUTUBE URL<input type="url" placeholder="https://www.youtube.com/watch?v=…" data-youtube-url></label><div class="music-actions"><button type="button" data-youtube-load>Load player</button><a data-youtube-link target="_blank" rel="noopener" hidden>Open on YouTube</a></div><p>Loading connects to YouTube and is subject to <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube’s terms</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google’s privacy policy</a>.</p><div class="music-youtube" hidden></div></div>
       <div data-source="builtin"><p>The original bundled tracks, available by choice.</p></div>
       <div class="music-actions" data-transport><button type="button" data-prev>Previous</button><button type="button" data-play>Play</button><button type="button" data-next>Next · N</button><button type="button" data-shuffle aria-pressed="false">Shuffle</button></div>
@@ -33,7 +31,6 @@ export function installMusicSettings(menu) {
     const placeholder = panel.querySelector('#music-source-settings');
     if (placeholder) placeholder.replaceWith(section); else panel.prepend(section);
     const q = selector => section.querySelector(selector), status = text => { q('.music-status').textContent = text; };
-    q('[data-spotify-setup]').textContent = SPOTIFY_CLIENT_ID ? 'Client ID configured. In-game playback remains unavailable under Spotify’s current policy.' : 'Spotify is not connected. No client ID is configured; owner setup and Spotify permission are required.';
     const update = () => {
       q('select').value = music.source;
       for (const child of section.querySelectorAll('[data-source]')) child.hidden = child.dataset.source !== music.source;

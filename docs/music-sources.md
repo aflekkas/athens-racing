@@ -1,20 +1,6 @@
 # Music sources for Athens Street Racers
 
-Checked against current official documentation on **2026-10-14**. Spotify’s older 25-user advice is obsolete. The practical default is **Music: Off**; let players explicitly select their own files or a visible YouTube video, and retain the original tracks only as optional Built-in radio.
-
-## Spotify: technically possible, prohibited for this game under the current policy
-
-Spotify’s [Developer Policy](https://developer.spotify.com/policy), III.2 and III.5–7, prohibits games, integration with other services’ streams, synchronization with visuals, and mixing/overlapping Spotify content with other audio. A racing soundtrack with engine sounds/action-driven ducking falls inside those restrictions. Streaming also requires displayed metadata/cover art. An app registration or quota approval does not waive these restrictions. Obtain specific written permission before building this game integration. The shipped Spotify choice therefore opens the official external app/site and explains the setup state; it does not load the SDK, request OAuth tokens, control Connect, or treat a client ID as permission. External Spotify listening remains controlled by Spotify and independent of game volume/keys.
-
-The [Web Playback SDK setup](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started) registers a browser playback device, requires a Spotify **Premium** listener, a registered developer app and a public client ID. Spotify serves the SDK at `https://sdk.scdn.co/spotify-player.js`. An approved implementation would handle ready/not-ready, authentication, account, playback and autoplay failures; transferring playback may require a prior user gesture/`activateElement()`. The SDK is not an ordinary MediaElementAudioSource that we can put in the game’s WebAudio graph.
-
-For a static browser client, use [Authorization Code + PKCE](https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow): cryptographically random verifier/state, SHA-256 S256 challenge, exact redirect URI, then exchange the returned code with the verifier and client ID. **No client secret** belongs in static assets. Tokens expire and must be refreshed; disconnect must clear credentials. Request only required scopes (`streaming`, `user-read-private`, `user-read-email`, plus playback-read/modify scopes for an approved Connect interface).
-
-**Free listeners are not entitled to remote-control playback via the Web API as a workaround.** The official [Start/Resume Playback endpoint](https://developer.spotify.com/documentation/web-api/reference/start-a-users-playback) requires Premium even on an existing Spotify Connect device. Free accounts can use Spotify’s own ad-supported application/site, and some metadata/embeds where offered, subject to account/endpoint restrictions. Provide an external link rather than promising Free API playback.
-
-Current [quota modes](https://developer.spotify.com/documentation/web-api/concepts/quota-modes): Development Mode needs a Premium app owner and allows **up to 5 authenticated users**, individually allowlisted in Settings → Users Management (name and Spotify email). Non-allowlisted authentication can succeed but API calls return 403. The older ~25 users is not the current limit. Extended quota removes the allowlist after review; current eligibility includes an established business/organization, a launched service and at least **250,000 MAU**, so this is not a routine hobby-project upgrade. The [July 2026 update](https://developer.spotify.com/blog/2026-07-23-web-api-quota-updates) permits up to 25 **client IDs**, not 25 testers; Development Mode API quotas are shared per developer account. Handle 429/rate limits without polling aggressively.
-
-[Redirect URI rules](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri): exact registered match, HTTPS required except explicit loopback IP HTTP; `localhost` is not accepted. Proposed redirects for a future approved integration are the staging and production origins with a trailing `/` (listed in deploy/README.md). Register both explicitly; do not add arbitrary query strings. Owner setup alone does not enable OAuth in this release.
+Checked against current official documentation on **2026-10-14**. The practical default is **Music: Off**; let players explicitly select their own files or a visible YouTube video, and retain the original tracks only as optional Built-in radio.
 
 ## YouTube: visible video, not an audio radio extraction
 
@@ -48,4 +34,4 @@ The [SoundCloud Widget API](https://developers.soundcloud.com/docs/api/html5-wid
 
 ## Delivered scope and owner action
 
-Settings → Sound → MUSIC SOURCE: Off (fresh default), Your music files, Spotify (external link + truthful setup state), YouTube stream/playlist URL (visible menu-only), optional Built-in radio. **J mute, N next; M remains transmission.** Existing rebinding protections remain in src/input.js. Spotify Web Playback SDK/PKCE/Connect is intentionally not implemented under the current game prohibition; follow the conditional setup steps in deploy/README.md only after Spotify permission and a design approved for those restrictions.
+Settings → Sound → MUSIC SOURCE: Off (fresh default), Your music files, YouTube stream/playlist URL (visible menu-only), optional Built-in radio. **J mute, N next; M remains transmission.** Existing rebinding protections remain in src/input.js. There is no streaming-service account integration.
