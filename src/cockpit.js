@@ -325,7 +325,20 @@ export class Cockpit {
     mirror.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),eye.clone().sub(mirror.position).normalize().add(new THREE.Vector3(0,0,1)).normalize());
     const mframe=new THREE.Mesh(new RoundedBoxGeometry(.306,.094,.026,1,.008),new THREE.MeshStandardMaterial({color:'#0e0e0f',roughness:.4}));
     mframe.position.copy(mirror.position).add(new THREE.Vector3(0,0,-.015).applyQuaternion(mirror.quaternion));mframe.quaternion.copy(mirror.quaternion);
-    const tip=mframe.position.clone();
+    // The stalk leaves the BACK of the housing and runs forward / up into the windscreen, so every point of it lies
+    // behind the glass plane: it can never cross or show through the glass. (The raked screen puts the header
+    // point on the driver's side of the glass, which made a stalk to it cut across the face.)
+    const glassN=new THREE.Vector3(0,0,1).applyQuaternion(mirror.quaternion),glassUp=new THREE.Vector3(0,1,0).applyQuaternion(mirror.quaternion);
+    const tip=mframe.position.clone().addScaledVector(glassN,-.013).addScaledVector(glassUp,.012);
+    const stalkDir=glassN.clone().negate().addScaledVector(glassUp,.55).normalize();
+    model.windscreen.updateWorldMatrix(true,false);
+    const stalkHit=new THREE.Raycaster(model.body.localToWorld(tip.clone()),stalkDir.clone().transformDirection(model.body.matrixWorld),0,.45).intersectObject(model.windscreen,false)[0];
+    if(stalkHit)root.copy(model.body.worldToLocal(stalkHit.point.clone()));
+    else{
+      // no screen within reach: bring the mirror toward the driver until the header mount is behind its back face
+      const d=root.clone().sub(tip).dot(glassN);
+      if(d>-.01){const shift=glassN.clone().multiplyScalar(d+.01);mirror.position.add(shift);mframe.position.add(shift);tip.add(shift);}
+    }
     const mount=this.mirrorMount=new THREE.Mesh(new THREE.SphereGeometry(.015,8,6),mframe.material);mount.name='rearview-mount';mount.position.copy(root);
     const stem=this.mirrorStem=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,root.distanceTo(tip),6),mframe.material);stem.name='rearview-stalk';
     stem.position.copy(root).add(tip).multiplyScalar(.5);stem.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tip.sub(root).normalize());
