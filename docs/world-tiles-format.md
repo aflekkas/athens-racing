@@ -1,6 +1,6 @@
 # Athens world tiles, AWT/1
 
-Status: **Draft v1**, generator/runtime interchange contract, 2026-10-15. Schema identifier **`AWT/1`**, integer `tileVersion: 1`. Validator: `src/world-tile-format.js`, `validateWorldTile({metadata, arrays})`; run `node tools/validate-world-tiles.mjs <manifest.json>` on an emitted directory. This document supersedes the scenery, graphics-preset and street-photo requirements in the research plan. Bare OSM road shapes, clean elevation terrain, plain building boxes (at most 40 triangles per building), racing signs/gantries; no vegetation or beach props. One Lighting Off / Effects Off look.
+Status: **Draft v1.1**, generator/runtime interchange contract, 2026-10-15. Schema identifier **`AWT/1`**, integer `tileVersion: 1`. Validator: `src/world-tile-format.js`, `validateWorldTile({metadata, arrays})`; run `node tools/validate-world-tiles.mjs <manifest.json>` on an emitted directory. This document supersedes the scenery, graphics-preset and street-photo requirements in the research plan. Bare OSM road shapes, clean elevation terrain, plain building boxes (at most 40 triangles per building), racing signs/gantries; no vegetation or beach props. One Lighting Off / Effects Off look.
 
 ## Coordinates and ownership
 
@@ -40,7 +40,7 @@ Every table is required, using a zero-length array for absent features. IDs in r
 | `edgeLayers` | Int8 / 1 | OSM layer for each edge; ordering only |
 | `turns` | Uint32 / 4 | fromEdgeId, viaNodeId, toEdgeId, rule (0 allowed connector, 1 prohibited, 2 only) |
 | `ribbons` | Uint32 / 5 | surfaceId, edgeId, firstVertex, vertexCount, materialIndex |
-| `ribbonVertices` | Float32 / 5 | local x,y,z, globalStationMetres, signedLateralMetres |
+| `ribbonVertices` | Float32 / 5 | local x,y,z, globalStationMetres, signedLateralMetres; triangle-list spans, vertexCount divisible by 3 |
 | `junctions` | Uint32 / 5 | surfaceId, nodeId, firstVertex, vertexCount, materialIndex |
 | `junctionVertices` | Float32 / 3 | local x,y,z; simple polygon in clockwise XZ order |
 | `markings` | Float32 / 7 | edgeIdIndex, stationStart, stationEnd, lateral, width, dashLength, gapLength |
@@ -50,9 +50,9 @@ Every table is required, using a zero-length array for absent features. IDs in r
 | `coarseHeights` | Float32 / 1 | exactly 1089 heights, row-major Z then X; includes both edges |
 | `finePositions` | Float32 / 3 | adaptive road-conformed terrain x,y,z, 1–4 m near road |
 | `fineTriangles` | Uint32 / 3 | vertexA, vertexB, vertexC; same diagonal/contact surface as rendered terrain |
-| `buildings` | Uint32 / 4 | buildingId, firstCorner, cornerCount (4–10), colourIndex |
-| `buildingCorners` | Float32 / 2 | local x,z, clockwise convex block footprint (simplify concavities offline) |
-| `buildingHeights` | Float32 / 2 | baseY,height per building; height >0; extrusion triangles=4*cornerCount-4 <=36 |
+| `buildings` | Uint32 / 4 | buildingId, firstCorner, cornerCount (4–14), colourIndex |
+| `buildingCorners` | Float32 / 2 | local x,z, clockwise simple footprint, concave allowed; split multipart outlines into stable part IDs |
+| `buildingHeights` | Float32 / 2 | baseY,height per building; height >0; walls + triangulated roof, no hidden bottom: triangles=3*cornerCount-2 <=40 |
 | `signs` | Uint32 / 4 | signId, positionIndex, kind (0 speed,1 direction,2 gantry), textString |
 | `signTransforms` | Float32 / 5 | local x,y,z,yawRadians,widthMetres; one transform per sign |
 | `anchors` | Uint32 / 5 | anchorId, positionIndex, edgeId, kind (0 spawn,1 tow,2 race,3 parking), nameString |
@@ -60,7 +60,7 @@ Every table is required, using a zero-length array for absent features. IDs in r
 
 Edge flags bits: 0 one-way (every edge is directed; two-way roads emit reverse edges), 1 bridge, 2 tunnel, 3 restricted, 4 primary race route. Contact flags bits: 0 drivable asphalt, 1 terrain, 2 shoulder, 3 barrier. `surfaceId` is a world ID dictionary index. Unknown lane/speed is 0; routing must apply manifest defaults explicitly. Reverse edges share physical surface IDs but never duplicate contact triangles. Lane count describes travel direction; explicit lane-specific turn restrictions use separately identified lane edges. Layer arrays align with rows. Markings' edge ID indexes must be exactly representable as Float32 (<2^24); other ID fields use Uint32. On clipped edges, endpoints are stable portal nodes, edge IDs use `osm:way:<id>:<segment>:<direction>:<cell>`; `ids` also retains original way IDs. No fabricated connectivity at planar crossings with different layers.
 
-Render meshes are accelerators of these canonical surfaces, using the shared packGroup descriptors and terrain layout. They must cover all rendered roads, terrain, boxes and signs. A tile may split meshes by material and bounded activation job; each mesh <=16384 triangles and <=65535 vertices. Offline validator checks structural tables; generator must additionally validate polygon winding, triangle area, grade separation, actual rendered/contact equivalence and shared-edge equality. `validateTileSeam(a,b)` checks canonical boundary vertices for exact equal heights; run for every adjacent emitted pair, both terrain and contacts. Seam validation does not substitute for manifold/topology checks.
+Render only the fine mesh near roads; coarse heights may remain metadata/contact fallback without a second overlapping rendered mesh. Render meshes are accelerators of these canonical surfaces, using the shared packGroup descriptors and terrain layout. They must cover all rendered roads, terrain, boxes and signs. A tile may split meshes by material and bounded activation job; each mesh <=16384 triangles and <=65535 vertices. Offline validator checks structural tables; generator must additionally validate polygon winding, triangle area, grade separation, actual rendered/contact equivalence and shared-edge equality. `validateTileSeam(a,b)` checks canonical boundary vertices for exact equal heights; run for every adjacent emitted pair, both terrain and contacts. Seam validation does not substitute for manifold/topology checks.
 
 ## Manifest, deployment and caching
 

@@ -51,7 +51,7 @@ export function validateWorldTile(pack, expected = {}) {
   }
   for (let i = 0; i < t.turns.length; i += 4) { for (let j = 0; j < 3; j++) id(t.turns[i+j], 'turn id'); if (t.turns[i+3] > 2) fail('turn rule'); }
   for (const [k, vertices] of [['ribbons', 'ribbonVertices'], ['junctions', 'junctionVertices']]) for (let i = 0; i < t[k].length; i += 5) {
-    id(t[k][i], 'surface'); id(t[k][i+1], 'road/node'); span(t[k][i+2], t[k][i+3], count(vertices), k, 3); ref(t[k][i+4], m.palette.length, 'material');
+    id(t[k][i], 'surface'); id(t[k][i+1], 'road/node'); span(t[k][i+2], t[k][i+3], count(vertices), k, 3); ref(t[k][i+4], m.palette.length, 'material'); if (k === 'ribbons' && t[k][i+3] % 3) fail('ribbon triangle list');
   }
   for (let i = 0; i < t.markings.length; i += 7) { id(t.markings[i], 'marking edge'); if (t.markings[i] >= 2**24 || t.markings[i+2] < t.markings[i+1] || t.markings[i+4] <= 0 || t.markings[i+5] < 0 || t.markings[i+6] < 0) fail('marking'); }
   for (const [k, vertices, stride] of [['contactTriangles', 'contactPositions', 5], ['fineTriangles', 'finePositions', 3]]) for (let i = 0; i < t[k].length; i += stride) {
@@ -66,7 +66,7 @@ export function validateWorldTile(pack, expected = {}) {
   if (count('buildingHeights') !== count('buildings')) fail('building height count');
   for (let i = 0, row = 0; i < t.buildings.length; i += 4, row++) {
     span(t.buildings[i+1], t.buildings[i+2], count('buildingCorners'), 'building corners', 4);
-    if (t.buildings[i+2] > 10 || t.buildingHeights[row*2+1] <= 0) fail('building budget/height'); ref(t.buildings[i+3], m.palette.length, 'building colour');
+    if (t.buildings[i+2] > 14 || t.buildingHeights[row*2+1] <= 0) fail('building budget/height'); ref(t.buildings[i+3], m.palette.length, 'building colour');
   }
   for (const [k, transforms, stride, maxKind] of [['signs', 'signTransforms', 4, 2], ['anchors', 'anchorTransforms', 5, 3]]) for (let i = 0; i < t[k].length; i += stride) {
     ref(t[k][i+1], count(transforms), `${k} transform`);
@@ -107,6 +107,21 @@ export function validateWorldManifest(m) {
   }
   if (!Array.isArray(m.spawn.cell) || m.spawn.cell.length !== 2 || !m.spawn.cell.every(Number.isSafeInteger) || !m.tiles[m.spawn.cell.join(',')] || typeof m.spawn.anchor !== 'string') fail('spawn');
   return m;
+}
+/** Canonical edge strings are small relative to a pack; CLI hashes and discards them per tile. */
+export function tileEdgeSignatures(pack) {
+  const m = pack.metadata, t = tileTables(pack);
+  const number = v => Object.is(v, -0) ? '-0' : String(v);
+  return [0,1,2,3].map(side => {
+    const axis = side < 2 ? 0 : 2, value = (side % 2) * TILE_METRES, samples = new Set();
+    for (const name of ['finePositions','contactPositions']) {
+      const p = t[name];
+      for (let i=0;i<p.length;i+=3) if (p[i+axis] === value) samples.add(`${name}:${number(p[i]+m.origin[0])},${number(p[i+2]+m.origin[2])},${number(p[i+1])}`);
+    }
+    const heights = [];
+    for (let i=0;i<33;i++) heights.push(number(t.coarseHeights[side<2 ? i*33+(side%2)*32 : (side%2)*32*33+i]));
+    return JSON.stringify([heights,[...samples].sort()]);
+  });
 }
 /** Compare all canonical terrain/contact samples on the common edge, including missing vertices. */
 export function validateTileSeam(a, b) {
