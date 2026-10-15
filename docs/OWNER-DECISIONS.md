@@ -13,3 +13,4 @@ These choices were made deliberately by the owner (Alexandros Lekkas). Don't cha
 | 2026-10-15 | **No rear-view mirror in third-person/chase camera.** | Cockpit mirrors follow the mirrors setting. |
 | 2026-10-15 | **Simplified world:** no trees or vegetation, clean terrain (real mountains kept), buildings as clean blocks. | "We want to simplify this as much as possible." Being implemented with guard tests. |
 | 2026-10-15 | Every release's changelog (What's new) includes screenshots of the visible changes. | |
+| 2026-10-15 | **No street-photo proof rule** for any road or map. Maps are generated **bare simple** from OSM roads plus elevation: road shapes, terrain and building blocks. The goal is to build out all of Athens at minimal cost. | "I relax 100%, we don't need the photo rule for any streets." Supersedes the 2026-10-13 street-view rule. |

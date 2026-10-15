@@ -63,7 +63,7 @@ Every player-visible change must add a plain-language bullet and its screenshot 
 - Terrain next to every drivable road blends to road level so a car can always drive back on (checked by tools/road-terrain-level.test.mjs).
 - UI: no native dropdowns (`<select>`), use the shared Select component; every selection/hover/focus state animates; all screens are built from the shared components in `src/ui/components.js` and update in place (no full re-render or flashing); menus are full screens, not pop-up dialogs.
 - Nitro only exists on the SEAT.
-- New tracks are built from real street-level imagery of the real road, with side-by-side comparison screenshots in the PR.
+- New roads and maps are generated bare-simple from OpenStreetMap and elevation data (road shapes, terrain, building blocks). No street-level photo proof is required (owner decision, docs/OWNER-DECISIONS.md).
 - Free Cloudflare plan only: no paid services, no new paid APIs.
 - Assets must be ours or properly licensed (CC0 / CC-BY with credits added to the matching `CREDITS.txt`). No ripped models, textures, music or sounds.
 
