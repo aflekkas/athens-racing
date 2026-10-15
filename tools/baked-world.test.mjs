@@ -38,7 +38,7 @@ test('geometry packs reject invalid magic, versions and out-of-bounds views', ()
   const bad = pack.slice(0); new DataView(bad).setUint32(0, 0); assert.throws(() => decodeGeometryPack(bad));
   assert.throws(() => decodeGeometryPack(pack.slice(0, 16)));
 });
-for (const id of ['riviera', 'penteli']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, async () => {
+for (const id of ['riviera', 'penteli', 'psychiko']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, async () => {
   const bake = await generateMapBake(root, id), terrainPack = roundTrip(bake.terrain), roadsPack = roundTrip(bake.roads);
   // The worker uses raw (unshuffled) transferable packs; build bakes choose gzip-friendly byte planes.
   const workerTerrain = decodeGeometryPack(packGroup(bake.terrainGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, height: 0, source: 1 }, [bake.map.terrain.Hc, bake.network.source]));

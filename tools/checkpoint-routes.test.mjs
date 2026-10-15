@@ -8,7 +8,7 @@ import { RIVIERA_TUNNELS } from '../src/maps/riviera-tunnels.js';
 import { buildCourse, observeCourse } from '../src/checkpoints.js';
 import { resolveMap } from '../server/map-definitions.mjs';
 import { effectiveEvent } from '../server/mp-lifecycle.mjs';
-for (const id of ['riviera', 'penteli', 'megara']) {
+for (const id of ['riviera', 'penteli', 'psychiko', 'megara']) {
   const dataUrl = id === 'riviera' ? '../data/map.json' : `../data/maps/${id}/map.json`;
   const raw = JSON.parse(await readFile(new URL(dataUrl, import.meta.url), 'utf8')).route;
   const corridors = id === 'riviera' ? RIVIERA_TUNNELS : [];
@@ -41,13 +41,13 @@ for (const id of ['riviera', 'penteli', 'megara']) {
 
 // Event boundaries move the 80 m gates, so full-map tests alone miss failures
 // such as tt-coast's gate at 9502. Sweep actual event and mission itineraries.
-for (const id of ['riviera', 'penteli']) {
+for (const id of ['riviera', 'penteli', 'psychiko']) {
   const dataUrl = id === 'riviera' ? '../data/map.json' : `../data/maps/${id}/map.json`;
   const data = JSON.parse(await readFile(new URL(dataUrl, import.meta.url), 'utf8'));
   const map = resolveMap({ id }, data), route = new Route(data.route, { corridors: map.geometry.corridors });
   // Objective modes do not enable course gates; their deterministic itineraries
   // still provide additional real start/finish stations for this geometry sweep.
-  const itineraries = Object.entries(map.trips).flatMap(([mode, trips]) => trips.map(trip => ({
+  const itineraries = Object.entries(map.trips).flatMap(([mode, trips]) => (trips || []).map(trip => ({
     id: `${mode}/${trip.id}`, s0: trip.pickup.s, s1: trip.dropoff.s,
     dir: Math.sign(trip.dropoff.s - trip.pickup.s), checkpoints: [],
   })));

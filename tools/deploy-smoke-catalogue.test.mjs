@@ -5,7 +5,7 @@ import { getMap } from '../src/map-catalog.js';
 import { resolveMap } from '../server/map-definitions.mjs';
 import { verifySessionCatalogue, verifySessionCatalogueWithRetry } from './deploy-smoke-catalogue.mjs';
 
-for (const id of ['riviera', 'megara', 'penteli']) {
+for (const id of ['riviera', 'megara', 'penteli', 'psychiko']) {
   const meta = getMap(id), data = JSON.parse(await readFile(new URL('../' + meta.dataUrl, import.meta.url)));
   const map = resolveMap(meta, data), events = [...map.definitions.values()];
   const offered = { track: map.track, events };

@@ -160,7 +160,7 @@ test('plate text normalizes usernames to fit the texture', async () => {
 test('lobby map picker offers only enabled maps (including Megara Circuit)', () => {
   // The hello handler assigns this.maps through getPlayableMaps, so the
   // lobby pickers and the solo selector share one registry.
-  assert.deepEqual(getPlayableMaps([{ id: 'riviera' }, { id: 'megara' }, { id: 'penteli' }]).map((m) => m.id), ['riviera', 'megara', 'penteli']);
+  assert.deepEqual(getPlayableMaps([{ id: 'riviera' }, { id: 'megara' }, { id: 'penteli' }, { id: 'psychiko' }]).map((m) => m.id), ['riviera', 'megara', 'penteli', 'psychiko']);
   assert.deepEqual(getPlayableMaps([]), []);
 });
 
