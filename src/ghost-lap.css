@@ -1,0 +1,4 @@
+#ghost-delta[hidden]{display:none!important}
+#ghost-delta{position:fixed;z-index:55;top:140px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 18px;color:#ffc197;background:rgba(8,10,14,.85);border-left:3px solid var(--c-cyan,#29d8ff);border-radius:4px;font:italic 800 20px 'Barlow Condensed',sans-serif;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+#ghost-delta::before{content:'';width:18px;height:18px;background:var(--c-cyan,#29d8ff);-webkit-mask:url(../assets/icons/ghost.svg) center/contain no-repeat;mask:url(../assets/icons/ghost.svg) center/contain no-repeat}
+#ghost-delta.ahead{color:#9ef1c1}

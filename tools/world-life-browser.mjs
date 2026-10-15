@@ -43,7 +43,7 @@ try {
       window.__freezeWorld = true; window.__worldENV = await import('/src/env.js');
       window.__worldTHREE = await import('three'); window.__worldUtil = await import('/src/util.js'); window.__worldAudit = await import('/tools/world-life-audit.mjs');
       window.__flow.startEvent('free'); await new Promise(done => setTimeout(done, 500)); window.__sim.G.state = 'paused'; window.__sim.G.lastDt = .25;
-      window.__iblIdentity = window.__replay.ctx.scene.environment;
+      window.__iblIdentity = window.__sim.scene.environment;
     });
     const rows = await page.evaluate(() => {
       const env = window.__worldENV, life = window.__worldLife;
@@ -54,7 +54,7 @@ try {
     report.audit.push(...rows); assert.ok(rows.every(row => row['mountain/forest'] === 0), 'zero pedestrians on every sampled mountain connector'); await save();
     async function position(s, resident = false) {
       return page.evaluate(({ s, resident }) => {
-        const sim = window.__sim, r = sim.route, camera = sim.camera, ctx = window.__replay.ctx;
+        const sim = window.__sim, r = sim.route, camera = sim.camera, ctx = window.__sim;
         sim.player.veh.reset(s, r.laneU(s, 0), 0); sim.people.reset(s); sim.traffic.reset(s); sim.traffic.sync(s);
         const f = r.frame(s, {}), p = r.point(s, 0);
         let anchor = resident ? sim.people.anchors.find(a => a.kind === 'resident') : null;
@@ -67,7 +67,7 @@ try {
     }
     async function capture(file, detail = {}) {
       const state = await page.evaluate(() => {
-        const ctx = window.__replay.ctx; ctx.render(); ctx.renderer.getContext().finish();
+        const ctx = window.__sim; ctx.render(); ctx.renderer.getContext().finish();
         const canvas = document.createElement('canvas'); canvas.width = 800; canvas.height = 500; const c = canvas.getContext('2d'); c.drawImage(ctx.canvas, 0, 0, 800, 500); const a = c.getImageData(0, 0, 800, 500).data;
         let lum = 0; for (let i = 0; i < a.length; i += 4) lum += .2126 * a[i] + .7152 * a[i + 1] + .0722 * a[i + 2];
         const THREE = window.__worldTHREE, rt = new THREE.WebGLRenderTarget(16, 16), diag = new THREE.Scene();
@@ -98,7 +98,7 @@ try {
       }
       assert.ok(report.transitions[1].rain > 0 && report.transitions[1].rain < report.transitions[2].rain); assert.ok(report.transitions.at(-1).wet > 0);
       // Context restore in the middle of a fade: both snapshots must be reseeded.
-      const before = await page.evaluate(() => { window.__worldLife.tick(10); window.__worldENV.updateWorldBlend(.2); const gl = window.__replay.ctx.renderer.getContext(), ext = gl.getExtension('WEBGL_lose_context'); window.__worldRestore = ext; ext.loseContext(); return true; });
+      const before = await page.evaluate(() => { window.__worldLife.tick(10); window.__worldENV.updateWorldBlend(.2); const gl = window.__sim.renderer.getContext(), ext = gl.getExtension('WEBGL_lose_context'); window.__worldRestore = ext; ext.loseContext(); return true; });
       assert.ok(before); await page.waitForFunction(() => window.__sim.G.ctxLost, null, { timeout: 30000 });
       await page.evaluate(() => window.__worldRestore.restoreContext()); await page.waitForFunction(() => !window.__sim.G.ctxLost, null, { timeout: 60000 });
       await page.evaluate(() => { window.__sim.render(); window.__worldENV.setWorldConditions(window.__worldLife.world.sample()); for (let i = 0; i < 10; i++) { window.__worldENV.updateWorldBlend(.2); window.__sim.render(); } });
@@ -106,7 +106,7 @@ try {
     } else if (id === 'penteli') {
       await page.evaluate(() => window.__worldLife.configure({ type: 'free', conditions: { time: 'day', weather: 'clear' } }));
       const residents = await position(120, true); assert.ok(residents.active.some(p => p.kind === 'resident'));
-      const clearance = await page.evaluate(() => { let result = null; window.__replay.ctx.scene.traverse(o => { if (o.userData.worldLifeClearance) result = o.userData.worldLifeClearance; }); return result; });
+      const clearance = await page.evaluate(() => { let result = null; window.__sim.scene.traverse(o => { if (o.userData.worldLifeClearance) result = o.userData.worldLifeClearance; }); return result; });
       assert.ok(clearance?.excluded > 0, 'procedural vegetation is excluded from mapped forecourts');
       await capture('penteli-village.png', { ...residents, clearance });
       for (const s of [2500, 7344]) { const mountain = await position(s); assert.equal(mountain.active.length, 0); await capture(`penteli-mountain-${s}.png`, mountain); }

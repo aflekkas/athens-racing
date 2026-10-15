@@ -16,7 +16,7 @@
 //   settings.drawDistance     'auto' (the preset's) | 300 | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
 //   settings.motionBlur       camera motion blur on / off (src/post.js)
 //   settings.mirrors          working rear-view / door mirrors and the chase rear-view strip on / off (src/cockpit.js)
-//   settings.ghostEnabled     race against your best ghost (src/replay.js reads it)
+//   settings.ghostEnabled     race against your best ghost (src/ghost-lap.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];

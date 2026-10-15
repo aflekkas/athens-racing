@@ -10,7 +10,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
 //      Every value change dispatches a bubbling CustomEvent 'ui:change' { key, value, el } from the row.
 //   2. enhance(root) / autoEnhance(root): swaps native <input type=range> and <input type=checkbox> in DOM
-//      owned by other modules (multiplayer lobby, replay / photo bar) for the custom Select / Slider / Toggle. The native
+//      owned by other modules (multiplayer lobby) for the custom Select / Slider / Toggle. The native
 //      element stays in the DOM, hidden, as the source of truth: its value / checked setters are mirrored, and user
 //      changes fire its normal 'input' / 'change' events, so the owning code needs no changes.
 //
@@ -384,7 +384,7 @@ export function closeListbox() {
 export const listboxOpen = () => !!lb;
 
 // ------------------------------------------------------------------ <ui-select>: the dropdown for DOM other modules own
-// There are no native select elements in the game. Code that builds its own DOM (the replay / photo bar, the music source,
+// There are no native select elements in the game. Code that builds its own DOM (the music source,
 // the standings' spectator pick, multiplayer transport state) uses <ui-select>: the same API as a native select
 // (value, selectedIndex, options, disabled, <option> children, 'input' / 'change' events, onchange) drawn as the kit's
 // Select with the animated listbox, keyboard / gamepad / touch alike. Menu screens use the select() row builder.

@@ -251,7 +251,6 @@ export class Menu {
       case 'list': this.h.quit('title'); break;
       case 'menu': this.h.quit('title'); break;
       case 'shareResult': this.h.shareResult?.(); break;
-      case 'replay': window.__replay?.watch?.(); break;
     }
   }
   /** a component value changed (keyboard, gamepad, mouse or touch) */
@@ -454,7 +453,7 @@ export class Menu {
         <h2 class="res-title">${esc(d.title || '')}</h2>${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
         ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
-        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${window.__replay?.watch ? act('replay', 'film-strip', 'WATCH REPLAY') : ''}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
+        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
       </div><div class="res-side scroll-y">${field}${splits}</div></div>` });
   }
 }

@@ -2,11 +2,11 @@
 //  scene (MSAA, half-float colour + resolved depth)
 //  -> ambient occlusion (half res, Alchemy-style from depth, bilateral blur)                              med+
 //  -> composite: AO, per-pixel camera motion blur by depth reprojection (the cars themselves are masked out),
-//     depth of field for the orbit / garage / photo cameras, distant heat shimmer                           med+ (low: DOF only)
+//     depth of field for the orbit / garage cameras, distant heat shimmer                           med+ (low: DOF only)
 //  -> bloom: soft-knee threshold, Karis-weighted 13-tap downsample chain, tent upsample (dual filter)      med+
 //  -> final: FXAA + contrast-adaptive sharpening, exposure, white balance, sun glare, AgX filmic tone mapping,
 //     per time-of-day / weather grade (lift / gamma / gain, saturation, contrast, split tone; eased between
-//     conditions), photo controls, vignette, gameplay flashes, TPDF dither.
+//     conditions), vignette, gameplay flashes, TPDF dither.
 // The mirrors (cockpit.js) and the sea reflection render the scene into their own targets and never run this chain.
 import * as THREE from 'three';
 import * as ENV from './env.js';
@@ -122,7 +122,7 @@ const CompositeShader = {
       }
       vec3 col = texture2D(tColor, sampleUV).rgb;
       float j = hh(gl_FragCoord.xy + fract(uTime * 7.0) * 61.0);
-      // ---- depth of field (orbit / garage / photo cameras): a golden-angle gather, sharp foreground never bleeds
+      // ---- depth of field (orbit / garage cameras): a golden-angle gather, sharp foreground never bleeds
       if (uDof > 0.0) {
         float z = -P.z;
         float coc = clamp(uDof * abs(z - uFocus) / max(z, 0.1), 0.0, 9.0) * uRes.y / 1080.0;
@@ -224,7 +224,7 @@ const FinalShader = {
     tHDR: { value: null }, tBloom: { value: null }, uBloom: { value: 0 }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) },
     uSun: { value: new THREE.Vector3(0.5, 0.5, 0) }, uSpeed: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.56) },
     uShake: { value: 0 }, uFlash: { value: 0 }, uNitro: { value: 0 }, uFade: { value: 0 }, uExposure: { value: 1.0 },
-    uWB: { value: new THREE.Vector3(0.96, 1.0, 1.06) }, uGlare: { value: 1 }, uRainLens: { value: 0 }, uFilter: { value: 0 },
+    uWB: { value: new THREE.Vector3(0.96, 1.0, 1.06) }, uGlare: { value: 1 }, uRainLens: { value: 0 }, 
     // grade (eased per time of day / weather) and lens
     uLift: { value: new THREE.Vector3() }, uGamma: { value: new THREE.Vector3(1, 1, 1) }, uGain: { value: new THREE.Vector3(1, 1, 1) },
     uSat: { value: 1 }, uContrast: { value: 1 }, uShadowTint: { value: new THREE.Vector3(1, 1, 1) }, uHiTint: { value: new THREE.Vector3(1, 1, 1) },
@@ -234,7 +234,7 @@ const FinalShader = {
   fragmentShader: /* glsl */`
     uniform sampler2D tHDR; uniform sampler2D tBloom; uniform float uBloom; uniform float uTime; uniform vec2 uRes; uniform vec3 uSun; uniform float uSpeed; uniform vec2 uCenter;
     uniform float uShake; uniform float uFlash; uniform float uNitro; uniform float uFade; uniform float uExposure;
-    uniform vec3 uWB; uniform float uGlare; uniform float uRainLens; uniform float uFilter;
+    uniform vec3 uWB; uniform float uGlare; uniform float uRainLens;
     uniform vec3 uLift; uniform vec3 uGamma; uniform vec3 uGain; uniform float uSat; uniform float uContrast; uniform vec3 uShadowTint; uniform vec3 uHiTint;
     uniform float uVignette; uniform float uGrain; uniform float uSharpen; uniform float uCA;
     varying vec2 vUv;
@@ -336,15 +336,6 @@ const FinalShader = {
       float l = lum(col);
       col = max(mix(vec3(l), col, uSat), 0.0);
       col *= mix(uShadowTint, uHiTint, smoothstep(0.06, 0.6, l));
-      // photo mode filters: 1 warm, 2 cool, 3 mono, 4 film, 5 sunset
-      if (uFilter > 0.5) {
-        float fl = lum(col);
-        if (uFilter < 1.5) col *= vec3(1.07, 1.0, 0.88);
-        else if (uFilter < 2.5) col *= vec3(0.9, 0.99, 1.1);
-        else if (uFilter < 3.5) col = vec3(fl) * vec3(1.02, 1.0, 0.96);
-        else if (uFilter < 4.5) { col = mix(col, col * col * (3.0 - 2.0 * col), 0.35); col = mix(col * vec3(0.92, 1.0, 1.06), col * vec3(1.06, 1.0, 0.9), smoothstep(0.15, 0.6, fl)) * 0.9 + vec3(0.035, 0.03, 0.025); }
-        else { col *= vec3(1.12, 0.97, 0.8); col += vec3(0.05, 0.02, 0.0) * smoothstep(0.3, 1.0, vUv.y); }
-      }
       // nitro: cool edge tint; impact flash
       col = mix(col, col * vec3(0.8, 0.96, 1.2) + vec3(0.0, 0.01, 0.03), uNitro * smoothstep(0.25, 0.85, length(c * asp)) * 0.7);
       // optical vignette (cos^4-ish), a touch stronger at speed
@@ -389,7 +380,6 @@ function gradeFor(time, weather) {
   return g;
 }
 
-export const PHOTO_FILTERS = ['neutral', 'warm', 'cool', 'mono', 'film', 'sunset'];
 /** effects: an EFFECTS level ('off' | 'low' | 'med' | 'high' | 'ultra'); quality (a preset id) is the legacy form */
 export function createPost(renderer, scene, camera, { lowQuality = false, quality = lowQuality ? 'low' : 'high', effects = PRESETS[quality]?.effects || 'high' } = {}) {
   if (!EFFECTS[effects]) effects = 'high';
@@ -448,7 +438,6 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
       if (prof) { gl.finish(); prof.t = performance.now(); }
       lerpGrade(1 - Math.exp(-Math.min(dt, 0.25) / 0.6));
       post.applyGrade();
-      post.applyPhoto();
       camera.updateMatrixWorld();
       aoMat.uniforms.uInvProj.value.copy(camera.projectionMatrixInverse);
       aoMat.uniforms.uProj.value.copy(camera.projectionMatrix);
@@ -522,7 +511,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
       u.uRes.value.set(ww, hh);
       mips.forEach((m, i) => m.setSize(Math.max(1, ww >> (i + 1)), Math.max(1, hh >> (i + 1))));
     },
-    /** Keep this object (replay/weather reference it); rebuild only changed GPU resources. */
+    /** Keep this object (weather references it); rebuild only changed GPU resources. */
     /** switch effects level live (an EFFECTS id; a preset id is accepted for older callers) */
     setQuality(next) { post.setEffects(EFFECTS[next] ? next : PRESETS[next]?.effects); },
     setEffects(next) {
@@ -542,7 +531,7 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
       post.setConditions(ENV.COND_STATE); post.setSize(size.x, size.y, pr); post.resetHistory();
     },
     resetHistory() { havePrev = false; post.snapGrade(); },
-    /** jump the eased grade / exposure to the current conditions (map switch, photo mode, captures) */
+    /** jump the eased grade / exposure to the current conditions (map switch, captures) */
     snapGrade() { if (grade.target) { lerpGrade(1); post.applyGrade(); } },
     /** average ms per pass over n renders of the current view (gl.finish fences) */
     measure(n = 20) {
@@ -552,33 +541,16 @@ export function createPost(renderer, scene, camera, { lowQuality = false, qualit
       for (const k in prof.sum) { out[k] = +(prof.sum[k] / prof.frames).toFixed(2); if (k !== 'scene') total += prof.sum[k] / prof.frames; }
       out.post = +total.toFixed(2); prof = null; return out;
     },
-    // ---- photo mode (replay.js): {focus: m, dof: 0..9 blur strength, exposure: EV stops, filter: name,
-    //      contrast: -1..1, saturation: 0..2, vignette: 0..1}
-    photo: null, baseExposure: 1,
+    baseExposure: 1,
     /** quality tiers scale bloom here (then call setConditions(post.lastConditions)); the conditions own the base value */
     bloomScale: 1, bloomThreshold: 2.5, lastConditions: null,
-    setPhoto(p = {}) { post.photo = { ...(post.photo || {}), ...p }; post.snapGrade(); post.applyPhoto(); },
-    clearPhoto() { post.photo = null; u.uFilter.value = 0; post.applyGrade(); },
-    /** the eased grade into the uniforms (photo controls are applied on top by applyPhoto) */
+    /** Apply the eased environment grade to the uniforms. */
     applyGrade() {
       const g = grade.cur; if (!g) return;
       u.uLift.value.fromArray(g.lift); u.uGamma.value.fromArray(g.gamma); u.uGain.value.fromArray(g.gain);
       u.uShadowTint.value.fromArray(g.sh); u.uHiTint.value.fromArray(g.hi);
       u.uSat.value = g.sat; u.uContrast.value = g.contrast;
       u.uExposure.value = grade.exposure; u.uVignette.value = 0.22;
-    },
-    /** re-apply the photo controls over the per-frame camera FX (render() calls it too) */
-    applyPhoto() {
-      const p = post.photo; if (!p) return;
-      // a still: no gameplay camera FX (main sets these every frame before render)
-      post.blur = 0; u.uSpeed.value = 0; u.uNitro.value = 0; u.uFlash.value = 0; u.uShake.value = 0;
-      if (p.dof !== undefined) compMat.uniforms.uDof.value = p.dof;
-      if (p.focus !== undefined) compMat.uniforms.uFocus.value = p.focus;
-      u.uExposure.value = grade.exposure * Math.pow(2, p.exposure || 0);
-      u.uContrast.value = (grade.cur?.contrast ?? 1) * (1 + 0.6 * (p.contrast || 0));
-      u.uSat.value = (grade.cur?.sat ?? 1) * (p.saturation ?? 1);
-      u.uVignette.value = p.vignette ?? 0.22;
-      u.uFilter.value = Math.max(0, PHOTO_FILTERS.indexOf(p.filter || 'neutral'));
     },
     /** lighting state from env.js COND_STATE: exposure, white balance, sun glare, bloom (night lamps glow more), grade */
     setConditions(st) {

@@ -30,16 +30,15 @@ test('live stuckCheck minimises after 3s and dismiss/on-road preserve 20s cooldo
   for(let i=0;i<18;i++) check.stuckCheck(v,1); assert.equal(offers,0);
   check.stuckCheck(v,1); assert.equal(offers,1);
 });
-test('actual camera and simulation gates stop solo pause and MP menus, allow racing and photo', () => {
+test('actual camera and simulation gates stop solo pause and MP menus, allow racing', () => {
   const gate = section('function updateCamera(', '  previousCameraQuat.copy');
   const G = {state:'paused'}, multiplayer={active:false}, window={}; let menuOpen=false;
   const frozen = Function('window','G','multiplayer','inMenu', gate+'return false; } return updateCamera;')(window,G,multiplayer,()=>menuOpen);
   assert.equal(frozen(1/60),undefined); G.state='race'; assert.equal(frozen(1/60),false);
   multiplayer.active=true; menuOpen=true; assert.equal(frozen(1/60),undefined);
-  window.__replay={active:true}; assert.equal(frozen(1/60),false);
   const expression=source.match(/const simulate = (.*);/)[1];
   const simulate=()=>Function('window','G','multiplayer','inMenu','return '+expression)(window,G,{...multiplayer,panel:{hidden:true}},()=>menuOpen);
-  window.__replay=null; assert.equal(simulate(),false); menuOpen=false; assert.equal(simulate(),true); G.state='paused'; assert.equal(simulate(),false);
+  assert.equal(simulate(),false); menuOpen=false; assert.equal(simulate(),true); G.state='paused'; assert.equal(simulate(),false);
 });
 test('reset resumes a paused race and calls recovery, preserving Retry as restart', () => {
   const calls=[], G={state:'paused'}, player={veh:{}};

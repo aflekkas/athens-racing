@@ -54,8 +54,8 @@ try {
     await page.waitForFunction(() => document.body.classList.contains('loaded'), null, { timeout: 600000 });
     const setup = await page.evaluate(() => {
       window.__freezeGraffiti = true;
-      const sim = window.__sim, life = sim.people.streetLife, replay = window.__replay;
-      sim.G.state = 'paused'; if (!replay.photo()) throw Error('Photo mode unavailable'); replay.ui.hidden = true;
+      const sim = window.__sim, life = sim.people.streetLife;
+      sim.G.state = 'paused';
       return { stats: life.stats, bins: life.group.userData.bins, artists: life.artists.map(a => ({ s: a.s, x: a.x, y: a.y, z: a.z, yaw: a.yaw })), colliders: sim.ground.parked.filter(p => p.kind === 'municipal-bin').length };
     });
     console.log(id, 'SETUP', JSON.stringify({ stats: setup.stats, colliders: setup.colliders }));
@@ -64,27 +64,26 @@ try {
     const bin = setup.bins.reduce((a, b) => Math.abs(b.s - station) < Math.abs(a.s - station) ? b : a);
     async function position(target, distance = 7) {
       await page.evaluate(({ target: b, distance }) => {
-        const r = window.__replay, sim = window.__sim, camera = r.ctx.camera;
+        const r = window.__sim, sim = window.__sim, camera = r.camera;
         sim.player.veh.reset(b.s, sim.route.laneU(b.s, 0), 0);
         sim.people.reset(b.s); sim.people.update(0, b.s, [], camera.position); sim.people.update(0, b.s, [], camera.position);
         camera.position.set(b.x + Math.sin(b.yaw) * distance + Math.cos(b.yaw) * 3.6, b.y + 3, b.z + Math.cos(b.yaw) * distance - Math.sin(b.yaw) * 3.6);
         camera.lookAt(b.x, b.y + .9, b.z); camera.rotation.reorder('YXZ');
-        Object.assign(r.photoState, { position: camera.position.clone(), yaw: camera.rotation.y, pitch: camera.rotation.x, roll: 0, fov: 60, dof: 0 });
-        r.ctx.post.setPhoto(r.photoState); r.updateCamera(0); r.ctx.render();
+        camera.fov = 60; camera.updateProjectionMatrix(); r.post.dof = 0; r.post.resetHistory(); r.render();
       }, { target, distance });
     }
     async function capture(name) {
-      const bytes = await page.evaluate(() => { const c = window.__replay.ctx; c.render(); c.renderer.getContext().finish(); return c.canvas.toDataURL('image/png').split(',')[1]; });
+      const bytes = await page.evaluate(() => { const c = window.__sim; c.render(); c.renderer.getContext().finish(); return c.canvas.toDataURL('image/png').split(',')[1]; });
       await fs.writeFile(resolve(out, name), Buffer.from(bytes, 'base64')); console.log(id, 'CAPTURE', name);
     }
     await position(bin);
     const perf = await page.evaluate(() => {
-      const sim = window.__sim, life = sim.people.streetLife, ctx = window.__replay.ctx, camera = ctx.camera;
+      const sim = window.__sim, life = sim.people.streetLife, ctx = window.__sim, camera = ctx.camera;
       const draw = artists => { sim.people.crowd.begin(); for (const p of sim.people.peds) if (p.active && (artists || p.kind !== 'artist')) { const d = Math.hypot(p.x - camera.position.x, p.z - camera.position.z); if (d < 175) { sim.people.pose(p); sim.people.crowd.draw(p.P, p.look, d); } } sim.people.crowd.end(); };
       const sample = enabled => { life.group.visible = enabled; draw(enabled); ctx.render(); ctx.renderer.getContext().finish(); ctx.render(); return { calls: ctx.renderer.info.render.calls, triangles: ctx.renderer.info.render.triangles }; };
       const before = sample(false), after = sample(true); return { before, after, added: { calls: after.calls - before.calls, triangles: after.triangles - before.triangles }, gpu: window.__renderInfo().gpu, pixelRatio: window.__renderInfo().pixelRatio, viewport: [960, 600] };
     });
-    await page.evaluate(() => { const sim = window.__sim, a = sim.people.streetLife.artists; for (const p of a) p.elapsed = 10; sim.people.streetLife.update(0, window.__replay.ctx.camera.position); });
+    await page.evaluate(() => { const sim = window.__sim, a = sim.people.streetLife.artists; for (const p of a) p.elapsed = 10; sim.people.streetLife.update(0, window.__sim.camera.position); });
     await capture(`${id}-bins.png`);
     const frames = [];
     if (id === 'riviera') {
@@ -92,14 +91,14 @@ try {
       const nearest = setup.bins.reduce((b, c) => Math.abs(c.s - a.s) < Math.abs(b.s - a.s) ? c : b);
       await position(nearest, 4.3);
       for (const elapsed of [.8, 4.5, 8.7]) {
-        const state = await page.evaluate(elapsed => { const sim = window.__sim, life = sim.people.streetLife, camera = window.__replay.ctx.camera;
+        const state = await page.evaluate(elapsed => { const sim = window.__sim, life = sim.people.streetLife, camera = window.__sim.camera;
           for (const a of life.artists) { a.elapsed = elapsed; if (a.ped) { a.ped.t = elapsed; sim.people.pose(a.ped); } }
           sim.people.update(0, sim.player.veh.s, [], camera.position); return life.artists.filter(a => a.ped).map(a => ({ elapsed: a.elapsed, moving: a.ped.moving, raised: a.ped.P.shA[1], progress: Math.min(1, a.elapsed / 9) })); }, elapsed);
         const name = `artist-${String(elapsed).replace('.', '-')}.png`; await capture(name); frames.push({ file: name, state });
       }
       const reaction = await page.evaluate(() => { const sim = window.__sim, a = sim.people.streetLife.artists.find(a => a.ped), p = a.ped;
         const veh = { x: p.x + .3, z: p.z + .3, y: p.y, s: a.s, u: 0, yaw: 0, vLong: 0, halfL: 2, halfW: .9 };
-        const before = { x: p.x, z: p.z }; sim.people.update(.2, a.s, [{ veh, kind: 'player' }], window.__replay.ctx.camera.position);
+        const before = { x: p.x, z: p.z }; sim.people.update(.2, a.s, [{ veh, kind: 'player' }], window.__sim.camera.position);
         return { distance: Math.hypot(p.x - before.x, p.z - before.z), moving: p.moving }; });
       assert.ok(reaction.distance > .1 && reaction.moving, 'artist steps back from a slow close car');
       console.log('ARTIST REACTION', reaction);

@@ -91,13 +91,9 @@ async function saveScreenshot(page, options) {
 }
 async function captureProof(page, id, report, stationsOverride = null) {
         await page.evaluate(() => {
-          const replay = window.__replay;
-          replay.ctx.G.state = 'paused';
-          if (!replay.photo()) throw new Error('Photo mode unavailable for comparison capture');
-          const mp = document.querySelector('#mp-toggle');
-          if (mp && getComputedStyle(mp).display !== 'none') window.__proofUiError = 'Multiplayer toggle visible in photo mode';
-          replay.ui.hidden = true;
-          window.__proofCars = replay.cars.map(car => [car, car.model.root.visible]);
+          const capture = window.__sim;
+          capture.G.state = 'paused';
+          window.__proofCars = capture.cars.map(car => [car, car.model.root.visible]);
           for (const [car] of window.__proofCars) car.model.root.visible = false;
           document.querySelector('#graphics-quality').style.visibility = 'hidden';
         });
@@ -106,28 +102,26 @@ async function captureProof(page, id, report, stationsOverride = null) {
         const stations = stationsOverride || (id === 'megara' ? [260, 510, 700, 1000, 1290, 1670, 1900, 0, 'northwest'] : [2318]);
         for (const station of stations) {
           const pose = await page.evaluate(async station => {
-            const replay = window.__replay, { route, camera } = replay.ctx;
+            const capture = window.__sim, { route, camera } = capture;
             const s = station === 'northwest' ? 1000 : station;
             const p = route.point(s, 0), ahead = station === 'northwest' ? { x: p.x - 35, y: p.y, z: p.z - 35 } : route.point(s + 35, 0);
             camera.position.set(p.x, p.y + 1.65, p.z); camera.lookAt(ahead.x, ahead.y + 1.3, ahead.z);
             camera.rotation.reorder('YXZ');
-            Object.assign(replay.photoState, { position: camera.position.clone(), yaw: camera.rotation.y, pitch: camera.rotation.x, roll: 0, fov: 78, dof: 0 });
-            replay.ctx.post.setPhoto(replay.photoState); replay.ctx.post.resetHistory?.();
-            replay.updateCamera(0);
+            camera.fov = 78; camera.updateProjectionMatrix(); capture.post.dof = 0; capture.post.resetHistory?.();
             const { updateSceneryLod } = await import('./src/scenery.js');
             const list = [];
-            replay.ctx.scene.traverse(o => { if (o.userData.far && o.boundingSphere) list.push(o); });
+            capture.scene.traverse(o => { if (o.userData.far && o.boundingSphere) list.push(o); });
             updateSceneryLod(list, camera);
-            replay.ctx.render();
+            capture.render();
             await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
-            return { station, x: p.x, y: p.y + 1.65, z: p.z, heading: replay.photoState.yaw };
+            return { station, x: p.x, y: p.y + 1.65, z: p.z, heading: camera.rotation.y };
           }, station);
           report.photos ||= []; report.photos.push({ mapId: id, quality: new URL(page.url()).searchParams.get('quality'), ...pose });
           const shotPath = resolve(out, id === 'riviera' ? 'riviera-regression.png' : `ingame-${station}.png`);
           let shot = await saveScreenshot(page, { path: shotPath });
           for (let retry = 0; blackFrame(shot) && retry < 1; retry++) {
             console.warn('Retrying black proof frame', id, station);
-            const direct = await page.evaluate(() => { const c = window.__replay.ctx; if (c.renderer.getContext().isContextLost()) throw new Error('PROOF_WEBGL_CONTEXT_LOST'); c.render(); return c.canvas.toDataURL('image/png'); });
+            const direct = await page.evaluate(() => { const c = window.__sim; if (c.renderer.getContext().isContextLost()) throw new Error('PROOF_WEBGL_CONTEXT_LOST'); c.render(); return c.canvas.toDataURL('image/png'); });
             shot = Buffer.from(direct.split(',')[1], 'base64'); await writeFile(shotPath, shot);
             report.photos.at(-1).capture = 'direct-canvas-retry';
           }
@@ -137,9 +131,9 @@ async function captureProof(page, id, report, stationsOverride = null) {
         }
         await page.evaluate(() => {
           for (const [car, visible] of window.__proofCars) car.model.root.visible = visible;
-          delete window.__proofCars; window.__replay.closePhoto();
+          delete window.__proofCars;
           document.querySelector('#graphics-quality').style.visibility = '';
-          window.__replay.ctx.G.state = 'menu'; window.__flow.menu.show('maps');
+          window.__sim.G.state = 'menu'; window.__flow.menu.show('maps');
         });
         await page.waitForFunction(() => [...document.querySelectorAll('.map-card img')].every(img => img.complete));
         await saveScreenshot(page, { path: resolve(out, 'map-select.png') });
@@ -180,9 +174,9 @@ try {
   await waitReady(page);
   await page.evaluate(async () => {
     // Postprocess fullscreen quad/depth targets upload lazily on the first full render.
-    window.__replay.ctx.render();
+    window.__sim.render();
     await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
-    await window.__mapResourceAudit.sample(window.__replay.ctx.scene, true);
+    await window.__mapResourceAudit.sample(window.__sim.scene, true);
   });
   // Repeat every map: resource ownership must plateau once shared geometry caches warm up.
   for (let pass = 0; pass < 3; pass++) for (const id of ids) {
@@ -191,7 +185,7 @@ try {
       const changing = window.__flow.mapId !== id;
       let damageProof = null;
       if (changing && window.__flow.mapId === 'riviera' && id === 'megara') { try {
-        const ctx = window.__replay.ctx;
+        const ctx = window.__sim;
         const car = ctx.traffic.cars.find(c => !c.type.bus && !c.type.scooter && c.m.damageParts?.some(p => p.id.startsWith('bumper_f') && p.detachable));
         if (!car) throw new Error('No traffic damage model for unload regression');
         const p = ctx.route.point(ctx.route.start + 100, 0);
@@ -204,9 +198,9 @@ try {
         ctx.camera.position.set(p.x + 4, p.y + 2, p.z - 5); ctx.camera.lookAt(p.x, p.y + .5, p.z); ctx.render();
         damageProof = { spawned: debris.length, model: car.type.id, point: { x: bumper.center.x, y: bumper.center.y, z: bumper.center.z } };
       } catch (error) { damageProof = { error: String(error) }; } }
-      if (changing) window.__mapResourceAudit.beforeSwitch(window.__replay.ctx.scene);
+      if (changing) window.__mapResourceAudit.beforeSwitch(window.__sim.scene);
       await window.__flow.switchMap(id);
-      if (changing && window.__replay.ctx.scene.children.some(o => o.userData.damageDebris)) throw new Error(id + ': damage debris survived map unload');
+      if (changing && window.__sim.scene.children.some(o => o.userData.damageDebris)) throw new Error(id + ': damage debris survived map unload');
       const sim = window.__sim, r = sim.route, v = sim.player.veh;
       const samples = [];
       // Integrate physics around a representative part of every map; cross the lap seam on circuits.
@@ -229,7 +223,7 @@ try {
       sim.step(1);
       await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
       // Compare an identical camera on each revisit; parked-car LODs otherwise follow the menu orbit.
-      const ctx = window.__replay.ctx, eye = r.point(r.start + 100, 0), ahead = r.point(r.start + 140, 0);
+      const ctx = window.__sim, eye = r.point(r.start + 100, 0), ahead = r.point(r.start + 140, 0);
       ctx.camera.position.set(eye.x, eye.y + 8, eye.z); ctx.camera.lookAt(ahead.x, ahead.y + 1, ahead.z);
       const { updateSceneryLod } = await import('./src/scenery.js');
       const lod = []; ctx.scene.traverse(o => { if (o.userData.far && o.boundingSphere) lod.push(o); });

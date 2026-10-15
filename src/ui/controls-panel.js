@@ -9,7 +9,7 @@ const { icon, esc } = C;
 const GROUPS = [
   ['DRIVING', 'steering-wheel', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', tractionControl: 'TOGGLE TC / ESC', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN', transmission: 'MANUAL / AUTO', map: 'BIG MAP' }],
   ['CAMERA', 'camera', { camera: 'CHANGE CAMERA', lookBack: 'LOOK BACK', lookLeft: 'LOOK LEFT', lookRight: 'LOOK RIGHT', lookUp: 'LOOK UP', lookDown: 'LOOK DOWN' }],
-  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE', replayPlay: 'REPLAY PLAY / PAUSE' }],
+  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE' }],
   ['MUSIC', 'speaker-high', { music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
   ['MENUS', 'list', { up: 'UP', down: 'DOWN', menuLeft: 'LEFT', menuRight: 'RIGHT', confirm: 'CONFIRM', back: 'BACK' }],
 ];

@@ -17,7 +17,7 @@ Map: <!-- Riviera / Penteli / Megara -->  ·  Graphics preset: <!-- Potato / Low
 
 ## Checklist
 - [ ] Branched from the latest `staging` and targeting `staging`; one feature/fix in this PR
-- [ ] `npm test`, physics regress, events, replay, syntax and browser-import checks pass locally (CI will re-run them)
+- [ ] `npm test`, physics regress, events, ghosts, syntax and browser-import checks pass locally (CI will re-run them)
 - [ ] Screenshots or video attached above
 - [ ] Performance noted if I added models/effects/scenery (draw calls / frame time on Low and High)
 - [ ] Multiplayer: looks the same for every player, or is hidden online

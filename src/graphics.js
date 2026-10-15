@@ -19,7 +19,7 @@ export const LIGHTING = {
 };
 // EFFECTS: the post chain (src/post.js) and the extra views.
 //   msaa: scene samples (capped by the GPU) · fxaa: post-tone-map edge AA · ao: Alchemy AO samples at half res (0 = off) ·
-//   bloomMips: 0 = off · blurTaps: camera motion blur taps (0 = off) · dofTaps: photo / orbit depth of field ·
+//   bloomMips: 0 = off · blurTaps: camera motion blur taps (0 = off) · dofTaps: garage / orbit depth of field ·
 //   sharpen: contrast-adaptive, luma only · heat: distant heat shimmer on clear days · grade: the final pass also does
 //   glare, vignette and sharpening (off = tone map only) · simple: cheap sky / sea / terrain shading ·
 //   mirrorEvery: cockpit mirror cadence divisor (0 = off) · mirrorFar: mirror camera far plane (m) ·

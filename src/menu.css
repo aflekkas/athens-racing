@@ -359,7 +359,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
 
 /* the floating MULTIPLAYER button and GRAPHICS select now live in the menus (title -> Multiplayer, Settings -> Graphics):
    keep them off the race HUD and out of the way of the menus */
-body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle, body.replay-active #mp-toggle,
+body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle,
 #graphics-quality { display: none !important; }
 
 /* short / narrow screens: the route bar sits between the (moved) minimap and the right-hand widgets, district

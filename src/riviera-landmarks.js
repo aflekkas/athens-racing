@@ -51,7 +51,7 @@ export function buildRivieraLandmarks(map, scene) {
   if(meshes.length)scene.add(group);else material.dispose();
   group.userData.landmarks=corridors.map(c=>({id:c.id,sourceWayId:c.sourceWayId,portalS:c.portalS}));
   const ray=new THREE.Raycaster(),origin=new THREE.Vector3(),direction=new THREE.Vector3();
-  // Only these two local meshes participate. The callback never changes cockpit/photo cameras.
+  // Only these two local meshes participate. The callback never changes cockpit cameras.
   function constrainCamera(position,anchor){
     if(!meshes.length)return false;
     origin.copy(anchor);origin.y+=1;direction.copy(position).sub(origin);const distance=direction.length();
