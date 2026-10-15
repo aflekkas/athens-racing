@@ -394,11 +394,12 @@ function apply(cond, st, changed) {
 export function updateRoadWeather(dt) { advanceRoadWetness(dt, ENV.COND_STATE.rain, ENV.COND_STATE.daylight); }
 const carList = [];
 /** per drawn frame: lights follow the cars and the camera, rain follows the camera */
+export function setOnlineWeather(online) { if (W) W.online = online; }
 export function updateWeather(dt) {
   if (!W) return;
   const st = ENV.COND_STATE, cam = W.camera, f = ++W.frame;
   WXU.wxWet.value = WEATHER.wet;
-  W.spray.pts.visible = WEATHER.wet > .01;
+  W.spray.pts.visible = !W.online && WEATHER.wet > .01;
   const cars = W.cars().filter(Boolean), player = cars[0];
   // camera velocity (for the rain streaks' apparent motion)
   if (dt > 0) { W.camVel.subVectors(cam.position, W.prevCam).divideScalar(Math.max(dt, 1e-3)); if (W.camVel.lengthSq() > 4e4) W.camVel.set(0, 0, 0); }
@@ -486,7 +487,7 @@ export function updateWeather(dt) {
     W.spray.mat.uniforms.uScale.value = pxPerM;
     W.spray.mat.uniforms.uCol.value.copy(ru.uCol.value).multiplyScalar(1.5);
     const sprayCar = (root, wid, len, v) => {
-      if (v < 7 || Math.random() > (W.low ? 0.4 : 1)) return;
+      if (W.online || v < 7 || Math.random() > (W.low ? 0.4 : 1)) return;
       const e = root.matrixWorld.elements; _f.set(-e[8], 0, -e[10]).normalize();
       for (const sx of [-1, 1]) {
         _v.set(sx * wid * 0.4, 0.25, len / 2 - 0.4).applyMatrix4(root.matrixWorld);

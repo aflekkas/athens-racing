@@ -122,6 +122,14 @@ test('reversing into a parked car reports rear damage; separating overlaps add n
   assert.equal(noEvents.length, 0); assert.equal(separate.c.crash, null);
   assert.equal(separating.vLong, -10); assert.equal(separate.c.dmg, 0);
 });
+test('online traffic reports the applied impulse and cone kick through the multiplayer contact hooks', () => {
+  const {T,c}=world();c.s=996;c.v=0;c.mode='parked';let carHit,coneHit;
+  T.online={contactCar(...args){carHit=args;},contactCone(...args){coneHit=args;}};
+  c.m.setDamageSnapshot=()=>{};
+  const veh={s:1000,u:1.75,x:1.75,z:-1000,yaw:0,vLong:-10,vLat:0,w:0,halfL:2.2,halfW:.9,m:1500,Iz:2800};
+  T.collide({veh,kind:'player'},[],0);assert.equal(carHit[0],c);assert.ok(carHit[3]>.1);assert.equal(carHit[1].vs,0);assert.ok(carHit[2].vs<0);
+  c.active=false;T.cones=[{s:veh.s,u:veh.u,y:0}];T.collide({veh,kind:'player'},[],1);assert.equal(coneHit[1],0);assert.equal(coneHit[0].hit,true);
+});
 
 test('a hard-hit car settles as a wreck with hazards instead of resuming its drive', () => {
   const { T, c } = world();

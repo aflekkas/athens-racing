@@ -1,6 +1,6 @@
 // Increment only for incompatible multiplayer wire-format/meaning changes.
 // Asset/build changes alone must not disconnect a compatible client.
-export const MULTIPLAYER_PROTOCOL = 3;
+export const MULTIPLAYER_PROTOCOL = 4;
 export const UPDATE_CLOSE_CODE = 4001;
 export const protocolVersion = value => Number.isSafeInteger(value) && value >= 0 ? value : 0;
 export function connectionProtocol(url) {

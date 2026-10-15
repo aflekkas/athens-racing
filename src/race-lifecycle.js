@@ -58,6 +58,7 @@ const engineFields = ['impactMechanical', 'maxImpactEbs', 'engineDamage', 'engHe
 // Lightweight cosmetic telemetry rides the existing state cadence; no wheel-force arrays.
 export function spectatorState(vehicle) {
   const state = Object.fromEntries(engineFields.filter(k => vehicle[k] !== undefined).map(k => [k, vehicle[k]]));
+  for (const [field, key] of [['bodyHeave', 'heave'], ['bodyPitch', 'pitch'], ['bodyRoll', 'roll']]) if (Number.isFinite(vehicle.pose?.[key])) state[field] = vehicle.pose[key];
   const tyres = vehicle.tyreTelemetry;
   if (tyres) {
     const axle = a => Object.fromEntries(['utilization', 'slipDemand', 'saturated', 'sliding', 'contact'].map(k => [k, a[k]]));
@@ -66,6 +67,7 @@ export function spectatorState(vehicle) {
   return state;
 }
 export function applySpectatorState(vehicle, snapshot) {
+  if (vehicle.pose) for (const [field, key] of [['bodyHeave', 'heave'], ['bodyPitch', 'pitch'], ['bodyRoll', 'roll']]) vehicle.pose[key] = snapshot[field] || 0;
   vehicle.remoteTyreTelemetry = snapshot.tyreTelemetry || null;
   vehicle.remoteEngineTelemetry = Number.isFinite(snapshot.engHealth);
   for (const key of engineFields) vehicle[key] = snapshot[key];

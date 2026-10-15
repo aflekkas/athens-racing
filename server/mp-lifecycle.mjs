@@ -339,6 +339,7 @@ export function validateStateExtras(s, ctx = {}) {
     if (v === undefined) continue;
     if (Number.isFinite(v) && v >= min && v <= max) extras[name] = v;
   }
+  for (const [key, limit] of [['bodyHeave', 3], ['bodyPitch', 6.3], ['bodyRoll', 6.3]]) if (Number.isFinite(s?.[key]) && Math.abs(s[key]) <= limit) extras[key] = s[key];
   Object.assign(extras, pickEngine(s || {}));
   const tyres = pickTyreTelemetry(s?.tyreTelemetry);
   if (tyres !== undefined) extras.tyreTelemetry = tyres;

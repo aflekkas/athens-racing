@@ -61,12 +61,11 @@ test('police come only from the race / lobby setup: no settings key, URL or save
   W.police.reset(false); W.police.offs.forEach(off => off());
 });
 
-test('main.js wiring: the MP start hook configures police after the lobby reset, and police update online', () => {
+test('universal-world policy keeps the host config but hides per-driver police online', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const start = main.slice(main.indexOf('  start(lobby, id, resumeState = null) {'), main.indexOf('  remote(peers, dt) {'));
   assert.ok(start.indexOf('startOnlinePolice(lobby)') > start.indexOf('onlineWait()'), 'configured after onlineWait (which resets police)');
-  assert.match(main, /function startOnlinePolice\(lobby\) \{ police\?\.configureOnline\(lobby\); \}/);
-  assert.match(main, /if \(police\) for \(const e of police\.update\(/, 'police update is not skipped online');
-  assert.doesNotMatch(main, /police && !multiplayer\.active/);
+  assert.match(main, /function startOnlinePolice\(lobby\) \{ police\?\.configureOnline\(lobby\); police\?\.reset\(false\); \}/);
+  assert.match(main, /if \(police && !multiplayer\.active\) for \(const e of police\.update\(/, 'private police AI never runs online');
   assert.match(main, /multiplayer\.lobby\.traffic \|\| police\?\.enabled\)/, 'police contacts collide online');
 });

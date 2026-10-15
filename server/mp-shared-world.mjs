@@ -19,10 +19,12 @@ export function createSharedWorldRelay(send) {
       // because a chunk was lost during a reconnect.
       const prior = cached(l);
       if (prior?.owner === c.id && now - (l.worldAcceptedAt || 0) < 120) return false;
-      l.worldAcceptedAt = now;
       const { raceId, generation, owner, seq, at, rows, cones } = full;
+      let packets;
+      try { packets = worldPackets({ raceId, generation, owner, seq, at }, rows, cones).map(p => JSON.stringify(p)); }
+      catch { return false; }
+      l.worldAcceptedAt = now;
       l.sharedWorld = { raceId, generation, owner, seq, at, rows, cones };
-      const packets = worldPackets({ raceId, generation, owner, seq, at }, rows, cones).map(p => JSON.stringify(p));
       // Encode once for fan-out, rather than once per recipient.
       for (const p of l.players.values()) for (const packet of packets) send(p.ws, packet);
       return true;

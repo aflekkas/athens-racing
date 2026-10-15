@@ -227,6 +227,7 @@ export class Traffic {
   }
   pickFree(pred) {
     // a free vehicle of a fitting type; buses are rarer outside the avenue
+    if (this.onlineBudget && this.cars.filter(c => c.active && !c.police).length >= this.onlineBudget) return null;
     let best = null;
     for (const c of this.cars) if (!c.active && !c.police && (!pred || pred(c))) { if (!best || this.rng.chance(0.35)) best = c; }
     return best;
@@ -400,7 +401,8 @@ export class Traffic {
       if (route.closed && this.allowClosedRoam) c.s += Math.round((ps - c.s) / route.length) * route.length;
       const ahead = (c.s - ps) * this.dir;
       if (c.cop && c.cop.keep) { if (!(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; } continue; }
-      if (ahead < -260 || ahead > 1150 || !(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
+      if (!(this.onlineFoci || [ps]).some(focus => (c.s - focus) * this.dir >= -260 && (c.s - focus) * this.dir <= 1150) || !(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
+      if (this.onlineFoci && (ahead < -260 || ahead > 1150)) continue;
       if (c.mode === 'parked') parked++; else if (c.dir > 0) same++; else onc++;
     }
     if (!this.disabled) {
@@ -1194,7 +1196,8 @@ export class Traffic {
     c.dz = c.dz || { front: 0, rear: 0, left: 0, right: 0 };
     if (!(zone in c.dz)) return;
     c.dz[zone] = Math.min(1, c.dz[zone] + inc);
-    c.m.setDamage?.(zone, c.dz[zone], { ...impact, ebs, cheap: true });
+    if (this.online) c.m.setDamageSnapshot?.(c.dz);
+    else c.m.setDamage?.(zone, c.dz[zone], { ...impact, ebs, cheap: true });
   }
 
   /** collide a physics vehicle against all traffic and cones; returns events */
@@ -1231,6 +1234,7 @@ export class Traffic {
       this.vehBody(veh, rv, actor.kind === 'rival' ? 2.5 : 1, A); // the rival shoulders his way through
       this.carBody(c, B);
       const ct = obbContact(A, B); if (!ct) continue;
+      const beforeOnline = this.online ? { ...B } : null;
       const vs0 = A.vs, vu0 = A.vu;
       const r = impulse(A, B, ct, c.crash && c.crash.onSide ? 0.05 : 0.15, 0.45);
       const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
@@ -1247,6 +1251,7 @@ export class Traffic {
       if (c.cop && c.cop.chase && !c.crash && dvB < 3) { c.v = Math.max(0, c.dir * B.vs); c.uv = B.vu; this.damageCar(c, zoneOf(B, ct.ps, ct.pu), dvB, impactB); } // a police driver rides out a PIT / ram contact
       else if (dvB > 0.35 || c.crash) this.hitCar(c, B, dvB, zoneOf(B, ct.ps, ct.pu), now, impactB);
       else if (c.mode !== 'parked') { c.v = Math.max(0, c.dir * B.vs); c.shakenT = 2; } // a nudge: brake, glare
+      this.online?.contactCar(c, beforeOnline, B, dvB, zoneOf(B, ct.ps, ct.pu), impactB);
       if (actor.kind === 'player') c.pHitT = now;
       const sev = r.vn;
       if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB, ...impactA });
@@ -1259,6 +1264,7 @@ export class Traffic {
       const sp = Math.max(4, rv.vs);
       k.vs = sp * (1.05 + Math.random() * 0.4); k.vu = rv.vu + Math.sign(du || 1) * (2 + Math.random() * sp * 0.25); k.vy = 2.5 + Math.random() * sp * 0.18;
       k.w = (Math.random() - 0.5) * 20; k.hit = true;
+      this.online?.contactCone(k, this.cones.indexOf(k));
       rv.vs *= 0.985; setRouteVel(veh, rv.f, rv.vs, rv.vu);
       events.push({ kind: 'cone', who: actor.kind, sev: sp });
     }
@@ -1480,16 +1486,16 @@ export class Traffic {
       const ry = Math.atan2(-f.tx, -f.tz) + (c.dir < 0 ? Math.PI : 0);
       const yaw = ry - (k ? k.yaw : c.cross ? c.xyaw : c.yawLC);
       // brake dive / squat and a little lean on scooters
-      const pitch = k ? k.pitch : clamp((c.acc || 0) * (c.type.scooter ? 0.004 : 0.006), -0.035, 0.02);
+      const pitch = k ? k.pitch : this.online ? 0 : clamp((c.acc || 0) * (c.type.scooter ? 0.004 : 0.006), -0.035, 0.02);
       const lean = c.type.scooter && !k ? clamp(-(c.uv || 0) * 0.12 * c.dir, -0.3, 0.3) : 0;
       c.m.root.rotation.set(Math.atan(f.grade) * c.dir + (k ? 0 : 0), yaw, Math.atan(f.bank) * c.dir + (k ? k.roll : lean), 'YXZ');
       c.m.body.rotation.x = pitch;
       // front wheels steer: wheelbase x path curvature (the road's plus our own lane-change arc)
-      if (!k && !c.type.scooter) {
+      if ((!this.online || this.online.authority) && !k && !c.type.scooter) {
         const curv = c.cross ? 0 : route.curv(c.s) * c.dir + (c.v > 1 ? ((c.yawLC || 0) - (c.yawLCp ?? c.yawLC ?? 0)) / Math.max(1e-3, this.dtLast || 0.016) / c.v : 0);
         c.yawLCp = c.yawLC;
         c.steerA = lerp(c.steerA || 0, clamp(curv * c.len * 0.6, -0.55, 0.55), 0.2);
-      } else if (k) c.steerA = (c.steerA || 0) * 0.98;
+      } else if (k && (!this.online || this.online.authority)) c.steerA = (c.steerA || 0) * 0.98;
       for (const w of c.m.wheels) {
         w.spin.rotation.x = -c.wheel / (w.r || 0.3);
         if (w.front && w.pivot && w.pivot !== w.spin) w.pivot.rotation.y = -(c.steerA || 0);

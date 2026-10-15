@@ -6,6 +6,7 @@ import { socketAttachment } from '../worker/socket-attachment.mjs';
 import { normalizeDriverAppearance } from '../src/driver-appearance-data.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { resolvePlayerContacts, containOnlineVehicle } from '../src/multiplayer-contact.js';
+import { worldPackets } from '../src/shared-world-protocol.js';
 const pose = (s, u = 0) => ({ x: s, y: 0, z: u, s, u, yaw: -Math.PI/2, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
 const socket = () => ({ readyState: 1, messages: [], send(s) { this.messages.push(JSON.parse(s)); }, close() {} });
 function setup(t) {
@@ -45,8 +46,27 @@ test('ordered checkpoint standings are identical on all clients and ignore local
  assert.deepEqual(packets[0].standings,packets[1].standings);assert.deepEqual(packets[1].standings,packets[2].standings);
  assert.equal(packets[0].standings[0].id,core.clientData(b).id,'valid checkpoint beats unpassed off-road cursor');
  assert.equal(packets[0].world.state.weather,'rain');assert.equal(packets[0].world.state.wet,1);
- const publicLobby=core.publicLobby(l);assert.equal(publicLobby.traffic,false);assert.equal(publicLobby.config.traffic,0);
+ const publicLobby=core.publicLobby(l);assert.equal(publicLobby.traffic,true);assert.equal(publicLobby.config.traffic,2);assert.equal(publicLobby.trafficPolicy,'shared-authority');
  for(const ws of [a,b,c]) { const mp=Object.assign(Object.create(Multiplayer.prototype),{id:core.clientData(ws).id,lobby:publicLobby,peers:new Map()});assert.deepEqual(mp.ranking(9999).map(p=>p.id),packets[0].standings.map(p=>p.id)); }
+});
+test('shared traffic is host authoritative, atomically delivered, restored and available to late loaders', t => {
+ const {core,clients:[a,b,c],send,lobby:l,opts,advance}=setup(t);
+ for(const ws of [b,c])send(ws,{type:'join',code:l.code});
+ for(const ws of [a,b,c])send(ws,{type:'ready',ready:true,version:'v'});
+ send(a,{type:'start'});advance(1000);
+ const rows=Array.from({length:66},(_,id)=>[id,10000,300,1200,0,0,0,0,0,0,0,0,1,0,1000,0,0,0,0,0,0,0,0,0]);
+ const packets=worldPackets({raceId:l.raceId,generation:l.generation,seq:0,at:Date.now()},rows,[]);
+ assert.ok(packets.length>1);
+ const frames=ws=>ws.messages.filter(m=>m.type==='world-frame');
+ for(const p of packets)send(b,p);assert.equal(frames(c).length,0);
+ send(a,packets[0]);assert.equal(frames(c).length,0);
+ for(const p of packets.slice(1))send(a,p);
+ assert.deepEqual(frames(a),frames(b));assert.deepEqual(frames(b),frames(c));assert.equal(l.sharedWorld.rows.length,66);
+ const before=frames(c).length;send(c,{type:'loaded',loaded:true,mapId:'riviera',version:'v'});
+ assert.equal(frames(c).length,before+packets.length);assert.ok(!c.messages.some(m=>m.type==='error'));
+ const saved=structuredClone(core.exportState()),restored=createGameCore(opts);restored.restore(saved,new Map([...core.clients].map(c=>[c.token,c.ws])));
+ assert.deepEqual([...restored.lobbies.values()][0].sharedWorld,l.sharedWorld);
+ core.disconnect(a);assert.equal(core.publicLobby(l).worldOwner,core.clientData(b).id);
 });
 test('attachment stays within a conservative 2KiB budget with full telemetry; restores latest checkpoint cursor',t=>{
  const {core,clients:[a,b],send,lobby:l,opts,advance}=setup(t);send(b,{type:'join',code:l.code});send(a,{type:'start',force:true});advance(1000);

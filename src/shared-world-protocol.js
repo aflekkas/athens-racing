@@ -14,12 +14,12 @@ const quantize = (n, scale = 100) => Math.round((Number.isFinite(n) ? n : 0) * s
 export function packCar(traffic, c) {
   const b = traffic.carBody(c, {}), k = c.crash;
   return [c.id, quantize(c.s), quantize(c.u), quantize(b.vs), quantize(b.vu), quantize(b.phi, 1000), quantize(b.w, 1000), quantize(k?.y), quantize(k?.vy), quantize(k?.roll, 1000), quantize(k?.pitch, 1000), quantize(k?.gy), c.dir < 0 ? -1 : 1,
-    (k ? 1 : 0) | (k?.wreck ? 2 : 0) | (c.mode === 'parked' ? 4 : 0) | (c.cross ? 8 : 0) | (c.braking ? 16 : 0), quantize(c.wheel), quantize(c.steerA, 1000), ...ZONES.map(z => quantize(c.dz?.[z], 1000)), (c.indL?.emissiveIntensity > 1 ? 1 : 0) | (c.indR?.emissiveIntensity > 1 ? 2 : 0), quantize(k?.rollV, 1000), quantize(k?.pitchV, 1000), quantize(c.dmg)];
+    (k ? 1 : 0) | (k?.wreck ? 2 : 0) | (c.mode === 'parked' ? 4 : 0) | (c.cross ? 8 : 0) | (c.braking ? 16 : 0), quantize(c.wheel), quantize(c.steerA, 1000), ...ZONES.map(z => quantize(c.dz?.[z], 1000)), (c.indL?.emissiveIntensity > 1 ? 1 : 0) | (c.indR?.emissiveIntensity > 1 ? 2 : 0) | (c.flash?.emissiveIntensity > 1 ? 4 : 0), quantize(k?.rollV, 1000), quantize(k?.pitchV, 1000), quantize(c.dmg)];
 }
 export function packCone(k, id) { return [id, ...['s', 'u', 'y', 'vs', 'vu', 'vy'].map(key => quantize(k[key])), ...['rx', 'rz', 'w'].map(key => quantize(k[key], 1000))]; }
 const integers = row => row.every(n => Number.isSafeInteger(n) && Math.abs(n) <= 2e9);
 export function validCarRow(row) {
-  return Array.isArray(row) && row.length === 24 && integers(row) && row[0] >= 0 && row[0] < WORLD_CARS && Math.abs(row[2]) <= 100000 && Math.abs(row[3]) <= 20000 && Math.abs(row[4]) <= 20000 && Math.abs(row[6]) <= 50000 && Math.abs(row[7]) <= 10000 && Math.abs(row[8]) <= 20000 && Math.abs(row[12]) === 1 && row[13] >= 0 && row[13] <= 31 && row.slice(16, 20).every(n => n >= 0 && n <= 1000) && row[20] >= 0 && row[20] <= 3;
+  return Array.isArray(row) && row.length === 24 && integers(row) && row[0] >= 0 && row[0] < WORLD_CARS && Math.abs(row[2]) <= 100000 && Math.abs(row[3]) <= 20000 && Math.abs(row[4]) <= 20000 && Math.abs(row[6]) <= 50000 && Math.abs(row[7]) <= 10000 && Math.abs(row[8]) <= 20000 && Math.abs(row[12]) === 1 && row[13] >= 0 && row[13] <= 31 && row.slice(16, 20).every(n => n >= 0 && n <= 1000) && row[20] >= 0 && row[20] <= 7;
 }
 export function validConeRow(row) { return Array.isArray(row) && row.length === 10 && integers(row) && row[0] >= 0 && row[0] < WORLD_CONES && Math.abs(row[2]) <= 100000 && row.slice(4, 7).every(n => Math.abs(n) <= 20000); }
 export function worldPackets(base, rows, cones) {
