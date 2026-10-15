@@ -10,6 +10,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-a
 process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY='1';
 const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>{errors.push(e.stack);console.log('PAGEERROR',e.stack);});page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE',m.text());});
 await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',async route=>{const suffix=route.request().url().split('three@0.170.0/')[1];await route.fulfill({body:await fs.readFile(resolve(root,'node_modules/three',suffix)),contentType:'text/javascript'});});
+await page.route('**/tools/physics-test/jazz-slide.mjs',async route=>route.fulfill({body:await fs.readFile(resolve(root,'tools/physics-test/jazz-slide.mjs')),contentType:'text/javascript'}));
 await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__holdFrame&&cb.name==='frame'?0:raf(cb);});
 page.setDefaultTimeout(120000);
 try{
@@ -17,7 +18,7 @@ try{
  console.log('DOM READY');await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:180000});console.log('LOADED');await page.evaluate(()=>{window.__holdFrame=true;});
  const show=async id=>{await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.show('car',{index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});},id);await page.waitForSelector('#carStage canvas');await page.waitForTimeout(500);};
  const capture=async name=>{
-  if(process.env.RENDERER_ONLY){
+  if(process.env.RENDERER_ONLY&&!(process.env.GARAGE_UI&&name.startsWith('garage-'))){
    const result=await page.evaluate(name=>{
     const garage=name.startsWith('garage-');
     if(garage)__flow.menu.carView?.captureFrame?.();else __sim.render();
@@ -73,16 +74,17 @@ try{
       const {jazzSlideInput}=await import('/tools/physics-test/jazz-slide.mjs');
       const sim=__sim,v=sim.player.veh,m=sim.player.model,dt=1/60;
       // Use the actual Megara road, vehicle and suspension; keep world stepping frozen.
-      v.reset(450,0,70/3.6);
-      for(let i=0;i<90;i++){v.update(dt,{throttle:.25,brake:0,steer:0});v.vLong=70/3.6;}
-      for(let i=0;i<24;i++)v.update(dt,{throttle:0,brake:0,steer:.6,handbrake:i<21});
-      for(let i=0;i<75;i++)v.update(dt,jazzSlideInput(v));
+      v.reset(750,0,70/3.6);
+      let corridorExcess=-Infinity;const tick=input=>{v.update(dt,input);corridorExcess=Math.max(corridorExcess,Math.abs(v.u)+v.halfW-sim.route.edge(v.s));};
+      for(let i=0;i<90;i++){tick({throttle:.25,brake:0,steer:0});v.vLong=70/3.6;}
+      for(let i=0;i<24;i++)tick({throttle:0,brake:0,steer:.6,handbrake:i<21});
+      for(let i=0;i<24;i++)tick(jazzSlideInput(v));
       v.place(m.root);m.update(dt,v.vLong,v.steer,false,v.pose,v.corners,v.w);
       const speed=Math.hypot(v.vLong,v.vLat)*3.6,beta=Math.atan2(v.vLat,Math.abs(v.vLong))*180/Math.PI;
       const c=sim.camera;c.position.set(v.x+Math.cos(v.yaw)*5+Math.sin(v.yaw)*5,v.y+2.6,v.z-Math.sin(v.yaw)*5+Math.cos(v.yaw)*5);c.lookAt(v.x,v.y+.65,v.z);c.fov=55;c.updateProjectionMatrix();sim.render();
-      return {id:v.spec.id,speed,beta,steer:v.steer,gear:v.gear,s:v.s,u:v.u};
+      return {id:v.spec.id,speed,beta,steer:v.steer,gear:v.gear,s:v.s,u:v.u,corridorExcess};
     });
-    assert.equal(slide.id,'jazz_drift');assert(slide.speed>20);assert(Math.abs(slide.beta)>17&&Math.abs(slide.beta)<40,JSON.stringify(slide));
+    assert.equal(slide.id,'jazz_drift');assert(slide.speed>20);assert(slide.corridorExcess<=0,'slide stays fully on the tarmac');assert(Math.abs(slide.beta)>17&&Math.abs(slide.beta)<40,JSON.stringify(slide));
     console.log('JAZZ_SLIDE',JSON.stringify(slide));await fs.writeFile(resolve(out,'jazz-slide.json'),JSON.stringify(slide,null,2));await capture('jazz-mid-drift');
    }
    await page.evaluate(()=>__flow.quit());
