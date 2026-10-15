@@ -6,7 +6,7 @@ registerHooks({ resolve(specifier, context, next) {
   if (specifier === 'cloudflare:workers') return { url: 'data:text/javascript,export class DurableObject {}', shortCircuit: true };
   return next(specifier, context);
 } });
-const { GameArena } = await import('./index.mjs');
+const { default: worker, GameArena } = await import('./index.mjs');
 const arena = () => Object.assign(Object.create(GameArena.prototype), { instanceId: 'instance-test', startedAt: 123, core: { clients: new Set(), lobbies: new Map(), track: {} } });
 test('arena health identifies the live incarnation without exposing connection tokens', async () => {
   const a = arena(), response = await a.fetch(new Request('https://race.test/health')), data = await response.json();
@@ -36,4 +36,14 @@ test('telemetry checkpoints the whole arena at most once per two seconds, while 
  now++;await a.webSocketMessage({},'{"type":"states"}');assert.equal(writes,2);
  now++;await a.webSocketMessage({},'{"type":"loaded"}');assert.equal(writes,3);
  now+=1000;await a.webSocketMessage({},'{"type":"ping"}');assert.equal(writes,3);
+});
+
+
+test('the public Worker forwards an upgrade response intact and still enforces same-origin requests', async () => {
+ const response={get status(){assert.fail('the upgrade must bypass HTTP response decoration');}},requests=[];
+ const env={GAME:{idFromName:name=>name,get:id=>({fetch:request=>{requests.push({id,request});return Promise.resolve(response);}})}};
+ const request=new Request('https://race.test/ws?protocol=2',{headers:{Origin:'https://race.test',Upgrade:'websocket'}});
+ assert.equal(await worker.fetch(request,env),response);assert.equal(requests.length,1);assert.equal(requests[0].request,request);
+ const rejected=await worker.fetch(new Request(request,{headers:{Origin:'https://other.test',Upgrade:'websocket'}}),env);
+ assert.equal(rejected.status,403);assert.equal(requests.length,1);
 });
