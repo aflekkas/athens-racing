@@ -1,0 +1,92 @@
+TAP version 13
+# Subtest: OSM widths override class defaults; lanes respected
+ok 1 - OSM widths override class defaults; lanes respected
+  ---
+  duration_ms: 4.721805
+  type: 'test'
+  ...
+# Subtest: widened route keeps grid, two cars, progress and corridor on tarmac
+not ok 2 - widened route keeps grid, two cars, progress and corridor on tarmac
+  ---
+  duration_ms: 52.068902
+  type: 'test'
+  location: '/tmp/penteli-rails.N30ASb/tools/penteli-rails.test.mjs:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 0.0021625071211177627
+    - 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 0.0021625071211177627
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/penteli-rails.N30ASb/tools/penteli-rails.test.mjs:23:54)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: drop rules leave flat and uphill verges open, protect valley, outer hairpin and bridge
+ok 3 - drop rules leave flat and uphill verges open, protect valley, outer hairpin and bridge
+  ---
+  duration_ms: 0.287166
+  type: 'test'
+  ...
+# Subtest: placement preserves junction gaps, grounded posts, turned ends and mapped bridge parapets
+not ok 4 - placement preserves junction gaps, grounded posts, turned ends and mapped bridge parapets
+  ---
+  duration_ms: 0.989499
+  type: 'test'
+  location: '/tmp/penteli-rails.N30ASb/tools/penteli-rails.test.mjs:36:1'
+  failureType: 'testCodeFailure'
+  error: 'map.roadNetwork?.sample is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    file:///tmp/penteli-rails.N30ASb/src/maps/penteli-roadside.js:50:84
+    Array.some (<anonymous>)
+    buildPenteliRails (file:///tmp/penteli-rails.N30ASb/src/maps/penteli-roadside.js:50:19)
+    TestContext.<anonymous> (file:///tmp/penteli-rails.N30ASb/tools/penteli-rails.test.mjs:40:13)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: solid rail limits and glancing collision retain forward motion
+not ok 5 - solid rail limits and glancing collision retain forward motion
+  ---
+  duration_ms: 0.709024
+  type: 'test'
+  location: '/tmp/penteli-rails.N30ASb/tools/penteli-rails.test.mjs:45:1'
+  failureType: 'testCodeFailure'
+  error: 'data.buildings is not iterable'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    new Ground (file:///tmp/penteli-rails.N30ASb/src/ground.js:53:26)
+    TestContext.<anonymous> (file:///tmp/penteli-rails.N30ASb/tools/penteli-rails.test.mjs:47:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 2
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 726.303005

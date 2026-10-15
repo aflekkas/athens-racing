@@ -1,0 +1,116 @@
+{
+  "runtimeCommit": "979080892b6aa3b9b22834ddb71912ec48b5aad4",
+  "archive": "/tmp/penteli-rails-release.7xQFjM",
+  "gates": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "log": "npm-test-release.log"
+    },
+    {
+      "command": "node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs",
+      "exitCode": 0,
+      "passed": 369,
+      "failed": 0,
+      "log": "physics-regress-release.log"
+    },
+    {
+      "command": "node tools/check-browser-imports.mjs",
+      "exitCode": 0,
+      "modules": 191,
+      "log": "browser-imports-release.log"
+    }
+  ],
+  "terrain": [
+    {
+      "samples": 2525118,
+      "maxAbove": -0.007688271580239103,
+      "maxStep": 0.1315225993454927,
+      "maxSlope": 0.5656855598191551,
+      "worstAbove": {
+        "s": 9404,
+        "u": -7.92,
+        "source": {
+          "terrainRefinement": 5
+        }
+      },
+      "worstStep": {
+        "s": 9468,
+        "side": 1,
+        "source": {
+          "terrainRefinement": 5
+        }
+      },
+      "worstSlope": {
+        "s": 7830,
+        "side": 1,
+        "d": 4.25,
+        "source": {
+          "terrainRefinement": 5
+        }
+      }
+    },
+    {
+      "samples": 237940,
+      "maxAbove": -0.07195737523740497,
+      "maxStep": 0.11662019792873135,
+      "maxSlope": 0.17146178588733182,
+      "worstAbove": {
+        "s": 1241.7514752980264,
+        "u": 4.25,
+        "source": {
+          "terrainRefinement": 4
+        }
+      },
+      "worstStep": {
+        "road": 474368258,
+        "k": 3,
+        "side": -1,
+        "source": {
+          "terrainRefinement": 4
+        }
+      },
+      "worstSlope": {
+        "s": 1638.6720354376098,
+        "side": 1,
+        "d": 6,
+        "source": {
+          "terrainRefinement": 4
+        }
+      }
+    },
+    {
+      "samples": 1043060,
+      "maxAbove": -0.036977435504013556,
+      "maxStep": 0.12517140695803164,
+      "maxSlope": 0.5656534348994506,
+      "worstAbove": {
+        "s": 5950,
+        "u": 3.120500087738037,
+        "source": {
+          "terrainRefinement": 8
+        }
+      },
+      "worstStep": {
+        "road": 25513502,
+        "k": 1,
+        "side": -1,
+        "source": {
+          "terrainRefinement": 8
+        }
+      },
+      "worstSlope": {
+        "s": 5010,
+        "side": -1,
+        "d": 6,
+        "source": {
+          "terrainRefinement": 8
+        }
+      }
+    }
+  ],
+  "productionContacts": 20,
+  "productionGridSlots": 32,
+  "browserErrors": [],
+  "imagesReviewed": 8
+}

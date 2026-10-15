@@ -1,0 +1,32 @@
+{
+  "fixture": "Production terrain, road, scenery and Mini models, fixed lighting/cameras. No game HUD or running AI.",
+  "errors": [],
+  "shots": [
+    {
+      "phase": "after",
+      "name": "bridge",
+      "s": 2405,
+      "calls": 219,
+      "triangles": 1536266,
+      "rails": {
+        "runs": 28,
+        "metres": 2532,
+        "chunks": 31
+      },
+      "railTriangles": 17724,
+      "railChunks": 31,
+      "width": 7.199999809265137,
+      "carWidth": 1.727,
+      "camera": [
+        637.328215071299,
+        456.9529039443005,
+        -333.4098868602271
+      ],
+      "target": [
+        664.7999877929688,
+        449.7549877166748,
+        -327.9599914550781
+      ]
+    }
+  ]
+}
