@@ -308,7 +308,7 @@ export class Menu {
   // ---------------------------------------------------------------- events
   eventsHere() {
     const ctx = this.h.ctx();
-    return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : getEvents(ctx.mapId).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
+    return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : (ctx.events || getEvents(ctx.mapId)).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
   }
   /** Session facts; Quick Race has no event medals or event records. */
   eventSummary(e, r) {
@@ -319,7 +319,7 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- race setup (event detail)
-  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), quick: true, name: 'QUICK RACE' }; }
+  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
   setupKey() { const d = this.setupDef(); return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {

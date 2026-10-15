@@ -3,9 +3,11 @@ import { objectiveNotice } from './ui/objective-notice.js';
 import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
 // TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
-// World built from OpenStreetMap data (see tools/). Boots straight into a countdown, no click needed.
+// World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
+import { getMap } from './map-catalog.js';
+import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
 import * as ENV from './env.js';
 import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
@@ -148,7 +150,7 @@ function driverVoice(c, category = 'driver') {
     const p = traffic.route.point(c.s, c.u, new THREE.Vector3()); p.y += 1.25; return p;
   }, { enclosed: category !== 'police' && !(c.windowOpen || c.spec?.convertible || c.type?.scooter || c.type?.moto) });
 }
-audio.onTrack = (t) => hud.message(`${icon('music-notes')} <i>${t.title}</i> · ${t.artist}`, 3);
+audio.onTrack = (t) => hud?.message(`${icon('music-notes')} <i>${t.title}</i> · ${t.artist}`, 3);
 
 // ------------------------------------------------------------------ game state
 const G = {
@@ -226,34 +228,49 @@ const input = controls.state;
 // ------------------------------------------------------------------ boot
 const T0 = performance.now(); const tlog = (n) => { if (Q.has('debug')) console.log(n, Math.round(performance.now() - T0), 'abs', Math.round(performance.now())); };
 async function boot() {
-  tlog('boot');
-  loading.show(Q.get('map') || 'riviera');
-  lstat('LOADING MAP DATA', 0.05);
+  G.carIdx = savedCar(); G.selIdx = G.carIdx;
+  initFlow();
+  // loaded means the app can respond to a lobby; mapId/version still gate the loaded/ready protocol.
+  multiplayer.loaded = true;
+  showTitle();
+  last = performance.now(); requestAnimationFrame(frame);
+  if (multiplayer.active) await multiplayer.syncLobby();
+  else if (SKIP_MENU && !multiplayer.token && !multiplayer.pendingCode) {
+    await switchMap(initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
+    prepareEvent(Q.get('event') || 'quick'); resetRace(); startCountdown();
+  }
+  document.body.classList.add('loaded');
+  performance.mark('menu-ready'); tlog('ready');
+}
+
+async function loadFirstMap(id) {
   const texReady = loadTextures(); // decodes in parallel with the world building below
-  map = await loadMap(undefined, './', Q.get('map') || 'riviera');
+  map = await loadMap(undefined, './', id);
   route = map.route;
   startS = route.start;
+  hud?.paintPanel?.remove(); $('rticks').replaceChildren();
   hud = new Hud(map);
   hud.onPaint = (id, color) => { if (player?.spec.id === id) setPaint(player.model, color); }; // garage paint picker (hud.showPaint)
   hud.drawOverview($('overview'));
   tlog('map');
   lstat('BUILDING TERRAIN', 0.25); await frameYield();
-  sky = ENV.createSky(); scene.add(sky);
-  const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube;
-  scene.environment = baked.env;
-  ({ sun } = ENV.createLights(scene)); if (GFX.L.shadow) ENV.setShadowRange(...GFX.L.shadow);
-  world = await buildMapWorld(map, { scene, sky, skyCube: baked.cube, lowGraphics, quality: sceneryQuality, progress: lstat });
+  if (!sky) {
+    sky = ENV.createSky(); scene.add(sky);
+    const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube; scene.environment = baked.env;
+    ({ sun } = ENV.createLights(scene)); if (GFX.L.shadow) ENV.setShadowRange(...GFX.L.shadow);
+  }
+  world = await buildMapWorld(map, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
   bindMapWorld(world);
-  policeHud = new PoliceHud();
-  post = createPost(renderer, scene, camera, { effects: GFX.effects }); window.__post = post;
-  probe = createProbe();
+  policeHud ||= new PoliceHud();
+  post ||= createPost(renderer, scene, camera, { effects: GFX.effects }); window.__post = post;
+  probe ||= createProbe();
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
   // ?car= takes a 1-based number or a car id (?car=2, ?car=z4); anything else falls back to the saved car
   const qCar = Q.get('car'), qIdx = qCar == null ? -1 : /^\d+$/.test(qCar) ? clamp(+qCar - 1, 0, CARS.length - 1) : CARS.findIndex((c) => c.id === qCar);
   setCar(qIdx >= 0 ? qIdx : savedCar(), false);
-  prepareEvent(SKIP_MENU && Q.get('event') || 'quick');
+  prepareEvent('quick');
   resetRace();
   updateCamera(0, true);
   lstat('WARMING TYRES', 0.95);
@@ -264,26 +281,13 @@ async function boot() {
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
   tlog('compiled');
   onResize();
-  document.body.classList.add('loaded');
-  lstat('READY', 1); loading.hide();
-  announceGearbox(player.spec); // Initial load: show the cue after shader warm-up finishes.
-  multiplayer.loaded = true;
-  multiplayer.mapId = map.id || 'riviera';
+  multiplayer.mapId = map.id;
   multiplayer.trackVersion = trackVersion(map.data.route);
-  initFlow();
-  initReplay({ G, scene, camera, renderer, canvas, post, traffic, route, hud, input, controls, render,
+  if (!window.__replay) initReplay({ G, scene, camera, renderer, canvas, post, traffic, route, hud, input, controls, render,
     player: () => player, grid: () => multiplayer.active ? [] : grid, online: () => multiplayer.active,
     trackVersion: () => multiplayer.trackVersion });
-  if (multiplayer.active) {
-    setCar(Math.max(0, CARS.findIndex(c => c.id === multiplayer.me.car)));
-    // Hydrate only after the lobby's track is loaded, including a reload into an ongoing race.
-    onlineWait();
-    await multiplayer.syncLobby();
-  } else if (SKIP_MENU) startCountdown(); // test / dev URLs go straight to the grid as before
-  else showTitle();
-  tlog('ready');
-  last = performance.now();
-  requestAnimationFrame(frame);
+  G.state = 'menu'; G.cam = 'orbit'; applyCamMode(); updateCamera(0, true);
+  return map;
 }
 
 // Map scene ownership is separate from persistent rendering, input and menu state.
@@ -304,16 +308,21 @@ function bindMapWeather() {
   initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: GFX.E.particles, cars: () => [player, rival], cam: () => G.cam });
 }
 /** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
-async function switchMap(id = 'riviera') {
-  if (mapSwitch) { await mapSwitch; return switchMap(id); }
-  if (map?.id === id) return map;
-  loading.show(id);
+async function switchMap(id = 'riviera', context = 'QUICK RACE') {
+  if (mapSwitch) { await mapSwitch; return switchMap(id, context); }
+  if (world && map?.id === id) return map;
+  getMap(id); selectedMapId = id;
+  loading.show(id, context);
   mapSwitch = (async () => {
     const priorState = G.state, priorPaused = G.paused;
     if (window.__replay?.active) { window.__replay.close(); if (window.__replay.active) window.__replay.close(); }
     sessionTransitions.cancel(); controls.clear(); G.cameraStarting = false; G.towing = false; G.paused = null;
     document.body.classList.remove('fading');
     voices.reset(); audio.menuRequested = true; audio.syncMenu(); audio.cancelIgnition?.(); G.state = 'loading';
+    if (!world) {
+      try { return await loadFirstMap(id); }
+      catch (error) { map?.dispose?.(); map = route = null; G.state = 'menu'; throw error; }
+    }
     let nextMap, nextWorld;
     try {
       nextMap = await loadMap(undefined, './', id);
@@ -354,7 +363,7 @@ async function switchMap(id = 'riviera') {
     last = performance.now();
     return map;
   })();
-  try { return await mapSwitch; } finally { mapSwitch = null; loading.hide(); }
+  try { const loaded = await mapSwitch; selectedMapId = loaded.id; return loaded; } finally { mapSwitch = null; loading.hide(); }
 }
 window.__switchMap = switchMap;
 window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: scene.children.filter(o => o.name.startsWith('map-world:')).map(o => o.name), lastDisposal: lastMapDisposal, memory: { ...renderer.info.memory }, weatherWidgets: document.querySelectorAll('#police-hud, #replay-controls').length });
@@ -619,6 +628,7 @@ function recoverFromCapture() {
 
 const inFreeRoam = () => !multiplayer.active && G.ev?.def.type === 'free';
 function startCountdown() {
+  document.body.classList.remove('menu-backdrop');
   G.cameraStarting = false; G.paused = null;
   syncSteeringAssist();
   G.state = 'countdown'; G.countT = 0; G.countShown = -1; G.countWall = 0;
@@ -707,7 +717,10 @@ function readInput(dt) {
 let grid = []; // the offline AI field: [{ spec, veh, model, driver, ai, drv, name, dir, pen, reds, finish, tR, actor }]; grid[0] === rival
 let markers = null, menu = null;
 const MENU_STATES = ['menu', 'paused', 'results', 'garage'];
-const evCtx = () => ({ map, mapId: map.id || 'riviera', route, marks: map.data.marks, events: map.events });
+let selectedMapId = initialMapId(Q);
+const evCtx = () => ({ map, mapId: map.id, route, marks: map.data.marks, events: map.events });
+const menuCtx = () => map?.id === selectedMapId ? evCtx() : menuMapContext(selectedMapId);
+function selectMenuMap(id) { getMap(id); selectedMapId = id; }
 const activeInputDevice = () => G.inputDevice || (controls.pad ? 'gamepad' : 'keyboard');
 function syncSteeringAssist() {
   if (!player) return false;
@@ -726,20 +739,20 @@ function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].i
 const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some((k) => Q.has(k));
 function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 && inGarage(CARS[i]) ? i : 0; } catch { return 0; } } // a car since dropped from the garage falls back to the default
 function initFlow() {
-  let plate = player.model.plate;
+  let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
   menu = new Menu($('ui'), {
-    quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, switchMap,
+    quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, selectMap: selectMenuMap, switchMap,
     chooseCar: (index, def, garage) => {
       try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}
       if (menu.data.inFreeRoam) { const onPick = menu.data.onPick; menu.back(); onPick?.(CARS[index].id); return; }
-      if (garage) { setCar(index); menu.back(); return; }
+      if (garage) { if (player && world) setCar(index); else G.carIdx = G.selIdx = index; menu.back(); return; }
       if (!def) return;
-      G.pendingEvent = def; restart(index);
+      startEvent(def, { car: index });
     },
     openCarPicker, freeRoamCar: () => openCarPicker({ inFreeRoam: true, onPick: switchRoamCar }), roamConditions: openRoamConditions, roamLandmarks: openRoamLandmarks, roamTow: () => { resume(); tow(player.veh); },
     resume, restart: () => openEvent(G.ev.def), quit: quitToMenu, next: (id) => openEvent(id),
-    ctx: evCtx, inputDevice: activeInputDevice, carName: () => player.spec.name, carSpec: () => player.spec, manual: () => player.veh.manual, fmtTime, ui: (fwd) => audio.ui?.(fwd),
+    ctx: menuCtx, inputDevice: activeInputDevice, carName: () => CARS[G.carIdx].name, carSpec: () => CARS[G.carIdx], manual: () => player?.veh.manual ?? settings.transmission === 'manual', fmtTime, ui: (fwd) => audio.ui?.(fwd),
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
@@ -761,10 +774,11 @@ function initFlow() {
 
 function mapEvent(id) {
   if (id && typeof id === 'object') return ['sprint', 'free'].includes(id.type) ? id : null;
-  if (id === 'free') return EV.freeRoam(map.id);
-  const list = map.events || [];
-  if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
-  const def = list.find(e => e.id === id) || EV.getEvent(id);
+  const mapId = selectedMapId;
+  if (id === 'free') return EV.freeRoam(mapId);
+  const list = map?.id === mapId ? map.events || [] : [];
+  if (id === 'quick') return mapId === 'riviera' ? quickMapEvent(mapId) : list.find(e => e.type === 'sprint') || quickMapEvent(mapId);
+  const def = list.find(e => e.id === id) || EV.getEvent(id) || (getMap(mapId).eventIds?.includes(id) && quickMapEvent(mapId));
   return ['sprint', 'free'].includes(def?.type) ? def : null;
 }
 
@@ -854,13 +868,24 @@ function onFlowSettings(s, key) {
 }
 
 // Direct simulation API: retained for automation and integrations; the menu calls openEvent.
-function startEvent(id, opts = {}) {
+let soloStart = 0;
+async function startEvent(id, opts = {}) {
   if (multiplayer.active) { multiplayer.open(); return; }
+  const token = ++soloStart;
   const def = mapEvent(id); if (!def) return;
   const car = def.car || opts.car;
   const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === car));
+  const mapId = def.mapId || selectedMapId;
   if (window.__replay?.active) window.__replay.close();
-  G.pendingEvent = def; restart(idx);
+  menu?.hide();
+  try {
+    await switchMap(mapId, def.type === 'free' ? 'FREE ROAM' : def.quick || def.id === 'quick' ? 'QUICK RACE' : def.name);
+    if (token !== soloStart || multiplayer.active) return;
+    G.pendingEvent = def; restart(idx);
+  } catch (error) {
+    console.error('[map] start failed', error); showTitle();
+    ui.toast('COULD NOT LOAD THIS TRACK · PLEASE TRY AGAIN', { icon: 'warning', tone: 'bad' });
+  }
 }
 function openEvent(id, index = G.carIdx) {
   if (multiplayer.active) { multiplayer.open(); return; }
@@ -928,6 +953,8 @@ function openSettings() {
 
 function quitToMenu(screen = 'title') {
   if (multiplayer.active) return;
+  soloStart++;
+  if (!world) { sessionTransitions.cancel(); showTitle(); return; }
   sessionTransitions.cancel();
   if (window.__replay?.active) { window.__replay.close(); if (window.__replay.active) window.__replay.close(); }
   window.__replay?.hideGhost();
@@ -945,8 +972,8 @@ function quitToMenu(screen = 'title') {
   document.body.classList.remove('racing', 'counting', 'started', 'circuit-race');
   audio.menuRequested = true; audio.syncMenu(); audio.cancelIgnition?.();
   G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4; updateCamera(0, true); post.resetHistory?.();
-  // The live map owns the title background until switchMap installs its replacement,
-  // unbinds weather/police, and disposes the old world. Never render a disposed root.
+  // The static menu backdrop keeps idle menus free of world rendering work.
+  document.body.classList.add('menu-backdrop');
   document.body.classList.add('fading');
   sessionTransitions.after(260, () => {
     menu.show(screen === 'events' ? 'events' : 'title');
@@ -954,6 +981,7 @@ function quitToMenu(screen = 'title') {
   });
 }
 function showTitle() {
+  document.body.classList.add('menu-backdrop');
   G.state = 'menu'; G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4;
   document.body.classList.remove('racing', 'counting');
   menu.show('title');
@@ -999,9 +1027,9 @@ function flowAction(name) {
 const inMenu = () => !!menu?.open || !multiplayer.panel.hidden || MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
 window.__flow = {
   enforcement, finePhone,
-  switchMap, get mapId() { return map?.id || 'riviera'; }, get map() { return map; },
+  switchMap, get mapId() { return map?.id || null; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
-  pause: pauseGame, openOnlinePause: pauseGame, openSettings, resetCar, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(map.id), drivingModeDef: mode => drivingModeDefinition(mode, map.id), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
+  pause: pauseGame, openOnlinePause: pauseGame, openSettings, resetCar, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(selectedMapId), drivingModeDef: mode => drivingModeDefinition(mode, selectedMapId), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !multiplayer.active && (G.state === 'race' || G.state === 'countdown')) pauseGame(); });
 
@@ -1692,6 +1720,7 @@ function frame(now) {
 function step(dt, draw = true) {
   // A queued first frame can predate boot's clock reset. Integrators require a positive timestep.
   if (!(dt > 0) || mapSwitch) return;
+  if (!world || !player || G.state === 'menu') { readInput(dt); return; }
   G.t += dt; frameN++;
   const bootFrameLog = text => { if (frameN === 1) tlog(text); };
   bootFrameLog('first-frame');
@@ -2008,6 +2037,7 @@ function updateProbe() {
 }
 
 function render() {
+  if (!world || mapSwitch || G.state === 'menu') return;
   if (G.ctxLost || renderer.getContext().isContextLost()) return;
   guardLighting();
   renderer.info.autoReset = false; renderer.info.reset();
@@ -2069,7 +2099,8 @@ function updateRacerMarkers() {
 const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance } });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
-  if (!player || !multiplayer.loaded) return;
+  if (!world || !player || !multiplayer.loaded) return;
+  document.body.classList.remove('menu-backdrop');
   clearDriveInput(); hud.hideMenu(); hud.count(''); G.state = 'lobby'; G.cam = G.userCam; applyCamMode();
   G.trafficMul = 0; traffic.disabled = true; resetRace(); rival.model.root.visible = false;
   document.body.classList.remove('racing', 'counting');
@@ -2077,7 +2108,7 @@ function onlineWait() {
 /** MP police: only the host's lobby setting turns them on; after onlineWait's resetRace. */
 function startOnlinePolice(lobby) { police?.configureOnline(lobby); police?.reset(false); }
 function onlineMembers(members) {
-  if (!multiplayer.loaded) return;
+  if (!world || mapSwitch || !multiplayer.loaded) return;
   const ids = new Set(members.map(p => p.id));
   for (const [id, c] of remoteCars) if (!ids.has(id)) { if (c !== rival) disposeCar(c); else c.model.root.visible = false; remoteCars.delete(id); multiplayer.peers.delete(id); }
   for (const p of members) {
@@ -2102,29 +2133,29 @@ const multiplayer = new Multiplayer(CARS, {
   appearance: () => player ? { paint: player.model.paintColor, driver: { ...player.driver.appearance } } : {},
   inputOverlayOpen: () => menu?.screen === 'car' && !!menu.data?.onPick,
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
-  async mapChanged(id) { await window.__flow.switchMap(id); if (multiplayer.active) onlineWait(); else window.__flow.quit(); },
+  async mapChanged(id) { await window.__flow.switchMap(id, multiplayer.lobby?.status === 'waiting' ? 'MULTIPLAYER LOBBY' : 'MULTIPLAYER RACE · RESUMING'); if (multiplayer.active) { setCar(Math.max(0, CARS.findIndex(c => c.id === multiplayer.me?.car))); onlineWait(); } else window.__flow.quit(); },
   panelClosed() { G.countWall = performance.now(); if (G.state === 'race') controls.requestMouseLock(); },
-  join(car) { graphicsControl.disabled = false; graphicsControl.title = ''; if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
+  join(car) { graphicsControl.disabled = false; graphicsControl.title = ''; if (world && !mapSwitch && multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
   carChanged(car) {
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
-    if (multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); }
+    if (world && !mapSwitch && multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); }
   },
   wait: onlineWait,
   leave() {
     graphicsControl.disabled = false; graphicsControl.title = '';
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
-    if (!multiplayer.loaded) return;
+    if (!world || mapSwitch || !multiplayer.loaded) { showTitle(); return; }
     traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); quitToMenu();
   },
   members: onlineMembers,
   world(snapshot, age) { receiveWorldLife(snapshot, age); },
-  sharedWorld(packet) { sharedWorld.receive(packet); },
+  sharedWorld(packet) { if (world && !mapSwitch && multiplayer.worldReady) sharedWorld.receive(packet); },
   fine(entry) {
     if (entry.raceId !== multiplayer.lobby?.raceId || entry.generation !== multiplayer.lobby?.generation) return;
     const fine = enforcement.record({ ...entry, now: G.t }); if (fine) finePhone.show(fine);
   },
   start(lobby, id, resumeState = null) {
-    if (!multiplayer.loaded) return;
+    if (!world || mapSwitch || !multiplayer.loaded) return;
     if (!resumeState) { applyDriving(); }
     beginCameraBlend();
     window.__flow?.prepareEvent({ ...lobby.event, id: lobby.eventId, from: lobby.event.s0, to: lobby.event.s1, traffic: lobby.config.traffic || 0, police: lobby.config.police === true, rules: { ...lobby.event.rules, police: lobby.config.police === true }, conditions: { time: lobby.config.time, weather: lobby.config.weather } });
@@ -2163,7 +2194,7 @@ const multiplayer = new Multiplayer(CARS, {
     hud.count('');
   },
   clock(elapsed, remaining) {
-    if (!multiplayer.loaded) return;
+    if (!world || mapSwitch || !multiplayer.loaded) return;
     if (G.state === 'onlineCountdown') {
       const n = Math.ceil(remaining);
       if (n !== G.countShown) { G.countShown = n; hud.count(n > 0 ? String(n) : 'GO!', n === 0); audio.beep(n === 0); }
@@ -2177,6 +2208,7 @@ const multiplayer = new Multiplayer(CARS, {
     G.raceT = G.pFinish ?? elapsed;
   },
   results() {
+    if (!world || mapSwitch) return;
     G.pFinish = multiplayer.me?.finish ?? null;
     G.raceT = G.pFinish ?? G.raceT;
     if (G.state !== 'onlineResults') { const won = G.pFinish !== null && multiplayer.ranking()[0]?.id === multiplayer.id; if (won) audio.win(); else audio.lose(); }

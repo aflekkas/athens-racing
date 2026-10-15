@@ -1,4 +1,4 @@
-// LOADING SCREEN: full-screen, shown at first boot and on every map switch. The map's name and facts, its route outline
+// LOADING SCREEN: full-screen, shown when a committed session needs a map. The map's name and facts, its route outline
 // (the map-select art, assets/maps/<id>.svg, inlined so the route draws itself as loading advances), a progress bar
 // driven by the real load phases (main.js lstat(text, fraction): boot, buildMapWorld progress, textures, shader
 // compile) and a rotating tip. The markup lives in index.html (#loading) so it paints before any module loads.
@@ -27,10 +27,12 @@ const svgCache = new Map();
 class LoadingScreen {
   constructor() { this.tipIdx = Math.floor(Math.random() * TIPS.length); this.p = 0; this.mapId = null; }
   get el() { return $('loading'); }
-  show(mapId = 'riviera') {
+  show(mapId = 'riviera', context = 'QUICK RACE') {
     const el = this.el; if (!el) return;
     clearTimeout(this.hideTimer);
-    this.setMap(mapId); this.progress('LOADING MAP DATA', 0);
+    this.setMap(mapId);
+    const purpose = $('ldContext'); if (purpose) purpose.textContent = 'LOADING TRACK FOR ' + context;
+    this.progress('LOADING MAP DATA', 0);
     el.inert = false; el.style.pointerEvents = ''; el.removeAttribute('aria-hidden');
     el.classList.add('open'); el.setAttribute('aria-busy', 'true');
     this.nextTip(); clearInterval(this.tipTimer); this.tipTimer = setInterval(() => this.nextTip(), 5200);

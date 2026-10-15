@@ -127,7 +127,7 @@ export async function selectMap(menu, id, confirmed = false) {
   if(!confirmed){menu.show('mapConfirm',{...menu.data,mapId:id},true);return;}
   menu.mapLoading = true;
   try {
-    await (menu.h.switchMap || window.__flow.switchMap)(id);
+    menu.h.selectMap(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
     if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
     else menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
@@ -137,5 +137,5 @@ export async function selectMap(menu, id, confirmed = false) {
 
 export function renderMapConfirm(id) {
   const map=MAPS.find(m=>m.id===id&&isMapEnabled(m.id));if(!map)return '';
-  return C.screen({cls:'scr--map-confirm',kick:'SELECTED TRACK · CONFIRM BEFORE LOADING',title:map.name,hints:[['confirm','LOAD TRACK'],['back','CHOOSE ANOTHER']],body:`<div class="map-confirm"><img src="${map.preview}" alt="${esc(map.name)} route"/><section class="panel"><h2>${esc(map.subtitle)}</h2><p>${fmtDist(map.length)} · ${KIND(map)[0]}</p>${C.button({label:'LOAD '+map.name,icon:'flag-checkered',variant:'primary',size:'lg',act:'mapLoad',attrs:{'data-default':''},block:true})}${C.button({label:'CHOOSE ANOTHER TRACK',act:'back',variant:'ghost',block:true})}</section></div>`});
+  return C.screen({cls:'scr--map-confirm',kick:'SELECTED TRACK',title:map.name,hints:[['confirm','CONTINUE'],['back','CHOOSE ANOTHER']],body:`<div class="map-confirm"><img src="${map.preview}" alt="${esc(map.name)} route"/><section class="panel"><h2>${esc(map.subtitle)}</h2><p>${fmtDist(map.length)} · ${KIND(map)[0]}</p>${C.button({label:'CONTINUE TO SETUP',icon:'flag-checkered',variant:'primary',size:'lg',act:'mapLoad',attrs:{'data-default':''},block:true})}${C.button({label:'CHOOSE ANOTHER TRACK',act:'back',variant:'ghost',block:true})}</section></div>`});
 }
