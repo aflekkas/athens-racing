@@ -3,7 +3,7 @@ import { drawCameraIcons } from './enforcement-hud.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
-import { GearboxHud } from './gearbox-hud.js';
+import { gearFeedback } from './transmission.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 
 const $ = (id) => document.getElementById(id);
@@ -74,7 +74,6 @@ export class Hud {
     this.el.mapLabel.textContent = map.definition?.name || route.from;
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
-    this.gearbox = new GearboxHud(this.tacho.parentElement);
     this.raceLen = route.finish - route.start;
     // ---- land/sea raster from the terrain grid (10 m per pixel)
     const { GX, GZ, H, C } = terrain;
@@ -187,7 +186,6 @@ export class Hud {
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
     this.setLimit(st.limit);
     this.drawTacho(st);
-    this.gearbox.update(st);
     if ((this.frame & 1) === 0 || this.bigMap) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2);
   }
   /** M: the minimap grows into a wide-area map (about 0.8 km around you) so the other drivers are in view */
@@ -316,12 +314,16 @@ export class Hud {
     if (st.damageLabel) { g.fillStyle = '#ffb34a'; g.font = '800 13px sans-serif'; g.fillText(st.damageLabel, cx, cy + 57); }
     // gear box
     const gx = cx, gy = cy - 86;
-    g.fillStyle = st.shiftFlash > 0 ? '#ffc21a' : '#ff3b2f';
+    // the cluster is the only gear display: a manual-car upshift cue blinks the badge amber like a shift light
+    const cue = gearFeedback(st).upshift && Math.sin(performance.now() * 0.03) > 0, hot = st.shiftFlash > 0 || cue;
+    g.fillStyle = hot ? '#ffc21a' : '#ff3b2f';
     g.beginPath(); g.moveTo(gx - 26, gy - 24); g.lineTo(gx + 34, gy - 24); g.lineTo(gx + 26, gy + 24); g.lineTo(gx - 34, gy + 24); g.closePath(); g.fill();
-    g.fillStyle = st.shiftFlash > 0 ? '#07090c' : '#fff'; g.font = 'italic 900 44px "Barlow Condensed", sans-serif'; g.fillText(st.gearLabel, gx, gy + 3);
+    g.fillStyle = hot ? '#07090c' : '#fff'; g.font = 'italic 900 44px "Barlow Condensed", sans-serif'; g.fillText(st.gearLabel, gx, gy + 3);
     // driver-aid lamps
     g.font = '800 15px "Barlow Condensed", sans-serif';
-    for (const [txt, on, x, y] of [['ESC', st.esc, gx - 58, gy - 10], ['TC', st.tc, gx - 62, gy + 13], ['ABS', st.abs, gx + 62, gy + 2]]) { const off = st.aidsOff && txt !== 'ABS'; g.font = `${off ? '800 12px' : '800 15px'} "Barlow Condensed", sans-serif`; g.fillStyle = off || on ? '#ffb000' : 'rgba(255,255,255,.13)'; g.fillText(off ? txt + ' OFF' : txt, x, y); }
+    for (const [txt, on, x, y] of [['ESC', st.esc, gx - 58, gy - 10], ['TC', st.tc, gx - 62, gy + 13], ['ABS', st.abs, gx + 62, gy + 13]]) { const off = st.aidsOff && txt !== 'ABS'; g.font = `${off ? '800 12px' : '800 15px'} "Barlow Condensed", sans-serif`; g.fillStyle = off || on ? '#ffb000' : 'rgba(255,255,255,.13)'; g.fillText(off ? txt + ' OFF' : txt, x, y); }
+    // transmission mode (L toggles): MAN lights amber, AUTO stays dim beside the gear badge
+    g.font = '800 18px "Barlow Condensed", sans-serif'; g.fillStyle = st.manual ? '#ffb000' : 'rgba(255,255,255,.72)'; g.fillText(st.manual ? 'MAN' : 'AUTO', gx + 62, gy - 10);
   }
 
   /** speed-limit sign hook: limit = {v, src} or null. Minimal styling on purpose:

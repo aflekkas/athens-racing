@@ -504,9 +504,6 @@ body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons
 #drivingTip { position: fixed; z-index: 24; bottom: 4.5rem; left: 50%; transform: translateX(-50%); width: min(34rem,calc(100vw - 2rem)); padding: .8rem 1rem; display: flex; align-items: center; gap: .7rem; border: 1px solid var(--c-line-2); border-left: 3px solid var(--c-cyan); border-radius: var(--r-2); background: #0b1119ed; color: white; font: 600 .85rem/1.4 var(--f-sans); }
 #drivingTip .btn { flex: none; }
 body.ui-open #drivingHints, body.ui-open #drivingTip { display: none; }
-body #gearboxHud { font: 800 .75rem var(--f-cond); border-color: var(--c-line-2); border-radius: var(--r-2); background: #0b1119ed; }
-body #gearboxHud .gearbox-gear { font: italic 900 3rem/.95 var(--f-cond); }
-body #gearboxHud .gearbox-mode { color: #b9c8d6; letter-spacing: .1em; }
 @media (max-width: 650px), (max-height: 500px) { #drivingHints { bottom: 8.7rem; max-width: calc(100vw - 1.5rem); padding: .5rem; } #drivingHints .driving-controls { gap: .3rem .6rem; } #drivingHints .driving-controls > span:last-child { display: none; } #drivingTip { bottom: 9rem; font-size: .8rem; } .driving-dismiss { padding-inline: .4rem; } }
 
 /* The binding-aware strip replaces the legacy hardcoded driving footer. */
@@ -522,10 +519,8 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 #engineHud > i { position: absolute; bottom: 0; left: 0; height: 3px; width: calc(var(--health)*100%); background: currentColor; }
 .car-actions { display: grid; gap: .5rem; }
 
-/* The limit sign and gearbox occupy separate slots beside the dial. */
-body #gearboxHud { box-sizing: border-box; left: calc(-5.25rem - 10px); bottom: 16px; width: 5.25rem; height: 7.8rem; display: flex; flex-direction: column; justify-content: center; }
-body #gearboxHud .gearbox-revs { width: 100%; flex-shrink: 0; }
-body #limitSign { left: calc(-2.625rem - 34px); bottom: calc(16px + 7.8rem + 12px); width: 48px; height: 48px; border-width: 6px; }
+/* The limit sign sits beside the dial (the gear and mode live on the cluster itself). */
+body #limitSign { left: calc(-2.625rem - 34px); bottom: calc(16px + 3.9rem - 24px); width: 48px; height: 48px; border-width: 6px; }
 
 @media(max-width:500px) { body.touch-driving #hud #dialBox { bottom: calc(208px + env(safe-area-inset-bottom)); } }
 
