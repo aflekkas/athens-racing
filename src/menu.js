@@ -1,7 +1,5 @@
 import { openPhoneWheel, renderPhoneWheel, unpairPhoneWheel } from './ui/phone-wheel-game.js';
-import { mountTitleHero } from './ui/title-hero.js';
 import {setExhaustPops} from './exhaust-pops.js';
-import { savedPaint } from './vehicle-paint.js';
 import { install as installAccounts } from './ui/account-screen.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
@@ -94,7 +92,6 @@ export class Menu {
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
   render({ morph = false } = {}) {
     const entering = this.screen !== this.shown;
-    this.titleHero?.dispose(); this.titleHero = null;
     if (morph && !entering && this.root.firstElementChild && this.screen !== 'maps' && !(this.screen === 'car' && this.data.detail)) return this.patch();
     const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
     const stage = keepCar ? this.root.querySelector('#carStage') : null;
@@ -112,7 +109,6 @@ export class Menu {
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
     if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
-    if (this.screen === 'title') { const car=this.h.carSpec?.() || CARS[0]; this.titleHero=mountTitleHero(this.root,car,savedPaint(car)); }
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -125,12 +121,10 @@ export class Menu {
   /** the morph path of render(): only nodes whose markup changed are touched, so focus, scroll and the garage
    *  thumbnails survive and nothing flashes */
   patch() {
-    this.titleHero?.dispose(); this.titleHero=null;
     C.closeListbox();
     const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
     if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
     MP.afterRender(this);
-    if(this.screen==='title'){const car=this.h.carSpec?.()||CARS[0];this.titleHero=mountTitleHero(this.root,car,savedPaint(car));}
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
     this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item
@@ -316,21 +310,15 @@ export class Menu {
     return C.screen({ title: 'MULTIPLAYER', kick: 'DRIVE TOGETHER', body: C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a code or browse open lobbies', act: 'mpJoin', attrs: { 'data-default': '' } }) + C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Choose a road and invite your friends', act: 'mpHost' }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });
   }
   r_title() {
-    const car = this.h.carSpec?.() || CARS[0];
-    const map = MAPS.find(m => m.id === this.h.ctx?.()?.mapId) || MAPS[0];
-    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'ΑΘΗΝΑ <span class="acc">/</span> ATHENS, GREECE' })}<div class="home home--racing">
-      <div class="home__left"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="home__eyebrow">REAL ROADS. NOTHING BUT TIME.</p>
-      <nav class="title__menu home__list" aria-label="Main menu">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race / Free Roam', act: 'play', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'users-three', title: 'MULTIPLAYER', desc: 'Find a lobby or bring your crew', act: 'multiplayer' })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: esc(car.name), act: 'garage' })}
-        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Make it yours', act: 'settings' })}</nav></div>
-      <section class="home__hero" aria-label="Selected car: ${esc(car.name)}"><div class="road-sign"><span>ΠΑΡΑΛΙΑΚΗ</span><b>ATHENS RIVIERA</b><i>↗</i></div>
-        <div class="home__edition">37° 49′ N &nbsp; 23° 47′ E <span>ATTICA / 01</span></div>
-        <div class="home__road" aria-hidden="true"></div><div class="home__car" data-title-hero data-ui-keep role="img" aria-label="${esc(car.name)} in ${esc(savedPaint(car))}"></div>
-        <div class="home__feature"><span>YOUR CAR / ${esc(savedPaint(car))}</span><b>${esc(car.name)}</b><small>${Math.round(car.power * 1.341)} HP / ${esc(car.drive.toUpperCase())} / ${car.gears.length}-SPEED</small></div>
-        <div class="home__session"><div><span>YOUR NEXT ROAD</span><b>${esc(map.name)}</b><small>Riviera coast · Megara circuit · Penteli climb</small></div><div class="home__session-car"><span>READY TO DRIVE</span><b>${esc(car.name)}</b><small>${Math.round(car.power * 1.341)} HP · ${esc(car.drive.toUpperCase())}</small></div></div>
-      </section></div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'START'], ['garage', 'GARAGE']])}</footer></div>`;
+    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
+      <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
+      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
+      <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
+        ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
+        ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage' })}
+        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
+      </div><footer class="scr__foot">${Release.titleExtras(this)}${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {
@@ -462,7 +450,7 @@ export class Menu {
       body: tab === 'video' ? `<div class="video-layout"><aside class="video-hero">${C.routeHero({...(MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]),eyebrow:'TUNE YOUR VIEW',content:C.stats([['PROFILE',PRESET_LABELS[profile.preset]],['RESOLUTION',Math.round(profile.resolution*100)+'%']])})}<div class="video-hero__action"><p>YOUR ROADS. YOUR PICTURE.</p><span>Every change applies live.</span>${C.button({label:'BACK TO THE ROAD',act:'back',icon:'caret-right',variant:'primary'})}</div></aside><div class="set-panel panel scroll-y">${body}</div></div>` : `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
-  leaving() { this.titleHero?.dispose(); this.titleHero=null; this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
+  leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
   r_phoneWheel() { return renderPhoneWheel(); }

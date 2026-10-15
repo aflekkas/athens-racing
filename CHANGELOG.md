@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- The title screen returns to the large Play card and four menu cards, with the logo on the left. It fits smaller screens while keeping account access and version links.
+  ![The restored Athens Racing title with its five menu cards](assets/changelog/2026.10.15.3/title-night-restored.webp "The night design returns.")
+
 - Use your phone as a steering wheel: scan a code, tilt to steer, and use touch pedals in solo or online races.
   ![Phone steering wheel with throttle and brake pedals, calibration and gear buttons](assets/changelog/2026.10.15.4/phone-wheel.webp "Tilt your phone to steer and slide up the pedals for more throttle or brake.")
 
