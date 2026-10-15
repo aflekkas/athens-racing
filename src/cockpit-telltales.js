@@ -55,10 +55,10 @@ function lampImage(name, colour) {
   return images.get(key);
 }
 export function drawCockpitLamps(g, lamps) {
-  // Dedicated lower strip, clear of the needles and digital speed on every cluster layout.
-  g.fillStyle = '#06090c'; g.beginPath(); g.roundRect(196, 341, 632, 40, 9); g.fill();
+  // Upper annunciator strip stays visible above the wheel rim in the normal cockpit view.
+  g.fillStyle = '#06090c'; g.beginPath(); g.roundRect(196, 64, 632, 40, 9); g.fill();
   for (let i = 0; i < lamps.length; i++) {
     const [name, colour] = lamps[i], img = lampImage(name, colour || '#20292e');
-    if (img.complete && img.naturalWidth) g.drawImage(img, 204 + i * 47, 344, 34, 34);
+    if (img.complete && img.naturalWidth) g.drawImage(img, 204 + i * 47, 67, 34, 34);
   }
 }
