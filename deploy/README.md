@@ -46,8 +46,10 @@ release_repo_root="$(pwd)"
 release_artifact_dir="$(mktemp -d "$release_repo_root/.scratch/release.XXXXXX")"
 git archive HEAD | tar -xf - -C "$release_artifact_dir"
 ln -s "$release_repo_root/node_modules" "$release_artifact_dir/node_modules"
-(cd "$release_artifact_dir" && node_modules/.bin/wrangler deploy --env staging)
+(cd "$release_artifact_dir" && ASR_GIT_SHA="$(git rev-parse --short HEAD)" node_modules/.bin/wrangler deploy --env staging)
 ```
+
+`ASR_GIT_SHA` is only needed for an archive copy, which has no `.git`; without it the About screen shows no commit (CI uses `GITHUB_SHA`; a plain checkout asks git).
 
 This assumes `npm ci` has installed the committed lockfile. If deploying another revision with different dependencies, run `npm ci` in its archive instead of sharing node_modules. GitHub Actions already deploys a committed checkout.
 
@@ -132,6 +134,24 @@ away and is destroyed when Sound settings closes. It cannot share WebAudio;
 its API volume follows master × music. ERT stream endpoints are documented in
 the research but are not shipped as presets without station/rights permission.
 No music source requires a Cloudflare paid feature or a streaming proxy.
+
+## Release notes and versions
+
+Players see the version in **Settings → About** and on the title screen, read the release notes under **What's new**, and get a one-time "What's new in <version>" card on the first launch after an update (never during a race, and not on a brand-new player's very first launch). It all comes from `CHANGELOG.md`.
+
+A version is `YYYY.MM.DD.N`: the release date plus a counter for that day (`2026.10.15.2` is the second release on 15 Oct 2026). The build also carries the short git SHA and the content build id (the `build` in `/sw.js`). `tools/prepare-deploy.mjs` stamps all three into `<meta name="asr-version|asr-sha|asr-build">` in `index.html` and into `/release.json`; it also writes `/credits.json` for the Credits screen. Both datasets are bundled into the HTML shell for immediate offline access, after the content build id is computed. Local dev has none of this and reports `dev`.
+
+**Before promoting to prod** (the release step, done by the maintainer or lead):
+
+1. Open `CHANGELOG.md`. Under `## Unreleased`, write or tidy the bullets for players: short, plain, no file names or internal jargon, one sentence each, what they can now see, hear or do.
+2. Rename `## Unreleased` to the new version and date, e.g. `## 2026.10.16.1 — 2026-10-16`. Use `.2`, `.3`... for another release on the same day. Add a fresh empty `## Unreleased` above it. Versions must be newest first; the build fails on a bad heading, an older version above a newer one, or a release with no bullets.
+3. Commit it. The newest dated section is the version `prepare-deploy` stamps, so the commit you deploy must contain it.
+4. Deploy as above. `node tools/prepare-deploy.mjs` prints `release.version`, `sha` and `build`, and warns if `Unreleased` still has bullets (they would ship unlabelled) or a git author is missing from `CREDITS.md`.
+5. After the deploy, check `/release.json` shows the version and that the title screen corner reads `V<version>`.
+
+Staging builds carry the same stamp, so a staging playtest shows the version the next prod release will have once the section is dated. Dry run: `node tools/prepare-deploy.mjs`, then serve `.deploy/assets`.
+
+**Credits** are generated at deploy time: `CREDITS.md` (team and AI line), every `CREDITS*`, `LICENSE*`, `NOTICE*` file under the repo (and `MODELS.md` beside the Greek voices), the "Data and credits" list in `README.md`, the fonts in `index.html` and `package.json`. Add a new asset's credits file next to it and it appears automatically; `tools/release-data.test.mjs` fails if a credits file exists that the screen does not include, or if a git author is not in `CREDITS.md`.
 
 ## Branches
 
