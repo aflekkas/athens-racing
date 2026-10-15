@@ -6,8 +6,8 @@ import { environmentBadge } from '../src/build-environment.js';
 test('only an explicit production identity removes the environment badge', () => {
   assert.equal(environmentBadge('production', '2026.10.15.1'), '');
   for (const id of ['staging', 'preview-abc', 'test']) assert.equal(environmentBadge(id, '2026.10.15.1'), 'STAGING · 2026.10.15.1');
-  assert.equal(environmentBadge(undefined), 'DEV · dev');
-  assert.equal(environmentBadge('dev', 'local'), 'DEV · local');
+  assert.equal(environmentBadge(undefined), 'DEV');
+  assert.equal(environmentBadge('dev', 'local'), 'DEV');
 });
 test('Wrangler injects distinct build identities for staging and production', () => {
   const config = JSON.parse(readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
@@ -38,4 +38,21 @@ test('D-pad and A continue to emit menu navigation actions', () => {
       pad.buttons[index].value=0;input.update(1/60,{inMenu:true});
     }
   } finally {input.destroy();}
+});
+
+import { mountTitleHero } from '../src/ui/title-hero.js';
+test('title hero waits for two frames and idle; cancelling a stale idle callback never imports the renderer', async () => {
+  const keys=['window','requestAnimationFrame','cancelAnimationFrame','requestIdleCallback','cancelIdleCallback'];
+  const previous=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
+  let id=0,idleCallback,idleCancelled=false;const frames=[];
+  const host={isConnected:true,dataset:{ready:'true'}};
+  Object.assign(globalThis,{window:{requestIdleCallback:true},requestAnimationFrame:cb=>{frames.push(cb);return ++id;},cancelAnimationFrame:()=>{},requestIdleCallback:cb=>{idleCallback=cb;return 1;},cancelIdleCallback:()=>{idleCancelled=true;}});
+  try {
+    const preview=mountTitleHero({querySelector:()=>host},{id:'mini'},'#bd1626');
+    assert.equal(frames.length,1);assert.equal(idleCallback,undefined);
+    frames.shift()();assert.equal(frames.length,1);assert.equal(idleCallback,undefined);
+    frames.shift()();assert.equal(typeof idleCallback,'function');
+    preview.dispose();assert.equal(idleCancelled,true);assert.equal(host.dataset.ready,undefined);
+    await idleCallback(); // Importing THREE/renderer here would fail in this Node-only test.
+  } finally {for(const key of keys)if(previous[key]===undefined)delete globalThis[key];else globalThis[key]=previous[key];}
 });

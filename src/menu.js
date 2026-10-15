@@ -1,3 +1,5 @@
+import { mountTitleHero } from './ui/title-hero.js';
+import { savedPaint } from './vehicle-paint.js';
 import { install as installAccounts } from './ui/account-screen.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
@@ -90,6 +92,7 @@ export class Menu {
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
   render({ morph = false } = {}) {
     const entering = this.screen !== this.shown;
+    this.titleHero?.dispose(); this.titleHero = null;
     if (morph && !entering && this.root.firstElementChild && this.screen !== 'maps' && !(this.screen === 'car' && this.data.detail)) return this.patch();
     const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
     const stage = keepCar ? this.root.querySelector('#carStage') : null;
@@ -107,6 +110,7 @@ export class Menu {
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
     if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
+    if (this.screen === 'title') { const car=this.h.carSpec?.() || CARS[0]; this.titleHero=mountTitleHero(this.root,car,savedPaint(car)); }
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -119,10 +123,12 @@ export class Menu {
   /** the morph path of render(): only nodes whose markup changed are touched, so focus, scroll and the garage
    *  thumbnails survive and nothing flashes */
   patch() {
+    this.titleHero?.dispose(); this.titleHero=null;
     C.closeListbox();
     const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
     if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
     MP.afterRender(this);
+    if(this.screen==='title'){const car=this.h.carSpec?.()||CARS[0];this.titleHero=mountTitleHero(this.root,car,savedPaint(car));}
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
     this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item
@@ -314,11 +320,11 @@ export class Menu {
         ${C.option({ icon: 'users-three', title: 'MULTIPLAYER', desc: 'Find a lobby or bring your crew', act: 'multiplayer' })}
         ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: esc(car.name), act: 'garage' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Make it yours', act: 'settings' })}</nav></div>
-      <section class="home__hero" aria-label="Featured garage car: Porsche 911 Carrera"><div class="road-sign"><span>ΠΑΡΑΛΙΑΚΗ</span><b>ATHENS RIVIERA</b><i>↗</i></div>
+      <section class="home__hero" aria-label="Selected car: ${esc(car.name)}"><div class="road-sign"><span>ΠΑΡΑΛΙΑΚΗ</span><b>ATHENS RIVIERA</b><i>↗</i></div>
         <div class="home__edition">37° 49′ N &nbsp; 23° 47′ E <span>ATTICA / 01</span></div>
-        <div class="home__road" aria-hidden="true"></div><img class="home__car" src="./assets/menu/carrera.webp" width="744" height="288" alt="In-game Porsche 911 Carrera, rear three-quarter view" fetchpriority="low" decoding="async" />
-        <div class="home__feature"><span>FROM THE GARAGE</span><b>911 CARRERA</b><small>REAR ENGINE / REAR WHEEL DRIVE</small></div>
-        <div class="home__session"><div><span>YOUR NEXT ROAD</span><b>${esc(map.name)}</b><small>Riviera coast · Megara circuit · Penteli climb</small></div><div class="home__session-car"><span>READY TO DRIVE</span><b>${esc(car.short || car.name)}</b><small>${Math.round(car.power * 1.341)} HP · ${esc(car.drive.toUpperCase())}</small></div></div>
+        <div class="home__road" aria-hidden="true"></div><div class="home__car" data-title-hero data-ui-keep role="img" aria-label="${esc(car.name)} in ${esc(savedPaint(car))}"></div>
+        <div class="home__feature"><span>YOUR CAR / ${esc(savedPaint(car))}</span><b>${esc(car.name)}</b><small>${Math.round(car.power * 1.341)} HP / ${esc(car.drive.toUpperCase())} / ${car.gears.length}-SPEED</small></div>
+        <div class="home__session"><div><span>YOUR NEXT ROAD</span><b>${esc(map.name)}</b><small>Riviera coast · Megara circuit · Penteli climb</small></div><div class="home__session-car"><span>READY TO DRIVE</span><b>${esc(car.name)}</b><small>${Math.round(car.power * 1.341)} HP · ${esc(car.drive.toUpperCase())}</small></div></div>
       </section></div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'START'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
@@ -450,7 +456,7 @@ export class Menu {
       body: `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
-  leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
+  leaving() { this.titleHero?.dispose(); this.titleHero=null; this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
   r_pause(d) {

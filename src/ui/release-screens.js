@@ -141,7 +141,7 @@ export function titleExtras(menu) {
   ensure(menu, 'release', 'release.json');
   settle(menu, false); // already rendering the title
   const b = buildInfo(), card = racing() ? null : state.card, more = card ? card.items.length - CARD_ITEMS : 0;
-  return `<div class="title-meta">${C.button({ label: versionLabel(b.version), variant: 'ghost', size: 'sm', act: 'whatsNew', cls: 'title-meta__btn', title: "What's new" })}${C.button({ label: 'CREDITS', variant: 'ghost', size: 'sm', act: 'credits', cls: 'title-meta__btn' })}</div>${card ? `
+  return `<div class="title-meta">${b.version === DEV_VERSION ? '' : C.button({ label: versionLabel(b.version), variant: 'ghost', size: 'sm', act: 'whatsNew', cls: 'title-meta__btn', title: "What's new" })}${C.button({ label: 'CREDITS', variant: 'ghost', size: 'sm', act: 'credits', cls: 'title-meta__btn' })}</div>${card ? `
     <aside class="news-card" aria-label="What's new in ${esc(card.version)}"><div class="news-card__head"><span class="kick">WHAT'S NEW IN ${esc(versionLabel(card.version))}</span><span class="news-card__date">${esc(formatDate(card.date))}</span></div>
       <ul class="news-card__list">${card.items.slice(0, CARD_ITEMS).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>${more > 0 ? `<p class="news-card__more">+ ${more} MORE IN WHAT'S NEW</p>` : ''}
       ${card.images?.length ? state.cardPictures ? gallery(card) : C.button({ label: `VIEW ${card.images.length} PHOTO${card.images.length === 1 ? '' : 'S'}`, variant: 'ghost', size: 'sm', act: 'newsPictures' }) : ''}
