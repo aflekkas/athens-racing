@@ -1,3 +1,4 @@
+import { legalPage } from '../worker/legal-pages.mjs';
 import { connectionProtocol } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -35,6 +36,8 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const server = http.createServer(async (req, res) => {
     const headers = { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' };
     try {
+      const legal = legalPage(new Request(new URL(req.url, 'http://' + (req.headers.host || 'localhost')), { method: req.method }));
+      if (legal) { res.writeHead(legal.status, Object.fromEntries(legal.headers)); res.end(Buffer.from(await legal.arrayBuffer())); return; }
       const url = new URL(req.url, 'http://localhost');
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };

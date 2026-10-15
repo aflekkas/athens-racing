@@ -1,0 +1,16 @@
+[
+  {
+    "width": 1280,
+    "errors": [],
+    "standaloneRequests": 1,
+    "overflow": false,
+    "menuLinks": true
+  },
+  {
+    "width": 390,
+    "errors": [],
+    "standaloneRequests": 1,
+    "overflow": false,
+    "menuLinks": true
+  }
+]

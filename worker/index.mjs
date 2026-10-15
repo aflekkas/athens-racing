@@ -1,3 +1,4 @@
+import { legalPage } from './legal-pages.mjs';
 import { arenaAccountStatus } from './account-arena.mjs';
 import { accounts } from './accounts.mjs';
 export { FriendsPresence } from './presence.mjs';
@@ -29,6 +30,8 @@ export default {
     await env.ACCOUNTS.batch(['sessions','challenges','limits','invites'].map(table=>env.ACCOUNTS.prepare(`DELETE FROM ${table} WHERE expires<?`).bind(now)));
   },
   async fetch(request, env) {
+    const legal = legalPage(request);
+    if (legal) return legal;
     const url = new URL(request.url);
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);

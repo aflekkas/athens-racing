@@ -18,6 +18,12 @@
       "/health",
       "/",
       "/index.html",
+      "/privacy",
+      "/privacy/",
+      "/privacy.html",
+      "/terms",
+      "/terms/",
+      "/terms.html",
       "/robots.txt",
       "/sitemap.xml"
     ]

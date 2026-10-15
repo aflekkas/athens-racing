@@ -1,0 +1,64 @@
+{
+  "routes": [
+    {
+      "host": "athensracing.com",
+      "path": "/privacy",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 10420,
+      "scripts": false
+    },
+    {
+      "host": "athensracing.com",
+      "path": "/terms",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 4790,
+      "scripts": false
+    },
+    {
+      "host": "staging.athensracing.com",
+      "path": "/privacy",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 10428,
+      "scripts": false
+    },
+    {
+      "host": "staging.athensracing.com",
+      "path": "/terms",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 4798,
+      "scripts": false
+    },
+    {
+      "host": "www.athensracing.com",
+      "path": "/privacy",
+      "status": 308,
+      "location": "http://athensracing.com/privacy",
+      "bytes": 0,
+      "scripts": false
+    },
+    {
+      "host": "www.athensracing.com",
+      "path": "/terms",
+      "status": 308,
+      "location": "http://athensracing.com/terms",
+      "bytes": 0,
+      "scripts": false
+    }
+  ],
+  "sitemap": {
+    "status": 200,
+    "headers": {
+      "content-length": "351",
+      "content-type": "application/xml; charset=utf-8",
+      "cache-control": "public, max-age=3600",
+      "cf-cache-status": "HIT",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff"
+    },
+    "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url><loc>http://staging.athensracing.com/</loc></url>\n  <url><loc>http://staging.athensracing.com/privacy</loc><lastmod>2026-10-15</lastmod></url>\n  <url><loc>http://staging.athensracing.com/terms</loc><lastmod>2026-10-15</lastmod></url>\n</urlset>\n"
+  }
+}

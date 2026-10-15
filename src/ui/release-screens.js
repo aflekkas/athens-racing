@@ -1,3 +1,4 @@
+import { legalLinks } from './legal-links.js';
 // RELEASE SCREENS: version label, About (Settings), What's new, Credits and the one-time "What's new in <version>" card.
 // Built from the shared components; src/menu.js only calls the hooks at the bottom of this file. The version arrives
 // synchronously from <meta name="asr-version"> (tools/release-data.mjs, deploy builds only; local dev is "dev"); the
@@ -70,7 +71,7 @@ export function renderAbout(menu) {
       ${C.option({ icon: 'users-three', title: 'CREDITS', desc: 'Team, map data, audio, fonts and open-source software', act: 'credits' })}</div>
     <div class="group"><h3 class="group__title">${icon('link')}OPEN SOURCE</h3>
       ${C.option({ icon: 'globe', title: 'VIEW SOURCE ON GITHUB', desc: 'aflekkas/athens-racing · opens in a new tab', act: 'openLink', attrs: { 'data-url': SOURCE_URL } })}
-      ${C.option({ icon: 'wrench', title: 'CONTRIBUTE', desc: 'Pull requests go into the staging branch · read CONTRIBUTING.md', act: 'openLink', attrs: { 'data-url': CONTRIBUTING_URL } })}</div>`;
+      ${C.option({ icon: 'wrench', title: 'CONTRIBUTE', desc: 'Pull requests go into the staging branch · read CONTRIBUTING.md', act: 'openLink', attrs: { 'data-url': CONTRIBUTING_URL } })}</div>${legalLinks}`;
 }
 
 /** Image bytes are requested only when this gallery is mounted by an open screen or explicit card action. */
@@ -125,7 +126,7 @@ export function renderCredits(menu) {
         ${c.ai ? `<p class="group__note">${esc(c.ai)}</p>` : ''}</div>
       ${c.sections.map((s) => `<div class="group"><h3 class="group__title">${esc(s.title.toUpperCase())}</h3>${s.entries.map(row).join('')}</div>`).join('')}</div>`;
   }
-  return C.screen({ ...head(menu, 'ABOUT'), title: 'CREDITS', hints: [['updown', 'SELECT'], ['confirm', 'OPEN'], ['back', 'BACK']], body });
+  return C.screen({ ...head(menu, 'ABOUT'), title: 'CREDITS', hints: [['updown', 'SELECT'], ['confirm', 'OPEN'], ['back', 'BACK']], body: body + legalLinks });
 }
 
 /** one credits / licence file, as readable paragraphs (each focusable, so keys and pads scroll it) */
