@@ -1,5 +1,5 @@
 // Pure deterministic selection/placement helpers, also used by verification tools.
-export const STREET_LIFE_MAPS = Object.freeze(['riviera', 'penteli']);
+export const STREET_LIFE_MAPS = Object.freeze(['riviera', 'penteli', 'psychiko']);
 export function graffitiSeed(id) { return Math.imul(Number(id) | 0, 2654435761) >>> 0; }
 export function buildingGraffiti(id) {
   const seed = graffitiSeed(id);

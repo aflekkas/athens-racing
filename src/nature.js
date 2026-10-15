@@ -513,7 +513,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
       const sw = ROAD.sidewalk(route, s, side);
       if (urb > 0.5) {
         if (sea < 140 && s % 14 === (side > 0 ? 0 : 6)) { route.point(s, side * (e + sw - 1.0), pt); addPalm(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
-        else if (sea >= 140 && s % 10 === 4) { route.point(s, side * (e + 1.2), pt); if (!bld.inBuilding(pt.x, pt.z, 0.5)) addOrange(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
+        else if (sea >= 140 && s % 10 === 4) { route.point(s, side * (e + 1.2), pt); if (!bld.inBuilding(pt.x, pt.z, 0.5)) { if (route.streetCircuit && rng.chance(.65)) addPine(pt.x, pt.y + ROAD.curbH(route, s), pt.z, rng.range(8, 12)); else addOrange(pt.x, pt.y + ROAD.curbH(route, s), pt.z); } }
       } else {
         // cliff road: maquis on the verges, rocks below the guard rail, the odd pine
         if (s % 6 === 0) { route.point(s, side * (e + sw + rng.range(2, 9)), pt); const h = heightC(pt.x, pt.z); if (h > 0.4) { if (rng.chance(0.55)) addBush(pt.x, h, pt.z, rng.range(0.6, 1.4), MAQUIS); else addRock(pt.x, h, pt.z, rng.range(0.4, 1.3)); } }
@@ -540,7 +540,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
   for (const a of data.areas.scrub) if (a.c) scatter(a, 1 / 45, 700, (x, y, z, du) => { if (variety.chance(0.57)) addDryPlant(x, y, z); else if (rng.chance(0.85)) addBush(x, y, z, rng.range(0.6, 1.5), MAQUIS); else addRock(x, y, z, rng.range(0.5, 1.4)); });
   for (const a of data.areas.rock) if (a.c) scatter(a, 1 / 30, 600, (x, y, z) => addRock(x, y, z, rng.range(0.5, 2.2)));
   // gardens of the villas (Kavouri / Vouliagmeni): pines, cypresses, oleanders between houses
-  for (let s = 5800; s < 11000; s += 3.2) for (const side of [1, -1]) {
+  for (let s = route.streetCircuit ? 0 : 5800; s < (route.streetCircuit ? route.length : 11000); s += 3.2) for (const side of [1, -1]) {
     const u = side * (rng.chance(0.6) ? rng.range(12, 70) : rng.range(70, 320)); route.point(s, u, pt);
     const h = free(pt.x, pt.z, 3); if (h === null) continue;
     const r = rng.next();

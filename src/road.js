@@ -16,6 +16,7 @@ export const ROAD = {
   gutter: 0.55,
   /** pavement / shoulder width beyond the curb */
   sidewalk(route, s, side) {
+    if (route.streetCircuit) return 1.8;
     const urb = route.urban(s);
     const sea = side > 0 ? route.seaR(s) : route.seaL(s);
     const prom = sea < 140 ? 2.4 : 0; // the seaside promenade is wider (palms, benches)
@@ -209,7 +210,7 @@ export function buildRoad(map, scene, heightC, assets) {
   const curbMat = concreteMaterial('#e2ddd2', 1.6);
   const vergeMat = terrainMaterial();
   const P = () => new THREE.Vector3();
-  const sMin = -60, sMax = route.length + 60;
+  const sMin = route.closed ? 0 : -60, sMax = route.length + (route.closed ? 0 : 60);
   const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGrass = new THREE.Color('#62733a'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
 
   for (let c0 = sMin; c0 < sMax; c0 += CHUNK) {
@@ -315,7 +316,7 @@ function signTexture(route) {
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
-      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('RIVIERA RUN · START', w / 2, h / 2 + 6);
+      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + route.from.toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6);
     });
   });
   return { tex, regions };
@@ -419,6 +420,7 @@ function buildFurniture(map, group, heightC, assets) {
   // -- direction / name signs at real places
   const sgPole = new THREE.CylinderGeometry(0.07, 0.07, 3.2, 8); sgPole.translate(0, 1.6, 0);
   const addSign = (s, key, w, h, height = 2.4, side = 1, poles = 1) => {
+    if (!Number.isFinite(s)) return;
     const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
     const u = side * (route.edge(s) + ROAD.gutter + 1.0);
     route.point(s, u, pt);
@@ -428,7 +430,7 @@ function buildFurniture(map, group, heightC, assets) {
     const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), metal); back.position.set(0, height + h / 2, -0.05); g.add(back);
   };
   const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
-  addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
+  if (map.id === 'riviera') addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.astir - 90, 'd_astir', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.lake - 160, 'd_lake', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.limanakia - 200, 'n_limanakia', 2.4, 0.6);
@@ -465,7 +467,8 @@ function buildFurniture(map, group, heightC, assets) {
     const banner2 = banner.clone(); banner2.rotation.y = 0; banner2.scale.x = -1; banner2.position.z = 0.05; g.add(banner2);
   };
   gantry(route.start, 'start', '#ff3d2e');
-  gantry(route.finish, 'finish', '#f2f2f2');
+  if (route.closed) route.fixedGantries = [route.start];
+  else gantry(route.finish, 'finish', '#f2f2f2');
 }
 
 function addBusStop(group, route, f, regions, signMat, assets) {

@@ -756,12 +756,12 @@ function initFlow() {
 }
 
 function mapEvent(id) {
-  if (id && typeof id === 'object') return ['sprint', 'free'].includes(id.type) ? id : null;
+  if (id && typeof id === 'object') return ['sprint', 'timetrial', 'free'].includes(id.type) ? id : null;
   if (id === 'free') return EV.freeRoam(map.id);
   const list = map.events || [];
   if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
   const def = list.find(e => e.id === id) || EV.getEvent(id);
-  return ['sprint', 'free'].includes(def?.type) ? def : null;
+  return ['sprint', 'timetrial', 'free'].includes(def?.type) ? def : null;
 }
 
 /** make an event (definition or id) the active one: route segment / direction, HUD range, arches, traffic direction */
