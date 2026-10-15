@@ -17,7 +17,7 @@ export function installMusicSettings(menu) {
     if (!panel || !music || mounted?.isConnected) return;
     const section = mounted = document.createElement('section'); section.className = 'group music-settings'; section.id = 'music-source-settings'; section.dataset.uiKeep = ''; // the menu patches screens in place; this section is ours
     section.innerHTML = `<h3 class="group__title">${icon('music-notes')}MUSIC SOURCE</h3>
-      <label>LISTEN TO<select aria-label="Music source"><option value="off">Off</option><option value="files">Your music files</option><option value="youtube">YouTube stream / playlist URL</option><option value="builtin">Built-in radio</option></select></label>
+      <label>LISTEN TO<ui-select class="mi music-source-select" aria-label="Music source"><option value="off">Off</option><option value="files">Your music files</option><option value="youtube">YouTube stream / playlist URL</option><option value="builtin">Built-in radio</option></ui-select></label>
       <div data-source="off"><p>Music is off. Choose a source whenever you want.</p></div>
       <div data-source="files"><p>Your files stay on this device. Music volume and the car’s audio mix apply.</p><div class="music-actions"><button type="button" data-files>Choose files</button><button type="button" data-folder>Choose folder</button><button type="button" data-restore>Restore saved files</button><button type="button" data-forget>Forget saved files</button></div><input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac,.webm" multiple hidden data-file-input><input type="file" webkitdirectory multiple hidden data-folder-input></div>
       <div data-source="youtube"><p>Menu-only video player. Keep it visible; playback pauses when hidden, scrolled away or when you return to driving. Use the player’s own controls.</p><label>YOUTUBE URL<input type="url" placeholder="https://www.youtube.com/watch?v=…" data-youtube-url></label><div class="music-actions"><button type="button" data-youtube-load>Load player</button><a data-youtube-link target="_blank" rel="noopener" hidden>Open on YouTube</a></div><p>Loading connects to YouTube and is subject to <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube’s terms</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google’s privacy policy</a>.</p><div class="music-youtube" hidden></div></div>
@@ -32,7 +32,7 @@ export function installMusicSettings(menu) {
     if (placeholder) placeholder.replaceWith(section); else panel.prepend(section);
     const q = selector => section.querySelector(selector), status = text => { q('.music-status').textContent = text; };
     const update = () => {
-      q('select').value = music.source;
+      q('ui-select').value = music.source;
       for (const child of section.querySelectorAll('[data-source]')) child.hidden = child.dataset.source !== music.source;
       q('[data-transport]').hidden = !['files', 'builtin'].includes(music.source);
       q('[data-key-note]').hidden = !['files', 'builtin'].includes(music.source);
@@ -43,7 +43,7 @@ export function installMusicSettings(menu) {
       if (music.source !== 'youtube' && youtube) { youtube.destroy(); youtube = null; q('.music-youtube').replaceChildren(); q('.music-youtube').hidden = true; }
     };
     unsubscribe = music.subscribe(update); update();
-    q('select').onchange = e => { music.select(e.target.value); if (['files', 'builtin'].includes(music.source)) { music.audio.start(); void music.play(); } };
+    q('ui-select').onchange = e => { music.select(e.target.value); if (['files', 'builtin'].includes(music.source)) { music.audio.start(); void music.play(); } };
     const run = task => async () => { try { await task(); } catch (error) { if (error.name !== 'AbortError') status(error.message || 'Could not access your music. Choose the files again.'); } };
     const load = async handles => {
       const files = await filesFromHandles(handles); await music.loadFiles(files);

@@ -8,7 +8,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
 //      Every value change dispatches a bubbling CustomEvent 'ui:change' { key, value, el } from the row.
-//   2. enhance(root) / autoEnhance(root): swaps native <select>, <input type=range> and <input type=checkbox> in DOM
+//   2. enhance(root) / autoEnhance(root): swaps native <input type=range> and <input type=checkbox> in DOM
 //      owned by other modules (multiplayer lobby, replay / photo bar) for the custom Select / Slider / Toggle. The native
 //      element stays in the DOM, hidden, as the source of truth: its value / checked setters are mirrored, and user
 //      changes fire its normal 'input' / 'change' events, so the owning code needs no changes.
@@ -210,6 +210,7 @@ export function setValue(el, v, doEmit = true) {
 }
 /** left / right on a row. Returns true if the row is adjustable */
 export function step(el, d) {
+  if (el?.localName === 'ui-select') return el.step(d);
   const kind = el?.dataset.kind; if (!kind) return false;
   if (kind === 'slider') { setValue(el, +el.dataset.value + d * (+el.dataset.step || 0.05)); return true; }
   if (kind === 'toggle') { setValue(el, !(el.dataset.value === 'true')); return true; }
@@ -226,6 +227,7 @@ export function step(el, d) {
 }
 /** confirm on a row */
 export function activate(el) {
+  if (el?.localName === 'ui-select') { el.open(); return true; }
   const kind = el?.dataset.kind; if (!kind) return false;
   if (kind === 'select') { openListbox(el); return true; }
   if (kind === 'slider') return true;
@@ -329,8 +331,74 @@ function hilite(i) {
   lb.box.children[lb.hi]?.scrollIntoView({ block: 'nearest' });
 }
 function pick(i) { if (!lb) return; const o = lb.opts[i]; if (!o || o[2]?.disabled) return; const fn = lb.onPick; closeListbox(); fn(o[0]); }
-export function closeListbox() { if (!lb) return; lb.sel.classList.remove('open'); lb.sel.setAttribute('aria-expanded', 'false'); lb.scrim.remove(); const done = lb.onClose; lb = null; done?.(); }
+export function closeListbox() {
+  if (!lb) return; lb.sel.classList.remove('open'); lb.sel.setAttribute('aria-expanded', 'false');
+  const { scrim, box } = lb; scrim.style.pointerEvents = 'none'; box.classList.add('is-closing'); setTimeout(() => scrim.remove(), 140); // the list folds away (ui.css)
+  const done = lb.onClose; lb = null; done?.();
+}
 export const listboxOpen = () => !!lb;
+
+// ------------------------------------------------------------------ <ui-select>: the dropdown for DOM other modules own
+// There are no native select elements in the game. Code that builds its own DOM (the replay / photo bar, the music source,
+// the standings' spectator pick, multiplayer transport state) uses <ui-select>: the same API as a native select
+// (value, selectedIndex, options, disabled, <option> children, 'input' / 'change' events, onchange) drawn as the kit's
+// Select with the animated listbox, keyboard / gamepad / touch alike. Menu screens use the select() row builder.
+// With class "mi" it is also a menu focus item: OK opens it, left / right cycle it.
+if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && !customElements.get('ui-select')) {
+  class UISelect extends HTMLElement {
+    static get observedAttributes() { return ['disabled']; }
+    constructor() { super(); this._sel = null; this._init = false; }
+    connectedCallback() {
+      if (!this._init) {
+        this._init = true;
+        for (const p of ['value', 'selectedIndex', 'disabled']) if (Object.prototype.hasOwnProperty.call(this, p)) { const v = this[p]; delete this[p]; this[p] = v; }
+        this.classList.add('select'); if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
+        if (this.classList.contains('mi') && !this.dataset.kind) this.dataset.kind = 'uiselect'; // a menu row: activate / step route here
+        this.setAttribute('role', 'combobox'); this.setAttribute('aria-haspopup', 'listbox'); this.setAttribute('aria-expanded', 'false');
+        this.addEventListener('click', (e) => { e.preventDefault(); this.open(); });
+        this.addEventListener('keydown', (e) => {
+          if (lb?.el === this) {
+            if (e.key === 'ArrowDown') hilite(lb.hi + 1); else if (e.key === 'ArrowUp') hilite(lb.hi - 1);
+            else if (e.key === 'Enter' || e.key === ' ') pick(lb.hi); else if (e.key === 'Escape' || e.key === 'Tab') closeListbox(); else return;
+            e.preventDefault(); e.stopPropagation(); return;
+          }
+          if (this.classList.contains('mi')) return; // a menu item: the menu routes its keys
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); this.open(); }
+        });
+        new MutationObserver(() => this.sync()).observe(this, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['selected', 'value', 'label', 'disabled'] });
+      }
+      this.sync();
+    }
+    attributeChangedCallback() { if (this._init) this.sync(); }
+    get options() { return [...this.children].filter((n) => n.localName === 'option'); }
+    current() { const o = this.options; return (this._sel && this._sel.parentNode === this && this._sel) || o.find((x) => x.hasAttribute('selected')) || o[0] || null; }
+    get value() { return this.current()?.value ?? ''; }
+    set value(v) { this._sel = this.options.find((o) => o.value === String(v)) || null; this.sync(); }
+    get selectedIndex() { return this.options.indexOf(this.current()); }
+    set selectedIndex(i) { this._sel = this.options[i] || null; this.sync(); }
+    get disabled() { return this.hasAttribute('disabled'); }
+    set disabled(v) { this.toggleAttribute('disabled', !!v); }
+    sync() {
+      if (!this._init) return;
+      let val = this.querySelector(':scope > .select__val');
+      if (!val) { // the visible parts; data-ui-keep so an in-place patch of the owner's markup leaves them alone
+        const t = document.createElement('template'); t.innerHTML = `<span class="select__val" data-ui-keep></span>${icon('caret-down')}`;
+        t.content.lastChild.setAttribute('data-ui-keep', ''); this.prepend(...t.content.childNodes); val = this.querySelector(':scope > .select__val');
+      }
+      const text = this.current()?.textContent || ''; if (val.textContent !== text) val.textContent = text;
+      const off = this.disabled; if (this.classList.contains('off') !== off) this.classList.toggle('off', off);
+      if (this.getAttribute('aria-disabled') !== String(off)) this.setAttribute('aria-disabled', String(off));
+    }
+    choose(v) { if (String(v) === this.value) return; this.value = v; this.dispatchEvent(new Event('input', { bubbles: true })); this.dispatchEvent(new Event('change', { bubbles: true })); }
+    open() {
+      if (this.disabled || lb?.el === this) return; const opts = this.options; if (!opts.length) return;
+      openListbox(this, { anchor: this, options: opts.map((o) => [o.value, esc(o.textContent), { disabled: o.disabled }]), value: this.value, onPick: (v) => this.choose(v) });
+      lb.onClose = () => { if (!this.classList.contains('mi')) this.focus({ preventScroll: true }); };
+    }
+    step(d) { const opts = this.options.filter((o) => !o.disabled), i = opts.indexOf(this.current()), o = opts[clamp(i + d, 0, opts.length - 1)]; if (o) this.choose(o.value); return true; }
+  }
+  customElements.define('ui-select', UISelect);
+}
 
 // ------------------------------------------------------------------ modal prompt + toasts
 let modal = null; // { root, actions, focus, resolve, dismissible, timer }
@@ -398,27 +466,6 @@ function mirror(el, prop, after) {
   return (v) => d.set.call(el, v);
 }
 const keyStop = (e) => { e.stopPropagation(); };
-function enhanceSelect(sel) {
-  const box = document.createElement('div'); box.className = 'select'; box.tabIndex = 0; box.setAttribute('role', 'combobox'); box.setAttribute('aria-haspopup', 'listbox'); box.setAttribute('aria-expanded', 'false');
-  if (sel.getAttribute('aria-label')) box.setAttribute('aria-label', sel.getAttribute('aria-label'));
-  box.innerHTML = `<span class="select__val"></span>${icon('caret-down')}`;
-  const sync = () => { const o = sel.options[sel.selectedIndex]; box.querySelector('.select__val').textContent = o ? o.textContent : ''; box.classList.toggle('off', sel.disabled); box.setAttribute('aria-disabled', sel.disabled); box.tabIndex = sel.disabled ? -1 : 0; };
-  const set = mirror(sel, 'value', sync); mirror(sel, 'selectedIndex', sync);
-  const choose = (v) => { if (sel.value === v) return; set ? set(v) : (sel.value = v); sync(); sel.dispatchEvent(new Event('input', { bubbles: true })); sel.dispatchEvent(new Event('change', { bubbles: true })); };
-  const open = () => { if (sel.disabled) return; openListbox(box, { anchor: box, options: [...sel.options].map((o) => [o.value, esc(o.textContent), { disabled: o.disabled }]), value: sel.value, onPick: choose }); lb.onClose = () => box.focus({ preventScroll: true }); };
-  box.addEventListener('click', open);
-  box.addEventListener('keydown', (e) => {
-    keyStop(e);
-    if (lb?.el === box) {
-      if (e.key === 'ArrowDown') hilite(lb.hi + 1); else if (e.key === 'ArrowUp') hilite(lb.hi - 1);
-      else if (e.key === 'Enter' || e.key === ' ') pick(lb.hi); else if (e.key === 'Escape' || e.key === 'Tab') closeListbox(); else return;
-      e.preventDefault(); return;
-    }
-    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); }
-  });
-  new MutationObserver(sync).observe(sel, { childList: true, subtree: true, attributes: true, characterData: true });
-  sel.classList.add('ui-native'); sel.tabIndex = -1; sel.after(box); sync();
-}
 function enhanceRange(input) {
   const el = document.createElement('div'); el.className = 'slider slider--bare'; el.tabIndex = 0; el.setAttribute('role', 'slider');
   if (input.getAttribute('aria-label')) el.setAttribute('aria-label', input.getAttribute('aria-label'));
@@ -454,7 +501,6 @@ function enhanceCheckbox(input) {
 }
 /** replace the native controls under root with the custom components (idempotent) */
 export function enhance(root) {
-  for (const el of root.querySelectorAll('select:not([data-ui])')) { el.dataset.ui = '1'; enhanceSelect(el); }
   for (const el of root.querySelectorAll('input[type=range]:not([data-ui])')) { el.dataset.ui = '1'; enhanceRange(el); }
   for (const el of root.querySelectorAll('input[type=checkbox]:not([data-ui])')) { el.dataset.ui = '1'; enhanceCheckbox(el); }
   for (const el of root.querySelectorAll('input:not([type]):not([data-ui]), input[type=text]:not([data-ui]), input[type=search]:not([data-ui])')) { el.dataset.ui = '1'; el.classList.add('ui-text'); }

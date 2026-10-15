@@ -31,12 +31,12 @@
 #mp-board .mp-gaps{font-size:10px;color:#bdccd8;padding:5px 0;border-bottom:1px solid #ffffff19;white-space:pre}
 #mp-board ol{list-style:none;margin:4px 0 0;padding:0}#mp-board li{display:flex;gap:8px;align-items:center;line-height:1.5;font-size:12px}#mp-board li.me{color:#62e9bf}
 #mp-board .mp-position{width:23px;flex:none;font-size:10px;font-variant-numeric:tabular-nums;color:#a8b7c3}#mp-board .mp-driver-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#mp-board .mp-watch{display:flex;gap:3px;padding:3px 0;pointer-events:auto}#mp-board .mp-watch select{width:0;flex:1;font-size:10px;min-height:26px}#mp-board .mp-watch button{padding:0 8px;min-height:26px}
+#mp-board .mp-watch{display:flex;gap:3px;padding:3px 0;pointer-events:auto}#mp-board .mp-watch ui-select{width:0;min-width:0;flex:1;font-size:10px;min-height:26px;padding:0 6px;gap:4px}#mp-board .mp-watch button{padding:0 8px;min-height:26px}
 .mp-blocked-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:10px}
 @media(max-height:480px){#mp-board{top:86px;right:12px;width:168px;max-height:160px;padding:7px 9px}#mp-board li{font-size:11px}}
 @media(max-width:500px){#mp-board{top:132px;right:12px;width:154px;max-height:210px;padding:8px}body[data-mode=taxi] #mp-board,body[data-mode=getaway] #mp-board{top:360px}}
 /* Short windscreens reserve the right corner for the dial and speed-limit sign. */
-@media(max-height:480px){#mp-board{top:90px;left:104px;right:auto;width:110px;max-height:90px;padding:6px}#mp-board ol{max-height:44px;overflow-y:auto;pointer-events:auto}#mp-board .mp-gaps{font-size:9px;padding:3px 0}#mp-board li{font-size:10px;gap:4px;line-height:1.4}#mp-board .mp-position{width:18px}#mp-board .mp-watch select{min-height:20px}#mp-board .mp-watch button{min-height:20px;padding:0 5px}}
+@media(max-height:480px){#mp-board{top:90px;left:104px;right:auto;width:110px;max-height:90px;padding:6px}#mp-board ol{max-height:44px;overflow-y:auto;pointer-events:auto}#mp-board .mp-gaps{font-size:9px;padding:3px 0}#mp-board li{font-size:10px;gap:4px;line-height:1.4}#mp-board .mp-position{width:18px}#mp-board .mp-watch ui-select{min-height:20px}#mp-board .mp-watch button{min-height:20px;padding:0 5px}}
 
 /* Persistent update action; independent of whether the lobby/menu is open. */
 .mp-update-notice{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:16px;max-width:calc(100vw - 32px);padding:10px 14px;background:#101a21;color:#fff;border:1px solid #4ccce4;border-radius:8px;font:14px system-ui;box-shadow:0 4px 20px #0008}

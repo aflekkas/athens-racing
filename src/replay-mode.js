@@ -164,8 +164,8 @@ class ReplayMode {
   makeReplayUI() {
     this.ui.innerHTML = `<div class="replay-title"><b>REPLAY</b><span>TRAFFIC HIDDEN · P PHOTO MODE</span><button data-close>BACK TO RESULTS</button></div>
       <div class="replay-timeline"><button data-play>PAUSE</button><output data-time></output><input aria-label="Replay timeline" data-scrub type="range" min="0" max="${this.last.duration}" step="0.01" value="${this.time}"></div>
-      <div class="replay-options"><label>SPEED <select data-speed aria-label="Replay speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option selected value="1">1×</option><option value="2">2×</option></select></label>
-      <label>CAMERA <select data-camera aria-label="Replay camera"><option value="director">AUTO DIRECTOR</option><option value="chase">CHASE</option><option value="cockpit">COCKPIT</option><option value="orbit">FREE ORBIT</option><option value="helicopter">HELICOPTER</option><option value="bumper">LOW BUMPER</option><option value="tv">TRACKSIDE TV</option></select></label>
+      <div class="replay-options"><label>SPEED <ui-select data-speed aria-label="Replay speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option selected value="1">1×</option><option value="2">2×</option></ui-select></label>
+      <label>CAMERA <ui-select data-camera aria-label="Replay camera"><option value="director">AUTO DIRECTOR</option><option value="chase">CHASE</option><option value="cockpit">COCKPIT</option><option value="orbit">FREE ORBIT</option><option value="helicopter">HELICOPTER</option><option value="bumper">LOW BUMPER</option><option value="tv">TRACKSIDE TV</option></ui-select></label>
       <button data-hud>SHOW HUD</button></div>`;
     this.ui.querySelector('[data-close]').onclick = () => this.close(); this.ui.querySelector('[data-play]').onclick = () => this.togglePlay();
     this.ui.querySelector('[data-scrub]').oninput = ev => this.scrub(+ev.target.value);
@@ -192,8 +192,8 @@ class ReplayMode {
     this.ui.innerHTML = `<div class="replay-title"><b>PHOTO MODE</b><span>DRAG TO LOOK · WASD MOVE · Q/E UP/DOWN · SHIFT FAST · WHEEL SPEED</span><button data-close>CLOSE · P / ESC</button></div>
       <div class="photo-options">${[['fov', 'FOV', 20, 110, 1], ['roll', 'ROLL', -3.14, 3.14, .01], ['focus', 'FOCUS · M', .5, 200, .5], ['dof', 'DEPTH OF FIELD', 0, 9, .1], ['exposure', 'EXPOSURE · EV', -3, 3, .1], ['contrast', 'CONTRAST', -1, 1, .05], ['saturation', 'SATURATION', 0, 2, .05], ['vignette', 'VIGNETTE', 0, 1, .02]].map(([key, label, min, max, step]) =>
         `<label>${label}<input aria-label="Photo ${key}" data-photo-key="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${s[key]}"><output>${s[key].toFixed(1)}</output></label>`).join('')}
-      <label>FILTER<select aria-label="Photo filter" data-filter>${PHOTO_FILTERS.map(f => `<option value="${f}">${f.toUpperCase()}</option>`).join('')}</select></label>
-      <label>EXPORT<select aria-label="Photo resolution" data-resolution><option value="2">2× SUPERSAMPLED</option><option value="3">3× SUPERSAMPLED</option></select></label><button data-save>SAVE PNG</button><output data-status></output></div>`;
+      <label>FILTER<ui-select aria-label="Photo filter" data-filter>${PHOTO_FILTERS.map(f => `<option value="${f}">${f.toUpperCase()}</option>`).join('')}</ui-select></label>
+      <label>EXPORT<ui-select aria-label="Photo resolution" data-resolution><option value="2">2× SUPERSAMPLED</option><option value="3">3× SUPERSAMPLED</option></ui-select></label><button data-save>SAVE PNG</button><output data-status></output></div>`;
     this.ui.querySelector('[data-close]').onclick = () => this.closePhoto();
     for (const input of this.ui.querySelectorAll('[data-photo-key]')) input.oninput = () => { s[input.dataset.photoKey] = +input.value; input.nextElementSibling.value = (+input.value).toFixed(1); this.ctx.post.setPhoto(s); };
     this.ui.querySelector('[data-filter]').onchange = ev => { s.filter = ev.target.value; this.ctx.post.setPhoto(s); };

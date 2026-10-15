@@ -43,7 +43,7 @@ export class Menu {
    * root: the #ui element. h: handlers from main.js
    *   quickRace(), openEvent(def | id), chooseCar(index, def, garage), multiplayer(), garage(), resume(), restart(), quit(), next(id)
    *   ctx() -> resolve context { route, marks, mapId }, carName() -> string, fmtTime(t), ui(forward) (click sound)
-   *   cancelBindings() (drop a half-done key capture), graphicsControl (the hidden graphics <select>), inputDevice()
+   *   cancelBindings() (drop a half-done key capture), graphicsControl (the hidden graphics <ui-select>), inputDevice()
    */
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];

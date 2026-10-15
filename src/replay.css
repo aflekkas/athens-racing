@@ -1,4 +1,4 @@
-/* Replay + photo mode bar (src/replay-mode.js). Its native range / select controls become the UI kit's Slider / Select
+/* Replay + photo mode bar (src/replay-mode.js). Its <ui-select>s are the UI kit's Select; native range controls become the kit's Slider
    (src/ui/hosts.js); buttons and layout use the kit's tokens here. */
 #replay-controls{position:fixed;z-index:90;left:max(24px,env(safe-area-inset-left));right:max(24px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));padding:var(--s-4,16px) var(--s-5,20px);color:#fff;
   background:rgba(13,17,22,.94);border:1px solid rgba(255,255,255,.12);border-top:3px solid var(--c-accent,#ff3b2f);border-radius:8px;font:700 var(--t-sm,13px) 'Barlow Condensed',sans-serif;letter-spacing:.08em;box-shadow:0 1rem 3rem rgba(0,0,0,.55)}
