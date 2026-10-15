@@ -3,11 +3,14 @@
 // https://media.mercedes-benz.fr/decouvrez-la-nouvelle-mercedes-benz-cle/
 // https://nd-mediagallery2-public-production.s3.amazonaws.com/215df8a0a2f426ec8e82796a0eaca795/techdata_cle_c236_806_056.pdf
 import * as THREE from 'three';
+import { buildA160 } from './player-a160.js';
 
 export const MERCEDES_MODELS = {
   // R231 launch roadster, vario-roof stowed; Mercedes brochure dimensions / 19-inch tyres.
   // https://www.baaf-ks.com/upload/models/slclass/brosure/slclassr231_brosur.pdf
   sl65: { mercedes:true,sl:true,amg:true,sculpted:true,open:true,seats:2,mirrorSetback:.10,L:4.631,W:1.877,H:1.314,wb:2.585,track:1.610,trackRear:1.604,axleOffset:-.09,r:.330,rim:.2413,tyreF:.255,tyreR:.285,belt:.89,front:.75,rear:.91,cowl:-.49,header:.06,roofBack:.70,back:1.04,seatZ:.44,seatBase:.37,eyeY:1.04,doors:2,leather:'#80523d' },
+  // W168 facelift SWB: Mercedes archive 194914949; 195/50 R15, high sandwich floor.
+  a160: { mercedes:true,a160:true,L:3.606,W:1.719,H:1.575,wb:2.423,track:1.503,trackRear:1.452,r:.288,rim:.1905,tyreF:.195,tyreR:.195,belt:.96,front:.69,rear:.99,cowl:-1.10,header:-.39,roofBack:1.34,back:1.68,seatZ:.10,seatBase:.56,eyeY:1.28,doors:4,leather:'#50545c' },
   // H247 dimensions and 19-inch Progressive wheels: Mercedes-Benz PH brochure (refs/gla.pdf).
   // 235/50 R19: https://nd-mediagallery2-public-production.s3.amazonaws.com/2925aea29951c2de6bd34196724709f8/2024_10_h247_15.10.2024_gla_ee.pdf
   gla: { mercedes:true,suv:true,L:4.410,W:1.834,H:1.611,wb:2.729,track:1.605,trackRear:1.606,axleOffset:-.065,r:.358,rim:.241,tyreF:.235,tyreR:.235,belt:1.065,front:.94,rear:1.08,cowl:-.94,header:-.47,roofBack:1.65,back:2.035,hatchGlassY:1.17,seatZ:.18,eyeY:1.245,doors:4,leather:'#343434' },
@@ -97,6 +100,7 @@ export function mercedesSurface(d){
 }
 
 export function buildMercedes(car,d,M,low,plate,H){
+  if(d.a160)return buildA160(car,d,M,low,plate,H);
   const {mesh,box,line,surface,patch,ring,cabinFittings,makePlateMaterial}=H;
   const p=car.body,F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0,S=mercedesSurface(d),C=S.contour,arch=d.r+(C?.archGap||.055);
   const suv=!!d.suv,amg=!!d.amg,cla=!!d.cla;

@@ -2,6 +2,7 @@
 // Taxicab yellow is an additional fleet finish; GR Yaris grey includes the 2024 Ogier special edition.
 export const PAINTS = {
   sl65: [['Diamond White','#edece5'],['Obsidian Black Metallic','#13171c'],['Iridium Silver','#b6bec3'],['Palladium Silver','#8d9191'],['Mars Red','#b92228'],['designo Magno Allanite Grey','#626866']],
+  a160: [['Brilliant Silver','#b9bfc2'],['Polar White','#ecece4'],['Night Black','#181b20'],['Mars Red','#b72a25'],['Jaspis Blue','#274660'],['Chrysolite Green','#8d9980']],
   cla: [['Obsidian Black Metallic','#111419'],['Polar White','#eeeeeb'],['Cosmos Black','#1b2028'],['Alpine Grey','#8e9398'],['Hyper Blue','#216498'],['Patagonia Red','#922536']],
   gla45: [['Mountain Grey','#737c83'],['Night Black','#14171b'],['Polar White','#ededeb'],['Digital White','#dce1dc'],['Denim Blue','#36536d'],['Patagonia Red','#98253b']],
   e36: [["Boston Green","#455948"],["Alpine White","#e3e4da"],["Calypso Red","#683443"],["Arctic Silver","#abb4b8"],["Avus Blue","#344c83"],["Faded Hellrot","#a85048"]],
