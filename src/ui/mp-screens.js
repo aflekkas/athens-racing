@@ -9,6 +9,7 @@
 //     (Menu.refresh -> C.morph touches only rows whose markup changed), so an update never rebuilds the screen,
 //     flashes, resets an input or moves focus; and the panel's hidden flag follows the menu screen.
 import * as C from './components.js';
+import { notifications } from './notifications.js';
 import { TIMES, WEATHERS, TRAFFIC_LEVELS, POLICE_LEVELS } from '../race-setup.js';
 import { configFromLobby, describeMode } from '../mp-setup.js';
 import { carCategory, classLabel, inGarage } from '../car-catalog.js';
@@ -64,33 +65,44 @@ export function setPending(key, value, now = Date.now()) { pending.set(key, { va
 const statusText = (mp) => mp?.$?.('mp-status')?.textContent || '';
 const carOf = (mp, id) => mp?.cars?.find((c) => c.id === id);
 const mapName = (mp, id) => mp?.maps?.find((m) => m.id === (id || 'riviera'))?.name || 'ATHENS RIVIERA';
-const statusLine = (mp, extra = '') => `<p class="mp-status" role="status">${mp?.preparing ? C.spinner() : icon(mp?.connected ? 'globe' : 'warning')}<span>${esc(statusText(mp) || 'Connecting…')}</span>${extra}</p>`;
-const inputRow = (fid, labelText, input, note) => C.field(labelText, input, { note, attrs: { 'data-act': 'mpInput', 'data-fid': fid }, cls: 'mp-input' });
-const kickOf = (l) => esc(l.code || '');
+const statusChip = (mp) => C.chip(`${mp?.preparing ? C.spinner() : ''}${esc(statusText(mp) || 'Connecting…')}`, { tone: mp?.connected ? '' : 'warn', icon: mp?.preparing ? null : mp?.connected ? 'globe' : 'warning', cls: 'mp-status', attrs: { role: 'status' } });
+/** the car the session will use: yours in the lobby, otherwise the car you would join or host with */
+export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-car')?.value || mp?.cars?.[mp?.hooks?.carIndex?.() ?? 0]?.id; }
+
+// ---------------------------------------------------------------- the showroom frame (home-screen layout)
+// The selected car stands large in the middle as a live studio render (car-select.js mountCarSelect, lite); a slim
+// right-hand column of head-unit panels floats beside it. No map world is needed. #carStage is data-ui-keep="stage",
+// so in-place refreshes never touch the canvas; afterRender() mounts, keeps or swaps the studio.
+const STAGE = '<div id="carStage" class="mp-stage" data-ui-keep="stage" aria-hidden="true"></div>';
+function carPlate(mp, car, extra = '') {
+  const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
+  return `<div class="mp-plate"><span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc(car?.name || '—')}</b><span class="mp-plate__spec">${spec}</span>
+    <div class="mp-plate__acts">${C.button({ label: 'CHANGE CAR', icon: 'car-profile', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, attrs: { 'data-fid': 'car' } })}${extra}</div></div>`;
+}
+const showroom = ({ cls = '', caption, plate, side }) => `<div class="mp-show ${cls}">${STAGE}<div class="mp-show__cap">${caption}</div>${plate}<aside class="mp-side scroll-y">${side}</aside></div>`;
 
 // ---------------------------------------------------------------- Join / Host
 export function renderMp(menu, mp, d = {}) {
   const tab = form.tab = d.tab || form.tab || 'join';
-  const head = C.tabs({ key: 'mpTab', value: tab, options: [['join', 'JOIN GAME', 'users-three'], ['host', 'HOST GAME', 'plus']], cls: 'mp-tabs' });
-  const body = tab === 'host' ? hostBody(mp) : joinBody(mp);
-  return C.screen({ cls: 'scr--mp scr--mp-entry', kick: 'MULTIPLAYER <span class="acc">/</span> LIVE RACING', title: tab === 'host' ? 'HOST GAME' : 'JOIN GAME', head,
+  const tabs = C.tabs({ key: 'mpTab', value: tab, options: [['join', 'JOIN', 'users-three'], ['host', 'HOST', 'plus']], cls: 'mp-tabs' });
+  const caption = `<span class="kick">MULTIPLAYER</span><h2 class="mp-show__title">${tab === 'host' ? 'HOST A GAME' : 'JOIN A GAME'}</h2>
+    <p class="mp-show__sub">2–${MAX_DRIVERS} drivers · player collisions on · rejoin within 90 seconds</p>`;
+  return C.screen({ cls: 'scr--mp scr--showroom', kick: 'MULTIPLAYER <span class="acc">/</span> LIVE RACING',
     hints: [['updown', 'SELECT'], ['tabs', 'JOIN / HOST'], ['confirm', 'OK'], ['back', 'BACK']],
-    body: `${statusLine(mp)}<div class="mp-layout">${body}</div><p class="mp-footnote">2–${MAX_DRIVERS} drivers · player collisions on · shared traffic off · 10-minute race limit · rejoin within 90 seconds after a disconnect</p>` });
+    body: showroom({ cls: 'mp-show--entry', caption, plate: carPlate(mp, carOf(mp, showroomCar(mp))), side: `<div class="mp-side__head">${tabs}${statusChip(mp)}</div>${tab === 'host' ? hostBody(mp) : joinBody(mp)}` }) });
 }
 function joinBody(mp) {
   const ready = /^[A-Z0-9]{6}$/.test(form.code);
-  const join = C.panel('JOIN BY CODE', `<p class="group__note">Enter the host’s six-character lobby code.</p>
-    ${inputRow('code', 'LOBBY CODE', `<input class="mp-code" data-mp-field="code" maxlength="6" placeholder="ABC123" value="${esc(form.code)}" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">`)}
+  const join = C.panel('JOIN BY CODE', `${C.textField({ name: 'code', label: 'LOBBY CODE', value: form.code, placeholder: 'ABC123', maxlength: 6, inputCls: 'mp-code', attrs: { 'data-default': '' }, inputAttrs: { autocapitalize: 'characters', enterkeyhint: 'go' } })}
     <div class="mp-go">${C.button({ label: 'JOIN LOBBY', icon: 'sign-in', iconRight: 'caret-right', variant: 'primary', block: true, act: 'mpJoinCode', disabled: !ready || !mp?.connected, attrs: { 'data-fid': 'join' } })}</div>`, { icon: 'link', cls: 'mp-join' });
   const lobbies = mp?.__lobbies || [];
   const rows = lobbies.length ? lobbies.map((l) => {
     const full = l.players.length >= l.capacity, open = l.status === 'waiting';
-    return `<div class="mi mp-lobby-row ${full ? 'off' : ''}" role="button" data-act="mpJoinLobby" data-code="${esc(l.code)}" data-fid="lobby:${esc(l.code)}">
-      <span class="mp-lobby-row__main"><b>${esc(l.name)}</b><span>${esc(mapName(mp, l.mapId))} · ${esc(l.event?.name || 'QUICK RACE')}</span></span>
-      <span class="mp-lobby-row__meta">${C.badge(`${l.players.length}/${l.capacity}`, '', 'users-three')}${C.badge(full ? 'FULL' : open ? 'OPEN' : 'RACING', open && !full ? 'accent' : '')}</span>${icon('caret-right', 'mp-lobby-row__go')}</div>`;
-  }).join('') : `<p class="empty">NO OPEN LOBBIES · HOST ONE AND INVITE DRIVERS</p>`;
-  const browse = C.panel('OPEN LOBBIES', `<div class="mp-lobby-list scroll-y">${rows}</div>`,
-    { icon: 'globe', cls: 'mp-browse', right: C.button({ label: 'REFRESH', icon: 'arrows-clockwise', variant: 'ghost', size: 'sm', act: 'mpRefresh', attrs: { 'data-fid': 'refresh' } }) });
+    return C.listRow({ title: esc(l.name), desc: `${esc(mapName(mp, l.mapId))} · ${esc(l.event?.name || 'QUICK RACE')}`, act: 'mpJoinLobby', fid: 'lobby:' + l.code, disabled: full, attrs: { 'data-code': l.code },
+      meta: C.chip(`${l.players.length}/${l.capacity}`, { icon: 'users-three' }) + C.chip(full ? 'FULL' : open ? 'OPEN' : 'RACING', { tone: open && !full ? 'accent' : '' }) });
+  }).join('') : `<p class="empty">NO OPEN LOBBIES YET · HOST ONE AND INVITE DRIVERS</p>`;
+  // discovery is re-requested while this screen is up (installMpScreens), so the list stays live without a button
+  const browse = C.panel('OPEN LOBBIES', `<div class="mp-lobby-list">${rows}</div>`, { icon: 'globe', cls: 'mp-browse', right: C.chip('LIVE', { tone: 'accent', cls: 'mp-live' }) });
   return join + browse;
 }
 function hostBody(mp) {
@@ -98,13 +110,13 @@ function hostBody(mp) {
   form.map = map || form.map;
   const A = { 'data-scope': 'mpHost' }, draft = mp?.pendingDraft, cfg = draft?.config;
   const rows = [
-    inputRow('name', 'LOBBY NAME', `<input class="mp-name" data-mp-field="name" maxlength="28" placeholder="${esc((driverName.get() || 'MY') + '’S RACE')}" value="${esc(form.name)}" aria-label="Lobby name" autocomplete="off" spellcheck="false" enterkeyhint="done">`),
+    C.textField({ name: 'name', label: 'LOBBY NAME', value: form.name, placeholder: (driverName.get() || 'MY') + '’S RACE', maxlength: 28, inputAttrs: { enterkeyhint: 'done' } }),
     maps.length ? C.select({ key: 'map', label: 'TRACK', icon: 'map-trifold', value: map, options: maps.map((m) => [m.id, esc(m.name)]), attrs: A }) : '',
     C.segmented({ key: 'mode', label: 'MODE', icon: 'flag-checkered', value: form.mode, options: MODES, attrs: A }),
-    C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock-simple', value: String(form.private), type: 'bool', options: [['false', 'ANYONE · LISTED'], ['true', 'INVITE ONLY']], attrs: A }),
+    C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock-simple', value: String(form.private), type: 'bool', options: [['false', 'ANYONE'], ['true', 'INVITE ONLY']], attrs: A }),
   ].join('');
   const note = cfg ? `<p class="group__note">${icon('sliders-horizontal')} Uses your race setup: ${esc(label(TIMES, cfg.time))} · ${esc(label(WEATHERS, cfg.weather))} · ${esc(trafficLabel(cfg.traffic).toLowerCase())} traffic. You can change it in the lobby.</p>`
-    : '<p class="group__note">Time of day, weather and traffic are set in the lobby. Share the code so friends can join.</p>';
+    : '<p class="group__note">Time of day, weather, traffic and police are set in the lobby. Share the code so friends can join.</p>';
   return C.panel('NEW LOBBY', `<div class="mp-fields">${rows}</div>${note}
     <div class="mp-go">${C.button({ label: mp?.creating ? 'CREATING…' : 'CREATE LOBBY', icon: 'plus', iconRight: 'caret-right', variant: 'primary', block: true, act: 'mpCreate', disabled: !!mp?.creating || !mp?.connected, attrs: { 'data-default': '', 'data-fid': 'create' } })}</div>`, { icon: 'users-three', cls: 'mp-host' });
 }
@@ -112,12 +124,9 @@ function hostBody(mp) {
 // ---------------------------------------------------------------- lobby room
 export function renderLobby(menu, mp) {
   const l = mp?.lobby;
-  if (!l) return C.screen({ cls: 'scr--mp', kick: 'MULTIPLAYER', title: 'LOBBY', body: statusLine(mp), hints: [['back', 'BACK']] });
+  if (!l) return C.screen({ cls: 'scr--mp', kick: 'MULTIPLAYER', title: 'LOBBY', body: statusChip(mp), hints: [['back', 'BACK']] });
   const host = l.host === mp.id, waiting = l.status === 'waiting', me = mp.me, cfg = configFromLobby(l), mode = l.mode || l.event?.type || 'sprint';
   const A = { 'data-scope': 'mpCfg' }, live = ['countdown', 'race'].includes(l.status);
-  const car = carOf(mp, me?.car);
-  const carRow = `<div class="mi field mp-car ${mp.canChangeCar ? '' : 'off'}" role="button" data-act="mpCar" data-fid="car"><span class="field__label">${icon('car-profile')}<span>YOUR CAR</span></span>
-    <div class="field__ctl"><span class="mp-car__name"><b>${esc(car?.name || me?.car || '—')}</b>${car ? `<small>${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}</small>` : ''}</span>${mp.canChangeCar ? `<span class="mp-car__go">CHANGE${icon('caret-right')}</span>` : ''}</div></div>`;
   let session;
   if (host && waiting) {
     const time = shownValue('time', cfg.time), weather = shownValue('weather', cfg.weather), traffic = shownValue('traffic', cfg.traffic ?? 1), reverse = String(shownValue('reverse', cfg.reverse === true)), modeV = shownValue('mode', mode), mapV = shownValue('mapId', l.mapId || 'riviera');
@@ -132,24 +141,25 @@ export function renderLobby(menu, mp) {
       ...(modeV === 'sprint' ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
       C.segmented({ key: 'policeMode', label: 'POLICE & LAWS', icon: 'police-car', value: police ? policeLevel : 'off', options: [['off', 'OFF'], ...POLICE_LEVELS], attrs: A }),
       ...(police ? [C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: busted, type: 'bool', options: [['true', 'ON'], ['false', 'OFF']], attrs: A })] : []),
-      C.option({ icon: 'car', title: 'ALLOWED CARS', desc: allowed >= garage ? `ALL ${garage} CARS` : `${allowed} OF ${garage} CARS`, act: 'mpCars', attrs: { 'data-fid': 'cars' } }),
+      C.listRow({ icon: 'car', title: 'ALLOWED CARS', desc: allowed >= garage ? `ALL ${garage} CARS` : `${allowed} OF ${garage} CARS`, act: 'mpCars', fid: 'cars' }),
     ].join('');
   } else {
     session = C.stats([['TRACK', esc(mapName(mp, l.mapId)), { icon: 'map-trifold' }], ['MODE', esc(describeMode(mode)), { icon: 'flag-checkered' }],
       ['TIME OF DAY', esc(label(TIMES, cfg.time)), { icon: timeIcon(cfg.time) }], ['WEATHER', esc(label(WEATHERS, cfg.weather)), { icon: weatherIcon(cfg.weather) }],
-      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'police-car' }], ['DRIVERS', `${l.players.length}/${MAX_DRIVERS}`, { icon: 'users-three' }]], 'mp-facts');
+      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'police-car' }]], 'mp-facts');
   }
   const rows = l.players.map((p) => {
     const r = driverRow(p, l, mp.id), c = carOf(mp, r.car);
     const ctl = host && !r.me ? `<span class="mp-driver__ctl">${C.button({ label: 'KICK', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpKick', attrs: { 'data-id': p.id, 'data-fid': 'kick:' + p.id, 'aria-label': 'Kick ' + p.name } })}${C.button({ label: 'BLOCK', icon: 'x', variant: 'ghost', size: 'sm', act: 'mpBlock', cls: 'mp-block', attrs: { 'data-id': p.id, 'data-fid': 'block:' + p.id, 'aria-label': 'Block ' + p.name } })}</span>` : '';
     return `<div class="mp-driver ${r.me ? 'me' : ''}" data-player="${esc(p.id)}"><i class="mp-dot" data-state="${r.state}"></i>
-      <span class="mp-driver__who"><b>${esc(r.name)}</b>${r.me ? C.badge('YOU', 'accent') : ''}${r.host ? C.badge('HOST', 'gold', 'crown') : ''}</span>
+      <span class="mp-driver__who"><b>${esc(r.name)}</b>${r.me ? C.chip('YOU', { tone: 'accent' }) : ''}${r.host ? C.chip('HOST', { tone: 'gold', icon: 'crown' }) : ''}</span>
       <span class="mp-driver__car">${esc(c?.short || r.car || '')}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
   }).join('');
   const blocked = host ? (l.blockedPlayers || []) : [];
   const blockedList = blocked.length ? `<div class="mp-blocked"><h4 class="mp-sub">${icon('x')}BLOCKED</h4>${blocked.map((p) => `<div class="mp-driver mp-driver--blocked"><span class="mp-driver__who"><b>${esc(p.name)}</b></span>${C.button({ label: 'UNBLOCK', variant: 'ghost', size: 'sm', act: 'mpUnblock', attrs: { 'data-id': p.id, 'data-fid': 'unblock:' + p.id } })}</div>`).join('')}</div>` : '';
   const allReady = l.players.length >= 2 && l.players.every((p) => p.ready && p.loaded && p.connected !== false);
   const connected = l.players.filter((p) => p.connected !== false).length;
+  // the race actions sit under the car, like PLAY on the home screen
   const acts = [];
   if (waiting) {
     acts.push(C.button({ label: me?.ready ? 'READY · CANCEL' : 'READY TO RACE', icon: me?.ready ? 'check' : 'flag-checkered', variant: host || me?.ready ? 'secondary' : 'primary', act: 'mpReady', disabled: !mp.worldReady, cls: me?.ready ? 'is-on' : '', attrs: { 'data-default': '', 'data-fid': 'ready' } }));
@@ -159,12 +169,39 @@ export function renderLobby(menu, mp) {
     acts.push(C.button({ label: 'BACK TO THE RACE', icon: 'play', variant: 'primary', act: 'back', attrs: { 'data-default': '', 'data-fid': 'resume' } }));
     if (host) acts.push(C.button({ label: 'RESTART', icon: 'arrow-counter-clockwise', act: 'mpRestart', attrs: { 'data-fid': 'restart' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } }));
   }
-  const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list scroll-y">${rows}${blockedList}</div>
-    <p class="mp-help">${esc(helpText(mp, l, host))}</p><div class="mp-actions">${acts.join('')}</div>`, { icon: 'users-three', cls: 'mp-drivers' });
-  const headR = `<div class="mp-headr"><span class="mp-code-chip" title="Lobby code">${icon('lock-simple')}${kickOf(l)}</span>${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'gear-six', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div>`;
-  return C.screen({ cls: 'scr--mp scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`, title: esc(l.name), head: headR,
+  const caption = `<span class="kick">LOBBY · ${live ? 'RACE IN PROGRESS' : waiting ? 'WAITING FOR DRIVERS' : 'RESULTS'}</span><h2 class="mp-show__title">${esc(l.name)}</h2>
+    <div class="mp-show__meta">${C.chip(esc(l.code || ''), { tone: 'accent', icon: 'lock-simple', cls: 'mp-code-chip', attrs: { title: 'Lobby code' } })}${C.chip(esc(mapName(mp, l.mapId)), { icon: 'map-trifold' })}${C.chip(esc(describeMode(mode)), { icon: 'flag-checkered' })}</div>`;
+  const tools = `<div class="mp-side__head">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'gear-six', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
+  const sessionPanel = C.panel('SESSION', `<div class="mp-fields">${session}</div>`, { icon: 'sliders-horizontal', cls: 'mp-session' });
+  const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users-three', cls: 'mp-drivers' });
+  return C.screen({ cls: 'scr--mp scr--showroom scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`,
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'CLOSE']],
-    body: `${statusLine(mp)}<div class="mp-room"><section class="panel mp-session"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}SESSION</h3></header><div class="mp-fields scroll-y">${carRow}${session}</div></section>${drivers}</div>` });
+    body: showroom({ cls: 'mp-show--lobby', caption, plate: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), side: tools + drivers + sessionPanel }) });
+}
+
+// ---------------------------------------------------------------- the live studio behind the showroom screens
+const SHOWROOM = ['mp', 'mpLobby'];
+let studio = null, mounting = 0; // { carId, el, view }
+export function disposeStage() { mounting++; studio?.view?.dispose?.(); studio = null; }
+/** before a full render: lift the live stage out so the new screen can take it over */
+export function detachStage(menu) {
+  const el = studio && menu.root.querySelector('#carStage'); if (!el || el !== studio.el) return null;
+  el.remove(); return el;
+}
+/** after any render / patch / hide: keep, swap or mount the studio for the car the session will use */
+export function afterRender(menu, kept = null) {
+  const mp = typeof window !== 'undefined' ? window.__multiplayer : null;
+  if (!menu.open || !SHOWROOM.includes(menu.screen) || !mp) { disposeStage(); return; }
+  let el = menu.root.querySelector('#carStage'); if (!el) { disposeStage(); return; }
+  if (kept && kept !== el) { el.replaceWith(kept); el = kept; }
+  const id = showroomCar(mp), index = (mp.cars || []).findIndex((c) => c.id === id);
+  if (studio && studio.el === el && studio.carId === id) return;
+  disposeStage(); if (index < 0) return;
+  const token = mounting;
+  import('../car-select.js').then(({ mountCarSelect }) => {
+    if (token !== mounting || !el.isConnected) return;
+    try { studio = { carId: id, el, view: mountCarSelect(menu.root, index, { container: el, lite: true }) }; } catch (error) { console.warn('Showroom unavailable:', error?.message || error); }
+  });
 }
 
 /** one line under the driver list: what happens next */
@@ -244,7 +281,7 @@ let notice = null;
 export function afterShow(menu, screen) {
   if (screen !== 'title' || !notice) return;
   if (Date.now() > notice.until) { notice = null; return; }
-  C.ui.toast(notice.text, { tone: 'bad', ms: 5000 });
+  notifications.menuFeedback(notice.text, { tone: 'bad', ms: 6000 }); // the menu row: the race lane is hidden behind menus
 }
 /** keep main.js's "multiplayer UI is up" flag in step with the menu: only the multiplayer screens raise it */
 export function syncFlag(screen) {
@@ -256,10 +293,8 @@ export function syncFlag(screen) {
 export function act(menu, el) {
   const mp = window.__multiplayer, a = el.dataset.act; if (!mp) return false;
   switch (a) {
-    case 'mpInput': { const input = el.querySelector('input'); if (input && document.activeElement !== input) { input.focus(); input.select?.(); } return true; }
     case 'mpJoinCode': if (/^[A-Z0-9]{6}$/.test(form.code)) { mp.status('Joining ' + form.code + '…'); mp.action('join', { code: form.code }); } return true;
     case 'mpJoinLobby': mp.status('Joining ' + el.dataset.code + '…'); mp.action('join', { code: el.dataset.code }); return true;
-    case 'mpRefresh': mp.send({ type: 'discover' }); return true;
     case 'mpCreate': {
       if (mp.lobby || mp.creating) return true;
       const draft = mp.pendingDraft || {}, keep = draft.mapId === form.map && (draft.mode || 'sprint') === form.mode;
@@ -286,7 +321,7 @@ export function act(menu, el) {
     case 'mpPreset': mp.setAllowedPreset(el.dataset.preset); return true;
     case 'mpCar': {
       if (!mp.canChangeCar) return true;
-      const cars = mp.cars || [], index = Math.max(0, cars.findIndex((c) => c.id === mp.me?.car));
+      const cars = mp.cars || [], index = Math.max(0, cars.findIndex((c) => c.id === showroomCar(mp)));
       mp.setCarPickerOpen(true);
       menu.show('car', { garage: true, index, allowedCars: mp.allowedCars, onPick(id) { if (mp.changeCar(id) === false) return false; mp.setCarPickerOpen(false); return true; }, onCancel() { mp.setCarPickerOpen(false); } }, true);
       return true;
@@ -327,13 +362,13 @@ export function installMpScreens(menu) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
   const root = menu.root;
   root.addEventListener('input', (e) => {
-    const name = e.target.dataset?.mpField; if (!name) return;
+    const name = e.target.dataset?.field; if (!name || menu.screen !== 'mp') return;
     if (name === 'code') { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (v !== e.target.value) e.target.value = v; form.code = v; }
     else form.name = e.target.value;
     menu.refresh(); // JOIN lights up at six characters; the focused input itself is never rewritten
   });
   root.addEventListener('keydown', (e) => {
-    const name = e.target.dataset?.mpField; if (!name || e.key !== 'Enter') return;
+    const name = e.target.dataset?.field; if (!name || menu.screen !== 'mp' || e.key !== 'Enter') return;
     e.preventDefault(); e.target.blur(); root.focus({ preventScroll: true });
     const go = root.querySelector(name === 'code' ? '[data-act=mpJoinCode]' : '[data-act=mpCreate]'); if (go) menu.activate(go);
   });
@@ -372,10 +407,12 @@ export function installMpScreens(menu) {
     const wrap = (name, after) => { const fn = mp[name]; if (typeof fn !== 'function') return; mp[name] = function (...args) { const r = fn.apply(this, args); after?.(...args); schedule(); return r; }; };
     wrap('renderRoom'); wrap('status'); wrap('left');
     wrap('renderDiscovery', (lobbies) => { mp.__lobbies = Array.isArray(lobbies) ? lobbies : []; });
-    const kicked = mp.hooks.kicked; mp.hooks.kicked = (m) => { kicked?.(m); notice = { text: String(m?.message || m?.reason || 'Removed from the lobby.'), until: Date.now() + 4000 }; };
+    const kicked = mp.hooks.kicked; mp.hooks.kicked = (m) => { kicked?.(m); notice = { text: String(m?.message || m?.reason || 'Removed from the lobby.'), until: Date.now() + 8000 }; };
     const overlay = mp.hooks.inputOverlayOpen; mp.hooks.inputOverlayOpen = () => !!overlay?.() || (dismissed != null && dismissed === phaseKey(mp));
     new MutationObserver(schedule).observe(mp.panel, { attributes: true, attributeFilter: ['hidden'] });
     if (mp.pendingCode) form.code = String(mp.pendingCode).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    // the server answers discovery on request; while JOIN is up the open-lobby list re-asks, so it stays live
+    setInterval(() => { if (menu.screen === 'mp' && form.tab === 'join' && mp.connected && !mp.lobby && !document.hidden) mp.send({ type: 'discover' }); }, 4000);
     // an invite link (?lobby=CODE) opened the panel before the menus existed: open Join once the title is up
     if (!mp.panel.hidden && !mp.lobby) { if (menu.screen === 'title') openEntry(menu, 'join'); else menu.mpBooting = true; }
     schedule();

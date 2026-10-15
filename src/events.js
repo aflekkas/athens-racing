@@ -26,7 +26,7 @@ import { buildCourse, observeCourse, courseStatus } from './checkpoints.js';
 //   { id, name, blurb, type: 'sprint' | 'timetrial' | 'pursuit',
 //     from, to,              route locations: 'start' | 'finish' | a data/map.json marks id | a route s in metres;
 //                            from > to (in s) means the REVERSE direction (Lomvarda -> Vouliagmeni)
-//     rivals: n | [ids],     sprint grid (DRIVERS ids; SP_RIVALS = 3 by default, up to MAX_RIVALS via src/race-setup.js), 0 for solo events
+//     rivals: n | [ids],     sprint grid (DRIVERS ids; SP_RIVALS = 2 by default, up to MAX_RIVALS via src/race-setup.js), 0 for solo events
 //     rivalCount: n          the player's choice of AI rivals (race setup); overrides the rivals count, keeps listed ids first
 //     traffic: 0..1.6,       traffic density multiplier (0 = closed road)
 //     rules: { timeLimit, penalty, signals },   pursuit survive clock (s); red light penalty (s); signals off = all green
@@ -70,9 +70,9 @@ export const DRIVERS = [
 const CLASSIC_DRIVERS = 8; // the original grid pool (see gridFor)
 export const driver = (id) => DRIVERS.find((d) => d.id === id) || DRIVERS[0];
 /** single player: the default number of AI racers in a sprint (the race setup can change it, 0..MAX_RIVALS) */
-export const SP_RIVALS = 3;
-/** the most AI racers a grid takes (one per driver); more than src/race-setup.js PERF_RIVALS shows a frame-rate warning */
-export const MAX_RIVALS = 11;
+export const SP_RIVALS = 2;
+/** the most AI racers a grid takes: two (the user's cap; more cost frame rate for little racing) */
+export const MAX_RIVALS = 2;
 /** how many AI racers an event runs: the player's choice, else the event's own count, else SP_RIVALS */
 export function rivalCount(def) {
   if (def.type !== 'sprint') return 0;
@@ -106,7 +106,7 @@ export function driverCar(d, carIds, avoid) {
 export const TYPES = {
   ...DRIVING_MODES,
   free: { label: 'FREE ROAM', short: 'FREE', desc: 'Drive anywhere in traffic. No clock, rivals or finish.' },
-  sprint: { label: 'SPRINT', short: 'SPRINT', desc: 'Beat three locals to the line.' },
+  sprint: { label: 'SPRINT', short: 'SPRINT', desc: 'Beat two locals to the line.' },
   timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock.' },
   pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
@@ -115,14 +115,14 @@ export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, na
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [
-  { id: 'riviera-sprint', name: 'RIVIERA SPRINT', blurb: 'The full run, Vouliagmeni to Lomvarda.', type: 'sprint', from: 'start', to: 'finish', rivals: 3, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'astir-varkiza', name: 'BEACH ROAD DASH', blurb: 'Past the lake and the coves of Limanakia into Varkiza.', type: 'sprint', from: 'astir', to: 'varkiza', rivals: 3, traffic: 0.8, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'cliff-sprint', name: 'CLIFF ROAD SPRINT', blurb: 'Limanakia to Lomvarda, the bends above the sea.', type: 'sprint', from: 'limanakia', to: 'finish', rivals: 3, traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'return-leg', name: 'THE RETURN LEG', blurb: 'Reverse: Lomvarda back to Vouliagmeni at sunset.', type: 'sprint', from: 'finish', to: 'start', rivals: 3, traffic: 1, conditions: { time: 'sunset' }, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'harbour-run', name: 'HARBOUR RUN', blurb: 'Reverse: Varkiza harbour back to the lake.', type: 'sprint', from: 'varkiza', to: 'lake', rivals: 3, traffic: 0.7, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'classic-cup', name: 'CLASSIC CUP', blurb: 'Vouliagmeni to the Limanakia cliffs.', type: 'sprint', from: 'start', to: 'limanakia', rivals: ['giorgos', 'dimitra', 'yiannis'], traffic: 0.6, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'hot-hatch', name: 'HOT HATCH SHOOTOUT', blurb: 'The lake to the coast road.', type: 'sprint', from: 'lake', to: 'coast', rivals: ['nikos', 'kostas', 'stavros'], traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
-  { id: 'legend-run', name: 'LEGEND OF THE RIVIERA', blurb: 'The full road at night against the three fastest locals.', type: 'sprint', from: 'start', to: 'finish', rivals: ['maria', 'eleni', 'dimitra'], traffic: 1.2, conditions: { time: 'night' }, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'riviera-sprint', name: 'RIVIERA SPRINT', blurb: 'The full run, Vouliagmeni to Lomvarda.', type: 'sprint', from: 'start', to: 'finish', rivals: 2, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'astir-varkiza', name: 'BEACH ROAD DASH', blurb: 'Past the lake and the coves of Limanakia into Varkiza.', type: 'sprint', from: 'astir', to: 'varkiza', rivals: 2, traffic: 0.8, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'cliff-sprint', name: 'CLIFF ROAD SPRINT', blurb: 'Limanakia to Lomvarda, the bends above the sea.', type: 'sprint', from: 'limanakia', to: 'finish', rivals: 2, traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'return-leg', name: 'THE RETURN LEG', blurb: 'Reverse: Lomvarda back to Vouliagmeni at sunset.', type: 'sprint', from: 'finish', to: 'start', rivals: 2, traffic: 1, conditions: { time: 'sunset' }, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'harbour-run', name: 'HARBOUR RUN', blurb: 'Reverse: Varkiza harbour back to the lake.', type: 'sprint', from: 'varkiza', to: 'lake', rivals: 2, traffic: 0.7, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'classic-cup', name: 'CLASSIC CUP', blurb: 'Vouliagmeni to the Limanakia cliffs.', type: 'sprint', from: 'start', to: 'limanakia', rivals: ['giorgos', 'yiannis'], traffic: 0.6, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'hot-hatch', name: 'HOT HATCH SHOOTOUT', blurb: 'The lake to the coast road.', type: 'sprint', from: 'lake', to: 'coast', rivals: ['nikos', 'stavros'], traffic: 0.9, targets: { gold: 1, silver: 2, bronze: 3 } },
+  { id: 'legend-run', name: 'LEGEND OF THE RIVIERA', blurb: 'The full road at night against the two fastest locals.', type: 'sprint', from: 'start', to: 'finish', rivals: ['maria', 'eleni'], traffic: 1.2, conditions: { time: 'night' }, targets: { gold: 1, silver: 2, bronze: 3 } },
   { id: 'tt-riviera', name: 'RIVIERA TIME TRIAL', blurb: 'The whole road, closed off.', type: 'timetrial', from: 'start', to: 'finish', rivals: 0, traffic: 0, targets: { gold: 150, silver: 132, bronze: 115 } },
   { id: 'tt-coast', name: 'COAST ROAD TT', blurb: 'Varkiza to Lomvarda in the morning traffic.', type: 'timetrial', from: 'varkiza', to: 'finish', rivals: 0, traffic: 0.4, targets: { gold: 140, silver: 122, bronze: 105 } },
   { id: 'tt-reverse', name: 'REVERSE TT', blurb: 'Lomvarda to Limanakia, the wrong way round.', type: 'timetrial', from: 'finish', to: 'limanakia', rivals: 0, traffic: 0, targets: { gold: 148, silver: 130, bronze: 112 } },
@@ -130,8 +130,8 @@ export const EVENTS = [
   { id: 'pursuit-escape', name: 'HOT PURSUIT: CLIFF ROAD', blurb: 'Two stars on your tail from Limanakia. Lose them, the faster the better.', type: 'pursuit', from: 'limanakia', to: 'finish', rivals: 0, traffic: 0.9, rules: { police: true, startHeat: 2, goal: 'escape' }, targets: { gold: 60, silver: 95, bronze: 140 } },
   { id: 'pursuit-survive', name: 'MOST WANTED: RIVIERA', blurb: 'Survive three minutes with every patrol on the coast after you.', type: 'pursuit', from: 'start', to: 'finish', rivals: 0, traffic: 1, rules: { police: true, startHeat: 1, goal: 'survive', timeLimit: 180 }, targets: {} },
 ];
-/** Quick Race: the full sprint in whatever car you have, three rivals */
-export const QUICK_RACE = { id: 'quick', name: 'QUICK RACE', blurb: 'Vouliagmeni to Lomvarda against three locals.', type: 'sprint', from: 'start', to: 'finish', rivals: 3, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 }, quick: true };
+/** Quick Race: the full sprint in whatever car you have, two rivals */
+export const QUICK_RACE = { id: 'quick', name: 'QUICK RACE', blurb: 'Vouliagmeni to Lomvarda against two locals.', type: 'sprint', from: 'start', to: 'finish', rivals: 2, traffic: 1, targets: { gold: 1, silver: 2, bronze: 3 }, quick: true };
 // Bundle-owned events are registered when that map loads; IDs stay global for saved records.
 const mapEvents = new Map();
 export function registerMapEvents(mapId, defs) {

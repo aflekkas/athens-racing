@@ -144,12 +144,14 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .scr--settings .tabs__hint { display: none; }
 .scr--settings .tab { justify-content: flex-start; gap: var(--s-3); min-height: 3rem; padding: 0 var(--s-4); border-radius: var(--r-3); font-size: var(--t-md); letter-spacing: .08em; color: var(--c-text-2); }
 .scr--settings .tab .ico { width: 1.25rem; height: 1.25rem; color: var(--c-text-3); }
-.scr--settings .tab:hover { background: rgba(255,255,255,.05); }
-.scr--settings .tab.on { background: var(--hu-sheen), rgba(255,255,255,.08); color: #fff; box-shadow: inset 0 0 0 1px var(--hu-hair); }
-.scr--settings .tab.on::before { content: ""; position: absolute; left: 0; top: 26%; bottom: 26%; width: 3px; border-radius: 3px; background: var(--hu-ice); box-shadow: 0 0 10px var(--hu-ice); }
+/* hover only brightens the label; the one selected item is the glass indicator that slides along the rail */
+@media (hover: hover) { .scr--settings .tab:not(.on):hover { color: var(--c-text); } .scr--settings .tab:not(.on):hover .ico { color: var(--c-text-2); } }
+.scr--settings .tab.on { color: #fff; }
+.scr--settings .tabs > .sel-ind { border-radius: var(--r-3); background: var(--hu-sheen), rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px var(--hu-hair); }
+.scr--settings .tabs > .sel-ind::before { content: ""; position: absolute; left: 0; top: 26%; bottom: 26%; width: 3px; border-radius: 3px; background: var(--hu-ice); box-shadow: 0 0 10px var(--hu-ice); }
 .scr--settings .tab.on .ico { color: var(--hu-ice); }
 .scr--settings .tabs.focus { box-shadow: none; }
-.scr--settings .tabs.focus .tab.on { background: linear-gradient(90deg, rgba(111,208,255,.18), rgba(111,208,255,.04)); box-shadow: inset 0 0 0 1px rgba(111,208,255,.55); }
+.scr--settings .tabs.focus > .sel-ind { background: linear-gradient(90deg, rgba(111,208,255,.18), rgba(111,208,255,.04)); box-shadow: inset 0 0 0 1px rgba(111,208,255,.55); }
 .scr--settings .scr__body { align-items: stretch; }
 .set-panel { width: min(56rem, 100%); min-height: 0; padding: var(--s-4) var(--s-4) var(--s-5); }
 .set-panel .group + .group { margin-top: var(--s-5); padding-top: var(--s-1); }
@@ -238,7 +240,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .scr--settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; }
   .scr--settings .tabs { flex-direction: row; overflow-x: auto; gap: var(--s-1); }
   .scr--settings .tab { flex: none; min-height: 2.5rem; border-radius: var(--r-pill); font-size: var(--t-sm); }
-  .scr--settings .tab.on::before { left: 22%; right: 22%; top: auto; bottom: 0; width: auto; height: 2px; }
+  .scr--settings .tabs > .sel-ind { border-radius: var(--r-pill); }
+  .scr--settings .tabs > .sel-ind::before { left: 22%; right: 22%; top: auto; bottom: 0; width: auto; height: 2px; }
   .set-panel { padding: var(--s-3) var(--s-2) var(--s-4); }
   .pause-card { justify-self: stretch; width: 100%; }
 }
@@ -307,7 +310,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .scr--settings { grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
   .scr--settings .tabs { flex-direction: column; overflow: visible; }
   .scr--settings .tab { min-height: 2.3rem; border-radius: var(--r-2); }
-  .scr--settings .tab.on::before { left: 0; right: auto; top: 26%; bottom: 26%; width: 3px; height: auto; }
+  .scr--settings .tabs > .sel-ind { border-radius: var(--r-2); }
+  .scr--settings .tabs > .sel-ind::before { left: 0; right: auto; top: 26%; bottom: 26%; width: 3px; height: auto; }
   .scr--settings .scr__headr { overflow-y: auto; max-height: 100%; }
   .pause-card { padding: var(--s-3); width: min(36rem, 100%); justify-self: start; }
   .pause__list .option { grid-template-columns: auto 1fr; min-height: 2.6rem; } .pause__list .option__go { display: none; }

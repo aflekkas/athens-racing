@@ -16,7 +16,7 @@ import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
 import { resolveGraphics, PRESETS, PRESET_IDS, PRESET_LABELS, LEVEL_IDS } from './graphics.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
-import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS, POLICE_LEVELS } from './race-setup.js';
+import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, POLICE_LEVELS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
 import { mapTagline } from './menu-copy.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
@@ -79,7 +79,7 @@ export class Menu {
   }
   hide() {
     this.leaving(); this.mapView?.dispose(); this.mapView = null;
-    this.screen = this.shown = null; this.stack.length = 0; this.root.innerHTML = '';
+    this.screen = this.shown = null; this.stack.length = 0; MP.afterRender(this); this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui; MP.syncFlag(null);
   }
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
@@ -94,7 +94,9 @@ export class Menu {
     // Only a real screen change slides in; refreshes (a toggle, a tab) swap in place. Transitions stay off until the
     // new DOM has its focus state, so nothing visibly animates from an unfocused, unstyled first frame.
     this.shown = this.screen;
+    const mpStage = MP.detachStage(this); // the multiplayer showroom's live car carries over between its screens
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
+    MP.afterRender(this, mpStage);
     this.root.className = 's-' + this.screen + ' is-settling' + (entering ? ' is-entering' : '');
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
@@ -107,7 +109,7 @@ export class Menu {
     if (f == null) { f = it.findIndex((el) => el.dataset.default != null); if (f < 0) f = it.findIndex((el) => el.dataset.kind !== 'tabs'); }
     if (this.data.keepScroll && keep != null) { const b = this.root.querySelector('.scr__body .scroll-y, .scr__body'); if (b) b.scrollTop = keep; }
     this.setFocus(Math.min(Math.max(0, f), Math.max(0, it.length - 1)), !this.data.keepScroll && !(this.screen === 'car' && this.data.detail));
-    this.data.keepScroll = false;
+    this.data.keepScroll = false; C.indicators(this.root);
   }
   /** the morph path of render(): only nodes whose markup changed are touched, so focus, scroll and the garage
    *  thumbnails survive and nothing flashes */
@@ -115,9 +117,10 @@ export class Menu {
     C.closeListbox();
     const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
     if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
+    MP.afterRender(this);
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
-    this.data.keepScroll = false;
+    this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item
   }
   /** re-render in place (a value changed that other rows depend on); focus stays on the same item even when others
    *  appear or disappear (e.g. DEFAULTS becomes available) */
@@ -349,7 +352,7 @@ export class Menu {
     const A = { 'data-scope': 'setup' }, rows = [];
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users-three', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
-        note: cur.rivals > PERF_RIVALS ? `${icon('warning')} MORE THAN ${PERF_RIVALS} RIVALS CAN LOWER THE FRAME RATE` : f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: cur.rivals > PERF_RIVALS ? 'warn' : '' }));
+        note: f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: '' }));
       if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'police-car', value: cur.police ? cur.policeLevel : 'off', attrs: A, options: [['off', 'OFF'], ...POLICE_LEVELS],
         note: !cur.police ? '' : cur.policeLevel === 'relaxed' ? 'LATE TO NOTICE, SLOW TO ESCALATE, FEW UNITS' : cur.policeLevel === 'tough' ? 'SHARP-EYED, LITTLE TOLERANCE, MORE UNITS' : 'A WARNING FROM +25 KM/H IN VIEW, A CHASE IF YOU KEEP GOING' }));
       if (f.key === 'busted' && cur.police) rows.push(C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: String(cur.busted), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['true', 'ON'], ['false', 'OFF']],

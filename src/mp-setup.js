@@ -5,7 +5,7 @@
 import { TIMES, WEATHERS, MAX_RIVALS, isPoliceLevel } from './race-setup.js';
 
 export const MP_CONFIG_DEFAULTS = Object.freeze({
-  rivals: 3, traffic: 1, time: 'afternoon', weather: 'clear',
+  rivals: 2, traffic: 1, time: 'afternoon', weather: 'clear',
   reverse: false, police: false, sessionDuration: 300, enforcement: null,
 });
 // Optional police setup keys (absent on older lobbies): POLICE level and CAN BE BUSTED.

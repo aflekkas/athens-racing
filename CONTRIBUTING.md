@@ -4,10 +4,14 @@ Thanks for helping. This page is the whole process: read it once before your fir
 
 ## The rules
 
-1. **Everything goes through a pull request into `main`.** Direct pushes to `main` are blocked for contributors. Branch from the latest `main`, push your branch, open a PR.
+1. **Everything goes through a pull request into `staging`.** There are two long-lived branches:
+   - `staging`: the integration branch and the default branch. It deploys to https://athens-street-racers-staging.aflekkas.workers.dev. Every contribution lands here first, through a PR.
+   - `prod`: what players get, at https://athens-street-racers.aflekkas.workers.dev. Only the maintainer updates it, by promoting a tested `staging` commit.
+
+   Both branches are protected: no direct pushes, no force-pushes, and every change needs a PR with a green `test` check and the code owner's approval. Branch from the latest `staging`, push your own branch, open a PR into `staging`. Never push to `staging` or `prod` directly; anything pushed there outside a PR is reverted.
 2. **CI must be green.** The `test` check (`.github/workflows/ci.yml`) runs on every PR and must pass before merging.
 3. **The maintainer reviews and merges.** @aflekkas is the code owner and approves every PR. Nothing reaches players without that review.
-4. **Deploys are done by the maintainer**, never from a PR. Merged work goes to staging (https://athens-street-racers-staging.aflekkas.workers.dev) for a playtest first, and to production (https://athens-street-racers.aflekkas.workers.dev) only when the maintainer says so. See `deploy/README.md`.
+4. **Deploys are done by the maintainer**, never from a PR. Merged work goes to staging for a playtest first, and is promoted from `staging` to `prod` (production) only when the maintainer says so. See `deploy/README.md`.
 5. **Show your work.** Every PR that changes anything a player can see, hear or feel needs screenshots or a short video in the PR description (the template asks for them). Before *and* after for visual changes. A PR without them will be sent back.
 
 ## Workflow
@@ -15,15 +19,16 @@ Thanks for helping. This page is the whole process: read it once before your fir
 ```sh
 git clone https://github.com/aflekkas/athens-street-racers.git
 cd athens-street-racers
+git switch staging
 npm ci
 npm start                     # http://localhost:8000
 git switch -c your-name/short-feature-name
 # ...make changes, commit in small steps...
 git push -u origin your-name/short-feature-name
-gh pr create --fill           # or open the PR on github.com
+gh pr create --base staging --fill   # or open the PR on github.com
 ```
 
-Keep your branch up to date with `git pull --rebase origin main`. Never force-push `main` or someone else's branch.
+Keep your branch up to date with `git pull --rebase origin staging`. Never force-push `staging`, `prod` or someone else's branch.
 
 ## Before you open the PR, run the same checks CI runs
 

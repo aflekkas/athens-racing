@@ -104,3 +104,14 @@ test('never steers into a car alongside', async () => {
   // Mirror image on the left.
   near(alongsideLimit(-3, -0.5, 0.9, -3, 0.9, 0.5), -0.7);
 });
+
+test('a slower civilian is passed at once, from a few car lengths back', async () => {
+  const { civilianPass } = await import('../src/rival-ai.js');
+  assert.equal(civilianPass(false, 25, 12, 30, 25), true, 'closing on a slow civilian: pull out early');
+  assert.equal(civilianPass(true, 25, 12, 30, 25), false, 'a racer is a race: patience rules apply');
+  assert.equal(civilianPass(false, 25, 24, 10, 25), false, 'not meaningfully slower');
+  assert.equal(civilianPass(false, 25, 12, 80, 25), false, 'still too far back');
+  assert.equal(civilianPass(false, 25, 12, 1, 25), false, 'too close to swing out: back off first');
+  assert.equal(civilianPass(false, 25, 12, 30, 25, 1), false, 'cooling down after an abort');
+  assert.equal(civilianPass(false, 25, 12, 30, 25, 0, 1), false, 'gathering it up after contact');
+});

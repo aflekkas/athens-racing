@@ -23,14 +23,14 @@ const pursuit = { id: 'chase', name: 'CHASE', type: 'pursuit', s0: 5, s1: 15, di
 const defs = new Map([['quick', sprint], ['chase', pursuit]]);
 
 test('default config follows the event; sanitize accepts shared setup keys only', () => {
-  assert.deepEqual(defaultConfig(sprint), { rivals: 3, traffic: 1, time: 'sunset', weather: 'clear', reverse: false, police: false, sessionDuration: 300, enforcement: null });
+  assert.deepEqual(defaultConfig(sprint), { rivals: 2, traffic: 1, time: 'sunset', weather: 'clear', reverse: false, police: false, sessionDuration: 300, enforcement: null });
   assert.equal(defaultConfig(pursuit).police, true);
   assert.deepEqual(sanitizeConfig(undefined), { config: null });
   assert.ok(sanitizeConfig(null).error);
-  const { config, error } = sanitizeConfig({ rivals: 5, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 120, enforcement: { zone: 'coast' }, taxi: { whatever: 1 } });
+  const { config, error } = sanitizeConfig({ rivals: 2, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 120, enforcement: { zone: 'coast' }, taxi: { whatever: 1 } });
   assert.equal(error, undefined);
-  assert.deepEqual(config, { rivals: 5, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 120, enforcement: { zone: 'coast' } });
-  for (const bad of [{ rivals: 12 }, { rivals: -1 }, { traffic: 3 }, { time: 'dusk' }, { weather: 'snow' }, { sessionDuration: 0 }, { enforcement: { a: 1, b: { c: { d: 1 } } } }, { enforcement: [1] }]) {
+  assert.deepEqual(config, { rivals: 2, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 120, enforcement: { zone: 'coast' } });
+  for (const bad of [{ rivals: 3 }, { rivals: -1 }, { traffic: 3 }, { time: 'dusk' }, { weather: 'snow' }, { sessionDuration: 0 }, { enforcement: { a: 1, b: { c: { d: 1 } } } }, { enforcement: [1] }]) {
     assert.ok(sanitizeConfig(bad).error, JSON.stringify(bad));
   }
   assert.deepEqual(sanitizeConfig({ enforcement: null }).config, { enforcement: null });
@@ -82,10 +82,10 @@ test('telemetry registry stays bounded and only accepts finite in-range values',
 });
 
 test('client adapter maps lobby config to race-setup semantics', () => {
-  assert.deepEqual(configFromLobby(null).rivals, 3);
+  assert.deepEqual(configFromLobby(null).rivals, 2);
   assert.deepEqual(configFromLobby({ config: { rivals: 0, time: 'night' } }), { rivals: 0, traffic: 1, time: 'night', weather: 'clear', reverse: false, police: false, sessionDuration: 300, enforcement: null });
-  assert.deepEqual(lobbyConfigToRaceSetup({ rivals: 99, traffic: 9, time: 'dusk', weather: 'snow', reverse: 1, police: 1 }).rivals, 11);
-  assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 3, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false, policeLevel: 'normal', busted: true });
+  assert.deepEqual(lobbyConfigToRaceSetup({ rivals: 99, traffic: 9, time: 'dusk', weather: 'snow', reverse: 1, police: 1 }).rivals, 2);
+  assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 2, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false, policeLevel: 'normal', busted: true });
   assert.deepEqual([lobbyConfigToRaceSetup({ police: true, policeLevel: 'tough', busted: false }), lobbyConfigToRaceSetup({ policeLevel: 'insane' })].map(c => [c.policeLevel, c.busted]), [['tough', false], ['normal', true]]);
   assert.equal(trafficBoolToLevel(true), 1); assert.equal(trafficBoolToLevel(false), 0);
   assert.equal(trafficLevelToBool(0.5), true); assert.equal(trafficLevelToBool(0), false);
@@ -130,10 +130,10 @@ test('create seeds configurable Quick Race; removed modes rejected and circuit e
     assert.match(errOf(a), /Mode unavailable/);
     assert.equal(core.lobbies.size, 0);
   }
-  send(a, { type: 'create', eventId: 'quick', config: { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true } });
+  send(a, { type: 'create', eventId: 'quick', config: { rivals: 2, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true } });
   const l = lobbyOf(a);
   assert.equal(l.mode, 'sprint');
-  assert.deepEqual(l.config, { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
+  assert.deepEqual(l.config, { rivals: 2, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
   assert.deepEqual([l.event.s0, l.event.s1, l.event.dir, l.event.routeKey], [15, 0, -1, '15>0']);
   send(a, { type: 'options', eventId: 'cab' });
   assert.match(errOf(a), /Mode unavailable/);
@@ -334,7 +334,7 @@ test('three real clients converge on one room through concurrent create/edit/joi
   // Host creates and immediately edits (the playtest create/edit race); guests join mid-edit.
   host.send({ type: 'create', lobbyName: 'Converge', mapId: 'riviera', allowedCars: ['mini', 'z4'] });
   const created = (await wroom(host)).lobby;
-  host.send({ type: 'options', config: { rivals: 5, time: 'sunset', traffic: 1 } });
+  host.send({ type: 'options', config: { rivals: 1, time: 'sunset', traffic: 1 } });
   g1.send({ type: 'join', code: created.code, car: 'z4' });
   g2.send({ type: 'join', code: created.code, car: 'mini' });
   await wroom(g1); await wroom(g2); await wroom(host);
@@ -346,7 +346,7 @@ test('three real clients converge on one room through concurrent create/edit/joi
   await g1.next((m) => m.type === 'lobby' && m.lobby.allowedCars.length === 1);
   await g2.next((m) => m.type === 'lobby' && m.lobby.allowedCars.length === 1);
   assert.equal(hg.lobby.code, created.code, 'room code is stable');
-  assert.equal(hg.lobby.config.rivals, 5);
+  assert.equal(hg.lobby.config.rivals, 1);
   assert.deepEqual(hg.lobby.allowedCars, ['mini']);
   const gus = hg.lobby.players.find((p) => p.id === g1.id);
   assert.equal(gus.car, 'mini', 'guest gets an allowed car after host filter edits');

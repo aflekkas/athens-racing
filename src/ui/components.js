@@ -3,7 +3,8 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
-//      segmented(), stepper(), select(), tabs(), option(), card(), panel(), stat(), keyHints(), progress(), spinner(),
+//      segmented(), stepper(), select(), tabs({ vertical }), option(), listRow(), textField(), card(), panel(), stat(), chip(),
+//      table(), keyHints(), progress(), spinner(),
 //      medal(), icon(name). Interactive builders emit a `.mi` row (the menu's focus item) carrying data-kind / data-key.
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
@@ -77,6 +78,21 @@ export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
   return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
 }
 export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map((t) => Array.isArray(t) ? stat(...t) : t).join('')}</div>`;
+/** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron */
+export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true } = {}) {
+  return `<div class="mi list-row ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('caret-right', 'list-row__go') : ''}</div>`;
+}
+/** a small status pill: tone '' | 'accent' | 'good' | 'warn' | 'bad' | 'gold' */
+export const chip = (text, { tone = '', icon: ic, cls = '', attrs } = {}) => `<span class="chip ${tone ? 'chip--' + tone : ''} ${cls}"${attrStr(attrs)}>${icon(ic)}<span>${text}</span></span>`;
+/** a classification / splits table: rows [{ pos, name, sub, value, me, tone, chip }] */
+export function table(rows, { cls = '' } = {}) {
+  return `<table class="r-table ${cls}">${rows.map((r) => `<tr class="${r.me ? 'me' : ''}">${r.pos != null ? `<td class="r-pos">${r.pos}</td>` : ''}<td>${r.name ?? ''}${r.sub ? `<small>${r.sub}</small>` : ''}${r.chip || ''}</td><td class="tnum ${r.tone || ''}">${r.value ?? ''}</td></tr>`).join('')}</table>`;
+}
+/** a text field in a normal focus row: OK puts the caret in it; Esc / Enter leave (the owner listens for 'input' on [data-field]) */
+export function textField({ name, label, value = '', placeholder = '', maxlength, fid, icon: ic, note, cls = '', inputCls = '', inputAttrs, attrs } = {}) {
+  const input = `<input class="text-field__input ${inputCls}"${attrStr({ 'data-field': name, value, placeholder, maxlength, 'aria-label': label, autocomplete: 'off', spellcheck: 'false', ...inputAttrs })}>`;
+  return field(label, input, { icon: ic, note, cls: 'text-field ' + cls, kind: 'text', attrs: { 'data-fid': fid || name, ...attrs } });
+}
 export const badge = (text, tone = '', ic) => `<span class="badge ${tone ? 'badge--' + tone : ''}">${icon(ic)}${text}</span>`;
 export const medal = (m, cls = '') => `<i class="medal ${m || 'none'} ${cls}" title="${m ? m.toUpperCase() : 'NO MEDAL'}"></i>`;
 export const progress = (value = 0, cls = '') => `<div class="progress ${cls}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(value * 100)}" style="--p:${value}"><i class="progress__fill"></i></div>`;
@@ -139,10 +155,12 @@ export function toggle({ key, label, value = false, on = 'ON', off = 'OFF', icon
   return field(label, `<div class="switch ${value ? 'on' : ''}" role="switch" aria-checked="${!!value}"><span class="switch__track"><i class="switch__knob"></i></span><span class="switch__txt" data-on="${esc(on)}" data-off="${esc(off)}">${value ? on : off}</span></div>`,
     { icon: ic, note, cls, kind: 'toggle', key, type: 'bool', attrs: { 'data-value': String(!!value), ...attrs } });
 }
+/** the one "selected" surface of a tab bar / sidebar / segmented control: it slides to the chosen item (indicators()) */
+const IND = '<i class="sel-ind" data-ui-keep="ind" aria-hidden="true"></i>';
 const segOpts = (options, value, dflt) => options.map(([v, l, ic]) => `<span class="seg__opt ${String(v) === String(value) ? 'on' : ''} ${dflt != null && String(v) === String(dflt) ? 'dflt' : ''}" data-v="${esc(v)}">${icon(ic)}${l}</span>`).join('');
 /** options: [[value, label, icon?]]; dflt marks the event / factory default with a dot */
 export function segmented({ key, label, value, options, icon: ic, note, noteCls, dflt, type, attrs, cls } = {}) {
-  return field(label, `<div class="seg" role="radiogroup">${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
+  return field(label, `<div class="seg" role="radiogroup">${IND}${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
 }
 /** numeric (min / max / step / format) or a list (options: [[value, label]]) */
 export function stepper({ key, label, value, min, max, step = 1, format = 'int', options, icon: ic, note, noteCls, type, attrs } = {}) {
@@ -160,10 +178,11 @@ export function select({ key, label, value, options, icon: ic, note, type, attrs
     { icon: ic, note, kind: 'select', key, type, attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
 /** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
-export function tabs({ key, value, options, cls = '', hint = true } = {}) {
+export function tabs({ key, value, options, cls = '', hint = true, vertical = false } = {}) {
+  if (vertical) cls += ' tabs--rail';
   const h = hint ? `<span class="tabs__hint on-key">${kbd('Q')}</span><span class="tabs__hint on-pad">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key">${kbd('E')}</span><span class="tabs__hint on-pad">${kbd('RB', true)}</span>` : '';
-  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
+  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
 }
 
 // ------------------------------------------------------------------ values
@@ -194,6 +213,7 @@ export function setValue(el, v, doEmit = true) {
     const t = el.querySelector('.switch__txt'); if (t) t.textContent = v ? t.dataset.on : t.dataset.off;
   } else if (kind === 'choice' || kind === 'tabs') {
     for (const o of el.querySelectorAll('[data-v]')) { const on = o.dataset.v === String(v); o.classList.toggle('on', on); if (kind === 'tabs') o.setAttribute('aria-selected', on); }
+    indicators(el);
   } else if (kind === 'stepper') {
     const list = el.dataset.options ? optionsOf(el) : null, val = el.querySelector('.stepper__val');
     let atMin, atMax;
@@ -211,7 +231,7 @@ export function setValue(el, v, doEmit = true) {
 /** left / right on a row. Returns true if the row is adjustable */
 export function step(el, d) {
   if (el?.localName === 'ui-select') return el.step(d);
-  const kind = el?.dataset.kind; if (!kind) return false;
+  const kind = el?.dataset.kind; if (!kind || kind === 'text') return false;
   if (kind === 'slider') { setValue(el, +el.dataset.value + d * (+el.dataset.step || 0.05)); return true; }
   if (kind === 'toggle') { setValue(el, !(el.dataset.value === 'true')); return true; }
   if (kind === 'stepper' && !el.dataset.options) { setValue(el, +el.dataset.value + d * (+el.dataset.step || 1)); return true; }
@@ -229,6 +249,7 @@ export function step(el, d) {
 export function activate(el) {
   if (el?.localName === 'ui-select') { el.open(); return true; }
   const kind = el?.dataset.kind; if (!kind) return false;
+  if (kind === 'text') { const input = el.querySelector('input'); if (input && document.activeElement !== input) { input.focus(); input.select?.(); } return true; }
   if (kind === 'select') { openListbox(el); return true; }
   if (kind === 'slider') return true;
   return step(el, 1);
@@ -244,6 +265,7 @@ export function handleClick(e) {
   if (kind === 'toggle') { step(row, 1); return true; }
   if (kind === 'select') { openListbox(row); return true; }
   if (kind === 'slider') return true; // pointerdown handles it
+  if (kind === 'text') { if (e.target.localName !== 'input') activate(row); return true; }
   return false;
 }
 function dragSlider(e, el, track, onValue, onDone) {
@@ -268,7 +290,10 @@ export function morph(root, html) {
   const t = document.createElement('template'); t.innerHTML = html; patchChildren(root, t.content);
 }
 function patchChildren(from, to) {
-  const next = [...to.childNodes], keep = [...from.childNodes].filter((n) => n.nodeType === 1 && n.hasAttribute('data-ui-keep'));
+  const keep = [...from.childNodes].filter((n) => n.nodeType === 1 && n.hasAttribute('data-ui-keep'));
+  // a keyed keep node (data-ui-keep="ind") in the new markup stands for the live one already here, which keeps its state
+  const keys = new Set(keep.map((n) => n.getAttribute('data-ui-keep')).filter(Boolean));
+  const next = [...to.childNodes].filter((n) => !(n.nodeType === 1 && keys.has(n.getAttribute('data-ui-keep'))));
   let cur = [...from.childNodes].filter((n) => !keep.includes(n));
   next.forEach((n, i) => {
     const old = cur[i];
@@ -288,6 +313,26 @@ function patchAttrs(old, n) {
   if (old.nodeName === 'INPUT' && old !== document.activeElement && old.value !== (n.getAttribute('value') ?? '')) old.value = n.getAttribute('value') ?? '';
 }
 
+/** slide every selection indicator under root to its chosen item. The first placement does not animate; later ones
+ *  glide (ui.css .sel-ind), because the indicator node survives in-place refreshes (morph keeps data-ui-keep="ind"). */
+export function indicators(root) {
+  if (!root?.querySelectorAll) return;
+  const bars = root.matches?.('.tabs, .seg') ? [root] : root.querySelectorAll('.tabs, .seg');
+  for (const bar of bars) {
+    const ind = bar.querySelector(':scope > .sel-ind'); if (!ind) continue;
+    const on = bar.querySelector(':scope > .on, :scope > [data-v].on');
+    if (!on || !on.offsetParent) { ind.style.opacity = '0'; continue; }
+    const x = on.offsetLeft, y = on.offsetTop, w = on.offsetWidth, h = on.offsetHeight;
+    const first = !ind.dataset.placed;
+    if (first) ind.style.transition = 'none';
+    ind.style.transform = `translate(${x}px, ${y}px)`; ind.style.width = w + 'px'; ind.style.height = h + 'px'; ind.style.opacity = '1';
+    if (first) { void ind.offsetWidth; ind.style.transition = ''; ind.dataset.placed = '1'; }
+  }
+}
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  let raf = 0; const all = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => indicators(document)); };
+  addEventListener('resize', all); document.fonts?.ready?.then(all);
+}
 export function bindRoot(root) {
   if (root.__uiBound) return; root.__uiBound = true;
   root.addEventListener('pointerdown', (e) => {

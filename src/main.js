@@ -12,7 +12,7 @@ import { waitForBootSession } from './boot-session.js';
 import * as ENV from './env.js';
 import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
-import { CARS, CarModel, Driver, setCarEnv, setPaint } from './cars.js';
+import { CARS, CarModel, Driver, setCarEnv, setPaint, catalogueTrafficTypes } from './cars.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
 import { ENGINE_HOT_C } from './driving-feedback-model.js';
 import { inGarage } from './car-catalog.js';
@@ -31,7 +31,7 @@ import { Audio } from './audio.js';
 import { VoiceReactions } from './voice.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
-import { clamp, lerp, damp, smoothstep, frameYield } from './util.js';
+import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
 import { resolvePlayerContacts, containOnlineVehicle } from './multiplayer-contact.js';
 import { SharedWorld } from './mp-shared-world.js';
 import { onlineWorldVisibility } from './mp-world-policy.js';
@@ -60,7 +60,7 @@ import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
 import { PRESETS, PRESET_IDS, PRESET_LABELS, detectQuality, resolveGraphics, applyQualityTier, applyRenderResolution, applySceneryQuality, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
-import { PARKED_RANGE } from './traffic-fleet.js';
+import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initReplay } from './replay-mode.js';
 import { loading } from './ui/loading.js';
 import { ui, icon } from './ui/components.js';
@@ -371,8 +371,24 @@ function makeCar(spec, isPlayer, plate) {
   trimShadowCasters(model.root); if (driver.root) { if (isPlayer || spec.convertible) trimShadowCasters(driver.root); else driver.root.traverse(o => { o.castShadow = false; }); }
   return { model, driver };
 }
+// A rival beyond ~60 m draws the catalogue car's own far level from the traffic fleet (a few merged draws, no shadow)
+// instead of the full model (~65 draws and ~40 shadow casters); built with the grid, so the switch costs nothing mid-race.
+let rivalFarTypes = null;
+function attachRivalFar(c) {
+  rivalFarTypes ||= catalogueTrafficTypes(CARS);
+  const type = rivalFarTypes.find((t) => t.id === c.spec.id);
+  c.far = type ? fleetModel(type, c.model.paint?.color || c.spec.color, new RNG(7), { low: true }) : null;
+  if (c.far) { c.far.root.visible = false; c.far.root.name = 'rival-far:' + c.spec.id; scene.add(c.far.root); }
+  c.farOn = false; c.shadowsOff = false;
+  c.casters = []; c.model.root.traverse((o) => { if (o.isMesh && o.castShadow) c.casters.push(o); });
+}
 function disposeCar(c) {
   if (!c) return;
+  if (c.far) {
+    scene.remove(c.far.root);
+    c.far.root.traverse((o) => { for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) if (!m.userData?.shared) m.dispose?.(); });
+    c.far = null;
+  }
   c.cockpit?.disposeMirrors();
   c.driver?.dispose?.();
   c.model.disposeDamage?.();
@@ -849,6 +865,7 @@ function buildGrid() {
       rival = { spec, veh: rival.veh, ...built, ai: { lane: 0, cool: 0 } }; rival.veh.setSpec(spec); rival.veh.gear = 1; c = rival;
     } else c = { spec, veh: new Vehicle(spec, route), ...makeCar(spec, false), ai: { lane: 0, cool: 0 } };
     c.veh.ground = ground; c.drv = d; c.name = d.name; c.actor = { veh: c.veh, kind: 'rival', car: c };
+    attachRivalFar(c);
     grid.push(c);
   }
   if (!grid.length) { rival.name = ''; rival.drv = null; }
@@ -1069,6 +1086,9 @@ function updateGrid(dt) {
     if (pace === 0) { rin.throttle = 0; rin.brake = v.vLong > 1 ? 0.7 : 0; rin.handbrake = v.vLong <= 1; }
     c.lastBrake = rin.brake > 0.2;
     v.dragMul = 1 - 0.32 * (c.ai.controller?.draft || 0); // the same slipstream tow the player gets
+    // Well away from the player (out of any close view) a rival integrates at 120 Hz instead of 240: half the cost,
+    // within 0.3% on lap time (tools/ai-driving.test.mjs far-rival-substep).
+    v.subH = Math.hypot(v.x - player.veh.x, v.z - player.veh.z) > 150 ? 1 / 120 : 0;
     v.update(dt, rin);
     if (v.spec.nitrous === true && !v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
@@ -1325,8 +1345,22 @@ function handlePeople() {
 function syncCar(c, dt) {
   const v = c.veh;
   v.place(c.model.root);
+  // Offline rivals: far level beyond ~60 m (hysteresis 55/62), no shadow casting beyond ~40 m.
+  let far = false;
+  if (c.far && multiplayer.active && (c.farOn || c.shadowsOff)) { // the online code reuses `rival`: back to the full model
+    c.farOn = c.shadowsOff = false; for (const ch of c.model.root.children) ch.visible = true; c.far.root.visible = false; for (const o of c.casters) o.castShadow = true;
+  }
+  if (c.far && !multiplayer.active) {
+    const distance = camera.position.distanceTo(c.model.root.position);
+    far = c.model.root.visible && distance > (c.farOn ? 55 : 62);
+    if (far !== c.farOn) { c.farOn = far; for (const ch of c.model.root.children) ch.visible = !far; c.far.root.visible = far; }
+    if (far) { c.far.root.position.copy(c.model.root.position); c.far.root.quaternion.copy(c.model.root.quaternion); }
+    else if (!c.model.root.visible) c.far.root.visible = false;
+    const shadowsOff = distance > (c.shadowsOff ? 36 : 42);
+    if (shadowsOff !== c.shadowsOff) { c.shadowsOff = shadowsOff; for (const o of c.casters) o.castShadow = !shadowsOff; }
+  }
   c.model.steamAmount = multiplayer.active ? 0 : v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
-  c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
+  if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
   if (c !== player) {
     const distance = camera.position.distanceTo(c.model.root.position);

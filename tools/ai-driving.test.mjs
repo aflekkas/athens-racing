@@ -217,3 +217,35 @@ for (const gap of [1.2, 3]) test(`boxed-in-${gap}`, () => {
   record(`boxed-in-${gap}`, { contacts, passedAt, wall, maxU }, []);
   if (!baseline) { assert.equal(contacts, 0); assert.ok(passedAt !== null && passedAt < 20, `got past at ${passedAt}`); assert.ok(maxU < route.edge(0) - 0.9, `stayed on the road (max u ${maxU.toFixed(2)})`); }
 });
+// main.js integrates rivals far from the player at 120 Hz (Vehicle.subH): same driving, half the cost.
+test('far-rival-substep', () => {
+  const data = JSON.parse(readFileSync(new URL('data/maps/penteli/map.json', root)));
+  const route = new Route(data.route); route.urban = () => 1;
+  const run = (subH) => {
+    const v = new Vehicle({ ...spec }, route); v.reset(100, 0, 0); v.subH = subH;
+    const ai = new RivalAI(route, v, { perfect: true, closedRoad: true });
+    let t = 0, beta = 0;
+    for (; t < 60 && v.s < 1100; t += dt) { v.update(dt, ai.update(dt)); beta = Math.max(beta, Math.abs(Math.atan2(v.vLat, Math.max(2, v.vLong)))); }
+    return { t, beta, ok: [v.x, v.z, v.vLong].every(Number.isFinite) };
+  };
+  const fine = run(0), coarse = run(1 / 120);
+  record('far-rival-substep', { fine, coarse }, []);
+  if (!baseline) { assert.ok(coarse.ok); assert.ok(Math.abs(coarse.t / fine.t - 1) < 0.01, `${coarse.t} vs ${fine.t}`); assert.ok(coarse.beta < fine.beta + 0.03); }
+});
+// Real-traffic finding: an oncoming civilian drifting toward us, our kerb side occupied by a car alongside.
+// The old escape scored the far side of the oncoming car higher and drove across its path. Never cross it.
+for (const dir of [1, -1]) test(`no-escape-across-oncoming-${dir}`, () => {
+  const route = road({ wide: true }), bot = make(route, 500, dir * 2.4, 18, dir);
+  const beside = make(route, 500, dir * 5.9, 18, dir).veh;
+  const onc = obstacle(500 + dir * 80, -dir * 1.6, -dir * 12.5); onc.vu = dir * 1.5;
+  let crossed = false, contacts = 0;
+  for (let step = 0; step < 6 / dt; step++) {
+    beside.s = bot.veh.s; beside.z = -beside.s;
+    const input = bot.controller.update(dt, { racers: [{ veh: beside }], traffic: [onc] });
+    bot.veh.update(dt, input); onc.s += onc.vs * dt; onc.u = dir > 0 ? Math.min(onc.u + onc.vu * dt, -0.3) : Math.max(onc.u + onc.vu * dt, 0.3); // drifts to the centre line
+    if (Math.abs(onc.s - bot.veh.s) < 8 && Math.sign(bot.veh.u - onc.u) !== Math.sign(dir)) crossed = true;
+    if (overlap(bot.veh, onc, route) || overlap(bot.veh, { ...beside, hs: beside.halfL, hu: beside.halfW }, route)) contacts++;
+  }
+  record(`no-escape-across-oncoming-${dir}`, { crossed, contacts }, []);
+  if (!baseline) { assert.equal(crossed, false, 'escaped across the oncoming car'); assert.equal(contacts, 0); }
+});

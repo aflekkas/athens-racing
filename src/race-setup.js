@@ -11,8 +11,6 @@ import { rivalCount, MAX_RIVALS, SP_RIVALS } from './events.js';
 import { isDrivingMode } from './driving-objectives.js';
 
 export { MAX_RIVALS };
-/** above this many AI cars the frame rate can suffer on modest machines: the menu shows a warning, not a limit */
-export const PERF_RIVALS = 5;
 export const TRAFFIC_LEVELS = Object.freeze([['off', 0, 'OFF'], ['light', 0.5, 'LIGHT'], ['normal', 1, 'NORMAL'], ['heavy', 1.5, 'HEAVY'], ['extreme', 2, 'EXTREME']]);
 export const TIMES = Object.freeze([['dawn', 'DAWN'], ['day', 'MIDDAY'], ['afternoon', 'AFTERNOON'], ['sunset', 'SUNSET'], ['night', 'NIGHT'], ['dynamic', 'DYNAMIC']]);
 export const WEATHERS = Object.freeze([['clear', 'CLEAR'], ['overcast', 'OVERCAST'], ['rain', 'RAIN'], ['dynamic', 'DYNAMIC']]);
@@ -49,7 +47,13 @@ export function setupFields(def, { closed = false } = {}) {
 }
 
 export function loadSetup(id, st = store()) {
-  try { const all = JSON.parse(st.getItem(KEY) || '{}'); const s = all?.[id]; return s && typeof s === 'object' ? { ...s } : {}; } catch { return {}; }
+  try {
+    const all = JSON.parse(st.getItem(KEY) || '{}'), s = all?.[id];
+    if (!s || typeof s !== 'object') return {};
+    // Setups saved before the two-rival cap: bring them down and store the fix.
+    if (Number.isFinite(+s.rivals) && +s.rivals > MAX_RIVALS) { s.rivals = MAX_RIVALS; all[id] = s; st.setItem(KEY, JSON.stringify(all)); }
+    return { ...s };
+  } catch { return {}; }
 }
 export function saveSetup(id, setup, st = store()) {
   try {

@@ -7,7 +7,8 @@ import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { resolveMap } from './map-definitions.mjs';
 import { createGameCore } from './core.mjs';
 import { QUICK_RACE } from '../src/events.js';
-import { setupFields, applySetup } from '../src/race-setup.js';
+import { setupFields, applySetup, loadSetup, resolveSetup } from '../src/race-setup.js';
+import { gridFor, EVENTS } from '../src/events.js';
 import { assertModeAllowed } from './mp-lifecycle.mjs';
 
 const maps = new Map(await Promise.all(MAPS.map(async meta => {
@@ -74,15 +75,25 @@ test('two clients join Free Roam by code; it remains untimed without finish reco
   assert.equal(submissions.length, 0);
 });
 
-test('Quick Race keeps rivals 0–11, traffic, police, direction, time and weather on every road type', () => {
+test('Quick Race keeps rivals 0–2, traffic, police, direction, time and weather on every road type', () => {
   for (const closed of [false, true]) {
     const fields = setupFields(QUICK_RACE, { closed });
     for (const key of ['rivals', 'traffic', 'police', 'reverse', 'time', 'weather']) assert.ok(fields.some(f => f.key === key), key);
-    for (const rivals of [0, 11]) {
+    for (const rivals of [0, 2]) {
       const run = applySetup(QUICK_RACE, { rivals, traffic: 2, police: true, reverse: true, time: 'night', weather: 'rain' }, { closed });
       assert.equal(run.rivalCount, rivals); assert.equal(run.traffic, 2); assert.equal(run.rules.police, true);
       assert.deepEqual(run.conditions, { time: 'night', weather: 'rain' });
       assert.equal(run.setup.reverse, true);
     }
   }
+});
+
+test('AI rivals are capped at two: saved setups migrate down, every grid fits', () => {
+  const mem = { m: new Map(), getItem(k) { return this.m.get(k) ?? null; }, setItem(k, v) { this.m.set(k, String(v)); } };
+  mem.setItem('paraliaki.raceSetup', JSON.stringify({ quick: { rivals: 7, traffic: 1 } }));
+  assert.equal(loadSetup('quick', mem).rivals, 2);
+  assert.equal(JSON.parse(mem.getItem('paraliaki.raceSetup')).quick.rivals, 2, 'the stored setup is rewritten');
+  assert.equal(resolveSetup(QUICK_RACE, { rivals: 11 }).rivals, 2);
+  assert.equal(setupFields(QUICK_RACE).find((f) => f.key === 'rivals').max, 2);
+  for (const def of [...EVENTS, QUICK_RACE]) assert.ok(gridFor(def).length <= 2, def.id);
 });
