@@ -56,3 +56,16 @@ For permissive shipped models, no upstream output-specific restriction was found
 this is distinct from asserting that Apache/MIT/CC0 automatically licenses every
 possible model output. CREDITS.txt preserves attribution, and sources.json records
 ONNX hashes, output hashes, licences and generation settings.
+
+## Police and impact extension — 2026-10-15
+
+The original 50-phrase evaluation above is retained as historical evidence.
+The bank now has 98 phrases / 392 clips: 22 new police cues, six new reactions
+in each of driver/pedestrian/near/rider, and two short clean driver tap cues.
+Rendered with the same local Rapunzelina and Chreece models, verified against
+the recorded ONNX hashes. Police clips use a 420–3200 Hz band, mild tanh
+soft clipping and the original -20 LUFS / -4 dBTP normalization after processing.
+Regenerate only missing clips with `build_voice.py MODEL --final --new-only`;
+all source text, English glosses and clean/explicit tags are in lines.json.
+These remain synthetic voices with processed loudspeaker character; acted
+shouting or native-listener pronunciation approval is not claimed.

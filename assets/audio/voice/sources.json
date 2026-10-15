@@ -30,7 +30,8 @@
     "loudness": "-20 LUFS target, -4 dBTP ceiling before encoding",
     "trim": "edge amplitude > .008; 20 ms lead, 50 ms tail",
     "duration": ".5–2.48 seconds; long speech time-compressed, never word-truncated",
-    "runtimeRate": ".98–1.02 plus existing bounded Doppler"
+    "runtimeRate": ".98–1.02 plus existing bounded Doppler",
+    "police-megaphone-v1": "After pitch/time processing: highpass 420 Hz, lowpass 3200 Hz, tanh soft clip threshold .12/output .85, highpass 350 Hz; then original -20 LUFS/-4 dBTP normalization and fades."
   },
   "files": [
     {
@@ -1432,6 +1433,1543 @@
       "profile": "male-older",
       "bytes": 7061,
       "sha256": "6f6591d942bf9208af8f21eca658da36255fd67666bd5047924db30cf06b69fc"
+    },
+    {
+      "file": "police-08-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13402,
+      "sha256": "9bced3f3f1f05f0a7838c52ece6f8bfb1184b92593292a33c8a4c8671269f2b6",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-08-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 13119,
+      "sha256": "00f872257119de63f803a057da3fa0ece8c54bfa56b35917483b0394cd9d94e0",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-09-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8697,
+      "sha256": "82545bc85e4e0c65f7ba8e47c9be4f5d553bf6bfdbcb143d9cceed34a947ea60",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-09-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8913,
+      "sha256": "756a4b85c8a936b99fca037c28a8d1de8823e3dc4bd026a5ee210336f602a904",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-10-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7962,
+      "sha256": "c3fcaaeb8ceb45d99180712429f59b6ef0e03006df8484f2631d69ad79c4f771",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-10-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8862,
+      "sha256": "f5f0acac7605bba7b24e253bf55eece802f1acd39d04f9f3148c4b8c293c280d",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-11-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 9763,
+      "sha256": "cc295e63bbd32d8648ba24c5a1b33e8237eaf4519b20b712ab5bf85dd5d608d5",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-11-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 9865,
+      "sha256": "23ebfafd9aaa9843a5080ffc1ad1bdc77422d81d1cb8f0d42c63044513944731",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-12-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13170,
+      "sha256": "619b959b485b9d1656836416568ab0d66b898984fdd82e18a281d129e6d4530c",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-12-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 13103,
+      "sha256": "e5dbbefb5af387d370a51816edea1d3110378740793c79010f3a09904e8bf8fb",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-13-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13704,
+      "sha256": "4a4a99385b5a43a76e2bf6cdfdffe2618b9afe2d02cad9f7795d2329c3ffa923",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-13-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 13332,
+      "sha256": "eb64673b14765f9b1d56c46be0fa7fdb7165e125b7bb82f138af8b3ecaefde07",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-14-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 11435,
+      "sha256": "1e12047df9b1c689eaa829ec0b6d727c026e5007db58b53d05cb0b2f9bff049f",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-14-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12199,
+      "sha256": "d376fc366fa04e5614637578bfe14943e9c013647ed632c16c111c32354ad801",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-15-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 12084,
+      "sha256": "666bf3d50f82d771bbd1296fbede1c232b30f282260c2dc150da44760aae3ffe",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-15-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12869,
+      "sha256": "5e67763ec626cdb762beb4fe7a927228a2129d4d6b19434e3d7940f1d60a2264",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-16-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 11274,
+      "sha256": "e7a973647adcc724a9046d7245751338f9e4d5b7dc1bcc28a60506cb48e3f0f7",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-16-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 11548,
+      "sha256": "49fcf3a041f9c67378642a53cec2ca9c793b1ccaa8369dc8331e5e2e3073f6ae",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-17-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 14751,
+      "sha256": "9009edb656f340d0941865246049de65c14ed5b541ccea9fdb7849e941dcc6f4",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-17-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 14580,
+      "sha256": "51e86e9d6d0d50e53a7a62a33f97a7d34976d7c3d8e138d361d0041d88a4f074",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-18-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13677,
+      "sha256": "3baab82c8f9bacd4eaaf456135e58affcc54f08ee53e4402069b68729e3b08e0",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-18-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 13742,
+      "sha256": "07235fff7110dcf12d5fef6d8efc4eac98f1c8e353ef11047326bd1bc1c483f7",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-19-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10101,
+      "sha256": "99e0b5e24ed24092655391c9acfcff3cfc18d8ea512f290d3d7ae328f417bbcf",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-19-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 10876,
+      "sha256": "f17704b6f9ce853acd11938a457f418ac2bfcd36bdb7d3d65ff9d3d6bc375a43",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-20-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 11343,
+      "sha256": "9d92e5b2633d34f246e6acb6516bfbcad8242ebd3da14f4b0868238b826f16d5",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-20-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 11799,
+      "sha256": "e2c1fb6951d9b1979a635047943dc3eb753678cac3d1eec4fdb76ae52a3a39c3",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-21-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 14086,
+      "sha256": "fe2588fe82bca72eb5457d9422f87c28e169f8d3b669ecc6485206d485d92f96",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-21-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 14220,
+      "sha256": "667abec8657a4f1a42863c958123934219f574fcf36bf0015bcdcf6734037e0e",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-22-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 14346,
+      "sha256": "4474d37a3dff4a471966b4628ae473ff32da0ac68e97936852a88f89cde0996b",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-22-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 14303,
+      "sha256": "6228489a4f28c7a5005824aceba6e69646d9ec27c1c91cd5f6fb8a7569187e84",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-23-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 14097,
+      "sha256": "226546f7e35e795b55e4acff69f4c639fd598e31fd89b3f4fa713b177523451b",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-23-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 13802,
+      "sha256": "81ff119cd429b7cf33f353d3026f654e9f1c1baebe3604d3bd2da95e93603ce6",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-24-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 11988,
+      "sha256": "b88cbf222ab16e3490b112f90cc76f83034c652dd47c79a15d69f30245d1c268",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-24-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12674,
+      "sha256": "565180852bb47616f22d8159a5ad3179f5ba05d22b3f40b2498349ccec324c41",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-25-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 14174,
+      "sha256": "e51106f024afc24ff9e5e7610d9495cb660b2002187cb976511c067e2ad0cf9c",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-25-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 14272,
+      "sha256": "990e62891a4f1d281acaaa71f1561c0811a51e996ce5d026c168f337e35203e5",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-26-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 12080,
+      "sha256": "c08095e5e09eb8dc9794d17c8b8f81d2955f8d88c28a6df6b8ea9643b3015b63",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-26-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 13089,
+      "sha256": "c350b056faf21919687703e5c92f2a4de951a845269848e2ad9a89dfcf60d5a4",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-27-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13411,
+      "sha256": "34333687a244b93e6c7213d1e2729354c8ac8f67512b468e373c3ebb286dcf48",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-27-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 14062,
+      "sha256": "6f158dcb48eede1b5023d4e51599286ee15e8bc3379837fd14c0b29b69b7d8ca",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-28-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8379,
+      "sha256": "3d346fc5c08e18d01a46038d85682e0b0fdfffcfce704cc276e531f58ce6f3c0",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-28-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8969,
+      "sha256": "ad19a2b9f03b5afd970017085483abeb2ae9d478e83d64fb21d2f570bf3cdaae",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-29-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 9106,
+      "sha256": "a8187a884d72afe6bf30ec89ef2a84d491b22f8df4dddca53d0a8dfb51de22f4",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-29-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 9556,
+      "sha256": "43b235b9625f1eb4055fbcc82204a3804a224322c7b1703758cbbbaa46cfd9b8",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "driver-12-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 12762,
+      "sha256": "f07f693f5eaddf1a05647ea91c76233a19ffd31167b8754f28e97557e8883a8d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-12-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12366,
+      "sha256": "8421acc17818e1f17cf2707109fabed2ffa0729074179a648cf300bfec83e3cf",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-13-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8464,
+      "sha256": "082a343bab436535bcf8dcaea103507cfd94ac478f0212c973073437b28bdb3f",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-13-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8627,
+      "sha256": "1b126542e15ce495a64e7223c21a44e19327c0bf076aa701833289ee0430b160",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-14-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10330,
+      "sha256": "357bfd593cd0f48fd9aea5a2b4cdb84a0b7a59ed9e00f6d079b862934a09d3de",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-14-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 10491,
+      "sha256": "a2c60d84243a4280607617c7da5f33f402cc1b638ffe2c7e22c15d77b07fb1fe",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-15-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8365,
+      "sha256": "608ef51ec93dcfc51c343415dcaecbca2311df4a399f2bd6c12e417bde0d5f73",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-15-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8350,
+      "sha256": "bb0bed3204a6a3cf28a31cd98f2f618cbd6509203c494d16e7f0a469d103b27b",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-16-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7111,
+      "sha256": "25d3ee94d0d9967fd3abeb97d9c7e27fb194b17fe6a5b7b97d63d8032f815b25",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-16-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7256,
+      "sha256": "8ecba48ab692bf6e4291286a196bd219ac2629f6f438b9e4eed46d6bab46280b",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-17-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7431,
+      "sha256": "10c5b2d205c18c02d786a2bf21817dc8c009016ed845638ed921038b283a1c4e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-17-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7460,
+      "sha256": "ccd65e37395851aab1aca69ce7858daa81b6c8ba97a076993bb5e653b233e4ed",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-14-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 12597,
+      "sha256": "09e2de64cd29c5bc87920bf28b03137c3d778baa7ad86f3d0c5c6431fde0851d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-14-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 11977,
+      "sha256": "657c6388eeeb79f739a157e1c7ad6686e100bace16266481f301d149eef617ee",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-15-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8774,
+      "sha256": "3f268703387c289a9e89bfae58a87546568013fbea758acf8b3eb8aa400d5543",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-15-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8840,
+      "sha256": "1173986a4ba338c608875af573aadbf0befec2f3b5633d6dee33aea5d6efab93",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-16-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10316,
+      "sha256": "7cb9bb16f9785b1a5dacfa8442ccd65cea64f34a41c6e51682501c5e9b759187",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-16-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 10434,
+      "sha256": "61ac717951fe3b6eec2f7060cae048bbff2d1ff54e3d218d4b2538d7ae61a3ab",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-17-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8134,
+      "sha256": "5b3f537fd0f8540ef6abf75e6f0f01cc4a6ffe973052f73efd2e7a35ca5158d8",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-17-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8232,
+      "sha256": "1419086057cb1e7f843f9c3f1a9a2bef80d14810c97bd6d708db8ba84307434e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-18-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7528,
+      "sha256": "b0c8955c6031c6f022f215643115385963ac1603e1da49fc347cbe6101e04075",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-18-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7594,
+      "sha256": "c3e944b40131e27668998ea8e3b0f647ec420f6d73f0c99f5414fe97b90afc16",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-19-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7785,
+      "sha256": "1f89f9cfa04be7d91b92b4c60646ade8ef7ee0780aab825d0b2e8b9e65356cd9",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-19-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8052,
+      "sha256": "275414617e384fe6d99a3bc0e232efbca798654a556bc34ae169b986415fc9bb",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-08-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 12569,
+      "sha256": "06cc6804c69aaa1b8dac9a87a724ab37f4fa208f3177a920ebba1360c4ef221b",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-08-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12082,
+      "sha256": "072a8ae2ddbef71abb029d8aa642b4c753af4ad094d824fbb24e9685a48a6783",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-09-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8457,
+      "sha256": "5ffa77626c7b7fd8d59459c23ef455110b113d3136596cf6037c99592e30d4f7",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-09-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8516,
+      "sha256": "0a3ef38948e4f0a7485ee6fa19553252c72c27b88491209804ac17cdf2c130e7",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-10-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10879,
+      "sha256": "5dceddf55271a8fe8c122e2e963f871832da08483f44ef67ee840018bdcce5eb",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-10-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 10905,
+      "sha256": "49e82767d34c61ca55c96151f70a5e66f5e303095defd8f5284286c109d912c8",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-11-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8162,
+      "sha256": "f705751eb22f7e89573511c01d3e5daa57a7d455c0149c5b9b4c86c1c2f61132",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-11-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8357,
+      "sha256": "d16ee4c051fb722eaee9d4db13a55077203ec081afd85586e79b2decc2a2c306",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-12-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7020,
+      "sha256": "fce75966b864f77ec6dd0a1103e4b628951e0f5b99c2dc0ad924d020fe52ad87",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-12-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7104,
+      "sha256": "d2e476dfaafff63d0b53f5c9f71d0127c326f341afce2b69a35bde84cfaf6d60",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-13-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7461,
+      "sha256": "e34ab4b031a9184b78639ec3214aa55b7f3e0759792f828ed8f081b4053f9c3b",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-13-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7631,
+      "sha256": "5049cd4d811703dcbeb6736938fccc987e2a815c00433513629c152327445c5e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-00-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 12785,
+      "sha256": "f4e67813bcf312b0f8350fa5c049b0674b794d8465224538f246b3d026ee81bb",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-00-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12341,
+      "sha256": "748a6da949eb00ba7483d5a8ef9eec4b4ff54fe8b93922298cb296db90117ed7",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-01-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8012,
+      "sha256": "e9c27f0f5b05e1c961ba2ddfccb00d7581288c8cf93ebbb13c4a16105c339ba7",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-01-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8113,
+      "sha256": "34fb5df9c267e3a030557f33fe42042d343ff7ed7b11685c3cf74ad224cdb05e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-02-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10390,
+      "sha256": "7ebd14c20cecd82ded88bdb3483d8d90053fa7a3a26dcaa871353f4f16866087",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-02-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 10539,
+      "sha256": "8e414682263fbb177e1118642c0060c3b2451d54770ef21a87793b2ed80e516c",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-03-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8277,
+      "sha256": "4439f0bbee4d4c6fe80ef821219e2a2a9b916dd3c03edf00f74d330c28eb0e10",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-03-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8351,
+      "sha256": "28cebe498269bdede37a83c634d33052e83d2494335813be6a6d78f07f162a29",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-04-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7369,
+      "sha256": "61ccaf993187fa1e16a8badf8200e108d3297ae75ae31b9c9085220415e149ec",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-04-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7456,
+      "sha256": "0ecf5101158f97dc8262881ccc4627b6dcfd5543b80bd1c6636080884696eeb1",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-05-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7182,
+      "sha256": "99bcdf444bb1701fc358fe898ce1f193bd99a78093211d9df1dacc8ad3d1ee55",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-05-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7308,
+      "sha256": "32ce116eebf6c7b02d5a8593a0fdd8129499412f1ff0a6d3f54d46adeca992a2",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-00-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10225,
+      "sha256": "aa69483680684b93cff946b9bfafebec5062d8350fd432f2d3826e1869f2181a",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-00-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 10405,
+      "sha256": "8b5d98fbb1287cc3ec05e9074fd11f5a423ae7c23c2c223e464d681da2496419",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-01-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 6430,
+      "sha256": "5196683cae44b32a9ca6cea398e4cb85425553a3ff6eebbf4a3eeba172957a6d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-01-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 6391,
+      "sha256": "c5b891343cf42f11c92e6d61e82e5f782870983656cce3821eb126c473b59a60",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "police-08-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 5796,
+      "sha256": "814db7098345749cd091f827b2a262498b6658a0ab6fa61c2da901ac15c0fdc6",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-08-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 6442,
+      "sha256": "a1ec360884b188b9a8a97a7fc3a6faf64873dbc969f7deb145f3ac66918e0f91",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-09-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8196,
+      "sha256": "dd1422c9cf47da9291ebe199a2f49236116bcbed26083f9d210ffd77edc0e1b1",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-09-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8476,
+      "sha256": "07b248eacce9c5d9544664d148972178dd2e7c0fd5cfb9ea27e5e12a5b196f51",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-10-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 7391,
+      "sha256": "c6a923321986f0fad061fdb4d92c2cf724dbd78021a7d3dc95addd0cfde59a61",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-10-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 7775,
+      "sha256": "79b222629c25a51ae8db4f12024ed9aa09b3925f3581e309e6ddf1c1e88c4339",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-11-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8531,
+      "sha256": "89861cb18ea273b356a504a9ba4fae8eb56b78eba161047773c4b3496b94d812",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-11-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8980,
+      "sha256": "8afb2f831049fdf6b9e91e544f7e0047e8b947d42d40429302419bd18ba67ff9",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-12-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8748,
+      "sha256": "caf65ad84d29e3b203ca3344b2057650eca341ad5b701da3fbfada976af891e7",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-12-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 9320,
+      "sha256": "423e50942d53020e596e37433dfec1e7847b6b5c355b2db47b6365ba49ab4f2c",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-13-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 11072,
+      "sha256": "431a19d5c5e14e7c2a9a3d01116bbfbd88367959c8d4089e99432c44cfd2ea0a",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-13-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 11444,
+      "sha256": "4f2a779ec2a7186a87f18554d25222ac4a98e596bbdd9c87dabcbb1430b1a816",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-14-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10986,
+      "sha256": "c4a9d727af16cff73895e1accde25791c3cadc2330d8551bd47acb0c8b0cb04b",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-14-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 11678,
+      "sha256": "50e0a8a2f4d17390afb8121c5490ad7461203f262e6f4a7b9c0d1b80a3605728",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-15-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10638,
+      "sha256": "99ad55cda0e99ce13e713f3cc3f59ea79e9e0657dcf53730cd297896f0810f77",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-15-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10700,
+      "sha256": "aad018eba74fd4553611f727d6793a7017fb0f5625f89d1b5df8c1eb4d58f189",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-16-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10159,
+      "sha256": "d6d6be2f170eb32e400af69f150429215b70dedc63ae03de0f072a1405a7c4d1",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-16-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 11093,
+      "sha256": "17afdfb19a611e4aa69ae07d448822e75e14973d2ddf6fd26809c3236eae9344",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-17-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 11909,
+      "sha256": "f057070e9b294d848a03b14aa2a1de8aa306b24c9e2116b8cb759f3c52ba1b5f",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-17-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 12220,
+      "sha256": "bbbbe09b7a387af8155191039498c3e1799d734eb19a634ea337f7e1927f37ed",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-18-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 9916,
+      "sha256": "93e1115dc8e52102f19b72806dc2f5e6b477c5a3836fb64fc4de1091490f15e6",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-18-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10411,
+      "sha256": "ebe8eec8888cf35cea8f3d791d619a86114afbe682eb52c833edc90584018a70",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-19-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 9195,
+      "sha256": "e2d7f83911de08ad78d6f06bc85f80fdb6d0472c7943e4a4f2be540b2567d49c",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-19-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 9502,
+      "sha256": "b5703037fc374786e062b478639fd6c3c4b4642200dba38ee021b1f804e55800",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-20-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10057,
+      "sha256": "5e5eeed6445296b41154d049fd8f6201794a4a4237acc6d66cec4a27e7fdb3e6",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-20-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10368,
+      "sha256": "452232c56d6049379871601c187566578895dfed464d96c0aca1bddac148e9b4",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-21-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10861,
+      "sha256": "3ff209c13de71a45f43f5b840b828ee57e38471f4e444758b4bd2cc128609bf7",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-21-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 11697,
+      "sha256": "b432a1369bf1556be15c886d88e2f6f4c28a970fc9e9ede0a1ddaf1e1309bf67",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-22-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 12080,
+      "sha256": "dd62e6603be9bea31e2a77c832ab01e1fa76d988139249374dc2c83d5faed544",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-22-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 12805,
+      "sha256": "090d7096697c6c36196030c8decafef9c52865a15562b666dbdb2f6b9b70a1ea",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-23-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 12740,
+      "sha256": "98298891e9451b8b52a56e814b3e80931b5d4bd81e130e760188518c498ebb7f",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-23-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 13206,
+      "sha256": "6d3328efcb99c513882b4499d6221f330f662f26517785ebbf49404507441010",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-24-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10387,
+      "sha256": "dfb045b255d07746a87944c7b1f0acd30a939f16b764b6fde4f68af8d76a2945",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-24-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10765,
+      "sha256": "ab1628a9daa9690b65f5804b70e9fc70138911e1366eee1b3bcd8bac8319713e",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-25-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 13283,
+      "sha256": "dd397fab3652233c1c3f58cec2fbc8a2b8dc2d8d901340e2088824743a126e67",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-25-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 14369,
+      "sha256": "966407430f2ff482d62fcdeaa420793ab4f5a500402cad793492f0fbfbe04b0b",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-26-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10891,
+      "sha256": "3e06ba669203288fd131bc1c581ca6067ccead84b45d639cf5db1eb4e7900e00",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-26-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 11270,
+      "sha256": "a95fc523a43fcbb848cfd3ebbfb08721c730b8521cd475d9e139ef8c541de022",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-27-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 11656,
+      "sha256": "0374ef212ac5fa0bf8ba0c2d75d26df00e4c4e81b4a51d9029d718b662b55f6b",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-27-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 12503,
+      "sha256": "9c6334c2af92ddeb90986b6b1fcef97ebbd536a9ab9d695738e9326f9321ef05",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-28-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 9163,
+      "sha256": "d5ed8393d84842a40d7d066a6b211bb83f40d6ab589bb8c9bf1efea514fcf408",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-28-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 9601,
+      "sha256": "b38214cd6fddf262f1ec5a40ebcc73e397c5ccffd35de2de8e90aabc565b6e0a",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-29-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 7936,
+      "sha256": "3cb8e99248fd79471083ab3f2f71cc10823db4ad00b918ae527cf3b4e1f60741",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "police-29-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8426,
+      "sha256": "1759eea78350503ba26ae6088c2671466a498a16d82b4bb52a5c7a5d226376cf",
+      "processing": "police-megaphone-v1"
+    },
+    {
+      "file": "driver-12-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 5770,
+      "sha256": "4ef4d8e73063c6bc90e04154fa4c5427433a7f3d871730a18b0b4078fd71ec7e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-12-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 5759,
+      "sha256": "6462b508c1a4f988d481429446833d33e9e4349e432602e4658804fb16ee5463",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-13-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8037,
+      "sha256": "8c102e68f739d33049dc20d7eb0721d4c48e894a1f7dc95c38b3e8221cfad869",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-13-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 7993,
+      "sha256": "c8972a5d2dc5022515c386945aaa1eb7069d460972f58dd30b22d62c4cac783e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-14-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10328,
+      "sha256": "fee58fc89281e4bd19a75908ce623240a58405cbdbecb12a6e3cb54d02940137",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-14-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10253,
+      "sha256": "685e269e0505677f9ff52e26476c19f0ab9e5344d3cb47c0416be8ce47ac3d05",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-15-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8458,
+      "sha256": "e6b012fe9eb56e9d98884acd15565a89f49b90edf90c3fd33dde0200414b03c6",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-15-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8541,
+      "sha256": "7b08150effa75972ab9c3281bf449b76d61338466e263b0e00c7e2507cc9a997",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-16-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 6498,
+      "sha256": "d704f6c530a472b0d1b4c1530bfe06203d1f1e86f479cd29575c3663fd18a7a9",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-16-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 6529,
+      "sha256": "adfb4955cb10a8014fe517a04f33e581292c2b4f90992d3bf3b093318c543735",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-17-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 7588,
+      "sha256": "3ae96e5bd5acd537d322bc07fbc8646f492b64ea4d43248bb4c679b359554286",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-17-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 7623,
+      "sha256": "64ea970a6b8741faf975854763e526956b5b240f195a6c852ffe311ddd09a693",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-14-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 5778,
+      "sha256": "2b2e5bb7994b586e8645b44c4386d231783cc4bf23d1279838d3b4ecc099b347",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-14-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 5806,
+      "sha256": "73809142b20e39195c289fd42438f50cee49c3718fb4fd1f81f310cb4b9e2314",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-15-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8405,
+      "sha256": "b477ae1c2634e3c55feb8b6b9fc1073145e23851314d248c9b0d7b1180a6aa77",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-15-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8263,
+      "sha256": "a42c93f381e43693c77f4a577e1d50a8c1e6a6c06b4589530d54dc619fd043e6",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-16-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10192,
+      "sha256": "6e75dd824b448f44f212bf36619d5ef1166618295b063b3acd1ffe01f0b90f5e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-16-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10433,
+      "sha256": "b94d70667bb29d7a2a9df8793f1eaf32670373ed40cbfdf35d2b1f456918c321",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-17-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8527,
+      "sha256": "68c7c66e5c74405965d9205424bfdb60a17f519a9b9e6ec80b5fa885c7c0389d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-17-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8425,
+      "sha256": "3f206e69b3951a20bf90b06e2a74ce23b4991fb3f46b80ef9064e2e6740a0a29",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-18-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 6474,
+      "sha256": "63d9845151d98b48f7ee365ec2e0d38ddec9b0163525d4bb0b5244f81d6fd81d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-18-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 6377,
+      "sha256": "b1629703347cfe0e04580b0a14e2e8347e29a9107ab19db8e9e17911be18526d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-19-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8016,
+      "sha256": "845e498f76ef4e9f4e1cc5057e7eced2bf262a14282fea2c23dd2dcc0dc53c39",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "pedestrian-19-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 7800,
+      "sha256": "28c0d53880740c315ea497fa0d9c82a9f8bf47b2f0e3669e56b6d6c6c45956c1",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-08-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 5847,
+      "sha256": "f8882cef04c1c09bfbc34f891d1c5694f58ed8133fa8b7337b0d2670003217c2",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-08-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 5850,
+      "sha256": "33961a5dc2b417cac14de09e3c516aa7f0ecc53d83fa069bc011ab02b6e40590",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-09-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8156,
+      "sha256": "2e78097c532184fc266db53e1f38ef7375fa7b04081d9c1344f79fcdf74fa9be",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-09-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8053,
+      "sha256": "2c1b7ea309360b0d9652231242aba355f742581cef4f16509d58a65ffdeba37c",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-10-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10226,
+      "sha256": "ebe0ac5252265e391095c5ff292b557595b3bd24add044b9f5c30330923f669d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-10-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10330,
+      "sha256": "adea916481587ec528702ec1f67e8a83a4c01103474a235f93deec7f8a09ff9d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-11-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8614,
+      "sha256": "999416cbb232439d6f57e6e4f320f61409fcbb5dc463f86da90aa41be467dc9a",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-11-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8639,
+      "sha256": "ed3f11f566dee16e7882274a4f1e936aa5bdba759ab5e3c597bc9aadd68cd769",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-12-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 6473,
+      "sha256": "24e962d0751c07e77b51336d8db18262d8e8140fbabea50530138dde19c7d326",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-12-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 6505,
+      "sha256": "8e7c6f171311f2343b813ab3dbef6a42cb6df6a3fb1b5558b703f4d35534efa0",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-13-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 7728,
+      "sha256": "fc7ae3727109db41cb0228d5756815b27b0194a560316e20110d02ace545934c",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "near-13-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 7833,
+      "sha256": "c115f1af50a25cf3b3e822a5b50873d61fab0fd9f7ac75ae8de20ba3b07a1103",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-00-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 5796,
+      "sha256": "70496c085f7f7f4cd1b675fd9a3019ce11ad8d2b5696d9f9acd5bd53cb7954d3",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-00-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 5803,
+      "sha256": "5c49e3feba6155ef593720fb7efd06245d9fb5d899d76da51326411238155900",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-01-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8576,
+      "sha256": "dfa12787d38c30772470684bd9f67cdad28cabf31d97c6e07020a5d4f926930d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-01-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8279,
+      "sha256": "ffb52719d664e397fd74e0ee61ee5b0a8c42ced3f5972b1fcfc0c67cb065bc6c",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-02-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10079,
+      "sha256": "f3beb88dfdc1815694c6d37044ab733a309e8a1d1c35053ce2dc66da1131b128",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-02-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10138,
+      "sha256": "16d298914e6a44f1781a2e5903a064da4be60e91fc1b6d4ca3dc05344eb4c5fe",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-03-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8544,
+      "sha256": "080e5e9c46c6d7ed71e0217eb8a36209c04406ed0da08c02046eacfbd73af5f9",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-03-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8762,
+      "sha256": "8b490b648ea274f6e14250010af26f4749224640d1e7b51862e14e6fd154dc85",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-04-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 6680,
+      "sha256": "13021532aead4fdfddcc0a8d01590df5772d5e0a109bd6643525fb1b63709422",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-04-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 6613,
+      "sha256": "10ab90455b1187d9777ceb9248570950bcf6417ca1671117b850a11e67ce4a26",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-05-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 7953,
+      "sha256": "a6166b0d448f213e37c8b7008b799342105cccff12a40dd1c96d395a7b5e6ba8",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "rider-05-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8043,
+      "sha256": "681fb86fc16cbcae23e781cbb8542d952d22b4a7b876b923b4f7f4e2b2c10d45",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-00-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 5120,
+      "sha256": "8aee1005e4b866a6d371a132ea5fddbb5f6a0cbe769435fffc91f7983ac5231f",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-00-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 5056,
+      "sha256": "330afb7bf226168826c93adfcdc33b19c3d2f7141018fff82741414eeeb2088e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-01-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 6523,
+      "sha256": "65d1dc007db29759cd4a3260e1623420c531a1a75c38fc23e6fd37f435fe4426",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-tap-01-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 6270,
+      "sha256": "f3eb98bb79f8b54448024fd4c1efb1b3fea720cfd38db30ffa281d2eec6bf995",
+      "processing": "voice-v1"
     }
-  ]
+  ],
+  "updated": "2026-10-15"
 }

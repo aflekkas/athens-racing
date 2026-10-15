@@ -268,6 +268,7 @@ export class Menu {
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
+      if (key === 'swearing') { setSetting('mildLanguage', !value); return; }
       if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;if(this.root)this.refresh();return; }
       if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));if(this.root)this.refresh();return;}
       if(key==='drawDistance'){setSetting(key,value==='auto'?'auto':Number(value));return;}
@@ -287,7 +288,7 @@ export class Menu {
       saveSetup(id, s); this.refresh(); return;
     }
   }
-  valueFor(key) { return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
+  valueFor(key) { if (key === 'swearing') return !settings.mildLanguage; return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
   /** settings changed elsewhere (e.g. the steering assist following the active device) */
   refreshValues() { for (const el of this.root.querySelectorAll('[data-scope=setting][data-key]')) C.setValue(el, String(this.valueFor(el.dataset.key)), false); }
 
@@ -394,7 +395,7 @@ export class Menu {
       body = `<div class="group"><h3 class="group__title">${icon('user')}DRIVER NAME</h3><label class="group__note" for="driver-name">YOUR PLATE & ONLINE NAME</label><input id="driver-name" data-driver-name maxlength="16" value="${esc(driverName.get())}" aria-label="Driver name" autocomplete="off" autocapitalize="characters" spellcheck="false"><p class="group__note">3–16 LETTERS, NUMBERS OR HYPHENS. SAVED IN THIS BROWSER. NAMES CAN BE SHARED.</p>${C.option({ icon: 'check', title: 'SAVE DRIVER NAME', act: 'saveDriverName' })}</div>`;
     } else if (tab === 'audio') {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
-      body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'mildLanguage', label: 'MILD LANGUAGE', value: settings.mildLanguage, attrs: SET })}</div>`;
+      body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'swearing', label: 'SWEARING', value: !settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
       // Graphics: one preset, plus Lighting / Effects / Resolution / Draw distance overrides (src/graphics.js). All fixed, all live.
       const gfx=resolveGraphics(settings),P=PRESETS[gfx.preset],L=PRESET_LABELS,pct=r=>Math.round(r*100)+'%';
