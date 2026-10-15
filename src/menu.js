@@ -350,7 +350,7 @@ export class Menu {
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
 
   // ---------------------------------------------------------------- car
-  r_car(d) { return renderCarSelect(d); }
+  r_car(d) { return renderCarSelect({...d, road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name}); }
   confirmCar() {
     const c = CARS[this.data.index || 0];
     if (this.data.allowedCars && !this.data.allowedCars.includes(c.id)) return;
@@ -401,9 +401,9 @@ export class Menu {
     }
     if (rows[0]) rows[0] = rows[0].replace('<div class="mi field', '<div data-default="" class="mi field'); // open on the first choice
     const note = '';
-    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
+    return C.screen({ appearance: 'racing', road: (MAPS.find(m=>m.id===ctx.mapId)||MAPS[0]).name, car: this.h.carSpec?.()?.name || 'YOUR GARAGE', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${this.eventSummary(runDef, r, runDef.id)}</aside>
+      body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${C.routeHero(MAPS.find(m=>m.id===ctx.mapId)||MAPS[0])}${this.eventSummary(runDef, r, runDef.id)}</aside>
         <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}${def.type === 'free' ? 'YOUR SESSION' : 'YOUR RACE'}</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
           <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}</div>${note}
           <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'HOST / CREATE GAME' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
@@ -431,7 +431,7 @@ export class Menu {
       const presetNote={potato:'NO SHADOWS · NO POST-PROCESSING · LOW RESOLUTION · SHORT DRAW DISTANCE',low:'NO SHADOWS · LIGHT POST-PROCESSING · REDUCED RESOLUTION',med:'SOFT SHADOWS · CORE EFFECTS · FOR LAPTOPS',high:'FULL SHADOWS · ALL EFFECTS · FOR GAMING PCS',ultra:'LONGEST SHADOWS AND DRAW DISTANCE · HIGH-END GPUS'}[gfx.preset];
       const level=(key,title,note)=>C.segmented({key,label:title,value:v(key),options:[['preset','PRESET · '+L[P[key]]],...LEVEL_IDS.map(id=>[id,id==='med'?'MED':L[id]])],note,attrs:SET});
       const screen=Math.min(globalThis.devicePixelRatio||1,2),presetRes=Math.min(screen,P.pixelRatio)/screen;
-      body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}PRESET</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS PRESET', value: gfx.preset, options: PRESET_IDS.map(id=>[id,L[id]]), note:presetNote+' · APPLIES LIVE', attrs: SET })}</div>
+      body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}PRESET</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS PRESET', value: gfx.preset, options: PRESET_IDS.map(id=>[id,L[id]]), note:presetNote+' · APPLIES LIVE', attrs: {...SET, 'data-default':''} })}</div>
         <div class="group graphics-detail"><h3 class="group__title">${icon('sun')}LIGHTING & EFFECTS</h3>${level('lighting','LIGHTING','SHADOWS AND SHINY CAR REFLECTIONS · OFF IS FASTEST')}${level('effects','EFFECTS','SMOOTH EDGES, GLOW, MOTION BLUR, SOFT CORNER SHADING, MIRROR SHARPNESS, SEA REFLECTIONS, RAIN DETAIL · OFF IS FASTEST')}</div>
         <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · NEVER CHANGES BY ITSELF',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
         <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'PRESET · '+(P.drawDistance>=1000?P.drawDistance/1000+' KM':P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
@@ -452,10 +452,11 @@ export class Menu {
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;
     } else if (tab === 'controls') body = renderControls(this);
     else if (tab === 'about') body = Release.renderAbout(this);
-    return C.screen({ cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
+    const profile = tab === 'video' ? resolveGraphics(settings) : null;
+    return C.screen({ appearance: tab === 'video' ? 'racing' : '', road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name, car: this.h.carSpec?.()?.name || 'YOUR GARAGE', cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
       head: C.tabs({ key: 'settingsTab', value: tab, options: tabsList }),
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['tabs', 'TAB'], ...(tab === 'controls' ? [['confirm', 'REBIND']] : []), ['back', 'BACK']],
-      body: `<div class="set-panel panel scroll-y">${body}</div>` });
+      body: tab === 'video' ? `<div class="video-layout"><aside class="video-hero">${C.routeHero({...(MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]),eyebrow:'TUNE YOUR VIEW',content:C.stats([['PROFILE',PRESET_LABELS[profile.preset]],['RESOLUTION',Math.round(profile.resolution*100)+'%']])})}<div class="video-hero__action"><p>YOUR ROADS. YOUR PICTURE.</p><span>Every change applies live.</span>${C.button({label:'BACK TO THE ROAD',act:'back',icon:'caret-right',variant:'primary'})}</div></aside><div class="set-panel panel scroll-y">${body}</div></div>` : `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
   leaving() { this.titleHero?.dispose(); this.titleHero=null; this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }

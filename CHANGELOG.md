@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Browse cars in their saved paint, set up your next race and tune your graphics in a new racing front end.
+  ![The redesigned Garage with car thumbnails and lime selection](assets/changelog/2026.10.15.3/garage-racing-ui.webp "Your collection. Your next drive.")
+
 - Drive the Aventador SVJ with a screaming V12, hard ISR shifts and switchable exhaust flames and crackles.
   ![The green Aventador SVJ in the garage with its exhaust pops switch](assets/changelog/2026.10.15.3/svj-garage.webp "A V12, a huge wing, and hot exhausts.")
 - Garage trim changes keep drag rotation working, and slow touch drags rotate your car.

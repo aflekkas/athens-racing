@@ -1,0 +1,210 @@
+{
+  "cleanArchiveCommit": "818b2ad215362d7bc5777fc833514bd160034f16",
+  "baseline": "694a9cf385f05d1691be7bbee4a95d2e897926ba",
+  "gates": {
+    "npm-test": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  },
+  "browserBefore": {
+    "boot": {
+      "worlds": 0,
+      "mapRequests": 0,
+      "thumbnailModules": 0,
+      "thumbnailImages": 0
+    },
+    "errors": [],
+    "checks": [
+      {
+        "name": "garage",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [],
+        "heading": "THE GARAGE"
+      },
+      {
+        "name": "setup",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [],
+        "heading": "RACE SETUP"
+      },
+      {
+        "name": "settings-video",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [],
+        "heading": "SETTINGS"
+      },
+      {
+        "name": "garage",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [],
+        "heading": "THE GARAGE"
+      },
+      {
+        "name": "setup",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [],
+        "heading": "RACE SETUP"
+      },
+      {
+        "name": "settings-video",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [],
+        "heading": "SETTINGS"
+      }
+    ],
+    "navigation": {
+      "keyboardGraphicsPreset": true,
+      "touchCarDetails": true
+    }
+  },
+  "browserAfter": {
+    "boot": {
+      "worlds": 0,
+      "mapRequests": 0,
+      "thumbnailModules": 0,
+      "thumbnailImages": 0
+    },
+    "errors": [],
+    "checks": [
+      {
+        "name": "garage",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [
+          {
+            "id": "panda",
+            "key": "dev/panda/bd1626"
+          },
+          {
+            "id": "jazz",
+            "key": "dev/jazz/dce4e7"
+          },
+          {
+            "id": "yaris",
+            "key": "dev/yaris/315476"
+          },
+          {
+            "id": "ibiza",
+            "key": "dev/ibiza/8d4948"
+          }
+        ],
+        "heading": "THE GARAGE"
+      },
+      {
+        "name": "setup",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [],
+        "heading": "RACE SETUP"
+      },
+      {
+        "name": "setup-select",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [],
+        "heading": "RACE SETUP"
+      },
+      {
+        "name": "settings-video",
+        "width": 1280,
+        "nativeSelects": 0,
+        "scrollWidth": 1280,
+        "view": 1280,
+        "thumbs": [],
+        "heading": "SETTINGS"
+      },
+      {
+        "name": "garage",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [
+          {
+            "id": "panda",
+            "key": "dev/panda/bd1626"
+          },
+          {
+            "id": "jazz",
+            "key": "dev/jazz/dce4e7"
+          },
+          {
+            "id": "yaris",
+            "key": "dev/yaris/315476"
+          },
+          {
+            "id": "ibiza",
+            "key": "dev/ibiza/8d4948"
+          },
+          {
+            "id": "golf",
+            "key": "dev/golf/526a83"
+          },
+          {
+            "id": "aygo",
+            "key": "dev/aygo/dce2e5"
+          }
+        ],
+        "heading": "THE GARAGE"
+      },
+      {
+        "name": "setup",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [],
+        "heading": "RACE SETUP"
+      },
+      {
+        "name": "setup-select",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [],
+        "heading": "RACE SETUP"
+      },
+      {
+        "name": "settings-video",
+        "width": 390,
+        "nativeSelects": 0,
+        "scrollWidth": 390,
+        "view": 390,
+        "thumbs": [],
+        "heading": "SETTINGS"
+      }
+    ],
+    "navigation": {
+      "keyboardGraphicsPreset": true,
+      "touchCarDetails": true
+    }
+  }
+}

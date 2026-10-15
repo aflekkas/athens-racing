@@ -1,0 +1,69 @@
+{
+  "boot": {
+    "worlds": 0,
+    "mapRequests": 0,
+    "thumbnailModules": 0,
+    "thumbnailImages": 0
+  },
+  "errors": [],
+  "checks": [
+    {
+      "name": "garage",
+      "width": 1280,
+      "nativeSelects": 0,
+      "scrollWidth": 1280,
+      "view": 1280,
+      "thumbs": [],
+      "heading": "THE GARAGE"
+    },
+    {
+      "name": "setup",
+      "width": 1280,
+      "nativeSelects": 0,
+      "scrollWidth": 1280,
+      "view": 1280,
+      "thumbs": [],
+      "heading": "RACE SETUP"
+    },
+    {
+      "name": "settings-video",
+      "width": 1280,
+      "nativeSelects": 0,
+      "scrollWidth": 1280,
+      "view": 1280,
+      "thumbs": [],
+      "heading": "SETTINGS"
+    },
+    {
+      "name": "garage",
+      "width": 390,
+      "nativeSelects": 0,
+      "scrollWidth": 390,
+      "view": 390,
+      "thumbs": [],
+      "heading": "THE GARAGE"
+    },
+    {
+      "name": "setup",
+      "width": 390,
+      "nativeSelects": 0,
+      "scrollWidth": 390,
+      "view": 390,
+      "thumbs": [],
+      "heading": "RACE SETUP"
+    },
+    {
+      "name": "settings-video",
+      "width": 390,
+      "nativeSelects": 0,
+      "scrollWidth": 390,
+      "view": 390,
+      "thumbs": [],
+      "heading": "SETTINGS"
+    }
+  ],
+  "navigation": {
+    "keyboardGraphicsPreset": true,
+    "touchCarDetails": true
+  }
+}

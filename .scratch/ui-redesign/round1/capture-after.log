@@ -1,0 +1,10 @@
+[browser-slot] slot 2 acquired (ticket 987, waited 0s)
+CAPTURE 1280 garage
+CAPTURE 1280 setup
+CAPTURE 1280 setup-select
+CAPTURE 1280 settings-video
+CAPTURE 390 garage
+CAPTURE 390 setup
+CAPTURE 390 setup-select
+CAPTURE 390 settings-video
+COMPLETE after 8 screens; no browser errors; navigation passed
