@@ -109,10 +109,12 @@ def build():
     # Hypsometric tint and a NW-lit normal field: true DEM relief, no fake rings.
     cell_meters=6371008.8*SPAN*math.cos(math.radians((NORTH+SOUTH)/2))/(gw-1)
     dy,dx=np.gradient(h,cell_meters); shade=np.clip((-.65*dx+.65*dy+1)/np.sqrt(1+dx*dx+dy*dy),.25,1.3)
-    elev=np.clip(h/1400,0,1)[:,:,None]; low=np.array([27,38,40]); high=np.array([62,79,78])
+    # Calm relief: keep the real NW-lit shape but compress it toward neutral.
+    shade=1+(shade-1)*.6
+    elev=np.clip(h/1400,0,1)[:,:,None]; low=np.array([29,40,43]); high=np.array([58,72,71])
     rgb=np.clip((low+(high-low)*elev)*shade[:,:,None],0,255).astype('uint8')
-    raster=Image.fromarray(rgb).resize((WIDTH,HEIGHT),Image.Resampling.BICUBIC); urban_mask=Image.new('L',raster.size); urban_draw=ImageDraw.Draw(urban_mask); minor_roads=[]
-    roads={k:[] for k in ['primary','trunk','motorway']}
+    raster=Image.fromarray(rgb).resize((WIDTH,HEIGHT),Image.Resampling.BICUBIC); urban_mask=Image.new('L',raster.size); urban_draw=ImageDraw.Draw(urban_mask)
+    roads={k:[] for k in ['trunk','motorway']}
     for e in elements:
         t=e['t']; pts=e['p']
         if not pts or not isinstance(pts[0],list):continue
@@ -124,33 +126,33 @@ def build():
             poly=poly.intersection(extent).simplify(.7)
             for f in geometries(poly):
                 if isinstance(f,Polygon) and f.area>3:urban_draw.polygon(list(f.exterior.coords),fill=100)
-        if t.get('highway') in ['tertiary','secondary','primary','trunk','motorway']:
-            for l in geometries(line.intersection(extent).simplify(.6)):
-                if isinstance(l,LineString):
-                    if t['highway'] in ['secondary','tertiary']:minor_roads.append((t['highway'],list(l.coords)))
-                    else:roads[t['highway']].append(path(l.coords))
-    raster=Image.composite(Image.new('RGB',raster.size,(64,76,82)),raster,urban_mask)
-    draw=ImageDraw.Draw(raster)
-    for kind,coords in minor_roads:draw.line(coords,fill=(53,67,73) if kind=='tertiary' else (76,94,99),width=1)
+        # Only the motorway network (and the EO trunk roads) is drawn: the overview is a locator, not a street map.
+        if t.get('highway') in roads:
+            for l in geometries(line.intersection(extent).simplify(.8)):
+                if isinstance(l,LineString):roads[t['highway']].append(path(l.coords))
+    urban_mask=urban_mask.point(lambda v:v*.62)
+    raster=Image.composite(Image.new('RGB',raster.size,(60,72,78)),raster,urban_mask)
     buf=io.BytesIO();raster.save(buf,format='WEBP',quality=86,method=6);relief=base64.b64encode(buf.getvalue()).decode()
-    labels=[]
-    # Curated OSM names/coordinates avoid hundreds of overlapping suburb labels.
-    desired={'Athens':('ATHENS', 'city'),'Piraeus':('PIRAEUS','place'),'Glyfada':('GLYFADA','place'),'Vouliagmeni':('VOULIAGMENI','place'),'Varkiza':('VARKIZA','place'),'Dionysos':('DIONYSOS','place'),'Kifisia':('KIFISIA','place'),'Marousi':('MAROUSI','place'),'Chalandri':('CHALANDRI','place'),'Koropi':('KOROPI','place'),'Penteli':('PENTELI','place'),'Parnitha':('PARNITHA · 1,413 m','peak'),'Hymettus':('HYMETTUS · 1,026 m','peak')}
+    # Curated OSM places/summits: few names, ranked; the selector places them at screen size and drops collisions.
+    labels=[]; wanted={'Athens':('ATHENS','city',0),'Piraeus':('PIRAEUS','place',1),'Glyfada':('GLYFADA','place',2),'Kifisia':('KIFISIA','place',2),'Koropi':('KOROPI','place',2),'Eleusis':('ELEFSINA','place',2),'Vouliagmeni':('VOULIAGMENI','place',3),'Marousi':('MAROUSI','place',3),'Rafina':('RAFINA','place',3),'Varkiza':('VARKIZA','place',4),'Dionysos':('DIONYSOS','place',4)}
+    summits={'Καραβόλα':('PARNITHA','1,413 m'),'Πυργάρι':('PENTELI','1,109 m'),'Εύζωνας':('HYMETTUS','1,026 m')}
     for e in elements:
         if isinstance(e['p'][0],list):continue
-        name=e['t'].get('name:en'); key={'Kifissia':'Kifisia','Βάρκιζα':'Varkiza'}.get(name or e['t'].get('name'),name)
-        if key in desired:
-            text,cls=desired.pop(key);x,y=e['p'];y += -28 if key=='Varkiza' else 28 if key=='Kifisia' else 0;labels.append(f'<text class="{cls}" x="{x:.1f}" y="{y:.1f}">{html.escape(text)}</text>')
-    # Geographic annotations placed by coordinates; mountains named at their summits.
-    for lon,lat,text,cls in [(23.885,38.083,'PENTELI · 1,109 m','peak'),(23.811,37.963,'HYMETTUS','peak'),(23.717,38.174,'PARNITHA','peak'),(23.595,37.845,'SARONIC GULF','water'),(24.015,37.97,'AEGEAN SEA','water'),(23.739,37.963,'SYNGROU','road'),(23.771,38.021,'KIFISIAS','road'),(23.849,38.02,'ATTIKI ODOS / A6','road'),(23.752,37.884,'POSEIDONOS / EO91','road'),(23.869,37.81,'LOMVARDA','place')]:
-        x,y=project(lon,lat);labels.append(f'<text class="{cls}" x="{x:.1f}" y="{y:.1f}">{text}</text>')
-    styles='text{font:500 12px sans-serif;fill:#a1b7bd;letter-spacing:1.4px;paint-order:stroke;stroke:#142026;stroke-width:3px;stroke-linejoin:round}.city{font-size:24px;fill:#e2eaeb;letter-spacing:5px}.peak{font-size:11px;fill:#829b91}.water{font-size:16px;fill:#426e85;letter-spacing:4px}.road{font-size:9px;fill:#779798;letter-spacing:1px}'
+        t=e['t'];name=t.get('name:en') or t.get('name');name={'Kifissia':'Kifisia','Βάρκιζα':'Varkiza'}.get(name,name);x,y=e['p']
+        if t.get('natural')=='peak' and t.get('name') in summits:
+            text,sub=summits.pop(t['name']);labels.append({'t':text,'s':sub,'k':'peak','p':1,'x':round(x,1),'y':round(y,1)})
+        elif t.get('place') and name in wanted and 0<=x<=WIDTH and 0<=y<=HEIGHT:
+            text,cls,rank=wanted.pop(name);labels.append({'t':text,'k':cls,'p':rank,'x':round(x,1),'y':round(y,1)})
+    for lon,lat,text in [(23.595,37.845,'SARONIC GULF'),(24.06,37.93,'AEGEAN SEA')]:
+        x,y=project(lon,lat);labels.append({'t':text,'k':'water','p':1,'x':round(x,1),'y':round(y,1)})
+    print('Labels',len(labels),'missing',sorted(wanted)+sorted(summits))
+    labels.sort(key=lambda l:l['p'])
     road_svg=''
-    for kind,color,w in [('primary','#6d8281',1.5),('trunk','#6a9090',2),('motorway','#749eac',2.5)]:
-        d=''.join(roads[kind]);road_svg+=f'<defs><path id="r-{kind}" d="{d}"/></defs><use href="#r-{kind}" stroke="#142228" stroke-width="{w+2}"/><use href="#r-{kind}" stroke="{color}" stroke-width="{w}"/>'
-    svg=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {WIDTH} {HEIGHT}"><desc>Greater Athens, WGS84 Web Mercator, {WEST},{SOUTH},{EAST},{NORTH}. Map data © OpenStreetMap contributors, ODbL. Relief produced using Copernicus data and information funded by the European Union, EU-DEM via Mapzen/AWS and local EU-DEM terrain.bin.</desc><defs><clipPath id="land"><path d="{land_path}" fill-rule="evenodd"/></clipPath></defs><style>{styles}</style><rect width="{WIDTH}" height="{HEIGHT}" fill="#10222e"/><g clip-path="url(#land)"><image width="{WIDTH}" height="{HEIGHT}" href="data:image/webp;base64,{relief}"/></g><path d="{land_path}" fill="none" stroke="#63828a" stroke-width="1"/><g fill="none" stroke-linecap="round" stroke-linejoin="round">{road_svg}</g>{"".join(labels)}</svg>'
+    for kind,color,w in [('trunk','#4f6a70',.75),('motorway','#628896',1.15)]:
+        d=''.join(roads[kind]);road_svg+=f'<defs><path id="r-{kind}" d="{d}"/></defs><use href="#r-{kind}" stroke="#142228" stroke-width="{w+1.1}"/><use href="#r-{kind}" stroke="{color}" stroke-width="{w}"/>'
+    svg=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {WIDTH} {HEIGHT}"><desc>Greater Athens, WGS84 Web Mercator, {WEST},{SOUTH},{EAST},{NORTH}. Map data © OpenStreetMap contributors, ODbL. Relief produced using Copernicus data and information funded by the European Union, EU-DEM via Mapzen/AWS and local EU-DEM terrain.bin.</desc><defs><clipPath id="land"><path d="{land_path}" fill-rule="evenodd"/></clipPath></defs><rect width="{WIDTH}" height="{HEIGHT}" fill="#10222e"/><g clip-path="url(#land)"><image width="{WIDTH}" height="{HEIGHT}" href="data:image/webp;base64,{relief}"/></g><path d="{land_path}" fill="none" stroke="#557a83" stroke-width=".7"/><g fill="none" stroke-linecap="round" stroke-linejoin="round">{road_svg}</g></svg>'
     meters=6371008.8*SPAN*math.cos(math.radians((NORTH+SOUTH)/2))
-    module='// Generated by tools/build-attica-map.py; route geometry from shipped OSM maps.\nexport const MAP_VIEW = '+json.dumps({'width':WIDTH,'height':HEIGHT,'metersPerUnit':meters/WIDTH},separators=(',',':'))+';\nexport const TRACK_ROUTES = '+json.dumps(routes,separators=(',',':'))+';\nexport const TRACK_PINS = Object.fromEntries(Object.entries(TRACK_ROUTES).map(([id, route]) => [id, route.pin]));\n'
+    module='// Generated by tools/build-attica-map.py; route geometry from shipped OSM maps.\nexport const MAP_VIEW = '+json.dumps({'width':WIDTH,'height':HEIGHT,'metersPerUnit':meters/WIDTH},separators=(',',':'))+';\nexport const TRACK_ROUTES = '+json.dumps(routes,separators=(',',':'))+';\nexport const MAP_LABELS = '+json.dumps(labels,separators=(',',':'),ensure_ascii=False)+';\nexport const TRACK_PINS = Object.fromEntries(Object.entries(TRACK_ROUTES).map(([id, route]) => [id, route.pin]));\n'
     size=len(svg.encode())+len(module.encode());assert size<500000,f'Map assets too large: {size}'
     (ROOT/'assets/maps/attica.svg').write_text(svg);(ROOT/'src/attica-map-data.js').write_text(module)
     print('Map + routes',size,'bytes; land faces',len(land),'road segments',sum(map(len,roads.values())))
