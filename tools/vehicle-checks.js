@@ -62,6 +62,17 @@ export function runVehicleChecks(carIds=null) {
         check('W168 raised sandwich floor survives interior batching',floors.some(b=>b.min.y<.4&&b.max.y>.53&&b.max.y<.7));
         check('W168 facelift glazing retained in road LOD',car.mediumDetail.children.some(o=>o.material?.userData.playerGlass));
         check('W168 sourced narrower rear track',car.wheels.filter(w=>!w.front).every(w=>Math.abs(Math.abs(w.pivot.position.x)*2-spec.trackRear)<.001));
+        // Compare the actual centreline vertices, including the screen's lower join.
+        const bonnet=[];car.playerParts.bonnet.traverse(o=>{if(o.isMesh&&o.material===car.paint){const a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)if(Math.abs(a.getX(i))<.001)bonnet.push(new THREE.Vector3().fromBufferAttribute(a,i));}});
+        bonnet.sort((a,b)=>a.z-b.z);const nose=bonnet[0],cowl=bonnet.at(-1),screen=car.windscreen.geometry.attributes.position;
+        const base=new THREE.Vector3().fromBufferAttribute(screen,12*11),header=new THREE.Vector3().fromBufferAttribute(screen,12*11+10);
+        check('W168 bonnet continues into screen without a flat cowl break',cowl.distanceTo(base)<.01&&Math.abs(Math.atan2(cowl.y-nose.y,cowl.z-nose.z)-Math.atan2(header.y-base.y,header.z-base.z))<.12);
+        check('W168 broad clear lamps sweep up and back into both wings',['light_fl','light_fr'].every(id=>{
+          const b=new THREE.Box3();car.playerParts[id].traverse(o=>{if(o.isMesh&&o.material===car.materials.head){const a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)if(a.getY(i)>.58)b.expandByPoint(new THREE.Vector3().fromBufferAttribute(a,i));}});
+          return b.max.y>.88&&b.min.y<.66&&b.max.x-b.min.x>.3&&b.max.z-b.min.z>.25;
+        }));
+        check('W168 retains 15-inch wheels and 195/50 tyre proportions',Math.abs(car.shape.rim*2-.381)<.001&&car.shape.tyreF===.195&&Math.abs(car.shape.r-(.381/2+.195*.5))<.001);
+
       }
       if(car.shape.suv){
         const glass=car.body.getObjectByName('rear-glass');glass.geometry.computeBoundingBox();const b=glass.geometry.boundingBox;
