@@ -15,22 +15,22 @@ const server=createServer(async(req,res)=>{try{
  res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.html':'text/html','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(data);
 }catch{res.writeHead(404);res.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await pw.chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||resolve(homedir(),'.cache/ms-playwright/chromium-1234/chrome-linux64/chrome'),args:['--no-sandbox','--enable-webgl','--ignore-gpu-blocklist','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-const report={maps:[],errors:[]};
+const report={capture:'Renderer frames plus live DOM state; PNGs exclude HTML overlays.',maps:[],errors:[]};
 async function capture(page,path) {
- const cdp=await page.context().newCDPSession(page);
- try {
-  const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
-  await fs.writeFile(path,Buffer.from(shot.data,'base64'));
- } finally { await cdp.detach(); }
+ // Compositor screenshots can stall under SwiftShader. Preserve the real renderer
+ // frame and record the live DOM separately; no UI is drawn into the exported image.
+ const frame=await page.evaluate(()=>{window.__sim.render();return window.__sim.canvas.toDataURL('image/png').split(',')[1];});
+ await fs.writeFile(path,Buffer.from(frame,'base64'));
+ const dom=await page.evaluate(()=>({classes:document.body.className,text:document.body.innerText,warning:document.body.classList.contains('offtrack-warning'),notices:[...document.querySelectorAll('.race-notice')].map(n=>({text:n.textContent,kind:n.dataset.kind}))}));
+ await fs.writeFile(path.replace('.png','.json'),JSON.stringify(dom,null,2));
 }
-
 try{for(const id of ['riviera','penteli']){
  const page=await browser.newPage({viewport:{width:960,height:600}});
  page.setDefaultTimeout(600000);
  page.on('pageerror',e=>{report.errors.push(String(e));console.log('ERROR',String(e));});
  await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__freezeOfftrack&&cb.name==='frame'?0:raf(cb);});
  console.log('BOOT',id);
- await page.goto(`http://127.0.0.1:${server.address().port}/?menu&simhook&quality=low&fixedres&notraffic&map=${id}`,{waitUntil:'domcontentloaded',timeout:120000});
+ await page.goto(`http://127.0.0.1:${server.address().port}/?menu&simhook&quality=potato&fixedres&notraffic&map=${id}`,{waitUntil:'domcontentloaded',timeout:120000});
  await page.waitForFunction(()=>document.body.classList.contains('loaded')&&window.__flow,null,{timeout:120000});
  await page.evaluate(async()=>{await window.__flow.startEvent('quick');window.__freezeOfftrack=true;});
  await page.waitForFunction(()=>window.__sim?.ground,null,{timeout:600000});
