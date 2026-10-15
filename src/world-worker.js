@@ -11,7 +11,7 @@ self.onmessage = async ({ data: { id } }) => {
     const map = await loadMap(undefined, '/', id, { preload: false }), network = new RoadNetwork(map), scene = new THREE.Group();
     map.roadNetwork = network;
     const mapReady = performance.now();
-    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', network });
+    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', network, beachAreas: map.data.areas?.beach || [] });
     const terrainReady = performance.now();
     const terrain = packGroup(ter.group, { map: id, grid: map.terrain.GX * map.terrain.GZ, height: 0, source: 1 }, [map.terrain.Hc, network.source]);
     const root = buildRoadNetwork(network, scene);

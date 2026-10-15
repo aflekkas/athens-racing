@@ -27,7 +27,7 @@ export async function generateMapBake(root, id) {
   try {
     const map = await loadMap(undefined, './', id), network = new RoadNetwork(map), scene = new THREE.Group();
     map.roadNetwork = network;
-    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', network });
+    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', network, beachAreas: map.data.areas?.beach || [] });
     const terrain = packGroup(ter.group, { map: id, grid: map.terrain.GX * map.terrain.GZ, height: 0, source: 1 }, [map.terrain.Hc, network.source], chooseShuffling);
     const roads = buildRoadNetwork(network, scene);
     return { map, network, terrain, roads: packGroup(roads, { map: id, grid: map.terrain.GX * map.terrain.GZ, stats: { triangles: network.stats.triangles, tiles: network.stats.tiles } }, [], chooseShuffling), terrainGroup: ter.group, roadsGroup: roads };
