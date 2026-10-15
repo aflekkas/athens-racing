@@ -823,7 +823,10 @@ export function createWater(skyCube, terrain, depthTex) {
       }`,
   });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.frustumCulled = false; mesh.renderOrder = -10;
+  mesh.frustumCulled = false;
+  // Opaque land writes depth first, so the sea shader skips dry beach pixels.
+  // Underwater terrain remains behind the water by the normal depth test.
+  mesh.renderOrder = 1;
 
   const virt = new THREE.PerspectiveCamera();
   virt.layers.set(REFLECT_LAYER);
