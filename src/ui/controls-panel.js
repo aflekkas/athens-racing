@@ -41,7 +41,7 @@ export function renderControls(menu) {
   const other = all.filter(a => !known.has(a));
   const groups = [...GROUPS, ...(other.length ? [['OTHER', 'wrench', Object.fromEntries(other.map((a) => [a, a.replace(/([A-Z])/g, ' $1').toUpperCase()]))]] : [])];
   menu.bindCol = menu.bindCol || 0; paintCol(menu);
-  return `<div class="group"><h3 class="group__title">${icon('game-controller')}STEERING RESPONSE</h3>
+  return `<div class="field-actions">${C.button({label:'USE PHONE AS WHEEL',icon:'device-mobile',act:'phoneWheel'})}</div><div class="group"><h3 class="group__title">${icon('game-controller')}STEERING RESPONSE</h3>
       ${C.slider({ key: 'deadzone', label: 'STICK DEADZONE', value: s.deadzone, min: 0, max: 0.45, step: 0.01, format: 'f2', attrs: A })}
       ${C.slider({ key: 'sensitivity', label: 'STEERING SENSITIVITY', value: s.sensitivity, min: 0.25, max: 2, step: 0.05, format: 'x', attrs: A })}
       ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}

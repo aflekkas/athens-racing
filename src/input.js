@@ -1,3 +1,4 @@
+import { WheelInput } from './phone-wheel-packet.js';
 import { notifications } from './ui/notifications.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
@@ -40,14 +41,17 @@ export class Input {
     this.state = { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false,
       ...Object.fromEntries(EDGE_ACTIONS.map(a => [a, false])) };
     this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
-    this.nitrousEnabled = false;
+    this.nitrousEnabled = false; this.phoneWheel = new WheelInput(); this.drivingSource = 'keyboard'; this.lastPhoneActivity = this.phoneWheel.activity; this.padSignature = ''; this.touchSignature = '{}'; this.localRevision = 0; this.lastLocalRevision = 0;
     this.load();
-    this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => { if (e.code === 'KeyR' && this.keys.has('KeyR') && !this.inMenu && !this.resetHeld) this.pending.add('tow'); this.keys.delete(e.code); });
+    this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => { if (e.code === 'KeyR' && this.keys.has('KeyR') && !this.inMenu && !this.resetHeld) this.pending.add('tow'); this.keys.delete(e.code); this.localRevision++; this.drivingSource = 'keyboard'; });
     this.listen('blur', () => this.clear());
     this.listen('gamepadconnected', e => this.connect(e.gamepad));
     this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; });
     this.listen('deviceorientation', e => { if (Number.isFinite(e.gamma)) this.tilt = clamp(e.gamma / 30, -1, 1); });
     if (document) this.mountTouch();
+  }
+  phoneButton(action, down) {
+    if (down === true && ['camera','shiftUp','shiftDown','pause'].includes(action)) { this.drivingSource = 'phone'; this.pending.add(action); }
   }
   setNitrousEnabled(enabled) {
     this.nitrousEnabled = enabled === true;
@@ -132,7 +136,7 @@ export class Input {
     // A menu/blur may clear a held key; OS repeats must not press it again until a real release/press.
     if (e.repeat && !this.keys.has(e.code)) return;
     if (!e.repeat && !this.keys.has(e.code)) for (const [a] of matched) if (EDGE_ACTIONS.includes(a) && !(e.code === 'KeyR' && (a === 'reset' || a === 'tow'))) this.pending.add(a);
-    this.keys.add(e.code);
+    this.keys.add(e.code); this.drivingSource = 'keyboard'; this.localRevision++;
   }
   clear() {
     // Preserve edge latches for a held controller button when pause/menu code clears driving.
@@ -204,7 +208,18 @@ export class Input {
       else if (this.capture.ready) { const { action, done } = this.capture; this.capture = null; this.bind('gamepad', action, [active[0]]); done?.(); }
     }
     const k = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c));
-    const held = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c) && !(c === 'KeyR' && (a === 'reset' || a === 'tow'))) || gp(a) > 0.55 || !!this.touch[a];
+    const phone = this.phoneWheel.sample();
+    const localHeld = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c) && !(c === 'KeyR' && (a === 'reset' || a === 'tow'))) || gp(a) > 0.55 || !!this.touch[a];
+    // Only changes claim a source: the phone's 60 Hz heartbeat cannot steal a held keyboard/pad.
+    if (this.localRevision !== this.lastLocalRevision) { this.lastLocalRevision = this.localRevision; this.drivingSource = 'keyboard'; }
+    const padValues = ['throttle','brake','left','right','handbrake',...EDGE_ACTIONS].map(a => Math.round((a === 'left' || a === 'right' ? axisValue(gp(a),this.settings.deadzone) : gp(a)) * 100));
+    const padSignature = JSON.stringify(padValues);
+    if (padSignature !== this.padSignature && (this.padSignature || padValues.some(Boolean))) this.drivingSource = 'gamepad';
+    this.padSignature = padSignature;
+    const touchSignature = JSON.stringify({...this.touch, ...(this.settings.touchSteering === 'tilt' && Number.isFinite(this.tilt) ? {steer:this.tilt} : {})});
+    if (touchSignature !== this.touchSignature) { this.touchSignature = touchSignature; this.drivingSource = 'touch'; }
+    if (this.phoneWheel.activity !== this.lastPhoneActivity) { this.lastPhoneActivity = this.phoneWheel.activity; this.drivingSource = 'phone'; }
+    const held = a => this.drivingSource === 'phone' && a in phone ? ['handbrake','lookBack'].includes(a) && !!phone[a] : localHeld(a);
     if (!inMenu && !blocked && !capturing && this.keys.has('KeyR')) {
       this.resetHoldT = (this.resetHoldT || 0) + dt;
       if (this.resetHoldT >= 0.75 && !this.resetHeld) { this.pending.add('reset'); this.resetHeld = true; }
@@ -231,6 +246,12 @@ export class Input {
     s.throttle = Math.max(this.keyThrottle, gp('throttle'), this.touch.throttle || 0);
     s.brake = Math.max(this.keyBrake, gp('brake'), this.touch.brake || 0);
     s.handbrake = held('handbrake'); s.nitro = this.nitrousEnabled && held('nitro'); s.lookBack = held('lookBack');
+    if (this.drivingSource === 'keyboard') { s.steer = keyboardSteer; s.throttle = this.keyThrottle; s.brake = this.keyBrake; s.handbrake = k('handbrake'); s.nitro = this.nitrousEnabled && k('nitro'); s.lookBack = k('lookBack'); }
+    if (this.drivingSource === 'gamepad') { s.steer = analog; s.throttle = gp('throttle'); s.brake = gp('brake'); s.handbrake = gp('handbrake') > .55; s.nitro = this.nitrousEnabled && gp('nitro') > .55; s.lookBack = gp('lookBack') > .55; }
+    if (this.drivingSource === 'touch') { s.steer = touchSteer; s.throttle = this.touch.throttle || 0; s.brake = this.touch.brake || 0; s.handbrake = !!this.touch.handbrake; s.nitro = this.nitrousEnabled && !!this.touch.nitro; s.lookBack = !!this.touch.lookBack; }
+    if (this.drivingSource === 'phone') {
+      s.steer = phone.steer; s.throttle = phone.throttle; s.brake = phone.brake; s.handbrake = phone.handbrake; s.lookBack = phone.lookBack; s.nitro = false;
+    }
     this.cameraLook.x = axisValue(gp('lookRight') - gp('lookLeft'), this.settings.deadzone);
     this.cameraLook.y = axisValue(gp('lookDown') - gp('lookUp'), this.settings.deadzone);
     if (blocked || inMenu || capturing) {
@@ -241,7 +262,15 @@ export class Input {
     if (this.touchUI) this.touchUI.hidden = inMenu || blocked;
     return s;
   }
+  observePhoneWheel(vehicle, now = performance.now()) {
+    if (!this.phoneWheelFeedback) return;
+    const serial = vehicle.gearChangeEvent?.serial || 0;
+    if (this.wheelFeedbackVehicle !== vehicle) { this.wheelFeedbackVehicle = vehicle; this.wheelFeedbackSerial = serial; this.wheelLimiterAt = -Infinity; }
+    if (serial !== this.wheelFeedbackSerial) { this.wheelFeedbackSerial = serial; this.phoneWheelFeedback(40); }
+    if (vehicle.limiter && now - this.wheelLimiterAt >= 250) { this.wheelLimiterAt = now; this.phoneWheelFeedback(25); }
+  }
   async rumble(strong = 0, weak = 0, ms = 100) {
+    if (!this.document?.hidden) this.phoneWheelFeedback?.(clamp(ms, 0, 250));
     const actuator = this.pad?.vibrationActuator;
     if (!actuator?.playEffect || this.document?.hidden) return false;
     try { await actuator.playEffect('dual-rumble', { startDelay: 0, duration: clamp(ms, 0, 1000), strongMagnitude: clamp(strong, 0, 1), weakMagnitude: clamp(weak, 0, 1) }); return true; } catch { return false; }

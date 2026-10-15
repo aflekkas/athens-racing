@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Use your phone as a steering wheel: scan a code, tilt to steer, and use touch pedals in solo or online races.
+  ![Phone steering wheel with throttle and brake pedals, calibration and gear buttons](assets/changelog/2026.10.15.4/phone-wheel.webp "Tilt your phone to steer and slide up the pedals for more throttle or brake.")
+
 - SVJ exhaust pops now throw flickering blue-white and orange jets, with crisp red rear lights.
   ![Directional SVJ exhaust jets during an upshift](assets/changelog/2026.10.15.3/svj-flames-v2.webp "A sharp ISR bang and two hot jets.")
 - Steel guardrails protect steep coastal bends on the Riviera, with openings for side roads and beach paths.

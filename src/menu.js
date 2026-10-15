@@ -1,3 +1,4 @@
+import { openPhoneWheel, renderPhoneWheel, unpairPhoneWheel } from './ui/phone-wheel-game.js';
 import { mountTitleHero } from './ui/title-hero.js';
 import {setExhaustPops} from './exhaust-pops.js';
 import { savedPaint } from './vehicle-paint.js';
@@ -231,6 +232,8 @@ export class Menu {
     if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
+      case 'phoneWheel': openPhoneWheel(this); break;
+      case 'phoneWheelUnpair': unpairPhoneWheel(); this.back(); break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
@@ -462,11 +465,12 @@ export class Menu {
   leaving() { this.titleHero?.dispose(); this.titleHero=null; this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
+  r_phoneWheel() { return renderPhoneWheel(); }
   r_pause(d) {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'device-mobile', title: 'USE PHONE AS WHEEL', act: 'phoneWheel' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
   }
 

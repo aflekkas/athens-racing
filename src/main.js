@@ -838,7 +838,7 @@ let selectedMapId = initialMapId(Q);
 const evCtx = () => ({ map, mapId: map.id, route, marks: map.data.marks, events: map.events });
 const menuCtx = () => map?.id === selectedMapId ? evCtx() : menuMapContext(selectedMapId);
 function selectMenuMap(id) { getMap(id); selectedMapId = id; }
-const activeInputDevice = () => G.inputDevice || (controls.pad ? 'gamepad' : 'keyboard');
+const activeInputDevice = () => controls.drivingSource === 'phone' ? 'wheel' : controls.drivingSource;
 function syncSteeringAssist() {
   if (!player) return false;
   const before = player.veh.steerAssist;
@@ -2062,6 +2062,7 @@ function step(dt, draw = true) {
   const acc = { x: pv.ay, y: 0, z: -pv.ax };
   // the full cabin only where a camera can see it: cockpit, open tops, close orbit views and camera blends
   player.cockpit.setDetail(!(G.cam === 'chase' || G.cam === 'spectate') || !!player.spec.convertible || cameraBlend.active);
+  controls.observePhoneWheel(pv);
   player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: input.handbrake && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
   player.driver.update(dt, G.t, pv.vLong, acc, player.cockpit.wheelInfo, pv.steer, pv.pose.heaveV);
   for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);

@@ -16,6 +16,7 @@ test('production chunks preserve source-relative resources and lazy imports whil
     await writeFile(resolve(root, 'src/lazy.js'), "export const css = new URL('./input.css', import.meta.url).href;");
     for (const [name, value] of Object.entries({ 'main.js': source, 'offline-cache.js': '/* registrar */', 'input.css': 'body{}' })) await writeFile(resolve(out, 'src', name), value);
     await writeFile(resolve(out, 'index.html'), '<script type="module" src="./src/main.js"></script>');
+    await wheelFixture(root,out);
     const meta = await bundleBrowser(root, out), output = Object.entries(meta.outputs).find(([, v]) => v.entryPoint === 'src/main.js')[0];
     globalThis.location = { href: 'https://game.example/index.html' };
     const main = await import(pathToFileURL(resolve(root, output)));
@@ -26,6 +27,7 @@ test('production chunks preserve source-relative resources and lazy imports whil
     assert.ok((await readdir(resolve(out, 'src'))).includes('offline-cache.js'));
     assert.ok(!(await readdir(resolve(out, 'src'))).includes('main.js'));
     assert.ok((await readFile(resolve(out, 'index.html'), 'utf8')).includes('main-'));
+    assert.match(await readFile(resolve(out,'src/ui/phone-wheel.html'),'utf8'), /src="\/src\/phone-wheel-controller-[^"]+\.js"/);
   } finally { if (previous === undefined) delete globalThis.location; else globalThis.location = previous; await rm(root, { recursive: true, force: true }); }
 });
 
@@ -41,6 +43,7 @@ test('every map bake points to the published world worker, including Megara', as
       await mkdir(resolve(out, path, '..'), {recursive:true});
       await writeFile(resolve(out, path), JSON.stringify({bakedWorld:{version:1,terrain:'terrain',roads:'roads'}}));
     }
+    await wheelFixture(root,out);
     await bundleBrowser(root, out);
     for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
       const data = JSON.parse(await readFile(resolve(out, path), 'utf8'));
@@ -49,3 +52,9 @@ test('every map bake points to the published world worker, including Megara', as
     }
   } finally { await rm(root, {recursive:true,force:true}); }
 });
+
+async function wheelFixture(root,out) {
+  await mkdir(resolve(root,'src/ui'),{recursive:true}); await mkdir(resolve(out,'src/ui'),{recursive:true});
+  await writeFile(resolve(root,'src/ui/phone-wheel-controller.js'),'export const wheel = true;');
+  await writeFile(resolve(out,'src/ui/phone-wheel.html'),'<script type="module" src="/src/ui/phone-wheel-controller.js"></script>');
+}

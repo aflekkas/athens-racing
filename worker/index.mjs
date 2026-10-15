@@ -1,3 +1,5 @@
+import { wheelRoute } from './phone-wheel.mjs';
+export { PhoneWheelRoom } from './phone-wheel.mjs';
 import { canonicalHostRedirect } from './canonical-host.mjs';
 import { legalPage } from './legal-pages.mjs';
 import { arenaAccountStatus } from './account-arena.mjs';
@@ -36,6 +38,8 @@ export default {
     const legal = legalPage(request);
     if (legal) return legal;
     const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/wheel')) return wheelRoute(request, env);
+    if (url.pathname === '/wheel') return env.ASSETS.fetch(new Request(new URL('/src/ui/phone-wheel', url), request));
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
     if (['/ws', '/health', '/api/lobbies', '/api/leaderboard'].includes(url.pathname)) {

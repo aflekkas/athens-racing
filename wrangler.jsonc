@@ -23,6 +23,10 @@
       {
         "name": "PRESENCE",
         "class_name": "FriendsPresence"
+      },
+      {
+        "name": "WHEEL",
+        "class_name": "PhoneWheelRoom"
       }
     ]
   },
@@ -37,6 +41,12 @@
       "tag": "v2-accounts",
       "new_sqlite_classes": [
         "FriendsPresence"
+      ]
+    },
+    {
+      "tag": "v3-phone-wheel",
+      "new_sqlite_classes": [
+        "PhoneWheelRoom"
       ]
     }
   ],
@@ -61,6 +71,10 @@
           {
             "name": "PRESENCE",
             "class_name": "FriendsPresence"
+          },
+          {
+            "name": "WHEEL",
+            "class_name": "PhoneWheelRoom"
           }
         ]
       },
@@ -102,6 +116,10 @@
           {
             "name": "PRESENCE",
             "class_name": "FriendsPresence"
+          },
+          {
+            "name": "WHEEL",
+            "class_name": "PhoneWheelRoom"
           }
         ]
       },
