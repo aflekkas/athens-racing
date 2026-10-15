@@ -1,8 +1,8 @@
 # Trim catalogue conventions
 
-Garage `CAR_MODELS` groups a generation and body style; each `trims` member names an executable `CARS` physics spec and multiplayer wire ID. Retaining existing IDs is intentional. `migrateCarSelection` upgrades string IDs to `{entry,trim}` without losing an old engine selection. The compatibility `paraliaki.car` string remains authoritative; the garage also writes `paraliaki.car.selection`.
+Garage `CAR_MODELS` groups a generation family; each `trims` member names an executable `CARS` physics spec and multiplayer wire ID. Retaining existing IDs is intentional. `migrateCarSelection` upgrades string IDs to `{entry,trim}` without losing an old engine selection. The compatibility `paraliaki.car` string remains authoritative; the garage also writes `paraliaki.car.selection`.
 
-The available trim set is curated, not every engine sold worldwide. F56 JCW hardtop and F57 Cooper S convertible are different bodies, and CLA C178, CLE C236 and GLA H247 are different generations/models. Only the two H247 GLA engines share a garage card. The E36 325i and European M3 3.2 share a card.
+The available trim set is curated, not every engine sold worldwide. Round 2 combines F56/F57 under MINI with independent body/engine controls, and replaces the earlier CLA C178 with the requested C118. CLE C236 and GLA H247 remain distinct models. All existing wire IDs remain valid.
 
 New CLE specifications use ICE rated kW/Nm (48 V transient assist is not added to continuous engine power), DIN mass excluding the 75 kg EU driver/luggage allowance. Existing CLE 300 stays at its sourced 1805 kg calibration; year/equipment change published weights. CLE 200 / 450 / AMG 53 use representative 1715 / 1870 / 1925 kg DIN masses. 9G gear ratios use the existing C236 set; AMG final drive is 3.07. These ratios, off-peak engine curves, grip and suspension are simulation approximations, not claimed factory telemetry.
 
@@ -15,3 +15,86 @@ Manufacturer sources:
 - Existing individual cars retain the citations next to their specs in `src/cars.js`.
 
 Appearance uses representative factory/sport-package cues rather than promising every wheel or cosmetic item is standard in every market: wheel diameter/spokes, coloured fixed calipers, ride height, trim lettering, rear lip, AMG grille and quad round outlets. Body surfaces and cabin are shared. E36 M3 uses twin left outlets, M front splitter and rear diffuser. The CLE AMG skin approximates the wide-body car with the existing parameterised arches.
+
+## Round 2 specification ledger
+
+Power kW; torque Nm; representative DIN/road mass kg; time seconds. Every row identifies the simulated gearbox; all curves away from the rated anchors, final drives/ratios unless explicitly cited in round 1, axle splits, tyre grip, suspension and aero are approximations. DIN weights exclude a 75 kg driver allowance. Equipment/market/year alter mass. Huracán adds 120 kg to manufacturer dry weights for fluids/equipment. No battery/e-CVT model exists, so Corolla uses the real E210 1.5/1.6 manual petrol engines, not an invented hybrid gearbox.
+
+| ID | Trim | kW | Nm | kg | Drive | Gears | 0–100 |
+|---|---|---:|---:|---:|---|---:|---:|
+| panda | PANDA 169 | 44 | 102 | 860 | fwd | 5 | 14 |
+| panda_11 | 1.1 | 40 | 88 | 840 | fwd | 5 | 15 |
+| panda_100hp | 100HP | 74 | 131 | 975 | fwd | 6 | 9.5 |
+| yaris | YARIS XP10 | 50 | 90 | 850 | fwd | 5 | 13.6 |
+| yaris_13 | 1.3 VVT-i | 63 | 124 | 900 | fwd | 5 | 12.1 |
+| yaris_ts | 1.5 T SPORT | 78 | 145 | 950 | fwd | 5 | 9 |
+| ibiza | IBIZA 6K | 44 | 107 | 935 | fwd | 5 | 15.7 |
+| ibiza_cupra | 1.8 20VT CUPRA | 115 | 210 | 1119 | fwd | 5 | 7.9 |
+| golf | GOLF TSI | 103 | 250 | 1270 | fwd | 6 | 8.4 |
+| golf_gti | GTI | 162 | 350 | 1276 | fwd | 6 | 6.5 |
+| golf_gtd | GTD | 135 | 380 | 1302 | fwd | 6 | 7.5 |
+| golf_r | R 4MOTION | 221 | 380 | 1401 | awd | 6 | 4.9 |
+| mini | MINI | 141 | 280 | 1320 | fwd | 6 | 7.2 |
+| mini_cabrio_cooper | COOPER CABRIO | 100 | 220 | 1205 | fwd | 6 | 8.8 |
+| mini_jcw | MINI JCW | 170 | 320 | 1205 | fwd | 6 | 6.3 |
+| mini_cooper | COOPER | 100 | 220 | 1085 | fwd | 6 | 7.9 |
+| mini_s | COOPER S | 141 | 280 | 1160 | fwd | 6 | 6.8 |
+| corolla | COROLLA | 97 | 159 | 1280 | fwd | 6 | 9.7 |
+| corolla_15 | 1.5 DYNAMIC FORCE | 92 | 153 | 1210 | fwd | 6 | 12.1 |
+| taxi | OCTAVIA | 110 | 360 | 1460 | fwd | 7 | 8.6 |
+| octavia_16tdi | 1.6 TDI TAXI | 81 | 250 | 1230 | fwd | 5 | 10.6 |
+| octavia_rs | 2.0 TSI RS | 162 | 350 | 1350 | fwd | 6 | 6.8 |
+| superb | SUPERB TSI | 162 | 350 | 1505 | fwd | 6 | 7 |
+| superb_15 | 1.5 TSI | 110 | 250 | 1380 | fwd | 6 | 8.7 |
+| superb_4x4 | 2.0 TSI 4x4 | 206 | 350 | 1540 | awd | 6 | 5.8 |
+| cla | 200 | 120 | 250 | 1335 | fwd | 7 | 8.2 |
+| cla250 | 250 4MATIC | 165 | 350 | 1430 | awd | 7 | 6.3 |
+| cla35 | 35 4MATIC | 225 | 400 | 1495 | awd | 7 | 4.9 |
+| cla45s | 45 S 4MATIC+ | 310 | 500 | 1600 | awd | 8 | 4 |
+| gla | GLA 200 | 120 | 250 | 1485 | fwd | 7 | 8.7 |
+| gla250 | 250 4MATIC | 165 | 350 | 1535 | awd | 8 | 6.7 |
+| gla45 | GLA 45 S | 310 | 500 | 1765 | awd | 8 | 4.3 |
+| z4 | Z4 M40i | 250 | 500 | 1610 | rwd | 8 | 4.5 |
+| z4_20i | sDrive20i | 145 | 320 | 1405 | rwd | 8 | 6.6 |
+| z4_30i | sDrive30i | 190 | 400 | 1415 | rwd | 8 | 5.4 |
+| carrera | 911 CARRERA | 257 | 390 | 1380 | rwd | 7 | 4.8 |
+| carrera_s | CARRERA S | 294 | 440 | 1395 | rwd | 7 | 4.5 |
+| carrera_gts | CARRERA GTS | 316 | 440 | 1425 | rwd | 7 | 4.4 |
+| huracan | HURACÁN EVO | 470 | 600 | 1542 | awd | 7 | 2.9 |
+| huracan_rwd | EVO RWD | 449 | 560 | 1509 | rwd | 7 | 3.3 |
+| gtv | 2000 GTV | 97 | 182 | 1040 | rwd | 5 | 8.9 |
+| gtv1750 | 1750 GTV | 87 | 186 | 1038 | rwd | 5 | 9.5 |
+| e36 | 325i E36 | 141 | 245 | 1330 | rwd | 5 | 8 |
+| e36_318i | 318i | 85 | 168 | 1190 | rwd | 5 | 11.3 |
+| e36_m3 | M3 E36 | 236 | 350 | 1460 | rwd | 6 | 5.5 |
+| cle200 | CLE 200 | 150 | 320 | 1715 | rwd | 9 | 7.9 |
+| cle | CLE 300 | 190 | 400 | 1805 | awd | 9 | 6.2 |
+| cle450 | CLE 450 | 280 | 500 | 1870 | awd | 9 | 4.4 |
+| cle53 | AMG CLE 53 | 330 | 560 | 1925 | awd | 9 | 4.2 |
+| gr_yaris | GR YARIS | 206 | 390 | 1280 | awd | 6 | 5.5 |
+
+## Round 2 sources and body policy
+
+Round 2 supersedes the earlier body grouping: MINI is now one F56/F57 family entry with three engines and two bodies. `mini` is still the Cooper S Convertible wire ID; `mini_jcw` is still the JCW Hardtop. Selection records retain the executable `trim` ID and add `body` for this entry. F57 Cooper / Cooper S / JCW use 1205 / 1320 / 1310 kg representative road masses (the S preserves its prior calibration). The roof is permanently open on the F57 preset, closed on F56. Z4 is roadster only. The existing 911 model has no cabriolet cabin/roof preset, so this round does not advertise an unsupported 911 body option. Huracán offers EVO and EVO RWD; STO is omitted because its roof scoop, clamshell and large aero assembly need a distinct model.
+
+Primary specification references, consulted 2026-10-15:
+
+- Panda 169 1.1/1.2: [Fiat 2003 UK launch](https://www.media.stellantis.com/uk-en/fiat/press/new-fiat-panda-in-uk), and the 169 handbook linked above. [Panda 100HP launch](https://www.media.stellantis.com/uk-en/fiat/press/new-fiat-panda-100hp): 74 kW, 131 Nm, six-speed manual, 9.5 s, 185 km/h. The model retains the shared 169 shell with sport wheels, lowered stance, spoiler and bumper extensions.
+- Yaris XP10: [Toyota first-generation technical pack](https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/Gen1-Yaris-archive-press-pack.pdf) and [T Sport pack](https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/Gen1-Yaris-T-Sport-archive-press-pack.pdf). Early 1.3 is 63 kW/124 Nm; T Sport is 78 kW/145 Nm, 9.0 s. These remain XP10, not later XP90 engines. Body panels are shared five-door approximations across engines.
+- Ibiza 6K/6K2: [SEAT historic Ibiza Cupra](https://seat.media-corner.ch/press/seat-ibiza-25-jahre-erfolgsgeschichte). The 1.8 20VT is the 156 PS facelift-era Cupra, not the later 6L Cupra. The 6K shell is shared; door count and facelift-specific lamp shapes are approximations, not a separate Cupra body claim. Original 1.4 CLX keeps the only aftermarket nitrous bottle.
+- Golf VII: [GTI history](https://www.volkswagen-newsroom.com/en/the-new-golf-gti-international-media-drive-6282/golf-gti-history-6287), [GTD launch technical data](https://www.volkswagen-newsroom.com/en/the-new-golf-gtd-international-press-presentation-2807), [R launch](https://www.volkswagen-newsroom.com/en/the-new-golf-r-2432). Launch GTI 220 PS manual, GTD 184 PS manual, R 300 PS DSG/4MOTION. R's 4.9 s is DSG; manual versions have a different time. Wheel designs, grille stripe, spoiler and diffuser are representative sport-package cues.
+- MINI: [F56 launch](https://www.press.bmwgroup.com/global/article/detail/T0157473EN/the-new-mini), [F56 JCW specifications](https://www.press.bmwgroup.com/global/article/detail/T0210262EN/specifications-of-the-mini-john-cooper-works-valid-from-march-2015), [F57 launch](https://www.press.bmwgroup.com/united-kingdom/article/detail/T0240023EN_GB/the-new-mini-convertible), [F57 technical sheet](https://www.press.bmwgroup.com/canada/article/attachment/T0261914EN/377464). Six-speed manuals, including 6.6 s JCW Convertible; these are not the later seven-speed automatic variants.
+- Corolla E210 saloon: [Toyota 1.6 launch](https://media.toyota.co.uk/toyota-reveals-the-all-new-corolla-saloon/), [Toyota regional 1.5 brochure](https://toyota.com.mk/content/modelspdfs/615-corolla-sedan-mk-2.pdf?t=1616622510), [Toyota MY24 1.5 technical sheet](https://pdf.sites.toyota.sk/cennik_corolla_sedan_active_comfort.pdf). 92 kW/153 Nm three-cylinder M15A-FKS, six-speed manual, 12.1 s. Model covers the generation's different model years.
+- Octavia III 5E: [2015 RS specifications](https://www.skoda-storyboard.com/en/press-releases/skoda-octavia-rs-now-wheel-drive-six-speed-dsg-2/). RS is the pre-facelift 220 PS six-speed petrol manual (not the 2017 230 PS or IV's 245 PS). The existing 4.689 m taxi shell and wheelbase are III, so the garage label is corrected from IV. 1.6 TDI is the 110 PS five-speed taxi; the old 2.0 TDI DSG taxi stays available. Taxi lighting/livery remains on diesel taxi variants; RS has neither roof sign nor taxi paint.
+- Superb III: [manufacturer petrol technical table](https://cdn.skoda-storyboard.com/2016/05/TD-SUPERB-en-1.pdf). 1.5 TSI 150 PS manual and 2.0 TSI 280 PS 4x4 DSG, alongside the old 220 PS DSG. 1.5 appeared later within this generation.
+- CLA C118: [2019 launch engine table](https://media.mercedes-benz.pl/dostawy-mercedesa-cla-coupe-rozpoczna-sie-w-maju-2019-roku/), [C118 press kit](https://media.mercedes-benz.com/press-kit/99b405e9-7909-40e2-9f51-7dd2e062800c), [AMG 45 S launch](https://media.mercedes-benz.com/article/1ac09d7e-dc4a-452a-8a16-8e14f370582a). CLA 200 seven-speed DCT 8.2 s; 250 4MATIC seven-speed DCT; 35 seven-speed DCT; 45 S eight-speed DCT. The `cla` ID now represents the requested 2019 C118 200 rather than the prior 2025 hybrid. Dimensions and LED signatures are corrected; panel contours are shared procedural approximations. AMG 35 uses two outlets; 45 S uses four and the vertical grille. No electric boost is counted.
+- GLA H247: existing 200 and 45 S sources remain; the added 250 is the 225 PS/350 Nm eight-speed DCT 4MATIC, 6.7 s. [Mercedes GLA launch](https://media.mercedes-benz.nl/de-nieuwe-mercedes-benz-gla---meer-karakter-meer-ruimte-meer-veiligheid/).
+- Z4 G29: [BMW 2018 launch](https://www.press.bmwgroup.com/global/article/detail/T0284770EN/the-new-bmw-z4?language=en). European 197/258/340 PS, eight-speed automatic; 20i/30i are four-cylinder, M40i six-cylinder. Base masses 1405/1415 kg are DIN (EU figures minus 75 kg), while the existing M40i keeps its 1610 kg calibration.
+- 911 991.1: [Porsche 2014 GTS launch](https://newsroom.porsche.com/en/products/the-new-porsche-911-carrera-gts-models-10756.html). Naturally aspirated Carrera / S / GTS, seven-speed manual throughout: 4.8 / 4.5 / 4.4 s, not the PDK Sport Chrono 4.0 s. GTS wider rear body is represented by physics width, wheels and trim parts; the procedural shell retains the common Carrera surface.
+- Huracán: [EVO RWD manufacturer specification](https://www.lamborghini.com/en-en/history/huracan-evo-rwd), [RWD design/output description](https://www.lamborghini.com/en-en/news/huracan-evo-rwd-new-features). 449 kW/560 Nm RWD versus 470 kW/600 Nm AWD; same seven-speed LDF family. Dry mass plus 120 kg road equipment convention as above.
+- Alfa 105: [Alfa Romeo historical collection](https://www.museoalfaromeo.com/en-us/collezione/Pages/Collezione.aspx). 1750 118 PS/186 Nm and 2000 132 PS/182 Nm use period European quoted outputs, with representative road masses and period 0–100 estimates. Historical gross/net measurement conventions vary; do not compare those figures as modern homologation results. Five-speed manual/RWD, shared Bertone shell.
+- E36: [BMW Classic 318i](https://www.bmwgroup-classic.com/en/history/historic-modeloverview-bmw.html), plus existing 325i/M3 sources. 318i represents the M43 115 PS/168 Nm sedan, five-speed manual/RWD; equipment-dependent mass is representative.
+
+All added gearboxes have the real gear count/type and driven axle arrangement; exact gear and final-drive values not individually provided by these sources are effective family-level estimates. New trim torque curves are interpolated from rated Nm and kW anchors, not measured dyno traces. Cosmetic sport packages do not imply that every wheel, caliper colour or spoiler was standard in all markets. Bodykit extensions use the existing parameterised geometry; they do not reproduce bespoke wide-body panels.
+
+Additional body row: `mini_cabrio_jcw` — JCW Convertible, 170 kW / 320 Nm, 1310 kg, FWD, six-speed manual, 6.6 s. All six MINI variants carry `bodyStyle` and `trimLabel` metadata; catalogue bodies map those to the original or new executable IDs.

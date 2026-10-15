@@ -278,7 +278,7 @@ else {
   const source = readFileSync(new URL('../../src/cars.js', import.meta.url),'utf8');
   const cars = Function('return '+source.split('export const CARS = ')[1].split('\n];')[0]+'\n];')();
   const launch = id => { const v=new Vehicle(cars.find(c=>c.id===id),route);v.reset(0,0,0);let t=0;while(v.kmh<100&&t<20){v.update(DT,{throttle:1,brake:0,steer:0});t+=DT;}return t; };
-  for(const [base,performance]of [['cle200','cle53'],['e36','e36_m3'],['gla','gla45']]){
+  for(const [base,performance]of [['cle200','cle53'],['e36','e36_m3'],['gla','gla45'],['panda_11','panda_100hp'],['yaris','yaris_ts'],['ibiza','ibiza_cupra'],['golf','golf_r'],['mini_cooper','mini_jcw'],['octavia_16tdi','octavia_rs'],['superb_15','superb_4x4'],['cla','cla45s'],['z4_20i','z4'],['e36_318i','e36_m3']]){
     const slow=launch(base),fast=launch(performance);
     check(`trim acceleration: ${performance} quicker than ${base}`,fast<slow*.85,`${f2(fast)} vs ${f2(slow)} s`);
   }

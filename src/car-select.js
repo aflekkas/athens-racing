@@ -6,7 +6,7 @@ import { TurntableControl } from './turntable-control.js';
 import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection } from './car-catalog.js';
+import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection, bodyTrim } from './car-catalog.js';
 
 // Period 0–100 km/h figures for the represented drivetrain (seconds).
 // Power, mass and driven wheels come from the live physics catalogue.
@@ -36,16 +36,20 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
         return head + C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
           attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
           media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(carModel(car)?.name || car.name),
-          text: `${classLabel(carCategory(car))} · ${carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}`,
+          text: `${classLabel(carCategory(car))} · ${carModel(car).bodies ? carModel(car).bodies[0][2].length : carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}${carModel(car).bodies ? ' · 2 BODIES' : ''}`,
           foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
   }
+  const available=id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id);
+  const body=model?.bodies?.find(([, ,ids])=>ids.includes(c.id));
+  const trims=(body?.[2] || model?.trims || []).filter(available);
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
   return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
     hints: [['select', 'BROWSE'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
     body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count">${C.badge(c.drive.toUpperCase())}</span></div>
     <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
-      ${model ? C.select({ key:'carTrim', label:'ENGINE / TRIM', value:c.id, options:model.trims.filter(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id)).map(id=>[id,CARS.find(t=>t.id===id).short]), attrs:{'data-scope':'car-trim'} }) : ''}
+      <div class="car-variants field-actions">${body ? C.segmented({key:'carBody',label:'BODY',cls:'field--stack',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}
+      ${model ? C.segmented({key:'carTrim',label:'ENGINE / TRIM',cls:'field--stack',value:c.id,options:trims.map(id=>{const t=CARS.find(t=>t.id===id);return [id,t.trimLabel || t.short];}),attrs:{'data-scope':'car-trim'}}) : ''}</div>
       <div class="car-transmission label">${c.gears.length}-SPEED · ${c.drive.toUpperCase()}</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
@@ -96,9 +100,14 @@ export function openCarPicker(options = {}) {
 export function mountCarSelect(root, index, opts = {}) {
   // Keep trim events inside this component; the shared menu owns navigation/layout.
   const onTrim = e => {
-    if(e.detail?.el?.dataset.scope !== 'car-trim') return;
+    const scope=e.detail?.el?.dataset.scope;
+    if(!['car-trim','car-body'].includes(scope)) return;
     e.stopPropagation();
-    const next=CARS.findIndex(c=>c.id===e.detail.value), menu=window.__flow?.menu;
+    const menu=window.__flow?.menu, model=carModel(CARS[index]);
+    const allowed=menu?.data?.def?.car ? [menu.data.def.car] : menu?.data?.allowedCars;
+    const id=scope==='car-body'?bodyTrim(model,CARS[index].id,e.detail.value,allowed):e.detail.value;
+    const next=CARS.findIndex(c=>c.id===id);
+    if(allowed && !allowed.includes(id))return;
     if(next>=0 && carModel(CARS[next])===carModel(CARS[index]) && menu){menu.data={...menu.data,index:next,detail:true};menu.render();}
   };
   const onConfirm = e => {

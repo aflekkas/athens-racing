@@ -12,7 +12,7 @@ export const MERCEDES_MODELS = {
   // H247 AMG-specific width/track; manufacturer 2020 press kit and MY24 drawings.
   gla45: { mercedes:true,suv:true,amg:true,sculpted:true,L:4.443,W:1.849,H:1.590,wb:2.729,track:1.615,trackRear:1.590,axleOffset:-.065,r:.356,rim:.254,tyreF:.255,tyreR:.255,belt:1.065,front:.88,rear:1.06,cowl:-.94,header:-.37,roofBack:1.52,back:2.035,hatchGlassY:1.17,seatZ:.18,eyeY:1.165,doors:4,leather:'#292b2d' },
   // New 2025 CLA hybrid is C178, sister to electric C174. Mercedes UK technical data.
-  cla: { mercedes:true,cla:true,sculpted:true,blackRoof:true,L:4.723,W:1.855,H:1.450,wb:2.790,track:1.605,axleOffset:-.045,r:.334,rim:.241,tyreF:.225,tyreR:.255,belt:1.00,front:.74,rear:1.00,cowl:-.97,header:-.48,roofBack:1.08,back:1.84,seatZ:.21,eyeY:1.065,doors:4,leather:'#c4b5a0' },
+  cla: { mercedes:true,cla:true,cla118:true,sculpted:true,blackRoof:true,L:4.688,W:1.830,H:1.439,wb:2.729,track:1.605,axleOffset:-.045,r:.334,rim:.241,tyreF:.225,tyreR:.255,belt:1.00,front:.74,rear:1.00,cowl:-.97,header:-.48,roofBack:1.08,back:1.84,seatZ:.21,eyeY:1.065,doors:4,leather:'#c4b5a0' },
   cle: { mercedes:true,sculpted:true,mirrorSetback:.18,L:4.850,W:1.861,H:1.428,wb:2.865,track:1.605,axleOffset:-.12,r:.337,rim:.241,tyreF:.245,tyreR:.275,belt:.98,front:.75,rear:.95,cowl:-.94,header:-.32,roofBack:1.04,back:1.98,seatZ:.20,eyeY:1.080,doors:2,leather:'#875b43' },
 };
 const mix=THREE.MathUtils.lerp,clamp=THREE.MathUtils.clamp;
@@ -33,7 +33,7 @@ function sculptedContour(d){
   if(!d.sculpted)return null;
   const F=-d.L/2,R=d.L/2,W=d.W/2;
   if(d.cla){
-    // C174 manufacturer side profile; C178 hybrid shares the arched glasshouse.
+    // C118 arched glasshouse; shared contour is a procedural approximation.
     // https://media.mercedes-benz.fr/download/a39ec976-adb6-4310-a492-951866f5b9e5/brochure-cla-c174-29-04-2025.pdf
     return {
       belt:z=>contour([[d.cowl,1.012],[.15,1.060],[1.38,1.095],[d.back,1.014]],z),
@@ -187,14 +187,14 @@ export function buildMercedes(car,d,M,low,plate,H){
   }
   if(C)mesh(p,new THREE.CircleGeometry(.094,24),M.black,[0,gy,S.face(0,F,gy)-.047]);
   star(0,gy,C?S.face(0,F,gy)-.052:suv?S.face(0,F,gy)-.023:F-.023,C?.089:.101);
-  if(cla)stroke(M.led,[[-.78,.797],[0,.790],[.78,.797]],F,.006,'light_fl');
+  if(cla&&!d.cla118)stroke(M.led,[[-.78,.797],[0,.790],[.78,.797]],F,.006,'light_fl');
   front(M.black,[[-.52,.36],[.52,.36],[.63,.235],[-.63,.235]],'lower-grille','bumper_f');
   for(const s of [-1,1]){
     const side=s<0?'l':'r',fy=d.front-.11;
     const pts=C&&d.doors===2?[[.46,.728],[.65,.774],[.83,.826],[.81,.714],[.59,.660],[.49,.676]]:C&&cla?[[.40,.783],[.69,.804],[.83,.835],[.80,.722],[.56,.713],[.42,.730]]:C?[[.50,.825],[.70,.846],[.84,.901],[.83,.809],[.62,.767],[.51,.783]]:cla?[[.39,fy+.045],[.82,fy+.12],[.79,fy-.04],[.58,fy-.10]]:suv?[[.48,fy+.12],[.80,fy+.13],[.80,fy-.03],[.50,fy-.06]]:[[.48,fy+.02],[.82,fy+.115],[.79,fy-.025],[.55,fy-.095]];
     front(M.head,pts.map(([x,y])=>[s*x,y]),'headlamp-housing','light_f'+side);
     stroke(M.led,C&&d.doors===2?[[s*.49,.731],[s*.64,.770],[s*.81,.808]]:C&&cla?[[s*.42,.784],[s*.68,.810],[s*.81,.820]]:C?[[s*.52,.832],[s*.69,.850],[s*.81,.882]]:[[s*pts[0][0],pts[0][1]-.014],[s*.76,pts[1][1]-.025],[s*.80,pts[1][1]-.045]],F,.009,'light_f'+side);
-    if(cla)star(s*.65,(C?.763:fy-.005),S.lightFace(s*.65,F,C?.763:fy)-.033,C?.038:.050,M.led,'light_f'+side);
+    if(cla&&!d.cla118)star(s*.65,(C?.763:fy-.005),S.lightFace(s*.65,F,C?.763:fy)-.033,C?.038:.050,M.led,'light_f'+side);
     else for(const x of [.60,.72]){const y=C?(suv?.803:.720):fy-.025;const q=mesh(p,new THREE.CircleGeometry(.022,16),M.chrome,[s*x,y,S.lightFace(s*x,F,y)-.026]);q.userData.damagePart='light_f'+side;}
     front(M.black,[[s*.56,suv?.60:.43],[s*.73,suv?.63:.46],[s*.80,suv?.56:.40],[s*.80,.29],[s*.62,.26]],'outer-intake',suv?'structure':'bumper_f');
     if(suv&&!amg){const y=.46;mesh(p,new THREE.CircleGeometry(.043,20),M.chrome,[s*.68,y,S.face(s*.68,F,y)-.022]);}
@@ -202,7 +202,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     const ry=d.rear-.12,tail=C?[[.24,ry+.028],[.65,ry+.049],[.83,ry+.065],[.80,ry-.025],[.43,ry-.047],[.27,ry-.020]]:cla?[[.32,ry+.06],[.80,ry+.09],[.78,ry-.08],[.34,ry-.07]]:[[.24,ry+.035],[.80,ry+.095],[.77,ry-.06],[.43,ry-.09]];
     front(M.red,tail.map(([x,y])=>[s*x,y]),'rear-lamp-housing','light_r'+side,R);
     stroke(M.tail,[...tail,tail[0]].map(([x,y])=>[s*x,y]),R,.013,'light_r'+side);
-    if(cla)for(const x of [.44,.65])star(s*x,ry+.007,S.face(s*x,R,ry)+.035,C?.036:.049,M.tail,'light_r'+side);
+    if(cla&&!d.cla118)for(const x of [.44,.65])star(s*x,ry+.007,S.face(s*x,R,ry)+.035,C?.036:.049,M.tail,'light_r'+side);
     else stroke(M.tail,[[s*.39,ry+.005],[s*.68,ry+.037],[s*.70,ry-.025],[s*.48,ry-.042]],R,C?.006:.009,'light_r'+side);
     if(C){stroke(M.seam,[[s*.61,ry+.052],[s*.59,ry-.040]],R,.003);const wrap=[];for(let i=0;i<=12;i++){const z=mix(R-.24,R-.035,i/12),y=ry+.012;wrap.push([s*(S.side(z,y)+.004),y,S.longitudinal(s*S.side(z,y),z,y)]);}line(p,M.tail,wrap,.018).userData.damagePart='light_r'+side;}
   }
