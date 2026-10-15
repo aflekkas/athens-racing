@@ -231,7 +231,7 @@ export class People {
 
   reset(ps) {
     for (const p of this.peds) if (p.active) this.despawn(p);
-    for (const a of this.anchors) a.ped = null;
+    for (const a of this.anchors) { a.ped = null; a.hitUntil = 0; }
     this.t = 0; this.bodies.clear();
     for (let i = 0; i < INITIAL_WALKERS; i++) this.spawnWalker(ps, true);
     this.updateAnchors(ps);
@@ -249,7 +249,7 @@ export class People {
         a.rank ??= ((Math.imul(Math.round(a.s * 17 + a.x * 7), 2654435761) >>> 0) % 1000) / 1000;
         a.avail = a.rank < this.policy.anchor(a, hour, rain) * (ANCHOR_SHARE[a.kind] ?? .5); a.availKey = key;
       }
-      const inW = a.avail && a.s > ps - 150 && a.s < ps + 380;
+      const inW = a.avail && !(a.hitUntil > this.t) && a.s > ps - 150 && a.s < ps + 380;
       if (inW && !a.ped) this.spawnAnchor(a);
       else if (!inW && a.ped && (!a.avail || a.s < ps - 190 || a.s > ps + 430)) this.despawn(a.ped);
     }
@@ -490,6 +490,7 @@ export class People {
     const b = this.bodies.spawn({rig,look:p.look,s:p.s,x:p.x,y:p.wy ?? p.y,z:p.z,yaw:p.yaw,scale:p.look.k,wH:p.look.wH,wT:p.look.wT,vx,vz,seed:p.slot,car,owner:p.slot});
     const dv = pedestrianThump(v, A.v, p.x - v.x, p.z - v.z);
     this.events.push({dv, kind:'hit', target:'pedestrian', who:A.kind, p, body:b, sev:A.v, x:p.x,y:p.wy ?? p.y,z:p.z});
+    if (p.anchor) p.anchor.hitUntil = this.t + 12;
     this.despawn(p);
   }
   dive(p, A, lat) {

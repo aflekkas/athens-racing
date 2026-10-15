@@ -78,3 +78,12 @@ test('actual pedestrian contact reacts even at a crawl, and ignores parked cars'
  People.prototype.react.call(world,p,1/60);assert.equal(hits,1);
  A.v=0;People.prototype.react.call(world,p,1/60);assert.equal(hits,1);
 });
+
+test('struck anchor stays empty while the fallen body settles, then becomes available',()=>{
+ const source=readFileSync(new URL('../src/people.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'');
+ const People=new Function('COND_STATE',source+'\nreturn People;')({rain:0});let spawned=0;
+ const a={s:100,x:0,avail:true,availKey:896,hitUntil:12,ped:null};
+ const world={t:1,anchors:[a],hour:()=>14,spawnAnchor(){spawned++;}};
+ People.prototype.updateAnchors.call(world,100);assert.equal(spawned,0);
+ world.t=13;People.prototype.updateAnchors.call(world,100);assert.equal(spawned,1);
+});
