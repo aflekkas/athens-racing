@@ -27,15 +27,16 @@ try {
       await page.screenshot({ path: resolve(out, file), timeout: 60000 });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
       assert.equal(overflow, false, `${name} overflows at ${width}`);
-      report.captures.push(file);
+      report.captures.push(file); console.log('Captured', file);
     };
     await boot();
     assert.equal(await page.locator('.news-card').count(), 0, 'brand-new launch is quiet');
     const current = await page.evaluate(() => document.querySelector('meta[name="asr-version"]').content);
+    report.build = await page.evaluate(() => Object.fromEntries(['version', 'sha', 'build'].map(key => [key, document.querySelector(`meta[name="asr-${key}"]`)?.content])));
     assert.equal(await page.evaluate(() => localStorage.getItem('paraliaki.releaseSeen')), current);
     report.checks.push(`${width}: first launch skips and records current version`);
     await click('settings');
-    await page.locator('[data-key="settingsTab"] [data-v="about"]').evaluate(el => el.click());
+    await page.locator('[data-key="settingsTab"] [data-v="about"]').click();
     await page.waitForSelector('.about-stats');
     assert.match(await page.locator('#ui').innerText(), /PR|Pull requests|PULL REQUESTS/i);
     const source = await page.locator('[data-act="openLink"][data-url="https://github.com/aflekkas/athens-street-racers"]').count();
@@ -52,11 +53,11 @@ try {
     assert.equal(await page.locator('.release').count(), 4);
     await page.evaluate(() => __flow.menu.pop());
     await click('credits'); await page.waitForSelector('.credits'); await snap('credits');
-    assert.match(await page.locator('.credits').innerText(), /Alexandros Lekkas/);
-    assert.match(await page.locator('.credits').innerText(), /Vassilis Perrotis/);
-    assert.match(await page.locator('.credits').innerText(), /Copernicus/);
+    assert.match(await page.locator('.credits').innerText(), /Alexandros Lekkas/i);
+    assert.match(await page.locator('.credits').innerText(), /Vassilis Perrotis/i);
+    assert.match(await page.locator('.credits').innerText(), /Copernicus/i);
     await page.locator('[data-credit="assets-audio-voice-credits-txt"]').evaluate(el => el.click());
-    assert.match(await page.locator('.credit-sheet').innerText(), /Piper/);
+    assert.match(await page.locator('.credit-sheet').innerText(), /Piper/i);
     // Persist only an older version, then reload: a returning player gets the current section.
     await page.evaluate(() => { localStorage.setItem('paraliaki.releaseSeen', '2026.10.15.2'); localStorage.setItem('paraliaki.car', 'seat'); });
     await boot(); await page.waitForSelector('.news-card'); await snap('one-time-card');
