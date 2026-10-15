@@ -30,6 +30,7 @@ import { Hud, RacerMarkers, fmtTime } from './hud.js';
 import { Audio } from './audio.js';
 import { VoiceReactions } from './voice.js';
 import { PoliceVoice, impactVoiceCue } from './police-voice.js';
+import { HumanVoiceEvents } from './human-voice.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
@@ -127,6 +128,7 @@ function carVoicePosition(c) {
   const p = traffic.route.point(c.s,c.u,new THREE.Vector3()); p.y += 1.25; return p;
 }
 const policeVoice = new PoliceVoice(voices, carVoicePosition);
+const humanVoices = new HumanVoiceEvents(voices, (s,u) => traffic.route.point(s,u,new THREE.Vector3()));
 function playerImpactVoice(event) {
   const cue = impactVoiceCue(event); if (!cue || !player) return;
   const appearance = player.driver?.appearance || normalizeDriverAppearance();
@@ -160,7 +162,7 @@ const G = {
 canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); G.ctxLost = true; clearDriveInput(); });
 canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; lightingRecoveryPending = true; });
 window.__game = G;
-window.__voice = { voices, playerVoices, policeVoice, playerImpactVoice, pedestrianVoice, driverVoice };
+window.__voice = { voices, playerVoices, policeVoice, humanVoices, playerImpactVoice, pedestrianVoice, driverVoice };
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
@@ -301,7 +303,7 @@ function bindMapWorld(next) {
   traffic.disabled = Q.has('notraffic') || route.closed;
   { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
   police = new Police(traffic, route); window.__police = police;
-  policeVoice.reset(); police.onVoice = (state, transitions) => policeVoice.observe(state, transitions);
+  policeVoice.reset(); humanVoices.reset(); police.onVoice = (state, transitions) => policeVoice.observe(state, transitions);
   window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, camera, cameraBlend, towOffer, get player() { return player; } };
   if (Q.has('simhook')) {
     Object.assign(window.__sim, { scene, renderer, canvas, keys, render: () => render(), step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
@@ -1009,7 +1011,7 @@ function quitToMenu(screen = 'title') {
   // Stop simulation/input before the fade. A pending restart/tow cannot revive it.
   G.state = 'menu'; G.paused = null; G.cameraStarting = false; G.towing = false;
   G.pendingEvent = null; G.run = null; G.result = null; G.pursuit = null; G.shake = G.flash = 0;
-  controls.clear(); resetTowOffer(); voices.reset(); playerVoices.reset(); policeVoice.reset(); police?.reset(false);
+  controls.clear(); resetTowOffer(); voices.reset(); playerVoices.reset(); policeVoice.reset(); humanVoices.reset(); police?.reset(false);
   hideGrid(); rival.model.root.visible = false;
   for (const c of [player, rival]) { c.veh.vLong = c.veh.vLat = c.veh.w = 0; c.veh.nitroOn = false; for (const zone of Object.keys(c.model.damage || {})) c.model.setDamage(zone, 0); }
   traffic.reset(player.veh.s);
@@ -1347,7 +1349,7 @@ function handlePeople() {
   for (const e of people.events) {
     const p = e.p;
     if (G.state !== 'race') continue;
-    if (e.who === 'player' && ['hit', 'dive', 'startle'].includes(e.kind)) pedestrianVoice(p, p.kind === 'artist' ? 'artist' : e.kind === 'startle' ? 'near' : 'pedestrian');
+    if (!multiplayer.active && e.who === 'player') humanVoices.offer(e);
     if (e.kind === 'hit' && e.who === 'player') {
       G.shake = Math.max(G.shake, .28 + Math.min(.45, e.sev / 45));
       player.driver.impulse(.35 + Math.min(.5, e.sev / 40), 0, .3);
@@ -1504,7 +1506,7 @@ function listenerRel(x, y, z, vx, vz) {
 function handleTrafficSounds() {
   if (multiplayer.active) { traffic.sounds.length = 0; return; }
   for (const e of traffic.sounds) {
-    if (e.kind === 'rider-thrown') continue; // Classified event for rider voice routing.
+    if (e.kind === 'rider-thrown') { humanVoices.offer(e); continue; }
     const c = e.c, p = route.point(c.s, c.u, _ap);
     const L = listenerRel(p.x, p.y, p.z, 0, 0); if (L.d > 140) continue;
     const lvl = 1 / (1 + Math.pow(L.d / 14, 1.5));
@@ -1519,6 +1521,7 @@ function updateAudio(dt) {
   voices.update(voiceFrame); playerVoices.update(voiceFrame);
   if (!police?.enabled) policeVoice.reset();
   else if (voiceFrame.enabled) policeVoice.tick();
+  if (voiceFrame.enabled) humanVoices.tick();
   if (G.state === 'race' && Math.abs(player.veh.vLong) > 3) for (const a of people.streetLife?.artists || []) {
     if (a.ped?.active && Math.hypot(a.ped.x - player.veh.x, a.ped.z - player.veh.z) < 7) pedestrianVoice(a.ped, 'artist');
   }

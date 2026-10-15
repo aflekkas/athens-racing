@@ -57,15 +57,27 @@ try{
    const ok=await v.trigger('driver',{},()=>({x:0,y:0,z:-2}),{cue:impactVoiceCue({kind,dv}),gender:'male'});
    if(!ok)throw Error('crash cue');crash.push({kind,dv,mild,line:v.active.line});await wait(2800);
   }
+  const {HumanVoiceEvents}=await import('/src/human-voice.js');
+  const humans=new HumanVoiceEvents(v,(s,u)=>({x:u,y:0,z:-s})),human=[];
+  const rider={id:3,rider:{}};
+  if(humans.offer({kind:'crash',target:'rider',c:rider,s:5,u:2}))throw Error('bike collision routed to human voice');
+  for(const mild of [false,true])for(const category of ['pedestrian','rider']){
+   v.reset();humans.reset();settings.mildLanguage=mild;
+   const event=category==='rider'?{kind:'rider-thrown',target:'rider',c:rider,s:5,u:2}:{kind:'hit',target:'pedestrian',p:{active:false,x:-2,y:0,z:-4,look:{female:true}},x:-2,y:0,z:-4};
+   if(!humans.offer(event))throw Error('classified event rejected');await humans.tick();
+   if(!v.active)throw Error('classified voice did not play');
+   human.push({category,mild,line:v.active.line,position:v.active.locate()});await wait(2800);
+  }
   const done=new Promise(r=>rec.onstop=r);rec.stop();await done;
   const bytes=new Uint8Array(await new Blob(chunks).arrayBuffer());let binary='';for(const b of bytes)binary+=String.fromCharCode(b);
-  await ctx.close();return{fired,transitions,crash,audio:btoa(binary)};
+  await ctx.close();return{fired,transitions,crash,human,audio:btoa(binary)};
  });
  await writeFile(resolve(out,'scripted-chase.webm'),Buffer.from(report.audio,'base64'));delete report.audio;
  await page.screenshot({path:resolve(out,'scripted-chase.png')});
  await writeFile(resolve(out,'browser-capture.json'),JSON.stringify({...report,errors},null,2));
  assert.deepEqual(errors,[]);assert.ok(report.transitions.includes('busted'));assert.ok(report.fired.some(x=>x.cue==='escape'));assert.equal(report.crash[2].line.strong,false);
  console.log(JSON.stringify(report,null,2));
+ if (!process.env.VOICE_FIXTURE_ONLY) {
  await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
  await page.goto(`http://127.0.0.1:${app.server.address().port}/?simhook&quality=low&car=mini&cam=chase`,{waitUntil:'domcontentloaded',timeout:120000});
  await page.waitForFunction(()=>window.__sim?.player && window.__voice && document.body.classList.contains('loaded'),null,{timeout:240000,polling:250});
@@ -86,4 +98,5 @@ try{
  await writeFile(resolve(out,'live-game-smoke.json'),JSON.stringify({live,errors},null,2));
  assert.equal(live.wired,true);assert.ok(live.hits.every(x=>x.played));assert.deepEqual(live.hits.map(x=>x.cue),['tap','hard']);assert.deepEqual(errors,[]);
  console.log('Live game player crash hooks and police observer passed.',live);
+ }
 }finally{await browser.close();await app.close();}
