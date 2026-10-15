@@ -1,3 +1,4 @@
+import { beachBedPose } from './beach-placement.js';
 // Vegetation, coast and street life placed from the real OSM land use:
 // Washingtonia palms on the Glyfada promenade, bitter-orange street trees, oleanders in the median,
 // Aleppo pines in Vouliagmeni, maquis and limestone boulders along the cliff road, yachts in the
@@ -616,7 +617,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
   const poleI = new CellInstances(umb.pole, new THREE.MeshStandardMaterial({ color: '#d9d4c7', roughness: 0.6 }), { cell: 500, far: 500, shadow: false });
   const topI = new CellInstances(umb.top, new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8, side: THREE.DoubleSide }), { colors: true, cell: 500, far: 1200 });
   const strawI = new CellInstances(straw.top, new THREE.MeshStandardMaterial({ color: '#b99b62', roughness: 1, side: THREE.DoubleSide }), { cell: 500, far: 1200 });
-  const bedGeo = new THREE.BoxGeometry(0.7, 0.3, 1.9); bedGeo.translate(0, 0.25, 0);
+  const bedGeo = new THREE.BoxGeometry(0.7, 0.3, 1.9); bedGeo.translate(0, 0.15, 0);
   const beds = new CellInstances(bedGeo, new THREE.MeshStandardMaterial({ color: '#f1efe9', roughness: 0.7 }), { cell: 500, colors: true, far: 450, shadow: false });
   const UMB = [new THREE.Color('#f6f6f2'), new THREE.Color('#1f6fb4'), new THREE.Color('#f2c230'), new THREE.Color('#e8572d'), new THREE.Color('#f6f6f2')];
   const beachPeople = [], sunbeds = [];
@@ -635,8 +636,12 @@ export function buildNature(map, scene, heightC, bld, assets) {
       if (++n > 400) break;
       poleI.add(M(jx, h, jz)); (strawB ? strawI : topI).add(M(jx, h, jz, 0, rng.range(0, 6), 0, 1), col);
       const yaw = rng.range(-0.2, 0.2) + Math.atan2(-1, 0.3);
-      for (const o of [-0.55, 0.55]) { beds.add(M(jx + o, h, jz + 0.9, 0, yaw, 0, 1), isAstir ? '#ffffff' : '#e6e1d6'); sunbeds.push([jx + o, h, jz + 0.9, yaw]); }
-      if (rng.chance(0.4)) beachPeople.push([jx + rng.range(-1.5, 1.5), h, jz + rng.range(0.5, 2.5)]);
+      for (const o of [-0.55, 0.55]) {
+        const x = jx + o, z = jz + .9, pose = beachBedPose(heightC, x, z, yaw);
+        beds.add(M(x, pose.height, z, pose.pitch, yaw, pose.roll, 1, 1, 1, 'YXZ'), isAstir ? '#ffffff' : '#e6e1d6');
+        sunbeds.push([x, pose.height, z, yaw]);
+      }
+      if (rng.chance(0.4)) { const x = jx + rng.range(-1.5, 1.5), z = jz + rng.range(.5, 2.5); beachPeople.push([x, heightC(x,z), z]); }
     }
   }
   poleI.build(group); topI.build(group); strawI.build(group); beds.build(group);

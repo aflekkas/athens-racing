@@ -117,6 +117,21 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   for (let s = -300; s <= route.length + 300; s += 25) { const p = route.point(s, 0); stamp(p.x, p.z, Math.max(120, route.edge(s) + 80)); }
   for (const [x, z, r] of extraStamps) stamp(x, z, r);
 
+  // A 40 m triangle can interpolate a narrow, dry beach below sea level.
+  // Keep dry sand at DEM resolution even outside the road's 120 m detail
+  // corridor. Extend to whole coarse cells so no coarse sheet overlaps it.
+  if (coastal) {
+    const beaches = new Set();
+    for (let j=0;j<GZ;j++) for(let i=0;i<GX;i++) {
+      const id=j*GX+i;
+      if (CL[id]===1 && H[id]>-1.2) beaches.add(Math.floor(j/4)*4*GX+Math.floor(i/4)*4);
+    }
+    for (const id of beaches) {
+      const i=id%GX,j=Math.floor(id/GX);
+      for(let b=j;b<=Math.min(GZ-1,j+4);b++)for(let a=i;a<=Math.min(GX-1,i+4);a++)mask[b*GX+a]=1;
+    }
+  }
+
   // ---------------------------------------------------------------- road clamp (per 10 m vertex: nearest route sample)
   const Hc = H.slice();
   const best = new Float32Array(GX * GZ).fill(1e9), bestS = new Float32Array(GX * GZ), bestU = new Float32Array(GX * GZ);
