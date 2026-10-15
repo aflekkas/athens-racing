@@ -28,3 +28,24 @@ test('production chunks preserve source-relative resources and lazy imports whil
     assert.ok((await readFile(resolve(out, 'index.html'), 'utf8')).includes('main-'));
   } finally { if (previous === undefined) delete globalThis.location; else globalThis.location = previous; await rm(root, { recursive: true, force: true }); }
 });
+
+
+test('every map bake points to the published world worker, including Megara', async () => {
+  const root = await mkdtemp(resolve(tmpdir(), 'asr-worker-bundle-')), out = resolve(root, '.deploy/assets');
+  try {
+    await mkdir(resolve(root, 'src'), {recursive:true}); await mkdir(resolve(out, 'src'), {recursive:true});
+    await writeFile(resolve(root, 'src/main.js'), 'export const boot = true;');
+    await writeFile(resolve(root, 'src/world-worker.js'), 'onmessage = () => postMessage({ok:true});');
+    await writeFile(resolve(out, 'index.html'), '<script type="module" src="./src/main.js"></script>');
+    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+      await mkdir(resolve(out, path, '..'), {recursive:true});
+      await writeFile(resolve(out, path), JSON.stringify({bakedWorld:{version:1,terrain:'terrain',roads:'roads'}}));
+    }
+    await bundleBrowser(root, out);
+    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+      const data = JSON.parse(await readFile(resolve(out, path), 'utf8'));
+      assert.match(data.bakedWorld.worker, /^\.\/src\/world-worker-.+\.js$/);
+      await readFile(resolve(out, data.bakedWorld.worker));
+    }
+  } finally { await rm(root, {recursive:true,force:true}); }
+});

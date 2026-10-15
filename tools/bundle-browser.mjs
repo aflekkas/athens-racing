@@ -1,5 +1,6 @@
 // Production-only ESM bundle. Keep module-relative resource URLs anchored to their original source locations.
 import { build } from 'esbuild';
+import { MAPS } from '../src/map-catalog.js';
 import { readFile, writeFile, readdir, unlink } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 export async function bundleBrowser(root, out) {
@@ -35,7 +36,7 @@ export async function bundleBrowser(root, out) {
   await writeFile(index, html.replace('src="./src/main.js"', `src="${path}"`));
   const worker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/world-worker.js')?.[0];
   if (worker) {
-    for (const path of [resolve(out, 'data/map.json'), ...['penteli'].map(id => resolve(out, `data/maps/${id}/map.json`))]) {
+    for (const path of MAPS.map(map => resolve(out, map.dataUrl))) {
       const data = JSON.parse(await readFile(path, 'utf8'));
       if (data.bakedWorld) { data.bakedWorld.worker = './' + relative(out, resolve(root, worker)).split(sep).join('/'); await writeFile(path, JSON.stringify(data)); }
     }
