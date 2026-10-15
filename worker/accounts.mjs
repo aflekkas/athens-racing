@@ -29,25 +29,26 @@ const cookies = (r) =>
   );
 const run = (db, q, ...v) => db.prepare(q).bind(...v);
 const all = async (db, q, ...v) => (await run(db, q, ...v).all()).results;
-export const devEmail = (env, url) =>
-  !env.RESEND_API_KEY &&
-  (url.hostname === "staging.athensracing.com" ||
-    ["localhost", "127.0.0.1"].includes(url.hostname));
-export const providers = (env, url) =>
-  ["google", "discord"]
-    .filter(
-      (p) =>
-        env[p.toUpperCase() + "_CLIENT_ID"] &&
-        env[p.toUpperCase() + "_CLIENT_SECRET"],
-    )
-    .concat(env.RESEND_API_KEY || devEmail(env, url) ? ["email"] : []);
+export const providers = (env) =>
+  env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? ["google"] : [];
+const keyedHash = async (secret, value) => {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return b64(await crypto.subtle.sign("HMAC", key, encoder.encode(value)));
+};
 export async function session(request, env) {
   const token = cookies(request).ar_session;
-  return token && env.ACCOUNTS
+  return token && env.ACCOUNTS && env.SESSION_SECRET
     ? run(
         env.ACCOUNTS,
         "SELECT s.*, u.display_name, u.plate, u.avatar, u.progress, u.migrated FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=? AND s.expires>?",
-        await hash(token),
+        await keyedHash(env.SESSION_SECRET, "session:" + token),
         Date.now(),
       ).first()
     : null;
@@ -79,12 +80,6 @@ const oauth = {
     profile: "https://openidconnect.googleapis.com/v1/userinfo",
     scope: "openid profile",
   },
-  discord: {
-    authorize: "https://discord.com/oauth2/authorize",
-    token: "https://discord.com/api/oauth2/token",
-    profile: "https://discord.com/api/users/@me",
-    scope: "identify",
-  },
 };
 async function identity(db, provider, subject) {
   const id = crypto.randomUUID();
@@ -113,13 +108,13 @@ async function identity(db, provider, subject) {
     await run(db, "DELETE FROM users WHERE id=?", id).run();
   return existing.user_id;
 }
-async function login(db, user) {
+async function login(db, user, secret) {
   const token = random(),
     xsrf = random();
   await run(
     db,
     "INSERT INTO sessions VALUES (?,?,?,?)",
-    await hash(token),
+    await keyedHash(secret, "session:" + token),
     user,
     xsrf,
     Date.now() + 2592000000,
@@ -158,9 +153,7 @@ export async function accounts(request, env, fetcher = fetch) {
       const enabled = db && env.SESSION_SECRET ? providers(env, url) : [];
       return json({
         providers: enabled,
-        required: enabled.some(
-          (provider) => provider !== "email" || Boolean(env.RESEND_API_KEY),
-        ),
+        required: enabled.length > 0,
       });
     }
     if (!db || !env.SESSION_SECRET)
@@ -192,87 +185,7 @@ export async function accounts(request, env, fetcher = fetch) {
             }
           : { user: null },
       );
-    if (p === "/api/auth/email/request" && request.method === "POST") {
-      if (!providers(env, url).includes("email"))
-        fail("Email sign-in unavailable", 503);
-      const b = await body(request),
-        email = String(b.email || "")
-          .trim()
-          .toLowerCase();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)
-        fail("Enter your email address.");
-      await limit(
-        db,
-        "code-ip:" +
-          (await hash(request.headers.get("CF-Connecting-IP") || "local")),
-        8,
-      );
-      await limit(db, "code-email:" + (await hash(email)), 3);
-      const id = random(),
-        code = String(
-          crypto.getRandomValues(new Uint32Array(1))[0] % 1000000,
-        ).padStart(6, "0");
-      await run(
-        db,
-        "INSERT INTO challenges VALUES (?,?,?,?)",
-        await hash(id),
-        "email",
-        JSON.stringify({
-          email,
-          code: await hash(env.SESSION_SECRET + id + code),
-        }),
-        now + 600000,
-      ).run();
-      if (env.RESEND_API_KEY) {
-        const res = await fetcher("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${env.RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: env.EMAIL_FROM || "Athens Racing <accounts@athensracing.com>",
-            to: [email],
-            subject: "Your Athens Racing sign-in code",
-            text: `Your code is ${code}. It expires in 10 minutes.`,
-          }),
-        });
-        if (!res.ok) fail("Email delivery unavailable. Try again later.", 503);
-      }
-      return json({ id, ...(devEmail(env, url) ? { devCode: code } : {}) });
-    }
-    if (p === "/api/auth/email/verify" && request.method === "POST") {
-      await limit(
-        db,
-        "login:" +
-          (await hash(request.headers.get("CF-Connecting-IP") || "local")),
-        15,
-      );
-      const b = await body(request),
-        key = await hash(String(b.id)),
-        c = await run(
-          db,
-          "SELECT * FROM challenges WHERE id=? AND kind=? AND expires>?",
-          key,
-          "email",
-          now,
-        ).first();
-      if (!c) fail("Code expired. Request another.");
-      const d = JSON.parse(c.data);
-      await limit(db, "attempt:" + key, 5);
-      if ((await hash(env.SESSION_SECRET + b.id + String(b.code))) !== d.code)
-        fail("Incorrect code.");
-      const consumed = await run(
-        db,
-        "DELETE FROM challenges WHERE id=? RETURNING id",
-        key,
-      ).first();
-      if (!consumed) fail("Code already used.");
-      return json({ ok: true }, 200, {
-        "Set-Cookie": await login(db, await identity(db, "email", d.email)),
-      });
-    }
-    const match = p.match(/^\/api\/auth\/(google|discord)\/(start|callback)$/);
+    const match = p.match(/^\/api\/auth\/(google)\/(start|callback)$/);
     if (match && request.method === "GET") {
       const [, provider, step] = match,
         config = oauth[provider],
@@ -309,7 +222,7 @@ export async function accounts(request, env, fetcher = fetch) {
             provider,
             verifier,
             nonce,
-            binding: await hash(binding),
+            binding: await keyedHash(env.SESSION_SECRET, "oauth:" + binding),
             redirect,
           }),
           now + 600000,
@@ -347,7 +260,11 @@ export async function accounts(request, env, fetcher = fetch) {
       if (
         d.provider !== provider ||
         d.redirect !== redirect ||
-        d.binding !== (await hash(cookies(request).ar_oauth || ""))
+        d.binding !==
+          (await keyedHash(
+            env.SESSION_SECRET,
+            "oauth:" + (cookies(request).ar_oauth || ""),
+          ))
       )
         fail("Invalid sign-in state", 403);
       if (
@@ -372,33 +289,35 @@ export async function accounts(request, env, fetcher = fetch) {
       });
       if (!tokenResponse.ok) fail("Provider rejected sign-in", 401);
       const token = await tokenResponse.json();
-      let googleSubject;
-      if (provider === "google") {
-        const claims = await verifyGoogleToken(token.id_token, {
-          audience: env.GOOGLE_CLIENT_ID,
-          nonce: d.nonce,
-          fetcher,
-          now,
-        });
-        googleSubject = claims.sub;
-      }
+      const claims = await verifyGoogleToken(token.id_token, {
+        audience: env.GOOGLE_CLIENT_ID,
+        nonce: d.nonce,
+        fetcher,
+        now,
+      });
       const profileResponse = await fetcher(config.profile, {
         headers: { Authorization: `Bearer ${token.access_token}` },
       });
       if (!profileResponse.ok) fail("Could not read provider identity", 401);
       const profile = await profileResponse.json(),
-        subject = provider === "google" ? profile.sub : profile.id;
-      if (!subject || (provider === "google" && subject !== googleSubject))
+        subject = profile.sub;
+      if (!subject || subject !== claims.sub)
         fail("Missing or mismatched provider identity", 401);
       return new Response(null, {
         status: 302,
         headers: {
           Location: "/?account=1",
-          "Set-Cookie": await login(db, await identity(db, provider, subject)),
+          "Set-Cookie": await login(
+            db,
+            await identity(db, provider, subject),
+            env.SESSION_SECRET,
+          ),
           "Cache-Control": "no-store",
         },
       });
     }
+    if (p.startsWith("/api/auth/") && p !== "/api/auth/logout")
+      return json({ error: "Not found" }, 404);
     if (!s) fail("Sign in first", 401);
     if (request.method === "POST") csrf(request, s, url.origin);
     const user = s.user_id;

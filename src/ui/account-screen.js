@@ -17,16 +17,7 @@ export function renderSignIn(a) {
         : "YOUR PLACE ON THE GRID",
     body: `<div class="account-layout"><section class="account-intro"><p class="account-lede">One driver. Every road.</p><p>Save your garage and personal bests. Find your friends and head out together.</p><p>Your progress on this device comes with you.</p></section>${C.panel(
       "SIGN IN / CREATE ACCOUNT",
-      `<p>New here? Signing in creates your account.</p>${a.ready ? "" : C.spinner()}${a.providers
-        .filter((p) => p !== "email")
-        .map((p) =>
-          btn("CONTINUE WITH " + p.toUpperCase(), "account-oauth", {
-            "data-provider": p,
-          }),
-        )
-        .join(
-          "",
-        )}${a.providers.includes("email") ? `${field("email", "EMAIL ADDRESS", a.email || "", { type: "email", autocomplete: "email" })}${btn("EMAIL ME A CODE", "account-email")}${a.challenge ? `${field("code", "6-DIGIT CODE", "", { inputmode: "numeric", autocomplete: "one-time-code", maxlength: 6 })}${btn("VERIFY CODE", "account-verify", {}, "primary")}${a.devCode ? `<p class="account-dev">Development code: ${esc(a.devCode)}</p>` : ""}` : ""}` : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is coming soon. Keep playing as usual.</p>" : ""}${a.ready ? btn(!a.providers.length ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${btn("PRIVACY & YOUR DATA", "account-privacy", {}, "ghost")}</p>`,
+      `<p>New here? Signing in creates your account.</p>${a.ready ? "" : C.spinner()}${a.providers.includes("google") ? btn("CONTINUE WITH GOOGLE", "account-oauth") : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is coming soon. Keep playing as usual.</p>" : ""}${a.ready ? btn(!a.providers.length ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${btn("PRIVACY & YOUR DATA", "account-privacy", {}, "ghost")}</p>`,
     )}</div>`,
   });
 }
@@ -69,7 +60,7 @@ export function renderPrivacy() {
     title: "YOUR DATA, YOUR CONTROL",
     body: C.panel(
       "ATHENS STREET RACERS ACCOUNTS",
-      `<p>We store your provider ID (or email for email sign-in), driver name, plate, saved game settings and progress, friendships, and short-lived lobby invitations. OAuth access tokens are never saved. Online status is shared only with accepted friends and disappears shortly after disconnecting.</p><p>Sign-in uses a necessary, secure session cookie. We use short-lived hashed rate-limit identifiers to prevent abuse. Expired codes, sessions and invitations are removed automatically. We do not sell account data or use advertising trackers.</p><p>Cloudflare hosts account data; Google or Discord handles your chosen provider sign-in. Email codes use Resend when configured. Device progress remains on this browser for offline play.</p><p>In Account, export your data or permanently delete your account and its sessions, friends and invitations. Clearing browser storage removes local progress. Contact the site owner for EU access, correction or erasure requests. The owner must publish their contact details before enabling accounts publicly.</p>`,
+      `<p>We store your Google account ID, driver name, plate, saved game settings and progress, friendships, and short-lived lobby invitations. OAuth access tokens are never saved. Online status is shared only with accepted friends and disappears shortly after disconnecting.</p><p>Sign-in uses a necessary, secure session cookie. We use short-lived hashed rate-limit identifiers to prevent abuse. Expired sign-in challenges, sessions and invitations are removed automatically. We do not sell account data or use advertising trackers.</p><p>Cloudflare hosts account data; Google handles sign-in. We do not request or store your Google email address. Device progress remains on this browser for offline play.</p><p>In Account, export your data or permanently delete your account and its sessions, friends and invitations. Clearing browser storage removes local progress. Contact the site owner for EU access, correction or erasure requests. The owner must publish their contact details before enabling accounts publicly.</p>`,
     ),
   });
 }
@@ -190,7 +181,7 @@ export function install(menu) {
     a.error = "";
     try {
       if (kind === "oauth") {
-        location.assign("/api/auth/" + el.dataset.provider + "/start");
+        location.assign("/api/auth/google/start");
         return;
       }
       if (kind === "offline") {
@@ -201,21 +192,6 @@ export function install(menu) {
       }
       if (kind === "privacy") {
         menu.show("accountPrivacy", {}, true);
-        return;
-      }
-      if (kind === "email") {
-        a.email = value("email");
-        const b = await a.api("/api/auth/email/request", { email: a.email });
-        a.challenge = b.id;
-        a.devCode = b.devCode;
-      }
-      if (kind === "verify") {
-        await a.api("/api/auth/email/verify", {
-          id: a.challenge,
-          code: value("code"),
-        });
-        await a.init();
-        menu.show(a.user?.displayName ? "title" : "accountName");
         return;
       }
       if (kind === "profile") {

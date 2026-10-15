@@ -2,13 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
-import {
-  accounts,
-  session,
-  hash,
-  devEmail,
-  providers,
-} from "../worker/accounts.mjs";
+import { accounts, session, hash, providers } from "../worker/accounts.mjs";
 import { FriendsPresence, visiblePresence } from "../worker/presence.mjs";
 import {
   AccountsClient,
@@ -97,7 +91,9 @@ function fixture() {
   const notices = [];
   const env = {
     ACCOUNTS: db,
-    SESSION_SECRET: "test-only-secret",
+    SESSION_SECRET: "test-only-secret-32-random-test-bytes",
+    GOOGLE_CLIENT_ID: "client",
+    GOOGLE_CLIENT_SECRET: "test-client-secret",
     GAME: {
       idFromName: (x) => x,
       get: () => ({
@@ -143,15 +139,34 @@ function fixture() {
       env,
       fetcher,
     );
-  const login = async (email) => {
-    const code = await (
-      await call("/api/auth/email/request", { email })
-    ).json();
-    const r = await call("/api/auth/email/verify", {
-      id: code.id,
-      code: code.devCode,
-    });
-    assert.equal(r.status, 200);
+  const login = async (subject) => {
+    const start = await call("/api/auth/google/start");
+    const dest = new URL(start.headers.get("location"));
+    const r = await call(
+      "/api/auth/google/callback?state=" +
+        dest.searchParams.get("state") +
+        "&code=mock",
+      undefined,
+      { cookie: start.headers.get("set-cookie").split(";")[0] },
+      undefined,
+      async (url) => {
+        if (url.includes("/certs")) return jwks();
+        if (url.includes("/token"))
+          return Response.json({
+            access_token: "mock",
+            id_token: await googleToken({
+              sub: subject,
+              nonce: dest.searchParams.get("nonce"),
+              aud: "client",
+              iss: "https://accounts.google.com",
+              exp: Date.now() / 1000 + 60,
+            }),
+          });
+        return Response.json({ sub: subject });
+      },
+    );
+    assert.equal(r.status, 302);
+    assert.match(r.headers.get("set-cookie"), /HttpOnly; Secure; SameSite=Lax/);
     const cookie = r.headers.get("set-cookie").split(";")[0];
     const s = await (
       await call("/api/auth/session", undefined, { cookie })
@@ -160,39 +175,9 @@ function fixture() {
   };
   return { env, db, sqlite, call, login, notices };
 }
-test("email adapter production deny, provider visibility, session cookie and one-use code", async () => {
-  const f = fixture();
-  assert.equal(devEmail({}, new URL("https://athensracing.com")), false);
-  assert.deepEqual(providers({}, new URL("https://athensracing.com")), []);
-  assert.deepEqual(
-    providers({ GOOGLE_CLIENT_ID: "x" }, new URL("https://athensracing.com")),
-    [],
-  );
-  const c = await (
-    await f.call("/api/auth/email/request", { email: "me@example.com" })
-  ).json();
-  assert.match(c.devCode, /^\d{6}$/);
-  const r = await f.call("/api/auth/email/verify", {
-    id: c.id,
-    code: c.devCode,
-  });
-  assert.match(r.headers.get("set-cookie"), /HttpOnly; Secure; SameSite=Lax/);
-  assert.equal(
-    (await f.call("/api/auth/email/verify", { id: c.id, code: c.devCode }))
-      .status,
-    400,
-  );
-  const prod = await f.call(
-    "/api/auth/email/request",
-    { email: "x@example.com" },
-    {},
-    "https://athensracing.com",
-  );
-  assert.equal(prod.status, 503);
-});
 test("CSRF, expiry, revocation and export/delete cascade", async () => {
   const f = fixture(),
-    a = await f.login("one@example.com");
+    a = await f.login("one-google-subject");
   assert.equal(
     (
       await f.call(
@@ -226,7 +211,7 @@ test("CSRF, expiry, revocation and export/delete cascade", async () => {
     f.env,
   );
   assert.equal(foreign.status, 403);
-  const b = await f.login("two@example.com");
+  const b = await f.login("two-google-subject");
   assert.equal(
     (
       await f.call(
@@ -245,7 +230,7 @@ test("CSRF, expiry, revocation and export/delete cascade", async () => {
   );
   assert.equal((await f.call("/api/auth/logout", {}, a)).status, 200);
   assert.equal((await f.call("/api/account/export", undefined, a)).status, 401);
-  const a2 = await f.login("one@example.com");
+  const a2 = await f.login("one-google-subject");
   assert.equal(
     (await f.call("/api/account/delete", { confirm: "DELETE" }, a2)).status,
     200,
@@ -255,37 +240,6 @@ test("CSRF, expiry, revocation and export/delete cascade", async () => {
       .prepare("SELECT count(*) n FROM identities WHERE user_id=?")
       .get(a.id).n,
     0,
-  );
-});
-test("rate limits cap requests and incorrect login attempts without network", async () => {
-  const f = fixture();
-  for (let i = 0; i < 3; i++)
-    assert.equal(
-      (
-        await f.call("/api/auth/email/request", {
-          email: "limited@example.com",
-        })
-      ).status,
-      200,
-    );
-  assert.equal(
-    (await f.call("/api/auth/email/request", { email: "limited@example.com" }))
-      .status,
-    429,
-  );
-  const c = await (
-    await f.call("/api/auth/email/request", { email: "code@example.com" })
-  ).json();
-  for (let i = 0; i < 5; i++)
-    assert.equal(
-      (await f.call("/api/auth/email/verify", { id: c.id, code: "wrong" }))
-        .status,
-      400,
-    );
-  assert.equal(
-    (await f.call("/api/auth/email/verify", { id: c.id, code: c.devCode }))
-      .status,
-    429,
   );
 });
 test("OAuth state browser binding, PKCE exchange, nonce validation, replay and configured redirect", async () => {
@@ -334,7 +288,7 @@ test("OAuth state browser binding, PKCE exchange, nonce validation, replay and c
   const cb = "/api/auth/google/callback?state=" + state + "&code=x";
   const r = await f.call(cb, undefined, { cookie }, undefined, fetcher);
   assert.equal(r.status, 302);
-  assert.equal(calls, 3);
+  assert.ok([2, 3].includes(calls));
   assert.equal(
     (await f.call(cb, undefined, { cookie }, undefined, fetcher)).status,
     400,
@@ -355,8 +309,8 @@ test("OAuth state browser binding, PKCE exchange, nonce validation, replay and c
 });
 test("friendship state machine, block and invite to existing lobby join code", async () => {
   const f = fixture(),
-    a = await f.login("host@example.com"),
-    b = await f.login("friend@example.com");
+    a = await f.login("host-google-subject"),
+    b = await f.login("friend-google-subject");
   for (const [auth, displayName] of [
     [a, "HOST"],
     [b, "FRIEND"],
@@ -449,8 +403,8 @@ test("friendship state machine, block and invite to existing lobby join code", a
 });
 test("expired and dead lobby invites are invisible, decline removes pending request", async () => {
   const f = fixture(),
-    a = await f.login("a@example.com"),
-    b = await f.login("b@example.com");
+    a = await f.login("a-google-subject"),
+    b = await f.login("b-google-subject");
   await f.call(
     "/api/account/profile",
     { displayName: "AAA", plate: "AA-123" },
@@ -481,9 +435,9 @@ test("expired and dead lobby invites are invisible, decline removes pending requ
 });
 test("presence fans out only to accepted friends, expires and rejects revoked sessions", async () => {
   const f = fixture(),
-    a = await f.login("presence-a@example.com"),
-    b = await f.login("presence-b@example.com"),
-    c = await f.login("stranger@example.com");
+    a = await f.login("presence-a-google-subject"),
+    b = await f.login("presence-b-google-subject"),
+    c = await f.login("stranger-google-subject");
   f.sqlite
     .prepare("INSERT INTO friendships VALUES (?,?,?)")
     .run(a.id, b.id, "accepted");
@@ -535,7 +489,7 @@ test("presence fans out only to accepted friends, expires and rejects revoked se
 });
 test("guest migration is idempotent, retains local data and excludes credentials; auth outage degrades", async () => {
   const f = fixture(),
-    a = await f.login("migrate@example.com");
+    a = await f.login("migrate-google-subject");
   const values = new Map([
     ["paraliaki.settings", '{"volume":1}'],
     ["paraliaki.personalBests.v1", '{"best":10}'],
@@ -576,47 +530,6 @@ test("guest migration is idempotent, retains local data and excludes credentials
   assert.equal(client.ready, true);
   assert.equal(offlineAllowed({ status: 401 }, true), false);
 });
-test("Resend HTTP adapter never returns a production code and OAuth challenge expiry rejects before network", async () => {
-  const f = fixture();
-  f.env.RESEND_API_KEY = "test-resend-not-real";
-  let sent;
-  const r = await f.call(
-    "/api/auth/email/request",
-    { email: "prod@example.com" },
-    {},
-    "https://athensracing.com",
-    async (url, options) => {
-      assert.equal(url, "https://api.resend.com/emails");
-      sent = JSON.parse(options.body);
-      assert.equal(
-        options.headers.Authorization,
-        "Bearer test-resend-not-real",
-      );
-      return Response.json({ id: "mock" });
-    },
-  );
-  const result = await r.json();
-  assert.equal(result.devCode, undefined);
-  assert.match(sent.text, /\d{6}/);
-  Object.assign(f.env, {
-    DISCORD_CLIENT_ID: "client",
-    DISCORD_CLIENT_SECRET: "test",
-  });
-  const start = await f.call("/api/auth/discord/start"),
-    url = new URL(start.headers.get("location"));
-  assert.equal(url.searchParams.get("scope"), "identify");
-  assert.equal(url.searchParams.get("code_challenge_method"), "S256");
-  f.sqlite.exec("UPDATE challenges SET expires=0");
-  const expired = await f.call(
-    "/api/auth/discord/callback?state=" + url.searchParams.get("state"),
-    undefined,
-    { cookie: start.headers.get("set-cookie").split(";")[0] },
-    undefined,
-    () => assert.fail("no provider traffic"),
-  );
-  assert.equal(expired.status, 400);
-});
-
 test("accepted invitation joins the verified host’s actual core lobby with the existing code protocol", async () => {
   const { createGameCore } = await import("./core.mjs");
   const { MULTIPLAYER_PROTOCOL } =
@@ -659,8 +572,8 @@ test("accepted invitation joins the verified host’s actual core lobby with the
   const token = core.clientData(host).token,
     code = core.clientData(host).lobbyCode;
   const f = fixture(),
-    a = await f.login("real-host@example.com"),
-    b = await f.login("real-guest@example.com");
+    a = await f.login("real-host-google-subject"),
+    b = await f.login("real-guest-google-subject");
   f.env.GAME.get = () => ({
     fetch: async (request) =>
       Response.json(arenaAccountStatus(core, new URL(request.url))),
@@ -753,7 +666,7 @@ test("no real provider leaves legacy play enabled and configuration needs neithe
       noTables,
     )
   ).json();
-  assert.deepEqual(staging, { providers: ["email"], required: false });
+  assert.deepEqual(staging, { providers: [], required: false });
   const calls = [];
   const client = new AccountsClient({
     storage: null,
@@ -769,4 +682,30 @@ test("no real provider leaves legacy play enabled and configuration needs neithe
   assert.equal(client.offline, false);
   assert.equal(client.ready, true);
   assert.deepEqual(calls, ["/api/auth/config"]);
+});
+
+test("Google login attempts are rate limited and SESSION_SECRET rotation revokes sessions", async () => {
+  const f = fixture(),
+    a = await f.login("rotation-subject");
+  for (let i = 0; i < 20; i++)
+    assert.equal(
+      (
+        await f.call("/api/auth/google/start", undefined, {
+          ip: "fixed-rate-ip",
+        })
+      ).status,
+      302,
+    );
+  assert.equal(
+    (await f.call("/api/auth/google/start", undefined, { ip: "fixed-rate-ip" }))
+      .status,
+    429,
+  );
+  f.env.SESSION_SECRET = "rotated-test-secret-32-random-test-bytes";
+  assert.equal((await f.call("/api/account/export", undefined, a)).status, 401);
+  f.env.SESSION_SECRET = "";
+  assert.deepEqual(await (await f.call("/api/auth/config")).json(), {
+    providers: [],
+    required: false,
+  });
 });

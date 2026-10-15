@@ -61,7 +61,7 @@ try {
       const path = new URL(route.request().url()).pathname;
       const value =
         path === "/api/auth/config"
-          ? { providers: ["google", "discord", "email"], required: true }
+          ? { providers: ["google"], required: true }
           : path === "/api/auth/session"
             ? { user: null }
             : [];
@@ -73,8 +73,6 @@ try {
     );
     assert.deepEqual(await page.evaluate(() => menu.accounts.providers), [
       "google",
-      "discord",
-      "email",
     ]);
     assert.equal(await page.evaluate(() => menu.accounts.offline), false);
     await page.screenshot({ path: resolve(out, `sign-in-${width}.png`) });
