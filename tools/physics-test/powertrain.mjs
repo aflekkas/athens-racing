@@ -15,6 +15,7 @@ export function validatePowertrain(spec, pt = powertrainFor(spec)) {
     if (!Number.isFinite(pt[field])) fail(`missing/invalid ${field}`);
   if (spec.idle !== pt.idleRpm || spec.redline !== pt.redlineRpm || spec.shiftT !== pt.shiftTime) fail('literal legacy rpm/shift fields disagree with powertrain');
   if (pt.idleRpm < 600 || pt.idleRpm > 1100) fail('idle outside 600–1100 rpm');
+  if (!['na3','na4','na6','turbo3','turbo4','turbo5','turbo6','flat6','v10','v12','diesel'].includes(spec.engine)) fail('unknown engine class requires explicit validation bounds');
   const turbo = /^turbo/.test(spec.engine), diesel = spec.engine === 'diesel';
   const highTurbo = ['gr_yaris','gla45','cla45s'].includes(spec.id);
   const highNA = spec.engine === 'flat6' || spec.engine === 'v10' || spec.id === 'e36_m3';

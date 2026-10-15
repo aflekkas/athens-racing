@@ -13,6 +13,7 @@ test('every trim has complete plausible powertrain parameters', () => {
 });
 test('validation rejects omissions, diesel overspeed, excessive rev rise and the wrong shift duration', () => {
   const spec = cars.find(c => c.id === 'taxi'), pt = powertrainFor(spec);
+  assert.ok(validatePowertrain({ ...spec, engine: 'unknown-future-engine' }).length);
   assert.match(validatePowertrain({ ...spec, id: 'future-trim', powertrain: undefined }).join(), /missing/);
   for (const bad of [{ redlineRpm: 7000 }, { maxFreeRevRate: 8000 }, { shiftTime: .4 }, { inertia: .01 }, { spoolTime: 0 }, { idleRpm: undefined }])
     assert.ok(validatePowertrain(spec, { ...pt, ...bad }).length, JSON.stringify(bad));
@@ -109,4 +110,10 @@ test('PDK/DSG and converter automatics protect unsafe paddle downshifts even in 
     const v=mk(id);v.setManual(true);v.reset(0,0,130/3.6);v.gear=2;v.syncWheels();
     assert.equal(v.shiftManual(-1),false);assert.equal(v.shiftFeedback.reason,'overrev_protection');assert.equal(v.pendingGear,0);
   }
+});
+
+test('heavy braking downshifts safely instead of applying the light-throttle anti-hunting ceiling', () => {
+  const v=mk('cle200');v.setManual(false);v.reset(0,0,100/3.6);v.gear=4;v.syncWheels();
+  v.update(1/240,{throttle:0,brake:1,steer:0});
+  assert.equal(v.pendingGear,3);assert.ok(v.shiftStartEvent);assert.ok(v.powertrainSignals.rpm < v.spec.redline);
 });

@@ -659,12 +659,12 @@ export class Vehicle {
       const up = holdGear ? red * 0.99 : pt ? schedule.up : red * lerp(0.6, 0.975, smoothstep(0.2, 0.9, thrRaw));
       const rpmIn = (g) => vwD / R * this.ratio(g) * 60 / (2 * Math.PI);
       const rpmRoad = (g) => vt / R * this.ratio(g) * 60 / (2 * Math.PI);
-      if (this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
+      if ((!pt || brk < .2) && this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
       else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * 0.25 && rpmRoad(this.gear - 1) < red * 0.7) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
       else if (this.gear > 1) {
         const dn = rpmIn(this.gear - 1);
-        const downAt = pt ? (brk > 0.2 ? red * 0.42 : schedule.down) : brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
-        if (dn < red * 0.9 && (!pt || dn < schedule.up * .9) && (rpmIn(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmIn(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
+        const downAt = pt ? (brk > 0.2 ? red * lerp(.42, .72, brk) : schedule.down) : brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
+        if (dn < red * 0.9 && (!pt || dn < (brk > .2 ? red * .88 : schedule.up * .9)) && (rpmIn(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmIn(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
       }
     }
     }
