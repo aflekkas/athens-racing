@@ -15,8 +15,9 @@ For a clean deployment proof:
 
 1. Finish deployments and close live-tail/dashboard-log sessions before testing.
    Allow pending platform updates to settle (the Wrangler default deferred code
-   update deadline is five minutes). Keep log-session configuration unchanged
-   throughout the proof.
+   update deadline is five minutes, in addition to global propagation). Run a
+   separate warm-up and keep log-session configuration unchanged throughout
+   the proof. Do not count failures during propagation as a completed proof.
 2. Run twenty sequential full races without retrying failed rounds. Alternate
    Riviera and Penteli, retain each exit code and full log, and record the
    deployed version. For example:
