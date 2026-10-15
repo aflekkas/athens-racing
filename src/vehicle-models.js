@@ -453,7 +453,7 @@ export function buildDetailedCar(car,kind,opts={}) {
     if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
     cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
   }
-  if(car.spec.visual?.lip)box(car.body,M.black,[d.W*.84,.035,.12],[0,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris'].includes(kind)?d.H-.04:d.rear+.035,d.L/2-.11],.012,[0,0,0],'trim-spoiler-lip');
+  if(car.spec.visual?.lip)box(car.body,M.black,[d.W*.84,.035,.12],[0,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris'].includes(kind)?d.H-.04:d.rear+.035,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris'].includes(kind)?d.roofBack+.12:d.L/2-.11],.012,[0,0,0],'trim-spoiler-lip');
   if(car.spec.visual?.m){
     box(car.body,M.black,[d.W*.80,.09,.10],[0,.22,-d.L/2+.03],.012,[0,0,0],'m-front-splitter');
     box(car.body,M.black,[d.W*.76,.12,.10],[0,.24,d.L/2-.03],.012,[0,0,0],'m-rear-diffuser');

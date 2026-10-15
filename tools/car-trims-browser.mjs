@@ -17,7 +17,8 @@ try{
  console.log('DOM READY');await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:180000});console.log('LOADED');await page.evaluate(()=>{window.__holdFrame=true;});
  const show=async id=>{await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.show('car',{index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});},id);await page.waitForSelector('#carStage canvas');await page.waitForTimeout(500);};
  const capture=async name=>{await page.evaluate(()=>__flow.menu.carView?.captureFrame?.());await page.screenshot({timeout:120000,path:resolve(out,name+'.png')});};
- for(const id of (process.env.MINI_ONLY?[]:['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){await show(id);await capture('garage-'+id);}
+ for(const id of (process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){await show(id);await capture('garage-'+id);}
+ if(!process.env.TRIM_ONLY){
  await show('mini_cooper');await capture('garage-mini-hardtop-cooper');
  await page.locator('[data-key="carTrim"] [data-v="mini_jcw"]').click();
  assert.equal(await page.locator('[data-key="carTrim"]').getAttribute('data-value'),'mini_jcw');
@@ -29,8 +30,9 @@ try{
  await capture('garage-mini-convertible-cooper');
  await page.locator('[data-key="carBody"] [data-v="hardtop"]').click();
  assert.equal(await page.locator('[data-key="carTrim"]').getAttribute('data-value'),'mini_cooper');
+ }
  // Six actual stationary world views use the same spawn, camera and body colour.
- for(const id of (process.env.MINI_ONLY?[]:['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){
+ for(const id of (process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){
    await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.h.chooseCar(CARS.findIndex(c=>c.id===id),null,true);await __flow.startEvent(__flow.freeRoamDef());},id);
    await page.waitForTimeout(1000);
    await page.evaluate(()=>{__game.countWall=performance.now()-5000;__sim.step(1,.05);__game.cam='chase';__sim.step(60,1/60);__sim.render();});
