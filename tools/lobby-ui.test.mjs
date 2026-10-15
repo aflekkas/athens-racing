@@ -100,3 +100,15 @@ test('allowed cars and results render from lobby state', () => {
   const guest = fakeMp({ host: false, status: 'results' }); guest.lobby.results = mp.lobby.results;
   assert.doesNotMatch(renderResults(menu, guest), /mpStart|mpToLobby/);
 });
+
+
+test('a finisher sees live results before the rest of the field, with no early rematch', () => {
+  const mp = fakeMp({ status: 'race' });
+  mp.me.finish = 80.5;
+  mp.lobby.players[0].finish = 80.5;
+  assert.equal(wantedScreen(mp, 'mpLobby'), 'mpResults');
+  const html = renderResults(menu, mp);
+  assert.match(html, /80\.50/); assert.match(html, /RACING/);
+  assert.match(html, /Live standings/); assert.match(html, /data-act="shareResult"/);
+  assert.doesNotMatch(html, /data-act="mpStart"|data-act="mpToLobby"|data-act="mpCar"/);
+});
