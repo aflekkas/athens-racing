@@ -130,3 +130,18 @@ test('fresh players start with the tyre grip display off', async () => {
   assert.equal(module.settings.showTyreGrip, false);
   assert.equal(module.DEFAULTS.showTyreGrip, false);
 });
+
+test('HUD motion respects reduced motion until explicitly chosen and rejects invalid values', async () => {
+  const previous = globalThis.matchMedia;
+  try {
+    globalThis.matchMedia = () => ({ matches: false });
+    assert.equal((await preferences(memory())).settings.hudMotion, 'subtle');
+    globalThis.matchMedia = () => ({ matches: true });
+    const storage = memory(), module = await preferences(storage);
+    assert.equal(module.settings.hudMotion, 'off');
+    module.setSetting('hudMotion', 'full');
+    assert.equal((await preferences(storage)).settings.hudMotion, 'full');
+    module.setSetting('hudMotion', 'invalid');
+    assert.equal(module.settings.hudMotion, 'full');
+  } finally { globalThis.matchMedia = previous; }
+});

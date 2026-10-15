@@ -27,7 +27,9 @@ export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', lighting: 'preset', effects: 'preset', renderScale: 'auto', pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', motionBlur: true, mirrors: true, ghostEnabled: true,
-  mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false };
+  mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'subtle' };
+export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
+const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
 const CAMERA_FLAGS = ['invertLookY', 'speedFov', 'playerMarkers', 'rivalMarkers'];
 function cameraValue(key, value) {
@@ -46,7 +48,7 @@ export function pixelRatioCapValue(value) {
 const ls = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch { return null; } };
 
 function load() {
-  const out = { ...DEFAULTS };
+  const out = { ...DEFAULTS, hudMotion: reducedMotion() ? 'off' : DEFAULTS.hudMotion };
   try {
     const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
     Object.assign(out, saved);
@@ -88,6 +90,7 @@ function load() {
   out.showTyreGrip = out.showTyreGrip === true;
   out.motionBlur = out.motionBlur !== false;
   out.mirrors = out.mirrors !== false;
+  if (!HUD_MOTION_VALUES.includes(out.hudMotion)) out.hudMotion = reducedMotion() ? 'off' : DEFAULTS.hudMotion;
   if (![300, 500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
   for (const key of [...Object.keys(CAMERA_RANGES), ...CAMERA_FLAGS]) out[key] = cameraValue(key, out[key]);
   return out;
@@ -107,6 +110,7 @@ export function setSetting(key, value) {
   if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));
   if (!(key in DEFAULTS) || settings[key] === value) return;
   if (key === 'steeringAssist' && ![null, 'off', 'light', 'full'].includes(value)) return;
+  if (key === 'hudMotion' && !HUD_MOTION_VALUES.includes(value)) return;
   settings[key] = value;
   try {
     const { graphics, ...rest } = settings;

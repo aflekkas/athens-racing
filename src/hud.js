@@ -80,6 +80,7 @@ export class Hud {
   constructor(map) {
     this.map = map; const { route, data, terrain } = map;
     this.el = {}; for (const id of ['posBox', 'posN', 'posSuf', 'tRace', 'gap', 'rivalName', 'rZone', 'rRoad', 'rToGo', 'rfill', 'rticks', 'rRival', 'rMe', 'mapLabel', 'pops', 'banner', 'count', 'msg', 'menu', 'penRow', 'pen', 'sigBox', 'sigTxt', 'sigD', 'limitSign', 'limitV', 'mKick', 'mTitle', 'mSub', 'mTable', 'cIdx', 'cName', 'cTag', 'cSpecs', 'cStats', 'cBest']) this.el[id] = $(id);
+    this.el.limitSign.onanimationend = event => this.finishLimitFlash(event);
     this.el.mapLabel.textContent = map.definition?.name || route.from;
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
@@ -347,7 +348,8 @@ export class Hud {
   }
 
   /** speed-limit sign: limit = {v, src} (km/h) or null; kmh = the car's speed in km/h. Over the limit the sign takes
-   *  data-over, which flashes it red a few times and then holds it lit, like a car's speed-limit assist (style.css).
+   *  data-over for the held halo and data-flashing for a complete four-flash burst (style.css).
+   *  Speed hunting around the hysteresis threshold must not cancel/restart an in-flight burst.
    *  Hysteresis (on above v + 3, off at v + 1 or below) keeps it from flickering at the threshold; the DOM is only
    *  touched when the limit or the over state changes. */
   setLimit(limit, kmh = 0) {
@@ -363,7 +365,14 @@ export class Hud {
       }
     }
     const over = !!limit && (this.limitOver ? kmh > limit.v + 1 : kmh > limit.v + 3);
-    if (over !== !!this.limitOver) { this.limitOver = over; el.limitSign.toggleAttribute('data-over', over); }
+    if (over !== !!this.limitOver) {
+      this.limitOver = over; el.limitSign.toggleAttribute('data-over', over);
+      if (over && !el.limitSign.hasAttribute('data-flashing') && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) el.limitSign.setAttribute('data-flashing', '');
+    }
+    if (!limit) el.limitSign.removeAttribute('data-flashing');
+  }
+  finishLimitFlash(event) {
+    if (event.animationName === 'limitFlash') this.el.limitSign.removeAttribute('data-flashing');
   }
   /** next traffic light widget: info = {main, d, wait} or null */
   signal(info) {

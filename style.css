@@ -13,6 +13,11 @@ b { font-weight: inherit; }
 body.racing #hud, body.counting #hud { opacity: 1; }
 body.menu #hud > :not(#pops) { opacity: 0; transition: opacity .4s; }
 
+.hud-motion-layer { position: absolute; inset: 0; overflow: visible; }
+#hudMotionCluster { transform-origin: calc(100% - 188px) calc(100% - 176px); }
+#hudMotionMap { transform-origin: 153px calc(100% - 151px); }
+#hudMotionFar { transform-origin: 50% 60px; }
+
 .slant { clip-path: polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%); }
 
 /* position block */
@@ -77,12 +82,12 @@ body.menu #hud > :not(#pops) { opacity: 0; transition: opacity .4s; }
 #limitSign[hidden] { display: none; }
 #limitV { position: relative; z-index: 1; font: 900 26px system-ui, sans-serif; letter-spacing: -.02em; color: #111314; }
 #limitSign[data-src="inferred"] { opacity: .85; }
-#limitSign[data-over] { opacity: 1; box-shadow: 0 0 0 3px rgba(255,46,61,.55), 0 0 22px rgba(255,46,61,.6), 0 2px 10px rgba(0,0,0,.45); }
-#limitSign[data-over]::after { animation: limitFlash .7s ease-in-out 4; }
-#limitSign[data-over] #limitV { animation: limitFlashV .7s ease-in-out 4; }
+#limitSign[data-over] { opacity: 1; box-shadow: 0 0 0 3px rgba(255,46,61,.55), 0 0 22px 7px rgba(255,46,61,.8), 0 2px 10px rgba(0,0,0,.45); }
+#limitSign[data-flashing]::after { animation: limitFlash .7s ease-in-out 4; }
+#limitSign[data-flashing] #limitV { animation: limitFlashV .7s ease-in-out 4; }
 @keyframes limitFlash { 0%, 100% { opacity: 0; } 45%, 60% { opacity: 1; } }
 @keyframes limitFlashV { 0%, 100% { color: #111314; } 45%, 60% { color: #fff; } }
-@media (prefers-reduced-motion: reduce) { #limitSign[data-over]::after, #limitSign[data-over] #limitV { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #limitSign[data-flashing]::after, #limitSign[data-flashing] #limitV { animation: none; } }
 
 /* popups */
 #pops { position: absolute; inset: 0; overflow: hidden; }

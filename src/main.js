@@ -27,6 +27,7 @@ import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
 import { Cockpit } from './cockpit.js';
 import { Hud, RacerMarkers, fmtTime } from './hud.js';
+import { createHudSway } from './hud-sway.js';
 import { PerfOverlay } from './perf-overlay.js';
 import { Audio } from './audio.js';
 import { VoiceReactions } from './voice.js';
@@ -2095,6 +2096,13 @@ function step(dt, draw = true) {
   const objectiveDriver = multiplayer.active ? multiplayer.spectating?.() || multiplayer.me : null;
   st.objectiveTarget = st.objectiveMode ? drivingModeTarget(multiplayer.active ? objectiveDriver?.objective : G.run?.objective, multiplayer.active ? multiplayer.lobby.event?.objectiveRoutes : G.run?.routes) : null;
   hud.update(st);
+  const watched = multiplayer.active ? multiplayer.spectating() : null;
+  const swayCar = (watched && remoteCars.get(watched.id)?.veh) || pv;
+  swayInput.active = (G.state === 'race' || G.state === 'countdown' || G.state === 'onlineCountdown') && !inMenu() && !G.paused;
+  swayInput.cam = G.cam; swayInput.mode = settings.hudMotion;
+  swayInput.ax = swayCar.ax; swayInput.ay = swayCar.ay; swayInput.heave = swayCar.pose?.heave;
+  swayInput.lookYaw = look.yaw + look.back; swayInput.lookPitch = look.pitch;
+  hudSway.update(dt, swayInput);
   if (st.gapUnit) $('gap').textContent = !Number.isFinite(st.gap) ? '—' : `${st.gap >= 0 ? '+' : '−'}${Math.abs(st.gap).toFixed(st.gapUnit === 'm' ? 0 : 2)} ${st.gapUnit}`;
   for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
@@ -2248,6 +2256,8 @@ addEventListener('resize', onResize);
 // Multiplayer owns the online state machine; offline racing retains its AI rival.
 const remoteCars = new Map();
 const racerMarkers = new RacerMarkers();
+const hudSway = createHudSway({ near: [$('hudMotionCluster'), $('hudMotionMap')], far: [$('hudMotionFar')] });
+const swayInput = { active: false, cam: 'cockpit', mode: 'subtle', ax: 0, ay: 0, heave: 0, lookYaw: 0, lookPitch: 0 };
 const markerPoint = new THREE.Vector3(), markerView = new THREE.Vector3();
 const _markerItems = [];
 function updateRacerMarkers() {

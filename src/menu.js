@@ -422,7 +422,7 @@ export class Menu {
     } else if (tab === 'camera') {
       const sl = (k, label, min, max, step, format) => has(k) ? C.slider({ key: k, label, value: settings[k], min, max, step, format, attrs: SET }) : '';
       const tg = (k, label) => has(k) ? C.toggle({ key: k, label, value: settings[k], attrs: SET }) : '';
-      body = `<div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}</div>
+      body = `<div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
         <div class="group"><h3 class="group__title">${icon('mouse')}FREE LOOK</h3>${sl('mouseSensitivity', 'LOOK SENSITIVITY', 0.25, 3, 0.05, 'x')}${tg('invertLookY', 'INVERT LOOK Y')}
           <p class="group__note">Click the racing view to look around. Hold and drag if the pointer cannot be locked. The right stick also looks.</p></div>
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;

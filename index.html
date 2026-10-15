@@ -56,6 +56,7 @@
 <canvas id="c"></canvas>
 
 <div id="hud">
+  <div id="hudMotionFar" class="hud-motion-layer">
   <!-- position / time / rival gap -->
   <div id="posBox">
     <div class="pos"><span id="posN">2</span><span id="posSuf">ND</span><span class="of">/2</span></div>
@@ -72,12 +73,17 @@
   </div>
   <!-- next traffic light -->
   <div id="sigBox"><div class="sl"><i class="r"></i><i class="a"></i><i class="g"></i></div><div class="st"><b id="sigTxt">GREEN</b><span id="sigD">SIGNAL</span></div></div>
-  <!-- minimap -->
-  <div id="mapBox"><canvas id="minimap" width="300" height="300"></canvas><div id="mapLabel">VOULIAGMENI</div></div>
-  <!-- speedometer / tachometer -->
-  <div id="dialBox"><canvas id="tacho" width="380" height="380"></canvas><div id="limitSign" hidden><b id="limitV">50</b></div></div>
-  <!-- pursuit survive countdown and the wrong-way warning: main.js updateEventHud -->
   <div id="evBox"></div>
+  </div>
+  <!-- minimap -->
+  <div id="hudMotionMap" class="hud-motion-layer">
+  <div id="mapBox"><canvas id="minimap" width="300" height="300"></canvas><div id="mapLabel">VOULIAGMENI</div></div>
+  </div>
+  <!-- speedometer / tachometer -->
+  <div id="hudMotionCluster" class="hud-motion-layer">
+  <div id="dialBox"><canvas id="tacho" width="380" height="380"></canvas><div id="limitSign" hidden><b id="limitV">50</b></div></div>
+  </div>
+  <!-- wrong-way warning: main.js updateEventHud -->
   <div id="wrongWay"><b>WRONG WAY</b><span>TURN AROUND</span></div>
   <div id="pops"></div>
   <div id="banner"><div class="b1"></div><div class="b2"></div></div>
