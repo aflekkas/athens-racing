@@ -20,6 +20,7 @@ import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, 
 import { MAPS } from './map-catalog.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
 import * as MP from './ui/mp-screens.js';
+import { personalBestLabel } from './personal-bests.js';
 import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
@@ -246,6 +247,7 @@ export class Menu {
       case 'next': this.h.next(this.data.next); break;
       case 'list': this.h.quit('title'); break;
       case 'menu': this.h.quit('title'); break;
+      case 'shareResult': this.h.shareResult?.(); break;
       case 'replay': window.__replay?.watch?.(); break;
     }
   }
@@ -326,7 +328,9 @@ export class Menu {
     const n = rivalCount(e);
     const facts = e.type === 'free' ? [['SESSION', 'FREE ROAM', 'car-profile'], ['ROAD', TRAFFIC(e.traffic ?? 1), 'traffic-cone']] :
       [['DISTANCE', fmtDist(r.len), 'path'], ['ROUTE', routeLine(r), 'map-pin'], ['FIELD', `${n + 1} CARS`, 'users-three'], ['ROAD', r.closed ? 'CLOSED CIRCUIT' : TRAFFIC(e.traffic ?? 1), 'traffic-cone']];
-    return `<div class="evs__top">${C.badge(e.type === 'free' ? 'FREE ROAM' : 'QUICK RACE')}${r.reverse ? C.badge('REVERSE', 'cyan', 'arrows-left-right') : ''}</div><h3 class="evs__name">${esc(e.type === 'free' ? 'Explore the map' : 'Your race')}</h3>${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}`;
+    const pb = e.type === 'free' ? null : this.h.personalBests?.(e, r);
+    const records = pb ? C.stats([['BEST · EXACT SETUP', pb.exact ? this.h.fmtTime(pb.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', pb.route ? this.h.fmtTime(pb.route.time) : '—']]) : '';
+    return `${records}<div class="evs__top">${C.badge(e.type === 'free' ? 'FREE ROAM' : 'QUICK RACE')}${r.reverse ? C.badge('REVERSE', 'cyan', 'arrows-left-right') : ''}</div><h3 class="evs__name">${esc(e.type === 'free' ? 'Explore the map' : 'Your race')}</h3>${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}`;
   }
 
   // ---------------------------------------------------------------- race setup (event detail)
@@ -441,8 +445,9 @@ export class Menu {
     return C.screen({ cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
       body: `<div class="res-layout"><div class="res-main">
         <h2 class="res-title">${esc(d.title || '')}</h2>${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
+        ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
-        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${window.__replay?.watch ? act('replay', 'film-strip', 'WATCH REPLAY') : ''}${act('list', 'list', 'MAIN MENU')}</div>
+        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${window.__replay?.watch ? act('replay', 'film-strip', 'WATCH REPLAY') : ''}${d.result?.time != null ? act('shareResult', 'share-network', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
       </div><div class="res-side scroll-y">${field}${splits}</div></div>` });
   }
 }

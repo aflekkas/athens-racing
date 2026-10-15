@@ -32,7 +32,7 @@ export const form = { tab: 'join', code: '', name: '', map: null, mode: 'sprint'
 /** The room the player closed with Back: lobby publishes in the same phase do not pop it back open (a new phase, such as
  *  the results after a race, still does). Read through the Multiplayer inputOverlayOpen hook. */
 let dismissed = null;
-const phaseKey = (mp) => (mp?.lobby ? `${mp.lobby.code}:${mp.lobby.status}:${mp.lobby.raceId || ''}` : null);
+const phaseKey = (mp) => (mp?.lobby ? `${mp.lobby.code}:${mp.lobby.status}:${mp.lobby.raceId || ''}:${mp.me?.finish != null ? 'finished' : 'running'}` : null);
 /** Host edits shown until the server echoes them, so a publish in between cannot flick a control back. */
 const pending = new Map();
 const PENDING_MS = 2500;
@@ -42,7 +42,7 @@ const PENDING_MS = 2500;
 export function wantedScreen(mp, current) {
   const l = mp?.lobby;
   if (!l) return 'mp';
-  if (l.status === 'results') return 'mpResults';
+  if (l.status === 'results' || mp.me?.finish != null) return 'mpResults';
   if (current === 'mpCars' && l.host === mp.id && l.status === 'waiting') return 'mpCars';
   return 'mpLobby';
 }
@@ -191,13 +191,18 @@ export function renderResults(menu, mp) {
   const objective = mp.objectiveMode;
   const title = objective ? `${objective.toUpperCase()} RESULTS` : me?.finish != null ? `P${mine + 1}` : me ? 'DNF' : 'RESULTS';
   const tiles = objective ? [] : [['TIME', me?.finish != null ? fmt(me.finish) : '—'], ['POSITION', me?.finish != null ? `${mine + 1} / ${ranked.length}` : 'DNF'], ['DRIVERS', String(ranked.length)]];
-  const rows = ranked.map((p, i) => `<tr class="${p.id === mp.id ? 'me' : ''}"><td class="r-pos">${p.finish != null || objective ? 'P' + (i + 1) : '—'}</td><td>${esc(p.name)}<small>${esc(carOf(mp, p.car)?.short || '')}</small></td><td class="tnum">${objective ? esc(mp.resultRowText(p, i).split(' · ').slice(2).join(' · ')) : p.finish != null ? fmt(p.finish) : p.dnf === 'wrecked' ? 'WRECKED' : 'DNF'}</td></tr>`).join('');
-  const acts = host ? [C.button({ label: 'REMATCH', icon: 'arrow-counter-clockwise', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady, attrs: { 'data-default': '', 'data-fid': 'rematch' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } })]
+  const rows = ranked.map((p, i) => `<tr class="${p.id === mp.id ? 'me' : ''}"><td class="r-pos">${p.finish != null || objective ? 'P' + (i + 1) : '—'}</td><td>${esc(p.name)}<small>${esc(carOf(mp, p.car)?.short || '')}</small></td><td class="tnum">${objective ? esc(mp.resultRowText(p, i).split(' · ').slice(2).join(' · ')) : p.finish != null ? fmt(p.finish) : p.dnf === 'wrecked' ? 'WRECKED' : p.dnf ? 'DNF' : l.status === 'results' ? 'DNF' : 'RACING'}</td></tr>`).join('');
+  const complete = l.status === 'results';
+  const personal = window.__game?.result?.personalBest;
+  if (personal) tiles.push(['BEST · EXACT SETUP', personal.exact ? fmt(personal.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', personal.route ? fmt(personal.route.time) : '—']);
+  const acts = host && complete ? [C.button({ label: 'REMATCH', icon: 'arrow-counter-clockwise', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady, attrs: { 'data-default': '', 'data-fid': 'rematch' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } })]
     : [];
-  acts.push(C.button({ label: 'CHANGE CAR', icon: 'car-profile', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }), C.button({ label: 'LEAVE LOBBY', icon: 'sign-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
+  if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'share-network', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
+  if (complete) acts.push(C.button({ label: 'CHANGE CAR', icon: 'car-profile', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }));
+  acts.push(C.button({ label: 'LEAVE LOBBY', icon: 'sign-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
   return C.screen({ cls: 'scr--results scr--mp scr--mp-results', kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
     hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'CLOSE']],
-    body: `<div class="res-layout"><div class="res-main"><h2 class="res-title">${esc(title)}</h2><p class="res-sub">${esc(host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
+    body: `<div class="res-layout"><div class="res-main"><h2 class="res-title">${esc(title)}</h2><p class="res-sub">${personal?.newBest ? C.badge('NEW PERSONAL BEST' + (personal.delta < 0 ? ' −' + Math.abs(personal.delta).toFixed(2) + ' s' : ''), 'good', 'timer') : ''}${esc(!complete ? 'Your clock has stopped. Live standings · waiting for the other drivers or the race timeout.' : host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
       ${tiles.length ? C.stats(tiles.map(([k, v]) => [k, v]), 'res-stats') : ''}<div class="res-actions">${acts.join('')}</div></div>
       <div class="res-side scroll-y">${C.panel('CLASSIFICATION', `<table class="r-table">${rows}</table>`, { icon: 'flag-checkered' })}</div></div>` });
 }

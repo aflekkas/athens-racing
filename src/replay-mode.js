@@ -1,5 +1,6 @@
 // Browser adapter for replay.js. Owns ghost visuals, replay/photo controls and the camera override.
 import * as THREE from 'three';
+import { bestGhostEvent } from './personal-bests.js';
 import { Recorder, GhostStore, sampleReplay, encodeReplay, decodeReplay, ghostKey, ghostOpacity, MAX_REPLAY_BYTES } from './replay.js';
 import { CARS, CarModel } from './cars.js';
 import { events } from './events.js';
@@ -68,12 +69,12 @@ class ReplayMode {
     this.hideGhost(); this.spins = []; this.last = null; this.saved = null; this.lastSave = Promise.resolve(null);
     const run = p.run, routeKey = `${Math.round(run.r.s0)}>${Math.round(run.r.s1)}`;
     this.recorder = new Recorder(this.cars.map(c => ({ car: c.spec.id, name: c.name || 'YOU' })),
-      { eventId: p.eventId, car: p.car, routeKey, trackVersion: this.ctx.trackVersion(), type: p.type });
+      { eventId: p.eventId, car: p.car, routeKey, trackVersion: this.ctx.trackVersion(), type: p.type, pbEventId: this.ctx.G.bestSetup ? bestGhostEvent(this.ctx.G.bestSetup) : null });
     this.recorder.tick(0, this.capture()); this.startToken = (this.startToken || 0) + 1;
     const token = this.startToken;
-    if (p.type !== 'timetrial' || !settings.ghostEnabled || this.choices.get(p.eventId) === null) return;
+    if (!['timetrial', 'sprint'].includes(p.type) || !settings.ghostEnabled || this.choices.get(p.eventId) === null) return;
     const selected = this.choices.get(p.eventId), cached = selected ? this.store.cache.get(selected) : null;
-    Promise.resolve(cached || this.store.load(p.eventId, p.car)).then(r => {
+    Promise.resolve(cached || this.store.load(this.recorder?.metadata.pbEventId || p.eventId, p.car)).then(r => {
       if (token !== this.startToken || !this.recorder || !settings.ghostEnabled || !r || r.routeKey !== routeKey || r.trackVersion !== this.ctx.trackVersion()) return;
       this.ghostReplay = r; this.buildGhost(r.car);
     });
@@ -83,8 +84,8 @@ class ReplayMode {
     if (!this.recorder) return;
     this.last = this.recorder.finish({ time: result.time ?? this.recorder.elapsed, splits: result.splits, resultType: result.type });
     this.recorder = null; this.hideGhost();
-    if (result.type === 'timetrial' && result.valid && result.time != null && !this.last.truncated) {
-      this.lastSave = this.store.saveBest(this.last).then(s => {
+    if (['timetrial', 'sprint'].includes(result.type) && result.valid && result.time != null && !this.last.truncated) {
+      this.lastSave = Promise.resolve().then(() => result.personalBest?.eligible === false ? { saved: false, best: null, persistent: false } : this.store.saveBest({ ...this.last, eventId: this.last.pbEventId || this.last.eventId })).then(s => {
         this.saved = s;
         this.ctx.hud.message(s.saved ? (s.persistent ? 'BEST GHOST <i>SAVED</i>' : 'BEST GHOST <i>IN MEMORY · EXPORT TO KEEP</i>') : 'BEST GHOST <i>KEPT</i>', 4);
         return s;

@@ -5,6 +5,7 @@ import { MAP_VIEW, TRACK_ROUTES } from './attica-map-data.js';
 import { coverScale, routeBounds, fitTracks, focusTrack, clampCamera } from './map-select-camera.js';
 import { fmtDist } from './settings.js';
 import * as C from './ui/components.js';
+import { getMapPersonalBest } from './personal-bests.js';
 
 const { esc, icon } = C;
 const playable = () => getPlayableMaps(MAPS).filter(m => TRACK_ROUTES[m.id]);
@@ -16,7 +17,9 @@ function style() {
 const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'arrows-clockwise'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountains'] : ['POINT TO POINT', 'path'];
 function preview(map) {
   const [kind, ic] = KIND(map);
-  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div><button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
+  const pb = getMapPersonalBest(map.id), t = pb?.time;
+  const record = pb ? C.stat('ROUTE BEST · ANY CAR / SETUP', `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`, { icon: 'timer' }) + `<small>${C.esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'} · ${pb.setup.direction < 0 ? 'REVERSE' : 'FORWARD'}</small>` : C.stat('LOCAL ROUTE BEST', '—', { icon: 'timer' });
+  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div>${record}<button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
 }
 export function renderMapSelect(selectedId = 'riviera', mode) {
   style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
