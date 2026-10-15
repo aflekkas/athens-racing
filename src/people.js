@@ -55,14 +55,14 @@ export class People {
     this.rng = new RNG(2024);
     this.policy = new PeoplePolicy(map, ROAD.sidewalk);
     this.crowd = new Crowd(scene, MAX);
-    this._impactFrame = {};
+    this._impactFrame = {}; this._impactSurface = {};
     this._impactGround = (x, z, body) => {
       const r = this.route, f = this._impactFrame;
       const hint = body.groundS ?? r.project(x,z).s;
       r.frame(hint,f);
       const s = hint + (x-f.x)*f.tx + (z-f.z)*f.tz;
       r.frame(s,f); const u = (x-f.x)*f.rx + (z-f.z)*f.rz; body.groundS=s;
-      return this.walkY(s,u);
+      return this.traffic?.ground ? this.traffic.ground.at(x,z,s,u,this._impactSurface).y + .015 : this.walkY(s,u);
     };
     this.bodies = new ImpactBodies(scene, this._impactGround);
     this.peds = Array.from({ length: MAX }, (_, i) => ({ slot: i, active: false, P: newPose() }));
@@ -468,7 +468,7 @@ export class People {
       // Contact is classified before the anticipatory evasive/near-miss reaction.
       const along = dx * A.fx + dz * A.fz, across = dx * A.rx + dz * A.rz;
       const py = p.wy ?? p.y;
-      if (A.v > .7 && Math.abs(along) < A.halfL + .24 && Math.abs(across) < A.halfW + .22 && Math.abs(py - (A.veh.y ?? py)) < 1.25) {
+      if (A.v > .15 && Math.abs(along) < A.halfL + .24 && Math.abs(across) < A.halfW + .22 && Math.abs(py - (A.veh.y ?? py)) < 1.25) {
         this.hit(p, A); return;
       }
       if (A.v < 3) continue;

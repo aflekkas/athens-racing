@@ -69,3 +69,12 @@ test('walking-speed bumper contact separates along the closest hull face without
   for(const[a,c,min,max]of b.links){const d=Math.hypot(b.p[a]-b.p[c],b.p[a+1]-b.p[c+1],b.p[a+2]-b.p[c+2]);assert(d>=min-.025&&d<=max+.025);}
  }
 });
+
+test('actual pedestrian contact reacts even at a crawl, and ignores parked cars',()=>{
+ const source=readFileSync(new URL('../src/people.js',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace(/^export /gm,'');
+ const People=new Function(source+'\nreturn People;')();
+ let hits=0;const A={kind:'player',x:0,z:0,fx:0,fz:-1,rx:1,rz:0,v:.3,halfL:2.2,halfW:.9,veh:{y:0}};
+ const world={acts:[A],hit(){hits++;}},p={kind:'walker',x:0,y:0,wy:0,z:-2,rs:false};
+ People.prototype.react.call(world,p,1/60);assert.equal(hits,1);
+ A.v=0;People.prototype.react.call(world,p,1/60);assert.equal(hits,1);
+});
