@@ -18,9 +18,9 @@ function recoveryHarness(route, v, options={}) {
   if(options.checkpoint!=null)G.run={r:{s0:0,checkpoints:[{d:options.checkpoint}]},cpIdx:0,progress:s=>s};
   const safe={s:options.safe??v.s,u:0},towOffer={safe},player={veh:v};
   const multiplayer={active:!!options.online,retired:false,lobby:{raceId:'test',event:{dir:G.dir}},recover:async()=>({s:options.serverS??safe.s,until:5000}),now:()=>0,stateSender:{discontinuity(){}}};
-  const api=Function('G','multiplayer','towOffer','route','recoveryPosition','roadRecoveryPose','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud',
+  const api=Function('G','multiplayer','towOffer','route','recoveryPosition','roadRecoveryPose','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications',
     section('function backOnRoad(', 'function stuckCheck(')+section('function tow(', 'function resetCar(')+'return {tow,backOnRoad};')(
-    G,multiplayer,towOffer,route,recoveryPosition,roadRecoveryPose,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>true,{message(){}});
+    G,multiplayer,towOffer,route,recoveryPosition,roadRecoveryPose,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>true,{message(){}},{dismiss(){}});
   return {G,towOffer,...api,async flush(){while(callbacks.length)await callbacks.shift()(()=>true);}};
 }
 for(const def of MAPS)test(`${def.id}: real T/R paths place off-road cars on the race surface in both directions`,async t=>{

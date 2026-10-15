@@ -114,7 +114,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     const j0 = Math.max(0, Math.floor((z - r - minZ) / T)), j1 = Math.min(GZ - 1, Math.ceil((z + r - minZ) / T));
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const dx = minX + i * T - x, dz = minZ + j * T - z; if (dx * dx + dz * dz < r * r) mask[j * GX + i] = 1; }
   };
-  for (let s = -300; s <= route.length + 300; s += 25) { const p = route.point(s, 0); stamp(p.x, p.z, 420); }
+  for (let s = -300; s <= route.length + 300; s += 25) { const p = route.point(s, 0); stamp(p.x, p.z, Math.max(120, route.edge(s) + 80)); }
   for (const [x, z, r] of extraStamps) stamp(x, z, r);
 
   // ---------------------------------------------------------------- road clamp (per 10 m vertex: nearest route sample)

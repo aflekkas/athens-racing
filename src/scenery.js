@@ -23,6 +23,7 @@
 //   - the scene's camera far plane is 90 km; the aerial perspective (env.js) fades everything into the horizon haze,
 //     so the horizon impostors and the far scenery melt into the sky instead of clipping.
 import * as THREE from 'three';
+import { DrivableCorridor } from './drivable-corridor.js';
 import { settings } from './settings.js';
 
 export const DRAW_DISTANCES = [300, 500, 1000, 2000, 4000];
@@ -246,7 +247,24 @@ class CellInstancesLite {
   }
 }
 
-export function prepareSceneryLod(scene, quality = 'high') {
+export function prepareSceneryLod(scene, quality = 'high', map = null) {
+  // Reject unreachable prop chunks before building impostors or uploading buffers.
+  // Budget for the largest live draw setting, so changing quality needs no rebuild.
+  if (map) {
+    const corridor = new DrivableCorridor(map.route, map.roadNetwork), discard = [];
+    scene.updateMatrixWorld(true);
+    scene.traverse(mesh => {
+      const far = mesh.userData.far, sphere = mesh.boundingSphere;
+      if (!(mesh.isInstancedMesh || mesh.userData.lod) || !far || far > 1500 || !sphere || mesh.userData.horizon) return;
+      const center = sphere.center.clone().applyMatrix4(mesh.matrixWorld);
+      const radius = sphere.radius * mesh.matrixWorld.getMaxScaleOnAxis();
+      const reach = radius + far * Math.pow(4000 / 2000, .75) + 80;
+      if (corridor.distance(center.x, center.z, reach) > reach) discard.push(mesh);
+    });
+    for (const mesh of discard) { mesh.removeFromParent(); if (mesh.isInstancedMesh) mesh.dispose(); }
+    const retained = new Set(); scene.traverse(mesh => { if(mesh.geometry)retained.add(mesh.geometry); });
+    for (const geometry of new Set(discard.map(mesh => mesh.geometry))) if (!retained.has(geometry)) geometry.dispose();
+  }
   if (!STATE.ready) setDrawDistance(drawDistanceFor(quality), quality); // main.js sets it first, with the full tier
   const impostors = buildImpostors(scene), list = [];
   scene.traverse(mesh => {

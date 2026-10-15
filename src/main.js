@@ -43,6 +43,7 @@ import { applyRemotePose } from './remote-timeline.js';
 import { personalBestSetup, getPersonalBests, recordPersonalBest, exactBestKey } from './personal-bests.js';
 import { captureResultFrame, shareResultCard } from './result-share.js';
 import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
+import { DrivableCorridor, corridorRecovery } from './drivable-corridor.js';
 import { roadRecoveryPose } from './road-recovery.js';
 import { DrivingFeedback } from './driving-feedback.js';
 import { driverName } from './driver-name.js';
@@ -298,6 +299,7 @@ function bindMapWorld(next) {
   ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next); applyDrawDistance();
   for (const c of traffic.cars || []) if (c.m?.root && !c.m.root.userData.shadowTrimmed) { trimShadowCasters(c.m.root); c.m.root.userData.shadowTrimmed = true; }
   route = map.route; startS = route.start;
+  ground.corridor = new DrivableCorridor(route, ground.network, map.terrain);
   drivingModeView?.dispose(); drivingModeView = new DrivingModeView(scene, route);
   lodList.splice(0, lodList.length, ...next.lod);
   traffic.disabled = Q.has('notraffic') || route.closed;
@@ -525,7 +527,7 @@ function resetEvent() {
 // people spawn / despawn in a window ahead of where they're told the player is; reverse events look the other way
 const peopleS = (s) => (G.dir < 0 && !multiplayer.active ? s - 300 : s);
 
-// Recovery always offers a choice. A tow costs five seconds: solo timed events add to G.pen;
+// Manual recovery offers a choice; leaving the drivable corridor recovers automatically. A tow costs five seconds: solo timed events add to G.pen;
 // online races and pursuit-survive hold the car for five seconds while the authoritative clock runs.
 const towOffer = { element: null, cooldown: 0, offT: 0, safe: null, hold: 0, recovering: false, elapsed: 0, stuckT: 0, severeT: 0 };
 function closeTowOffer(delay = 0) {
@@ -534,6 +536,7 @@ function closeTowOffer(delay = 0) {
   towOffer.cooldown = Math.max(towOffer.cooldown, delay);
 }
 function resetTowOffer() {
+  clearCorridorWarning(); towOffer.corridorT = 0;
   closeTowOffer(); Object.assign(towOffer, { cooldown: 0, offT: 0, hold: 0, recovering: false, elapsed: 0, stuckT: 0, severeT: 0 });
   towOffer.safe = player ? { s: player.veh.s, u: player.veh.u } : null;
 }
@@ -587,7 +590,27 @@ function backOnRoad(pv, recovery = null, { reset = false } = {}) {
   G.sinkT = 0; G.sinkFade = false; look.yaw = look.pitch = look.targetYaw = look.targetPitch = look.yawV = look.pitchV = 0;
   syncCar(player, 0); updateCamera(0, true);
 }
+function clearCorridorWarning() {
+  document.body.classList.remove('offtrack-warning'); notifications.dismiss('offtrack');
+}
+function corridorCheck(pv, dt) {
+  if (G.state !== 'race' || G.towing || multiplayer.retired || towOffer.hold > 0) {
+    towOffer.corridorT = 0; clearCorridorWarning(); return false;
+  }
+  const distance = ground.corridor.distance(pv.x, pv.z);
+  const q = ground.network?.project(pv.x, pv.z) || route.project(pv.x, pv.z, null);
+  const drop = route.surfaceY(q.s, clamp(q.u, -route.edge(q.s), route.edge(q.s))) - pv.y;
+  const result = corridorRecovery({ distance, bounds: ground.corridor.outsideBounds(pv.x,pv.z), mapId: map.id, freeRoam: inFreeRoam(), drop }, dt, towOffer);
+  if (result.tow) { clearCorridorWarning(); tow(pv, { automatic: true }); return true; }
+  if (result.warning) {
+    document.body.classList.add('offtrack-warning');
+    const countdown = towOffer.corridorT > 0 ? ` · ${Math.ceil(result.remaining)} s` : '';
+    notifications.toast('Return to the road' + countdown, { id: 'offtrack', priority: 70, persistent: true });
+  } else clearCorridorWarning();
+  return false;
+}
 function stuckCheck(pv, dt) {
+  if (corridorCheck(pv, dt)) return;
   if (G.state !== 'race' || G.towing || multiplayer.retired) {
     G.stuckT = 0; closeTowOffer(); return;
   }
@@ -608,9 +631,9 @@ function stuckCheck(pv, dt) {
   G.stuckT = towOffer.stuckT;
   if (needed && towOffer.hold <= 0) offerTow();
 }
-function tow(pv, { reset = false } = {}) {
+function tow(pv, { reset = false, automatic = false } = {}) {
   if (G.state !== 'race' || G.towing || multiplayer.retired) return;
-  G.towing = true; G.stuckT = 0; closeTowOffer(TOW_PROMPT_COOLDOWN);
+  G.towing = true; G.stuckT = 0; towOffer.corridorT = 0; clearCorridorWarning(); closeTowOffer(TOW_PROMPT_COOLDOWN);
   controls.releaseMouseLook(); document.body.classList.add('fading');
   const raceId = multiplayer.lobby?.raceId;
   sessionTransitions.after(320, async current => {
@@ -625,7 +648,8 @@ function tow(pv, { reset = false } = {}) {
     const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
     towOffer.recovering = hold;
     if (hold) towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 5; else if (!inFreeRoam()) G.pen += 5;
-    hud.message(`<i>${reset ? 'RESET' : 'TOWED'}</i> · ${inFreeRoam() ? '' : '+5 s · '}BACK ON THE ROAD`, 3);
+    if (automatic) notifications.toast('Recovered to road', { id: 'recovered', ms: 3000 });
+    else hud.message(`<i>${reset ? 'RESET' : 'TOWED'}</i> · ${inFreeRoam() ? '' : '+5 s · '}BACK ON THE ROAD`, 3);
     sessionTransitions.after(120, () => document.body.classList.remove('fading'));
   });
 }
