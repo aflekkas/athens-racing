@@ -1,3 +1,4 @@
+import { engineProfile } from './audio/engine-profiles.js';
 // Local, edited field recordings. Full provenance and known substitutions:
 // assets/audio/engines/sources.json and CREDITS.txt.
 const base = new URL('../assets/audio/engines/', import.meta.url);
@@ -22,8 +23,7 @@ function download(url) {
   return downloads.get(url);
 }
 export function recordingFor(spec) {
-  const recording = ENGINE_RECORDINGS[spec?.id];
-  return recording && recording.engine === spec?.engine ? recording : null;
+  return ENGINE_RECORDINGS[engineProfile(spec).sample] || null;
 }
 export function preloadEngine(spec) {
   const recording = recordingFor(spec);
@@ -36,23 +36,24 @@ export function loadRecordedEngine(ctx, spec) {
   if (!recording) return Promise.resolve(null);
   let cache = banks.get(ctx);
   if (!cache) { cache = new Map(); banks.set(ctx, cache); }
-  if (!cache.has(spec.id)) {
+  if (!cache.has(recording)) {
     const decode = async url => ctx.decodeAudioData((await download(url)).slice(0));
     const promise = Promise.all([
       decode(new URL(recording.start + '.wav', base).href),
       Promise.all(recording.loops.map(async l => ({ ...l, buffer: await decode(l.url) }))),
     ]).then(([start, loops]) => ({ ...recording, start, loops, recorded: true }))
-      .catch(error => { cache.delete(spec.id); throw error; });
-    cache.set(spec.id, promise);
+      .catch(error => { cache.delete(recording); throw error; });
+    cache.set(recording, promise);
   }
-  return cache.get(spec.id);
+  return cache.get(recording);
 }
 
-export function rpmBlend(points, rpm) {
+export function rpmBlend(points, rpm, out = new Float32Array(points.length)) {
   let i = 0;
   while (i < points.length - 2 && rpm > points[i + 1]) i++;
   const x = Math.max(0, Math.min(1, Math.log(Math.max(1, rpm) / points[i]) / Math.log(points[i + 1] / points[i])));
-  return points.map((_, k) => k === i ? Math.cos(x * Math.PI / 2) : k === i + 1 ? Math.sin(x * Math.PI / 2) : 0);
+  for (let k = 0; k < points.length; k++) out[k] = k === i ? Math.cos(x * Math.PI / 2) : k === i + 1 ? Math.sin(x * Math.PI / 2) : 0;
+  return out;
 }
 
 /** Build a long, phase-coherent granular bed once per decoded take. Random offsets
@@ -155,6 +156,7 @@ export class RecordedEngineVoice {
   constructor(ctx, bank, dest, spec, gain = 1) {
     this.ctx = ctx; this.bank = bank; this.spec = spec; this.level = gain;
     this.sources = []; this.gains = [];
+    this.points = bank.loops.map(s => s.rpm); this.weights = new Float32Array(this.points.length);
     this.filter = ctx.createBiquadFilter(); this.filter.type = 'lowpass'; this.filter.Q.value = .55;
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.filter.connect(this.out); this.out.connect(dest);
@@ -175,13 +177,14 @@ export class RecordedEngineVoice {
   set(rpm, load, level, now, dop = 1, limiter = false, tc = .045) {
     if (this.stopped) return;
     const r = Math.max(this.spec.idle * .65, rpm), on = Math.max(0, Math.min(1, load));
-    const weights = rpmBlend(this.bank.loops.map(s => s.rpm), r);
-    this.sources.forEach((source, i) => {
+    const weights = rpmBlend(this.points, r, this.weights);
+    for (let i = 0; i < this.sources.length; i++) {
+      const source = this.sources[i];
       // Clamp only outside the driving envelope (e.g. corrupt telemetry).
       const rate = Math.max(.25, Math.min(4, r / this.bank.loops[i].rpm * dop));
       source.playbackRate.setTargetAtTime(rate, now, tc);
       this.gains[i].gain.setTargetAtTime(weights[i], now, .06);
-    });
+    }
     const rn = Math.min(1, r / this.spec.redline);
     this.filter.frequency.setTargetAtTime((this.spec.engine === 'diesel' ? 1700 : 2200) + on * 8300 + rn * (700 + on * 1100), now, .07);
     const amplitude = level * this.level * (.37 + .46 * on + .17 * rn);

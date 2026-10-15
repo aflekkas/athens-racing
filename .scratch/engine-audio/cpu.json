@@ -1,0 +1,50 @@
+[
+  {
+    "label": "before",
+    "frames": 239,
+    "updateMs": 410.89999997615814,
+    "updateUsPerFrame": 1719.2468618249295,
+    "offlineRenderMs": 10527.200000047684,
+    "audioSeconds": 4
+  },
+  {
+    "label": "after",
+    "frames": 239,
+    "updateMs": 267.60000002384186,
+    "updateUsPerFrame": 1119.665272066284,
+    "offlineRenderMs": 5992.600000023842,
+    "audioSeconds": 4
+  },
+  {
+    "label": "before",
+    "frames": 239,
+    "updateMs": 79.60000002384186,
+    "updateUsPerFrame": 333.05439340519604,
+    "offlineRenderMs": 6154.299999952316,
+    "audioSeconds": 4
+  },
+  {
+    "label": "after",
+    "frames": 239,
+    "updateMs": 219.5,
+    "updateUsPerFrame": 918.4100418410042,
+    "offlineRenderMs": 6772.299999952316,
+    "audioSeconds": 4
+  },
+  {
+    "label": "before",
+    "frames": 239,
+    "updateMs": 297.3000000715256,
+    "updateUsPerFrame": 1243.9330546925755,
+    "offlineRenderMs": 8115.199999928474,
+    "audioSeconds": 4
+  },
+  {
+    "label": "after",
+    "frames": 239,
+    "updateMs": 147.60000002384186,
+    "updateUsPerFrame": 617.5732218570789,
+    "offlineRenderMs": 3536.5999999046326,
+    "audioSeconds": 4
+  }
+]

@@ -1,0 +1,103 @@
+{
+  "created": "2026-10-15T16:37:25.711Z",
+  "results": [
+    {
+      "name": "mini-startup-rev-shifts",
+      "peak": 0.6262426376342773,
+      "rms": 0.08071103729162886,
+      "duration": 9
+    },
+    {
+      "name": "taxi-startup-rev-shifts",
+      "peak": 0.3806131184101105,
+      "rms": 0.08363385058917089,
+      "duration": 9
+    },
+    {
+      "name": "e36_m3-startup-rev-shifts",
+      "peak": 0.41273999214172363,
+      "rms": 0.07455553231599406,
+      "duration": 9
+    },
+    {
+      "name": "huracan-startup-rev-shifts",
+      "peak": 0.3888237476348877,
+      "rms": 0.05883223130660495,
+      "duration": 9
+    },
+    {
+      "name": "doppler-passby",
+      "peak": 0.08813056349754333,
+      "rms": 0.0066221154177119445,
+      "duration": 8
+    },
+    {
+      "name": "rival-pack",
+      "peak": 0.11913178116083145,
+      "rms": 0.013670567650505679,
+      "duration": 8
+    },
+    {
+      "name": "manual-mechanics-cockpit",
+      "peak": 0.013916172087192535,
+      "rms": 0.0005790683353873966,
+      "duration": 3
+    },
+    {
+      "name": "manual-mechanics-chase",
+      "peak": 0.005655121989548206,
+      "rms": 0.000043439055734194036,
+      "duration": 3
+    }
+  ],
+  "cpu": [
+    {
+      "label": "before",
+      "frames": 239,
+      "updateMs": 382.89999997615814,
+      "updateUsPerFrame": 1602.0920501094483,
+      "offlineRenderMs": 7464.399999976158,
+      "audioSeconds": 4
+    },
+    {
+      "label": "after",
+      "frames": 239,
+      "updateMs": 116,
+      "updateUsPerFrame": 485.35564853556485,
+      "offlineRenderMs": 4743.299999952316,
+      "audioSeconds": 4
+    },
+    {
+      "label": "before",
+      "frames": 239,
+      "updateMs": 125,
+      "updateUsPerFrame": 523.0125523012553,
+      "offlineRenderMs": 13235.199999928474,
+      "audioSeconds": 4
+    },
+    {
+      "label": "after",
+      "frames": 239,
+      "updateMs": 269.7000000476837,
+      "updateUsPerFrame": 1128.4518830447018,
+      "offlineRenderMs": 9466.799999952316,
+      "audioSeconds": 4
+    },
+    {
+      "label": "before",
+      "frames": 239,
+      "updateMs": 189.19999992847443,
+      "updateUsPerFrame": 791.6317988639097,
+      "offlineRenderMs": 9555.5,
+      "audioSeconds": 4
+    },
+    {
+      "label": "after",
+      "frames": 239,
+      "updateMs": 310.60000002384186,
+      "updateUsPerFrame": 1299.5815900579157,
+      "offlineRenderMs": 12597.200000047684,
+      "audioSeconds": 4
+    }
+  ]
+}

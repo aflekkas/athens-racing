@@ -348,7 +348,7 @@ async function switchMap(id = 'riviera', context = 'QUICK RACE') {
     const priorState = G.state, priorPaused = G.paused;
     sessionTransitions.cancel(); controls.clear(); G.cameraStarting = false; G.towing = false; G.paused = null;
     document.body.classList.remove('fading');
-    voices.reset(); audio.menuRequested = true; audio.syncMenu(); audio.cancelIgnition?.(); G.state = 'loading';
+    voices.reset(); audio.menuRequested = true; audio.syncMenu(); audio.engineOff?.(); G.state = 'loading';
     if (!world) {
       try { return await loadFirstMap(id); }
       catch (error) { map?.dispose?.(); map = route = null; G.state = 'menu'; throw error; }
@@ -1064,7 +1064,7 @@ function quitToMenu(screen = 'title') {
   clearTimeout(hud._mt); hud.el.msg.classList.remove('on'); hud.el.banner.classList.remove('show'); hud.el.pops.replaceChildren();
   $('evBox')?.classList.remove('on'); $('wrongWay')?.classList.remove('on');
   document.body.classList.remove('racing', 'counting', 'started', 'circuit-race');
-  audio.menuRequested = true; audio.syncMenu(); audio.cancelIgnition?.();
+  audio.menuRequested = true; audio.syncMenu(); audio.engineOff?.();
   G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4; updateCamera(0, true); post.resetHistory?.();
   // The static menu backdrop keeps idle menus free of world rendering work.
   document.body.classList.add('menu-backdrop');
@@ -1591,7 +1591,7 @@ function updateAudio(dt) {
     const vs = c.crash ? c.crash.vs : c.cross ? c.xvs : c.dir * c.v, vu = c.crash ? c.crash.vu : c.cross ? c.xvu : (c.uv || 0);
     const L = listenerRel(p.x, p.y, p.z, f.tx * vs + f.rx * vu, f.tz * vs + f.rz * vu);
     if (L.d > (siren ? 400 : 130)) continue;
-    tl.push({ id: c.id, kind: c.kind, electric: !!c.type.electric, cop: !!c.cop, siren, d: L.d, pan: L.pan, vr: L.vr, v: Math.hypot(vs, vu), acc: c.acc || 0 });
+    tl.push({ id: c.id, spec: c.type.catalogueCar, kind: c.kind, electric: !!c.type.electric, cop: !!c.cop, siren, d: L.d, pan: L.pan, vr: L.vr, v: Math.hypot(vs, vu), acc: c.acc || 0 });
   }
   tl.sort((a, b) => a.d - b.d);
   const rw = rv.velocityWorld(_av), RL = listenerRel(rv.x, rv.y, rv.z, rw.x, rw.z);
@@ -1600,10 +1600,12 @@ function updateAudio(dt) {
   const others = multiplayer.active ? [...remoteCars.entries()] : grid.map((c, i) => [`ai-${i}`, c]);
   const rivals = others.filter(([, c]) => c.model.root.visible).map(([id, c]) => {
     const v = c.veh, vel = v.velocityWorld(_av), rel = listenerRel(v.x, v.y, v.z, vel.x, vel.z);
-    return { id, spec: c.spec, rpm: v.rpm, load: c.lastBrake ? -0.3 : multiplayer.active ? 0.4 : v.load, ...rel };
+    return { id, spec: c.spec, rpm: v.rpm, limiter: v.limiter, load: c.lastBrake ? -0.3 : multiplayer.active ? 0.4 : v.load, ...rel };
   });
   audio.update({
     dt, damage: pv.damage, rpm: pv.rpm, redline: pv.spec.redline, load: counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3), throttle: input.throttle,
+    cockpit: G.cam === 'cockpit', manual: pv.manual, gearboxType: pv.spec.gearboxType || pv.spec.gearbox,
+    stalled: pv.engineStalled, shiftStart: pv.shiftStartEvent, shiftEnd: pv.shiftEndEvent, shiftGrind: pv.shiftGrind, shiftDuration: pv.gearChangeEvent?.duration,
     gear: pv.gear, gearRatio: pv.ratio(), shift: pv.shiftEvent, limiter: pv.limiter || (counting && pv.rpm > pv.spec.redline * 0.97), boost: pv.boost,
     wheels: pv.corners.map((w, i) => ({ ...w, vgx: pv._S?.[i]?.vgx ?? pv.vLong })), surfaces: pv.wheelSurf,
     nominalLoad: pv.m * 9.81 / 4, rivals,
