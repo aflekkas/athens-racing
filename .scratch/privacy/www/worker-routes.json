@@ -1,0 +1,108 @@
+[
+  {
+    "host": "athensracing.com",
+    "path": "/privacy",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "scripts": false
+  },
+  {
+    "host": "athensracing.com",
+    "path": "/terms",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "scripts": false
+  },
+  {
+    "host": "staging.athensracing.com",
+    "path": "/privacy",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "scripts": false
+  },
+  {
+    "host": "staging.athensracing.com",
+    "path": "/terms",
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "scripts": false
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/privacy?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/privacy?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/terms?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/terms?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/index.html?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/index.html?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/style.css?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/style.css?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/assets/share/og-image.jpg?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/assets/share/og-image.jpg?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/robots.txt?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/robots.txt?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/sitemap.xml?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/sitemap.xml?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/arbitrary/path?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/arbitrary/path?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/api/auth/google/start?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/api/auth/google/start?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/api/auth/google/callback?from=google&return=%2Frace%3Fx%3D1",
+    "status": 301,
+    "location": "https://athensracing.com/api/auth/google/callback?from=google&return=%2Frace%3Fx%3D1"
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/ws",
+    "status": 426,
+    "exempt": true
+  },
+  {
+    "host": "www.athensracing.com",
+    "path": "/api/auth/config",
+    "status": 200,
+    "exempt": true
+  }
+]

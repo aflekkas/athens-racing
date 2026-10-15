@@ -1,0 +1,18 @@
+{
+  "testedCommit": "e42dd03fcd572b7a964c8cff41a58b824d5df908",
+  "gates": {
+    "wrangler": 0,
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "syntax": 0,
+    "physics": 0
+  },
+  "realWorkerRouteChecks": 17,
+  "workerRoutes": "worker-routes.json",
+  "hostExceptions": [
+    "/ws",
+    "/api/* except Google OAuth start/callback navigation"
+  ],
+  "pagesUseName": "Athens Racing"
+}
