@@ -27,8 +27,8 @@ export class EngineLifecycle {
     const a = this.host, selected = gearboxSound(a.engineSpec, p.gearboxType);
     const kind = selected === 'manual' && p.manual === false ? 'auto' : selected;
     const cabin = p.cockpit ?? !p.open, cabinGain = cabin ? 1 : .045;
-    const up = (p.shiftDirection ?? p.shift ?? 1) > 0;
-    const fast = Math.max(0, Math.min(1, (.5 - (p.shiftDuration ?? a.engineSpec?.shiftT ?? .25)) / .4));
+    const up = (p.shiftDirection ?? p.shiftStart?.direction ?? p.shift ?? 1) > 0;
+    const fast = Math.max(0, Math.min(1, (.5 - (p.shiftDuration ?? p.shiftStart?.duration ?? a.engineSpec?.powertrain?.shiftTime ?? a.engineSpec?.shiftT ?? .25)) / .4));
     const variation = .88 + Math.random() * .24;
     if (start) {
       if (kind === 'manual') {
@@ -59,7 +59,7 @@ export class EngineLifecycle {
       this.rpm = Math.max(p.rpm, idle*(1 + .65*Math.exp(-Math.max(0,age-.5)*3)));
       if (age > 2) this.state = 'running';
     }
-    const startSignal = p.shiftStart ?? p.shift, endSignal = p.shiftEnd;
+    const startSignal = p.shiftStart?.serial ?? p.shiftStart ?? p.shift, endSignal = p.shiftEnd?.serial ?? p.shiftEnd;
     const start = !!startSignal && (startSignal !== this.lastShiftStart || !this.lastShiftStart);
     const end = !!endSignal && (endSignal !== this.lastShiftEnd || !this.lastShiftEnd);
     this.lastShiftStart = startSignal; this.lastShiftEnd = endSignal;

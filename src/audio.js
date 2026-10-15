@@ -458,7 +458,8 @@ export class Audio {
     // ---- engine
     this.lastSpeed = v;
     this.lifecycle.update(p, now, this.engineSpec?.idle);
-    if (this.lifecycle.shiftStarted) this.shiftCutUntil = now + (this.lifecycle.shiftKind === 'auto' ? .035 : this.lifecycle.shiftKind === 'dct' ? .065 : .12);
+    if (this.lifecycle.shiftStarted) this.shiftCutUntil = now + (this.lifecycle.shiftKind === 'auto' ? .035 : this.lifecycle.shiftKind === 'dct' ? .065 : (p.shiftDuration ?? p.shiftStart?.duration ?? .12));
+    if (this.lifecycle.shiftEnded) this.shiftCutUntil = now;
     const startLevel = this.lifecycle.level * this.engineStartLevel(now) * (now < (this.shiftCutUntil || 0) ? (this.lifecycle.shiftKind === 'auto' ? .75 : .18) : 1);
     this.updateExhaustRattle(p, now, startLevel);
     if (this.engineVoice) this.engineVoice.set(this.lifecycle.rpm, load, mute * startLevel, now, 1, p.limiter);
@@ -478,14 +479,15 @@ export class Audio {
     }
     // overrun: burble and pops from hot exhausts after a lift at high rpm, and on the upshift ignition cut
     const crackle = this.profile?.pops ?? 0;
-    if (lift && rn > .42) this.overrunUntil = now + .7 + crackle * .9;
-    if (load < -0.05 && rn > 0.42 && !p.muted && now < (this.overrunUntil || 0)) {
+    if ((lift || p.overrun && !this.lastOverrun) && rn > .42) this.overrunUntil = now + .7 + crackle * .9;
+    if ((p.overrun ?? load < -0.05) && rn > 0.42 && !p.muted && now < (this.overrunUntil || 0)) {
       this.popAcc = (this.popAcc || 0) + Math.min(.1,p.dt || 0) * crackle * (rn - 0.35) * 9 * (this.lastLift < 2 ? 1 : 0.25);
       while (this.popAcc > 1) { this.popAcc -= 1 + Math.random(); this.pop(0.35 + Math.random() * 0.5 * rn, Math.random() * 0.05); }
     }
     else this.popAcc = 0;
     this.lastLift = load < -0.05 ? (this.lastLift || 0) + p.dt : 0;
     if (this.lifecycle.shiftStarted && this.lifecycle.shiftKind === 'dct' && (this.lastLoad ?? 0) > .6 && rn > .55 && crackle > .3) this.pop(.45, .015);
+    this.lastOverrun = !!p.overrun;
     this.lastLoad = load;
     x.whine.frequency.setTargetAtTime(p.rpm / 60 * 7.3 / Math.max(0.6, (p.gearRatio || 1) * 0.35), now, 0.05);
     x.whineG.gain.setTargetAtTime(mute * E.whine * 0.012 * (0.3 + Math.abs(load)) * Math.min(1, v / 8), now, 0.08);

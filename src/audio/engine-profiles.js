@@ -51,7 +51,7 @@ export function gearboxSound(spec, signal) {
   const cached = gearboxCache.get(spec);
   if (cached && cached.signal === signal) return cached.kind;
   const known = /^(huracan|taxi|octavia|cla|gla)/.test(spec?.id || '') ? 'dct' : /^(z4|cle)/.test(spec?.id || '') ? 'auto' : 'manual';
-  const type = String(signal || spec?.gearboxType || spec?.gearbox || known).toLowerCase();
+  const type = String(signal || spec?.powertrain?.gearboxType || spec?.gearboxType || spec?.gearbox || known).toLowerCase();
   const kind = /dct|dsg|pdk|dual/.test(type) ? 'dct' : /auto|^at$|cvt|torque/.test(type) ? 'auto' : 'manual';
   gearboxCache.set(spec, {signal, kind}); return kind;
 }

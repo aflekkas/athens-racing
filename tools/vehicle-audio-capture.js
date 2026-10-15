@@ -4,9 +4,9 @@ import {EngineVoice,buildEngineBank} from '../src/audio/engine-synth.js';
 import {RecordedEngineVoice,loadRecordedEngine} from '../src/engine-recordings.js';
 import {ExternalEngines,spatialEngine} from '../src/audio/engine-spatial.js';
 const specs=[
- {id:'mini',engine:'turbo4',idle:850,redline:6800,gearbox:'DCT'},
+ {id:'mini',engine:'turbo4',idle:850,redline:6800,gearbox:'MT',shiftT:.34},
  {id:'taxi',engine:'diesel',idle:800,redline:4800,gearbox:'DCT'},
- {id:'e36_m3',engine:'na6',idle:750,redline:7400,gearbox:'MT',shiftT:.22},
+ {id:'e36_m3',engine:'na6',idle:750,redline:7600,gearbox:'MT',shiftT:.34},
  {id:'huracan',engine:'v10',idle:900,redline:8500,gearbox:'DCT'},
 ];
 function wav(buffer) {
@@ -22,10 +22,8 @@ async function save(name,buffer) {
 }
 function manager(Ctor=Audio,duration=9) {
  const ctx=new OfflineAudioContext(2,44100*duration,44100),a=new Ctor();a.start({context:ctx,recordings:false,radio:false});a.setVolumes({music:0,ambience:0,tyres:0});
- // Engine primitives normally run at real AudioContext time. Offline scheduling
- // supplies the equivalent event offset, without changing production primitives.
+ // The production primitives read this audio-time getter directly.
  a.captureTime=0; Object.defineProperty(ctx, 'currentTime', {get:()=>a.captureTime});
- for(const name of ['noise','tone']) {const original=a[name].bind(a);a[name]=p=>original({...p,at:(p.at||0)+a.captureTime});}
  return a;
 }
 function telemetry(rpm=800) {return {dt:1/60,rpm,redline:7000,load:.1,speed:0,open:false,cockpit:true,gear:1,gearRatio:2,boost:0,wheels:[{},{},{},{}],rivals:[],traffic:[],menuOpen:false};}
@@ -94,3 +92,5 @@ window.runEvidence=async()=>{
 };
 
 window.runBenchmarks=async()=>{const {Audio:Before}=await import('../src/audio-baseline.js');const cpu=[];for(let i=0;i<3;i++){cpu.push(await benchmark(Before,'before'),await benchmark(Audio,'after'));}await fetch('/capture/cpu.json',{method:'POST',body:JSON.stringify(cpu,null,2)});return window.cpu=cpu;};
+
+window.runCaptures=async()=>{const results=[];for(const spec of specs){document.querySelector('#status').textContent='Rendering '+spec.id;results.push(await player(spec));}results.push(await external(false),await external(true),await mechanics(false),await mechanics(true));const report={created:new Date().toISOString(),results,cpu:await (await fetch('/.scratch/engine-audio/cpu.json')).json()};await fetch('/capture/metrics.json',{method:'POST',body:JSON.stringify(report,null,2)});document.querySelector('#status').textContent='Captures complete';return window.captureResults=report;};

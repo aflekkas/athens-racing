@@ -1604,8 +1604,8 @@ function updateAudio(dt) {
   });
   audio.update({
     dt, damage: pv.damage, rpm: pv.rpm, redline: pv.spec.redline, load: counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3), throttle: input.throttle,
-    cockpit: G.cam === 'cockpit', manual: pv.manual, gearboxType: pv.spec.gearboxType || pv.spec.gearbox,
-    stalled: pv.engineStalled, shiftStart: pv.shiftStartEvent, shiftEnd: pv.shiftEndEvent, shiftGrind: pv.shiftGrind, shiftDuration: pv.gearChangeEvent?.duration,
+    cockpit: G.cam === 'cockpit', manual: pv.manual, gearboxType: pv.powertrain?.gearboxType || pv.spec.gearboxType || pv.spec.gearbox,
+    overrun: pv.overrun, shifting: pv.shiftT > 0, stalled: pv.engineStalled, shiftStart: pv.shiftStartEvent, shiftEnd: pv.shiftEndEvent, shiftGrind: pv.shiftGrind, shiftDuration: pv.gearChangeEvent?.duration,
     gear: pv.gear, gearRatio: pv.ratio(), shift: pv.shiftEvent, limiter: pv.limiter || (counting && pv.rpm > pv.spec.redline * 0.97), boost: pv.boost,
     wheels: pv.corners.map((w, i) => ({ ...w, vgx: pv._S?.[i]?.vgx ?? pv.vLong })), surfaces: pv.wheelSurf,
     nominalLoad: pv.m * 9.81 / 4, rivals,

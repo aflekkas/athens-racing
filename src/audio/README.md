@@ -84,7 +84,7 @@ I4, vans/trucks diesel I4, bus diesel I6 and bikes their separate fallback.
 | gtv | na-i4 | procedural fallback | manual |
 | golf | turbo-i4 | mini | manual |
 | corolla | city-i4 | mini | manual |
-| superb | turbo-i4 | mini | manual |
+| superb | turbo-i4 | mini | dct |
 | police_octavia | turbo-i4 | mini | manual |
 | mini_jcw | turbo-i4-sport | mini | manual |
 | cle | turbo-i4 | mini | auto |
@@ -112,8 +112,8 @@ I4, vans/trucks diesel I4, bus diesel I6 and bikes their separate fallback.
 | mini_s | turbo-i4 | mini | manual |
 | mini_cabrio_cooper | turbo-i3 | procedural fallback | manual |
 | corolla_15 | city-i3 | procedural fallback | manual |
-| octavia_16tdi | diesel-i4 | taxi | dct |
-| octavia_rs | turbo-i4-sport | mini | dct |
+| octavia_16tdi | diesel-i4 | taxi | manual |
+| octavia_rs | turbo-i4-sport | mini | manual |
 | superb_15 | turbo-i4 | mini | manual |
 | superb_4x4 | turbo-i4 | mini | dct |
 | cla250 | turbo-i4 | mini | dct |
@@ -137,3 +137,9 @@ selection, layouts, sample mapping, allocation-free RPM weights, mechanical
 shift edges, camera attenuation and lifecycle transitions. The three repository
 gates run in a clean `git archive HEAD` export, never the shared working tree.
 See `.scratch/engine-audio/README.md` for offline browser captures and timings.
+
+Powertrain integration verified against `5e782b3`: the bridge reads physical
+`pv.powertrain.gearboxType`, durable shift-start/end event serials and `overrun`,
+alongside rpm/load/boost/gear/limiter. It reads existing fields directly rather
+than allocating the `powertrainSignals` snapshot every frame. No clutch-failure
+diagnostic is exposed, so normal gameplay cannot trigger the optional grind.

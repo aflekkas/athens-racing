@@ -62,3 +62,12 @@ test('starter flare settles, explicit stall shuts off, restart recovers',()=>{
   life.update({rpm:0,stalled:true},4,800); life.update({rpm:0,stalled:true},5,800); assert.equal(life.level,0);
   life.update({rpm:800,engineRunning:true},6,800); assert.equal(life.state,'starting');
 });
+test('physical powertrain type wins over legacy badge; durable event serials fire once',()=>{
+ const calls=[],host={engineSpec:{id:'mini',gearbox:'DCT',powertrain:{gearboxType:'manual',shiftTime:.34}},eng:{},noise(p){calls.push(p);},tone(p){calls.push(p);}};
+ assert.equal(gearboxSound(host.engineSpec),'manual');
+ const life=new EngineLifecycle(host), p={rpm:2500,manual:true,cockpit:true,shiftStart:{serial:4,direction:-1,duration:.34}};
+ life.update(p,1);assert.equal(calls.length,3);
+ assert.ok(calls[0].f<1200,'downshift gate uses its lower resonance even if the frame shift pulse was missed');
+ life.update({...p,shiftStart:{...p.shiftStart}},1.1);assert.equal(calls.length,3,'same serial cloned into new telemetry is not replayed');
+ life.update({...p,shiftEnd:{serial:5}},1.34);assert.equal(calls.length,4,'clutch release follows shift-end');
+});
