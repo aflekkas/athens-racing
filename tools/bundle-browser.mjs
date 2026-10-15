@@ -5,7 +5,7 @@ import { readFile, writeFile, readdir, unlink } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 export async function bundleBrowser(root, out) {
   const result = await build({
-    absWorkingDir: root, entryPoints: ['src/main.js', 'src/ui/phone-wheel-controller.js', ...(await readFile(resolve(root, 'src/ragdoll-worker.js')).then(() => ['src/ragdoll-worker.js']).catch(() => [])), ...(await readFile(resolve(root, 'src/world-worker.js')).then(() => ['src/world-worker.js']).catch(() => []))], outdir: resolve(out, 'src'),
+    absWorkingDir: root, entryPoints: [...(await readFile(resolve(root, 'src/world-tile-worker.js')).then(() => ['src/world-tile-worker.js']).catch(() => [])), 'src/main.js', 'src/ui/phone-wheel-controller.js', ...(await readFile(resolve(root, 'src/ragdoll-worker.js')).then(() => ['src/ragdoll-worker.js']).catch(() => [])), ...(await readFile(resolve(root, 'src/world-worker.js')).then(() => ['src/world-worker.js']).catch(() => []))], outdir: resolve(out, 'src'),
     entryNames: '[name]-[hash]', chunkNames: 'chunk-[hash]', bundle: true, splitting: true,
     format: 'esm', platform: 'browser', target: 'es2022', minify: true, keepNames: true,
     metafile: true, legalComments: 'eof',
@@ -28,6 +28,8 @@ export async function bundleBrowser(root, out) {
     }
   }
   await prune(resolve(out, 'src'));
+  const tileWorker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/world-tile-worker.js')?.[0];
+  if (tileWorker) await writeFile(resolve(out, 'src/world-tile-worker.js'), `import './${relative(resolve(out,'src'),resolve(root,tileWorker)).split(sep).join('/')}';\n`);
   const main = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/main.js')?.[0];
   if (!main) throw new Error('Browser bundle entry missing');
   const path = './' + relative(out, resolve(root, main)).split(sep).join('/');

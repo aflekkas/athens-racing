@@ -1,0 +1,77 @@
+{
+  "status": "intermediate, not accepted or activated",
+  "maps": [
+    {
+      "id": "riviera",
+      "tiles": 139,
+      "bytes": 44922493,
+      "reservationBytes": 453868930,
+      "triangles": 2860175,
+      "seamFailures": [],
+      "bytesPerKm2": 1232846.8432529368
+    },
+    {
+      "id": "megara",
+      "tiles": 64,
+      "bytes": 2274233,
+      "reservationBytes": 84627514,
+      "triangles": 165121,
+      "seamFailures": [],
+      "bytesPerKm2": 135554.85010147095
+    },
+    {
+      "id": "penteli",
+      "tiles": 240,
+      "bytes": 47044215,
+      "reservationBytes": 590151792,
+      "triangles": 3396419,
+      "seamFailures": [
+        [
+          "-1,-3",
+          "0,-3"
+        ],
+        [
+          "0,-1",
+          "1,-1"
+        ],
+        [
+          "1,-1",
+          "2,-1"
+        ],
+        [
+          "1,-1",
+          "1,0"
+        ],
+        [
+          "2,-1",
+          "2,0"
+        ],
+        [
+          "4,1",
+          "5,1"
+        ],
+        [
+          "4,2",
+          "5,2"
+        ],
+        [
+          "1,2",
+          "1,3"
+        ],
+        [
+          "-1,2",
+          "0,2"
+        ],
+        [
+          "-1,3",
+          "0,3"
+        ],
+        [
+          "-1,4",
+          "0,4"
+        ]
+      ],
+      "bytesPerKm2": 747747.6596832277
+    }
+  ]
+}

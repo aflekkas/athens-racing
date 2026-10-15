@@ -1,0 +1,158 @@
+{
+  "fullSuiteBase": "f1dd16cf1610dc75841e6db65235dbb2f5b9fef8",
+  "rebasedBase": "9e5e85f9b7cccf4ba907a87672250051029d9430",
+  "checks": {
+    "gates-initial": {
+      "events.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "events.log": {
+        "sha256": "4561b79054c1ec5dae76656e41dcf5c8b0091d211e45b581c5f55d839845b0bd",
+        "exit": null
+      },
+      "imports.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "imports.log": {
+        "sha256": "f222decde3f34c9eafd297dab3d94058f4f41272a7a73d85aaf65fcddc5129f3",
+        "exit": null
+      },
+      "npm.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "npm.log": {
+        "sha256": "3631fa5a04fadc5394881d16a67632412010a9bd01775cbe8d73652fcd829f04",
+        "exit": null
+      },
+      "physics.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "physics.log": {
+        "sha256": "a49f7b23122586930f678a79a1337c95f0fafe8d8d68b2566a0c12fbc92ea9f2",
+        "exit": null
+      },
+      "syntax.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "syntax.log": {
+        "sha256": "101ac96e41c0455ce9362a9195e4aeb7ef4b5f370b208ff055fa9ae9098f6adc",
+        "exit": null
+      },
+      "worker.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "worker.log": {
+        "sha256": "234525680ced9ac2c22ad343db5ec10b8ff879b9c0c0b10144fe4846d4280f58",
+        "exit": null
+      }
+    },
+    "gates-rebased": {
+      "events.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "events.log": {
+        "sha256": "1ca226d3b57ea4d4685c9a727948c7ebce76f049130ec4f16acb7a0fdb66f5df",
+        "exit": null
+      },
+      "focused.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "focused.log": {
+        "sha256": "8ea0869f1992fe0da9680795d60b781a961340b76979f15248aa55ba0ce60db9",
+        "exit": null
+      },
+      "imports.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "imports.log": {
+        "sha256": "80cc6ebb12d320add2464e3b71b6b2cade6140c10f529404e3619756b77a7b23",
+        "exit": null
+      },
+      "physics.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "physics.log": {
+        "sha256": "a49f7b23122586930f678a79a1337c95f0fafe8d8d68b2566a0c12fbc92ea9f2",
+        "exit": null
+      },
+      "syntax.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "syntax.log": {
+        "sha256": "4bd94adf530bd6e83cc31191b7b7c8dfa163df00a53eb257e6d2b73d04ba564d",
+        "exit": null
+      },
+      "worker.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "worker.log": {
+        "sha256": "e440fbe80f2e27629080637197c6071c35d678e0ff247765d4f8784c17d9773a",
+        "exit": null
+      }
+    },
+    "gates-owner": {
+      "syntax.log": {
+        "sha256": "4cb62d1b5ec19f5057ddc65e9d6f05a9dff78b578c921682292612085207cd4a",
+        "exit": null
+      },
+      "imports.log": {
+        "sha256": "21350b8cec577c3e0fbd767ce457739fa1ade97eeeb36766921696d41c389ddc",
+        "exit": null
+      },
+      "worker.log": {
+        "sha256": "96043fb6de42a9157c0e2670ca66523c48951a6f823c78f66a71bddd089a05a9",
+        "exit": null
+      },
+      "events.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "events.log": {
+        "sha256": "c488eda8c87b8c784885a0d838ac6c057302416a3e8f94534308e2a47bd170db",
+        "exit": null
+      },
+      "imports.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "physics.log": {
+        "sha256": "a49f7b23122586930f678a79a1337c95f0fafe8d8d68b2566a0c12fbc92ea9f2",
+        "exit": null
+      },
+      "syntax.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "npm.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "physics.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      },
+      "npm.log": {
+        "sha256": "975710d26298db09645390c23ec69d6e19ee23ad37a40a18337203202d3bfba3",
+        "exit": null
+      },
+      "worker.exit": {
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "exit": 0
+      }
+    }
+  },
+  "status": "inactive runtime foundation; existing-map activation and milestone acceptance remain pending",
+  "finalBase": "5c72f29b95fc8b5eda05b5f3299da484715e0c02"
+}

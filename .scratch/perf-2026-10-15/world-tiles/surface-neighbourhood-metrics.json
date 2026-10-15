@@ -1,0 +1,33 @@
+{
+  "method": "Offline actual decode/index/accounting; surface packs only. Excludes retained legacy DEM, map JSON, scenery and vehicles. Not browser time-to-control or total residency acceptance.",
+  "reports": [
+    {
+      "id": "megara",
+      "status": "surface-neighbourhood-ready",
+      "seams": 0,
+      "baselineSurfaceBytes": 1064242,
+      "candidateStartupSurfaceBytes": 1049825,
+      "baselineAccountedSurfaceBytes": 9425592,
+      "candidateAccountedSurfaceBytes": 9913515,
+      "startupReduction": 0.013546730912705973,
+      "residentReduction": -0.05176576707330427,
+      "activeTiles": 9,
+      "failures": [],
+      "error": null
+    },
+    {
+      "id": "riviera",
+      "status": "surface-neighbourhood-ready",
+      "seams": 0,
+      "baselineSurfaceBytes": 29333217,
+      "candidateStartupSurfaceBytes": 5713239,
+      "baselineAccountedSurfaceBytes": 316119079,
+      "candidateAccountedSurfaceBytes": 47894241,
+      "startupReduction": 0.8052297161951245,
+      "residentReduction": 0.8484930389158827,
+      "activeTiles": 9,
+      "failures": [],
+      "error": null
+    }
+  ]
+}

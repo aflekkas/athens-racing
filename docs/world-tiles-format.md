@@ -1,6 +1,6 @@
 # Athens world tiles, AWT/1
 
-Status: **Draft v1.1**, generator/runtime interchange contract, 2026-10-15. Schema identifier **`AWT/1`**, integer `tileVersion: 1`. Validator: `src/world-tile-format.js`, `validateWorldTile({metadata, arrays})`; run `node tools/validate-world-tiles.mjs <manifest.json>` on an emitted directory. This document supersedes the scenery, graphics-preset and street-photo requirements in the research plan. Bare OSM road shapes, clean elevation terrain, plain building boxes (at most 40 triangles per building), racing signs/gantries; no vegetation or beach props. One Lighting Off / Effects Off look.
+Status: **Draft v1.2**, generator/runtime interchange contract, 2026-10-15. Schema identifier **`AWT/1`**, integer `tileVersion: 1`. Validator: `src/world-tile-format.js`, `validateWorldTile({metadata, arrays})`; run `node tools/validate-world-tiles.mjs <manifest.json>` on an emitted directory. This document supersedes the scenery, graphics-preset and street-photo requirements in the research plan. Bare OSM road shapes, clean elevation terrain, plain building boxes (at most 40 triangles per building), racing signs/gantries; no vegetation or beach props. One Lighting Off / Effects Off look. Terrain colour varies with slope, elevation and OSM landuse: dry earth, rock, scrub tones, coastal sand and urban ground. Building colours are white/light plaster, light greys and muted Greek accents; building colours must not reuse beige terrain tones. Scrub is a terrain colour category, never vegetation geometry. Bake these colours offline into the shared palette/normalised vertex-colour attributes; no per-tile textures or runtime style selector.
 
 ## Coordinates and ownership
 
@@ -88,3 +88,15 @@ Absent → loading → ready → active → retiring → disposed. Fetch/decompr
 Safety ring around player, cosmetic outer rings and >=1 km velocity lookahead at 250 km/h; increase by measured p95 fetch/decode latency plus five seconds. Budget admission precedes allocation. Atomic render/contact activation, canonical seam geometry and neighbour-aware LOD ensure crack-free contact/render. Origin rebase in 512 m increments beyond 2048 m render displacement; logical routes, multiplayer/replay coordinates and hashes stay in global metres. Rebase camera, visible objects, particles and physics adapters atomically in a frame, including pending worker results. Distant Athens coordinates remain double until subtraction.
 
 Feature flag remains opt-in until ALL three existing-map integrations and acceptance gates pass: Riviera/Penteli >=50% startup transfer and >=40% resident map-data reduction; Megara <=10% regression; ten cold and ten warm time-to-control starts per map; no decode/activation main task >50 ms; twenty real minutes high-speed/reversal/teleport with zero missing-contact frames and memory plateau within 5%; existing race/traffic/rival/tow/police/multiplayer/replay/terrain/physics gates. Menu boot allocates no worlds. A scheduler unit test or offline partition benchmark alone does not meet these gates.
+
+
+Generator handoff: the original Riviera route-start coordinate is a connection
+reference, not a generated-world spawn. Its Athens projection is approximately
+`[4563.66367,18641.59686]`, cell `[8,36]`, between carriageways. The generator's
+road-match evidence identifies public one-way layer-0 `osm:way:459160388`
+(Ποσειδώνος, 6.4 m width), with centre projection
+`[4559.38514,18642.95518]`, 4.49 m from that nominal point. The opposite
+carriageway is `osm:way:459160393`. Require the generator's lane/contact-validated
+anchor with the emitted manifest before using it as a spawn; neither approximate
+point above is approved for placement. Evidence is the generator's
+`.scratch/athens-world/riviera-road-match.json`.
