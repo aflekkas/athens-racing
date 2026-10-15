@@ -1,5 +1,6 @@
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
+import {exhaustPopsEnabled} from './exhaust-pops.js';
 import {showroomRig} from './vehicle-camera.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint } from './cars.js';
@@ -75,10 +76,11 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
   return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
     hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
-    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}">${trimBrowser(c,model,trims,body,available)}<div class="car-preview-viewport" data-ui-keep></div></div>
+    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}">${trimBrowser(c,model,trims,body,available)}<div class="car-preview-viewport" data-ui-keep="preview"></div></div>
     <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
       <div class="car-transmission label">${c.gears.length}-SPEED · ${c.drive.toUpperCase()}</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
+      ${c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{"data-scope":"exhaust"}}) : ''}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
       <div class="car-actions">${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock-simple')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
@@ -181,10 +183,10 @@ export function mountCarSelect(root, index, opts = {}) {
     camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,CARS[index].nativeFleet?framing.targetY:lite?.45:.65,0); camera.updateProjectionMatrix();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
-  const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, pointerStart, touch, last = performance.now();
-  const down = e => { if (pointer != null) return; e.preventDefault(); pointer=e.pointerId;pointerX=e.clientX;pointerStart=e.clientX;touch=e.pointerType==='touch';turntable.dragging=true;container.classList.add('dragging');container.setPointerCapture(pointer); };
-  const move = e => { if(e.pointerId!==pointer || touch)return;model.root.rotation.y=turntable.drag(e.clientX-pointerX);pointerX=e.clientX;renderer.render(scene,camera); };
-  const up = e => { if(e.pointerId!==pointer)return;const swipe=touch?e.clientX-pointerStart:0;pointer=null;if(e.type==='pointerup' && Math.abs(swipe)>45)step(swipe<0?1:-1);turntable.dragging=false;container.classList.remove('dragging'); };
+  const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, pointerStart, pointerAt, touch, last = performance.now();
+  const down = e => { if (pointer != null) return; e.preventDefault(); pointer=e.pointerId;pointerX=e.clientX;pointerStart=e.clientX;pointerAt=performance.now();touch=e.pointerType==='touch';turntable.dragging=true;container.classList.add('dragging');container.setPointerCapture(pointer); };
+  const move = e => { if(e.pointerId!==pointer)return;model.root.rotation.y=turntable.drag(e.clientX-pointerX);pointerX=e.clientX;renderer.render(scene,camera); };
+  const up = e => { if(e.pointerId!==pointer)return;const swipe=touch?e.clientX-pointerStart:0;pointer=null;if(e.type==='pointerup' && Math.abs(swipe)>60 && performance.now()-pointerAt<350)step(swipe<0?1:-1);turntable.dragging=false;container.classList.remove('dragging'); };
   container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
   for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
   const hint=document.createElement('span');hint.className='car-stage__hint';hint.textContent='DRAG TO ROTATE · SWIPE TO CHANGE TRIM';if(!lite)container.append(hint);

@@ -11,7 +11,7 @@ export function renderSignIn(a) {
   return C.screen({
     cls: "scr--account",
     back: false,
-    kick: "ATHENS STREET RACERS",
+    kick: "ATHENS RACING",
     title:
       a.ready && !a.providers.length
         ? "SIGN-IN IS COMING SOON"
@@ -60,7 +60,7 @@ export function renderPrivacy() {
     kick: "PRIVACY",
     title: "YOUR DATA, YOUR CONTROL",
     body: C.panel(
-      "ATHENS STREET RACERS ACCOUNTS",
+      "ATHENS RACING ACCOUNTS",
       `<p>Google sign-in connects your driver account, imported progress and friends. Accepted friends can see your online status. In Account, export your data or delete your account; separate leaderboard records and device storage remain.</p><p>Read the ${privacyLink} for the full details and contact information.</p>${legalLinks}`,
     ),
   });

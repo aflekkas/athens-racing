@@ -1,0 +1,334 @@
+TAP version 13
+# Subtest: full gamepad request stays within useful front slip on Megara without a drift latch
+ok 1 - full gamepad request stays within useful front slip on Megara without a drift latch
+  ---
+  duration_ms: 2196.438847
+  type: 'test'
+  ...
+# Subtest: AI inverse includes partial-input response and zero-response tuning remains supported
+ok 2 - AI inverse includes partial-input response and zero-response tuning remains supported
+  ---
+  duration_ms: 5.081239
+  type: 'test'
+  ...
+# Subtest: handbrake AWD and RWD power-over still hold a physical drift for five seconds
+ok 3 - handbrake AWD and RWD power-over still hold a physical drift for five seconds
+  ---
+  duration_ms: 584.795415
+  type: 'test'
+  ...
+# Subtest: Megara hairpin does not release the slip guard for same-yaw understeer
+ok 4 - Megara hairpin does not release the slip guard for same-yaw understeer
+  ---
+  duration_ms: 1810.291226
+  type: 'test'
+  ...
+# Subtest: riviera: real keyboard corners, all six cars at 60/90/120 km/h
+ok 5 - riviera: real keyboard corners, all six cars at 60/90/120 km/h
+  ---
+  duration_ms: 3862.833883
+  type: 'test'
+  ...
+# Subtest: megara: real keyboard corners, all six cars at 60/90/120 km/h
+ok 6 - megara: real keyboard corners, all six cars at 60/90/120 km/h
+  ---
+  duration_ms: 2650.531718
+  type: 'test'
+  ...
+# Subtest: penteli: real keyboard corners, all six cars at 60/90/120 km/h
+ok 7 - penteli: real keyboard corners, all six cars at 60/90/120 km/h
+  ---
+  duration_ms: 2249.967491
+  type: 'test'
+  ...
+# Subtest: held W+steer permits bounded RWD rotation and preserves FWD/AWD grip
+ok 8 - held W+steer permits bounded RWD rotation and preserves FWD/AWD grip
+  ---
+  duration_ms: 8099.999875
+  type: 'test'
+  ...
+# Subtest: TC never builds a cut below 0.9 of combined-slip peak
+ok 9 - TC never builds a cut below 0.9 of combined-slip peak
+  ---
+  duration_ms: 1022.642883
+  type: 'test'
+  ...
+# Subtest: default light gamepad assist retains front grip at full stick without suppressing assist-off
+ok 10 - default light gamepad assist retains front grip at full stick without suppressing assist-off
+  ---
+  duration_ms: 7279.177913
+  type: 'test'
+  ...
+# Subtest: FWD full-throttle mid-corner preserves a normal road line at 60 and 90 km/h
+ok 11 - FWD full-throttle mid-corner preserves a normal road line at 60 and 90 km/h
+  ---
+  duration_ms: 433.875815
+  type: 'test'
+  ...
+# Subtest: keyboard turn-in develops useful force during a 150 ms corner-entry tap
+ok 12 - keyboard turn-in develops useful force during a 150 ms corner-entry tap
+  ---
+  duration_ms: 1003.116144
+  type: 'test'
+  ...
+# Subtest: RWD second-gear power-on stays controlled; sports engines can exceed rear grip
+ok 13 - RWD second-gear power-on stays controlled; sports engines can exceed rear grip
+  ---
+  duration_ms: 4964.536422
+  type: 'test'
+  ...
+# Subtest: low-gear lift transfers more load and gives more rotation than a low-rev lift
+ok 14 - low-gear lift transfers more load and gives more rotation than a low-rev lift
+  ---
+  duration_ms: 3247.612836
+  type: 'test'
+  ...
+# Subtest: carrera 20km/h: full-lock power remains finite with TC/ESC off
+ok 15 - carrera 20km/h: full-lock power remains finite with TC/ESC off
+  ---
+  duration_ms: 11.309997
+  type: 'test'
+  ...
+# Subtest: carrera 30km/h: full-lock power remains finite with TC/ESC off
+ok 16 - carrera 30km/h: full-lock power remains finite with TC/ESC off
+  ---
+  duration_ms: 14.257429
+  type: 'test'
+  ...
+# Subtest: carrera 40km/h: full-lock power remains finite with TC/ESC off
+ok 17 - carrera 40km/h: full-lock power remains finite with TC/ESC off
+  ---
+  duration_ms: 12.40682
+  type: 'test'
+  ...
+# Subtest: z4 30km/h: full-lock power remains finite with TC/ESC off
+ok 18 - z4 30km/h: full-lock power remains finite with TC/ESC off
+  ---
+  duration_ms: 2.046845
+  type: 'test'
+  ...
+# Subtest: e36 30km/h: full-lock power remains finite with TC/ESC off
+ok 19 - e36 30km/h: full-lock power remains finite with TC/ESC off
+  ---
+  duration_ms: 2.204148
+  type: 'test'
+  ...
+# Subtest: gtv 30km/h: full-lock power remains finite with TC/ESC off
+ok 20 - gtv 30km/h: full-lock power remains finite with TC/ESC off
+  ---
+  duration_ms: 11.404643
+  type: 'test'
+  ...
+# Subtest: carrera aids false: deliberate handbrake turn completes 360°
+ok 21 - carrera aids false: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.199713
+  type: 'test'
+  ...
+# Subtest: carrera aids true: deliberate handbrake turn completes 360°
+ok 22 - carrera aids true: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.103523
+  type: 'test'
+  ...
+# Subtest: z4 aids false: deliberate handbrake turn completes 360°
+ok 23 - z4 aids false: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.318082
+  type: 'test'
+  ...
+# Subtest: z4 aids true: deliberate handbrake turn completes 360°
+ok 24 - z4 aids true: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.413601
+  type: 'test'
+  ...
+# Subtest: e36 aids false: deliberate handbrake turn completes 360°
+ok 25 - e36 aids false: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.099155
+  type: 'test'
+  ...
+# Subtest: e36 aids true: deliberate handbrake turn completes 360°
+ok 26 - e36 aids true: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.084076
+  type: 'test'
+  ...
+# Subtest: gtv aids false: deliberate handbrake turn completes 360°
+ok 27 - gtv aids false: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.064049
+  type: 'test'
+  ...
+# Subtest: gtv aids true: deliberate handbrake turn completes 360°
+ok 28 - gtv aids true: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.061855
+  type: 'test'
+  ...
+# Subtest: gr_yaris aids false: deliberate handbrake turn completes 360°
+ok 29 - gr_yaris aids false: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.061925
+  type: 'test'
+  ...
+# Subtest: gr_yaris aids true: deliberate handbrake turn completes 360°
+ok 30 - gr_yaris aids true: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.066804
+  type: 'test'
+  ...
+# Subtest: mini aids false: deliberate handbrake turn completes 360°
+ok 31 - mini aids false: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 14.018944
+  type: 'test'
+  ...
+# Subtest: mini aids true: deliberate handbrake turn completes 360°
+ok 32 - mini aids true: deliberate handbrake turn completes 360°
+  ---
+  duration_ms: 0.117618
+  type: 'test'
+  ...
+# Subtest: carrera: countersteer and throttle hold 40° drift without leaving the 30–50° window
+ok 33 - carrera: countersteer and throttle hold 40° drift without leaving the 30–50° window
+  ---
+  duration_ms: 0.162142
+  type: 'test'
+  ...
+# Subtest: z4: countersteer and throttle hold 40° drift without leaving the 30–50° window
+ok 34 - z4: countersteer and throttle hold 40° drift without leaving the 30–50° window
+  ---
+  duration_ms: 0.066844
+  type: 'test'
+  ...
+# Subtest: e36: countersteer and throttle hold 40° drift without leaving the 30–50° window
+ok 35 - e36: countersteer and throttle hold 40° drift without leaving the 30–50° window
+  ---
+  duration_ms: 0.062015
+  type: 'test'
+  ...
+# Subtest: gtv: countersteer and throttle hold 40° drift without leaving the 30–50° window
+ok 36 - gtv: countersteer and throttle hold 40° drift without leaving the 30–50° window
+  ---
+  duration_ms: 0.086742
+  type: 'test'
+  ...
+# Subtest: carrera: ease power and unwind from 45° without a launch or tank-slapper
+ok 37 - carrera: ease power and unwind from 45° without a launch or tank-slapper
+  ---
+  duration_ms: 0.142647
+  type: 'test'
+  ...
+# Subtest: z4: ease power and unwind from 45° without a launch or tank-slapper
+ok 38 - z4: ease power and unwind from 45° without a launch or tank-slapper
+  ---
+  duration_ms: 0.06955
+  type: 'test'
+  ...
+# Subtest: e36: ease power and unwind from 45° without a launch or tank-slapper
+ok 39 - e36: ease power and unwind from 45° without a launch or tank-slapper
+  ---
+  duration_ms: 0.088113
+  type: 'test'
+  ...
+# Subtest: gtv: ease power and unwind from 45° without a launch or tank-slapper
+ok 40 - gtv: ease power and unwind from 45° without a launch or tank-slapper
+  ---
+  duration_ms: 0.077475
+  type: 'test'
+  ...
+# Subtest: large-angle lateral tyre force stays broad through sideways and backward motion
+ok 41 - large-angle lateral tyre force stays broad through sideways and backward motion
+  ---
+  duration_ms: 0.175407
+  type: 'test'
+  ...
+# Subtest: a slow handbrake pivot uses rear brakes and integrates only actual tyre yaw moment
+ok 42 - a slow handbrake pivot uses rear brakes and integrates only actual tyre yaw moment
+  ---
+  duration_ms: 16.682067
+  type: 'test'
+  ...
+# Subtest: a coasting pivot does not silently pin the free front wheels at a stationary CG
+ok 43 - a coasting pivot does not silently pin the free front wheels at a stationary CG
+  ---
+  duration_ms: 67.146499
+  type: 'test'
+  ...
+# Subtest: 30 km/h real keyboard throttle + turn: TC on/off, manual/automatic, FWD versus RWD
+ok 44 - 30 km/h real keyboard throttle + turn: TC on/off, manual/automatic, FWD versus RWD
+  ---
+  duration_ms: 2460.925834
+  type: 'test'
+  ...
+# Subtest: skidpad, lift-off and trail braking preserve grip and brake rotation
+ok 45 - skidpad, lift-off and trail braking preserve grip and brake rotation
+  ---
+  duration_ms: 20314.115595
+  type: 'test'
+  ...
+# Subtest: cross-road travel and a flat neighbouring road do not inherit main-route crest unloading
+ok 46 - cross-road travel and a flat neighbouring road do not inherit main-route crest unloading
+  ---
+  duration_ms: 422.429935
+  type: 'test'
+  ...
+# Subtest: rough road and genuine crest change both physical tyre loads and suspension pose with bounded forces
+ok 47 - rough road and genuine crest change both physical tyre loads and suspension pose with bounded forces
+  ---
+  duration_ms: 720.958889
+  type: 'test'
+  ...
+# Subtest: real Ground grass-to-asphalt uphill recovery uses controller input and all four contacts
+ok 48 - real Ground grass-to-asphalt uphill recovery uses controller input and all four contacts
+  ---
+  duration_ms: 1183.260767
+  type: 'test'
+  ...
+# Subtest: tyre telemetry is immutable and distinguishes force utilization from sliding demand
+ok 49 - tyre telemetry is immutable and distinguishes force utilization from sliding demand
+  ---
+  duration_ms: 63.933752
+  type: 'test'
+  ...
+# Subtest: Penteli shipped elevation profile remains bounded near strongest crests
+ok 50 - Penteli shipped elevation profile remains bounded near strongest crests
+  ---
+  duration_ms: 850.996246
+  type: 'test'
+  ...
+# Subtest: 60/120/240 Hz update grouping preserves actual controller transient and tyre loads
+ok 51 - 60/120/240 Hz update grouping preserves actual controller transient and tyre loads
+  ---
+  duration_ms: 2223.648737
+  type: 'test'
+  ...
+# Subtest: main-road contact uses the route fast path and rotated slope normals preserve load
+ok 52 - main-road contact uses the route fast path and rotated slope normals preserve load
+  ---
+  duration_ms: 21.710237
+  type: 'test'
+  ...
+# Subtest: Huracan and older catalogue cars retain bounded controller turn authority
+ok 53 - Huracan and older catalogue cars retain bounded controller turn authority
+  ---
+  duration_ms: 1285.419731
+  type: 'test'
+  ...
+# Subtest: optional mapped contact frame controls reset heading and contact-axis texture
+ok 54 - optional mapped contact frame controls reset heading and contact-axis texture
+  ---
+  duration_ms: 48.802225
+  type: 'test'
+  ...
+1..54
+# tests 54
+# suites 0
+# pass 54
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41836.381697

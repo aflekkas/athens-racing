@@ -237,7 +237,12 @@ export class Vehicle {
     const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, v), rack = this.rackLock(v);
     const thF = Math.atan2(this.vLat + this.a * this.w, Math.max(2, Math.abs(this.vLong)));
     const into = Math.max(1e-3, thF * sg + this.aPk * (sp.steerPk ?? 1) * wetPeakScale(this.surf));
-    return clamp((need + comp * (1 - A)) / ((1 - A) * rack + A * into), -1, 1);
+    // Invert the modest partial-input boost used by the player mapping too:
+    // y = B*x - C*x². Stable quadratic form also works when C is zero.
+    const response = clamp(sp.steerResponse ?? 0, 0, 0.25);
+    const B = (1 - A) * rack + A * into * (1 + response), C = A * into * response;
+    const demand = Math.abs(need + comp * (1 - A));
+    return Math.sign(need) * clamp(2 * demand / Math.max(1e-6, B + Math.sqrt(Math.max(0, B * B - 4 * C * demand))), 0, 1);
   }
   /** understeer gradient this car is set up with (deg / g) */
   get understeerGradient() { return this.kComp * 57.3 + 0.45; }
@@ -579,7 +584,11 @@ export class Vehicle {
     const into = Math.max(0, thF * Math.sign(sIn || 1) + aOpt);   // room towards the input side
     // compliance: the front axle's lateral force (as a share of its static load) bends the wheels back out of the turn
     const comp = this.kComp * clamp(this.wheel[0].Fy / (this.m * G * (sp.frontW ?? 0.55)), -1.5, 1.5);
-    const assisted = clamp(sIn * into + comp + helper, -(rack + 0.5), rack + 0.5);
+    // A small, per-car mid-input boost makes short keyboard taps and stick
+    // turn-in more useful. Zero/full input and deliberate drift rack are unchanged.
+    const response = clamp(sp.steerResponse ?? 0, 0, 0.25);
+    const intent = sIn * (1 + response * (1 - Math.abs(sIn)));
+    const assisted = clamp(intent * into + comp + helper, -(rack + 0.5), rack + 0.5);
     // Deliberate slides use the rack directly; do not fight their countersteer.
     const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
     let target = lerp(raw, assisted, A);
@@ -589,9 +598,19 @@ export class Vehicle {
     // Leave a small amount of scrub for feedback, and release the guard for
     // deliberate slides / counter-steer or when the driver disables assist.
     const guard = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
-    const catchingSlide = counter > 0 && sliding;
+    // Same-sign sideslip during a slow understeering turn is not a rear
+    // slide to catch. Only opposite-yaw countersteer needs the raw guard exit.
+    const catchingSlide = counter > 0 && sliding && sIn * this.w < 0;
     if (guard > 0 && vx > 0 && !catchingSlide && target * sIn > 0) {
-      const useful = Math.max(0, thF * Math.sign(sIn) + aOpt * 1.15 + comp * Math.sign(sIn));
+      const side = Math.sign(sIn);
+      // The outside front contact travels faster than the axle centre in a
+      // hairpin. Its travel heading is smaller, so centre-only targeting can
+      // still over-steer that loaded tyre. Guard both actual contact headings.
+      const frontLat = vy + this.a * this.w;
+      const frontTravel = Math.min(
+        Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[0])) * side,
+        Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[1])) * side);
+      const useful = Math.max(0, frontTravel + aOpt * (sp.steerSlipGuard ?? 1.02) + comp * side);
       const excess = Math.max(0, Math.abs(target) - useful);
       target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
     }
@@ -602,7 +621,7 @@ export class Vehicle {
     // ---------------- normal loads: the suspension (see stepSuspension). Crests unload the car and dips load it
     // (vertical curvature of the real road); each contact patch rides over the road texture plus whatever ground.js
     // found under that wheel (kerbs, humps: wheelBump)
-    const DF = 0.5 * RHO * (sp.clA ?? 0) * vx * vx, aeroF = sp.aeroF ?? 0.45;
+    const DF = 0.5 * RHO * (sp.clA ?? 0) * (sp.activeAero && inp.throttle>.8 && Math.abs(this.steer)<.025 ? .45 : 1) * vx * vx, aeroF = sp.aeroF ?? 0.45;
     const contact = suspensionRoadInput(this, ROAD), gEff = contact.effectiveGravity;
     const W = this.m * G * gEff;
     const C4 = this.corners, cx = this.cx, cy = this.cy;
@@ -669,7 +688,7 @@ export class Vehicle {
     }
     }
     // clutch: slips on launch (holds revs up), otherwise locked to the driven wheels
-    const launchRpm = sp.idle + (red * (burnout ? 0.9 : sp.engine === 'diesel' ? 0.38 : 0.5) - sp.idle) * thrRaw;
+    const launchRpm = sp.idle + (red * (burnout ? 0.9 : sp.launchRpmFraction ?? (sp.engine === 'diesel' ? 0.38 : 0.5)) - sp.idle) * thrRaw;
     const shifting = this.shiftT > 0;
     const slipGear = this.reverse || this.gear === 1;
     // handbrake: the driver dips the clutch so the engine can't fight the locked rears (rwd / awd); revs flare on throttle
@@ -767,6 +786,8 @@ export class Vehicle {
 
     // ---------------- per-wheel tyres
     const sinD = Math.sin(delta), cosD = Math.cos(delta);
+    const rearAngle=sp.rearSteering?this.steer*lerp(-.12,.08,clamp((av-12)/18,0,1)):0;
+    this.rearSteer=rearAngle;
     const mw = J_WHEEL / (R * R);
     const S = this._S || (this._S = Array.from({ length: 4 }, () => ({ vgx: 0, vgy: 0, vref: 1, kx: 0, Fb: 0, sg: 0, G: 0, p: 0, c: 1, s: 0, brk: 0, d: 0 })));
     const tyre = (i, vw, out) => {
@@ -819,7 +840,7 @@ export class Vehicle {
       const Wc = C4[i], Si = S[i], front = i < 2;
       // contact-patch velocity: body velocity plus yaw rate x lever arm, then into the wheel frame
       const vxp = vx - this.w * cy[i], vyp = vy + this.w * cx[i];
-      const c = front ? cosD : 1, s_ = front ? sinD : 0;
+      const c = front ? cosD : Math.cos(rearAngle), s_ = front ? sinD : Math.sin(rearAngle);
       Si.c = c; Si.s = s_;
       Si.vgx = vxp * c + vyp * s_; Si.vgy = -vxp * s_ + vyp * c;
       // Slip angle and slip ratio share the same low-speed reference. Using
@@ -1149,11 +1170,12 @@ export class Vehicle {
   }
   /** Sound consumes scalar state every frame and events by monotonic serial. No frame-edge polling required. */
   get powertrainSignals() {
-    return { rpm: this.rpm, redline: this.spec.redline, limiterRpm: this.powertrain?.limiterRpm ?? this.spec.redline,
-      throttle: this.engineThrottle || 0, load: this.load, boost: this.boost, gear: this.reverse ? -1 : this.gear,
-      gearboxType: this.powertrain?.gearboxType ?? 'legacy', shifting: this.shiftT > 0,
-      limiter: this.limiter, overrun: this.overrun, converterSlip: this.converterSlip,
-      converterLocked: this.converterLocked, events: this.powertrainEvents };
+    const p=this._powertrainSignals ||= {};
+    p.rpm=this.rpm;p.redline=this.spec.redline;p.limiterRpm=this.powertrain?.limiterRpm??this.spec.redline;
+    p.throttle=this.engineThrottle||0;p.load=this.load;p.boost=this.boost;p.gear=this.reverse?-1:this.gear;
+    p.gearboxType=this.powertrain?.gearboxType??'legacy';p.shifting=this.shiftT>0;
+    p.limiter=this.limiter;p.overrun=this.overrun;p.converterSlip=this.converterSlip;p.converterLocked=this.converterLocked;p.events=this.powertrainEvents;
+    return p;
   }
   shift(g, t) {
     this.shiftEvent = g > this.gear ? 1 : -1;

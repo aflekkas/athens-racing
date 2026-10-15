@@ -2,7 +2,7 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-15 19:15 UTC.
+Last updated: 2026-10-15 19:45 UTC.
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
@@ -22,12 +22,13 @@ Last updated: 2026-10-15 19:15 UTC.
 ## UI
 - [x] Title menu redesign: compact list, live car hero matching the selected car and paint, staging badge (`7414ef1`…`533c53b`).
 - [x] Flat head-unit kit: blue-glow removal, base and menu screens (`bc69c8b`, `9b5760d`).
-- [~] Final glow sweep over every remaining screen, incl. What's new/About/accounts (Sol, menu thread).
+- [~] Final glow sweep over every remaining screen, plus a mode-screen redesign, car thumbnails in the garage, and stronger contrast on settings/setup/results; fresh full screenshot set (Sol, menu thread).
 - [x] Release photos in the changelog / What's new (`e520f68`, `7712db9`, `92e545a`). Rule: every visible change adds a picture.
-- [~] Rename the game to "Athens Racing" everywhere player-facing; Worker names and storage keys stay (Sol).
+- [x] Renamed to "Athens Racing" everywhere player-facing; Worker names and storage keys stay (`272efb8`).
 
 ## Driving and cars
-- [~] Less understeer and sharper turn-in, per-drivetrain character, Megara playable in a supercar (Sol).
+- [x] Front-slip steering assist: gamepad overshoot past peak grip removed (173/180 frames → 0) (`c45aa28`).
+- [?] Keyboard turn-in is barely changed and the scripted Megara lap is unchanged. Owner: which car and input did you use on Megara? Then a second, stronger pass.
 - [~] Lamborghini Aventador SVJ with exhaust flames and flame/pop sound (Astra).
 - [x] HUD motion (POV sway) defaults to Full (`1397702`).
 - [x] Every vehicle model drivable, 30 entries / 69 configs (`4ad85ea`, `ac46091`, `e4a6dc7`).
@@ -44,7 +45,7 @@ Last updated: 2026-10-15 19:15 UTC.
 - [ ] Mac-only near-black sand tint not reproduced on the VPS. Owner to re-check on the live site after the next deploy.
 - [ ] Mac GPU profiling of the render changes (VPS SwiftShader timings are noise).
 - [x] Penteli road width 7.2–7.8 m plus 2.5 km of real guardrails (`d3acd1f`, `bc0fd52`, `9790808`).
-- [ ] Riviera cliff-drop guardrails: follow-up suggested by the Penteli agent (assessment in the review-fixes task).
+- [~] Riviera cliff-drop guardrails: 45 unprotected drop samples confirmed, e.g. 9 m at s=2860 (Astra).
 - [x] Auto-tow on leaving the road (`d08bd72`).
 - [?] Auto-tow on sand beside the road: tighten to "fully off the drivable surface for 3 s"? Owner to decide.
 - [x] Ragdolls and rider ejection (`d13dd21`…`07db7b6`).
@@ -53,7 +54,7 @@ Last updated: 2026-10-15 19:15 UTC.
 - [~] Phone as steering wheel: QR pairing, WebRTC with relay fallback, tilt steering, pedal zones, haptics (Sol).
 
 ## Quality
-- [~] Fix the reviewer's findings on current prod: trim-step DOM leak, touch rotate, frozen scooter rider, mild-language silence, unwired test files, protocol bounds (Sol).
+- [x] Review findings fixed: trim-step DOM leak, touch rotate, frozen scooter rider, rider protocol bounds, 8 unwired test suites plus a coverage guard (`b2798b9`). CLE margin and mild-language silence were already fixed.
 - [ ] Muse perf round 6: final numbers never reported (5 commits landed). Check whether a follow-up is needed.
 
 ## Contributors

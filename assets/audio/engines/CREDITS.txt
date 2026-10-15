@@ -100,3 +100,7 @@ External bus and motorcycle profiles retain the existing world pack recordings
 when decoded: CC0 bus idle by bikesnbassboi, scooter idle by lovretta, scooter
 running by dif1891 (assets/audio/world/CREDITS.txt). Bus running uses the
 existing Sonniss TDI substitute; synthesis is the missing/decode fallback.
+
+Aventador SVJ exhaust: original procedural noise/triangle synthesis in
+src/audio/exhaust-voice.js, created for Athens Racing. No third-party samples.
+V12 uses the original 12-cylinder procedural engine bank (engine-synth.js).

@@ -1,0 +1,435 @@
+PASS  powertrain parameters mini
+PASS  powertrain parameters z4
+PASS  powertrain parameters taxi
+PASS  powertrain parameters carrera
+PASS  powertrain parameters gr_yaris
+PASS  powertrain parameters gtv
+PASS  powertrain parameters golf
+PASS  powertrain parameters corolla
+PASS  powertrain parameters superb
+PASS  powertrain parameters police_octavia
+PASS  powertrain parameters mini_jcw
+PASS  powertrain parameters cle
+PASS  powertrain parameters gla
+PASS  powertrain parameters gla45
+PASS  powertrain parameters cla
+PASS  powertrain parameters aventador_svj
+PASS  powertrain parameters huracan
+PASS  powertrain parameters ibiza
+PASS  powertrain parameters panda
+PASS  powertrain parameters yaris
+PASS  powertrain parameters e36
+PASS  powertrain parameters cle200
+PASS  powertrain parameters cle450
+PASS  powertrain parameters cle53
+PASS  powertrain parameters e36_m3
+PASS  powertrain parameters panda_11
+PASS  powertrain parameters panda_100hp
+PASS  powertrain parameters yaris_13
+PASS  powertrain parameters yaris_ts
+PASS  powertrain parameters ibiza_cupra
+PASS  powertrain parameters golf_gti
+PASS  powertrain parameters golf_gtd
+PASS  powertrain parameters golf_r
+PASS  powertrain parameters mini_cooper
+PASS  powertrain parameters mini_s
+PASS  powertrain parameters mini_cabrio_cooper
+PASS  powertrain parameters corolla_15
+PASS  powertrain parameters octavia_16tdi
+PASS  powertrain parameters octavia_rs
+PASS  powertrain parameters superb_15
+PASS  powertrain parameters superb_4x4
+PASS  powertrain parameters cla250
+PASS  powertrain parameters cla35
+PASS  powertrain parameters cla45s
+PASS  powertrain parameters gla250
+PASS  powertrain parameters z4_20i
+PASS  powertrain parameters z4_30i
+PASS  powertrain parameters carrera_s
+PASS  powertrain parameters carrera_gts
+PASS  powertrain parameters huracan_rwd
+PASS  powertrain parameters gtv1750
+PASS  powertrain parameters e36_318i
+PASS  powertrain parameters mini_cabrio_jcw
+PASS  powertrain parameters cle300e
+PASS  powertrain parameters jazz
+PASS  powertrain parameters jazz_dynamic
+PASS  powertrain parameters jazz_drift
+PASS  powertrain parameters aygo
+PASS  powertrain parameters qashqai
+PASS  powertrain parameters qashqai_dci
+PASS  powertrain parameters dolphin
+PASS  powertrain parameters atto3
+PASS  powertrain parameters van
+PASS  powertrain parameters van_150
+PASS  powertrain parameters truck
+PASS  powertrain parameters bus
+PASS  powertrain parameters delivery
+PASS  powertrain parameters scooter
+PASS  powertrain parameters moto
+PASS  powertrain parameters police_moto
+PASS  determinism: identical runs give bit-identical state
+PASS  launch: RWD gets to 50 km/h first on a 50/50 chassis (weight moves onto the driven rear)  [fwd 3.88 s, rwd 2.78 s]
+PASS  launch: FWD driven wheels slip harder than RWD (less load on them)  [peak normalised slip fwd 38.27, rwd 17.33]
+PASS  steady corner: identical before power (same chassis)  [k fwd 0.026 rwd 0.027 1/m, ay 0.89 g]
+PASS  power-on: FWD runs wide (path curvature drops, understeer)  [k 0.026 -> min 0.013]
+PASS  power-on: FWD tail stays put  [tail-out 0.7 -> max 0.9 deg]
+PASS  power-on: RWD tail steps out (oversteer)  [tail-out 0.8 -> max 17.7 deg]
+PASS  power-on: RWD tightens its line relative to FWD  [max k rwd 0.043 vs fwd 0.027]
+PASS  open diff: unloaded inner driven wheel spins more than the outer (FWD)  [inner 19.91 outer 0.39]
+PASS  LSD: locking evens out inner / outer spin  [open d 19.51, lsd d 0.11]
+PASS  EDL: braking the spinning wheel lets the open-diff axle drive harder  [exit speed edl 76.7 vs open 74.6 km/h]
+PASS  lift-off: FWD tucks in (curvature rises)  [k 0.011 -> 0.013]
+PASS  lift-off: RWD tucks in (curvature rises)  [k 0.011 -> 0.013]
+PASS  lift-off: RWD rotates at least as much as FWD (engine braking on the rear axle)  [d tail fwd 0.4 rwd 0.3 deg]
+PASS  lift-off: no spin (stays below 25 deg) without assists
+PASS  braking fwd: stops straight  [yaw 0.000 rad, drift 0.024 m]
+PASS  braking fwd: distance near mu-limited ideal (35.8 m)  [34.5 m, ABS frames 47]
+PASS  braking fwd: comes to rest without rolling backwards  [v 0.002 m/s after 2.55 s]
+PASS  braking rwd: stops straight  [yaw 0.004 rad, drift 0.037 m]
+PASS  braking rwd: distance near mu-limited ideal (35.8 m)  [34.2 m, ABS frames 46]
+PASS  braking rwd: comes to rest without rolling backwards  [v 0.082 m/s after 2.52 s]
+PASS  braking: FWD and RWD within 5% (drivetrain barely matters)
+PASS  reverse fwd: engages from standstill on the brake pedal
+PASS  reverse fwd: speed capped (~25 km/h) and moving backwards  [24.9 km/h]
+PASS  reverse fwd: yaw follows steering kinematics, no snap  [max beta 13.3 deg]
+PASS  parking fwd: full-lock crawl is stable  [v 3.8 km/h, R 2.7 m]
+PASS  reverse rwd: engages from standstill on the brake pedal
+PASS  reverse rwd: speed capped (~25 km/h) and moving backwards  [24.9 km/h]
+PASS  reverse rwd: yaw follows steering kinematics, no snap  [max beta 12.0 deg]
+PASS  parking rwd: full-lock crawl is stable  [v 3.2 km/h, R 3.1 m]
+PASS  engine braking never pushes a car rolling backwards in a forward gear faster  [peak 2.00 m/s]
+PASS  engine braking: coasting in 3rd decelerates moderately (0.05-0.35 g)  [0.07 g]
+PASS  time step fwd: 30/60/144/240 Hz frames agree  [max pos dev 0.99 m over 146.5 m, yaw dev 0.007 rad]
+PASS  time step rwd: 30/60/144/240 Hz frames agree  [max pos dev 0.88 m over 186.0 m, yaw dev 0.005 rad]
+PASS  wheel[0].vw / wheel[1].vw track road speed when rolling  [front 25.63 rear 25.44 car 25.44]
+PASS  wheel resync after an impact: per-corner rolling speed, no slip spike  [max |sx| 0.003, rear L-R 0.718 vs yaw 0.718]
+PASS  damage: separating contact (dv <= 0) does nothing
+PASS  damage: bumper absorbs a 7 km/h tap
+PASS  damage: equal-mass car at 2 dv equals a barrier at dv (EBS = dv / 2)  [0.184 vs 0.184]
+PASS  damage: a lorry hurts more than a car at the same closing speed
+PASS  damage: heavy frontal crash -> crush and cooling damage, gradual power loss before steam  [engHealth 0.52]
+PASS  damage: ruptured cooling system heats gradually with no immediate white plume  [coolant 93.9 C]
+PASS  damage: a large off-centre frontal hit pulls towards its struck wheel  [drift damaged -10.55 m, clean -0.000 m in 5 s]
+PASS  damage: serious frontal substantially slows acceleration while car remains driveable  [80-130 3.70 -> 6.97 s]
+PASS  damage: reset() repairs the car
+PASS  damage: traffic event is sized by closing speed e.sev, not the impulse delta-v e.dv  [sev 20 dv 11.50 -> EBS 10.00 (dv-as-closing would give 5.75)]
+PASS  damage: separating or impulse-free traffic contact does nothing
+PASS  damage: deterministic
+PASS  catalogue mini (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 7.60 s, top 225.9 / 230, 100-0 37.1 m, wb 2.495 halfL 1.925 halfW 0.8635]
+PASS  catalogue z4 (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.85 s, top 247.5 / 250, 100-0 31.7 m, wb 2.47 halfL 2.162 halfW 0.932]
+PASS  catalogue taxi (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.03 s, top 221.9 / 227, 100-0 38.5 m, wb 2.686 halfL 2.3445 halfW 0.9145]
+PASS  catalogue carrera: sourced torque and power anchors  [390.0 Nm, 257.0 kW]
+PASS  catalogue carrera: curve rpm strictly ascending
+PASS  catalogue carrera: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue carrera (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.67 s, top 284.7 / 289, 100-0 33.1 m, wb 2.45 halfL 2.2455 halfW 0.904]
+PASS  catalogue gr_yaris: sourced torque and power anchors  [390.0 Nm, 206.0 kW]
+PASS  catalogue gr_yaris: curve rpm strictly ascending
+PASS  catalogue gr_yaris: both axles transmit drive torque
+PASS  catalogue gr_yaris (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.05 s, top 227.6 / 230, 100-0 34.1 m, wb 2.56 halfL 1.9975 halfW 0.9025]
+PASS  catalogue gtv: sourced torque and power anchors  [182.0 Nm, 97.0 kW]
+PASS  catalogue gtv: curve rpm strictly ascending
+PASS  catalogue gtv (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.83 s, top 192.0 / 195, 100-0 40.6 m, wb 2.35 halfL 2.05 halfW 0.79]
+PASS  catalogue golf: sourced torque and power anchors  [250.0 Nm, 103.0 kW]
+PASS  catalogue golf: curve rpm strictly ascending
+PASS  catalogue golf (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.52 s, top 208.2 / 212, 100-0 38.7 m, wb 2.637 halfL 2.1275 halfW 0.8995]
+PASS  catalogue corolla: sourced torque and power anchors  [159.0 Nm, 97.0 kW]
+PASS  catalogue corolla: curve rpm strictly ascending
+PASS  catalogue corolla (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 11.00 s, top 196.9 / 200, 100-0 39.4 m, wb 2.7 halfL 2.315 halfW 0.89]
+PASS  catalogue superb: sourced torque and power anchors  [350.0 Nm, 162.0 kW]
+PASS  catalogue superb: curve rpm strictly ascending
+PASS  catalogue superb (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.52 s, top 241.1 / 245, 100-0 37.4 m, wb 2.841 halfL 2.4305 halfW 0.932]
+PASS  catalogue police_octavia: sourced torque and power anchors  [250.0 Nm, 110.0 kW]
+PASS  catalogue police_octavia: curve rpm strictly ascending
+PASS  catalogue police_octavia (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.70 s, top 215.1 / 230, 100-0 37.6 m, wb 2.686 halfL 2.3445 halfW 0.9145]
+PASS  catalogue mini_jcw: sourced torque and power anchors  [320.0 Nm, 170.0 kW]
+PASS  catalogue mini_jcw: curve rpm strictly ascending
+PASS  catalogue mini_jcw (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.48 s, top 241.6 / 246, 100-0 35.2 m, wb 2.495 halfL 1.937 halfW 0.8635]
+PASS  catalogue cle: sourced torque and power anchors  [400.0 Nm, 190.0 kW]
+PASS  catalogue cle: curve rpm strictly ascending
+PASS  catalogue cle: both axles transmit drive torque
+PASS  catalogue cle (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.82 s, top 246.6 / 250, 100-0 33.6 m, wb 2.865 halfL 2.425 halfW 0.9305]
+PASS  catalogue gla: sourced torque and power anchors  [250.0 Nm, 120.0 kW]
+PASS  catalogue gla: curve rpm strictly ascending
+PASS  catalogue gla (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.22 s, top 206.6 / 210, 100-0 38.5 m, wb 2.729 halfL 2.205 halfW 0.917]
+PASS  catalogue gla45: sourced torque and power anchors  [500.0 Nm, 310.0 kW]
+PASS  catalogue gla45: curve rpm strictly ascending
+PASS  catalogue gla45: both axles transmit drive torque
+PASS  catalogue gla45 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.45 s, top 266.3 / 270, 100-0 33.5 m, wb 2.729 halfL 2.2215 halfW 0.9245]
+PASS  catalogue cla: sourced torque and power anchors  [250.0 Nm, 120.0 kW]
+PASS  catalogue cla: curve rpm strictly ascending
+PASS  catalogue cla (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 7.40 s, top 225.6 / 229, 100-0 37.0 m, wb 2.729 halfL 2.344 halfW 0.915]
+PASS  catalogue aventador_svj: sourced torque and power anchors  [720.0 Nm, 566.3 kW]
+PASS  catalogue aventador_svj: curve rpm strictly ascending
+PASS  catalogue aventador_svj: both axles transmit drive torque
+PASS  catalogue aventador_svj: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue aventador_svj (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 3.03 s, top 350.1 / 355, 100-0 29.1 m, wb 2.7 halfL 2.4715 halfW 1.049]
+PASS  catalogue huracan: sourced torque and power anchors  [600.0 Nm, 470.0 kW]
+PASS  catalogue huracan: curve rpm strictly ascending
+PASS  catalogue huracan: both axles transmit drive torque
+PASS  catalogue huracan: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue huracan (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 2.88 s, top 320.7 / 325, 100-0 30.2 m, wb 2.62 halfL 2.26 halfW 0.9665]
+PASS  catalogue ibiza: sourced torque and power anchors  [107.0 Nm, 44.0 kW]
+PASS  catalogue ibiza: curve rpm strictly ascending
+PASS  catalogue ibiza (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 15.87 s, top 153.8 / 157, 100-0 44.2 m, wb 2.44 halfL 1.9065 halfW 0.82]
+PASS  catalogue panda: sourced torque and power anchors  [102.0 Nm, 44.0 kW]
+PASS  catalogue panda: curve rpm strictly ascending
+PASS  catalogue panda (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 15.05 s, top 152.1 / 155, 100-0 43.3 m, wb 2.299 halfL 1.769 halfW 0.789]
+PASS  catalogue yaris: sourced torque and power anchors  [90.0 Nm, 50.0 kW]
+PASS  catalogue yaris: curve rpm strictly ascending
+PASS  catalogue yaris (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 14.03 s, top 153.1 / 155, 100-0 43.2 m, wb 2.37 halfL 1.8075 halfW 0.83]
+PASS  catalogue e36: sourced torque and power anchors  [245.0 Nm, 141.0 kW]
+PASS  catalogue e36: curve rpm strictly ascending
+PASS  catalogue e36 (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.32 s, top 229.1 / 233, 100-0 39.1 m, wb 2.7 halfL 2.2165 halfW 0.849]
+PASS  catalogue cle200: sourced torque and power anchors  [320.0 Nm, 150.0 kW]
+PASS  catalogue cle200: curve rpm strictly ascending
+PASS  catalogue cle200 (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 7.47 s, top 232.5 / 236, 100-0 33.9 m, wb 2.865 halfL 2.425 halfW 0.9305]
+PASS  catalogue cle450: sourced torque and power anchors  [500.0 Nm, 280.0 kW]
+PASS  catalogue cle450: curve rpm strictly ascending
+PASS  catalogue cle450: both axles transmit drive torque
+PASS  catalogue cle450 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.62 s, top 248.0 / 250, 100-0 33.6 m, wb 2.865 halfL 2.425 halfW 0.9305]
+PASS  catalogue cle53: sourced torque and power anchors  [560.0 Nm, 330.0 kW]
+PASS  catalogue cle53: curve rpm strictly ascending
+PASS  catalogue cle53: both axles transmit drive torque
+PASS  catalogue cle53 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.20 s, top 248.3 / 250, 100-0 32.5 m, wb 2.865 halfL 2.425 halfW 0.968]
+PASS  catalogue e36_m3: sourced torque and power anchors  [350.0 Nm, 236.0 kW]
+PASS  catalogue e36_m3: curve rpm strictly ascending
+PASS  catalogue e36_m3 (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.60 s, top 247.2 / 250, 100-0 34.4 m, wb 2.7 halfL 2.2165 halfW 0.849]
+PASS  catalogue panda_11: sourced torque and power anchors  [88.0 Nm, 40.0 kW]
+PASS  catalogue panda_11: curve rpm strictly ascending
+PASS  catalogue panda_11 (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 17.03 s, top 147.3 / 150, 100-0 43.4 m, wb 2.299 halfL 1.769 halfW 0.789]
+PASS  catalogue panda_100hp: sourced torque and power anchors  [131.0 Nm, 74.0 kW]
+PASS  catalogue panda_100hp: curve rpm strictly ascending
+PASS  catalogue panda_100hp (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 10.97 s, top 181.7 / 185, 100-0 39.8 m, wb 2.299 halfL 1.769 halfW 0.789]
+PASS  catalogue yaris_13: sourced torque and power anchors  [124.0 Nm, 63.0 kW]
+PASS  catalogue yaris_13: curve rpm strictly ascending
+PASS  catalogue yaris_13 (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 11.33 s, top 172.4 / 175, 100-0 42.8 m, wb 2.37 halfL 1.8075 halfW 0.83]
+PASS  catalogue yaris_ts: sourced torque and power anchors  [145.0 Nm, 78.0 kW]
+PASS  catalogue yaris_ts: curve rpm strictly ascending
+PASS  catalogue yaris_ts (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 9.95 s, top 187.1 / 190, 100-0 39.7 m, wb 2.37 halfL 1.8075 halfW 0.83]
+PASS  catalogue ibiza_cupra: sourced torque and power anchors  [210.0 Nm, 115.0 kW]
+PASS  catalogue ibiza_cupra: curve rpm strictly ascending
+PASS  catalogue ibiza_cupra (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 7.93 s, top 214.3 / 218, 100-0 38.1 m, wb 2.44 halfL 1.9065 halfW 0.82]
+PASS  catalogue golf_gti: sourced torque and power anchors  [350.0 Nm, 162.0 kW]
+PASS  catalogue golf_gti: curve rpm strictly ascending
+PASS  catalogue golf_gti (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.37 s, top 242.1 / 246, 100-0 35.5 m, wb 2.637 halfL 2.1275 halfW 0.8995]
+PASS  catalogue golf_gtd: sourced torque and power anchors  [380.0 Nm, 135.0 kW]
+PASS  catalogue golf_gtd: curve rpm strictly ascending
+PASS  catalogue golf_gtd (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 7.93 s, top 226.4 / 230, 100-0 36.1 m, wb 2.637 halfL 2.1275 halfW 0.8995]
+PASS  catalogue golf_r: sourced torque and power anchors  [380.0 Nm, 221.0 kW]
+PASS  catalogue golf_r: curve rpm strictly ascending
+PASS  catalogue golf_r: both axles transmit drive torque
+PASS  catalogue golf_r (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.63 s, top 247.0 / 250, 100-0 34.2 m, wb 2.637 halfL 2.1275 halfW 0.8995]
+PASS  catalogue mini_cooper: sourced torque and power anchors  [220.0 Nm, 100.0 kW]
+PASS  catalogue mini_cooper: curve rpm strictly ascending
+PASS  catalogue mini_cooper (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 7.67 s, top 206.0 / 210, 100-0 37.9 m, wb 2.495 halfL 1.937 halfW 0.8635]
+PASS  catalogue mini_s: sourced torque and power anchors  [280.0 Nm, 141.0 kW]
+PASS  catalogue mini_s: curve rpm strictly ascending
+PASS  catalogue mini_s (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.62 s, top 229.2 / 235, 100-0 35.8 m, wb 2.495 halfL 1.937 halfW 0.8635]
+PASS  catalogue mini_cabrio_cooper: sourced torque and power anchors  [220.0 Nm, 100.0 kW]
+PASS  catalogue mini_cabrio_cooper: curve rpm strictly ascending
+PASS  catalogue mini_cabrio_cooper (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.22 s, top 204.4 / 208, 100-0 37.8 m, wb 2.495 halfL 1.925 halfW 0.8635]
+PASS  catalogue corolla_15: sourced torque and power anchors  [153.0 Nm, 92.0 kW]
+PASS  catalogue corolla_15: curve rpm strictly ascending
+PASS  catalogue corolla_15 (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 10.90 s, top 187.7 / 190, 100-0 39.3 m, wb 2.7 halfL 2.315 halfW 0.89]
+PASS  catalogue octavia_16tdi: sourced torque and power anchors  [250.0 Nm, 81.0 kW]
+PASS  catalogue octavia_16tdi: curve rpm strictly ascending
+PASS  catalogue octavia_16tdi (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 10.85 s, top 193.9 / 197, 100-0 38.9 m, wb 2.686 halfL 2.3445 halfW 0.9145]
+PASS  catalogue octavia_rs: sourced torque and power anchors  [350.0 Nm, 162.0 kW]
+PASS  catalogue octavia_rs: curve rpm strictly ascending
+PASS  catalogue octavia_rs (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.45 s, top 244.3 / 248, 100-0 35.6 m, wb 2.686 halfL 2.3445 halfW 0.9145]
+PASS  catalogue superb_15: sourced torque and power anchors  [250.0 Nm, 110.0 kW]
+PASS  catalogue superb_15: curve rpm strictly ascending
+PASS  catalogue superb_15 (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 8.63 s, top 215.0 / 220, 100-0 37.0 m, wb 2.841 halfL 2.4305 halfW 0.932]
+PASS  catalogue superb_4x4: sourced torque and power anchors  [350.0 Nm, 206.0 kW]
+PASS  catalogue superb_4x4: curve rpm strictly ascending
+PASS  catalogue superb_4x4: both axles transmit drive torque
+PASS  catalogue superb_4x4 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.48 s, top 246.6 / 250, 100-0 34.9 m, wb 2.841 halfL 2.4305 halfW 0.932]
+PASS  catalogue cla250: sourced torque and power anchors  [350.0 Nm, 165.0 kW]
+PASS  catalogue cla250: curve rpm strictly ascending
+PASS  catalogue cla250: both axles transmit drive torque
+PASS  catalogue cla250 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.50 s, top 246.6 / 250, 100-0 35.2 m, wb 2.729 halfL 2.344 halfW 0.915]
+PASS  catalogue cla35: sourced torque and power anchors  [400.0 Nm, 225.0 kW]
+PASS  catalogue cla35: curve rpm strictly ascending
+PASS  catalogue cla35: both axles transmit drive torque
+PASS  catalogue cla35 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.65 s, top 247.7 / 250, 100-0 33.9 m, wb 2.729 halfL 2.344 halfW 0.915]
+PASS  catalogue cla45s: sourced torque and power anchors  [500.0 Nm, 310.0 kW]
+PASS  catalogue cla45s: curve rpm strictly ascending
+PASS  catalogue cla45s: both axles transmit drive torque
+PASS  catalogue cla45s (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.13 s, top 267.8 / 270, 100-0 33.0 m, wb 2.729 halfL 2.344 halfW 0.915]
+PASS  catalogue gla250: sourced torque and power anchors  [350.0 Nm, 165.0 kW]
+PASS  catalogue gla250: curve rpm strictly ascending
+PASS  catalogue gla250: both axles transmit drive torque
+PASS  catalogue gla250 (awd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.92 s, top 235.7 / 240, 100-0 38.0 m, wb 2.729 halfL 2.205 halfW 0.917]
+PASS  catalogue z4_20i: sourced torque and power anchors  [320.0 Nm, 145.0 kW]
+PASS  catalogue z4_20i: curve rpm strictly ascending
+PASS  catalogue z4_20i (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.42 s, top 235.4 / 240, 100-0 33.9 m, wb 2.47 halfL 2.162 halfW 0.932]
+PASS  catalogue z4_30i: sourced torque and power anchors  [400.0 Nm, 190.0 kW]
+PASS  catalogue z4_30i: curve rpm strictly ascending
+PASS  catalogue z4_30i (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 5.42 s, top 246.2 / 250, 100-0 32.6 m, wb 2.47 halfL 2.162 halfW 0.932]
+PASS  catalogue carrera_s: sourced torque and power anchors  [440.0 Nm, 294.0 kW]
+PASS  catalogue carrera_s: curve rpm strictly ascending
+PASS  catalogue carrera_s: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue carrera_s (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.53 s, top 299.4 / 304, 100-0 32.4 m, wb 2.45 halfL 2.2455 halfW 0.904]
+PASS  catalogue carrera_gts: sourced torque and power anchors  [440.0 Nm, 316.0 kW]
+PASS  catalogue carrera_gts: curve rpm strictly ascending
+PASS  catalogue carrera_gts: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue carrera_gts (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 4.58 s, top 301.7 / 306, 100-0 31.5 m, wb 2.45 halfL 2.2455 halfW 0.926]
+PASS  catalogue huracan_rwd: sourced torque and power anchors  [560.0 Nm, 449.0 kW]
+PASS  catalogue huracan_rwd: curve rpm strictly ascending
+PASS  catalogue huracan_rwd: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue huracan_rwd (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 3.60 s, top 319.6 / 325, 100-0 32.4 m, wb 2.62 halfL 2.26 halfW 0.9665]
+PASS  catalogue gtv1750: sourced torque and power anchors  [186.0 Nm, 87.0 kW]
+PASS  catalogue gtv1750: curve rpm strictly ascending
+PASS  catalogue gtv1750 (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 9.27 s, top 187.0 / 190, 100-0 40.7 m, wb 2.35 halfL 2.05 halfW 0.79]
+PASS  catalogue e36_318i: sourced torque and power anchors  [168.0 Nm, 85.0 kW]
+PASS  catalogue e36_318i: curve rpm strictly ascending
+PASS  catalogue e36_318i (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 11.22 s, top 195.4 / 201, 100-0 39.0 m, wb 2.7 halfL 2.2165 halfW 0.849]
+PASS  catalogue mini_cabrio_jcw: sourced torque and power anchors  [320.0 Nm, 170.0 kW]
+PASS  catalogue mini_cabrio_jcw: curve rpm strictly ascending
+PASS  catalogue mini_cabrio_jcw (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.68 s, top 238.0 / 242, 100-0 34.9 m, wb 2.495 halfL 1.937 halfW 0.8635]
+PASS  catalogue cle300e: sourced torque and power anchors  [550.0 Nm, 230.0 kW]
+PASS  catalogue cle300e: curve rpm strictly ascending
+PASS  catalogue cle300e (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.52 s, top 234.0 / 236, 100-0 34.0 m, wb 2.865 halfL 2.425 halfW 0.9305]
+PASS  catalogue jazz: sourced torque and power anchors  [123.0 Nm, 75.0 kW]
+PASS  catalogue jazz: curve rpm strictly ascending
+PASS  catalogue jazz (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 12.10 s, top 186.6 / 190, 100-0 39.9 m, wb 2.53 halfL 2.014 halfW 0.847]
+PASS  catalogue jazz_dynamic: sourced torque and power anchors  [155.0 Nm, 96.0 kW]
+PASS  catalogue jazz_dynamic: curve rpm strictly ascending
+PASS  catalogue jazz_dynamic (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 9.72 s, top 187.6 / 190, 100-0 38.8 m, wb 2.53 halfL 2.0255 halfW 0.847]
+PASS  catalogue jazz_drift: sourced torque and power anchors  [240.0 Nm, 149.0 kW]
+PASS  catalogue jazz_drift: curve rpm strictly ascending
+PASS  catalogue jazz_drift (rwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 6.53 s, top 216.8 / 220, 100-0 36.7 m, wb 2.53 halfL 2.0255 halfW 0.88]
+PASS  catalogue aygo: sourced torque and power anchors  [95.0 Nm, 51.0 kW]
+PASS  catalogue aygo: curve rpm strictly ascending
+PASS  catalogue qashqai: sourced torque and power anchors  [190.0 Nm, 85.0 kW]
+PASS  catalogue qashqai: curve rpm strictly ascending
+PASS  catalogue qashqai_dci: sourced torque and power anchors  [260.0 Nm, 81.0 kW]
+PASS  catalogue qashqai_dci: curve rpm strictly ascending
+PASS  catalogue dolphin: sourced torque and power anchors  [310.0 Nm, 150.0 kW]
+PASS  catalogue dolphin: curve rpm strictly ascending
+PASS  catalogue atto3: sourced torque and power anchors  [310.0 Nm, 150.0 kW]
+PASS  catalogue atto3: curve rpm strictly ascending
+PASS  catalogue van: sourced torque and power anchors  [320.0 Nm, 96.0 kW]
+PASS  catalogue van: curve rpm strictly ascending
+PASS  catalogue van_150: sourced torque and power anchors  [350.0 Nm, 110.0 kW]
+PASS  catalogue van_150: curve rpm strictly ascending
+PASS  catalogue truck: sourced torque and power anchors  [510.0 Nm, 140.0 kW]
+PASS  catalogue truck: curve rpm strictly ascending
+PASS  catalogue bus: sourced torque and power anchors  [1250.0 Nm, 220.0 kW]
+PASS  catalogue bus: curve rpm strictly ascending
+PASS  catalogue bus: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage
+PASS  catalogue delivery: sourced torque and power anchors  [13.9 Nm, 11.0 kW]
+PASS  catalogue delivery: curve rpm strictly ascending
+PASS  catalogue scooter: sourced torque and power anchors  [26.0 Nm, 19.0 kW]
+PASS  catalogue scooter: curve rpm strictly ascending
+PASS  catalogue moto: sourced torque and power anchors  [87.5 Nm, 84.6 kW]
+PASS  catalogue moto: curve rpm strictly ascending
+PASS  catalogue police_moto: sourced torque and power anchors  [143.0 Nm, 100.0 kW]
+PASS  catalogue police_moto: curve rpm strictly ascending
+PASS  playable fleet aygo: accelerates, reaches rated speed and brakes safely  [14.67s to 100.0, top 157.8, stop 24.6m from 80.0km/h (1.02g)]
+PASS  playable fleet qashqai: accelerates, reaches rated speed and brakes safely  [10.87s to 100.0, top 181.9, stop 24.4m from 80.0km/h (1.03g)]
+PASS  playable fleet qashqai_dci: accelerates, reaches rated speed and brakes safely  [12.72s to 100.0, top 178.9, stop 24.5m from 80.0km/h (1.03g)]
+PASS  playable fleet dolphin: accelerates, reaches rated speed and brakes safely  [8.73s to 100.0, top 159.5, stop 23.6m from 80.0km/h (1.06g)]
+PASS  playable fleet atto3: accelerates, reaches rated speed and brakes safely  [9.25s to 100.0, top 159.5, stop 23.6m from 80.0km/h (1.07g)]
+PASS  playable fleet van: accelerates, reaches rated speed and brakes safely  [15.60s to 100.0, top 147.4, stop 25.6m from 80.0km/h (0.98g)]
+PASS  utility gentle corner van: stable body and no unloaded wheel/rollover  [roll 0.43deg, beta 0.48deg, minimum wheel load 19.73%]
+PASS  playable fleet van_150: accelerates, reaches rated speed and brakes safely  [14.17s to 100.0, top 157.1, stop 25.6m from 80.0km/h (0.98g)]
+PASS  utility gentle corner van_150: stable body and no unloaded wheel/rollover  [roll 0.43deg, beta 0.48deg, minimum wheel load 19.85%]
+PASS  playable fleet truck: accelerates, reaches rated speed and brakes safely  [13.70s to 77.0, top 108.8, stop 29.4m from 80.0km/h (0.85g)]
+PASS  utility gentle corner truck: stable body and no unloaded wheel/rollover  [roll 0.42deg, beta 0.36deg, minimum wheel load 18.64%]
+PASS  playable fleet bus: accelerates, reaches rated speed and brakes safely  [12.57s to 59.5, top 84.6, stop 24.9m from 68.0km/h (0.73g)]
+PASS  utility gentle corner bus: stable body and no unloaded wheel/rollover  [roll 0.53deg, beta 0.29deg, minimum wheel load 15.38%]
+PASS  playable fleet delivery: accelerates, reaches rated speed and brakes safely  [13.45s to 73.5, top 103.6, stop 27.9m from 80.0km/h (0.90g)]
+PASS  playable fleet scooter: accelerates, reaches rated speed and brakes safely  [11.30s to 91.0, top 128.0, stop 26.4m from 80.0km/h (0.96g)]
+PASS  playable fleet moto: accelerates, reaches rated speed and brakes safely  [5.00s to 100.0, top 216.7, stop 24.9m from 80.0km/h (1.01g)]
+PASS  playable fleet police_moto: accelerates, reaches rated speed and brakes safely  [4.58s to 100.0, top 198.2, stop 25.1m from 80.0km/h (1.00g)]
+PASS  powertrain performance cle200: 0–100 within 12%, top within 3% of trim figures  [7.47 / 7.9s; 232.5 / 236km/h]
+PASS  powertrain performance carrera: 0–100 within 12%, top within 3% of trim figures  [4.67 / 4.8s; 284.7 / 289km/h]
+PASS  powertrain performance golf_gti: 0–100 within 12%, top within 3% of trim figures  [6.37 / 6.5s; 242.1 / 246km/h]
+PASS  powertrain performance taxi: 0–100 within 12%, top within 3% of trim figures  [8.03 / 8.6s; 223.0 / 227km/h]
+PASS  powertrain performance e36_m3: 0–100 within 12%, top within 3% of trim figures  [5.60 / 5.5s; 247.2 / 250km/h]
+PASS  powertrain performance huracan: 0–100 within 12%, top within 3% of trim figures  [2.88 / 2.9s; 320.6 / 325km/h]
+PASS  powertrain performance aventador_svj: 0–100 within 12%, top within 3% of trim figures  [3.03 / 2.8s; 350.1 / 355km/h]
+PASS  powertrain performance cle300e: 0–100 within 12%, top within 3% of trim figures  [6.52 / 6.3s; 234.0 / 236km/h]
+PASS  trim acceleration: jazz_dynamic quicker than jazz  [9.72 vs 12.10 s]
+PASS  trim acceleration: cle53 quicker than cle200  [4.20 vs 7.47 s]
+PASS  trim acceleration: cle300e quicker than cle200  [6.52 vs 7.47 s]
+PASS  trim acceleration: e36_m3 quicker than e36  [5.60 vs 8.32 s]
+PASS  trim acceleration: gla45 quicker than gla  [4.45 vs 8.22 s]
+PASS  trim acceleration: panda_100hp quicker than panda_11  [10.97 vs 17.03 s]
+PASS  trim acceleration: yaris_ts quicker than yaris  [9.95 vs 14.03 s]
+PASS  trim acceleration: ibiza_cupra quicker than ibiza  [7.93 vs 15.87 s]
+PASS  trim acceleration: golf_r quicker than golf  [4.63 vs 8.52 s]
+PASS  trim acceleration: mini_jcw quicker than mini_cooper  [6.48 vs 7.67 s]
+PASS  trim acceleration: octavia_rs quicker than octavia_16tdi  [6.45 vs 10.85 s]
+PASS  trim acceleration: superb_4x4 quicker than superb_15  [5.48 vs 8.63 s]
+PASS  trim acceleration: cla45s quicker than cla  [4.13 vs 7.40 s]
+PASS  trim acceleration: z4 quicker than z4_20i  [4.85 vs 6.42 s]
+PASS  trim acceleration: e36_m3 quicker than e36_318i  [5.60 vs 11.22 s]
+PASS  Jazz Drift Spec: sustained 17–34 degree slide for at least five seconds  [7.85 s, minimum 57.2 km/h, peak 28.2 degrees]
+PASS  straight stability: huracan dry TC off  [peak 0.46 deg, heading 0.10 deg, offset 0.24 m]
+PASS  straight stability: huracan dry TC on  [peak 0.46 deg, heading 0.10 deg, offset 0.24 m]
+PASS  straight stability: cle dry TC off  [peak 0.47 deg, heading 0.13 deg, offset 0.26 m]
+PASS  straight stability: cle dry TC on  [peak 0.47 deg, heading 0.13 deg, offset 0.26 m]
+PASS  straight stability: carrera dry TC off  [peak 0.46 deg, heading 0.17 deg, offset 0.43 m]
+PASS  straight stability: carrera dry TC on  [peak 0.46 deg, heading 0.17 deg, offset 0.43 m]
+PASS  straight stability: z4 dry TC off  [peak 0.46 deg, heading 0.12 deg, offset 0.25 m]
+PASS  straight stability: z4 dry TC on  [peak 0.46 deg, heading 0.12 deg, offset 0.25 m]
+PASS  straight stability: e36 dry TC off  [peak 0.47 deg, heading 0.16 deg, offset 0.35 m]
+PASS  straight stability: e36 dry TC on  [peak 0.47 deg, heading 0.16 deg, offset 0.35 m]
+PASS  straight stability: corolla dry TC off  [peak 0.48 deg, heading 0.23 deg, offset 0.45 m]
+PASS  straight stability: corolla dry TC on  [peak 0.48 deg, heading 0.23 deg, offset 0.45 m]
+PASS  power/lift/countersteer recovery: huracan dry TC off  [peak 1.5 deg, final 0.00 deg, latch 0.00, exit 81.1 km/h]
+PASS  power/lift/countersteer recovery: huracan dry TC on  [peak 1.6 deg, final 0.00 deg, latch 0.00, exit 80.5 km/h]
+PASS  power/lift/countersteer recovery: carrera dry TC off  [peak 6.8 deg, final 0.00 deg, latch 0.00, exit 72.5 km/h]
+PASS  power/lift/countersteer recovery: carrera dry TC on  [peak 3.0 deg, final 0.00 deg, latch 0.00, exit 70.9 km/h]
+PASS  power/lift/countersteer recovery: z4 dry TC off  [peak 16.1 deg, final -0.00 deg, latch 0.00, exit 55.1 km/h]
+PASS  power/lift/countersteer recovery: z4 dry TC on  [peak 5.7 deg, final 0.00 deg, latch 0.00, exit 58.6 km/h]
+PASS  power/lift/countersteer recovery: e36 dry TC off  [peak 11.6 deg, final 0.00 deg, latch 0.00, exit 59.8 km/h]
+PASS  power/lift/countersteer recovery: e36 dry TC on  [peak 6.2 deg, final -0.00 deg, latch 0.00, exit 61.9 km/h]
+PASS  walking-speed U-turn/unwind: huracan dry TC off  [turn 189.0 deg, final yaw rate -0.000]
+PASS  walking-speed U-turn/unwind: carrera dry TC off  [turn 189.1 deg, final yaw rate -0.000]
+PASS  walking-speed U-turn/unwind: z4 dry TC off  [turn 191.7 deg, final yaw rate -0.000]
+PASS  walking-speed U-turn/unwind: e36 dry TC off  [turn 196.3 deg, final yaw rate -0.000]
+PASS  walking-speed U-turn/unwind: corolla dry TC off  [turn 196.4 deg, final yaw rate -0.000]
+PASS  catalogue braking in huracan dry TC off  [100-0 29.4 m]
+PASS  catalogue braking in carrera dry TC off  [100-0 31.9 m]
+PASS  911 half-pedal braking authority: carrera dry TC off  [100-0 52.9 m]
+PASS  catalogue braking in z4 dry TC off  [100-0 31.6 m]
+PASS  catalogue braking in corolla dry TC off  [100-0 38.1 m]
+PASS  straight stability: huracan wet TC off  [peak 0.47 deg, heading 0.23 deg, offset 0.55 m]
+PASS  straight stability: huracan wet TC on  [peak 0.47 deg, heading 0.23 deg, offset 0.55 m]
+PASS  straight stability: cle wet TC off  [peak 0.48 deg, heading 0.20 deg, offset 0.45 m]
+PASS  straight stability: cle wet TC on  [peak 0.48 deg, heading 0.20 deg, offset 0.45 m]
+PASS  straight stability: carrera wet TC off  [peak 0.48 deg, heading 0.22 deg, offset 0.55 m]
+PASS  straight stability: carrera wet TC on  [peak 0.48 deg, heading 0.22 deg, offset 0.55 m]
+PASS  straight stability: z4 wet TC off  [peak 0.48 deg, heading 0.21 deg, offset 0.46 m]
+PASS  straight stability: z4 wet TC on  [peak 0.48 deg, heading 0.21 deg, offset 0.46 m]
+PASS  straight stability: e36 wet TC off  [peak 0.48 deg, heading 0.29 deg, offset 0.61 m]
+PASS  straight stability: e36 wet TC on  [peak 0.48 deg, heading 0.29 deg, offset 0.61 m]
+PASS  straight stability: corolla wet TC off  [peak 0.49 deg, heading 0.33 deg, offset 0.64 m]
+PASS  straight stability: corolla wet TC on  [peak 0.49 deg, heading 0.33 deg, offset 0.64 m]
+PASS  power/lift/countersteer recovery: huracan wet TC off  [peak 9.3 deg, final -0.00 deg, latch 0.00, exit 75.7 km/h]
+PASS  power/lift/countersteer recovery: huracan wet TC on  [peak 3.1 deg, final 0.00 deg, latch 0.00, exit 72.5 km/h]
+PASS  power/lift/countersteer recovery: carrera wet TC off  [peak 44.0 deg, final 0.00 deg, latch 0.00, exit 58.3 km/h]
+PASS  power/lift/countersteer recovery: carrera wet TC on  [peak 6.5 deg, final 0.00 deg, latch 0.00, exit 57.1 km/h]
+PASS  power/lift/countersteer recovery: z4 wet TC off  [peak 46.5 deg, final 0.00 deg, latch 0.00, exit 49.0 km/h]
+PASS  power/lift/countersteer recovery: z4 wet TC on  [peak 8.5 deg, final -0.00 deg, latch 0.00, exit 52.0 km/h]
+PASS  power/lift/countersteer recovery: e36 wet TC off  [peak 45.4 deg, final -0.00 deg, latch 0.00, exit 55.3 km/h]
+PASS  power/lift/countersteer recovery: e36 wet TC on  [peak 9.6 deg, final 0.00 deg, latch 0.00, exit 54.6 km/h]
+PASS  walking-speed U-turn/unwind: huracan wet TC off  [turn 189.9 deg, final yaw rate 0.000]
+PASS  walking-speed U-turn/unwind: carrera wet TC off  [turn 191.0 deg, final yaw rate 0.000]
+PASS  walking-speed U-turn/unwind: z4 wet TC off  [turn 193.5 deg, final yaw rate 0.000]
+PASS  walking-speed U-turn/unwind: e36 wet TC off  [turn 195.9 deg, final yaw rate -0.000]
+PASS  walking-speed U-turn/unwind: corolla wet TC off  [turn 198.8 deg, final yaw rate 0.000]
+PASS  catalogue braking in huracan wet TC off  [100-0 40.9 m]
+PASS  catalogue braking in carrera wet TC off  [100-0 44.5 m]
+PASS  911 half-pedal braking authority: carrera wet TC off  [100-0 53.7 m]
+PASS  catalogue braking in z4 wet TC off  [100-0 45.0 m]
+PASS  catalogue braking in corolla wet TC off  [100-0 52.5 m]
+PASS  reset placement riviera: road centreline, whole car on road, race direction, checkpoint-safe anchor respected  [604 off-road samples, 0 invalid]
+PASS  reset placement megara: road centreline, whole car on road, race direction, checkpoint-safe anchor respected  [112 off-road samples, 0 invalid]
+PASS  reset placement penteli: road centreline, whole car on road, race direction, checkpoint-safe anchor respected  [576 off-road samples, 0 invalid]
+
+433 passed, 0 failed

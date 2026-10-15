@@ -329,6 +329,9 @@ export function pickTyreTelemetry(v) {
 // persist on c.state (numeric registry fields + engine/tyre objects).
 export function validateStateExtras(s, ctx = {}) {
   const extras = {};
+  if(Number.isSafeInteger(s?.exhaustSerial)&&s.exhaustSerial>=0&&s.exhaustSerial<=2147483647)extras.exhaustSerial=s.exhaustSerial;
+  if(Number.isInteger(s?.exhaustKind)&&s.exhaustKind>=0&&s.exhaustKind<=3)extras.exhaustKind=s.exhaustKind;
+  if(typeof s?.exhaustEnabled==='boolean')extras.exhaustEnabled=s.exhaustEnabled;
   if (typeof s?.braking === 'boolean') extras.braking = s.braking;
   // The driver's own police pursuit (src/police.js encodePursuit), for the world authority's shared units.
   if (Number.isSafeInteger(s?.pursuit) && s.pursuit >= 0 && s.pursuit <= 2047) extras.pursuit = s.pursuit;

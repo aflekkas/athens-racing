@@ -1,4 +1,4 @@
-# Contributing to Athens Street Racers
+# Contributing to ATHENS RACING
 
 Thanks for helping. This page is the whole process: read it once before your first pull request.
 

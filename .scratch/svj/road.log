@@ -1,0 +1,56 @@
+[browser-slot] slot 1 acquired (ticket 963, waited 0s)
+ROAD READY
+SHIFT day {
+  found: true,
+  rpm: 8065.466250441613,
+  gear: 1,
+  speed: 96.6422714316288,
+  kind: 2,
+  serial: 1,
+  life: 0.17,
+  throttle: 1,
+  state: 'race',
+  keys: [ 'KeyW' ],
+  conditions: { time: 'day', weather: 'clear', hour: 14.021905333334605 },
+  mirrorUpdates: 4
+}
+CAPTURE chase-day-upshift
+OVERRUN day {
+  found: true,
+  rpm: 5033.629350166704,
+  gear: 2,
+  speed: 96.48090241314388,
+  kind: 1,
+  serial: 2,
+  life: 0.095,
+  overrun: true,
+  throttle: 0
+}
+CAPTURE chase-day-overrun
+SHIFT night {
+  found: true,
+  rpm: 7991.531788917546,
+  gear: 1,
+  speed: 96.69625331419216,
+  kind: 2,
+  serial: 3,
+  life: 0.17,
+  throttle: 1,
+  state: 'race',
+  keys: [ 'KeyW' ],
+  conditions: { time: 'night', weather: 'clear', hour: 3.016808000000319 },
+  mirrorUpdates: 7
+}
+CAPTURE chase-night-upshift
+OVERRUN night {
+  found: true,
+  rpm: 5034.78932829161,
+  gear: 2,
+  speed: 96.52409207929115,
+  kind: 1,
+  serial: 4,
+  life: 0.095,
+  overrun: true,
+  throttle: 0
+}
+CAPTURE chase-night-overrun

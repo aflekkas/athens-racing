@@ -12,7 +12,7 @@ function ring(p,m,r,t,x){const g=new THREE.TorusGeometry(r,t,4,32);g.rotateY(Mat
 function disc(p,m,r,x){const g=new THREE.CircleGeometry(r,r<.012?8:32);g.rotateY(Math.PI/2);return mesh(p,g,m,'',[x,0,0]);}
 function spoke(p,m,x,r0,r1,a0,a1,width){const a=v(x,Math.cos(a0)*r0,Math.sin(a0)*r0),b=v(x,Math.cos(a1)*r1,Math.sin(a1)*r1);const o=mesh(p,new THREE.BoxGeometry(.022,a.distanceTo(b),width),m,'wheel-spoke',a.clone().add(b).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(v(0,1,0),b.sub(a).normalize());}
 function wheelDetails(car,d,M){
-  const k=car.modelKind,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris'||k==='huracan'||d.amg;
+  const k=car.modelKind,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris'||(k==='huracan'||k==='aventador')||d.amg;
   const rimMat=dark?M.darkAlloy:new THREE.MeshStandardMaterial({color:'#c1c6ca',metalness:.92,roughness:.25,side:THREE.DoubleSide});
   const rotorMat=new THREE.MeshStandardMaterial({color:'#64676b',metalness:.78,roughness:.48,side:THREE.DoubleSide});
   M.wheelMetal=rimMat;M.brakeSteel=rotorMat;
@@ -36,7 +36,7 @@ function wheelDetails(car,d,M){
       for(let i=0;i<n;i++){
         const a=i*2*Math.PI/n;
         if(d.sculpted&&d.doors===2){for(const b of [-1,1])spoke(w.spin,rimMat,x,.05,rim-.009,a+b*.045,a+b*.065,.010);}else if(k==='gr_yaris'||d.amg)spoke(w.spin,rimMat,x,.042,rim-.012,a,a+.035,.017);
-        else if(k==='huracan'){for(const b of [-1,1]){spoke(w.spin,M.darkAlloy,x,.046,rim*.48,a,a,.030);spoke(w.spin,M.darkAlloy,x,rim*.48,rim-.009,a,a+b*.30,.029);spoke(w.spin,M.chrome,x+s*.012,rim*.48,rim-.009,a,a+b*.30,.006);}}
+        else if((k==='huracan'||k==='aventador')){for(const b of [-1,1]){spoke(w.spin,M.darkAlloy,x,.046,rim*.48,a,a,.030);spoke(w.spin,M.darkAlloy,x,rim*.48,rim-.009,a,a+b*.30,.029);spoke(w.spin,M.chrome,x+s*.012,rim*.48,rim-.009,a,a+b*.30,.006);}}
         else if(k==='taxi')spoke(w.spin,rimMat,x,.045,rim-.012,a,a+.10,.045);
         else for(const b of [-1,1]){spoke(w.spin,rimMat,x,.046,rim*.59,a+b*.07,a+b*.075,k==='mini'?.025:.022);spoke(w.spin,rimMat,x,rim*.59,rim-.012,a+b*.075,a+b*(k==='mini'?.18:.12),.019);}
       }
@@ -73,7 +73,7 @@ function signals(car,d,M){
     const o=box(car.body,reverse,[.075,.019,.007],[s*(positions[0]-.11),positions[2]-.037,R],`reverse-${side}`);o.userData.damagePart=`light_r${side}`;
   }
   if(car.spec.fleet||d.mercedes){const panels=mirrorSurfaces(car);car.body.updateMatrixWorld(true);car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const hit=nearestSurface(o.position,panels,car.body);if(hit){o.position.copy(hit.point);o.position.z+=Math.sign(o.position.z)*.003;}}});}
-  if(car.spec.playerDetail)car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const t=Math.max(0,Math.min(1,(Math.abs(o.position.z)-d.L*.34)/(d.L*.16)));o.position.z-=Math.sign(o.position.z)*((k==='huracan'?.34:.16)*t*t*(Math.abs(o.position.x)/(d.W/2))**2+.027);if(k==='huracan'&&o.position.z>0)o.position.z-=.07*t*t*((o.position.y-.56)/.42)**2;}});
+  if(car.spec.playerDetail)car.body.traverse(o=>{if(o.isMesh&&/^(indicator|reverse)-/.test(o.name)){const t=Math.max(0,Math.min(1,(Math.abs(o.position.z)-d.L*.34)/(d.L*.16)));o.position.z-=Math.sign(o.position.z)*(((k==='huracan'||k==='aventador')?.34:.16)*t*t*(Math.abs(o.position.x)/(d.W/2))**2+.027);if((k==='huracan'||k==='aventador')&&o.position.z>0)o.position.z-=.07*t*t*((o.position.y-.56)/.42)**2;}});
   car.indicator='off';car.signalTime=0;
   car.setIndicators=value=>{car.indicator=['left','right','hazard'].includes(value)?value:'off';};
   car.updateSignalLights=(dt,speed)=>{car.signalTime+=Math.max(0,dt);const flash=(car.signalTime%0.8)<.4;left.emissiveIntensity=flash&&(car.indicator==='left'||car.indicator==='hazard')?3.5:0;right.emissiveIntensity=flash&&(car.indicator==='right'||car.indicator==='hazard')?3.5:0;reverse.emissiveIntensity=speed<-.05?2.3:0;if(M.optical?.emissive){M.optical.emissive.set('#e4f2ff');M.optical.emissiveIntensity=car.lightsOn?3.2:0;}};

@@ -4,7 +4,7 @@ import './police-voice.test.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
-import { VoiceReactions, voiceAcoustics } from '../src/voice.js';
+import { VoiceReactions, voiceAcoustics, chooseVoiceLine } from '../src/voice.js';
 import { VOICE_LINES, VOICE_PROFILES } from '../src/voice-lines.js';
 import { AUDIO_DEFAULTS } from '../src/audio.js';
 import { DEFAULTS } from '../src/settings.js';
@@ -62,4 +62,14 @@ test('speaker appearance selects a stable matching profile and moving sources ap
   z=-9;f.ctx.currentTime+=.05;f.v.update({enabled:true,relative:p=>p});
   assert.ok(a.src.playbackRate.value>initial,'approaching source raises pitch');
   assert.equal(a.pan.positionZ.value,-9,'panner follows speaker');
+});
+
+test('mild hard crashes retain dedicated clean barks in the current catalogue',()=>{
+ const lines=VOICE_LINES.filter(l=>l.category==='driver' && l.cue==='hard' && !l.strong);
+ assert.ok(lines.length>=2);
+ for(const last of [undefined,...lines.map(l=>l.id)]) {
+  const line=chooseVoiceLine(VOICE_LINES,{category:'driver',cue:'hard',mildLanguage:true,last,random:()=>0});
+  assert.ok(line);assert.equal(line.strong,false);assert.equal(line.cue,'hard');
+  if(last)assert.notEqual(line.id,last);
+ }
 });

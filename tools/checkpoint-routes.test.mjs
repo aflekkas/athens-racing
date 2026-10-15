@@ -47,7 +47,7 @@ for (const id of ['riviera', 'penteli']) {
   const map = resolveMap({ id }, data), route = new Route(data.route, { corridors: map.geometry.corridors });
   // Objective modes do not enable course gates; their deterministic itineraries
   // still provide additional real start/finish stations for this geometry sweep.
-  const itineraries = Object.entries(map.trips).flatMap(([mode, trips]) => trips.map(trip => ({
+  const itineraries = Object.entries(map.trips).flatMap(([mode, trips]) => (trips || []).map(trip => ({
     id: `${mode}/${trip.id}`, s0: trip.pickup.s, s1: trip.dropoff.s,
     dir: Math.sign(trip.dropoff.s - trip.pickup.s), checkpoints: [],
   })));

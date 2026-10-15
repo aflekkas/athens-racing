@@ -1,0 +1,20 @@
+{
+  "found": true,
+  "rpm": 7991.531788917546,
+  "gear": 1,
+  "speed": 96.69625331419216,
+  "kind": 2,
+  "serial": 3,
+  "life": 0.17,
+  "throttle": 1,
+  "state": "race",
+  "keys": [
+    "KeyW"
+  ],
+  "conditions": {
+    "time": "night",
+    "weather": "clear",
+    "hour": 3.016808000000319
+  },
+  "mirrorUpdates": 7
+}

@@ -111,3 +111,6 @@ test('low-gear lift transfers more load and gives more rotation than a low-rev l
     assert.ok(high.trace.every(t => t.latch === 0 && Math.abs(t.beta) < 11), 'ordinary lift is controlled and does not enter drift');
   }
 });
+
+// Keep the six-car Megara steering contract in the regular npm test gate.
+import './handling-audit.test.mjs';

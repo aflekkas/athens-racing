@@ -1,5 +1,6 @@
 // Car catalogue + procedural car models (lofted bodies), traffic vehicles, the curly-haired driver.
 import * as THREE from 'three';
+import {ExhaustFlames} from './exhaust-flames.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat } from './cockpit.js';
@@ -21,7 +22,7 @@ export const CARS = [
     accent: "#f1efe7", mass: 1320, power: 141, torque: 280, redline: 6800, idle: 850, gears: [3.92,2.43,1.43,1,0.81,0.67], final: 3.59, wheelR: 0.316,
     wheelbase: 2.495, length: 3.85, width: 1.727, cdA: 0.68, vmax: 230, grip: 1.08, steer: 0.6, yawI: 1, drift: 1, brake: 1, cyl: 4, pitch: 1,
     convertible: true, body: "mini", drive: "fwd", frontW: 0.61, hcg: 0.5, track: 1.485, rsF: 0.59, susHz: 1.85, susZ: 0.55, rollK: 1, pitchK: 1,
-    alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.34, bias: 0.74, steerRate: 1.15, ebrake: 0.16, engine: "turbo4",
+    alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.34, bias: 0.74, steerResponse: 0.10, steerRate: 1.15, ebrake: 0.16, engine: "turbo4",
     turbo: 1, stats: {"speed":0.58,"accel":0.56,"handling":0.88,"drift":0.38}, zeroTo100: 7.2,
     visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, trimLabel: "COOPER S", bodyStyle: "convertible",
   },
@@ -57,7 +58,7 @@ export const CARS = [
     peakPowerRpm: 7400, wheelbase: 2.45, length: 4.491, width: 1.808, cdA: 0.58, vmax: 289, grip: 1.14, gripRear: 1.08, steer: 0.55, yawI: 1.1, drift: 1,
     brake: 1.16, cyl: 6, pitch: 1, body: "carrera", drive: "rwd", engine: "flat6", engineZone: "rear", tyres: ["235/40 ZR19","285/30 ZR19"], frontW: 0.39,
     hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11, mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5,
-    esc: 0.4, shiftT: 0.34, bias: 0.6, steerRate: 1.08, ebrake: 0.15, lsd: 0, stats: {"speed":0.96,"accel":0.91,"handling":0.94,"drift":0.78},
+    esc: 0.4, shiftT: 0.34, bias: 0.6, steerResponse: 0.10, steerRate: 1.08, ebrake: 0.15, lsd: 0, stats: {"speed":0.96,"accel":0.91,"handling":0.94,"drift":0.78},
     zeroTo100: 4.8, visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false},
   },
   {
@@ -199,6 +200,20 @@ export const CARS = [
     playerDetail: true, visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, gearbox: "DCT",
   },
   {
+    id: 'aventador_svj',
+    powertrain: {"idleRpm":900,"redlineRpm":8500,"limiterRpm":8600,"inertia":0.27,"maxFreeRevRate":8500,"spoolTime":0,"engineBraking":0.15,"gearboxType":"amt","shiftTime":0.18,"revMatch":true,"torqueConverter":false,"limiterDrop":220},
+    gearbox: "AMT", name: "LAMBORGHINI AVENTADOR SVJ", short: "AVENTADOR SVJ", tag: "LP770-4 · 6.5 V12 · 770 PS · Seven-speed ISR.", color: "#77b52c",
+    accent: "#dbb755", zeroTo100: 2.8, mass: 1675, dryMass: 1525, power: 566.35, torque: 720, redline: 8500, idle: 900, gears: [3.909,2.438,1.810,1.458,1.185,0.967,0.844],
+    final: 2.867, wheelR: 0.355, torqueCurve: [[0,210],[900,250],[2000,420],[3500,540],[5000,640],[6750,720],[7500,700],[8500,636.25],[8700,585]],
+    peakTorqueRpm: 6750, peakPowerRpm: 8500, wheelbase: 2.70, length: 4.943, width: 2.098, cdA: 0.64, vmax: 355, grip: 1.27, gripRear: 1.1, steer: 0.54,
+    yawI: 1.08, drift: 1, brake: 1.18, cyl: 12, pitch: 1.12, body: "aventador", cabinWidth: 0.77, drive: "awd", awdRear: 0.7, awdDrift: 0.8, engine: "v12",
+    engineZone: "rear", playerDetail: true, trafficWeight: 0, tyres: ["255/30 ZR20","355/25 ZR21"], frontW: 0.43, hcg: 0.4, track: 1.72, rsF: 0.5,
+    usGrad: 1.8, susHz: 1.9, susZ: 0.61, rollK: 0.65, pitchK: 0.65, alphaPk: 0.1, mfC: 1.5, loadSens: 0.14, clA: 0.32, rearSteering: true, activeAero: "ALA 2.0", tc: 0.8, esc: 0.4, shiftT: 0.18,
+    bias: 0.62, steerRate: 1.15, ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.98,"drift":0.81},
+    launchRpmFraction: .78, exhaustPops: true, trimLabel: "SVJ LP770-4",
+    visual: {"rim":20,"spokes":7,"ride":0,"caliper":"#bb2027","lip":false},
+  },
+  {
     id: 'huracan',
     powertrain: {"idleRpm":900,"redlineRpm":8500,"limiterRpm":8600,"inertia":0.27,"maxFreeRevRate":8500,"spoolTime":0,"engineBraking":0.15,"gearboxType":"dct","shiftTime":0.09,"revMatch":true,"torqueConverter":false,"limiterDrop":220},
     gearbox: "DCT", name: "LAMBORGHINI HURACÁN EVO", short: "HURACÁN EVO", tag: "5.2 V10 · 640 CV. Seven-speed dual clutch. AWD.", color: "#ea701d",
@@ -208,7 +223,7 @@ export const CARS = [
     yawI: 1.08, drift: 1, brake: 1.22, cyl: 10, pitch: 1.12, body: "huracan", cabinWidth: 0.77, drive: "awd", awdRear: 0.7, awdDrift: 0.8, engine: "v10",
     engineZone: "rear", playerDetail: true, trafficWeight: 0.1, tyres: ["245/30 ZR20","305/30 ZR20"], frontW: 0.43, hcg: 0.4, track: 1.668, rsF: 0.5,
     usGrad: 1.8, susHz: 1.9, susZ: 0.61, rollK: 0.65, pitchK: 0.65, alphaPk: 0.1, mfC: 1.5, loadSens: 0.14, clA: 0.12, tc: 0.8, esc: 0.4, shiftT: 0.09,
-    bias: 0.62, steerRate: 1.15, ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.98,"drift":0.81},
+    steerResponse: 0.18, steerSlipGuard: 1.02, bias: 0.62, steerRate: 1.15, ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.98,"drift":0.81},
     visual: {"rim":20,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true},
   },
   {
@@ -314,7 +329,7 @@ export const CARS = [
     wheelbase: 2.7, length: 4.433, width: 1.698, cdA: 0.62, vmax: 250, grip: 1.12, steer: 0.61, yawI: 1.05, drift: 1, brake: 1.08, cyl: 6, pitch: 1,
     body: "e36", cabinWidth: 0.8, drive: "rwd", engine: "na6", playerDetail: true, trafficWeight: 0.25, oldDash: true, gripRear: 1.04, lsd: 0.25,
     tyres: ["225/45 ZR17","245/40 ZR17"], frontW: 0.51, hcg: 0.48, track: 1.408, rsF: 0.58, usGrad: 2.3, susHz: 1.9, susZ: 0.52, rollK: 1.2, pitchK: 1.15,
-    alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.34, bias: 0.66, steerRate: 1.05, ebrake: 0.16,
+    alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.34, bias: 0.66, steerResponse: 0.10, steerRate: 1.05, ebrake: 0.16,
     stats: {"speed":0.55,"accel":0.59,"handling":0.65,"drift":0.77},
     visual: {"rim":17,"spokes":10,"ride":-0.02,"exhaust":2,"caliper":"#242424","lip":true,"m":true},
   },
@@ -394,7 +409,7 @@ export const CARS = [
     peakPowerRpm: 5500, wheelbase: 2.637, length: 4.255, width: 1.799, cdA: 0.62, vmax: 246, grip: 1.13, steer: 0.6, yawI: 1.02, drift: 1, brake: 1,
     cyl: 4, pitch: 1, body: "golf", fleet: "hatch", drive: "fwd", engine: "turbo4", turbo: 0.8, tyres: ["225/40 R18","225/40 R18"], frontW: 0.6, hcg: 0.51,
     track: 1.549, rsF: 0.59, susHz: 1.65, susZ: 0.54, rollK: 1.1, pitchK: 1.1, alphaPk: 0.125, mfC: 1.43, loadSens: 0.17, clA: 0, tc: 0.65, esc: 0.45,
-    shiftT: 0.34, bias: 0.72, steerRate: 1.1, ebrake: 0.16, lsd: 0.15,
+    shiftT: 0.34, bias: 0.72, steerResponse: 0.10, steerRate: 1.1, ebrake: 0.16, lsd: 0.15,
     stats: {"speed":0.7935483870967742,"accel":0.6153846153846154,"handling":0.8692307692307691,"drift":0.35}, zeroTo100: 6.5,
     visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"GTI"}, playerDetail: true,
   },
@@ -526,7 +541,7 @@ export const CARS = [
     peakPowerRpm: 6000, wheelbase: 2.841, length: 4.861, width: 1.864, cdA: 0.62, vmax: 250, grip: 1.12, steer: 0.57, yawI: 1.17, drift: 1, brake: 1.04,
     cyl: 4, pitch: 0.92, body: "superb", fleet: "taxi_superb", drive: "awd", engine: "turbo4", turbo: 1, tyres: ["215/55 R17","215/55 R17"], frontW: 0.6,
     hcg: 0.53, track: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.55, rollK: 1.15, pitchK: 1.15, alphaPk: 0.125, mfC: 1.44, loadSens: 0.17, clA: 0, tc: 0.7,
-    esc: 0.5, shiftT: 0.12, bias: 0.72, steerRate: 1.02, ebrake: 0.16, lsd: 0,
+    esc: 0.5, shiftT: 0.12, bias: 0.72, steerResponse: 0.10, steerRate: 1.02, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.8064516129032258,"accel":0.6896551724137931,"handling":0.8615384615384616,"drift":0.35}, zeroTo100: 5.8,
     visual: {"rim":19,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"4x4"}, playerDetail: true, gearbox: "DCT", awdRear: 0.5,
   },
@@ -1935,6 +1950,7 @@ export class CarModel {
     if(spec.nativeFleet)buildPlayerFleet(this);else buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',taxi:'ΤΑΑ 2150',carrera:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
     setPaint(this, savedPaint(spec));
     this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    if(spec.exhaustPops)this.exhaustFlames=new ExhaustFlames(this);
     this.wheelSpin = 0;
     // contact shadow
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());

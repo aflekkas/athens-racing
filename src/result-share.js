@@ -16,7 +16,7 @@ export async function renderResultCard({ screenshot, mapName, routeName, carName
   const g = c.createLinearGradient(0, 330, 0, 585); g.addColorStop(0, 'rgba(8,14,21,0)'); g.addColorStop(1, '#080e15'); c.fillStyle = g; c.fillRect(0, 330, 1200, 260);
   c.fillStyle = '#55e1db'; c.fillRect(48, 580, 5, 210);
   const text = (value, x, y, size, color = '#f2f6fa', max = 1080) => { c.fillStyle = color; c.font = `600 ${size}px sans-serif`; c.fillText(String(value), x, y, max); };
-  text('ATHENS / STREET RACERS', 48, 58, 23); text(mapName || 'ATHENS', 76, 600, 34);
+  text('ATHENS RACING', 48, 58, 23); text(mapName || 'ATHENS', 76, 600, 34);
   text(routeName || 'QUICK RACE', 76, 638, 22, '#9baebd'); text(carName || '', 76, 678, 24);
   text(format(time), 70, 775, 88); text(position ? `P${position} / ${field || position}` : 'FINISH', 925, 767, 40, '#55e1db', 230);
   if (personalBestLabel(pb)) text(personalBestLabel(pb), 76, 826, 24, '#55e1db');
@@ -26,9 +26,9 @@ export async function renderResultCard({ screenshot, mapName, routeName, carName
   return { canvas, blob };
 }
 export async function shareResultCard(data) {
-  const { blob } = await renderResultCard(data), file = new File([blob], 'athens-street-racers-result.png', { type: 'image/png' });
+  const { blob } = await renderResultCard(data), file = new File([blob], 'athens-racing-result.png', { type: 'image/png' });
   if (navigator.canShare?.({ files: [file] }) && navigator.share) {
-    try { await navigator.share({ files: [file], title: 'Athens Street Racers', text: `${data.mapName} · ${format(data.time)}` }); return 'SHARED'; }
+    try { await navigator.share({ files: [file], title: 'ATHENS RACING', text: `${data.mapName} · ${format(data.time)}` }); return 'SHARED'; }
     catch (e) { if (e.name === 'AbortError') return 'SHARE CANCELLED'; }
   }
   const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000);

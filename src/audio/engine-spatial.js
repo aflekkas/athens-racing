@@ -1,3 +1,4 @@
+import {ExhaustVoice} from './exhaust-voice.js';
 import { engineProfile, TRAFFIC_PROFILES, ENGINE_PROFILES } from './engine-profiles.js';
 import { buildEngineBank, EngineVoice } from './engine-synth.js';
 import { loadRecordedEngine, RecordedEngineVoice } from '../engine-recordings.js';
@@ -77,7 +78,7 @@ export class ExternalEngines {
       const air = ctx.createBiquadFilter(), panner = ctx.createStereoPanner(), gate = ctx.createGain();
       air.type = 'lowpass'; air.Q.value = .5; gate.gain.value = 0;
       air.connect(gate); gate.connect(panner); panner.connect(dest);
-      this.slots.push({air, panner, gate, voice: null, source: null, id: null, kind: -1, nextSwap: 0, nextPass: 0});
+      this.slots.push({exhaust:new ExhaustVoice(ctx,air),air, panner, gate, voice: null, source: null, id: null, kind: -1, nextSwap: 0, nextPass: 0});
     }
   }
   /** Reuse the existing CC0 world recordings, including their MP3 guard offsets.
@@ -143,6 +144,7 @@ export class ExternalEngines {
         slot.voice = detail ? bank.recorded ? new RecordedEngineVoice(this.ctx, bank, slot.air, spec, .65 * profile.gain)
           : new EngineVoice(this.ctx, bank, slot.air, .65 * profile.gain) : new DistantEngineVoice(this.ctx, bank, slot.air, spec);
       }
+      slot.exhaust.update(source.exhaustPulse);
       spatialEngine(slot, source, now, spec.kind === 'bus' ? 20 : 14);
       const speed = Math.max(0, source.v || 0), diesel = profile.diesel;
       const rpm = source.rpm || (spec.idle + Math.min(1, speed / 7) * (diesel ? 1000 : 1800) + speed % (diesel ? 7 : 11) * 65);

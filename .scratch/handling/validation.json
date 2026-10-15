@@ -1,0 +1,60 @@
+{
+  "releaseGatesAllGreen": true,
+  "physics": {
+    "passed": 426,
+    "failed": 0,
+    "thresholdsChanged": false
+  },
+  "focused": {
+    "passed": 54,
+    "failed": 0
+  },
+  "newContracts": {
+    "passed": 4,
+    "failed": 0
+  },
+  "tightSectionCases": 72,
+  "significantFrontOvershootAfter": 0,
+  "groundLaps": {
+    "before": [
+      {
+        "device": "keyboard",
+        "time": 75.65,
+        "finished": true,
+        "offroadFrames": 0,
+        "wallFrames": 0
+      },
+      {
+        "device": "gamepad",
+        "time": 75.13333333333334,
+        "finished": true,
+        "offroadFrames": 0,
+        "wallFrames": 0
+      }
+    ],
+    "after": [
+      {
+        "device": "keyboard",
+        "time": 75.76666666666667,
+        "finished": true,
+        "offroadFrames": 0,
+        "wallFrames": 0
+      },
+      {
+        "device": "gamepad",
+        "time": 75.03333333333333,
+        "finished": true,
+        "offroadFrames": 0,
+        "wallFrames": 0
+      }
+    ]
+  },
+  "drift": {
+    "huracanHandbrakeSeconds": 7.7,
+    "huracanPowerSeconds": 7.5,
+    "m3HandbrakeSeconds": 7.8,
+    "m3PowerSeconds": 7.4,
+    "feintFiveSecondCriterion": "pre-existing failure retained; see notes/logs"
+  },
+  "noPushOrDeploy": true
+}
