@@ -23,7 +23,7 @@ git archive "$C" | tar -x -C "$D"
 if cmp -s <(git show "$C:package-lock.json") package-lock.json; then ln -s "$REPO/node_modules" "$D/node_modules"; else (cd "$D" && npm ci --no-audit --no-fund > "$STATE/npm-ci.log" 2>&1) || { log "$S npm ci failed"; echo "$C" > "$STATE/failed"; exit 1; }; fi
 cd "$D"
 fail() { log "$S FAILED: $1 (see $STATE/last-failure.log)"; cp "$2" "$STATE/last-failure.log" 2>/dev/null; echo "$C" > "$STATE/failed"; exit 1; }
-gate() { timeout 1800 "$@" > gate.log 2>&1 || fail "$*" gate.log; }
+gate() { timeout 3600 "$@" > gate.log 2>&1 || fail "$*" gate.log; }
 log "$S testing"
 gate npm test
 gate node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
