@@ -21,7 +21,7 @@ The remaining shared scene, map, physics and road files merged automatically. Me
 - Restore the retaining-masonry comment and format the villa range block and Psychiko scenery module.
 - Restrict the extra road-network mouth check to street circuits. Comparing the executed villa blocks with actual Riviera data gives the same 56 placement calls as staging.
 - Keep the Riviera direction sign scoped to Riviera; unnamed closed-route start banners fall back to `CIRCUIT`.
-- Accept `psychiko-tt` only when explicitly requested by the URL. Megara/Penteli trials stay disabled, including their URL lookups; menus retain Quick Race and Free Roam. The scratch event-scope audit checks string and object lookups for all three maps.
+- `psychiko-tt` stays disabled like the Megara/Penteli trials; `src/main.js` is unchanged from staging and menus retain Quick Race and Free Roam.
 - Update older selector and browser-worker fixtures that assumed only three tracks. The first full test run exposed these two fixture omissions; both are fixed and the full rerun passes.
 
 ## Commands and results

@@ -756,15 +756,12 @@ function initFlow() {
 }
 
 function mapEvent(id) {
-  // Keep time trials out of the menu flow; Psychiko's authored trial is a URL launch option.
-  const supported = def => ['sprint', 'free'].includes(def?.type) ||
-    def?.type === 'timetrial' && map.id === 'psychiko' && def.id === 'psychiko-tt' && Q.get('event') === def.id;
-  if (id && typeof id === 'object') return supported(id) ? id : null;
+  if (id && typeof id === 'object') return ['sprint', 'free'].includes(id.type) ? id : null;
   if (id === 'free') return EV.freeRoam(map.id);
   const list = map.events || [];
   if (id === 'quick') return map.id === 'riviera' ? EV.QUICK_RACE : list.find(e => e.type === 'sprint') || list[0] || EV.QUICK_RACE;
   const def = list.find(e => e.id === id) || EV.getEvent(id);
-  return supported(def) ? def : null;
+  return ['sprint', 'free'].includes(def?.type) ? def : null;
 }
 
 /** make an event (definition or id) the active one: route segment / direction, HUD range, arches, traffic direction */
