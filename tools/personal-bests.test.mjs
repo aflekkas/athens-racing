@@ -21,3 +21,16 @@ test('rejects DNF, invalid/autodrive and corrupt data; blocked storage stays usa
  const s=setup(),st=mem();for(const r of [{time:1,valid:false},{time:null,valid:true},{time:NaN,valid:true},{time:Infinity,valid:true},{time:-1,valid:true},{time:1,valid:true,retired:true}])assert.equal(recordPersonalBest(s,r,st).newBest,false);
  const blocked={getItem(){throw Error('blocked')},setItem(){throw Error('quota')}};assert.equal(getPersonalBests(s,blocked).exact,null);assert.equal(recordPersonalBest(s,{time:30,valid:true},blocked).persistent,false);
 });
+
+
+test('lazy track setup and loaded geometry resolve identical personal-record keys', async () => {
+ const { menuMapContext, quickMapEvent } = await import('../src/menu-map.js');
+ const { resolve } = await import('../src/events.js');
+ const { readFile } = await import('node:fs/promises');
+ for (const id of ['riviera', 'penteli', 'megara']) {
+  const data = JSON.parse(await readFile(new URL(id === 'riviera' ? '../data/map.json' : `../data/maps/${id}/map.json`, import.meta.url)));
+  const def = quickMapEvent(id), menu = resolve(def, menuMapContext(id)), live = resolve(def, { route: data.route, marks: data.marks });
+  const key = route => exactBestKey(personalBestSetup({ mapId: id, def, route, car: 'mini' }));
+  assert.equal(key(menu), key(live), id);
+ }
+});
