@@ -531,12 +531,12 @@ function seaCheck(pv, dt) {
   }
   if (pv.water <= 0.05) G.sinkT = 0;
 }
-function backOnRoad(pv, recovery = null) {
+function backOnRoad(pv, recovery = null, { reset = false } = {}) {
   const online = multiplayer.active, dir = online ? multiplayer.lobby.event?.dir || 1 : G.dir || 1;
   const sf = towOffer.safe || pv.safe || { s: G.ev.r.s0, u: 0 };
   // Road projection gives the nearest point on all maps, including unwrapped circuit laps.
   // Online recovery uses the last valid road progress, never the off-road projection or a forward jump.
-  let s = recovery?.s ?? recoveryPosition(pv.s, sf.s, dir);
+  let s = recovery?.s ?? (reset ? roadRecoveryPose(route, pv, dir).s : recoveryPosition(pv.s, sf.s, dir));
   if (!online && G.run && !recovery) {
     const next = G.run.r.checkpoints[G.run.cpIdx];
     if (next) s = G.run.r.s0 + dir * Math.min(G.run.progress(s), next.d - 3);
@@ -586,9 +586,8 @@ function tow(pv, { reset = false } = {}) {
     if (!current()) return;
     G.towing = false;
     if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
-    // Reset uses the current road projection; multiplayer keeps the server's checkpoint-safe anchor.
-    if (reset && !multiplayer.active) recovery = roadRecoveryPose(route, pv, G.dir || 1);
-    backOnRoad(pv, recovery);
+    // Both controls share checkpoint limits; online keeps the server's anchor.
+    backOnRoad(pv, recovery, { reset });
     const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
     towOffer.recovering = hold;
     if (hold) towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 5; else if (!inFreeRoam()) G.pen += 5;

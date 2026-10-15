@@ -46,6 +46,7 @@ for(const def of MAPS)test(`${def.id}: real T/R paths place off-road cars on the
   }
   // These exercise the main-game path absent from the old helper-only tests.
   v.reset(200,r.edge(200)+15);let h=recoveryHarness(r,v,{safe:180,checkpoint:150});h.tow(v);await h.flush();assert.ok(v.s<=147);
+  v.reset(200,20);h=recoveryHarness(r,v,{safe:180,checkpoint:150});h.tow(v,{reset:true});await h.flush();assert.ok(v.s<=147);
   v.reset(200,20);h=recoveryHarness(r,v,{online:true,safe:180,serverS:120});h.tow(v);await h.flush();assert.equal(v.s,120);assert.equal(h.towOffer.hold,5);
   v.reset(200,20);h=recoveryHarness(r,v);h.backOnRoad(v,{s:NaN});assert.ok([v.x,v.y,v.z,v.s].every(Number.isFinite),'invalid anchor is repaired before reset');
   t.diagnostic(`${samples} production tow/reset samples, plus checkpoint, MP and invalid-anchor cases`);

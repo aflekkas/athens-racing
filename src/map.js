@@ -29,6 +29,7 @@
 // Route space: s = distance along the route (Vouliagmeni -> Lomvarda), u = lateral offset, + = right.
 import * as THREE from 'three';
 import { clamp, lerp, smoothstep } from './util.js';
+import { conformRoadElevations } from './road-elevation.js';
 import { getMap } from './map-catalog.js';
 import { LocalCarriageways } from './local-carriageways.js';
 import { loadBakedWorldData } from './baked-world-data.js';
@@ -81,6 +82,7 @@ export class Route {
       this.GR[i] = (this.Y[b] - this.Y[a]) / (2 * this.step);
     }
     this.setLocalCorridors(corridors);
+    conformRoadElevations(this);
   }
   setLocalCorridors(metadata) { this.localLayout = metadata.length ? new LocalCarriageways(this, metadata) : null; this.localCorridors = this.localLayout?.bores || []; }
   contactFrame(s, u, out = {}) { if (this.localLayout?.contains(s)) return this.localLayout.frame(s,u,out); this.frame(s,out); out.mapped=false; return out; }

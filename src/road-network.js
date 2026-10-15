@@ -35,7 +35,7 @@ export function buildRoadNetwork(network,scene){
   for(let i=0;i<3;i++){const j=(i+1)%3;error=Math.max(error,Math.abs(network.height((points[i][0]+points[j][0])/2,(points[i][1]+points[j][1])/2)-(ys[i]+ys[j])/2));}
   error=Math.max(error,Math.abs(network.height((a[0]+b[0]+c[0])/3,(a[1]+b[1]+c[1])/3)-(ys[0]+ys[1]+ys[2])/3));
   const junction=points.some(p=>{if(!network.nearMain(...p))return false;const q=network.project(...p);return Math.abs(q.u)<network.route.edge(q.s)+8;});
-  if((length>(junction?3.8:18)||error>.045&&length>2)&&depth<12){let A=a,B=b,C=c;if(bc>ab&&bc>ca){A=b;B=c;C=a;}else if(ca>ab){A=c;B=a;C=b;}const mid=[(A[0]+B[0])/2,(A[1]+B[1])/2];triangle(A,mid,C,seg,pavement,depth+1);triangle(mid,B,C,seg,pavement,depth+1);return;}
+  if((length>(junction?3.8:18)||error>.01&&length>.3)&&depth<16){let A=a,B=b,C=c;if(bc>ab&&bc>ca){A=b;B=c;C=a;}else if(ca>ab){A=c;B=a;C=b;}const mid=[(A[0]+B[0])/2,(A[1]+B[1])/2];triangle(A,mid,C,seg,pavement,depth+1);triangle(mid,B,C,seg,pavement,depth+1);return;}
   // Clip at the race asphalt boundary. Both surfaces meet at precisely route.surfaceY, with no overlay.
   let poly=[a,b,c],values=poly.map(p=>{if(!network.nearMain(...p))return 1;const q=network.project(...p);return !network.route.closed&&(q.s < -60||q.s>network.route.length+60)?1:Math.abs(q.u)-network.route.edge(q.s)-network.mainMargin;});const clipped=[];
   for(let i=0,j=2;i<3;j=i++){const P=values[j]>0,Q=values[i]>0;if(P!==Q){const t=values[j]/(values[j]-values[i]);clipped.push([poly[j][0]+(poly[i][0]-poly[j][0])*t,poly[j][1]+(poly[i][1]-poly[j][1])*t]);}if(Q)clipped.push(poly[i]);}

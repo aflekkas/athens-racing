@@ -51,6 +51,7 @@ All must exit 0. If you change physics, add or update a case in `tools/physics-t
 
 - Racing is about time only: no XP, levels, points, money, unlocks or text dialogue.
 - The HUD stays simple.
+- Terrain next to every drivable road blends to road level so a car can always drive back on (checked by tools/road-terrain-level.test.mjs).
 - UI: no native dropdowns (`<select>`), use the shared Select component; every selection/hover/focus state animates; all screens are built from the shared components in `src/ui/components.js` and update in place (no full re-render or flashing); menus are full screens, not pop-up dialogs.
 - Nitro only exists on the SEAT.
 - New tracks are built from real street-level imagery of the real road, with side-by-side comparison screenshots in the PR.

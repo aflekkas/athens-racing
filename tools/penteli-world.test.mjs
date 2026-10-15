@@ -32,10 +32,10 @@ test('signs face both approaches; inferred reverse limits match the entered zone
  const riviera={id:'riviera',data:{speedSigns:[{s:10,v:50,dir:1}]}};assert.equal(speedSignRecords(riviera),riviera.data.speedSigns);
 });
 
-test('Penteli verge contacts use rendered triangles and have no phantom sidewalk',async()=>{
+test('Penteli gravel contacts use rendered triangles and have no phantom sidewalk',async()=>{
  const THREE=await import('three'),{buildPenteliSurface}=await import('../src/maps/penteli-surface.js'),{PenteliGround}=await import('../src/maps/penteli-ground.js');
  const scene=new THREE.Group(),height=(x,z)=>terrain.height(x,z)-3,road=buildPenteliSurface(scene,map,height),ground=new PenteliGround(map,height,{network:map.roadNetwork},road);
  let tested=0;
- for(const mesh of road.group.children.filter(m=>m.name==='Penteli cut and fill verge')){const p=mesh.geometry.attributes.position.array,ix=mesh.geometry.index.array;for(let i=0;i<ix.length;i+=3*97){const ids=[ix[i]*3,ix[i+1]*3,ix[i+2]*3],x=ids.reduce((n,k)=>n+p[k],0)/3,z=ids.reduce((n,k)=>n+p[k+2],0)/3,y=ids.reduce((n,k)=>n+p[k+1],0)/3,q=route.project(x,z,null);if(map.roadNetwork.sample(x,z)||Math.abs(q.u)<=route.edge(q.s))continue;const hit=ground.at(x,z,q.s,q.u,{});assert.ok(hit.y>=y-1e-4);assert.equal(hit.networkStep,0);assert.notEqual(hit.surf,'pavement');tested++;}}
+ for(const mesh of road.group.children){const p=mesh.geometry.attributes.position.array,ix=mesh.geometry.index.array;for(let i=0;i<ix.length;i+=3*23){const ids=[ix[i]*3,ix[i+1]*3,ix[i+2]*3],x=ids.reduce((n,k)=>n+p[k],0)/3,z=ids.reduce((n,k)=>n+p[k+2],0)/3,y=ids.reduce((n,k)=>n+p[k+1],0)/3,q=route.project(x,z,null);if(map.roadNetwork.sample(x,z)||Math.abs(q.u)<=route.edge(q.s))continue;const hit=ground.at(x,z,q.s,q.u,{});assert.ok(hit.y>=y-1e-4);assert.equal(hit.networkStep,0);assert.notEqual(hit.surf,'pavement');tested++;}}
  assert.ok(tested>100);road.dispose();
 });

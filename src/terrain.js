@@ -5,6 +5,9 @@ import { vnoise, fbm, smoothstep, clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 import { sampleTerrainHeight } from './terrain-contact.js';
 import { cutMountainRoads } from './road-cut.js';
+import { RoadTerrain } from './road-terrain.js';
+import { limitTerrainSlopes } from './terrain-slope.js';
+import { installTerrainRefinement, TERRAIN_SUBDIVISIONS } from './terrain-refinement.js';
 
 const C = (h) => new THREE.Color(h);
 const CLASS_COL = [C('#b9a985'), C('#dcc8a0'), C('#b7ab95'), C('#8a7d57'), C('#9a937f'), C('#738440'), C('#5c6435'), C('#6d6b57'), C('#9c8b63')];
@@ -210,6 +213,28 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     return out;
   };
 
+  // The source DEM is 10 m: road-edge constraints cannot survive interpolation
+  // of those large triangles. Refine only the road/shoulder corridor; the
+  // tighter Penteli hairpins use 1.25 m, Riviera 2 m, and Megara 2.5 m.
+  const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : .075 }), refined = new Set();
+  for (const seg of conform.segments) {
+    const R = seg.width + 32 + T;
+    const i0 = Math.max(0, Math.floor((Math.min(seg.ax, seg.bx) - R - minX) / T)), i1 = Math.min(GX - 2, Math.ceil((Math.max(seg.ax, seg.bx) + R - minX) / T));
+    const j0 = Math.max(0, Math.floor((Math.min(seg.az, seg.bz) - R - minZ) / T)), j1 = Math.min(GZ - 2, Math.ceil((Math.max(seg.az, seg.bz) + R - minZ) / T));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const x = minX + (i + .5) * T, z = minZ + (j + .5) * T;
+      const t = clamp(((x - seg.ax) * seg.dx + (z - seg.az) * seg.dz) / seg.L2, 0, 1);
+      if (Math.hypot(x - seg.ax - seg.dx * t, z - seg.az - seg.dz * t) <= seg.width + 32 + T * .71) {
+        refined.add(j * GX + i); mask[j * GX + i] = mask[j * GX + i + 1] = mask[(j + 1) * GX + i] = mask[(j + 1) * GX + i + 1] = 1;
+      }
+    }
+  }
+  // A coarse 40 m triangle must never overlie a new cut/fill corridor. Extend
+  // the fine mask to whole coarse cells; merely checking its four corners can
+  // leave a tall underlay poking through a perfectly level fine shoulder.
+  for(const id of refined){const i=Math.floor((id%GX)/4)*4,j=Math.floor(Math.floor(id/GX)/4)*4;
+    for(let b=j;b<=Math.min(GZ-1,j+4);b++)for(let a=i;a<=Math.min(GX-1,i+4);a++)mask[b*GX+a]=1;
+  }
   const build = (step, include, lower) => {
     const nx = Math.floor((GX - 1) / step) + 1, nz = Math.floor((GZ - 1) / step) + 1;
     const vid = new Int32Array(nx * nz).fill(-1);
@@ -244,7 +269,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     return g;
   };
   const inFine = (i, j, i2, j2) => mask[j * GX + i] && mask[j * GX + i2] && mask[j2 * GX + i] && mask[j2 * GX + i2];
-  const fineGeo = build(1, inFine);
+  const fineGeo = build(1, (i,j,i2,j2) => inFine(i,j,i2,j2) && !refined.has(j * GX + i));
   // coarse outside: drop vertices that are deep inside the fine area so they hide under it
   const C4 = 4;
   const coarseGeo = build(C4, (i, j, i2, j2) => !(inFine(i, j, i, j) && inFine(i2, j2, i2, j2) && inFine(i, j2, i, j2) && inFine(i2, j, i2, j)),
@@ -258,11 +283,48 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   const coarseMat = mat.clone(); coarseMat.onBeforeCompile = mat.onBeforeCompile; coarseMat.customProgramCacheKey = mat.customProgramCacheKey;
   Object.assign(coarseMat, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 });
   for (const g of splitGeometry(coarseGeo, 1500)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  // Use the uncut DEM for feathering; earlier cuts are only an underlay.
+  // This raises downhill fills as well as lowering uphill cuts.
+  const heights = new Map(), fixed = new Set(), n = farmland ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
+  const height = (ix, iz) => {
+    const key = iz * stride + ix; if (heights.has(key)) return heights.get(key);
+    const x = minX + ix * T / n, z = minZ + iz * T / n;
+    const y = conform.height(x, z, sampleTerrainHeight(terrain, H, x, z));
+    heights.set(key, y); if(conform.fixed)fixed.add(key); return y;
+  };
+  // Bound the actual triangle slopes around all drivable strips. Side roads
+  // subsequently sample this same field rather than restoring an older DEM.
+  for(const id of refined){const i=id%GX,j=Math.floor(id/GX);for(let b=0;b<=n;b++)for(let a=0;a<=n;a++)height(i*n+a,j*n+b);}
+  limitTerrainSlopes(heights,fixed,stride,T/n);
+  const pos = [], col = [], nor = [], urb = [], indices = [], vertices = new Map(), c = new THREE.Color(), normal = new THREE.Vector3();
+  const vertex = (ix, iz) => {
+    const key = iz * stride + ix; if (vertices.has(key)) return vertices.get(key);
+    const y = height(ix, iz), i = clamp(Math.round(ix / n), 0, GX - 1), j = clamp(Math.round(iz / n), 0, GZ - 1);
+    normal.set((height(Math.max(0,ix-1),iz)-height(Math.min((GX-1)*n,ix+1),iz))/(2*T/n),1,
+      (height(ix,Math.max(0,iz-1))-height(ix,Math.min((GZ-1)*n,iz+1)))/(2*T/n)).normalize();
+    colorAt(i,j,y,normal,c);
+    const id = pos.length / 3; vertices.set(key,id);
+    pos.push(minX + ix * T / n,y,minZ + iz * T / n); col.push(c.r,c.g,c.b); nor.push(normal.x,normal.y,normal.z); urb.push(CL[j*GX+i]===4?1:0); return id;
+  };
+  for (const id of refined) {
+    const i = id % GX, j = Math.floor(id / GX);
+    for (let b=0;b<n;b++) for(let a=0;a<n;a++) {
+      const x=i*n+a,z=j*n+b,v00=vertex(x,z),v10=vertex(x+1,z),v01=vertex(x,z+1),v11=vertex(x+1,z+1);
+      if (Math.abs(pos[v00*3+1]-pos[v11*3+1])<Math.abs(pos[v10*3+1]-pos[v01*3+1])) indices.push(v00,v01,v11,v00,v11,v10);
+      else indices.push(v00,v01,v10,v10,v01,v11);
+    }
+  }
+  const refinedGeo = new THREE.BufferGeometry();
+  refinedGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); refinedGeo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  refinedGeo.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); refinedGeo.setAttribute('aU',new THREE.Float32BufferAttribute(urb,1));refinedGeo.setIndex(indices);
+  for (const g of splitGeometry(refinedGeo,600)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
+  fineGeo.dispose();coarseGeo.dispose();refinedGeo.dispose();
+  installTerrainRefinement(terrain,group);
   scene.add(group);
   return { group, material: mat, heightC: (x, z) => sampleH(terrain, Hc, x, z) };
 }
 
-export const sampleH = sampleTerrainHeight;
+export const sampleH = (terrain, heights, x, z) => terrain.refinedHeight?.(x,z) ?? sampleTerrainHeight(terrain, heights, x, z);
 
 function splitGeometry(geo, tile) {
   const pos = geo.attributes.position, col = geo.attributes.color, nor = geo.attributes.normal, ua = geo.attributes.aU, idx = geo.index.array;
