@@ -1,0 +1,25 @@
+[browser-slot] queued with ticket 1057
+[browser-slot] slot 4 acquired (ticket 1057, waited 144s)
+NAVIGATED
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+BROWSER THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+LOADED
+after chase launch
+after chase cruise50
+after chase cruise80
+after chase braking
+after chase lane-change
+after chase junction-turn
+after chase kerb
+after chase bump
+after cockpit launch
+after cockpit cruise50
+after cockpit cruise80
+after cockpit braking
+after cockpit lane-change
+after cockpit junction-turn
+after cockpit kerb
+after cockpit bump
+DONE after {"recovery":{"triggered":true},"final":{"s":361.26890520442515,"u":4.621868936311478,"pose":{"roll":-0.00040818600393960157,"rollV":0.0005398118465056642,"pitch":0.00022813897514344553,"pitchV":-0.0001790547560185375,"heave":-0.004364356576098925,"heaveV":0.00012248703472698226},"conditions":{"time":"day","weather":"clear","hour":14},"gameTime":100.93319999999554,"parameters":{"mass":12000,"unsprung":200,"tyreK":1000000,"bars":[144177.71212528963,110568.74435599954]},"load":[21252.770255098694,20955.53360383429,37604.78173648304,37890.19088034525],"towing":false}}
+after chase kerb

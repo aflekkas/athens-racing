@@ -1,0 +1,18 @@
+[
+  {
+    "camera": "chase",
+    "scenario": "kerb",
+    "samples": 360,
+    "speed_kmh": [
+      23.675927834652555,
+      25.574663122239095
+    ],
+    "pitch_deg": 0.43133684462699284,
+    "roll_deg": 6.015920939950039,
+    "heave_cm": 1.826322485172167,
+    "unloaded_frames": 1,
+    "longest_unloaded_seconds": 0.016666666666666666,
+    "max_compression_cm": 1.5903444232971877,
+    "heading_change_deg": 3.1696990562221683
+  }
+]

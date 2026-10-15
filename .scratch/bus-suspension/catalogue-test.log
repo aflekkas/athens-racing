@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: catalogue composes search, class, drivetrain and HP filters without losing original indices
+ok 1 - catalogue composes search, class, drivetrain and HP filters without losing original indices
+  ---
+  duration_ms: 10.251546
+  type: 'test'
+  ...
+# Subtest: the garage lineup is grouped by class, names only real catalogue cars and leaves the rest to traffic and AI
+ok 2 - the garage lineup is grouped by class, names only real catalogue cars and leaves the rest to traffic and AI
+  ---
+  duration_ms: 24.622057
+  type: 'test'
+  ...
+# Subtest: labels and gearbox feedback use remapped keyboard/controller/touch bindings
+ok 3 - labels and gearbox feedback use remapped keyboard/controller/touch bindings
+  ---
+  duration_ms: 0.995826
+  type: 'test'
+  ...
+# Subtest: each generation has unique valid trim IDs and legacy selections migrate without losing their engine
+ok 4 - each generation has unique valid trim IDs and legacy selections migrate without losing their engine
+  ---
+  duration_ms: 2.193367
+  type: 'test'
+  ...
+# Subtest: CLE and E36 factory output anchors differ by engine and performance trim has visible parts
+ok 5 - CLE and E36 factory output anchors differ by engine and performance trim has visible parts
+  ---
+  duration_ms: 13.798476
+  type: 'test'
+  ...
+# Subtest: garage renders the shared trim control, torque and a selectable model when only its performance trim is allowed
+ok 6 - garage renders the shared trim control, torque and a selectable model when only its performance trim is allowed
+  ---
+  duration_ms: 56.95218
+  type: 'test'
+  ...
+# Subtest: generation labels match the existing represented Panda, Ibiza and Huracán
+ok 7 - generation labels match the existing represented Panda, Ibiza and Huracán
+  ---
+  duration_ms: 0.346225
+  type: 'test'
+  ...
+# Subtest: MINI body and engine choices preserve all legacy IDs and respect host restrictions
+ok 8 - MINI body and engine choices preserve all legacy IDs and respect host restrictions
+  ---
+  duration_ms: 0.590751
+  type: 'test'
+  ...
+# Subtest: new trim IDs reach server and deployment catalogues, with exactly one nitrous car
+ok 9 - new trim IDs reach server and deployment catalogues, with exactly one nitrous car
+  ---
+  duration_ms: 7.88805
+  type: 'test'
+  ...
+# Subtest: body uses shared segments beside trim arrows, filtering forbidden body-engine combinations
+ok 10 - body uses shared segments beside trim arrows, filtering forbidden body-engine combinations
+  ---
+  duration_ms: 2.841826
+  type: 'test'
+  ...
+# Subtest: trim arrows wrap within the current body and obey event and multiplayer restrictions
+ok 11 - trim arrows wrap within the current body and obey event and multiplayer restrictions
+  ---
+  duration_ms: 0.4828
+  type: 'test'
+  ...
+# Subtest: CLE offers a real PHEV without adding transient 48V ratings to continuous engine power
+ok 12 - CLE offers a real PHEV without adding transient 48V ratings to continuous engine power
+  ---
+  duration_ms: 0.312722
+  type: 'test'
+  ...
+# Subtest: Jazz GK factory manuals and fantasy RWD build stay distinct and host-filterable
+ok 13 - Jazz GK factory manuals and fantasy RWD build stay distinct and host-filterable
+  ---
+  duration_ms: 1.396012
+  type: 'test'
+  ...
+# Subtest: trim ride height survives live suspension poses while all four wheel centres stay grounded
+ok 14 - trim ride height survives live suspension poses while all four wheel centres stay grounded
+  ---
+  duration_ms: 1952.86004
+  type: 'test'
+  ...
+# Subtest: every authored fleet body is reachable, while rivals only draw from race cars
+ok 15 - every authored fleet body is reachable, while rivals only draw from race cars
+  ---
+  duration_ms: 7.128444
+  type: 'test'
+  ...
+# Subtest: native fleet builds finite geometry, correct wheel counts and usable cockpit stations
+ok 16 - native fleet builds finite geometry, correct wheel counts and usable cockpit stations
+  ---
+  duration_ms: 1086.42385
+  type: 'test'
+  ...
+# Subtest: garage cameras fit utility bodies through a complete turntable and narrow screens
+ok 17 - garage cameras fit utility bodies through a complete turntable and narrow screens
+  ---
+  duration_ms: 18.472587
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4614.424174

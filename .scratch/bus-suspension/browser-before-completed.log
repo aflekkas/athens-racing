@@ -1,0 +1,25 @@
+# Completed baseline capture events; interrupted setup output omitted.
+[browser-slot] queued with ticket 1037
+[browser-slot] slot 2 acquired (ticket 1037, waited 4s)
+NAVIGATED
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+BROWSER THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+LOADED
+before chase launch
+before chase cruise50
+before chase cruise80
+before chase braking
+before chase lane-change
+before chase junction-turn
+before chase kerb
+before chase bump
+before cockpit launch
+before cockpit cruise50
+before cockpit cruise80
+before cockpit braking
+before cockpit lane-change
+before cockpit junction-turn
+before cockpit kerb
+before cockpit bump
+DONE before {"recovery":{"triggered":true},"final":{"s":361.2976749257947,"u":4.621888263321583,"pose":{"roll":-0.0003513992483909174,"rollV":0.0005818927916244132,"pitch":0.0003379082318379289,"pitchV":-0.00010658863606992736,"heave":-0.004487906281880688,"heaveV":0.0003778830383896573},"parameters":{"mass":12000,"unsprung":48,"tyreK":240000,"bars":[2228834.1516192695,2169166.001119044]},"load":[20760.357270825793,20518.535998095707,38106.49745078623,38335.284233739185],"towing":false}}

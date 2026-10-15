@@ -1,0 +1,56 @@
+{
+  "baseline_checks": 433,
+  "preflight_checks": 1137,
+  "legacy_checks_identical": 421,
+  "differences": [
+    {
+      "before": "PASS  playable fleet van: accelerates, reaches rated speed and brakes safely  [15.60s to 100.0, top 147.4, stop 25.6m from 80.0km/h (0.98g)]",
+      "after": "PASS  playable fleet van: accelerates, reaches rated speed and brakes safely  [15.60s to 100.0, top 147.4, stop 25.4m from 80.0km/h (0.99g)]"
+    },
+    {
+      "before": "PASS  utility gentle corner van: stable body and no unloaded wheel/rollover  [roll 0.43deg, beta 0.48deg, minimum wheel load 19.73%]",
+      "after": "PASS  utility gentle corner van: stable body and no unloaded wheel/rollover  [roll 0.49deg, beta 0.48deg, minimum wheel load 20.07%]"
+    },
+    {
+      "before": "PASS  playable fleet van_150: accelerates, reaches rated speed and brakes safely  [14.17s to 100.0, top 157.1, stop 25.6m from 80.0km/h (0.98g)]",
+      "after": "PASS  playable fleet van_150: accelerates, reaches rated speed and brakes safely  [14.17s to 100.0, top 157.1, stop 25.4m from 80.0km/h (0.99g)]"
+    },
+    {
+      "before": "PASS  utility gentle corner van_150: stable body and no unloaded wheel/rollover  [roll 0.43deg, beta 0.48deg, minimum wheel load 19.85%]",
+      "after": "PASS  utility gentle corner van_150: stable body and no unloaded wheel/rollover  [roll 0.49deg, beta 0.48deg, minimum wheel load 20.18%]"
+    },
+    {
+      "before": "PASS  playable fleet truck: accelerates, reaches rated speed and brakes safely  [13.70s to 77.0, top 108.8, stop 29.4m from 80.0km/h (0.85g)]",
+      "after": "PASS  playable fleet truck: accelerates, reaches rated speed and brakes safely  [13.70s to 77.0, top 108.8, stop 29.5m from 80.0km/h (0.85g)]"
+    },
+    {
+      "before": "PASS  utility gentle corner truck: stable body and no unloaded wheel/rollover  [roll 0.42deg, beta 0.36deg, minimum wheel load 18.64%]",
+      "after": "PASS  utility gentle corner truck: stable body and no unloaded wheel/rollover  [roll 0.44deg, beta 0.36deg, minimum wheel load 19.74%]"
+    },
+    {
+      "before": "PASS  playable fleet bus: accelerates, reaches rated speed and brakes safely  [12.57s to 59.5, top 84.6, stop 24.9m from 68.0km/h (0.73g)]",
+      "after": "PASS  playable fleet bus: accelerates, reaches rated speed and brakes safely  [12.57s to 59.5, top 84.6, stop 24.5m from 68.0km/h (0.74g)]"
+    },
+    {
+      "before": "PASS  utility gentle corner bus: stable body and no unloaded wheel/rollover  [roll 0.53deg, beta 0.29deg, minimum wheel load 15.38%]",
+      "after": "PASS  utility gentle corner bus: stable body and no unloaded wheel/rollover  [roll 0.35deg, beta 0.29deg, minimum wheel load 16.08%]"
+    },
+    {
+      "before": "PASS  playable fleet delivery: accelerates, reaches rated speed and brakes safely  [13.45s to 73.5, top 103.6, stop 27.9m from 80.0km/h (0.90g)]",
+      "after": "PASS  playable fleet delivery: accelerates, reaches rated speed and brakes safely  [13.43s to 73.5, top 103.6, stop 28.9m from 80.0km/h (0.87g)]"
+    },
+    {
+      "before": "PASS  playable fleet scooter: accelerates, reaches rated speed and brakes safely  [11.30s to 91.0, top 128.0, stop 26.4m from 80.0km/h (0.96g)]",
+      "after": "PASS  playable fleet scooter: accelerates, reaches rated speed and brakes safely  [11.30s to 91.0, top 128.0, stop 27.1m from 80.0km/h (0.93g)]"
+    },
+    {
+      "before": "PASS  playable fleet moto: accelerates, reaches rated speed and brakes safely  [5.00s to 100.0, top 216.7, stop 24.9m from 80.0km/h (1.01g)]",
+      "after": "PASS  playable fleet moto: accelerates, reaches rated speed and brakes safely  [4.58s to 100.0, top 216.7, stop 26.2m from 80.0km/h (0.96g)]"
+    },
+    {
+      "before": "PASS  playable fleet police_moto: accelerates, reaches rated speed and brakes safely  [4.58s to 100.0, top 198.2, stop 25.1m from 80.0km/h (1.00g)]",
+      "after": "PASS  playable fleet police_moto: accelerates, reaches rated speed and brakes safely  [4.38s to 100.0, top 198.2, stop 26.1m from 80.0km/h (0.96g)]"
+    }
+  ],
+  "unexpected_differences": []
+}

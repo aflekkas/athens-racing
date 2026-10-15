@@ -382,8 +382,19 @@ export class Vehicle {
     const kbF = Math.max(0, (inv(rsF * Kphi) - KsF) / (t * t)), kbR = Math.max(0, (inv((1 - rsF) * Kphi) - KsR) / (t * t));
     this.rollGradEff = ms * G * this.hcg * (1 - this.rcK) / Kphi * 57.3; // deg/g actually achieved (body on the tyres)
     this.kBar = [kbF, kbR];
+    // Commercial dampers must control roll as well as the soft air/leaf springs. Size
+    // the additional axle damping from the roll mode, subtracting the corner dampers.
+    // Opt-in: existing passenger cars retain their exact force/integration path.
+    this.cBar = sp.rollDamping ? [0, 1].map(j => {
+      const share = j ? 1 - rsF : rsF;
+      const corner = (this.cBump[j * 2] + this.cReb[j * 2]) * 0.5 * t * t / 2;
+      return Math.max(0, 2 * sp.rollDamping * Math.sqrt(Kphi * this.Ixx) * share - corner) / (t * t);
+    }) : null;
+    // Keep the fastest wheel/bar mode resolved even for coarse distant-AI steps.
+    this.susStep = sp.rollDamping ? Math.min(1 / 960,
+      0.15 * Math.sqrt(mu / (Math.max(kF, kR) * 13 + (sp.tyreK ?? 240e3) + 2 * Math.max(kbF, kbR)))) : 0;
     this.antiPitch = sp.antiPitch ?? 0.3;                              // anti-dive / anti-squat share of pitch transfer
-    // tyre: vertical stiffness ~ 200-280 N/mm for these sizes, a little damping
+    // Passenger tyre default: ~200-280 N/mm; commercial/bike profiles supply their own stiffness.
     const kt = this.kTyre = sp.tyreK ?? 240e3;
     this.cTyre = 2 * 0.06 * Math.sqrt(kt * mu);
     this.travel = sp.travel ?? 0.075;                                  // bump travel to the bump stop (m)
@@ -415,7 +426,7 @@ export class Vehicle {
    * Writes each corner's tyre load Fz, wheel travel zu / compression d.
    */
   stepSuspension(dt, ax, ay, gEff, rIn, patchV) {
-    const S = this.sus, mu = this.mUns, ms = this.mSpr, n = 4, h = dt / n;
+    const S = this.sus, mu = this.mUns, ms = this.mSpr, n = this.susStep ? Math.max(4, Math.ceil(dt / this.susStep)) : 4, h = dt / n;
     const cx = this.cx, cy = this.cy, k = this.kSpr, kt = this.kTyre, ct = this.cTyre, kb = this.kBar;
     const hEl = this.hcg * (1 - this.rcK), hP = this.hcg * (1 - this.antiPitch);
     const Mroll = ms * ay * hEl, Mpitch = ms * ax * hP, gx = G * (gEff - 1);
@@ -435,11 +446,17 @@ export class Vehicle {
         const d = S.zu[i] - zb, dv = S.zuv[i] - zbv;                   // compression (+) and its rate
         let f = k[i] * d + (dv > 0 ? this.cBump[i] : this.cReb[i]) * dv;
         if (d > this.travel) f += k[i] * 12 * (d - this.travel) + this.cBump[i] * 2 * Math.max(0, dv); // bump stop
+        if (this.spec.droop && d < -this.spec.droop) f += k[i] * 12 * (d + this.spec.droop) + this.cReb[i] * 2 * Math.min(0, dv);
         S.d[i] = d; Fs[i] = f;
       }
       for (let j = 0; j < 2; j++) { const fb = kb[j] * (S.d[j * 2] - S.d[j * 2 + 1]); Fs[j * 2] += fb; Fs[j * 2 + 1] -= fb; }
+      if (this.cBar) for (let j = 0; j < 2; j++) {
+        const l = j * 2, r = l + 1;
+        const diffV = S.zuv[l] - S.zuv[r] - (cy[l] - cy[r]) * S.phv;
+        const fb = this.cBar[j] * diffV; Fs[l] += fb; Fs[r] -= fb;
+      }
       // a spring can only push: fully extended, the wheel hangs from the body (droop)
-      for (let i = 0; i < 4; i++) Fs[i] = Math.max(Fs[i], -this.Fs0[i]);
+      for (let i = 0; i < 4; i++) Fs[i] = this.spec.droop && S.d[i] < -this.spec.droop ? Fs[i] : Math.max(Fs[i], -this.Fs0[i]);
       let Fz = 0, My = 0, Mx = 0;
       for (let i = 0; i < 4; i++) {
         const tc = S.r[i] - S.zu[i], tcv = S.rv[i] - S.zuv[i];

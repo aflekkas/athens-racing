@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- The Citaro bus and delivery vehicles now settle smoothly after bumps and turns, with steadier suspension for scooters and motorbikes.
+  ![The Citaro bus driving along the Riviera](assets/changelog/2026.10.15.3/bus-suspension.webp "A softer, controlled ride for the heavy fleet.")
+
 - Known terrain issue: some distant slopes still show small sky-coloured gaps; a terrain fix is being tracked separately.
   <!-- Pre-existing in 935cc47 per terrain-owner review. Evidence: .scratch/simplify-world/after-penteli-mid-afternoon.png; .scratch/simplify-world/after-riviera-owner-candidate-afternoon.png. -->
 

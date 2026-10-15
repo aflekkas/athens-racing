@@ -287,6 +287,15 @@ else {
  }
 }
 
+// Vertical stability on every catalogue configuration, including heavy and assisted fleet.
+{
+ const {stabilityScenarios}=await import('./heavy-stability.mjs');
+ for(const r of stabilityScenarios()){
+  const {id,type,ok,...metrics}=r;
+  check(`suspension stability ${id}: ${type}`,ok,JSON.stringify(metrics));
+ }
+}
+
 // Representative real-trim performance: tighter than the catalogue-wide sanity envelope.
 // 120s allows stock power/aero to approach terminal speed; 12% sprint / 3% top tolerances.
 for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','aventador_svj','cle300e']) {
