@@ -237,7 +237,12 @@ export class Vehicle {
     const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, v), rack = this.rackLock(v);
     const thF = Math.atan2(this.vLat + this.a * this.w, Math.max(2, Math.abs(this.vLong)));
     const into = Math.max(1e-3, thF * sg + this.aPk * (sp.steerPk ?? 1) * wetPeakScale(this.surf));
-    return clamp((need + comp * (1 - A)) / ((1 - A) * rack + A * into), -1, 1);
+    // Invert the modest partial-input boost used by the player mapping too:
+    // y = B*x - C*x². Stable quadratic form also works when C is zero.
+    const response = clamp(sp.steerResponse ?? 0, 0, 0.25);
+    const B = (1 - A) * rack + A * into * (1 + response), C = A * into * response;
+    const demand = Math.abs(need + comp * (1 - A));
+    return Math.sign(need) * clamp(2 * demand / Math.max(1e-6, B + Math.sqrt(Math.max(0, B * B - 4 * C * demand))), 0, 1);
   }
   /** understeer gradient this car is set up with (deg / g) */
   get understeerGradient() { return this.kComp * 57.3 + 0.45; }
@@ -579,7 +584,11 @@ export class Vehicle {
     const into = Math.max(0, thF * Math.sign(sIn || 1) + aOpt);   // room towards the input side
     // compliance: the front axle's lateral force (as a share of its static load) bends the wheels back out of the turn
     const comp = this.kComp * clamp(this.wheel[0].Fy / (this.m * G * (sp.frontW ?? 0.55)), -1.5, 1.5);
-    const assisted = clamp(sIn * into + comp + helper, -(rack + 0.5), rack + 0.5);
+    // A small, per-car mid-input boost makes short keyboard taps and stick
+    // turn-in more useful. Zero/full input and deliberate drift rack are unchanged.
+    const response = clamp(sp.steerResponse ?? 0, 0, 0.25);
+    const intent = sIn * (1 + response * (1 - Math.abs(sIn)));
+    const assisted = clamp(intent * into + comp + helper, -(rack + 0.5), rack + 0.5);
     // Deliberate slides use the rack directly; do not fight their countersteer.
     const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
     let target = lerp(raw, assisted, A);
@@ -589,9 +598,19 @@ export class Vehicle {
     // Leave a small amount of scrub for feedback, and release the guard for
     // deliberate slides / counter-steer or when the driver disables assist.
     const guard = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
-    const catchingSlide = counter > 0 && sliding;
+    // Same-sign sideslip during a slow understeering turn is not a rear
+    // slide to catch. Only opposite-yaw countersteer needs the raw guard exit.
+    const catchingSlide = counter > 0 && sliding && sIn * this.w < 0;
     if (guard > 0 && vx > 0 && !catchingSlide && target * sIn > 0) {
-      const useful = Math.max(0, thF * Math.sign(sIn) + aOpt * 1.15 + comp * Math.sign(sIn));
+      const side = Math.sign(sIn);
+      // The outside front contact travels faster than the axle centre in a
+      // hairpin. Its travel heading is smaller, so centre-only targeting can
+      // still over-steer that loaded tyre. Guard both actual contact headings.
+      const frontLat = vy + this.a * this.w;
+      const frontTravel = Math.min(
+        Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[0])) * side,
+        Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[1])) * side);
+      const useful = Math.max(0, frontTravel + aOpt * (sp.steerSlipGuard ?? 1.02) + comp * side);
       const excess = Math.max(0, Math.abs(target) - useful);
       target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
     }

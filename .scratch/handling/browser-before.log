@@ -1,0 +1,43 @@
+[browser-slot] queued with ticket 954
+[browser-slot] slot 3 acquired (ticket 954, waited 72s)
+Handling before: private server on 36487
+Browser console: Failed to load resource: the server responded with a status of 404 (Not Found)
+Browser console: Failed to load resource: the server responded with a status of 404 (Not Found)
+before-huracan: boot complete
+starting rolling setup
+rolling setup complete {
+  side: 1,
+  car: 'huracan',
+  assist: 1,
+  cornerRadius: 38.24137198185137,
+  gear: 4
+}
+stepping strip 0
+rendered strip 0
+captured strip 0
+stepping strip 1
+rendered strip 1
+captured strip 1
+stepping strip 2
+rendered strip 2
+captured strip 2
+stepping strip 3
+rendered strip 3
+captured strip 3
+before-huracan-coast: 150 ms 0.714 g, 250 ms 0.575 g, peak 1.063 g, u 0.05
+production-ground laps [
+  {
+    device: 'keyboard',
+    time: 75.65,
+    finished: true,
+    offroadFrames: 0,
+    wallFrames: 0
+  },
+  {
+    device: 'gamepad',
+    time: 75.13333333333334,
+    finished: true,
+    offroadFrames: 0,
+    wallFrames: 0
+  }
+]

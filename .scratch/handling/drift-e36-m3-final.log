@@ -1,0 +1,7 @@
+== e36_m3 (rwd)
+  PASS handbrake entry b -6°  0.3 rad after 0.20 s, held 7.8 s in 0.3-0.6 rad, avg 27°, min 57 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+  PASS powerOver entry b -6°  0.3 rad after 0.62 s, held 7.4 s in 0.3-0.6 rad, avg 28°, min 50 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+  FAIL feint     entry b -11°  0.3 rad after 0.10 s, held 4.4 s in 0.3-0.6 rad, avg 24°, min 53 km/h  [thr 0.9 kS 1.5 kW 0.5 tgt 0.4]
+  PASS aided power rotation: beta 7.3°, rear 1.67 peak, latch false
+  PASS transition into the opposite drift: held 4.2 s, avg 29°, min 74 km/h  [thr 1 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 13.8° (latch off 13.8°)

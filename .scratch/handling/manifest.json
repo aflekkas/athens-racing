@@ -1,0 +1,53 @@
+{
+  "baseline": "533c53bf28e594c35d041558edd45757b0c68c29",
+  "codeGateCommit": "9670b74902586c2c30ef9c7185d0ab2ea2c10b77",
+  "gateBase": "e42dd03fcd572b7a964c8cff41a58b824d5df908",
+  "archive": "clean git archive of codeGateCommit; dependency symlink only",
+  "sources": {
+    "src/physics.js": "ccd60bed9b80f536f4b744cf7bd975ec159e3a688b660c39fdb05f3407e75b41",
+    "src/cars.js": "f06b76b2b5c7834955a66e82b6b45f258f86efa69d57db71f6422ecae076e333",
+    "tools/handling-notes.md": "3e4ba7cd6d9e4ca4a5138396e6af116049eabfb586380aec62a4f6fa37247d64",
+    "tools/physics-test/driver-feel.test.mjs": "79b8324a2b2d933636641c3434cd079504c94d00d275ec0feadc78316069484d",
+    "tools/physics-test/handling-audit.mjs": "a88f0c810ca6de096795d54abaa2154dfd5be055b17134f50700c18b50c4173d",
+    "tools/physics-test/handling-audit.test.mjs": "e35b20ce286a2efca6c4bce09b69195aaf5f46b1671d32b5daa808e580c54282",
+    "tools/physics-test/handling-sections.mjs": "4153d73d1cf45ae9d73b7cc89ba0bf86bc6b83a375e7d6b2c098bccc7a415316",
+    "tools/physics-test/handling-browser.mjs": "ca093dc11c050a869a5bb91a9bba69d862d03bd73ba301b50287d9ee98e1402e"
+  },
+  "baselinePhysicsSHA256": "627f7b61b99f25e556a7631a3acf1ee05ca8270bacb4cf56c9d64d61204f7f02",
+  "routeSHA256": "fe7fe12681bd8840c2be4d14c06656ed8233bb0d89bfcf15d1f4b9962f1ebed8",
+  "inputSHA256": "90e7abc6ba4170e7d8ca561f6a78294ca8139e05987e8bf11d0b1a30c88cf1bc",
+  "aiSHA256": "74be07bd54330a219b5384576995bac42a67a40fb87a16319124d78ff8cd6e36",
+  "gates": {
+    "npm-test": {
+      "exit": 0,
+      "logSHA256": "e61da0f1f2416ed85bed760fd0d756cc911ee0b2574c6d84b9610e54dfa6dfc0"
+    },
+    "physics": {
+      "exit": 0,
+      "logSHA256": "e19511f0e2582999e230b41ae138a55a3da3e40796d534d699b56c694bda04b5"
+    },
+    "events": {
+      "exit": 0,
+      "logSHA256": "ac250c886af673bb7e7befd40c51b64a738a6d17f4f449123e45264e7896cf76"
+    },
+    "syntax": {
+      "exit": 0,
+      "logSHA256": "463f395f763562baab16752397239c2201a3c4921df8bdd49e5b736f925fe52d"
+    },
+    "imports": {
+      "exit": 0,
+      "logSHA256": "d39d2eca8833115025a47c8d232b30046de7cc21fb221ab22cac6e77ec0f0b9d"
+    },
+    "wrangler": {
+      "exit": 0,
+      "logSHA256": "51d7ec216c89a590a963375b21ad69151200d3191a20fe88349b7a256e71c48f"
+    }
+  },
+  "visualMethod": "native browser WebGL canvas frames, chase cam, 0.2/0.4/0.6/0.8s after trusted keydown; inspected first and last frames of each phase",
+  "knownLimitations": [
+    "Existing broad feint-hold grid fails its5s criterion before and after; handbrake/power-over and fixed-controller drift contracts pass.",
+    "No matched six-car physical slalom data or primary Superb4x4 skidpad result found.",
+    "CPU dry laps omit barriers; production-Ground browser laps independently validate surfaces and barriers."
+  ],
+  "publication": "Evidence prepared before atomic prod ref update; final release SHA is reported in the thread."
+}
