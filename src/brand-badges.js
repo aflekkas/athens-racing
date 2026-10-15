@@ -60,6 +60,9 @@ export function finishBrandBadges(car){
   for(const badge of badges){
     const centre=body.worldToLocal(badge.getWorldPosition(new THREE.Vector3()));
     if(Math.abs(centre.z)<d.L*.3)continue;
+    // The other models already have authored mounts; do not snap a hood
+    // medallion onto a neighbouring grille slat or move a rear mesh badge.
+    if(!['carrera','gr_yaris'].includes(car.modelKind)&&!(car.modelKind==='huracan'&&centre.z<0))continue;
     const sign=Math.sign(centre.z),hood=badge.name==='carrera-bonnet-crest'||(car.modelKind==='huracan'&&sign<0);
     const origin=body.localToWorld(hood?new THREE.Vector3(centre.x,d.H+.2,centre.z):new THREE.Vector3(centre.x,centre.y,sign*(d.L/2+.5)));
     const direction=(hood?new THREE.Vector3(0,-1,0):new THREE.Vector3(0,0,-sign)).transformDirection(body.matrixWorld);
