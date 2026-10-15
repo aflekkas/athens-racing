@@ -83,7 +83,12 @@ export class Ragdoll {
    else if(z<rear){top=h;}
    else {slope=-h*.38/(hl-rear);top=h+(z-rear)*slope;}
    // Reject underside entries: push sideways at the bumper instead of teleporting to roof.
-   if(p[j+1]<base+.3){const out=(hw+r-Math.abs(x))*(Math.sign(x)||1);p[j]+=cs*out;p[j+2]-=sn*out;q[j]+=cs*out;q[j+2]-=sn*out;continue;}
+   if(p[j+1]<base+.3){
+    const side=hw+r-Math.abs(x),end=hl+r-Math.abs(z);
+    const ox=side<end?side*(Math.sign(x)||1):0,oz=end<=side?end*(Math.sign(z)||-1):0;
+    const wx=cs*ox+sn*oz,wz=-sn*ox+cs*oz;
+    p[j]+=wx;p[j+2]+=wz;q[j]+=wx;q[j+2]+=wz;continue;
+   }
    const penetration=base+top+r-p[j+1];
    if(penetration>0) {
     const e=penetration/(1+slope*slope);p[j+1]+=e;p[j]-=sn*slope*e;p[j+2]-=cs*slope*e;
