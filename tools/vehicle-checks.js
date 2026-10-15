@@ -36,6 +36,23 @@ export function runVehicleChecks(carIds=null) {
         check('SL 65 rear-drive V12 roadster',spec.drive==='rwd'&&spec.engine==='v12'&&spec.convertible&&car.shape.open&&car.shape.seats===2);
         check('SL 65 stowed roof leaves the cockpit open',!car.body.getObjectByName('roof')&&!car.body.getObjectByName('rear-glass'));
         check('SL 65 staggered 19-inch tyres',car.shape.rim===.2413&&car.shape.tyreF===.255&&car.shape.tyreR===.285);
+        const pane=car.windscreen,glass=pane.material;
+        check('SL 65 visible dielectric windscreen tint survives shared roadster finish',glass.transparent&&glass.opacity>=.3&&glass.opacity<=.5&&glass.metalness===0&&glass.depthWrite===false);
+        check('SL 65 tinted windscreen remains in road LOD',car.mediumDetail.children.some(o=>o.material===glass));
+        pane.geometry.computeBoundingBox();const screen=pane.geometry.boundingBox;
+        check('SL 65 full-width raked windscreen',screen.max.x-screen.min.x>1.5&&screen.max.z-screen.min.z>.5&&screen.max.y-screen.min.y>.3);
+        car.root.updateMatrixWorld(true);const surround=[];car.body.traverse(o=>{if(o.isMesh&&o.material===car.paint)surround.push(o);});
+        const vertices=pane.geometry.attributes.position;let gap=0;
+        // Both pillar edges and the bowed header must meet the assembled paint.
+        for(const i of [0,5,10,12*11+10,24*11,24*11+5,24*11+10]){
+          const point=car.body.worldToLocal(pane.localToWorld(new THREE.Vector3().fromBufferAttribute(vertices,i)));
+          gap=Math.max(gap,nearestSurface(point,surround,car.body).distance);
+        }
+        check('SL 65 windscreen seated in painted pillars, cowl and header',gap<.018);
+        const deck=car.mercedesSurface.deck;
+        check('SL 65 paired raised bonnet power domes',[-1,1].every(s=>deck(s*.4,-1.2)-deck(0,-1.2)>.025));
+        const badges=[];car.body.traverse(o=>{if(o.name==='sl-v12-biturbo-badge')badges.push(o);});
+        check('SL 65 two wing badges retain procedural lettering',badges.length===2&&badges.every(o=>!!o.material.map));
       }else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
       if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
       if(spec.id==='a160'){
