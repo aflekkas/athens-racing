@@ -12,7 +12,7 @@ export const CAR_MODELS = [
   { id:'taxi', name:'ŠKODA OCTAVIA III 5E', trims:['taxi','octavia_16tdi','octavia_rs'] },
   { id:'superb', name:'ŠKODA SUPERB III', trims:['superb','superb_15','superb_4x4'] },
   { id:'cla', name:'MERCEDES-BENZ CLA C118', trims:['cla','cla250','cla35','cla45s'] },
-  { id:'cle', name:'MERCEDES-BENZ CLE C236', trims:['cle200','cle','cle450','cle53'] },
+  { id:'cle', name:'MERCEDES-BENZ CLE C236', trims:['cle200','cle','cle300e','cle450','cle53'] },
   { id:'z4', name:'BMW Z4 G29', trims:['z4','z4_20i','z4_30i'] },
   { id:'carrera', name:'PORSCHE 911 991.1', trims:['carrera','carrera_s','carrera_gts'] },
   { id:'huracan', name:'LAMBORGHINI HURACÁN EVO', trims:['huracan','huracan_rwd'] },
@@ -65,4 +65,13 @@ export function bodyTrim(model, current, body, allowed) {
   if(!from || !to)return null;
   const wanted=to[2][from[2].indexOf(current)];
   return (!allowed || allowed.includes(wanted)) ? wanted : to[2].find(id=>!allowed || allowed.includes(id)) || null;
+}
+
+export function trimChoices(current, {allowedCars, def} = {}) {
+  const model=carModel(current), body=model?.bodies?.find(([, ,ids])=>ids.includes(current));
+  return (body?.[2] || model?.trims || []).filter(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));
+}
+export function stepTrim(current, direction, rules) {
+  const ids=trimChoices(current,rules);if(!ids.length)return null;
+  return ids[(Math.max(0,ids.indexOf(current))+direction+ids.length)%ids.length];
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { filterCars, carCategory, GARAGE_CLASSES, GARAGE_CARS, inGarage, CAR_MODELS, carModel, migrateCarSelection, bodyTrim } from '../src/car-catalog.js';
+import { filterCars, carCategory, GARAGE_CLASSES, GARAGE_CARS, inGarage, CAR_MODELS, carModel, migrateCarSelection, bodyTrim, trimChoices, stepTrim } from '../src/car-catalog.js';
 import { bindingLabel, gearboxMessage } from '../src/input-labels.js';
 import { CARS } from '../src/cars.js';
 const cars=[{id:'panda',name:'Fiat Panda',power:44,mass:900,drive:'fwd'},{id:'z4',name:'BMW Z4',power:250,mass:1500,drive:'rwd'},{id:'huracan',name:'Lamborghini Huracán',power:470,mass:1500,drive:'awd'},{id:'cla',name:'Mercedes CLA',power:120,mass:1500,drive:'fwd'}];
@@ -47,8 +47,8 @@ test('garage renders the shared trim control, torque and a selectable model when
   const {renderCarSelect}=await import('../src/car-select.js');
   const index=CARS.findIndex(c=>c.id==='cle53');
   const detail=renderCarSelect({index,detail:true,allowedCars:['cle53']});
-  assert.match(detail,/data-key="carTrim"/);assert.match(detail,/560 NM/);assert(!detail.includes('<select'));
-  assert.match(detail,/AMG CLE 53/);assert(!detail.includes('&quot;cle200&quot;'));
+  assert.match(detail,/data-trim-current="cle53"/);assert.match(detail,/560 NM/);assert(!detail.includes('<select'));
+  assert.match(detail,/AMG CLE 53/);assert(!detail.includes('data-act="carTrimPrev"') || detail.includes('disabled'));
   const grid=renderCarSelect({allowedCars:['gla45'],filters:{search:'GLA'}});
   assert.match(grid,new RegExp(`data-car-index="${CARS.findIndex(c=>c.id==='gla45')}"`));
   assert(!grid.includes('car-card off'));
@@ -80,7 +80,19 @@ test('new trim IDs reach server and deployment catalogues, with exactly one nitr
 test('body and trim use shared segmented controls, filtering forbidden body-engine combinations',async()=>{
  const {renderCarSelect}=await import('../src/car-select.js');
  const html=renderCarSelect({index:CARS.findIndex(c=>c.id==='mini'),detail:true,allowedCars:['mini','mini_jcw']});
- assert.match(html,/data-key="carBody"/);assert.match(html,/data-key="carTrim"/);assert.match(html,/HARDTOP/);assert.match(html,/CONVERTIBLE/);assert.match(html,/role="radiogroup"/);assert(!html.includes('<select'));
- assert(!html.includes('data-val="mini_cabrio_jcw"'));
+ assert.match(html,/data-key="carBody"/);assert.match(html,/data-trim-current="mini"/);assert.match(html,/HARDTOP/);assert.match(html,/CONVERTIBLE/);assert.match(html,/role="radiogroup"/);assert(!html.includes('<select'));
+ assert(!html.includes('data-key="carTrim"'));assert.match(html,/data-act="carTrimNext"/);
  const z4=renderCarSelect({index:CARS.findIndex(c=>c.id==='z4'),detail:true});assert(!z4.includes('data-key="carBody"'));
+});
+
+test('trim arrows wrap within the current body and obey event and multiplayer restrictions',()=>{
+ assert.equal(stepTrim('cle200',1),'cle');assert.equal(stepTrim('cle',1),'cle300e');assert.equal(stepTrim('cle53',1),'cle200');assert.equal(stepTrim('cle200',-1),'cle53');
+ assert.deepEqual(trimChoices('mini_jcw'),['mini_cooper','mini_s','mini_jcw']);assert.equal(stepTrim('mini_jcw',1),'mini_cooper');
+ assert.equal(stepTrim('mini_cabrio_jcw',1),'mini_cabrio_cooper');
+ assert.equal(stepTrim('cle200',1,{allowedCars:['cle200','cle53']}),'cle53');
+ assert.equal(stepTrim('cle200',1,{def:{car:'cle200'}}),'cle200');assert.equal(stepTrim('cle',1,{allowedCars:[]}),null);
+});
+test('CLE offers a real PHEV without adding transient 48V ratings to continuous engine power',()=>{
+ const p=CARS.find(c=>c.id==='cle300e');assert.deepEqual([p.power,p.torque,p.mass,p.drive,p.gears.length,p.zeroTo100],[230,550,2100,'rwd',9,6.3]);assert.equal(p.hybrid.type,'phev');assert.equal(p.hybrid.electricPowerKW,95);assert.equal(p.hybrid.icePowerKW,150);assert.equal(p.hybrid.simulation,'charged-blended-curve');
+ for(const id of ['cle200','cle','cle450','cle53']){const c=CARS.find(c=>c.id===id);assert.equal(c.hybrid.type,'mhev');assert.equal(c.hybrid.electricPowerKW,17);assert.equal(c.hybrid.electricTorqueNm,205);}
 });

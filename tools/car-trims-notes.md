@@ -100,3 +100,20 @@ All added gearboxes have the real gear count/type and driven axle arrangement; e
 Additional body row: `mini_cabrio_jcw` — JCW Convertible, 170 kW / 320 Nm, 1310 kg, FWD, six-speed manual, 6.6 s. All six MINI variants carry `bodyStyle` and `trimLabel` metadata; catalogue bodies map those to the original or new executable IDs.
 
 Visual QA follow-up: F56 Cooper removes JCW intake/bonnet stripes, hood scoop, red grille bar and roof spoiler; Cooper S keeps its scoop/spoiler, while JCW retains the full cues. M3 keeps its paired left exhaust. MINI body and trim controls sit side by side using scoped spacing on the shared segmented component.
+
+## CLE hybrid update and live trim browser
+
+C236 really offers **CLE 300 e EQ Hybrid**, introduced in 2024. This is the rear-wheel-drive plug-in coupé, not the E 300 e saloon or an invented electrified AMG. Factory system output is **230 kW / 550 Nm**, from a 150 kW / 320 Nm M254 petrol engine and a 95 kW / 440 Nm electric motor; the component maxima must not simply be summed. It uses 9G-TRONIC, reaches 100 km/h in **6.3 s**, and is rated at 236 km/h. The 2175 kg EU mass includes a 75 kg allowance; the new executable `cle300e` uses **2100 kg DIN** consistently with the other new CLE variants. Its battery specification is **19.53 kWh**, with electric driving up to 140 km/h. Body/wheels/badge distinguish it from CLE 200; the common C236 shell remains shared.
+
+Sources (manufacturer documents):
+
+- Mercedes-Benz 23 October 2024 CLE 300 e press event: https://media.mercedes-benz.com/press-kit/f85fb260-67fb-4e4e-87a7-48899af1f817
+- Mercedes-Benz CLE price/specification table, including the ICE/electric/system columns and 6.3 s: https://retail.mercedes-benz.hr/files/cjenici/Mercedes_cjenik_CLE.pdf
+- Mercedes-Benz September 2024 UK brochure, technical-data and weight footnotes: https://6656052.fs1.hubspotusercontent-na1.net/hubfs/6656052/2024%20Brochures/CLE%20Coupe%20%26%20Cab%20Sept%202024.pdf
+- Mercedes-Benz German price list (19.53 kWh battery): https://www.kunzmann.de/tiny/Marken/Mercedes_Benz/CLE/Mercedes-Benz-Preisliste-CLE-Coupe-C236.pdf
+- Mercedes-Benz launch confirmation that the original CLE engines are all 48V mild hybrids: https://media.mercedes-benz.com/press-kit/00b85fd6-987c-455f-970a-1f06c891a79e/article/cf98d759-fce5-4cbb-8854-29331cb50a54
+- AMG CLE 53 integrated starter-generator specification, 17 kW / 205 Nm transient: https://media.mercedes-benz.be/de/das-mercedes-amg-cle-coupe-neuer-einstieg-in-das-performance-coupe-segment/
+
+**Simulation boundary:** physics currently consumes one crankshaft torque curve and one rated power, without a separate electric motor, battery state, regeneration or boost-duration channel. `cle300e` therefore uses an explicitly labelled charged blended curve, with low-rpm electric fill and the real combined rating; setting its turbo time multiplier to zero avoids making the electric contribution wait for ICE spool. It does not simulate depletion, pure EV driving or a selectable electric boost button. The existing CLE 200/300/450/53 get `hybrid.type:'mhev'` metadata and clear 48V trim descriptions. Their 17 kW / 205 Nm ISG values are recorded as **transient motor maxima**, not added to the continuous engine power/torque: the factory does not publish a simple combined system rating for those mild hybrids. Existing continuous torque anchors stay intact. Further dynamic electric assistance belongs in the powertrain agent's model, not an improvised nitrous mechanism.
+
+Trim UX now has previous/next arrows, a trim name with power/0–100/driven wheels and position pips above the live car. MINI's Body segment sits beside the name. A/D, controller LB/RB and horizontal touch swipe share the same body-specific, host/event-filtered sequence. Model changes preserve the canvas, environment and turntable angle; the stats and heading morph in place. Mouse dragging still rotates freely. Controls use shared buttons/segments with scoped flat styling, no glow, bounce or native select. The generation catalogue remains separate; no grid of trim choices is introduced.
