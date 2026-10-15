@@ -11,6 +11,7 @@ import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
 import { COND_STATE } from './env.js';
 import { CockpitLamps, drawCockpitLamps, lampArtVersion } from './cockpit-telltales.js';
+import { shiftGateOffset, selectShiftKind, shiftAnimDuration, shiftEnvelope, smootherstep, cockpitShiftHardware } from './driver.js';
 // Night in the cabin: a faint instrument / street-light spill on the cockpit's own trim (emissive, no extra light)
 // and door / rear-view glass that darkens with the scene. Both are display-referred, so they divide out the
 // exposure the night brings up everything else by (env.js COND_STATE).
@@ -37,6 +38,7 @@ const darkGlass = () => DARK_GLASS ||= Object.assign(new THREE.DataTexture(new U
 const _rp = new THREE.Vector3(), _rq = new THREE.Quaternion(), REAR_TILT = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(REAR_PITCH));
 const sceneLight = () => clamp(COND_STATE.ambient ?? 1, 0.03, 1) / Math.max(COND_STATE.exposure || 1, 0.05);
 const MIRROR_FLIP=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
+const HARD_STEER=1.0;
 
 /**
  * Interior trim: grained soft-touch plastics, perforated / stitched leather and suede-like fabric, sampled
@@ -264,22 +266,33 @@ export class Cockpit {
     box(isPorsche?.285:.245,.09,.61,trim,0,consoleY-.016,faceZ+.37,.025,isPorsche?.25:.12,'centre-console');
     box(.205,.018,.41,isClassic?wood:alu,0,consoleY+.046,faceZ+.34,.008,isPorsche?.25:.12);
     if(isPorsche)for(const sx of [-1,1])for(let i=0;i<5;i++)box(.033,.012,.031,gloss,sx*.093,consoleY+.07-i*.007,faceZ+.28+i*.042,.003);
-    const manual=spec.transmission==='manual';
+    const shiftHw=this.shiftHardware=cockpitShiftHardware(spec);
+    const dual=shiftHw.stick&&shiftHw.paddles;
+    const manual=shiftHw.stick&&!shiftHw.paddles;
     const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda&&!manual?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
     const knob=this.knob=isSkoda&&!manual?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
     if(isMercedes){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
     this.selectorX=-.04;
+    this.stickLever=null;this.stickKnob=null;this.stickParts=null;this.selectorParts=null;this._prndLabel=null;
     if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
-    else label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
+    else this._prndLabel=label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
+    if(dual){
+      const sLever=this.stickLever=part(new THREE.CylinderGeometry(.009,.012,.13,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever-manual');
+      const sKnob=this.stickKnob=part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276,0,'gear-knob-manual');
+      const sBoot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);sBoot.scale.z=.85;
+      const gate=label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);
+      this.stickParts=[sLever,sKnob,sBoot,gate];
+      this.selectorParts=[lever,knob,this._prndLabel];
+    }
     if(isBMW||isMini)part(new THREE.CylinderGeometry(.028,.031,.023,24),alu,.069,consoleY+.066,faceZ+.46);
     // A tactile lever is available even in cars with a factory electronic brake.
     const brakePivot=this.handbrakePivot=new THREE.Group();brakePivot.name='handbrake-pivot';
     brakePivot.position.set(.09,consoleY+.075,faceZ+.57);g.add(brakePivot);
     const brakeGrip=new THREE.Mesh(new RoundedBoxGeometry(.031,.029,.18,1,.009),trim);
     brakeGrip.name='handbrake-grip';brakeGrip.position.z=-.08;brakePivot.add(brakeGrip);
-    this.controlTargets={handbrake:new THREE.Vector3(),shifter:new THREE.Vector3(),pull:0,manual:false,gear:1};
+    this.controlTargets={handbrake:new THREE.Vector3(),shifter:new THREE.Vector3(),pull:0,manual:false,gear:1,shiftSerial:0,shiftBlend:0,paddleL:0,paddleR:0,paddleLT:new THREE.Vector3(),paddleRT:new THREE.Vector3()};
     this._brakeGrip=brakeGrip;
-    for(const x of manual?[eye.x-.15,eye.x-.04,eye.x+.075]:[eye.x-.07,eye.x+.075]){
+    for(const x of (manual||dual)?[eye.x-.15,eye.x-.04,eye.x+.075]:[eye.x-.07,eye.x+.075]){
       const pedal=box(.06,.014,.105,alu,x,.31,faceZ-.02,.003,-.5);
       for(let j=-1;j<=1;j++)box(.052,.002,.005,trim,x,.321+j*.008,faceZ-.02+j*.023,.001,-.5);
     }
@@ -295,8 +308,16 @@ export class Cockpit {
     const badge=new THREE.Mesh(new THREE.CircleGeometry(isClassic?.022:.023,32),model.materials?.badge||alu);badge.position.z=.016;spin.add(badge);
     const col=new THREE.Mesh(new THREE.CylinderGeometry(.032,.047,.26,12),trim);col.rotation.x=Math.PI/2;col.position.z=-.145;wheel.add(col);
     if(!isClassic)for(const sx of [-1,1]){const control=new THREE.Mesh(new RoundedBoxGeometry(.061,.039,.012,1,.004),gloss);control.position.set(sx*.104,0,.008);spin.add(control);for(let j=-1;j<=1;j++){const key=new THREE.Mesh(new THREE.BoxGeometry(.009,.002,.001),alu);key.position.set(sx*.104+j*.016,0,.015);spin.add(key);}}
-    if(!manual)for(const sx of [-1,1]){const paddle=new THREE.Mesh(new RoundedBoxGeometry(.025,.066,.009,1,.003),alu);paddle.position.set(sx*.116,.025,-.04);wheel.add(paddle);}
+    this.paddleL=null;this.paddleR=null;
+    if(shiftHw.paddles)for(const sx of [-1,1]){const paddle=new THREE.Mesh(new RoundedBoxGeometry(.025,.066,.009,1,.003),alu);paddle.name=sx<0?'paddle-left':'paddle-right';paddle.position.set(sx*.118,.058,-.04);wheel.add(paddle);if(sx<0)this.paddleL=paddle;else this.paddleR=paddle;}
     for(const sx of [-1,1]){const stalk=new THREE.Mesh(new THREE.CylinderGeometry(.008,.011,.08,8),trim);stalk.rotation.z=Math.PI/2;stalk.position.set(sx*.096,0,-.10);wheel.add(stalk);}
+    this._shift={serial:0,t:0,dur:.38,fromX:0,fromZ:0,toX:0,toZ:0,kind:'none',dir:0,queued:false,qT:0,tap:false,paddle:0};
+    this._levX=0;this._levZ=0;this._gateTmp={x:0,z:0};
+    this._leverBase=this.lever.position.clone();this._knobBase=this.knob.position.clone();
+    this._leverTiltX=-.18;
+    if(this.paddleL)this._paddleBaseLZ=this.paddleL.position.z;
+    if(this.paddleR)this._paddleBaseRZ=this.paddleR.position.z;
+    if(this.stickLever){this._stickLeverBase=this.stickLever.position.clone();this._stickKnobBase=this.stickKnob.position.clone();}
     wheel.rotation.x=this.wheelTilt;g.add(wheel);
     // Three independent rearward views; each optical face has its own target.
     // Dimensions are metres. The centre unit hangs from the windscreen header.
@@ -375,8 +396,8 @@ export class Cockpit {
     // Preserve the wheel's animated frames and the selector/mirror mesh handles.
     // Door batches stay separate by side so damage can hide one door's lining.
     compactCockpit(spin);
-    compactCockpit(wheel);
-    compactCockpit(g,new Set([lever,knob,mirror,stem,mount,this.shell]));
+    compactCockpit(wheel,new Set([this.paddleL,this.paddleR].filter(Boolean)));
+    compactCockpit(g,new Set([lever,knob,mirror,stem,mount,this.shell,...(this.stickParts||[])]));
     // only the cabin's own trim takes the night instrument glow (trimMat also dresses drivers and pedestrians)
     g.traverse(o=>{for(const m of [].concat(o.material||[]))if(/^trim6_/.test(m.customProgramCacheKey?.()||''))m.userData.cabinGlow=true;});
     const cockpitLOD=this.lod=new THREE.LOD();cockpitLOD.name='cockpit-lod';
@@ -401,13 +422,20 @@ export class Cockpit {
     this.handbrakePivot.updateMatrix();
     controls.handbrake.copy(this._brakeGrip.position).applyMatrix4(this.handbrakePivot.matrix);
     controls.handbrake.y+=.018;
-    controls.shifter.copy(this.knob.position);controls.shifter.y+=.012;
     controls.manual=!!st.manual;controls.gear=st.gear;controls.held=!!st.handbrake;
+    this.updateShiftHand(dt,st,controls);
+    const activeKnob=(this.stickKnob&&controls.manual)?this.stickKnob:this.knob;
+    controls.shifter.copy(activeKnob.position);controls.shifter.y+=.012;
+    if(this.stickParts){
+      const showStick=!!controls.manual;
+      for(const m of this.stickParts)m.visible=showStick;
+      for(const m of this.selectorParts)m.visible=!showStick;
+    }
     // shift lights
     const k = clamp((st.rpm / st.redline - 0.7) / 0.27, 0, 1);
     const blink = st.rpm > st.redline * 0.97 && Math.sin(performance.now() * 0.05) > 0;
     this.shiftLeds.forEach((m, i) => { m.opacity = blink ? 1 : (i / 8 < k ? 1 : 0.1); });
-    this.knob.position.x = this.lever.position.x = this.selectorX; // Automatic selector remains fixed while the gearbox changes.
+    if(!this.shiftHardware.stick||(this.stickKnob&&!controls.manual))this.knob.position.x=this.lever.position.x=this.selectorX; // Automatic selector remains fixed while the gearbox changes.
     this.lampState = this.lamps.update(dt, st);
     this.clusterAge += Math.max(0, dt);
     // Quantise to displayed precision. Stationary instruments upload nothing once the lamps settle.
@@ -416,6 +444,76 @@ export class Cockpit {
     if (this.detailed !== false && key !== this.clusterKey && (this.clusterAge >= .1 || this.clusterKey === undefined)) {
       this.clusterAge = 0; this.clusterKey = key; this.drawCluster(display);
     }
+  }
+  gearCount(st){return st.gearCount||this.spec?.gears?.length||6;}
+  /** Serialised shift choreography: the lever strokes its H-gate, a paddle pulls, the hand follows. */
+  updateShiftHand(dt,st,controls){
+    const S=this._shift,h=Math.max(0,dt);
+    // Sol-era shift-start/end events win when the vehicle provides them; otherwise the gear-change serial.
+    const ev=st.shiftStartEvent||st.shiftStart||st.gearChangeEvent||st.gearChange||null;
+    if(ev&&ev.serial!==undefined&&ev.serial!==S.serial){
+      const wasActive=S.kind!=='none'&&S.t<S.dur;
+      S.serial=ev.serial;
+      let dir=ev.direction||0;
+      if(!dir){const from=ev.from??controls.gear,to=ev.to??st.gear;dir=(to==='R'||from==='R')?(to==='R'?-1:1):Math.sign(to-from)||0;}
+      const manualEv=ev.manual!==undefined?!!ev.manual:!!st.manual;
+      const kind=selectShiftKind({manual:manualEv,stick:this.shiftHardware.stick,paddles:this.shiftHardware.paddles,autoOverride:st.autoOverride||0,shiftType:ev.shiftType||ev.type||st.shiftType||st.gearboxType,direction:dir||1});
+      S.kind=kind;S.dir=kind==='paddle'&&!dir?1:dir;
+      S.dur=shiftAnimDuration(kind,ev.duration!==undefined?ev.duration:st.shiftDuration);
+      if(S.dur<=0)S.kind='none';
+      // Retarget from the lever's current offset so rapid consecutive shifts never snap.
+      S.fromX=this._levX;S.fromZ=this._levZ;
+      shiftGateOffset(ev.to!==undefined?ev.to:st.gear,this.gearCount(st),this._gateTmp);
+      S.toX=this._gateTmp.x;S.toZ=this._gateTmp.z;
+      // A fresh stroke restarts; a chained one keeps the hand at the lever.
+      S.t=(S.kind!=='none'&&wasActive)?Math.min(S.t,S.dur*.3):0;
+      S.qT=0;S.tap=false;S.paddle=0;
+      if(S.kind!=='none'&&controls.held)S.kind='none';
+      else if(S.kind==='lever'&&Math.abs(this.wheelInfo.angle)>HARD_STEER)S.queued=true;
+      else if(S.kind==='paddle')S.paddle=S.dir;
+    }
+    const endEv=st.shiftEndEvent||st.shiftEnd||null;
+    if(endEv&&endEv.serial!==undefined&&endEv.serial===S.serial&&S.kind!=='none')S.t=Math.max(S.t,S.dur*.72);
+    // Queue while the wheel is hard over; after ~0.6 s fall back to a short tap so the hand never leaves long.
+    if(S.queued){
+      S.qT+=h;
+      const hard=Math.abs(this.wheelInfo.angle)>HARD_STEER;
+      if(!hard||S.qT>.6){S.queued=false;if(hard){S.tap=true;S.dur=Math.min(S.dur,.2);}}
+    }else if(S.kind!=='none'&&S.t<S.dur)S.t=Math.min(S.dur,S.t+h);
+    const prog=S.kind==='none'?1:Math.min(1,S.t/Math.max(1e-3,S.dur));
+    let ox,oz;
+    if(S.kind==='lever'){
+      // Old gate -> neutral -> new gate, eased per leg: never a diagonal robot slide.
+      if(prog<1){
+        if(prog<.5){const k=smootherstep(prog*2);ox=S.fromX*(1-k);oz=S.fromZ*(1-k);}
+        else{const k=smootherstep((prog-.5)*2);ox=S.toX*k;oz=S.toZ*k;}
+      }else{ox=S.toX;oz=S.toZ;}
+    }else if(controls.manual){
+      // At rest the stick sits in its current gate; settle there instead of snapping.
+      shiftGateOffset(controls.gear,this.gearCount(st),this._gateTmp);
+      const k=1-Math.exp(-10*h);
+      ox=this._levX+(this._gateTmp.x-this._levX)*k;oz=this._levZ+(this._gateTmp.z-this._levZ)*k;
+    }else{ox=this._levX;oz=this._levZ;}
+    this._levX=ox;this._levZ=oz;
+    // Pose the visible stick; the automatic selector never moves with the gearbox.
+    let lv=null,kb=null,lb=null,nb=null;
+    if(this.stickKnob&&controls.manual){lv=this.stickLever;kb=this.stickKnob;lb=this._stickLeverBase;nb=this._stickKnobBase;}
+    else if(this.shiftHardware.stick&&!this.stickKnob){lv=this.lever;kb=this.knob;lb=this._leverBase;nb=this._knobBase;}
+    if(lv&&(controls.manual||S.kind==='lever')){
+      lv.position.set(lb.x+ox*.45,lb.y,lb.z+oz*.45);
+      lv.rotation.x=this._leverTiltX+oz*3.2;lv.rotation.z=-ox*3.2;
+      kb.position.set(nb.x+ox,nb.y,nb.z+oz);
+    }
+    // A paddle pull reads as a finger flick from the eye point; the envelope tugs the hand.
+    const penv=S.kind==='paddle'?Math.sin(Math.min(1,prog)*Math.PI):0;
+    controls.paddleL=S.paddle<0?penv:0;controls.paddleR=S.paddle>0?penv:0;
+    if(this.paddleL)this.paddleL.position.z=this._paddleBaseLZ+(S.paddle<0?penv*.012:0);
+    if(this.paddleR)this.paddleR.position.z=this._paddleBaseRZ+(S.paddle>0?penv*.012:0);
+    this.wheel.updateMatrix();
+    if(this.paddleL)controls.paddleLT.copy(this.paddleL.position).applyMatrix4(this.wheel.matrix);
+    if(this.paddleR)controls.paddleRT.copy(this.paddleR.position).applyMatrix4(this.wheel.matrix);
+    controls.shiftBlend=S.kind==='lever'?(S.tap?shiftEnvelope(prog)*.45:shiftEnvelope(prog)):0;
+    controls.shiftSerial=S.serial;
   }
   drawCluster(st){
     const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.id;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';

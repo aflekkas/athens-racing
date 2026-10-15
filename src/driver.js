@@ -6,6 +6,67 @@ import { clamp, RNG } from './util.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
 import { createCharacterRig } from './character-driver.js';
 
+// ---- driver shift-hand choreography: manual H-lever, wheel paddles, automatic ----
+// Pure helpers (no scene): the cockpit authors the motion, the driver follows it.
+// Lever travel in metres in cockpit space: forward is -Z (odd gears push away).
+const SHIFT_X_TRAVEL = .022, SHIFT_X_EXTRA = .034, SHIFT_Z_TRAVEL = .026;
+/** H-pattern gate for a target gear: lateral x and fore/aft z lever offsets. R is far-right back. */
+export function shiftGateOffset(gear, gears = 6, out = null) {
+  const r = out || { x: 0, z: 0 };
+  const n = Math.max(4, Math.min(9, gears | 0 || 6));
+  if (gear === 'R' || gear === 0 || gear === -1) {
+    r.x = n <= 5 ? SHIFT_X_TRAVEL : SHIFT_X_EXTRA; r.z = SHIFT_Z_TRAVEL; return r;
+  }
+  const g = Math.max(1, Math.min(n, gear | 0 || 1));
+  const pairs = Math.ceil(n / 2), pair = (g - 1) >> 1;
+  r.x = pairs <= 2 ? (pair === 0 ? -SHIFT_X_TRAVEL : 0)
+    : pairs === 3 ? [-SHIFT_X_TRAVEL, 0, SHIFT_X_TRAVEL][pair]
+    : [-SHIFT_X_TRAVEL, 0, SHIFT_X_TRAVEL, SHIFT_X_EXTRA][Math.min(3, pair)];
+  r.z = (g % 2 === 1) ? -SHIFT_Z_TRAVEL : SHIFT_Z_TRAVEL;
+  return r;
+}
+// Cars with a physical H-stick, and the dual 911 that offers PDK paddles or the stick.
+const STICK_FALLBACK = new Set(['e36', 'e36_318i', 'e36_m3', 'gtv', 'gtv1750']);
+const DUAL_FALLBACK = new Set(['carrera', 'carrera_s', 'carrera_gts']);
+/** Which shift hardware a cockpit should build. Explicit Sol-era gearbox fields win; ids cover the rest. */
+export function cockpitShiftHardware(spec = {}) {
+  const t = spec.transmission ?? spec.gearboxType ?? spec.shiftType;
+  if (t != null) {
+    const s = String(t).toLowerCase();
+    if (/(^|[^a-z])manual([^a-z]|$)/.test(s)) return { stick: true, paddles: DUAL_FALLBACK.has(spec.id) || /(pdk|dct)/.test(s) };
+    return { stick: false, paddles: true };
+  }
+  if (DUAL_FALLBACK.has(spec.id)) return { stick: true, paddles: true };
+  if (STICK_FALLBACK.has(spec.id) || spec.body === 'e36' || spec.body === 'gtv') return { stick: true, paddles: false };
+  return { stick: false, paddles: true };
+}
+/** 'lever' | 'paddle' | 'none'. Automatics stay still in D; manual selections flick a paddle when fitted. */
+export function selectShiftKind({ manual = false, stick = false, paddles = true, autoOverride = 0, shiftType = null, direction = 0 } = {}) {
+  if (!direction) return 'none';
+  const t = shiftType == null ? null : String(shiftType).toLowerCase();
+  if (t) {
+    if (/manual|stick|h.pattern|h_pattern/.test(t)) return stick ? 'lever' : 'none';
+    if (/dct|pdk|paddle|auto|torque/.test(t)) return paddles ? 'paddle' : 'none';
+    return 'none';
+  }
+  if (manual && stick) return 'lever';
+  if (manual && paddles && !stick) return 'paddle';
+  if (!manual && autoOverride > 0 && paddles) return 'paddle';
+  return 'none';
+}
+/** Hand time follows the gearbox: a lever stroke reads at 300-450 ms, a paddle flick is quicker. */
+export function shiftAnimDuration(kind, seconds) {
+  const s = Number.isFinite(seconds) ? seconds : kind === 'paddle' ? .16 : .35;
+  if (kind === 'paddle') return Math.min(.25, Math.max(.12, s));
+  if (kind === 'lever') return Math.min(.45, Math.max(.30, s + .06));
+  return 0;
+}
+export function smootherstep(p) { const t = Math.min(1, Math.max(0, p)); return t * t * t * (t * (t * 6 - 15) + 10); }
+/** 0 at both ends, 1 mid-travel: the hand is back on the wheel when the envelope closes. */
+export function shiftEnvelope(p) {
+  if (p <= 0 || p >= 1) return 0;
+  return Math.min(smootherstep(p / .38), 1 - smootherstep((p - .62) / .38));
+}
 const UP = new THREE.Vector3(0, 1, 0);
 const SPHERE = new THREE.SphereGeometry(1, 18, 12);
 const ARM = new THREE.CapsuleGeometry(.5, 1, 5, 12);
@@ -120,6 +181,7 @@ export class Driver {
     add(facePatch(0,-.0545,.017,.0004,.0008),shadowM,0,0,0,1,1,1,head);
 
     this.controlReach=0;this.shiftReach=0;this.shiftHold=0;this.lastControlGear=null;
+    this.shiftSerial=-1;this.shiftSmooth=0;this.paddleSmoothL=0;this.paddleSmoothR=0;
     this._controlTarget=new THREE.Vector3();this._controlRotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,-.35));
     this.arms=[];
     for(const sx of [-1,1]) {
@@ -222,12 +284,22 @@ export class Driver {
     const h=clamp(dt,0,1/30),ax=acc?.x||0,ay=acc?.y||0,az=acc?.z||0;
     const control=wheel?.controls;
     if(control){
-      if(control.manual&&this.lastControlGear!==null&&control.gear!==this.lastControlGear&&!control.held)this.shiftHold=.34;
-      this.lastControlGear=control.gear;
+      if(control.shiftSerial===undefined){
+        // Legacy hand-made wheels: a bare manual gear change still earns a short reach.
+        if(control.manual&&this.lastControlGear!==null&&control.gear!==this.lastControlGear&&!control.held)this.shiftHold=.34;
+        this.lastControlGear=control.gear;
+      }else if(control.shiftSerial!==this.shiftSerial)this.shiftSerial=control.shiftSerial;
     }
     this.shiftHold=Math.max(0,this.shiftHold-h);
     this.controlReach+=((control?.held?1:0)-this.controlReach)*(1-Math.exp(-16*h));
     this.shiftReach+=((control?.manual&&this.shiftHold>0&&!control.held?1:0)-this.shiftReach)*(1-Math.exp(-22*h));
+    // The cockpit authors serialised shift envelopes; the hand trails them like muscle, not a servo.
+    const authored=control&&control.shiftSerial!==undefined;
+    const shiftTarget=authored?(control.shiftBlend||0):this.shiftReach;
+    this.shiftSmooth+=(shiftTarget-this.shiftSmooth)*(1-Math.exp(-18*h));
+    const paddleL=authored?(control.paddleL||0):0,paddleR=authored?(control.paddleR||0):0;
+    this.paddleSmoothL+=(paddleL-this.paddleSmoothL)*(1-Math.exp(-20*h));
+    this.paddleSmoothR+=(paddleR-this.paddleSmoothR)*(1-Math.exp(-20*h));
     this.characterRig.update(h,t,speed,acc,wheel,steer,heaveV);
     if(wheel||this.characterRig.passengerRole)for(const a of this.arms) {
       const shoulder=this._shoulder.set(a.sx*.18,-.10,.035);
@@ -235,18 +307,33 @@ export class Driver {
       const hand=this._hand;
       if(wheel)hand.set(Math.cos(ang)*wheel.r,Math.sin(ang)*wheel.r,0).applyEuler(wheel.euler).add(wheel.pos).sub(this.root.position).divide(this.root.scale);
       this.characterRig.adjustHand(a,hand,wheel);
-      if(a.sx>0&&control&&!this.characterRig.usesFreeHand()){
-        // Positive X is the right hand in our LHD, nose -Z cabin coordinates.
-        const reach=this.controlReach,shift=this.shiftReach*(1-reach);
-        hand.lerp(this._controlTarget.copy(control.shifter).sub(this.root.position).divide(this.root.scale),shift);
-        hand.lerp(this._controlTarget.copy(control.handbrake).sub(this.root.position).divide(this.root.scale),reach);
+      if(control&&!this.characterRig.usesFreeHand()){
+        // Positive X is the right hand in our LHD, nose -Z cabin coordinates; the lever
+        // sits beside the driver, so RHD (if fitted) mirrors to the left hand.
+        const shiftSx=this.root.position.x<=0?1:-1;
+        const reach=this.controlReach,shift=(a.sx===shiftSx?this.shiftSmooth:0)*(1-reach);
+        if(shift>0){
+          hand.lerp(this._controlTarget.copy(control.shifter).sub(this.root.position).divide(this.root.scale),Math.min(1,shift));
+          // A small arc over the console keeps the travel from reading as a straight servo slide.
+          hand.y+=Math.sin(Math.min(1,shift)*Math.PI)*.028;
+        }
+        if(reach>0)hand.lerp(this._controlTarget.copy(control.handbrake).sub(this.root.position).divide(this.root.scale),a.sx===shiftSx?reach:reach*.5);
+        // A paddle flick tugs the shifting-side hand toward its paddle while the paddle pulls.
+        const flick=a.sx<0?this.paddleSmoothL:this.paddleSmoothR;
+        if(flick>.001&&control.paddleLT){
+          hand.lerp(this._controlTarget.copy(a.sx<0?control.paddleLT:control.paddleRT).sub(this.root.position).divide(this.root.scale),Math.min(.28,flick*.28));
+        }
       }
       const elbow=this._elbow.copy(shoulder).lerp(hand,.5);elbow.x+=a.sx*.064;elbow.y-=.115;elbow.z+=.045;
       beam(a.up,shoulder,elbow,.098,this._delta);beam(a.fo,elbow,hand,.071,this._delta);a.hand.position.copy(hand);
       const tan=this._tan.set(-Math.sin(ang),Math.cos(ang),0);if(wheel)tan.applyEuler(wheel.euler);
       const out=this._out.set(Math.cos(ang),Math.sin(ang),0);if(wheel)out.applyEuler(wheel.euler);
       this._normal.crossVectors(tan,out);a.hand.quaternion.setFromRotationMatrix(this._m.makeBasis(out,this._normal,tan));
-      if(a.sx>0&&control&&!this.characterRig.usesFreeHand())a.hand.quaternion.slerp(this._controlRotation,Math.max(this.controlReach,this.shiftReach));
+      if(control&&!this.characterRig.usesFreeHand()){
+        const shiftSx=this.root.position.x<=0?1:-1;
+        const grip=Math.max(this.controlReach,a.sx===shiftSx?this.shiftSmooth:0,a.sx<0?this.paddleSmoothL:this.paddleSmoothR);
+        if(grip>0)a.hand.quaternion.slerp(this._controlRotation,grip);
+      }
       this.characterRig.orientHand(a);
     }
     const hw=this.hw;

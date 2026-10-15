@@ -115,21 +115,7 @@ export function install(menu) {
     act = menu.activate.bind(menu),
     render = menu.render.bind(menu);
   menu.render = (...args) => {
-    const keepDrafts =
-      menu.shown === menu.screen &&
-      ["account", "accountName", "signIn", "accountDelete"].includes(
-        menu.screen,
-      );
-    const drafts = keepDrafts
-      ? [...menu.root.querySelectorAll('input[data-field^="account-"]')].map(
-          (input) => [input.dataset.field, input.value],
-        )
-      : [];
     const result = render(...args);
-    for (const [name, value] of drafts) {
-      const input = menu.root.querySelector(`input[data-field="${name}"]`);
-      if (input) input.value = value;
-    }
     for (const chip of menu.root.querySelectorAll("[data-hu-driver] span"))
       chip.textContent = a.user?.plate || driverName.get();
     return result;
