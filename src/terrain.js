@@ -219,7 +219,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
 
   // The source DEM is 10 m: road-edge constraints cannot survive interpolation
   // of those large triangles. Refine only the road/shoulder corridor; the
-  // tighter Penteli hairpins use 1.25 m, Riviera 2 m, and Megara 2.5 m.
+  // tighter Penteli hairpins use 1.25 m, Riviera 2 m, Megara and the Psychiko street grid 2.5 m.
   const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : .075 }), refined = new Set();
   for (const seg of conform.segments) {
     const R = seg.width + 32 + T;
@@ -287,7 +287,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
 
   // Use the uncut DEM for feathering; earlier cuts are only an underlay.
   // This raises downhill fills as well as lowering uphill cuts.
-  const heights = new Map(), fixed = new Set(), n = farmland ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
+  const heights = new Map(), fixed = new Set(), n = farmland || gardens ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
   const height = (ix, iz) => {
     const key = iz * stride + ix, cached = heights.get(key); if (cached !== undefined) return cached;
     const x = minX + ix * T / n, z = minZ + iz * T / n;
