@@ -19,6 +19,7 @@ import { renderControls, controlsClick, controlsAction, controlsChange } from '.
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
+import * as MP from './ui/mp-screens.js';
 import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
@@ -45,7 +46,7 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all'; this.participants = 'solo';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this); MP.installMpScreens(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -64,18 +65,20 @@ export class Menu {
     this.screen = screen; this.data = data; this.focus = data.focus ?? null;
     document.body.classList.add('ui-open'); // before render: focus needs laid-out items
     document.body.dataset.ui = screen;
-    this.render();
+    this.render(); MP.syncFlag(screen);
+    MP.afterShow(this, screen);
+    if (screen === 'title' && this.mpBooting) { this.mpBooting = false; MP.openEntry(this, 'join'); } // an invite link waits for the title
   }
   pop() {
     const prev = this.stack.pop(); if (!prev) return false;
     this.leaving();
-    this.screen = prev.screen; this.data = prev.data; this.focus = prev.focus; this.render(); document.body.dataset.ui = this.screen;
+    this.screen = prev.screen; this.data = prev.data; this.focus = prev.focus; this.render(); document.body.dataset.ui = this.screen; MP.syncFlag(this.screen);
     return true;
   }
   hide() {
     this.leaving(); this.mapView?.dispose(); this.mapView = null;
     this.screen = this.shown = null; this.stack.length = 0; this.root.innerHTML = '';
-    document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
+    document.body.classList.remove('ui-open'); delete document.body.dataset.ui; MP.syncFlag(null);
   }
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
   render({ morph = false } = {}) {
@@ -117,7 +120,7 @@ export class Menu {
   /** re-render in place (a value changed that other rows depend on); focus stays on the same item even when others
    *  appear or disappear (e.g. DEFAULTS becomes available) */
   refresh() {
-    const id = (el) => el && ['key', 'act', 'ev', 'mapId', 'action', 'color'].map((k) => el.dataset[k]).find((v) => v != null);
+    const id = (el) => el && ['fid', 'key', 'act', 'ev', 'mapId', 'action', 'color'].map((k) => el.dataset[k]).find((v) => v != null);
     const want = id(this.items()[this.focus]);
     this.data.keepScroll = true; this.render({ morph: true });
     if (want != null) { const i = this.items().findIndex((el) => id(el) === want); if (i >= 0 && i !== this.focus) this.setFocus(i, false); }
@@ -184,7 +187,7 @@ export class Menu {
   }
   back() {
     this.h.ui?.(false);
-    if (this.screen === 'settings' && this.data.returnLobby) { this.pop() || this.hide(); const mp=window.__multiplayer;if(mp?.panel)mp.panel.hidden=false;return; }
+    if (MP.isMpScreen(this.screen)) { MP.back(this); return; }
     if (this.screen === 'pause') { this.h.resume(); return; }
     if (this.screen === 'results') { this.h.quit('title'); return; }
     const cancel = this.screen === 'car' ? this.data.onCancel : null;
@@ -208,6 +211,7 @@ export class Menu {
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
+    if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'mapLoad': selectMap(this,this.data.mapId,true);break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
@@ -226,8 +230,8 @@ export class Menu {
       case 'setupAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
       case 'setupGo': this.startSetup(); break;
       case 'setupReset': saveSetup(this.setupKey(), {}); this.refresh(); C.ui.toast('DEFAULTS RESTORED', { icon: 'arrow-counter-clockwise' }); break;
-      case 'mp': case 'mpJoin': window.__multiplayer.open({ entry: 'join' }); break;
-      case 'mpHost': window.__multiplayer.open({ entry: 'host' }); break;
+      case 'mp': case 'mpJoin': MP.openEntry(this, 'join'); break;
+      case 'mpHost': MP.openEntry(this, 'host'); break;
       case 'garage': this.h.garage(); break;
       case 'fines': this.show('fines',{},true);break;
       case 'settings': this.show('settings', { from: this.screen, tab: 'audio' }, true); break;
@@ -235,7 +239,7 @@ export class Menu {
       case 'resume': this.h.resume(); break;
       case 'retire': { const mp=window.__multiplayer;C.ui.prompt({title:'RETIRE FROM THIS RACE?',body:'This records a DNF. You can watch the remaining drivers.',actions:[{id:'retire',label:'RETIRE · DNF',variant:'primary'},{id:'cancel',label:'KEEP RACING'}]}).then(choice=>{if(choice==='retire'){mp?.retire();this.h.resume();}});break;}
       case 'reset': window.__flow?.resetCar?.(); break;
-      case 'onlineLobby': this.hide();window.__multiplayer?.open();break;
+      case 'onlineLobby': MP.openRoom(this); break;
       case 'restart': this.h.restart(); break;
       case 'quit': this.h.quit('title'); break;
       case 'retry': this.h.restart(); break;
@@ -248,6 +252,7 @@ export class Menu {
   /** a component value changed (keyboard, gamepad, mouse or touch) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
+    if (MP.isMpScreen(this.screen) && MP.change(this, { key, value, el })) return;
     if (scope === 'participants') { this.participants = value; this.refresh(); return; }
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {
@@ -291,6 +296,12 @@ export class Menu {
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="mode-select">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
+
+  // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
+  r_mp(d) { return MP.renderMp(this, window.__multiplayer, d); }
+  r_mpLobby() { return MP.renderLobby(this, window.__multiplayer); }
+  r_mpCars() { return MP.renderCars(this, window.__multiplayer); }
+  r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
   r_mapConfirm() { return renderMapConfirm(this.data.mapId); }
@@ -347,7 +358,7 @@ export class Menu {
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
-    if (this.participants === 'multiplayer') { window.__multiplayer.open({ mapId: this.h.ctx().mapId, eventId: def.id, mode: def.type, config: lobbyConfigToRaceSetup(resolveSetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() })) }); return; }
+    if (this.participants === 'multiplayer') { MP.openEntry(this, 'host', { mapId: this.h.ctx().mapId, eventId: def.id, mode: def.type, config: lobbyConfigToRaceSetup(resolveSetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() })) }); return; }
     this.h.openEvent(runDef);
   }
 

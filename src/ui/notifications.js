@@ -58,9 +58,9 @@ export class NotificationManager {
   }
   menuFeedback(text,{tone='info',ms=3500}={}){
     if(typeof document==='undefined')return;this.mount();
-    const panel=document.querySelector('#multiplayer:not([hidden]) .mp-card')||document.querySelector('#ui .scr__head')||document.querySelector('#ui .scr');
+    const panel=document.querySelector('#ui .scr__head')||document.querySelector('#ui .scr');
     if(!panel)return this.toast(text,{tone});
-    let row=panel.querySelector('[data-menu-feedback]');if(!row){row=document.createElement('p');row.dataset.menuFeedback='';row.className='menu-feedback';row.setAttribute('role','status');const heading=panel.querySelector('.mp-heading');if(heading)heading.after(row);else panel.append(row);}
+    let row=panel.querySelector('[data-menu-feedback]');if(!row){row=document.createElement('p');row.dataset.menuFeedback='';row.dataset.uiKeep='';row.className='menu-feedback';row.setAttribute('role','status');panel.append(row);} // ui-keep: an in-place menu refresh leaves it up
     row.textContent=notificationText(text);row.dataset.tone=tone;clearTimeout(row.timer);row.timer=setTimeout(()=>row.remove(),ms);return row;
   }
 }

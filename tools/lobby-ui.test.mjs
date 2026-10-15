@@ -1,38 +1,102 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { syncLobbySetup } from '../src/ui/lobby-setup.js';
+import { wantedScreen, driverRow, shownValue, setPending, renderLobby, renderMp, renderCars, renderResults, form, isMpScreen, helpText } from '../src/ui/mp-screens.js';
 
-// Small DOM surface models a room whose optional sections have been removed by a race transition.
-class Element {
-  constructor(tag='div'){this.tag=tag;this.dataset={};this.children=[];this.hidden=false;this.html='';}
-  append(...nodes){for(const node of nodes){node.parent=this;this.children.push(node);}}
-  prepend(node){node.parent=this;this.children.unshift(node);}
-  before(node){const list=this.parent.children;node.parent=this.parent;list.splice(list.indexOf(this),0,node);}
-  remove(){this.parent?.children.splice(this.parent.children.indexOf(this),1);}
-  querySelector(selector){if(selector==='[data-lobby-setup]')return this.children.find(n=>'lobbySetup'in n.dataset)||null;return null;}
-  querySelectorAll(){return [];}
-  contains(node){return this.children.includes(node);}
-  set innerHTML(value){this.html=value;this.writes=(this.writes||0)+1;}
-  get innerHTML(){return this.html;}
+// A Multiplayer stand-in with just the state the screens read (src/multiplayer.js owns the real one).
+function fakeMp({ host = true, players, status = 'waiting', lobbies } = {}) {
+  const mp = {
+    id: host ? 'a' : 'b', connected: true, worldReady: true, canChangeCar: true, preparing: null, creating: false, objectiveMode: null,
+    cars: [{ id: 'mini', name: 'Mini Cooper S', short: 'MINI', power: 141, drive: 'fwd' }, { id: 'z4', name: 'BMW Z4', short: 'Z4', power: 285, drive: 'rwd' }, { id: 'police_x', name: 'Police', short: 'POL', power: 200, drive: 'rwd' }],
+    maps: [{ id: 'riviera', name: 'ATHENS RIVIERA' }, { id: 'penteli', name: 'PENTELI' }],
+    lobby: { code: 'ABC123', name: 'TEST RUN', host: 'a', status, mode: 'sprint', mapId: 'riviera', config: { time: 'afternoon', weather: 'clear', police: false, traffic: 1 },
+      players: players || [{ id: 'a', name: 'GR-1001', car: 'mini', ready: false, loaded: true }, { id: 'b', name: 'GR-2002', car: 'z4', ready: false, loaded: true }] },
+    get me() { return this.lobby?.players.find((p) => p.id === this.id); },
+    get allowedCars() { return this.cars.map((c) => c.id); },
+    $: () => ({ textContent: 'Connected · 12 ms · 2/8 drivers' }),
+    ranking() { return this.lobby.results || this.lobby.players; },
+    resultRowText: () => '',
+    __lobbies: lobbies,
+  };
+  return mp;
 }
-for(const host of [true,false])test(`lobby sync tolerates missing car toggles/browser for ${host?'host':'guest'}`,()=>{
-  const room=new Element(),panel=new Element();
-  const oldWindow=globalThis.window,oldDocument=globalThis.document,oldObserver=globalThis.MutationObserver,oldWarn=console.warn;let warnings=0;
-  globalThis.MutationObserver=class {observe(){}};console.warn=()=>warnings++;
-  globalThis.window={__multiplayer:{id:'me',panel,lobby:{host:host?'me':'other',status:'waiting',mode:'sprint'},setLobbyConfig(){}}};
-  globalThis.document={activeElement:null,getElementById:id=>id==='mp-room'?room:null,createElement:tag=>new Element(tag)};
-  try{
-    assert.doesNotThrow(()=>syncLobbySetup());
-    const section=room.querySelector('[data-lobby-setup]');assert.ok(section,'setup appends directly to a room with no anchor');
-    const writes=section.writes;syncLobbySetup();syncLobbySetup();assert.equal(section.writes,writes,'observer repeats do not mutate a stable room');
-    assert.equal(warnings,0,'partial DOM does not need the exception fallback');
-    window.__multiplayer.panel=null;assert.doesNotThrow(()=>syncLobbySetup(),'torn-down panel is safe');
-  }finally{globalThis.window=oldWindow;globalThis.document=oldDocument;globalThis.MutationObserver=oldObserver;console.warn=oldWarn;}
+const menu = { h: { fmtTime: (t) => t.toFixed(2) } };
+
+test('the multiplayer state picks the screen: join/host without a lobby, the room while in one, results after a race', () => {
+  assert.equal(wantedScreen({ lobby: null }, 'mpLobby'), 'mp');
+  const mp = fakeMp();
+  assert.equal(wantedScreen(mp, 'mp'), 'mpLobby');
+  assert.equal(wantedScreen(mp, 'mpCars'), 'mpCars', 'the host stays on the allowed-car rules');
+  assert.equal(wantedScreen(fakeMp({ host: false }), 'mpCars'), 'mpLobby', 'guests never see host rules');
+  assert.equal(wantedScreen(fakeMp({ status: 'results' }), 'mpLobby'), 'mpResults');
+  assert.equal(wantedScreen(fakeMp({ status: 'race' }), 'mpLobby'), 'mpLobby');
+  assert.ok(['mp', 'mpLobby', 'mpCars', 'mpResults'].every(isMpScreen) && !isMpScreen('settings') && !isMpScreen('car'));
 });
-test('a failing lobby getter cannot throw through the observer or recursively re-enter',()=>{
-  const oldWindow=globalThis.window,oldDocument=globalThis.document,oldWarn=console.warn;let reports=0,calls=0;
-  globalThis.document={activeElement:null,getElementById:()=>new Element(),createElement:tag=>new Element(tag)};
-  globalThis.window={__multiplayer:{id:'me',panel:new Element(),lobby:{host:'me'},getLobbyConfig(){calls++;syncLobbySetup();throw new Error('panel replaced');}}};console.warn=()=>reports++;
-  try{assert.doesNotThrow(()=>syncLobbySetup());syncLobbySetup();assert.equal(calls,2);assert.equal(reports,1);}
-  finally{globalThis.window=oldWindow;globalThis.document=oldDocument;console.warn=oldWarn;}
+
+test('driver rows report ready, loading, reconnecting and race states', () => {
+  const l = { host: 'a', status: 'waiting' };
+  assert.equal(driverRow({ id: 'a', loaded: true, ready: true }, l, 'a').text, 'READY');
+  assert.equal(driverRow({ id: 'b', loaded: false }, l, 'a').text, 'LOADING');
+  assert.equal(driverRow({ id: 'b', loaded: true, connected: false }, l, 'a').text, 'RECONNECTING');
+  assert.equal(driverRow({ id: 'b', loaded: true, finish: 81.2 }, { ...l, status: 'race' }, 'a').text, 'FINISHED');
+  const me = driverRow({ id: 'a', loaded: true }, l, 'a'); assert.ok(me.me && me.host);
+});
+
+test('a host edit stays on screen until the lobby echoes it, then follows the server', () => {
+  setPending('time', 'night', 1000);
+  assert.equal(shownValue('time', 'afternoon', 1500), 'night', 'a publish in between cannot flick it back');
+  assert.equal(shownValue('time', 'night', 1600), 'night');
+  assert.equal(shownValue('time', 'dawn', 1700), 'dawn', 'cleared once echoed');
+  setPending('police', true, 0); assert.equal(shownValue('police', false, 10000), false, 'and expires');
+});
+
+test('a lobby update changes only the markup of what changed, so the menu morph leaves the rest of the screen alone', () => {
+  const mp = fakeMp(), before = renderLobby(menu, mp);
+  assert.equal(renderLobby(menu, mp), before, 'same state, same markup: a no-op patch');
+  mp.lobby = { ...mp.lobby, players: mp.lobby.players.map((p) => (p.id === 'b' ? { ...p, ready: true } : p)) };
+  const after = renderLobby(menu, mp), a = before.split('<'), b = after.split('<');
+  assert.equal(a.length, b.length, 'no row added or removed');
+  const changed = a.filter((t, i) => t !== b[i]);
+  assert.ok(changed.length > 0 && changed.length <= 3, `only the driver's light and state change (${changed.length} tags)`);
+  assert.ok(changed.every((t) => /data-state|NOT READY/.test(t)), changed.join(' | '));
+});
+
+test('the host gets separate KICK and BLOCK on other drivers; guests see the setup read-only and no host controls', () => {
+  const host = renderLobby(menu, fakeMp());
+  assert.equal((host.match(/data-act="mpKick"/g) || []).length, 1);
+  assert.equal((host.match(/data-act="mpBlock"/g) || []).length, 1);
+  assert.match(host, /data-act="mpStart"/); assert.match(host, /data-scope="mpCfg"/);
+  assert.match(host, /ALL 2 CARS/, 'allowed cars count garage cars only');
+  assert.match(host, /data-key="traffic"/); assert.match(host, /data-key="reverse"/);
+  assert.doesNotMatch(host, /data-key="police"/, 'police is not offered online'); assert.match(host, /UNAVAILABLE ONLINE/);
+  const guest = renderLobby(menu, fakeMp({ host: false }));
+  assert.doesNotMatch(guest, /mpKick|mpBlock|mpStart|mpForce|data-scope="mpCfg"/);
+  assert.match(guest, /ATHENS RIVIERA/); assert.match(guest, /NORMAL/); assert.match(guest, /data-act="mpReady"/);
+  assert.doesNotMatch(host + guest, /<input|<textarea|chat/i, 'the lobby is chat-free');
+  assert.match(helpText(fakeMp({ host: false }), fakeMp().lobby, false), /host starts/);
+});
+
+test('join lights up at six characters and lists open lobbies; full ones are not selectable', () => {
+  form.tab = 'join'; form.code = 'AB1';
+  const lobbies = [{ code: 'QWE123', name: 'NIGHT', mapId: 'penteli', status: 'waiting', capacity: 8, players: [{}] }, { code: 'FULL88', name: 'FULL', status: 'waiting', capacity: 2, players: [{}, {}] }];
+  const mp = fakeMp({ lobbies }); mp.lobby = null;
+  const short = renderMp(menu, mp, { tab: 'join' });
+  assert.match(short, /btn--primary[^"]*off[^"]*" role="button" data-act="mpJoinCode"/);
+  form.code = 'AB12CD';
+  assert.doesNotMatch(renderMp(menu, mp, { tab: 'join' }), /off[^"]*" role="button" data-act="mpJoinCode"/);
+  const list = renderMp(menu, mp, { tab: 'join' });
+  assert.match(list, /data-code="QWE123"/); assert.match(list, /PENTELI/);
+  assert.match(list, /mp-lobby-row off" role="button" data-act="mpJoinLobby" data-code="FULL88"/);
+  const hostTab = renderMp(menu, mp, { tab: 'host' });
+  assert.match(hostTab, /data-act="mpCreate"/); assert.match(hostTab, /data-key="map"/);
+  form.code = '';
+});
+
+test('allowed cars and results render from lobby state', () => {
+  const cars = renderCars(menu, fakeMp());
+  assert.equal((cars.match(/data-scope="mpAllow"/g) || []).length, 2, 'garage cars only');
+  const mp = fakeMp({ status: 'results' }); mp.lobby.results = [{ id: 'a', name: 'GR-1001', car: 'mini', finish: 80.5 }, { id: 'b', name: 'GR-2002', car: 'z4', dnf: 'retired' }];
+  const res = renderResults(menu, mp);
+  assert.match(res, /P1/); assert.match(res, /80\.50/); assert.match(res, /DNF/); assert.match(res, /data-act="mpStart"/);
+  const guest = fakeMp({ host: false, status: 'results' }); guest.lobby.results = mp.lobby.results;
+  assert.doesNotMatch(renderResults(menu, guest), /mpStart|mpToLobby/);
 });

@@ -680,7 +680,7 @@ addEventListener('keydown', e => {
 });
 addEventListener('keydown', e => {
   if (e.target.closest?.('input, select, textarea, button, [contenteditable]')) return;
-  if (!multiplayer.panel.hidden) { clearDriveInput(); return; }
+  if (!multiplayer.panel.hidden && !menu?.open) { clearDriveInput(); return; } // the lobby screens are menus: their keys navigate
   G.inputDevice = 'keyboard'; audio.start();
 });
 addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch' ? 'touch' : 'keyboard'; audio.start(); });

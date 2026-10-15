@@ -44,7 +44,7 @@ try {
  await page.goto(base+'/?map='+map.id+'&quality=low&simhook=1&debug=1&quick=1&motion-control=1',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.__multiplayer?.loaded&&window.__sim?.player,null,{polling:100,timeout:300000});
  await page.evaluate(()=>__multiplayer.open());await page.waitForFunction(()=>__multiplayer.connected,null,{polling:100});
- await page.locator('#mp-code').fill(lobby.code);await page.locator('#mp-join-form button').click({force:true});
+ await page.evaluate(code=>__multiplayer.action('join',{code}),lobby.code); // the native panel is hidden transport state; the menus draw the lobby
  await page.waitForFunction(()=>__multiplayer.worldReady&&__multiplayer.active,null,{polling:100});
  const points=await page.evaluate(()=>Array.from({length:4001},(_,s)=>{const r=__sim.route,u=r.laneU(s,0),p=r.point(s,u);return{x:p.x,y:p.y,z:p.z,u,yaw:-r.heading(s)}}));
  send({type:'options',traffic:false});await next(m=>m.type==='lobby'&&!m.lobby.traffic&&m.lobby.players.every(p=>!p.ready));
