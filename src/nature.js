@@ -402,7 +402,10 @@ export function buildNature(map, scene, heightC, bld, assets) {
   const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1800, cell: 800, colors: true });
   const fanCrown = new CellInstances(makeFanPalm(), extraMat, { far: 1800, cell: 800, colors: true });
   const palmBoot = new CellInstances(palmT.boot, barkMaterial('palmbark', '#a89880', 1.0), { far: 700, shadow: false });
-  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: gardenScenery ? 300 : 1000, far: gardenScenery ? 900 : 2000 });
+  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: gardenScenery ? 300 : 1000, far: gardenScenery ? 420 : 2000 });
+  // Psychiko's ~26k mature-pine limbs: low-poly, close range and shadowless (the trunk keeps the shadow).
+  const limbGeo = gardenScenery ? new THREE.CylinderGeometry(0.1, 0.2, 1, 5, 1, true).translate(0, 0.5, 0) : null;
+  const pineLimbs = gardenScenery ? new CellInstances(limbGeo, pineTrunkMat, { cell: 200, far: 200, shadow: false }) : null;
   const pineCore = pineT.map((t) => new CellInstances(t.core, leafMat, { cell: gardenScenery ? 500 : 1000, near: gardenScenery ? 170 : 390, far: gardenScenery ? 1000 : 2600, colors: true, shadow: false }));
   const pineCards = pineT.map((t) => new CellInstances(t.cards, leafMat, { cell: gardenScenery ? 160 : 250, far: gardenScenery ? 220 : 500, colors: true }));
   const oleCards = [11, 12].map((seed) => cardCluster(30, seed, ATL.oleander, { r: [0.95, 0.7, 0.9], w: 1.1, h: 1.1, shell: 0.65 }));
@@ -457,7 +460,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
     const sc = h / 10, k = rng.int(0, 2);
     const m = M(tx, y + h - 0.6, tz, 0, rng.range(0, 6.28), 0, sc * rng.range(0.9, 1.2), sc, sc * rng.range(0.9, 1.2), 'YXZ');
     const tint = leafTint(); pineCore[k].add(m, tint); pineCards[k].add(m, tint);
-    if(gardenScenery) for(let j=0;j<3;j++) pineTrunk.add(M(x+(tx-x)*.65,y+h*.58,z+(tz-z)*.65, .65+j*.13,yaw+j*2.1,0,.35,h*.34,.35,'YXZ'));
+    if(gardenScenery) for(let j=0;j<3;j++) pineLimbs.add(M(x+(tx-x)*.65,y+h*.58,z+(tz-z)*.65, .65+j*.13,yaw+j*2.1,0,.35,h*.34,.35,'YXZ'));
   };
   const addBush = (x, y, z, s, colors) => {
     const k = rng.int(0, 1), c = rng.pick(colors);
@@ -584,7 +587,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
     }
   }
   }
-  for (const c of [palmTrunk, palmCrown, fanCrown, palmBoot, pineTrunk, ...pineCore, ...pineCards, ...bushCore, ...oleFar, ...oleI, ...lenI, ...rocks, cypCore, cypI, orangeCore, orangeI, smallTrunks, oliveTrunks, oliveCards, oliveFar, bougainvillea, phrygana, agave, pricklyPear]) c.build(group);
+  for (const c of [palmTrunk, palmCrown, fanCrown, palmBoot, pineTrunk, ...(pineLimbs ? [pineLimbs] : []), ...pineCore, ...pineCards, ...bushCore, ...oleFar, ...oleI, ...lenI, ...rocks, cypCore, cypI, orangeCore, orangeI, smallTrunks, oliveTrunks, oliveCards, oliveFar, bougainvillea, phrygana, agave, pricklyPear]) c.build(group);
   {
     const fruit = new CellInstances(fruitGeo, new THREE.MeshStandardMaterial({ color: '#f07a10', roughness: 0.42 }), { cell: 300, far: 260, shadow: false });
     for (const [x, y, z] of fruitPos) fruit.add(M(x, y, z));
