@@ -626,7 +626,7 @@ function corridorCheck(pv, dt) {
   if (result.warning) {
     document.body.classList.add('offtrack-warning');
     const countdown = towOffer.corridorT > 0 ? ` · ${Math.ceil(result.remaining)} s` : '';
-    notifications.toast('Return to the road' + countdown, { id: 'offtrack', priority: 70, persistent: true });
+    notifications.toast('Return to the road' + countdown, { id: 'offtrack', kind: 'hud', tone: 'bad', priority: 70, persistent: true });
   } else clearCorridorWarning();
   return false;
 }
@@ -669,7 +669,7 @@ function tow(pv, { reset = false, automatic = false } = {}) {
     const hold = multiplayer.active || G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'survive';
     towOffer.recovering = hold;
     if (hold) towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 5; else if (!inFreeRoam()) G.pen += 5;
-    if (automatic) notifications.toast('Recovered to road', { id: 'recovered', ms: 3000 });
+    if (automatic) notifications.toast('Recovered to road', { id: 'recovered', kind: 'card', label: 'RECOVERY', tone: 'good', ms: 3000 });
     else hud.message(`<i>${reset ? 'RESET' : 'TOWED'}</i> · ${inFreeRoam() ? '' : '+5 s · '}BACK ON THE ROAD`, 3);
     sessionTransitions.after(120, () => document.body.classList.remove('fading'));
   });
