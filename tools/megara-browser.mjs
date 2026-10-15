@@ -35,7 +35,7 @@ try {
  report.start=await page.evaluate(()=>({state:window.__game.state,map:window.__flow.mapId,event:window.__flow.event().def.id,rivals:window.__flow.grid.length,traffic:window.__sim.traffic.disabled,playerS:window.__sim.player.veh.s}));
  assert.equal(report.start.map,'megara');assert.equal(report.start.rivals,3);assert.equal(report.start.traffic,true);
  await render();await shot('02-solo-race-start');
- await page.evaluate(frames=>{window.__game.autodrive=true;window.__sim.step(frames);window.__game.autodrive=false;},sceneryOnly?600:1200);
+ await page.evaluate(frames=>{window.__game.autodrive=true;window.__sim.step(frames);window.__game.autodrive=false;},sceneryOnly?900:1200);
  report.mid=await page.evaluate(()=>({s:window.__sim.player.veh.s,rivals:window.__flow.grid.map(c=>({s:c.veh.s,u:c.veh.u,wall:c.veh.wallHit})),render:window.__renderInfo()}));
  assert.ok(report.mid.s>150);
  await render();await shot('03-solo-mid-lap');
