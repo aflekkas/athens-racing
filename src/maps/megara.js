@@ -198,6 +198,15 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
     const points = [k.s0+2,k.s0+4].map(s => { const p=route.point(s,k.side*(route.edge(s)+3)); return [p.x,p.z]; });
     tyreWalls.path(points,{facing:false});
   }
+  // Four-high bolted rows on the outside of the major turns, beyond the kerbs
+  // and runoff. Placement clearance rejects any crossing service/race road.
+  for (const k of route.kerbs.filter(k => [89.98, 412.916, 1214.755, 1620.674].includes(k.s0))) {
+    const points = [];
+    for (let s = k.s0 - 8; s <= k.s1 + 8; s += 3) {
+      const p = route.point(s, -k.side * (route.edge(s) + 6)); points.push([p.x, p.z]);
+    }
+    tyreWalls.path(points);
+  }
   tyreWalls.finish();
   // Galvanized diamond mesh around the timing booth/paddock is visible in
   // RallyDiaries start-straight.jpg and BIKEIT gallery09/gallery25. It is a low
@@ -348,5 +357,5 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   mergeSurfaces(roadGroup);mergeSurfaces(group);
   group.userData.reference='tools/maps/megara/SOURCES.md';
   // Every material, geometry and label remains below group for map-world disposal.
-  return {group,obstacles,assets:{},road:{group:roadGroup,asphalt}};
+  return {group,obstacles,tyreWalls,assets:{},road:{group:roadGroup,asphalt}};
 }

@@ -48,3 +48,15 @@ test('a sustained 90 km/h barrier scrape ignores tangential speed and cannot dam
  const g=ground(),v=mk();for(let i=0;i<200;i++){v.vLong=90/3.6;v.vLat=2/3.6;v.w=0;g._hit(v,-1,0,.01);}
  assert.deepEqual(v.damage,{front:0,rear:0,left:0,right:0});assert.equal(v.impactMechanical,0);assert.equal(v.maxImpactEbs,0);assert.equal(v.lastDamage,null);assert.equal(v.engHealth,1);
 });
+
+
+test('tyre barriers absorb speed with less rebound and damage, and deliver the actual impact impulse', () => {
+  const concrete = mk(), tyre = mk(), g = ground(); concrete.vLong = tyre.vLong = 20;
+  let impact;
+  g._hit(concrete, 0, 1, .01, undefined, {kind:'wall'});
+  g._hit(tyre, 0, 1, .01, undefined, {kind:'tyre', restitution:.08, damageScale:.35, onImpact: hit => { impact = hit; }});
+  assert.equal(impact.speed, 20); assert.equal(impact.vz, -20);
+  assert.ok(Math.abs(tyre.vLong) < Math.abs(concrete.vLong));
+  assert.ok(tyre.damage.front < concrete.damage.front);
+  assert.ok(Math.abs(tyre.vLong) < 2);
+});

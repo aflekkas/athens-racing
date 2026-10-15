@@ -137,7 +137,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const lod = prepareSceneryLod(group, quality);
     group.matrixAutoUpdate = false; group.updateMatrix(); freezeStatic(staticRoots);
     let disposed = false;
-    return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod,
+    return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, tyreWalls: custom?.tyreWalls,
       dispose() {
         if (disposed) return; disposed = true;
         // Damage fragments are parented directly to scene, outside this map root.

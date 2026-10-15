@@ -424,6 +424,7 @@ function setCar(idx, keepPose = true) {
 }
 
 function resetRace() {
+  world?.tyreWalls?.reset();
   applyDriving();
   resetLaws();
   if (!G.ev) prepareEvent(EV.QUICK_RACE);
@@ -448,6 +449,7 @@ function resetRace() {
 }
 /** offline reset onto the active event: the grid, traffic in the event's direction and density, timing */
 function resetEvent() {
+  world?.tyreWalls?.reset();
   notifications.clear();
   resetLaws();
   const { def, r } = G.ev, dir = r.dir;
@@ -1695,6 +1697,7 @@ function step(dt, draw = true) {
   if (!multiplayer.active) tickWorldLife(dt, { running: simulate });
   if (simulate && !multiplayer.active) updateRoadWeather(dt);
   if (simulate) signals.update(dt, pv.s, camera.position);
+  world?.tyreWalls?.update(simulate ? dt : 0, multiplayer.active);
   if (simulate) {
     // ---- state machine
     if (G.state === 'countdown') {

@@ -334,6 +334,7 @@ export class Ground {
     const wvx = fx * v.vLong + rx * v.vLat, wvz = fz * v.vLong + rz * v.vLat;
     const vn = -(wvx * nx + wvz * nz); // speed into the wall
     if (vn <= 0) return;
+    collider?.onImpact?.({ vx: wvx, vz: wvz, speed: vn });
     if (v.addDamage) {
       // the direction from the car into the wall, in the body frame (forward / right)
       const dF = -(nx * fx + nz * fz), dR = -(nx * rx + nz * rz);
