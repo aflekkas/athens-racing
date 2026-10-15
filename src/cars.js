@@ -162,6 +162,21 @@ export const CARS = [
     tyres: ['225/45 R19','255/40 R19'], frontW: .59, hcg: .51, track: 1.605, trackRear: 1.584, rsF: .60, susHz: 1.6, susZ: .56, rollK: 1.05, pitchK: 1.05, alphaPk: .12, mfC: 1.44, loadSens: .16, clA: 0, tc: .75, esc: .6, shiftT: .20, bias: .71, steerRate: 1.07, ebrake: .17, lsd: 0,
     stats: { speed: .59, accel: .51, handling: .75, drift: .32 },
   },
+  // R231 pre-facelift SL 65 AMG, M279 5980 cc V12; roof stowed for gameplay.
+  // https://media.mercedes-benz.pl/moc-bez-wysiku/ (2012 launch: output, rpm, tyres, EC mass)
+  // https://www.baaf-ks.com/upload/models/slclass/brosure/slclassr231_brosur.pdf (Mercedes brochure)
+  // Press: 463 kW @ 4800-5400, 1000 Nm @ 2300-4300, 0-100 4.0 s, 0-200 11.8 s, 250 km/h limited, 255/35 + 285/30 R19.
+  // 1875 kg DIN = published 1950 kg EC minus 75 kg driver/luggage; vmax uses the standard limiter, not the 300 km/h package.
+  // AMG SPEEDSHIFT PLUS 7G-TRONIC ratios; the game retains its global Auto/Manual player preference.
+  // Off-peak torque, CdA (roof down), suspension, LSD and aids are simulation calibrations.
+  {
+    id: 'sl65', name: 'MERCEDES-AMG SL 65', short: 'SL 65 AMG', tag: 'R231 · 6.0 V12 biturbo. 1000 Nm. Open-top rear-wheel drive.', color: '#edece5', accent: '#b8c4cf', marque: 'mercedes',
+    zeroTo100: 4.0, mass: 1875, power: 463, torque: 1000, redline: 6000, idle: 700, gears: [4.38,2.86,1.92,1.37,1,.82,.73], final: 2.65, wheelR: .330,
+    torqueCurve: [[0,220],[700,290],[1400,620],[1900,860],[2300,1000],[4300,1000],[4800,921.13],[5100,866.95],[5400,818.78],[6000,650]], peakTorqueRpm: 3000, peakPowerRpm: 4800,
+    wheelbase: 2.585, length: 4.631, width: 1.877, height: 1.314, cdA: .74, vmax: 250, grip: 1.13, gripRear: 1.15, steer: .55, yawI: 1.20, drift: 1, brake: 1.14, cyl: 12, pitch: .90, convertible: true, body: 'sl65', drive: 'rwd', engine: 'v12', trafficWeight: .08,
+    tyres: ['255/35 R19','285/30 R19'], frontW: .53, hcg: .50, track: 1.610, trackRear: 1.604, rsF: .56, usGrad: 2.6, susHz: 1.65, susZ: .62, rollK: .75, pitchK: .80, alphaPk: .115, mfC: 1.47, loadSens: .16, clA: .02, tc: .65, esc: .45, shiftT: .18, bias: .67, steerRate: 1.04, ebrake: .15, lsd: .40,
+    stats: { speed: .84, accel: .95, handling: .80, drift: .90 },
+  },
   // Huracan EVO AWD: Lamborghini 470 kW / 640 CV, 600 Nm, >325 km/h.
   // 1422 kg is dry; 1542 kg road-ready simulation mass adds estimated fluids/equipment.
   {

@@ -113,7 +113,7 @@ export class Cockpit {
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
     const isMini=spec.id==='mini'||spec.id==='mini_jcw',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
-    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.id==='cle';
+    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.id==='cle',isSL=spec.id==='sl65';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.33,-.43));
     const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
@@ -173,8 +173,8 @@ export class Cockpit {
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
-    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
-    const nw=spec.id==='huracan'?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
+    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMercCoupe?-.21:isSL?-.10:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
+    const nw=spec.id==='huracan'?.15:isMercCoupe?.225:isSL?.23:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMercCoupe?.32:isSL?.13:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
     if(!isClassic&&!spec.oldDash){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
@@ -204,7 +204,7 @@ export class Cockpit {
         for(let i=0;i<8;i++){const a=i*Math.PI/4,o=box(.005,.030,.006,alu,x+Math.sin(a)*.020,y+Math.cos(a)*.020,faceZ+.117,.001);o.rotation.z=-a+.35;}
       };
       for(const x of [-W/2+.105,W/2-.105])turbine(x,topY-.07);
-      for(const x of [-.115,0,.115])turbine(x,topY-(isMercCoupe?.002:.145));
+      for(const x of (isSL?[-.19,.19]:[-.115,0,.115]))turbine(x,topY-(isSL?.09:isMercCoupe?.002:.145));
       const ambient=new THREE.MeshBasicMaterial({color:'#6599e9'});
       box(W*.92,.004,.006,ambient,0,topY-.105,faceZ+.091,.001);
       if(spec.id==='cla'){box(W*.80,.22,.024,gloss,-.04,topY+.018,faceZ+.076,.018);label('MBUX   ·   MERCEDES-BENZ',.29,.035,W*.29,topY+.035,faceZ+.095,'#83bcde');}
@@ -238,7 +238,7 @@ export class Cockpit {
     const manual=spec.transmission==='manual';
     const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda&&!manual?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
     const knob=this.knob=isSkoda&&!manual?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
-    if(isMercedes){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
+    if(isMercedes&&!isSL){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
     this.selectorX=-.04;
     if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
     else label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
@@ -399,6 +399,15 @@ export class Cockpit {
       g.fillStyle='#ebedf1';g.font='bold 58px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),180,169);g.font='22px Arial';g.fillText('km/h',180,204);g.font='bold 68px Arial';g.fillText(st.gearLabel,518,241);
       g.fillStyle='#ba2f39';g.fillRect(45,294,192,6);g.font='20px Arial';g.fillStyle='#d7dbe1';g.fillText('GR-FOUR',150,277);g.fillText('53 : 47',150,338);
       g.font='21px monospace';g.fillText('WATER   90°C',838,116);g.fillText('OIL     96°C',838,165);g.fillText('BOOST   0.0',838,214);g.fillStyle='#889398';g.font='17px Arial';g.fillText('GRAVEL',838,308);
+    }else if(id==='sl65'){
+      // R231 COMAND-era AMG twin analogue dials and central driver display.
+      // https://media.mercedes-benz.fr/nouveau-sl-65-amg---maitrise-et-style-dans-la-performance/
+      g.fillRect(0,0,W,H);
+      instrumentDial(g,{x:220,y:192,r:170,max:360,value:st.kmh,step:40,label:'km/h'});
+      instrumentDial(g,{x:804,y:192,r:170,max:7,value:st.rpm/1000,step:1,label:'×1000 rpm',red:6});
+      g.fillStyle='#e8edf0';g.textAlign='center';g.font='26px Arial';g.fillText('AMG',512,62);
+      g.font='48px Arial';g.fillText(Math.round(st.kmh),512,176);g.font='20px Arial';g.fillText('km/h',512,210);
+      g.font='32px Arial';g.fillText(st.gearLabel,512,267);g.font='18px Arial';g.fillText('V12 BITURBO',512,331);
     }else if(id==='taxi'||id==='police_octavia'||id==='superb'){
       g.fillRect(0,0,W,H);instrumentDial(g,{x:228,y:192,r:172,max:6,value:st.rpm/1000,step:1,label:'×1000 rpm',red:4.5});instrumentDial(g,{x:799,y:192,r:172,max:260,value:st.kmh,step:20,label:'km/h'});
       g.fillStyle='#e0edf0';g.font='49px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),512,186);g.font='20px Arial';g.fillText('km/h',512,221);g.fillText(st.gearLabel,512,269);g.font='19px Arial';g.fillStyle='#9bcac7';g.fillText('23.0°C',512,49);g.fillText(id==='superb'?'SUPERB':'OCTAVIA',512,337);

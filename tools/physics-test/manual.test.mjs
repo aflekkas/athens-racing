@@ -31,7 +31,12 @@ test('explicit automatic mode is bit-identical to the default and resumes auto s
     const input = { throttle: i < 600 ? 1 : 0.2, brake: i > 750 ? 0.6 : 0, steer: Math.sin(i / 40) * 0.15 };
     a.update(1 / 60, input); b.update(1 / 60, input);
     assert.deepEqual([a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], [b.vLong, b.vLat, b.w, b.rpm, b.gear, b.pendingGear, b.shiftT]);
-    if (baseline.has(i)) assert.deepEqual([a.x, a.z, a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], baseline.get(i), 'frozen automatic trajectory at frame ' + i);
+    if (baseline.has(i)) {
+      // Stored trajectories cross JS engines/platforms; allow floating-point roundoff.
+      // The live default-vs-explicit automatic comparison above remains bit-exact.
+      const actual = [a.x, a.z, a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT];
+      baseline.get(i).forEach((expected, j) => assert.ok(Math.abs(actual[j] - expected) <= 1e-12 * Math.max(1, Math.abs(expected)), 'frozen automatic trajectory at frame ' + i + ', field ' + j));
+    }
   }
   b.reset(0, 0, 30); b.setManual(true); b.syncWheels(); run(b, 30); assert.equal(b.gear, 1);
   b.setManual(false); run(b, 90); assert.ok(b.gear > 1);

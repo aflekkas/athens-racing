@@ -1,6 +1,7 @@
 // Screen approximations of period factory finishes; references live in tools/vehicle-model-notes.md.
 // Taxicab yellow is an additional fleet finish; GR Yaris grey includes the 2024 Ogier special edition.
 export const PAINTS = {
+  sl65: [['Diamond White','#edece5'],['Obsidian Black Metallic','#13171c'],['Iridium Silver','#b6bec3'],['Palladium Silver','#8d9191'],['Mars Red','#b92228'],['designo Magno Allanite Grey','#626866']],
   cla: [['Obsidian Black Metallic','#111419'],['Polar White','#eeeeeb'],['Cosmos Black','#1b2028'],['Alpine Grey','#8e9398'],['Hyper Blue','#216498'],['Patagonia Red','#922536']],
   gla45: [['Mountain Grey','#737c83'],['Night Black','#14171b'],['Polar White','#ededeb'],['Digital White','#dce1dc'],['Denim Blue','#36536d'],['Patagonia Red','#98253b']],
   e36: [["Boston Green","#455948"],["Alpine White","#e3e4da"],["Calypso Red","#683443"],["Arctic Silver","#abb4b8"],["Avus Blue","#344c83"],["Faded Hellrot","#a85048"]],
@@ -38,7 +39,7 @@ export function setPaint(model,color) {
   model.paint.color.set(color);model.paintColor=color.toLowerCase();
   for(const m of model.paintAccents||[])m.color.set(color);
   const name=PAINTS[model.spec?.id]?.find(p=>p[1]===model.paintColor)?.[0]||'';
-  const matte=/^(Frozen|Matt |Faded|Chalky|Weathered|Oxidised|Dull)/.test(name);
+  const matte=/^(Frozen|Matt |Faded|Chalky|Weathered|Oxidised|Dull|designo Magno)/.test(name);
   model.paint.roughness=matte?.62:.26;
   if('clearcoat' in model.paint)model.paint.clearcoat=matte?.05:1;
   return true;

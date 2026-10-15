@@ -20,7 +20,7 @@ export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_ya
 import * as C from './ui/components.js';
 const { esc, icon } = C;
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, embedded = false } = {}) {
-  const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id];
+  const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id] ?? c.zeroTo100;
   if (!detail) {
     const list = filterCars(CARS, filters), attrs = { 'data-scope': 'catalog' };
     const html = C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],

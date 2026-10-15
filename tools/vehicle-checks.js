@@ -30,9 +30,13 @@ export function runVehicleChecks(carIds=null) {
       check(spec.id+' sourced wheelbase and height',Math.abs(car.shape.wb-spec.wheelbase)<.001&&Math.abs(car.dims.H-spec.height)<.001);
       check(spec.id+' matching registration faces',!!car.plate&&!!car.materials.plate.map);
       check(spec.id+' named paint is the default',PAINTS[spec.id].some(p=>p[1]===spec.color));
-      check(spec.id+' correct exhaust count',car.exhaust.length===(spec.id==='gla45'?4:2));
+      check(spec.id+' correct exhaust count',car.exhaust.length===(['gla45','sl65'].includes(spec.id)?4:2));
       if(spec.id==='cle'||spec.id==='gla45')check(spec.id+' AWD distribution',spec.drive==='awd'&&spec.awdRear>0&&spec.awdRear<1);
-      else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
+      else if(spec.id==='sl65'){
+        check('SL 65 rear-drive V12 roadster',spec.drive==='rwd'&&spec.engine==='v12'&&spec.convertible&&car.shape.open&&car.shape.seats===2);
+        check('SL 65 stowed roof leaves the cockpit open',!car.body.getObjectByName('roof')&&!car.body.getObjectByName('rear-glass'));
+        check('SL 65 staggered 19-inch tyres',car.shape.rim===.2413&&car.shape.tyreF===.255&&car.shape.tyreR===.285);
+      }else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
       if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
       if(car.shape.suv){
         const glass=car.body.getObjectByName('rear-glass');glass.geometry.computeBoundingBox();const b=glass.geometry.boundingBox;
