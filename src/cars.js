@@ -570,7 +570,7 @@ export const CARS = [
     stats: {"speed":0.6483870967741936,"accel":0.35398230088495575,"handling":0.7846153846153846,"drift":0.65},
   },
   {
-    id: 'mini_cabrio_jcw', name: "MINI JOHN COOPER WORKS CONVERTIBLE", short: "JCW", tag: "F56 hardtop · 231 PS. Six-speed manual. FWD.", color: "#22513d",
+    id: 'mini_cabrio_jcw', name: "MINI JOHN COOPER WORKS CONVERTIBLE", short: "JCW", tag: "F57 convertible · 231 PS. Six-speed manual. FWD.", color: "#22513d",
     accent: "#bc2028", mass: 1310, power: 170, torque: 320, redline: 6800, idle: 850, gears: [3.923,2.136,1.276,0.921,0.756,0.628], final: 3.824,
     wheelR: 0.316, torqueCurve: [[0,105],[850,130],[1250,320],[4800,320],[5200,312.2],[6000,270.6],[6800,220]], peakTorqueRpm: 3000, peakPowerRpm: 6000,
     wheelbase: 2.495, length: 3.874, width: 1.727, cdA: 0.71, vmax: 242, grip: 1.13, steer: 0.6, yawI: 0.98, drift: 1, brake: 1.08, cyl: 4, pitch: 1.04,

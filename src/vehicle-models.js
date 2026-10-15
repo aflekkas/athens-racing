@@ -466,7 +466,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   if(visual.exhaust){
     const old=[];car.body.traverse(o=>{if(/exhaust/.test(o.name))old.push(o);});for(const o of old)o.removeFromParent();
     const n=visual.exhaust,mid=kind==='mini'||kind==='mini_jcw',high=kind==='huracan';
-    const xs=n===4?[-.66,-.54,.54,.66]:n===2?(mid?[-.065,.065]:[-d.W*.30,d.W*.30]):[-d.W*.29];
+    const xs=visual.m?[-.49,-.40]:n===4?[-.66,-.54,.54,.66]:n===2?(mid?[-.065,.065]:[-d.W*.30,d.W*.30]):[-d.W*.29];
     car.exhaust=xs.map(x=>exhaust(car.body,M,x,high?.626:.25,d.L/2+(high?.07:-.03)));
   }
   if(visual.kit){
