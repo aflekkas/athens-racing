@@ -1,0 +1,28 @@
+{"proof":"health","base":"http://127.0.0.1:42405","entry":"/src/main.js","build":null,"health":{"ok":true,"clients":0,"lobbies":0,"track":{"start":241,"finish":10548,"version":"4718fbec"}}}
+{"proof":"matching Quick Race + Free Roam catalogues","mapId":"riviera","events":[{"id":"quick","type":"sprint"},{"id":"free:riviera","type":"free"}]}
+{
+  "proof": "create → join → ready → start → snapshot → checkpoints → finish",
+  "base": "http://127.0.0.1:42405",
+  "protocol": 7,
+  "legacy": false,
+  "mapId": "riviera",
+  "eventId": "quick",
+  "checkpoints": 134,
+  "raceId": "05147045-e9f1-4696-a440-e3bd20545f4b",
+  "startAt": 1792093451316,
+  "reconnects": 0,
+  "results": [
+    {
+      "id": "d373d68f-3f3f-4654-9da6-f35119292bc1",
+      "finish": 87.26321172714233,
+      "dnf": false
+    },
+    {
+      "id": "2621423d-0b28-4238-92fb-cc9e6640361f",
+      "finish": 87.26571297645569,
+      "dnf": false
+    }
+  ]
+}
+PASS: assets, private paths, playable map catalogue and /ws create-lobby round trip at http://127.0.0.1:42405
+{"proof":"reconnect summary","reconnects":0}

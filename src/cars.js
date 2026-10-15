@@ -1,5 +1,6 @@
 // Car catalogue + procedural car models (lofted bodies), traffic vehicles, the curly-haired driver.
 import * as THREE from 'three';
+import {ExhaustFlames} from './exhaust-flames.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat } from './cockpit.js';
@@ -197,6 +198,20 @@ export const CARS = [
     shiftT: 0.15, bias: 0.71, steerRate: 1.07, ebrake: 0.17, lsd: 0,
     stats: {"speed":0.7387096774193549,"accel":0.48780487804878053,"handling":0.8307692307692308,"drift":0.35}, zeroTo100: 8.2, trafficWeight: 0,
     playerDetail: true, visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, gearbox: "DCT",
+  },
+  {
+    id: 'aventador_svj',
+    powertrain: {"idleRpm":900,"redlineRpm":8500,"limiterRpm":8600,"inertia":0.27,"maxFreeRevRate":8500,"spoolTime":0,"engineBraking":0.15,"gearboxType":"amt","shiftTime":0.18,"revMatch":true,"torqueConverter":false,"limiterDrop":220},
+    gearbox: "AMT", name: "LAMBORGHINI AVENTADOR SVJ", short: "AVENTADOR SVJ", tag: "LP770-4 · 6.5 V12 · 770 PS · Seven-speed ISR.", color: "#77b52c",
+    accent: "#dbb755", zeroTo100: 2.8, mass: 1675, dryMass: 1525, power: 566.35, torque: 720, redline: 8500, idle: 900, gears: [3.909,2.438,1.810,1.458,1.185,0.967,0.844],
+    final: 2.867, wheelR: 0.355, torqueCurve: [[0,210],[900,250],[2000,420],[3500,540],[5000,640],[6750,720],[7500,700],[8500,636.25],[8700,585]],
+    peakTorqueRpm: 6750, peakPowerRpm: 8500, wheelbase: 2.70, length: 4.943, width: 2.098, cdA: 0.64, vmax: 355, grip: 1.27, gripRear: 1.1, steer: 0.54,
+    yawI: 1.08, drift: 1, brake: 1.18, cyl: 12, pitch: 1.12, body: "aventador", cabinWidth: 0.77, drive: "awd", awdRear: 0.7, awdDrift: 0.8, engine: "v12",
+    engineZone: "rear", playerDetail: true, trafficWeight: 0, tyres: ["255/30 ZR20","355/25 ZR21"], frontW: 0.43, hcg: 0.4, track: 1.72, rsF: 0.5,
+    usGrad: 1.8, susHz: 1.9, susZ: 0.61, rollK: 0.65, pitchK: 0.65, alphaPk: 0.1, mfC: 1.5, loadSens: 0.14, clA: 0.32, rearSteering: true, activeAero: "ALA 2.0", tc: 0.8, esc: 0.4, shiftT: 0.18,
+    bias: 0.62, steerRate: 1.15, ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.98,"drift":0.81},
+    launchRpmFraction: .78, exhaustPops: true, trimLabel: "SVJ LP770-4",
+    visual: {"rim":20,"spokes":7,"ride":0,"caliper":"#bb2027","lip":false},
   },
   {
     id: 'huracan',
@@ -1935,6 +1950,7 @@ export class CarModel {
     if(spec.nativeFleet)buildPlayerFleet(this);else buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',taxi:'ΤΑΑ 2150',carrera:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
     setPaint(this, savedPaint(spec));
     this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    if(spec.exhaustPops)this.exhaustFlames=new ExhaustFlames(this);
     this.wheelSpin = 0;
     // contact shadow
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());

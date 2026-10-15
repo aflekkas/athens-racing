@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Drive the Aventador SVJ with a screaming V12, hard ISR shifts and switchable exhaust flames and crackles.
+  ![The green Aventador SVJ in the garage with its exhaust pops switch](assets/changelog/2026.10.15.3/svj-garage.webp "A V12, a huge wing, and hot exhausts.")
 - Garage trim changes keep drag rotation working, and slow touch drags rotate your car.
   ![The garage after changing trims and rotating the car](assets/changelog/2026.10.15.3/garage-rotation.webp "Rotate your car after choosing another trim.")
 - Scooter riders return correctly when traffic recovers after a crash.

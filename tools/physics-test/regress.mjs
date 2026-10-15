@@ -289,7 +289,7 @@ else {
 
 // Representative real-trim performance: tighter than the catalogue-wide sanity envelope.
 // 120s allows stock power/aero to approach terminal speed; 12% sprint / 3% top tolerances.
-for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','cle300e']) {
+for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','aventador_svj','cle300e']) {
   const spec = catalogue().find(c => c.id === id), v = new Vehicle(spec, route);
   let t100 = null;
   for (let i=0;i<120*60;i++) { v.update(DT,{ throttle:1,brake:0,steer:0 }); if (t100 === null && v.kmh>=100) t100=(i+1)*DT; }

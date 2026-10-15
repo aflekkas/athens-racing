@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: every trim has complete plausible powertrain parameters
+ok 1 - every trim has complete plausible powertrain parameters
+  ---
+  duration_ms: 13.945538
+  type: 'test'
+  ...
+# Subtest: validation rejects omissions, diesel overspeed, excessive rev rise and the wrong shift duration
+ok 2 - validation rejects omissions, diesel overspeed, excessive rev rise and the wrong shift duration
+  ---
+  duration_ms: 0.731373
+  type: 'test'
+  ...
+# Subtest: heavy diesel free-revs slower than NA sports; both obey their class rate
+ok 3 - heavy diesel free-revs slower than NA sports; both obey their class rate
+  ---
+  duration_ms: 237.451607
+  type: 'test'
+  ...
+# Subtest: no-load limiter cuts and refires repeatedly rather than clamping rpm
+ok 4 - no-load limiter cuts and refires repeatedly rather than clamping rpm
+  ---
+  duration_ms: 650.098343
+  type: 'test'
+  ...
+# Subtest: gearbox equipment controls duration and torque handover independently of Auto / Manual policy
+ok 5 - gearbox equipment controls duration and torque handover independently of Auto / Manual policy
+  ---
+  duration_ms: 272.180215
+  type: 'test'
+  ...
+# Subtest: 9G converter creeps, slips at launch and locks once moving; manual stays still at idle
+ok 6 - 9G converter creeps, slips at launch and locks once moving; manual stays still at idle
+  ---
+  duration_ms: 1232.454418
+  type: 'test'
+  ...
+# Subtest: turbo retains lag while naturally aspirated engines have no synthetic boost
+ok 7 - turbo retains lag while naturally aspirated engines have no synthetic boost
+  ---
+  duration_ms: 63.28843
+  type: 'test'
+  ...
+# Subtest: throttle/load shift scheduling separates cruise, hill load and WOT with downshift hysteresis
+ok 8 - throttle/load shift scheduling separates cruise, hill load and WOT with downshift hysteresis
+  ---
+  duration_ms: 509.146007
+  type: 'test'
+  ...
+# Subtest: overrun and serialised sound events survive render-frame boundaries and reset removes stale events
+ok 9 - overrun and serialised sound events survive render-frame boundaries and reset removes stale events
+  ---
+  duration_ms: 142.656905
+  type: 'test'
+  ...
+# Subtest: turbo torque plateau survives sparse catalogue anchors; NA torque stays peaked
+ok 10 - turbo torque plateau survives sparse catalogue anchors; NA torque stays peaked
+  ---
+  duration_ms: 39.637285
+  type: 'test'
+  ...
+# Subtest: manual clutch hold extends torque interruption; rev matching is optional
+ok 11 - manual clutch hold extends torque interruption; rev matching is optional
+  ---
+  duration_ms: 145.70232
+  type: 'test'
+  ...
+# Subtest: PDK/DSG and converter automatics protect unsafe paddle downshifts even in Manual policy
+ok 12 - PDK/DSG and converter automatics protect unsafe paddle downshifts even in Manual policy
+  ---
+  duration_ms: 1.109537
+  type: 'test'
+  ...
+# Subtest: heavy braking downshifts safely instead of applying the light-throttle anti-hunting ceiling
+ok 13 - heavy braking downshifts safely instead of applying the light-throttle anti-hunting ceiling
+  ---
+  duration_ms: 11.41968
+  type: 'test'
+  ...
+# Subtest: overspeed recovery still upshifts while braking after reset/teleport in a low gear
+ok 14 - overspeed recovery still upshifts while braking after reset/teleport in a low gear
+  ---
+  duration_ms: 0.683323
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4692.48126

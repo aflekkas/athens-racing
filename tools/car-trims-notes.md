@@ -127,3 +127,11 @@ The original procedural shell uses the GK's short bonnet, long windscreen, tall 
 **Jazz Drift Spec is expressly a fantasy build, not a Honda factory trim.** Its 149 kW (200 hp), 240 Nm turbo four, 1120 kg mass, six-speed RWD conversion, fully locked differential, wide 215-section wheels, lowered suspension, large supported rear wing and loud single outlet are gameplay estimates. Powertrain uses a light .16 kg·m² flywheel, 7000 rpm redline, .30 s manual shift, .30 s spool and a 3000–5500 rpm torque plateau. Its sporty turbo-four audio uses the existing performance exhaust profile. It is not selected for ambient traffic. The build remains an ordinary catalogue wire ID, so allowed-car filtering and server discovery need no special exception.
 
 Jazz drift validation: the checked-in deterministic driver enters at 70 km/h with a 0.35 s handbrake pull and then uses constant 70% throttle plus sideslip/yaw countersteering. With the catalogue's default TC/ESC settings, it sustains 17–34° sideslip for 7.85 s, above 57 km/h, without modifying vehicle state after entry. Normal aided power rotation peaks at 9.3°, with no drift latch. The same build also passes power-over, lift-feint and opposite-direction transition checks in the wider drift bench. The regression uses fixed controller constants, rather than searching for passing inputs each run.
+
+## Aventador SVJ
+
+New Super generation `aventador_svj`, LP770-4 trim, distinct `aventador` body.
+Factory anchors and simulation estimates are recorded in [SVJ notes](svj-notes.md).
+The factory 1525 kg dry mass is retained as metadata; 1675 kg is the estimated
+operating mass used by dynamics. The 770 PS V12, 720 Nm, 7-speed ISR AMT,
+rear-biased AWD, rear-wheel steering and simplified ALA are explicit.

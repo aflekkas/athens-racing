@@ -24,9 +24,11 @@ export const ENGINE_PROFILES = Object.freeze({
   bike: profile('motorcycle', 'bike', null, 2, false, 0, .65),
   electric: profile('electric', 'electric', null, 0, false, 0, .25),
 });
+const SVJ_PROFILE=profile('aventador-svj-v12','v12',null,12,false,0,.92);
 const cache = new WeakMap();
 export function engineProfile(spec) {
   if (!spec) return ENGINE_PROFILES.turbo4;
+  if(spec.id==='aventador_svj')return SVJ_PROFILE;
   if (cache.has(spec)) return cache.get(spec);
   const type = String(spec.engine || '').toLowerCase();
   const layout = String(spec.engineLayout || spec.layout || '').toLowerCase();
@@ -52,7 +54,7 @@ export function gearboxSound(spec, signal) {
   if (cached && cached.signal === signal) return cached.kind;
   const known = /^(huracan|taxi|octavia|cla|gla)/.test(spec?.id || '') ? 'dct' : /^(z4|cle)/.test(spec?.id || '') ? 'auto' : 'manual';
   const type = String(signal || spec?.powertrain?.gearboxType || spec?.gearboxType || spec?.gearbox || known).toLowerCase();
-  const kind = /dct|dsg|pdk|dual/.test(type) ? 'dct' : /auto|^at$|cvt|torque/.test(type) ? 'auto' : 'manual';
+  const kind = /amt|isr/.test(type) ? 'amt' : /dct|dsg|pdk|dual/.test(type) ? 'dct' : /auto|^at$|cvt|torque/.test(type) ? 'auto' : 'manual';
   gearboxCache.set(spec, {signal, kind}); return kind;
 }
 const traffic = {};

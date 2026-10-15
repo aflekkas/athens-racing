@@ -45,3 +45,7 @@ Native fleet cabins supply actual seats and dashboards. A live speed/gear instru
 ## Verification and evidence
 
 `tools/car-catalog.test.mjs` covers all fleet registry identities, garage inclusion, AI exclusions, finite geometry, wheel counts and cockpit rigs. `tools/physics-test/fleet.mjs` uses production Vehicle for every new fleet trim, braking and speed checks; bus, both vans and truck additionally exercise a gentle turn and tyre loading. `regress.mjs` includes those checks. `tools/play-every-model-browser.mjs` captures the actual garage and bus on Riviera via `tools/browser-slot.sh`. Evidence and clean-archive gate logs are in `.scratch/play-every-model/`.
+
+SVJ follow-up: 31 generation entries, adding the independently authored
+Aventador SVJ LP770-4 rather than a Huracán paint variant. The SVJ remains a
+normal catalogue/wire ID and is eligible for the Super garage and AI grids.

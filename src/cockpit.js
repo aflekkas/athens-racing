@@ -210,8 +210,8 @@ export class Cockpit {
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
-    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.body==='huracan'?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
-    const nw=spec.body==='huracan'?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.body==='huracan'?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
+    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(['huracan','aventador'].includes(spec.body)?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
+    const nw=['huracan','aventador'].includes(spec.body)?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=['huracan','aventador'].includes(spec.body)?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
     if(!isClassic&&!spec.oldDash){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
@@ -389,8 +389,8 @@ export class Cockpit {
     for (const sx of [-1, 1]) {
       const doorStart=g.children.length;
       const rail = new THREE.Mesh(new RoundedBoxGeometry(0.08, 0.05, 1.1, 1, 0.02), spec.body === 'mini' ? soft : trim);
-      rail.position.set(sx * ((model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03)-(spec.body==='huracan'?.08:isBMW?.10:isSkoda?.05:0)), (spec.body === 'mini' ? 0.97 : model.shape.belt + (spec.body==='huracan'?-.015:.02)), eye.z - 0.15); g.add(rail);
-      const doorX=sx*((model.shape.profile?model.shape.W/2-.18:W/2+.03)-(spec.body==='huracan'?.08:isBMW?.10:isSkoda?.05:0)),doorY=rail.position.y-.17;
+      rail.position.set(sx * ((model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03)-(['huracan','aventador'].includes(spec.body)?.08:isBMW?.10:isSkoda?.05:0)), (spec.body === 'mini' ? 0.97 : model.shape.belt + (['huracan','aventador'].includes(spec.body)?-.015:.02)), eye.z - 0.15); g.add(rail);
+      const doorX=sx*((model.shape.profile?model.shape.W/2-.18:W/2+.03)-(['huracan','aventador'].includes(spec.body)?.08:isBMW?.10:isSkoda?.05:0)),doorY=rail.position.y-.17;
       const doorTrim=isBMW?trimMat('#69422b',{rough:.78,scale:.07,nk:.4}):isSkoda?fascia:soft;
       box(.045,.29,.77,doorTrim,doorX,doorY,eye.z-.13,.015,0,'door-card');
       box(.081,.035,.33,trim,doorX-sx*.04,doorY-.035,eye.z-.10,.014);
@@ -536,9 +536,9 @@ export class Cockpit {
       g.fillStyle='#d5d5cc';g.font='22px Arial';g.fillText('+23.0°C',690,68);g.fillText('12:41',350,68);g.fillText('0',811,340);g.fillText('1',811,56);
     }else if(id==='yaris'){
       g.fillRect(0,0,W,H);g.fillStyle='#91b7a6';g.font='110px monospace';g.textAlign='center';g.fillText(Math.round(st.kmh),510,215);g.font='28px monospace';g.fillText('km/h     '+st.gearLabel,510,264);g.font='20px monospace';g.fillText('ODO  184205       FUEL ▮▮▮▮',510,335);
-    }else if(id==='huracan'){
+    }else if(['huracan','aventador'].includes(id)){
       g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'',red:8.5});
-      g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,232);g.font='17px Arial';g.fillText('RPM ×1000',510,285);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,310);
+      g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,232);g.font='17px Arial';g.fillText('RPM ×1000',510,285);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText(id==='aventador'?'AVENTADOR SVJ':'HURACÁN EVO',840,310);
     }else if(id==='gtv'){
       // Transparent space between the separate period instrument pods.
       instrumentDial(g,{x:273,y:195,r:173,max:8,value:st.rpm/1000,step:1,label:'GIRI / MIN ×1000',red:5.8,classic:true});
@@ -611,12 +611,13 @@ export class Cockpit {
     if(interior){interior.geometry.computeBoundingBox();interior.geometry.boundingBox.getCenter(_rp);interior.localToWorld(cam.position.copy(_rp));}
     else body.localToWorld(cam.position.set(0,this.model.shape?.H??1.2,0));
     cam.quaternion.copy(body.getWorldQuaternion(_rq)).multiply(MIRROR_FLIP).multiply(REAR_TILT);cam.updateMatrixWorld(true);
+    this.model.exhaustFlames?.beginMirror(body);
     root.visible=false;renderer.shadowMap.autoUpdate=false;
     try{
       renderer.setRenderTarget(this.rearTarget);renderer.render(scene,cam);
       for(const m of this.mirrors){m.material.map=this.rearTarget.texture;m.material.color.set(0xffffff);}
       this.mirrorUpdates++;this.mirrorCalls=0;this.rearLast=now;
-    }finally{renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
+    }finally{this.model.exhaustFlames?.endMirror();renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
   }
   /** chase camera: the same rear view as a small rear-view strip at the top centre of the screen (after post) */
   drawRearStrip(renderer,{exposure=1,wb=null}={}){

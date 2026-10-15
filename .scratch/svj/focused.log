@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: brand artwork and fallback flags cover the garage bodies
+ok 1 - brand artwork and fallback flags cover the garage bodies
+  ---
+  duration_ms: 12.134077
+  type: 'test'
+  ...
+# Subtest: all 13 telltales have separate, bounded mountings in every cluster style
+ok 2 - all 13 telltales have separate, bounded mountings in every cluster style
+  ---
+  duration_ms: 1.033826
+  type: 'test'
+  ...
+# Subtest: extinguished telltales do not draw or allocate artwork
+ok 3 - extinguished telltales do not draw or allocate artwork
+  ---
+  duration_ms: 3.170048
+  type: 'test'
+  ...
+# Subtest: brands share one texture and disabling a brand selects the generic medallion
+ok 4 - brands share one texture and disabling a brand selects the generic medallion
+  ---
+  duration_ms: 4.060398
+  type: 'test'
+  ...
+# Subtest: catalogue composes search, class, drivetrain and HP filters without losing original indices
+ok 5 - catalogue composes search, class, drivetrain and HP filters without losing original indices
+  ---
+  duration_ms: 17.856533
+  type: 'test'
+  ...
+# Subtest: the garage lineup is grouped by class, names only real catalogue cars and leaves the rest to traffic and AI
+ok 6 - the garage lineup is grouped by class, names only real catalogue cars and leaves the rest to traffic and AI
+  ---
+  duration_ms: 8.480727
+  type: 'test'
+  ...
+# Subtest: labels and gearbox feedback use remapped keyboard/controller/touch bindings
+ok 7 - labels and gearbox feedback use remapped keyboard/controller/touch bindings
+  ---
+  duration_ms: 4.919469
+  type: 'test'
+  ...
+# Subtest: each generation has unique valid trim IDs and legacy selections migrate without losing their engine
+ok 8 - each generation has unique valid trim IDs and legacy selections migrate without losing their engine
+  ---
+  duration_ms: 8.640133
+  type: 'test'
+  ...
+# Subtest: CLE and E36 factory output anchors differ by engine and performance trim has visible parts
+ok 9 - CLE and E36 factory output anchors differ by engine and performance trim has visible parts
+  ---
+  duration_ms: 0.355312
+  type: 'test'
+  ...
+# Subtest: garage renders the shared trim control, torque and a selectable model when only its performance trim is allowed
+ok 10 - garage renders the shared trim control, torque and a selectable model when only its performance trim is allowed
+  ---
+  duration_ms: 16.675131
+  type: 'test'
+  ...
+# Subtest: generation labels match the existing represented Panda, Ibiza and Huracán
+ok 11 - generation labels match the existing represented Panda, Ibiza and Huracán
+  ---
+  duration_ms: 0.271537
+  type: 'test'
+  ...
+# Subtest: MINI body and engine choices preserve all legacy IDs and respect host restrictions
+ok 12 - MINI body and engine choices preserve all legacy IDs and respect host restrictions
+  ---
+  duration_ms: 0.511914
+  type: 'test'
+  ...
+# Subtest: new trim IDs reach server and deployment catalogues, with exactly one nitrous car
+ok 13 - new trim IDs reach server and deployment catalogues, with exactly one nitrous car
+  ---
+  duration_ms: 12.259942
+  type: 'test'
+  ...
+# Subtest: body uses shared segments beside trim arrows, filtering forbidden body-engine combinations
+ok 14 - body uses shared segments beside trim arrows, filtering forbidden body-engine combinations
+  ---
+  duration_ms: 3.185267
+  type: 'test'
+  ...
+# Subtest: trim arrows wrap within the current body and obey event and multiplayer restrictions
+ok 15 - trim arrows wrap within the current body and obey event and multiplayer restrictions
+  ---
+  duration_ms: 0.384526
+  type: 'test'
+  ...
+# Subtest: CLE offers a real PHEV without adding transient 48V ratings to continuous engine power
+ok 16 - CLE offers a real PHEV without adding transient 48V ratings to continuous engine power
+  ---
+  duration_ms: 0.258001
+  type: 'test'
+  ...
+# Subtest: Jazz GK factory manuals and fantasy RWD build stay distinct and host-filterable
+ok 17 - Jazz GK factory manuals and fantasy RWD build stay distinct and host-filterable
+  ---
+  duration_ms: 0.565834
+  type: 'test'
+  ...
+# Subtest: trim ride height survives live suspension poses while all four wheel centres stay grounded
+ok 18 - trim ride height survives live suspension poses while all four wheel centres stay grounded
+  ---
+  duration_ms: 1102.651718
+  type: 'test'
+  ...
+# Subtest: every authored fleet body is reachable, while rivals only draw from race cars
+ok 19 - every authored fleet body is reachable, while rivals only draw from race cars
+  ---
+  duration_ms: 3.371405
+  type: 'test'
+  ...
+# Subtest: native fleet builds finite geometry, correct wheel counts and usable cockpit stations
+ok 20 - native fleet builds finite geometry, correct wheel counts and usable cockpit stations
+  ---
+  duration_ms: 553.261306
+  type: 'test'
+  ...
+# Subtest: garage cameras fit utility bodies through a complete turntable and narrow screens
+ok 21 - garage cameras fit utility bodies through a complete turntable and narrow screens
+  ---
+  duration_ms: 0.866575
+  type: 'test'
+  ...
+# Subtest: ignition checks every bulb, seatbelt clears, restart checks bulbs again
+ok 22 - ignition checks every bulb, seatbelt clears, restart checks bulbs again
+  ---
+  duration_ms: 4.511609
+  type: 'test'
+  ...
+# Subtest: intervention flashes and holds brief TC/ABS pulses; disabling TC shows OFF
+ok 23 - intervention flashes and holds brief TC/ABS pulses; disabling TC shows OFF
+  ---
+  duration_ms: 4.312368
+  type: 'test'
+  ...
+# Subtest: damage severity, temperature, wheels, brake and lighting follow vehicle state
+ok 24 - damage severity, temperature, wheels, brake and lighting follow vehicle state
+  ---
+  duration_ms: 5.588947
+  type: 'test'
+  ...
+# Subtest: ISR cut and engagement, lift and limiter each emit one synchronized pulse
+ok 25 - ISR cut and engagement, lift and limiter each emit one synchronized pulse
+  ---
+  duration_ms: 1.707773
+  type: 'test'
+  ...
+# Subtest: toggle consumes events silently; low-rpm and downshifts do not flame
+ok 26 - toggle consumes events silently; low-rpm and downshifts do not flame
+  ---
+  duration_ms: 3.708903
+  type: 'test'
+  ...
+# Subtest: replicated serial survives packet duplication, rejects unbounded wire fields
+ok 27 - replicated serial survives packet duplication, rejects unbounded wire fields
+  ---
+  duration_ms: 5.812284
+  type: 'test'
+  ...
+# Subtest: SVJ has a dedicated naturally aspirated V12 voice and ISR cut envelope
+ok 28 - SVJ has a dedicated naturally aspirated V12 voice and ISR cut envelope
+  ---
+  duration_ms: 0.860714
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2574.402394

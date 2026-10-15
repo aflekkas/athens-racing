@@ -1,4 +1,5 @@
 import { mountTitleHero } from './ui/title-hero.js';
+import {setExhaustPops} from './exhaust-pops.js';
 import { savedPaint } from './vehicle-paint.js';
 import { install as installAccounts } from './ui/account-screen.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
@@ -269,6 +270,7 @@ export class Menu {
   /** a component value changed (keyboard, gamepad, mouse or touch) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
+    if(scope==='exhaust'){setExhaustPops(CARS[this.data.index||0],value);return;}
     if (MP.isMpScreen(this.screen) && MP.change(this, { key, value, el })) return;
     if (scope === 'participants') { this.participants = value; this.refresh(); return; }
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }

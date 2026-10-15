@@ -1,5 +1,6 @@
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
+import {exhaustPopsEnabled} from './exhaust-pops.js';
 import {showroomRig} from './vehicle-camera.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint } from './cars.js';
@@ -79,6 +80,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
     <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
       <div class="car-transmission label">${c.gears.length}-SPEED · ${c.drive.toUpperCase()}</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
+      ${c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{"data-scope":"exhaust"}}) : ''}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
       <div class="car-actions">${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock-simple')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });

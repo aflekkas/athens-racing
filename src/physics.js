@@ -621,7 +621,7 @@ export class Vehicle {
     // ---------------- normal loads: the suspension (see stepSuspension). Crests unload the car and dips load it
     // (vertical curvature of the real road); each contact patch rides over the road texture plus whatever ground.js
     // found under that wheel (kerbs, humps: wheelBump)
-    const DF = 0.5 * RHO * (sp.clA ?? 0) * vx * vx, aeroF = sp.aeroF ?? 0.45;
+    const DF = 0.5 * RHO * (sp.clA ?? 0) * (sp.activeAero && inp.throttle>.8 && Math.abs(this.steer)<.025 ? .45 : 1) * vx * vx, aeroF = sp.aeroF ?? 0.45;
     const contact = suspensionRoadInput(this, ROAD), gEff = contact.effectiveGravity;
     const W = this.m * G * gEff;
     const C4 = this.corners, cx = this.cx, cy = this.cy;
@@ -688,7 +688,7 @@ export class Vehicle {
     }
     }
     // clutch: slips on launch (holds revs up), otherwise locked to the driven wheels
-    const launchRpm = sp.idle + (red * (burnout ? 0.9 : sp.engine === 'diesel' ? 0.38 : 0.5) - sp.idle) * thrRaw;
+    const launchRpm = sp.idle + (red * (burnout ? 0.9 : sp.launchRpmFraction ?? (sp.engine === 'diesel' ? 0.38 : 0.5)) - sp.idle) * thrRaw;
     const shifting = this.shiftT > 0;
     const slipGear = this.reverse || this.gear === 1;
     // handbrake: the driver dips the clutch so the engine can't fight the locked rears (rwd / awd); revs flare on throttle
@@ -786,6 +786,8 @@ export class Vehicle {
 
     // ---------------- per-wheel tyres
     const sinD = Math.sin(delta), cosD = Math.cos(delta);
+    const rearAngle=sp.rearSteering?this.steer*lerp(-.12,.08,clamp((av-12)/18,0,1)):0;
+    this.rearSteer=rearAngle;
     const mw = J_WHEEL / (R * R);
     const S = this._S || (this._S = Array.from({ length: 4 }, () => ({ vgx: 0, vgy: 0, vref: 1, kx: 0, Fb: 0, sg: 0, G: 0, p: 0, c: 1, s: 0, brk: 0, d: 0 })));
     const tyre = (i, vw, out) => {
@@ -838,7 +840,7 @@ export class Vehicle {
       const Wc = C4[i], Si = S[i], front = i < 2;
       // contact-patch velocity: body velocity plus yaw rate x lever arm, then into the wheel frame
       const vxp = vx - this.w * cy[i], vyp = vy + this.w * cx[i];
-      const c = front ? cosD : 1, s_ = front ? sinD : 0;
+      const c = front ? cosD : Math.cos(rearAngle), s_ = front ? sinD : Math.sin(rearAngle);
       Si.c = c; Si.s = s_;
       Si.vgx = vxp * c + vyp * s_; Si.vgy = -vxp * s_ + vyp * c;
       // Slip angle and slip ratio share the same low-speed reference. Using
@@ -1168,11 +1170,12 @@ export class Vehicle {
   }
   /** Sound consumes scalar state every frame and events by monotonic serial. No frame-edge polling required. */
   get powertrainSignals() {
-    return { rpm: this.rpm, redline: this.spec.redline, limiterRpm: this.powertrain?.limiterRpm ?? this.spec.redline,
-      throttle: this.engineThrottle || 0, load: this.load, boost: this.boost, gear: this.reverse ? -1 : this.gear,
-      gearboxType: this.powertrain?.gearboxType ?? 'legacy', shifting: this.shiftT > 0,
-      limiter: this.limiter, overrun: this.overrun, converterSlip: this.converterSlip,
-      converterLocked: this.converterLocked, events: this.powertrainEvents };
+    const p=this._powertrainSignals ||= {};
+    p.rpm=this.rpm;p.redline=this.spec.redline;p.limiterRpm=this.powertrain?.limiterRpm??this.spec.redline;
+    p.throttle=this.engineThrottle||0;p.load=this.load;p.boost=this.boost;p.gear=this.reverse?-1:this.gear;
+    p.gearboxType=this.powertrain?.gearboxType??'legacy';p.shifting=this.shiftT>0;
+    p.limiter=this.limiter;p.overrun=this.overrun;p.converterSlip=this.converterSlip;p.converterLocked=this.converterLocked;p.events=this.powertrainEvents;
+    return p;
   }
   shift(g, t) {
     this.shiftEvent = g > this.gear ? 1 : -1;

@@ -5,6 +5,7 @@ import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './a
 // TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
+import {exhaustPopsEnabled} from './exhaust-pops.js';
 import { loadMap, LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
@@ -420,6 +421,7 @@ function makeCar(spec, isPlayer, plate) {
   // the driver name; multiplayer shows every driver's name.
   const model = new CarModel(spec, { plate });
   scene.add(model.root);
+  if(model.exhaustFlames)scene.add(model.exhaustFlames.mirrorRoot);
   const driver = new Driver(isPlayer ? normalizeDriverAppearance() : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
   bindDriverToCar(driver,model);
   if (!isPlayer) for (const a of driver.arms) a.up.visible = a.fo.visible = a.hand.visible = false;
@@ -439,6 +441,7 @@ function attachRivalFar(c) {
   c.casters = []; c.model.root.traverse((o) => { if (o.isMesh && o.castShadow) c.casters.push(o); });
 }
 function disposeCar(c) {
+  c?.model?.exhaustFlames?.dispose();
   if (!c) return;
   if (c.far) {
     scene.remove(c.far.root);
@@ -1444,6 +1447,8 @@ function syncCar(c, dt) {
     if (shadowsOff !== c.shadowsOff) { c.shadowsOff = shadowsOff; for (const o of c.casters) o.castShadow = !shadowsOff; }
   }
   c.model.steamAmount = multiplayer.active ? 0 : v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
+  if(!multiplayer.active)c.remoteExhaust=null;
+  if(c.model.exhaustFlames)c.model.exhaustFlames.update(dt,c.remoteExhaust||v.powertrainSignals,c.remoteExhaust?c.remoteExhaust.exhaustEnabled:exhaustPopsEnabled(c.spec),quality);
   if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
   if (c !== player) {
@@ -1633,6 +1638,7 @@ function updateAudio(dt) {
     const v = c.veh, vel = v.velocityWorld(_av), rel = listenerRel(v.x, v.y, v.z, vel.x, vel.z);
     const r = _rivN < _rivals.length ? _rivals[_rivN] : (_rivals[_rivN] = {});
     _rivN++;
+    r.exhaustPulse=c.model.exhaustFlames?.pulse;
     r.id = id; r.spec = c.spec; r.rpm = v.rpm; r.limiter = v.limiter; r.load = load;
     r.d = rel.d; r.pan = rel.pan; r.vr = rel.vr;
   };
@@ -1649,6 +1655,7 @@ function updateAudio(dt) {
   for (let i = 0; i < 4; i++) Object.assign(_wheelArgs[i], pv.corners[i], { vgx: pv._S?.[i]?.vgx ?? pv.vLong });
   _audioRival.rpm = rv.rpm; _audioRival.load = rival.lastBrake ? -0.3 : counting ? (G.countT > 1 ? 0.7 : 0.1) : rv.load;
   _audioRival.dist = RL.d; _audioRival.pan = RL.pan; _audioRival.vr = RL.vr;
+  _audioParam.exhaustPulse = player.model.exhaustFlames?.pulse;
   _audioParam.dt = dt; _audioParam.damage = pv.damage; _audioParam.rpm = pv.rpm; _audioParam.redline = pv.spec.redline;
   _audioParam.load = counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3);
   _audioParam.throttle = input.throttle;
@@ -2293,7 +2300,7 @@ function updateRacerMarkers() {
   _markerItems.length = n;
   racerMarkers.update(_markerItems);
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance }, pursuit: police?.online ? police.pursuitCode() : 0 });
+const networkState = v => ({ exhaustSerial: player.model.exhaustFlames?.pulse.serial || 0, exhaustKind: player.model.exhaustFlames?.pulse.kind || 0, exhaustEnabled: exhaustPopsEnabled(v.spec), ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance }, pursuit: police?.online ? police.pursuitCode() : 0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
@@ -2372,6 +2379,7 @@ const multiplayer = new Multiplayer(CARS, {
       const member = multiplayer.lobby.players.find(p => p.id === id);
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
       applySpectatorState(v, p);
+      c.remoteExhaust=p;
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       if(p.driver)c.driver?.setAppearance?.(p.driver);
       c.lastBrake = p.braking === true; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;

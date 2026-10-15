@@ -1,5 +1,6 @@
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from 'three';
+import { AVENTADOR, buildAventador } from './player-aventador.js';
 import { brandBadgeMaterial, finishBrandBadges } from './brand-badges.js';
 import { MERCEDES_MODELS, buildMercedes } from './player-mercedes.js';
 import { ROAD_MODELS, buildRoadCar } from './player-road-cars.js';
@@ -17,6 +18,7 @@ import { tintGlass } from './glass-tint.js';
 import { isPlayerVehicle, refinePlayerDetails, groupPlayerParts, installPlayerLOD } from './player-vehicle-details.js';
 
 export const MODEL = {
+  aventador: AVENTADOR,
   ...MERCEDES_MODELS,
   ...ROAD_MODELS,
   carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.04,back:1.57,roofBack:.54,seatZ:.36,eyeY:1.00,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
@@ -426,7 +428,9 @@ export function buildDetailedCar(car,kind,opts={}) {
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
   const playerModel=isPlayerVehicle(car);car.root.userData.playerDetail=playerModel;
-  if(d.mercedes){
+  if(kind==='aventador'){
+    buildAventador(car,d,M,low,{surface,patch,box,line,mesh,cabinFittings,wheels,makePlateMaterial});
+  }else if(d.mercedes){
     buildMercedes(car,d,M,low,opts.plate||nextRegistration(),{mesh,box,line,surface,patch,ring,cabinFittings,makePlateMaterial});
     wheels(car,d,M,low);
   }else if(ROAD_MODELS[kind]){
@@ -513,6 +517,7 @@ export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawR
   for(const w of car.wheels){
     // Physics steer is positive right; Three.js yaw is positive left.
     let angle=0;if(w.front&&Math.abs(steer)>.0001){const radius=d.wb/Math.tan(Math.abs(steer));angle=-Math.sign(steer)*Math.atan(d.wb/Math.max(.1,radius-Math.sign(steer)*w.side*d.track/2));}
+    if(!w.front&&car.spec.rearSteering)angle=-steer*lerp(-.12,.08,clamp((Math.abs(speed)-12)/18,0,1));
     w.pivot.rotation.y=angle;
     const corner=axles?.[axles.length===4?(w.front?0:2)+(w.side>0?1:0):(w.front?0:1)];
     const axleSpeed=corner?.vw;

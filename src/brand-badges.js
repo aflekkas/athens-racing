@@ -15,7 +15,7 @@ export const BRAND_BADGES = {
   toyota: { enabled:true, cell:11 },
   volkswagen: { enabled:true, cell:12 },
 };
-const BRANDS={panda:'fiat',jazz:'honda',yaris:'toyota',gr_yaris:'toyota',corolla:'toyota',ibiza:'seat',golf:'volkswagen',mini:'mini',mini_hardtop:'mini',mini_jcw:'mini',z4:'bmw',e36:'bmw',carrera:'porsche',huracan:'lamborghini',gtv:'alfaromeo',octavia:'skoda',taxi:'skoda',superb:'skoda',police_octavia:'skoda',gla:'mercedes',gla45:'mercedes',cla:'mercedes',cle:'mercedes',mx5:'mazda'};
+const BRANDS={panda:'fiat',jazz:'honda',yaris:'toyota',gr_yaris:'toyota',corolla:'toyota',ibiza:'seat',golf:'volkswagen',mini:'mini',mini_hardtop:'mini',mini_jcw:'mini',z4:'bmw',e36:'bmw',carrera:'porsche',aventador:'lamborghini',huracan:'lamborghini',gtv:'alfaromeo',octavia:'skoda',taxi:'skoda',superb:'skoda',police_octavia:'skoda',gla:'mercedes',gla45:'mercedes',cla:'mercedes',cle:'mercedes',mx5:'mazda'};
 export function badgeBrand(spec){return spec.marque||BRANDS[spec.body]||BRANDS[spec.id];}
 let atlas;const materials=new Map();
 export function brandBadgeMaterial(spec){

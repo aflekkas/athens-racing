@@ -138,3 +138,14 @@ Units: RPM; inertia kg m²; free rise RPM/s; spool/shift seconds. `brake` is the
 | jazz | na4 | 750 | 6800 | 6900 | 0.19 | 4500 | 0 | 0.15 | manual | 360 | NA |
 | jazz_dynamic | na4 | 750 | 6800 | 6900 | 0.19 | 4500 | 0 | 0.15 | manual | 360 | NA |
 | jazz_drift | turbo4 | 850 | 7000 | 7100 | 0.16 | 5800 | 0.3 | 0.15 | manual | 300 | 3000–5500 |
+
+## SVJ single-clutch AMT
+
+`aventador_svj` adds `amt` (literal gearbox `AMT`): 180 ms zero-torque
+single-clutch ISR interruption, automated rev matching, no converter,
+protected paddle downshifts. This intentionally differs from the Huracán's
+90 ms LDF DCT with 94% shift torque. V12 receives explicit 8000–8700 RPM
+validation bounds and an NA base engine. See `../svj-notes.md` for the mass,
+launch-control, ALA and rear-steer approximation boundaries. The persistent
+`powertrainSignals` view now reuses one object; consumers must copy it if
+retaining a historical snapshot.
