@@ -6,7 +6,7 @@ export function carCategory(c) {
   if (['gla', 'gla45'].includes(c.id)) return 'SUV';
   if (['mini', 'mini_jcw', 'gr_yaris'].includes(c.id)) return 'hot hatch';
   if (c.id === 'huracan' || c.power >= 350) return 'super';
-  if (['z4', 'carrera', 'gtv', 'e36', 'f348'].includes(c.id)) return 'sports';
+  if (['z4', 'carrera', 'gtv', 'e36', 'f348', 'p928'].includes(c.id)) return 'sports';
   return CAR_CLASSES.includes(c.class || c.category) ? c.class || c.category : 'normal';
 }
 export function filterCars(cars, filters = {}) {
