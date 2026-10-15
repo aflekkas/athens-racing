@@ -9,8 +9,9 @@ const { catalogueTrafficTypes } = Function(helpers + '\nreturn { catalogueTraffi
 test('passenger traffic follows the playable catalogue, including future entries', () => {
   const future = { id: 'future_city', body: 'future_city', class: 'normal', power: 60, length: 3.6, width: 1.6, color: '#ffffff' };
   const types = catalogueTrafficTypes([...cars, future]);
-  assert.deepEqual(types.map(t => t.id), [...cars, future].filter(c => !c.police).map(c => c.id));
+  assert.deepEqual(types.map(t => t.id), [...cars, future].filter(c => !c.police && !c.nativeFleet).map(c => c.id));
   assert.ok(types.every(t => t.catalogueCar.body === t.model && t.len === t.catalogueCar.length && t.wid === t.catalogueCar.width));
+  assert.ok(types.every(t=>!t.catalogueCar.nativeFleet),'native traffic bodies retain their existing fleet registrations');
   assert.equal(types.at(-1).w, 18);
   assert.ok(types.find(t => t.id === 'golf').w > 50 * types.find(t => t.id === 'carrera').w);
   assert.equal(catalogueTrafficTypes([{ ...future, trafficWeight: 0 }])[0].w, 0);

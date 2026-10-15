@@ -2,6 +2,7 @@
 // steering wheel the driver's hands hold, centre nav screen, working rear-view + door mirrors (render target),
 // and an interior shell (headliner, pillars, door cards) generated from the body loft for closed cars.
 import * as THREE from 'three';
+import {FleetCockpit} from './fleet-cockpit.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clamp } from './util.js';
@@ -137,6 +138,7 @@ function compactCockpit(parent,keep=new Set()){
 
 export class Cockpit {
   constructor(spec, model, mirrorTex) {
+    if(spec.nativeFleet)return new FleetCockpit(spec,model);
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
     const isMini=spec.id==='mini'||spec.id==='mini_jcw',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';

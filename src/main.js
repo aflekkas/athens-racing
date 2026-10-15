@@ -26,6 +26,8 @@ import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
 import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
 import { Cockpit } from './cockpit.js';
+import {chaseRig} from './vehicle-camera.js';
+import {isRivalCar} from './car-catalog.js';
 import { Hud, RacerMarkers, fmtTime } from './hud.js';
 import { createHudSway } from './hud-sway.js';
 import { PerfOverlay } from './perf-overlay.js';
@@ -913,7 +915,8 @@ function prepareEvent(e) {
 function gridSlot(i, base = G.ev.r.s0) {
   const r = G.ev.r, dir = r.dir;
   const columns = route.closed || route.lanes(base) > 1 ? 2 : 1;
-  const rawS = base - dir * (4 + Math.floor(i / columns) * 8);
+  const spacing=Math.max(8,((player?.spec.length||4.4)+4.9)/2+2);
+  const rawS = base - dir * (4 + Math.floor(i / columns) * spacing);
   const s = route.closed ? rawS : clamp(rawS, 5, route.length - 5);
   const lane = Math.min(i % 2, route.lanes(s) - 1);
   const u = route.closed ? (i % 2 ? 1 : -1) * Math.min(2.25, Math.max(.5, route.edge(s) - 1.2)) : dir * route.laneU(s, lane);
@@ -931,9 +934,9 @@ function buildGrid() {
   G.gridKey = key;
   for (const c of grid) if (c !== rival) disposeCar(c);
   grid = [];
-  const ids = CARS.map((c) => c.id);
+  const raceCars=CARS.filter(isRivalCar),ids=raceCars.map(c=>c.id);
   for (const [i, d] of drivers.entries()) {
-    const spec = CARS.find((c) => c.id === (def.car || EV.driverCar(d, ids, player.spec.id))) || CARS[1];
+    const spec = raceCars.find((c) => c.id === (def.car && ids.includes(def.car) ? def.car : EV.driverCar(d, ids, player.spec.id))) || raceCars[0];
     let c;
     if (i === 0) { // the first one is `rival`, the car the audio, the post blur mask and the online code know about
       disposeCar(rival); const built = makeCar(spec, false);
@@ -1743,6 +1746,7 @@ function finishCamera(dt, trackedRoot = player.model.root) {
     _blendQ.copy(camera.quaternion);
     camera.quaternion.slerpQuaternions(previousCameraQuat, _blendQ, alpha);
   }
+  if(player.spec.twoWheeler){const helmet=player.model.body.getObjectByName('helmet');if(helmet)helmet.visible=G.cam!=='cockpit';}
   player.driver.head.getWorldPosition(cameraHeadPoint);
   player.driver.head.visible = G.cam !== 'cockpit' && camera.position.distanceTo(cameraHeadPoint) > .55;
   camera.updateProjectionMatrix(); G.cameraReady = true;
@@ -1770,7 +1774,7 @@ function updateCamera(dt, snap = false) {
     if (G.cam !== 'spectate') { G.cam = 'spectate'; applyCamMode(); }
     if (G.spectateId && G.spectateId !== watching.id) beginCameraBlend();
     // MP owner: keep remote visual pose sampling before this view; follow model.root rather than packet positions.
-    const v = targetCar.veh, visible = targetCar.model.root.position, back = 7;
+    const v = targetCar.veh, visible = targetCar.model.root.position, back = Math.max(7,chaseRig(targetCar.spec).back);
     const behind = _v2.set(0, 0, 1).applyQuaternion(targetCar.model.root.quaternion);
     const target = _v1.copy(visible).addScaledVector(behind, back); target.y = visible.y + 2.8;
     const changed = G.spectateId !== watching.id; G.spectateId = watching.id;
@@ -1804,7 +1808,7 @@ function updateCamera(dt, snap = false) {
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else if (G.cam === 'chase') {
     // behind the car, swung round by the free look: yaw about the car, pitch up / down, wheel zoom
-    const back = 5.6 + sk * 1.2, up = 1.75 + sk * 0.15;
+    const {back,up,targetY}=chaseRig(player.spec,sk);
     const dist = Math.hypot(back, up) * look.zoom, el = clamp(Math.atan2(up, back) + look.pitch, -0.08, 1.35);
     if (snap || camState.followYaw === undefined) { camState.followYaw = veh.yaw; camState.followYawV = 0; }
     const yawTarget = camState.followYaw + Math.atan2(Math.sin(veh.yaw - camState.followYaw), Math.cos(veh.yaw - camState.followYaw));
@@ -1818,7 +1822,7 @@ function updateCamera(dt, snap = false) {
     camera.position.copy(camState.pos);
     // look ahead of the car when behind it; at the car itself once swung round to the side / front
     const ahead = 5 * Math.max(0, Math.cos(look.yaw + look.back)) * clamp(1 - look.pitch, 0, 1);
-    const lk = _v2.set(veh.x, veh.y + 1.0, veh.z).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
+    const lk = _v2.set(veh.x, veh.y + targetY, veh.z).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
     camera.lookAt(lk);
     const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);

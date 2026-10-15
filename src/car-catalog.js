@@ -1,6 +1,18 @@
 // Garage entries describe a generation/body style. Trim IDs remain the wire/physics IDs,
 // so old saves, event links, traffic and remote players retain their exact drivetrain.
 export const CAR_MODELS = [
+  {"id": "aygo", "name": "TOYOTA AYGO II", "trims": ["aygo"]},
+  {"id": "qashqai", "name": "NISSAN QASHQAI J11", "trims": ["qashqai", "qashqai_dci"]},
+  {"id": "dolphin", "name": "BYD DOLPHIN", "trims": ["dolphin"]},
+  {"id": "atto3", "name": "BYD ATTO 3", "trims": ["atto3"]},
+  {"id": "van", "name": "FIAT DUCATO L2H2", "trims": ["van", "van_150"]},
+  {"id": "truck", "name": "ISUZU NPR", "trims": ["truck"]},
+  {"id": "bus", "name": "MERCEDES-BENZ CITARO O530", "trims": ["bus"]},
+  {"id": "delivery", "name": "HONDA SH150i DELIVERY", "trims": ["delivery"]},
+  {"id": "scooter", "name": "PIAGGIO BEVERLY 300", "trims": ["scooter"]},
+  {"id": "moto", "name": "YAMAHA TRACER 900", "trims": ["moto"]},
+  {"id": "police_octavia", "name": "ŠKODA OCTAVIA · ΕΛ.ΑΣ.", "trims": ["police_octavia"]},
+  {"id": "police_moto", "name": "BMW R 1250 RT · ΔΙ.ΑΣ.", "trims": ["police_moto"]},
   { id:'panda', name:'FIAT PANDA 169', trims:['panda','panda_11','panda_100hp'] },
   { id:'jazz', name:'HONDA JAZZ GK', trims:['jazz','jazz_dynamic','jazz_drift'] },
   { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris','yaris_13','yaris_ts'] },
@@ -21,13 +33,18 @@ export const CAR_MODELS = [
   { id:'e36', name:'BMW 3 SERIES E36', trims:['e36','e36_318i','e36_m3'] },
 ];
 export const GARAGE_CLASSES = [
-  ['city','CITY',['panda','jazz','yaris','ibiza','golf']],
+  ['city','CITY',['panda','jazz','yaris','ibiza','golf','aygo']],
   ['hot hatch','HOT HATCH',['mini','gr_yaris']],
   ['sedan/coupe','SEDAN / COUPE',['corolla','taxi','superb','cla','cle']],
-  ['suv','SUV',['gla']],
+  ['suv','SUV',['gla','qashqai']],
   ['sports','SPORTS',['z4','carrera']],
   ['super','SUPER',['huracan']],
   ['classic','CLASSIC',['gtv','e36']],
+  ['electric','ELECTRIC',['dolphin','atto3']],
+  ['commercial','COMMERCIAL / UTILITY',['van','truck']],
+  ['public transport','PUBLIC TRANSPORT',['bus']],
+  ['motorcycle','MOTORCYCLES',['delivery','scooter','moto']],
+  ['service','PUBLIC SERVICES',['police_octavia','police_moto']],
 ];
 export const CAR_CLASSES = GARAGE_CLASSES.map(([id])=>id);
 export const GARAGE_CARS = GARAGE_CLASSES.flatMap(([, ,ids])=>ids);
@@ -76,3 +93,6 @@ export function stepTrim(current, direction, rules) {
   const ids=trimChoices(current,rules);if(!ids.length)return null;
   return ids[(Math.max(0,ids.indexOf(current))+direction+ids.length)%ids.length];
 }
+
+// Fleet and fantasy builds remain available to players, never the fallback AI race pool.
+export const isRivalCar = car => !car.nonRacing && !car.police && !car.fantasy;
