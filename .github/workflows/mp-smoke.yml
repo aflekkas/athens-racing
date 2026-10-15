@@ -26,7 +26,7 @@ jobs:
           SMOKE_MAP: ${{ inputs.map }}
         run: |
           set -euo pipefail
-          node tools/deploy-smoke.mjs https://athens-street-racers-staging.aflekkas.workers.dev --race --map="$SMOKE_MAP" | tee smoke.log
+          node tools/deploy-smoke.mjs https://staging.athensracing.com --race --map="$SMOKE_MAP" | tee smoke.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,0 +1,28 @@
+{"proof":"health","base":"https://athensracing.com","entry":"/src/main-I2QOI7DB.js","build":"0f62a118be5a","health":{"instanceId":"917777fd-ffa4-4ad8-9c5f-4d7e76b128df","startedAt":1792088005467,"ok":true,"transport":"durable-object","clients":0,"lobbies":0,"track":{"start":241,"finish":10548,"version":"4718fbec"},"maps":[{"id":"riviera","track":{"start":241,"finish":10548,"version":"4718fbec"}},{"id":"megara","track":{"start":0,"finish":1999.5997991916397,"version":"1621ff83"}},{"id":"penteli","track":{"start":292,"finish":10188,"version":"33ed3ce1"}}]}}
+{"proof":"matching Quick Race + Free Roam catalogues","mapId":"riviera","events":[{"id":"quick","type":"sprint"},{"id":"free:riviera","type":"free"}]}
+{
+  "proof": "create → join → ready → start → snapshot → checkpoints → finish",
+  "base": "https://athensracing.com",
+  "protocol": 6,
+  "legacy": false,
+  "mapId": "riviera",
+  "eventId": "quick",
+  "checkpoints": 134,
+  "raceId": "101b1ac3-9707-447f-a97c-8580b43ad4f7",
+  "startAt": 1792088010952,
+  "reconnects": 0,
+  "results": [
+    {
+      "id": "3fb2a4fa-7b13-4516-be94-4bbdbba94044",
+      "finish": 88.37704563140869,
+      "dnf": false
+    },
+    {
+      "id": "ef93af4e-c446-4268-b05a-334b04798b0d",
+      "finish": 88.37754416465759,
+      "dnf": false
+    }
+  ]
+}
+PASS: assets, private paths, playable map catalogue and /ws create-lobby round trip at https://athensracing.com
+{"proof":"reconnect summary","reconnects":0}

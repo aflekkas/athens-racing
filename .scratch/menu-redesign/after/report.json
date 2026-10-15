@@ -1,0 +1,70 @@
+{
+  "root": "/tmp/menu-redesign-work",
+  "boots": [
+    {
+      "cache": "cold",
+      "timeToMenuMs": 13900.200000047684,
+      "transferBytes": 4266194,
+      "bodyBytes": 4234848,
+      "mapRequests": [],
+      "runtime": {
+        "switching": false,
+        "worlds": [],
+        "lastDisposal": null,
+        "memory": {
+          "geometries": 0,
+          "textures": 0
+        },
+        "weatherWidgets": 0
+      },
+      "render": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "low",
+        "preset": "low",
+        "lighting": "off",
+        "effects": "low",
+        "lowGraphics": true,
+        "pixelRatio": 0.8,
+        "drawDistance": 1000,
+        "geometries": 0,
+        "textures": 0,
+        "renderScale": "auto"
+      }
+    },
+    {
+      "cache": "warm",
+      "timeToMenuMs": 964.7000000476837,
+      "transferBytes": 9259,
+      "bodyBytes": 4374915,
+      "mapRequests": [],
+      "runtime": {
+        "switching": false,
+        "worlds": [],
+        "lastDisposal": null,
+        "memory": {
+          "geometries": 0,
+          "textures": 0
+        },
+        "weatherWidgets": 0
+      },
+      "render": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "low",
+        "preset": "low",
+        "lighting": "off",
+        "effects": "low",
+        "lowGraphics": true,
+        "pixelRatio": 0.8,
+        "drawDistance": 1000,
+        "geometries": 0,
+        "textures": 0,
+        "renderScale": "auto"
+      }
+    }
+  ],
+  "errors": [],
+  "navigation": {
+    "passed": true,
+    "checks": 14
+  }
+}

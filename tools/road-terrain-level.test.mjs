@@ -33,10 +33,18 @@ for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||proc
   try {
     globalThis.fetch=async url=>new Response(readFileSync(resolve(import.meta.dirname,'..',String(url))));globalThis.location={search:''};
     const map=await loadMap(undefined,'./',def.id,{preload:false}),network=new RoadNetwork(map),scene=new Group();map.roadNetwork=network;
-    const terrain=buildTerrain(map.terrain,map.route,[],scene,{coastal:def.id==='riviera',farmland:def.id==='megara',network});
-    const roadsGroup=buildRoadNetwork(network,scene);bake={map,network,terrainGroup:terrain.group,roadsGroup};
+    const terrain=buildTerrain(map.terrain,map.route,[],scene,{coastal:def.id==='riviera',farmland:def.id==='megara',network,beachAreas:map.data.areas?.beach||[]});
+    const roadsGroup=buildRoadNetwork(network,scene);bake={map,network,terrain,terrainGroup:terrain.group,roadsGroup};
   }finally{globalThis.fetch=previousFetch;if(previousLocation===undefined)delete globalThis.location;else globalThis.location=previousLocation;}
   const r=bake.map.route,n=bake.network,h=meshHeightSampler(bake.terrainGroup);
+  if (def.id==='riviera') {
+    // The narrow shoreline beside the organised beach used to become a submerged 40 m triangle
+    // after the corridor budget reduction, leaving parasols over dark water.
+    const x=497.2,z=2810.8,y=h(x,z);
+    assert.ok(y>.3,`dry shoreline beside the beach submerged at ${x},${z}: ${y}`);
+    assert.ok(Math.abs(bake.terrain.heightC(x,z)-y)<.02,'beach props must sample the rendered shoreline');
+    t.diagnostic(JSON.stringify({astirShoreline:{x,z,y}}));
+  }
   let count=0,maxStep=0,maxSlope=0,maxAbove=-Infinity,worstStep,worstSlope,worstAbove;
   const carriage=(x,z,y,where)=>{const delta=h(x,z)-y;count++;if(delta>maxAbove){maxAbove=delta;worstAbove={...where,source:h.source};} };
   const shoulder=(point,edgeY,where)=>{

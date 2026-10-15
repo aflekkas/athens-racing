@@ -1,0 +1,69 @@
+{
+  "updatedAt": "2026-10-15T18:23:47.447705+00:00",
+  "implementationCommits": [
+    "d13411033e4793c31a10d4899f59e6d883334d62",
+    "face8e6b3635c2358b8557da5e6f1888e1d02e79",
+    "ca4bf13b699bfcb4ee79bfe52f022f4280955a18",
+    "d834460c989491be5612ccaf63c95b1567632cd8",
+    "7c7ce363062ceae28f7d47d1cf6f4553f6429492",
+    "1f60cef4c5524b24629a086839782743b5edf30f",
+    "b585492124778bc09a5c6080ec5a1da223164904"
+  ],
+  "baselineFullGates": {
+    "archive": "7c7ce363062ceae28f7d47d1cf6f4553f6429492",
+    "npmTest": 0,
+    "physicsRegression": {
+      "passed": 426,
+      "failed": 0
+    },
+    "events": 0,
+    "syntax": 0,
+    "browserImports": 0,
+    "stagingWorkerDryRun": 0
+  },
+  "googleOnlyChecks": {
+    "archive": "b585492124778bc09a5c6080ec5a1da223164904",
+    "focusedTests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "syntax": 0,
+    "browserImports": 0,
+    "stagingWorkerDryRun": 0,
+    "browser": {
+      "screenshots": [
+        {
+          "width": 1280,
+          "errors": [],
+          "overflow": false
+        },
+        {
+          "width": 390,
+          "errors": [],
+          "overflow": false
+        }
+      ],
+      "offlineDegrade": true,
+      "guestBypass": true,
+      "privacyLink": true,
+      "noProviderLegacyPlay": true
+    }
+  },
+  "remoteMigrations": {
+    "accountId": "d6f3d2dc5817687a91d74ccd257bad9e",
+    "migration": "0001_accounts.sql",
+    "staging": "5e3d1170-f253-4de6-bff4-8b8f2c0027f4",
+    "production": "965f63b7-a248-415e-ba11-f5f4c15d8c79",
+    "status": "applied successfully in both environments"
+  },
+  "liveRaceSmoke": {
+    "url": "https://athensracing.com",
+    "build": "0f62a118be5a",
+    "exit": 0,
+    "checkpoints": 134,
+    "finishedDrivers": 2,
+    "reconnects": 0
+  },
+  "manualWorkerDeploys": 0,
+  "workerSecretsCreated": 0
+}

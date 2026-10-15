@@ -39,15 +39,15 @@ try {
     await page.locator('[data-key="settingsTab"] [data-v="about"]').click();
     await page.waitForSelector('.about-stats');
     assert.match(await page.locator('#ui').innerText(), /PR|Pull requests|PULL REQUESTS/i);
-    const source = await page.locator('[data-act="openLink"][data-url="https://github.com/aflekkas/athens-street-racers"]').count();
+    const source = await page.locator('[data-act="openLink"][data-url="https://github.com/aflekkas/athens-racing"]').count();
     assert.equal(source, 1);
     const external = await page.evaluate(() => {
       const original = HTMLAnchorElement.prototype.click; let attrs;
       HTMLAnchorElement.prototype.click = function () { attrs = { href: this.href, target: this.target, rel: this.rel }; };
-      try { document.querySelector('[data-act="openLink"][data-url="https://github.com/aflekkas/athens-street-racers"]').click(); } finally { HTMLAnchorElement.prototype.click = original; }
+      try { document.querySelector('[data-act="openLink"][data-url="https://github.com/aflekkas/athens-racing"]').click(); } finally { HTMLAnchorElement.prototype.click = original; }
       return attrs;
     });
-    assert.deepEqual(external, { href: 'https://github.com/aflekkas/athens-street-racers', target: '_blank', rel: 'noopener' });
+    assert.deepEqual(external, { href: 'https://github.com/aflekkas/athens-racing', target: '_blank', rel: 'noopener' });
     await snap('about');
     await click('whatsNew'); await page.waitForSelector('.release-list'); await snap('whats-new');
     assert.equal(await page.locator('.release').count(), 4);

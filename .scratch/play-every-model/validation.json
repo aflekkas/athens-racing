@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "e4a6dc77ae5187d62a74764c7981ba55db8e9423",
+  "cleanArchive": "/tmp/every-release.x5lrn84e",
+  "npm": {
+    "tests": 882,
+    "pass": 880,
+    "fail": 0,
+    "skipped": 2
+  },
+  "physics": {
+    "pass": 426,
+    "fail": 0
+  },
+  "browserImportModules": 198,
+  "browserErrors": 0,
+  "garageEntries": 30,
+  "configurations": 69,
+  "implementationCommits": [
+    "4ad85ea237c8f6551a2314b3f35ccf242cca8fd2",
+    "ac46091e39e1885eac15c21b833335b0c957d559",
+    "e4a6dc77ae5187d62a74764c7981ba55db8e9423"
+  ]
+}

@@ -265,6 +265,7 @@ else {
       const rear=new Vehicle(spec,route),front=new Vehicle(spec,route);rear.addDamage('rear',16,{kind:'wall'});front.addDamage('front',16,{kind:'wall'});
       check(`catalogue ${spec.id}: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage`,rear.engHealth===1&&front.engHealth<1&&front.radiatorDamage===0&&!front.smoke);
     }
+    if(spec.nativeFleet)continue; // Fleet speed/size classes use the explicit scenarios below.
     const v = new Vehicle(spec, route); v.reset(0, 0, 0); let t = 0, t100 = null, ok = true;
     while (t < 60) { v.update(DT, { throttle: 1, brake: 0, steer: 0 }); t += DT; if (!t100 && v.kmh >= 100) t100 = t; if (!finite(v)) { ok = false; break; } }
     const b = new Vehicle(spec, route); b.reset(0, 0, 100 / 3.6); const z0 = b.z;
@@ -273,6 +274,17 @@ else {
     check(`catalogue ${spec.id} (${spec.drive}): finite, plausible acceleration, top near vmax, 100-0 28-50 m`, ok && t100 > (spec.zeroTo100 ? spec.zeroTo100*.70 : 3) && t100 < (spec.zeroTo100 ? spec.zeroTo100*1.40 : 14) && v.kmh > spec.vmax * 0.85 && v.kmh < spec.vmax * 1.05 && bd > 28 && bd < 50,
       `0-100 ${t100 && f2(t100)} s, top ${f1(v.kmh)} / ${spec.vmax}, 100-0 ${f1(bd)} m, wb ${v.wb} halfL ${v.halfL} halfW ${v.halfW}`);
   }
+}
+
+// Authored utility/bike/EV models: class-appropriate speed targets and normal-load stability.
+{
+ const {fleetScenarios}=await import('./fleet.mjs');
+ for(const r of fleetScenarios()){
+  if(r.type==='drive'){
+   const stoppingG=(r.brakeStart/3.6)**2/(2*r.stopDistance*9.81);
+   check(`playable fleet ${r.id}: accelerates, reaches rated speed and brakes safely`,r.finite&&r.sprint>1&&r.sprint<45&&r.top>r.vmax*.85&&r.top<r.vmax*1.05&&r.stopSpeed<.31&&stoppingG>.4&&stoppingG<1.15,`${f2(r.sprint)}s to ${f1(r.target)}, top ${f1(r.top)}, stop ${f1(r.stopDistance)}m from ${f1(r.brakeStart)}km/h (${f2(stoppingG)}g)`);
+  }else check(`utility gentle corner ${r.id}: stable body and no unloaded wheel/rollover`,r.finite&&r.roll<.15&&r.beta<.15&&r.minLoad>.04,`roll ${f2(r.roll*180/Math.PI)}deg, beta ${f2(r.beta*180/Math.PI)}deg, minimum wheel load ${f2(r.minLoad*100)}%`);
+ }
 }
 
 // Representative real-trim performance: tighter than the catalogue-wide sanity envelope.

@@ -6,7 +6,7 @@ export function captureResultFrame(source) {
   const copy = document.createElement('canvas'); copy.width = source.width; copy.height = source.height;
   copy.getContext('2d').drawImage(source, 0, 0); return copy;
 }
-export async function renderResultCard({ screenshot, mapName, routeName, carName, time, position, field, pb, date = new Date().toISOString(), url = 'athens-street-racers.aflekkas.workers.dev' }) {
+export async function renderResultCard({ screenshot, mapName, routeName, carName, time, position, field, pb, date = new Date().toISOString(), url = 'athensracing.com' }) {
   if (!screenshot?.width) throw new Error('Finish photo is not ready. Try again.');
   const canvas = document.createElement('canvas'); canvas.width = 1200; canvas.height = 900;
   const c = canvas.getContext('2d'); c.fillStyle = '#080e15'; c.fillRect(0, 0, 1200, 900);

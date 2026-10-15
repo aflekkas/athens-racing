@@ -24,6 +24,10 @@ async function copy(path) {
 }
 for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src', 'assets', 'data']) await copy(resolve(root, path));
 await bakeWorlds(root, out, PLAYABLE_MAPS);
+// Explicit Wrangler build commands set ASR_BUILD_ENV; unknown deployment IDs remain visibly staging.
+const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV || 'staging';
+const indexPath = resolve(out, 'index.html');
+await writeFile(indexPath, (await readFile(indexPath, 'utf8')).replace('</head>', `<meta name="asr-environment" content="${buildEnvironment === 'production' ? 'production' : 'staging'}">\n</head>`));
 await bundleBrowser(root, out);
 await writeFile(resolve(out, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/assets/share/*\n  Cache-Control: public, max-age=86400, stale-while-revalidate=604800\n  Content-Type: image/jpeg\n' + CACHE_HEADERS);
 const maps = [];
@@ -52,6 +56,6 @@ async function inventory(dir) {
 }
 await inventory(out);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
-const { cars, nitrousCars } = readCarCapabilities(catalogue);
-await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars }));
+const { cars, nitrousCars, specs: carSpecs } = readCarCapabilities(catalogue);
+await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs }));
 console.log(JSON.stringify({ assets: count, bytes, largest, release: { version: version.version, sha: version.sha, build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));

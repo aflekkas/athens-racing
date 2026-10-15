@@ -1,0 +1,14 @@
+{
+  "cars": 18,
+  "symbols": 234,
+  "occluded": 0,
+  "outsideDefaultViewport": 0,
+  "camera": {
+    "width": 1440,
+    "height": 900,
+    "verticalFov": 66,
+    "pitch": -0.045,
+    "eyeOffsetY": 0.02,
+    "space": "model.body.localToWorld, including trim ride height"
+  }
+}

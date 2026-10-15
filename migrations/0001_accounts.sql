@@ -1,0 +1,11 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE users (id TEXT PRIMARY KEY, display_name TEXT COLLATE NOCASE UNIQUE, plate TEXT NOT NULL DEFAULT 'GR-0000', avatar TEXT, progress TEXT NOT NULL DEFAULT '{}', migrated INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL);
+CREATE TABLE identities (provider TEXT NOT NULL, subject TEXT NOT NULL, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, PRIMARY KEY(provider,subject));
+CREATE TABLE sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, csrf TEXT NOT NULL, expires INTEGER NOT NULL);
+CREATE INDEX sessions_user ON sessions(user_id);
+CREATE TABLE challenges (id TEXT PRIMARY KEY, kind TEXT NOT NULL, data TEXT NOT NULL, expires INTEGER NOT NULL);
+CREATE TABLE limits (id TEXT PRIMARY KEY, count INTEGER NOT NULL, expires INTEGER NOT NULL);
+CREATE TABLE friendships (sender TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, recipient TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, state TEXT NOT NULL CHECK(state IN ('pending','accepted','blocked')), PRIMARY KEY(sender,recipient), CHECK(sender<>recipient));
+CREATE TABLE invites (id TEXT PRIMARY KEY, sender TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, recipient TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, lobby TEXT NOT NULL, expires INTEGER NOT NULL);
+CREATE INDEX invites_recipient ON invites(recipient,expires);
+CREATE UNIQUE INDEX friendships_pair ON friendships(min(sender,recipient),max(sender,recipient));

@@ -1,0 +1,37 @@
+{
+  "initialFrozenRevision": "7414ef1f74f84aec5ea19cf0d6c39a36f964ca18",
+  "initialGates": {
+    "wrangler": 0,
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "syntax": 0,
+    "physics": 0
+  },
+  "followupFrozenRevision": "1c98a0aed6e5670d065c30435f8998a252b60051",
+  "browserNavigation": {
+    "passed": true,
+    "checks": 14
+  },
+  "latencyGate": "not established: observed cold slowdown under heavy shared-host load",
+  "productionDeployment": false,
+  "followupGates": {
+    "focused-menu": 0,
+    "wrangler": 0,
+    "events": 0,
+    "imports": 0,
+    "syntax": 0,
+    "physics": 0
+  },
+  "followupTests": {
+    "passed": 40,
+    "skipped": 1,
+    "skipReason": "git authors check requires .git; frozen archives intentionally have no git history",
+    "physicsPassed": 426
+  },
+  "shippedStagingMetadata": {
+    "environment": "staging",
+    "version": "2026.10.15.3",
+    "sha": "1c98a0a"
+  }
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Read server-rendered metadata as link-preview crawlers; no browser/JS needed.
-Usage: python3 tools/check-share-metadata.py https://localhost:8796 --origin https://athens-street-racers-staging.aflekkas.workers.dev --insecure
+Usage: python3 tools/check-share-metadata.py https://localhost:8796 --origin https://staging.athensracing.com --insecure
 """
 import argparse
 import http.client

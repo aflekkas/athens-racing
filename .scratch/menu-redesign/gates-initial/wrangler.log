@@ -1,0 +1,68 @@
+
+ ⛅️ wrangler 4.151.0
+────────────────────
+[custom build] Running: ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs
+[custom build] Browser import graph checked: 192 modules.
+[custom build] 
+[custom build] Baked riviera terrain: 12056509 bytes
+[custom build] 
+[custom build] Baked riviera roads: 19689534 bytes
+[custom build] 
+[custom build] Baked riviera in 105814 ms
+[custom build] 
+[custom build] Baked megara terrain: 1057818 bytes
+[custom build] 
+[custom build] Baked megara roads: 301936 bytes
+[custom build] 
+[custom build] Baked megara in 5024 ms
+[custom build] 
+[custom build] Baked penteli terrain: 16468699 bytes
+[custom build] 
+[custom build] Baked penteli roads: 5416542 bytes
+[custom build] 
+[custom build] Baked penteli in 150447 ms
+[custom build] 
+[custom build] Bundled browser: 197 inputs, 26 ESM chunks, 2139120 bytes
+[custom build] 
+[custom build] {
+[custom build]   "assets": 1290,
+[custom build]   "bytes": 181973431,
+[custom build]   "largest": {
+[custom build]     "path": "_c/da3782644d7520ea.gz",
+[custom build]     "size": 19689534
+[custom build]   },
+[custom build]   "release": {
+[custom build]     "version": "2026.10.15.3",
+[custom build]     "sha": "7414ef1",
+[custom build]     "build": "053ae11f5cf9",
+[custom build]     "files": 629,
+[custom build]     "copies": 629,
+[custom build]     "swBytes": 46776
+[custom build]   },
+[custom build]   "maps": [
+[custom build]     {
+[custom build]       "id": "riviera",
+[custom build]       "version": "4718fbec",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1315 files from the assets directory /tmp/menu-redesign-gates/.deploy/assets
+Total Upload: 553.40 KiB / gzip: 145.85 KiB
+Your Worker has access to the following bindings:
+Binding                     Resource            
+env.GAME (GameArena)        Durable Object      
+env.ASSETS                  Assets              
+
+--dry-run: exiting now.

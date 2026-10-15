@@ -104,7 +104,7 @@ export function terrainMaterial({ farmland = false } = {}) {
  * Build terrain meshes. `corridorPts` is an array of [x,z,r] stamps marking the detailed area.
  * clampFn(x, z) -> max height allowed (keeps the ground under the road and pavements) or Infinity.
  */
-export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, network = null } = {}) {
+export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, network = null, beachAreas = [] } = {}) {
   const { GX, GZ, T, minX, minZ, H, C: CL } = terrain;
   const mat = terrainMaterial({ farmland });
   // ---------------------------------------------------------------- corridor mask (10 m vertices)
@@ -116,6 +116,29 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   };
   for (let s = -300; s <= route.length + 300; s += 25) { const p = route.point(s, 0); stamp(p.x, p.z, Math.max(120, route.edge(s) + 80)); }
   for (const [x, z, r] of extraStamps) stamp(x, z, r);
+
+  // A 40 m triangle can interpolate a narrow, dry beach below sea level.
+  // Keep dry sand at DEM resolution even outside the road's 120 m detail
+  // corridor. Extend to whole coarse cells so no coarse sheet overlaps it.
+  if (coastal) {
+    const beaches = new Set();
+    for (let j=0;j<GZ;j++) for(let i=0;i<GX;i++) {
+      const id=j*GX+i;
+      if (CL[id]===1 && H[id]>-1.2) beaches.add(Math.floor(j/4)*4*GX+Math.floor(i/4)*4);
+    }
+    for (const beach of beachAreas) {
+      const p=beach.p; if(!p?.length)continue;
+      let x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
+      for(let k=0;k<p.length;k+=2){x0=Math.min(x0,p[k]);x1=Math.max(x1,p[k]);z0=Math.min(z0,p[k+1]);z1=Math.max(z1,p[k+1]);}
+      const i0=Math.max(0,Math.floor((x0-minX)/T/4)*4),i1=Math.min(GX-1,Math.ceil((x1-minX)/T/4)*4);
+      const j0=Math.max(0,Math.floor((z0-minZ)/T/4)*4),j1=Math.min(GZ-1,Math.ceil((z1-minZ)/T/4)*4);
+      for(let j=j0;j<=j1;j+=4)for(let i=i0;i<=i1;i+=4)beaches.add(j*GX+i);
+    }
+    for (const id of beaches) {
+      const i=id%GX,j=Math.floor(id/GX);
+      for(let b=j;b<=Math.min(GZ-1,j+4);b++)for(let a=i;a<=Math.min(GX-1,i+4);a++)mask[b*GX+a]=1;
+    }
+  }
 
   // ---------------------------------------------------------------- road clamp (per 10 m vertex: nearest route sample)
   const Hc = H.slice();

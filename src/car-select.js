@@ -1,5 +1,6 @@
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
+import {showroomRig} from './vehicle-camera.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint } from './cars.js';
 import { TurntableControl } from './turntable-control.js';
@@ -7,6 +8,14 @@ import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection, bodyTrim, trimChoices, stepTrim } from './car-catalog.js';
+import { classifyCar } from './car-performance.js';
+import { carEligibility } from './mp-car-rules.js';
+// Why a trim is locked by lobby car rules (null without rules or when eligible).
+const ruleReason = (car, rules) => {
+  if (!rules || !car) return null;
+  const { pi, class: cls } = classifyCar(car);
+  return carEligibility({ id: car.id, name: car.short || car.name || car.id, pi, class: cls, category: carCategory(car) }, rules).reason || null;
+};
 
 // Period 0–100 km/h figures for the represented drivetrain (seconds).
 // Power, mass and driven wheels come from the live physics catalogue.
@@ -38,7 +47,7 @@ function trimBrowser(c,model,trims,body,available) {
   <div class="car-trim-pips" role="img" aria-label="Trim ${at+1} of ${trims.length}">${trims.map((id,i)=>`<i class="${i===at?'on':''}"></i>`).join('')}</div></div>
   ${C.button({icon:'caret-right',act:'carTrimNext',variant:'ghost',disabled:trims.length<2,attrs:{'aria-label':'Next trim',title:'Next trim · D / RB'}})}</div>`;
 }
-export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars } = {}) {
+export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
     const list = filterCars(CARS, filters).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
@@ -52,10 +61,11 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       <div class="car-grid scroll-y">${list.map(({ car, index: i }, n) => {
         const group = carCategory(car), head = n === 0 || carCategory(list[n - 1].car) !== group ? `<h3 class="car-group label">${classLabel(group)}<span>${list.filter(x => carCategory(x.car) === group).length}</span></h3>` : '';
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
+        const reason = locked && !def?.car ? ruleReason(car, rules) : null;
         return head + C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
-          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
+          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
           media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(carModel(car)?.name || car.name),
-          text: `${classLabel(carCategory(car))} · ${carModel(car).bodies ? carModel(car).bodies[0][2].length : carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}${carModel(car).bodies ? ' · 2 BODIES' : ''}`,
+          text: `${classLabel(carCategory(car))} · ${carModel(car).bodies ? carModel(car).bodies[0][2].length : carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}${carModel(car).bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
           foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
   }
@@ -70,7 +80,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       <div class="car-transmission label">${c.gears.length}-SPEED · ${c.drive.toUpperCase()}</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
-      <div class="car-actions">${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
+      <div class="car-actions">${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock-simple')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
 }
 
@@ -93,6 +103,7 @@ export function mountCarGrid(root) {
         renderer ||= new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         renderer.setSize(480, 240); renderer.toneMapping = THREE.ACESFilmicToneMapping;
         const model = new CarModel(c); model.root.rotation.y = -.45; scene.add(model.root);
+        const framing=showroomRig(c,2,32,Math.hypot(6,3,7));camera.position.set(6,3,7).normalize().multiplyScalar(framing.distance);camera.lookAt(0,c.nativeFleet?framing.targetY:.6,0);
         renderer.render(scene, camera); const url = renderer.domElement.toDataURL('image/png'); img.src = url; thumbs.set(key, url);
         model.root.removeFromParent(); model.disposeDamage?.();
         // The models share geometry/materials with the game; only thumbnail-specific geometry may be released.
@@ -165,8 +176,9 @@ export function mountCarSelect(root, index, opts = {}) {
   const resize = () => {
     const w = container.clientWidth, h = container.clientHeight; if (!w || !h) return;
     renderer.setSize(w,h); camera.aspect=w/h;
-    const distance = Math.max(8.3, 6.2 / camera.aspect) * (lite ? 1.12 : 1);
-    camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,lite ? .45 : .65,0); camera.updateProjectionMatrix();
+    const framing=showroomRig(CARS[index],camera.aspect,35,Math.max(8.3,6.2/camera.aspect)*(lite?1.12:1)),distance=framing.distance;
+    floor.scale.setScalar(Math.max(1,(CARS[index].length||4)/7));
+    camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,CARS[index].nativeFleet?framing.targetY:lite?.45:.65,0); camera.updateProjectionMatrix();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
   const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, pointerStart, touch, last = performance.now();
@@ -185,7 +197,7 @@ export function mountCarSelect(root, index, opts = {}) {
     old.root.traverse(o=>{if(o.geometry&&!o.geometry.userData.shared)o.geometry.dispose();});
     const nextMaterials=new Set(),nextTextures=new Set();nextModel.root.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){nextMaterials.add(m);for(const v of Object.values(m))if(v?.isTexture)nextTextures.add(v);}});
     for(const [original,copy]of materialCopies)if(!nextMaterials.has(copy)){for(const v of Object.values(copy))if(v?.isCanvasTexture&&!nextTextures.has(v))v.dispose();copy.dispose();materialCopies.delete(original);}
-    model=nextModel;index=next;
+    model=nextModel;index=next;resize();
     const menu=window.__flow?.menu;if(menu){menu.data={...menu.data,index,detail:true};C.morph(root,renderCarSelect(menu.data));C.indicators(root);}
     renderer.render(scene,camera);return true;
   };

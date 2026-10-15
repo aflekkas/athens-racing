@@ -1,3 +1,4 @@
+import { buildBadge } from '../build-environment.js';
 import { notifications, raceNotificationsActive } from './notifications.js';
 // UI COMPONENTS: the ATHENS STREET RACERS kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
 //
@@ -125,7 +126,7 @@ export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kb
 /** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), and the driver chip + clock at the right.
  *  Back never shares a row with the page title, so every title lines up with the content grid below it. */
 export function statusBar({ back = true, kick = '' } = {}) {
-  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r"><span class="hu-driver" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></span><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
+  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r">${buildBadge() ? `<span class="build-badge">${esc(buildBadge())}</span>` : ''}<button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
 }
 const clockText = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
 if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);

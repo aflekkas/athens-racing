@@ -48,7 +48,9 @@ const AOShader = {
       float rpx = R * uProj[1][1] * 0.5 * uRes.y / max(-P.z, 0.05);
       rpx = clamp(rpx, 2.0, 70.0);
       float sum = 0.0;
-      float a0 = hh(gl_FragCoord.xy + fract(uTime) * 13.0) * 6.2831;
+      // No temporal accumulation follows this pass: rotating the kernel every
+      // frame makes contact shadows sparkle even with a stationary camera.
+      float a0 = hh(gl_FragCoord.xy) * 6.2831;
       float r0 = hh(gl_FragCoord.yx * 1.37 + 3.1);
       for (int i = 0; i < NS; i++){
         float fi = (float(i) + r0) / float(NS);
@@ -121,7 +123,9 @@ const CompositeShader = {
         if (abs(rawDepth(refracted) - d) < 0.0002) sampleUV = refracted;
       }
       vec3 col = texture2D(tColor, sampleUV).rgb;
-      float j = hh(gl_FragCoord.xy + fract(uTime * 7.0) * 61.0);
+      // Keep the orbit DOF/blur kernel stable too; animated sample noise
+      // otherwise makes shadow edges shimmer through the gather.
+      float j = hh(gl_FragCoord.xy);
       // ---- depth of field (orbit / garage cameras): a golden-angle gather, sharp foreground never bleeds
       if (uDof > 0.0) {
         float z = -P.z;

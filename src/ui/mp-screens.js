@@ -12,7 +12,9 @@ import * as C from './components.js';
 import { notifications } from './notifications.js';
 import { TIMES, WEATHERS, TRAFFIC_LEVELS, POLICE_LEVELS } from '../race-setup.js';
 import { configFromLobby, describeMode } from '../mp-setup.js';
-import { carCategory, classLabel, inGarage } from '../car-catalog.js';
+import { carCategory, classLabel, inGarage, GARAGE_CLASSES } from '../car-catalog.js';
+import { classifyCar, PI_CLASSES } from '../car-performance.js';
+import { defaultCarRules, describeRules, carEligibility } from '../mp-car-rules.js';
 import { driverName } from '../driver-name.js';
 
 const { esc, icon } = C;
@@ -141,19 +143,20 @@ export function renderLobby(menu, mp) {
       ...(modeV === 'sprint' ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
       C.segmented({ key: 'policeMode', label: 'POLICE & LAWS', icon: 'police-car', value: police ? policeLevel : 'off', options: [['off', 'OFF'], ...POLICE_LEVELS], attrs: A }),
       ...(police ? [C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: busted, type: 'bool', options: [['true', 'ON'], ['false', 'OFF']], attrs: A })] : []),
-      C.listRow({ icon: 'car', title: 'ALLOWED CARS', desc: allowed >= garage ? `ALL ${garage} CARS` : `${allowed} OF ${garage} CARS`, act: 'mpCars', fid: 'cars' }),
+      C.listRow({ icon: 'car', title: 'CAR RULES', desc: `${esc(typeof mp?.rulesSummary === 'function' ? mp.rulesSummary() : describeRules(mp?.carRules, specNames(mp)))} · ${allowed} OF ${garage} CARS`, act: 'mpCars', fid: 'cars' }),
     ].join('');
   } else {
     session = C.stats([['TRACK', esc(mapName(mp, l.mapId)), { icon: 'map-trifold' }], ['MODE', esc(describeMode(mode)), { icon: 'flag-checkered' }],
       ['TIME OF DAY', esc(label(TIMES, cfg.time)), { icon: timeIcon(cfg.time) }], ['WEATHER', esc(label(WEATHERS, cfg.weather)), { icon: weatherIcon(cfg.weather) }],
-      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'police-car' }]], 'mp-facts');
+      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'police-car' }],
+      ['CAR RULES', esc(typeof mp?.rulesSummary === 'function' ? mp.rulesSummary() : describeRules(mp?.carRules, specNames(mp))), { icon: 'car' }]], 'mp-facts');
   }
   const rows = l.players.map((p) => {
     const r = driverRow(p, l, mp.id), c = carOf(mp, r.car);
     const ctl = host && !r.me ? `<span class="mp-driver__ctl">${C.button({ label: 'KICK', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpKick', attrs: { 'data-id': p.id, 'data-fid': 'kick:' + p.id, 'aria-label': 'Kick ' + p.name } })}${C.button({ label: 'BLOCK', icon: 'x', variant: 'ghost', size: 'sm', act: 'mpBlock', cls: 'mp-block', attrs: { 'data-id': p.id, 'data-fid': 'block:' + p.id, 'aria-label': 'Block ' + p.name } })}</span>` : '';
     return `<div class="mp-driver ${r.me ? 'me' : ''}" data-player="${esc(p.id)}"><i class="mp-dot" data-state="${r.state}"></i>
       <span class="mp-driver__who"><b>${esc(r.name)}</b>${r.me ? C.chip('YOU', { tone: 'accent' }) : ''}${r.host ? C.chip('HOST', { tone: 'gold', icon: 'crown' }) : ''}</span>
-      <span class="mp-driver__car">${esc(c?.short || r.car || '')}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
+      <span class="mp-driver__car">${esc(c?.short || r.car || '')}${p.balance && (p.balance.ballastKg > 0 || p.balance.powerCapKW > 0) ? ` · ${esc(p.balance.label)}` : ''}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
   }).join('');
   const blocked = host ? (l.blockedPlayers || []) : [];
   const blockedList = blocked.length ? `<div class="mp-blocked"><h4 class="mp-sub">${icon('x')}BLOCKED</h4>${blocked.map((p) => `<div class="mp-driver mp-driver--blocked"><span class="mp-driver__who"><b>${esc(p.name)}</b></span>${C.button({ label: 'UNBLOCK', variant: 'ghost', size: 'sm', act: 'mpUnblock', attrs: { 'data-id': p.id, 'data-fid': 'unblock:' + p.id } })}</div>`).join('')}</div>` : '';
@@ -212,14 +215,57 @@ export function helpText(mp, l, host) {
   return mp.me?.finish != null ? 'You finished. The race ends when everyone is in, or after ten minutes.' : 'Race in progress. Close this screen to keep driving.';
 }
 
-// ---------------------------------------------------------------- allowed cars (host)
+// ---------------------------------------------------------------- car rules (host)
+// Speed-range rulesets replace picking cars one by one: the host chooses a
+// preset (open / same class / max PI / category / spec / balanced) and the
+// server resolves which trims may race. The per-car list survives below as an
+// Advanced override that can only narrow the field further.
+const RULESET_OPTIONS = [['open', 'OPEN', 'globe'], ['same-class', 'SAME CLASS', 'flag-checkered'], ['max-pi', 'MAX PI', 'gauge'], ['category', 'CATEGORY', 'car-profile'], ['spec', 'SPEC', 'tire'], ['balanced', 'BALANCED', 'sliders-horizontal']];
+/** pace facts for every garage trim, used by the rules screen and its reasons */
+export function ruleViews(mp) {
+  return (mp?.cars || []).filter(inGarage).map((car) => {
+    const { pi, class: cls } = classifyCar(car);
+    return { car, id: car.id, name: car.short || car.name || car.id, pi, class: cls, category: carCategory(car) };
+  });
+}
+export function specNames(mp) { return Object.fromEntries((mp?.cars || []).map((c) => [c.id, c.short || c.id])); }
+/** sensible parameters when the host switches preset, seeded from their own car */
+export function rulesDefaults(mp, preset) {
+  const myCar = (mp?.cars || []).find((c) => c.id === mp?.me?.car);
+  const mine = myCar ? { ...classifyCar(myCar), category: carCategory(myCar) } : null;
+  switch (preset) {
+    case 'same-class': return { preset, class: mine?.class || 'B' };
+    case 'balanced': return { preset, class: mine?.class || 'B', balanced: true };
+    case 'max-pi': return { preset, maxPI: mine ? Math.ceil(mine.pi / 10) * 10 : 550 };
+    case 'category': return { preset, category: mine?.category || 'hot hatch' };
+    case 'spec': return { preset, spec: mp?.me?.car };
+    default: return { preset: 'open' };
+  }
+}
 export function renderCars(menu, mp) {
-  const l = mp?.lobby, all = new Set(mp?.allowedCars || []), cars = (mp?.cars || []).filter(inGarage), allowed = new Set(cars.filter((c) => all.has(c.id)).map((c) => c.id));
-  const presets = `<div class="mp-presets">${[['all', 'ALL'], ['normal', 'NORMAL'], ['supercar', 'SUPERCARS']].map(([p, t]) => C.button({ label: t, variant: 'ghost', size: 'sm', act: 'mpPreset', attrs: { 'data-preset': p, 'data-fid': 'preset:' + p } })).join('')}</div>`;
-  const toggles = cars.map((c, i) => C.toggle({ key: c.id, label: `${esc(c.name)} <small>${esc(classLabel(carCategory(c)))}</small>`, value: allowed.has(c.id), attrs: { 'data-scope': 'mpAllow', ...(i ? {} : { 'data-default': '' }) } })).join('');
-  return C.screen({ cls: 'scr--mp scr--mp-cars', kick: `${esc(l?.name || 'LOBBY')} <span class="acc">/</span> HOST RULES`, title: 'ALLOWED CARS', head: presets,
+  const l = mp?.lobby, rules = mp?.carRules || defaultCarRules();
+  const views = ruleViews(mp), allowed = new Set(mp?.allowedCars || []), R = { 'data-scope': 'mpRules' };
+  const eligible = views.filter((v) => carEligibility(v, { ...rules, allowedCars: null }).ok);
+  const summary = typeof mp?.rulesSummary === 'function' ? mp.rulesSummary() : describeRules(rules, specNames(mp));
+  const counts = {};
+  for (const v of views) counts[v.class] = (counts[v.class] || 0) + 1;
+  let params = '';
+  if (['same-class', 'balanced'].includes(rules.preset)) params = C.segmented({ key: 'class', label: 'CLASS', icon: 'flag-checkered', value: rules.class || 'B', options: PI_CLASSES.map((c) => [c, `${c} · ${counts[c] || 0}`]), attrs: R });
+  else if (rules.preset === 'max-pi') params = C.stepper({ key: 'maxPI', label: 'MAX PERFORMANCE INDEX', icon: 'gauge', value: rules.maxPI || 550, min: 150, max: 900, step: 10, format: 'int', attrs: R });
+  else if (rules.preset === 'category') params = C.select({ key: 'category', label: 'CATEGORY', icon: 'car-profile', value: rules.category || 'hot hatch', options: GARAGE_CLASSES.map(([id, label]) => [id, label]), attrs: R });
+  else if (rules.preset === 'spec') params = C.select({ key: 'spec', label: 'SPEC CAR · EVERYONE THE SAME TRIM', icon: 'tire', value: rules.spec || views[0]?.id, options: views.map((v) => [v.id, `${v.name} · PI ${v.pi} · ${v.class}`]), attrs: R });
+  const balanceRow = ['same-class', 'max-pi', 'category'].includes(rules.preset)
+    ? C.toggle({ key: 'balanced', label: 'EQUALIZE PACE (BALLAST)', icon: 'sliders-horizontal', value: rules.balanced === true, note: 'The slowest car sets the pace · faster cars carry ballast or a power cap', attrs: R }) : '';
+  const rows = views.map((v) => {
+    const rule = carEligibility(v, { ...rules, allowedCars: null });
+    if (!rule.ok) return C.option({ icon: 'lock-simple', title: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, desc: esc(rule.reason), disabled: true });
+    return C.toggle({ key: v.id, label: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, value: allowed.has(v.id), attrs: { 'data-scope': 'mpAllow' } });
+  }).join('');
+  return C.screen({ cls: 'scr--mp scr--mp-cars', kick: `${esc(l?.name || 'LOBBY')} <span class="acc">/</span> HOST RULES`, title: 'CAR RULES',
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['back', 'BACK']],
-    body: `<div class="set-panel panel scroll-y"><div class="group"><h3 class="group__title">${icon('car')}${allowed.size} OF ${cars.length} CARS · KEEP AT LEAST ONE</h3>${toggles}</div></div>` });
+    body: `<div class="set-panel panel scroll-y"><div class="group"><h3 class="group__title">${icon('sliders-horizontal')}RULESET · ${esc(summary)} · ${eligible.length} OF ${views.length} PASS</h3>
+      ${C.segmented({ key: 'preset', label: 'RULESET', icon: 'sliders-horizontal', value: rules.preset, options: RULESET_OPTIONS, attrs: R })}${params}${balanceRow}</div>
+      <div class="group"><h3 class="group__title">${icon('car')}ADVANCED · PER-CAR OVERRIDE · ${views.filter((v) => allowed.has(v.id)).length} OF ${views.length} ALLOWED</h3>${rows}</div></div>` });
 }
 
 // ---------------------------------------------------------------- results
@@ -318,12 +364,13 @@ export function act(menu, el) {
     }
     case 'mpUnblock': mp.unblockPlayer(el.dataset.id); return true;
     case 'mpCars': menu.show('mpCars', {}, true); return true;
-    case 'mpPreset': mp.setAllowedPreset(el.dataset.preset); return true;
     case 'mpCar': {
       if (!mp.canChangeCar) return true;
       const cars = mp.cars || [], index = Math.max(0, cars.findIndex((c) => c.id === showroomCar(mp)));
       mp.setCarPickerOpen(true);
-      menu.show('car', { garage: true, index, allowedCars: mp.allowedCars, onPick(id) { if (mp.changeCar(id) === false) return false; mp.setCarPickerOpen(false); return true; }, onCancel() { mp.setCarPickerOpen(false); } }, true);
+      // The garage greys out ineligible trims with the ruleset reason; the
+      // merged rule (ruleset + effective allow-list) keeps the reason precise.
+      menu.show('car', { garage: true, index, allowedCars: mp.allowedCars, rules: { ...(mp.carRules || defaultCarRules()), allowedCars: mp.allowedCars }, onPick(id) { if (mp.changeCar(id) === false) return false; mp.setCarPickerOpen(false); return true; }, onCancel() { mp.setCarPickerOpen(false); } }, true);
       return true;
     }
   }
@@ -351,6 +398,13 @@ export function change(menu, { key, value, el }) {
     const garage = (mp.cars || []).filter(inGarage).map((c) => c.id), all = new Set(mp.allowedCars), allowed = new Set(garage.filter((id) => all.has(id)));
     if (value) allowed.add(key); else allowed.delete(key);
     if (!mp.setAllowedCars([...allowed])) C.ui.toast('KEEP AT LEAST ONE CAR', { icon: 'warning', tone: 'bad' });
+    menu.refresh(); return true;
+  }
+  if (scope === 'mpRules') {
+    // Preset switches seed sensible parameters from the host's own car; every
+    // other control patches one field. The server echo re-renders the screen.
+    const patch = key === 'preset' ? rulesDefaults(mp, value) : { [key]: key === 'maxPI' ? Math.round(Number(value)) : value };
+    if (mp.setCarRules(patch) === false) C.ui.toast('ONLY THE HOST CAN CHANGE THE CAR RULES', { icon: 'warning', tone: 'bad' });
     menu.refresh(); return true;
   }
   return false;

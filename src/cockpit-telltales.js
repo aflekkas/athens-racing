@@ -54,11 +54,26 @@ function lampImage(name, colour) {
   }
   return images.get(key);
 }
-export function drawCockpitLamps(g, lamps) {
-  // Upper annunciator strip stays visible above the wheel rim in the normal cockpit view.
-  g.fillStyle = '#06090c'; g.beginPath(); g.roundRect(196, 64, 632, 40, 9); g.fill();
-  for (let i = 0; i < lamps.length; i++) {
-    const [name, colour] = lamps[i], img = lampImage(name, colour || '#20292e');
-    if (img.complete && img.naturalWidth) g.drawImage(img, 204 + i * 47, 67, 34, 34);
+// Layout coordinates are centres in the 1024 × 384 instrument artwork.
+// Place symbols in the quiet inner shoulders of the faces, below the rim's
+// projected upper edge, rather than in a strip across ticks and numerals.
+export function cockpitLampLayout(style) {
+  const arc=(x,y,r,angles)=>angles.map(a=>[x+Math.cos(a*Math.PI/180)*r,y+Math.sin(a*Math.PI/180)*r]);
+  if(style==='gtv')return [...arc(273,195,80,[190,220,250,290,320]),...arc(749,195,80,[190,220,250,290,320]),[749,220],[237,222],[310,222]];
+  if(['taxi','superb','police_octavia','octavia','panda','jazz','ibiza','golf','e36','corolla','cla','cle','gla','gla45'].includes(style))return [...arc(228,192,86,[190,218,246,274,302]),...arc(799,192,86,[190,218,246,274,302]),[840,224],[460,110],[564,110]];
+  if(style==='carrera')return [...arc(298,203,64,[195,230,270,310]),...arc(741,203,64,[195,230,270,310]),[104,190],[927,185],[927,215],[475,192],[569,192]];
+  if(style==='mini'||style==='mini_jcw')return [...arc(244,194,76,[190,225,260,295,330]),...arc(788,194,72,[190,225,260,295,330]),[788,228],[470,112],[588,112]];
+  if(style==='huracan')return [...arc(165,330,65,[180,215,250,285,320]),...arc(840,190,65,[0,36,72,108,144,180]),[465,188],[555,188]];
+  if(style==='gr_yaris')return [...arc(165,300,65,[180,215,250,285,320]),...arc(840,238,65,[0,36,72,108,144,180]),[465,188],[555,188]];
+  if(style==='yaris')return [...arc(260,210,80,[160,190,220,250,280]),...arc(760,210,80,[160,190,220,250,280]),[803,239],[452,105],[570,105]];
+  return [...arc(242,205,84,[180,210,240,270,300]),...arc(785,205,84,[180,210,240,270,300]),[785,290],[466,189],[558,189]];
+}
+export function drawCockpitLamps(g, lamps, style) {
+  const positions=cockpitLampLayout(style),size=25;
+  for (let i=0;i<lamps.length;i++) {
+    const [name,colour]=lamps[i];
+    if(!colour)continue; // An extinguished bulb is invisible, not a blue icon.
+    const img=lampImage(name,colour),[x,y]=positions[i];
+    if(img.complete&&img.naturalWidth)g.drawImage(img,x-size/2,y-size/2,size,size);
   }
 }

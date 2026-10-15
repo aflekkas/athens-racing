@@ -1,0 +1,674 @@
+[
+  {
+    "id": "police_octavia",
+    "name": "ŠKODA OCTAVIA POLICE",
+    "powerKW": 110,
+    "torqueNm": 250,
+    "massKg": 1408,
+    "drive": "fwd",
+    "gearbox": "MT",
+    "gears": [
+      3.615,
+      1.955,
+      1.281,
+      0.973,
+      0.778,
+      0.646
+    ],
+    "finalDrive": 3.647,
+    "lengthM": 4.689,
+    "widthM": 1.829,
+    "heightM": null,
+    "wheelbaseM": 2.686,
+    "centreOfMassM": 0.54,
+    "maxSpeedKmh": 230,
+    "zeroTo100Seconds": null,
+    "cameraRig": "existing detailed cabin",
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.24,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0.35,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.38,
+      "revMatch": false,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1500,
+        4117.66
+      ],
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "aygo",
+    "name": "TOYOTA AYGO II 1.0 VVT-i",
+    "powerKW": 51,
+    "torqueNm": 95,
+    "massKg": 855,
+    "drive": "fwd",
+    "gearbox": "MT",
+    "gears": [
+      3.545,
+      1.913,
+      1.31,
+      1.027,
+      0.85
+    ],
+    "finalDrive": 3.55,
+    "lengthM": 3.455,
+    "widthM": 1.615,
+    "heightM": 1.46,
+    "wheelbaseM": 2.34,
+    "centreOfMassM": 0.52,
+    "maxSpeedKmh": 160,
+    "zeroTo100Seconds": 14.2,
+    "cameraRig": {
+      "eye": [
+        -0.35,
+        1.16,
+        0.16
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.2,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "qashqai",
+    "name": "NISSAN QASHQAI J11 1.2 DIG-T",
+    "powerKW": 85,
+    "torqueNm": 190,
+    "massKg": 1318,
+    "drive": "fwd",
+    "gearbox": "MT",
+    "gears": [
+      3.727,
+      2.048,
+      1.393,
+      1.029,
+      0.821,
+      0.638
+    ],
+    "finalDrive": 4.214,
+    "lengthM": 4.377,
+    "widthM": 1.806,
+    "heightM": 1.59,
+    "wheelbaseM": 2.646,
+    "centreOfMassM": 0.6,
+    "maxSpeedKmh": 185,
+    "zeroTo100Seconds": 10.9,
+    "cameraRig": {
+      "eye": [
+        -0.39,
+        1.29,
+        0.2
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.2,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0.4,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220,
+      "torquePlateau": [
+        2000,
+        2600
+      ]
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "qashqai_dci",
+    "name": "NISSAN QASHQAI J11 1.5 dCi",
+    "powerKW": 81,
+    "torqueNm": 260,
+    "massKg": 1385,
+    "drive": "fwd",
+    "gearbox": "MT",
+    "gears": [
+      3.727,
+      1.947,
+      1.323,
+      0.975,
+      0.763,
+      0.638
+    ],
+    "finalDrive": 4.125,
+    "lengthM": 4.377,
+    "widthM": 1.806,
+    "heightM": 1.59,
+    "wheelbaseM": 2.646,
+    "centreOfMassM": 0.6,
+    "maxSpeedKmh": 182,
+    "zeroTo100Seconds": 11.9,
+    "cameraRig": {
+      "eye": [
+        -0.39,
+        1.29,
+        0.2
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 4500,
+      "limiterRpm": 4600,
+      "inertia": 0.45,
+      "maxFreeRevRate": 2800,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1750,
+        2350
+      ]
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "dolphin",
+    "name": "BYD DOLPHIN COMFORT",
+    "powerKW": 150,
+    "torqueNm": 310,
+    "massKg": 1658,
+    "drive": "fwd",
+    "gearbox": "SINGLE SPEED",
+    "gears": [
+      7.4
+    ],
+    "finalDrive": 1,
+    "lengthM": 4.29,
+    "widthM": 1.77,
+    "heightM": 1.57,
+    "wheelbaseM": 2.7,
+    "centreOfMassM": 0.48,
+    "maxSpeedKmh": 160,
+    "zeroTo100Seconds": 7,
+    "cameraRig": {
+      "eye": [
+        -0.3717,
+        1.3,
+        0.1
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 0,
+      "redlineRpm": 10000,
+      "limiterRpm": 10100,
+      "inertia": 0.12,
+      "maxFreeRevRate": 9000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "atto3",
+    "name": "BYD ATTO 3 DESIGN",
+    "powerKW": 150,
+    "torqueNm": 310,
+    "massKg": 1750,
+    "drive": "fwd",
+    "gearbox": "SINGLE SPEED",
+    "gears": [
+      7.8
+    ],
+    "finalDrive": 1,
+    "lengthM": 4.455,
+    "widthM": 1.875,
+    "heightM": 1.615,
+    "wheelbaseM": 2.72,
+    "centreOfMassM": 0.48,
+    "maxSpeedKmh": 160,
+    "zeroTo100Seconds": 7.3,
+    "cameraRig": {
+      "eye": [
+        -0.39375,
+        1.345,
+        0.1
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 0,
+      "redlineRpm": 10000,
+      "limiterRpm": 10100,
+      "inertia": 0.12,
+      "maxFreeRevRate": 9000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "van",
+    "name": "FIAT DUCATO L2H2 2.3 MULTIJET 130",
+    "powerKW": 96,
+    "torqueNm": 320,
+    "massKg": 2075,
+    "drive": "fwd",
+    "gearbox": "MT",
+    "gears": [
+      3.727,
+      1.952,
+      1.29,
+      0.875,
+      0.673,
+      0.585
+    ],
+    "finalDrive": 4.933,
+    "lengthM": 5.413,
+    "widthM": 2.05,
+    "heightM": 2.524,
+    "wheelbaseM": 3.45,
+    "centreOfMassM": 0.82,
+    "maxSpeedKmh": 150,
+    "zeroTo100Seconds": 17.5,
+    "cameraRig": {
+      "eye": [
+        -0.464,
+        1.82,
+        -1.02
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 4000,
+      "limiterRpm": 4100,
+      "inertia": 0.45,
+      "maxFreeRevRate": 2800,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1800,
+        2400
+      ]
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "van_150",
+    "name": "FIAT DUCATO L2H2 2.3 MULTIJET 150",
+    "powerKW": 110,
+    "torqueNm": 350,
+    "massKg": 2075,
+    "drive": "fwd",
+    "gearbox": "MT",
+    "gears": [
+      3.727,
+      1.952,
+      1.29,
+      0.875,
+      0.673,
+      0.585
+    ],
+    "finalDrive": 4.933,
+    "lengthM": 5.413,
+    "widthM": 2.05,
+    "heightM": 2.524,
+    "wheelbaseM": 3.45,
+    "centreOfMassM": 0.82,
+    "maxSpeedKmh": 160,
+    "zeroTo100Seconds": 15.5,
+    "cameraRig": {
+      "eye": [
+        -0.464,
+        1.82,
+        -1.02
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 4000,
+      "limiterRpm": 4100,
+      "inertia": 0.45,
+      "maxFreeRevRate": 2800,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1500,
+        2100
+      ]
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "truck",
+    "name": "ISUZU NPR 75-190 BOX TRUCK",
+    "powerKW": 140,
+    "torqueNm": 510,
+    "massKg": 4200,
+    "drive": "rwd",
+    "gearbox": "MT",
+    "gears": [
+      5.979,
+      3.434,
+      1.862,
+      1.297,
+      1,
+      0.759
+    ],
+    "finalDrive": 4.1,
+    "lengthM": 6.4,
+    "widthM": 2.3,
+    "heightM": 3.1,
+    "wheelbaseM": 3.815,
+    "centreOfMassM": 1.02,
+    "maxSpeedKmh": 110,
+    "zeroTo100Seconds": null,
+    "cameraRig": {
+      "eye": [
+        -0.456,
+        1.98,
+        -1.8
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 700,
+      "redlineRpm": 3000,
+      "limiterRpm": 3100,
+      "inertia": 0.45,
+      "maxFreeRevRate": 2800,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1600,
+        2200
+      ]
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "bus",
+    "name": "MERCEDES-BENZ CITARO O530 · ΟΣΥ",
+    "powerKW": 220,
+    "torqueNm": 1250,
+    "massKg": 12000,
+    "drive": "rwd",
+    "gearbox": "AT",
+    "gears": [
+      4.9,
+      1.36,
+      1,
+      0.73
+    ],
+    "finalDrive": 5.771,
+    "lengthM": 12,
+    "widthM": 2.55,
+    "heightM": 3.1,
+    "wheelbaseM": 5.845,
+    "centreOfMassM": 1.12,
+    "maxSpeedKmh": 85,
+    "zeroTo100Seconds": null,
+    "cameraRig": {
+      "eye": [
+        -0.66,
+        1.86,
+        -4.88
+      ],
+      "wheel": [
+        -0.66,
+        1.35,
+        -5.28
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 600,
+      "redlineRpm": 2300,
+      "limiterRpm": 2400,
+      "inertia": 1,
+      "maxFreeRevRate": 1400,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "automatic",
+      "shiftTime": 0.35,
+      "revMatch": true,
+      "torqueConverter": true,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1100,
+        1700
+      ]
+    },
+    "assistedTwoWheeler": false
+  },
+  {
+    "id": "delivery",
+    "name": "HONDA SH150i DELIVERY",
+    "powerKW": 11,
+    "torqueNm": 13.9,
+    "massKg": 220,
+    "drive": "rwd",
+    "gearbox": "CVT",
+    "gears": [
+      2.5,
+      2,
+      1.6,
+      1.2,
+      0.96,
+      0.8
+    ],
+    "finalDrive": 11.5,
+    "lengthM": 2.03,
+    "widthM": 0.74,
+    "heightM": 1.15,
+    "wheelbaseM": 1.34,
+    "centreOfMassM": 0.64,
+    "maxSpeedKmh": 105,
+    "zeroTo100Seconds": null,
+    "cameraRig": {
+      "eye": [
+        0,
+        1.5190000000000001,
+        0.15
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 1600,
+      "redlineRpm": 9000,
+      "limiterRpm": 9100,
+      "inertia": 0.045,
+      "maxFreeRevRate": 6000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": true
+  },
+  {
+    "id": "scooter",
+    "name": "PIAGGIO BEVERLY 300 HPE",
+    "powerKW": 19,
+    "torqueNm": 26,
+    "massKg": 260,
+    "drive": "rwd",
+    "gearbox": "CVT",
+    "gears": [
+      2.5,
+      2,
+      1.6,
+      1.2,
+      0.96,
+      0.8
+    ],
+    "finalDrive": 8.5,
+    "lengthM": 2.125,
+    "widthM": 0.8,
+    "heightM": 1.26,
+    "wheelbaseM": 1.54,
+    "centreOfMassM": 0.64,
+    "maxSpeedKmh": 130,
+    "zeroTo100Seconds": null,
+    "cameraRig": {
+      "eye": [
+        0,
+        1.532,
+        0.15
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 1600,
+      "redlineRpm": 8500,
+      "limiterRpm": 8600,
+      "inertia": 0.045,
+      "maxFreeRevRate": 6000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": true
+  },
+  {
+    "id": "moto",
+    "name": "YAMAHA TRACER 900",
+    "powerKW": 84.6,
+    "torqueNm": 87.5,
+    "massKg": 285,
+    "drive": "rwd",
+    "gearbox": "MT",
+    "gears": [
+      2.666,
+      2,
+      1.619,
+      1.381,
+      1.19,
+      1.037
+    ],
+    "finalDrive": 4.803,
+    "lengthM": 2.16,
+    "widthM": 0.85,
+    "heightM": 1.375,
+    "wheelbaseM": 1.5,
+    "centreOfMassM": 0.64,
+    "maxSpeedKmh": 220,
+    "zeroTo100Seconds": null,
+    "cameraRig": {
+      "eye": [
+        0,
+        1.5699999999999998,
+        0.15
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 1100,
+      "redlineRpm": 11500,
+      "limiterRpm": 11600,
+      "inertia": 0.045,
+      "maxFreeRevRate": 6000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "manual",
+      "shiftTime": 0.32,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": true
+  },
+  {
+    "id": "police_moto",
+    "name": "BMW R 1250 RT · ΔΙ.ΑΣ.",
+    "powerKW": 100,
+    "torqueNm": 143,
+    "massKg": 354,
+    "drive": "rwd",
+    "gearbox": "MT",
+    "gears": [
+      2.438,
+      1.714,
+      1.296,
+      1.059,
+      0.943,
+      0.848
+    ],
+    "finalDrive": 4.538,
+    "lengthM": 2.222,
+    "widthM": 0.99,
+    "heightM": 1.46,
+    "wheelbaseM": 1.485,
+    "centreOfMassM": 0.64,
+    "maxSpeedKmh": 200,
+    "zeroTo100Seconds": null,
+    "cameraRig": {
+      "eye": [
+        0,
+        1.525,
+        0.15
+      ]
+    },
+    "powertrain": {
+      "idleRpm": 1100,
+      "redlineRpm": 9000,
+      "limiterRpm": 9100,
+      "inertia": 0.045,
+      "maxFreeRevRate": 6000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "manual",
+      "shiftTime": 0.32,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "assistedTwoWheeler": true
+  }
+]

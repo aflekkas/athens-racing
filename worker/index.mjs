@@ -1,3 +1,6 @@
+import { arenaAccountStatus } from './account-arena.mjs';
+import { accounts } from './accounts.mjs';
+export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
 import { connectionProtocol, MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
@@ -11,6 +14,7 @@ import { createSqlLeaderboard } from './leaderboard.mjs';
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
+const carSpecs = catalogue.carSpecs || {};
 // Dynamic routes are never stored by a browser or shared cache (the offline service worker skips them too).
 const noStore = (response) => {
   if (response.status === 101 || response.headers.has('Cache-Control')) return response;
@@ -19,8 +23,15 @@ const noStore = (response) => {
 const json = (value, status = 200) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
 export default {
+  async scheduled(event, env) {
+    if (!env.ACCOUNTS) return;
+    const now=Date.now();
+    await env.ACCOUNTS.batch(['sessions','challenges','limits','invites'].map(table=>env.ACCOUNTS.prepare(`DELETE FROM ${table} WHERE expires<?`).bind(now)));
+  },
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
+    if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
     if (['/ws', '/health', '/api/lobbies', '/api/leaderboard'].includes(url.pathname)) {
       const origin = request.headers.get('Origin');
       if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
@@ -41,7 +52,7 @@ export class GameArena extends DurableObject {
     this.timer = null;
     this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars);
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS post_limits (ip TEXT PRIMARY KEY, at INTEGER NOT NULL, count INTEGER NOT NULL)');
-    this.core = createGameCore({ maps, cars, nitrousCars, leaderboard: this.leaderboard });
+    this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
     // Auto-response avoids waking the object for optional idle keepalives.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('keepalive', 'alive'));
     ctx.blockConcurrencyWhile(() => this.event('restore', async () => {
@@ -112,6 +123,9 @@ export class GameArena extends DurableObject {
         this.attach(server);
         await this.persist();
         return new Response(null, { status: 101, webSocket: client });
+      }
+      if (path === '/api/account/live') {
+        return json(arenaAccountStatus(this.core, url));
       }
       if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);

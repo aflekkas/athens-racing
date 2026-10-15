@@ -73,7 +73,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     progress('BUILDING TERRAIN', .25); await frameYield();
     const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
     const baked = await loadBakedWorld(map, network);
-    const terrainOptions = { coastal, farmland: map.id === 'megara', network };
+    const terrainOptions = { coastal, farmland: map.id === 'megara', network, beachAreas: map.data.areas?.beach || [] };
     const ter = still(() => baked ? restoreBakedTerrain(baked.terrain, map.terrain, network, group, terrainOptions) : buildTerrain(map.terrain, route, [], group, terrainOptions), 'terrain');
     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
     if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
