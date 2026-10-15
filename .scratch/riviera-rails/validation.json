@@ -1,0 +1,30 @@
+{
+  "base": "b7bd65445931c58a9eea5131704fd9b584a776fa",
+  "gatedBase": "ae241145355f0b0181062bef38207cc326b7762e",
+  "laterDocumentationChanges": [
+    "docs/TODO.md"
+  ],
+  "gatedCandidate": "e9ebf0d948a5864affb7d960aad993422c96b748",
+  "checks": {
+    "npm-test": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  },
+  "ownedBlobs": {
+    "src/road.js": "c8bc2bd6a26349e062e57ba903b5377c1478fe41",
+    "src/riviera-guardrails.js": "9355f832280ab5893e3a21499106f99caff75551",
+    "src/riviera-guardrail-mesh.js": "b5becd4ed7572e8a36a183ad359f2de85ee62c19",
+    "tools/riviera-rails.test.mjs": "eeb05825f04551bf56d652f57b88315d4f9c1b02",
+    "tools/riviera-rails-capture.mjs": "eff18b6eb6f25e7d8891138157f6380ffdbc6342",
+    "tools/riviera-rails.md": "e1cfeb819e80794897fd40a6f7aab4d91cd4ecbb",
+    "package.json": "1a050aa0c0d51e8695dd202fa0d3d622398ae19f",
+    "CHANGELOG.md": "57816fd1526e658db3b69d1c394ab26ad8ea9a4d",
+    "assets/changelog/README.md": "94ab6aa9a221e54ad76d4aede863fc617223c1f5",
+    "assets/changelog/2026.10.15.3/riviera-rails.webp": "5d31deb541eea426829561ba03c97437f4cfdcaf"
+  },
+  "browserErrors": [],
+  "notes": "All shipped code, tests, package configuration, changelog and WebP match the clean-archive gated candidate. Only evidence files are added after validation."
+}

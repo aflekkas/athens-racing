@@ -1,0 +1,17 @@
+TAP version 13
+# Subtest: Riviera wide drop protection, access gaps, grounded meshes and sliding contact
+ok 1 - Riviera wide drop protection, access gaps, grounded meshes and sliding contact
+  ---
+  duration_ms: 36039.847374
+  type: 'test'
+  ...
+# {"runs":15,"metres":2602,"chunks":18,"postChunks":24,"posts":613,"triangles":18214,"example":{"s":2860,"side":1,"u":9.01,"drops":[1.9849481453809972,5.99203034054247,9.118237986728928],"blocked":false,"want":true}}
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 36518.937543

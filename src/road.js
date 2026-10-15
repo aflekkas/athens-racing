@@ -2,6 +2,7 @@
 // curbs, pavements/shoulders, planted median, guard rails and road furniture.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildRivieraRails } from './riviera-guardrail-mesh.js';
 import { REFLECT_LAYER } from './env.js';
 import { clamp, smoothstep, canvasTex, CellInstances, M, RNG, lerp } from './util.js';
 import { LANE_W } from './map.js';
@@ -358,45 +359,18 @@ function buildFurniture(map, group, heightC, assets) {
   }
   lampPole.build(group); lampArm.build(group); lampHeadI.build(group);
 
-  // -- guard rail (W-beam) on the sea side of the cliff road and wherever the drop is steep
-  const railPos = [], railNor = [];
-  const postGeo = new THREE.BoxGeometry(0.12, 0.9, 0.08); postGeo.translate(0, 0.45, 0);
-  const posts = new CellInstances(postGeo, darkMetal, { shadow: false, far: 500 });
-  const reflGeo = new THREE.BoxGeometry(0.1, 1.0, 0.1); reflGeo.translate(0, 0.5, 0);
-  const reflPosts = new CellInstances(reflGeo, white, { shadow: false, far: 500 });
-  const railRuns = [];
-  for (const side of [1, -1]) {
-    let run = null;
-    for (let s = 0; s <= route.length; s += 2) {
-      const urb = route.urban(s);
-      const u = route.edge(s) + ROAD.gutter + ROAD.sidewalk(route, s, side) + 0.25;
-      route.point(s, side * u, pt);
-      const drop = route.surfaceY(s, side * u) - heightC(pt.x + 0, pt.z) ;
-      const p2 = route.point(s, side * (u + 6), new THREE.Vector3());
-      const drop2 = route.surfaceY(s, side * u) - heightC(p2.x, p2.z);
-      const want = (urb < 0.5 && (side > 0 ? route.seaR(s) < 90 : false)) || (drop2 > 2.2 && urb < 0.8);
-      if (want && !assets.network?.mouth(s, side, 3)) { if (!run) { run = []; railRuns.push({ side, pts: run }); } run.push({ s, u, p: pt.clone() }); }
-      else run = null;
-      if (want && !assets.network?.mouth(s, side, 3) && s % 4 === 0) { const f = route.frame(s, {}); posts.addTRS(pt.x, pt.y - 0.05, pt.z, Math.atan2(f.tx, f.tz), 1); }
-      // white reflector posts along the cliff road's inland edge
-      if (!want && urb < 0.5 && s % 50 === 0) { const f = route.frame(s, {}); reflPosts.addTRS(pt.x, pt.y - 0.05, pt.z, Math.atan2(f.tx, f.tz), 1); }
-    }
+  // Selective coastal drop protection shares its runs with Ground collision.
+  const railRuns = buildRivieraRails(map, group, heightC, assets, ROAD);
+  const reflGeo = new THREE.BoxGeometry(.1, 1, .1); reflGeo.translate(0, .5, 0);
+  const reflPosts = new CellInstances(reflGeo, white, {shadow:false, far:500});
+  for (const side of [-1, 1]) for (let s=0; s<route.length; s+=50) {
+    if (route.urban(s)>=.5 || assets.network?.mouth(s,side,3) || railRuns.some(r=>r.side===side&&s>=r.pts[0].s&&s<=r.pts.at(-1).s)) continue;
+    const u=route.edge(s)+ROAD.gutter+ROAD.sidewalk(route,s,side)+.14;
+    route.point(s,side*u,pt); const f=route.frame(s,{});
+    const y=route.surfaceY(s,side*(route.edge(s)+ROAD.gutter))+ROAD.curbH(route,s);
+    reflPosts.addTRS(pt.x,y,pt.z,Math.atan2(f.tx,f.tz),1);
   }
-  posts.build(group); reflPosts.build(group);
-  assets.rails = railRuns; // the only hard barriers along the road (see ground.js)
-  const prof = [[0, 0.52], [0.05, 0.55], [0.05, 0.62], [0, 0.66], [0, 0.72], [0.05, 0.76], [0.05, 0.83], [0, 0.86]];
-  for (const run of railRuns) {
-    if (run.pts.length < 3) continue;
-    const pos = [], idx = [];
-    run.pts.forEach((q, r) => {
-      const f = route.frame(q.s, {});
-      for (const [o, h] of prof) { const u = run.side * (q.u - 0.08 + o); route.point(q.s, u, pt); pos.push(pt.x, q.p.y + h - 0.05, pt.z); }
-      if (r > 0) for (let c = 0; c + 1 < prof.length; c++) { const a = (r - 1) * prof.length + c, b = a + 1, d = a + prof.length, e = d + 1; if (run.side > 0) idx.push(a, d, b, b, d, e); else idx.push(a, b, d, b, e, d); }
-    });
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
-    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: '#b9bec4', metalness: 0.9, roughness: 0.3, side: THREE.DoubleSide }));
-    m.castShadow = true; m.receiveShadow = true; group.add(m);
-  }
+  reflPosts.build(group);
 
   // -- OSM furniture: crossings and bus stops (the signalised junctions are built by signals.js)
   const crossings = [], stops = [], stopsO = [];
