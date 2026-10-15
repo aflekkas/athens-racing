@@ -729,7 +729,7 @@ async function shareResult() {
   try { ui.toast(await shareResultCard({ screenshot: G.resultPhoto, mapName: map.definition?.name,
     routeName: r.closed ? `${r.laps} LAPS · ${r.reverse ? 'REVERSE' : 'FORWARD'}` : `${r.fromName} → ${r.toName}`,
     carName: res.carName || player.spec.name, time: res.time, position: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === multiplayer.id) + 1 : res.position,
-    field: multiplayer.active ? multiplayer.lobby.players.length : res.field, pb: res.personalBest, date: res.date, url: location.host })); }
+    field: multiplayer.active ? multiplayer.lobby.players.length : res.field, pb: res.personalBest, date: res.date, url: new URL(document.querySelector('link[rel="canonical"]')?.href || location.href).host })); }
   catch (error) { ui.toast(error.message, { tone: 'bad' }); }
 }
 const MENU_STATES = ['menu', 'paused', 'results', 'garage'];

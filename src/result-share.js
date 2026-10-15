@@ -6,12 +6,13 @@ export function captureResultFrame(source) {
   const copy = document.createElement('canvas'); copy.width = source.width; copy.height = source.height;
   copy.getContext('2d').drawImage(source, 0, 0); return copy;
 }
-export async function renderResultCard({ screenshot, mapName, routeName, carName, time, position, field, pb, date = new Date().toISOString(), url = 'athens-street-racers.com' }) {
+export async function renderResultCard({ screenshot, mapName, routeName, carName, time, position, field, pb, date = new Date().toISOString(), url = 'athens-street-racers.aflekkas.workers.dev' }) {
   if (!screenshot?.width) throw new Error('Finish photo is not ready. Try again.');
   const canvas = document.createElement('canvas'); canvas.width = 1200; canvas.height = 900;
   const c = canvas.getContext('2d'); c.fillStyle = '#080e15'; c.fillRect(0, 0, 1200, 900);
   const h = 560, scale = Math.max(1200 / screenshot.width, h / screenshot.height);
-  c.drawImage(screenshot, (1200 - screenshot.width * scale) / 2, (h - screenshot.height * scale) / 2, screenshot.width * scale, screenshot.height * scale);
+  c.save(); c.beginPath(); c.rect(0, 0, 1200, h); c.clip();
+  c.drawImage(screenshot, (1200 - screenshot.width * scale) / 2, (h - screenshot.height * scale) / 2, screenshot.width * scale, screenshot.height * scale); c.restore();
   const g = c.createLinearGradient(0, 330, 0, 585); g.addColorStop(0, 'rgba(8,14,21,0)'); g.addColorStop(1, '#080e15'); c.fillStyle = g; c.fillRect(0, 330, 1200, 260);
   c.fillStyle = '#55e1db'; c.fillRect(48, 580, 5, 210);
   const text = (value, x, y, size, color = '#f2f6fa', max = 1080) => { c.fillStyle = color; c.font = `600 ${size}px sans-serif`; c.fillText(String(value), x, y, max); };
