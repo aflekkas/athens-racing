@@ -11,7 +11,7 @@ from shapely.ops import polygonize, unary_union
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / 'tools/maps/attica/source.json.gz'
-WEST, SOUTH, EAST, NORTH = 23.40, 37.70, 24.50, 38.24
+WEST, SOUTH, EAST, NORTH = 23.00, 37.70, 24.50, 38.24
 WIDTH = 1500
 merc = lambda lat: math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
 SPAN = math.radians(EAST - WEST)
@@ -56,7 +56,7 @@ def fetch():
             lon,lat=inverse(i/(gw-1)*WIDTH,j/(gh-1)*HEIGHT); xx,yy=tx(lon),ty(lat)
             dem[j,i]=rasters[(int(xx),int(yy))][min(255,int(yy%1*256)),min(255,int(xx%1*256))]
     SOURCE.parent.mkdir(parents=True,exist_ok=True)
-    source={'bounds':[WEST,SOUTH,EAST,NORTH],'size':[WIDTH,HEIGHT],'date':'2026-10-14','elements':elements,'land':land,'vectorExtension':'https://build.protomaps.com/20261013.pmtiles','dem':{'width':gw,'height':gh,'h':np.rint(dem).astype(int).ravel().tolist()}}
+    source={'bounds':[WEST,SOUTH,EAST,NORTH],'size':[WIDTH,HEIGHT],'date':'2026-10-15','elements':elements,'land':land,'vectorExtension':'https://build.protomaps.com/20261013.pmtiles','dem':{'width':gw,'height':gh,'h':np.rint(dem).astype(int).ravel().tolist()}}
     SOURCE.write_bytes(gzip.compress(json.dumps(source,separators=(',',':')).encode(),mtime=0)); print('Source snapshot',SOURCE.stat().st_size,flush=True)
 
 def build():
@@ -65,7 +65,7 @@ def build():
     coasts=[LineString(e['p']) for e in elements if e['t'].get('natural')=='coastline']
     # Use the shipped geographic race routes and corridor elevation data.
     routes={}; terrain=[]
-    for id,file,binfile in [('riviera','data/map.json','data/terrain.bin'),('penteli','data/maps/penteli/map.json','data/maps/penteli/terrain.bin')]:
+    for id,file,binfile in [('riviera','data/map.json','data/terrain.bin'),('megara','data/maps/megara/map.json','data/maps/megara/terrain.bin'),('penteli','data/maps/penteli/map.json','data/maps/penteli/terrain.bin')]:
         d=json.loads((ROOT/file).read_bytes()); p=d['proj']
         convert=lambda x,z:project(p['lon0']+x/p['mlon'],p['lat0']-z/p['mlat'])
         pts=list(LineString([convert(x,z) for x,z in zip(d['route']['x'],d['route']['z'])]).simplify(.35).coords)

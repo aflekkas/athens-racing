@@ -15,7 +15,7 @@ export function fitTracks(view, asset, bounds, padding = .08) {
   return clampCamera({ scale, x: (asset.width / 2 - (bounds[0] + bounds[2]) / 2) * scale, y: (asset.height / 2 - (bounds[1] + bounds[3]) / 2) * scale }, view, asset);
 }
 export function focusTrack(view, asset, bounds, home, pin) {
-  // A restrained camera move; keep both routes inside a 6% safe margin.
+  // A restrained camera move; keep all routes inside a 6% safe margin.
   const scale = home.scale * 1.035;
   const cx = (bounds[0] + bounds[2]) / 2, cy = (bounds[1] + bounds[3]) / 2;
   const x = (asset.width / 2 - (cx + (pin[0] - cx) * .08)) * scale;
