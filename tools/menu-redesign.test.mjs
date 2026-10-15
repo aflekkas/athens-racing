@@ -56,3 +56,24 @@ test('title hero waits for two frames and idle; cancelling a stale idle callback
     await idleCallback(); // Importing THREE/renderer here would fail in this Node-only test.
   } finally {for(const key of keys)if(previous[key]===undefined)delete globalThis[key];else globalThis[key]=previous[key];}
 });
+
+import { mountGarageThumbnails, thumbnailKey } from '../src/ui/garage-thumbnails.js';
+function thumbnailFixture(paint, cache = new Map(), extra = {}) {
+  const img={dataset:{carThumb:'mini'},isConnected:true,decode:async()=>{}},root={querySelector:()=>null,querySelectorAll:()=>[img]};
+  let observe, allocations=0, disposed=0;const paints=[];
+  class Observer {constructor(callback){observe=callback;}observe(){}unobserve(){}disconnect(){}}
+  const view=mountGarageThumbnails(root,[{id:'mini'}],()=>paint,{Observer,build:'test',read:async key=>cache.get(key),write:async(key,blob)=>cache.set(key,blob),createStudio:async()=>{allocations++;return {canvas:{},setVehicle:(_spec,p)=>paints.push(p),draw:async()=>{},dispose:()=>disposed++};},capture:async()=>new Blob(['car']),...extra});
+  return {img,view,paints,get allocations(){return allocations;},get disposed(){return disposed;},enter(){observe([{target:img,isIntersecting:true}]);}};
+}
+test('garage thumbnails allocate only after intersection and render the saved paint',async()=>{
+  const f=thumbnailFixture('#C02624');assert.equal(f.allocations,0);f.enter();await f.view.whenIdle();assert.equal(f.allocations,1);assert.deepEqual(f.paints,['#C02624']);assert.equal(f.img.dataset.thumbReady,'true');assert.equal(f.img.dataset.thumbKey,'test/mini/c02624');f.view.dispose();assert.equal(f.disposed,1);
+});
+test('a cached car and paint needs no renderer; a new paint gets a distinct thumbnail',async()=>{
+  const cache=new Map(),first=thumbnailFixture('#c02624',cache);first.enter();await first.view.whenIdle();first.view.dispose();
+  const warm=thumbnailFixture('#c02624',cache);warm.enter();await warm.view.whenIdle();assert.equal(warm.allocations,0);assert.equal(warm.img.dataset.thumbReady,'true');warm.view.dispose();
+  const blue=thumbnailFixture('#1e6384',cache);blue.enter();await blue.view.whenIdle();assert.equal(blue.allocations,1);assert.equal(cache.size,2);assert.notEqual(thumbnailKey('mini','#c02624','test'),thumbnailKey('mini','#1e6384','test'));blue.view.dispose();
+});
+test('leaving the garage during a lazy studio import disposes it without rendering',async()=>{
+  let release,draws=0,disposed=0;const studio={setVehicle(){},draw:async()=>draws++,dispose:()=>disposed++};
+  const f=thumbnailFixture('#fff',new Map(),{createStudio:()=>new Promise(resolve=>{release=resolve;})});f.enter();await new Promise(resolve=>setTimeout(resolve,0));f.view.dispose();release(studio);await f.view.whenIdle();assert.equal(draws,0);assert.equal(disposed,1);assert.equal(f.img.src,undefined);
+});

@@ -48,22 +48,22 @@ function trimBrowser(c,model,trims,body,available) {
   <div class="car-trim-pips" role="img" aria-label="Trim ${at+1} of ${trims.length}">${trims.map((id,i)=>`<i class="${i===at?'on':''}"></i>`).join('')}</div></div>
   ${C.button({icon:'caret-right',act:'carTrimNext',variant:'ghost',disabled:trims.length<2,attrs:{'aria-label':'Next trim',title:'Next trim · D / RB'}})}</div>`;
 }
-export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
+export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules, road = 'ATHENS RIVIERA' } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
     const list = filterCars(CARS, filters).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
-    return C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
-      body: `<div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
+    return C.screen({ appearance: 'racing', road, car: c.name, cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
+      body: `<div class="garage-intro"><div><span class="label">YOUR COLLECTION / ATTICA, GREECE</span><h3>FIND YOUR NEXT DRIVE.</h3><span class="garage-intro__selected">READY IN YOUR GARAGE · ${esc(c.name)}</span></div>${C.roadSign(undefined,road)}</div><div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
       ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
       ${C.select({ key: 'drive', label: 'DRIVE', value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
       ${C.select({ key: 'power', label: 'POWER', value: filters.power || 'all', options: [['all', 'ALL HP'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
       ${C.select({ key: 'sort', label: 'SORT', value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>
       <div class="catalog-count label">${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}</div>
       <div class="car-grid scroll-y">${list.map(({ car, index: i }, n) => {
-        const group = carCategory(car), head = n === 0 || carCategory(list[n - 1].car) !== group ? `<h3 class="car-group label">${classLabel(group)}<span>${list.filter(x => carCategory(x.car) === group).length}</span></h3>` : '';
+
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
         const reason = locked && !def?.car ? ruleReason(car, rules) : null;
-        return head + C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
+        return C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
           attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
           media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(carModel(car)?.name || car.name),
           text: `${classLabel(carCategory(car))} · ${carModel(car).bodies ? carModel(car).bodies[0][2].length : carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}${carModel(car).bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
@@ -86,37 +86,13 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
     </section></div>` });
 }
 
-// A single disposable renderer renders visible catalogue thumbnails; no per-card WebGL contexts.
-const thumbs = new Map();
+// Import and allocate only after the catalogue is mounted; one renderer for visible cars.
 export function mountCarGrid(root) {
-  let stopped = false, frame, renderer, observer;
-  const pending = [], scene = new THREE.Scene(); scene.background = new THREE.Color('#141b23');
-  scene.add(new THREE.HemisphereLight('#edf3ff', '#444650', 3));
-  const keyLight = new THREE.DirectionalLight('#fff', 4); keyLight.position.set(-4, 6, -5); scene.add(keyLight);
-  const camera = new THREE.PerspectiveCamera(32, 2, .1, 40); camera.position.set(6, 3, 7); camera.lookAt(0, .6, 0);
-  const run = () => {
-    if (stopped || !pending.length) return;
-    const img = pending.shift(), c = CARS.find(c => c.id === img.dataset.carThumb);
-    if (!c) return;
-    const key = c.id + savedPaint(c);
-    if (thumbs.has(key)) img.src = thumbs.get(key);
-    else {
-      try {
-        renderer ||= new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-        renderer.setSize(480, 240); renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        const model = new CarModel(c); model.root.rotation.y = -.45; scene.add(model.root);
-        const framing=showroomRig(c,2,32,Math.hypot(6,3,7));camera.position.set(6,3,7).normalize().multiplyScalar(framing.distance);camera.lookAt(0,c.nativeFleet?framing.targetY:.6,0);
-        renderer.render(scene, camera); const url = renderer.domElement.toDataURL('image/png'); img.src = url; thumbs.set(key, url);
-        model.root.removeFromParent(); model.disposeDamage?.();
-        // The models share geometry/materials with the game; only thumbnail-specific geometry may be released.
-        const geo = new Set(); model.root.traverse(o => { if (o.geometry && !o.geometry.userData.shared) geo.add(o.geometry); }); geo.forEach(g => g.dispose());
-      } catch { img.alt = c.short; }
-    }
-    frame = requestAnimationFrame(run);
-  };
-  observer = new IntersectionObserver(entries => { for (const e of entries) if (e.isIntersecting) { pending.push(e.target); observer.unobserve(e.target); } cancelAnimationFrame(frame); frame = requestAnimationFrame(run); }, { root: root.querySelector('.car-grid'), rootMargin: '100px' });
-  root.querySelectorAll('[data-car-thumb]').forEach(img => observer.observe(img));
-  return { dispose() { stopped = true; cancelAnimationFrame(frame); observer.disconnect(); renderer?.dispose(); renderer?.forceContextLoss(); } };
+  let stopped = false, view;
+  void import('./ui/garage-thumbnails.js').then(({mountGarageThumbnails}) => {
+    if (!stopped && root.isConnected) view = mountGarageThumbnails(root, CARS, savedPaint);
+  });
+  return { get thumbnailInfo() { return view?.info; }, dispose() { stopped = true; view?.dispose(); } };
 }
 /** Uses the live Menu instance supplied by main.js; selection returns a car ID without restarting the session. */
 export function openCarPicker(options = {}) {

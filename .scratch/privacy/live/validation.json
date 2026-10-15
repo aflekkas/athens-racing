@@ -1,0 +1,100 @@
+{
+  "checkedAt": "2026-10-15T20:41:11.481Z",
+  "routes": [
+    {
+      "url": "https://athensracing.com/privacy",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "gameBootScript": false,
+      "analyticsDisclosure": false
+    },
+    {
+      "url": "https://athensracing.com/terms",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "gameBootScript": false
+    },
+    {
+      "url": "https://athensracing.com/sitemap.xml",
+      "status": 200,
+      "legalPagesListed": true
+    },
+    {
+      "url": "https://staging.athensracing.com/privacy",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "gameBootScript": false,
+      "analyticsDisclosure": true
+    },
+    {
+      "url": "https://staging.athensracing.com/terms",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "gameBootScript": false
+    },
+    {
+      "url": "https://staging.athensracing.com/sitemap.xml",
+      "status": 200,
+      "legalPagesListed": true
+    },
+    {
+      "url": "https://www.athensracing.com/?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/privacy?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/privacy?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/terms?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/terms?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/style.css?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/style.css?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/assets/share/og-image.jpg?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/assets/share/og-image.jpg?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/arbitrary/path?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/arbitrary/path?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/api/auth/google/start?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/api/auth/google/start?from=privacy-check&return=%2Frace%3Fx%3D1"
+    },
+    {
+      "url": "https://www.athensracing.com/api/auth/google/callback?from=privacy-check&return=%2Frace%3Fx%3D1",
+      "status": 301,
+      "location": "https://athensracing.com/api/auth/google/callback?from=privacy-check&return=%2Frace%3Fx%3D1"
+    }
+  ],
+  "releases": {
+    "athensracing.com": {
+      "sha": "e42dd03",
+      "version": "2026.10.15.3",
+      "build": "a1657e6a2553"
+    },
+    "staging.athensracing.com": {
+      "sha": "56b2c91",
+      "version": "2026.10.15.3",
+      "build": "90284d48c335"
+    }
+  },
+  "productionDisclosurePending": true,
+  "implementationCommit": "6072314262b1dcdd5f5f249304e731057b5049bc",
+  "productionCommit": "e42dd03fcd572b7a964c8cff41a58b824d5df908",
+  "stagingCommit": "56b2c91a3e52f5c6919e990d2ed24dd477c8f576",
+  "allSixImplementationGatesPassed": true,
+  "releaseFailure": "2026-10-15T20:39:27Z 56b2c91 FAILED: deploy production; the 15-minute deploy step failed during asset baking under shared VPS CPU load.",
+  "screenshots": "../privacy-1280.png, ../privacy-390.png, ../terms-1280.png, ../terms-390.png; in-game links also captured at both widths."
+}

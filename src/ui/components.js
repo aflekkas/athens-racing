@@ -132,10 +132,19 @@ const clockText = () => { const d = new Date(); return String(d.getHours()).padS
 if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, a title row (title + right slot), a body that scrolls, a footer of key hints */
-export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '' } = {}) {
-  return `<div class="scr ${cls}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
-    <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', appearance = '', road = 'ATHENS RIVIERA', car = 'YOUR GARAGE' } = {}) {
+  const racing = appearance === 'racing';
+  return `<div class="scr ${cls} ${racing ? 'racing-ui' : ''}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
+    <div class="scr__body">${body}</div><footer class="scr__foot">${racing ? infoStrip(road, car) : ''}${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
+/** Racing appearance is opt-in during the three-screen design review. */
+export const infoStrip = (road, car) => `<div class="road-strip"><div><small>YOUR NEXT ROAD</small><b>${esc(road)}</b></div><div><small>READY TO DRIVE</small><b>${esc(car)}</b></div><span>${/RIVIERA/.test(road) ? '37°49′N / 23°47′E' : 'ATTICA / GREECE'}</span></div>`;
+export const roadSign = (title, sub = 'ATHENS RIVIERA') => `<div class="racing-road-sign"><b>${esc(title || (/MEGARA/.test(sub) ? 'ΜΕΓΑΡΑ' : /PENTELI/.test(sub) ? 'ΠΕΝΤΕΛΗ' : 'ΑΘΗΝΑΪΚΗ ΡΙΒΙΕΡΑ'))}</b><span>${esc(sub)} ↗</span></div>`;
+export const routeHero = ({title, name, subtitle = 'VOULIAGMENI → LOMVARDA', preview = './assets/maps/riviera.svg', eyebrow = 'THE ROAD AHEAD', content = ''} = {}) => {
+  const label = title || name || 'ATHENS RIVIERA';
+  const greek = /MEGARA/.test(label) ? 'ΜΕΓΑΡΑ' : /PENTELI/.test(label) ? 'ΠΕΝΤΕΛΗ' : 'ΑΘΗΝΑΪΚΗ ΡΙΒΙΕΡΑ';
+  return `<div class="route-hero"><span class="route-hero__eyebrow">${esc(eyebrow)}</span>${roadSign(greek,label)}<img src="${esc(preview)}" alt="Route preview: ${esc(label)}"><div class="route-hero__copy"><h3>${esc(label)}</h3><p>${esc(subtitle)}</p>${content}</div><span class="route-hero__coordinates">ATTICA, GREECE</span></div>`;
+};
 /** the ASR mark (assets/icon.svg, also the favicon) */
 export const brandMark = (cls = '') => `<img class="brand-mark ${cls}" src="${new URL('../../assets/icon.svg', import.meta.url).href}" alt="" draggable="false"/>`;
 export const wordmark = (cls = '') => `<span class="wordmark ${cls}"><b>ATHENS</b><b>RACING</b></span>`;
@@ -183,7 +192,7 @@ export function tabs({ key, value, options, cls = '', hint = true, vertical = fa
   if (vertical) cls += ' tabs--rail';
   const h = hint ? `<span class="tabs__hint on-key">${kbd('Q')}</span><span class="tabs__hint on-pad">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key">${kbd('E')}</span><span class="tabs__hint on-pad">${kbd('RB', true)}</span>` : '';
-  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
+  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic], index) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}<small class="tab__number">${String(index+1).padStart(2,'0')}</small>${l}</span>`).join('')}${h2}</div>`;
 }
 
 // ------------------------------------------------------------------ values
@@ -353,7 +362,7 @@ function layer() {
 function openListbox(anchorEl, { options, value, onPick, anchor } = {}) {
   closeListbox();
   const opts = options || optionsOf(anchorEl), cur = String(value ?? anchorEl.dataset.value);
-  const box = document.createElement('div'); box.className = 'listbox'; box.setAttribute('role', 'listbox');
+  const box = document.createElement('div'); box.className = 'listbox' + (anchorEl?.closest?.('.racing-ui') ? ' listbox--racing' : ''); box.setAttribute('role', 'listbox');
   box.innerHTML = opts.map(([v, l, o], i) => `<div class="listbox__opt ${String(v) === cur ? 'sel' : ''} ${o?.disabled ? 'dis' : ''}" role="option" data-i="${i}" aria-selected="${String(v) === cur}"><span>${l}</span>${icon('check')}</div>`).join('');
   const scrim = document.createElement('div'); scrim.style.cssText = 'position:fixed;inset:0;pointer-events:auto';
   scrim.addEventListener('pointerdown', (e) => { if (!box.contains(e.target)) { e.preventDefault(); closeListbox(); } });

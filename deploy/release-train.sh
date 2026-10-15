@@ -47,7 +47,7 @@ smoke() { timeout 600 node tools/deploy-smoke.mjs "$1" --race --map=riviera > sm
 ENVS="staging production"; [ -n "$HOLD" ] && ENVS=staging
 for env in $ENVS; do
   url=https://athensracing.com; [ $env = staging ] && url=https://staging.athensracing.com
-  ASR_GIT_SHA=$S timeout 900 node_modules/.bin/wrangler deploy --env $env > deploy.log 2>&1 || fail "deploy $env" deploy.log
+  ASR_GIT_SHA=$S timeout 2700 node_modules/.bin/wrangler deploy --env $env > deploy.log 2>&1 || fail "deploy $env" deploy.log
   sleep 20; smoke $url || fail "smoke $env" smoke.log
   log "$S live on $env"
 done

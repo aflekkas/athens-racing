@@ -1,0 +1,21 @@
+[browser-slot] slot 1 acquired (ticket 976, waited 0s)
+BOOT before
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+READY before
+SHOT {"phase":"before","s":2860,"u":2.9999999999999214,"camera":[2320.894594214747,33.6711269941089,3765.602928894768],"calls":446,"triangles":1810656}
+SHOT {"phase":"before","s":8200,"u":3.000000000000091,"camera":[5077.03579218116,15.264326286221237,2740.851413242709],"calls":404,"triangles":2413239}
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+BOOT after
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404
+READY after
+SHOT {"phase":"after","s":2860,"u":2.9999999999999214,"camera":[2320.894594214747,33.6711269941089,3765.602928894768],"calls":441,"triangles":1794620,"rails":{"runs":15,"metres":2622,"chunks":17,"postChunks":24,"posts":618,"triangles":18354}}
+SHOT {"phase":"after","s":8200,"u":3.000000000000091,"camera":[5077.03579218116,15.264326286221237,2740.851413242709],"calls":405,"triangles":2399825,"rails":{"runs":15,"metres":2622,"chunks":17,"postChunks":24,"posts":618,"triangles":18354}}
+CONSOLE WebSocket connection to 'ws://127.0.0.1:41677/ws?protocol=7' failed: Error during WebSocket handshake: Unexpected response code: 404

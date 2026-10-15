@@ -1,0 +1,147 @@
+   0.0s  riviera quick 10307 m · player z4 pace slow · grid STAVROS(mini), ELENI(carrera) · traffic 74
+   0.0s  ELENI passes PLAYER at -4 m (straight, 0 km/h, Δu 3.3 m)
+   0.0s  ELENI passes STAVROS at -4 m (straight, 0 km/h, Δu 3.3 m)
+  15.7s  ELENI starts pass (pull) on traffic at 285 m, sweeper R191
+  26.6s  ELENI pass ends (done)
+  32.7s  STAVROS starts pass (pull) on traffic at 537 m, sweeper R135
+  37.2s  ELENI starts pass (pull) on traffic at 658 m, straight
+  39.9s  STAVROS pass ends (done)
+  40.7s  STAVROS starts pass (pull) on traffic at 717 m, straight
+  41.2s  ELENI pass ends (done)
+  43.8s  ELENI starts pass (pull) on traffic at 837 m, straight
+  47.1s  ELENI pass ends (done)
+  48.6s  STAVROS pass ends (done)
+  54.3s  ELENI starts pass (pull) on traffic at 962 m, straight
+  54.7s  ELENI aborts a pass at 965 m (oncoming)
+  54.8s  ELENI pass ends (aborted)
+  54.8s  STAVROS starts pass (pull) on ELENI at 956 m, straight
+  55.2s  STAVROS aborts a pass at 959 m (oncoming)
+  55.8s  STAVROS pass ends (aborted)
+  57.6s  STAVROS starts pass (pull) on ELENI at 979 m, straight
+  67.0s  STAVROS passes ELENI at 1014 m (straight, 45 km/h, Δu -2.5 m)
+  70.2s  ELENI starts pass (pull) on traffic at 1039 m, straight
+  73.7s  STAVROS pass ends (done)
+  74.5s  STAVROS starts pass (pull) on traffic at 1100 m, sweeper R237
+  78.8s  STAVROS aborts a pass at 1134 m (stall)
+  78.9s  STAVROS pass ends (aborted)
+  82.4s  ELENI pass ends (done)
+  89.4s  ELENI starts pass (pull) on STAVROS at 1185 m, bend R80
+  90.8s  ELENI passes STAVROS at 1195 m (bend R68, 44 km/h, Δu -2.4 m)
+  91.2s  ELENI pass ends (done)
+  97.4s  STAVROS starts pass (pull) on traffic at 1202 m, bend R61
+ 103.3s  STAVROS pass ends (done)
+ 106.9s  STAVROS starts pass (pull) on traffic at 1289 m, sweeper R221
+ 109.9s  STAVROS aborts a pass at 1311 m (room)
+ 111.2s  ELENI starts pass (pull) on traffic at 1363 m, bend R47
+ 112.8s  STAVROS pass ends (aborted)
+ 115.8s  ELENI pass ends (done)
+ 116.4s  STAVROS starts pass (pull) on traffic at 1359 m, bend R44
+ 120.3s  STAVROS aborts a pass at 1397 m (room)
+ 121.2s  STAVROS pass ends (aborted)
+ 125.5s  STAVROS starts pass (pull) on traffic at 1444 m, sweeper R105
+ 136.5s  STAVROS pass ends (done)
+ 140.3s  ELENI starts pass (pull) on traffic at 1756 m, bend R82
+ 144.8s  ELENI pass ends (done)
+ 152.5s  STAVROS starts pass (pull) on traffic at 1754 m, bend R75
+ 155.0s  ELENI starts pass (pull) on traffic at 2089 m, straight
+ 157.6s  ELENI aborts a pass at 2165 m (room)
+ 157.8s  STAVROS pass ends (done)
+ 159.1s  ELENI pass ends (aborted)
+ 160.3s  ELENI starts pass (pull) on traffic at 2220 m, straight
+ 165.0s  ELENI pass ends (lost)
+ 170.0s  STAVROS starts pass (pull) on traffic at 2094 m, straight
+ 174.0s  STAVROS pass ends (done)
+ 176.4s  STAVROS starts pass (pull) on traffic at 2227 m, straight
+ 182.3s  STAVROS pass ends (done)
+ 189.0s  STAVROS starts pass (pull) on traffic at 2559 m, straight
+ 191.7s  STAVROS pass ends (done)
+ 194.7s  STAVROS starts pass (pull) on traffic at 2652 m, sweeper R93
+ 201.6s  STAVROS pass ends (done)
+ 207.6s  ELENI starts pass (pull) on traffic at 3457 m, straight
+ 208.0s  ELENI pass ends (lost)
+ 208.7s  STAVROS starts pass (pull) on traffic at 2966 m, sweeper R105
+ 211.2s  STAVROS pass ends (done)
+ 217.5s  STAVROS starts pass (pull) on traffic at 3147 m, sweeper R193
+ 223.7s  STAVROS pass ends (done)
+ 225.7s  ELENI starts pass (pull) on traffic at 3846 m, sweeper R191
+ 227.0s  ELENI pass ends (lost)
+ 227.8s  ELENI starts pass (pull) on traffic at 3890 m, sweeper R150
+ 230.0s  ELENI pass ends (lost)
+ 239.0s  ELENI starts pass (pull) on traffic at 4078 m, straight
+ 243.5s  ELENI aborts a pass at 4092 m (room)
+ 246.7s  ELENI pass ends (aborted)
+ 249.7s  ELENI starts pass (pull) on traffic at 4151 m, straight
+ 255.6s  ELENI aborts a pass at 4242 m (stall)
+ 263.1s  ELENI pass ends (aborted)
+ 275.0s  ELENI starts pass (pull) on traffic at 4544 m, straight
+ 277.2s  STAVROS starts pass (pull) on traffic at 4357 m, sweeper R111
+ 278.2s  ELENI pass ends (done)
+ 281.1s  ELENI starts pass (pull) on traffic at 4742 m, straight
+ 283.1s  STAVROS pass ends (done)
+ 285.2s  ELENI pass ends (done)
+ 296.2s  ELENI starts pass (pull) on traffic at 4933 m, straight
+ 298.8s  ELENI aborts a pass at 4941 m (stall)
+ 300.9s  STAVROS starts pass (pull) on traffic at 4691 m, straight
+ 302.5s  STAVROS aborts a pass at 4710 m (room)
+ 304.0s  STAVROS pass ends (aborted)
+ 312.3s  HIT scrape sev=0.7 civ#56 gtv at 4868 m u=3.0 by STAVROS
+ 312.4s  HIT scrape sev=0.5 civ#56 gtv at 4868 m u=3.0 by STAVROS
+ 312.6s  ELENI pass ends (done)
+ 313.5s  STAVROS starts pass (pull) on traffic at 4889 m, sweeper R113
+ 316.8s  STAVROS aborts a pass at 4933 m (room)
+ 318.0s  STAVROS pass ends (aborted)
+ 319.7s  STAVROS starts pass (pull) on traffic at 4972 m, straight
+ 324.7s  STAVROS pass ends (done)
+ 327.5s  STAVROS starts pass (pull) on traffic at 5144 m, sweeper R151
+ 332.9s  STAVROS aborts a pass at 5239 m (stall)
+ 338.9s  STAVROS pass ends (aborted)
+ 345.9s  STAVROS starts pass (pull) on traffic at 5492 m, straight
+ 351.1s  STAVROS pass ends (done)
+ 358.3s  ELENI starts pass (pull) on traffic at 6381 m, straight
+ 360.9s  ELENI pass ends (done)
+ 363.5s  ELENI starts pass (pull) on traffic at 6509 m, straight
+ 369.0s  ELENI pass ends (done)
+ 381.7s  STAVROS starts pass (pull) on traffic at 6744 m, straight
+ 385.5s  STAVROS pass ends (done)
+ 387.2s  STAVROS starts pass (pull) on traffic at 6901 m, straight
+ 388.8s  ELENI starts pass (pull) on traffic at 7268 m, straight
+ 391.6s  STAVROS pass ends (done)
+ 391.8s  ELENI pass ends (done)
+ 392.3s  STAVROS starts pass (pull) on traffic at 7067 m, straight
+ 397.7s  STAVROS pass ends (done)
+ 398.1s  ELENI starts pass (pull) on traffic at 7598 m, straight
+ 401.9s  STAVROS starts pass (pull) on traffic at 7425 m, straight
+ 405.0s  ELENI aborts a pass at 7826 m (room)
+ 405.1s  ELENI pass ends (aborted)
+ 409.8s  STAVROS aborts a pass at 7671 m (room)
+ 410.0s  ELENI starts pass (pull) on traffic at 7943 m, straight
+ 411.0s  STAVROS pass ends (aborted)
+ 415.7s  ELENI pass ends (done)
+ 424.0s  STAVROS starts pass (pull) on traffic at 8038 m, straight
+ 431.1s  STAVROS pass ends (done)
+ 442.4s  STAVROS starts pass (pull) on traffic at 8514 m, sweeper R201
+ 449.2s  STAVROS pass ends (done)
+ 460.1s  ELENI starts pass (pull) on traffic at 9055 m, straight
+ 464.8s  ELENI pass ends (done)
+ 476.6s  ELENI starts pass (pull) on traffic at 9411 m, straight
+ 479.5s  ELENI aborts a pass at 9493 m (room)
+ 481.4s  ELENI pass ends (aborted)
+ 484.3s  STAVROS starts pass (pull) on traffic at 9340 m, sweeper R136
+ 485.1s  ELENI starts pass (pull) on traffic at 9608 m, straight
+ 489.9s  ELENI pass ends (done)
+ 490.5s  STAVROS pass ends (done)
+ 505.5s  STAVROS starts pass (pull) on traffic at 9916 m, sweeper R157
+ 508.9s  ELENI starts pass (pull) on traffic at 10144 m, straight
+ 510.4s  STAVROS pass ends (done)
+ 514.7s  STAVROS starts pass (pull) on ELENI at 10142 m, straight
+ 517.9s  STAVROS aborts a pass at 10155 m (oncoming)
+ 520.3s  ELENI pass ends (done)
+ 523.5s  STAVROS pass ends (aborted)
+ 527.2s  ELENI starts pass (pull) on traffic at 10292 m, straight
+ 527.7s  ELENI FINISHES 527.72 s
+ 529.0s  STAVROS FINISHES 528.98 s
+ 535.4s  ELENI aborts a pass at 10422 m (stall)
+ 535.4s  ELENI pass ends (aborted)
+ 537.0s  PLAYER FINISHES 537.05 s
+ 537.0s  SLOW [[14.57,"STAVROS",12,"-"],[61.3,"ELENI",6.7,"-"],[62.72,"STAVROS",6.2,"pull"],[65.78,"STAVROS",9.1,"along"],[66.85,"STAVROS",6.2,"along"]]
+ 537.0s  SUMMARY {"map":"riviera","label":"rails","playerMode":"slow","length":10307,"finish":{"PLAYER":537.05,"STAVROS":528.98,"ELENI":527.72},"classification":["ELENI","STAVROS","PLAYER"],"passes":4,"rivalPassesOnPlayer":1,"playerPasses":0,"rivalOnRival":3,"swapBacks":0,"aiMicrosPerUpdate":29.6,"aiWorstUpdateMs":11.95,"racerContacts":0,"trafficContacts":0,"cars":[{"name":"PLAYER","car":"z4","finish":537.05,"attempts":27,"aborts":5,"overtakes":22,"contacts":0,"wallFrames":0,"followSeconds":51.75,"maxStuckSeconds":11,"maxStopS":4.4},{"name":"STAVROS","car":"mini","finish":528.9833333333333,"attempts":31,"aborts":9,"overtakes":23,"contacts":0,"wallFrames":0,"followSeconds":44.5,"maxStuckSeconds":11.25,"maxStopS":4.4},{"name":"ELENI","car":"carrera","finish":527.7166666666667,"attempts":28,"aborts":8,"overtakes":19,"contacts":0,"wallFrames":0,"followSeconds":5.25,"maxStuckSeconds":3.25,"maxStopS":4.3}],"civilians":{"episodes":113,"maxStillS":40.7,"over8s":45,"over20s":19,"unheldOver8s":39,"longest":[{"id":41,"racerWait":0,"kind":"cle","s":947,"u":5.67,"t0":4.8,"dur":40.7,"why":"parked","whys":["parked:40.7"]},{"id":46,"racerWait":0,"kind":"corolla","s":902,"u":-5.67,"t0":5.1,"dur":39.4,"why":"parked","whys":["parked:39.4"]},{"id":55,"racerWait":0,"kind":"yaris","s":3017,"u":5.67,"t0":200.4,"dur":37.6,"why":"parked","whys":["parked:37.6"]},{"id":52,"racerWait":0,"kind":"truck","s":872,"u":5.62,"t0":6.9,"dur":35.2,"why":"parked","whys":["parked:35.0","task-park-in:0.2","task-park-wait:0.0"]},{"id":50,"racerWait":0,"kind":"huracan","s":9939,"u":-5.67,"t0":495.5,"dur":34.7,"why":"parked","whys":["parked:34.8"]},{"id":61,"racerWait":0.3,"kind":"panda","s":2591,"u":5.72,"t0":175.5,"dur":33.8,"why":"parked","whys":["parked:33.9"]},{"id":46,"racerWait":0,"kind":"corolla","s":876,"u":-5.67,"t0":50.6,"dur":32.8,"why":"parked","whys":["parked:32.8"]},{"id":57,"racerWait":0,"kind":"taxi","s":10334,"u":31.67,"t0":504.6,"dur":32.5,"why":"parked-off-road","whys":["parked-off-road:32.5"]},{"id":61,"racerWait":0,"kind":"panda","s":881,"u":5.72,"t0":3,"dur":29,"why":"parked","whys":["parked:29.0"]},{"id":52,"racerWait":8,"kind":"truck","s":10163,"u":5.67,"t0":490.1,"dur":28.3,"why":"parked","whys":["parked:28.4"]},{"id":54,"racerWait":0,"kind":"cle","s":4783,"u":6.92,"t0":264.7,"dur":26.2,"why":"parked","whys":["parked:26.2"]},{"id":60,"racerWait":0,"kind":"golf","s":2641,"u":5.72,"t0":173.2,"dur":25.9,"why":"parked","whys":["parked:25.9"]}],"maxFieldStallS":0,"civilianHits":2},"slowUpdates":5}

@@ -1,0 +1,19 @@
+{
+  "base": "ae241145355f0b0181062bef38207cc326b7762e",
+  "candidate": "e9ebf0d948a5864affb7d960aad993422c96b748",
+  "bare": "/tmp/riviera-head.33ip_zyk",
+  "gates": "/tmp/riviera-final-gates.lxoogtiq",
+  "index": "/tmp/riviera-index.p3v1k6ih",
+  "owned": [
+    "src/road.js",
+    "src/riviera-guardrails.js",
+    "src/riviera-guardrail-mesh.js",
+    "tools/riviera-rails.test.mjs",
+    "tools/riviera-rails-capture.mjs",
+    "tools/riviera-rails.md",
+    "package.json",
+    "CHANGELOG.md",
+    "assets/changelog/README.md",
+    "assets/changelog/2026.10.15.3/riviera-rails.webp"
+  ]
+}

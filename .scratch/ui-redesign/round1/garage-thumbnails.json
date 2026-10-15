@@ -1,0 +1,197 @@
+{
+  "info": {
+    "rendered": 23,
+    "cacheHits": 8,
+    "renderers": 1,
+    "peakGeometries": 333,
+    "peakTextures": 9
+  },
+  "cards": [
+    {
+      "id": "panda",
+      "key": "dev/panda/bd1626",
+      "title": "FIAT PANDA 169",
+      "bytes": 9672
+    },
+    {
+      "id": "jazz",
+      "key": "dev/jazz/dce4e7",
+      "title": "HONDA JAZZ GK",
+      "bytes": 8596
+    },
+    {
+      "id": "yaris",
+      "key": "dev/yaris/315476",
+      "title": "TOYOTA YARIS XP10",
+      "bytes": 8658
+    },
+    {
+      "id": "ibiza",
+      "key": "dev/ibiza/8d4948",
+      "title": "SEAT IBIZA 6K",
+      "bytes": 8376
+    },
+    {
+      "id": "golf",
+      "key": "dev/golf/526a83",
+      "title": "VOLKSWAGEN GOLF VII",
+      "bytes": 7670
+    },
+    {
+      "id": "aygo",
+      "key": "dev/aygo/dce2e5",
+      "title": "TOYOTA AYGO II",
+      "bytes": 7954
+    },
+    {
+      "id": "mini",
+      "key": "dev/mini/bd1626",
+      "title": "MINI F56 / F57",
+      "bytes": 9480
+    },
+    {
+      "id": "gr_yaris",
+      "key": "dev/gr_yaris/e7e8e3",
+      "title": "TOYOTA GR YARIS GXPA16",
+      "bytes": 8386
+    },
+    {
+      "id": "corolla",
+      "key": "dev/corolla/d2d5d3",
+      "title": "TOYOTA COROLLA E210 SALOON",
+      "bytes": 7518
+    },
+    {
+      "id": "taxi",
+      "key": "dev/taxi/eebd19",
+      "title": "ŠKODA OCTAVIA III 5E",
+      "bytes": 9234
+    },
+    {
+      "id": "superb",
+      "key": "dev/superb/25475b",
+      "title": "ŠKODA SUPERB III",
+      "bytes": 7570
+    },
+    {
+      "id": "cla",
+      "key": "dev/cla/111419",
+      "title": "MERCEDES-BENZ CLA C118",
+      "bytes": 7606
+    },
+    {
+      "id": "cle",
+      "key": "dev/cle/929b9f",
+      "title": "MERCEDES-BENZ CLE C236",
+      "bytes": 7738
+    },
+    {
+      "id": "gla",
+      "key": "dev/gla/b5bdc3",
+      "title": "MERCEDES-BENZ GLA H247",
+      "bytes": 8656
+    },
+    {
+      "id": "qashqai",
+      "key": "dev/qashqai/dce2e5",
+      "title": "NISSAN QASHQAI J11",
+      "bytes": 7376
+    },
+    {
+      "id": "z4",
+      "key": "dev/z4/22679d",
+      "title": "BMW Z4 G29",
+      "bytes": 9148
+    },
+    {
+      "id": "carrera",
+      "key": "dev/carrera/c6c9cb",
+      "title": "PORSCHE 911 991.1",
+      "bytes": 8308
+    },
+    {
+      "id": "huracan",
+      "key": "dev/huracan/ea701d",
+      "title": "LAMBORGHINI HURACÁN EVO",
+      "bytes": 9496
+    },
+    {
+      "id": "aventador_svj",
+      "key": "dev/aventador_svj/77b52c",
+      "title": "LAMBORGHINI AVENTADOR",
+      "bytes": 9050
+    },
+    {
+      "id": "gtv",
+      "key": "dev/gtv/b52125",
+      "title": "ALFA ROMEO 105 GTV",
+      "bytes": 9378
+    },
+    {
+      "id": "e36",
+      "key": "dev/e36/455948",
+      "title": "BMW 3 SERIES E36",
+      "bytes": 7832
+    },
+    {
+      "id": "dolphin",
+      "key": "dev/dolphin/dce2e5",
+      "title": "BYD DOLPHIN",
+      "bytes": 7718
+    },
+    {
+      "id": "atto3",
+      "key": "dev/atto3/dce2e5",
+      "title": "BYD ATTO 3",
+      "bytes": 7428
+    },
+    {
+      "id": "van",
+      "key": "dev/van/dce2e5",
+      "title": "FIAT DUCATO L2H2",
+      "bytes": 7396
+    },
+    {
+      "id": "truck",
+      "key": "dev/truck/dce2e5",
+      "title": "ISUZU NPR",
+      "bytes": 7688
+    },
+    {
+      "id": "bus",
+      "key": "dev/bus/edf0eb",
+      "title": "MERCEDES-BENZ CITARO O530",
+      "bytes": 11346
+    },
+    {
+      "id": "delivery",
+      "key": "dev/delivery/dce2e5",
+      "title": "HONDA SH150i DELIVERY",
+      "bytes": 7098
+    },
+    {
+      "id": "scooter",
+      "key": "dev/scooter/dce2e5",
+      "title": "PIAGGIO BEVERLY 300",
+      "bytes": 6428
+    },
+    {
+      "id": "moto",
+      "key": "dev/moto/dce2e5",
+      "title": "YAMAHA TRACER 900",
+      "bytes": 6886
+    },
+    {
+      "id": "police_octavia",
+      "key": "dev/police_octavia/eceee9",
+      "title": "ŠKODA OCTAVIA · ΕΛ.ΑΣ.",
+      "bytes": 8334
+    },
+    {
+      "id": "police_moto",
+      "key": "dev/police_moto/dce2e5",
+      "title": "BMW R 1250 RT · ΔΙ.ΑΣ.",
+      "bytes": 7500
+    }
+  ]
+}
