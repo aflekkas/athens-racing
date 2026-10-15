@@ -18,7 +18,7 @@ Thanks for helping. This page is the whole process: read it once before your fir
 
 ```sh
 git clone https://github.com/aflekkas/athens-racing.git
-cd athens-street-racers
+cd athens-racing
 git switch staging
 npm ci
 npm start                     # http://localhost:8000
