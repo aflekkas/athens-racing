@@ -239,7 +239,8 @@ async function boot() {
   if (multiplayer.active) await multiplayer.syncLobby();
   else if (SKIP_MENU && !multiplayer.pendingCode) {
     await switchMap(initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
-    prepareEvent(Q.get('event') || 'quick'); resetRace(); startCountdown();
+    prepareEvent(Q.get('event') || 'quick'); resetRace();
+    G.cam = G.userCam; applyCamMode(); updateCamera(0, true); startCountdown();
   }
   document.body.classList.add('loaded');
   performance.mark('menu-ready'); tlog('ready');

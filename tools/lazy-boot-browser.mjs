@@ -101,8 +101,9 @@ try{for(const cache of ['cold','warm']){await page.goto(`http://127.0.0.1:${serv
   assert.equal(report.resume.state,'race');await snap('mp-resumed-race');peer.close();
   await page.evaluate(()=>__multiplayer.send({type:'leave'}));await page.waitForFunction(()=>!__multiplayer.active);
   for (const visit of ['direct','direct-reload']) {
-   await page.goto(`http://127.0.0.1:${server.address().port}/?event=quick&map=megara&simhook&debug&quality=low`,{waitUntil:'domcontentloaded',timeout:120000});
+   await page.goto(`http://127.0.0.1:${server.address().port}/?event=quick&map=megara&simhook&debug&quality=low&cam=chase`,{waitUntil:'domcontentloaded',timeout:120000});
    await waitWorld('megara');assert.equal(await page.evaluate(()=>__mapRuntime().worlds.length),1);
+   assert.equal(await page.evaluate(()=>__game.cam),'chase','direct race URLs retain the requested driving camera');
    await snap(visit);console.log('DIRECT URL',visit,'megara');
   }
   assert.deepEqual(errors,[]);
