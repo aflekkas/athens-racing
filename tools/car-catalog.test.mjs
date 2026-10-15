@@ -53,3 +53,5 @@ test('garage renders the shared trim control, torque and a selectable model when
   assert.match(grid,new RegExp(`data-car-index="${CARS.findIndex(c=>c.id==='gla45')}"`));
   assert(!grid.includes('car-card off'));
 });
+
+test('generation labels match the existing represented Panda, Ibiza and Huracán',()=>{assert.match(carModel('panda').name,/169/);assert.match(carModel('ibiza').name,/6K/);assert.match(carModel('huracan').name,/EVO/);});

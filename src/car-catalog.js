@@ -1,9 +1,9 @@
 // Garage entries describe a generation/body style. Trim IDs remain the wire/physics IDs,
 // so old saves, event links, traffic and remote players retain their exact drivetrain.
 export const CAR_MODELS = [
-  { id:'panda', name:'FIAT PANDA 141', trims:['panda'] },
+  { id:'panda', name:'FIAT PANDA 169', trims:['panda'] },
   { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris'] },
-  { id:'ibiza', name:'SEAT IBIZA 6L', trims:['ibiza'] },
+  { id:'ibiza', name:'SEAT IBIZA 6K', trims:['ibiza'] },
   { id:'golf', name:'VOLKSWAGEN GOLF VII', trims:['golf'] },
   { id:'mini', name:'MINI CONVERTIBLE F57', trims:['mini'] },
   { id:'mini_jcw', name:'MINI HATCH F56', trims:['mini_jcw'] },
@@ -16,7 +16,7 @@ export const CAR_MODELS = [
   { id:'cle', name:'MERCEDES-BENZ CLE C236', trims:['cle200','cle','cle450','cle53'] },
   { id:'z4', name:'BMW Z4 G29', trims:['z4'] },
   { id:'carrera', name:'PORSCHE 911 991.1', trims:['carrera'] },
-  { id:'huracan', name:'LAMBORGHINI HURACÁN LP610-4', trims:['huracan'] },
+  { id:'huracan', name:'LAMBORGHINI HURACÁN EVO', trims:['huracan'] },
   { id:'gtv', name:'ALFA ROMEO 105 GTV', trims:['gtv'] },
   { id:'e36', name:'BMW 3 SERIES E36', trims:['e36','e36_m3'] },
 ];
