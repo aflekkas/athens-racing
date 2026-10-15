@@ -200,9 +200,9 @@ export function mountMapSelect(root) {
     return false;
   }, dispose() { events.abort(); resize.disconnect(); stop(); cancelAnimationFrame(resizeFrame); } };
 }
-export async function selectMap(menu, id, confirmed = false) {
+// SELECT TRACK is the only confirmation: it goes straight to race setup.
+export async function selectMap(menu, id) {
   if (menu.mapLoading || !isMapEnabled(id)) return;
-  if(!confirmed){menu.show('mapConfirm',{...menu.data,mapId:id},true);return;}
   menu.mapLoading = true;
   try {
     menu.h.selectMap(id);
@@ -212,8 +212,5 @@ export async function selectMap(menu, id, confirmed = false) {
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
 }
-
-export function renderMapConfirm(id) {
-  const map=MAPS.find(m=>m.id===id&&isMapEnabled(m.id));if(!map)return '';
-  return C.screen({cls:'scr--map-confirm',kick:'SELECTED TRACK',title:map.name,hints:[['confirm','CONTINUE'],['back','CHOOSE ANOTHER']],body:`<div class="map-confirm"><img src="${map.preview}" alt="${esc(map.name)} route"/><section class="panel"><h2>${esc(map.subtitle)}</h2><p>${fmtDist(map.length)} · ${KIND(map)[0]}</p>${C.button({label:'CONTINUE TO SETUP',icon:'flag-checkered',variant:'primary',size:'lg',act:'mapLoad',attrs:{'data-default':''},block:true})}${C.button({label:'CHOOSE ANOTHER TRACK',act:'back',variant:'ghost',block:true})}</section></div>`});
-}
+// The intermediate "selected track" screen is gone; menu.js still names its renderer, so it renders nothing.
+export const renderMapConfirm = () => '';
