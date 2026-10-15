@@ -29,7 +29,7 @@ res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript',
 }catch{res.writeHead(404);res.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const pw=await import('/tmp/pw/node_modules/playwright/index.mjs');const browser=await pw.chromium.launch({headless:true,executablePath:resolve(homedir(),'.cache/ms-playwright/chromium-1234/chrome-linux64/chrome'),args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 const report={fixture:'Production terrain, road, scenery and Mini models, fixed lighting/cameras. No game HUD or running AI.',errors:[],shots:[]};
-try{for(phase of ['before','after']){
+try{for(phase of (process.env.CAPTURE_PHASES||'before,after').split(',')){
 const page=await browser.newPage();page.on('pageerror',e=>report.errors.push(String(e)));console.log('BUILD',phase);await page.goto('http://127.0.0.1:'+server.address().port+'/fixture',{waitUntil:'domcontentloaded',timeout:120000});await page.waitForFunction(()=>window.ready||window.failure,null,{timeout:600000});const error=await page.evaluate(()=>window.failure);if(error)throw Error(error);
 for(const [name,s,view] of [['hairpin',3920,'hairpin'],['valley',6900,'valley'],['two-cars',4500,'width']]){const shot=await page.evaluate(({s,view})=>window.capture(s,view),{s,view});await fs.writeFile(resolve(out,phase+'-'+name+'.png'),Buffer.from(shot.png,'base64'));report.shots.push({phase,name,s,...shot.metrics});console.log('CAPTURE',phase,name,JSON.stringify(shot.metrics));}
 await page.close();}
