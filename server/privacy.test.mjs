@@ -19,6 +19,7 @@ test('legal routes serve standalone crawlable HTML on production and staging', a
       assert.doesNotMatch(html, /<script\b|<iframe\b|src\/main|noindex/i);
       assert.match(html, /href="\/privacy"/);
       assert.match(html, /href="\/terms"/);
+      if (path === '/privacy') { assert.match(html, /cookieless Web Analytics beacon/); assert.doesNotMatch(html, /includes no analytics tracker/); }
       const head = legalPage(new Request(`https://${host}${path}`, { method: 'HEAD' }));
       assert.equal(head.status, 200);
       assert.equal(await head.text(), '');

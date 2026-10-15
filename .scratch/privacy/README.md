@@ -10,7 +10,7 @@ Screenshots at 1280×900 and 390×844 cover the privacy/terms pages, sign-in lin
 - Account progress is a one-time allowlisted import, not continuous cloud synchronization.
 - Account export/deletion do not include the separate leaderboard database, active multiplayer records or local browser storage. The policy directs leaderboard requests to the contact email and explains browser clearing.
 - IP handling is operational but not solely in-memory: leaderboard IP limits and reconnect state use Durable Object storage. OAuth IP hashes have expiry and daily cleanup; leaderboard old IP rows are removed on subsequent submissions. No fixed provider log/backup retention or specific international transfer safeguards are established in the code; none are invented here.
-- No game analytics tracker was found. Optional YouTube playback explicitly connects to Google/YouTube and has its own cookie/privacy practices.
+- No analytics tracker is included in the game source. Live Chrome inspection found Cloudflare hosting injects a cookieless Web Analytics beacon (`static.cloudflareinsights.com/beacon.min.js`) into browser responses. The policy discloses this. Its strict CSP blocks scripts on these legal pages. Optional YouTube playback explicitly connects to Google/YouTube and has its own cookie/privacy practices.
 - The minimum-age rule is published, but code does not verify date of birth. Account routes and consent do not implement a separate age-verification flow.
 - No automatic inactive-account deletion or timed leaderboard expiry exists.
 
