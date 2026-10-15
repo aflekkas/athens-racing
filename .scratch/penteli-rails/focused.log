@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: mountain road bed clears full carriageway, shoulders and verge at 2 m, without changing the race axis
+ok 1 - mountain road bed clears full carriageway, shoulders and verge at 2 m, without changing the race axis
+  ---
+  duration_ms: 3176.996497
+  type: 'test'
+  ...
+# Subtest: OSM fork and upper hairpin connect to substantial off-course roads
+ok 2 - OSM fork and upper hairpin connect to substantial off-course roads
+  ---
+  duration_ms: 48.306402
+  type: 'test'
+  ...
+# Subtest: signs face both approaches; inferred reverse limits match the entered zone; rails stay sparse
+ok 3 - signs face both approaches; inferred reverse limits match the entered zone; rails stay sparse
+  ---
+  duration_ms: 47.168655
+  type: 'test'
+  ...
+# Subtest: Penteli gravel contacts use rendered triangles and have no phantom sidewalk
+ok 4 - Penteli gravel contacts use rendered triangles and have no phantom sidewalk
+  ---
+  duration_ms: 1678.170438
+  type: 'test'
+  ...
+# Subtest: Penteli rock decoration follows ground and leaves the six-metre re-entry shoulder clear
+ok 5 - Penteli rock decoration follows ground and leaves the six-metre re-entry shoulder clear
+  ---
+  duration_ms: 7682.39817
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14164.920212

@@ -12,7 +12,7 @@ function ring(p,m,r,t,x){const g=new THREE.TorusGeometry(r,t,4,32);g.rotateY(Mat
 function disc(p,m,r,x){const g=new THREE.CircleGeometry(r,r<.012?8:32);g.rotateY(Math.PI/2);return mesh(p,g,m,'',[x,0,0]);}
 function spoke(p,m,x,r0,r1,a0,a1,width){const a=v(x,Math.cos(a0)*r0,Math.sin(a0)*r0),b=v(x,Math.cos(a1)*r1,Math.sin(a1)*r1);const o=mesh(p,new THREE.BoxGeometry(.022,a.distanceTo(b),width),m,'wheel-spoke',a.clone().add(b).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(v(0,1,0),b.sub(a).normalize());}
 function wheelDetails(car,d,M){
-  const k=car.spec.id,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris'||k==='huracan'||d.amg;
+  const k=car.modelKind,classic=k==='gtv'||car.spec.steelWheels,dark=k==='gr_yaris'||k==='huracan'||d.amg;
   const rimMat=dark?M.darkAlloy:new THREE.MeshStandardMaterial({color:'#c1c6ca',metalness:.92,roughness:.25,side:THREE.DoubleSide});
   const rotorMat=new THREE.MeshStandardMaterial({color:'#64676b',metalness:.78,roughness:.48,side:THREE.DoubleSide});
   M.wheelMetal=rimMat;M.brakeSteel=rotorMat;
@@ -32,7 +32,7 @@ function wheelDetails(car,d,M){
       for(let i=0;i<16;i++){const a=i*Math.PI/8;spoke(w.spin,M.alloy,x,.072,rim-.011,a,a+.14,.025);}
       disc(w.spin,M.chrome,.068,x+s*.013);ring(w.spin,M.chrome,.063,.004,x+s*.014);
     }else{
-      const n=d.sculpted&&d.doors===2?10:k==='taxi'?5:k==='gr_yaris'||d.amg?10:5;
+      const n=car.spec.visual?.spokes || (d.sculpted&&d.doors===2?10:k==='taxi'?5:k==='gr_yaris'||d.amg?10:5);
       for(let i=0;i<n;i++){
         const a=i*2*Math.PI/n;
         if(d.sculpted&&d.doors===2){for(const b of [-1,1])spoke(w.spin,rimMat,x,.05,rim-.009,a+b*.045,a+b*.065,.010);}else if(k==='gr_yaris'||d.amg)spoke(w.spin,rimMat,x,.042,rim-.012,a,a+.035,.017);
@@ -63,7 +63,7 @@ function paintFinish(car){
   };m.needsUpdate=true;
 }
 function signals(car,d,M){
-  const k=car.spec.id,F=-d.L/2-.032,R=d.L/2+.04;
+  const k=car.modelKind,F=-d.L/2-.032,R=d.L/2+.04;
   const lamp=(color)=>new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:0,roughness:.23,metalness:.15});
   const left=lamp('#ff7d08'),right=lamp('#ff7d08'),reverse=lamp('#e2eef2');car.signalMaterials={left,right,reverse};
   const positions={mini:[.64,.68,.47],z4:[.69,.60,.77],taxi:[.67,.69,.84],carrera:[.57,.37,.745],gr_yaris:[.68,.69,.86],gtv:[.57,.53,.76]}[k]||[d.W*.37,d.front-.10,d.rear-.12];
@@ -79,7 +79,7 @@ function signals(car,d,M){
   car.updateSignalLights=(dt,speed)=>{car.signalTime+=Math.max(0,dt);const flash=(car.signalTime%0.8)<.4;left.emissiveIntensity=flash&&(car.indicator==='left'||car.indicator==='hazard')?3.5:0;right.emissiveIntensity=flash&&(car.indicator==='right'||car.indicator==='hazard')?3.5:0;reverse.emissiveIntensity=speed<-.05?2.3:0;if(M.optical?.emissive){M.optical.emissive.set('#e4f2ff');M.optical.emissiveIntensity=car.lightsOn?3.2:0;}};
 }
 function seatDetails(car,d,M){
-  const k=car.spec.id;
+  const k=car.modelKind;
   for(const s of [-1,1]){
     const x=s*d.W*.215,z=d.seatZ;
     if(k==='z4')box(car.body,M.seat,[.31,.23,.09],[x,1.03,z+.205],'integrated-seat-headrest',.035);

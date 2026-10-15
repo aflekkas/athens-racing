@@ -1,0 +1,10 @@
+[browser-slot] queued with ticket 847
+[browser-slot] slot 3 acquired (ticket 847, waited 194s)
+BUILD before
+CAPTURE before hairpin {"calls":130,"triangles":933642,"railTriangles":0,"railChunks":0,"width":6.800000190734863,"carWidth":1.727,"camera":[1594.2851250901267,500.39801470935345,111.15710569020136],"target":[1655.219970703125,453.3999938964844,126.81999969482422]}
+CAPTURE before valley {"calls":232,"triangles":2655138,"railTriangles":0,"railChunks":0,"width":6.800000190734863,"carWidth":1.727,"camera":[2323.7819382347375,587.6566239565145,978.2789486441353],"target":[2312.9599609375,580.8300170898438,952.4299926757812]}
+CAPTURE before two-cars {"calls":197,"triangles":909647,"railTriangles":0,"railChunks":0,"width":6.800000190734863,"carWidth":1.727,"camera":[2023.3287388742297,480.4001003088197,431.4288517052064],"target":[2049.659912109375,474.17999267578125,441.0199890136719]}
+BUILD after
+CAPTURE after hairpin {"calls":130,"triangles":936569,"rails":{"runs":27,"metres":2326,"chunks":29},"railTriangles":16282,"railChunks":29,"width":7.497000217437744,"carWidth":1.727,"camera":[1594.2851250901267,500.39801470935345,111.15710569020136],"target":[1655.219970703125,453.3999938964844,126.81999969482422]}
+CAPTURE after valley {"calls":239,"triangles":2664576,"rails":{"runs":27,"metres":2326,"chunks":29},"railTriangles":16282,"railChunks":29,"width":7.199999809265137,"carWidth":1.727,"camera":[2323.7819382347375,587.6566239565145,978.2789486441353],"target":[2312.9599609375,580.8300170898438,952.4299926757812]}
+CAPTURE after two-cars {"calls":203,"triangles":912538,"rails":{"runs":27,"metres":2326,"chunks":29},"railTriangles":16282,"railChunks":29,"width":7.199999809265137,"carWidth":1.727,"camera":[2023.3287388742297,480.4001003088197,431.4288517052064],"target":[2049.659912109375,474.17999267578125,441.0199890136719]}

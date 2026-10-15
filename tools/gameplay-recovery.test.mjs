@@ -21,7 +21,7 @@ test('live stuckCheck minimises after 3s and dismiss/on-road preserve 20s cooldo
   const classes = new Set(), el = { classList: { contains: x=>classes.has(x), add: x=>classes.add(x) }, remove() {} };
   const towOffer = { element: el, cooldown: 0, elapsed: 0, offT: 0, hold: 0 }, G = { state: 'race' };
   let offers=0;
-  const check = Function('G','towOffer','multiplayer','route','EV','towCondition','TOW_PROMPT_SECONDS','TOW_PROMPT_COOLDOWN','offerTow','notifications', section('function closeTowOffer(', 'function resetTowOffer(')+section('function stuckCheck(', 'function tow(')+'; return { stuckCheck, closeTowOffer };')(G,towOffer,{retired:false},{edge:()=>4},{isWrecked:()=>false},towCondition,TOW_PROMPT_SECONDS,TOW_PROMPT_COOLDOWN,()=>{if(towOffer.cooldown<=0)offers++},{dismiss(){}});
+  const check = Function('G','towOffer','multiplayer','route','EV','towCondition','TOW_PROMPT_SECONDS','TOW_PROMPT_COOLDOWN','offerTow','notifications','corridorCheck', section('function closeTowOffer(', 'function resetTowOffer(')+section('function stuckCheck(', 'function tow(')+'; return { stuckCheck, closeTowOffer };')(G,towOffer,{retired:false},{edge:()=>4},{isWrecked:()=>false},towCondition,TOW_PROMPT_SECONDS,TOW_PROMPT_COOLDOWN,()=>{if(towOffer.cooldown<=0)offers++},{dismiss(){}},()=>false);
   const v = { s:100, u:14, offroad:1, water:0, pose:{roll:0,pitch:0},speed:10 };
   for(let i=0;i<180;i++) check.stuckCheck(v,1/60);
   check.stuckCheck(v,.01); assert.ok(classes.has('minimised')); assert.equal(towOffer.cooldown,20); assert.equal(v.speed,10);
@@ -45,3 +45,5 @@ test('reset resumes a paused race and calls recovery, preserving Retry as restar
   Function('G','multiplayer','menu','player','resume','tow',section('function resetCar()', 'function recoverFromCapture()')+'resetCar();')(G,{active:false},{open:true},player,()=>{calls.push('resume');G.state='race';},(v,opts)=>calls.push(opts));
   assert.deepEqual(calls,['resume',{reset:true}]);
 });
+
+await import('./offtrack-corridor.test.mjs');

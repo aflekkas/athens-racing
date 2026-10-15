@@ -17,10 +17,15 @@
   "env": {
     "staging": {
       "name": "athens-street-racers-staging",
+      "routes": [{ "pattern": "staging.athensracing.com", "custom_domain": true }],
       "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
     },
     "production": {
       "name": "athens-street-racers",
+      "routes": [
+        { "pattern": "athensracing.com", "custom_domain": true },
+        { "pattern": "www.athensracing.com", "custom_domain": true }
+      ],
       "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
     }
   }

@@ -3,6 +3,8 @@
 // Reactions use body language only: protective flinches, sideways evasive steps,
 // a braced landing, a raised fist, and a wave when a driver yields.
 import * as THREE from 'three';
+import { ImpactBodies } from './impact-ragdoll-view.js';
+import { pedestrianThump } from './impact-ragdoll.js';
 import { ROAD } from './road.js';
 import { RNG, clamp, damp, wrapAngle, CellInstances } from './util.js';
 import { Crowd, makeLook, newPose, poseWalk, poseCycle, poseStand, poseSit, poseLie, poseSwim, armsPanic, armsFist, armsWave, HIP_Y } from './human.js';
@@ -13,8 +15,9 @@ import { hourForTime } from './world-life.js';
 
 // A light sprinkle: people are set dressing, so the pool, the walker target and the share of
 // anchored spots (café seats, beach, bus stops) are kept small, and distant people tick slowly.
-const MAX = 56, WALKERS = 18, INITIAL_WALKERS = 16;
-const ANCHOR_SHARE = { cafe: .4, stop: .5, beach: .3, wander: .25, lie: .3, swim: .3, resident: .7, artist: 1 };
+export const PEOPLE_BUDGET = Object.freeze({ max: 28, walkers: 8, initial: 6 });
+const MAX = PEOPLE_BUDGET.max, WALKERS = PEOPLE_BUDGET.walkers, INITIAL_WALKERS = PEOPLE_BUDGET.initial;
+const ANCHOR_SHARE = { cafe: .18, stop: .22, beach: .12, wander: .1, lie: .12, swim: .12, resident: .28 };
 const FAR_TICK = 80 * 80, FAR_EVERY = 4; // beyond 80 m from the camera, update every 4th frame
 const TAU = Math.PI * 2;
 // ------------------------------------------------------------------ café furniture
@@ -52,6 +55,16 @@ export class People {
     this.rng = new RNG(2024);
     this.policy = new PeoplePolicy(map, ROAD.sidewalk);
     this.crowd = new Crowd(scene, MAX);
+    this._impactFrame = {}; this._impactSurface = {};
+    this._impactGround = (x, z, body) => {
+      const r = this.route, f = this._impactFrame;
+      const hint = body.groundS ?? r.project(x,z).s;
+      r.frame(hint,f);
+      const s = hint + (x-f.x)*f.tx + (z-f.z)*f.tz;
+      r.frame(s,f); const u = (x-f.x)*f.rx + (z-f.z)*f.rz; body.groundS=s;
+      return this.traffic?.ground ? this.traffic.ground.at(x,z,s,u,this._impactSurface).y + .015 : this.walkY(s,u);
+    };
+    this.bodies = new ImpactBodies(scene, this._impactGround);
     this.peds = Array.from({ length: MAX }, (_, i) => ({ slot: i, active: false, P: newPose() }));
     this.onRoad = []; this.events = []; this.t = 0;
     this.drawRadius = 175; // m (main.js: graphics tier)
@@ -202,16 +215,15 @@ export class People {
   }
   spawnAnchor(a) {
     const p = this.free(); if (!p) return;
-    const ctx = a.kind === 'artist' ? 'jogger' : a.kind === 'cafe' || a.kind === 'stop' || a.kind === 'resident' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
+    const ctx = a.kind === 'cafe' || a.kind === 'stop' || a.kind === 'resident' ? (a.kind === 'cafe' ? 'cafe' : 'street') : 'beach';
     const look = makeLook(this.rng, ctx);
     if (a.kind === 'stop' || a.kind === 'resident') look.umbrella = COND_STATE.rain > .12;
-    if (a.kind === 'artist') { look.role = 'artist'; look.cup = look.phone = look.bag = look.umbrella = look.towel = false; look.sprayCan = true; }
     if (a.kind === 'swim' || a.kind === 'lie') { look.cup = false; look.towel = false; look.bag = false; look.umbrella = false; look.phone = false; look.glasses = a.kind === 'lie' && look.glasses; if (a.kind === 'swim') look.hat = null; }
     if (a.kind === 'stop' || a.kind === 'beach' || a.kind === 'wander') look.cup = look.cup && this.rng.chance(0.5);
     this.init(p, a.kind, look);
     a.ped = p; p.anchor = a;
     p.x = a.x; p.z = a.z; p.y = a.y; p.yaw = a.yaw; p.home = { x: a.x, z: a.z, y: a.y, yaw: a.yaw };
-    p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand', artist: 'stand', resident: 'stand' }[a.kind];
+    p.mode = { cafe: 'sit', swim: 'swim', lie: 'lie', beach: 'stand', wander: 'wander', stop: 'stand', resident: 'stand' }[a.kind];
     p.variant = a.kind === 'stop' ? this.rng.pick(['idle', 'phone', 'look', 'cross']) : a.kind === 'beach' ? this.rng.pick(['chat', 'idle', 'hips', 'chat', 'phone']) : 'idle';
     look.phone = p.variant === 'phone';
     p.target = null; p.speed = p.look.speed * 0.7;
@@ -219,9 +231,8 @@ export class People {
 
   reset(ps) {
     for (const p of this.peds) if (p.active) this.despawn(p);
-    for (const a of this.anchors) a.ped = null;
-    this.t = 0;
-    this.streetLife?.reset();
+    for (const a of this.anchors) { a.ped = null; a.hitUntil = 0; }
+    this.t = 0; this.bodies.clear();
     for (let i = 0; i < INITIAL_WALKERS; i++) this.spawnWalker(ps, true);
     this.updateAnchors(ps);
   }
@@ -238,7 +249,7 @@ export class People {
         a.rank ??= ((Math.imul(Math.round(a.s * 17 + a.x * 7), 2654435761) >>> 0) % 1000) / 1000;
         a.avail = a.rank < this.policy.anchor(a, hour, rain) * (ANCHOR_SHARE[a.kind] ?? .5); a.availKey = key;
       }
-      const inW = a.avail && a.s > ps - 150 && a.s < ps + 380;
+      const inW = a.avail && !(a.hitUntil > this.t) && a.s > ps - 150 && a.s < ps + 380;
       if (inW && !a.ped) this.spawnAnchor(a);
       else if (!inW && a.ped && (!a.avail || a.s < ps - 190 || a.s > ps + 430)) this.despawn(a.ped);
     }
@@ -266,8 +277,10 @@ export class People {
     actors.forEach((a, i) => {
       const v = a.veh, A = acts[i] ||= {};
       A.kind = a.kind; A.x = v.x; A.z = v.z; A.s = v.s; A.u = v.u; A.fx = -Math.sin(v.yaw); A.fz = -Math.cos(v.yaw); A.rx = Math.cos(v.yaw); A.rz = -Math.sin(v.yaw);
-      A.v = Math.max(0, v.vLong); A.halfL = v.halfL; A.halfW = v.halfW; A.veh = v;
+      A.v = Math.abs(v.vLong); A.halfL = v.halfL; A.halfW = v.halfW; A.veh = v;
     });
+    for (const b of this.bodies.bodies) if (b.kind !== 'rider') b.update(dt, this._impactGround);
+    this.bodies.render();
     this.onRoad.length = 0;
     const f = this._f, cx = camPos.x, cz = camPos.z, frame = this.frame;
     for (const p of this.peds) {
@@ -279,7 +292,6 @@ export class People {
       this.tickPed(p, pdt, actors, f);
     }
     this.draw(camPos);
-    this.streetLife?.update(dt, camPos);
   }
 
   tickPed(p, dt, actors, f) {
@@ -408,15 +420,6 @@ export class People {
     const h = p.home;
     const away = Math.hypot(p.x - h.x, p.z - h.z);
     p.moving = false;
-    if (p.kind === 'artist') {
-      // Slow cars also make artists back away. Avoid returning into a parked car.
-      const nearby = this.acts.find(a => a.kind !== undefined && Math.abs((a.veh.y ?? p.y) - p.y) < 2.5 && Math.hypot(p.x - a.x, p.z - a.z) < Math.max(a.halfL, a.halfW) + 1.25);
-      if (nearby) {
-        const dx = p.x - nearby.x, dz = p.z - nearby.z, d = Math.hypot(dx, dz) || 1;
-        this.walkTo(p, p.x + dx / d, p.z + dz / d, dt, 1.4); p.y = h.y;
-        return;
-      }
-    }
     if (p.mode === 'swim') {
       // lazy breaststroke back and forth
       const a = p.yaw, v = 0.35;
@@ -462,6 +465,12 @@ export class People {
       if (A.kind === 'player' && p.mode === 'cross' && !p.thanked && A.v < 0.8 && al > 0 && al < A.halfL + 9 && Math.abs(lat) < 5) {
         p.thanked = true; p.react = { type: 'wave', t: 0, dur: 1.8 }; this.events.push({ kind: 'thanks', p });
       }
+      // Contact is classified before the anticipatory evasive/near-miss reaction.
+      const along = dx * A.fx + dz * A.fz, across = dx * A.rx + dz * A.rz;
+      const py = p.wy ?? p.y;
+      if (A.v > .15 && Math.abs(along) < A.halfL + .24 && Math.abs(across) < A.halfW + .22 && Math.abs(py - (A.veh.y ?? py)) < 1.25) {
+        this.hit(p, A); return;
+      }
       if (A.v < 3) continue;
       const tt = (al - A.halfL) / A.v;
       const gy = Math.abs(p.wy - (A.veh.y ?? p.wy));
@@ -471,6 +480,18 @@ export class People {
       if (!inPath && !p.air && !p.react && p.startleCool <= 0 && A.v > 11 && Math.abs(lat) < A.halfW + 1.5 + A.v * 0.035 && al > -1.5 && al < 3 + A.v * 0.3) { this.startle(p, A, lat); return; }
     }
     // slow players can still annoy someone on the zebra; handled in updateStreet
+  }
+  hit(p, A) {
+    const v = A.veh, vx = A.fx * v.vLong + A.rx * (v.vLat || 0), vz = A.fz * v.vLong + A.rz * (v.vLat || 0);
+    // Keep the vehicle reference: contact planes follow the live car as it brakes or turns.
+    const car = { x: v.x, y: v.y || 0, z: v.z, yaw: v.yaw, halfL: v.halfL, halfW: v.halfW, height: v.spec?.height || 1.4, vx, vz, veh: v };
+    // Transfer an already-built close rig, preserving clothes, face and hair without building on impact.
+    const rig = this.crowd?.near.get(p.look); if (rig) this.crowd.near.delete(p.look);
+    const b = this.bodies.spawn({rig,look:p.look,s:p.s,x:p.x,y:p.wy ?? p.y,z:p.z,yaw:p.yaw,scale:p.look.k,wH:p.look.wH,wT:p.look.wT,vx,vz,seed:p.slot,car,owner:p.slot});
+    const dv = pedestrianThump(v, A.v, p.x - v.x, p.z - v.z);
+    this.events.push({dv, kind:'hit', target:'pedestrian', who:A.kind, p, body:b, sev:A.v, x:p.x,y:p.wy ?? p.y,z:p.z});
+    if (p.anchor) p.anchor.hitUntil = this.t + 12;
+    this.despawn(p);
   }
   dive(p, A, lat) {
     const rng = this.rng, side = Math.sign(lat) || (rng.chance(0.5) ? 1 : -1);
@@ -482,7 +503,7 @@ export class People {
       spin: side * 0.18, spinV: 0, flip: 0, hop: false };
     p.react = { type: 'evade', t: 0, dur: 1.8 };
     p.startleCool = 4;
-    this.events.push({ kind: 'dive', who: A.kind, p });
+    this.events.push({ kind: 'dive', target: 'pedestrian', who: A.kind, p });
   }
   startle(p, A, lat) {
     const rng = this.rng, side = Math.sign(lat) || 1;
@@ -490,7 +511,7 @@ export class People {
     p.react = { type: rng.chance(0.55) ? 'panic' : 'fist', t: 0, dur: 1.7 };
     if (p.mode === 'sit') p.air = { y: 0, vy: 0.8, vx: 0, vz: 0, spin: 0, spinV: 0, flip: 0, hop: true };
     else if (p.mode !== 'lie') p.air = { y: 0, vy: 1.5, vx: A.rx * side * 1.7, vz: A.rz * side * 1.7, spin: 0, spinV: 0, flip: 0, hop: true };
-    if (A.kind === 'player') this.events.push({ kind: 'startle', who: A.kind, p });
+    if (A.kind === 'player') this.events.push({ kind: 'startle', target: 'pedestrian', who: A.kind, p });
   }
   land(p) {
     const a = p.air, hop = a.hop;
@@ -536,12 +557,6 @@ export class People {
     else if (m === 'lie' && !(p.home && Math.hypot(p.x - p.home.x, p.z - p.home.z) > 0.15)) { poseLie(P, t, p.sd); P.pitch = -Math.PI / 2; }
     else if (m === 'swim') { poseSwim(P, t); P.pitch = 1.2; }
     else poseStand(P, t, p.sd, m === 'wait' ? 'look' : p.variant);
-    if (p.kind === 'artist' && p.sprayActive !== false && !p.moving && !p.react && !p.air) {
-      // Small shoulder/elbow passes, directed at the bin rather than the driver.
-      P.shA[1] = .74 + .12 * Math.sin(t * 2.8); P.shR[1] = .08 + .09 * Math.sin(t * 1.7);
-      P.elb[1] = .52 + .13 * Math.sin(t * 2.8 + .7); P.hYaw = -.12; P.hPitch = .2;
-      P.tPitch = .18; P.tYaw = -.12;
-    }
     if (p.react && !(p.air && !p.air.hop)) {
       const rt = p.react.t;
       if (p.react.type === 'panic') armsPanic(P, rt);

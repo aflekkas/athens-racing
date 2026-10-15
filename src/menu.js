@@ -25,6 +25,7 @@ import { personalBestLabel } from './personal-bests.js';
 import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
+import * as Release from './ui/release-screens.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
 const { esc, icon } = C;
@@ -52,7 +53,7 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all'; this.participants = 'solo';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this); MP.installMpScreens(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this); MP.installMpScreens(this); Release.install(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -220,6 +221,7 @@ export class Menu {
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
+    if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
@@ -268,6 +270,7 @@ export class Menu {
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
+      if (key === 'swearing') { setSetting('mildLanguage', !value); return; }
       if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;if(this.root)this.refresh();return; }
       if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));if(this.root)this.refresh();return;}
       if(key==='drawDistance'){setSetting(key,value==='auto'?'auto':Number(value));return;}
@@ -287,7 +290,7 @@ export class Menu {
       saveSetup(id, s); this.refresh(); return;
     }
   }
-  valueFor(key) { return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
+  valueFor(key) { if (key === 'swearing') return !settings.mildLanguage; return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
   /** settings changed elsewhere (e.g. the steering assist following the active device) */
   refreshValues() { for (const el of this.root.querySelectorAll('[data-scope=setting][data-key]')) C.setValue(el, String(this.valueFor(el.dataset.key)), false); }
 
@@ -301,7 +304,7 @@ export class Menu {
         ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
         ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage' })}
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
-      </div><footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
+      </div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {
@@ -311,6 +314,9 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
+  r_whatsNew() { return Release.renderWhatsNew(this); }
+  r_credits() { return Release.renderCredits(this); }
+  r_creditFile() { return Release.renderCreditFile(this); }
   r_mp(d) { return MP.renderMp(this, window.__multiplayer, d); }
   r_mpLobby() { return MP.renderLobby(this, window.__multiplayer); }
   r_mpCars() { return MP.renderCars(this, window.__multiplayer); }
@@ -387,14 +393,14 @@ export class Menu {
   // ---------------------------------------------------------------- settings
   r_settings(d) {
     const tab = d.tab || 'audio';
-    const tabsList = [['driver', 'DRIVER', 'user'], ['audio', 'SOUND', 'speaker-high'], ['video', 'GRAPHICS', 'monitor'], ['driving', 'DRIVING', 'steering-wheel'], ...(has('chaseFov') || has('mouseSensitivity') ? [['camera', 'CAMERA', 'camera']] : []), ['controls', 'CONTROLS', 'game-controller']];
+    const tabsList = [['driver', 'DRIVER', 'user'], ['audio', 'SOUND', 'speaker-high'], ['video', 'GRAPHICS', 'monitor'], ['driving', 'DRIVING', 'steering-wheel'], ...(has('chaseFov') || has('mouseSensitivity') ? [['camera', 'CAMERA', 'camera']] : []), ['controls', 'CONTROLS', 'game-controller'], ['about', 'ABOUT', 'info']];
     const v = (k) => String(this.valueFor(k));
     let body = '';
     if (tab === 'driver') {
       body = `<div class="group"><h3 class="group__title">${icon('user')}DRIVER NAME</h3><label class="group__note" for="driver-name">YOUR PLATE & ONLINE NAME</label><input id="driver-name" data-driver-name maxlength="16" value="${esc(driverName.get())}" aria-label="Driver name" autocomplete="off" autocapitalize="characters" spellcheck="false"><p class="group__note">3–16 LETTERS, NUMBERS OR HYPHENS. SAVED IN THIS BROWSER. NAMES CAN BE SHARED.</p>${C.option({ icon: 'check', title: 'SAVE DRIVER NAME', act: 'saveDriverName' })}</div>`;
     } else if (tab === 'audio') {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
-      body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'mildLanguage', label: 'MILD LANGUAGE', value: settings.mildLanguage, attrs: SET })}</div>`;
+      body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'swearing', label: 'SWEARING', value: !settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
       // Graphics: one preset, plus Lighting / Effects / Resolution / Draw distance overrides (src/graphics.js). All fixed, all live.
       const gfx=resolveGraphics(settings),P=PRESETS[gfx.preset],L=PRESET_LABELS,pct=r=>Math.round(r*100)+'%';
@@ -406,7 +412,8 @@ export class Menu {
         <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · NEVER CHANGES BY ITSELF',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
         <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'PRESET · '+(P.drawDistance>=1000?P.drawDistance/1000+' KM':P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
           ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}
-          ${C.toggle({ key: 'mirrors', label: 'MIRRORS', value: settings.mirrors !== false, note: 'SEE BEHIND YOU · ON AT EVERY PRESET · REAR-VIEW STRIP IN THE CHASE CAMERA', attrs: SET })}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>
+          ${C.toggle({ key: 'mirrors', label: 'MIRRORS', value: settings.mirrors !== false, note: 'SEE BEHIND YOU · ON AT EVERY PRESET · REAR-VIEW STRIP IN THE CHASE CAMERA', attrs: SET })}
+          ${C.toggle({ key: 'perfOverlay', label: 'PERFORMANCE OVERLAY', value: settings.perfOverlay === true, note: 'FPS · FRAME MS · DRAW CALLS · F3 TOGGLES IT TOO', attrs: SET })}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
     } else if (tab === 'driving') {
       body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key:'showTyreGrip',label:'SHOW TYRE GRIP',value:settings.showTyreGrip,attrs:SET })}${C.toggle({ key: 'aids', label: 'TRACTION / STABILITY · TC ESC', value: settings.aids, attrs: SET })}${C.toggle({ key: 'abs', label: 'BRAKING ASSIST · ABS', value: settings.abs, attrs: SET })}
@@ -415,11 +422,12 @@ export class Menu {
     } else if (tab === 'camera') {
       const sl = (k, label, min, max, step, format) => has(k) ? C.slider({ key: k, label, value: settings[k], min, max, step, format, attrs: SET }) : '';
       const tg = (k, label) => has(k) ? C.toggle({ key: k, label, value: settings[k], attrs: SET }) : '';
-      body = `<div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}</div>
+      body = `<div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
         <div class="group"><h3 class="group__title">${icon('mouse')}FREE LOOK</h3>${sl('mouseSensitivity', 'LOOK SENSITIVITY', 0.25, 3, 0.05, 'x')}${tg('invertLookY', 'INVERT LOOK Y')}
           <p class="group__note">Click the racing view to look around. Hold and drag if the pointer cannot be locked. The right stick also looks.</p></div>
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;
     } else if (tab === 'controls') body = renderControls(this);
+    else if (tab === 'about') body = Release.renderAbout(this);
     return C.screen({ cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
       head: C.tabs({ key: 'settingsTab', value: tab, options: tabsList }),
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['tabs', 'TAB'], ...(tab === 'controls' ? [['confirm', 'REBIND']] : []), ['back', 'BACK']],

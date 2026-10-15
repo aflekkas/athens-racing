@@ -2,6 +2,14 @@
 import { spatialAudio } from './world-sounds.js';
 import { VOICE_LINES, VOICE_PROFILES } from './voice-lines.js';
 
+export function chooseVoiceLine(lines, { category, cue, mildLanguage = false, last, random = Math.random }) {
+  const pool = lines.filter(l => l.category === category && (!cue || l.cue === cue) && (!mildLanguage || !l.strong));
+  const explicit = pool.filter(l => l.strong), clean = pool.filter(l => !l.strong);
+  const group = explicit.length && clean.length ? (random() < .75 ? explicit : clean) : pool;
+  const fresh = group.filter(l => l.id !== last), choices = fresh.length ? fresh : group;
+  return choices.length ? choices[Math.floor(random() * choices.length)] : null;
+}
+
 export function voiceAcoustics(distance, cockpit = false, enclosed = false) {
   const d = Math.max(0, distance);
   const fade = Math.max(0, Math.min(1, (50 - d) / 20));
@@ -30,8 +38,9 @@ export class VoiceReactions {
     }
     return this.cache.get(key);
   }
-  async trigger(category, speaker, locate, { enclosed = false, gender, older } = {}) {
+  async trigger(category, speaker, locate, { enclosed = false, gender, older, cue, priority = false, cooldown = true } = {}) {
     const ctx = this.audio.ctx;
+    if (priority && this.enabled) { this.stop(); this.next = 0; }
     if (!ctx || !this.audio.mix?.buses.voice || !this.enabled || this.settings.voice === 0 || this.active || this.pending || ctx.currentTime < this.next || !speaker || !locate) return false;
     let state = this.speakers.get(speaker);
     if (!state) {
@@ -39,12 +48,12 @@ export class VoiceReactions {
       state = { next: 0, profile: choices[Math.floor(this.random() * choices.length)].id };
       this.speakers.set(speaker, state);
     }
-    if (ctx.currentTime < state.next) return false;
+    if (cooldown && !priority && ctx.currentTime < state.next) return false;
     const pos = locate(), rel = pos && this.relative?.(pos);
     if (!rel || Math.hypot(rel.x, rel.y, rel.z) >= 50) return false;
-    const pool = VOICE_LINES.filter(l => l.category === category && !(this.settings.mildLanguage && l.strong) && l.id !== this.last.get(category));
-    if (!pool.length) return false;
-    const line = pool[Math.floor(this.random() * pool.length)], token = ++this.token;
+    const line = chooseVoiceLine(VOICE_LINES, { category, cue, mildLanguage: this.settings.mildLanguage, last: this.last.get(category), random: this.random });
+    if (!line) return false;
+    const token = ++this.token;
     this.pending = true;
     try {
       const buffer = await this.buffer(line.id, state.profile);

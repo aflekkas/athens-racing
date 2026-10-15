@@ -1,3 +1,4 @@
+import { applyPenteliWidths } from './widths.mjs';
 #!/usr/bin/env node
 // Deterministic inland bundle. No coastal flattening, invented switchbacks or grade cap.
 import fs from 'node:fs';
@@ -46,7 +47,8 @@ const events=[{id:'penteli-tt',mapId:'penteli',name:'PENTELI HILL CLIMB',blurb:'
 const a=R.start/step,b=R.finish/step;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
 const stats={startElevation:Y[a],finishElevation:Y[b],ascent:r(ascent),descent:r(descent),maxGrade:r(maxGrade*100),elevationSource:dem.source};
 const data={schema:1,id:'penteli',name:'PENTELI HILL CLIMB',type:'point-to-point',coastal:false,length:R.finish-R.start,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(6.8),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:R.start,finish:R.finish,length:R.length,closed:false,from:'Dionysos',to:'Karakanta Pass',names:[{s:0,name:'Dionysou · EP29'},{s:R.fork,name:'Dionysou · EP5'}],speeds:[{s:0,v:50},{s:R.fork-60,v:30},{s:R.fork+260,v:50}]},marks,zones:[{s:0,urban:.4,zone:'town'},{s:R.start+160,urban:0,zone:'mountain'},{s:R.fork-80,urban:.12,zone:'chapel'},{s:R.fork+180,urban:0,zone:'mountain'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,trees,pois:[],furniture:[],places:[],sideRoads,events,penteli:{stats,fork:R.fork,landmarks,sourceWayIds:R.sourceWayIds,imageryEpoch:'Street View source dates documented in tools/maps/penteli/SOURCES.md'}};
-data.roadNetwork=extractRoadNetwork(data,osm,{excludeWays:R.sourceWayIds});
+applyPenteliWidths(data,osm);
+data.roadNetwork=extractRoadNetwork(data,osm);
 fs.writeFileSync(path.join(out,'map.json'),JSON.stringify(data));
 fs.writeFileSync(path.join(dir,'raw/profile.json'),JSON.stringify({step,start:R.start,finish:R.finish,raw:Yraw,smoothed:Y,stats}));
 console.log(JSON.stringify({length:data.length,stats,GX,GZ,buildings:buildings.length,sideRoads:sideRoads.length,areas:Object.fromEntries(Object.entries(areas).map(([k,v])=>[k,v.length]))},null,2));

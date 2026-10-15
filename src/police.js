@@ -298,6 +298,7 @@ export class Police {
     this.pending.length = 0;
     // ---- the state machine
     const tr0 = hm.update(dt, { seen, offending: speeding || wrongSide, fleeing, copNear: near > 0, copsNear: near, slow: Math.hypot(P.vs, P.vu) < this.C.bustSpeed });
+    this.onVoice?.(this, tr0); // before standDown / announce can release or reset the source
     for (const e of tr0) {
       out.push(e);
       if (this.online) continue; // online the world authority dispatches the units (dispatch)

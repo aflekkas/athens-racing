@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { buildHuracanShell, buildHuracanCabin } from './player-huracan.js';
 export const ROAD_MODELS = {
+ jazz: {L:4.028,W:1.694,H:1.550,wb:2.530,track:1.477,r:.302,rim:.1905,tyreF:.185,tyreR:.185,belt:1.02,front:.78,rear:1.03,cowl:-1.13,header:-.48,roofBack:1.32,back:1.82,seatZ:.10,eyeY:1.23,leather:'#333a43',doors:4,brand:'HONDA',stations:[[-2.014,.66,.76],[-1.65,.80,.84],[-1.13,.847,1.02],[.3,.83,1.03],[1.26,.847,1.04],[2.014,.73,1.02]]},
  e36: {L:4.433,W:1.698,H:1.393,wb:2.700,track:1.408,r:.309,rim:.1905,tyreF:.205,tyreR:.205,belt:.91,front:.77,rear:.88,cowl:-.83,header:-.35,roofBack:.81,back:1.37,seatZ:.26,eyeY:1.06,leather:'#43474c',doors:4,brand:'BMW',stations:[[-2.2165,.74,.77],[-1.75,.82,.81],[-1.35,.849,.88],[-.83,.82,.91],[.5,.82,.91],[1.35,.849,.92],[1.80,.82,.89],[2.2165,.76,.88]]},
 
  yaris: {L:3.615,W:1.660,H:1.500,wb:2.370,track:1.440,r:.282,rim:.165,tyreF:.155,tyreR:.155,belt:.95,front:.76,rear:.98,cowl:-.89,header:-.34,roofBack:1.09,back:1.63,seatZ:.19,eyeY:1.20,leather:'#526779',doors:4,brand:'TOYOTA',stations:[[-1.8075,.66,.76],[-1.40,.80,.85],[-.90,.83,.95],[.4,.80,.97],[1.19,.83,1.0],[1.8075,.72,.98]]},
@@ -56,10 +57,23 @@ export function buildRoadCar(car,d,M,low,plate,H){
   const badgeMat=textMaterial(d.brand,'#171b20','#dddddd',256,80);M.badge.map=badgeMat.map;M.badge.needsUpdate=true;
   const lamp=(s,points,rear=false)=>face(rear?M.tail:M.head,points.map(([x,y])=>[s*x,y]),rear?R+.004:F-.004,`${rear?'rear':'front'}-lamp-housing`);
   const badge=(text,w,h,y,z)=>mesh(p,new THREE.PlaneGeometry(w,h),textMaterial(text,null),[0,y,z],[0,z<0?Math.PI:0,0],'badge');
+  if(id==='jazz'){
+    face(M.black,[[-.58,.84],[-.44,.94],[.44,.94],[.58,.84],[.39,.69],[-.39,.69]],F-.008,'jazz-upper-grille');
+    face(M.black,[[-.56,.53],[.56,.53],[.48,.28],[-.48,.28]],F-.009,'jazz-lower-grille');
+    for(const s of [-1,1]){
+      lamp(s,[[.36,.91],[.72,.91],[.76,.77],[.50,.72]]);
+      line(p,M.chrome,[[s*.13,.86,F-.018],[s*.40,.81,F-.018],[s*.68,.81,F-.018]],.014,'jazz-chrome-wing');
+      lamp(s,[[.61,1.00],[.76,1.00],[.76,.72],[.60,.72]],true);
+      line(p,M.tail,[[s*.74,1.02,R+.013],[s*.68,1.27,R-.12],[s*.61,1.39,R-.23]],.032,'jazz-tall-tail-lamp');
+      line(p,M.paint,[[s*(W-.01),.81,-.65],[s*(W-.006),.96,.65],[s*(W-.035),1.02,1.5]],.012,'jazz-side-crease');
+    }
+    badge('H',.12,.10,.84,F-.021);badge('H',.10,.08,.96,R+.014);badge('JAZZ',.18,.045,.82,R+.015);
+  }
   if(id==='mini_jcw'){
+    const trim=car.spec.trimLabel || 'JCW',jcw=trim==='JCW',sport=trim!=='COOPER';
     face(M.black,[[-.43,.80],[-.34,.86],[.34,.86],[.43,.80],[.37,.55],[-.37,.55]],F-.006,'jcw-hex-grille');
     line(p,M.chrome,[[-.43,.80,F-.009],[-.34,.86,F-.009],[.34,.86,F-.009],[.43,.80,F-.009],[.37,.55,F-.009],[-.37,.55,F-.009],[-.43,.80,F-.009]],.009);
-    box(p,M.red,[.69,.018,.012],[0,.73,F-.013],.003);
+    if(jcw)box(p,M.red,[.69,.018,.012],[0,.73,F-.013],.003);
     for(const s of [-1,1]){
       const light=new THREE.Group();light.name='front-lamp-housing';light.position.set(s*.60,.86,F-.035);light.rotation.x=-.23;p.add(light);
       const cup=ring(light,M.paint,.151,.016,[0,0,-.022]);cup.scale.y=1.22;
@@ -67,16 +81,16 @@ export function buildRoadCar(car,d,M,low,plate,H){
       const rim=ring(light,M.chrome,.142,.012,[0,0,-.023]);rim.scale.y=1.22;
       const led=ring(light,M.led,.119,.007,[0,0,-.026]);led.scale.y=1.22;
       disk(light,M.chrome,.063,[0,-.022,-.03],[0,Math.PI,0]);disk(light,M.led,.042,[0,-.022,-.033],[0,Math.PI,0]);
-      face(M.black,[[s*.47,.52],[s*.72,.55],[s*.72,.29],[s*.43,.29]],F-.009,'jcw-brake-intake');
+      if(jcw)face(M.black,[[s*.47,.52],[s*.72,.55],[s*.72,.29],[s*.43,.29]],F-.009,'jcw-brake-intake');
       box(p,M.black,[.26,.045,.09],[s*.58,.285,F+.008],.007);
       lamp(s,[[.53,1.00],[.72,1.00],[.72,.69],[.53,.69]],true);
       line(p,M.chrome,[[s*.52,1.01,R+.012],[s*.73,1.01,R+.012],[s*.73,.68,R+.012],[s*.52,.68,R+.012],[s*.52,1.01,R+.012]],.010);
       line(p,M.tail,[[s*.55,.94,R+.02],[s*.69,.94,R+.02],[s*.69,.75,R+.02],[s*.55,.75,R+.02]],.013);
-      surface(p,M.black,(u,v)=>{const z=mix(F+.28,d.cowl-.06,u),x=s*mix(.21,.32,v);return[x,deck(x,z)+.003,z];},24,2,'bonnet-stripe');
+      if(jcw)surface(p,M.black,(u,v)=>{const z=mix(F+.28,d.cowl-.06,u),x=s*mix(.21,.32,v);return[x,deck(x,z)+.003,z];},24,2,'bonnet-stripe');
     }
-    box(p,M.black,[1.27,.08,.29],[0,d.H-.01,d.roofBack+.11],.02,[0,0,0],'jcw-roof-spoiler');
-    box(p,M.black,[.32,.024,.11],[0,deck(0,-1.15)+.01,-1.15],.009,[0,0,0],'bonnet-scoop');
-    badge('MINI',.16,.035,.89,F-.008);badge('JOHN COOPER WORKS',.30,.034,.91,R+.009);
+    if(sport)box(p,M.black,[1.27,.08,.29],[0,d.H-.01,d.roofBack+.11],.02,[0,0,0],'jcw-roof-spoiler');
+    if(sport)box(p,M.black,[.32,.024,.11],[0,deck(0,-1.15)+.01,-1.15],.009,[0,0,0],'bonnet-scoop');
+    badge('MINI',.16,.035,.89,F-.008);badge(jcw?'JOHN COOPER WORKS':trim,.30,.034,.91,R+.009);
     car.exhaust=[new THREE.Vector3(-.075,.26,R+.024),new THREE.Vector3(.075,.26,R+.024)];
   }
   if(id==='huracan'){

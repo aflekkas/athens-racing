@@ -74,7 +74,7 @@ export function runManeuvers(){
   for(const kmh of car==='carrera'?[20,30,40]:[30])results.donuts.push(spin({car,kmh}));
   results.holds.push(driftHold(car));results.recoveries.push(recover(car));
  }
- for(const car of ['carrera','z4','e36','gtv','gr_yaris','mini'])for(const aids of [false,true])results.handbrakeSpins.push(spin({car,kmh:car==='mini'?80:60,aids,handbrake:car==='mini'?1.5:.6,seconds:8}));
+ for(const car of ['carrera','z4','e36','gtv','gr_yaris','mini'])for(const aids of [false,true])results.handbrakeSpins.push(spin({car,kmh:car==='mini'?80:60,aids,handbrake:car==='mini'?1.5:.6,seconds:car==='mini'?9:8}));
  return results;
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){

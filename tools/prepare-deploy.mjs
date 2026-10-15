@@ -9,6 +9,7 @@ import { PLAYABLE_MAPS } from '../src/enabled-maps.js';
 import { bundleBrowser } from './bundle-browser.mjs';
 import { bakeWorlds } from './bake-world.mjs';
 import { buildRelease, publishRelease, CACHE_HEADERS } from './release-cache.mjs';
+import { publishReleaseData } from './release-data.mjs';
 const root = resolve(import.meta.dirname, '..'), out = resolve(root, '.deploy/assets');
 await rm(resolve(root, '.deploy'), { recursive: true, force: true });
 await mkdir(out, { recursive: true });
@@ -37,6 +38,10 @@ for (const def of MAPS) {
 // map data, generated worlds, textures and sounds must wait for a committed session.
 const release = await buildRelease(out, { core: ['/src/', '/style.css', '/assets/icons/', '/assets/maps/'] });
 const swBytes = await publishRelease(root, out, release);
+// After the content build id exists, so the version, notes and credits never change it (see tools/release-data.mjs).
+const version = await publishReleaseData(root, out, { build: release.build });
+if (version.unreleased) console.warn(`CHANGELOG.md still has ${version.unreleased} Unreleased bullet(s): before promoting to prod, move them under a dated version (deploy/README.md, Release notes).`);
+if (version.unlistedAuthors.length) console.warn(`Git authors missing from CREDITS.md: ${version.unlistedAuthors.join(', ')} (listed as contributors for now).`);
 count = 0; bytes = 0; largest = { size: 0, path: '' };
 async function inventory(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -49,4 +54,4 @@ await inventory(out);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
 const { cars, nitrousCars } = readCarCapabilities(catalogue);
 await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars }));
-console.log(JSON.stringify({ assets: count, bytes, largest, release: { build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));
+console.log(JSON.stringify({ assets: count, bytes, largest, release: { version: version.version, sha: version.sha, build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));

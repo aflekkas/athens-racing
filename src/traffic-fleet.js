@@ -83,7 +83,7 @@ function geometryOf(o,matrix,colored=false){
 function compact(parent,car,preserveParts,mergeMirrors=false){
   parent.updateMatrixWorld(true);const inv=parent.matrixWorld.clone().invert(),buckets=new Map(),parts=[];
   const visit=o=>{
-    if(o!==parent&&(!mergeMirrors&&(o.userData.mirrorAssembly||o.userData.mirrorSupport)||preserveParts&&o.userData.damagePart)){parts.push(o);return;}
+    if(o!==parent&&(o.name==='attached-rider'||!mergeMirrors&&(o.userData.mirrorAssembly||o.userData.mirrorSupport)||preserveParts&&o.userData.damagePart)){parts.push(o);return;}
     if(o.isMesh&&!Array.isArray(o.material)){
       const m=o.material,plain=!m.transparent&&!m.map&&m!==car.paint&&m!==car.tail&&m!==car.materials.head&&m!==car.materials.led&&!car.strobeMaterials?.includes(m);
       const material=plain?trimMaterial:m;

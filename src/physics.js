@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
 import { damageIncrement, equivalentBarrierSpeed, isGroundContact, frontalBarrierSpeed, mechanicalIncrement, impactPowerFactor, isTerminalImpact } from './damage-math.js';
 import { ROAD } from './road.js';
-import { manualMode } from './transmission.js';
+import { manualMode, powertrainFor, powertrainCurve, shiftSchedule } from './transmission.js';
 import { ENGINE_ABUSE, resetEngineAbuse, predictedGearRpm, shiftFeedback, updateMechanicalOverrev, updateManualHeat, engineWearFactor } from './engine-abuse.js';
 import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 import { suspensionRoadInput } from './suspension-road-input.js';
@@ -41,6 +41,9 @@ const ENGINES = {
   // BMW B58: 500 N m from 1600-4500 rpm, 250 kW 5000-6500 rpm (redline ~7000)
   turbo6: { curve: [[0, 0.45], [0.18, 0.88], [0.23, 1], [0.64, 1], [0.93, 0.79], [1, 0.72], [1.1, 0.6]], lag: 0.45, boostMin: 0.55, Je: 0.17, lsd: 0.3 },
   flat6: { curve: [[0, 0.48], [0.3, 0.7], [0.6, 0.92], [0.82, 1], [1, 0.93], [1.1, 0.85]], lag: 0, Je: 0.11, lsd: 0.4 },
+  na3: { curve: [[0,.4],[.25,.65],[.5,.87],[.72,1],[1,.75],[1.1,.6]], lag: 0, Je: .16, lsd: 0 },
+  na6: { curve: [[0,.4],[.25,.68],[.5,.9],[.72,1],[1,.78],[1.1,.6]], lag: 0, Je: .24, lsd: 0 },
+  v10: { curve: [[0,.3],[.25,.6],[.5,.83],[.76,1],[1,.83],[1.1,.7]], lag: 0, Je: .27, lsd: .4 },
   v12: { curve: [[0, 0.58], [0.3, 0.84], [0.6, 1], [0.86, 0.98], [1, 0.9], [1.1, 0.8]], lag: 0, Je: 0.24, lsd: 0.4 },
   diesel: { curve: [[0, 0.42], [0.22, 0.85], [0.32, 1], [0.55, 1], [0.8, 0.86], [1, 0.62], [1.1, 0.5]], lag: 0.9, boostMin: 0.48, Je: 0.21, lsd: 0 },
 };
@@ -63,10 +66,15 @@ export class Vehicle {
     this.reset(0, 0);
   }
   setSpec(spec) {
+    this.powertrain = powertrainFor(spec);
+    if (this.powertrain) spec = { ...spec, idle: this.powertrain.idleRpm, redline: this.powertrain.redlineRpm };
+    if (this.powertrain) spec = { ...spec, torqueCurve: powertrainCurve(spec, this.powertrain) };
     this.spec = spec;
     if (this.playerGearbox) this.manual = manualMode(spec, this.manualPreference);
     if (spec.nitrous !== true) { this.nitro = 0; this.nitroOn = false; }
     this.eng = ENGINES[spec.engine] || ENGINES.turbo4;
+    if (this.powertrain) this.eng = { ...this.eng, Je: this.powertrain.inertia,
+      lag: this.powertrain.spoolTime, boostMin: spec.engine === 'diesel' ? 0.48 : 0.60 };
     this.m = spec.mass;
     this.wb = spec.wheelbase ?? BODY_WB[spec.body] ?? 2.55;
     const fw = spec.frontW ?? 0.55;
@@ -138,6 +146,8 @@ export class Vehicle {
     this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
+    this.powertrainTime = 0; this.powertrainEvents = []; this.shiftStartEvent = this.shiftEndEvent = this.limiterEvent = null;
+    this.converterLocked = false; this.converterSlip = 0; this.overrun = false; this.limiterHold = 0;
     this.shiftEvent = 0; this.gearChangeEvent = null; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
     this.skid = 0; this.wheelspin = 0; this.lockup = 0; this.lastV = speed; this.lastBumpCell = -1; this.kickT = 0; this.wasDeclutched = false; this.rearDrag = 0; this.dragI = 0; this.flickT = 0; this.bigSteerT = 9; this.bigSteerSide = 0; this.shareR = this.shareR0; this.powerT = 0; this.burnout = false; this.burnoutPrimed = false; this.handbrakeInput = false; this.handbrakeTurn = false;
     this.damage = { front: 0, rear: 0, left: 0, right: 0 }; this.smoke = false; this.lastDamage = null;
@@ -622,8 +632,13 @@ export class Vehicle {
     if (thrIn > 0.1 && this.reverse && vx > -0.8) this.reverse = false;
     const thrRaw = this.reverse ? brk : thrIn;
     this.engineThrottle = thrRaw;
+    this.powertrainTime += dt;
+    const pt = this.powertrain;
     this.shiftT = Math.max(0, this.shiftT - dt); this.shiftCool = Math.max(0, this.shiftCool - dt);
-    if (this.shiftT <= 0 && this.pendingGear) { this.gear = this.pendingGear; this.pendingGear = 0; }
+    if (this.shiftT <= 0 && this.pendingGear) {
+      this.gear = this.pendingGear; this.pendingGear = 0;
+      if (pt) this.shiftEndEvent = this.emitPowertrainEvent('shift-end', { ...this.gearChangeEvent, phase: 'end' });
+    }
     const sR = burnout && this.awd ? 1 : this.shareR, sF = 1 - sR;
     const vwF = (C4[0].vw + C4[1].vw) * 0.5, vwR = (C4[2].vw + C4[3].vw) * 0.5;
     const vwD = vwF * sF + vwR * sR; // differential carrier speed (contact-patch units)
@@ -640,15 +655,16 @@ export class Vehicle {
     const holdGear = burnout || sR > 0 && (inp.handbrake || (this.driftLatch > 0.3 && Math.abs(beta) > 0.1)); // fwd: the box reads the (honest) front wheels
     if (!this.reverse && this.shiftT <= 0 && this.shiftCool <= 0 && av > 0.5 && !(holdGear && inp.handbrake)) {
       const nG = sp.gears.length;
-      const up = holdGear ? red * 0.99 : red * lerp(0.6, 0.975, smoothstep(0.2, 0.9, thrRaw));
+      const schedule = pt && shiftSchedule(pt, thrRaw, Math.max(this.load, thrRaw + Math.max(0, gradeNow) * 2));
+      const up = holdGear ? red * 0.99 : pt ? schedule.up : red * lerp(0.6, 0.975, smoothstep(0.2, 0.9, thrRaw));
       const rpmIn = (g) => vwD / R * this.ratio(g) * 60 / (2 * Math.PI);
       const rpmRoad = (g) => vt / R * this.ratio(g) * 60 / (2 * Math.PI);
-      if (this.gear < nG && rpmIn(this.gear) > up && this.clutch >= 1) this.shift(this.gear + 1, sp.shiftT ?? 0.15);
-      else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * 0.25 && rpmRoad(this.gear - 1) < red * 0.7) this.shift(this.gear - 1, (sp.shiftT ?? 0.15) * 0.7); }
+      if ((!pt || brk < .2 || rpmIn(this.gear) > pt.limiterRpm) && this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
+      else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * 0.25 && rpmRoad(this.gear - 1) < red * 0.7) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
       else if (this.gear > 1) {
         const dn = rpmIn(this.gear - 1);
-        const downAt = brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
-        if (dn < red * 0.9 && (rpmIn(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmIn(this.gear) < red * 0.55))) this.shift(this.gear - 1, (sp.shiftT ?? 0.15) * 0.7);
+        const downAt = pt ? (brk > 0.2 ? red * lerp(.42, .72, brk) : schedule.down) : brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
+        if (dn < red * 0.9 && (!pt || dn < (brk > .2 ? red * .88 : schedule.up * .9)) && (rpmIn(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmIn(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
       }
     }
     }
@@ -657,27 +673,51 @@ export class Vehicle {
     const shifting = this.shiftT > 0;
     const slipGear = this.reverse || this.gear === 1;
     // handbrake: the driver dips the clutch so the engine can't fight the locked rears (rwd / awd); revs flare on throttle
-    const hbClutch = !!inp.handbrake && sR > 0 && !burnout;
+    const hbClutch = (!!inp.handbrake && sR > 0 && !burnout) || !!pt && pt.gearboxType === 'manual' && inp.clutch > 0.5;
     // Rev with the clutch dipped, then dump the stored flywheel momentum once.
     // This breaks traction on lower-torque FWD cars without adding engine power.
     const burnoutDump = burnout && !this.burnoutPrimed && this.rpm >= red * 0.8;
     if (burnoutDump) this.burnoutPrimed = true;
     const burnoutClutch = burnout && !this.burnoutPrimed;
-    const engaged = !hbClutch && !burnoutClutch && !shifting && Math.abs(wheelRpm) > sp.idle * 0.9 && (!slipGear || Math.abs(wheelRpm) >= launchRpm * 0.98);
+    const converter = !!pt?.torqueConverter;
+    if (converter) {
+      if (av < 9 || shifting) this.converterLocked = false;
+      else if (av > 13 && !shifting) this.converterLocked = true;
+    }
+    const converterOpen = converter && !this.converterLocked;
+    const engaged = !converterOpen && !hbClutch && !burnoutClutch && !shifting && Math.abs(wheelRpm) > sp.idle * 0.9 && (!slipGear || Math.abs(wheelRpm) >= launchRpm * 0.98);
     this.clutch = engaged ? 1 : shifting || hbClutch || burnoutClutch ? 0 : clamp(Math.abs(wheelRpm) / Math.max(1, launchRpm), 0, 0.99);
     let rpmT = engaged ? Math.abs(wheelRpm) : hbClutch ? sp.idle + thrRaw * (red * 0.85 - sp.idle) : shifting ? (this.pendingGear ? Math.abs(vwD / R * this.ratio(this.pendingGear) * 60 / (2 * Math.PI)) : this.rpm) : launchRpm;
-    if (shifting && this.pendingGear < this.gear && this.pendingGear) rpmT *= 1.05; // throttle blip
+    if (shifting && this.pendingGear < this.gear && this.pendingGear && (!pt || (this.revMatch ?? pt.revMatch))) rpmT *= 1.05; // throttle blip
     rpmT = Math.max(rpmT, sp.idle);
     // clutch kick: letting the clutch out on a flared engine dumps its flywheel energy into the driven wheels
     if (engaged && this.wasDeclutched && this.rpm > Math.abs(wheelRpm) + 300) this.kickT = (this.rpm - Math.abs(wheelRpm)) * Math.PI / 30 * e.Je / 0.18;
     if (burnoutDump) this.kickT = Math.max(0, this.rpm - Math.abs(wheelRpm)) * Math.PI / 30 * e.Je / 0.18;
     this.wasDeclutched = hbClutch;
     this.kickT = Math.max(0, this.kickT - dt * this.kickT / 0.18);
-    this.rpm = engaged ? Math.max(sp.idle, Math.abs(wheelRpm)) : damp(this.rpm, rpmT, shifting ? 18 : 9, dt);
+    if (pt && !engaged) {
+      if (hbClutch || burnoutClutch) rpmT = pt.limiterRpm + 120;
+      if (converterOpen && !shifting) rpmT = Math.max(launchRpm, Math.abs(wheelRpm) + thrRaw * 420 + 65);
+      if (shifting && pt.gearboxType === 'manual' && !(this.revMatch ?? pt.revMatch) && this.pendingGear < this.gear) rpmT = Math.max(sp.idle, this.rpm - dt * 1600);
+      const freeTorque = this.torqueMax(this.rpm) * thrRaw;
+      const friction = sp.torque * pt.engineBraking * (0.2 + 1.1 * (this.rpm / red) ** 1.5);
+      const rise = Math.min(pt.maxFreeRevRate, Math.max(300, (freeTorque - friction) / e.Je * 30 / Math.PI));
+      const fall = Math.max(900, friction / e.Je * 30 / Math.PI);
+      const matching = shifting && (pt.gearboxType !== 'manual' || (this.revMatch ?? pt.revMatch));
+      const rate = matching ? Math.max(rise, Math.abs(rpmT - this.rpm) / Math.max(dt, this.shiftT)) : rise;
+      if (this.limiter) rpmT = Math.min(rpmT, pt.limiterRpm - pt.limiterDrop - 40);
+      if (thrRaw < .01 && (hbClutch || burnoutClutch)) rpmT = sp.idle;
+      this.rpm += clamp(rpmT - this.rpm, -(matching ? Math.max(fall, rate) : fall) * dt, rate * dt);
+    } else this.rpm = engaged ? Math.max(sp.idle, Math.abs(wheelRpm)) : damp(this.rpm, rpmT, shifting ? 18 : 9, dt);
+    this.converterSlip = converterOpen ? Math.max(0, this.rpm - Math.abs(wheelRpm)) : 0;
     if (this.manual) this.rpm = Math.min(this.rpm, red * ENGINE_ABUSE.displayRatio);
     if (updateMechanicalOverrev(this, dt, wheelRpm, engaged)) this.damageFx();
     // limiter (fuel cut with hysteresis)
-    if (this.rpm > red * 1.005) this.limiter = true; else if (this.rpm < red * 0.97) this.limiter = false;
+    const wasLimiter = this.limiter;
+    this.limiterHold = Math.max(0, this.limiterHold - dt);
+    if (this.rpm > (pt?.limiterRpm ?? red * 1.005)) { this.limiter = true; if (!wasLimiter) this.limiterHold = 0.055; }
+    else if (this.rpm < (pt ? pt.limiterRpm - pt.limiterDrop : red * 0.97) && !this.limiterHold) this.limiter = false;
+    if (pt && this.limiter && !wasLimiter) this.limiterEvent = this.emitPowertrainEvent('limiter-hit', { rpm: this.rpm, gear: this.gear });
     // traction control trims torque while the driven wheels spin
     const thr = thrRaw * (1 - this.tcCut) * (1 - this.escCut);
     let Te = this.torqueMax(this.rpm) * thr;
@@ -686,12 +726,21 @@ export class Vehicle {
     // axRaw into stepSuspension, transferring load forward without a yaw kick.
     // The clutch-open branch below disconnects this drag from the wheels.
     const brakeRevs = clamp(this.rpm / red, 0, 1.15);
-    const Teb = sp.torque * (sp.ebrake ?? 0.15) * (0.2 + 1.1 * brakeRevs ** 1.5) * Math.max(0, 1 - (this.manual && this.limiter ? 0 : thrRaw) * 4) * (wheelRpm < 0 ? -1 : 1);
+    const Teb = sp.torque * (pt?.engineBraking ?? sp.ebrake ?? 0.15) * (0.2 + 1.1 * brakeRevs ** 1.5) * Math.max(0, 1 - ((this.manual || pt) && this.limiter ? 0 : thrRaw) * 4) * (wheelRpm < 0 ? -1 : 1);
     // A manual fuel cut closes the throttle for engine braking, letting revs fall
     // through hysteresis and bounce instead of hanging at the cut indefinitely.
     if (this.limiter) Te = 0;
-    if (shifting) Te = 0;
-    let Tnet = engaged ? Te - Teb + this.kickT : hbClutch || burnoutClutch ? 0 : Te * (shifting ? 0 : 1) + (burnout ? this.kickT : 0);
+    const handover = shifting && !this.pendingGear ? 0 : pt?.gearboxType === 'dct' ? 0.94 : pt?.gearboxType === 'automatic' ? 0.60 : 0;
+    if (shifting) Te *= handover;
+    let Tnet = engaged ? Te - Teb + this.kickT : hbClutch || burnoutClutch ? 0 : Te + (burnout ? this.kickT : 0);
+    if (converterOpen && !shifting) {
+      // Hydrodynamic multiplication fades with turbine/pump speed ratio; no extra power at lock-up.
+      const speedRatio = clamp(Math.abs(wheelRpm) / Math.max(sp.idle, this.rpm), 0, 1);
+      Tnet *= 1 + 0.8 * (1 - speedRatio);
+      if (thrRaw < .01 && !this.reverse && av < 2.2 && brk < .1) Tnet += sp.torque * .055 * (1 - av / 2.2);
+      if (thrRaw < .01) Tnet -= Teb * speedRatio * .55;
+    }
+    this.overrun = thrRaw < .05 && this.rpm > sp.idle * 1.3 && !shifting && !hbClutch;
     this.engT = Tnet;
     this.load = clamp(Tnet / (sp.torque * (sp.powerMul ?? POWER_MUL)), -1, 1);
     // nitro: extra fuel and a squirt of shove
@@ -703,7 +752,9 @@ export class Vehicle {
     const vmax = sp.vmax / 3.6 * (this.nitroOn ? 1.08 : 1);
     if (Tnet > 0) Tnet *= 1 - smoothstep(vmax * 0.975, vmax * 1.01, av);
     if (this.reverse) Tnet *= 1 - smoothstep(5.5, 7, -vx); // reverse governor (~25 km/h), smooth so the wheels don't overshoot
-    const Fdrive = Tnet * gr * ETA / R; // at the contact patches, signed (reverse -> negative)
+    const shiftProgress = shifting && pt && this.pendingGear && this.gearChangeEvent ? 1 - this.shiftT / this.gearChangeEvent.duration : 0;
+    const driveRatio = shifting && pt && this.pendingGear && handover > 0 ? lerp(gr, this.ratio(this.pendingGear), smoothstep(0, 1, shiftProgress)) : gr;
+    const Fdrive = Tnet * driveRatio * ETA / R; // at the contact patches, signed (reverse -> negative)
     // engine + gearbox inertia seen at the driven contact patches (kg) while the clutch is locked: Je (i/R)^2
     const Jeq = engaged ? e.Je * gr * gr / (R * R) : 0;
 
@@ -1009,7 +1060,7 @@ export class Vehicle {
     }
     if (!this.reverse && Math.abs(this.vLong) < 0.05 && thrIn < 0.05 && brk > 0) this.vLong = 0;
     // at rest (|vLat| gate: a car sliding sideways passes through vLong = 0 and must not be stopped dead)
-    if (Math.abs(this.vLong) < 0.03 && Math.abs(this.vLat) < 0.4 && Math.abs(this.w) < 0.1 && thrRaw < 0.05) { this.vLong = 0; this.vLat *= 0.9; for (const Wc of C4) Wc.vw = 0; this.wheel[0].vw = this.wheel[1].vw = 0; }
+    if (Math.abs(this.vLong) < 0.03 && Math.abs(this.vLat) < 0.4 && Math.abs(this.w) < 0.1 && thrRaw < 0.05 && !(converter && brk < .1)) { this.vLong = 0; this.vLat *= 0.9; for (const Wc of C4) Wc.vw = 0; this.wheel[0].vw = this.wheel[1].vw = 0; }
     this.ax = damp(this.ax, ax, 10, dt); this.ay = damp(this.ay, ay, 10, dt);
     this.drift = Math.abs(beta) > 0.16 && vt > 12 ? Math.abs(beta) : 0;
     this.slipF = Math.abs(this.wheel[0].aDyn); this.slipR = Math.abs(this.wheel[1].aDyn);
@@ -1083,18 +1134,34 @@ export class Vehicle {
     if (g < 1 || g > sp.gears.length) return shiftFeedback(this, false, 'bounds', g);
     const rpm = predictedGearRpm(this, g), unsafe = g < this.gear && rpm > sp.redline;
     // A stick accepts a money shift. Automated/paddle boxes still protect their engine.
-    if (unsafe && !this.manual) return shiftFeedback(this, false, 'overrev_protection', g, rpm);
+    if (unsafe && (!this.manual || this.powertrain && this.powertrain.gearboxType !== 'manual')) return shiftFeedback(this, false, 'overrev_protection', g, rpm);
     if (!this.manual) this.autoOverride = 3;
     this._unsafeShift = this.manual && g < this.gear ? { gear: g, from: this.gear, unsafe } : null;
-    this.shift(g, (sp.shiftT ?? 0.15) * (g < this.gear ? 0.7 : 1));
+    this.shift(g, this.powertrain?.shiftTime ?? (sp.shiftT ?? 0.15) * (g < this.gear ? 0.7 : 1));
     return shiftFeedback(this, true, unsafe ? 'mechanical_overrev' : 'shifted', g, rpm, unsafe);
+  }
+  emitPowertrainEvent(type, data) {
+    const event = { ...data, type, serial: this.powertrainSerial = (this.powertrainSerial || 0) + 1,
+      time: this.powertrainTime, gearboxType: this.powertrain?.gearboxType ?? 'legacy' };
+    this.powertrainEvents.push(event);
+    if (this.powertrainEvents.length > 32) this.powertrainEvents.shift();
+    return event;
+  }
+  /** Sound consumes scalar state every frame and events by monotonic serial. No frame-edge polling required. */
+  get powertrainSignals() {
+    return { rpm: this.rpm, redline: this.spec.redline, limiterRpm: this.powertrain?.limiterRpm ?? this.spec.redline,
+      throttle: this.engineThrottle || 0, load: this.load, boost: this.boost, gear: this.reverse ? -1 : this.gear,
+      gearboxType: this.powertrain?.gearboxType ?? 'legacy', shifting: this.shiftT > 0,
+      limiter: this.limiter, overrun: this.overrun, converterSlip: this.converterSlip,
+      converterLocked: this.converterLocked, events: this.powertrainEvents };
   }
   shift(g, t) {
     this.shiftEvent = g > this.gear ? 1 : -1;
     // Animation hook: persistent event with a monotonic serial (survives shiftEvent's frame reset).
     this.gearChangeEvent = { serial: this.gearChangeSerial = (this.gearChangeSerial || 0) + 1,
       from: this.gear, to: g, direction: this.shiftEvent, duration: t, manual: this.manual };
-    this.pendingGear = g; this.shiftT = t; this.shiftCool = t + 0.35;
+    if (this.powertrain) this.shiftStartEvent = this.emitPowertrainEvent('shift-start', { ...this.gearChangeEvent, phase: 'start' });
+    this.pendingGear = g; this.shiftT = t; this.shiftCool = t + (this.powertrain ? 0.45 : 0.35);
   }
   applyImpulse(jx, jz, yawKick = 0) {
     const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw), rx = Math.cos(this.yaw), rz = -Math.sin(this.yaw);

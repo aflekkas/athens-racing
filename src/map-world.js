@@ -118,8 +118,6 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
     const streetLife = buildStreetLife(map, group, ter.heightC, coastal ? custom : null);
-    people.streetLife = streetLife;
-    people.anchors.push(...streetLife.artists); people.anchors.sort((a, b) => a.s - b.s);
     if (route.closed) { people.dens = () => 0; people.anchors.length = 0; }
     progress('FUELLING THE CARS', .85); await frameYield();
     const traffic = new Traffic(group, route, map.data);
@@ -134,7 +132,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     if (coastal) { buildHumps(map, group, ter.heightC); buildSandTraps(ground, group); buildBarriers(map, group); }
     const splash = new Splash(group), fx = new Fx(group, route, ground);
     const markers = new EventMarkers(group, route);
-    const lod = prepareSceneryLod(group, quality);
+    const lod = prepareSceneryLod(group, quality, map);
     group.matrixAutoUpdate = false; group.updateMatrix(); freezeStatic(staticRoots);
     let disposed = false;
     return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, tyreWalls: custom?.tyreWalls,

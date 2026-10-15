@@ -1,0 +1,52 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Impact physics evidence</title>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<style>body{margin:0;background:#aebec7;font:18px system-ui}#caption{position:absolute;left:24px;top:20px;padding:12px 18px;background:#ffffffe8;border-radius:8px}canvas{display:block}</style></head><body><div id="caption"></div><script type="module">
+import * as THREE from 'three';
+import { ImpactBodies } from '../../src/impact-ragdoll-view.js';
+import { People } from '../../src/people.js';
+import { Traffic } from '../../src/traffic.js';
+import { trafficModel,TRAFFIC_TYPES } from '../../src/cars.js';
+import { Crowd,makeLook,newPose,poseStand } from '../../src/human.js';
+import { RNG } from '../../src/util.js';
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1000,640);renderer.setPixelRatio(1);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#aebec7');scene.add(new THREE.HemisphereLight('#fff7e9','#747d79',2.4));const sun=new THREE.DirectionalLight('#fff4dd',3);sun.position.set(4,8,-3);scene.add(sun);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:'#565c60',roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.005;scene.add(floor);
+for(let z=-60;z<30;z+=6){const m=new THREE.Mesh(new THREE.PlaneGeometry(.1,3),new THREE.MeshStandardMaterial({color:'#eee6cd'}));m.rotation.x=-Math.PI/2;m.position.set(3,.006,z);scene.add(m);}
+const camera=new THREE.PerspectiveCamera(43,1000/640,.05,200),pool=new ImpactBodies(scene,()=>0),crowd=new Crowd(scene,1);
+const carType=TRAFFIC_TYPES.find(t=>t.id==='golf')||TRAFFIC_TYPES.find(t=>!t.scooter&&!t.bus),bikeType=TRAFFIC_TYPES.find(t=>t.id==='moto')||TRAFFIC_TYPES.find(t=>t.scooter);
+const car=trafficModel(carType,'#356b92',new RNG(2)),bike=trafficModel(bikeType,'#ba4935',new RNG(3));scene.add(car.root,bike.root);
+const route={point:(s,u,out=new THREE.Vector3())=>out.set(u,0,-s),frame:(s,out={})=>Object.assign(out,{tx:0,tz:-1,rx:1,rz:0,grade:0,bank:0}),surfaceY:()=>0,edge:()=>50,div:()=>0};
+const tr=Object.create(Traffic.prototype);Object.assign(tr,{cars:[],people:{bodies:pool},route,sounds:[],t:0,damageCar(){},chainCollide(){}});
+let t=0,mode,body,ped,vehicle,c;
+function setup(which){
+ mode=which;t=0;pool.clear();crowd.begin();crowd.end();car.root.visible=which!=='rider';bike.root.visible=which==='rider';
+ vehicle={x:0,y:0,z:0,yaw:0,halfL:carType.len/2,halfW:carType.wid/2,vLong:which==='low'?2:10,vLat:0,spec:{height:1.4}};
+ if(which==='rider'){
+  c={id:0,type:bikeType,m:bike,s:0,u:0,dir:1,len:bikeType.len,wid:bikeType.wid,mass:260,I:110,dmg:0,active:true,flash:{},indL:{},indR:{},wheel:0,v:8};tr.cars=[c];
+  tr.hitCar(c,{vs:14,vu:2,w:.7,phi:0},10,'left',0);
+  tr.syncRiders();body=c.riderBody;
+ }else{
+  ped={active:true,slot:4,x:.1,y:0,wy:0,z:-vehicle.halfL-.12,yaw:Math.PI,look:makeLook(new RNG(71),'street')};
+  People.prototype.hit.call({bodies:pool,events:[],despawn(p){p.active=false;}},ped,{veh:vehicle,fx:0,fz:-1,rx:1,rz:0,v:vehicle.vLong,kind:'player'});body=pool.bodies.find(b=>b.active);
+ }
+ render();return stats();
+}
+function step(seconds){
+ const n=Math.round(seconds*120);for(let i=0;i<n;i++){
+  t+=1/120;
+  if(mode==='rider'){tr.t=t;tr.updateCrashed(c,1/120);tr.syncRiders();}
+  else {if(mode==='low')vehicle.vLong=Math.max(0,2-t*8);vehicle.z-=vehicle.vLong/120;body.update(1/120,()=>0);}
+ }pool.render();render();return stats();
+}
+function render(){
+ if(mode==='rider'){
+  const k=c.crash;bike.root.position.set(c.u,k.y+c.wid*.5*Math.max(0,Math.abs(Math.sin(k.roll))-.1),-c.s);bike.root.rotation.set(k.pitch,-k.yaw,k.roll,'YXZ');
+ }else {car.root.position.set(vehicle.x,0,vehicle.z);car.root.rotation.set(0,0,0);}
+ const center=mode==='rider'?new THREE.Vector3((c.u+body.p[0])*.5,1,(-c.s+body.p[2])*.5):new THREE.Vector3(0,.7,vehicle.z-.5);
+ camera.position.copy(center).add(new THREE.Vector3(-5.8,3.3,-5.7));camera.lookAt(center);
+ document.querySelector('#caption').textContent=`${mode==='rider'?'Rider ejection · bike slides independently':mode==='low'?'Low speed · knock-down':'Moderate speed · bonnet fold'} — ${t.toFixed(2)} s`;
+ renderer.render(scene,camera);
+}
+function stats(){return{mode,t,body:body&&Array.from(body.p),sleep:body?.sleeping,roll:c?.crash?.roll,riderHidden:mode==='rider'?[...function*(){const arr=[];bike.root.traverse(o=>{if(o.name==='attached-rider')arr.push(o.visible);});yield* arr;}()]:null};}
+window.ragdollFixture={setup,step,stats};window.ready=true;
+</script></body></html>

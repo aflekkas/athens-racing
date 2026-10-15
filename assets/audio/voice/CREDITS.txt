@@ -1,7 +1,7 @@
 Athens Street Racers — offline synthetic Greek voice reactions (2026-10-14)
 
 Greek scripts, transliterations, English meanings: project contribution.
-50 phrases × 4 character profiles = 200 mono Ogg Vorbis clips.
+96 phrases × 4 character profiles = 384 mono Ogg Vorbis clips.
 Two independent neural speaker models; young/older names describe pitch/rate
 character treatments, not four distinct recorded actors or verified ages.
 No cloned player voices. No hosted inference or runtime model downloads.
@@ -33,3 +33,12 @@ Maintainable scripts and translations: lines.json. Runtime contains no subtitles
 MMS (CC-BY-NC-4.0) evaluation audio remains in .scratch/voice/mms only.
 XTTS-v2 CPML explicitly restricts both model and output to noncommercial use;
 no XTTS or MMS output is included in shipped assets.
+
+2026-10-15 extension: 22 police cues, 24 driver/pedestrian/near/rider reactions
+and 2 short driver tap reactions. Same two licensed local models and profiles.
+Police megaphone effect is baked offline before loudness normalization.
+No noncommercial model output was used. Runtime Swearing defaults ON; mixed
+pools choose explicit lines 75% of the time, OFF excludes all explicit lines.
+
+Road-rage extension: six player-driver cut-in reactions, four profiles each.
+Same licensed models, normalization and clean/explicit selection policy.

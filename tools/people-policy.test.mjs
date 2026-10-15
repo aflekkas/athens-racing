@@ -28,11 +28,10 @@ test('Riviera towns/promenades permit people; cliff roads never do', async () =>
   }
   assert.ok(populated > 50);
 });
-test('beaches only open by day in good weather, artists at dusk, rain reduces street activity', () => {
+test('beaches only open by day in good weather, rain reduces street activity', () => {
   assert.equal(peopleSchedule('beach', 21, 0), 0); assert.equal(peopleSchedule('beach', 14, 1), 0);
   assert.equal(peopleSchedule('beach', 14, 0), 1);
   assert.ok(peopleSchedule('beach', 8, 0) < peopleSchedule('beach', 14, 0) / 4, 'quiet early beach opening');
-  assert.ok(peopleSchedule('artist', 21, 0) > peopleSchedule('artist', 14, 0) * 10);
   assert.ok(peopleSchedule('walker', 21, 0) > peopleSchedule('walker', 3, 0) * 10);
   assert.ok(peopleSchedule('walker', 3, 0, true) > peopleSchedule('walker', 3, 0));
   assert.ok(peopleSchedule('walker', 14, 1) < peopleSchedule('walker', 14, 0));

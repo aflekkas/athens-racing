@@ -9,6 +9,7 @@
 // summer beach crowd near Vouliagmeni and Limanakia (more cars, cruisers hunting for parking, cars parked along the road).
 // Side-street cross traffic, crash physics, near-miss tracking and road-works cones are kept from the previous build.
 import * as THREE from 'three';
+import { impactTarget, LIFE, STEP } from './impact-ragdoll.js';
 import { COND } from './env.js';
 import { trafficByHour, hourForTime } from './world-life.js';
 import { TRAFFIC_TYPES, trafficModel } from './cars.js';
@@ -208,7 +209,7 @@ export class Traffic {
   // ---------------------------------------------------------------- spawning
   reset(ps) {
     this.proxies.begin(); this.proxies.end();
-    for (const c of this.cars) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; }
+    for (const c of this.cars) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; c.rider = null; c.riderDrawn = null; }
     for (const k of this.cones) { k.s = k.s0; k.u = k.u0; k.y = 0; k.vs = k.vu = k.vy = 0; k.rx = k.rz = 0; k.w = 0; k.hit = false; }
     this.honks.length = 0; this.sounds.length = 0; this.lastBus = -1e9;
     if (!this.disabled) {
@@ -221,7 +222,7 @@ export class Traffic {
 
   /** a pooled car comes back as a new one: straighten its panels */
   repair(c) {
-    c.dmg = 0;
+    c.dmg = 0; c.rider = null; c.riderDrawn = null;
     if (c.dz) for (const z in c.dz) { if (c.dz[z]) c.m.setDamage?.(z, 0); c.dz[z] = 0; }
     c.flash.emissiveIntensity = 0;
   }
@@ -1178,6 +1179,13 @@ export class Traffic {
       if (c.cross) { c.cross = null; c.dir = 1; }
       c.mode = 'drive'; c.task = null; c.evade = null; c.ovt = null; c.lcT = 0; c.flash.emissiveIntensity = 0;
     }
+    if (impactTarget(c.type) === 'rider' && dv >= 3 && !c.rider) {
+      // Quantize before simulating, just like the shared traffic authority.
+      const Q = n => Math.round(n * 100) / 100;
+      c.rider = { s:Q(c.s), u:Q(c.u), y:Q(this.route.surfaceY?.(c.s,c.u) || 0), yaw:Q(B.phi), vs:Q(B.vs), vu:Q(B.vu), vy:Q(Math.min(7, 2 + dv * .22)), age:0 };
+      c.crash.rollV += (zone === 'left' ? 1 : -1) * Math.min(5, 1 + dv * .25);
+      this.sounds.push({kind:'rider-thrown',target:'rider',who:impact.who || 'traffic',c,car:c,sev:dv, s:c.rider.s,u:c.rider.u,vs:c.rider.vs,vu:c.rider.vu,vy:c.rider.vy});
+    }
     const k = c.crash;
     k.vs = B.vs; k.vu = B.vu; k.w = B.w; k.yaw = B.phi - (c.dir < 0 ? Math.PI : 0);
     k.t = Math.min(k.t, 0.5); k.rec = 0;
@@ -1236,7 +1244,7 @@ export class Traffic {
           if (now - c.pHitT > 1.5 && c.pMin > 0 && c.pMin < 1.25) {
             if (!rv) rv = routeVel(veh, route);
             const relV = Math.hypot(rv.vs - cvs, rv.vu - cvu);
-            if (relV > 8) events.push({ kind: 'near', car: c, clearance: c.pMin, oncoming: c.dir * this.dir < 0, rel: relV, side: Math.sign(du) });
+            if (relV > 8) events.push({ kind: 'near', target: impactTarget(c.type), who: actor.kind, car: c, clearance: c.pMin, oncoming: c.dir * this.dir < 0, rel: relV, side: Math.sign(du) });
           }
           c.pMin = 99;
         }
@@ -1252,7 +1260,7 @@ export class Traffic {
       const vs0 = A.vs, vu0 = A.vu;
       const r = impulse(A, B, ct, c.crash && c.crash.onSide ? 0.05 : 0.15, 0.45);
       const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
-      impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m);
+      impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m); impactB.who = actor.kind;
       // separate them (by inverse mass), then write the bodies back
       const ia = 1 / A.m, ib = 1 / B.m, sh = (ct.ov + 0.01) / (ia + ib);
       pushVeh(veh, rv.f, -ct.ns * sh * ia, -ct.nu * sh * ia);
@@ -1268,7 +1276,7 @@ export class Traffic {
       this.online?.contactCar(c, beforeOnline, B, dvB, zoneOf(B, ct.ps, ct.pu), impactB);
       if (actor.kind === 'player') c.pHitT = now;
       const sev = r.vn;
-      if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB, ...impactA });
+      if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', target: impactTarget(c.type), sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB, ...impactA });
     }
     // cones
     for (const k of this.cones) {
@@ -1337,7 +1345,7 @@ export class Traffic {
 
   updateCrashed(c, dt) {
     const k = c.crash, route = this.route, g = this.ground;
-    k.t += dt;
+    k.t += dt; if (c.rider) c.rider.age += dt;
     const phi = k.yaw + (c.dir < 0 ? Math.PI : 0), fs = Math.cos(phi), fu = Math.sin(phi), rs = -fu, ru = fs;
     const onSide = Math.abs(k.roll) > 1.1;
     // ---- ground under the car
@@ -1482,9 +1490,37 @@ export class Traffic {
     m.instanceMatrix.needsUpdate = true;
   }
 
+  /** Shared ejection seeds are replayed at fixed steps, including late joins and authority changes. */
+  syncRiders() {
+    const pool = this.people?.bodies; if (!pool) return;
+    for (const c of this.cars) {
+      const r = c.rider;
+      if (c.riderHidden !== !!r) {
+        c.riderHidden = !!r;
+        c.m.root.traverse(o => { if (o.name === 'attached-rider') o.visible = !r; });
+      }
+      if (!r || r.age >= LIFE) continue;
+      let b = c.riderBody;
+      if (c.riderDrawn !== r) {
+        const pt = this.route.point(r.s,r.u,_v), f = this.route.frame(r.s,{});
+        b = pool.spawn({s:r.s,kind:'rider',owner:c.id,seed:c.id,x:pt.x,y:r.y+.12,z:pt.z,yaw:Math.atan2(-f.tx,-f.tz)-r.yaw,
+          vx:f.tx*r.vs+f.rx*r.vu,vz:f.tz*r.vs+f.rz*r.vu,vy:r.vy});
+        c.riderDrawn=r;c.riderBody=b;
+      }
+      if (!b?.active || b.kind !== 'rider' || b.owner !== c.id) continue; // cap eviction stays evicted
+      const target = Math.floor(r.age / STEP) * STEP;
+      while (b.age + STEP <= target + 1e-8) b.update(STEP,pool.ground);
+    }
+    for (const b of pool.bodies) if (b.kind === 'rider' && b.active) {
+      const c = this.cars[b.owner]; if (!c?.active || !c.rider || c.rider.age >= LIFE) b.active=false;
+    }
+    pool.render();
+  }
+
   /** place the visual models */
   sync(ps) {
     const route = this.route, f = this.syncFrame;
+    this.syncRiders();
     this.proxies.begin();
     for (const c of this.cars) {
       if (!c.active) { if (c.m.damageDebris?.length) c.m.updateDamage?.(this.dtLast || 0.016); continue; } // only falling debris needs a pooled car's update

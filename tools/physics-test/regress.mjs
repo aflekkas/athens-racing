@@ -4,6 +4,7 @@
 // The handling tests use one controlled chassis and change only spec.drive (and the diff), so any FWD / RWD
 // difference comes from where the torque goes, not from tuning. Assists (TC / ESC / EDL) are off unless stated.
 import './register.mjs';
+import { catalogue, validatePowertrain } from './powertrain.mjs';
 import { readFileSync } from 'node:fs';
 const { Vehicle } = await import(process.env.PHYS || '../../src/physics.js');
 
@@ -54,6 +55,8 @@ function corner(drive, phase2, o = {}) {
   }
   return { v, before, after: { k: kappa(v), b: overAng(v) }, maxB, minK, maxK, ...tr };
 }
+
+for (const spec of catalogue()) { const errors = validatePowertrain(spec); check(`powertrain parameters ${spec.id}`, !errors.length, errors.join('; ')); }
 
 // ------------------------------------------------------------------ 1. determinism
 {
@@ -272,16 +275,34 @@ else {
   }
 }
 
+// Representative real-trim performance: tighter than the catalogue-wide sanity envelope.
+// 120s allows stock power/aero to approach terminal speed; 12% sprint / 3% top tolerances.
+for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','cle300e']) {
+  const spec = catalogue().find(c => c.id === id), v = new Vehicle(spec, route);
+  let t100 = null;
+  for (let i=0;i<120*60;i++) { v.update(DT,{ throttle:1,brake:0,steer:0 }); if (t100 === null && v.kmh>=100) t100=(i+1)*DT; }
+  check(`powertrain performance ${id}: 0–100 within 12%, top within 3% of trim figures`,
+    t100 !== null && Math.abs(t100/spec.zeroTo100-1)<.12 && Math.abs(v.kmh/spec.vmax-1)<.03,
+    `${f2(t100)} / ${spec.zeroTo100}s; ${f1(v.kmh)} / ${spec.vmax}km/h`);
+}
+
 // Same-generation engine choices must affect actual acceleration, not just the UI.
 // Kept outside the general catalogue bounds so a mistakenly reused base engine is caught.
 {
   const source = readFileSync(new URL('../../src/cars.js', import.meta.url),'utf8');
   const cars = Function('return '+source.split('export const CARS = ')[1].split('\n];')[0]+'\n];')();
   const launch = id => { const v=new Vehicle(cars.find(c=>c.id===id),route);v.reset(0,0,0);let t=0;while(v.kmh<100&&t<20){v.update(DT,{throttle:1,brake:0,steer:0});t+=DT;}return t; };
-  for(const [base,performance]of [['cle200','cle53'],['e36','e36_m3'],['gla','gla45']]){
+  for(const [base,performance,margin=.85]of [['jazz','jazz_dynamic'],['cle200','cle53'],['cle200','cle300e',.90],['e36','e36_m3'],['gla','gla45'],['panda_11','panda_100hp'],['yaris','yaris_ts'],['ibiza','ibiza_cupra'],['golf','golf_r'],['mini_cooper','mini_jcw'],['octavia_16tdi','octavia_rs'],['superb_15','superb_4x4'],['cla','cla45s'],['z4_20i','z4'],['e36_318i','e36_m3']]){
     const slow=launch(base),fast=launch(performance);
-    check(`trim acceleration: ${performance} quicker than ${base}`,fast<slow*.85,`${f2(fast)} vs ${f2(slow)} s`);
+    check(`trim acceleration: ${performance} quicker than ${base}`,fast<slow*margin,`${f2(fast)} vs ${f2(slow)} s`);
   }
+}
+
+// The fantasy Jazz must hold a real slide with throttle and steering inputs alone.
+{
+ const {jazzSlide}=await import('./jazz-slide.mjs');
+ const r=jazzSlide(Vehicle,catalogue().find(c=>c.id==='jazz_drift'),route);
+ check('Jazz Drift Spec: sustained 17–34 degree slide for at least five seconds',r.best>=5&&r.minSpeed>20&&r.peakBeta<1.4&&finite(r.v),`${f2(r.best)} s, minimum ${f1(r.minSpeed)} km/h, peak ${f1(r.peakBeta*180/Math.PI)} degrees`);
 }
 
 // Playtest 3: neutral steering stability, progressive power breakaway and driver recovery.

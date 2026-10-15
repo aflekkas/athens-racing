@@ -49,8 +49,7 @@ TDI loops. Short sections of revs were pitch-stabilized, seams overlapped, DC
 removed and levels matched. The high MINI loop is short (0.43 s); a longer
 steady full-load recording would improve variation. Load uses filtering and
 gain, not separate measured load/coast recordings. World sounds have their own
-credits; turbo/shift effects are procedural. The existing rival shares the
-player's performance/audio bank. Engine synthesis remains as a decode fallback.
+credits; turbo/shift effects are procedural. Rivals and catalogue traffic select their own profile and sample bank. Engine synthesis remains as a decode fallback.
 
 ADDITIONAL SYNTHESIZED ENGINES
 Porsche 991.1 Carrera 3.4: flat6, six-cylinder pulse model, 7,800 RPM redline.
@@ -81,3 +80,23 @@ decorrelated texture is divided by the square root of summed window powers.
 Each summed band receives smooth look-ahead RMS normalization. Circular
 overlap-add keeps the long-bed wrap continuous. Audio-rate pitch follows RPM
 and Doppler. No source audio asset or licence changed.
+
+VEHICLE AUDIO MODULE REFACTOR (2026-10-15)
+No source recording or audio asset changed. src/audio/engine-profiles.js maps
+additional turbo I4 trims to the existing CC0 MINI takes and turbo I6 trims to
+the existing Sonniss BMW M4 substitute; diesel I4/van trims use the attributed
+Loffy + Sonniss diesel takes above. City I4s use the MINI recording as a quiet,
+filtered four-cylinder substitute, not a model-exact naturally aspirated take.
+No suitable licensed flat-six, NA I6, V6/V8 biturbo or V10 takes are in this
+repository: these remain explicitly procedural firing-order approximations.
+Bus I6, motorcycles and NA I3 also have distinct procedural fallback profiles.
+Starter fallback, shutdown, shift lever, clutch, paddle and pass-by effects are
+original procedural synthesis; no new third-party effect samples were added.
+See src/audio/README.md for every car/trim and .scratch/engine-audio/README.md
+for game-mix demonstration captures. These are review evidence, not a sound
+library or a grant to redistribute the underlying Sonniss recordings.
+
+External bus and motorcycle profiles retain the existing world pack recordings
+when decoded: CC0 bus idle by bikesnbassboi, scooter idle by lovretta, scooter
+running by dif1891 (assets/audio/world/CREDITS.txt). Bus running uses the
+existing Sonniss TDI substitute; synthesis is the missing/decode fallback.

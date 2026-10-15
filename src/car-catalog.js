@@ -1,28 +1,28 @@
 // Garage entries describe a generation/body style. Trim IDs remain the wire/physics IDs,
 // so old saves, event links, traffic and remote players retain their exact drivetrain.
 export const CAR_MODELS = [
-  { id:'panda', name:'FIAT PANDA 169', trims:['panda'] },
-  { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris'] },
-  { id:'ibiza', name:'SEAT IBIZA 6K', trims:['ibiza'] },
-  { id:'golf', name:'VOLKSWAGEN GOLF VII', trims:['golf'] },
-  { id:'mini', name:'MINI CONVERTIBLE F57', trims:['mini'] },
-  { id:'mini_jcw', name:'MINI HATCH F56', trims:['mini_jcw'] },
+  { id:'panda', name:'FIAT PANDA 169', trims:['panda','panda_11','panda_100hp'] },
+  { id:'jazz', name:'HONDA JAZZ GK', trims:['jazz','jazz_dynamic','jazz_drift'] },
+  { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris','yaris_13','yaris_ts'] },
+  { id:'ibiza', name:'SEAT IBIZA 6K', trims:['ibiza','ibiza_cupra'] },
+  { id:'golf', name:'VOLKSWAGEN GOLF VII', trims:['golf','golf_gti','golf_gtd','golf_r'] },
+  { id:'mini', name:'MINI F56 / F57', trims:['mini','mini_cooper','mini_s','mini_jcw','mini_cabrio_cooper','mini_cabrio_jcw'], bodies:[['hardtop','HARDTOP',['mini_cooper','mini_s','mini_jcw']],['convertible','CONVERTIBLE',['mini_cabrio_cooper','mini','mini_cabrio_jcw']]] },
   { id:'gr_yaris', name:'TOYOTA GR YARIS GXPA16', trims:['gr_yaris'] },
-  { id:'gla', name:'MERCEDES-BENZ GLA H247', trims:['gla','gla45'] },
-  { id:'corolla', name:'TOYOTA COROLLA E210 SALOON', trims:['corolla'] },
-  { id:'taxi', name:'ŠKODA OCTAVIA IV TAXI', trims:['taxi'] },
-  { id:'superb', name:'ŠKODA SUPERB III', trims:['superb'] },
-  { id:'cla', name:'MERCEDES-BENZ CLA C178', trims:['cla'] },
-  { id:'cle', name:'MERCEDES-BENZ CLE C236', trims:['cle200','cle','cle450','cle53'] },
-  { id:'z4', name:'BMW Z4 G29', trims:['z4'] },
-  { id:'carrera', name:'PORSCHE 911 991.1', trims:['carrera'] },
-  { id:'huracan', name:'LAMBORGHINI HURACÁN EVO', trims:['huracan'] },
-  { id:'gtv', name:'ALFA ROMEO 105 GTV', trims:['gtv'] },
-  { id:'e36', name:'BMW 3 SERIES E36', trims:['e36','e36_m3'] },
+  { id:'gla', name:'MERCEDES-BENZ GLA H247', trims:['gla','gla250','gla45'] },
+  { id:'corolla', name:'TOYOTA COROLLA E210 SALOON', trims:['corolla','corolla_15'] },
+  { id:'taxi', name:'ŠKODA OCTAVIA III 5E', trims:['taxi','octavia_16tdi','octavia_rs'] },
+  { id:'superb', name:'ŠKODA SUPERB III', trims:['superb','superb_15','superb_4x4'] },
+  { id:'cla', name:'MERCEDES-BENZ CLA C118', trims:['cla','cla250','cla35','cla45s'] },
+  { id:'cle', name:'MERCEDES-BENZ CLE C236', trims:['cle200','cle','cle300e','cle450','cle53'] },
+  { id:'z4', name:'BMW Z4 G29', trims:['z4','z4_20i','z4_30i'] },
+  { id:'carrera', name:'PORSCHE 911 991.1', trims:['carrera','carrera_s','carrera_gts'] },
+  { id:'huracan', name:'LAMBORGHINI HURACÁN EVO', trims:['huracan','huracan_rwd'] },
+  { id:'gtv', name:'ALFA ROMEO 105 GTV', trims:['gtv','gtv1750'] },
+  { id:'e36', name:'BMW 3 SERIES E36', trims:['e36','e36_318i','e36_m3'] },
 ];
 export const GARAGE_CLASSES = [
-  ['city','CITY',['panda','yaris','ibiza','golf']],
-  ['hot hatch','HOT HATCH',['mini','mini_jcw','gr_yaris']],
+  ['city','CITY',['panda','jazz','yaris','ibiza','golf']],
+  ['hot hatch','HOT HATCH',['mini','gr_yaris']],
   ['sedan/coupe','SEDAN / COUPE',['corolla','taxi','superb','cla','cle']],
   ['suv','SUV',['gla']],
   ['sports','SPORTS',['z4','carrera']],
@@ -41,7 +41,9 @@ export function carCategory(c) { return CLASS_OF.get(carModel(c)?.id) || (c?.pol
 export function migrateCarSelection(saved) {
   const trim = typeof saved === 'string' ? saved : saved?.trim;
   const model = carModel(trim) || CAR_MODELS.find(m=>m.id===saved?.entry) || carModel('mini');
-  return { entry:model.id, trim:model.trims.includes(trim) ? trim : model.trims.includes(model.id) ? model.id : model.trims[0] };
+  const selected=model.trims.includes(trim) ? trim : model.trims.includes(model.id) ? model.id : model.trims[0];
+  const body=model.bodies?.find(([, ,ids])=>ids.includes(selected))?.[0];
+  return { entry:model.id, trim:selected, ...(body?{body}:{}) };
 }
 export function filterCars(cars, filters = {}) {
   const q=String(filters.search||'').trim().toLocaleLowerCase(), list=[];
@@ -55,4 +57,22 @@ export function filterCars(cars, filters = {}) {
   }
   return list.sort((a,b)=>CAR_CLASSES.indexOf(carCategory(a.car))-CAR_CLASSES.indexOf(carCategory(b.car)) ||
     (filters.sort==='power'?b.car.power-a.car.power:filters.sort==='weight'?a.car.mass-b.car.mass:GARAGE_CARS.indexOf(carModel(a.car).id)-GARAGE_CARS.indexOf(carModel(b.car).id)));
+}
+
+// Switch body at the same engine level. Host/event rules may remove combinations.
+export function bodyTrim(model, current, body, allowed) {
+  const from=model?.bodies?.find(([, ,ids])=>ids.includes(current));
+  const to=model?.bodies?.find(([id])=>id===body);
+  if(!from || !to)return null;
+  const wanted=to[2][from[2].indexOf(current)];
+  return (!allowed || allowed.includes(wanted)) ? wanted : to[2].find(id=>!allowed || allowed.includes(id)) || null;
+}
+
+export function trimChoices(current, {allowedCars, def} = {}) {
+  const model=carModel(current), body=model?.bodies?.find(([, ,ids])=>ids.includes(current));
+  return (body?.[2] || model?.trims || []).filter(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));
+}
+export function stepTrim(current, direction, rules) {
+  const ids=trimChoices(current,rules);if(!ids.length)return null;
+  return ids[(Math.max(0,ids.indexOf(current))+direction+ids.length)%ids.length];
 }

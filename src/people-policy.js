@@ -27,7 +27,6 @@ export function villageForecourtBuffer(map, x, z, margin = 5) {
 export function peopleSchedule(kind, hour = 17, rain = 0, nightlife = false) {
   hour = ((hour % 24) + 24) % 24; rain = clamp(rain);
   if (['beach', 'swim', 'lie', 'wander'].includes(kind)) return hour >= 8 && hour < 19.5 && rain < .08 ? Math.min(1, .15 + (hour - 8) * .425, (19.5 - hour) / 1.5) : 0;
-  if (kind === 'artist') return (hour >= 19 || hour < 5 ? .95 : hour < 8 ? .12 : .04) * (1 - rain);
   if (kind === 'jogger' || kind === 'cyclist') return (hour >= 6 && hour < 10 ? .13 : hour >= 17 && hour < 20 ? .08 : hour >= 10 && hour < 17 ? .025 : 0) * (1 - rain);
   const knots = [[0, nightlife ? .45 : .12], [3, nightlife ? .22 : .025], [5, .035], [8, .45], [14, .65], [18, .85], [21, 1], [24, nightlife ? .45 : .12]];
   let i = 0; while (i < knots.length - 2 && hour > knots[i + 1][0]) i++;

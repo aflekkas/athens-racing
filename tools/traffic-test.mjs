@@ -1,6 +1,8 @@
 // node --import ./tools/physics-test/register.mjs --test tools/traffic-test.mjs
 // Run the actual traffic decisions/contact solver without loading the WebGL model library.
 import test from 'node:test';
+import './ragdoll.test.mjs';
+import { impactTarget } from '../src/impact-ragdoll.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as THREE from './physics-test/three-stub.mjs';
@@ -10,9 +12,9 @@ import { damageIncrement, equivalentBarrierSpeed } from '../src/damage-math.js';
 const source = readFileSync(new URL('../src/traffic.js', import.meta.url), 'utf8')
   .replace(/^import .*;$/gm, '').replace(/^export /gm, '');
 const { Traffic, obbContact, impulse } = new Function(
-  'THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed',
+  'THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed', 'impactTarget',
   source + '\nreturn { Traffic, obbContact, impulse };',
-)(THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed);
+)(THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed, impactTarget);
 
 function world() {
   const T = Object.create(Traffic.prototype);
@@ -144,4 +146,16 @@ test('a hard-hit car settles as a wreck with hazards instead of resuming its dri
   assert.ok(c.crash?.wreck); assert.equal(c.v, 0);
   assert.ok(Math.hypot(c.crash.vs, c.crash.vu) < 0.1);
   assert.equal(c.indL.emissiveIntensity, c.indR.emissiveIntensity);
+});
+
+test('hard bike contact emits one rider ejection and gives the bike its own tumble', () => {
+  const {T,c}=world();c.type={id:'moto',scooter:true};
+  const B={vs:15,vu:2,w:.5,phi:.1};
+  T.hitCar(c,B,2,'front',0);assert.equal(c.rider,undefined);
+  T.hitCar(c,B,8,'left',0);assert.ok(c.rider);assert.ok(c.crash.rollV>1);
+  assert.equal(T.sounds.filter(e=>e.kind==='rider-thrown').length,1);
+  assert.equal(T.sounds.find(e=>e.kind==='rider-thrown').target,'rider');
+  const seed=c.rider;T.hitCar(c,B,10,'front',0);assert.equal(c.rider,seed);
+  assert.equal(T.sounds.filter(e=>e.kind==='rider-thrown').length,1);
+  T.repair(c);assert.equal(c.rider,null);
 });

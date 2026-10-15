@@ -1,0 +1,57 @@
+/* Release screens (src/ui/release-screens.js): title corner, one-time card, What's new, Credits, About.
+   Built from the kit's tokens and components only; calm transitions, flat surfaces. */
+
+/* ---------------------------------------------------------------- title: version + credits in the corner
+   Bottom-left, level with the soft-key bar and well below its centred hints, so nothing competes with PLAY. */
+.title-meta { position: absolute; left: 0; bottom: 0; display: flex; align-items: center; gap: var(--s-1); z-index: 2; }
+.title-meta .btn { min-height: 2rem; padding: 0 var(--s-3); font-size: var(--t-xs); letter-spacing: .16em; color: var(--c-text-3); }
+@media (hover: hover) { .title-meta .btn:hover { color: var(--c-text); } }
+
+/* ---------------------------------------------------------------- the one-time "What's new in <version>" card */
+.news-card { position: absolute; right: 0; bottom: 3.25rem; z-index: 3; width: min(23rem, 100%); padding: var(--s-4) var(--s-4) var(--s-3);
+  display: flex; flex-direction: column; gap: var(--s-3); border-radius: var(--r-4); background: var(--hu-glass-solid);
+  border: 1px solid var(--hu-hair-2); max-height: calc(100% - 4rem); overflow-y: auto; animation: hu-enter .16s ease-out both; }
+.news-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
+.news-card__head .kick { color: var(--hu-ice); }
+.news-card__date { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; white-space: nowrap; }
+.news-card__list, .release__items { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
+.news-card__list li, .release__items li { position: relative; padding-left: var(--s-4); font: 500 var(--t-sm) / 1.45 var(--f-sans); color: var(--c-text-2); }
+.news-card__list li::before, .release__items li::before { content: ""; position: absolute; left: .1rem; top: .55em; width: .3rem; height: .3rem; border-radius: 50%; background: var(--hu-ice); opacity: .8; }
+.news-card__more { margin: 0; font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); }
+.news-card__acts { display: flex; align-items: center; gap: var(--s-2); }
+
+/* ---------------------------------------------------------------- What's new */
+.scr--info > .scr__body { align-items: stretch; }
+.release-list, .credits, .credit-sheet { width: min(52rem, 100%); min-height: 0; padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); align-self: center; }
+.release { position: relative; padding: var(--s-4); border-radius: var(--r-3); box-shadow: inset 0 0 0 1px var(--hu-hair); background: rgba(255,255,255,.03);
+  transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease); outline: none; }
+.release.focus { box-shadow: inset 0 0 0 1px rgba(111,208,255,.55); background: linear-gradient(90deg, rgba(111,208,255,.1), rgba(111,208,255,.02)); }
+.release__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2) var(--s-3); margin-bottom: var(--s-3); }
+.release__ver { margin: 0; font: 600 var(--t-xl) / 1 var(--f-cond); letter-spacing: .08em; }
+.release--now .release__ver { color: var(--hu-ice); }
+.release__date { font: 600 var(--t-sm) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
+.release-empty { width: min(52rem, 100%); align-self: center; }
+
+/* ---------------------------------------------------------------- Credits */
+.credits .group { margin: 0; }
+.credits .group + .group { margin-top: var(--s-4); }
+.credit-line { cursor: default; }
+.credit-para { padding: var(--s-3) var(--s-4); border-radius: var(--r-2); font: 500 var(--t-sm) / 1.6 var(--f-sans); color: var(--c-text-2); white-space: pre-wrap; overflow-wrap: anywhere;
+  transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease); outline: none; }
+.credit-para a { color: var(--hu-ice); text-decoration: none; }
+.credit-para a:hover { text-decoration: underline; }
+.credit-para.focus { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(111,208,255,.4); }
+
+/* ---------------------------------------------------------------- About */
+.about-stats { margin: 0 var(--s-4) var(--s-3); }
+
+@media (max-width: 720px) {
+  .news-card { left: 0; right: 0; bottom: 3rem; width: auto; }
+  .release-list, .credits, .credit-sheet { padding: var(--s-2); }
+  .release { padding: var(--s-3); }
+}
+@media (prefers-reduced-motion: reduce) { .news-card { animation: none; } }
+/* Match the shared screen backdrop and keep attribution / build identifiers readable on phones. */
+#ui.s-whatsNew, #ui.s-credits, #ui.s-creditFile { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%); }
+.about-stats .stat-tile__v { font-size: var(--t-lg); white-space: normal; overflow-wrap: anywhere; text-transform: none; }
+.credits .list-row__main b, .credits .list-row__main span { white-space: normal; overflow-wrap: anywhere; }

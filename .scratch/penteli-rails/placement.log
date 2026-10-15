@@ -1,0 +1,281 @@
+[ 'group', 'material', 'heightC' ]
+{
+  "runs": 28,
+  "metres": 2532,
+  "ranges": [
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 1472,
+      "to": 1540,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 1572,
+      "to": 1606,
+      "hazards": [
+        "drop",
+        "hairpin"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 2052,
+      "to": 2092,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 2126,
+      "to": 2156,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "concrete",
+      "from": 2386,
+      "to": 2436,
+      "hazards": [
+        "bridge"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 3236,
+      "to": 3310,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 3886,
+      "to": 3950,
+      "hazards": [
+        "hairpin",
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 4424,
+      "to": 4442,
+      "hazards": [
+        "reference"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 4476,
+      "to": 4770,
+      "hazards": [
+        "reference"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 4872,
+      "to": 4944,
+      "hazards": [
+        "hairpin",
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "concrete",
+      "from": 5126,
+      "to": 5150,
+      "hazards": [
+        "bridge"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 8234,
+      "to": 8302,
+      "hazards": [
+        "hairpin",
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 8846,
+      "to": 8950,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 9198,
+      "to": 9440,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 9474,
+      "to": 9494,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": -1,
+      "kind": "steel",
+      "from": 10318,
+      "to": 10466,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "concrete",
+      "from": 2386,
+      "to": 2436,
+      "hazards": [
+        "bridge"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "concrete",
+      "from": 5126,
+      "to": 5150,
+      "hazards": [
+        "bridge"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 5810,
+      "to": 5830,
+      "hazards": [
+        "hairpin"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 6128,
+      "to": 6178,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 6210,
+      "to": 6226,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 6290,
+      "to": 6514,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 6778,
+      "to": 6832,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 6868,
+      "to": 7008,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 7042,
+      "to": 7090,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 7138,
+      "to": 7180,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 7334,
+      "to": 7398,
+      "hazards": [
+        "drop"
+      ]
+    },
+    {
+      "side": 1,
+      "kind": "steel",
+      "from": 7542,
+      "to": 7992,
+      "hazards": [
+        "drop"
+      ]
+    }
+  ],
+  "hairpins": [
+    {
+      "s": 956,
+      "k": -0.025451771914958954
+    },
+    {
+      "s": 1838,
+      "k": 0.02506854385137558
+    },
+    {
+      "s": 3950,
+      "k": 0.032682865858078
+    },
+    {
+      "s": 5828,
+      "k": -0.04309803992509842
+    }
+  ]
+}

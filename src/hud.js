@@ -49,18 +49,28 @@ export class RacerMarkers {
         this.root.append(el); item = { el, name, chevron }; this.items.set(r.id, item);
       }
       const { el, name, chevron } = item;
-      name.textContent = r.name || 'DRIVER'; el.dataset.playerId = r.id;
-      el.className = 'racer-marker' + (r.player ? '' : ' ai') + (offscreen ? ' edge' : '');
+      const nm = r.name || 'DRIVER';
+      if (item._nm !== nm) { item._nm = nm; name.textContent = nm; }
+      if (item._pid !== r.id) { item._pid = r.id; el.dataset.playerId = r.id; }
+      const cls = 'racer-marker' + (r.player ? '' : ' ai') + (offscreen ? ' edge' : '');
+      if (item._cls !== cls) { item._cls = cls; el.className = cls; }
       let x = r.x, y = -r.y;
       if (offscreen) {
         if (r.behind) { x = r.viewX; y = -r.viewY; if (Math.abs(x) + Math.abs(y) < 0.01) x = 1; }
         const factor = Math.max(Math.abs(x) / 0.86, Math.abs(y) / 0.76, 0.01); x /= factor; y /= factor;
-        chevron.textContent = '➤'; chevron.style.transform = `rotate(${Math.atan2(y * innerHeight, x * innerWidth)}rad)`;
-      } else { chevron.textContent = '⌄'; chevron.style.transform = ''; }
-      el.style.left = `${(x + 1) * 50}%`; el.style.top = `${(y + 1) * 50}%`;
-      el.style.opacity = String((r.behind ? 0.45 : 1) * clamp((350 - r.distance) / 150, 0, 1));
+        if (item._ch !== 'edge') { item._ch = 'edge'; chevron.textContent = '➤'; }
+        const rot = `rotate(${Math.atan2(y * innerHeight, x * innerWidth)}rad)`;
+        if (item._rot !== rot) { item._rot = rot; chevron.style.transform = rot; }
+      } else if (item._ch !== 'main') { item._ch = 'main'; chevron.textContent = '⌄'; chevron.style.transform = ''; item._rot = null; }
+      // quantise to 0.05% (~0.5 px): sub-pixel marker writes never move anything on screen
+      const left = `${Math.round((x + 1) * 1000) / 20}%`, top = `${Math.round((y + 1) * 1000) / 20}%`;
+      if (item._left !== left) { item._left = left; el.style.left = left; }
+      if (item._top !== top) { item._top = top; el.style.top = top; }
+      const op = String(Math.round((r.behind ? 0.45 : 1) * clamp((350 - r.distance) / 150, 0, 1) * 100) / 100);
+      if (item._op !== op) { item._op = op; el.style.opacity = op; }
       const scale = offscreen ? 0.9 : clamp(1.1 - r.distance / 400, 0.7, 1.05);
-      el.style.transform = `translate(-50%, -100%) scale(${scale})`;
+      const tr = `translate(-50%, -100%) scale(${Math.round(scale * 200) / 200})`;
+      if (item._tr !== tr) { item._tr = tr; el.style.transform = tr; }
     }
     for (const [id, item] of this.items) if (!present.has(id)) { item.el.remove(); this.items.delete(id); }
   }
@@ -70,6 +80,7 @@ export class Hud {
   constructor(map) {
     this.map = map; const { route, data, terrain } = map;
     this.el = {}; for (const id of ['posBox', 'posN', 'posSuf', 'tRace', 'gap', 'rivalName', 'rZone', 'rRoad', 'rToGo', 'rfill', 'rticks', 'rRival', 'rMe', 'mapLabel', 'pops', 'banner', 'count', 'msg', 'menu', 'penRow', 'pen', 'sigBox', 'sigTxt', 'sigD', 'limitSign', 'limitV', 'mKick', 'mTitle', 'mSub', 'mTable', 'cIdx', 'cName', 'cTag', 'cSpecs', 'cStats', 'cBest']) this.el[id] = $(id);
+    this.el.limitSign.onanimationend = event => this.finishLimitFlash(event);
     this.el.mapLabel.textContent = map.definition?.name || route.from;
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
@@ -163,29 +174,41 @@ export class Hud {
   }
 
   // ------------------------------------------------------------------ per-frame
+  // DOM writes are cached: text and style are only touched when the visible value changes (a textContent or
+  // width write every frame costs layout even when the string is identical). The analogue cluster redraws at
+  // 30 Hz and the minimap at 15 Hz (30 Hz while expanded): both are low-frequency displays, and a still frame
+  // is pixel-identical.
   update(st) {
     const el = this.el, { route } = this.map;
     this.frame++;
     // position + gap
     if (st.pos !== this.lastPos) { this.lastPos = st.pos; el.posN.textContent = st.pos; el.posSuf.textContent = ord(st.pos); el.posBox.classList.toggle('p1', st.pos === 1); }
-    el.tRace.textContent = fmtTime(st.time);
+    const tStr = fmtTime(st.time);
+    if (tStr !== this._tRace) { this._tRace = tStr; el.tRace.textContent = tStr; }
     const g = st.gap; // + = we are behind
-    el.gap.textContent = !isFinite(g) ? '--' : (g >= 0 ? '+' : '−') + Math.abs(g).toFixed(2);
-    el.gap.className = g < 0 ? 'ahead' : 'behind';
-    // route
+    const gapStr = !isFinite(g) ? '--' : (g >= 0 ? '+' : '−') + Math.abs(g).toFixed(2), gapCls = g < 0 ? 'ahead' : 'behind';
+    if (gapStr !== this._gap) { this._gap = gapStr; el.gap.textContent = gapStr; }
+    if (gapCls !== this._gapCls) { this._gapCls = gapCls; el.gap.className = gapCls; }
+    // route (quantised to 0.1%: sub-pixel width/left writes never move anything on screen)
     const r0 = this.r0 ?? route.start, rl = this.raceLen;
     const f = clamp((st.s - r0) / rl, 0, 1), fr = clamp((st.rs - r0) / rl, 0, 1); // raceLen is signed for reverse events (setRange)
-    el.rfill.style.width = (f * 100) + '%'; el.rMe.style.left = (f * 100) + '%'; el.rRival.style.left = (fr * 100) + '%';
+    const fq = Math.round(f * 1000), frq = Math.round(fr * 1000);
+    if (fq !== this._rf) { this._rf = fq; el.rfill.style.width = (fq / 10) + '%'; el.rMe.style.left = (fq / 10) + '%'; }
+    if (frq !== this._rr) { this._rr = frq; el.rRival.style.left = (frq / 10) + '%'; }
     if ((this.frame & 7) === 0) {
       const toGo = ((this.r1 ?? route.finish) - st.s) * Math.sign(rl) / (st.unit === 'MPH' ? 1609.344 : 1000);
-      el.rToGo.textContent = `${Math.max(0, toGo).toFixed(1)} ${st.unit === 'MPH' ? 'MI' : 'KM'} TO FINISH`;
+      const toGoStr = `${Math.max(0, toGo).toFixed(1)} ${st.unit === 'MPH' ? 'MI' : 'KM'} TO FINISH`;
+      if (toGoStr !== this._toGo) { this._toGo = toGoStr; el.rToGo.textContent = toGoStr; }
       const z = route.zone(st.s); if (z && z !== this.lastZone) { this.lastZone = z; el.rZone.textContent = z.name; el.mapLabel.textContent = z.name; }
-      let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name; el.rRoad.textContent = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
+      let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name;
+      rn = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
+      if (rn !== this._rRoad) { this._rRoad = rn; el.rRoad.textContent = rn; }
     }
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
     this.setLimit(st.limit, st.unit === 'MPH' ? st.kmh * 1.609344 : st.kmh);
-    this.drawTacho(st);
-    if ((this.frame & 1) === 0 || this.bigMap) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2);
+    if ((this.frame & 1) === 0) this.drawTacho(st);
+    const mapEvery = this.bigMap ? 2 : 4;
+    if (this.frame % mapEvery === 0) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2);
   }
   /** M: the minimap grows into a wide-area map (about 0.8 km around you) so the other drivers are in view */
   toggleBigMap(on = !this.bigMap) {
@@ -325,7 +348,8 @@ export class Hud {
   }
 
   /** speed-limit sign: limit = {v, src} (km/h) or null; kmh = the car's speed in km/h. Over the limit the sign takes
-   *  data-over, which flashes it red a few times and then holds it lit, like a car's speed-limit assist (style.css).
+   *  data-over for the held halo and data-flashing for a complete four-flash burst (style.css).
+   *  Speed hunting around the hysteresis threshold must not cancel/restart an in-flight burst.
    *  Hysteresis (on above v + 3, off at v + 1 or below) keeps it from flickering at the threshold; the DOM is only
    *  touched when the limit or the over state changes. */
   setLimit(limit, kmh = 0) {
@@ -341,7 +365,14 @@ export class Hud {
       }
     }
     const over = !!limit && (this.limitOver ? kmh > limit.v + 1 : kmh > limit.v + 3);
-    if (over !== !!this.limitOver) { this.limitOver = over; el.limitSign.toggleAttribute('data-over', over); }
+    if (over !== !!this.limitOver) {
+      this.limitOver = over; el.limitSign.toggleAttribute('data-over', over);
+      if (over && !el.limitSign.hasAttribute('data-flashing') && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) el.limitSign.setAttribute('data-flashing', '');
+    }
+    if (!limit) el.limitSign.removeAttribute('data-flashing');
+  }
+  finishLimitFlash(event) {
+    if (event.animationName === 'limitFlash') this.el.limitSign.removeAttribute('data-flashing');
   }
   /** next traffic light widget: info = {main, d, wait} or null */
   signal(info) {

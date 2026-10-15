@@ -1,0 +1,13 @@
+{
+  "x": true,
+  "z": true,
+  "y": true,
+  "start": true,
+  "finish": true,
+  "step": true,
+  "lanes": true,
+  "div": true,
+  "speeds": true,
+  "events": true,
+  "marks": true
+}

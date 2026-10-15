@@ -1,3 +1,4 @@
+import { impactTarget, LIFE, STEP } from '../src/impact-ragdoll.js';
 // The real src/traffic.js and src/signals.js decision code without WebGL: the models are plain records, the
 // signal heads are not drawn. Used by tools/traffic-race.test.mjs and tools/traffic-race-sim.mjs to run civilians
 // beside real Vehicle physics. `loadTraffic()` is the module; `buildWorld()` wires a route, signals and bus stops.
@@ -33,11 +34,11 @@ export function loadTraffic() {
   const trafficModel = (type) => ({ root: node(), body: node(), tail: { emissiveIntensity: 0 }, setStrobe() {}, updateDamage() {}, setDamage() {}, damage: {}, damageDebris: [], lodLevel: 0 });
   const ROAD = { gutter: 0.55, sidewalk: () => 2.4 };
   const T = new Function('THREE', 'COND', 'trafficByHour', 'hourForTime', 'TRAFFIC_TYPES', 'trafficModel', 'skipHiddenMatrices', 'RNG', 'clamp', 'lerp', 'smoothstep',
-    'ROAD', 'LANE_W', 'SURF', 'mergeGeometries', 'bakeParkedFleet', 'damageIncrement', 'equivalentBarrierSpeed', 'TrafficProxies', 'PROXY_LAMP_RANGE',
+    'ROAD', 'LANE_W', 'SURF', 'mergeGeometries', 'bakeParkedFleet', 'damageIncrement', 'equivalentBarrierSpeed', 'TrafficProxies', 'PROXY_LAMP_RANGE', 'impactTarget', 'LIFE', 'STEP',
     strip(process.env.TRAFFIC_JS ? readFileSync(process.env.TRAFFIC_JS, 'utf8') : read('traffic.js')) + '\nreturn { Traffic, routeVel, extents };')(
     THREE, COND, trafficByHour, () => 15, TRAFFIC_TYPES, trafficModel, () => {}, RNG, clamp, lerp, smoothstep,
     ROAD, 3.3, {}, () => null, () => null, damageIncrement, equivalentBarrierSpeed,
-    class { begin() {} add() {} end() {} }, 110); // distant-car draw batches (src/traffic-proxies.js): nothing to draw here
+    class { begin() {} add() {} end() {} }, 110, impactTarget, LIFE, STEP); // distant-car draw batches (src/traffic-proxies.js): nothing to draw here
   const S = new Function('THREE', 'mergeGeometries', 'ROAD', 'RNG', 'clamp', 'canvasTex', strip(read('signals.js')) + '\nreturn { Signals, findJunctions };')(THREE, () => null, ROAD, RNG, clamp, () => null);
   return (loaded = { ...T, TRAFFIC_TYPES, ...S });
 }

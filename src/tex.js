@@ -20,13 +20,16 @@ const LIST = {
 const SINGLE = { water: 'waternormals', leafBroad: 'leaves_broad', leafNarrow: 'leaves_narrow', foliage: 'foliage_atlas', frond: 'palm_frond' };
 
 export const TX = {};
+// Anisotropic filtering level for subsequently loaded textures (lower presets use less: cheaper sampling on
+// road surfaces at grazing angles). Applied live to already-loaded textures via setAnisotropy().
+let ANISO = 8;
 
 // Texture objects exist immediately (materials can reference them while the world is being built); the images
 // decode off the main thread and are attached as they arrive.
 function load(key, url, srgb) {
   const t = TX[key] = new THREE.Texture();
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.anisotropy = 8;
+  t.anisotropy = ANISO;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   return new Promise((res) => {
     const img = new Image();
@@ -53,6 +56,15 @@ export function loadTextures() {
 }
 /** upload everything to the GPU before the first frame */
 export function uploadTextures(renderer) { for (const t of Object.values(TX)) if (t.image) renderer.initTexture(t); }
+/** Live anisotropy level (1..8): cheap texture filtering on the light presets. High keeps 8. */
+export function setAnisotropy(n) {
+  ANISO = Math.max(1, Math.min(8, Math.round(n) || 1));
+  for (const t of Object.values(TX)) {
+    if (t.anisotropy === ANISO) continue;
+    t.anisotropy = ANISO; t.needsUpdate = true;
+  }
+  return ANISO;
+}
 
 /** GLSL: shared helpers. Include after <common>. */
 export const GLSL_HELPERS = /* glsl */`

@@ -46,8 +46,9 @@ if model=='espeak': result['child_cpu_seconds']=resource.getrusage(resource.RUSA
 (out/'metrics.json').write_text(json.dumps(result,indent=2)+'\n');print(result,flush=True)
 if final:
  data=json.loads((ASSETS/'lines.json').read_text()); records=[]
- (ROOT/'src/voice-lines.js').write_text('// Generated from assets/audio/voice/lines.json by tools/build_voice.py. No display text.\nexport const VOICE_PROFILES = '+json.dumps(data['profiles'])+';\nexport const VOICE_LINES = '+json.dumps([{k:v for k,v in line.items() if k in ('id','category','strong')} for line in data['lines']])+';\n')
+ (ROOT/'src/voice-lines.js').write_text('// Generated from assets/audio/voice/lines.json by tools/build_voice.py. No display text.\nexport const VOICE_PROFILES = '+json.dumps(data['profiles'])+';\nexport const VOICE_LINES = '+json.dumps([{k:v for k,v in line.items() if k in ('id','category','strong','cue','language')} for line in data['lines']])+';\n')
  for line in data['lines']:
+  if '--new-only' in sys.argv and (ASSETS/f"{line['id']}-{next(p['id'] for p in data['profiles'] if p['model']==model)}.ogg").exists(): continue
   raw=out/(line['id']+'.wav');render(line['text'],raw)
   for p in data['profiles']:
    if p['model']!=model:continue
@@ -61,7 +62,8 @@ if final:
    trimmed=out/'trimmed.wav';wavfile.write(trimmed,sr,x)
    # Rate and pitch independently varied. Time-compress long lines, never truncate words.
    tempo=max(p['rate']/p['pitch'],len(x)/sr/p['pitch']/2.48)
-   filt=f"asetrate={sr*p['pitch']},aresample=24000,atempo={tempo},apad=pad_dur=0.5,atrim=duration={max(.5,len(x)/sr/p['pitch']/tempo)},loudnorm=I=-20:TP=-4:LRA=7,afade=t=in:d=0.008,areverse,afade=t=in:d=0.025,areverse"
+   megaphone="highpass=f=420,lowpass=f=3200,asoftclip=type=tanh:threshold=0.12:output=0.85,highpass=f=350," if line['category']=='police' else ""
+   filt=f"asetrate={sr*p['pitch']},aresample=24000,atempo={tempo},apad=pad_dur=0.5,atrim=duration={max(.5,len(x)/sr/p['pitch']/tempo)},{megaphone}loudnorm=I=-20:TP=-4:LRA=7,afade=t=in:d=0.008,areverse,afade=t=in:d=0.025,areverse"
    subprocess.run(['ffmpeg','-v','error','-y','-threads','1','-i',str(trimmed),'-af',filt,'-ar','24000','-ac','1','-c:a','libvorbis','-q:a','1',str(ASSETS/filename)],check=True)
    records.append(dict(file=filename,model=model,profile=p['id'],bytes=(ASSETS/filename).stat().st_size))
  (out/'rendered.json').write_text(json.dumps(records,indent=2)+'\n')

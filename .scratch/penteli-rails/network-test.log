@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: side asphalt and pavement use the same continuous height; their step belongs to wheelGround
+ok 1 - side asphalt and pavement use the same continuous height; their step belongs to wheelGround
+  ---
+  duration_ms: 5.913455
+  type: 'test'
+  ...
+# Subtest: a crossing has asphalt priority over either pavement, and mouths open onto the race route
+ok 2 - a crossing has asphalt priority over either pavement, and mouths open onto the race route
+  ---
+  duration_ms: 4.017908
+  type: 'test'
+  ...
+# Subtest: DEM sampling follows terrain triangles rather than bilinear interpolation
+ok 3 - DEM sampling follows terrain triangles rather than bilinear interpolation
+  ---
+  duration_ms: 0.375892
+  type: 'test'
+  ...
+# Subtest: terrain carving only touches cells near roads and preserves the DEM source
+ok 4 - terrain carving only touches cells near roads and preserves the DEM source
+  ---
+  duration_ms: 1.546365
+  type: 'test'
+  ...
+# Subtest: wheel heights interpolate the generated triangle plane, including the pavement step
+ok 5 - wheel heights interpolate the generated triangle plane, including the pavement step
+  ---
+  duration_ms: 3.663747
+  type: 'test'
+  ...
+# Subtest: extraction preserves highway classes and widths, excludes tunnels and unpaved surface lies
+ok 6 - extraction preserves highway classes and widths, excludes tunnels and unpaved surface lies
+  ---
+  duration_ms: 2.482893
+  type: 'test'
+  ...
+# Subtest: at-grade parking aisles are drivable service roads; elevated decks remain explicitly excluded
+ok 7 - at-grade parking aisles are drivable service roads; elevated decks remain explicitly excluded
+  ---
+  duration_ms: 0.815722
+  type: 'test'
+  ...
+# Subtest: riviera complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays
+ok 8 - riviera complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays
+  ---
+  duration_ms: 2944.804561
+  type: 'test'
+  ...
+# Subtest: megara complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays
+ok 9 - megara complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays
+  ---
+  duration_ms: 62.818719
+  type: 'test'
+  ...
+# Subtest: penteli complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays
+ok 10 - penteli complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays
+  ---
+  duration_ms: 2318.508227
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6098.047655

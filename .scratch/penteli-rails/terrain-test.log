@@ -1,0 +1,17 @@
+TAP version 13
+# Subtest: penteli: rendered terrain clears every road and both six-metre shoulders remain drivable
+ok 1 - penteli: rendered terrain clears every road and both six-metre shoulders remain drivable
+  ---
+  duration_ms: 98211.507587
+  type: 'test'
+  ...
+# {"samples":1054876,"maxAbove":-0.036977435504013556,"maxStep":0.12517140695803164,"maxSlope":0.5656534348994506,"worstAbove":{"s":5950,"u":3.120500087738037,"source":{"terrainRefinement":8}},"worstStep":{"road":25513502,"k":1,"side":-1,"source":{"terrainRefinement":8}},"worstSlope":{"s":5010,"side":-1,"d":6,"source":{"terrainRefinement":8}}}
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 99765.715448

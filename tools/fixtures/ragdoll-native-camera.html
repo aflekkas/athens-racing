@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><style>body{margin:0}canvas{display:block}</style></head><body><script type="module">
+import * as THREE from 'three';import{CARS,CarModel}from '../../src/cars.js';import{Cockpit}from '../../src/cockpit.js';import{Vehicle}from '../../src/physics.js';import{Ground}from '../../src/ground.js';import{loadMap}from '../../src/map.js';import{ImpactBodies}from '../../src/impact-ragdoll-view.js';import{People}from '../../src/people.js';import{makeLook}from '../../src/human.js';import{RNG}from '../../src/util.js';
+const map=await loadMap(null,'/','megara',{preload:false}),r=map.route,ground=new Ground(map,(x,z)=>map.terrain.height(x,z),{}),spec=CARS.find(c=>c.id==='mini'),car=new CarModel(spec),cockpit=new Cockpit(spec,car),v=new Vehicle(spec,r);v.ground=ground;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#b3c7d3');scene.add(car.root,new THREE.HemisphereLight('#fff7e9','#707b75',2.5));const sun=new THREE.DirectionalLight('#fff5e7',3);sun.position.set(5,8,-3);scene.add(sun);
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1000,640);renderer.setPixelRatio(1);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;document.body.append(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(62,1000/640,.05,500),sampler=(x,z)=>{const q=r.project(x,z);return ground.at(x,z,q.s,q.u,{}).y+.015;},pool=new ImpactBodies(scene,sampler);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(400,400),new THREE.MeshStandardMaterial({color:'#555b60',roughness:1}));floor.rotation.x=-Math.PI/2;scene.add(floor);
+window.nativeImpact=cam=>{
+ pool.clear();v.reset(100,r.laneU(100,0),10);floor.position.set(v.x,v.y-.015,v.z);
+ const p={active:true,slot:0,x:v.x-Math.sin(v.yaw)*(v.halfL+.05),y:v.y,wy:v.y,z:v.z-Math.cos(v.yaw)*(v.halfL+.05),yaw:v.yaw+Math.PI,look:makeLook(new RNG(71),'street')};
+ const before=v.vLong;People.prototype.hit.call({bodies:pool,events:[],despawn(q){q.active=false;}},p,{veh:v,fx:-Math.sin(v.yaw),fz:-Math.cos(v.yaw),rx:Math.cos(v.yaw),rz:-Math.sin(v.yaw),v:10,kind:'player'});
+ const after=v.vLong,kick={heave:v.sus.zv,pitch:v.sus.thv,roll:v.sus.phv},bump=v.bumpHit;
+ for(let i=0;i<40;i++){v.update(1/120,{throttle:0,brake:0,steer:0});pool.update(1/120);}
+ v.place(car.root);car.root.updateMatrixWorld(true);cockpit.setVisible(true);cockpit.setDetail(true);
+ if(cam==='cockpit'){camera.position.copy(cockpit.eye).add(new THREE.Vector3(0,.02,0));car.body.localToWorld(camera.position);car.body.getWorldQuaternion(camera.quaternion);camera.quaternion.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.045,0,0,'YXZ')));camera.near=.05;}
+ else{camera.position.set(-.5,2.3,6);car.root.localToWorld(camera.position);const target=new THREE.Vector3(0,.8,-.7);car.root.localToWorld(target);camera.lookAt(target);camera.near=.15;}
+ camera.updateProjectionMatrix();renderer.render(scene,camera);const b=pool.bodies.find(b=>b.active),head=new THREE.Vector3(b.p[9],b.p[10],b.p[11]).project(camera);
+ return{cam,before,after,kick,bump,eye:cockpit.eye.toArray(),camera:camera.position.toArray(),car:[v.x,v.y,v.z],headNDC:head.toArray(),png:renderer.domElement.toDataURL('image/png')};
+};window.ready=true;
+</script></body></html>
