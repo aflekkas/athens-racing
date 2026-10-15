@@ -63,9 +63,9 @@ function flattenMirrorScopes(car){
     if(group.parent===car.body)continue;
     const toBody=car.body.matrixWorld.clone().invert().multiply(group.parent.matrixWorld);
     for(const key of ['mirrorRoot','mirrorCenter'])if(group.userData[key])group.userData[key]=new THREE.Vector3().fromArray(group.userData[key]).applyMatrix4(toBody).toArray();
-    if(group.userData.mirrorTipOffset){
-      const offset=new THREE.Vector3().fromArray(group.userData.mirrorTipOffset).applyMatrix4(toBody).sub(new THREE.Vector3().applyMatrix4(toBody));
-      group.userData.mirrorTipOffset=offset.toArray();
+    for(const key of ['mirrorTipOffset','mirrorElbowOffset'])if(group.userData[key]){
+      const offset=new THREE.Vector3().fromArray(group.userData[key]).applyMatrix4(toBody).sub(new THREE.Vector3().applyMatrix4(toBody));
+      group.userData[key]=offset.toArray();
     }
     car.body.attach(group);
   }

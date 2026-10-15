@@ -214,11 +214,14 @@ export function measureMirrorGaps(car){
     const arm=group.getObjectByName('mirror-stalk'),housing=group.getObjectByName('mirror-housing'),scope=group.parent;
     const p=arm.geometry.parameters,n=p.radialSegments,h=p.heightSegments,a=arm.geometry.attributes.position;
     const inScope=i=>scope.worldToLocal(arm.localToWorld(new THREE.Vector3().fromBufferAttribute(a,i)));
-    const tip=inScope((n+1)*(h+1)),root=inScope((n+1)*(h+1)+2*n+1);
+    let tip=inScope((n+1)*(h+1)),root=inScope((n+1)*(h+1)+2*n+1);
     const mount=nearestSurface(root,mirrorSurfaces(car,scope),scope);
+    // dog-leg arms: the lower leg ends at the elbow, the upper leg carries on from it into the housing
+    const upper=group.getObjectByName('mirror-stalk-upper');let length=root.distanceTo(tip),elbowGap=0;
+    if(upper){const u=upper.geometry.attributes.position,up=i=>scope.worldToLocal(upper.localToWorld(new THREE.Vector3().fromBufferAttribute(u,i)));const a0=up((n+1)*(h+1)+2*n+1),a1=up((n+1)*(h+1));elbowGap=a0.distanceTo(tip);length+=a0.distanceTo(a1);tip=a1;}
     // Tip is embedded in the housing; distance to its bounding volume is zero.
     const tipWorld=scope.localToWorld(tip.clone()),box=new THREE.Box3().setFromObject(housing);
-    rows.push({side:group.name,rootGap:mount?.distance??Infinity,tipGap:box.distanceToPoint(tipWorld),stalkLength:root.distanceTo(tip),stalkRadius:p.radiusTop});
+    rows.push({side:group.name,rootGap:mount?.distance??Infinity,tipGap:Math.max(box.distanceToPoint(tipWorld),elbowGap),stalkLength:length,stalkRadius:p.radiusTop});
   });return rows;
 }
 export function runMirrorChecks(carIds=null){
@@ -263,6 +266,11 @@ export async function runCockpitMirrorChecks(carIds=null){
     check(spec.id+' three optical faces',cockpit.mirrors.length===3);
     const mount=car.body.worldToLocal(cockpit.mirrorMount.getWorldPosition(new THREE.Vector3()));
     check(spec.id+' rearview mount seated on windscreen',nearestSurface(mount,[car.windscreen],car.body).distance<.005);
+    // No part of a stalk or arm may sit in front of (show through) its glass
+    const glassFront=(glass,meshes,outlineOnly)=>{let bad=0;const q=glass.getWorldQuaternion(new THREE.Quaternion()),n=new THREE.Vector3(0,0,1).applyQuaternion(q),o=glass.getWorldPosition(new THREE.Vector3());
+      for(const m of meshes){if(!m)continue;const a=m.geometry.attributes.position;for(let i=0;i<a.count;i++){const w=m.localToWorld(new THREE.Vector3().fromBufferAttribute(a,i));if(w.clone().sub(o).dot(n)<=0)continue;const l=glass.worldToLocal(w.clone());if(!outlineOnly||Math.hypot(l.x,l.y)<1.02)bad++;}}return bad;};
+    check(spec.id+' rear-view stalk stays behind its glass',glassFront(cockpit.mirrors[0].mesh,[cockpit.mirrorStem],false)===0);
+    for(const m of cockpit.mirrors.slice(1))check(spec.id+' '+m.name+' door arm never crosses its glass',glassFront(m.mesh,[m.mesh.parent.getObjectByName('mirror-stalk'),m.mesh.parent.getObjectByName('mirror-stalk-upper')],true)===0);
     for(const mirror of cockpit.mirrors){
       const p=mirror.mesh.getWorldPosition(new THREE.Vector3()),viewCamera=camera.clone();
       // Exterior mirrors must fit a natural head glance, not force both sides
