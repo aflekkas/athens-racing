@@ -23,3 +23,26 @@ test('loaded in a waiting lobby publishes to everyone without throwing, readying
  }
  assert.deepEqual(errors,[],'the loaded handler must not reference settings-handler locals');
 });
+
+test('an abrupt arena replacement gives active racers a fresh grace period and restores compact checkpoint progress', t => {
+ let now=100000;t.mock.method(Date,'now',()=>now);
+ const opts={maps:new Map([['riviera',{track:{version:'v'},definitions:new Map([['quick',{id:'quick',type:'sprint',s0:0,s1:10000,dir:1,len:10000}]])}]]),cars:new Set(['mini']),leaderboard:{submit:async()=>{}},countdownMs:0};
+ let core=createGameCore(opts);const a=socket(),b=socket(),send=(ws,m)=>core.message(ws,JSON.stringify(m));
+ core.connect(a,'a',{protocol:MULTIPLAYER_PROTOCOL});core.connect(b,'b',{protocol:MULTIPLAYER_PROTOCOL});
+ send(a,{type:'create',name:'HOST'});const code=core.clientData(a).lobbyCode;send(b,{type:'join',code,name:'GUEST'});
+ for(const ws of [a,b])send(ws,{type:'ready',ready:true,version:'v'});
+ send(a,{type:'start'});core.tick();const race=[...core.lobbies.values()][0],raceId=race.raceId;
+ // A long race exceeds the reservation measured from connect/create. A recent
+ // durable checkpoint must survive a replacement that loses all attachments.
+ now+=120000;
+ for(const ws of [a,b])send(ws,{type:'state',raceId,state:{x:90,y:0,z:0,s:90,u:0,yaw:0,vLong:20,vLat:0,steer:0,rpm:3000,gear:2}});
+ const prior=core.clientData(a),saved=structuredClone(core.exportState());
+ assert.equal(prior.course.passed,1);assert.equal(saved.sessions[0].course,undefined);assert.equal(saved.sessions[0].courseCursor.passed,1);
+ assert.ok(JSON.stringify(saved).length<10000,'immutable gate replicas must not be written per player');
+ now+=2000;core=createGameCore(opts);core.restore(saved);core.tick();
+ assert.equal(core.sessions.size,2,'lost sockets start their grace at restoration');assert.equal(core.nextWake(),now+90001);
+ const replacement=socket();core.connect(replacement,'a',{protocol:MULTIPLAYER_PROTOCOL});send(replacement,{type:'resume',token:prior.token});
+ const resumed=replacement.messages.find(m=>m.type==='session');assert.equal(resumed.resumed,true);assert.equal(resumed.id,prior.id);
+ const lobby=replacement.messages.find(m=>m.type==='lobby');assert.equal(lobby.lobby.raceId,raceId);assert.equal(lobby.lobby.startAt,race.startAt);assert.equal(lobby.state.s,90);
+ assert.equal(core.clientData(replacement).course.passed,1);assert.equal(core.clientData(replacement).course.previous.s,90);
+});

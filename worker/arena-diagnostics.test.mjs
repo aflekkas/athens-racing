@@ -26,3 +26,14 @@ test('message persistence and alarm failures retain their original exception and
     assert.match(record.stack, /simulated storage failure/);
   }
 });
+
+test('telemetry checkpoints the whole arena at most once per two seconds, while transitions persist immediately', async t => {
+ let now=100000;t.mock.method(Date,'now',()=>now);const a=arena();let writes=0;
+ a.core.clientData=()=>({finish:null,state:{s:20}});a.core.message=()=>{};a.attach=()=>{};a.relay=()=>{};
+ a.persist=async()=>{writes++;a.persistedAt=Date.now();};
+ for(let i=0;i<100;i++)await a.webSocketMessage({},'{"type":"state"}');assert.equal(writes,1);
+ now+=1999;await a.webSocketMessage({},'{"type":"states"}');assert.equal(writes,1);
+ now++;await a.webSocketMessage({},'{"type":"states"}');assert.equal(writes,2);
+ now++;await a.webSocketMessage({},'{"type":"loaded"}');assert.equal(writes,3);
+ now+=1000;await a.webSocketMessage({},'{"type":"ping"}');assert.equal(writes,3);
+});

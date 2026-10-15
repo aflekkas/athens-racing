@@ -74,6 +74,7 @@ export class GameArena extends DurableObject {
   }
   async persist() {
     for (const ws of this.ctx.getWebSockets()) this.attach(ws);
+    this.persistedAt = Date.now();
     await this.ctx.storage.put('arena', this.core.exportState());
     const at = this.core.nextWake();
     if (at === null) await this.ctx.storage.deleteAlarm();
@@ -154,9 +155,13 @@ export class GameArena extends DurableObject {
       const before = this.core.clientData(ws)?.finish;
       this.core.message(ws, message);
       this.attach(ws);
-      // State lives in websocket attachments: avoid 500 SQLite writes/s for 50 racers.
-      // Lobby transitions and finishes persist immediately; telemetry is coalesced in memory.
-      if (!['state', 'states', 'ping', 'discover'].includes(type) || before !== this.core.clientData(ws)?.finish) await this.persist();
+      // Attachments survive hibernation, but a platform replacement can close
+      // every socket. One shared checkpoint per two seconds also survives that
+      // loss (at most 43,200 arena KV writes/day, never one write per driver).
+      // Lobby transitions and finishes still persist immediately.
+      const after = this.core.clientData(ws);
+      const checkpoint = ['state', 'states'].includes(type) && after?.state && Date.now() - (this.persistedAt || 0) >= 2000;
+      if (!['state', 'states', 'ping', 'discover'].includes(type) || before !== after?.finish || checkpoint) await this.persist();
       this.relay();
     });
   }

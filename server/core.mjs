@@ -439,7 +439,17 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
     }
   };
   const clientData = c => { const { ws, lobby, ...data } = c; return { ...data, lobbyCode: lobby?.code || null }; };
-  const exportState = () => ({ sessions: [...sessions.values()].map(clientData), lobbies: [...lobbies.values()].map(l => { const { players, racers, objectives, ...data } = l; return { ...data, playerIds: [...players.keys()], racers: racers ? [...racers] : null, objectives: objectives ? [...objectives] : null }; }) });
+  const exportState = () => ({ sessions: [...sessions.values()].map(c => {
+    const data = clientData(c);
+    // Course geometry is immutable catalogue data. Persist the accepted cursor
+    // once per driver instead of duplicating every gate in the arena KV row.
+    if (data.course) {
+      const { raceId, passed, missed, previousTime } = data.course;
+      data.courseCursor = { raceId, passed, missed, previousTime };
+      delete data.course;
+    }
+    return data;
+  }), lobbies: [...lobbies.values()].map(l => { const { players, racers, objectives, ...data } = l; return { ...data, playerIds: [...players.keys()], racers: racers ? [...racers] : null, objectives: objectives ? [...objectives] : null }; }) });
   const restore = (saved, sockets = new Map()) => {
     for (const data of saved?.sessions || []) {
       const ws = sockets.get(data.token) || { readyState: 3, close() {} };
@@ -447,6 +457,9 @@ export function createGameCore({ maps, cars: CARS, nitrousCars = new Set(), lead
       const connection = { ...data };
       for (const key of ['accountSub', 'accountName', 'friendsSent']) delete connection[key];
       const c = { ...connection, name: clean(data.name, 'GR-1000', 16), plate: formatPlate(data.name || 'GR-1000'), ws, lobby: null, connected: sockets.has(data.token) };
+      // A platform replacement can drop every socket without close callbacks.
+      // Start the reservation when that loss is discovered, not at race creation.
+      if (data.connected && !c.connected) c.touched = Date.now();
       if (c.state) { const { decals, ...state } = c.state; c.state = state; }
       if (c.state && !nitrousCars.has(c.car)) c.state = { ...c.state, nitro: 0 };
       sessions.set(c.token, c); if (c.connected) { clients.add(c); bind(c, ws, c.ip); }
