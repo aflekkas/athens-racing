@@ -1,3 +1,4 @@
+import { canonicalHostRedirect } from './canonical-host.mjs';
 // Standalone legal documents: no game bundle, scripts, fonts or remote assets.
 const documents = {
   "privacy": {
@@ -11,13 +12,14 @@ const documents = {
 };
 const style = "*{box-sizing:border-box}html{color-scheme:dark;background:#10171d}body{margin:0;color:#e9edef;font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}a{color:#c1ed91;text-underline-offset:4px;transition:color .18s,background .18s}a:hover{color:#fff}a:focus-visible{outline:2px solid #c1ed91;outline-offset:5px}header,main,footer{width:min(100% - 48px,800px);margin:auto}header{padding:28px 0;border-bottom:1px solid #35414b;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}header a{font-weight:750;text-decoration:none}nav{display:flex;gap:24px}main{padding:56px 0}h1{font-size:clamp(2.4rem,7vw,4rem);line-height:1.08;letter-spacing:-.045em;margin:10px 0 20px}h2{font-size:1.25rem;line-height:1.35;color:#f2f5f7;margin:0 0 14px}p{margin:0 0 18px;color:#bec9d0}.eyebrow{color:#c1ed91;font-size:.75rem;font-weight:750;letter-spacing:.15em;text-transform:uppercase}.date{font-size:.85rem}.lede{font-size:1.25rem;color:#e9edef;margin:30px 0 40px}section{padding:28px 0 10px;border-top:1px solid #35414b}strong{color:#e9edef}code{font-size:.88em;color:#e9edef;overflow-wrap:anywhere}footer{padding:24px 0 40px;border-top:1px solid #35414b;font-size:.85rem;display:flex;gap:24px;flex-wrap:wrap}p a{overflow-wrap:anywhere}@media(max-width:480px){header,main,footer{width:calc(100% - 36px)}header{padding:20px 0;gap:12px}main{padding:36px 0}nav{gap:20px}section{padding-top:24px}}@media(prefers-reduced-motion:reduce){a{transition:none}}";
 export function legalPage(request) {
+  const canonical = canonicalHostRedirect(request);
+  if (canonical) return canonical;
   const url = new URL(request.url);
   const key = url.pathname.replace(/^\//, '').replace(/\/$/, '').replace(/\.html$/, '');
   const doc = Object.hasOwn(documents, key) ? documents[key] : null;
   if (!doc) return null;
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
-  if (url.hostname === 'www.athensracing.com' || url.pathname !== '/' + key) {
-    if (url.hostname === 'www.athensracing.com') url.hostname = 'athensracing.com';
+  if (url.pathname !== '/' + key) {
     url.pathname = '/' + key;
     return Response.redirect(url.href, 308);
   }

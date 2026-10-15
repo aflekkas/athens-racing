@@ -30,7 +30,7 @@ test('legal routes serve standalone crawlable HTML on production and staging', a
 test('www and alternate legal paths redirect to canonical documents', () => {
   for (const path of ['/privacy', '/terms']) {
     const response = legalPage(new Request(`https://www.athensracing.com${path}`));
-    assert.equal(response.status, 308);
+    assert.equal(response.status, 301);
     assert.equal(response.headers.get('Location'), `https://athensracing.com${path}`);
     for (const suffix of ['/', '.html']) assert.equal(legalPage(new Request(`https://athensracing.com${path}${suffix}`)).headers.get('Location'), `https://athensracing.com${path}`);
     assert.equal(legalPage(new Request(`https://athensracing.com${path}`, { method: 'POST' })).status, 405);
@@ -41,7 +41,7 @@ test('Worker intercepts legal routes before assets; sitemap and in-game entry po
   const worker = await readFile(new URL('../worker/index.mjs', import.meta.url), 'utf8');
   assert.ok(worker.indexOf('legalPage(request)') < worker.indexOf('env.ASSETS.fetch(request)'));
   const config = JSON.parse((await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8')));
-  for (const path of ['/privacy', '/terms']) assert.ok(config.assets.run_worker_first.includes(path));
+  assert.equal(config.assets.run_worker_first, true, 'all assets must reach the Worker for host canonicalization');
   const sitemap = await readFile(new URL('../sitemap.xml', import.meta.url), 'utf8');
   for (const path of ['/privacy', '/terms']) assert.ok(sitemap.includes(`https://athensracing.com${path}`));
   const accounts = await readFile(new URL('../src/ui/account-screen.js', import.meta.url), 'utf8');
