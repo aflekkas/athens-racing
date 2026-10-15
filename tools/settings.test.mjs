@@ -135,7 +135,7 @@ test('HUD motion respects reduced motion until explicitly chosen and rejects inv
   const previous = globalThis.matchMedia;
   try {
     globalThis.matchMedia = () => ({ matches: false });
-    assert.equal((await preferences(memory())).settings.hudMotion, 'subtle');
+    assert.equal((await preferences(memory())).settings.hudMotion, 'full', 'Full by default');
     globalThis.matchMedia = () => ({ matches: true });
     const storage = memory(), module = await preferences(storage);
     assert.equal(module.settings.hudMotion, 'off');
@@ -143,5 +143,11 @@ test('HUD motion respects reduced motion until explicitly chosen and rejects inv
     assert.equal((await preferences(storage)).settings.hudMotion, 'full');
     module.setSetting('hudMotion', 'invalid');
     assert.equal(module.settings.hudMotion, 'full');
+    globalThis.matchMedia = () => ({ matches: false });
+    const old = memory(); old.setItem('paraliaki.settings', JSON.stringify({ hudMotion: 'subtle' }));
+    const migrated = await preferences(old);
+    assert.equal(migrated.settings.hudMotion, 'full', 'the old Subtle default moves to Full once');
+    migrated.setSetting('hudMotion', 'subtle');
+    assert.equal((await preferences(old)).settings.hudMotion, 'subtle', 'a later deliberate Subtle survives reloads');
   } finally { globalThis.matchMedia = previous; }
 });

@@ -26,8 +26,9 @@ const GRAPHICS_LEVELS = ['preset', 'off', 'low', 'med', 'high', 'ultra'];
 export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
+const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
 export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', lighting: 'preset', effects: 'preset', renderScale: 'auto', pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', motionBlur: true, mirrors: true, ghostEnabled: true,
-  mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'subtle' };
+  mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
 const CAMERA_RANGES = { mouseSensitivity: [0.25, 3], chaseFov: [45, 75], cockpitFov: [45, 90] };
@@ -70,6 +71,14 @@ function load() {
         try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
       }
       try { storage?.setItem(TYRE_DEFAULT_VERSION, '1'); } catch {}
+    }
+    // HUD motion's default moved from Subtle to Full. A stored 'subtle' from before then is the old default, so move it once.
+    if (storage?.getItem(HUD_MOTION_DEFAULT_VERSION) !== '1') {
+      if (saved?.hudMotion === 'subtle' && !reducedMotion()) {
+        saved.hudMotion = out.hudMotion = 'full';
+        try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
+      }
+      try { storage?.setItem(HUD_MOTION_DEFAULT_VERSION, '1'); } catch {}
     }
   } catch {}
   try { const g = ls()?.getItem('paraliaki.graphics'); if (g) out.graphics = g; } catch {}
