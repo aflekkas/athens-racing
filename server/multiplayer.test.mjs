@@ -70,9 +70,9 @@ test('private rooms, track mismatch, countdown cancellation, host transfer and c
   assert.equal(transferred.players.length, 1);
   b.send({ type: 'leave' }); await b.next(m => m.type === 'left'); assert.equal(env.app.lobbies.size, 0);
 });
-test('accepts live joins; rejects stale race packets and teleports; expires unfinished races', async t => {
+test('rejects live joins, stale race packets and teleports; expires unfinished races', async t => {
   const env = await setup(t); const { a, b, code } = await pair(env); const outsider = await env.client('Chris');
-  const l = await readyAndStart(a, b); outsider.send({ type: 'join', code }); const late = (await outsider.next(m => m.type === 'lobby')).lobby; assert.equal(late.players.at(-1).ready, false); assert.equal(late.players.at(-1).loaded, false);
+  const l = await readyAndStart(a, b); outsider.send({ type: 'join', code }); assert.match((await outsider.next(m => m.type === 'error')).message, /already racing/);
   await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
   a.send({ type: 'state', raceId: 'old-race', state: state(15) }); a.send({ type: 'state', raceId: l.raceId, state: state(400) });
   const r = (await a.next(m => m.type === 'lobby' && m.lobby.status === 'results')).lobby;
@@ -211,7 +211,7 @@ test('session switching cannot orphan a joined lobby or retain duplicate live so
 
 test('all ten catalogue cars can switch while waiting; race car changes are locked', async t => {
   const env = await setup(t, { raceLimitMs: 5000 }); const { a, b } = await pair(env);
-  for (const car of ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv', 'golf', 'corolla', 'superb', 'police_octavia', 'mini_jcw', 'huracan', 'e36', 'yaris', 'panda', 'ibiza', 'cle', 'gla', 'gla45', 'cla']) {
+  for (const car of ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv', 'golf', 'corolla', 'superb', 'police_octavia', 'mini_jcw', 'huracan', 'e36', 'p928', 'yaris', 'panda', 'ibiza', 'cle', 'gla', 'gla45', 'cla']) {
     a.send({ type: 'ready', ready: false, version: a.version, car }); const changed = (await room(a)).lobby; await room(b);
     assert.equal(changed.players.find(p => p.id === a.id).car, car);
   }

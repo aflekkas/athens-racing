@@ -1,12 +1,12 @@
 import { ENGINE_RECORDINGS, loadRecordedEngine, RecordedEngineVoice, rpmBlend } from '../src/engine-recordings.js';
 import { Audio, ENGINE_SOUND } from '../src/audio.js';
-import { ExternalEngines } from '../src/audio/engine-spatial.js';
 export const specs = [
   { id: 'mini', engine: 'turbo4', idle: 850, redline: 6800 },
   { id: 'z4', engine: 'turbo6', idle: 750, redline: 7000 },
   { id: 'taxi', engine: 'diesel', idle: 800, redline: 5000 },
 ];
 export const synthSpecs = [
+  { id: 'p928', engine: 'v8', idle: 750, redline: 6600, cylinders: 8 },
   { id: 'huracan', engine: 'v10', idle: 900, redline: 8500, cylinders: 10 },
   { id: 'e36', engine: 'na6', idle: 750, redline: 6500, cylinders: 6 },
   { id: 'carrera', engine: 'flat6', idle: 800, redline: 7800, cylinders: 6 },
@@ -46,7 +46,7 @@ export async function runAudioTests() {
     const points=bank.loops.map(l=>l.rpm);
     for (let rpm=spec.idle;rpm<=spec.redline;rpm+=25) {
       const w=rpmBlend(points,rpm);
-      assert(Math.abs(w.reduce((s,n)=>s+n*n,0)-1)<2e-7,'RPM blend loses energy beyond Float32 rounding');
+      assert(Math.abs(w.reduce((s,n)=>s+n*n,0)-1)<1e-8,'RPM blend loses energy');
       assert(w.filter(n=>n>0).length<=2,'More than two adjacent RPM bands active');
     }
     const voice = new RecordedEngineVoice(ctx,bank,ctx.destination,spec,.65);
@@ -90,7 +90,7 @@ export async function runAudioTests() {
   a.restart();assert(a.ignitionSource,'Restart does not replay ignition');
   const start=a.ignitionSource;a.requestIgnition();assert(a.ignitionSource===start,'Duplicate ignition in one frame');
   report.lifecycle.push('Ignition cancellation, catch fade, delayed-load suppression, moving-car suppression, restart and deduplication');
-  a.cancelIgnition();a.engineVoice.stop();a.engineVoice.stop();
+  a.cancelIgnition();a.engineVoice.stop();a.engineVoice.stop();a.rivalVoice.stop();
   report.lifecycle.push('Repeated stop is safe');
   // Real network failure on a fresh context; no mocked WebAudio decoder.
   const original=ENGINE_RECORDINGS.mini.loops[0];
@@ -100,30 +100,25 @@ export async function runAudioTests() {
     assert(b.recordingState==='fallback'&&!b.recordedBank,'Failed download did not preserve fallback');
     assert(b.engineVoice.bank.E.cyl===4&&b.pendingIgnition==null,'Fallback silenced or wrong engine');
     b.restart();assert(b.engineStartLevel(0)===1,'Restart muted fallback while no recording can load');
-    b.engineVoice.stop(); report.fallback='404 handled; procedural engine remains available';
+    b.engineVoice.stop();b.rivalVoice.stop(); report.fallback='404 handled; procedural engine remains available';
   } finally { ENGINE_RECORDINGS.mini.loops[0]=original; }
-  // The unified pool replaces the old traffic-only and legacy-rival voices.
+  // Recorded traffic routing: one pooled voice reused between EV/petrol/scooter.
   const trafficAudio = manager(), ctx = trafficAudio.ctx;
-  const pool = new ExternalEngines(ctx, ctx.destination);
-  const packet={id:99,kind:'car',electric:true,d:8,pan:0,vr:0,v:15,acc:0};
-  pool.update([], [packet], 0);
-  const slot=pool.slots.find(v=>v.id===99);
-  assert(slot.spec.engine==='electric' && !slot.bank.recorded,'EV retained combustion recordings');
-  packet.electric=false; pool.update([], [packet], 1);
-  assert(slot.spec.engine==='turbo4','Petrol profile not restored');
-  packet.electric=true; pool.update([], [packet], 2);
-  assert(slot.spec.engine==='electric' && !slot.bank.recorded,'Reused EV retained combustion recordings');
-  packet.electric=false;packet.kind='scooter';pool.update([], [packet], 3);
-  assert(slot.spec.engine==='bike','Scooter profile not restored');
-  const worldLoop={buffer:ctx.createBuffer(1,88200,44100),loopStart:.05,loopEnd:1.95};
-  for(const name of ['bus-idle','diesel-engine','scooter-idle','scooter-run']) pool.attachWorld(name,worldLoop);
-  packet.kind='bus';pool.update([], [packet], 4);
-  assert(slot.bank.recorded && slot.voice.sources[0].loopStart===.05,'Bus recording lost its loop guard');
-  packet.kind='scooter';pool.update([], [packet], 5);
-  assert(slot.bank.recorded && slot.voice.sources[0].loopEnd===1.95,'Scooter recording lost its loop guard');
-  pool.update([], [], 6);
-  assert(pool.slots.every(v=>!v.voice),'Retired pool voices did not stop');
-  report.traffic='Unified bounded pool restores electric, petrol and motorcycle profiles on reuse';
+  trafficAudio.mk.gain = value => { const g=ctx.createGain();g.gain.value=value;return g; };
+  const fixtureBuffer = ctx.createBuffer(1, 4410, 44100);
+  trafficAudio.S = Object.fromEntries(['car-idle','car-engine','scooter-idle','scooter-run'].map(k=>[k,{buffer:fixtureBuffer}]));
+  const v = { id:-1, kind:null, srcs:[], o3:ctx.createOscillator(), nz:ctx.createBufferSource(), pan:ctx.createStereoPanner() };
+  for(const k of ['g3','eG','nG','out']) v[k]=ctx.createGain();
+  for(const k of ['eLP','nBP','air']) v[k]=ctx.createBiquadFilter();
+  trafficAudio.voices=[v];
+  const packet={id:99,kind:'hatch',electric:true,d:8,pan:0,vr:0,v:15,acc:0};
+  const step=()=>trafficAudio.updateTraffic([packet],ctx.currentTime,1);
+  step();assert(v.electric && v.srcs.length===0 && v.loops===null,'EV has combustion recordings');
+  packet.electric=false;step();assert(v.srcs.length===2 && v.loops[0]==='car-idle','Petrol recordings not restored');
+  packet.electric=true;step();assert(v.srcs.length===0 && v.loops===null,'Reused EV retained combustion recordings');
+  packet.electric=false;packet.kind='scooter';step();assert(v.srcs.length===2 && v.loops[0]==='scooter-idle','Scooter recordings not restored');
+  trafficAudio.voiceKind(v,'hatch',0,true);
+  report.traffic='EV combustion absent; recorded petrol and scooter loops restored on voice reuse';
 
   const rattle = manager(), hits=[];
   rattle.chassis={};rattle.noise=event=>hits.push(event);
