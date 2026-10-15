@@ -17,8 +17,8 @@ try{
  console.log('DOM READY');await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:180000});console.log('LOADED');await page.evaluate(()=>{window.__holdFrame=true;});
  const show=async id=>{await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.show('car',{index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});},id);await page.waitForSelector('#carStage canvas');await page.waitForTimeout(500);};
  const capture=async name=>{await page.evaluate(()=>__flow.menu.carView?.captureFrame?.());await page.screenshot({timeout:120000,path:resolve(out,name+'.png')});console.log('CAPTURE',name);};
- for(const id of (process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){await show(id);await capture('garage-'+id);}
- if(!process.env.TRIM_ONLY){
+ for(const id of (process.env.CHASE_ONLY||process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){await show(id);await capture('garage-'+id);}
+ if(!process.env.TRIM_ONLY&&!process.env.CHASE_ONLY){
  await show('cle200');await capture('garage-cle200');
  await page.evaluate(()=>{window.__trimCanvas=document.querySelector('#carStage canvas');window.__trimRotation=__flow.menu.carView.rotation;});
  for(const id of ['cle','cle300e','cle450','cle53']){
@@ -47,10 +47,11 @@ try{
  }
  // Six actual stationary world views use the same spawn, camera and body colour.
  for(const id of (process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){
-   await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.h.chooseCar(CARS.findIndex(c=>c.id===id),null,true);await __flow.startEvent(__flow.freeRoamDef());},id);
+   await page.evaluate(async id=>{await __flow.startEvent(__flow.freeRoamDef(),{car:id});},id);
+   await page.waitForFunction(id=>__sim.player.spec.id===id&&!document.body.classList.contains('fading'),id,{timeout:120000});
    await page.waitForTimeout(1000);
    await page.evaluate(()=>{__game.countWall=performance.now()-5000;__sim.step(1,.05);__game.cam='chase';__sim.step(60,1/60);__sim.render();});
-   await capture('chase-'+id);await page.evaluate(()=>__flow.quit());
+   const actual=await page.evaluate(()=>({id:__sim.player.spec.id,physics:__sim.player.veh.spec.id,model:__sim.player.model.spec.id,body:__sim.player.model.modelKind,expectedBody:__sim.player.spec.body}));assert.equal(actual.id,id,'capture uses requested trim');assert.equal(actual.physics,id);assert.equal(actual.model,id);assert.equal(actual.body,actual.expectedBody);console.log('CHASE_ID',JSON.stringify(actual));await capture('chase-'+id);await page.evaluate(()=>__flow.quit());
  }
  const geometry=await page.evaluate(async()=>{const {CARS,CarModel}=await import('/src/cars.js');return ['mini_cooper','mini_s','mini_jcw','mini_cabrio_cooper','mini','mini_cabrio_jcw','panda_11','panda_100hp','golf','golf_r','cla','cla45s','cle300e'].map(id=>{const spec=CARS.find(c=>c.id===id),car=new CarModel(spec);const result={id,body:car.modelKind,open:!!car.shape.open,exhaust:car.exhaust.length,expected:spec.visual.exhaust};car.disposeDamage?.();return result;});});
  for(const row of geometry){assert.equal(row.exhaust,row.expected,row.id+' outlet count');if(row.id.startsWith('mini'))assert.equal(row.open,row.body==='mini',row.id+' roof geometry');}
