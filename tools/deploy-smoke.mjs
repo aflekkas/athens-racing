@@ -7,7 +7,7 @@ import { verifySessionCatalogueWithRetry } from './deploy-smoke-catalogue.mjs';
 import { checkDeployedEntry } from './deploy-smoke-assets.mjs';
 import { smokeDrive, SMOKE_SPEED, SMOKE_STEP } from './deploy-smoke-route.mjs';
 const base = (process.argv[2] || '').replace(/\/$/, '');
-if (!/^https?:\/\//.test(base)) throw new Error('Usage: node tools/deploy-smoke.mjs https://worker.workers.dev [--race] [--map=riviera|penteli]');
+if (!/^https?:\/\//.test(base)) throw new Error('Usage: node tools/deploy-smoke.mjs https://worker.workers.dev [--race] [--map=riviera|megara|penteli]');
 const raceProof = process.argv.includes('--race'), mapId = process.argv.find(v => v.startsWith('--map='))?.slice(6) || 'riviera';
 const { build, entry } = await checkDeployedEntry(base);
 const preview = await fetch(base + '/assets/maps/riviera.svg', { signal: AbortSignal.timeout(15000) });
@@ -60,7 +60,7 @@ async function connect(name) {
   const c = client(name); clients.push(c);
   const hello = await c.next(m => m.type === 'hello');
   assert.ok(hello.token); assert.ok(hello.id);
-  assert.ok(!hello.maps.some(map => map.id === 'megara'), 'Megara must remain absent from online hello');
+  assert.ok(hello.maps.some(map => map.id === 'megara'), 'Megara Circuit must be advertised');
   // Old Workers ignore the query and omit hello.protocol. Do not send the new
   // hello message to them; explicit reload/mismatched protocols never downgrade.
   if (hello.protocol !== undefined) {
@@ -120,5 +120,5 @@ try {
     b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
   }
   a.send({ type: 'leave' }); await a.next(m => m.type === 'left');
-  console.log(`PASS: assets, private paths, Megara exclusion and /ws create-lobby round trip at ${base}`);
+  console.log(`PASS: assets, private paths, playable map catalogue and /ws create-lobby round trip at ${base}`);
 } finally { for (const c of clients) c.close(); }

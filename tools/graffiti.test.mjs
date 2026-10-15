@@ -13,7 +13,7 @@ test('28% building selection is deterministic and bounded at one to three styles
   assert.equal(selectGraffitiBuildings(village).length, 2);
   assert.deepEqual(selectGraffitiBuildings(village), selectGraffitiBuildings(village.reverse()), 'independent of footprint iteration order');
 });
-test('mapped Riviera and Penteli settlements get bins; hidden Megara gets none', () => {
+test('mapped Riviera and Penteli settlements get bins; closed-circuit Megara gets none', () => {
   for (const [id, path] of [['riviera', '../data/map.json'], ['penteli', '../data/maps/penteli/map.json']]) {
     const data = JSON.parse(fs.readFileSync(new URL(path, import.meta.url))), zones = data.zones;
     const urban = s => { const zone = zones.findLast(z => z.s <= s); return zone?.urban ?? 0; };

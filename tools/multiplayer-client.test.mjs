@@ -157,10 +157,10 @@ test('plate text normalizes usernames to fit the texture', async () => {
   assert.deepEqual(presetCars(cars, 'bogus'), ['mini', 'z4', 'carrera', 'golf', 'gr_yaris']);
 });
 
-test('lobby map picker offers only enabled maps (Megara retained, not selectable)', () => {
+test('lobby map picker offers only enabled maps (including Megara Circuit)', () => {
   // The hello handler assigns this.maps through getPlayableMaps, so the
   // lobby pickers and the solo selector share one registry.
-  assert.deepEqual(getPlayableMaps([{ id: 'riviera' }, { id: 'megara' }, { id: 'penteli' }]).map((m) => m.id), ['riviera', 'penteli']);
+  assert.deepEqual(getPlayableMaps([{ id: 'riviera' }, { id: 'megara' }, { id: 'penteli' }]).map((m) => m.id), ['riviera', 'megara', 'penteli']);
   assert.deepEqual(getPlayableMaps([]), []);
 });
 

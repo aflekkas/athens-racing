@@ -111,7 +111,7 @@ export const TYPES = {
   pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
 /** Map-local untimed session; never part of the competitive event catalogue. */
-export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', free: true, from: 'start', to: 'finish', rivals: 0, traffic: 1, targets: {} });
+export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [

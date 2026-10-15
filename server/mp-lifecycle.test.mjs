@@ -115,14 +115,15 @@ function harness(t, opts = {}) {
 }
 const stateAt = (s, u = 0) => ({ x: s, y: 0, z: 0, yaw: 0, s, u, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
 
-test('create seeds configurable Quick Race; removed modes and disabled maps rejected', (t) => {
+test('create seeds configurable Quick Race; removed modes rejected and circuit enabled', (t) => {
   const { core, socket, lobbyOf, errOf, hello } = harness(t);
   const send = (ws, v) => core.message(ws, JSON.stringify(v));
   const a = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL });
-  assert.deepEqual(hello(a).maps.map((m) => m.id).sort(), ['riviera']);
+  assert.deepEqual(hello(a).maps.map((m) => m.id).sort(), ['megara', 'riviera']);
   assert.deepEqual(hello(a).events.filter(e => e.mapId === 'riviera').map(e => e.id), ['quick'], 'legacy objective/pursuit definitions are not advertised');
   send(a, { type: 'create', mapId: 'megara' });
-  assert.match(errOf(a), /unavailable/);
+  assert.equal(lobbyOf(a).mapId, 'megara');
+  send(a, { type: 'leave' });
   for (const eventId of ['chase', 'cab']) {
     send(a, { type: 'create', eventId });
     assert.match(errOf(a), /Mode unavailable/);

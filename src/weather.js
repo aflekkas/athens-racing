@@ -312,7 +312,7 @@ export function initWeather(ctx) {
     for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) {
       if (seen.has(m)) continue; seen.add(m);
       const key = m.customProgramCacheKey && m.customProgramCacheKey !== THREE.Material.prototype.customProgramCacheKey ? m.customProgramCacheKey() : '';
-      if (/^(asphalt|paving|concrete|penteli-double-solid)/.test(key)) wrap(m, 'wx-road', roadHook); // Riviera road kit, Penteli's painted road
+      if (/^(asphalt|paving|concrete|penteli-double-solid|megara-photo-surface)/.test(key)) wrap(m, 'wx-road', roadHook); // Riviera road kit, Penteli's painted road
       else if (/^facade/.test(key)) wrap(m, 'wx-facade', facadeHook);
       else if (/^(leaf|frond)/.test(key) || (m.onBeforeCompile && /totalEmissiveRadiance \+= (leafT|diffuseColor\.rgb)/.test(m.onBeforeCompile.toString()))) wrap(m, 'wx-leaf', leafHook);
       // street-lamp heads (road.js): emissive '#fff2d6'

@@ -6,9 +6,6 @@ import { createGameCore } from './core.mjs';
 import { createSqlLeaderboard } from '../worker/leaderboard.mjs';
 
 const map = (id, len, version, closed = false) => ({ id, name: id, track: { start: 0, finish: len, version }, definitions: new Map([[id === 'riviera' ? 'quick' : id + '-race', { id: id === 'riviera' ? 'quick' : id + '-race', name: id, type: 'sprint', s0: 0, s1: len, dir: 1, len, routeKey: `0>${len}`, traffic: false, closed }]]) });
-// Lobby fixtures use only enabled maps (Megara is retained in MAPS/data but not
-// offered: the registry rejects it at create/options). Leaderboard history
-// below still covers megara records.
 const maps = new Map([['riviera', map('riviera', 15, 'coast')], ['penteli', map('penteli', 40, 'circuit')], ['megara', map('megara', 40, 'circuit', true)]]), cars = new Set(['mini']);
 const socket = () => ({ readyState: 1, messages: [], send(data) { this.messages.push(JSON.parse(data)); }, close() { this.readyState = 3; } });
 const state = s => ({ x: s, y: 0, z: 0, yaw: 0, s, u: 0, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2 });
@@ -17,8 +14,8 @@ test('shared core restores lobby, socket identity, race clock and state after hi
   let now = 100000; t.mock.method(Date, 'now', () => now);
   const opts = { maps, cars, leaderboard: { submit: async () => ({ saved: true }) }, countdownMs: 100, raceLimitMs: 5000, reconnectGraceMs: 500 };
   let core = createGameCore(opts); const a = socket(), b = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
-  const hello = a.messages.find(m => m.type === 'hello'); assert.equal(hello.maps.length, 2);
-  assert.deepEqual(hello.maps.map((m) => m.id).sort(), ['penteli', 'riviera'], 'disabled maps leave the catalogue');
+  const hello = a.messages.find(m => m.type === 'hello'); assert.equal(hello.maps.length, 3);
+  assert.deepEqual(hello.maps.map((m) => m.id).sort(), ['megara', 'penteli', 'riviera'], 'all playable maps enter the catalogue');
   const send = (ws, value) => core.message(ws, JSON.stringify(value));
   send(a, { type: 'create', mapId: 'penteli', eventId: 'quick' }); assert.match(a.messages.at(-1).message, /route/);
   send(a, { type: 'create', mapId: 'penteli' }); const lobby = a.messages.at(-1).lobby; assert.equal(lobby.track.version, 'circuit');
@@ -40,21 +37,16 @@ test('shared core restores lobby, socket identity, race clock and state after hi
   assert.equal(a.messages.at(-1).lobby.status, 'results'); assert.ok(a.messages.at(-1).lobby.results.every(p => p.finish !== null));
 });
 
-test('disabled maps leave every lobby list: hello excludes Megara; create/switch/join reject it', () => {
+test('Megara is advertised, can host and switch, and accepts a second driver', () => {
   const core = createGameCore({ maps, cars, leaderboard: { submit: async () => ({}) } });
   const a = socket(), b = socket(); core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
   const send = (ws, value) => core.message(ws, JSON.stringify(value));
-  assert.deepEqual(a.messages.find((m) => m.type === 'hello').maps.map((m) => m.id).sort(), ['penteli', 'riviera']);
+  assert.deepEqual(a.messages.find(m => m.type === 'hello').maps.map(m => m.id).sort(), ['megara', 'penteli', 'riviera']);
   send(a, { type: 'create', mapId: 'megara' });
-  assert.match(a.messages.at(-1).message, /unavailable/);
-  send(a, { type: 'create', mapId: 'riviera' });
-  const code = a.messages.at(-1).lobby.code;
-  send(a, { type: 'options', mapId: 'megara' });
-  assert.match(a.messages.at(-1).message, /unavailable/);
-  assert.equal(core.lobbies.get(code).mapId, 'riviera', 'rejected switch keeps the lobby');
-  core.lobbies.set('MEG', { code: 'MEG', status: 'waiting', players: new Map(), mapId: 'megara' });
-  send(b, { type: 'join', code: 'meg' });
-  assert.match(b.messages.at(-1).message, /unavailable/);
+  let lobby = a.messages.at(-1).lobby; assert.equal(lobby.mapId, 'megara');
+  send(b, { type: 'join', code: lobby.code }); assert.equal(b.messages.at(-1).lobby.players.length, 2);
+  send(a, { type: 'options', mapId: 'riviera' }); assert.equal(a.messages.at(-1).lobby.mapId, 'riviera');
+  send(a, { type: 'options', mapId: 'megara' }); assert.equal(a.messages.at(-1).lobby.mapId, 'megara');
 });
 
 test('idle lobbies expire without a repeating timer and map changes invalidate ready votes', t => {
