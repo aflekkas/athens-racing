@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { StateSender } from '../src/multiplayer-state.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { getLeaderboard, submitResult } from '../src/leaderboard.js';
@@ -303,4 +304,32 @@ test('update close code alone stops retry even if the reload frame was lost', as
   const { m, nodes, timers } = protocolClient(t);
   m.ws.onclose({ code: UPDATE_CLOSE_CODE });
   assert.equal(m.reloadRequired, true); assert.equal(nodes.length, 1); assert.equal(timers.length, 0);
+});
+
+for (const code of [1006, 1011, 1000]) test(`transport close ${code} preserves driving and schedules token resume`, t => {
+  const {m, timers, packets}=protocolClient(t);let cleared=0;m.hooks.clearInput=()=>cleared++;
+  const lobby={code:'ABCDEF',mapId:'riviera',raceId:'same-race',status:'race',startAt:Date.now()-1000,players:[{id:'me',car:'mini'}]};
+  Object.assign(m,{lobby,id:'me',token:'reserved-token',startedRace:'same-race',panel:{hidden:true},connectionChip:{hidden:true}});
+  const prior=m.ws;m.ws.onclose({code,reason:''});
+  assert.equal(cleared,0);assert.equal(m.lobby,lobby);assert.equal(m.panel.hidden,true);assert.equal(m.connectionChip.hidden,false);assert.equal(timers.length,1);
+  timers.shift()();assert.notEqual(m.ws,prior);m.ws.onopen();
+  m.ws.onmessage({data:JSON.stringify({type:'hello',protocol:MULTIPLAYER_PROTOCOL,now:Date.now(),id:'temporary',token:'temporary-token',track:{version:'v'},maps:[],events:[]})});
+  assert.ok(packets.some(p=>p.type==='resume'&&p.token==='reserved-token'));
+  Object.assign(m,{loaded:true,mapId:'riviera',renderRoom(){},syncLobby(){},reconnectHistory:{resume(){},flush(){}}});
+  m.ws.onmessage({data:JSON.stringify({type:'session',resumed:true,lobby:true,id:'me',token:'reserved-token'})});
+  m.ws.onmessage({data:JSON.stringify({type:'lobby',resume:true,lobby,state:{s:1}})});
+  assert.equal(m.pendingResume,false,'same live race must not reconstruct the vehicle');assert.equal(m.startedRace,'same-race');assert.equal(m.reconnecting,false);assert.equal(m.connectionChip.hidden,true);assert.equal(cleared,0);
+});
+
+test('race clock and state sampling continue locally while disconnected',()=>{
+  const {m,packets}=lobbyClient('riviera');let clocks=0;m.startedRace='race';m.connected=false;m.boardAt=Infinity;m.hooks.clock=()=>clocks++;
+  m.update(1/60,state({s:10,vLong:20}));assert.equal(clocks,1);assert.equal(packets.length,1);m.stateSender.reset();
+});
+
+test('bounded reconnect breadcrumbs replay at a safe rate and discard accepted poses',async()=>{
+  const {ReconnectHistory,reconnectDelay}=await import('../src/reconnect-history.js');assert.deepEqual([0,1,2,3,9].map(reconnectDelay),[750,1500,3000,6000,8000]);
+  const h=new ReconnectHistory();for(let i=0;i<1000;i++)h.record({type:'state',raceId:'r',state:{sampleTime:i,motionEpoch:1,s:i}});
+  assert.equal(h.frames.length,900);h.resume({sampleTime:995,motionEpoch:1});const sent=[];h.flush(p=>sent.push(p),2,2000);h.flush(p=>sent.push(p),2,2050);h.flush(p=>sent.push(p),2,2100);
+  assert.deepEqual(sent.flatMap(p=>p.states.map(s=>s.s)),[996,997,998,999]);assert.ok(sent.every(p=>p.generation===2));assert.equal(h.replaying,false);
+  h.record({raceId:'next',state:{sampleTime:2001}});assert.equal(h.frames.length,1);
 });

@@ -149,3 +149,5 @@
 /* Persistent update action; independent of whether the lobby/menu is open. */
 .mp-update-notice{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:16px;max-width:calc(100vw - 32px);padding:10px 14px;background:#101a21;color:#fff;border:1px solid #4ccce4;border-radius:8px;font:14px system-ui;box-shadow:0 4px 20px #0008}
 .mp-update-notice button{border:1px solid #4ccce4;border-radius:4px;background:#153541;color:#fff;padding:7px 12px;font:inherit;cursor:pointer}
+
+.mp-connection-chip{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:90;padding:6px 12px;border-radius:14px;background:#182126dc;color:#ffd176;font:600 12px system-ui;pointer-events:none}.mp-connection-chip[hidden]{display:none}
