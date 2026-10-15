@@ -200,7 +200,7 @@ export class RacingLine {
     }
   }
   index(i) { return this.closed ? (i % this.n + this.n) % this.n : clamp(i, 0, this.n - 1); }
-  bounds(s, oncoming = false, wide = false, out = {}) { return racingBounds(this.route, s, this.dir, this.halfWidth, this.roadEdges, oncoming || this.closedRoad, wide ? PASS_MARGIN : 0.95, out); }
+  bounds(s, oncoming = false, wide = false, out = {}) { return racingBounds(this.route, s, this.dir, this.halfWidth, this.roadEdges, oncoming || this.closedRoad, wide && !this.closed ? PASS_MARGIN : 0.95, out); }
   sample(A, s) {
     const t = (this.closed ? wrap(s, this.length) : clamp(s, 0, this.length)) / this.step, i = Math.floor(t);
     return mix(A[this.index(i)], A[this.index(i + 1)], t - i);
@@ -399,7 +399,9 @@ export class RivalAI {
     const ai = this;
     this._baseSampler = { limit: (d) => ai.line.sample(ai.profile, ai._s + ai.dir * d) * ai._pace };
     this._offSampler = { limit: (d) => {
-      const s = ai._s + ai.dir * d, k = ai.line.offsetCurvature(s, ai._off, ai._offCross, ai._offWide);
+      const s = ai._s + ai.dir * d;
+      if (ai._circuitProfile) return Math.min(ai.line.sample(ai.profile, s), ai.line.sample(ai._circuitProfile, s)) * ai._pace;
+      const k = ai.line.offsetCurvature(s, ai._off, ai._offCross, ai._offWide);
       return Math.min(ai.line.sample(ai.profile, s), cornerSpeed(k, ai._lat * 0.97)) * ai._pace;
     } };
   }
@@ -680,8 +682,14 @@ export class RivalAI {
         }
       }
     }
+    // A circuit pass needs a straight long enough to pull out and return.
+    // A fixed side target across consecutive hairpins is not a racing line.
+    let circuitPassRoom = true;
+    if (route.closed) for (let d = 0; d <= 160; d += 10) {
+      if (Math.abs(route.curv(veh.s + dir * d)) >= 0.006) { circuitPassRoom = false; break; }
+    }
     // ---- the decision to go for it
-    if (!this.pass && !launchHold && !this.evade && leader && leader.vs >= 0 && this.sideT <= 0 && freeSpeed > 12 && this._slowAhead(80) > 12 &&
+    if (circuitPassRoom && !this.pass && !launchHold && !this.evade && leader && leader.vs >= 0 && this.sideT <= 0 && freeSpeed > 12 && this._slowAhead(80) > 12 &&
       shouldCommit(this.heldT, p.patience, current.gap, v, this.cooldown, this.composure, v - leader.vs)) {
       this.sideT = 0.2; // re-scan for room five times a second, not every frame
       const choice = this._chooseSide(leader, baseU, v, freeSpeed, current.speed);
@@ -695,7 +703,7 @@ export class RivalAI {
       }
     }
     // ---- defending: one early move to cover the side a challenger shows, never once it is alongside
-    if (!this.pass && !launchHold && !this.perfect && !this.evade && p.aggression > 0.5) {
+    if (!route.closed && !this.pass && !launchHold && !this.perfect && !this.evade && p.aggression > 0.5) {
       if (this.defend) {
         const D = this.defend, C = this._find(D.key);
         D.t += dt;
@@ -799,10 +807,16 @@ export class RivalAI {
     this.offset += clamp(goalOffset - this.offset, -lateralRate * dt, lateralRate * dt);
     // The smoothing lag must never carry the steering target into that car either.
     this.offset = clamp(this.offset, uMin - baseU, uMax - baseU);
+    this._circuitProfile = null;
     if (Math.abs(this.offset) > 0.5 && !launchHold) {
       // A line held beside the racing line is its own bend: brake for the
       // curvature of that path (cheap parallel-curve estimate, no profile rebuild).
       this._off = this.offset; this._offWide = wide; this._lat = latV;
+      if (route.closed) {
+        const offset = Math.round(this.offset * 4) / 4;
+        if (!this.alternateProfiles.has(offset)) this.alternateProfiles.set(offset, line.offsetProfile(veh, offset));
+        this._circuitProfile = this.alternateProfiles.get(offset);
+      }
       this._offCross = oncoming || baseU + this.offset < bounds.min || baseU + this.offset > bounds.max;
       targetSpeed = Math.min(targetSpeed, this._offSampler.limit(Math.max(3, v * 0.2)));
       const off = planBraking(v, brakeV, budget - 0.05, 0.35, this._offSampler, v * v / (2 * Math.max(1, brakeV * 0.7)) + 60, 4, this._plan2);
@@ -943,7 +957,7 @@ export class RivalAI {
     // Establish a merge gap while holding the launch lanes. The car farther
     // from the racing line lifts briefly instead of both cars braking hard
     // when the 150 m lane hold ends. Single-file grids need no launch lift.
-    if (!route.closed && launchHold && this.elapsed < 3) for (let i = 0; i < obs.length; i++) {
+    if (launchHold && this.elapsed < 3) for (let i = 0; i < obs.length; i++) {
       const o = obs[i];
       if (o.racer && Math.abs(o.d) < 15 && Math.abs(this.launchU - baseU) > Math.abs(o.u - baseU) + 1) { throttle = Math.min(throttle, 0.7); break; }
     }
