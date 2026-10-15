@@ -7,7 +7,7 @@ import { CellInstances, RNG, M, clamp, pointInPoly, polyBounds } from '../util.j
 import { TX } from '../tex.js';
 import { COND_STATE } from '../env.js';
 import { buildPenteliSurface } from './penteli-surface.js';
-import { penteliGuardrail } from './penteli-roadside.js';
+import { buildPenteliRails } from './penteli-roadside.js';
 import { PenteliGround } from './penteli-ground.js';
 import { villageForecourtBuffer } from '../people-policy.js';
 
@@ -233,33 +233,41 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
     quarryRocks.addTRS(xx,y-.9,zz,rng.range(0,TAU),rng.range(3,10),rng.range(1,3),rng.range(3,8),'#e0d9c9');
   }}
 
-  const rails=[];
-  // Only the photographed outer EP29 run; do not infer rails on every DEM drop.
-  // Keep them beyond the generic road's 0.55 m gutter and 1.6 m shoulder.
-  for(const side of [-1,1]){
-    let run=null;
-    for(let s=12;s<route.length-12;s+=2){
-      const reference=penteliGuardrail(s,side),edge=route.edge(s)+(reference?.offset||1.25), p=route.point(s,side*edge);
-      const fork=data.marks?.find(m=>m.id==='agios-petros'||/fork/i.test(m.name||''))?.s??5744;
-      const nearJunction=Math.abs(s-fork)<42||s<180||map.roadNetwork?.mouth(s,side,5);
-      if(reference&&!nearJunction){if(!run){run={side,pts:[]};rails.push(run);}run.pts.push({s,u:edge,p:p.clone()});
-        if(s%4===0)posts.addTRS(p.x,p.y+.43,p.z,route.heading(s),.11,.86,.09);
-      }else run=null;
-      if(s%40===12&&!nearJunction){reflectorPosts.addTRS(p.x,p.y+.50,p.z,route.heading(s),.13,1,.1);
-        reflectorBlack.addTRS(p.x,p.y+.82,p.z,route.heading(s),.135,.19,.105);
-        reflectorRed.addTRS(p.x,p.y+.82,p.z,route.heading(s),.07,.065,.109);
-      }
-    }
+  const rails=buildPenteliRails(map,heightC);
+  for(const run of rails)for(const q of run.pts)if(run.kind==='steel'&&q.terminal>.5&&q.s%4===0)
+    posts.addTRS(q.p.x,q.p.y+.43,q.p.z,route.heading(q.s),.11,.86,.09);
+  for(let s=12;s<route.length-12;s+=40)for(const side of [-1,1]){
+    if(map.roadNetwork?.mouth(s,side,10))continue;
+    const p=route.point(s,side*(route.edge(s)+1.15));p.y=heightC(p.x,p.z);
+    reflectorPosts.addTRS(p.x,p.y+.50,p.z,route.heading(s),.13,1,.1);
+    reflectorBlack.addTRS(p.x,p.y+.82,p.z,route.heading(s),.135,.19,.105);
+    reflectorRed.addTRS(p.x,p.y+.82,p.z,route.heading(s),.07,.065,.109);
   }
   function mesh(g,m,name){geo(g);const o=new THREE.Mesh(g,m);o.name=name;o.receiveShadow=true;group.add(o);return o;}
   function sweep(samples,profile,material,name){
     if(samples.length<2)return;const pos=[],uv=[],idx=[],n=profile.length;
-    samples.forEach((q,i)=>{for(const [du,dy] of profile){const p=route.point(q.s,q.side*(q.u+du));pos.push(p.x,q.y+dy,p.z);uv.push(q.s*.5,du+dy);}
+    samples.forEach((q,i)=>{for(const [du,dy] of profile){const p=route.point(q.s,q.side*(q.u+du));pos.push(p.x,q.y+dy*(q.terminal??1),p.z);uv.push(q.s*.5,du+dy);}
       if(i)for(let j=0;j<n-1;j++){const a=(i-1)*n+j,b=a+n;idx.push(a,b,a+1,a+1,b,b+1);}});
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return mesh(g,material,name);
   }
   const wBeam=[[0,.51],[.07,.55],[.07,.61],[0,.66],[0,.71],[.07,.76],[.07,.82],[0,.85]];
-  for(const run of rails)sweep(run.pts.map(q=>({...q,side:run.side,y:q.p.y})),wBeam,metal,'mountain-guardrail');
+  // Merge short runs by 240 m world cell and material. Culling and preset scaling
+  // use the same scenery LOD policy as instanced posts, without whole-route beams.
+  const railChunks=new Map();
+  const concrete=std('#b1ada3',{map:TX.concrete_diff});
+  const jersey=[[-.28,0],[-.28,.15],[-.13,.42],[-.09,.82],[.09,.82],[.13,.42],[.28,.15],[.28,0]];
+  for(const run of rails){let chunk=[];let lastKey;
+    const flush=()=>{if(chunk.length<2)return;const o=sweep(chunk,run.kind==='steel'?wBeam:jersey,run.kind==='steel'?metal:concrete,'mountain-guardrail');
+      group.remove(o);const key=lastKey+':'+run.kind;if(!railChunks.has(key))railChunks.set(key,[]);railChunks.get(key).push(o.geometry);};
+    for(const q of run.pts){const key=Math.floor(q.p.x/240)+','+Math.floor(q.p.z/240);
+      if(lastKey!==undefined&&key!==lastKey){flush();chunk=chunk.slice(-1);}lastKey=key;chunk.push({...q,side:run.side,y:q.p.y});
+    }flush();
+  }
+  for(const [key,parts] of railChunks){const g=mergeGeometries(parts);const o=mesh(g,key.endsWith(':steel')?metal:concrete,'Penteli barrier chunk '+key);
+    g.computeBoundingSphere();o.boundingSphere=g.boundingSphere;o.userData={lod:true,far:1800,impostor:false};
+    for(const part of parts){geos.delete(part);part.dispose();}
+  }
+  group.userData.guardrails={runs:rails.length,metres:rails.reduce((n,r)=>n+r.pts.at(-1).s-r.pts[0].s,0),chunks:railChunks.size};
   // The common terrain provides drainage and re-entry shoulders. Raised
   // decorative drains/retaining strips must not recreate a wall across them.
 

@@ -28,3 +28,48 @@ export function penteliJunctions(map) {
   }
   return found.sort((a,b)=>a.s-b.s);
 }
+
+// Measured against the rendered terrain, beyond its six-metre re-entry apron.
+// A coarse DEM cannot locate individual culverts: only OSM bridges are asserted.
+export function penteliRailHazard({drop8, drop16, drop24, curvature, side, bridge=false, reference=false}) {
+  if (bridge) return 'bridge';
+  if (reference) return 'reference';
+  const slope=(drop16-drop8)/8, outside=curvature*side<-.012;
+  if (drop8>1.8 && slope>.22 || drop16>4 && slope>.28 || drop24>8 && slope>.32) return 'drop';
+  if (outside && drop16>2.5 && slope>.15) return 'hairpin';
+  return null;
+}
+export function buildPenteliRails(map, height) {
+  const {route:r}=map, runs=[], fork=map.data.penteli?.fork??5744;
+  for(const side of [-1,1]) {
+    const samples=[];
+    for(let s=12;s<r.length-12;s+=2) {
+      const reference=penteliGuardrail(s,side), u=r.edge(s)+(reference?.offset??.9), p=r.point(s,side*u);
+      p.y=height(p.x,p.z);
+      const blocked=s<180||Math.abs(s-fork)<42||!!map.roadNetwork?.mouth(s,side,10)
+        ||[0,4,8].some(d=>{const q=r.point(s,side*(u+d));return !!map.roadNetwork?.sample(q.x,q.z);});
+      const bridge=map.data.penteli?.bridges?.some(b=>s>=b.from-6&&s<=b.to+6);
+      const drop=d=>{const q=r.point(s,side*(r.edge(s)+d));return p.y-height(q.x,q.z);};
+      const hazard=blocked?null:penteliRailHazard({drop8:drop(8),drop16:drop(16),drop24:drop(24),curvature:r.curv(s),side,bridge,reference:!!reference});
+      samples.push({s,u,p,blocked,hazard,kind:bridge?'concrete':'steel'});
+    }
+    // Add 12 m approach protection, and avoid isolated two-metre on/off fragments.
+    const wanted=samples.map((q,i)=>!q.blocked&&samples.slice(Math.max(0,i-6),i+7).some(a=>a.hazard));
+    let run=null;
+    for(let i=0;i<samples.length;i++) {
+      const q=samples[i];
+      if(!wanted[i]){run=null;continue;}
+      if(!run||run.kind!==q.kind){run={side,kind:q.kind,pts:[]};runs.push(run);}
+      run.pts.push(q);
+    }
+  }
+  return runs.filter(r=>r.pts.length>=9||r.kind==='concrete').map(run=>{
+    const first=run.pts[0].s,last=run.pts.at(-1).s;
+    for(const q of run.pts) {
+      q.terminal=run.kind==='steel'?Math.min(1,(q.s-first)/6,(last-q.s)/6):1;
+      // Turn ends down into the verge and flare away from traffic.
+      q.u+=(1-q.terminal)*.5;const p=map.route.point(q.s,run.side*q.u);p.y=height(p.x,p.z);q.p=p;
+    }
+    return run;
+  });
+}

@@ -54,3 +54,6 @@ test('Penteli rock decoration follows ground and leaves the six-metre re-entry s
  }
  assert.ok(checked>100);world.dispose();
 });
+
+// Width, barrier placement, corridor and sliding-contact regressions.
+import './penteli-rails.test.mjs';
