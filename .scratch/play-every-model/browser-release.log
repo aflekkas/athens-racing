@@ -1,0 +1,13 @@
+[browser-slot] slot 3 acquired (ticket 893, waited 11s)
+MENU READY
+CAPTURE garage-commercial
+CAPTURE garage-public-transport
+CAPTURE garage-motorcycle
+CAPTURE garage-service
+CAPTURE garage-bus
+START RIVIERA
+BUS {"car":"bus","physics":"bus","model":"bus","cam":"chase","camera":[1046.3242096896402,11.850253783963762,2478.7777542154686],"position":[1049.9624420454595,7.505238265241861,2490.432324525026]}
+CAPTURE bus-riviera-chase
+BUS {"car":"bus","physics":"bus","model":"bus","cam":"cockpit","camera":[1052.4174325273327,9.199486169362373,2496.1479341003346],"position":[1050.335560870646,7.4668485631501955,2491.6275578161612]}
+CAPTURE bus-riviera-cockpit
+PASS fleet garage, bus chase and cockpit on Riviera
