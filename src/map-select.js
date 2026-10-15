@@ -19,7 +19,7 @@ function preview(map) {
   const [kind, ic] = KIND(map);
   const pb = getMapPersonalBest(map.id), t = pb?.time;
   const record = pb ? C.stat('ROUTE BEST · ANY CAR / SETUP', `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`, { icon: 'timer' }) + `<small>${C.esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'} · ${pb.setup.direction < 0 ? 'REVERSE' : 'FORWARD'}</small>` : C.stat('LOCAL ROUTE BEST', '—', { icon: 'timer' });
-  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div>${record}<button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
+  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><div class="map-preview-best">${record}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div><button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
 }
 export function renderMapSelect(selectedId = 'riviera', mode) {
   style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
@@ -37,7 +37,7 @@ export function mountMapSelect(root) {
   if (!map) return;
   const selectable = playable(), events = new AbortController(), { signal } = events;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let selected = card.dataset.map, active = selected, camera, home, baseScale = 1, view, drag, pinchDistance, pinching = false, swipe, frame = 0;
+  let selected = card.dataset.map, active = selected, camera, home, baseScale = 1, view, drag, pinchDistance, pinching = false, swipe, frame = 0, resizeFrame = 0;
   const bounds = routeBounds(selectable.map(m => TRACK_ROUTES[m.id]));
   const pointers = new Map();
   const scaleBar = map.querySelector('.map-scale');
@@ -108,14 +108,19 @@ export function mountMapSelect(root) {
   card.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){swipe=[e.clientX,e.clientY,e.pointerId];}},{signal});
   card.addEventListener('pointerup',e=>{if(!swipe||swipe[2]!==e.pointerId)return;const dx=e.clientX-swipe[0],dy=e.clientY-swipe[1];swipe=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4)cycle(dx<0?1:-1);},{signal});
   card.addEventListener('pointercancel',()=>{swipe=null;},{signal});
+  // ResizeObserver callbacks run during layout: defer writes to avoid another
+  // resize notification in the same delivery cycle (and the global error banner).
   const resize = new ResizeObserver(() => {
-    cancelAnimationFrame(frame);
-    const bounds = map.getBoundingClientRect();
-    view = { width: bounds.width, height: bounds.height };
-    if (!view.width || !view.height) return;
-    baseScale = coverScale(view, MAP_VIEW);
-    layer.style.width = `${MAP_VIEW.width * baseScale}px`; layer.style.height = `${MAP_VIEW.height * baseScale}px`;
-    home = fitTracks(view, MAP_VIEW, bounds); camera = { ...home }; sync();
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => {
+      cancelAnimationFrame(frame);
+      const rect = map.getBoundingClientRect();
+      view = { width: rect.width, height: rect.height };
+      if (!view.width || !view.height) return;
+      baseScale = coverScale(view, MAP_VIEW);
+      layer.style.width = `${MAP_VIEW.width * baseScale}px`; layer.style.height = `${MAP_VIEW.height * baseScale}px`;
+      home = fitTracks(view, MAP_VIEW, bounds); camera = { ...home }; sync();
+    });
   });resize.observe(map);
 
   return { preview:show, action(name){
@@ -123,7 +128,7 @@ export function mountMapSelect(root) {
     if(['right','shiftUp','mapNext'].includes(name)){cycle(1);return true;}
     if(name==='mapZoomIn')zoom(.3);else if(name==='mapZoomOut')zoom(-.3);else if(name==='mapReset'){animate(home);}else return false;
     return true;
-  }, dispose(){events.abort();resize.disconnect();cancelAnimationFrame(frame);} };
+  }, dispose(){events.abort();resize.disconnect();cancelAnimationFrame(frame);cancelAnimationFrame(resizeFrame);} };
 }
 export async function selectMap(menu, id, confirmed = false) {
   if (menu.mapLoading || !isMapEnabled(id)) return;
