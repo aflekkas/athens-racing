@@ -20,8 +20,8 @@ try{
   await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__freezeWorld&&cb.name==='frame'?0:raf(cb);});
   await page.goto(`http://127.0.0.1:${server.address().port}/?menu&simhook&quality=low&fixedres&fixeddt&map=${id}`,{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>document.body.classList.contains('loaded')&&window.__flow,null,{timeout:120000});
-  await page.evaluate(id=>__flow.startEvent({...__flow.freeRoamDef(),mapId:id}),id);
-  await page.waitForFunction(()=>window.__sim?.people,null,{timeout:600000});
+  await page.evaluate(id=>{window.__startImpactWorld=__flow.startEvent({...__flow.freeRoamDef(),mapId:id});},id);
+  await page.waitForFunction(()=>window.__sim?.people&&!__mapRuntime().switching,null,{timeout:600000});
   const result=await page.evaluate(async()=>{
    window.__freezeWorld=true;__sim.G.state='paused';
    const {People:Before}=await import('/src/people-density-before.js'),THREE=await import('three'),{RNG}=await import('/src/util.js'),env=await import('/src/env.js');
@@ -40,8 +40,8 @@ try{
    for(const cam of ['cockpit','chase']){
     const feedback=await page.evaluate(async cam=>{
      const sim=__sim,{RNG}=await import('/src/util.js'),H=await import('/src/human.js');
-     __flow.startEvent('free');await new Promise(r=>setTimeout(r,500));
-     sim.G.state='race';sim.G.cam=sim.G.userCam=cam;sim.G.cameraStarting=false;
+     await __flow.startEvent(__flow.freeRoamDef());
+     sim.G.state='race';sim.G.cam=sim.G.userCam=cam;sim.G.cameraStarting=false;sim.cameraBlend.active=false;
      const people=sim.people,v=sim.player.veh;v.reset(1000,sim.route.laneU(1000,0),10);sim.traffic.disabled=true;sim.traffic.reset(1000);__police.enabled=false;
      people.reset(1000);for(const p of people.peds)if(p.active)people.despawn(p);people.spawnWalker=()=>{};people.updateAnchors=()=>{};
      const p=people.peds[0];people.init(p,'fixture',H.makeLook(new RNG(71),'street'));
@@ -51,7 +51,8 @@ try{
      const before=v.vLong;people.hit(p,{veh:v,fx,fz,rx,rz,v:10,kind:'player'});const after=v.vLong;
      sim.step(20,1/120);sim.render();return{cam,before,after,shake:sim.G.shake,bodyKick:v.pose,activeBodies:people.bodies.bodies.filter(b=>b.active).length};
     },cam);report.feedback.push(feedback);assert(feedback.after<feedback.before);assert(feedback.activeBodies>0);
-    await page.screenshot({path:path.join(out,`impact-${cam}.png`)});
+    const png=await page.evaluate(()=>{__sim.render();return __sim.renderer.domElement.toDataURL('image/png');});
+    await fs.writeFile(path.join(out,`impact-${cam}.png`),Buffer.from(png.split(',')[1],'base64'));
    }
   }
   await page.close();
