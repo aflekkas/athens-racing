@@ -2,7 +2,7 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-15 19:45 UTC.
+Last updated: 2026-10-15 20:00 UTC.
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
@@ -22,14 +22,15 @@ Last updated: 2026-10-15 19:45 UTC.
 ## UI
 - [x] Title menu redesign: compact list, live car hero matching the selected car and paint, staging badge (`7414ef1`…`533c53b`).
 - [x] Flat head-unit kit: blue-glow removal, base and menu screens (`bc69c8b`, `9b5760d`).
-- [~] Final glow sweep over every remaining screen, plus a mode-screen redesign, car thumbnails in the garage, and stronger contrast on settings/setup/results; fresh full screenshot set (Sol, menu thread).
+- [~] Full redesign of every screen and every shared component in the title's visual language. Round 1 (Garage, Race setup, Video settings) goes to the owner for review first (Sol, menu thread).
 - [x] Release photos in the changelog / What's new (`e520f68`, `7712db9`, `92e545a`). Rule: every visible change adds a picture.
 - [x] Renamed to "Athens Racing" everywhere player-facing; Worker names and storage keys stay (`272efb8`).
 
 ## Driving and cars
 - [x] Front-slip steering assist: gamepad overshoot past peak grip removed (173/180 frames → 0) (`c45aa28`).
 - [?] Keyboard turn-in is barely changed and the scripted Megara lap is unchanged. Owner: which car and input did you use on Megara? Then a second, stronger pass.
-- [~] Lamborghini Aventador SVJ with exhaust flames and flame/pop sound (Astra).
+- [x] Lamborghini Aventador SVJ: V12/ISR, own body and cockpit, pops and bangs sound, exhaust-pops toggle (`56b2c91`).
+- [~] SVJ flames v2: directional jets instead of round blobs, daytime visibility, crisp red tail lights (Astra).
 - [x] HUD motion (POV sway) defaults to Full (`1397702`).
 - [x] Every vehicle model drivable, 30 entries / 69 configs (`4ad85ea`, `ac46091`, `e4a6dc7`).
 - [x] More trims, 18 cars / 55 trims; ride-height fix (`6ca36ee`).
@@ -49,6 +50,17 @@ Last updated: 2026-10-15 19:45 UTC.
 - [x] Auto-tow on leaving the road (`d08bd72`).
 - [?] Auto-tow on sand beside the road: tighten to "fully off the drivable surface for 3 s"? Owner to decide.
 - [x] Ragdolls and rider ejection (`d13dd21`…`07db7b6`).
+
+## Performance (Codex agents, one per area; started 20:00 UTC)
+- [~] Bundle, minify and code-split the client, and bundle three.js (Sol).
+- [~] Terrain: compact vertex data plus distance-based LOD, crack-free (Astra).
+- [~] KTX2 textures plus meshopt-compressed map data (Sol).
+- [~] Shadows: near/far cascades plus cached static shadows; merge and instance scenery for fewer draw calls (Sol).
+- [~] Move simulation (traffic, peds, AI) to a Web Worker plus dynamic resolution scaling (Sol).
+- [?] Owner: one Mac Chrome performance trace (Riviera + Penteli, High) to confirm GPU vs CPU bottlenecks.
+
+## Open world
+- [~] Design doc: streamed tile loading toward an all-Athens free roam, measured from OSM, phased roadmap (Sol). To discuss with the owner before building.
 
 ## Controls
 - [~] Phone as steering wheel: QR pairing, WebRTC with relay fallback, tilt steering, pedal zones, haptics (Sol).
