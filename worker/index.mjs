@@ -1,3 +1,5 @@
+import { accounts } from './accounts.mjs';
+export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
 import { connectionProtocol, MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
@@ -19,8 +21,15 @@ const noStore = (response) => {
 const json = (value, status = 200) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
 export default {
+  async scheduled(event, env) {
+    if (!env.ACCOUNTS) return;
+    const now=Date.now();
+    await env.ACCOUNTS.batch(['sessions','challenges','limits','invites'].map(table=>env.ACCOUNTS.prepare(`DELETE FROM ${table} WHERE expires<?`).bind(now)));
+  },
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
+    if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
     if (['/ws', '/health', '/api/lobbies', '/api/leaderboard'].includes(url.pathname)) {
       const origin = request.headers.get('Origin');
       if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
@@ -112,6 +121,12 @@ export class GameArena extends DurableObject {
         this.attach(server);
         await this.persist();
         return new Response(null, { status: 101, webSocket: client });
+      }
+      if (path === '/api/account/live') {
+        const token=url.searchParams.get('token'), code=url.searchParams.get('code');
+        const c=token?this.core.sessions.get(token):null;
+        const l=c?c.lobby:code?this.core.lobbies.get(code):null;
+        return json({live:!!l,code:l?.code,map:l?.mapId,status:l?.status,host:!!c&&l?.host===c.id});
       }
       if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);

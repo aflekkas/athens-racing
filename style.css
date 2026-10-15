@@ -1,3 +1,4 @@
+@import url("./src/ui/accounts.css");
 :root {
   --red: #ff3b2f; --red2: #c4161c; --cyan: #29d8ff; --gold: #ffc21a; --ink: #07090c; --panel: rgba(8, 10, 14, 0.86); --line: rgba(255, 255, 255, 0.14);
   --cond: "Barlow Condensed", "Arial Narrow", sans-serif; --sans: "Barlow", "Helvetica Neue", Arial, sans-serif;

@@ -6,29 +6,134 @@
   "compatibility_date": "2026-10-13",
   "workers_dev": true,
   "preview_urls": false,
-  "build": { "command": "node tools/prepare-deploy.mjs" },
+  "build": {
+    "command": "node tools/prepare-deploy.mjs"
+  },
   "assets": {
     "directory": ".deploy/assets",
     "binding": "ASSETS",
-    "run_worker_first": ["/ws", "/api/*", "/health", "/", "/index.html", "/robots.txt", "/sitemap.xml"]
+    "run_worker_first": [
+      "/ws",
+      "/api/*",
+      "/health",
+      "/",
+      "/index.html",
+      "/robots.txt",
+      "/sitemap.xml"
+    ]
   },
-  "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameArena"] }],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME",
+        "class_name": "GameArena"
+      },
+      {
+        "name": "PRESENCE",
+        "class_name": "FriendsPresence"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "GameArena"
+      ]
+    },
+    {
+      "tag": "v2-accounts",
+      "new_sqlite_classes": [
+        "FriendsPresence"
+      ]
+    }
+  ],
   "env": {
     "staging": {
       "name": "athens-street-racers-staging",
-      "build": { "command": "ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs" },
-      "routes": [{ "pattern": "staging.athensracing.com", "custom_domain": true }],
-      "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
+      "build": {
+        "command": "ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs"
+      },
+      "routes": [
+        {
+          "pattern": "staging.athensracing.com",
+          "custom_domain": true
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "GAME",
+            "class_name": "GameArena"
+          },
+          {
+            "name": "PRESENCE",
+            "class_name": "FriendsPresence"
+          }
+        ]
+      },
+      "d1_databases": [
+        {
+          "binding": "ACCOUNTS",
+          "database_name": "athens-racing-accounts-staging",
+          "database_id": "5e3d1170-f253-4de6-bff4-8b8f2c0027f4",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "triggers": {
+        "crons": [
+          "17 3 * * *"
+        ]
+      }
     },
     "production": {
       "name": "athens-street-racers",
-      "build": { "command": "ASR_BUILD_ENV=production node tools/prepare-deploy.mjs" },
+      "build": {
+        "command": "ASR_BUILD_ENV=production node tools/prepare-deploy.mjs"
+      },
       "routes": [
-        { "pattern": "athensracing.com", "custom_domain": true },
-        { "pattern": "www.athensracing.com", "custom_domain": true }
+        {
+          "pattern": "athensracing.com",
+          "custom_domain": true
+        },
+        {
+          "pattern": "www.athensracing.com",
+          "custom_domain": true
+        }
       ],
-      "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameArena" }] }
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "GAME",
+            "class_name": "GameArena"
+          },
+          {
+            "name": "PRESENCE",
+            "class_name": "FriendsPresence"
+          }
+        ]
+      },
+      "d1_databases": [
+        {
+          "binding": "ACCOUNTS",
+          "database_name": "athens-racing-accounts",
+          "database_id": "965f63b7-a248-415e-ba11-f5f4c15d8c79",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "triggers": {
+        "crons": [
+          "17 3 * * *"
+        ]
+      }
     }
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "ACCOUNTS",
+      "database_name": "athens-racing-accounts-staging",
+      "database_id": "5e3d1170-f253-4de6-bff4-8b8f2c0027f4",
+      "migrations_dir": "migrations"
+    }
+  ]
 }
