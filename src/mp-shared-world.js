@@ -21,6 +21,14 @@ export function applySharedCar(traffic, row, age = 0, promote = false) {
   c.indL.emissiveIntensity = row[CAR.BLINK] & 1 ? 3.5 : 0; c.indR.emissiveIntensity = row[CAR.BLINK] & 2 ? 3.5 : 0;
   c.flash.emissiveIntensity = row[CAR.BLINK] & 4 ? 5 : 0;
   c.crash = k ? { t: 1, brake: 1, rec: 0, vs: row[CAR.VS] / 100, vu: row[CAR.VU] / 100, w: row[CAR.W] / 1000, yaw: c.yawLC + row[CAR.W] / 1000 * age, y: Math.max(0, row[CAR.Y] / 100 + row[CAR.VY] / 100 * age), vy: row[CAR.VY] / 100, roll: row[CAR.ROLL] / 1000, pitch: row[CAR.PITCH] / 1000, gy: row[CAR.GY] / 100, rollV: row[CAR.ROLLV] / 1000, pitchV: row[CAR.PITCHV] / 1000, wreck: !!(flags & 2), onSide: Math.abs(row[CAR.ROLL]) > 1100 } : null;
+  if (row.length === 32) {
+    const signature = row.slice(24,31).join(':');
+    if (c.riderSignature !== signature || !c.rider) {
+      c.riderSignature = signature;
+      c.rider = Object.fromEntries(['s','u','y','yaw','vs','vu','vy','age'].map((k,i) => [k,row[24+i]/100]));
+    }
+    c.rider.age = row[31]/100 + age;
+  } else { c.rider = null; c.riderSignature = null; }
   c.dz = Object.fromEntries(ZONES.map((z, i) => [z, row[CAR.FRONT + i] / 1000]));
   c.m.setDamageSnapshot?.(c.dz);
   return c;

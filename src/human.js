@@ -493,7 +493,7 @@ function warmHumanRig(material) {
   for (const p of rig.pedals) { p.pedal.geometry.dispose(); p.crank.geometry.dispose(); }
   rigWarmed = true;
 }
-function createHumanRig(L, material) {
+export function createHumanRig(L, material) {
   const bones = [], bind = [], names = {}, c = L.col, parts = [];
   function bone(name, parent, x, y, z) {
     const b = new THREE.Bone(); b.name = name; b.position.set(x,y,z);

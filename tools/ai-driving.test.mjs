@@ -1,3 +1,4 @@
+import { impactTarget, LIFE, STEP } from '../src/impact-ragdoll.js';
 // Deterministic 60 Hz decisions AND real Vehicle motion. No renderer/model mocks
 // enter the rival controller. Traffic model construction is skipped, as in traffic-test.
 // node --import ./tools/physics-test/register.mjs --test tools/ai-driving.test.mjs
@@ -17,9 +18,9 @@ const baseline = process.env.AI_BASELINE === '1';
 const aiSource = readFileSync(new URL(baseline ? '.scratch/ai-overtake/before-rival-ai.js' : 'src/rival-ai.js', root), 'utf8');
 const { RivalAI } = await import('data:text/javascript,' + encodeURIComponent(aiSource));
 const trafficSource = readFileSync(new URL(baseline ? '.scratch/ai-overtake/before-traffic.js' : 'src/traffic.js', root), 'utf8');
-const { Traffic } = new Function('THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed',
+const { Traffic } = new Function('THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed', 'impactTarget', 'LIFE', 'STEP',
   trafficSource.replace(/^import .*;$/gm, '').replace(/^export /gm, '') + '\nreturn { Traffic };')(
-  THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed);
+  THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed, impactTarget, LIFE, STEP);
 const catalogue = readFileSync(new URL('src/cars.js', root), 'utf8');
 const spec = Function('return ' + catalogue.split('export const CARS = ')[1].split('\n];')[0] + '\n];')().find(c => c.id === 'z4');
 // A straight synthetic road has exactly zero curvature at any sampling spacing.

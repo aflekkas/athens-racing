@@ -1348,6 +1348,11 @@ function handlePeople() {
     const p = e.p;
     if (G.state !== 'race') continue;
     if (e.who === 'player' && ['hit', 'dive', 'startle'].includes(e.kind)) pedestrianVoice(p, p.kind === 'artist' ? 'artist' : e.kind === 'startle' ? 'near' : 'pedestrian');
+    if (e.kind === 'hit' && e.who === 'player') {
+      G.shake = Math.max(G.shake, .28 + Math.min(.45, e.sev / 45));
+      player.driver.impulse(.35 + Math.min(.5, e.sev / 40), 0, .3);
+      controls.rumble(.35, .5, 180);
+    }
     if (e.kind === 'dive' && e.who === 'player') { G.scared++; hud.pop('info bad', 'WATCH THE PAVEMENT!'); }
 
   }
@@ -1482,7 +1487,7 @@ function handleEvents(events) {
         if (!multiplayer.active) audio.opa(1.1);
         hud.pop('opa', 'OPA!', '', (Math.random() - 0.5) * 10);
       } else hud.pop('info bad', e.car.type.bus ? 'BUS BUMP!' : 'BUMP!');
-      if (!multiplayer.active && Math.random() < 0.6) audio.horn(e.car.type.bus, 0.9, -e.side * 0.4, 0.25);
+      if (!multiplayer.active && e.target !== 'rider' && Math.random() < 0.6) audio.horn(e.car.type.bus, 0.9, -e.side * 0.4, 0.25);
     } else if (e.kind === 'scrape') { audio.scrape(Math.min(1, e.sev / 4)); G.shake = Math.max(G.shake, 0.15); }
     else if (e.kind === 'cone') {
       G.cones++; audio.tone({ f: 380 + Math.random() * 200, slide: 900, dur: 0.18, gain: 0.08, type: 'triangle' }); audio.noise({ dur: 0.08, f: 1200, type: 'bandpass', gain: 0.12 });
@@ -1499,6 +1504,7 @@ function listenerRel(x, y, z, vx, vz) {
 function handleTrafficSounds() {
   if (multiplayer.active) { traffic.sounds.length = 0; return; }
   for (const e of traffic.sounds) {
+    if (e.kind === 'rider-thrown') continue; // Classified event for rider voice routing.
     const c = e.c, p = route.point(c.s, c.u, _ap);
     const L = listenerRel(p.x, p.y, p.z, 0, 0); if (L.d > 140) continue;
     const lvl = 1 / (1 + Math.pow(L.d / 14, 1.5));
