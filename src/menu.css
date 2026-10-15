@@ -18,6 +18,9 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   padding: max(var(--pad-screen-y), env(safe-area-inset-top)) max(var(--pad-screen-x), env(safe-area-inset-right)) max(calc(var(--pad-screen-y) * .5), env(safe-area-inset-bottom)) max(var(--pad-screen-x), env(safe-area-inset-left));
  }
 /* a new screen slides up a touch; it never fades, so the road view behind cannot flash through between screens */
+/* a screen without a title row keeps its body in the body row, so the soft-key bar stays at the bottom (Results) */
+:where(.scr > .scr__head:not(:has(.scr__title, .scr__headr, [data-menu-feedback]))) ~ .scr__body { grid-row: 3; }
+:where(.scr > .scr__head:not(:has(.scr__title, .scr__headr, [data-menu-feedback]))) ~ .scr__foot { grid-row: 4; }
 #ui.is-entering .scr { animation: hu-enter .22s var(--ease) both; }
 @keyframes hu-enter { from { transform: translateY(6px); } }
 #ui.is-settling *, #ui.is-settling *::before, #ui.is-settling *::after { transition: none !important; }
