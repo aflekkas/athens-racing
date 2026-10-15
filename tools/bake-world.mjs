@@ -28,7 +28,7 @@ export async function generateMapBake(root, id) {
   try {
     const map = await loadMap(undefined, './', id), network = new RoadNetwork(map), scene = new THREE.Group();
     map.roadNetwork = network;
-    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', network, beachAreas: map.data.areas?.beach || [] });
+    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', gardens: id === 'psychiko', network, beachAreas: map.data.areas?.beach || [] });
     const terrain = packGroup(ter.group, { map: id, grid: map.terrain.GX * map.terrain.GZ, height: 0, source: 1 }, [map.terrain.Hc, network.source], chooseShuffling);
     const roads = buildRoadNetwork(network, scene);
     return { map, network, terrain, roads: packGroup(roads, { map: id, grid: map.terrain.GX * map.terrain.GZ, stats: { triangles: network.stats.triangles, tiles: network.stats.tiles } }, [], chooseShuffling), terrainGroup: ter.group, roadsGroup: roads };
@@ -42,9 +42,20 @@ export async function bakeWorlds(root, out, ids) {
     let legacyBytes = 0, compactBytes = 0, meshoptViews = 0;
     for (const kind of ['terrain', 'roads']) {
       const bytes = gzipSync(new Uint8Array(bake[kind]), { level: 9 });
-      if (bytes.length > 25 * 1024 * 1024) throw new Error(`Baked ${id}/${kind} exceeds Cloudflare's asset limit`);
+      const chunkSize = 20 * 1024 * 1024;
       const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16), name = `${id}-${kind}-${hash}.bin.gz`;
-      await writeFile(resolve(dir, name), bytes); paths[kind] = `./data/baked/${name}`;
+      if (bytes.length <= 25 * 1024 * 1024) {
+        await writeFile(resolve(dir, name), bytes); paths[kind] = `./data/baked/${name}`;
+      } else {
+        // Split the compressed stream without altering a single geometry byte.
+        const parts = [];
+        for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+          const part = name.replace('.bin.gz', `.part-${parts.length}.bin.gz`);
+          await writeFile(resolve(dir, part), bytes.subarray(offset, offset + chunkSize));
+          parts.push(`./data/baked/${part}`);
+        }
+        paths[kind] = parts;
+      }
       console.log(`Baked ${id} ${kind}: ${bytes.length} bytes`);
       const compact = await encodeMeshoptPack(bake[kind]);
       const jsonSize = new DataView(compact.buffer).getUint32(4, true);

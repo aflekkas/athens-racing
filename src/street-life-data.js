@@ -1,5 +1,5 @@
 // Pure deterministic selection/placement helpers, also used by verification tools.
-export const STREET_LIFE_MAPS = Object.freeze(['riviera', 'penteli']);
+export const STREET_LIFE_MAPS = Object.freeze(['riviera', 'penteli', 'psychiko']);
 export function streetLifeTown(map, s) {
   if (map.id === 'penteli') {
     const zone = map.data.zones?.findLast(z => z.s <= s);

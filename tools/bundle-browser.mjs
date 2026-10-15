@@ -2,7 +2,7 @@
 import { build } from 'esbuild';
 import { preserveCodecWorkerSource } from './serialized-codec-workers.mjs';
 import { MAPS } from '../src/map-catalog.js';
-import { readFile, writeFile, readdir, unlink, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, readdir, unlink, mkdir, realpath } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 const slash = path => path.split(sep).join('/');
 export function initialChunks(meta, root, out, entry) {
@@ -16,6 +16,7 @@ export function initialChunks(meta, root, out, entry) {
   return [...seen].map(path => '/' + slash(relative(out, resolve(root, path))));
 }
 export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_MODE || 'bundled' } = {}) {
+  root = await realpath(root); out = await realpath(out);
   if (!['bundled', 'cdn'].includes(three)) throw new Error('ASR_THREE_MODE must be bundled or cdn');
   const exists = path => readFile(resolve(root, path)).then(() => true, () => false);
   const entry = await exists('src/boot.js') ? 'src/boot.js' : 'src/main.js';
