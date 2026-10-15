@@ -25,11 +25,7 @@ export default {
       const origin = request.headers.get('Origin');
       if (origin && origin !== url.origin) return json({ error: 'Origin mismatch.' }, 403);
       // One arena shares discovery and connections. Idle rooms hibernate; games share duration.
-      const arena = env.GAME.get(env.GAME.idFromName('arena-v1'));
-      // Forward the upgrade response directly. HTTP cache decoration belongs
-      // only to ordinary responses, outside the WebSocket proxy lifecycle.
-      if (url.pathname === '/ws') return arena.fetch(request);
-      return noStore(await arena.fetch(request));
+      return noStore(await env.GAME.get(env.GAME.idFromName('arena-v1')).fetch(request));
     }
     if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) return json({ error: 'Not found.' }, 404);
     return rewriteShareMetadata(request, await env.ASSETS.fetch(request));
