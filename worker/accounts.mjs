@@ -113,7 +113,8 @@ export async function accounts(request,env,fetcher=fetch) {
    else if(b.action==='accept'){await run(db,'UPDATE friendships SET state=? WHERE sender=? AND recipient=? AND state=?','accepted',other,user,'pending').run();}
    else if(b.action==='decline'){await run(db,'DELETE FROM friendships WHERE sender=? AND recipient=? AND state=?',other,user,'pending').run();}
    else if(b.action==='request'){await run(db,'INSERT INTO friendships SELECT ?,?,? WHERE NOT EXISTS (SELECT 1 FROM friendships WHERE sender=? AND recipient=? OR sender=? AND recipient=?)',user,other,'pending',user,other,other,user).run();}
-   else fail('Unknown friend action');return json({ok:true});}
+   else fail('Unknown friend action');
+   await env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(new Request('https://internal/notify',{method:'POST',body:JSON.stringify({user:other,type:'social'})}));return json({ok:true});}
   if(p.startsWith('/api/account/invites'))return await inviteRoute(request,env,s,url,fetcher);
   return json({error:'Not found'},404);
  }catch(e){return json({error:e.status?e.message:'Accounts are temporarily unavailable.'},e.status||503);}
