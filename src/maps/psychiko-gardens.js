@@ -37,11 +37,11 @@ export function buildPsychikoGardens(map,scene,heightC,buildings,assets){
  const spec=map.data.psychiko.scenery,root=new THREE.Group();root.name='psychiko-properties';scene.add(root);
  const h=(x,z)=>Math.max(heightC(x,z),map.roadNetwork?.height(x,z)-.2||0);
  const schoolRails=new CellInstances(template(box=>{for(const z of [-2.8,0,2.8])box(0,.48,z,.065,.96,.065,IRON);for(const y of [.2,.85])box(0,y,0,.055,.055,5.9,IRON);}),flat(),{cell:240,far:350});
- const walls=[0,1,2,3,4].map(type=>new CellInstances(wallGeometry(type),boundaryMaterial(),{cell:240,far:420}));
+ const walls=[0,1,2,3,4].map(type=>new CellInstances(wallGeometry(type),boundaryMaterial(),{cell:200,far:280}));
  for(const [x,z,yaw,len,type,height] of spec.frontages)walls[type].add(M(x,h(x,z),z,0,yaw,0,1,height/(type===4?2.55:type===2?1.95:type===1?1.8:1.9),len/5.95));
  for(const [x,z,yaw,len,type] of spec.frontages)if(type===4){const px=x-Math.cos(yaw)*1.1,pz=z+Math.sin(yaw)*1.1;schoolRails.add(M(px,h(px,pz)+.14,pz,0,yaw));}
  for(const w of [...walls,schoolRails])w.build(root);
- const lamps=[false,true].map(a=>new CellInstances(lampGeometry(a),flat(),{cell:280,far:500}));
+ const lamps=[false,true].map(a=>new CellInstances(lampGeometry(a),flat(),{cell:240,far:320}));
  const bins=new CellInstances(template(box=>{box(0,.57,0,1.15,1.1,.85,'#2b5444');box(0,1.15,0,1.22,.12,.92,IRON);for(const x of [-.48,.48])box(x,.12,.35,.12,.24,.2,'#242a28');}),flat(),{cell:280,far:200});
  const blueBins=new CellInstances(template(box=>{box(0,.6,0,1.15,1.15,.85,'#347aa1');box(0,1.22,0,1.22,.12,.92,'#25566c');}),flat(),{cell:280,far:200});
  const cableGeo=new THREE.CylinderGeometry(.012,.012,1,4),cables=new CellInstances(cableGeo,new THREE.MeshStandardMaterial({color:'#303a34',roughness:1}),{cell:350,far:230,shadow:false});
@@ -60,7 +60,7 @@ export function buildPsychikoGardens(map,scene,heightC,buildings,assets){
  // Shared fleet templates, flattened once per type then instanced by cell, rather than one detailed car per space.
  const types=TRAFFIC_TYPES.filter(t=>!t.police&&!t.scooter&&!t.bus&&t.len<4.8&&t.wid<1.95).slice(0,4),rng=new RNG(38125);
  const templates=types.slice(0,2).map(t=>{const c=trafficModel(t,'#ffffff',rng,{parked:true});return bakeParkedFleet([c],240);});
- const carBatches=templates.map(t=>{t.updateMatrixWorld(true);const batches=[];t.traverse(o=>{if(!o.isMesh)return;const g=o.geometry.clone();if(o.isInstancedMesh){const m=new THREE.Matrix4();o.getMatrixAt(0,m);g.applyMatrix4(m);}else g.applyMatrix4(o.matrixWorld);batches.push(new CellInstances(g,o.material,{cell:200,far:250,colors:true}));});return batches;});
+ const carBatches=templates.map(t=>{t.updateMatrixWorld(true);const batches=[];t.traverse(o=>{if(!o.isMesh)return;const g=o.geometry.clone();if(o.isInstancedMesh){const m=new THREE.Matrix4();o.getMatrixAt(0,m);g.applyMatrix4(m);}else g.applyMatrix4(o.matrixWorld);batches.push(new CellInstances(g,o.material,{cell:120,far:140,colors:true,shadow:false}));});return batches;});
  const colors=['#e6e6df','#aaaead','#444b51','#252b30','#c7c9c4','#535d63','#37536d','#974c43'];
  for(const [x,z,yaw,c] of spec.parking)for(const b of carBatches[c%carBatches.length]||[])b.add(M(x,h(x,z)+.14,z,0,yaw),colors[c]);
  for(const a of carBatches.flat())a.build(root);
