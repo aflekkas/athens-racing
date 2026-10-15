@@ -18,6 +18,7 @@ import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
+import { mapTagline } from './menu-copy.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
 import * as MP from './ui/mp-screens.js';
 import { personalBestLabel } from './personal-bests.js';
@@ -283,7 +284,7 @@ export class Menu {
   r_title() {
     return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
       <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
+      <p class="title__tag">${esc(mapTagline(MAPS))}</p></div>
       <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
         ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
