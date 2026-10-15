@@ -280,12 +280,15 @@ export async function runCockpitMirrorChecks(carIds=null){
       check(spec.id+' '+mirror.name+' glass unobstructed from driver eye',clear>=8);
     }
     let renders=0,target=null;const renderer={shadowMap:{autoUpdate:true},getRenderTarget:()=>target,setRenderTarget:t=>target=t,render:()=>renders++};
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false});check(spec.id+' low quality allocates no targets',renders===0&&cockpit.mirrors.every(m=>!m.target));
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:0});check(spec.id+' independent mirror targets',renders===3&&new Set(cockpit.mirrors.map(m=>m.target)).size===3);
-    for(const m of cockpit.mirrors){check(spec.id+' '+m.name+' camera at glass',m.camera.position.distanceTo(m.mesh.getWorldPosition(new THREE.Vector3()))<.001);check(spec.id+' '+m.name+' horizontally reversed UVs',m.name==='interior'?m.mesh.geometry.attributes.uv.getX(0)>.99:m.mesh.geometry.attributes.uv.getX(1)<.01);}
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:16});check(spec.id+' alternate frame skipped',renders===3);
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:32});check(spec.id+' next even frame refreshed',renders===6);
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false,now:64});check(spec.id+' low quality stops reflection rendering',renders===6&&cockpit.mirrors.every(m=>m.material.map===null));
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false});check(spec.id+' mirrors off allocates no target',renders===0&&!cockpit.rearTarget);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:0,quality:'low'});check(spec.id+' low quality still renders one shared rear view',renders===1&&!!cockpit.rearTarget&&cockpit.mirrors.every(m=>m.material.map===cockpit.rearTarget.texture));
+    for(const m of cockpit.mirrors){check(spec.id+' '+m.name+' horizontally reversed UVs',m.name==='interior'?m.mesh.geometry.attributes.uv.getX(0)>.99:m.mesh.geometry.attributes.uv.getX(1)<.01);check(spec.id+' '+m.name+' crop inside the shared view',m.window.x>=0&&m.window.y>=0&&m.window.x+m.window.z<=1&&m.window.y+m.window.w<=1);}
+    const L=cockpit.mirrors.find(m=>m.name==='left'),R=cockpit.mirrors.find(m=>m.name==='right');if(L&&R)check(spec.id+' left glass looks back-left, right glass back-right',L.window.x+L.window.z/2>.5&&R.window.x+R.window.z/2<.5);
+    check(spec.id+' rear camera at the interior glass, facing back',cockpit.rearCamera.position.distanceTo(cockpit.mirrors[0].mesh.getWorldPosition(new THREE.Vector3()))<.05&&new THREE.Vector3(0,0,-1).applyQuaternion(cockpit.rearCamera.quaternion).dot(new THREE.Vector3(0,0,1).transformDirection(car.body.matrixWorld))>.99);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:0});renders=0;cockpit.rearLast=0;cockpit.mirrorCalls=0;
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:16});check(spec.id+' alternate frame skipped',renders===0);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:32});check(spec.id+' next even frame refreshed',renders===1);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false,now:64});check(spec.id+' mirrors off stops rendering',renders===1&&cockpit.mirrors.every(m=>m.material.map&&m.material.map!==cockpit.rearTarget.texture));
     check(spec.id+' reflection restores renderer state',target===null&&renderer.shadowMap.autoUpdate&&car.root.visible);cockpit.disposeMirrors();
   }return {passed:results.length,results};
 }

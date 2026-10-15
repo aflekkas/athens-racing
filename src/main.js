@@ -2009,9 +2009,11 @@ function render() {
   if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
   if (water && E.waterEvery && frameN % E.waterEvery === 0) water.renderReflection(renderer, scene, camera);
-  // lower levels: mirrors at a lower cadence with a shorter far plane, shadow map every n-th frame (graphics.js)
-
-  if (G.cam === 'cockpit' && (!E.mirrorEvery || frameN % E.mirrorEvery === 0)) player.cockpit.renderMirrors(renderer, scene, { enabled: E.mirrorEvery > 0, frame: frameN, far: E.mirrorFar });
+  // lower levels: shadow map every n-th frame (graphics.js). The shared rear view feeds the cockpit mirrors and the chase
+  // camera's rear-view strip: lower effects levels only lower its resolution / refresh / range (cockpit.js MIRROR_TIERS),
+  // only Settings > Mirrors turns it off
+  const mirrorsOn = settings.mirrors !== false, rearStrip = mirrorsOn && G.cam === 'chase' && ['race', 'onlineRace'].includes(G.state);
+  if (G.cam === 'cockpit' || rearStrip) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorsOn, quality: GFX.effects });
   // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
   post.blur = orbit ? 0.35 : 0.5;
@@ -2026,6 +2028,7 @@ function render() {
   renderer.shadowMap.autoUpdate = L.shadowEvery === 1;
   renderer.shadowMap.needsUpdate = pendingShadow || !sun.shadow.map || frameN % L.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
   post.render(G.lastDt || 1 / 60);
+  if (rearStrip) player.cockpit.drawRearStrip(renderer, { exposure: post.comp.uExposure.value, wb: post.u.uWB.value.toArray() });
 }
 
 function onResize() {
