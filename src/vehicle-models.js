@@ -457,6 +457,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   if(d.mercedes&&!d.open){M.glass.color.set(d.sculpted?'#26343e':d.suv?'#354e59':'#71868f');M.glass.opacity=d.sculpted?.64:d.suv?.42:.55;if(d.sculpted)M.glass.envMapIntensity=.25;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   const grouped=groupPlayerParts(car,d);
+  car.finishModel?.(grouped?.keep);
   if(!grouped){
     for(const side of [-1,1]){const face=car[side<0?'mirrorL':'mirrorR'],g=new THREE.Group();g.name=side<0?'mirror_l':'mirror_r';car.body.add(g);g.attach(face);}
     seatMirrors(car);
@@ -499,6 +500,7 @@ export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawR
   }
   car.tail.emissiveIntensity=brake?2.8:car.lightsOn?1.6:.55;
   car.updateSignalLights?.(dt,speed);
+  car.updateHeadlamps?.(dt);
   if(car.steam){car.steam.visible=(car.steamAmount||0)>.01;car.steam.material.opacity=Math.min(.18,car.steamAmount||0);car.steamTime+=dt;if(car.steam.visible){const a=car.steam.geometry.attributes.position;for(let i=0;i<a.count;i++){const age=(car.steamTime*.55+i/a.count)%1;a.setXYZ(i,Math.sin(i*2.4+age*3)*(.08+age*.17),d.front+.12+age*.72,-d.L/2+.23+age*.12);}a.needsUpdate=true;}}
   car.updateDamage?.(dt);
 }

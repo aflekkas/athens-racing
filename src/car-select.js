@@ -17,7 +17,7 @@ import { CAR_CLASSES, carCategory, filterCars } from './car-catalog.js';
 // GR Yaris: https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/241007-GR-Yaris-Press-Pack.pdf
 // GTV: period estimate; the catalogue's net engine output is also approximate (tools/vehicle-model-notes.md).
 // 348 tb: https://www.ferrari.com/en-EN/auto/348-tb
-export const ACCELERATION = { f348: 5.6, mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0 };
+export const ACCELERATION = { f348: 5.6, mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0, p928: 5.7 };
 import * as C from './ui/components.js';
 const { esc, icon } = C;
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, embedded = false } = {}) {

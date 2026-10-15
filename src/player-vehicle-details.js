@@ -38,6 +38,7 @@ function wheelDetails(car,d,M){
         if(d.sculpted&&d.doors===2){for(const b of [-1,1])spoke(w.spin,rimMat,x,.05,rim-.009,a+b*.045,a+b*.065,.010);}else if(k==='gr_yaris'||d.amg)spoke(w.spin,rimMat,x,.042,rim-.012,a,a+.035,.017);
         else if(k==='huracan'){for(const b of [-1,1]){spoke(w.spin,M.darkAlloy,x,.046,rim*.48,a,a,.030);spoke(w.spin,M.darkAlloy,x,rim*.48,rim-.009,a,a+b*.30,.029);spoke(w.spin,M.chrome,x+s*.012,rim*.48,rim-.009,a,a+b*.30,.006);}}
         else if(k==='f348')spoke(w.spin,rimMat,x,.042,rim-.012,a,a,.052);
+        else if(k==='p928')spoke(w.spin,rimMat,x,.045,rim-.012,a,a+.05,.066); // Five broad, smooth Cup spokes.
         else if(k==='taxi')spoke(w.spin,rimMat,x,.045,rim-.012,a,a+.10,.045);
         else for(const b of [-1,1]){spoke(w.spin,rimMat,x,.046,rim*.59,a+b*.07,a+b*.075,k==='mini'?.025:.022);spoke(w.spin,rimMat,x,rim*.59,rim-.012,a+b*.075,a+b*(k==='mini'?.18:.12),.019);}
       }
