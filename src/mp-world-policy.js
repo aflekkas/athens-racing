@@ -8,7 +8,6 @@ export function onlineWorldVisibility(online, { people, fx, splash }) {
       p.life.fill(0); p.alpha.fill(0); p.pos.fill(-1e5); p.live = 0;
       p.pts.geometry.attributes.position.needsUpdate = p.pts.geometry.attributes.aAlpha.needsUpdate = true;
     }
-    if (online) people.streetLife?.reset();
   }
   for (const p of [fx.smoke, fx.grit, fx.sparkP]) p.pts.visible = !online;
   fx.marks.visible = !online;
@@ -17,6 +16,5 @@ export function onlineWorldVisibility(online, { people, fx, splash }) {
     if (splash) { splash.t = 9; splash.life.fill(0); splash.pts.visible = splash.ring.visible = false; }
     for (const b of people.bodies?.bodies || []) if (b.kind !== 'rider') b.active = false;
     people.crowd.begin(); people.crowd.end(); people.onRoad.length = 0; people.events.length = 0;
-    const mist = people.streetLife?.group?.getObjectByName('street artist spray mist'); if (mist) mist.visible = false;
   }
 }

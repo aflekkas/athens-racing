@@ -1,13 +1,5 @@
 // Pure deterministic selection/placement helpers, also used by verification tools.
 export const STREET_LIFE_MAPS = Object.freeze(['riviera', 'penteli']);
-export function graffitiSeed(id) { return Math.imul(Number(id) | 0, 2654435761) >>> 0; }
-export function buildingGraffiti(id) {
-  const seed = graffitiSeed(id);
-  return { selected: seed / 4294967296 < .28, count: 1 + seed % 3, style: seed % 4, color: (seed >>> 5) % 4, seed };
-}
-export function selectGraffitiBuildings(buildings) {
-  return [...buildings].sort((a, b) => graffitiSeed(a.id) - graffitiSeed(b.id)).slice(0, Math.round(buildings.length * .28));
-}
 export function streetLifeTown(map, s) {
   if (map.id === 'penteli') {
     const zone = map.data.zones?.findLast(z => z.s <= s);
@@ -24,4 +16,3 @@ export function townBinStations(map) {
     if (mark) for (const ds of [-150, -25, 100]) if (mark.s + ds < r.length - 30) stations.push(mark.s + ds); }
   return [...new Set(stations)].sort((a, b) => a - b);
 }
-export function paintProgress(elapsed) { return Math.max(0, Math.min(1, elapsed / 9)); }

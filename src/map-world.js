@@ -118,8 +118,6 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
     const streetLife = buildStreetLife(map, group, ter.heightC, coastal ? custom : null);
-    people.streetLife = streetLife;
-    people.anchors.push(...streetLife.artists); people.anchors.sort((a, b) => a.s - b.s);
     if (route.closed) { people.dens = () => 0; people.anchors.length = 0; }
     progress('FUELLING THE CARS', .85); await frameYield();
     const traffic = new Traffic(group, route, map.data);

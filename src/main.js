@@ -1546,9 +1546,7 @@ function updateAudio(dt) {
   if (!police?.enabled) policeVoice.reset();
   else if (voiceFrame.enabled) policeVoice.tick();
   if (voiceFrame.enabled) humanVoices.tick();
-  if (G.state === 'race' && Math.abs(player.veh.vLong) > 3) for (const a of people.streetLife?.artists || []) {
-    if (a.ped?.active && Math.hypot(a.ped.x - player.veh.x, a.ped.z - player.veh.z) < 7) pedestrianVoice(a.ped, 'artist');
-  }
+
   if (!audio.ctx) return;
   syncAudioListener(audio.ctx, camera);
   const pv = player.veh, rv = rival.veh;

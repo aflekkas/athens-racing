@@ -1,4 +1,4 @@
-// Shared prop for street artists and preset characters. Origin is the hand joint;
+// Shared prop for preset characters. Origin is the hand joint;
 // the nozzle is (0, .015, .045), the can body extends down through the grip.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';

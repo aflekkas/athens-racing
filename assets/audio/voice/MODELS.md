@@ -34,11 +34,8 @@ XTTS/Bark/Moira were licence/support screening only, and have no comparison WAVs
 
 Rapunzelina plus Chreece: two permissive local Greek neural models with complementary
 voices. Four character treatments (male/female × younger/older pitch/rate), not four
-independent trained speakers or validated ages. Fifty phrases: pedestrian 14,
-driver 12, near-miss 8, police 8, artist 8. Every category has at least eight clean
-choices. Eight strong-language phrases in all, including the requested swearing.
-All 200 Ogg clips are edge-trimmed, targeted to -20 LUFS / -4 dBTP, mono 24 kHz,
-0.5–2.48 s. Source waveforms retained locally. Runtime downloads just the chosen
+independent trained speakers or validated ages. The catalogue contains 90 phrases across pedestrian, driver, near, police, rider. Street-artist lines and their 32 clips have been removed.
+All 360 Ogg clips are edge-trimmed, targeted to -20 LUFS / -4 dBTP, mono 24 kHz. Source waveforms retained locally. Runtime downloads just the chosen
 clip; cache holds at most 24 decoded clips. Nothing calls an online TTS service.
 
 ## Primary sources and licensing distinction

@@ -28,7 +28,7 @@ test('voice distance curve fades monotonically to silence, with cabin/window los
 test('assets cover every phrase/profile, retain clean alternatives, fit byte budget', () => {
   const data=JSON.parse(readFileSync(new URL('../assets/audio/voice/lines.json',import.meta.url)));
   assert.equal(data.lines.length,VOICE_LINES.length);let bytes=0;
-  for(const cat of ['pedestrian','driver','near','police','artist']) assert.ok(VOICE_LINES.filter(l=>l.category===cat&&!l.strong).length>=8);
+  for(const cat of ['pedestrian','driver','near','police']) assert.ok(VOICE_LINES.filter(l=>l.category===cat&&!l.strong).length>=8);
   for(const l of data.lines) {assert.ok(l.transliteration && l.meaning);for(const p of VOICE_PROFILES) bytes+=statSync(new URL(`../assets/audio/voice/${l.id}-${p.id}.ogg`,import.meta.url)).size;}
   assert.ok(bytes<4_000_000); assert.equal(DEFAULTS.voice,AUDIO_DEFAULTS.voice);assert.equal(DEFAULTS.mildLanguage,false);
 });
