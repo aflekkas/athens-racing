@@ -44,9 +44,10 @@ On the shared VPS, release only a committed snapshot that has passed CI. Other a
 mkdir -p .scratch
 release_repo_root="$(pwd)"
 release_artifact_dir="$(mktemp -d "$release_repo_root/.scratch/release.XXXXXX")"
+release_git_sha="$(git rev-parse --short HEAD)"
 git archive HEAD | tar -xf - -C "$release_artifact_dir"
 ln -s "$release_repo_root/node_modules" "$release_artifact_dir/node_modules"
-(cd "$release_artifact_dir" && ASR_GIT_SHA="$(git rev-parse --short HEAD)" node_modules/.bin/wrangler deploy --env staging)
+(cd "$release_artifact_dir" && ASR_GIT_SHA="$release_git_sha" node_modules/.bin/wrangler deploy --env staging)
 ```
 
 `ASR_GIT_SHA` is only needed for an archive copy, which has no `.git`; without it the About screen shows no commit (CI uses `GITHUB_SHA`; a plain checkout asks git).

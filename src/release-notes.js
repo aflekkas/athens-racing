@@ -49,7 +49,7 @@ export const versionLabel = (version) => parseVersion(version) ? 'V' + version :
 export function parseChangelog(text) {
   const src = String(text).replace(/\r\n?/g, '\n').replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ''));
   const out = { unreleased: [], releases: [] };
-  let section = null, item = null;
+  let section = null, item = null, unreleasedSeen = false;
   const fail = (n, msg) => { throw new Error(`CHANGELOG.md:${n}: ${msg}`); };
   const close = (n) => {
     if (section?.version && !section.items.length) fail(n, `release ${section.version} has no bullets`);
@@ -65,6 +65,8 @@ export function parseChangelog(text) {
       if (!h) fail(n, `heading must be "Unreleased" or "YYYY.MM.DD.N [— YYYY-MM-DD]": ${head[1]}`);
       if (/^unreleased$/i.test(h[1])) {
         if (out.releases.length) fail(n, 'Unreleased must come first');
+        if (unreleasedSeen) fail(n, 'only one Unreleased section is allowed');
+        unreleasedSeen = true;
         if (h[2]) fail(n, 'Unreleased has no date');
         section = { items: out.unreleased };
       } else {
@@ -107,7 +109,7 @@ export function readSeen(storage) {
 }
 export function markSeen(storage, version) {
   if (!parseVersion(version)) return false;
-  try { store(storage)?.setItem(SEEN_KEY, version); return true; } catch { return false; }
+  try { const s = store(storage); if (!s) return false; s.setItem(SEEN_KEY, version); return true; } catch { return false; }
 }
 /**
  * What the card does for this launch:

@@ -10,7 +10,7 @@
 /* ---------------------------------------------------------------- the one-time "What's new in <version>" card */
 .news-card { position: absolute; right: 0; bottom: 3.25rem; z-index: 3; width: min(23rem, 100%); padding: var(--s-4) var(--s-4) var(--s-3);
   display: flex; flex-direction: column; gap: var(--s-3); border-radius: var(--r-4); background: var(--hu-glass-solid);
-  border: 1px solid var(--hu-hair-2); max-height: calc(100% - 4rem); overflow-y: auto; animation: ui-pop .24s var(--ease) both; }
+  border: 1px solid var(--hu-hair-2); max-height: calc(100% - 4rem); overflow-y: auto; animation: hu-enter .16s ease-out both; }
 .news-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
 .news-card__head .kick { color: var(--hu-ice); }
 .news-card__date { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; white-space: nowrap; }
@@ -51,3 +51,7 @@
   .release { padding: var(--s-3); }
 }
 @media (prefers-reduced-motion: reduce) { .news-card { animation: none; } }
+/* Match the shared screen backdrop and keep attribution / build identifiers readable on phones. */
+#ui.s-whatsNew, #ui.s-credits, #ui.s-creditFile { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%); }
+.about-stats .stat-tile__v { font-size: var(--t-lg); white-space: normal; overflow-wrap: anywhere; text-transform: none; }
+.credits .list-row__main b, .credits .list-row__main span { white-space: normal; overflow-wrap: anywhere; }

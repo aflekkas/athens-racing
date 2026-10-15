@@ -73,6 +73,7 @@ test('parseChangelog reads sections newest first, ignoring comments and prose', 
 
 test('parseChangelog fails the build on mistakes instead of dropping notes', () => {
   const bad = (md, re) => assert.throws(() => parseChangelog(md), re, md);
+  bad('## Unreleased\n- a\n## Unreleased\n- b', /only one Unreleased/);
   bad('## Next week\n- x', /heading must be/);
   bad('## 2026.10.15\n- x', /not a version/);
   bad('## 2026.02.30.1\n- x', /not a version/);
