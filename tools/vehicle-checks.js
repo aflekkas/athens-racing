@@ -14,7 +14,11 @@ export function runVehicleChecks(carIds=null) {
     const front=car.body.getObjectByName('windscreen'),paint=[];
     car.body.traverse(o=>{if(o.isMesh&&(o.material===car.paint||car.shape.blackRoof&&o.material.color?.getHex()===car.materials.black.color.getHex()))paint.push(o.geometry.attributes.position);});
     let gap=0;
-    for(const [glass,indices] of [[front,[10,12*11+10,24*11+10]],[rear,[0,11*13,22*13]]]){
+    // The 928 uses denser, independently sampled curved glass. Select its actual
+    // roof boundary in UV space rather than the original cars' fixed grid indices.
+    const edgeIndices=(glass,v)=>{const uv=glass.geometry.attributes.uv,edge=[];for(let i=0;i<uv.count;i++)if(Math.abs(uv.getY(i)-v)<1e-6)edge.push(i);return [edge[0],edge[Math.floor(edge.length/2)],edge.at(-1)];};
+    const joins=car.spec.id==='p928'?[[front,edgeIndices(front,1)],[rear,edgeIndices(rear,0)]]:[[front,[10,12*11+10,24*11+10]],[rear,[0,11*13,22*13]]];
+    for(const [glass,indices] of joins){
       const a=glass.geometry.attributes.position;
       for(const i of indices){let nearest=Infinity;for(const p of paint)for(let j=0;j<p.count;j++)nearest=Math.min(nearest,Math.hypot(a.getX(i)-p.getX(j),a.getY(i)-p.getY(j),a.getZ(i)-p.getZ(j)));gap=Math.max(gap,nearest);}
     }
