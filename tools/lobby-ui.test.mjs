@@ -65,7 +65,8 @@ test('the host gets separate KICK and BLOCK on other drivers; guests see the set
   assert.equal((host.match(/data-act="mpKick"/g) || []).length, 1);
   assert.equal((host.match(/data-act="mpBlock"/g) || []).length, 1);
   assert.match(host, /data-act="mpStart"/); assert.match(host, /data-scope="mpCfg"/);
-  assert.match(host, /ALL 2 CARS/, 'allowed cars count garage cars only');
+  assert.match(host, /CAR RULES/, 'the allow-list row is now the car rules entry');
+  assert.match(host, /OPEN · ANY CAR · 2 OF 2 CARS/, 'the rules summary counts garage cars only');
   assert.match(host, /data-key="traffic"/); assert.match(host, /data-key="reverse"/);
   assert.match(host, /data-key="policeMode"/, 'POLICE: OFF / RELAXED / NORMAL / TOUGH'); assert.doesNotMatch(host, /UNAVAILABLE ONLINE|data-key="busted"/, 'CAN BE BUSTED only while police are on');
   const guest = renderLobby(menu, fakeMp({ host: false }));
@@ -96,6 +97,19 @@ test('join lights up at six characters and lists open lobbies; full ones are not
 test('allowed cars and results render from lobby state', () => {
   const cars = renderCars(menu, fakeMp());
   assert.equal((cars.match(/data-scope="mpAllow"/g) || []).length, 2, 'garage cars only');
+  assert.match(cars, /data-key="preset"/, 'the host picks a speed-range ruleset first');
+  assert.match(cars, /ADVANCED · PER-CAR OVERRIDE/, 'the per-car list survives as an override');
+  const ruled = fakeMp(); ruled.carRules = { preset: 'same-class', class: 'C', maxPI: null, category: null, spec: null, balanced: false, allowedCars: null };
+  const limited = renderCars(menu, ruled);
+  assert.equal((limited.match(/data-scope="mpAllow"/g) || []).length, 1, 'only class-C trims stay toggleable');
+  assert.match(limited, /class A · this lobby races class C/, 'the rest grey out with the reason');
+  const sent = []; globalThis.window = { __multiplayer: { ...ruled, allowedCars: ['mini', 'z4'], setCarRules: (p) => { sent.push(p); return true; } } };
+  const m = { refresh() {} }, el = (scope, key) => ({ dataset: { scope, key } });
+  change(m, { key: 'preset', value: 'max-pi', el: el('mpRules', 'preset') });
+  assert.deepEqual(sent, [{ preset: 'max-pi', maxPI: 420 }], 'switching preset seeds the cap from the host car');
+  change(m, { key: 'class', value: 'B', el: el('mpRules', 'class') });
+  assert.deepEqual(sent[1], { class: 'B' });
+  delete globalThis.window;
   const mp = fakeMp({ status: 'results' }); mp.lobby.results = [{ id: 'a', name: 'GR-1001', car: 'mini', finish: 80.5 }, { id: 'b', name: 'GR-2002', car: 'z4', dnf: 'retired' }];
   const res = renderResults(menu, mp);
   assert.match(res, /P1/); assert.match(res, /80\.50/); assert.match(res, /DNF/); assert.match(res, /data-act="mpStart"/);

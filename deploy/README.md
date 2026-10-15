@@ -20,6 +20,8 @@ One SQLite-backed `GameArena` Durable Object per environment owns discovery, lob
 
 `server/core.mjs` implements one protocol for both Cloudflare and the existing Node server. Node retains `createGameServer`, static serving, health, JSON-file leaderboard, heartbeat, reconnect grace and existing tests. A missing optional map bundle logs and is skipped; Riviera remains required. Lobby selection, ready votes and event validation use each map's route version. Changing maps resets readiness.
 
+Protocol 7 adds host car rulesets (`carRules`), per-player pace (`pi`/`class`) and Balance of Performance (`balance`) to lobby publishes, with pace data shipped in `.deploy/catalogue.json` (`carSpecs`). The worker and the browser client must deploy together: a protocol-6 client is asked to reload and never mixes into a protocol-7 lobby, and a worker without `carSpecs` rejects every spec-dependent ruleset while open lobbies keep racing.
+
 Physics stays in the browser. Clients sample at 10 Hz and can send two samples in a `states` packet at 5 packets/s, suppressing unchanged stationary telemetry. The core retains compatibility with single `state` packets. The server coalesces snapshots to at most 10 Hz per lobby and broadcasts only changed state. Waiting/results lobbies expire after 30 minutes without lobby activity; disconnected seats expire after 90 seconds. The DO has no repeating idle timer: alarms cover countdown/race deadlines and expiry, and a short relay timeout exists only after a racing state change. Client clock sync is once per 30 seconds; discovery is pushed or explicitly refreshed. Optional raw `keepalive`/`alive` is answered by Cloudflare without waking JavaScript.
 
 ## Local checks and staging deploy

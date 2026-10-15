@@ -56,6 +56,6 @@ async function inventory(dir) {
 }
 await inventory(out);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
-const { cars, nitrousCars } = readCarCapabilities(catalogue);
-await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars }));
+const { cars, nitrousCars, specs: carSpecs } = readCarCapabilities(catalogue);
+await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs }));
 console.log(JSON.stringify({ assets: count, bytes, largest, release: { version: version.version, sha: version.sha, build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));

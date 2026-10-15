@@ -14,6 +14,7 @@ import { createSqlLeaderboard } from './leaderboard.mjs';
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
+const carSpecs = catalogue.carSpecs || {};
 // Dynamic routes are never stored by a browser or shared cache (the offline service worker skips them too).
 const noStore = (response) => {
   if (response.status === 101 || response.headers.has('Cache-Control')) return response;
@@ -51,7 +52,7 @@ export class GameArena extends DurableObject {
     this.timer = null;
     this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars);
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS post_limits (ip TEXT PRIMARY KEY, at INTEGER NOT NULL, count INTEGER NOT NULL)');
-    this.core = createGameCore({ maps, cars, nitrousCars, leaderboard: this.leaderboard });
+    this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
     // Auto-response avoids waking the object for optional idle keepalives.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('keepalive', 'alive'));
     ctx.blockConcurrencyWhile(() => this.event('restore', async () => {

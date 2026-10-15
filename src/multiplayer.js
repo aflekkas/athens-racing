@@ -10,6 +10,7 @@ import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.j
 import { driverName } from './driver-name.js';
 import { presetCars } from './plate.js';
 import { inGarage } from './car-catalog.js';
+import { defaultCarRules, describeRules } from './mp-car-rules.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
@@ -106,6 +107,16 @@ export class Multiplayer {
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('race-checkpoint', { detail: status }));
   }
   setAllowedPreset(preset) { return this.setAllowedCars(presetCars(this.cars.filter(inGarage), preset)); }
+  // Host car ruleset (speed-range presets + balancing). The server stays
+  // authoritative: it sanitizes the patch, resolves the effective allow-list
+  // and rejects invalid car picks with the reason.
+  get carRules() { return this.lobby?.carRules || defaultCarRules(); }
+  rulesSummary() { return describeRules(this.carRules, Object.fromEntries((this.cars || []).map(c => [c.id, c.short || c.id]))); }
+  setCarRules(patch = {}) {
+    if (this.lobby?.host !== this.id) { this.status('Only the host can change the car rules.'); return false; }
+    this.send({ type: 'options', carRules: { ...this.carRules, ...patch } });
+    return true;
+  }
   // Shared session-setup contract (UI binds host controls to these; the
   // server stays authoritative and rejects guest writes + invalid values).
   // getLobbyConfig() returns { mode, mapId, eventId, rivals, traffic, time,
@@ -295,7 +306,7 @@ export class Multiplayer {
       else if (m.type === 'checkpoint') { if (m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.applyCheckpoint(m); }
       else if (m.type === 'lobby') {
         this.creating = false; if (this.$) this.$('mp-create').disabled = false;
-        const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
+        const joined = !this.lobby, previousCar = this.me?.car, previousBalance = JSON.stringify(this.me?.balance || null), previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
         if (previousRace !== m.lobby.raceId) { this.reconnectHistory?.clear(); this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
         for (const member of m.lobby.players) {
           const prior = previousMembers?.find(p => p.id === member.id), peer = this.peers.get(member.id);
@@ -309,7 +320,7 @@ export class Multiplayer {
           this.connectionState(false);
         }
         if (joined) { this.peers.clear(); this.hooks.join(this.me.car); this.panel.hidden = false; }
-        else if (previousCar !== this.me?.car) this.hooks.carChanged?.(this.me.car);
+        else if (previousCar !== this.me?.car || previousBalance !== JSON.stringify(this.me?.balance || null)) this.hooks.carChanged?.(this.me.car);
         if (this.me?.checkpoint) this.applyCheckpoint(this.me.checkpoint);
         this.renderRoom(); this.syncLobby();
       } else if (m.type === 'recovered' && m.raceId === this.lobby?.raceId && (m.generation === undefined || m.generation === this.lobby.generation)) {

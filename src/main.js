@@ -40,6 +40,7 @@ import { createPost } from './post.js';
 import { loadTextures, uploadTextures, setAnisotropy } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
 import { resolvePlayerContacts, containOnlineVehicle } from './multiplayer-contact.js';
+import { applyBalance } from './mp-car-rules.js';
 import { SharedWorld } from './mp-shared-world.js';
 import { onlineWorldVisibility } from './mp-world-policy.js';
 import { setOnlineWeather } from './weather.js';
@@ -465,7 +466,10 @@ function announceGearbox(spec) {
 
 function setCar(idx, keepPose = true) {
   const old = player;
-  const spec = CARS[idx];
+  // A balanced lobby handicaps the local car authoritatively: the server's
+  // per-player ballast / power cap applies here, so the effect is real pace.
+  // Solo play (or an unbalanced lobby) returns the catalogue entry untouched.
+  const spec = applyBalance(CARS[idx], window.__multiplayer?.me?.balance);
   G.carIdx = idx; G.selIdx = idx;
   if (old) beginCameraBlend();
   disposeCar(old);
