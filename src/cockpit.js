@@ -323,8 +323,10 @@ export class Cockpit {
     for (const sx of [-1, 1]) {
       const doorStart=g.children.length;
       const rail = new THREE.Mesh(new RoundedBoxGeometry(0.08, 0.05, 1.1, 1, 0.02), spec.body === 'mini' ? soft : trim);
-      rail.position.set(sx * ((model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03)-(spec.id==='huracan'?.08:isBMW?.10:isSkoda?.05:0)), (spec.body === 'mini' ? 0.97 : model.shape.belt + (spec.id==='huracan'?-.015:.02)), eye.z - 0.15); g.add(rail);
-      const doorX=sx*((model.shape.profile?model.shape.W/2-.18:W/2+.03)-(spec.id==='huracan'?.08:isBMW?.10:isSkoda?.05:0)),doorY=rail.position.y-.17;
+      rail.position.set(sx * ((model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03)-(spec.id==='huracan'?.08:isBMW?.10:isSkoda?.05:0)), (spec.body === 'mini' ? 0.97 : model.shape.belt + (spec.id==='huracan'?-.015:.02)), eye.z - 0.15);
+      if(spec.id==='a160'){rail.position.x=sx*(model.shape.W/2-.17);rail.position.y=.94;}
+      g.add(rail);
+      const doorX=spec.id==='a160'?rail.position.x:sx*((model.shape.profile?model.shape.W/2-.18:W/2+.03)-(spec.id==='huracan'?.08:isBMW?.10:isSkoda?.05:0)),doorY=rail.position.y-.17;
       const doorTrim=isBMW?trimMat('#69422b',{rough:.78,scale:.07,nk:.4}):isSkoda?fascia:soft;
       box(.045,.29,.77,doorTrim,doorX,doorY,eye.z-.13,.015,0,'door-card');
       box(.081,.035,.33,trim,doorX-sx*.04,doorY-.035,eye.z-.10,.014);
