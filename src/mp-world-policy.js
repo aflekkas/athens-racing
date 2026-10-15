@@ -1,6 +1,6 @@
 // Private simulations must not leave world actors or damage behind online.
 const previous = new WeakMap();
-export function onlineWorldVisibility(online, { people, fx }) {
+export function onlineWorldVisibility(online, { people, fx, splash }) {
   const changed = previous.get(fx) !== online; previous.set(fx, online);
   if (changed) {
     fx.clearMarks();
@@ -14,6 +14,7 @@ export function onlineWorldVisibility(online, { people, fx }) {
   fx.marks.visible = !online;
   if (online) for (const b of fx.blurPool || []) b.group.visible = false;
   if (online) {
+    if (splash) { splash.t = 9; splash.life.fill(0); splash.pts.visible = splash.ring.visible = false; }
     people.crowd.begin(); people.crowd.end(); people.onRoad.length = 0; people.events.length = 0;
     const mist = people.streetLife?.group?.getObjectByName('street artist spray mist'); if (mist) mist.visible = false;
   }

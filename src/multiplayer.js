@@ -4,6 +4,7 @@ import { renderLiveBoard } from './ui/live-board.js';
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
 import { StateSender } from './multiplayer-state.js';
+import { ServerClock } from './server-clock.js';
 import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 import { driverName } from './driver-name.js';
@@ -271,12 +272,13 @@ export class Multiplayer {
       if (this.ws !== ws || this.reloadRequired) return;
       if (e.data === 'alive') return;
       const m = JSON.parse(e.data);
+      if (Number.isFinite(m.now)) this.offset = (this.serverClock ||= new ServerClock()).observe(m.now, Date.now(), m.type === 'pong' ? m.sent : null);
       if (m.type === 'reload' && m.reason === 'update') { this.requireReload(); return; }
       if (m.type === 'hello') {
         if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { this.requireReload(); ws.close(UPDATE_CLOSE_CODE, 'Game updated, reload'); return; }
         // Immediate 10 Hz samples avoid an additional 100–200ms batching delay.
         this.stateBatching = false;
-        this.offset = m.now - Date.now(); if (!this.loaded) this.trackVersion = m.track.version;
+        if (!this.loaded) this.trackVersion = m.track.version;
         this.maps = getPlayableMaps(m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]);
         this.events = m.events || this.maps.flatMap(map => (map.events || []).map(e => ({ ...e, mapId: map.id })));
         for (const id of ['mp-create-map', 'mp-map']) { this.$(id).replaceChildren(); for (const map of this.maps) { const option = document.createElement('option'); option.value = map.id; option.textContent = map.name; this.$(id).append(option); } }
@@ -293,7 +295,7 @@ export class Multiplayer {
         if (!m.resumed) { this.left(); this.status('Your previous session expired. Join or create a lobby.'); }
         else if (!m.lobby) this.left();
       }
-      else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); this.offset = m.now - (m.sent + Date.now()) / 2; }
+      else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); }
       else if (m.type === 'world' && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.world?.(m.world, Math.max(0, (this.now() - m.now) / 1000));
       else if (['world-frame', 'world-contact'].includes(m.type) && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.sharedWorld?.(m);
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);

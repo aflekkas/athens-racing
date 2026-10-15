@@ -83,6 +83,7 @@ export class SharedWorld {
   }
   apply(frame, promote = false) {
     const now = this.mp.now(), age = promote ? 0 : clamp((now - frame.at) / 1000, 0, .35), active = new Set(frame.rows.map(row => row[0]));
+    this.lastPoseAge = age; this.lastPoseAt = now;
     for (const c of this.traffic.cars) if (!active.has(c.id)) { c.active = false; c.m.root.visible = false; }
     for (const row of frame.rows) {
       const p = this.predictions.get('car:' + row[0]);

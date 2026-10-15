@@ -1,8 +1,8 @@
 // Sample at 10 Hz, send at most two samples per message, and avoid repeating parked state.
-const tolerances = { x: .01, y: .01, z: .01, s: .02, u: .01, yaw: .001, steer: .005, vLong: .05, vLat: .05, rpm: 150, nitro: .02 };
+const tolerances = { x: .01, y: .01, z: .01, s: .02, u: .01, yaw: .001, steer: .005, vLong: .05, vLat: .05, rpm: 150, nitro: .02, bodyHeave: .005, bodyPitch: .005, bodyRoll: .005 };
 function stationaryUnchanged(a, b) {
   if (!b || Math.abs(a.vLong) > .1 || Math.abs(a.vLat) > .1 || Math.abs(b.vLong) > .1 || Math.abs(b.vLat) > .1) return false;
-  if (a.gear !== b.gear || a.reverse !== b.reverse) return false;
+  if (a.gear !== b.gear || a.reverse !== b.reverse || a.braking !== b.braking) return false;
   if (a.paint !== b.paint || JSON.stringify(a.driver || null) !== JSON.stringify(b.driver || null)) return false;
   for (const [key, tolerance] of Object.entries(tolerances)) if (Math.abs(a[key] - b[key]) > tolerance) return false;
   for (const zone of ['front', 'rear', 'left', 'right']) if (Math.abs((a.damage?.[zone] || 0) - (b.damage?.[zone] || 0)) > .001) return false;

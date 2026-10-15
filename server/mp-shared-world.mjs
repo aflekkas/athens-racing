@@ -6,7 +6,7 @@ export function createSharedWorldRelay(send) {
   const cached = l => l.sharedWorld?.raceId === l.raceId && l.sharedWorld.generation === (l.generation || 0) ? l.sharedWorld : null;
   const deliver = (ws, l) => {
     const frame = cached(l); if (!frame) return;
-    for (const packet of worldPackets(frame, frame.rows, frame.cones)) send(ws, packet);
+    for (const packet of worldPackets({ ...frame, now: Date.now() }, frame.rows, frame.cones)) send(ws, packet);
   };
   return {
     deliver,
@@ -21,7 +21,7 @@ export function createSharedWorldRelay(send) {
       if (prior?.owner === c.id && now - (l.worldAcceptedAt || 0) < 120) return false;
       const { raceId, generation, owner, seq, at, rows, cones } = full;
       let packets;
-      try { packets = worldPackets({ raceId, generation, owner, seq, at }, rows, cones).map(p => JSON.stringify(p)); }
+      try { packets = worldPackets({ raceId, generation, owner, seq, at, now }, rows, cones).map(p => JSON.stringify(p)); }
       catch { return false; }
       l.worldAcceptedAt = now;
       l.sharedWorld = { raceId, generation, owner, seq, at, rows, cones };

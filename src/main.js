@@ -537,7 +537,7 @@ function seaCheck(pv, dt) {
   if (pv.water > 0.2 && !G.sinkT) {
     G.sinkT = 1e-3;
     const v = pv.velocityWorld(new THREE.Vector3()), sp = Math.hypot(v.x, v.z);
-    splash.burst(pv.x, pv.z, v.x, v.z, sp / 18);
+    if (!multiplayer.active) splash.burst(pv.x, pv.z, v.x, v.z, sp / 18);
     audio.noise({ dur: 1.4, f: 500, type: 'lowpass', gain: 0.5 * Math.min(1, 0.4 + sp / 25) });
     audio.noise({ dur: 0.5, f: 2400, type: 'bandpass', q: 0.8, gain: 0.25 });
     G.shake = Math.max(G.shake, Math.min(0.7, sp / 30));
@@ -1733,7 +1733,7 @@ function step(dt, draw = true) {
   const simulate = !window.__replay?.active && G.state !== 'menu' && G.state !== 'garage' && G.state !== 'loading' && G.state !== 'paused' && !(multiplayer.active && inMenu()) && (multiplayer.active || multiplayer.panel.hidden);
   if (!multiplayer.active) tickWorldLife(dt, { running: simulate });
   if (simulate && !multiplayer.active) updateRoadWeather(dt);
-  onlineWorldVisibility(multiplayer.active, { people, fx }); setOnlineWeather(multiplayer.active);
+  onlineWorldVisibility(multiplayer.active, { people, fx, splash }); setOnlineWeather(multiplayer.active);
   sharedWorld.update(dt);
   if (multiplayer.active && multiplayer.lobby.startAt) signals.t = (multiplayer.now() - multiplayer.lobby.startAt) / 1000 - dt;
   if (simulate || multiplayer.active) signals.update(dt, pv.s, camera.position);
@@ -2096,7 +2096,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance } });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance } });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
@@ -2181,7 +2181,7 @@ const multiplayer = new Multiplayer(CARS, {
       applySpectatorState(v, p);
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       if(p.driver)c.driver?.setAppearance?.(p.driver);
-      c.lastBrake = false; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
+      c.lastBrake = p.braking === true; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
       c.driver?.update?.(dt,G.t,v.vLong,{x:v.ay||0,y:0,z:-(v.ax||0)},c.cockpit?.wheelInfo,v.steer||0,0);
     }

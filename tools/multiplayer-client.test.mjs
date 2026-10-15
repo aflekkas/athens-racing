@@ -35,6 +35,12 @@ test('a single sample flushes at 200ms and unchanged stationary clients remain q
   q.advance(10100); q.sender.sample(state({ gear: 2 }), 'race', { batching: true }); q.advance(10300);
   assert.equal(q.packets.length, 2); assert.equal(q.packets[1].states[0].gear, 2);
 });
+test('parked brake-light and suspension changes are sent without reintroducing an idle stream', () => {
+  const q=sender(),pose=state({braking:false,bodyHeave:0,bodyPitch:0,bodyRoll:0});q.sender.sample(pose,'race');
+  q.advance(100);q.sender.sample({...pose,braking:true},'race');assert.equal(q.packets.length,2);assert.equal(q.packets[1].state.braking,true);
+  q.advance(200);q.sender.sample({...pose,braking:true,bodyRoll:.05},'race');assert.equal(q.packets.length,3);
+  q.advance(300);q.sender.sample({...pose,braking:true,bodyRoll:.05},'race');assert.equal(q.packets.length,3);
+});
 
 test('finish forces a sub-100ms flush and reset cancels packets from an earlier race', () => {
   const q = sender(); q.sender.sample(state({ vLong: 10, s: 99 }), 'first', { batching: true });

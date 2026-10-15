@@ -23,7 +23,7 @@ export function validCarRow(row) {
 }
 export function validConeRow(row) { return Array.isArray(row) && row.length === 10 && integers(row) && row[0] >= 0 && row[0] < WORLD_CONES && Math.abs(row[2]) <= 100000 && row.slice(4, 7).every(n => Math.abs(n) <= 20000); }
 export function worldPackets(base, rows, cones) {
-  const { raceId, generation, owner, seq, at } = base, header = { raceId, generation, owner, seq, at };
+  const { raceId, generation, owner, seq, at, now } = base, header = { raceId, generation, owner, seq, at, ...(Number.isFinite(now) ? { now } : {}) };
   const overhead = JSON.stringify({ ...header, type: 'world-frame', part: 7, total: 8, rows: [], cones: [] }).length;
   const groups = [{ rows: [], cones: [] }];
   let size = overhead;

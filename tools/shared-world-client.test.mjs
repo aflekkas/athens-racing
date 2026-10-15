@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SharedWorld, applySharedCar } from '../src/mp-shared-world.js';
 import { worldPackets } from '../src/shared-world-protocol.js';
+import { onlineWorldVisibility } from '../src/mp-world-policy.js';
+import { validateStateExtras } from '../server/mp-lifecycle.mjs';
+import { ServerClock } from '../src/server-clock.js';
 
 const row = () => [0,10000,300,1200,50,200,100,20,0,300,100,0,1,3,5000,0,400,0,0,0,3,0,0,800];
 function fixture() {
@@ -36,4 +39,23 @@ test('local guest contact prediction is bounded, sent once per cooldown and reco
 test('car reconstruction uses the same quantization for both direction and crash heading',()=>{
   const {traffic}=fixture(),r=row();r[12]=-1;r[5]=Math.round((Math.PI+.2)*1000);
   const c=applySharedCar(traffic,r,.2);assert.ok(Math.abs(c.crash.yaw-.22)<.002);assert.equal(c.dir,-1);
+});
+test('online policy removes pedestrian render instances, impact particles, marks and water splashes',()=>{
+  const particle=()=>({life:new Float32Array([1]),alpha:new Float32Array([1]),pos:new Float32Array([1,2,3]),live:1,pts:{visible:true,geometry:{attributes:{position:{},aAlpha:{}}}}});
+  const fx={smoke:particle(),grit:particle(),sparkP:particle(),marks:{visible:true},blurPool:[{group:{visible:true}}],clearMarks(){this.cleared=true;}};
+  const crowd={n:3,begin(){this.n=0;},end(){}},people={crowd,onRoad:[{}],events:[{}]},splash={life:new Float32Array([1]),pts:{visible:true},ring:{visible:true}};
+  onlineWorldVisibility(true,{people,fx,splash});assert.equal(crowd.n,0);assert.equal(people.onRoad.length,0);assert.equal(fx.marks.visible,false);assert.equal(fx.smoke.pts.visible,false);assert.equal(splash.ring.visible,false);assert.equal(splash.pts.visible,false);assert.equal(splash.t,9);
+  onlineWorldVisibility(false,{people,fx,splash});assert.equal(fx.marks.visible,true);assert.equal(fx.smoke.live,0);assert.equal(fx.smoke.pts.visible,true);
+});
+test('remote brake-light and suspension telemetry accepts only bounded values',()=>{
+  assert.deepEqual(validateStateExtras({braking:true,bodyHeave:.1,bodyRoll:-.4,bodyPitch:.3}),{braking:true,bodyHeave:.1,bodyPitch:.3,bodyRoll:-.4});
+  assert.deepEqual(validateStateExtras({braking:'true',bodyHeave:Infinity,bodyRoll:50,bodyPitch:NaN}),{});
+});
+test('delayed loading and reconnect stamps cannot override a fresher server clock or low-RTT ping',()=>{
+  const c=new ServerClock();assert.equal(c.observe(1000,2000),-1000);
+  assert.equal(c.observe(3010,3020),-10,'fresh world stamp fixes an old hello');
+  assert.equal(c.observe(4005,4010,4000),0);
+  assert.equal(c.observe(4200,5200),0,'delayed resume hello preserves the measured clock');
+  assert.equal(c.observe(6200,7000,6000),0,'a slower pong cannot replace the good sample');
+  assert.equal(c.observe(NaN,7100),0);
 });

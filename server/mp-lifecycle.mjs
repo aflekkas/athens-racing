@@ -334,6 +334,7 @@ export function pickTyreTelemetry(v) {
 // persist on c.state (numeric registry fields + engine/tyre objects).
 export function validateStateExtras(s, ctx = {}) {
   const extras = {};
+  if (typeof s?.braking === 'boolean') extras.braking = s.braking;
   for (const [name, { min, max }] of telemetryFields) {
     const v = s?.[name];
     if (v === undefined) continue;
