@@ -42,6 +42,8 @@ const ENGINES = {
   turbo6: { curve: [[0, 0.45], [0.18, 0.88], [0.23, 1], [0.64, 1], [0.93, 0.79], [1, 0.72], [1.1, 0.6]], lag: 0.45, boostMin: 0.55, Je: 0.17, lsd: 0.3 },
   flat6: { curve: [[0, 0.48], [0.3, 0.7], [0.6, 0.92], [0.82, 1], [1, 0.93], [1.1, 0.85]], lag: 0, Je: 0.11, lsd: 0.4 },
   v12: { curve: [[0, 0.58], [0.3, 0.84], [0.6, 1], [0.86, 0.98], [1, 0.9], [1.1, 0.8]], lag: 0, Je: 0.24, lsd: 0.4 },
+  // Ferrari 348 F119 flat-plane V8: naturally aspirated (no turbo lag); its torqueCurve anchors override this normalized fallback.
+  v8flat: { curve: [[0,.28],[.25,.68],[.56,1],[.85,.96],[1,.84],[1.1,.68]], lag: 0, Je: .12, lsd: .4 },
   diesel: { curve: [[0, 0.42], [0.22, 0.85], [0.32, 1], [0.55, 1], [0.8, 0.86], [1, 0.62], [1.1, 0.5]], lag: 0.9, boostMin: 0.48, Je: 0.21, lsd: 0 },
 };
 function curveAt(c, x) {

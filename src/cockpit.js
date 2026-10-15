@@ -235,12 +235,19 @@ export class Cockpit {
     box(isPorsche?.285:.245,.09,.61,trim,0,consoleY-.016,faceZ+.37,.025,isPorsche?.25:.12,'centre-console');
     box(.205,.018,.41,isClassic?wood:alu,0,consoleY+.046,faceZ+.34,.008,isPorsche?.25:.12);
     if(isPorsche)for(const sx of [-1,1])for(let i=0;i<5;i++)box(.033,.012,.031,gloss,sx*.093,consoleY+.07-i*.007,faceZ+.28+i*.042,.003);
-    const manual=spec.transmission==='manual';
+    const manual=spec.transmission==='manual'||spec.id==='f348';
     const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda&&!manual?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
     const knob=this.knob=isSkoda&&!manual?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
     if(isMercedes&&!isSL){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
     this.selectorX=-.04;
-    if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
+    if(spec.id==='f348'){
+      // Exposed five-speed dogleg gate: R/2/4 above 1/3/5, no leather gaiter.
+      box(.13,.008,.14,alu,-.04,consoleY+.074,faceZ+.30,.003,0,'348-open-shift-gate');
+      for(const dx of [-.04,0,.04])box(.008,.002,.105,trim,-.04+dx,consoleY+.079,faceZ+.30,.001);
+      box(.09,.002,.008,trim,-.04,consoleY+.080,faceZ+.30,.001);
+      label('R 2 4\n1 3 5',.075,.045,-.04,consoleY+.081,faceZ+.30,'#17191b',-Math.PI/2);
+    }
+    else if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
     else label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
     if(isBMW||isMini)part(new THREE.CylinderGeometry(.028,.031,.023,24),alu,.069,consoleY+.066,faceZ+.46);
     // A tactile lever is available even in cars with a factory electronic brake.
@@ -382,6 +389,12 @@ export class Cockpit {
     }else if(id==='huracan'){
       g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'RPM ×1000',red:8.5});
       g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,255);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,273);
+    }else if(id==='f348'){
+      // Period Veglia-style analogue cluster: speedometer left, tachometer right.
+      g.fillRect(0,0,W,H);
+      instrumentDial(g,{x:290,y:192,r:165,max:300,value:st.kmh,step:30,label:'km/h'});
+      instrumentDial(g,{x:731,y:192,r:165,max:9,value:st.rpm/1000,step:1,label:'giri/min ×1000',red:7.5});
+      g.fillStyle='#131619';g.fillRect(224,253,132,30);g.fillStyle='#d6d2b9';g.font='21px monospace';g.textAlign='center';g.fillText('0 4 8 3 4',290,274);
     }else if(id==='gtv'){
       // Transparent space between the separate period instrument pods.
       instrumentDial(g,{x:273,y:195,r:173,max:8,value:st.rpm/1000,step:1,label:'GIRI / MIN ×1000',red:5.8,classic:true});
