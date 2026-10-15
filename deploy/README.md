@@ -167,3 +167,16 @@ Staging builds carry the same stamp, so a staging playtest shows the version the
 ### Menu build identity
 
 Wrangler's `staging` and `production` environments explicitly set `ASR_BUILD_ENV` in their build commands. `tools/prepare-deploy.mjs` injects `asr-environment` metadata before bundling and content hashing. Only `production` hides the badge; all other packaged builds show STAGING with the release version. A source checkout without metadata shows DEV. Never reuse staging assets for a production deploy.
+
+## Automatic releases (VPS release train)
+
+`deploy/release-train.sh` runs every 10 minutes from the systemd user timer `athens-release.timer` (installed as `~/.local/bin/athens-release-train`). When local `prod` has a new commit, it:
+1. Runs every CI gate on a clean `git archive`.
+2. Pushes the commit to `origin/prod` and sync-merges `origin/staging`.
+3. Deploys staging and runs the live race smoke test, then does the same for production.
+
+A failing commit is recorded and skipped until a newer commit arrives. State and logs are in `~/.local/state/athens-release/` (`train.log`, `last-failure.log`, `deployed`, `failed`).
+
+- `touch ~/.local/state/athens-release/production-hold`: deploy staging only. Remove the file and delete `deployed` to promote the current commit.
+- When the repository has a `CLOUDFLARE_API_TOKEN` Actions secret, the train only pushes and GitHub Actions deploys.
+- `systemctl --user start athens-release.service`: run now. `journalctl --user -u athens-release`: service output.
