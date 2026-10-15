@@ -117,3 +117,8 @@ test('heavy braking downshifts safely instead of applying the light-throttle ant
   v.update(1/240,{throttle:0,brake:1,steer:0});
   assert.equal(v.pendingGear,3);assert.ok(v.shiftStartEvent);assert.ok(v.powertrainSignals.rpm < v.spec.redline);
 });
+
+test('overspeed recovery still upshifts while braking after reset/teleport in a low gear', () => {
+  const v=mk('mini');v.setManual(false);v.reset(0,0,100/3.6);v.gear=1;v.syncWheels();
+  v.update(1/240,{throttle:0,brake:1,steer:0});assert.equal(v.pendingGear,2);
+});

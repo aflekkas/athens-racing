@@ -659,7 +659,7 @@ export class Vehicle {
       const up = holdGear ? red * 0.99 : pt ? schedule.up : red * lerp(0.6, 0.975, smoothstep(0.2, 0.9, thrRaw));
       const rpmIn = (g) => vwD / R * this.ratio(g) * 60 / (2 * Math.PI);
       const rpmRoad = (g) => vt / R * this.ratio(g) * 60 / (2 * Math.PI);
-      if ((!pt || brk < .2) && this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
+      if ((!pt || brk < .2 || rpmIn(this.gear) > pt.limiterRpm) && this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
       else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * 0.25 && rpmRoad(this.gear - 1) < red * 0.7) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
       else if (this.gear > 1) {
         const dn = rpmIn(this.gear - 1);
@@ -736,7 +736,7 @@ export class Vehicle {
     if (converterOpen && !shifting) {
       // Hydrodynamic multiplication fades with turbine/pump speed ratio; no extra power at lock-up.
       const speedRatio = clamp(Math.abs(wheelRpm) / Math.max(sp.idle, this.rpm), 0, 1);
-      Tnet *= 1 + 0.45 * (1 - speedRatio);
+      Tnet *= 1 + 0.8 * (1 - speedRatio);
       if (thrRaw < .01 && !this.reverse && av < 2.2 && brk < .1) Tnet += sp.torque * .055 * (1 - av / 2.2);
       if (thrRaw < .01) Tnet -= Teb * speedRatio * .55;
     }

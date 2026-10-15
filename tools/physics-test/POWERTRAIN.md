@@ -1,6 +1,6 @@
 # Powertrain rules and sound contract — 2026-10-15
 
-All 53 catalogue entries carry a literal `powertrain` object in `src/cars.js`. `idle`, `redline`, `shiftT` and `gearbox` agree with it. Server capability scans and deployment tools may continue parsing the literal CARS array; no browser-only enrichment changes catalogue membership or equipment. `Vehicle.setSpec` calls the same pure resolver for live cars and headless benches. The scalar parameters are explicit; future missing entries fail both npm test and regress.
+All 56 catalogue entries carry a literal `powertrain` object in `src/cars.js`. `idle`, `redline`, `shiftT` and `gearbox` agree with it. Server capability scans and deployment tools may continue parsing the literal CARS array; no browser-only enrichment changes catalogue membership or equipment. `Vehicle.setSpec` calls the same pure resolver for live cars and headless benches. The scalar parameters are explicit; future missing entries fail both npm test and regress.
 
 ## Evidence and parameter provenance
 
@@ -22,17 +22,19 @@ Power, peak torque, factory ratios, mass, 0–100 and top speed remain the trims
 - Braking coefficient multiplies peak torque by `0.2 + 1.1 * (rpm/redline)^1.5`, with throttle lift blending and drivetrain direction. It is disconnected when the clutch is open. Limiter cut also exposes friction so a held gear can decelerate and refire. This produces negative sound load on overrun without injecting body/yaw forces.
 - CLE 48 V transient assistance remains metadata; continuous ICE outputs are unchanged. CLE 300 e preserves the charged blended catalogue curve with zero boost lag. It is **not** a battery/SOC, motor torque split, electric-only, regeneration or battery-depletion model. Engine sound RPM still represents its running ICE approximation, not an EV motor.
 
+The concurrent GK Jazz 1.3/1.5 Dynamic additions use the same NA4/manual rules (0.19 kg m², 4500 RPM/s, 360 ms). Their factory output/ratio references are in [the trim notes](../car-trims-notes.md). The third Jazz is explicitly a **fantasy** turbo RWD Drift Spec: its 0.16 kg m² lightweight rotating assembly, 5800 RPM/s response, 300 ms manual and 3000–5500 RPM plateau are build assumptions, not Honda production specifications. All three retain their literal trim data.
+
 ## Gearboxes and driver policy
 
 Equipment and player Auto/Manual preference are independent. Auto can operate a manual chassis with a simulated driver; Manual on a DCT or converter box still has that box's shift speed and overrev protection.
 
 | Equipment | Shift envelope | Torque during shift | Low speed / downshift |
 | --- | --- | --- | --- |
-| Torque converter, including 9G and ZF8 | 250–400 ms | 60%, ratio handover eased over duration | Slip and up to 1.45x stall multiplication fade with turbine/pump speed; brake-released forward creep; unlock below 9 m/s, lock above 13 m/s; unlock during shift. Rev match enabled. |
+| Torque converter, including 9G and ZF8 | 250–400 ms | 60%, ratio handover eased over duration | Slip and up to 1.8x stall multiplication fade with turbine/pump speed; brake-released forward creep; unlock below 9 m/s, lock above 13 m/s; unlock during shift. Rev match enabled. |
 | DSG / PDK / LDF / Mercedes DCT | 80–150 ms | 94%, progressive ratio handover | Small launch clutch slip; no converter creep. Crisp downshift matching through shift completion. |
 | Manual | 300–500 ms | Zero while clutch open | Player button starts the shift; `input.clutch > .5` extends disengagement; `vehicle.revMatch = true` opts into a downshift blip. Default false. Unsafe downshifts can cause existing mechanical damage. |
 
-Converter creep is suppressed by braking and fades by 2.2 m/s. Its reverse selection remains the game's brake-to-reverse policy. Converter slip is an algebraic hydrodynamic approximation, not a fluid/thermal solver. Clutch bite/launch RPM remains a game-driver approximation, rather than a full clutch pedal travel map. The unchanged tyre/suspension/damage integrators receive only crank torque and reflected inertia.
+Converter creep is suppressed by braking and fades by 2.2 m/s. Its reverse selection remains the game's brake-to-reverse policy. The 1.8 stall multiplier is a generic converter estimate; `(1 + .8 * (1 - turbine/pump ratio)) * turbine/pump ratio <= 1`, so multiplication cannot create shaft power. Converter slip is an algebraic hydrodynamic approximation, not a fluid/thermal solver. Clutch bite/launch RPM remains a game-driver approximation, rather than a full clutch pedal travel map. The unchanged tyre/suspension/damage integrators receive only crank torque and reflected inertia.
 
 Light throttle shifts at 34% of redline for converter autos, 38% DCT, 43% manual simulated driver. Load/grade raises this; WOT shifts at 97.5%, or 90% for diesel's useful power band. Lower shift thresholds and a projected-lower-gear 10% margin plus 450 ms post-shift dwell prevent hunting during cruise. Heavy braking inhibits cruise upshifts and raises the downshift threshold toward 72% redline and admits a lower gear up to 88% redline, preserving engine braking and corner-exit gear selection without the cruise ceiling. WOT kicks down below 55% redline when the lower gear fits the safe power band. No CVT or single-speed EV is in the catalogue; neither is fabricated.
 
@@ -61,7 +63,7 @@ Events have monotonic `serial` (never rewound by reset), simulation `time` in se
 
 ## Verification and reproduction
 
-`manual.test.mjs` imports `powertrain.test.mjs`, so the existing npm test command runs the validation and dynamic behaviour tests. The regression executable also checks all 53 parameter sets, plus all catalogue performance/safety checks and seven representative 120-second flat-road pulls with 0–100 within 12% and top speed within 3%. Synthetic chassis without a powertrain object retain their exact frozen automatic trajectory; it was not regenerated. Engine-abuse tests now wait for each physical shift duration, and use a physical manual GTD to test diesel money-shift damage rather than forcing an impossible DSG downshift.
+`manual.test.mjs` imports `powertrain.test.mjs`, so the existing npm test command runs the validation and dynamic behaviour tests. The regression executable also checks all 56 parameter sets, plus all catalogue performance/safety checks and seven representative 120-second flat-road pulls with 0–100 within 12% and top speed within 3%. Synthetic chassis without a powertrain object retain their exact frozen automatic trajectory; it was not regenerated. Engine-abuse tests now wait for each physical shift duration, and use a physical manual GTD to test diesel money-shift damage rather than forcing an impossible DSG downshift.
 
 ```sh
 npm test
@@ -133,3 +135,6 @@ Units: RPM; inertia kg m²; free rise RPM/s; spool/shift seconds. `brake` is the
 | e36_318i | na4 | 750 | 6200 | 6300 | 0.23 | 3600 | 0 | 0.16 | manual | 420 | NA |
 | mini_cabrio_jcw | turbo4 | 850 | 6800 | 6900 | 0.22 | 5500 | 0.38 | 0.16 | manual | 320 | 1250–4500 |
 | cle300e | turbo4 | 750 | 6500 | 6600 | 0.4 | 4200 | 0 | 0.16 | automatic | 360 | blended |
+| jazz | na4 | 750 | 6800 | 6900 | 0.19 | 4500 | 0 | 0.15 | manual | 360 | NA |
+| jazz_dynamic | na4 | 750 | 6800 | 6900 | 0.19 | 4500 | 0 | 0.15 | manual | 360 | NA |
+| jazz_drift | turbo4 | 850 | 7000 | 7100 | 0.16 | 5800 | 0.3 | 0.15 | manual | 300 | 3000–5500 |

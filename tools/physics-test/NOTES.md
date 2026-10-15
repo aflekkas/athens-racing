@@ -31,4 +31,4 @@ The matrix includes 911, Z4, E36, GTV, GR Yaris and MINI. The tyre-curve check s
 
 ## 2026-10-15: per-trim powertrain realism
 
-See [POWERTRAIN.md](POWERTRAIN.md) for the complete 53-trim parameter table, sources versus simulation rules, gearbox equipment, sound event contract, regression tolerances and reproduction commands. Every parameter is in the literal CARS catalogue so browser, server/deploy readers and headless benches share it.
+See [POWERTRAIN.md](POWERTRAIN.md) for the complete 56-trim parameter table, sources versus simulation rules, gearbox equipment, sound event contract, regression tolerances and reproduction commands. Every parameter is in the literal CARS catalogue so browser, server/deploy readers and headless benches share it.
