@@ -1,0 +1,35 @@
+// Run through tools/browser-slot.sh node tools/lazy-boot-browser.mjs ROOT OUT [scenarios|multiplayer].
+// Local CDN mirror and immutable static cache keep cold/warm timing repeatable without routing (which disables Chrome caching).
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import fs from 'node:fs/promises';
+import {resolve,extname} from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=resolve(process.argv[2]),out=resolve(process.argv[3]);await fs.mkdir(out,{recursive:true});
+const {createGameServer}=await import(pathToFileURL(resolve(root,'server/index.mjs')));
+const app=await createGameServer({root,dataDir:resolve(out,'server-data')});
+const types={'.js':'text/javascript','.mjs':'text/javascript','.html':'text/html','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.bin':'application/octet-stream','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.wav':'audio/wav','.mp3':'audio/mpeg','.woff2':'font/woff2'};
+const server=http.createServer(async(req,res)=>{const path=new URL(req.url,'http://localhost').pathname;if(path.startsWith('/api/')||path==='/health')return app.server.emit('request',req,res);try{let file=resolve(root,'.'+(path==='/'?'/index.html':path));if(path.startsWith('/vendor/'))file=resolve(root,'node_modules/three',path.slice(8));let body=await fs.readFile(file);if(file.endsWith('index.html'))body=Buffer.from(body.toString().replaceAll('https://cdn.jsdelivr.net/npm/three@0.170.0/','/vendor/'));res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Content-Length':body.length,'Cache-Control':file.endsWith('index.html')?'no-cache':'public,max-age=3600'});res.end(body);}catch{res.writeHead(404);res.end();}});
+server.on('upgrade',(...args)=>app.server.emit('upgrade',...args));await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || '/tmp/pw/node_modules/playwright/index.mjs');
+const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const context=await browser.newContext({viewport:{width:1000,height:650}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.stack);console.error('PAGEERROR',e.stack);});
+await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>['frame','onAnimationFrame'].includes(cb.name)?0:raf(cb);const ob=new MutationObserver(()=>{if(document.body?.dataset.ui==='title'&&!window.__menuAt){window.__menuAt=performance.now();}});ob.observe(document,{subtree:true,childList:true,attributes:true,attributeFilter:['data-ui']});});
+const report={root,boots:[],errors};
+const scenarios = ['scenarios','multiplayer'].includes(process.argv[4]);
+const dataRequests = []; page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/data/')) dataRequests.push(request.url()); });
+async function click(act) { await page.locator(`[data-act="${act}"]`).first().evaluate(el => el.click(),null,{timeout:120000}); }
+async function snap(label) { await page.screenshot({path:resolve(out,label+'.png'),timeout:60000}); }
+async function waitWorld(id) { await page.waitForFunction(id => __flow.mapId === id && !__mapRuntime().switching && ['countdown','race','lobby'].includes(__game.state), id, {timeout:600000}); }
+
+try{for(const cache of ['cold','warm']){await page.goto(`http://127.0.0.1:${server.address().port}/?menu&quality=low${scenarios ? '&simhook&debug' : ''}`,{waitUntil:'domcontentloaded',timeout:120000});await page.waitForFunction(()=>window.__menuAt&&document.body.classList.contains('loaded'),null,{timeout:600000});report.boots.push(await page.evaluate(cache=>{const rs=performance.getEntriesByType('resource');return{cache,timeToMenuMs:__menuAt,transferBytes:rs.reduce((n,r)=>n+r.transferSize,performance.getEntriesByType('navigation')[0].transferSize),bodyBytes:rs.reduce((n,r)=>n+r.encodedBodySize,0),mapRequests:rs.filter(r=>/\/data\//.test(r.name)).map(r=>({url:r.name,bytes:r.encodedBodySize,transfer:r.transferSize})),runtime:__mapRuntime(),render:__renderInfo()};},cache));await page.screenshot({path:resolve(out,cache+'-menu.png'),timeout:30000});console.log(JSON.stringify(report.boots.at(-1)));}
+
+ if(process.argv[4]!=='hero') {
+ const navigation=await page.evaluate(()=>{const f=__flow,m=f.menu;const selected=()=>m.items()[m.focus]?.dataset.act;const check=(ok,msg)=>{if(!ok)throw Error(msg);};m.show('title');check(selected()==='play','PLAY default');f.action('down');check(selected()==='multiplayer','down to multiplayer');f.action('down');check(selected()==='garage','down to garage');f.action('up');check(selected()==='multiplayer','up to multiplayer');f.action('confirm');check(m.screen==='multiplayer','multiplayer route');check(m.root.querySelector('[data-act="mpJoin"]')&&m.root.querySelector('[data-act="mpHost"]'),'both lobby paths');f.action('back');const chip=m.root.querySelector('[data-act="account"]');check(chip.tagName==='BUTTON'&&chip.tabIndex===0,'focusable account');chip.click();check(m.screen==='account','account route');f.action('back');check(m.screen==='title','account back');f.action('garage');check(m.screen==='car','G garage action');f.action('back');m.show('title');return {passed:true,checks:10};});report.navigation=navigation;
+ }
+ for(const [width,height] of [[1280,800],[1920,1080],[390,844]]){await page.setViewportSize({width,height});await page.waitForTimeout(350);await page.screenshot({path:resolve(out,`menu-${width}.png`)});}
+ if(process.argv[4]==='hero'){
+ const url=await page.evaluate(async()=>{const THREE=await import('three');const {RoomEnvironment}=await import('three/addons/environments/RoomEnvironment.js');const {CarModel,CARS}=await import('/src/cars.js');const r=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});r.setSize(1400,800);r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.25;const s=new THREE.Scene();const pm=new THREE.PMREMGenerator(r);s.environment=pm.fromScene(new RoomEnvironment(),.04).texture;s.add(new THREE.HemisphereLight('#d9efff','#313a47',3));for(const [x,y,z,i] of [[-4,6,-3,4],[4,3,5,3]]){const l=new THREE.DirectionalLight('#fff4dd',i);l.position.set(x,y,z);s.add(l);}const car=new CarModel(CARS.find(c=>c.id==='carrera'));car.root.rotation.y=-.4;s.add(car.root);const c=new THREE.PerspectiveCamera(32,1400/800,.1,50);c.position.set(6,2.3,7);c.lookAt(0,.6,0);r.render(s,c);return r.domElement.toDataURL('image/png');});await fs.writeFile(resolve(out,'hero.png'),Buffer.from(url.split(',')[1],'base64'));
+ }
+ await fs.writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2));
+}catch(error){console.error(error);process.exitCode=1;}finally{await browser.close();server.close();app.server.close();process.exit(process.exitCode || 0);}

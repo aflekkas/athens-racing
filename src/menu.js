@@ -18,7 +18,6 @@ import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, POLICE_LEVELS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
-import { mapTagline } from './menu-copy.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
 import * as MP from './ui/mp-screens.js';
 import { personalBestLabel } from './personal-bests.js';
@@ -227,6 +226,8 @@ export class Menu {
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
+      case 'account': this.show('account', {}, true); break;
+      case 'multiplayer': this.show('multiplayer', {}, true); break;
       case 'play': this.show('mode', {}, true); break;
       case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); break;
@@ -295,16 +296,29 @@ export class Menu {
   refreshValues() { for (const el of this.root.querySelectorAll('[data-scope=setting][data-key]')) C.setValue(el, String(this.valueFor(el.dataset.key)), false); }
 
   // ---------------------------------------------------------------- title / mode
+  // Account integration hook: replace r_account or supply h.account(menu) to render the full account route.
+  r_account() {
+    return this.h.account?.(this) || C.screen({ title: 'Account', kick: 'YOUR DRIVER', body: '<p class="group__note">Sign-in, friends and invites are coming here.</p>', hints: [['back', 'BACK']] });
+  }
+  r_multiplayer() {
+    return C.screen({ title: 'MULTIPLAYER', kick: 'DRIVE TOGETHER', body: C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a code or browse open lobbies', act: 'mpJoin', attrs: { 'data-default': '' } }) + C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Choose a road and invite your friends', act: 'mpHost' }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });
+  }
   r_title() {
-    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
-      <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">${esc(mapTagline(MAPS))}</p></div>
-      <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
-        ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage' })}
-        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
-      </div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
+    const car = this.h.carSpec?.() || CARS[0];
+    const map = MAPS.find(m => m.id === this.h.ctx?.()?.mapId) || MAPS[0];
+    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'ΑΘΗΝΑ <span class="acc">/</span> ATHENS, GREECE' })}<div class="home home--racing">
+      <div class="home__left"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
+      <p class="home__eyebrow">REAL ROADS. NOTHING BUT TIME.</p>
+      <nav class="title__menu home__list" aria-label="Main menu">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race / Free Roam', act: 'play', attrs: { 'data-default': '' } })}
+        ${C.option({ icon: 'users-three', title: 'MULTIPLAYER', desc: 'Find a lobby or bring your crew', act: 'multiplayer' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: esc(car.name), act: 'garage' })}
+        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Make it yours', act: 'settings' })}</nav></div>
+      <section class="home__hero" aria-label="Featured garage car: Porsche 911 Carrera"><div class="road-sign"><span>ΠΑΡΑΛΙΑΚΗ</span><b>ATHENS RIVIERA</b><i>↗</i></div>
+        <div class="home__edition">37° 49′ N &nbsp; 23° 47′ E <span>ATTICA / 01</span></div>
+        <div class="home__road" aria-hidden="true"></div><img class="home__car" src="./assets/menu/carrera.webp" width="1400" height="800" alt="In-game Porsche 911 Carrera, rear three-quarter view" fetchpriority="low" decoding="async" />
+        <div class="home__feature"><span>FROM THE GARAGE</span><b>911 CARRERA</b><small>REAR ENGINE / REAR WHEEL DRIVE</small></div>
+        <div class="home__session"><div><span>YOUR NEXT ROAD</span><b>${esc(map.name)}</b><small>Riviera coast · Megara circuit · Penteli climb</small></div><div class="home__session-car"><span>READY TO DRIVE</span><b>${esc(car.short || car.name)}</b><small>${Math.round(car.power * 1.341)} HP · ${esc(car.drive.toUpperCase())}</small></div></div>
+      </section></div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'START'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {

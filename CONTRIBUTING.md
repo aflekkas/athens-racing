@@ -5,8 +5,8 @@ Thanks for helping. This page is the whole process: read it once before your fir
 ## The rules
 
 1. **Everything goes through a pull request into `staging`.** There are two long-lived branches:
-   - `staging`: the integration branch and the default branch. It deploys to https://athens-street-racers-staging.aflekkas.workers.dev. Every contribution lands here first, through a PR.
-   - `prod`: what players get, at https://athens-street-racers.aflekkas.workers.dev. Only the maintainer updates it, by promoting a tested `staging` commit.
+   - `staging`: the integration branch and the default branch. It deploys to https://staging.athensracing.com. Every contribution lands here first, through a PR.
+   - `prod`: what players get, at https://athensracing.com. Only the maintainer updates it, by promoting a tested `staging` commit.
 
    Both branches are protected: no direct pushes, no force-pushes, and every change needs a PR with a green `test` check and the code owner's approval. Branch from the latest `staging`, push your own branch, open a PR into `staging`. Never push to `staging` or `prod` directly; anything pushed there outside a PR is reverted.
 2. **CI must be green.** The `test` check (`.github/workflows/ci.yml`) runs on every PR and must pass before merging.
@@ -17,7 +17,7 @@ Thanks for helping. This page is the whole process: read it once before your fir
 ## Workflow
 
 ```sh
-git clone https://github.com/aflekkas/athens-street-racers.git
+git clone https://github.com/aflekkas/athens-racing.git
 cd athens-street-racers
 git switch staging
 npm ci

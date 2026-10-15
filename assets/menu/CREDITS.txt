@@ -1,0 +1,4 @@
+carrera.webp — offline render of Athens Street Racers' own Porsche 911 Carrera game model.
+Generated with Three.js RoomEnvironment and the game's CarModel; no external photo or game artwork.
+Reproduce with tools/menu-capture.mjs ROOT OUT hero, then:
+ffmpeg -i OUT/hero.png -c:v libwebp -quality 86 assets/menu/carrera.webp

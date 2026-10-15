@@ -1,4 +1,4 @@
-const productionOrigin = 'https://athens-street-racers.aflekkas.workers.dev';
+const productionOrigin = 'https://athensracing.com';
 
 // Crawlers get complete metadata in the HTTP response, without running JavaScript.
 export async function rewriteShareMetadata(request, response) {

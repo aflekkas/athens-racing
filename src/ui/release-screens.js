@@ -6,7 +6,7 @@ import * as C from './components.js';
 import { DEV_VERSION, parseVersion, versionLabel, formatDate, hasPriorPlay, readSeen, markSeen, whatsNewDecision } from '../release-notes.js';
 
 const { esc, icon } = C;
-export const SOURCE_URL = 'https://github.com/aflekkas/athens-street-racers';
+export const SOURCE_URL = 'https://github.com/aflekkas/athens-racing';
 export const CONTRIBUTING_URL = SOURCE_URL + '/blob/staging/CONTRIBUTING.md';
 const CARD_ITEMS = 6;
 const SCREENS = ['whatsNew', 'credits', 'creditFile'];
@@ -69,7 +69,7 @@ export function renderAbout(menu) {
       ${C.option({ icon: 'star', title: "WHAT'S NEW", desc: 'Release notes for every version', act: 'whatsNew' })}
       ${C.option({ icon: 'users-three', title: 'CREDITS', desc: 'Team, map data, audio, fonts and open-source software', act: 'credits' })}</div>
     <div class="group"><h3 class="group__title">${icon('link')}OPEN SOURCE</h3>
-      ${C.option({ icon: 'globe', title: 'VIEW SOURCE ON GITHUB', desc: 'aflekkas/athens-street-racers · opens in a new tab', act: 'openLink', attrs: { 'data-url': SOURCE_URL } })}
+      ${C.option({ icon: 'globe', title: 'VIEW SOURCE ON GITHUB', desc: 'aflekkas/athens-racing · opens in a new tab', act: 'openLink', attrs: { 'data-url': SOURCE_URL } })}
       ${C.option({ icon: 'wrench', title: 'CONTRIBUTE', desc: 'Pull requests go into the staging branch · read CONTRIBUTING.md', act: 'openLink', attrs: { 'data-url': CONTRIBUTING_URL } })}</div>`;
 }
 

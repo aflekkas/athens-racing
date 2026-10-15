@@ -1,14 +1,14 @@
 # Athens Street Racers — Cloudflare deployment
 
-Staging: https://athens-street-racers-staging.aflekkas.workers.dev
+Staging: https://staging.athensracing.com
 
-Production is configured as `athens-street-racers` and will use https://athens-street-racers.aflekkas.workers.dev after its first authorised deploy. Production has not been deployed by this task.
+Production: https://athensracing.com (also https://www.athensracing.com). The Cloudflare worker names remain `athens-street-racers` and `athens-street-racers-staging`.
 
 Account: **Aflekkas@gmail.com's Account**, `d6f3d2dc5817687a91d74ccd257bad9e`. Never deploy into the other accounts returned by `wrangler whoami`.
 
 The previous worker at https://paraliaki-racing-staging.aflekkas.workers.dev is retained. This rename does not delete it or migrate its temporary lobby state.
 
-The GitHub repository is [aflekkas/athens-street-racers](https://github.com/aflekkas/athens-street-racers). The shared VPS checkout remains `/home/dev/projects/paraliaki-racing`, and its existing systemd service name remains `paraliaki-racing`.
+The GitHub repository is [aflekkas/athens-racing](https://github.com/aflekkas/athens-racing). The shared VPS checkout remains `/home/dev/projects/paraliaki-racing`, and its existing systemd service name remains `paraliaki-racing`.
 
 Use the Workers Free plan. The configuration uses only Free-compatible features, including SQLite-backed Durable Objects (`new_sqlite_classes`). This rename does not change account subscriptions or enable paid services. Free quotas are shared with the retained old worker.
 
@@ -34,8 +34,8 @@ node tools/check-syntax.mjs
 node tools/check-browser-imports.mjs
 npx wrangler deploy --env staging --dry-run
 npx wrangler deploy --env staging
-node tools/deploy-smoke.mjs https://athens-street-racers-staging.aflekkas.workers.dev
-node tools/deploy-smoke.mjs https://athens-street-racers-staging.aflekkas.workers.dev --race
+node tools/deploy-smoke.mjs https://staging.athensracing.com
+node tools/deploy-smoke.mjs https://staging.athensracing.com --race
 ```
 
 On the shared VPS, release only a committed snapshot that has passed CI. Other agents can be editing the checkout during deployment; copying that working tree can publish an incomplete client module. Push the intended HEAD to staging and deploy an archive rather than a worktree:
@@ -67,16 +67,16 @@ Create the CI token yourself; never copy the Wrangler OAuth token into GitHub:
 1. Sign in to https://dash.cloudflare.com/ as aflekkas@gmail.com.
 2. Open **My Profile → API Tokens → Create Token** (https://dash.cloudflare.com/profile/api-tokens).
 3. Choose **Edit Cloudflare Workers → Use template**.
-4. Under **Account Resources**, select **Include → Specific account → Aflekkas@gmail.com's Account** (`d6f3d2dc5817687a91d74ccd257bad9e`). Keep the template's Workers edit permissions. No custom-domain route is needed for workers.dev.
+4. Under **Account Resources**, select **Include → Specific account → Aflekkas@gmail.com's Account** (`d6f3d2dc5817687a91d74ccd257bad9e`). Keep the template's Workers edit permissions. Custom domains are configured in `wrangler.jsonc`.
 5. Choose a suitable expiry, **Continue to summary → Create Token**, and copy the token once.
 6. From a terminal authenticated to GitHub, run the commands below. Paste the token into the first command's hidden interactive prompt; do not put it in a command argument, chat or repository file.
 
 ```sh
-gh secret set CLOUDFLARE_API_TOKEN --repo aflekkas/athens-street-racers
-gh secret set CLOUDFLARE_ACCOUNT_ID --repo aflekkas/athens-street-racers --body d6f3d2dc5817687a91d74ccd257bad9e
+gh secret set CLOUDFLARE_API_TOKEN --repo aflekkas/athens-racing
+gh secret set CLOUDFLARE_ACCOUNT_ID --repo aflekkas/athens-racing --body d6f3d2dc5817687a91d74ccd257bad9e
 ```
 
-The account-ID secret is already set. After adding the token, rerun the most recent staging CI run in GitHub Actions, or use `gh run rerun <run-id> --repo aflekkas/athens-street-racers`. Only a successful deploy step followed by the live smoke step confirms automated deployment. Production awaits the orchestrator's approval and a promotion of a tested `staging` commit to `prod`.
+The account-ID secret is already set. After adding the token, rerun the most recent staging CI run in GitHub Actions, or use `gh run rerun <run-id> --repo aflekkas/athens-racing`. Only a successful deploy step followed by the live smoke step confirms automated deployment. Production awaits the orchestrator's approval and a promotion of a tested `staging` commit to `prod`.
 
 ## Free-tier headroom
 
@@ -158,8 +158,12 @@ Staging builds carry the same stamp, so a staging playtest shows the version the
 
 | Branch | Deploys to | Who updates it |
 |---|---|---|
-| `staging` (default) | https://athens-street-racers-staging.aflekkas.workers.dev | PRs from contributor branches, after CI and code-owner review |
-| `prod` | https://athens-street-racers.aflekkas.workers.dev | The maintainer only, by promoting a commit already tested on staging |
+| `staging` (default) | https://staging.athensracing.com | PRs from contributor branches, after CI and code-owner review |
+| `prod` | https://athensracing.com | The maintainer only, by promoting a commit already tested on staging |
 
 `main` was renamed to `prod` on 2026-10-15; GitHub redirects old `main` references. Both branches are protected (PR + `test` check + code-owner approval, no force-pushes). Promote with a fast-forward of `prod` to the tested `staging` commit, then deploy production from a clean `git archive` of that exact commit and run `tools/deploy-smoke.mjs --race` against each map.
 
+
+### Menu build identity
+
+Wrangler's `staging` and `production` environments explicitly set `ASR_BUILD_ENV` in their build commands. `tools/prepare-deploy.mjs` injects `asr-environment` metadata before bundling and content hashing. Only `production` hides the badge; all other packaged builds show STAGING with the release version. A source checkout without metadata shows DEV. Never reuse staging assets for a production deploy.
