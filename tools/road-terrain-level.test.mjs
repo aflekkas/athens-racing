@@ -33,7 +33,7 @@ for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||proc
   try {
     globalThis.fetch=async url=>new Response(readFileSync(resolve(import.meta.dirname,'..',String(url))));globalThis.location={search:''};
     const map=await loadMap(undefined,'./',def.id,{preload:false}),network=new RoadNetwork(map),scene=new Group();map.roadNetwork=network;
-    const terrain=buildTerrain(map.terrain,map.route,[],scene,{coastal:def.id==='riviera',farmland:def.id==='megara',network,beachAreas:map.data.areas?.beach||[]});
+    const terrain=buildTerrain(map.terrain,map.route,[],scene,{coastal:def.id==='riviera',farmland:def.id==='megara',gardens:def.id==='psychiko',network,beachAreas:map.data.areas?.beach||[]});
     const roadsGroup=buildRoadNetwork(network,scene);bake={map,network,terrain,terrainGroup:terrain.group,roadsGroup};
   }finally{globalThis.fetch=previousFetch;if(previousLocation===undefined)delete globalThis.location;else globalThis.location=previousLocation;}
   const r=bake.map.route,n=bake.network,h=meshHeightSampler(bake.terrainGroup);
