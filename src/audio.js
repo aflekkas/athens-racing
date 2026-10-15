@@ -25,6 +25,9 @@ import { Sirens } from './sirens.js';
 // pat: per-cylinder pulse strength (uneven headers / firing order -> warble); jit: cycle-to-cycle variation;
 // knock: diesel injection clatter; lp: tone filter range; whine: gearbox whine; pops: overrun crackle tendency
 export const ENGINE_SOUND = {
+  // F119 flat-plane V8: even 90-degree firing pulses, bright upper harmonics, restrained overrun.
+  // Synthesized approximation, not a Ferrari recording; independent of cross-plane V8 profiles.
+  v8flat: { cyl: 8, f1: 270, f2: 2350, t1: .0038, t2: .001, b: .57, thump: .66, pat: [1,.98,.99,.97,1,.98,.99,.97], jit: .015, knock: 0, rasp: .29, lp: [1100,8500], whine: .13, pops: .28, idleWobble: .025, gain: 1 },
   // Catalogue additions: synthesized firing pulses, not recordings of these models.
   na6: { cyl: 6, f1: 185, f2: 1600, t1: .0053, t2: .0012, b: .40, thump: .82, pat: [1,.98,.96,1,.97,.99], jit: .018, knock: 0, rasp: .19, lp: [850,7200], whine: .06, pops: .18, idleWobble: .02, gain: 1 },
   v10: { cyl: 10, f1: 290, f2: 2300, t1: .0035, t2: .001, b: .52, thump: .68, pat: [1,.92,.98,.94,1,.91,.97,.95,.99,.93], jit: .018, knock: 0, rasp: .26, lp: [1100,8500], whine: .10, pops: .70, idleWobble: .016, gain: 1 },

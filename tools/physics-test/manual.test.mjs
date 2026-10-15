@@ -31,7 +31,15 @@ test('explicit automatic mode is bit-identical to the default and resumes auto s
     const input = { throttle: i < 600 ? 1 : 0.2, brake: i > 750 ? 0.6 : 0, steer: Math.sin(i / 40) * 0.15 };
     a.update(1 / 60, input); b.update(1 / 60, input);
     assert.deepEqual([a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], [b.vLong, b.vLat, b.w, b.rpm, b.gear, b.pendingGear, b.shiftT]);
-    if (baseline.has(i)) assert.deepEqual([a.x, a.z, a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], baseline.get(i), 'frozen automatic trajectory at frame ' + i);
+    if (baseline.has(i)) {
+      const actual = [a.x, a.z, a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], expected = baseline.get(i);
+      // ARM64/macOS and other runtimes differ by a few floating-point ulps.
+      // Preserve the frozen trajectory to 1e-12 relative; the live Auto/default comparison above stays exact.
+      for (let k = 0; k < actual.length; k++) {
+        if (k === 6 || k === 7) assert.equal(actual[k], expected[k], `gear state at frame ${i}`);
+        else assert.ok(Math.abs(actual[k] - expected[k]) <= 1e-12 * Math.max(1, Math.abs(expected[k])), `frozen automatic trajectory at frame ${i}, component ${k}`);
+      }
+    }
   }
   b.reset(0, 0, 30); b.setManual(true); b.syncWheels(); run(b, 30); assert.equal(b.gear, 1);
   b.setManual(false); run(b, 90); assert.ok(b.gear > 1);

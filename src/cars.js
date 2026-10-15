@@ -208,6 +208,18 @@ export const CARS = [
     tyres: ['205/60 R15','205/60 R15'], frontW: 0.51, hcg: 0.48, track: 1.408, rsF: .58, usGrad: 2.3, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .66, steerRate: 1.05, ebrake: .16,
     stats: { speed: .55, accel: .59, handling: .65, drift: .77 },
   },
+  // Ferrari 348 tb (1989–1993, not the 320 CV GTB): https://www.ferrari.com/en-EN/auto/348-tb
+  // 3405 cc F119 flat-plane V8, 221 kW (300 CV) @ 7200, 324 Nm @ 4200: https://www.ultimatespecs.com/car-specs/Ferrari/1960/Ferrari-348-TB.html
+  // 1393 kg dry (Ferrari reference above); 1500 kg representative road-ready kerb
+  // (https://en.wikipedia.org/wiki/Ferrari_348). Ratios, 41:59 axle loads and chassis calibration: tools/models-more-notes.md.
+  {
+    id: 'f348', name: 'FERRARI 348 tb', short: '348 tb', tag: 'Tipo F119 3.4 V8 · 300 CV. Mid-engine. Five-speed gated manual.', color: '#d51b21', accent: '#f3ca32',
+    zeroTo100: 5.6, mass: 1500, power: 221, torque: 324, redline: 7500, idle: 1000, gears: [3.214,2.105,1.458,1.094,0.861], final: 3.563, wheelR: .331,
+    torqueCurve: [[0,90],[1000,125],[2000,225],[3000,290],[4200,324],[5500,316],[6500,307],[7200,293.11],[7500,272],[8200,225]], peakTorqueRpm: 4200, peakPowerRpm: 7200,
+    wheelbase: 2.450, length: 4.230, width: 1.894, height: 1.170, cdA: .62, vmax: 275, grip: 1.08, gripRear: 1.02, steer: .58, yawI: .87, drift: 1, brake: 1.03, cyl: 8, pitch: 1.05, body: 'f348', cabinWidth: .78, drive: 'rwd', engine: 'v8flat', engineZone: 'rear', playerDetail: true, trafficWeight: .08, oldDash: true,
+    tyres: ['215/50 ZR17','255/45 ZR17'], frontW: .41, hcg: .43, track: 1.540, rsF: .44, usGrad: 1.1, susHz: 1.85, susZ: .59, rollK: .8, pitchK: .8, alphaPk: .103, mfC: 1.56, loadSens: .16, clA: 0, tc: .45, esc: .30, shiftT: .32, bias: .61, steerRate: 1.18, ebrake: .15, lsd: .40,
+    stats: { speed: .90, accel: .81, handling: .87, drift: .86 },
+  },
 ];
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
