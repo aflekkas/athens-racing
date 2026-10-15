@@ -2,7 +2,7 @@
 export const CAR_CLASSES = ['shitbox', 'normal', 'hot hatch', 'sports', 'super', 'SUV', 'police'];
 export function carCategory(c) {
   if (/police/.test(c.id)) return 'police';
-  if (['ibiza', 'panda', 'yaris'].includes(c.id)) return 'shitbox';
+  if (['ibiza', 'panda', 'yaris', 'a160'].includes(c.id)) return 'shitbox';
   if (['gla', 'gla45'].includes(c.id)) return 'SUV';
   if (['mini', 'mini_jcw', 'gr_yaris'].includes(c.id)) return 'hot hatch';
   if (c.id === 'huracan' || c.power >= 350) return 'super';

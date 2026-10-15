@@ -30,10 +30,18 @@ export function runVehicleChecks(carIds=null) {
       check(spec.id+' sourced wheelbase and height',Math.abs(car.shape.wb-spec.wheelbase)<.001&&Math.abs(car.dims.H-spec.height)<.001);
       check(spec.id+' matching registration faces',!!car.plate&&!!car.materials.plate.map);
       check(spec.id+' named paint is the default',PAINTS[spec.id].some(p=>p[1]===spec.color));
-      check(spec.id+' correct exhaust count',car.exhaust.length===(spec.id==='gla45'?4:2));
+      check(spec.id+' correct exhaust count',car.exhaust.length===(spec.id==='gla45'?4:spec.id==='a160'?1:2));
       if(spec.id==='cle'||spec.id==='gla45')check(spec.id+' AWD distribution',spec.drive==='awd'&&spec.awdRear>0&&spec.awdRear<1);
       else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
       if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
+      if(spec.id==='a160'){
+        const hatch=car.body.getObjectByName('rear-glass');hatch.geometry.computeBoundingBox();const b=hatch.geometry.boundingBox;
+        check('W168 upright short hatch behind rear axle',b.min.z>spec.wheelbase/2&&b.max.z-b.min.z<.4&&b.min.y>1);
+        const floors=[];car.body.traverse(o=>{if(o.isMesh&&o.material===car.materials.cloth)floors.push(new THREE.Box3().setFromObject(o));});
+        check('W168 raised sandwich floor survives interior batching',floors.some(b=>b.min.y<.4&&b.max.y>.53&&b.max.y<.7));
+        check('W168 facelift glazing retained in road LOD',car.mediumDetail.children.some(o=>o.material?.userData.playerGlass));
+        check('W168 sourced narrower rear track',car.wheels.filter(w=>!w.front).every(w=>Math.abs(Math.abs(w.pivot.position.x)*2-spec.trackRear)<.001));
+      }
       if(car.shape.suv){
         const glass=car.body.getObjectByName('rear-glass');glass.geometry.computeBoundingBox();const b=glass.geometry.boundingBox;
         check(spec.id+' hatch roof extends behind the rear axle',b.min.z>car.shape.wb/2+car.shape.axleOffset+(car.shape.sculpted?.18:.25));

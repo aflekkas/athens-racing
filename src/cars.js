@@ -148,6 +148,18 @@ export const CARS = [
     tyres: ['255/40 ZR20','255/40 ZR20'], frontW: .60, hcg: .55, track: 1.615, trackRear: 1.590, rsF: .59, susHz: 2.0, susZ: .60, rollK: .8, pitchK: .85, alphaPk: .115, mfC: 1.46, loadSens: .15, clA: .03, tc: .55, esc: .40, shiftT: .13, bias: .72, steerRate: 1.12, ebrake: .16, lsd: .35,
     stats: { speed: .89, accel: .92, handling: .87, drift: .68 },
   },
+  // W168 facelift short-wheelbase A 160, SG 150 manual; Mercedes archive (not A 160 L/automatic).
+  // https://mercedes-benz-publicarchive.com/marsClassic/en/instance/ko/A-160-2001---2004-production-in-Brazil-for-South-America-until-2005.xhtml?oid=194914949
+  // Factory data: 1115 kg unladen, 180 km/h, 10.8 s, 195/50 R15. Off-peak torque,
+  // drag, weight split, high CG/roll and strong ESP are game calibration, not measured data.
+  {
+    id: 'a160', name: 'MERCEDES-BENZ A 160', short: 'A 160 W168', tag: '2001 W168 · Sandwich floor. Tall body. ESP on moose duty.', color: '#b9bfc2', accent: '#a7a5a0', marque: 'mercedes', category: 'shitbox',
+    zeroTo100: 10.8, mass: 1115, power: 75, torque: 150, redline: 6200, idle: 800, gears: [3.27,1.92,1.26,.88,.70], final: 4.06, wheelR: .288,
+    torqueCurve: [[0,48],[800,62],[1500,102],[2500,128],[3500,145],[4000,150],[4500,147],[5250,136.42],[5800,115],[6200,91]], peakTorqueRpm: 4000, peakPowerRpm: 5250,
+    wheelbase: 2.423, length: 3.606, width: 1.719, height: 1.575, cdA: .67, vmax: 180, grip: .97, steer: .61, yawI: 1.03, drift: 1, brake: .98, cyl: 4, pitch: 1, body: 'a160', drive: 'fwd', engine: 'na4', playerDetail: true, trafficWeight: 4, rearDrums: true, oldDash: true,
+    tyres: ['195/50 R15','195/50 R15'], frontW: .62, hcg: .64, track: 1.503, trackRear: 1.452, tyreK: 175000, rsF: .64, usGrad: 4.2, rollGrad: 6.8, susHz: 1.50, susZ: .56, rollK: 2.2, pitchK: 1.4, alphaPk: .135, mfC: 1.42, loadSens: .18, clA: 0, tc: .85, esc: .95, shiftT: .35, bias: .73, steerRate: 1.0, ebrake: .16, lsd: 0,
+    stats: { speed: .32, accel: .29, handling: .59, drift: .23 },
+  },
   // NEW CLA 200 hybrid (C178, same 2025 design family as C174 with EQ Technology).
   // https://media.mercedes-benz.com/article/2cbb1f31-888b-4912-b201-793d8eb2bb26
   // https://www.mercedes-benz.co.uk/passengercars/models/saloon/cla/overview.html
