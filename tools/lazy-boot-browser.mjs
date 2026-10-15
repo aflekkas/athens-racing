@@ -38,9 +38,9 @@ try{for(const cache of ['cold','warm']){await page.goto(`http://127.0.0.1:${serv
    await page.evaluate(()=>__flow.quit()); await page.waitForTimeout(400);
    const before=dataRequests.length;
    await click('play'); await click('quick');
-   // The normal selector UI previews then confirms the selected track.
+   // The normal selector UI previews the track; SELECT TRACK goes straight to race setup.
    await page.locator(`.track-pin[data-map-id="${id}"]`).evaluate(el=>el.click());
-   await page.locator('[data-confirm-track]').evaluate(el=>el.click()); await click('mapLoad');
+   await page.locator('[data-confirm-track]').evaluate(el=>el.click());
    await page.waitForFunction(()=>__flow.menu.screen==='setup');
    assert.equal(dataRequests.length,before,'track setup is catalogue only');
    await click('setupGo');

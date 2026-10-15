@@ -212,5 +212,3 @@ export async function selectMap(menu, id) {
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
 }
-// The intermediate "selected track" screen is gone; menu.js still names its renderer, so it renders nothing.
-export const renderMapConfirm = () => '';

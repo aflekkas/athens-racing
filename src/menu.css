@@ -7,7 +7,7 @@ body.ui-open #hud { opacity: 0 !important; }
 body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 #ui .mi { cursor: pointer; }
 /* the screen sits on the live road view: dimmed, with a cool vignette like a screen bezel */
-#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks, #ui.s-mapConfirm {
+#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks {
   background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
 #ui.s-pause { background: linear-gradient(90deg, rgba(3,5,7,.78), rgba(3,5,7,.35) 46%, rgba(3,5,7,.1)); }
 #ui.s-car { background: radial-gradient(120% 90% at 32% 42%, #18222c, #070a0e 72%); }

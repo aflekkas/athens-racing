@@ -7,7 +7,7 @@
 // focused form controls, so focus is drawn with a class and the keys keep flowing through flowAction().
 import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount, SP_RIVALS, MAX_RIVALS } from './events.js';
 import * as S from './settings.js';
-import { renderMapSelect, renderMapConfirm, selectMap, mountMapSelect } from './map-select.js';
+import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
 import { GARAGE_CARS } from './car-catalog.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
@@ -222,7 +222,6 @@ export class Menu {
     this.h.ui?.(true);
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
-      case 'mapLoad': selectMap(this,this.data.mapId,true);break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
@@ -318,7 +317,6 @@ export class Menu {
   r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
-  r_mapConfirm() { return renderMapConfirm(this.data.mapId); }
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
 
   // ---------------------------------------------------------------- car
