@@ -707,7 +707,7 @@ function readInput(dt) {
 let grid = []; // the offline AI field: [{ spec, veh, model, driver, ai, drv, name, dir, pen, reds, finish, tR, actor }]; grid[0] === rival
 let markers = null, menu = null;
 function bestSetup(def = G.ev?.def, r = G.ev?.r, car = player?.spec.id) {
-  return personalBestSetup({ mapId: map?.id, def, route: r, car, conditions: window.__conditions?.(),
+  return personalBestSetup({ mapId: map?.id, def, route: r, car: car || CARS[G.carIdx]?.id, conditions: window.__conditions?.(),
     assists: { tc: settings.aids, abs: settings.abs, steering: settings.steeringAssist ?? (['gamepad', 'wheel'].includes(activeInputDevice()) ? 'light' : 'full'), gearbox: settings.transmission } });
 }
 function rememberResult(res) {
