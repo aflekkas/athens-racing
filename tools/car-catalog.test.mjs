@@ -43,3 +43,13 @@ test('CLE and E36 factory output anchors differ by engine and performance trim h
   const base=CARS.find(c=>c.id==='cle200').visual,amg=CARS.find(c=>c.id==='cle53').visual;
   assert.equal(base.exhaust,2);assert.equal(amg.exhaust,4);assert(amg.amg&&amg.lip&&amg.rim>base.rim&&amg.ride<base.ride);
 });
+test('garage renders the shared trim control, torque and a selectable model when only its performance trim is allowed',async()=>{
+  const {renderCarSelect}=await import('../src/car-select.js');
+  const index=CARS.findIndex(c=>c.id==='cle53');
+  const detail=renderCarSelect({index,detail:true,allowedCars:['cle53']});
+  assert.match(detail,/data-key="carTrim"/);assert.match(detail,/560 NM/);assert(!detail.includes('<select'));
+  assert.match(detail,/AMG CLE 53/);assert(!detail.includes('&quot;cle200&quot;'));
+  const grid=renderCarSelect({allowedCars:['gla45'],filters:{search:'GLA'}});
+  assert.match(grid,new RegExp(`data-car-index="${CARS.findIndex(c=>c.id==='gla45')}"`));
+  assert(!grid.includes('car-card off'));
+});

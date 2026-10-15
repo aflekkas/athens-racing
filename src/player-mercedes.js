@@ -219,7 +219,7 @@ export function buildMercedes(car,d,M,low,plate,H){
   for(const s of [-1,1])for(const dx of amg?[-.060,.060]:[0]){
     const x=s*.62+dx,z=(suv||C)?S.face(x,R,.24)-.018:R-.018;const outlet=mesh(p,new THREE.CylinderGeometry(.039,.039,.11,20,1,true),M.chrome,[x,.24,z],[Math.PI/2,0,0],'exhaust-outlet');outlet.userData.damagePart='bumper_r';mesh(p,new THREE.CircleGeometry(.031,16),M.black,[x,.24,z+.057]);car.exhaust.push(new THREE.Vector3(x,.24,z+.06));
   }
-  if(!suv&&!cla)for(const s of [-1,1]){const o=ring(p,M.chrome,.055,.009,[s*.62,.245,C?S.face(s*.62,R,.245)+.04:R+.043]);o.scale.set(1.65,.65,1);}
+  if(!amg&&!suv&&!cla)for(const s of [-1,1]){const o=ring(p,M.chrome,.055,.009,[s*.62,.245,C?S.face(s*.62,R,.245)+.04:R+.043]);o.scale.set(1.65,.65,1);}
   car.plate=plate;M.plate=makePlateMaterial(plate);
   for(const end of [F,R]){const y=end<0?.44:.64,z=(suv||C)?S.face(0,end,y):end;box(p,M.black,[.535,.124,.019],[0,y,z+Math.sign(z)*.012],.006);mesh(p,new THREE.PlaneGeometry(.51,.108),M.plate,[0,y,z+Math.sign(z)*.025],[0,z<0?Math.PI:0,0],'registration');}
   // Procedural badge reused on the steering wheel; not a downloaded logo texture.

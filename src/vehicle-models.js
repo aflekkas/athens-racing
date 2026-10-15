@@ -285,8 +285,8 @@ function wheels(car,d,M,low) {
     const barrel=new THREE.CylinderGeometry(rim,rim,width*.90,low?24:48,1,true);barrel.rotateZ(Math.PI/2);mesh(spin,barrel,M.darkAlloy);
     ring(spin,M.chrome,rim-.004,.008,[ox,0,0],[0,Math.PI/2,0]);
     const disc=new THREE.CylinderGeometry(rim*.86,rim*.86,.016,48);disc.rotateZ(Math.PI/2);mesh(spin,disc,M.alloy,[s*width*.20,0,0]);
-    const caliper=box(pivot,car.modelKind==='z4'?mat('#154eaf',.34,.5):car.modelKind==='gr_yaris'?M.red:M.darkAlloy,[.065,.135,.07],[s*width*.24,0,rim*.73],.02);caliper.name='fixed-brake-caliper';
-    const n=car.modelKind==='mini'?6:d.ev?5:5;
+    const caliper=box(pivot,car.spec.visual?.caliper?mat(car.spec.visual.caliper,.34,.5):car.modelKind==='z4'?mat('#154eaf',.34,.5):car.modelKind==='gr_yaris'?M.red:M.darkAlloy,[.065,.135,.07],[s*width*.24,0,rim*.73],.02);caliper.name='fixed-brake-caliper';
+    const n=car.spec.visual?.spokes || (car.modelKind==='mini'?6:5);
     for(let k=0;k<n;k++)for(const branch of (car.modelKind==='mini'?[0]:[-1,1])){
       const a=k*Math.PI*2/n+(branch*.065),r= rim*.58;
       const o=box(spin,M.chrome,[.025,rim*.76,low?.031:.023],[ox,Math.cos(a)*r,Math.sin(a)*r],.006,[a,0,0]);
@@ -417,7 +417,10 @@ function specialFascia(car,d,M,low,plate){
 }
 export function damageSystem(car) { return installDamageSystem(car); }
 export function buildDetailedCar(car,kind,opts={}) {
-  car.modelKind=kind in MODEL?kind:'octavia';const d=MODEL[car.modelKind],low=!!opts.low;
+  car.modelKind=kind in MODEL?kind:'octavia';const visual=car.spec.visual||{}, d={...MODEL[car.modelKind],amg:car.spec.visual?.amg ?? MODEL[car.modelKind].amg},low=!!opts.low;
+  if(visual.amg && kind==='cle'){d.W=1.936;d.track=1.663;d.trackRear=1.691;}
+  if(visual.rim)d.rim=visual.rim*.0254/2;
+  if(visual.ride)car.body.position.y=visual.ride;
   car.dims={L:d.L,W:d.W,H:d.H};car.shape={...d,ws:[-d.header/(d.L/2),-d.cowl/(d.L/2)],roofT:[-d.roofBack/(d.L/2),-d.header/(d.L/2)]};
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
@@ -449,6 +452,14 @@ export function buildDetailedCar(car,kind,opts={}) {
   }else{
     if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
     cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
+  }
+  if(car.spec.visual?.lip)box(car.body,M.black,[d.W*.84,.035,.12],[0,d.rear+.035,d.L/2-.11],.012,[0,0,0],'trim-spoiler-lip');
+  if(car.spec.visual?.m){
+    box(car.body,M.black,[d.W*.80,.09,.10],[0,.22,-d.L/2+.03],.012,[0,0,0],'m-front-splitter');
+    box(car.body,M.black,[d.W*.76,.12,.10],[0,.24,d.L/2-.03],.012,[0,0,0],'m-rear-diffuser');
+  }
+  if(car.spec.visual){
+    const badge=mesh(car.body,new THREE.PlaneGeometry(.34,.055),textMaterial(car.spec.short,null),[d.W*.25,d.rear-.10,d.L/2+.025]);badge.name='trim-badge';
   }
   if(playerModel){refinePlayerDetails(car,d,M);refineOriginalPlayer(car,d,M,low);refineSportsPlayer(car,d,M,low);}
   // Light automotive tint: preserve the cabin through both side panes. Physical

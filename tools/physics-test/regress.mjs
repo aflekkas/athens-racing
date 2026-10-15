@@ -272,6 +272,18 @@ else {
   }
 }
 
+// Same-generation engine choices must affect actual acceleration, not just the UI.
+// Kept outside the general catalogue bounds so a mistakenly reused base engine is caught.
+{
+  const source = readFileSync(new URL('../../src/cars.js', import.meta.url),'utf8');
+  const cars = Function('return '+source.split('export const CARS = ')[1].split('\n];')[0]+'\n];')();
+  const launch = id => { const v=new Vehicle(cars.find(c=>c.id===id),route);v.reset(0,0,0);let t=0;while(v.kmh<100&&t<20){v.update(DT,{throttle:1,brake:0,steer:0});t+=DT;}return t; };
+  for(const [base,performance]of [['cle200','cle53'],['e36','e36_m3'],['gla','gla45']]){
+    const slow=launch(base),fast=launch(performance);
+    check(`trim acceleration: ${performance} quicker than ${base}`,fast<slow*.85,`${f2(fast)} vs ${f2(slow)} s`);
+  }
+}
+
 // Playtest 3: neutral steering stability, progressive power breakaway and driver recovery.
 {
   const { stabilityScenarios } = await import('./stability.mjs');

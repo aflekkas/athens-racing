@@ -6,7 +6,7 @@ import { TurntableControl } from './turntable-control.js';
 import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars } from './car-catalog.js';
+import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection } from './car-catalog.js';
 
 // Period 0–100 km/h figures for the represented drivetrain (seconds).
 // Power, mass and driven wheels come from the live physics catalogue.
@@ -20,9 +20,9 @@ export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_ya
 import * as C from './ui/components.js';
 const { esc, icon } = C;
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars } = {}) {
-  const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || [], acc = ACCELERATION[c.id];
+  const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
-    const list = filterCars(CARS, filters), attrs = { 'data-scope': 'catalog' };
+    const list = filterCars(CARS, filters).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
     return C.screen({ cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
       body: `<div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
       ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
@@ -35,17 +35,18 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
         return head + C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
           attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
-          media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(car.name),
-          text: classLabel(carCategory(car)),
+          media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(carModel(car)?.name || car.name),
+          text: `${classLabel(carCategory(car))} · ${carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}`,
           foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
   }
-  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
+  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
   return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
     hints: [['select', 'BROWSE'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
     body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}"><span class="car-stage__count">${C.badge(c.drive.toUpperCase())}</span></div>
     <section class="car-info panel panel--notch scroll-y"><p class="car-description">${esc(c.tag)}</p>
-      <div class="car-transmission label">${c.gears.length}-SPEED</div>
+      ${model ? C.select({ key:'carTrim', label:'ENGINE / TRIM', value:c.id, options:model.trims.filter(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id)).map(id=>[id,CARS.find(t=>t.id===id).short]), attrs:{'data-scope':'car-trim'} }) : ''}
+      <div class="car-transmission label">${c.gears.length}-SPEED · ${c.drive.toUpperCase()}</div>
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
       <div class="car-actions">${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
@@ -93,6 +94,18 @@ export function openCarPicker(options = {}) {
 /** opts (all optional): container (default #carStage under root), lite (the multiplayer showroom: pixel ratio 1, a
  *  small shadow map, 30 fps, no hint; it sits behind menu panels, so it stays light on the GPU) */
 export function mountCarSelect(root, index, opts = {}) {
+  // Keep trim events inside this component; the shared menu owns navigation/layout.
+  const onTrim = e => {
+    if(e.detail?.el?.dataset.scope !== 'car-trim') return;
+    e.stopPropagation();
+    const next=CARS.findIndex(c=>c.id===e.detail.value), menu=window.__flow?.menu;
+    if(next>=0 && carModel(CARS[next])===carModel(CARS[index]) && menu){menu.data={...menu.data,index:next,detail:true};menu.render();}
+  };
+  const onConfirm = e => {
+    if(!e.target.closest('[data-act="carConfirm"]')) return;
+    try { localStorage.setItem('paraliaki.car.selection',JSON.stringify(migrateCarSelection(CARS[index].id))); } catch {}
+  };
+  root.addEventListener('ui:change',onTrim,true); root.addEventListener('click',onConfirm,true);
   const container = opts.container || root.querySelector('#carStage'), lite = !!opts.lite;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1 : 1.5));
@@ -142,6 +155,7 @@ export function mountCarSelect(root, index, opts = {}) {
     captureFrame() { renderer.setAnimationLoop(null);  renderer.render(scene, camera); },
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {
+      root.removeEventListener('ui:change',onTrim,true);root.removeEventListener('click',onConfirm,true);
       renderer.setAnimationLoop(null); observer.disconnect();container.removeEventListener('pointerdown',down);container.removeEventListener('pointermove',move);for(const name of ['pointerup','pointercancel','lostpointercapture'])container.removeEventListener(name,up); model.disposeDamage?.();
       const geometry=new Set(), materials=new Set(), textures=new Set();
       scene.traverse(o=>{if(o.geometry && !o.geometry.userData.shared)geometry.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){materials.add(m);for(const v of Object.values(m))if(v?.isCanvasTexture)textures.add(v);}});
