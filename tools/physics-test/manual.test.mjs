@@ -1,4 +1,3 @@
-import './powertrain.test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -33,9 +32,10 @@ test('explicit automatic mode is bit-identical to the default and resumes auto s
     a.update(1 / 60, input); b.update(1 / 60, input);
     assert.deepEqual([a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], [b.vLong, b.vLat, b.w, b.rpm, b.gear, b.pendingGear, b.shiftT]);
     if (baseline.has(i)) {
-      // The frozen trace crosses Node/V8 versions; ignore last-bit rounding.
-      const actual = [a.x, a.z, a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT];
-      actual.forEach((v, j) => assert.ok(Math.abs(v - baseline.get(i)[j]) <= 1e-10 * Math.max(1, Math.abs(baseline.get(i)[j])), 'frozen automatic trajectory at frame ' + i + ' component ' + j));
+      // Stored trajectories cross JS engines/CPU architectures: transcendental math can differ by a few ULPs.
+      // The live default-vs-explicit comparison above remains bit-identical, as do discrete gearbox fields.
+      const actual = [a.x, a.z, a.vLong, a.vLat, a.w, a.rpm, a.gear, a.pendingGear, a.shiftT], expected = baseline.get(i);
+      actual.forEach((value, field) => assert.ok(field >= 6 ? value === expected[field] : Math.abs(value - expected[field]) <= 1e-12 * Math.max(1, Math.abs(expected[field])), 'frozen automatic trajectory at frame ' + i + ', field ' + field));
     }
   }
   b.reset(0, 0, 30); b.setManual(true); b.syncWheels(); run(b, 30); assert.equal(b.gear, 1);
