@@ -232,7 +232,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 }
 @media (max-width: 560px) {
   .scr__back span { display: none; } .hu-status .scr__back { padding: 0; min-width: 2.5rem; }
-  .hu-driver { display: none; }
+  .hu-clock { display: none; }
   .scr__title { font-size: var(--t-xl); }
   .home__tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; gap: var(--s-2); }
   .home__tiles .option { padding: var(--s-4); min-height: 6.5rem; }
