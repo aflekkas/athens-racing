@@ -42,6 +42,16 @@ try {
  proof.standings=await all(()=>__multiplayer.ranking(99999).map(p=>({id:p.id,name:p.name,progress:__multiplayer.driverProgress(p)})));
  assert.deepEqual(proof.standings[0],proof.standings[1]);assert.deepEqual(proof.standings[1],proof.standings[2]);assert.equal(proof.standings[0][0].name,'PARROT#3');
  console.log('Shared standings verified');
+ if(process.argv.includes('--reconnect')) {
+  const page=pages[1],before=await page.evaluate(()=>{window.__recoveryVehicle=__vehicle();__vehicle().vLong=20;window.__recoveryInputClears=0;const clear=__multiplayer.hooks.clearInput;__multiplayer.hooks.clearInput=(...args)=>{window.__recoveryInputClears++;return clear(...args);};return{id:__multiplayer.id,race:__multiplayer.lobby.raceId,resumes:__multiplayer.resumeCount,s:__vehicle().s};});
+  const cut=await fetch(base+'/__cut?slot=1');assert.equal(cut.status,200);
+  await page.waitForFunction(()=>!__multiplayer.connected&&__multiplayer.reconnecting);
+  const offline=await page.evaluate(()=>{__sim.G.state='race';__sim.step(1,1/60);return{panel:__multiplayer.panel.hidden,chip:!__multiplayer.connectionChip.hidden,sameVehicle:window.__recoveryVehicle===__vehicle(),inputClears:window.__recoveryInputClears,state:__sim.G.state,s:__vehicle().s};});
+  await page.waitForFunction(n=>__multiplayer.connected&&__multiplayer.resumeCount>n,before.resumes,{timeout:20000});
+  const after=await page.evaluate(()=>({id:__multiplayer.id,race:__multiplayer.lobby.raceId,panel:__multiplayer.panel.hidden,chip:__multiplayer.connectionChip.hidden,sameVehicle:window.__recoveryVehicle===__vehicle(),inputClears:window.__recoveryInputClears,code:__multiplayer.lastClose.code,checkpoint:__multiplayer.checkpoint}));
+  proof.reconnect={before,offline,after};assert.ok(offline.panel&&offline.chip&&offline.sameVehicle);assert.equal(offline.inputClears,0);assert.ok(offline.s>before.s+.01,'local physics keeps moving during loss');assert.equal(after.code,1006);assert.equal(after.id,before.id);assert.equal(after.race,before.race);assert.ok(after.panel&&after.chip&&after.sameVehicle);assert.equal(after.inputClears,0);assert.equal(after.checkpoint?.missed,false);console.log('Live browser1006 recovered without a menu or vehicle reset');
+ }
+
  // Render the peer proxy through the production intake; exercise the production collision hook.
  const remote=await pages[1].evaluate(()=>({id:__multiplayer.id,state:__multiplayer.hooks.appearance()}));
  const contact=await pages[0].evaluate(({id})=>{
