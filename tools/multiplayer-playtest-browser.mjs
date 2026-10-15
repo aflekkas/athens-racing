@@ -31,7 +31,7 @@ try {
  for(const page of pages)await page.evaluate(()=>__multiplayer.$('mp-ready').click());
  await pages[0].waitForFunction(()=>__multiplayer.lobby.players.every(p=>p.ready&&p.loaded));
  await pages[0].evaluate(()=>__multiplayer.startRace());
- for(const page of pages)await page.waitForFunction(()=>__multiplayer.lobby.status==='race');
+ for(const page of pages)await page.waitForFunction(()=>__multiplayer.lobby.status==='race'&&__multiplayer.now()>=__multiplayer.lobby.startAt);
  await all(()=>{__multiplayer.close();__flow.menu.close?.();__sim.step(1,1/60);});
  proof.start=await all(()=>({race:__multiplayer.lobby.raceId,slot:__multiplayer.me.gridSlot,s:__vehicle().s,weather:__conditions(),world:__multiplayer.lobby.world.state,traffic:__sim.traffic.disabled,visibleTraffic:__sim.traffic.cars.filter(c=>!c.cop&&c.active&&c.m.root.visible).length}));
  assert.ok(proof.start.every(p=>p.race===proof.start[0].race&&p.weather.weather==='rain'&&p.weather.time==='night'&&p.world.wet===1&&p.traffic&&p.visibleTraffic===0));
