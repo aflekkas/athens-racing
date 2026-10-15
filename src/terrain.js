@@ -1,6 +1,6 @@
 // Terrain meshes from the DEM/land-cover grid: a 10 m mesh along the route corridor and a 40 m mesh beyond.
 import * as THREE from 'three';
-import { buildTerrainLods, installTerrainLods } from './terrain-lod.js';
+import { buildTerrainPatchLods, installTerrainLods } from './terrain-lod.js';
 import { compactTerrainGeometry, restoreTerrainLayout } from './terrain-layout.js';
 import { REFLECT_LAYER } from './env.js';
 import { vnoise, fbm, smoothstep, clamp } from './util.js';
@@ -301,13 +301,13 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     (i, j) => { let all = true; for (let dj = -C4; dj <= C4 && all; dj += C4) for (let di = -C4; di <= C4 && all; di += C4) { const a = Math.min(GX - 1, Math.max(0, i + di)), b = Math.min(GZ - 1, Math.max(0, j + dj)); if (!mask[b * GX + a]) all = false; } return all ? 3 : 0; });
   // split the fine mesh into tiles for culling
   const group = new THREE.Group();
-  const tiles = splitGeometry(fineGeo, 600, T);
+  const tiles = splitGeometry(fineGeo, 1200, T);
   for (const g of tiles) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
   // The coarse mesh underlies the fine area too: push it back in depth so the fine tiles always win, even where the
   // depth buffer can't resolve the few metres between them (kilometres away, cockpit near plane).
   const coarseMat = mat.clone(); coarseMat.onBeforeCompile = mat.onBeforeCompile; coarseMat.customProgramCacheKey = mat.customProgramCacheKey;
   Object.assign(coarseMat, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 });
-  for (const g of splitGeometry(coarseGeo, 1500, T * 4)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  for (const g of splitGeometry(coarseGeo, 3000, T * 4)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
   // Use the uncut DEM for feathering; earlier cuts are only an underlay.
   // This raises downhill fills as well as lowering uphill cuts.
   const heights = new Map(), fixed = new Set(), n = farmland ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
@@ -342,17 +342,19 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   const refinedGeo = new THREE.BufferGeometry();
   refinedGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); refinedGeo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
   refinedGeo.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); refinedGeo.setAttribute('aU',new THREE.Float32BufferAttribute(urb,1));refinedGeo.setIndex(indices);
-  for (const g of splitGeometry(refinedGeo,600, T / n)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
+  for (const g of splitGeometry(refinedGeo,1200, T / n)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
   fineGeo.dispose();coarseGeo.dispose();refinedGeo.dispose();
   for (const mesh of group.children) {
     mesh.userData.terrainDecode = mesh.geometry.userData.terrainDecode;
-    if (!mesh.userData.terrainRefinement) { buildTerrainLods(mesh.geometry); if (mesh.geometry.userData.terrainLod) mesh.userData.terrainLod = mesh.geometry.userData.terrainLod; }
+    buildTerrainPatchLods(mesh.geometry);
+    mesh.userData.terrainLod = mesh.geometry.userData.terrainLod;
+    mesh.userData.terrainLodPatches = mesh.geometry.userData.terrainLodPatches;
     restoreTerrainLayout(mesh);
   }
   installTerrainRefinement(terrain,group);
   installTerrainLods(terrain,group);
   scene.add(group);
-  return { group, material: mat, heightC: (x, z) => sampleH(terrain, Hc, x, z) };
+  return { group, material: mat, heightC: terrainHeightSampler(terrain, Hc) };
 }
 
 export const sampleH = (terrain, heights, x, z) => terrain.refinedHeight?.(x,z) ?? sampleTerrainHeight(terrain, heights, x, z);
@@ -363,7 +365,7 @@ function splitGeometry(geo, tile, step) {
   for (let t = 0; t < idx.length; t += 3) {
     const a = idx[t];
     const k = `${Math.floor(pos.getX(a) / tile)},${Math.floor(pos.getZ(a) / tile)}`;
-    let b = buckets.get(k); if (!b || b.map.size > 60000) { b = { map: new Map(), p: [], c: [], n: [], u: [], i: [] }; buckets.set(k, b); parts.push(b); }
+    let b = buckets.get(k); if (!b || b.map.size > 65532) { b = { map: new Map(), p: [], c: [], n: [], u: [], i: [] }; buckets.set(k, b); parts.push(b); }
     for (let q = 0; q < 3; q++) {
       const v = idx[t + q]; let nv = b.map.get(v);
       if (nv === undefined) { nv = b.p.length / 3; b.map.set(v, nv); b.p.push(pos.getX(v), pos.getY(v), pos.getZ(v)); b.c.push(col.getX(v), col.getY(v), col.getZ(v)); b.n.push(nor.getX(v), nor.getY(v), nor.getZ(v)); b.u.push(ua ? ua.getX(v) : 0); }
@@ -382,3 +384,7 @@ function splitGeometry(geo, tile, step) {
   }
   return out;
 }
+
+// Keep the public sampler outside the builder closure: otherwise V8 retains
+// the shared build context (height/vertex Maps and temporary JS arrays).
+function terrainHeightSampler(terrain, heights) { return (x,z) => sampleH(terrain,heights,x,z); }

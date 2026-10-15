@@ -1,0 +1,4202 @@
+[
+  {
+    "id": "riviera",
+    "browser": {
+      "mapDecodeMs": 583.7999999523163,
+      "buildMs": 50749
+    },
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          959.3300170898438,
+          17.34000015258789,
+          2350.81005859375
+        ],
+        "target": [
+          939.3300170898438,
+          10.34000015258789,
+          2330.81005859375
+        ],
+        "calls": 18,
+        "triangles": 281604,
+        "browser": {
+          "frame": 1,
+          "calls": 11,
+          "triangles": 80224,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            5740,
+            85,
+            72,
+            87
+          ],
+          "heap": 91373037
+        },
+        "debug": {
+          "frame": 3,
+          "calls": 11,
+          "triangles": 80224,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            5740,
+            85,
+            72,
+            87
+          ],
+          "heap": 99008979
+        }
+      },
+      {
+        "name": "mid",
+        "eye": [
+          3137.949951171875,
+          14.880000114440918,
+          1527.3299560546875
+        ],
+        "target": [
+          3107.949951171875,
+          4.880000114440918,
+          1497.3299560546875
+        ],
+        "calls": 22,
+        "triangles": 445348,
+        "browser": {
+          "frame": 4,
+          "calls": 17,
+          "triangles": 81331,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            5409,
+            202,
+            152,
+            221
+          ],
+          "heap": 100035115
+        },
+        "debug": {
+          "frame": 6,
+          "calls": 17,
+          "triangles": 81331,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            5409,
+            202,
+            152,
+            221
+          ],
+          "heap": 101536999
+        }
+      },
+      {
+        "name": "overview",
+        "eye": [
+          4607.949951171875,
+          2204.880000114441,
+          2997.3299560546875
+        ],
+        "target": [
+          3107.949951171875,
+          4.880000114440918,
+          1497.3299560546875
+        ],
+        "calls": 86,
+        "triangles": 1626055,
+        "browser": {
+          "frame": 7,
+          "calls": 44,
+          "triangles": 577926,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            2584,
+            1569,
+            562,
+            1269
+          ],
+          "heap": 103526442
+        },
+        "debug": {
+          "frame": 9,
+          "calls": 44,
+          "triangles": 577926,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            2584,
+            1569,
+            562,
+            1269
+          ],
+          "heap": 90243499
+        }
+      }
+    ],
+    "motion": [
+      {
+        "frame": 10,
+        "calls": 11,
+        "triangles": 77824,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2682,
+          1490,
+          556,
+          1256
+        ],
+        "heap": 90491677
+      },
+      {
+        "frame": 11,
+        "calls": 11,
+        "triangles": 77834,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2682,
+          1490,
+          556,
+          1256
+        ],
+        "heap": 90931212
+      },
+      {
+        "frame": 12,
+        "calls": 11,
+        "triangles": 77834,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2682,
+          1490,
+          556,
+          1256
+        ],
+        "heap": 90196852
+      },
+      {
+        "frame": 13,
+        "calls": 11,
+        "triangles": 77890,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2682,
+          1490,
+          556,
+          1256
+        ],
+        "heap": 90418252
+      },
+      {
+        "frame": 14,
+        "calls": 11,
+        "triangles": 78160,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2683,
+          1489,
+          556,
+          1256
+        ],
+        "heap": 90619352
+      },
+      {
+        "frame": 15,
+        "calls": 11,
+        "triangles": 78160,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2683,
+          1489,
+          556,
+          1256
+        ],
+        "heap": 90803928
+      },
+      {
+        "frame": 16,
+        "calls": 11,
+        "triangles": 78184,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2683,
+          1489,
+          556,
+          1256
+        ],
+        "heap": 90229500
+      },
+      {
+        "frame": 17,
+        "calls": 11,
+        "triangles": 79322,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2685,
+          1487,
+          556,
+          1256
+        ],
+        "heap": 90414668
+      },
+      {
+        "frame": 18,
+        "calls": 11,
+        "triangles": 79322,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2685,
+          1487,
+          556,
+          1256
+        ],
+        "heap": 90598848
+      },
+      {
+        "frame": 19,
+        "calls": 11,
+        "triangles": 79322,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2685,
+          1487,
+          556,
+          1256
+        ],
+        "heap": 90783212
+      },
+      {
+        "frame": 20,
+        "calls": 11,
+        "triangles": 79550,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2686,
+          1486,
+          556,
+          1256
+        ],
+        "heap": 90969032
+      },
+      {
+        "frame": 21,
+        "calls": 11,
+        "triangles": 80318,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          556,
+          1254
+        ],
+        "heap": 90269452
+      },
+      {
+        "frame": 22,
+        "calls": 11,
+        "triangles": 80318,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          556,
+          1254
+        ],
+        "heap": 90453976
+      },
+      {
+        "frame": 23,
+        "calls": 11,
+        "triangles": 80538,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          556,
+          1254
+        ],
+        "heap": 90638784
+      },
+      {
+        "frame": 24,
+        "calls": 11,
+        "triangles": 80538,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          556,
+          1254
+        ],
+        "heap": 90704804
+      },
+      {
+        "frame": 25,
+        "calls": 11,
+        "triangles": 80554,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          556,
+          1254
+        ],
+        "heap": 90767204
+      },
+      {
+        "frame": 26,
+        "calls": 11,
+        "triangles": 80968,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          557,
+          1253
+        ],
+        "heap": 90830028
+      },
+      {
+        "frame": 27,
+        "calls": 11,
+        "triangles": 81172,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          557,
+          1253
+        ],
+        "heap": 90892596
+      },
+      {
+        "frame": 28,
+        "calls": 11,
+        "triangles": 81172,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          557,
+          1253
+        ],
+        "heap": 90123932
+      },
+      {
+        "frame": 29,
+        "calls": 11,
+        "triangles": 81264,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          557,
+          1253
+        ],
+        "heap": 90187168
+      },
+      {
+        "frame": 30,
+        "calls": 11,
+        "triangles": 81264,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          557,
+          1253
+        ],
+        "heap": 90249788
+      },
+      {
+        "frame": 31,
+        "calls": 11,
+        "triangles": 81794,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1485,
+          557,
+          1253
+        ],
+        "heap": 90313616
+      },
+      {
+        "frame": 32,
+        "calls": 11,
+        "triangles": 82070,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          557,
+          1252
+        ],
+        "heap": 90376496
+      },
+      {
+        "frame": 33,
+        "calls": 11,
+        "triangles": 82820,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1486,
+          557,
+          1251
+        ],
+        "heap": 90451252
+      },
+      {
+        "frame": 34,
+        "calls": 11,
+        "triangles": 82820,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1486,
+          557,
+          1251
+        ],
+        "heap": 90513232
+      },
+      {
+        "frame": 35,
+        "calls": 11,
+        "triangles": 82820,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1486,
+          557,
+          1251
+        ],
+        "heap": 90572792
+      },
+      {
+        "frame": 36,
+        "calls": 11,
+        "triangles": 83174,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1486,
+          559,
+          1249
+        ],
+        "heap": 90633908
+      },
+      {
+        "frame": 37,
+        "calls": 11,
+        "triangles": 83174,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1486,
+          559,
+          1249
+        ],
+        "heap": 90703848
+      },
+      {
+        "frame": 38,
+        "calls": 11,
+        "triangles": 83686,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90767680
+      },
+      {
+        "frame": 39,
+        "calls": 11,
+        "triangles": 83964,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90810628
+      },
+      {
+        "frame": 40,
+        "calls": 11,
+        "triangles": 84004,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90850888
+      },
+      {
+        "frame": 41,
+        "calls": 11,
+        "triangles": 84004,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90888864
+      },
+      {
+        "frame": 42,
+        "calls": 11,
+        "triangles": 84012,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90926952
+      },
+      {
+        "frame": 43,
+        "calls": 11,
+        "triangles": 84012,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90999008
+      },
+      {
+        "frame": 44,
+        "calls": 11,
+        "triangles": 84076,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90200196
+      },
+      {
+        "frame": 45,
+        "calls": 11,
+        "triangles": 84076,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90238228
+      },
+      {
+        "frame": 46,
+        "calls": 11,
+        "triangles": 84076,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90278616
+      },
+      {
+        "frame": 47,
+        "calls": 11,
+        "triangles": 84076,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1485,
+          559,
+          1249
+        ],
+        "heap": 90316648
+      },
+      {
+        "frame": 48,
+        "calls": 11,
+        "triangles": 83660,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90354900
+      },
+      {
+        "frame": 49,
+        "calls": 11,
+        "triangles": 83710,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90393072
+      },
+      {
+        "frame": 50,
+        "calls": 11,
+        "triangles": 83710,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90430984
+      },
+      {
+        "frame": 51,
+        "calls": 11,
+        "triangles": 83774,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90469060
+      },
+      {
+        "frame": 52,
+        "calls": 11,
+        "triangles": 83870,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90507172
+      },
+      {
+        "frame": 53,
+        "calls": 11,
+        "triangles": 83870,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90545156
+      },
+      {
+        "frame": 54,
+        "calls": 11,
+        "triangles": 84154,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90583780
+      },
+      {
+        "frame": 55,
+        "calls": 11,
+        "triangles": 84154,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90858930
+      },
+      {
+        "frame": 56,
+        "calls": 11,
+        "triangles": 84154,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90896990
+      },
+      {
+        "frame": 57,
+        "calls": 11,
+        "triangles": 84282,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90935338
+      },
+      {
+        "frame": 58,
+        "calls": 11,
+        "triangles": 84642,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 90973850
+      },
+      {
+        "frame": 59,
+        "calls": 11,
+        "triangles": 84642,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 91014362
+      },
+      {
+        "frame": 60,
+        "calls": 11,
+        "triangles": 84812,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 91052854
+      },
+      {
+        "frame": 61,
+        "calls": 11,
+        "triangles": 84860,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 91093842
+      },
+      {
+        "frame": 62,
+        "calls": 11,
+        "triangles": 84796,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1487,
+          560,
+          1249
+        ],
+        "heap": 91133706
+      },
+      {
+        "frame": 63,
+        "calls": 11,
+        "triangles": 84796,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1487,
+          560,
+          1249
+        ],
+        "heap": 91172042
+      },
+      {
+        "frame": 64,
+        "calls": 11,
+        "triangles": 84796,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1487,
+          560,
+          1249
+        ],
+        "heap": 91210374
+      },
+      {
+        "frame": 65,
+        "calls": 11,
+        "triangles": 84668,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1488,
+          560,
+          1249
+        ],
+        "heap": 91248822
+      },
+      {
+        "frame": 66,
+        "calls": 11,
+        "triangles": 84796,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          561,
+          1249
+        ],
+        "heap": 90465222
+      },
+      {
+        "frame": 67,
+        "calls": 11,
+        "triangles": 84874,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          561,
+          1249
+        ],
+        "heap": 90508486
+      },
+      {
+        "frame": 68,
+        "calls": 11,
+        "triangles": 85408,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90547342
+      },
+      {
+        "frame": 69,
+        "calls": 11,
+        "triangles": 85576,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90586246
+      },
+      {
+        "frame": 70,
+        "calls": 11,
+        "triangles": 85576,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90625034
+      },
+      {
+        "frame": 71,
+        "calls": 11,
+        "triangles": 85656,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90664130
+      },
+      {
+        "frame": 72,
+        "calls": 11,
+        "triangles": 85656,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90702990
+      },
+      {
+        "frame": 73,
+        "calls": 11,
+        "triangles": 85656,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90741850
+      },
+      {
+        "frame": 74,
+        "calls": 11,
+        "triangles": 86124,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90780966
+      },
+      {
+        "frame": 75,
+        "calls": 11,
+        "triangles": 86124,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1486,
+          561,
+          1249
+        ],
+        "heap": 90819898
+      },
+      {
+        "frame": 76,
+        "calls": 11,
+        "triangles": 86108,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          561,
+          1249
+        ],
+        "heap": 90861390
+      },
+      {
+        "frame": 77,
+        "calls": 11,
+        "triangles": 86108,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          561,
+          1249
+        ],
+        "heap": 90900442
+      },
+      {
+        "frame": 78,
+        "calls": 11,
+        "triangles": 86108,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          561,
+          1249
+        ],
+        "heap": 90939506
+      },
+      {
+        "frame": 79,
+        "calls": 11,
+        "triangles": 86108,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2687,
+          1487,
+          561,
+          1249
+        ],
+        "heap": 90978582
+      },
+      {
+        "frame": 80,
+        "calls": 11,
+        "triangles": 86612,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1487,
+          560,
+          1249
+        ],
+        "heap": 91017786
+      },
+      {
+        "frame": 81,
+        "calls": 11,
+        "triangles": 86612,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2688,
+          1487,
+          560,
+          1249
+        ],
+        "heap": 91056898
+      },
+      {
+        "frame": 82,
+        "calls": 11,
+        "triangles": 86962,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2689,
+          1486,
+          560,
+          1249
+        ],
+        "heap": 91096074
+      },
+      {
+        "frame": 83,
+        "calls": 11,
+        "triangles": 87876,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1485,
+          560,
+          1249
+        ],
+        "heap": 91135586
+      },
+      {
+        "frame": 84,
+        "calls": 11,
+        "triangles": 87876,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2690,
+          1485,
+          560,
+          1249
+        ],
+        "heap": 91174866
+      },
+      {
+        "frame": 85,
+        "calls": 11,
+        "triangles": 88364,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1484,
+          560,
+          1249
+        ],
+        "heap": 91214482
+      },
+      {
+        "frame": 86,
+        "calls": 11,
+        "triangles": 88364,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1484,
+          560,
+          1249
+        ],
+        "heap": 91253858
+      },
+      {
+        "frame": 87,
+        "calls": 11,
+        "triangles": 88374,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1484,
+          560,
+          1249
+        ],
+        "heap": 90476294
+      },
+      {
+        "frame": 88,
+        "calls": 11,
+        "triangles": 88504,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2691,
+          1484,
+          561,
+          1248
+        ],
+        "heap": 90516010
+      },
+      {
+        "frame": 89,
+        "calls": 11,
+        "triangles": 88856,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2692,
+          1484,
+          560,
+          1248
+        ],
+        "heap": 90555658
+      },
+      {
+        "frame": 90,
+        "calls": 11,
+        "triangles": 89036,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2692,
+          1484,
+          560,
+          1248
+        ],
+        "heap": 90595330
+      },
+      {
+        "frame": 91,
+        "calls": 11,
+        "triangles": 89036,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2692,
+          1484,
+          560,
+          1248
+        ],
+        "heap": 90635042
+      },
+      {
+        "frame": 92,
+        "calls": 11,
+        "triangles": 89036,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2692,
+          1484,
+          560,
+          1248
+        ],
+        "heap": 90674762
+      },
+      {
+        "frame": 93,
+        "calls": 11,
+        "triangles": 89036,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2692,
+          1484,
+          560,
+          1248
+        ],
+        "heap": 90715042
+      },
+      {
+        "frame": 94,
+        "calls": 11,
+        "triangles": 89036,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2692,
+          1484,
+          560,
+          1248
+        ],
+        "heap": 90754754
+      },
+      {
+        "frame": 95,
+        "calls": 11,
+        "triangles": 89230,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2693,
+          1483,
+          560,
+          1248
+        ],
+        "heap": 90799002
+      },
+      {
+        "frame": 96,
+        "calls": 11,
+        "triangles": 89230,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2693,
+          1483,
+          560,
+          1248
+        ],
+        "heap": 90838798
+      },
+      {
+        "frame": 97,
+        "calls": 11,
+        "triangles": 89258,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2693,
+          1483,
+          560,
+          1248
+        ],
+        "heap": 90878746
+      },
+      {
+        "frame": 98,
+        "calls": 11,
+        "triangles": 89258,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2693,
+          1483,
+          560,
+          1248
+        ],
+        "heap": 90918554
+      },
+      {
+        "frame": 99,
+        "calls": 11,
+        "triangles": 89258,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          2693,
+          1483,
+          560,
+          1248
+        ],
+        "heap": 90959886
+      }
+    ]
+  },
+  {
+    "id": "penteli",
+    "browser": {
+      "mapDecodeMs": 486.2999999523163,
+      "buildMs": 80014
+    },
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          -713.8499755859375,
+          478.7200012207031,
+          -1733.4200439453125
+        ],
+        "target": [
+          -733.8499755859375,
+          471.7200012207031,
+          -1753.4200439453125
+        ],
+        "calls": 18,
+        "triangles": 745770,
+        "browser": {
+          "frame": 1,
+          "calls": 13,
+          "triangles": 125184,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            6928,
+            34,
+            221,
+            257
+          ],
+          "heap": 913629970
+        },
+        "debug": {
+          "frame": 3,
+          "calls": 13,
+          "triangles": 125184,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            6928,
+            34,
+            221,
+            257
+          ],
+          "heap": 917835184
+        }
+      },
+      {
+        "name": "mid",
+        "eye": [
+          2622.080078125,
+          478.8299865722656,
+          781.4099731445312
+        ],
+        "target": [
+          2592.080078125,
+          468.8299865722656,
+          751.4099731445312
+        ],
+        "calls": 75,
+        "triangles": 2516065,
+        "browser": {
+          "frame": 4,
+          "calls": 41,
+          "triangles": 465345,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            2425,
+            403,
+            1739,
+            2873
+          ],
+          "heap": 920557572
+        },
+        "debug": {
+          "frame": 6,
+          "calls": 41,
+          "triangles": 465345,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            2425,
+            403,
+            1739,
+            2873
+          ],
+          "heap": 924004444
+        }
+      },
+      {
+        "name": "overview",
+        "eye": [
+          4092.080078125,
+          2668.8299865722656,
+          2251.4099731445312
+        ],
+        "target": [
+          2592.080078125,
+          468.8299865722656,
+          751.4099731445312
+        ],
+        "calls": 111,
+        "triangles": 3043666,
+        "browser": {
+          "frame": 7,
+          "calls": 53,
+          "triangles": 613240,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            482,
+            599,
+            2115,
+            4244
+          ],
+          "heap": 925048988
+        },
+        "debug": {
+          "frame": 9,
+          "calls": 53,
+          "triangles": 613240,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            482,
+            599,
+            2115,
+            4244
+          ],
+          "heap": 122666599
+        }
+      }
+    ],
+    "motion": [
+      {
+        "frame": 10,
+        "calls": 13,
+        "triangles": 121856,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 123040689
+      },
+      {
+        "frame": 11,
+        "calls": 13,
+        "triangles": 121856,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 123506288
+      },
+      {
+        "frame": 12,
+        "calls": 13,
+        "triangles": 122016,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 123768460
+      },
+      {
+        "frame": 13,
+        "calls": 13,
+        "triangles": 122016,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 124001668
+      },
+      {
+        "frame": 14,
+        "calls": 13,
+        "triangles": 122112,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 122408028
+      },
+      {
+        "frame": 15,
+        "calls": 13,
+        "triangles": 122112,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 122246776
+      },
+      {
+        "frame": 16,
+        "calls": 13,
+        "triangles": 122192,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 122490020
+      },
+      {
+        "frame": 17,
+        "calls": 13,
+        "triangles": 122192,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 122723024
+      },
+      {
+        "frame": 18,
+        "calls": 13,
+        "triangles": 122256,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          655,
+          594,
+          2048,
+          4143
+        ],
+        "heap": 122955500
+      },
+      {
+        "frame": 19,
+        "calls": 13,
+        "triangles": 122768,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          656,
+          594,
+          2047,
+          4143
+        ],
+        "heap": 122294840
+      },
+      {
+        "frame": 20,
+        "calls": 13,
+        "triangles": 122768,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          656,
+          594,
+          2047,
+          4143
+        ],
+        "heap": 122527324
+      },
+      {
+        "frame": 21,
+        "calls": 13,
+        "triangles": 123344,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2046,
+          4143
+        ],
+        "heap": 122760140
+      },
+      {
+        "frame": 22,
+        "calls": 13,
+        "triangles": 123344,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2046,
+          4143
+        ],
+        "heap": 122993732
+      },
+      {
+        "frame": 23,
+        "calls": 13,
+        "triangles": 123408,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2046,
+          4143
+        ],
+        "heap": 122308300
+      },
+      {
+        "frame": 24,
+        "calls": 13,
+        "triangles": 123762,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2046,
+          4143
+        ],
+        "heap": 122538568
+      },
+      {
+        "frame": 25,
+        "calls": 13,
+        "triangles": 123890,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2046,
+          4143
+        ],
+        "heap": 122775680
+      },
+      {
+        "frame": 26,
+        "calls": 13,
+        "triangles": 124018,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2047,
+          4142
+        ],
+        "heap": 123001632
+      },
+      {
+        "frame": 27,
+        "calls": 13,
+        "triangles": 124098,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2047,
+          4142
+        ],
+        "heap": 122214096
+      },
+      {
+        "frame": 28,
+        "calls": 13,
+        "triangles": 124258,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          657,
+          594,
+          2048,
+          4141
+        ],
+        "heap": 122271296
+      },
+      {
+        "frame": 29,
+        "calls": 13,
+        "triangles": 124834,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          658,
+          594,
+          2048,
+          4140
+        ],
+        "heap": 122323932
+      },
+      {
+        "frame": 30,
+        "calls": 13,
+        "triangles": 125474,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          659,
+          594,
+          2048,
+          4139
+        ],
+        "heap": 122376836
+      },
+      {
+        "frame": 31,
+        "calls": 13,
+        "triangles": 125474,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          659,
+          594,
+          2048,
+          4139
+        ],
+        "heap": 122429432
+      },
+      {
+        "frame": 32,
+        "calls": 13,
+        "triangles": 126146,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          660,
+          594,
+          2048,
+          4138
+        ],
+        "heap": 122482496
+      },
+      {
+        "frame": 33,
+        "calls": 13,
+        "triangles": 126146,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          660,
+          594,
+          2048,
+          4138
+        ],
+        "heap": 122539124
+      },
+      {
+        "frame": 34,
+        "calls": 13,
+        "triangles": 126146,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          660,
+          594,
+          2048,
+          4138
+        ],
+        "heap": 122627140
+      },
+      {
+        "frame": 35,
+        "calls": 13,
+        "triangles": 126210,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          660,
+          594,
+          2048,
+          4138
+        ],
+        "heap": 122680024
+      },
+      {
+        "frame": 36,
+        "calls": 13,
+        "triangles": 126722,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          661,
+          594,
+          2048,
+          4137
+        ],
+        "heap": 122732952
+      },
+      {
+        "frame": 37,
+        "calls": 13,
+        "triangles": 126722,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          661,
+          594,
+          2048,
+          4137
+        ],
+        "heap": 122786808
+      },
+      {
+        "frame": 38,
+        "calls": 13,
+        "triangles": 126722,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          661,
+          594,
+          2048,
+          4137
+        ],
+        "heap": 122839596
+      },
+      {
+        "frame": 39,
+        "calls": 13,
+        "triangles": 126786,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          661,
+          594,
+          2048,
+          4137
+        ],
+        "heap": 122892536
+      },
+      {
+        "frame": 40,
+        "calls": 13,
+        "triangles": 127298,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          663,
+          594,
+          2046,
+          4137
+        ],
+        "heap": 122945672
+      },
+      {
+        "frame": 41,
+        "calls": 13,
+        "triangles": 127298,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          663,
+          594,
+          2046,
+          4137
+        ],
+        "heap": 123000356
+      },
+      {
+        "frame": 42,
+        "calls": 13,
+        "triangles": 127810,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          664,
+          594,
+          2045,
+          4137
+        ],
+        "heap": 122260504
+      },
+      {
+        "frame": 43,
+        "calls": 14,
+        "triangles": 127938,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          664,
+          594,
+          2045,
+          4137
+        ],
+        "heap": 122314004
+      },
+      {
+        "frame": 44,
+        "calls": 14,
+        "triangles": 128450,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          665,
+          594,
+          2045,
+          4136
+        ],
+        "heap": 122367308
+      },
+      {
+        "frame": 45,
+        "calls": 14,
+        "triangles": 129026,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          666,
+          594,
+          2044,
+          4136
+        ],
+        "heap": 122420808
+      },
+      {
+        "frame": 46,
+        "calls": 14,
+        "triangles": 129026,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          666,
+          594,
+          2044,
+          4136
+        ],
+        "heap": 122474068
+      },
+      {
+        "frame": 47,
+        "calls": 14,
+        "triangles": 128898,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          665,
+          595,
+          2044,
+          4136
+        ],
+        "heap": 122529904
+      },
+      {
+        "frame": 48,
+        "calls": 14,
+        "triangles": 129474,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          666,
+          595,
+          2044,
+          4135
+        ],
+        "heap": 122583576
+      },
+      {
+        "frame": 49,
+        "calls": 14,
+        "triangles": 129986,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          667,
+          595,
+          2044,
+          4134
+        ],
+        "heap": 122637156
+      },
+      {
+        "frame": 50,
+        "calls": 14,
+        "triangles": 130498,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          668,
+          595,
+          2043,
+          4134
+        ],
+        "heap": 122690900
+      },
+      {
+        "frame": 51,
+        "calls": 14,
+        "triangles": 130562,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          668,
+          595,
+          2043,
+          4134
+        ],
+        "heap": 122744684
+      },
+      {
+        "frame": 52,
+        "calls": 14,
+        "triangles": 131010,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2042,
+          4134
+        ],
+        "heap": 122803100
+      },
+      {
+        "frame": 53,
+        "calls": 14,
+        "triangles": 131074,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2042,
+          4134
+        ],
+        "heap": 122857028
+      },
+      {
+        "frame": 54,
+        "calls": 14,
+        "triangles": 131234,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2042,
+          4134
+        ],
+        "heap": 122911504
+      },
+      {
+        "frame": 55,
+        "calls": 14,
+        "triangles": 131298,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2042,
+          4134
+        ],
+        "heap": 123199406
+      },
+      {
+        "frame": 56,
+        "calls": 14,
+        "triangles": 131298,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2042,
+          4134
+        ],
+        "heap": 123253338
+      },
+      {
+        "frame": 57,
+        "calls": 14,
+        "triangles": 131618,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          670,
+          595,
+          2042,
+          4133
+        ],
+        "heap": 122477682
+      },
+      {
+        "frame": 58,
+        "calls": 14,
+        "triangles": 131394,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2043,
+          4133
+        ],
+        "heap": 122532026
+      },
+      {
+        "frame": 59,
+        "calls": 14,
+        "triangles": 131602,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          669,
+          595,
+          2044,
+          4132
+        ],
+        "heap": 122588930
+      },
+      {
+        "frame": 60,
+        "calls": 14,
+        "triangles": 132178,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          670,
+          595,
+          2044,
+          4131
+        ],
+        "heap": 122645934
+      },
+      {
+        "frame": 61,
+        "calls": 14,
+        "triangles": 132754,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          671,
+          595,
+          2044,
+          4130
+        ],
+        "heap": 122700666
+      },
+      {
+        "frame": 62,
+        "calls": 14,
+        "triangles": 132818,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          671,
+          595,
+          2044,
+          4130
+        ],
+        "heap": 122755326
+      },
+      {
+        "frame": 63,
+        "calls": 14,
+        "triangles": 133202,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2043,
+          4130
+        ],
+        "heap": 122810350
+      },
+      {
+        "frame": 64,
+        "calls": 14,
+        "triangles": 133202,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2043,
+          4130
+        ],
+        "heap": 122865026
+      },
+      {
+        "frame": 65,
+        "calls": 14,
+        "triangles": 133298,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2043,
+          4130
+        ],
+        "heap": 122919854
+      },
+      {
+        "frame": 66,
+        "calls": 14,
+        "triangles": 133874,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2043,
+          4129
+        ],
+        "heap": 122974882
+      },
+      {
+        "frame": 67,
+        "calls": 14,
+        "triangles": 133490,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 123029794
+      },
+      {
+        "frame": 68,
+        "calls": 14,
+        "triangles": 133490,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 123084590
+      },
+      {
+        "frame": 69,
+        "calls": 14,
+        "triangles": 133490,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 123139386
+      },
+      {
+        "frame": 70,
+        "calls": 14,
+        "triangles": 133698,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 123194354
+      },
+      {
+        "frame": 71,
+        "calls": 14,
+        "triangles": 133698,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 123249198
+      },
+      {
+        "frame": 72,
+        "calls": 14,
+        "triangles": 133698,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122485210
+      },
+      {
+        "frame": 73,
+        "calls": 14,
+        "triangles": 133698,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122540054
+      },
+      {
+        "frame": 74,
+        "calls": 14,
+        "triangles": 133842,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122599166
+      },
+      {
+        "frame": 75,
+        "calls": 14,
+        "triangles": 133842,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122654130
+      },
+      {
+        "frame": 76,
+        "calls": 14,
+        "triangles": 133842,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122710654
+      },
+      {
+        "frame": 77,
+        "calls": 14,
+        "triangles": 133842,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122765438
+      },
+      {
+        "frame": 78,
+        "calls": 14,
+        "triangles": 134130,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122820386
+      },
+      {
+        "frame": 79,
+        "calls": 14,
+        "triangles": 134194,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122875466
+      },
+      {
+        "frame": 80,
+        "calls": 14,
+        "triangles": 134194,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122930430
+      },
+      {
+        "frame": 81,
+        "calls": 14,
+        "triangles": 134706,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2043,
+          4129
+        ],
+        "heap": 122985558
+      },
+      {
+        "frame": 82,
+        "calls": 14,
+        "triangles": 134770,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2043,
+          4129
+        ],
+        "heap": 123040734
+      },
+      {
+        "frame": 83,
+        "calls": 14,
+        "triangles": 134898,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2043,
+          4129
+        ],
+        "heap": 123096122
+      },
+      {
+        "frame": 84,
+        "calls": 14,
+        "triangles": 134904,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2043,
+          4129
+        ],
+        "heap": 123151430
+      },
+      {
+        "frame": 85,
+        "calls": 14,
+        "triangles": 134968,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2043,
+          4129
+        ],
+        "heap": 123206786
+      },
+      {
+        "frame": 86,
+        "calls": 14,
+        "triangles": 134840,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 123262294
+      },
+      {
+        "frame": 87,
+        "calls": 14,
+        "triangles": 134904,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122494234
+      },
+      {
+        "frame": 88,
+        "calls": 14,
+        "triangles": 135064,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          672,
+          595,
+          2044,
+          4129
+        ],
+        "heap": 122550142
+      },
+      {
+        "frame": 89,
+        "calls": 14,
+        "triangles": 135576,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          595,
+          2044,
+          4128
+        ],
+        "heap": 122605738
+      },
+      {
+        "frame": 90,
+        "calls": 14,
+        "triangles": 136056,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          596,
+          2045,
+          4126
+        ],
+        "heap": 122661862
+      },
+      {
+        "frame": 91,
+        "calls": 14,
+        "triangles": 136184,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          596,
+          2045,
+          4126
+        ],
+        "heap": 122717902
+      },
+      {
+        "frame": 92,
+        "calls": 14,
+        "triangles": 136856,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          674,
+          596,
+          2045,
+          4125
+        ],
+        "heap": 122774210
+      },
+      {
+        "frame": 93,
+        "calls": 14,
+        "triangles": 136600,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          597,
+          2045,
+          4125
+        ],
+        "heap": 122830854
+      },
+      {
+        "frame": 94,
+        "calls": 14,
+        "triangles": 136760,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          597,
+          2045,
+          4125
+        ],
+        "heap": 122887294
+      },
+      {
+        "frame": 95,
+        "calls": 14,
+        "triangles": 136760,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          673,
+          597,
+          2045,
+          4125
+        ],
+        "heap": 122943406
+      },
+      {
+        "frame": 96,
+        "calls": 14,
+        "triangles": 137098,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          674,
+          596,
+          2045,
+          4125
+        ],
+        "heap": 123004450
+      },
+      {
+        "frame": 97,
+        "calls": 14,
+        "triangles": 137162,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          674,
+          596,
+          2045,
+          4125
+        ],
+        "heap": 123060790
+      },
+      {
+        "frame": 98,
+        "calls": 14,
+        "triangles": 137226,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          674,
+          596,
+          2045,
+          4125
+        ],
+        "heap": 123117178
+      },
+      {
+        "frame": 99,
+        "calls": 14,
+        "triangles": 137226,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          674,
+          596,
+          2045,
+          4125
+        ],
+        "heap": 123173450
+      }
+    ]
+  },
+  {
+    "id": "megara",
+    "browser": {
+      "mapDecodeMs": 155,
+      "buildMs": 2757.7000000476837
+    },
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          -24.436195251026312,
+          16.25495808512799,
+          5.347480909520872
+        ],
+        "target": [
+          -44.43619525102631,
+          9.254958085127988,
+          -14.652519090479128
+        ],
+        "calls": 15,
+        "triangles": 120736,
+        "browser": {
+          "frame": 1,
+          "calls": 12,
+          "triangles": 22796,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            323,
+            18,
+            6,
+            0
+          ],
+          "heap": 50555200
+        },
+        "debug": {
+          "frame": 3,
+          "calls": 12,
+          "triangles": 22796,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            323,
+            18,
+            6,
+            0
+          ],
+          "heap": 57134074
+        }
+      },
+      {
+        "name": "mid",
+        "eye": [
+          -11.543998718261491,
+          19.55500030517578,
+          -107.60499572753903
+        ],
+        "target": [
+          -41.54399871826149,
+          9.555000305175781,
+          -137.60499572753903
+        ],
+        "calls": 12,
+        "triangles": 94217,
+        "browser": {
+          "frame": 4,
+          "calls": 9,
+          "triangles": 12759,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            324,
+            17,
+            6,
+            0
+          ],
+          "heap": 44698590
+        },
+        "debug": {
+          "frame": 6,
+          "calls": 9,
+          "triangles": 12759,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            324,
+            17,
+            6,
+            0
+          ],
+          "heap": 50760390
+        }
+      },
+      {
+        "name": "overview",
+        "eye": [
+          1458.4560012817385,
+          2209.555000305176,
+          1362.395004272461
+        ],
+        "target": [
+          -41.54399871826149,
+          9.555000305175781,
+          -137.60499572753903
+        ],
+        "calls": 25,
+        "triangles": 129419,
+        "browser": {
+          "frame": 7,
+          "calls": 12,
+          "triangles": 46440,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            70,
+            91,
+            48,
+            138
+          ],
+          "heap": 51105202
+        },
+        "debug": {
+          "frame": 9,
+          "calls": 12,
+          "triangles": 46440,
+          "points": 0,
+          "lines": 0,
+          "levels": [
+            70,
+            91,
+            48,
+            138
+          ],
+          "heap": 29554523
+        }
+      }
+    ],
+    "motion": [
+      {
+        "frame": 10,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 29803277
+      },
+      {
+        "frame": 11,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 30237672
+      },
+      {
+        "frame": 12,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 30437772
+      },
+      {
+        "frame": 13,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 30658732
+      },
+      {
+        "frame": 14,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 30851208
+      },
+      {
+        "frame": 15,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 30981984
+      },
+      {
+        "frame": 16,
+        "calls": 12,
+        "triangles": 19948,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31111100
+      },
+      {
+        "frame": 17,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31238452
+      },
+      {
+        "frame": 18,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31362500
+      },
+      {
+        "frame": 19,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31489708
+      },
+      {
+        "frame": 20,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31614248
+      },
+      {
+        "frame": 21,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31738332
+      },
+      {
+        "frame": 22,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31863820
+      },
+      {
+        "frame": 23,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 31989876
+      },
+      {
+        "frame": 24,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 32100148
+      },
+      {
+        "frame": 25,
+        "calls": 12,
+        "triangles": 19436,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 32210424
+      },
+      {
+        "frame": 26,
+        "calls": 12,
+        "triangles": 19929,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 32320976
+      },
+      {
+        "frame": 27,
+        "calls": 12,
+        "triangles": 19417,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 32438564
+      },
+      {
+        "frame": 28,
+        "calls": 12,
+        "triangles": 19417,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          90,
+          102,
+          54,
+          101
+        ],
+        "heap": 32552244
+      },
+      {
+        "frame": 29,
+        "calls": 12,
+        "triangles": 19538,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 32654060
+      },
+      {
+        "frame": 30,
+        "calls": 12,
+        "triangles": 19538,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 32754728
+      },
+      {
+        "frame": 31,
+        "calls": 12,
+        "triangles": 19538,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 32856644
+      },
+      {
+        "frame": 32,
+        "calls": 12,
+        "triangles": 19651,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 32959108
+      },
+      {
+        "frame": 33,
+        "calls": 12,
+        "triangles": 19651,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 33060344
+      },
+      {
+        "frame": 34,
+        "calls": 12,
+        "triangles": 19651,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 33162244
+      },
+      {
+        "frame": 35,
+        "calls": 12,
+        "triangles": 19765,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 33267436
+      },
+      {
+        "frame": 36,
+        "calls": 12,
+        "triangles": 19765,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 33387204
+      },
+      {
+        "frame": 37,
+        "calls": 12,
+        "triangles": 19765,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 33488024
+      },
+      {
+        "frame": 38,
+        "calls": 12,
+        "triangles": 19367,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          91,
+          101,
+          54,
+          101
+        ],
+        "heap": 33593196
+      },
+      {
+        "frame": 39,
+        "calls": 12,
+        "triangles": 19612,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          92,
+          100,
+          54,
+          101
+        ],
+        "heap": 33695976
+      },
+      {
+        "frame": 40,
+        "calls": 12,
+        "triangles": 20102,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          93,
+          99,
+          54,
+          101
+        ],
+        "heap": 33797984
+      },
+      {
+        "frame": 41,
+        "calls": 12,
+        "triangles": 20372,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          94,
+          98,
+          54,
+          101
+        ],
+        "heap": 33911364
+      },
+      {
+        "frame": 42,
+        "calls": 12,
+        "triangles": 20372,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          94,
+          98,
+          54,
+          101
+        ],
+        "heap": 34015288
+      },
+      {
+        "frame": 43,
+        "calls": 12,
+        "triangles": 20867,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          95,
+          97,
+          54,
+          101
+        ],
+        "heap": 34115124
+      },
+      {
+        "frame": 44,
+        "calls": 12,
+        "triangles": 20867,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          95,
+          97,
+          54,
+          101
+        ],
+        "heap": 34212544
+      },
+      {
+        "frame": 45,
+        "calls": 12,
+        "triangles": 20867,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          95,
+          97,
+          54,
+          101
+        ],
+        "heap": 34309968
+      },
+      {
+        "frame": 46,
+        "calls": 12,
+        "triangles": 21361,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 34393704
+      },
+      {
+        "frame": 47,
+        "calls": 12,
+        "triangles": 21361,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 34456732
+      },
+      {
+        "frame": 48,
+        "calls": 12,
+        "triangles": 21361,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 34526080
+      },
+      {
+        "frame": 49,
+        "calls": 12,
+        "triangles": 21327,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 34623748
+      },
+      {
+        "frame": 50,
+        "calls": 12,
+        "triangles": 21327,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 34686676
+      },
+      {
+        "frame": 51,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 34749892
+      },
+      {
+        "frame": 52,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 34815220
+      },
+      {
+        "frame": 53,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 34878036
+      },
+      {
+        "frame": 54,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 34941212
+      },
+      {
+        "frame": 55,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35220426
+      },
+      {
+        "frame": 56,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35283230
+      },
+      {
+        "frame": 57,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35346114
+      },
+      {
+        "frame": 58,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35408978
+      },
+      {
+        "frame": 59,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35474382
+      },
+      {
+        "frame": 60,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35519822
+      },
+      {
+        "frame": 61,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35546982
+      },
+      {
+        "frame": 62,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35574094
+      },
+      {
+        "frame": 63,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35601254
+      },
+      {
+        "frame": 64,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35628402
+      },
+      {
+        "frame": 65,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35655562
+      },
+      {
+        "frame": 66,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35684830
+      },
+      {
+        "frame": 67,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35711990
+      },
+      {
+        "frame": 68,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35743726
+      },
+      {
+        "frame": 69,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35770886
+      },
+      {
+        "frame": 70,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35798010
+      },
+      {
+        "frame": 71,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35825170
+      },
+      {
+        "frame": 72,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35852330
+      },
+      {
+        "frame": 73,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35879478
+      },
+      {
+        "frame": 74,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35906598
+      },
+      {
+        "frame": 75,
+        "calls": 12,
+        "triangles": 21137,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35933758
+      },
+      {
+        "frame": 76,
+        "calls": 12,
+        "triangles": 21622,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35963406
+      },
+      {
+        "frame": 77,
+        "calls": 12,
+        "triangles": 21622,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          95,
+          54,
+          101
+        ],
+        "heap": 35990602
+      },
+      {
+        "frame": 78,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36017878
+      },
+      {
+        "frame": 79,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36045074
+      },
+      {
+        "frame": 80,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36072270
+      },
+      {
+        "frame": 81,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36099466
+      },
+      {
+        "frame": 82,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36126626
+      },
+      {
+        "frame": 83,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36153822
+      },
+      {
+        "frame": 84,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36181026
+      },
+      {
+        "frame": 85,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36209638
+      },
+      {
+        "frame": 86,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36236798
+      },
+      {
+        "frame": 87,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36263994
+      },
+      {
+        "frame": 88,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36291262
+      },
+      {
+        "frame": 89,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36318530
+      },
+      {
+        "frame": 90,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36345690
+      },
+      {
+        "frame": 91,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36372910
+      },
+      {
+        "frame": 92,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36400154
+      },
+      {
+        "frame": 93,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36427926
+      },
+      {
+        "frame": 94,
+        "calls": 12,
+        "triangles": 21366,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          96,
+          96,
+          54,
+          101
+        ],
+        "heap": 36459494
+      },
+      {
+        "frame": 95,
+        "calls": 12,
+        "triangles": 21878,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          96,
+          54,
+          100
+        ],
+        "heap": 36486914
+      },
+      {
+        "frame": 96,
+        "calls": 12,
+        "triangles": 21878,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          96,
+          54,
+          100
+        ],
+        "heap": 36514266
+      },
+      {
+        "frame": 97,
+        "calls": 12,
+        "triangles": 21878,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          97,
+          96,
+          54,
+          100
+        ],
+        "heap": 36541594
+      },
+      {
+        "frame": 98,
+        "calls": 12,
+        "triangles": 22390,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          98,
+          96,
+          54,
+          99
+        ],
+        "heap": 36569050
+      },
+      {
+        "frame": 99,
+        "calls": 12,
+        "triangles": 22390,
+        "points": 0,
+        "lines": 0,
+        "levels": [
+          98,
+          96,
+          54,
+          99
+        ],
+        "heap": 36596378
+      }
+    ]
+  }
+]

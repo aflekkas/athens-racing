@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { compactTerrainGeometry, restoreTerrainLayout } from '../src/terrain-layout.js';
-import { buildTerrainLods, installTerrainLods, selectTerrainLod } from '../src/terrain-lod.js';
+import { buildTerrainLods, buildTerrainPatchLods, installTerrainLods, selectTerrainLod } from '../src/terrain-lod.js';
 import { packGroup } from '../src/baked-world-pack.js';
 import { decodeGeometryPack } from '../src/baked-geometry.js';
 function fixture() {
@@ -42,4 +42,32 @@ test('LOD error bounds include diagonal crossings, and near-detail hysteresis ha
 test('flat but multicolored ground cannot bypass the visual LOD error budget',()=>{
   const g=fixture();for(let i=0;i<g.attributes.position.count;i++){g.attributes.position.setY(i,100);g.attributes.color.setX(i,i%3===0?.9:.1);}
   compactTerrainGeometry(g,1.25);buildTerrainLods(g);assert.ok(g.userData.terrainLod[1].error>1);
+});
+
+test('patch LOD coarsens refined terrain in one draw and contact pins only the sampled patch',()=>{
+  const source=fixture(),p=source.attributes.position;
+  // Four adjacent copies form one submission chunk, with independent patches.
+  const big=new THREE.BufferGeometry(),arrays={position:[],normal:[],color:[],aU:[]},indices=[];
+  for(let tile=0;tile<4;tile++){
+    for(const [name,a]of Object.entries(source.attributes))for(let i=0;i<a.array.length;i++)arrays[name].push(a.array[i]+(name==='position'&&i%3===0?tile*20:0));
+    for(const i of source.index.array)indices.push(i+tile*p.count);
+  }
+  for(const [name,a]of Object.entries(source.attributes))big.setAttribute(name,new THREE.Float32BufferAttribute(arrays[name],a.itemSize));big.setIndex(indices);
+  compactTerrainGeometry(big,1.25);buildTerrainPatchLods(big);
+  const mesh=new THREE.Mesh(big,new THREE.MeshLambertMaterial());Object.assign(mesh.userData,big.userData);delete mesh.userData.terrainLodSource;
+  const group=new THREE.Group();group.add(mesh);const terrain={refinedHeight:()=>100};installTerrainLods(terrain,group);
+  const full=big.index.count,sourceIndices=big.userData.terrainLodSource.slice(),camera=new THREE.PerspectiveCamera();camera.far=10000;camera.updateProjectionMatrix();camera.position.set(1000,1000,1000);camera.lookAt(150,100,-420);camera.updateMatrixWorld();
+  const renderer={getDrawingBufferSize:v=>v.set(960,600)};mesh.onBeforeRender(renderer,null,camera);
+  assert.ok(big.drawRange.count<full*.5);assert.equal(group.children.length,1);assert.equal(big.drawRange.start,0);
+  const before=big.drawRange.count;terrain.refinedHeight(125,-430);mesh.onBeforeRender(renderer,null,camera);
+  assert.ok(big.drawRange.count>before&&big.drawRange.count<full*.6);
+  assert.equal(mesh.terrainLodState.patches.filter(p=>p.pinned).length,1);
+  assert.deepEqual(big.userData.terrainLodSource,sourceIndices);
+  const packed=decodeGeometryPack(packGroup(group,{}));assert.deepEqual(packed.arrays[packed.metadata.meshes[0].index],sourceIndices);
+  const state=mesh.terrainLodState,range=state.updateRange,index=big.index.array;
+  camera.position.set(130,100,-430);camera.updateMatrixWorld();mesh.onBeforeRender(renderer,null,camera);
+  assert.equal(big.index.array,index);assert.equal(state.updateRange,range);
+  const version=big.index.version;mesh.onBeforeRender(renderer,null,camera);assert.equal(big.index.version,version);
+  camera.position.set(1000,1000,1000);camera.lookAt(2000,2000,2000);camera.updateMatrixWorld();mesh.onBeforeRender(renderer,null,camera);
+  assert.equal(big.drawRange.count,0,'off-screen patches submit no triangles');
 });

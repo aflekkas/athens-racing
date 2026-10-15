@@ -1,0 +1,55 @@
+{
+  "before": {
+    "shallowRetainedBytes": {
+      "other managed objects/code/strings": 20617544,
+      "Map/Set and other internal tables": 95578192,
+      "JS array element storage": 88416112,
+      "boxed numbers": 23292784,
+      "typed-array and buffer wrappers": 10780632,
+      "native backing stores": 48834268
+    },
+    "largeBuildContextBindings": [
+      {
+        "contextBinding": "heights",
+        "type": "Map",
+        "backingBytes": 58720296
+      },
+      {
+        "contextBinding": "pos",
+        "type": "Array",
+        "backingBytes": 25196576
+      },
+      {
+        "contextBinding": "col",
+        "type": "Array",
+        "backingBytes": 25196576
+      },
+      {
+        "contextBinding": "nor",
+        "type": "Array",
+        "backingBytes": 25196576
+      },
+      {
+        "contextBinding": "urb",
+        "type": "Array",
+        "backingBytes": 10433688
+      },
+      {
+        "contextBinding": "vertices",
+        "type": "Map",
+        "backingBytes": 29360168
+      }
+    ]
+  },
+  "after": {
+    "shallowRetainedBytes": {
+      "other managed objects/code/strings": 19246800,
+      "Map/Set and other internal tables": 4885336,
+      "JS array element storage": 3383296,
+      "boxed numbers": 1630640,
+      "typed-array and buffer wrappers": 12331064,
+      "native backing stores": 67650520
+    },
+    "largeBuildContextBindings": []
+  }
+}

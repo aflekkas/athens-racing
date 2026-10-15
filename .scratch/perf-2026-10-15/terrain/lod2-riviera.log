@@ -1,0 +1,89 @@
+{
+  id: 'riviera',
+  mapDecodeCpuMs: 550.704,
+  networkCpuMs: 118.542,
+  buildCpuMs: 51829.36,
+  stages: [
+    {
+      stage: 'modules',
+      rss: 78454784,
+      heapTotal: 20832256,
+      heapUsed: 11398872,
+      external: 2058706,
+      arrayBuffers: 307311
+    },
+    {
+      stage: 'map',
+      rss: 105861120,
+      heapTotal: 32890880,
+      heapUsed: 15132368,
+      external: 7182367,
+      arrayBuffers: 3815147
+    },
+    {
+      stage: 'network',
+      rss: 107433984,
+      heapTotal: 52027392,
+      heapUsed: 17555432,
+      external: 7182367,
+      arrayBuffers: 3815147
+    },
+    {
+      stage: 'terrain',
+      rss: 296382464,
+      heapTotal: 75579392,
+      heapUsed: 39998584,
+      external: 70992237,
+      arrayBuffers: 67629363
+    }
+  ],
+  contactMemory: {
+    refinedCells: 46497,
+    refinedBytes: 6695568,
+    coarseCells: 11296,
+    coarseBytes: 180736
+  },
+  bytes: 30788944,
+  triangles: 2078540,
+  chunks: 59,
+  poses: [
+    {
+      name: 'start',
+      eye: [Array],
+      target: [Array],
+      calls: 11,
+      triangles: 80224
+    },
+    {
+      name: 'mid',
+      eye: [Array],
+      target: [Array],
+      calls: 17,
+      triangles: 81331
+    },
+    {
+      name: 'overview',
+      eye: [Array],
+      target: [Array],
+      calls: 44,
+      triangles: 577926
+    }
+  ],
+  cpuLodIndexBytes: 22757412,
+  patchCount: 5984,
+  lodHistogram: [
+    { pose: 'start', counts: [Array] },
+    { pose: 'mid', counts: [Array] },
+    { pose: 'overview', counts: [Array] }
+  ],
+  stationarySelectionCpuUs: 939.3,
+  cachedDecodeBuildCpuMs: 1468.5,
+  rawPackBytes: 46309948,
+  gzipPackBytes: 25030193,
+  restored: {
+    bytes: 30788944,
+    triangles: 2078540,
+    chunks: 59,
+    poses: [ [Object], [Object], [Object] ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  id: 'megara',
+  mapDecodeCpuMs: 344.288,
+  networkCpuMs: 14.782,
+  buildCpuMs: 3416.763,
+  stages: [
+    {
+      stage: 'modules',
+      rss: 77447168,
+      heapTotal: 21356544,
+      heapUsed: 11398872,
+      external: 2058706,
+      arrayBuffers: 307311
+    },
+    {
+      stage: 'map',
+      rss: 96190464,
+      heapTotal: 32104448,
+      heapUsed: 13919360,
+      external: 4738337,
+      arrayBuffers: 1371117
+    },
+    {
+      stage: 'network',
+      rss: 96452608,
+      heapTotal: 32628736,
+      heapUsed: 14082072,
+      external: 4738337,
+      arrayBuffers: 1371117
+    },
+    {
+      stage: 'terrain',
+      rss: 141533184,
+      heapTotal: 54337536,
+      heapUsed: 18826840,
+      external: 9518822,
+      arrayBuffers: 6151602
+    }
+  ],
+  contactMemory: {
+    refinedCells: 4114,
+    refinedBytes: 411400,
+    coarseCells: 7801,
+    coarseBytes: 124816
+  },
+  bytes: 1932213,
+  triangles: 129876,
+  chunks: 12,
+  poses: [
+    {
+      name: 'start',
+      eye: [Array],
+      target: [Array],
+      calls: 12,
+      triangles: 22796
+    },
+    {
+      name: 'mid',
+      eye: [Array],
+      target: [Array],
+      calls: 9,
+      triangles: 12759
+    },
+    {
+      name: 'overview',
+      eye: [Array],
+      target: [Array],
+      calls: 12,
+      triangles: 46440
+    }
+  ],
+  cpuLodIndexBytes: 1394304,
+  patchCount: 347,
+  lodHistogram: [
+    { pose: 'start', counts: [Array] },
+    { pose: 'mid', counts: [Array] },
+    { pose: 'overview', counts: [Array] }
+  ],
+  stationarySelectionCpuUs: 265.13,
+  cachedDecodeBuildCpuMs: 218.725,
+  rawPackBytes: 3679728,
+  gzipPackBytes: 1598116,
+  restored: {
+    bytes: 1932213,
+    triangles: 129876,
+    chunks: 12,
+    poses: [ [Object], [Object], [Object] ]
+  }
+}

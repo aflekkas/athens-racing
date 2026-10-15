@@ -23,7 +23,7 @@ export function coarseTerrainSampler(terrain, group) {
       cell.diagonal = !!((corners & 1) && (corners & 8));
     }
   });
-  return (x, z) => {
+  const sample = (x, z) => {
     const i = Math.floor((x - terrain.minX) / step), j = Math.floor((z - terrain.minZ) / step);
     if (i < 0 || j < 0 || i >= width || j >= Math.ceil((terrain.GZ - 1) / 4)) return null;
     const cell = cells.get(j * width + i); if (!cell) return null;
@@ -33,4 +33,5 @@ export function coarseTerrainSampler(terrain, group) {
       : (a+b<1 ? h00+(h10-h00)*a+(h01-h00)*b : h11+(h01-h11)*(1-a)+(h10-h11)*(1-b));
     return Number.isFinite(y) ? y : null;
   };
+  sample.cells=cells.size;sample.bytes=cells.size*16;return sample;
 }
