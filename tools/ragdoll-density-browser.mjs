@@ -20,7 +20,7 @@ try{
   await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__freezeWorld&&cb.name==='frame'?0:raf(cb);});
   await page.goto(`http://127.0.0.1:${server.address().port}/?menu&simhook&quality=low&fixedres&fixeddt&map=${id}`,{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>document.body.classList.contains('loaded')&&window.__flow,null,{timeout:120000});
-  await page.evaluate(id=>{window.__startImpactWorld=__flow.startEvent({...__flow.freeRoamDef(),mapId:id});},id);
+  await page.evaluate(id=>{window.__startImpactWorld=__flow.switchMap(id);},id);
   await page.waitForFunction(()=>window.__sim?.people&&!__mapRuntime().switching,null,{timeout:600000});
   const result=await page.evaluate(async()=>{
    window.__freezeWorld=true;__sim.G.state='paused';
@@ -38,19 +38,20 @@ try{
   if(id==='riviera'){
    report.feedback=[];
    for(const cam of ['cockpit','chase']){
-    const feedback=await page.evaluate(async cam=>{
-     const sim=__sim,{RNG}=await import('/src/util.js'),H=await import('/src/human.js');
-     await __flow.startEvent(__flow.freeRoamDef());
-     sim.G.state='race';sim.G.cam=sim.G.userCam=cam;sim.G.cameraStarting=false;sim.cameraBlend.active=false;
-     const people=sim.people,v=sim.player.veh;v.reset(1000,sim.route.laneU(1000,0),10);sim.traffic.disabled=true;sim.traffic.reset(1000);__police.enabled=false;
-     people.reset(1000);for(const p of people.peds)if(p.active)people.despawn(p);people.spawnWalker=()=>{};people.updateAnchors=()=>{};
-     const p=people.peds[0];people.init(p,'fixture',H.makeLook(new RNG(71),'street'));
-     const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);
-     Object.assign(p,{rs:false,x:v.x+fx*(v.halfL+.05),y:v.y,wy:v.y,z:v.z+fz*(v.halfL+.05),yaw:v.yaw+Math.PI,mode:'stand'});
-     p.home={x:p.x,y:p.y,z:p.z,yaw:p.yaw};
-     const before=v.vLong;people.hit(p,{veh:v,fx,fz,rx,rz,v:10,kind:'player'});const after=v.vLong;
-     sim.step(20,1/120);sim.render();return{cam,before,after,shake:sim.G.shake,bodyKick:v.pose,activeBodies:people.bodies.bodies.filter(b=>b.active).length};
-    },cam);report.feedback.push(feedback);assert(feedback.after<feedback.before);assert(feedback.activeBodies>0);
+  const feedback=await page.evaluate(async cam=>{
+   const sim=__sim,THREE=await import('three'),H=await import('/src/human.js'),{RNG}=await import('/src/util.js');__flow.menu.hide();sim.G.state='paused';sim.G.cameraStarting=false;sim.cameraBlend.active=false;sim.G.resultPhotoPending=false;
+   const v=sim.player.veh,people=sim.people,r=sim.route,s=100;v.reset(s,r.laneU(s,0),10);sim.traffic.disabled=true;sim.traffic.reset(s);__police.enabled=false;
+   people.reset(s);for(const q of people.peds)if(q.active)people.despawn(q);people.spawnWalker=()=>{};people.updateAnchors=()=>{};
+   const p=people.peds[0];people.init(p,'fixture',H.makeLook(new RNG(71),'street'));const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);
+   Object.assign(p,{rs:false,x:v.x+fx*(v.halfL+.05),y:v.y,wy:v.y,z:v.z+fz*(v.halfL+.05),yaw:v.yaw+Math.PI,mode:'stand'});p.home={x:p.x,y:p.y,z:p.z,yaw:p.yaw};
+   const before=v.vLong;people.hit(p,{veh:v,fx,fz,rx,rz,v:10,kind:'player'});const after=v.vLong,kick={heave:v.sus.zv,pitch:v.sus.thv,roll:v.sus.phv},bump=v.bumpHit;
+   for(let i=0;i<35;i++){v.update(1/120,{throttle:0,brake:0,steer:0});people.bodies.update(1/120);}
+   v.place(sim.player.model.root);sim.player.model.root.visible=true;sim.player.model.root.updateMatrixWorld(true);sim.player.cockpit.setVisible(true);sim.player.cockpit.setDetail(true);sim.player.driver.head.visible=cam!=='cockpit';
+   sim.G.cam=sim.G.userCam=cam;sim.G.resultPhotoPending=false;const camera=sim.camera,body=sim.player.model.body,root=sim.player.model.root;
+   if(cam==='cockpit'){camera.position.copy(sim.player.cockpit.eye).add(new THREE.Vector3(0,.02,0));body.localToWorld(camera.position);body.getWorldQuaternion(camera.quaternion);camera.quaternion.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.045,0,0,'YXZ')));camera.fov=62;camera.near=.05;}
+   else{camera.position.set(-.5,2.3,6);root.localToWorld(camera.position);const target=new THREE.Vector3(0,.8,-.7);root.localToWorld(target);camera.lookAt(target);camera.fov=62;camera.near=.15;}
+   camera.updateProjectionMatrix();sim.render();return{cam,before,after,kick,bump,car:[v.x,v.y,v.z],camera:camera.position.toArray(),activeBodies:people.bodies.bodies.filter(b=>b.active).length,body:Array.from(people.bodies.bodies.find(b=>b.active).p.slice(0,12)),png:sim.renderer.domElement.toDataURL('image/png')};
+  },cam);delete feedback.png;report.feedback.push(feedback);assert(feedback.after<feedback.before);assert(feedback.activeBodies>0);
     const png=await page.evaluate(()=>{__sim.render();return __sim.renderer.domElement.toDataURL('image/png');});
     await fs.writeFile(path.join(out,`impact-${cam}.png`),Buffer.from(png.split(',')[1],'base64'));
    }
