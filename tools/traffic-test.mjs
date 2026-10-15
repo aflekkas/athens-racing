@@ -151,11 +151,28 @@ test('a hard-hit car settles as a wreck with hazards instead of resuming its dri
 test('hard bike contact emits one rider ejection and gives the bike its own tumble', () => {
   const {T,c}=world();c.type={id:'moto',scooter:true};
   const B={vs:15,vu:2,w:.5,phi:.1};
-  T.hitCar(c,B,2,'front',0);assert.equal(c.rider,undefined);
+  T.hitCar(c,B,2,'front',0);assert.equal(c.rider,null);
   T.hitCar(c,B,8,'left',0);assert.ok(c.rider);assert.ok(c.crash.rollV>1);
   assert.equal(T.sounds.filter(e=>e.kind==='rider-thrown').length,1);
   assert.equal(T.sounds.find(e=>e.kind==='rider-thrown').target,'rider');
   const seed=c.rider;T.hitCar(c,B,10,'front',0);assert.equal(c.rider,seed);
   assert.equal(T.sounds.filter(e=>e.kind==='rider-thrown').length,1);
   T.repair(c);assert.equal(c.rider,null);
+});
+
+test('recovery, repair and reset clear ejected rider state and restore the attached rider', () => {
+  for (const action of ['initDrive','repair','reset']) {
+    const {T,c}=world(), attached={name:'attached-rider',visible:false};
+    c.m.root.traverse=fn=>fn(attached);
+    const body={kind:'rider',owner:c.id,active:true};
+    Object.assign(c,{rider:{age:1},riderDrawn:{},riderBody:body,riderHidden:true});
+    T.disabled=true;T.proxies={begin(){},end(){}};T.updateCones=()=>{};
+    T[action](action==='reset'?0:c);
+    for(const key of ['rider','riderDrawn','riderBody'])assert.equal(c[key],null,action+' '+key);
+    assert.equal(body.active,false);assert.equal(c.riderHidden,false);assert.equal(attached.visible,true);
+  }
+});
+test('rider cleanup does not deactivate a pool body reassigned to another owner',()=>{
+ const {T,c}=world();c.riderBody={kind:'rider',owner:99,active:true};const b=c.riderBody;
+ T.initDrive(c);assert.equal(b.active,true);assert.equal(c.riderBody,null);
 });

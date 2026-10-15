@@ -209,7 +209,7 @@ export class Traffic {
   // ---------------------------------------------------------------- spawning
   reset(ps) {
     this.proxies.begin(); this.proxies.end();
-    for (const c of this.cars) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; c.rider = null; c.riderDrawn = null; }
+    for (const c of this.cars) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; this.clearRider(c); }
     for (const k of this.cones) { k.s = k.s0; k.u = k.u0; k.y = 0; k.vs = k.vu = k.vy = 0; k.rx = k.rz = 0; k.w = 0; k.hit = false; }
     this.honks.length = 0; this.sounds.length = 0; this.lastBus = -1e9;
     if (!this.disabled) {
@@ -222,7 +222,7 @@ export class Traffic {
 
   /** a pooled car comes back as a new one: straighten its panels */
   repair(c) {
-    c.dmg = 0; c.rider = null; c.riderDrawn = null;
+    c.dmg = 0; this.clearRider(c);
     if (c.dz) for (const z in c.dz) { if (c.dz[z]) c.m.setDamage?.(z, 0); c.dz[z] = 0; }
     c.flash.emissiveIntensity = 0;
   }
@@ -263,7 +263,16 @@ export class Traffic {
     if (arch === 'courteous') D.indicate = Math.max(D.indicate, 0.9);
   }
 
+  clearRider(c) {
+    const b = c.riderBody;
+    if (b?.kind === 'rider' && b.owner === c.id) b.active = false;
+    c.rider = c.riderDrawn = c.riderBody = null;
+    if (c.riderHidden) c.m.root.traverse(o => { if (o.name === 'attached-rider') o.visible = true; });
+    c.riderHidden = false;
+  }
+
   initDrive(c, keepDrv = true) {
+    this.clearRider(c);
     if (!keepDrv || !c.drv) this.personality(c);
     Object.assign(c, {
       mode: 'drive', uT: c.u, uv: 0, acc: 0, accT: 0, lcEval: this.rng.range(0.2, 1.2), lcT: 0, lcDelay: 0, blinkSide: 0, hazard: false,
@@ -458,7 +467,7 @@ export class Traffic {
       }
       c.heldT = held ? c.heldT + dt : Math.max(0, c.heldT - dt * 2);
       // a wreck the field has been stuck behind is towed away
-      if (c.crash && c.crash.wreck && c.heldT > 10) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; }
+      if (c.crash && c.crash.wreck && c.heldT > 10) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; this.clearRider(c); }
     }
   }
 

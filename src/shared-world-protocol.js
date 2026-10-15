@@ -25,8 +25,10 @@ export function packCar(traffic, c) {
 }
 export function packCone(k, id) { return [id, ...['s', 'u', 'y', 'vs', 'vu', 'vy'].map(key => quantize(k[key])), ...['rx', 'rz', 'w'].map(key => quantize(k[key], 1000))]; }
 const integers = row => row.every(n => Number.isSafeInteger(n) && Math.abs(n) <= 2e9);
+// Rider coordinates use centimetres: allow 100 km of road and elevations up to
+// 2 km in either direction; yaw permits repeated turns but rejects corrupt seeds.
 export function validCarRow(row) {
-  return Array.isArray(row) && (row.length === 24 || row.length === 32) && (row.length === 24 || Math.abs(row[25]) <= 100000 && row[28] >= -20000 && row[28] <= 20000 && Math.abs(row[29]) <= 20000 && row[30] >= 0 && row[30] <= 2000 && row[31] >= 0 && row[31] <= 360000) && integers(row) && row[0] >= 0 && row[0] < WORLD_IDS && Math.abs(row[2]) <= 100000 && Math.abs(row[3]) <= 20000 && Math.abs(row[4]) <= 20000 && Math.abs(row[6]) <= 50000 && Math.abs(row[7]) <= 10000 && Math.abs(row[8]) <= 20000 && Math.abs(row[12]) === 1 && row[13] >= 0 && row[13] <= 2047 && (row[0] >= WORLD_CARS || row[13] <= 31) && row.slice(16, 20).every(n => n >= 0 && n <= 1000) && row[20] >= 0 && row[20] <= 7;
+  return Array.isArray(row) && (row.length === 24 || row.length === 32) && (row.length === 24 || Math.abs(row[24]) <= 10000000 && Math.abs(row[25]) <= 100000 && Math.abs(row[26]) <= 200000 && Math.abs(row[27]) <= 100000 && row[28] >= -20000 && row[28] <= 20000 && Math.abs(row[29]) <= 20000 && row[30] >= 0 && row[30] <= 2000 && row[31] >= 0 && row[31] <= 360000) && integers(row) && row[0] >= 0 && row[0] < WORLD_IDS && Math.abs(row[2]) <= 100000 && Math.abs(row[3]) <= 20000 && Math.abs(row[4]) <= 20000 && Math.abs(row[6]) <= 50000 && Math.abs(row[7]) <= 10000 && Math.abs(row[8]) <= 20000 && Math.abs(row[12]) === 1 && row[13] >= 0 && row[13] <= 2047 && (row[0] >= WORLD_CARS || row[13] <= 31) && row.slice(16, 20).every(n => n >= 0 && n <= 1000) && row[20] >= 0 && row[20] <= 7;
 }
 export function validConeRow(row) { return Array.isArray(row) && row.length === 10 && integers(row) && row[0] >= 0 && row[0] < WORLD_CONES && Math.abs(row[2]) <= 100000 && row.slice(4, 7).every(n => Math.abs(n) <= 20000); }
 export function worldPackets(base, rows, cones) {

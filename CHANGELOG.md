@@ -8,6 +8,10 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Garage trim changes keep drag rotation working, and slow touch drags rotate your car.
+  ![The garage after changing trims and rotating the car](assets/changelog/2026.10.15.3/garage-rotation.webp "Rotate your car after choosing another trim.")
+- Scooter riders return correctly when traffic recovers after a crash.
+
 - Welcome to ATHENS RACING: a new name and bold A-and-red-slash logo. Your saved progress stays with you.
   ![The ATHENS RACING title screen](assets/changelog/2026.10.15.3/athens-racing-title.webp "ATHENS RACING. Real roads. Nothing but time.")
 

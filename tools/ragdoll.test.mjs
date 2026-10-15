@@ -87,3 +87,14 @@ test('struck anchor stays empty while the fallen body settles, then becomes avai
  People.prototype.updateAnchors.call(world,100);assert.equal(spawned,0);
  world.t=13;People.prototype.updateAnchors.call(world,100);assert.equal(spawned,1);
 });
+
+test('rider road position, height and yaw reject excessive values in either direction',()=>{
+ const row=Array(32).fill(0);row[12]=1;
+ for(const [slot,limit] of [[24,10000000],[26,200000],[27,100000]]) {
+  for(const sign of [-1,1]) {
+   row[slot]=sign*limit;assert.equal(validCarRow(row),true);
+   row[slot]=sign*(limit+1);assert.equal(validCarRow(row),false);
+  }
+  row[slot]=0;
+ }
+});
