@@ -9,7 +9,7 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 ## Unreleased
 
 - Release notes now include photos you can open full screen.
-  ![Engine trims pictured in the release notes](assets/changelog/2026.10.15.3/golf-trims.webp "Open release photos for a closer look.")
+  ![The release notes screen with photos, captions and player-facing changes](assets/changelog/2026.10.15.3/release-gallery.webp "Browse release photos and open them full screen.")
 
 <!-- Add bullets here as work lands. The automatic release train cuts a version from this section, e.g.
 ## 2026.10.16.1 — 2026-10-16

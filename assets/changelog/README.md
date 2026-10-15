@@ -9,5 +9,6 @@ Real in-game screenshots, inspected before inclusion, converted to 1280 px wide 
 | 2026.10.15.2/rivals.webp | .scratch/hud-sway/cockpit-007.png | Rivals visible from the cockpit |
 | 2026.10.15.1/garage.webp | .scratch/car-trims-2/garage-mini-convertible-cooper.png | Garage car and paint choices |
 | 2026.10.14.1/riviera.webp | .scratch/play-every-model/bus-riviera-chase.png | Riviera roadside and coastline |
+| 2026.10.15.3/release-gallery.webp | .scratch/release-notes/pictures/gallery-source-1280.png, build e520f68; crop y64–754 | Photo release notes for Unreleased (top account strip and bottom offline status excluded) |
 
 Keep filenames stable: a later release may reuse an earlier screenshot. See deploy/README.md and CONTRIBUTING.md for the Unreleased workflow and automated limits.
