@@ -6,8 +6,8 @@ import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 // ---------------------------------------------------------------- graphics presets
 // A preset (settings.graphics) picks a LIGHTING level, an EFFECTS level, the world's scenery tier, the render
 // resolution and the draw distance. Lighting, effects, resolution and draw distance can each be overridden in
-// Settings > Graphics ('preset' = follow the preset). Nothing changes behind the player's back at runtime: there is
-// no adaptive resolution and no silent tier switching. Everything applies live (main.js).
+// Settings > Graphics ('preset' = follow the preset). Dynamic resolution may temporarily lower resolution within the selected ceiling.
+// Lighting and scenery tiers stay fixed. Everything applies live (main.js).
 //
 // LIGHTING: shadow: [sun shadow box half-size m, map size] (null = no shadow maps) · shadowEvery: re-render the sun
 //   shadow map every n frames · probeEvery: car reflection probe face cadence in frames (0 = frozen sky reflection)

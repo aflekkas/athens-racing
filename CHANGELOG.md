@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Turn dynamic resolution on or off in Video settings; the road can adapt under load while the HUD stays sharp.
+  ![Dynamic resolution enabled in the Video settings](assets/changelog/2026.10.15.3/dynamic-resolution.webp "The picture adapts. Your HUD stays sharp.")
+
 - The title screen returns to the large Play card and four menu cards, with the logo on the left. It fits smaller screens while keeping account access and version links.
   ![The restored Athens Racing title with its five menu cards](assets/changelog/2026.10.15.3/title-night-restored.webp "The night design returns.")
 

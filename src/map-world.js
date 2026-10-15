@@ -138,6 +138,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, tyreWalls: custom?.tyreWalls,
       dispose() {
         if (disposed) return; disposed = true;
+        people.bodies.dispose?.();
         // Damage fragments are parented directly to scene, outside this map root.
         for (const car of traffic.cars) car.m?.disposeDamage?.();
         const counts = disposeMapGroup(group, scene);

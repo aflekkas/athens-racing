@@ -5,7 +5,7 @@ import { readFile, writeFile, readdir, unlink } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 export async function bundleBrowser(root, out) {
   const result = await build({
-    absWorkingDir: root, entryPoints: ['src/main.js', 'src/ui/phone-wheel-controller.js', ...(await readFile(resolve(root, 'src/world-worker.js')).then(() => ['src/world-worker.js']).catch(() => []))], outdir: resolve(out, 'src'),
+    absWorkingDir: root, entryPoints: ['src/main.js', 'src/ui/phone-wheel-controller.js', ...(await readFile(resolve(root, 'src/ragdoll-worker.js')).then(() => ['src/ragdoll-worker.js']).catch(() => [])), ...(await readFile(resolve(root, 'src/world-worker.js')).then(() => ['src/world-worker.js']).catch(() => []))], outdir: resolve(out, 'src'),
     entryNames: '[name]-[hash]', chunkNames: 'chunk-[hash]', bundle: true, splitting: true,
     format: 'esm', platform: 'browser', target: 'es2022', minify: true, keepNames: true,
     metafile: true, legalComments: 'eof',
@@ -34,6 +34,8 @@ export async function bundleBrowser(root, out) {
   const index = resolve(out, 'index.html'), html = await readFile(index, 'utf8');
   if (!html.includes('src="./src/main.js"')) throw new Error('Browser module entry missing from index');
   await writeFile(index, html.replace('src="./src/main.js"', `src="${path}"`));
+  const ragdoll = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/ragdoll-worker.js')?.[0];
+  if (ragdoll) await writeFile(resolve(out, 'src/ragdoll-worker.js'), `export * from './${relative(resolve(out, 'src'), resolve(root, ragdoll)).split(sep).join('/')}';\n`);
   const wheel = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/ui/phone-wheel-controller.js')?.[0];
   if (!wheel) throw new Error('Phone wheel bundle entry missing');
   const wheelHtml = resolve(out, 'src/ui/phone-wheel.html');

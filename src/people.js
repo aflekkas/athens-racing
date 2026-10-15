@@ -279,7 +279,7 @@ export class People {
       A.kind = a.kind; A.x = v.x; A.z = v.z; A.s = v.s; A.u = v.u; A.fx = -Math.sin(v.yaw); A.fz = -Math.cos(v.yaw); A.rx = Math.cos(v.yaw); A.rz = -Math.sin(v.yaw);
       A.v = Math.abs(v.vLong); A.halfL = v.halfL; A.halfW = v.halfW; A.veh = v;
     });
-    for (const b of this.bodies.bodies) if (b.kind !== 'rider') b.update(dt, this._impactGround);
+    for (const b of this.bodies.bodies) if (b.kind !== 'rider') this.bodies.advanceBody(b, dt);
     this.bodies.render();
     this.onRoad.length = 0;
     const f = this._f, cx = camPos.x, cz = camPos.z, frame = this.frame;

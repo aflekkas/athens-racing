@@ -90,3 +90,15 @@ test('actual main HUD override takes chosen vehicle instruments and target finis
   Function('multiplayer', 'pv', 'player', 'remoteCars', 'st', '$', 'document', 'speedIn', 'speedLimitAt', 'map', `let pos; ${body}`)(multiplayer, local, { veh: local }, new Map([['target', car]]), st, () => element, { querySelector: () => element }, v => v, () => 50, {});
   assert.equal(st.rpm, 4200); assert.equal(st.kmh, 90); assert.equal(st.gearLabel, '3'); assert.equal(st.redline, 6500); assert.equal(st.time, 12.3); assert.equal(st.s, 70); assert.equal(st.manual, true); assert.equal(st.gapUnit, 'm'); assert.equal(element.textContent, '/3');
 });
+
+test('objective HUD skips identical writes and restores content after another screen replaces its DOM',()=>{
+ const source=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
+ const line=source.split('\n').find(line=>line.includes('const content = drivingModeHud('));
+ const render=Function('box','drivingModeHud','objective','objectiveRoutes','selectedPose','notifications','objectiveNotice',line);
+ let writes=0,value='',child=null;
+ const box={classList:{toggle(){}},get firstChild(){return child;},get innerHTML(){return value;},set innerHTML(html){writes++;value=html;child={};}};
+ const update=()=>render(box,()=>'<span>Turn left</span>',{},[],{}, {dismiss(){}},()=>{});
+ update();update();assert.equal(writes,1);
+ box.innerHTML='<header>A different event</header>';update();
+ assert.equal(writes,3);assert.equal(value,'<span>Turn left</span>');update();assert.equal(writes,3);
+});

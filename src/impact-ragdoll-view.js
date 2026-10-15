@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { createHumanRig, makeLook } from './human.js';
 import { RNG } from './util.js';
+import { RagdollClient } from './ragdoll-client.js';
 import { PARENTS, RagdollPool } from './impact-ragdoll.js';
 // Three prebuilt pairs of skinned meshes, reusing crowd clothing and hair. No per-frame mesh creation.
 export class ImpactBodies extends RagdollPool {
  constructor(scene,ground){
-  super();this.ground=ground;this.v=new THREE.Vector3();this.d=new THREE.Vector3();this.inv=new THREE.Quaternion();this.side=new THREE.Vector3();this.up=new THREE.Vector3();this.forward=new THREE.Vector3();this.basis=new THREE.Matrix4();
+  super();this.workerSim=new RagdollClient(ground);this.ground=ground;this.v=new THREE.Vector3();this.d=new THREE.Vector3();this.inv=new THREE.Quaternion();this.side=new THREE.Vector3();this.up=new THREE.Vector3();this.forward=new THREE.Vector3();this.basis=new THREE.Matrix4();
   for(const b of this.bodies){
    const L=makeLook(new RNG(71),'street');Object.assign(L,{hat:null,bag:false,phone:false,cup:false,umbrella:false,skirt:false,role:'street'});
    const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.8,transparent:true});
@@ -27,7 +28,9 @@ export class ImpactBodies extends RagdollPool {
   b.borrowedRig=null;b.rig=b.pedRig;b.look=b.pedLook;
  }
  spawn(o){
-  const b=super.spawn(o);b.rig.mesh.visible=false;this.release(b);
+  // Pool eviction must see current ages/activity, even when a worker checkpoint is behind.
+  if(this.workerSim.jobs.size)this.workerSim.fallback();
+  const b=super.spawn(o);this.workerSim.reset(b);b.rig.mesh.visible=false;this.release(b);
   b.rig=o.kind==='rider'?b.riderRig:o.rig||b.pedRig;b.look=o.kind==='rider'?b.riderLook:o.rig?o.look:b.pedLook;
   if(o.rig){b.borrowedRig=o.rig;o.rig.mesh.material=b.pedRig.mesh.material;for(const c of o.rig.mesh.children)if(!c.isBone)c.visible=false;}
   b.rig.mesh.visible=true;b.helmet.visible=o.kind==='rider';return b;
@@ -36,7 +39,7 @@ export class ImpactBodies extends RagdollPool {
   for(const b of this.bodies){
    b.pedRig.mesh.visible=b.riderRig.mesh.visible=false;
    const {mesh,bones}=b.rig;mesh.visible=b.active;if(!b.active){this.release(b);continue;}
-   mesh.material.opacity=b.opacity;const p=b.p,k=b.look.k;
+   mesh.material.opacity=b.opacity;const p=this.workerSim.positions(b),k=b.look.k;
    mesh.position.set(0,0,0);mesh.rotation.set(0,0,0);mesh.scale.setScalar(k);
    for(let i=0;i<16;i++){
     const parent=PARENTS[i],child=i===0?1:i===1?2:i===2?3:i===4?5:i===5?6:i===7?8:i===8?9:i===10?11:i===11?12:i===13?14:i===14?15:-1;
@@ -58,6 +61,8 @@ export class ImpactBodies extends RagdollPool {
    mesh.updateMatrixWorld(true);
   }
  }
- update(dt){super.update(dt,this.ground);this.render();}
- clear(){super.clear();this.render();}
+ advanceBody(b,dt){this.workerSim.advance(b,dt);}
+ update(dt){for(const b of this.bodies)this.advanceBody(b,dt);this.render();}
+ dispose(){this.workerSim.clear();}
+ clear(){this.workerSim.clear();super.clear();this.render();}
 }

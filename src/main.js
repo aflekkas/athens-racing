@@ -1,3 +1,5 @@
+import { CpuMetrics } from './cpu-metrics.js';
+import { RenderScale } from './render-scale.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
 import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
@@ -94,6 +96,8 @@ window.addEventListener('error', (e) => fail(e.error || e.message));
 const lstat = (t, f) => loading.progress(t, f); // the loading screen (src/ui/loading.js)
 
 // ------------------------------------------------------------------ renderer
+const cpuMetrics = new CpuMetrics(Q.has('cpuProfile'));
+window.__cpuMetrics = cpuMetrics;
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
 let graphicsPreference = Q.get('quality') || 'auto';
@@ -102,7 +106,7 @@ const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_rendere
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 graphicsPreference = await firstQualityPreference(graphicsPreference, { gpuName });
 // One fixed preset, chosen once: an unset (or legacy 'auto') preference settles on the device heuristic's pick and is
-// stored, so Settings always shows the preset that is actually running. Nothing adapts behind the player's back.
+// stored, so Settings always shows the preset that is actually running. Dynamic resolution is controlled separately in Video settings.
 if (!PRESETS[graphicsPreference]) graphicsPreference = detectQuality('auto', gpuName, navigator.userAgent);
 setSetting('graphics', graphicsPreference);
 // GFX: what the preset + the Lighting / Effects / Resolution / Draw distance overrides resolve to (graphics.js)
@@ -117,7 +121,7 @@ for (const value of [...PRESET_IDS].reverse()) { const option = document.createE
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
 graphicsControl.onchange = () => applyQualityTier(graphicsControl.value);
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
-const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles }));
+const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2) }));
 perfOverlay.setVisible(settings.perfOverlay === true);
 onSettings((st, key) => { if (key === 'perfOverlay' || !key) perfOverlay.setVisible(st.perfOverlay === true); });
 addEventListener('keydown', (e) => {
@@ -125,6 +129,11 @@ addEventListener('keydown', (e) => {
   e.preventDefault(); setSetting('perfOverlay', !(settings.perfOverlay === true));
 });
 let pixelRatio = GFX.pixelRatio;
+let dynamicScale = makeDynamicScale();
+function makeDynamicScale() {
+  const floor = { potato: .83, low: .75, med: .65, high: .6, ultra: .55 }[GFX.preset];
+  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: 1200 / (settings.frameCap || 60) });
+}
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -240,10 +249,11 @@ function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.posi
 setDrawDistance(+Q.get('draw') || GFX.drawDistance, GFX.horizon, GFX.detail);
 // lower presets cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
-const GRAPHICS_KEYS = new Set(['graphics', 'lighting', 'effects', 'renderScale', 'drawDistance']);
+const GRAPHICS_KEYS = new Set(['graphics', 'lighting', 'effects', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
 /** re-resolve the graphics settings and apply whatever changed, live (no reload, the world is kept) */
 function applyGraphics(key) {
   const prev = GFX; GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
+  dynamicScale = makeDynamicScale();
   graphicsPreference = GFX.preset; graphicsControl.value = GFX.preset;
   if (key === 'graphics') { const url = new URL(location.href); if (url.searchParams.has('quality')) { url.searchParams.set('quality', GFX.preset); history.replaceState(null, '', url); } }
   quality = GFX.preset; sceneryQuality = GFX.scenery; lowGraphics = GFX.E.simple;
@@ -1861,7 +1871,8 @@ const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
 let last = 0, frameN = 0;
 const events = [];
 const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
-const sunScreen = new THREE.Vector3();
+const sunScreen = new THREE.Vector3(), driverAcc = { x: 0, y: 0, z: 0 };
+const bootFrameLog = text => { if (frameN === 1) tlog(text); };
 function frame(now) {
   requestAnimationFrame(frame);
   // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
@@ -1870,11 +1881,16 @@ function frame(now) {
   // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery).
   const cap = settings.frameCap;
   if (cap > 0 && !Q.has('fixeddt') && now >= last && now - last < 800 / cap) return;
+  const cpuFrameStart = cpuMetrics.start();
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;
   if (Q.has('fixeddt')) dt = 1 / 60;
   G.lastDt = dt;
-  perfOverlay.frame(dt);
+  if (settings.dynamicResolution && !document.hidden && !Q.has('fixeddt') && (G.state === 'race' || G.state === 'onlineRace')) {
+    const ratio = dynamicScale.sample(wallDt * 1000);
+    if (ratio !== null && ratio !== pixelRatio) { pixelRatio = ratio; onResize(); post?.resetHistory(); }
+  }
+  perfOverlay.frame(wallDt);
   G.fps = G.fps ? G.fps * 0.95 + 0.05 / Math.max(1e-3, (now - (G.lastNow || now - 16)) / 1000) : 60; G.lastNow = now;
   const reps = +(Q.get('turbo') || 1);
   const slices = Math.max(1, Math.ceil(dt / (1 / 60)));
@@ -1887,6 +1903,7 @@ function frame(now) {
     updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden, spectating: !!watching, towLabel: bindingLabel(controls.bindings, 'tow', activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
   }
+  cpuMetrics.frame(cpuFrameStart);
 }
 
 function step(dt, draw = true) {
@@ -1894,7 +1911,6 @@ function step(dt, draw = true) {
   if (!(dt > 0) || mapSwitch) return;
   if (!world || !player || G.state === 'menu') { readInput(dt); return; }
   G.t += dt; frameN++;
-  const bootFrameLog = text => { if (frameN === 1) tlog(text); };
   bootFrameLog('first-frame');
   readInput(dt);
   if (multiplayer.active && inMenu() && G.pFinish == null) { player.veh.vLong = player.veh.vLat = player.veh.w = 0; player.veh.syncWheels(); }
@@ -1908,7 +1924,9 @@ function step(dt, draw = true) {
   onlineWorldVisibility(multiplayer.active, { people, fx, splash }); setOnlineWeather(multiplayer.active);
   sharedWorld.update(dt);
   if (multiplayer.active && multiplayer.lobby.startAt) signals.t = (multiplayer.now() - multiplayer.lobby.startAt) / 1000 - dt;
+  const cpuSignals = cpuMetrics.start();
   if (simulate || multiplayer.active) signals.update(dt, pv.s, camera.position);
+  cpuMetrics.end('signals', cpuSignals);
   world?.tyreWalls?.update(simulate ? dt : 0, multiplayer.active);
   if (simulate) {
     // ---- state machine
@@ -1952,7 +1970,9 @@ function step(dt, draw = true) {
       if (holdingRecovery) { pin = { throttle: 0, brake: 1, steer: 0, handbrake: true, nitro: false }; towOffer.hold = Math.max(0, towOffer.hold - dt); }
       pv.dragMul = 1 - 0.32 * (G.draft || 0);
       const snapP = Q.has('nantrap') ? JSON.stringify({ x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw, vL: pv.vLong, vLat: pv.vLat, w: pv.w, pin, ai: player.ai }) : '';
+      const cpuPhysics = cpuMetrics.start();
       pv.update(dt, pin);
+      cpuMetrics.end('playerPhysics', cpuPhysics);
       if (inFreeRoam() && route.closed) pv.s = route.wrap(pv.s); // untimed traffic stays in the same lap coordinates
       // A recovery hold is a time cost even on a slope or with a held throttle; suspension still settles.
       if (recoveryPose) restoreVehicleState(pv, { ...recoveryPose, vLong: 0, vLat: 0, w: 0, lastV: 0 });
@@ -1963,7 +1983,9 @@ function step(dt, draw = true) {
       if (pv.nitroOn && !G.nitroWas) audio.nitroStart();
       G.nitroWas = pv.nitroOn;
       if (!multiplayer.active) {
+      const cpuRivals = cpuMetrics.start();
       updateGrid(dt); // the AI field: racing lines, traffic, red lights (offline)
+      cpuMetrics.end('rivals', cpuRivals);
       }
       // ---- stop lines: camera or police witness, with optional game-time laws
       const D = G.dir || 1, pf = pv.s + D * pv.halfL, rf = rv.s + rv.halfL;
@@ -1974,7 +1996,9 @@ function step(dt, draw = true) {
       _actors.length = multiplayer.active ? 1 : 1 + grid.length;
       if (!multiplayer.active) for (let i = 0; i < grid.length; i++) _actors[i + 1] = grid[i].actor;
       const actors = _actors;
+      const cpuTraffic = cpuMetrics.start();
       if (!multiplayer.active) traffic.update(dt, pv.s, actors);
+      cpuMetrics.end('traffic', cpuTraffic);
       events.length = 0;
       if ((!multiplayer.active || multiplayer.lobby.traffic || police?.enabled) && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
       // out of sight a rival is not held up by traffic (they know these roads); in sight they race for real (updateGrid)
@@ -1992,7 +2016,9 @@ function step(dt, draw = true) {
       }
       // Online the units are shared (src/mp-shared-world.js); this client judges only its own driver.
       if (police && multiplayer.active && police.enabled && !sharedWorld.authority) traffic.setRacers(actors);
+      const cpuPolice = cpuMetrics.start();
       if (police) for (const e of police.update(dt, { events, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
+      cpuMetrics.end('police', cpuPolice);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
       for (const h of traffic.honks) handleHonk(h);
@@ -2033,7 +2059,7 @@ function step(dt, draw = true) {
     }
   }
   // ---- people (they live on during the countdown too)
-  if (simulate && !multiplayer.active) { people.update(dt, peopleS(pv.s), ACTORS, camera.position); police?.pedEvents(people.events); handlePeople(); }
+  if (simulate && !multiplayer.active) { const cpuPeople = cpuMetrics.start(); people.update(dt, peopleS(pv.s), ACTORS, camera.position); police?.pedEvents(people.events); handlePeople(); cpuMetrics.end('people', cpuPeople); }
   // ---- next traffic light: HUD, green-man ticker, nitro top-up while waiting at red
   {
     const nj = signals.next(pv.s + pv.halfL, 1);
@@ -2059,7 +2085,7 @@ function step(dt, draw = true) {
   }
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
-  const acc = { x: pv.ay, y: 0, z: -pv.ax };
+  const acc = driverAcc; acc.x = pv.ay; acc.z = -pv.ax;
   // the full cabin only where a camera can see it: cockpit, open tops, close orbit views and camera blends
   player.cockpit.setDetail(!(G.cam === 'chase' || G.cam === 'spectate') || !!player.spec.convertible || cameraBlend.active);
   controls.observePhoneWheel(pv);
@@ -2083,6 +2109,7 @@ function step(dt, draw = true) {
   }
   ENV.U.time.value = multiplayer.active && multiplayer.lobby.startAt ? (multiplayer.now() - multiplayer.lobby.startAt) / 1000 : G.t;
   bootFrameLog('frame-visuals');
+  const cpuHud = cpuMetrics.start();
   // HUD
   let gap = NaN, pos = 1, gapUnit = 's';
   if (!multiplayer.active && G.ev && !inFreeRoam()) ({ gap, pos, gapUnit = 's' } = raceGap());
@@ -2120,7 +2147,7 @@ function step(dt, draw = true) {
   swayInput.lookYaw = look.yaw + look.back; swayInput.lookPitch = look.pitch;
   hudSway.update(dt, swayInput);
   if (st.gapUnit) $('gap').textContent = !Number.isFinite(st.gap) ? '—' : `${st.gap >= 0 ? '+' : '−'}${Math.abs(st.gap).toFixed(st.gapUnit === 'm' ? 0 : 2)} ${st.gapUnit}`;
-  for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
+  for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { const hidden = inFreeRoam(); if (el.hidden !== hidden) el.hidden = hidden; const display = hidden ? 'none' : ''; if (el.style.display !== display) el.style.display = display; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
   if (multiplayer.retired && !multiplayer.spectating()) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
   updateLapHud(G.run, !multiplayer.active && !isDrivingMode(G.ev?.def) && !MENU_STATES.includes(G.state));
@@ -2133,13 +2160,16 @@ function step(dt, draw = true) {
     for (const id of ['posBox', 'gapBox', 'timeBox']) { const el = $(id); if (el) { el.hidden = true; el.style.display = 'none'; } }
     if (onlineObjective) {
       const box = $('evBox'), selectedPose = watchedObjective ? remoteCars.get(watchedObjective.id)?.veh : pv;
-      box.innerHTML = drivingModeHud(objective, objectiveRoutes || [], selectedPose); box.classList.toggle('on', !!objective); notifications.dismiss('wrong-way'); objectiveNotice(objective,objectiveRoutes||[],selectedPose);
+      const content = drivingModeHud(objective, objectiveRoutes || [], selectedPose); if (box._objectiveHtml !== content || box._objectiveNode !== box.firstChild) { box.innerHTML = content; box._objectiveHtml = content; box._objectiveNode = box.firstChild; } box.classList.toggle('on', !!objective); notifications.dismiss('wrong-way'); objectiveNotice(objective,objectiveRoutes||[],selectedPose);
     }
   }
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
+  cpuMetrics.end('hud', cpuHud);
   bootFrameLog('frame-hud');
   // audio
+  const cpuAudio = cpuMetrics.start();
   updateAudio(dt);
+  cpuMetrics.end('audio', cpuAudio);
   pv.shiftEvent = 0; rv.shiftEvent = 0; for (const c of grid) c.veh.shiftEvent = 0;
   // post FX
   const u = post.u;
@@ -2151,7 +2181,9 @@ function step(dt, draw = true) {
   const vis = sunScreen.z < 1 && Math.abs(sunScreen.x) < 1.2 && Math.abs(sunScreen.y) < 1.2 ? 1 - Math.max(Math.abs(sunScreen.x), Math.abs(sunScreen.y)) / 1.2 : 0;
   u.uSun.value.set(sunScreen.x * 0.5 + 0.5, sunScreen.y * 0.5 + 0.5, vis * 0.8);
   bootFrameLog('frame-draw');
+  const cpuRender = cpuMetrics.start();
   if (draw && (multiplayer.panel.hidden || G.resultPhotoPending)) render();
+  cpuMetrics.end('renderSubmission', cpuRender);
   bootFrameLog('frame-done');
 }
 

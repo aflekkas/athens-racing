@@ -1,0 +1,102 @@
+TAP version 13
+# Bundled browser: 4 inputs, 4 ESM chunks, 613 bytes
+# Subtest: production chunks preserve source-relative resources and lazy imports while dev sources survive
+ok 1 - production chunks preserve source-relative resources and lazy imports while dev sources survive
+  ---
+  duration_ms: 258.641035
+  type: 'test'
+  ...
+# Bundled browser: 4 inputs, 5 ESM chunks, 363 bytes
+# Subtest: every map bake points to the published world worker, including Megara
+ok 2 - every map bake points to the published world worker, including Megara
+  ---
+  duration_ms: 120.367473
+  type: 'test'
+  ...
+# Subtest: Graphics menu writes preset, lighting, effects and a fixed resolution independently without the legacy reload control
+ok 3 - Graphics menu writes preset, lighting, effects and a fixed resolution independently without the legacy reload control
+  ---
+  duration_ms: 6.269604
+  type: 'test'
+  ...
+# Subtest: Graphics tab lists five presets, lighting and effects levels, and an explicit dynamic resolution switch
+ok 4 - Graphics tab lists five presets, lighting and effects levels, and an explicit dynamic resolution switch
+  ---
+  duration_ms: 8.600678
+  type: 'test'
+  ...
+# Subtest: Potato is genuinely minimal and presets never resolve to automatic behaviour
+ok 5 - Potato is genuinely minimal and presets never resolve to automatic behaviour
+  ---
+  duration_ms: 2.347184
+  type: 'test'
+  ...
+# Subtest: Dynamic resolution is on by default, persisted and controllable independently of the ceiling
+ok 6 - Dynamic resolution is on by default, persisted and controllable independently of the ceiling
+  ---
+  duration_ms: 1.214004
+  type: 'test'
+  ...
+# Subtest: chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets
+ok 7 - chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets
+  ---
+  duration_ms: 11.039673
+  type: 'test'
+  ...
+# Subtest: target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state
+ok 8 - target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state
+  ---
+  duration_ms: 5.730269
+  type: 'test'
+  ...
+# Subtest: finish order uses recorded times; running gaps never divide by speed
+ok 9 - finish order uses recorded times; running gaps never divide by speed
+  ---
+  duration_ms: 1.16429
+  type: 'test'
+  ...
+# Subtest: recovery has no forward gift and cannot cross the next checkpoint in either direction
+ok 10 - recovery has no forward gift and cannot cross the next checkpoint in either direction
+  ---
+  duration_ms: 0.36492
+  type: 'test'
+  ...
+# Subtest: a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock
+ok 11 - a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock
+  ---
+  duration_ms: 124.003809
+  type: 'test'
+  ...
+# Subtest: spectator relay is a small immutable axle summary and absence clears old engine telemetry
+ok 12 - spectator relay is a small immutable axle summary and absence clears old engine telemetry
+  ---
+  duration_ms: 0.699704
+  type: 'test'
+  ...
+# Subtest: stationary engine changes relay on the existing capped state cadence
+ok 13 - stationary engine changes relay on the existing capped state cadence
+  ---
+  duration_ms: 4.302758
+  type: 'test'
+  ...
+# Subtest: actual main HUD override takes chosen vehicle instruments and target finish time
+ok 14 - actual main HUD override takes chosen vehicle instruments and target finish time
+  ---
+  duration_ms: 5.864671
+  type: 'test'
+  ...
+# Subtest: objective HUD skips identical writes and restores content after another screen replaces its DOM
+ok 15 - objective HUD skips identical writes and restores content after another screen replaces its DOM
+  ---
+  duration_ms: 2.35611
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 831.63841

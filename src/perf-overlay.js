@@ -27,7 +27,7 @@ export class PerfOverlay {
     const fps = this.acc > 0 ? this.n / this.acc : 0;
     const ms = fps > 0 ? 1000 / fps : 0;
     const tris = s.tris >= 1e6 ? (s.tris / 1e6).toFixed(2) + 'M' : s.tris >= 1e3 ? (s.tris / 1e3).toFixed(0) + 'k' : String(s.tris ?? '?');
-    this.el.textContent = `${fps.toFixed(0)} FPS · ${ms.toFixed(1)} MS · ${s.calls ?? '?'} DRAWS · ${tris} TRIS`;
+    this.el.textContent = `${fps.toFixed(0)} FPS · ${ms.toFixed(1)} MS · ${s.calls ?? '?'} DRAWS · ${tris} TRIS${Number.isFinite(s.scale) ? ' · ' + Math.round(s.scale * 100) + '% SCALE' : ''}`;
     this.acc = 0; this.n = 0;
   }
   dispose() { this.el.remove(); }

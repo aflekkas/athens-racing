@@ -1,0 +1,49 @@
+{
+  "workerMode": false,
+  "frames": 3600,
+  "simulatedSeconds": 60,
+  "warmupSeconds": 10,
+  "scenario": {
+    "map": "riviera",
+    "rivals": 2,
+    "hour": 8.5,
+    "police": true,
+    "maxTraffic": 38,
+    "maxPeds": 23,
+    "ragdolls": 3
+  },
+  "systemCpuMs": {
+    "playerPhysics": 0.1258924999999999,
+    "rivalPlanning": 0.16820805555555549,
+    "rivalPhysics": 0.19708166666666674,
+    "signals": 0.0017197222222222225,
+    "traffic": 0.29308027777777784,
+    "police": 0.029532777777777776,
+    "pedestrians": 0.05264972222222223,
+    "ragdolls": 0.26310527777777787
+  },
+  "systemWallMs": {
+    "playerPhysics": 0.2839355327777821,
+    "rivalPlanning": 0.37973413999999545,
+    "rivalPhysics": 0.47732837861112026,
+    "signals": 0.0051782288888716724,
+    "traffic": 0.6245973686111362,
+    "police": 0.0602549477777883,
+    "pedestrians": 0.10616890111113005,
+    "ragdolls": 0.5570557852777599
+  },
+  "totalCpuMs": 1.1506527777777762,
+  "p95CpuMs": 2.087,
+  "p99CpuMs": 2.801,
+  "framesOver50ms": 0,
+  "gc": {
+    "count": 155,
+    "totalMs": 445.3021551370621,
+    "maxMs": 19.223990082740784
+  },
+  "workerFallback": false,
+  "meanSimCompletionWallMs": 2.546214898333343,
+  "heapBytes": 34431616,
+  "hash": "fc232906ba39612e347d5d5e950d9f16fb50e21fd890edaae74366425d2b092b",
+  "limits": "CPU-only simulation; no DOM, AudioContext, GL, real input-to-photon or browser long-task observation."
+}

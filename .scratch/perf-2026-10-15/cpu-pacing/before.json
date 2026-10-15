@@ -1,0 +1,36 @@
+{
+  "frames": 3600,
+  "simulatedSeconds": 60,
+  "warmupSeconds": 10,
+  "scenario": {
+    "map": "riviera",
+    "rivals": 2,
+    "hour": 8.5,
+    "police": true,
+    "maxTraffic": 38,
+    "maxPeds": 3,
+    "ragdolls": 3
+  },
+  "systemMs": {
+    "playerPhysics": 0.26910070638891487,
+    "rivalPlanning": 0.31303445027777393,
+    "rivalPhysics": 0.3957395677777817,
+    "signals": 0.0018361374999952002,
+    "traffic": 0.4883462683333197,
+    "police": 0.06109523472221655,
+    "pedestrians": 0.07573552694444187,
+    "ragdolls": 0.48130072361111315
+  },
+  "totalMs": 2.1042470861111124,
+  "p95Ms": 7.2613839999994525,
+  "p99Ms": 11.71059399999831,
+  "framesOver50ms": 0,
+  "gc": {
+    "count": 156,
+    "totalMs": 524.8628789186478,
+    "maxMs": 23.870204091072083
+  },
+  "heapBytes": 33763568,
+  "hash": "f7dca31df00b517862c0ab67c17825d71d34a7f22ba463ea2fcbe6ee7a4f6be1",
+  "limits": "CPU-only simulation; no DOM, AudioContext, GL, real input-to-photon or browser long-task observation."
+}

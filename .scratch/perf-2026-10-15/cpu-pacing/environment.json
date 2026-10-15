@@ -1,0 +1,10 @@
+{
+  "node": "v22.23.3",
+  "v8": "12.4.254.21-node.57",
+  "cpu": "AMD EPYC Processor (with IBPB)",
+  "logicalCpus": 8,
+  "platform": "linux",
+  "arch": "x64",
+  "clock": "process.threadCpuUsage (user + system), performance.now separately",
+  "gpu": "SwiftShader; frame times are not hardware-GPU evidence"
+}

@@ -1,3 +1,4 @@
+import { AudioCadence } from './audio-cadence.js';
 import {ExhaustVoice} from './audio/exhaust-voice.js';
 import { MusicSources } from './music-sources.js';
 import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } from './engine-recordings.js';
@@ -214,7 +215,7 @@ export class TyreVoice {
 }
 
 export class Audio {
-  constructor() { this.ctx = null; this.musicOn = false; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.musicSources = new MusicSources(this); this.lifecycle = new EngineLifecycle(this); }
+  constructor() { this.worldCadence = new AudioCadence(); this.worldMuted = null; this.ctx = null; this.musicOn = false; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.musicSources = new MusicSources(this); this.lifecycle = new EngineLifecycle(this); }
 
   start({ context, recordings = true, radio = true } = {}) {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
@@ -520,11 +521,15 @@ export class Audio {
     this.ambLP.frequency.setTargetAtTime(open ? 15000 : 2200, now, 0.2);
     this.engineLP.frequency.setTargetAtTime(open ? 15000 : 3800, now, 0.2);
 
-    this.externalEngines.update(p.rivals, p.traffic, now);
-    this.sirens.update(p.traffic || [], now, mute);
-
-    // ---- map ambience / weather (owns bed levels and sparse natural events)
-    this.weather.update(p, now);
+    const worldMuted = !!(p.muted || p.menuOpen);
+    if (this.worldCadence.sample(now, p.dt, worldMuted !== this.worldMuted)) {
+      this.worldMuted = worldMuted;
+      this.externalEngines.update(p.rivals, p.traffic, now);
+      this.sirens.update(p.traffic || [], now, mute);
+      // Keep natural-event timers in simulation seconds when graph updates are less frequent.
+      const dt = p.dt; p.dt = this.worldCadence.dt;
+      this.weather.update(p, now); p.dt = dt;
+    }
 
     // ---- music ducks under the action (crashes, horns, slides, speed)
     this.duckEv = Math.max(0, this.duckEv - p.dt * 0.7);

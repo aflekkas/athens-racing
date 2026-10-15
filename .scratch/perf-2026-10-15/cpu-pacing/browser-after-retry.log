@@ -1,0 +1,32 @@
+Debugger listening on ws://127.0.0.1:38327/9d2aa7bc-3b2b-4173-b772-4c8d75776d19
+For help, see: https://nodejs.org/learn/getting-started/debugging
+after error Failed to load resource: the server responded with a status of 404 (Not Found)
+after log map 6511 abs 19738
+after log rugged cells 41286 0.9142909646034241
+after log infill buildings 244
+after log traffic+post 98382 abs 111609
+after log textures 101117 abs 114344
+after warning THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+after log compiled 106051 abs 119279
+after log ready 106095 abs 119323
+after loaded
+after scene configured
+after audio input received
+after log first-frame 118642 abs 131869
+after log frame-simulation 118744 abs 131972
+after log frame-visuals 118788 abs 132015
+after log frame-hud 118816 abs 132044
+after log frame-draw 120152 abs 133380
+after log frame-done 120154 abs 133382
+after warmup done
+after measuring 60 s
+after timer finished
+after report read
+{"variant":"after","frames":218,"mainTaskMsPerFrame":49.79148623853211,"errors":["Failed to load resource: the server responded with a status of 404 (Not Found)"]}
+after capturing race
+Debugger attached.
+Debugger ending on ws://127.0.0.1:38327/9d2aa7bc-3b2b-4173-b772-4c8d75776d19
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on ws://127.0.0.1:38327/9d2aa7bc-3b2b-4173-b772-4c8d75776d19
+For help, see: https://nodejs.org/learn/getting-started/debugging

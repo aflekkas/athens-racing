@@ -27,3 +27,12 @@ test('external budget handles absent lists, legacy distance and invalid telemetr
   assert.equal(budget.traffic.size, 0);
   assert.equal(externalEngineWeights().rivals.size, 0);
 });
+
+import { AudioCadence } from '../src/audio-cadence.js';
+test('ambient scheduling is bounded at 30 Hz, preserves elapsed dt and reacts immediately to mute',()=>{
+ const cadence=new AudioCadence();let updates=0,seconds=0;
+ for(let i=0;i<121;i++)if(cadence.sample(i/120,1/120)){updates++;seconds+=cadence.dt;}
+ assert.equal(updates,31);assert.ok(Math.abs(seconds-121/120)<1e-12);
+ assert.equal(cadence.sample(1.001,.001,true),true);assert.equal(cadence.dt,.001);
+ assert.equal(cadence.sample(0,.01),true,'audio context clock restart');
+});

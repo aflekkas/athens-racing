@@ -52,19 +52,26 @@ export class Ragdoll {
    p[a]+=dx*e;p[a+1]+=dy*e;p[a+2]+=dz*e;p[b]-=dx*e;p[b+1]-=dy*e;p[b+2]-=dz*e;
   }
  }
- step(ground) {
-  const p=this.p,q=this.prev;let motion=0;
+ integrate() {
+  const p=this.p,q=this.prev;
   for(let j=0;j<48;j+=3) {
    const vx=(p[j]-q[j])*.997,vy=(p[j+1]-q[j+1])*.997,vz=(p[j+2]-q[j+2])*.997;
    q[j]=p[j];q[j+1]=p[j+1];q[j+2]=p[j+2];p[j]+=vx;p[j+1]+=vy-9.81*STEP*STEP;p[j+2]+=vz;
   }
-  for(let i=0;i<16;i++) this.floor[i]=ground(p[i*3],p[i*3+2],this);
+ }
+ solve() {
+  const p=this.p,q=this.prev;let motion=0;
   for(let n=0;n<10;n++) {this.constrain();this.contacts();}
   // Depenetration at a bumper/glass corner must not become an explosive impulse.
   for(let j=0;j<48;j+=3) q[j+1]=Math.max(q[j+1],p[j+1]-this.maxRise*STEP);
   for(let j=0;j<48;j++)motion+=(p[j]-q[j])**2;
   this.quiet=motion<.000012?this.quiet+STEP:0;
   if(this.quiet>.7&&!this.car)this.sleeping=true;
+ }
+ step(ground) {
+  this.integrate();
+  for(let i=0;i<16;i++) this.floor[i]=ground(this.p[i*3],this.p[i*3+2],this);
+  this.solve();
  }
  contacts() {
   const p=this.p,q=this.prev,C=this.car;
@@ -101,7 +108,7 @@ export class Ragdoll {
    }
   }
  }
- update(dt,ground) {
+ prepareUpdate(dt) {
   if(!this.active)return;this.age+=Math.max(0,dt);
   if(this.age>=LIFE){this.active=false;return;}
   if(this.car?.veh) {
@@ -111,6 +118,10 @@ export class Ragdoll {
   if(this.car&&Math.hypot(this.p[0]-this.car.x,this.p[2]-this.car.z)>(this.car.halfL||2.2)+3)this.car=null;
   if(this.sleeping)return;
   this.acc+=Math.min(.1,Math.max(0,dt));
+  return true;
+ }
+ update(dt,ground) {
+  if(!this.prepareUpdate(dt))return;
   while(this.acc>=STEP){this.step(ground);this.acc-=STEP;}
  }
  get opacity(){return limit(LIFE-this.age,0,1);}

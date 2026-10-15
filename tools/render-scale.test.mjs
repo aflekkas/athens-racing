@@ -33,3 +33,12 @@ test('hitches and hidden-tab gaps are not samples', () => {
   for (let i = 0; i < 500; i++) assert.equal(s.sample(i % 2 ? 900 : 1000 / 60), null);
   assert.equal(s.ratio, 1.5);
 });
+
+test('fractional device ratios and every preset ceiling remain bounded through overload and recovery',()=>{
+ for(const max of [.375,.6,.8,1.1,1.5,2]){
+  const min=Math.min(max,Math.max(.5,max*.55)),s=new RenderScale({max,min});
+  const changes=[...run(s,30,r=>Math.max(1000/60,40*(r/max)**2)),...run(s,90,()=>1000/60)];
+  assert.ok(changes.every(r=>r>=min&&r<=max),`${max}: ${changes}`);
+  assert.equal(s.ratio,max);
+ }
+});

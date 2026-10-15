@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: real transferable worker matches every Float64 and scalar over changing dt, terrain, car contacts and sleep
+ok 1 - real transferable worker matches every Float64 and scalar over changing dt, terrain, car contacts and sleep
+  ---
+  duration_ms: 2302.006875
+  type: 'test'
+  ...
+# Subtest: queue overflow and worker error replay every unacknowledged step exactly
+ok 2 - queue overflow and worker error replay every unacknowledged step exactly
+  ---
+  duration_ms: 7.656154
+  type: 'test'
+  ...
+# Subtest: reset rejects stale worker replies and interpolation never changes authoritative state
+ok 3 - reset rejects stale worker replies and interpolation never changes authoritative state
+  ---
+  duration_ms: 71.769484
+  type: 'test'
+  ...
+# Subtest: unavailable workers keep synchronous behavior and replicated riders never leave main thread
+ok 4 - unavailable workers keep synchronous behavior and replicated riders never leave main thread
+  ---
+  duration_ms: 1.033827
+  type: 'test'
+  ...
+# Subtest: a new impact catches up pending bodies before deterministic pool eviction
+ok 5 - a new impact catches up pending bodies before deterministic pool eviction
+  ---
+  duration_ms: 8.522689
+  type: 'test'
+  ...
+# Subtest: perfOverlay defaults off and persists
+ok 6 - perfOverlay defaults off and persists
+  ---
+  duration_ms: 2.303562
+  type: 'test'
+  ...
+# Subtest: PerfOverlay shows fps/ms/draws at 2 Hz and hides
+ok 7 - PerfOverlay shows fps/ms/draws at 2 Hz and hides
+  ---
+  duration_ms: 1.654642
+  type: 'test'
+  ...
+# Subtest: tex.setAnisotropy clamps to 1..8
+ok 8 - tex.setAnisotropy clamps to 1..8
+  ---
+  duration_ms: 49.103966
+  type: 'test'
+  ...
+# Subtest: Graphics settings video tab offers the overlay toggle
+ok 9 - Graphics settings video tab offers the overlay toggle
+  ---
+  duration_ms: 280.795863
+  type: 'test'
+  ...
+# Subtest: real transferable worker matches every Float64 and scalar over changing dt, terrain, car contacts and sleep
+ok 10 - real transferable worker matches every Float64 and scalar over changing dt, terrain, car contacts and sleep
+  ---
+  duration_ms: 2393.270651
+  type: 'test'
+  ...
+# Subtest: queue overflow and worker error replay every unacknowledged step exactly
+ok 11 - queue overflow and worker error replay every unacknowledged step exactly
+  ---
+  duration_ms: 6.743463
+  type: 'test'
+  ...
+# Subtest: reset rejects stale worker replies and interpolation never changes authoritative state
+ok 12 - reset rejects stale worker replies and interpolation never changes authoritative state
+  ---
+  duration_ms: 134.181014
+  type: 'test'
+  ...
+# Subtest: unavailable workers keep synchronous behavior and replicated riders never leave main thread
+ok 13 - unavailable workers keep synchronous behavior and replicated riders never leave main thread
+  ---
+  duration_ms: 1.006435
+  type: 'test'
+  ...
+# Subtest: a new impact catches up pending bodies before deterministic pool eviction
+ok 14 - a new impact catches up pending bodies before deterministic pool eviction
+  ---
+  duration_ms: 12.205351
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3121.959987

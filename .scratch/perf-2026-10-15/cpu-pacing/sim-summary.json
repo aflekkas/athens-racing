@@ -1,0 +1,60 @@
+{
+  "before": {
+    "cpuMs": 1.5309799999999991,
+    "p95CpuMs": 3.005,
+    "p99CpuMs": 4.014,
+    "systems": {
+      "playerPhysics": 0.17379194444444426,
+      "rivalPlanning": 0.22693944444444436,
+      "rivalPhysics": 0.24696555555555538,
+      "signals": 0.00454138888888889,
+      "traffic": 0.39910638888888805,
+      "police": 0.053100833333333326,
+      "pedestrians": 0.07841888888888891,
+      "ragdolls": 0.3186280555555554
+    },
+    "gc": {
+      "count": 115,
+      "totalMs": 641.0491989850998,
+      "maxMs": 34.39537000656128
+    },
+    "heapBytes": 45332248,
+    "wallFramesOver50ms": [
+      0,
+      3,
+      1
+    ],
+    "hashes": [
+      "fc232906ba39612e347d5d5e950d9f16fb50e21fd890edaae74366425d2b092b"
+    ]
+  },
+  "after": {
+    "cpuMs": 1.2027405555555548,
+    "p95CpuMs": 2.472,
+    "p99CpuMs": 3.95,
+    "systems": {
+      "playerPhysics": 0.13803638888888883,
+      "rivalPlanning": 0.18007416666666662,
+      "rivalPhysics": 0.1982619444444444,
+      "signals": 0.004701666666666667,
+      "traffic": 0.3056586111111105,
+      "police": 0.03967472222222223,
+      "pedestrians": 0.061373611111111115,
+      "ragdolls": 0.27208722222222215
+    },
+    "gc": {
+      "count": 113,
+      "totalMs": 596.7650212049484,
+      "maxMs": 36.77737998962402
+    },
+    "heapBytes": 41203320,
+    "wallFramesOver50ms": [
+      0,
+      1,
+      1
+    ],
+    "hashes": [
+      "fc232906ba39612e347d5d5e950d9f16fb50e21fd890edaae74366425d2b092b"
+    ]
+  }
+}

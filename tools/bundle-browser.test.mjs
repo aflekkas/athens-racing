@@ -37,6 +37,7 @@ test('every map bake points to the published world worker, including Megara', as
   try {
     await mkdir(resolve(root, 'src'), {recursive:true}); await mkdir(resolve(out, 'src'), {recursive:true});
     await writeFile(resolve(root, 'src/main.js'), 'export const boot = true;');
+    await writeFile(resolve(root, 'src/ragdoll-worker.js'), 'export const workerMarker = 42;');
     await writeFile(resolve(root, 'src/world-worker.js'), 'onmessage = () => postMessage({ok:true});');
     await writeFile(resolve(out, 'index.html'), '<script type="module" src="./src/main.js"></script>');
     for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
@@ -45,6 +46,7 @@ test('every map bake points to the published world worker, including Megara', as
     }
     await wheelFixture(root,out);
     await bundleBrowser(root, out);
+    assert.equal((await import(pathToFileURL(resolve(out, 'src/ragdoll-worker.js')))).workerMarker, 42, 'native worker URL resolves to its published bundle');
     for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
       const data = JSON.parse(await readFile(resolve(out, path), 'utf8'));
       assert.match(data.bakedWorld.worker, /^\.\/src\/world-worker-.+\.js$/);

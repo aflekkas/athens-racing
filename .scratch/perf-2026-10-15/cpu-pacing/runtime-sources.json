@@ -1,0 +1,50 @@
+{
+  "before": "b7bd65445931c58a9eea5131704fd9b584a776fa",
+  "after": "054e96988644b84a0d40087f07d7b6e5cb38606a",
+  "sha256": {
+    "src/physics.js": {
+      "before": "58ed8678e11e8f79b3d98dcb8cdb71fd24e6728ed7f63b544529a8ab4134b0fa",
+      "after": "58ed8678e11e8f79b3d98dcb8cdb71fd24e6728ed7f63b544529a8ab4134b0fa"
+    },
+    "src/transmission.js": {
+      "before": "55771afdb0c187ae28b42e09dd58f9db81a46415029527924be2ed68a91427a4",
+      "after": "55771afdb0c187ae28b42e09dd58f9db81a46415029527924be2ed68a91427a4"
+    },
+    "src/rival-ai.js": {
+      "before": "74be07bd54330a219b5384576995bac42a67a40fb87a16319124d78ff8cd6e36",
+      "after": "74be07bd54330a219b5384576995bac42a67a40fb87a16319124d78ff8cd6e36"
+    },
+    "src/traffic.js": {
+      "before": "94f16d45bae2e1702f656e1cac97bd7a29757a65f7d88c10ef2c8042188b5aa5",
+      "after": "67d1d04c402d0d4f09bae9328b408f04647443719d58d497e003a5b0052bd310"
+    },
+    "src/people.js": {
+      "before": "8211c41410b00169646d8b03ef0fab9fc15dd1ef4f445e1e7398e5d77c282b38",
+      "after": "f13caec5389ab102281c769f224e27c3071f6465309ab94c583beba739b87a54"
+    },
+    "src/impact-ragdoll.js": {
+      "before": "5507791915092a70a21809d948616d357fee0794d82cc49bf7ca685a774590cc",
+      "after": "3637c71da837ae432672ed6a74cfdc6111e1d1721df874c45812bb9c928a94d4"
+    },
+    "src/settings.js": {
+      "before": "04138a687c0dce19d322fd240d2fd574abd03fb708c1f9d3120de1ae66bb88ae",
+      "after": "18ee58f2a74fb54c90e802f3a6e375c26cdda957c6d1a5e1936a49e26310c7d0"
+    },
+    "src/render-scale.js": {
+      "before": "42b1f84c91eb4cbc1ba3085ce065f8f7dc03942e2fbd5442596c90ab6683466e",
+      "after": "7bb8b6c01c63f6cbed13c5ea52ea940e2b11eb82b47e96f1d1d50cc4d5bd9722"
+    },
+    "src/main.js": {
+      "before": "c34f7b764623f306d334f2eefd4e5977cc7451e538d7fc05e1893744d5fe30b2",
+      "after": "a5f9c38316aa362b5ec3f54a26efd6f8e821246bfd0caa4fdc13973681fed820"
+    },
+    "src/multiplayer-protocol.js": {
+      "before": "30de4537bacd1fc08d698d24f51280f2e36a4e62ac633b51865f73ae7a8a2bb4",
+      "after": "30de4537bacd1fc08d698d24f51280f2e36a4e62ac633b51865f73ae7a8a2bb4"
+    },
+    "src/ghost-lap.js": {
+      "before": "b26f004d3e95734d289a76e254bfdd7b204aeacfb43f63b03c9a5d2cff9b566a",
+      "after": "b26f004d3e95734d289a76e254bfdd7b204aeacfb43f63b03c9a5d2cff9b566a"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import './ragdoll-worker.test.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -34,7 +35,7 @@ test('PerfOverlay shows fps/ms/draws at 2 Hz and hides', async () => {
   try {
   const { PerfOverlay } = await import('../src/perf-overlay.js?perf-overlay-b=1');
   let calls = 0;
-  const overlay = new PerfOverlay(() => { calls++; return { calls: 750, tris: 2500000 }; });
+  const overlay = new PerfOverlay(() => { calls++; return { calls: 750, tris: 2500000, scale: .675 }; });
   assert.equal(overlay.el.style.display, 'none');
   overlay.setVisible(true);
   assert.equal(overlay.el.style.display, 'block');
@@ -49,6 +50,7 @@ test('PerfOverlay shows fps/ms/draws at 2 Hz and hides', async () => {
   assert.match(overlay.el.textContent, /MS/);
   assert.match(overlay.el.textContent, /750 DRAWS/);
   assert.match(overlay.el.textContent, /2\.50M TRIS/);
+  assert.match(overlay.el.textContent, /68% SCALE/);
   overlay.setVisible(false);
   assert.equal(overlay.el.style.display, 'none');
   overlay.frame(1);
