@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: coarse beach contacts match rendered triangles, including a lowered seam and both diagonals
+ok 1 - coarse beach contacts match rendered triangles, including a lowered seam and both diagonals
+  ---
+  duration_ms: 13.327077
+  type: 'test'
+  ...
+# Subtest: sunbed base corners rest on their own sloping terrain rather than the umbrella height
+ok 2 - sunbed base corners rest on their own sloping terrain rather than the umbrella height
+  ---
+  duration_ms: 3.901381
+  type: 'test'
+  ...
+# Subtest: a hole surrounded by refined vertices is not a refined contact cell
+ok 3 - a hole surrounded by refined vertices is not a refined contact cell
+  ---
+  duration_ms: 8.301812
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 226.36915

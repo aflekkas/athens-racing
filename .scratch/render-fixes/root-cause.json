@@ -1,0 +1,27 @@
+{
+  "oldBuild": "98d0ea0f",
+  "oldCommit": "21771a1",
+  "shorelineSample": {
+    "x": 497.2,
+    "z": 2810.8,
+    "oldRenderedTerrainY": -1.2544212752587107,
+    "waterY": 0,
+    "fixedRenderedTerrainY": 0.5439780461182089
+  },
+  "actualLoungerSample": {
+    "x": 6727.630859375,
+    "z": 3021.921142578125,
+    "originalPlacementY": 0.651430070400238,
+    "oldRenderedTerrainY": -1.0929254289179937,
+    "fixedRenderedTerrainY": 0.6534301932144473
+  },
+  "cause": "40 m terrain removed narrow dry shoreline relief outside the road corridor; 10 m placement heights disagreed with visible triangles. Preserve mapped beach extents at 10 m and sample emitted final triangles.",
+  "colorLimitation": "SwiftShader reproduced flooding, not the exact near-black Mac shade; mapped dry beach now occludes the ocean sheet.",
+  "shadowCause": "Unaccumulated AO and DOF sampling kernels changed every frame; existing sun texel snapping was already present.",
+  "roadBandCaster": {
+    "type": "streetlight pole",
+    "geometry": "CylinderGeometry",
+    "height": 9.5,
+    "station": 154.30897834528693
+  }
+}
