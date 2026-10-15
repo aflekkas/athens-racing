@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 const mix=(a,b,t)=>a+(b-a)*t;
 const clamp=t=>Math.max(0,Math.min(1,t));
+const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
 function at(stations,z,column){
   for(let i=1;i<stations.length;i++)if(z<=stations[i][0]){const a=stations[i-1],b=stations[i],prev=stations[Math.max(0,i-2)],next=stations[Math.min(stations.length-1,i+1)],h=b[0]-a[0],t=clamp((z-a[0])/h);
     const m0=(b[column]-prev[column])/(b[0]-prev[0]),m1=(next[column]-a[column])/(next[0]-a[0]);
@@ -10,13 +11,13 @@ function at(stations,z,column){
   return stations.at(-1)[column];
 }
 export function buildP928(car,d,M,low,plate,H){
-  const {surface,box,line,patch,mesh,ring,disk,cabinFittings,wheels,makePlateMaterial,textMaterial}=H;
+  const {surface,box,line,mesh,ring,disk,cabinFittings,wheels,makePlateMaterial,textMaterial}=H;
   const p=car.body,F=-d.L/2,R=d.L/2,W=d.W/2;
-  // Long, low bonnet; a pinched door waist swells into the wider GTS rear quarters.
-  const stations=[[F,.73,.585],[-2.04,.835,.68],[-1.65,.90,.79],[-1.25,.905,.85],[d.cowl,.865,.855],[.35,.87,.855],[1.10,.945,.90],[1.55,.94,.91],[1.95,.87,.86],[R,.78,.80]];
+  // Full rounded nose and wing crowns; the door waist swells into GTS rear quarters.
+  const stations=[[F,.80,.66],[-2.04,.85,.735],[-1.65,.90,.815],[-1.25,.905,.855],[d.cowl,.865,.855],[.35,.87,.855],[1.10,.945,.88],[1.55,.94,.89],[1.95,.89,.85],[R,.85,.80]];
   const top=z=>at(stations,z,2);
   const side=(z,y)=>{const v=clamp((y-.18)/(top(z)-.18));return at(stations,z,1)-.105*(1-v)**3-.022*v**7+.014*Math.sin(v*Math.PI);};
-  const deck=(x,z)=>{const q=x/side(z,top(z));return top(z)+.025*(1-q*q)-.035*(1-q*q)*clamp((d.cowl-z)/.7);};
+  const deck=(x,z)=>{const q=x/side(z,top(z));return top(z)+.018*(1-q*q)-.025*(1-q*q)*clamp((d.cowl-z)/.7)+.045*Math.exp(-(((Math.abs(x)-.64)/.20)**2))*Math.exp(-(((z+1.42)/.62)**4))*(1-q*q);};
   car.playerSurface={top,side,deck};
   for(const s of [-1,1]){
     const arch=d.r+.052;
@@ -25,11 +26,11 @@ export function buildP928(car,d,M,low,plate,H){
       const pts=[];for(let i=0;i<=36;i++){const t=i*Math.PI/36,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);pts.push([s*(side(z,y)+.002),y,z]);}line(p,M.paint,pts,.008);
       surface(p,M.black,(u,v)=>{const t=u*Math.PI,z=a+arch*Math.cos(t),y=d.r+arch*Math.sin(t);return[s*mix(d.track/2-.15,side(z,y)-.006,v),y,z];},32,3,'wheelarch-liner');
     }
-    surface(p,M.paint,(u,v)=>{const z=mix(d.cowl,d.back,u);return[s*mix(side(z,top(z)),W-.115,v),mix(top(z),d.belt+.014,v)+.016*Math.sin(v*Math.PI),z];},56,8,'door-shoulder');
-    const shut=[[d.cowl+.025,d.belt],[d.cowl+.10,.39],[d.cowl+.22,.27],[.69,.27],[.81,.46],[.79,d.belt]];
+    surface(p,M.paint,(u,v)=>{const z=mix(d.cowl,d.back,u);return[s*mix(side(z,top(z)),W-.115,v),mix(top(z),d.belt+.014,v)+.016*Math.sin(v*Math.PI),z];},40,5,'door-shoulder');
+    const shut=[[d.cowl+.025,d.belt],[d.cowl+.10,.39],[d.cowl+.22,.27],[.43,.27],[.58,.46],[.53,d.belt]];
     const curve=new THREE.CatmullRomCurve3(shut.map(([z,y])=>new THREE.Vector3(0,y,z)));
     line(p,M.seam,curve.getPoints(64).map(({y,z})=>[s*(side(z,y)+.003),y,z]),.0025,'door-seam');
-    box(p,M.black,[.025,.035,.13],[s*(side(.62,.78)+.008),.78,.62],.01,[0,0,0],'door-handle');
+    box(p,M.black,[.025,.035,.13],[s*(side(.38,.78)+.008),.78,.38],.01,[0,0,0],'door-handle');
     // Keep the rub strip on steel, clear of both open wheel arches.
     for(const [a,b] of [[-2.09,-1.58],[-.92,.92],[1.58,2.06]]){const strip=[];for(let i=0;i<=16;i++){const z=mix(a,b,i/16);strip.push([s*(side(z,.56)+.005),.56,z]);}line(p,M.black,strip,.012,'side-protection-strip');}
     line(p,M.paint,[[s*.835,.235,-.83],[s*.84,.235,.82]],.031,'side-sill');
@@ -39,22 +40,31 @@ export function buildP928(car,d,M,low,plate,H){
   box(p,M.black,[1.45,.07,3.95],[0,.19,0],.03,[0,0,0],'undertray');
   for(const s of [-1,1]){const pts=[];for(let i=0;i<=24;i++){const z=mix(-2.05,d.cowl-.02,i/24),x=s*mix(.43,.67,i/24);pts.push([x,deck(x,z)+.003,z]);}line(p,M.seam,pts,.0022,'bonnet-seam');}
 
-  // Low rounded roof and large wraparound hatch; the quarter pane ends in a curved painted pillar.
-  const bw=W-.115,rw=W-.23,roofEdge=d.H-.045;
-  car.windscreen=surface(p,M.glass,(u,v)=>{const x=2*u-1;return[x*mix(bw,rw,v),mix(d.belt+.014,roofEdge,v)+.018*(1-x*x),mix(d.cowl,d.header,v)-.045*(1-x*x)];},28,12,'windscreen');
-  surface(p,M.paint,(u,v)=>{const x=2*v-1;return[x*rw,roofEdge+(.018+.039*Math.sin(u*Math.PI))*(1-x*x),mix(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'roof');
-  const hatch=(u,v)=>{const x=2*u-1;return[x*mix(rw,bw,v),mix(roofEdge,d.belt+.014,v)+(.012+.065*Math.sin(v*Math.PI))*(1-x*x),mix(d.roofBack,d.back,v)];};
-  surface(p,M.glass,hatch,32,24,'rear-glass');
+  // The roof and bubble hatch share one continuous longitudinal arc.
+  const bw=W-.115,rw=W-.23;
+  const rails=[[d.cowl,0,d.belt+.014],[d.header,0,1.205],[.12,0,1.245],[d.roofBack,0,1.225],[.86,0,1.195],[1.23,0,1.10],[1.68,0,.955],[d.back,0,d.belt+.014]];
+  const rail=z=>at(rails,z,2),width=z=>mix(rw,bw,clamp((z-d.roofBack)/(d.back-d.roofBack)));
+  const roofPoint=(x,z)=>[x*width(z),rail(z)+.037*(1-x*x),z-.035*(1-x*x)*(1-clamp((z-d.header)/(d.roofBack-d.header)))];
+  // Keep the side/hatch tint independent of the shared light-windscreen finish.
+  const tinted=M.glass.clone();tinted.color.set('#25383d');tinted.opacity=.73;tinted.metalness=0;tinted.roughness=.08;tinted.envMapIntensity=.55;tinted.userData.playerGlass=true;
+  car.windscreen=surface(p,M.glass,(u,v)=>{const x=2*u-1;return[x*mix(bw,rw,v),mix(d.belt+.014,rail(d.header),v)+.037*(1-x*x)*v,mix(d.cowl,d.header,v)-.035*(1-x*x)*v];},28,12,'windscreen');
+  surface(p,M.paint,(u,v)=>roofPoint(2*v-1,mix(d.header,d.roofBack,u)),30,20,'roof');
+  surface(p,M.cloth,(u,v)=>{const q=roofPoint(2*v-1,mix(d.header,d.roofBack,u));q[1]-=.018;return q;},20,12,'headliner');
+  const hatch=(u,v)=>roofPoint(2*u-1,mix(d.roofBack,d.back,v));
+  surface(p,tinted,hatch,32,18,'rear-glass');
   for(const s of [-1,1]){
-    const A=[s*bw,d.belt+.014,d.cowl],B=[s*rw,roofEdge,d.header],C=[s*rw,roofEdge,d.roofBack],D=[s*bw,d.belt+.014,d.back];
-    const B0=[s*bw,d.belt+.014,.73],B1=[s*rw,roofEdge,.54];
-    patch(p,M.glass,[A,B,B1,B0],'front-door-glass');line(p,M.black,[A,B,B1,B0,A],.008);
-    patch(p,M.glass,[[s*bw,d.belt+.014,.79],[s*rw,roofEdge,.60],C,[s*(bw-.01),d.belt+.014,1.66]],'rear-door-glass');
-    patch(p,M.black,[B0,B1,[s*rw,roofEdge,.60],[s*bw,d.belt+.014,.79]],'b-pillar');
-    patch(p,M.paint,[A,B,[s*rw,roofEdge,d.header+.055],[s*bw,d.belt+.014,d.cowl+.055]],'solid-a-pillar');
-    patch(p,M.paint,[C,[s*(rw-.04),roofEdge,d.roofBack-.025],[s*(bw-.015),d.belt+.014,1.66],D],'solid-c-pillar');
-    line(p,M.paint,[B,[s*rw,roofEdge+.005,.28],C],.019,'roof-rail');
-    line(p,M.black,[C,D],.009,'hatch-seal');
+    const panePoint=(z,v)=>[s*mix(bw,mix(width(z),bw,smooth((z-.48)/.82)),v),mix(d.belt+.014,Math.max(d.belt+.014,rail(z)-.026-.20*smooth((z-.48)/.82)),v),z];
+    const pane=(lo,hi,name)=>surface(p,tinted,(u,v)=>{const a=panePoint(mix(lo[0],hi[0],u),0),b=panePoint(mix(lo[1],hi[1],u),1);return a.map((q,i)=>mix(q,b[i],v));},24,6,name);
+    pane([d.cowl+.045,d.header+.045],[.48,.45],'front-door-glass');
+    pane([.525,.495],[1.30,1.30],'rear-door-glass');
+    surface(p,M.black,(u,v)=>panePoint(mix(.48-.03*v,.525-.03*v,u),v),2,10,'b-pillar');
+    const outline=(lo,hi,v)=>Array.from({length:33},(_,i)=>panePoint(mix(lo,hi,i/32),v));
+    line(p,M.black,outline(d.header+.045,1.30,1),.009,'side-window-upper-seal');
+    line(p,M.black,outline(d.cowl+.045,1.30,0),.009,'side-window-lower-seal');
+    surface(p,M.paint,(u,v)=>{const low=panePoint(d.cowl+.045,0),high=panePoint(d.header+.045,1),a=low.map((q,i)=>mix(q,high[i],v)),b=[s*mix(bw,rw,v),mix(d.belt+.014,rail(d.header),v),mix(d.cowl,d.header,v)];return a.map((q,i)=>mix(q,b[i],u));},3,14,'solid-a-pillar');
+    // Narrow painted rail broadens into the rounded rear quarter / hatch surround.
+    surface(p,M.paint,(u,v)=>{const z=mix(d.header,d.back,u),a=panePoint(Math.min(z,1.30),1),b=roofPoint(s,z);return a.map((q,i)=>mix(q,b[i],v));},48,5,'solid-c-pillar');
+    line(p,M.black,Array.from({length:33},(_,i)=>hatch(s<0?0:1,i/32)),.009,'hatch-seal');
     line(p,M.black,[[s*.08,d.belt+.04,d.cowl-.02],[s*.26,d.belt+.055,d.cowl-.05],[s*.56,d.belt+.045,d.cowl-.05]],.006,'wiper');
     box(p,M.black,[.14,.035,.06],[s*(W-.025),d.belt+.06,d.cowl+.17],.012);
     box(p,M.paint,[.225,.105,.13],[s*(W+.065),d.belt+.10,d.cowl+.17],.042,[0,0,0],'cup-mirror-housing');
@@ -68,7 +78,7 @@ export function buildP928(car,d,M,low,plate,H){
 
   const popups=[];
   const amber=new THREE.MeshStandardMaterial({color:'#cf802a',roughness:.24,side:THREE.DoubleSide});
-  M.head.color.set('#b8c5c8');M.head.metalness=.45;M.head.roughness=.18;
+  M.head.color.set('#9baeb6');M.head.metalness=.25;M.head.roughness=.12;M.red.roughness=.20;M.red.metalness=.12;
   for(const s of [-1,1]){
     // Flip-forward lamps pivot at the front of the recess; closed lenses lie along the bonnet.
     const x=s*.625,z=-1.76,y=deck(x,z)+.012,rotation=[-1.78,0,0];
@@ -78,17 +88,22 @@ export function buildP928(car,d,M,low,plate,H){
     disk(p,M.head,.137,[x,y+.006,z],rotation).name='headlamp-lens';
     ring(p,M.chrome,.137,.003,[x,y+.009,z],rotation);
     if(!low)for(let i=-3;i<=3;i++){const xx=i*.028,h=Math.sqrt(.127**2-xx**2);line(p,M.chrome,[[x+xx,y+.012-h*.20,z-h],[x+xx,y+.012+h*.20,z+h]],.0012,'headlamp-fluting');}
-    const nodes=p.children.slice(start);for(const o of nodes)o.userData.damagePart=s<0?'light_fl':'light_fr';
+    const nodes=p.children.slice(start);
+    // Conform every closed-lamp vertex to the crowned wing rather than a tilted flat disc.
+    for(const o of nodes){o.updateMatrix();const a=o.geometry.attributes.position,inv=o.matrix.clone().invert(),q=new THREE.Vector3();const lift=o.material===M.black?.003:o.material===M.paint?.007:o.material===M.head?.010:.013;for(let i=0;i<a.count;i++){q.fromBufferAttribute(a,i).applyMatrix4(o.matrix);q.y=deck(q.x,q.z)+lift;q.applyMatrix4(inv);a.setXYZ(i,q.x,q.y,q.z);}a.needsUpdate=true;o.userData.damagePart=s<0?'light_fl':'light_fr';}
     popups.push({nodes,x,y,z,side:s});
-    box(p,M.head,[.24,.073,.015],[s*.565,.445,F-.011],.013,[0,0,0],'bumper-driving-lamp');
-    box(p,amber,[.13,.073,.018],[s*.748,.445,F-.012],.013,[0,0,0],'indicator-lens');
-    box(p,M.tail,[.27,.115,.024],[s*.644,.755,R+.011],.018,[0,0,0],'rear-lamp-housing');
-    box(p,amber,[.20,.036,.027],[s*.67,.787,R+.014],.008,[0,0,0],'rear-amber-lens');
+    const frontLens=(mat,a,b,lo,hi,offset,name)=>surface(p,mat,(u,v)=>[s*mix(a,b,u),mix(lo,hi,v),F-offset],16,4,name);
+    frontLens(M.black,.405,.815,.407,.503,.018,'bumper-lamp-recess');
+    frontLens(M.head,.42,.65,.420,.490,.023,'bumper-driving-lamp');
+    frontLens(amber,.665,.80,.420,.490,.024,'indicator-lens');
+    box(p,amber,[.012,.042,.14],[s*(side(-1.91,.50)+.005),.50,-1.91],.010,[0,0,0],'front-side-marker');
+    surface(p,M.tail,(u,v)=>{const x=s*mix(.50,.83,u);return[x,mix(.665,.815,v)+.012*u,R+.018];},16,4,'rear-lamp-housing');
+    surface(p,amber,(u,v)=>[s*mix(.54,.80,u),mix(.773,.810,v),R+.025],16,2,'rear-amber-lens');
   }
-  box(p,M.black,[1.02,.075,.018],[0,.31,F-.008],.012,[0,0,0],'lower-cooling-slot');
+  surface(p,M.black,(u,v)=>[mix(-.59,.59,u),mix(.267,.326,v),F-.018],32,3,'lower-cooling-slot');
   for(const end of [-1,1])line(p,M.seam,[[-.68,.56,end<0?F-.005:R+.005],[0,.56,end<0?F-.005:R+.005],[.68,.56,end<0?F-.005:R+.005]],.004,'bumper-joint');
-  surface(p,M.red,(u,v)=>[mix(-.52,.52,u),mix(.697,.813,v),R+.024],32,4,'gts-red-reflector-panel');
-  mesh(p,new THREE.PlaneGeometry(.77,.045,32,2),textMaterial('P O R S C H E',null,'#bca6a5'),[0,.756,R+.029],[0,0,0],'rear-badge');
+  surface(p,M.red,(u,v)=>[mix(-.52,.52,u),mix(.665,.815,v),R+.024],24,4,'gts-red-reflector-panel');
+  mesh(p,new THREE.PlaneGeometry(.77,.045,32,2),textMaterial('P O R S C H E',null,'#292327'),[0,.756,R+.029],[0,0,0],'rear-badge');
   mesh(p,new THREE.PlaneGeometry(.24,.035,16,2),textMaterial('928 GTS',null),[.45,.632,R+.017],[0,0,0],'model-badge');
   // Body-coloured GTS bridge spoiler sits across the foot of the glass hatch.
   for(const s of [-1,1])box(p,M.paint,[.09,.075,.17],[s*.73,.91,1.95],.025,[0,0,0],'spoiler-support');
@@ -119,5 +134,5 @@ export function buildP928(car,d,M,low,plate,H){
 
   // Round both bumper corners with the same mapping for lamps, plates, shut lines and body panels.
   p.updateMatrixWorld(true);const world=new THREE.Vector3();
-  p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=clamp((Math.abs(world.z)-d.L*.34)/(d.L*.16));world.z-=Math.sign(world.z)*t*t*(.16*(Math.abs(world.x)/W)**2+.14*clamp((.43-world.y)/.25)**2);world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});
+  p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=clamp((Math.abs(world.z)-d.L*.34)/(d.L*.16));world.z+=Math.sign(world.z)*t*t*(.035*Math.sin(clamp((world.y-.18)/.66)*Math.PI)-(world.z<0?.23:.20)*(Math.abs(world.x)/W)**2-.14*clamp((.43-world.y)/.25)**2);world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});
 }
