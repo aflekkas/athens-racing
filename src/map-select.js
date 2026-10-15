@@ -15,11 +15,15 @@ function style() {
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
 }
 const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'arrows-clockwise'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountains'] : ['POINT TO POINT', 'path'];
+const lapTime = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 function preview(map) {
-  const [kind, ic] = KIND(map);
-  const pb = getMapPersonalBest(map.id), t = pb?.time;
-  const record = pb ? C.stat('ROUTE BEST · ANY CAR / SETUP', `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`, { icon: 'timer' }) + `<small>${C.esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'} · ${pb.setup.direction < 0 ? 'REVERSE' : 'FORWARD'}</small>` : C.stat('LOCAL ROUTE BEST', '—', { icon: 'timer' });
-  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><div class="map-preview-best">${record}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div><button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
+  const [kind, ic] = KIND(map), pb = getMapPersonalBest(map.id);
+  // A best only appears once one exists; an empty record box is noise.
+  const best = pb ? `<div class="map-spec map-spec--best"><small>${icon('timer')}BEST</small><b>${lapTime(pb.time)}</b><span>${esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'}${pb.setup.direction < 0 ? ' · REV' : ''}</span></div>` : '';
+  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline" draggable="false"/></div>
+    <div class="map-preview__info"><div class="map-kind">${icon(ic)}${kind}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p>
+    <div class="map-specs"><div class="map-spec"><small>LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? '<span> / LAP</span>' : ''}</b></div>${best}</div>
+    ${C.button({ label: 'SELECT TRACK', icon: 'flag-checkered', iconRight: 'caret-right', variant: 'primary', block: true, attrs: { 'data-confirm-track': '', 'data-map-id': map.id } })}</div>`;
 }
 const count = (selectable, m) => `${selectable.indexOf(m) + 1} <span>/ ${selectable.length}</span>`;
 export function renderMapSelect(selectedId = 'riviera', mode) {
@@ -32,8 +36,8 @@ export function renderMapSelect(selectedId = 'riviera', mode) {
     body: `<div class="attica-layout"><div class="attica-map"><div class="attica-viewport" aria-label="Attica: Megara Circuit, Riviera coast and Dionysos"><div class="attica-layer"><img class="attica-art" src="assets/maps/attica.svg" alt="OpenStreetMap coastline and motorways of greater Athens, with DEM relief of Parnitha, Hymettus and Penteli" draggable="false"/><svg class="attica-routes" viewBox="0 0 ${width} ${height}" aria-hidden="true">${selectable.map(m => { const r = TRACK_ROUTES[m.id]; return `<g class="track-route ${m.id === selected.id ? 'active' : ''}" data-route-id="${m.id}" style="--route:${color(m.id)}"><path class="route-casing" d="${r.path}"/><path class="route-line" d="${r.path}"/><path class="route-trace" pathLength="100" d="${r.path}"/></g>`; }).join('')}</svg></div>
       <div class="attica-overlay"><div class="attica-labels" aria-hidden="true">${labels}</div>${pins}</div>
       <div class="map-region"><span class="map-status-dot"></span> ATTICA <small>37.98° N / 23.73° E</small></div><div class="map-north" aria-label="North is up">N <span>↑</span></div><div class="map-scale" aria-label="Map scale"><span></span><small>5 km</small></div>
-      </div><div class="attica-footer"><div class="attica-caption"><span>DRAG TO PAN · SCROLL / PINCH TO ZOOM</span><small><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors / ODbL</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-funded Copernicus EU-DEM</a></small></div><div class="map-tools">${C.button({ label: '+', act: 'mapZoomIn', title: 'Zoom in', size: 'sm' })}${C.button({ label: '−', act: 'mapZoomOut', title: 'Zoom out', size: 'sm' })}${C.button({ label: 'RESET', act: 'mapReset', size: 'sm' })}</div></div></div>
-      <aside class="map-preview panel" data-map="${selected.id}" style="--track:${color(selected.id)}"><nav class="map-track-nav" aria-label="Browse tracks"><button type="button" class="mi map-track-arrow" data-act="mapPrev" aria-label="Previous track">${icon('caret-left')}</button><div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div><button type="button" class="mi map-track-arrow" data-act="mapNext" aria-label="Next track">${icon('caret-right')}</button></nav><div class="map-preview-content" aria-live="polite">${preview(selected)}</div><div class="map-cycle-hint">← / → · LB / RB · SWIPE TO BROWSE</div></aside></div>` });
+      </div><div class="attica-footer"><div class="attica-caption"><span>DRAG TO PAN · SCROLL / PINCH TO ZOOM</span><small><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors / ODbL</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-funded Copernicus EU-DEM</a></small></div><div class="map-tools">${C.button({ label: 'RESET', icon: 'arrow-counter-clockwise', act: 'mapReset', size: 'sm', title: 'Show all tracks' })}</div></div></div>
+      <aside class="map-preview panel" data-map="${selected.id}" style="--track:${color(selected.id)}"><nav class="map-track-nav" aria-label="Browse tracks"><button type="button" class="mi map-track-arrow" data-act="mapPrev" aria-label="Previous track">${icon('caret-left')}</button><div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div><button type="button" class="mi map-track-arrow" data-act="mapNext" aria-label="Next track">${icon('caret-right')}</button></nav><div class="map-preview-content" aria-live="polite">${preview(selected)}</div><div class="map-cycle-hint">SWIPE TO BROWSE</div></aside></div>` });
 }
 // Screen rects are [left, top, right, bottom] in viewport pixels.
 const hit = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
@@ -136,7 +140,7 @@ export function mountMapSelect(root) {
     if (selected !== id) {
       const hadFocus = card.querySelector('[data-confirm-track]') === document.activeElement;
       selected = id; card.dataset.map = id; card.style.setProperty('--track', color(id));
-      const content = card.querySelector('.map-preview-content'); content.innerHTML = preview(m);
+      const content = card.querySelector('.map-preview-content'); content.innerHTML = preview(m); content.classList.remove('swap'); void content.offsetWidth; content.classList.add('swap');
       card.querySelector('.map-track-count').innerHTML = count(selectable, m);
       pins.forEach(p => { p.el.classList.toggle('selected', p.id === id); p.el.setAttribute('aria-pressed', String(p.id === id)); });
       if (hadFocus) card.querySelector('[data-confirm-track]').focus({ preventScroll: true });
