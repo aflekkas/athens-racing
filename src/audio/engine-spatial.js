@@ -1,4 +1,4 @@
-import { engineProfile, TRAFFIC_PROFILES } from './engine-profiles.js';
+import { engineProfile, TRAFFIC_PROFILES, ENGINE_PROFILES } from './engine-profiles.js';
 import { buildEngineBank, EngineVoice } from './engine-synth.js';
 import { loadRecordedEngine, RecordedEngineVoice } from '../engine-recordings.js';
 const clamp = (x, a, b) => Math.max(a, Math.min(b, Number.isFinite(x) ? x : 0));
@@ -54,6 +54,7 @@ export class DistantEngineVoice {
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.source = ctx.createBufferSource(); this.source.loop = true;
     this.source.buffer = bank.recorded ? bank.loops[1].buffer : bank.on[1].buf;
+    if (bank.recorded) { this.source.loopStart = bank.loops[1].loopStart || 0; this.source.loopEnd = bank.loops[1].loopEnd || this.source.buffer.duration; }
     this.ref = bank.recorded ? bank.loops[1].rpm : bank.pts[1];
     this.source.connect(this.out); this.out.connect(dest); this.source.start(ctx.currentTime);
   }
@@ -70,13 +71,29 @@ export class DistantEngineVoice {
 }
 export class ExternalEngines {
   constructor(ctx, dest, passBy) {
-    this.ctx = ctx; this.selection = new NearestEngines(); this.banks = new Map(); this.recorded = new Map(); this.pending = new Set();
+    this.ctx = ctx; this.world = {}; this.selection = new NearestEngines(); this.banks = new Map(); this.recorded = new Map(); this.pending = new Set();
     this.passBy = passBy; this.slots = [];
     for (let i = 0; i < 8; i++) {
       const air = ctx.createBiquadFilter(), panner = ctx.createStereoPanner(), gate = ctx.createGain();
       air.type = 'lowpass'; air.Q.value = .5; gate.gain.value = 0;
       air.connect(gate); gate.connect(panner); panner.connect(dest);
       this.slots.push({air, panner, gate, voice: null, source: null, id: null, kind: -1, nextSwap: 0, nextPass: 0});
+    }
+  }
+  /** Reuse the existing CC0 world recordings, including their MP3 guard offsets.
+   * Bus running layer remains the documented TDI substitute, as in the old pool.
+   */
+  attachWorld(name, sound) {
+    if (name !== 'bus-idle' && name !== 'diesel-engine' && name !== 'scooter-idle' && name !== 'scooter-run') return;
+    this.world[name] = sound;
+    for (const [profile, low, high, lowRpm, highRpm] of [
+      [ENGINE_PROFILES.bus, 'bus-idle', 'diesel-engine', 700, 2700],
+      [ENGINE_PROFILES.bike, 'scooter-idle', 'scooter-run', 3300, 7400],
+    ]) {
+      if (this.recorded.has(profile) || !this.world[low] || !this.world[high]) continue;
+      this.recorded.set(profile, {recorded:true, loops:[
+        {...this.world[low], rpm:lowRpm}, {...this.world[high], rpm:highRpm},
+      ]});
     }
   }
   update(rivals, traffic, now) {

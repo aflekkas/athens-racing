@@ -5,7 +5,7 @@ modules and `OfflineAudioContext`, stereo PCM16, 44.1 kHz. These are game-mix
 review demonstrations, not reusable asset-library releases.
 
 - `mini-startup-rev-shifts.wav`: CC0 recorded turbo I4 starter, idle flare,
-  acceleration, limiter, DCT cut/paddle, lift/overrun and shutdown.
+  acceleration, limiter, manual lever/clutch, lift/overrun and shutdown.
 - `taxi-startup-rev-shifts.wav`: attributed diesel I4 starter/running substitutes.
 - `e36_m3-startup-rev-shifts.wav`: NA I6 fallback, starter/catch, manual up/down
   lever and clutch movement, high revs and shutdown.
@@ -19,8 +19,8 @@ review demonstrations, not reusable asset-library releases.
   No grind is simulated because the current physics has no failed-clutch signal.
 
 Levels are in `capture-levels.json`. No clipped samples; highest capture peak
-is -4.1 dBFS. Four startup/rev sequences are within 2.8 dB whole-clip RMS. The
-isolated chase mechanical capture is approximately 23 dB quieter in whole-clip
+is -4.1 dBFS. Four startup/rev sequences are within 3.1 dB whole-clip RMS. The
+isolated chase mechanical capture is approximately 24.5 dB quieter in whole-clip
 RMS (short randomized events and PCM16 quantization affect the exact difference).
 
 ## Performance measurement

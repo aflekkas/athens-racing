@@ -71,3 +71,15 @@ test('physical powertrain type wins over legacy badge; durable event serials fir
  life.update({...p,shiftStart:{...p.shiftStart}},1.1);assert.equal(calls.length,3,'same serial cloned into new telemetry is not replayed');
  life.update({...p,shiftEnd:{serial:5}},1.34);assert.equal(calls.length,4,'clutch release follows shift-end');
 });
+test('existing world loop licences are retained through bus/bike banks and guard metadata',async()=>{
+ const {ExternalEngines}=await import('../src/audio/engine-spatial.js');
+ const {ENGINE_PROFILES}=await import('../src/audio/engine-profiles.js');
+ const pool={world:{},recorded:new Map()};
+ const sound={buffer:{duration:20},loopStart:.025,loopEnd:19.9};
+ for(const name of ['bus-idle','diesel-engine','scooter-idle','scooter-run']) ExternalEngines.prototype.attachWorld.call(pool,name,sound);
+ assert.equal(pool.recorded.size,2);
+ for(const profile of [ENGINE_PROFILES.bus,ENGINE_PROFILES.bike]) {
+  const bank=pool.recorded.get(profile);assert.equal(bank.loops.length,2);
+  assert.equal(bank.loops[0].loopStart,.025);assert.equal(bank.loops[1].loopEnd,19.9);
+ }
+});

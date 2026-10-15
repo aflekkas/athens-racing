@@ -72,7 +72,9 @@ no current trim is falsely mapped to a V engine based only on cylinder count.
 `mini`, `z4`, `taxi` in the source column refer to the licensed substitute banks
 above. City I4s intentionally have no turbo effects or sport exhaust pops.
 Catalogue traffic consumes its actual catalogue spec; generic police uses turbo
-I4, vans/trucks diesel I4, bus diesel I6 and bikes their separate fallback.
+I4, vans/trucks diesel I4, bus diesel I6 and bikes their separate fallback until the existing CC0 bus/
+scooter world loops arrive. Their MP3 loop guard offsets are preserved. Bus running
+audio retains the documented TDI substitute used by the previous traffic pool.
 
 | Car / trim | Profile | Source | Gearbox sound |
 |---|---|---|---|
@@ -129,6 +131,9 @@ I4, vans/trucks diesel I4, bus diesel I6 and bikes their separate fallback.
 | e36_318i | na-i4 | procedural fallback | manual |
 | mini_cabrio_jcw | turbo-i4-sport | mini | manual |
 | cle300e | turbo-i4 | mini | auto |
+| jazz | na-i4 | procedural fallback | manual |
+| jazz_dynamic | na-i4 | procedural fallback | manual |
+| jazz_drift | turbo-i4-sport | mini | manual |
 
 ## Verification
 
@@ -143,3 +148,7 @@ Powertrain integration verified against `5e782b3`: the bridge reads physical
 alongside rpm/load/boost/gear/limiter. It reads existing fields directly rather
 than allocating the `powertrainSignals` snapshot every frame. No clutch-failure
 diagnostic is exposed, so normal gameplay cannot trigger the optional grind.
+
+World-loop attribution: bus idle — bikesnbassboi; scooter idle — lovretta;
+scooter running — dif1891. All three are existing CC0 1.0 assets; see
+`assets/audio/world/CREDITS.txt` and `sources.json`. No new files downloaded.

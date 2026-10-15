@@ -95,3 +95,8 @@ original procedural synthesis; no new third-party effect samples were added.
 See src/audio/README.md for every car/trim and .scratch/engine-audio/README.md
 for game-mix demonstration captures. These are review evidence, not a sound
 library or a grant to redistribute the underlying Sonniss recordings.
+
+External bus and motorcycle profiles retain the existing world pack recordings
+when decoded: CC0 bus idle by bikesnbassboi, scooter idle by lovretta, scooter
+running by dif1891 (assets/audio/world/CREDITS.txt). Bus running uses the
+existing Sonniss TDI substitute; synthesis is the missing/decode fallback.

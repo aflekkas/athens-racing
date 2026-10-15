@@ -165,8 +165,9 @@ export class RecordedEngineVoice {
       const source = spec.id === 'mini' || sample.buffer.duration < 1.25
         ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, spec.engine === 'turbo6' ? 6 : 4)
         : ctx.createBufferSource();
-      if (!(source instanceof GranularEngineLoop)) { source.buffer = sample.buffer; source.loop = true; source.connect(g); }
-      source.start(ctx.currentTime, Math.random() * sample.buffer.duration);
+      if (!(source instanceof GranularEngineLoop)) { source.buffer = sample.buffer; source.loop = true; source.loopStart = sample.loopStart || 0; source.loopEnd = sample.loopEnd || sample.buffer.duration; source.connect(g); }
+      const offset = (sample.loopStart || 0) + Math.random() * ((sample.loopEnd || sample.buffer.duration) - (sample.loopStart || 0));
+      source.start(ctx.currentTime, offset);
       this.sources.push(source); this.gains.push(g);
     }
     // Preserve limiter feedback without distorting the recorded engine timbre.

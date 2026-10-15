@@ -417,6 +417,7 @@ export class Audio {
 
   /** hook a recorded sound into the graph built in start() */
   attach(name, snd) {
+    this.externalEngines?.attachWorld(name, snd);
     const ctx = this.ctx, t = this.t, a = this.a;
     const bed = { 'sea-sand': a.sand, 'sea-rocks': a.rocks, city: a.city, cafe: a.cafe, beach: a.beach, cicadas: a.cic }[name];
     if (bed) loopSource(ctx, snd, bed);

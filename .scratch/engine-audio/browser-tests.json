@@ -1,0 +1,68 @@
+{
+  "assets": 14,
+  "renders": [
+    {
+      "car": "mini",
+      "rms": 0.0794,
+      "peak": 0.3526,
+      "loops": 4
+    },
+    {
+      "car": "z4",
+      "rms": 0.0779,
+      "peak": 0.245,
+      "loops": 4
+    },
+    {
+      "car": "taxi",
+      "rms": 0.0757,
+      "peak": 0.3111,
+      "loops": 3
+    }
+  ],
+  "synthRenders": [
+    {
+      "car": "huracan",
+      "engine": "v10",
+      "cylinders": 10,
+      "rms": 0.095,
+      "peak": 0.3079
+    },
+    {
+      "car": "e36",
+      "engine": "na6",
+      "cylinders": 6,
+      "rms": 0.1492,
+      "peak": 0.3645
+    },
+    {
+      "car": "carrera",
+      "engine": "flat6",
+      "cylinders": 6,
+      "rms": 0.1467,
+      "peak": 0.364
+    },
+    {
+      "car": "gr_yaris",
+      "engine": "turbo3",
+      "cylinders": 3,
+      "rms": 0.1156,
+      "peak": 0.3903
+    },
+    {
+      "car": "gtv",
+      "engine": "na4",
+      "cylinders": 4,
+      "rms": 0.1299,
+      "peak": 0.4231
+    }
+  ],
+  "lifecycle": [
+    "Rapid MINI → taxi → Z4 selects only Z4",
+    "Ignition cancellation, catch fade, delayed-load suppression, moving-car suppression, restart and deduplication",
+    "Repeated stop is safe"
+  ],
+  "fallback": "404 handled; procedural engine remains available",
+  "traffic": "Unified bounded pool restores electric, petrol and motorcycle profiles on reuse",
+  "damage": "Rear >50% only; bounded level/rate; no rattle after repair, while muted/stopped or during ignition"
+}
