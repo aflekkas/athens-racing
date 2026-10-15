@@ -1,5 +1,6 @@
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
+import {showroomRig} from './vehicle-camera.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint } from './cars.js';
 import { TurntableControl } from './turntable-control.js';
@@ -93,6 +94,7 @@ export function mountCarGrid(root) {
         renderer ||= new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         renderer.setSize(480, 240); renderer.toneMapping = THREE.ACESFilmicToneMapping;
         const model = new CarModel(c); model.root.rotation.y = -.45; scene.add(model.root);
+        const framing=showroomRig(c,2,32,Math.hypot(6,3,7));camera.position.set(6,3,7).normalize().multiplyScalar(framing.distance);camera.lookAt(0,c.nativeFleet?framing.targetY:.6,0);
         renderer.render(scene, camera); const url = renderer.domElement.toDataURL('image/png'); img.src = url; thumbs.set(key, url);
         model.root.removeFromParent(); model.disposeDamage?.();
         // The models share geometry/materials with the game; only thumbnail-specific geometry may be released.
@@ -165,8 +167,9 @@ export function mountCarSelect(root, index, opts = {}) {
   const resize = () => {
     const w = container.clientWidth, h = container.clientHeight; if (!w || !h) return;
     renderer.setSize(w,h); camera.aspect=w/h;
-    const distance = Math.max(8.3, 6.2 / camera.aspect) * (lite ? 1.12 : 1);
-    camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,lite ? .45 : .65,0); camera.updateProjectionMatrix();
+    const framing=showroomRig(CARS[index],camera.aspect,35,Math.max(8.3,6.2/camera.aspect)*(lite?1.12:1)),distance=framing.distance;
+    floor.scale.setScalar(Math.max(1,(CARS[index].length||4)/7));
+    camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,CARS[index].nativeFleet?framing.targetY:lite?.45:.65,0); camera.updateProjectionMatrix();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
   const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, pointerStart, touch, last = performance.now();
@@ -185,7 +188,7 @@ export function mountCarSelect(root, index, opts = {}) {
     old.root.traverse(o=>{if(o.geometry&&!o.geometry.userData.shared)o.geometry.dispose();});
     const nextMaterials=new Set(),nextTextures=new Set();nextModel.root.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){nextMaterials.add(m);for(const v of Object.values(m))if(v?.isTexture)nextTextures.add(v);}});
     for(const [original,copy]of materialCopies)if(!nextMaterials.has(copy)){for(const v of Object.values(copy))if(v?.isCanvasTexture&&!nextTextures.has(v))v.dispose();copy.dispose();materialCopies.delete(original);}
-    model=nextModel;index=next;
+    model=nextModel;index=next;resize();
     const menu=window.__flow?.menu;if(menu){menu.data={...menu.data,index,detail:true};C.morph(root,renderCarSelect(menu.data));C.indicators(root);}
     renderer.render(scene,camera);return true;
   };

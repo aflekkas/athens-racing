@@ -148,3 +148,13 @@ test('native fleet builds finite geometry, correct wheel counts and usable cockp
   }
  }finally{globalThis.document=old;}
 });
+
+test('garage cameras fit utility bodies through a complete turntable and narrow screens',async()=>{
+ const {showroomRig}=await import('../src/vehicle-camera.js');
+ for(const spec of CARS.filter(c=>c.nativeFleet))for(const aspect of [.5,1,2]){
+  const rig=showroomRig(spec,aspect),h=(spec.height||1.5)+(spec.twoWheeler?.6:0),radius=Math.hypot(spec.length,spec.width,h)/2;
+  const half=Math.atan(Math.tan(35*Math.PI/360)*Math.min(1,aspect));
+  assert(rig.distance*Math.sin(half)>radius,spec.id+' bounding sphere fits');
+ }
+ assert.equal(showroomRig(CARS.find(c=>c.id==='golf')).distance,8.3);
+});
