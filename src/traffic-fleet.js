@@ -142,6 +142,7 @@ function cloneTemplate(t,color,plateMaterial,plateUV){
   return car;
 }
 function attachLevels(near,far){
+  near.farBody=far.body; // src/traffic-proxies.js batches this level for distant intact cars
   const root=near.root,nearBody=near.body,body=new THREE.Group();root.remove(nearBody);body.add(nearBody,far.body);root.add(body);near.body=body;
   const nearNodes=[nearBody],farNodes=[far.body];
   // One physical pivot/spin hierarchy drives both visual wheel levels.

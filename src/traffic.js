@@ -13,6 +13,7 @@ import { COND } from './env.js';
 import { trafficByHour, hourForTime } from './world-life.js';
 import { TRAFFIC_TYPES, trafficModel } from './cars.js';
 import { skipHiddenMatrices } from './batch.js';
+import { TrafficProxies, PROXY_LAMP_RANGE } from './traffic-proxies.js';
 import { RNG, clamp, lerp, smoothstep } from './util.js';
 import { ROAD } from './road.js';
 import { LANE_W } from './map.js';
@@ -137,6 +138,9 @@ export class Traffic {
       const mass = moto ? 320 : 1550;
       this.cars.push({ id: POOL + k, type, kind: type.id, police: true, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV.sedan, dmg: 0 });
     }
+    // distant intact cars draw through shared instanced batches (src/traffic-proxies.js)
+    this.proxies = new TrafficProxies(scene, this.cars);
+    this.syncFrame = {};
     this.police = null; // set by Police
     // road works: cones + a sign, closing the kerb lane for ~45 m in town
     this.sites = []; this.cones = [];
@@ -203,6 +207,7 @@ export class Traffic {
 
   // ---------------------------------------------------------------- spawning
   reset(ps) {
+    this.proxies.begin(); this.proxies.end();
     for (const c of this.cars) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; }
     for (const k of this.cones) { k.s = k.s0; k.u = k.u0; k.y = 0; k.vs = k.vu = k.vy = 0; k.rx = k.rz = 0; k.w = 0; k.hit = false; }
     this.honks.length = 0; this.sounds.length = 0; this.lastBus = -1e9;
@@ -1458,13 +1463,14 @@ export class Traffic {
 
   /** place the visual models */
   sync(ps) {
-    const route = this.route, f = {};
+    const route = this.route, f = this.syncFrame;
+    this.proxies.begin();
     for (const c of this.cars) {
       if (!c.active) { if (c.m.damageDebris?.length) c.m.updateDamage?.(this.dtLast || 0.016); continue; } // only falling debris needs a pooled car's update
       const vis = Math.abs(c.s - ps) < (this.drawRange || 650); // main.js: from the render distance
       c.m.root.visible = vis; if (!vis) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
       c.m.setLOD?.(Math.abs(c.s - ps)); // detail by distance (src/cars.js)
-      const lamps = Math.abs(c.s - ps) < 110; // 16 cm indicator boxes are sub-pixel beyond this
+      const lamps = Math.abs(c.s - ps) < PROXY_LAMP_RANGE; // 16 cm indicator boxes are sub-pixel beyond this
       if (c.m.accessories && c.lampsShown !== lamps) { c.lampsShown = lamps; for (const a of c.m.accessories) a.visible = lamps; }
       route.frame(c.s, f);
       route.point(c.s, c.u, _v);
@@ -1490,7 +1496,10 @@ export class Traffic {
       }
       c.m.tail.emissiveIntensity = !k && c.braking ? 7 : 1.4;
       c.m.updateDamage?.(this.dtLast || 0.016);
+      const dmg = c.m.damage;
+      if (c.proxyParts && c.m.lodLevel === 1 && !k && !c.dmg && !dmg?.front && !dmg?.rear && !dmg?.left && !dmg?.right && !c.m.damageDebris?.length) this.proxies.add(c, lamps);
     }
+    this.proxies.end();
   }
 }
 
