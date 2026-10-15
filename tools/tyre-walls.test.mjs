@@ -22,7 +22,7 @@ test('loose tyres fly, bounce, settle displaced, stay bounded and reset', () => 
   sim.reset(); assert.equal(sim.bodies.length, 0); assert.equal(stacks[0].released, false);
 });
 
-test('instanced four-high 3D tyre walls hide struck slots, restore on restart and stay static online', () => {
+test('instanced four-high 3D tyre walls stay static when struck, solo and online', () => {
   const group = new THREE.Group(), obstacles = [];
   const route = { project: () => ({s: 0, u: 50}), edge: () => 5, kerbs: [] };
   const walls = createTyreWalls(group, {route}, () => 0, obstacles);
@@ -31,10 +31,8 @@ test('instanced four-high 3D tyre walls hide struck slots, restore on restart an
   assert.equal(placements[0].slots[0].mesh.geometry.type, 'TorusGeometry');
   walls.update(0, true); obstacles[0].onImpact({vx: 20, vz: 0, speed: 20}); assert.equal(walls.dynamics.bodies.length, 0);
   walls.update(0, false); obstacles[0].onImpact({vx: 20, vz: 0, speed: 20}); walls.update(1 / 60, false);
-  assert.equal(walls.dynamics.bodies.length, 3);
+  assert.equal(walls.dynamics.bodies.length, 0, 'tyres stay in their stacks in solo too');
   const matrix = new THREE.Matrix4(), slot = placements[0].slots[3]; slot.mesh.getMatrixAt(slot.index, matrix);
-  assert.equal(matrix.elements[0], 0);
-  assert.equal(group.getObjectByName('loose-circuit-tyres').count, 3);
-  walls.update(0, true); assert.equal(walls.dynamics.bodies.length, 0);
-  slot.mesh.getMatrixAt(slot.index, matrix); assert.ok(matrix.elements[0] !== 0);
+  assert.ok(matrix.elements[0] !== 0, 'struck stack keeps every tyre');
+  assert.equal(group.getObjectByName('loose-circuit-tyres').count, 0);
 });
