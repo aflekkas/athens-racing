@@ -1,0 +1,24 @@
+{
+  "testedCommit": "6072314262b1dcdd5f5f249304e731057b5049bc",
+  "gates": {
+    "wrangler": 0,
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "syntax": 0,
+    "physics": 0
+  },
+  "focusedTests": 7,
+  "refreshedScreenshots": [
+    "../privacy-1280.png",
+    "../privacy-390.png"
+  ],
+  "hostingObservation": {
+    "scriptHost": "static.cloudflareinsights.com",
+    "scriptPathPrefix": "/beacon.min.js",
+    "injectedIntoChromeResponses": true,
+    "legalPageCsp": "default-src 'none'",
+    "emailContactReadable": true
+  },
+  "providerDocumentation": "https://developers.cloudflare.com/speed/observatory/rum-beacon/"
+}
