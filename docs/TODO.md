@@ -2,7 +2,7 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-15 21:00 UTC.
+Last updated: 2026-10-15 21:40 UTC.
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
@@ -67,8 +67,9 @@ Last updated: 2026-10-15 21:00 UTC.
 
 ## Open world
 - [x] Plan: docs/athens-open-world-plan.md (`ed1732d`).
-- [?] Owner: relax street-photo proof for free-roam side streets? It decides months vs years.
-- [?] Owner: go-ahead for milestone 1 (stream the three existing maps tile by tile).
+- [x] Owner: no photo rule for any street; bare simple (roads plus building blocks); all of Athens at minimal cost (`d9aed06`).
+- [~] Tile format spec plus streaming runtime; the existing 3 maps streamed tile by tile (Sol).
+- [~] Offline all-Athens generator from OSM + DEM: south suburbs, then the basin, then Attica, plus an "Athens" free-roam mode (Astra).
 
 ## Controls
 - [x] Phone as steering wheel: QR pairing, P2P with relay fallback, tilt, pedals, safe release (`fe12576`).
