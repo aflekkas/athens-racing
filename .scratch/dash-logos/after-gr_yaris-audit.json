@@ -1,0 +1,80 @@
+[
+  {
+    "x": 100,
+    "y": 300,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 111.75511712121552,
+    "y": 262.717531637182,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 142.7686906838315,
+    "y": 238.91997964891596,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 181.82323793166387,
+    "y": 237.21482129121057,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 214.79288880273356,
+    "y": 258.2188053703749,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 905,
+    "y": 238,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 892.5861046343716,
+    "y": 276.20604139901076,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 860.0861046343716,
+    "y": 299.81867355918496,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 819.9138953656284,
+    "y": 299.81867355918496,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 787.4138953656284,
+    "y": 276.20604139901076,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 775,
+    "y": 238,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 465,
+    "y": 188,
+    "withinViewport": true,
+    "blocked": []
+  },
+  {
+    "x": 555,
+    "y": 188,
+    "withinViewport": true,
+    "blocked": []
+  }
+]

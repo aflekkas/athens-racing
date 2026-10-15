@@ -1,0 +1,42 @@
+{
+  "implementationCommits": [
+    "549fab43277059a7ea1f56d38ba26770e8771418",
+    "5f5d2bd0d2d61932773cc8ce94e321ecb0559f38"
+  ],
+  "fullGateArchive": "d1e3272e89d9d3c27cf6e863d1185c6decb5c54d",
+  "gates": {
+    "staging-dry-run": 0,
+    "events": 0,
+    "npm-test": 1,
+    "imports": 0,
+    "syntax": 0,
+    "focused": 0,
+    "physics": 0
+  },
+  "finalFocusedTests": {
+    "passed": 24,
+    "exit": 0
+  },
+  "finalSyntaxExit": 0,
+  "finalImportExit": 0,
+  "knownBaselineFailure": {
+    "test": "tools/road-terrain-level.test.mjs \u2014 riviera",
+    "message": "dry Astir sand submerged at 497.2,2810.8: -1.2544212752587114",
+    "unchangedParent": "b585492124778bc09a5c6080ec5a1da223164904",
+    "parentTestExit": 1
+  },
+  "visibility": {
+    "cars": 18,
+    "symbols": 234,
+    "occluded": 0,
+    "outsideDefaultViewport": 0,
+    "camera": {
+      "width": 1440,
+      "height": 900,
+      "verticalFov": 66,
+      "pitch": -0.045,
+      "eyeOffsetY": 0.02,
+      "space": "model.body.localToWorld, including trim ride height"
+    }
+  }
+}

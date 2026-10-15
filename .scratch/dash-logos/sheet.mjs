@@ -1,0 +1,4 @@
+import fs from 'node:fs/promises';
+import sharp from 'sharp';
+const phase=process.argv[2]||'before',files=(await fs.readdir('.scratch/dash-logos')).filter(f=>f.startsWith(phase+'-')&&f.endsWith('-cockpit.png'));const width=480,height=320,tiles=[];
+for(const [i,f] of files.entries()){tiles.push({input:await sharp('.scratch/dash-logos/'+f).resize(width,300).png().toBuffer(),left:i%3*width,top:Math.floor(i/3)*height});tiles.push({input:Buffer.from(`<svg width="480" height="20"><rect width="480" height="20" fill="#161a20"/><text x="10" y="15" fill="white" font-size="14">${f}</text></svg>`),left:i%3*width,top:Math.floor(i/3)*height+300});}await sharp({create:{width:width*3,height:height*Math.ceil(files.length/3),channels:4,background:'#161a20'}}).composite(tiles).png().toFile('.scratch/dash-logos/'+phase+'-contact-sheet.png');

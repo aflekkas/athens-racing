@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: brand artwork and fallback flags cover the garage bodies
+ok 1 - brand artwork and fallback flags cover the garage bodies
+  ---
+  duration_ms: 1.765399
+  type: 'test'
+  ...
+# Subtest: all 13 telltales have separate, bounded mountings in every cluster style
+ok 2 - all 13 telltales have separate, bounded mountings in every cluster style
+  ---
+  duration_ms: 0.941915
+  type: 'test'
+  ...
+# Subtest: extinguished telltales do not draw or allocate artwork
+ok 3 - extinguished telltales do not draw or allocate artwork
+  ---
+  duration_ms: 0.272338
+  type: 'test'
+  ...
+# Subtest: brands share one texture and disabling a brand selects the generic medallion
+ok 4 - brands share one texture and disabling a brand selects the generic medallion
+  ---
+  duration_ms: 1.274294
+  type: 'test'
+  ...
+# Subtest: ignition checks every bulb, seatbelt clears, restart checks bulbs again
+ok 5 - ignition checks every bulb, seatbelt clears, restart checks bulbs again
+  ---
+  duration_ms: 1.956886
+  type: 'test'
+  ...
+# Subtest: intervention flashes and holds brief TC/ABS pulses; disabling TC shows OFF
+ok 6 - intervention flashes and holds brief TC/ABS pulses; disabling TC shows OFF
+  ---
+  duration_ms: 1.90016
+  type: 'test'
+  ...
+# Subtest: damage severity, temperature, wheels, brake and lighting follow vehicle state
+ok 7 - damage severity, temperature, wheels, brake and lighting follow vehicle state
+  ---
+  duration_ms: 0.391661
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 156.167555
