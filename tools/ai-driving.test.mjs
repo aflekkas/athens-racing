@@ -217,3 +217,18 @@ for (const gap of [1.2, 3]) test(`boxed-in-${gap}`, () => {
   record(`boxed-in-${gap}`, { contacts, passedAt, wall, maxU }, []);
   if (!baseline) { assert.equal(contacts, 0); assert.ok(passedAt !== null && passedAt < 20, `got past at ${passedAt}`); assert.ok(maxU < route.edge(0) - 0.9, `stayed on the road (max u ${maxU.toFixed(2)})`); }
 });
+// main.js integrates rivals far from the player at 120 Hz (Vehicle.subH): same driving, half the cost.
+test('far-rival-substep', () => {
+  const data = JSON.parse(readFileSync(new URL('data/maps/penteli/map.json', root)));
+  const route = new Route(data.route); route.urban = () => 1;
+  const run = (subH) => {
+    const v = new Vehicle({ ...spec }, route); v.reset(100, 0, 0); v.subH = subH;
+    const ai = new RivalAI(route, v, { perfect: true, closedRoad: true });
+    let t = 0, beta = 0;
+    for (; t < 60 && v.s < 1100; t += dt) { v.update(dt, ai.update(dt)); beta = Math.max(beta, Math.abs(Math.atan2(v.vLat, Math.max(2, v.vLong)))); }
+    return { t, beta, ok: [v.x, v.z, v.vLong].every(Number.isFinite) };
+  };
+  const fine = run(0), coarse = run(1 / 120);
+  record('far-rival-substep', { fine, coarse }, []);
+  if (!baseline) { assert.ok(coarse.ok); assert.ok(Math.abs(coarse.t / fine.t - 1) < 0.01, `${coarse.t} vs ${fine.t}`); assert.ok(coarse.beta < fine.beta + 0.03); }
+});

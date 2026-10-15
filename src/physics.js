@@ -469,7 +469,8 @@ export class Vehicle {
     if (!(dt > 0)) return; // a zero / negative / NaN step would divide by zero in the integrator (suspension, ABS rates)
     // something outside the integrator (a crash, a wall) changed our speed: let the wheels follow
     if (Math.abs(this.vLong - this.lastV) > 1.5) this.syncWheels();
-    const N = Math.max(1, Math.round(dt / H));
+    // subH: an AI rival far out of view may integrate at a coarser substep (main.js); everyone else 1/240 s.
+    const N = Math.max(1, Math.round(dt / (this.subH || H)));
     const h = dt / N;
     this.bumpHit = 0;
     for (let i = 0; i < N; i++) this.step(h, input);
