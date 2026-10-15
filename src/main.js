@@ -556,6 +556,7 @@ function backOnRoad(pv, recovery = null) {
   }
   if (!route.closed) s = clamp(s, 0, route.length);
   const placement = roadRecoveryPose(route, pv, dir, s);
+  s = placement.s; // The helper also repairs non-finite or out-of-range anchors.
   const u = placement.u;
   const nitro = pv.nitro; beginCameraBlend();
   pv.reset(s, u, 0); pv.yaw = placement.yaw;
@@ -580,7 +581,7 @@ function stuckCheck(pv, dt) {
   const disabled = pv.engineStalled || pv.drivetrainBroken || EV.isWrecked(pv.maxImpactEbs);
   // Only on-road poses advance the recovery anchor; a circuit excursion cannot skip a checkpoint.
   if (!offroad && !inverted && !disabled && !G.towing && towOffer.hold <= 0) {
-    towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = towOffer.stuckT = towOffer.severeT = G.stuckT = 0; return;
+    if (!pv._network && Math.abs(pv.u) + pv.halfW <= route.edge(pv.s)) towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = towOffer.stuckT = towOffer.severeT = G.stuckT = 0; return;
   }
   const needed = towCondition({ offroad, beyond, water: pv.water, inverted, disabled, speed: pv.speed }, dt, towOffer);
   G.stuckT = towOffer.stuckT;

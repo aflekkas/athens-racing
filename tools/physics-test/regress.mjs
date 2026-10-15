@@ -309,10 +309,10 @@ else {
       const edge=road.edge(pose.s),median=road.closed?0:road.medHalf(pose.s);
       worst=Math.max(worst,Math.abs(Math.abs(pose.u)-(road.closed?0:(edge+median)/2)));
       if (!finite(v) || Math.abs(pose.u)+v.halfW>edge || !road.closed && Math.abs(pose.u)-v.halfW<median || dot<.999) bad++;
-      const anchored=roadRecoveryPose(road,p,dir,s);if(Math.abs(anchored.s-s)>1e-9)bad++;
+      const anchored=roadRecoveryPose(road,p,dir,s);if((anchored.s-s)*dir>1e-9||Math.abs(anchored.s-s)>80)bad++;
       count++;
     }
-    check(`reset placement ${def.id}: road centreline, whole car on road, race direction, server anchor retained`, bad===0 && worst<1e-9, `${count} off-road samples, ${bad} invalid`);
+    check(`reset placement ${def.id}: road centreline, whole car on road, race direction, checkpoint-safe anchor respected`, bad===0 && worst<1e-9, `${count} off-road samples, ${bad} invalid`);
   }
 }
 

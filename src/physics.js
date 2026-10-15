@@ -134,6 +134,7 @@ export class Vehicle {
     // integrator's differences and every per-car cache ground.js keeps (contact history, airborne state, kerb zones)
     this.roadPrev = this.roadFPrev = this.lastAbsBeta = undefined;
     this._gx = this._gz = this._gy = this._gt = this._gu = undefined; this._curbZ = null;
+    this._network = false; // A tow leaves the side-road surface and its contact mode behind.
     this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
     this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
