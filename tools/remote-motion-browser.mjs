@@ -8,7 +8,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
-const base = process.env.MOTION_URL || 'https://athens-street-racers-staging.aflekkas.workers.dev';
+const base = process.env.MOTION_URL || 'https://staging.athensracing.com';
 const out = resolve(process.env.MOTION_OUT || '.scratch/mp-motion-followup/baseline');
 await mkdir(out,{recursive:true});
 const errors=[], inbox=[], waiters=[], packets=[];
