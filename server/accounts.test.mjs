@@ -692,3 +692,32 @@ test("accepted invitation joins the verified host’s actual core lobby with the
   assert.equal(core.clientData(guest).lobbyCode, code);
   assert.equal(core.lobbies.get(code).players.size, 2);
 });
+
+test("Google signature verification rejects a tampered signature and expired identity", async () => {
+  const { verifyGoogleToken } = await import("../worker/google-token.mjs");
+  const options = {
+    audience: "client",
+    nonce: "nonce",
+    fetcher: async () => jwks(),
+  };
+  const claims = {
+    sub: "sub",
+    iss: "https://accounts.google.com",
+    aud: "client",
+    nonce: "nonce",
+    exp: Date.now() / 1000 + 60,
+  };
+  const token = await googleToken(claims);
+  assert.equal((await verifyGoogleToken(token, options)).sub, "sub");
+  const parts = token.split("."),
+    signature = Buffer.from(parts[2], "base64url");
+  signature[0] ^= 1;
+  parts[2] = signature.toString("base64url");
+  await assert.rejects(verifyGoogleToken(parts.join("."), options), {
+    status: 401,
+  });
+  await assert.rejects(
+    verifyGoogleToken(await googleToken({ ...claims, exp: 1 }), options),
+    { status: 401 },
+  );
+});
