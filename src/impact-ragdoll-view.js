@@ -10,7 +10,7 @@ export class ImpactBodies extends RagdollPool {
    const L=makeLook(new RNG(71),'street');Object.assign(L,{hat:null,bag:false,phone:false,cup:false,umbrella:false,skirt:false,role:'street'});
    const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.8,transparent:true});
    b.pedRig=createHumanRig(L,material);b.pedLook=L;
-   const riderLook=makeLook(new RNG(17),'street');Object.assign(riderLook,{female:false,skirt:false,hat:null,bag:false,phone:false,cup:false,umbrella:false,sleeveless:false,longSleeve:true,hair:-1,role:'street'});
+   const riderLook=makeLook(new RNG(17),'street');Object.assign(riderLook,{female:false,skirt:false,shorts:false,swim:false,hat:null,bag:false,phone:false,cup:false,umbrella:false,sleeveless:false,longSleeve:true,hair:-1,role:'street'});
    riderLook.col.top.set('#3b4652');riderLook.col.bottom.set('#20252b');
    b.riderRig=createHumanRig(riderLook,material.clone());b.riderLook=riderLook;
    b.riderRig.mesh.visible=false;scene.add(b.riderRig.mesh);

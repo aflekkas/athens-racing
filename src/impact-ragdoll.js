@@ -78,8 +78,8 @@ export class Ragdoll {
    // Piecewise upper hull: bonnet, sloping windscreen, roof, rear deck.
    const front=-hl,hood=-hl*.48,screen=-hl*.05,rear=hl*.62;
    let top,slope=0;
-   if(z<hood){top=h*.52;}
-   else if(z<screen){slope=h*.48/(screen-hood);top=h*.52+(z-hood)*slope;}
+   if(z<hood){slope=h*.17/(hood-front);top=h*.48+(z-front)*slope;}
+   else if(z<screen){slope=h*.35/(screen-hood);top=h*.65+(z-hood)*slope;}
    else if(z<rear){top=h;}
    else {slope=-h*.38/(hl-rear);top=h+(z-rear)*slope;}
    // Reject underside entries: push sideways at the bumper instead of teleporting to roof.

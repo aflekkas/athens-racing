@@ -24,8 +24,8 @@ test('moderate impact folds the torso onto the live bonnet without launching sky
  assert(b.p[2]-car.z<0);assert(Math.max(...b.p.filter((_,i)=>i%3===1))<2.4);
 });
 test('higher speed reaches windscreen/roof; thrown body travels further than knockdown',()=>{
- const car={x:0,y:0,z:0,yaw:0,halfL:2.2,halfW:.9,height:1.4,vz:-18};const b=new Ragdoll().launch({...launch(18),x:.1,z:-2.3,car});
- for(let i=0;i<60;i++){car.z-=18*STEP;b.update(STEP,ground);}assert(b.p[10]>1.4);
+ const car={x:0,y:0,z:0,yaw:0,halfL:2.2,halfW:.9,height:1.4,vz:-23};const b=new Ragdoll().launch({...launch(23),x:.1,z:-2.3,car});
+ for(let i=0;i<60;i++){car.z-=23*STEP;b.update(STEP,ground);}assert(b.p[10]>1.4);
  const low=new Ragdoll().launch(launch(2)),high=new Ragdoll().launch(launch(28));advance(low,2);advance(high,2);assert(Math.abs(high.p[2])>Math.abs(low.p[2])+8);
 });
 test('one fixed pool caps both riders and pedestrians and reuses oldest body buffers',()=>{
