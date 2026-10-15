@@ -199,3 +199,16 @@ test('Unreleased without photos warns without blocking the automatic release tra
   assert.equal(missingPicturesWarning({ unreleased: [], unreleasedImages: [] }), null);
   assert.equal(missingPicturesWarning({ unreleased: ['A change.'], unreleasedImages: [{}] }), null);
 });
+
+test('the actual content manifest omits changelog photos even with a broad asset core', async () => {
+  const { buildRelease } = await import('./release-cache.mjs');
+  const out = await mkdtemp(join(tmpdir(), 'asr-picture-cache-'));
+  try {
+    await mkdir(join(out, 'assets/changelog/2026.10.15.3'), { recursive: true });
+    await mkdir(join(out, 'src'), { recursive: true });
+    await writeFile(join(out, 'assets/changelog/2026.10.15.3/photo.webp'), readFileSync(resolve(root, 'assets/changelog/2026.10.15.3/golf-trims.webp')));
+    await writeFile(join(out, 'src/shell.js'), 'console.log("menu");');
+    const release = await buildRelease(out, { core: ['/assets/', '/src/'] });
+    assert.deepEqual(Object.keys(release.files), ['/src/shell.js']);
+  } finally { await rm(out, { recursive: true, force: true }); }
+});

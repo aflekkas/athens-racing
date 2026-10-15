@@ -42,7 +42,7 @@ export const versionLabel = (version) => parseVersion(version) ? 'V' + version :
 /**
  * CHANGELOG.md -> { unreleased: string[], releases: [{ version, date, items: string[] }] }, newest first.
  * Strict on purpose (it runs at deploy time, so a typo fails the build instead of silently dropping notes):
- * only `## Unreleased` or `## <version>[ — <date>]` headings, only bullets below them, versions in descending order,
+ * only `## Unreleased` or `## <version>[ — <date>]` headings, bullets and local Markdown photos below them, versions in descending order,
  * a heading's date must match its version, and every release needs at least one bullet.
  * Text before the first `##` and <!-- comments --> are ignored. An indented line continues the bullet above it.
  */

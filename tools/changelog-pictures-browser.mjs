@@ -22,7 +22,7 @@ try {
     const boot = async () => { await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 }); await page.waitForFunction(() => window.__flow?.menu.screen === 'title' && document.body.classList.contains('loaded'), null, { timeout: 120000 }); };
     const click = act => page.locator(`[data-act="${act}"]`).first().click();
     const readyImage = selector => page.waitForFunction(selector => { const i = document.querySelector(selector); return i?.complete && i.naturalWidth > 0; }, selector);
-    const snap = async name => { await page.waitForTimeout(250); const file = `${name}-${width}.png`; await page.screenshot({ path: resolve(out, file), animations: 'disabled', timeout: 60000 }); report.captures.push(file); console.log('Captured', file); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); };
+    const snap = async name => { await page.locator('#ui img').evaluateAll(images => Promise.all(images.filter(i => i.complete && i.naturalWidth).map(i => i.decode()))); await page.waitForTimeout(250); const file = `${name}-${width}.png`; await page.screenshot({ path: resolve(out, file), animations: 'disabled', timeout: 60000 }); report.captures.push(file); console.log('Captured', file); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); };
     await boot();
     assert.equal(photos.length, 0); assert.equal(maps.length, 0); assert.equal(await page.locator('.news-card').count(), 0);
     report.checks.push(`${width}: brand-new boot requests zero changelog images and zero map data`);
@@ -34,7 +34,7 @@ try {
     await snap('card-photos');
     await page.locator('.news-card [data-act="releaseImage"]').first().click();
     assert.equal(await page.evaluate(() => __flow.menu.screen), 'releaseImage');
-    assert.equal(await page.locator('[role="dialog"]').count(), 0);
+    assert.equal(await page.locator('#ui [role="dialog"]').count(), 0);
     await click('back'); assert.equal(await page.evaluate(() => __flow.menu.screen), 'title');
     assert.equal(await page.locator('.news-card').count(), 1, 'viewing card pictures does not dismiss the card');
     await click('dismissNews'); await click('whatsNew'); await readyImage('.release-list img');
@@ -43,7 +43,7 @@ try {
     await snap('whats-new');
     await page.locator('.release-list [data-act="releaseImage"]').first().click();
     await readyImage('.release-image img'); await snap('full-screen');
-    assert.equal(await page.locator('[role="dialog"]').count(), 0);
+    assert.equal(await page.locator('#ui [role="dialog"]').count(), 0);
     await click('back'); assert.equal(await page.evaluate(() => __flow.menu.screen), 'whatsNew');
     assert.equal(maps.length, 0, 'notes and image viewer never load a map');
     report.checks.push(`${width}: card opt-in photos, lazy notes gallery, full screen and Back; no map data`);
