@@ -260,38 +260,26 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   }
   const wBeam=[[0,.51],[.07,.55],[.07,.61],[0,.66],[0,.71],[.07,.76],[.07,.82],[0,.85]];
   for(const run of rails)sweep(run.pts.map(q=>({...q,side:run.side,y:q.p.y})),wBeam,metal,'mountain-guardrail');
-  const ditchMat=std('#817a69',{map:TX.concrete_diff,side:THREE.DoubleSide});
-  const wallMat=std('#b5b0a1',{map:TX.rock_diff,normalMap:TX.rock_nor,side:THREE.DoubleSide});
-  for(const side of [-1,1])for(let start=0;start<route.length;start+=240){
-    let ditch=[],wall=[];
-    const flush=()=>{sweep(ditch,[[0,.04],[.34,-.16],[.76,.07]],ditchMat,'cut-side-drain');ditch=[];sweep(wall,[[0,-.3],[.18,.65],[.46,1.1]],wallMat,'low-stone-cut-retaining');wall=[];};
-    for(let s=start;s<=Math.min(route.length,start+240);s+=4){
-      const u=route.edge(s)+2.18,p=route.point(s,side*u),o=route.point(s,side*(u+7)),rise=terrain.height(o.x,o.z)-p.y;
-      if(rise>.8&&s>220&&Math.abs(s-5744)>45&&!map.roadNetwork?.mouth(s,side,6)){ditch.push({s,u,y:p.y,side});if(rise>3.2)wall.push({s,u:u+.86,y:p.y,side});else{if(wall.length)sweep(wall,[[0,-.3],[.18,.65],[.46,1.1]],wallMat,'low-stone-cut-retaining');wall=[];}}
-      else flush();
-    }flush();
-  }
+  // The common terrain provides drainage and re-entry shoulders. Raised
+  // decorative drains/retaining strips must not recreate a wall across them.
 
   // March2026 Google station06 shows a natural layered rock cut on the left.
-  // Its height follows the uphill DEM at20m: ~0–7m here. The coarse DEM smooths
-  // roadside cuts, so only the near face is reconstructed; the back meets terrain.
-  // Entire exposure stays beyond the shoulder, with no road/elevation mutation.
-  const cutPos=[],cutUV=[],cutCol=[],cutNorm=[],cutIdx=[],cutLevels=9;
+  // Keep its rock appearance on the conformed ground beyond the re-entry
+  // shoulder, instead of lofting an extra vertical face above the wheel surface.
+  const cutPos=[],cutUV=[],cutCol=[],cutIdx=[],cutValid=[],cutLevels=9;
   for(let s=6520,row=0;s<=6800;s+=5,row++){
-    const edge=route.edge(s),foot=route.point(s,-(edge+1.65)),back=route.point(s,-20),frame=route.frame(s,{});
-    const footY=Math.max(foot.y-.12,heightC(foot.x,foot.z)),topY=heightC(back.x,back.z),rise=clamp(topY-footY,0,7.5);
+    const edge=route.edge(s);
     for(let k=0;k<cutLevels;k++){
-      const t=k/(cutLevels-2),isBack=k===cutLevels-1;
-      const strata=Math.sin(k*2.7+Math.sin(s*.064)*.3)*.18;
-      const u=isBack?20:edge+1.65+Math.min(t,1)*2.1+strata+Math.sin(s*.19+k*.6)*.16;
-      const p=route.point(s,-u),groundY=heightC(p.x,p.z),y=isBack?topY+.05:Math.max(groundY+.08,footY+Math.min(t,1)*rise);
-      cutPos.push(p.x,y,p.z);cutUV.push(s*.35,(y-footY)*.46);
-      cutNorm.push(isBack?0:frame.rx,isBack?1:.15,isBack?0:frame.rz);
+      const d=8+16*k/(cutLevels-1),p=route.point(s,-(edge+d)),groundY=heightC(p.x,p.z),q=route.project(p.x,p.z,null);
+      cutPos.push(p.x,groundY+.015,p.z);cutUV.push(s*.35,d*.46);
+      cutValid.push(Math.abs(q.u)>route.edge(q.s)+6&&!map.roadNetwork?.sample(p.x,p.z));
       const shade=(k%3===0?.65:.92)+Math.sin(s*.09+k)*.04;cutCol.push(shade,shade*.97,shade*.86);
-      if(row&&k){const a=(row-1)*cutLevels+k-1,b=a+cutLevels;cutIdx.push(a,a+1,b,a+1,b+1,b);}
+      if(row&&k){const a=(row-1)*cutLevels+k-1,b=a+cutLevels;
+        if([a,a+1,b,b+1].every(i=>cutValid[i]))cutIdx.push(a,b,a+1,a+1,b,b+1);
+      }
     }
   }
-  const cutting=new THREE.BufferGeometry();cutting.setAttribute('position',new THREE.Float32BufferAttribute(cutPos,3));cutting.setAttribute('uv',new THREE.Float32BufferAttribute(cutUV,2));cutting.setAttribute('color',new THREE.Float32BufferAttribute(cutCol,3));cutting.setIndex(cutIdx);cutting.setAttribute('normal',new THREE.Float32BufferAttribute(cutNorm,3));
+  const cutting=new THREE.BufferGeometry();cutting.setAttribute('position',new THREE.Float32BufferAttribute(cutPos,3));cutting.setAttribute('uv',new THREE.Float32BufferAttribute(cutUV,2));cutting.setAttribute('color',new THREE.Float32BufferAttribute(cutCol,3));cutting.setIndex(cutIdx);cutting.computeVertexNormals();
   const cutMaterial=std('#ede8d7',{map:TX.rock_diff,vertexColors:true,side:THREE.DoubleSide});
   const cutHook=cutMaterial.onBeforeCompile;cutMaterial.customProgramCacheKey=()=> 'penteli-cut-diffuse-v3';
   cutMaterial.onBeforeCompile=sh=>{cutHook(sh);sh.fragmentShader=sh.fragmentShader

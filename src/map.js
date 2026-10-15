@@ -83,6 +83,8 @@ export class Route {
     }
     this.setLocalCorridors(corridors);
     conformRoadElevations(this);
+    // Axis reference heights must share the final profile used by contacts.
+    for(const bore of this.localCorridors)for(let i=0;i<bore.stations.length;i++)bore.axis3D[i][1]=bore.point(bore.stations[i],0,{}).y;
   }
   setLocalCorridors(metadata) { this.localLayout = metadata.length ? new LocalCarriageways(this, metadata) : null; this.localCorridors = this.localLayout?.bores || []; }
   contactFrame(s, u, out = {}) { if (this.localLayout?.contains(s)) return this.localLayout.frame(s,u,out); this.frame(s,out); out.mapped=false; return out; }
