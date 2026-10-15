@@ -7,7 +7,7 @@ body.ui-open #hud { opacity: 0 !important; }
 body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 #ui .mi { cursor: pointer; }
 /* the screen sits on the live road view: dimmed, with a cool vignette like a screen bezel */
-#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-fines, #ui.s-roamConditions, #ui.s-roamLandmarks, #ui.s-mapConfirm {
+#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks, #ui.s-mapConfirm {
   background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
 #ui.s-pause { background: linear-gradient(90deg, rgba(3,5,7,.78), rgba(3,5,7,.35) 46%, rgba(3,5,7,.1)); }
 #ui.s-car { background: radial-gradient(120% 90% at 32% 42%, #18222c, #070a0e 72%); }
@@ -565,9 +565,9 @@ body[data-mode="taxi"] #hud #routeBox,body[data-mode="getaway"] #hud #routeBox {
 @media(max-width:500px) { #evBox:has(.objective-card) { top: 128px; left: 122px; width: calc(100vw - 134px); } .objective-card { padding: 9px; } .objective-card header { gap: 6px; font-size: 11px; } .objective-card header small { display: none; } .objective-body h3 { font-size: 14px; } body[data-mode="taxi"] #input-toast,body[data-mode="getaway"] #input-toast { top: 316px; } }
 
 /* Every detached race widget follows the same menu visibility policy as the main HUD. */
-body.ui-open :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
-body:has(#multiplayer:not([hidden])) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone),
-body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud,#fine-phone) { visibility: hidden !important; pointer-events: none !important; }
+body.ui-open :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud),
+body:has(#multiplayer:not([hidden])) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud),
+body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
 
 #checkpoint-banner{position:absolute;top:94px;left:50%;transform:translateX(-50%);width:330px;padding:9px 14px;background:#311d16ed;border-left:3px solid #ffb277;box-sizing:border-box;color:#fff;font-family:var(--font-ui,sans-serif);pointer-events:none}
 #checkpoint-banner b{display:block;font-size:16px;letter-spacing:.08em;color:#ffb277}#checkpoint-banner span{font-size:11px;letter-spacing:.07em}#checkpoint-banner[hidden]{display:none}

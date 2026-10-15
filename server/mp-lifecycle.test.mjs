@@ -261,7 +261,7 @@ test('reversed runs finish at the mirrored line and skip the leaderboard', (t) =
   assert.equal(submissions.length, 0, 'reversed runs never touch the leaderboard');
 });
 
-test('telemetry extras relay validated; violations without sites stay silent', (t) => {
+test('telemetry extras relay validated; fine claims are never acknowledged', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
   core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
@@ -279,10 +279,10 @@ test('telemetry extras relay validated; violations without sites stay silent', (
   assert.equal(st.coolantTemp, undefined, 'out-of-range coolant is stripped, position survives');
   assert.equal(st.engineFailureReason, undefined);
   assert.equal(st.tyreTelemetry.understeer, false);
-  send(a, { type: 'violation', id: 'v1', kind: 'camera', s: 5, kmh: 200, raceId });
-  assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'empty site lists reject claims');
-  send(a, { type: 'violation', id: 'v1', kind: 'camera', s: 5, kmh: 200, raceId });
-  assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'duplicate rejected claims stay silent');
+  // Nothing is ever fined: a fine claim is not a message the server acts on, and no result carries penalty seconds.
+  send(a, { type: 'violation', id: 'v1', kind: 'camera', s: 5, kmh: 200, raceId, at: Date.now() });
+  assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'no fine is ever acknowledged');
+  assert.equal(lobbyOf(a).players.find((p) => p.name === 'one')?.enfPenalty, undefined);
 });
 
 test('hibernation preserves Quick Race code, config and generation', (t) => {

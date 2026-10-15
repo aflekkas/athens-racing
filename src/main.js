@@ -57,9 +57,6 @@ import { wetPlanningPace, WEATHER } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
-import { EnforcementRuntime } from './enforcement-runtime.js';
-import { FinePhone } from './enforcement-hud.js';
-import { redViolation } from './enforcement.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
 import { PRESETS, PRESET_IDS, PRESET_LABELS, detectQuality, resolveGraphics, applyQualityTier, applyRenderResolution, applySceneryQuality, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
@@ -76,22 +73,9 @@ import { towCondition, recoveryHeld, TOW_PROMPT_SECONDS, TOW_PROMPT_COOLDOWN } f
 const recoveryStyle = document.createElement('link'); recoveryStyle.rel = 'stylesheet'; recoveryStyle.href = new URL('./recovery-prompt.css', import.meta.url).href; document.head.append(recoveryStyle);
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
-const finePhone = new FinePhone();
-const enforcement = new EnforcementRuntime(entry => {
-  if (multiplayer.active) { multiplayer.sendViolation?.(entry); return; }
-  const fine = enforcement.record(entry);
-  if (fine) { G.pen += fine.penaltySec; if (fine.kind === 'red') G.reds++; finePhone.show(fine); }
-});
-let lawsRound = 0;
-function resetLaws() { lawsRound++; enforcement.reset(); finePhone.reset(); finePhone.setEnabled(false); }
-function lawsEnabled() { return (multiplayer.active ? (multiplayer.lobby?.config?.police ?? multiplayer.lobby?.event?.police) === true : police?.enabled === true) && G.ev?.def.rules?.laws !== false && (!multiplayer.active || multiplayer.lobby?.config?.enforcement?.enabled !== false); }
-function lawState(v = player.veh) { return { s: v.s, u: v.u, dir: (G.dir || 1) * (v.reverse ? -1 : 1), kmh: v.kmh, now: G.t, at: multiplayer.active ? multiplayer.now() : Date.now() }; }
-function updateLaws() {
-  if (enforcement.mapId !== map.id) enforcement.setMap(map);
-  enforcement.configure({ enabled: lawsEnabled(), rules: G.ev?.def.rules, raceId: multiplayer.active ? multiplayer.lobby?.raceId : `solo:${lawsRound}`, generation: multiplayer.lobby?.generation ?? 0, online: multiplayer.active });
-  finePhone.setEnabled(enforcement.enabled);
-  if (G.state === 'race' && !multiplayer.spectating?.()) enforcement.step(lawState());
-}
+// Laws: a police unit that sees you run a red may warn or chase you. Nothing is ever fined.
+const RED_GRACE = 0.3; // s at both ends of the red, as the signals' own amber/all-red margins
+function lawsEnabled() { return police?.enabled === true && G.ev?.def.rules?.laws !== false; }
 const RIVAL_NAME = 'STAVROS';
 const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
 
@@ -167,7 +151,7 @@ window.__game = G;
 window.__voice = { voices, pedestrianVoice, driverVoice };
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
-window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, reds: G.reds, rPen: G.rPen, rReds: G.rReds, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
+window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
 let map, route, hud, traffic, water, sky, sun, post, assets, startS, signals, people, probe, probeSeed;
 let lightingRecoveryPending = false, lightingChecks = 0, lightingRepairs = 0;
 function lightingInfo() {
@@ -444,7 +428,6 @@ function setCar(idx, keepPose = true) {
 function resetRace() {
   world?.tyreWalls?.reset();
   applyDriving();
-  resetLaws();
   if (!G.ev) prepareEvent(EV.QUICK_RACE);
   if (!multiplayer.active) { resetEvent(); return; }
   const s0 = Q.has('s') ? +Q.get('s') : startS;
@@ -459,7 +442,7 @@ function resetRace() {
   traffic.reset(s0);
   people.reset(s0); voices.reset();
   Object.assign(G, { raceT: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
-    pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1 });
+    pen: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1 });
   const n = Math.ceil((route.finish - startS) / 10) + 2;
   G.tP = new Float32Array(n).fill(NaN); G.tR = new Float32Array(n).fill(NaN);
   G.markIdx = map.data.marks.findIndex((m) => m.s > s0 + 50); if (G.markIdx < 0) G.markIdx = map.data.marks.length;
@@ -469,7 +452,6 @@ function resetRace() {
 function resetEvent() {
   world?.tyreWalls?.reset();
   notifications.clear();
-  resetLaws();
   const { def, r } = G.ev, dir = r.dir;
   buildGrid();
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
@@ -495,7 +477,7 @@ function resetEvent() {
   traffic.reset(player.veh.s);
   people.reset(peopleS(player.veh.s)); voices.reset();
   Object.assign(G, { raceT: 0, crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0, driftAcc: 0, driftT: 0, shake: 0, flash: 0, finishedT: 0, rivalBanner: false, cones: 0,
-    pen: 0, rPen: 0, reds: 0, rReds: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1,
+    pen: 0, scared: 0, postT: 0, pFront: null, rFront: null, tickT: 0, waitJ: -1,
     lastPos: 0, gapWho: null, lastSplit: null, lastTrap: null, wrong: {}, wrongShown: null, evHtml: null, result: null });
   const n = Math.ceil(r.len / 10) + 4;
   G.tP = new Float32Array(n).fill(NaN); G.tR = new Float32Array(n).fill(NaN);
@@ -626,13 +608,14 @@ function recoverFromCapture() {
   // Online the capture is the server's recovery hold (it costs the clock time), then you race on.
   if (multiplayer.active) { police?.reset(police.enabled); tow(player.veh); hud.message('<i>CAPTURED</i> · RECOVERY HOLD', 4); return; }
   if (G.ev?.def.type === 'pursuit') { finishRace('busted'); return; }
-  if (!inFreeRoam()) G.pen += 15;
+  // Pulled over: held at the roadside while the clock runs (no fine, no added seconds), then you drive on.
   police?.reset(police.enabled);
-  tow(player.veh);
-  hud.message(inFreeRoam() ? '<i>CAPTURED</i> · TOWING BACK TO THE ROAD' : '<i>CAPTURED</i> · +15 s · TOW +5 s', 4);
+  towOffer.recovering = true; towOffer.hold = inFreeRoam() ? 3 : CAPTURE_HOLD;
+  hud.message(`<i>PULLED OVER</i> · HELD ${towOffer.hold} s`, 4);
 }
 
 const inFreeRoam = () => !multiplayer.active && G.ev?.def.type === 'free';
+const CAPTURE_HOLD = 10; // s held at the roadside after a solo arrest, on the race clock
 function startCountdown() {
   document.body.classList.remove('menu-backdrop');
   G.cameraStarting = false; G.paused = null;
@@ -791,15 +774,12 @@ function initFlow() {
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
-  // Police captures recover with a time cost; shaking them off wins an escape.
+  // A police arrest holds you at the roadside; shaking them off wins an escape.
   EV.events.on('pursuit', (p) => {
     G.pursuit = p;
     if (G.state !== 'race' || !G.ev) return;
     if (multiplayer.active) { if (p.phase === 'busted') recoverFromCapture(); return; }
-    if (p.phase === 'busted') {
-      if (G.ev.def.type !== 'pursuit') finePhone.show(enforcement.recordCapture(G.t, inFreeRoam() ? 0 : 15));
-      recoverFromCapture();
-    }
+    if (p.phase === 'busted') recoverFromCapture();
     else if (p.phase === 'evaded' && G.ev.def.type === 'pursuit' && G.ev.def.rules?.goal === 'escape') finishRace('evaded');
   });
   EV.events.on('start', () => { G.pursuit = null; });
@@ -998,7 +978,7 @@ function quitToMenu(screen = 'title') {
   // Stop simulation/input before the fade. A pending restart/tow cannot revive it.
   G.state = 'menu'; G.paused = null; G.cameraStarting = false; G.towing = false;
   G.pendingEvent = null; G.run = null; G.result = null; G.pursuit = null; G.shake = G.flash = 0;
-  controls.clear(); resetTowOffer(); voices.reset(); resetLaws(); police?.reset(false);
+  controls.clear(); resetTowOffer(); voices.reset(); police?.reset(false);
   hideGrid(); rival.model.root.visible = false;
   for (const c of [player, rival]) { c.veh.vLong = c.veh.vLat = c.veh.w = 0; c.veh.nitroOn = false; for (const zone of Object.keys(c.model.damage || {})) c.model.setDamage(zone, 0); }
   traffic.reset(player.veh.s);
@@ -1062,7 +1042,7 @@ function flowAction(name) {
 }
 const inMenu = () => !!menu?.open || !multiplayer.panel.hidden || MENU_STATES.includes(G.state) || !!window.__replay?.active || ui.modalOpen; // replay / photo mode take the controls too
 window.__flow = {
-  enforcement, finePhone, shareResult,
+  shareResult,
   switchMap, get mapId() { return map?.id || null; }, get map() { return map; },
   action: flowAction, inMenu, prepareEvent, gridSlot, event: () => G.ev, startEvent, openEvent, quickRace: () => startEvent('quick'),
   pause: pauseGame, openOnlinePause: pauseGame, openSettings, resetCar, resume, quit: quitToMenu, hideGrid, freeRoamDef: () => EV.freeRoam(selectedMapId), drivingModeDef: mode => drivingModeDefinition(mode, selectedMapId), setTraffic: (mul) => { G.trafficMul = mul; traffic.disabled = !(mul > 0); }, restart: () => openEvent(G.ev.def), get state() { return G.state; }, get menu() { return menu; }, openCarPicker, switchRoamCar, setRoamConditions, teleportLandmark, landmarks: () => map.data.marks.map(m => ({ id: m.id, name: m.name })), inFreeRoam, get grid() { return grid; },
@@ -1093,7 +1073,7 @@ function updateGrid(dt) {
     if (v.spec.nitrous === true && !v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
     const f = v.s + G.dir * v.halfL;
-    if (G.state === 'race' && c.front !== null && v.vLong > 0 && c.finish === null) { const j = crossedDir(c.front, f, G.dir); if (j) onStopLine(j, 'rival', c); }
+    if (G.state === 'race' && c.front !== null && v.vLong > 0 && c.finish === null) { const j = crossedDir(c.front, f, G.dir); if (j) onStopLine(j, 'rival'); }
     c.front = c.front === null ? f : G.dir > 0 ? Math.max(c.front, f) : Math.min(c.front, f);
     c.ghost = false; // Traffic and collision rules apply throughout the race.
   }
@@ -1176,7 +1156,7 @@ function finishRace(how = 'finish') {
   else if (how === 'evaded') G.pFinish = G.raceT + G.pen;
   if (dnf) G.pFinish = null;
   const pos = racePosition();
-  const res = run.finish({ time: G.pFinish, position: wrecked || retired ? null : busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, reds: G.reds, busted, wrecked, retired, how, valid: !G.autodrive && !Q.has('s') && !dnf });
+  const res = run.finish({ time: G.pFinish, position: wrecked || retired ? null : busted ? grid.length + 1 : pos, field: grid.length + 1, penalties: G.pen, carName: player.spec.name, topSpeed: G.topSpeed, crashes: G.crashes, busted, wrecked, retired, how, valid: !G.autodrive && !Q.has('s') && !dnf });
   G.result = res; rememberResult(res);
   G.won = !dnf && (isDrivingMode(def) ? res.completed > 0 : def.type === 'sprint' ? pos === 1 : !!res.medal);
   if (G.won) audio.win(); else audio.lose();
@@ -1213,7 +1193,7 @@ function showResults() {
   const kick = r.closed ? `${map.definition?.name || def.name} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'} · ${fmtDist(r.len)}` : `${def.name} · ${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${fmtDist(r.len)}`;
   const splits = run.splits.map((t, i) => { const b = prev.bestSplits?.[i]; const cp = r.checkpoints[i]; return { name: cp.name, time: fmtTime(t), delta: b != null ? sign(t - b) : '', cls: b == null ? '' : t <= b ? 'good' : 'bad' }; });
   const best = res.record?.bestTime ?? prev.bestTime;
-  const info = [['TOP SPEED', top], ['AVG SPEED', avg], ['CRASHES', G.crashes], ['RED LIGHTS', G.reds ? `${G.reds} · +${G.pen.toFixed(1)} S` : '0']];
+  const info = [['TOP SPEED', top], ['AVG SPEED', avg], ['CRASHES', G.crashes]];
   if (res.laps > 1 && res.bestLap != null) info.unshift(['BEST LAP', T(res.bestLap)]);
   let title, sub, rows, field = null;
   if (res.retired) {
@@ -1311,23 +1291,12 @@ function aiInput(car, dt, pace, other) {
   return result;
 }
 
-function onStopLine(j, who, rc = rival) {
-  if (!lawsEnabled()) return;
-  if (who === 'rival') {
-    const site = enforcement.redSites?.find(c => Math.abs(c.s - j.s) < 30 && (c.dir === 0 || c.dir === (rc.dir || G.dir)));
-    if (!redViolation(j, { camera: !!site })) return;
-    const penalty = G.ev?.def.rules?.penalty ?? 2;
-    G.rPen += penalty; G.rReds++; rc.pen = (rc.pen || 0) + penalty; rc.reds = (rc.reds || 0) + 1;
-    people.redRun(j); return;
-  }
-  // Recheck the unit's actual short-range sight line at the crossing. Online
-  // players cannot self-certify witnesses for themselves or other drivers.
-  const st = lawState();
-  const witnessed = !enforcement.online && police?.witnesses(st);
-  if (enforcement.red(j, st, witnessed)) {
-    police?.witnessedRed(st);
-    hud.flashCam(); audio.shutter(); people.redRun(j);
-  }
+function onStopLine(j, who) {
+  if (!lawsEnabled() || !(j.main === 'R' && j.redT > RED_GRACE && j.toGreen > RED_GRACE)) return;
+  if (who === 'rival') { people.redRun(j); return; }
+  // Only a unit that actually sees the crossing reacts (a warning, or more): nothing is ever fined.
+  const st = { s: player.veh.s, u: player.veh.u };
+  if (police.witnesses(st)) { police.witnessedRed(st); people.redRun(j); }
 }
 
 function handleHonk(h) {
@@ -1834,7 +1803,6 @@ function step(dt, draw = true) {
       if (!multiplayer.active) {
       updateGrid(dt); // the AI field: racing lines, traffic, red lights (offline)
       }
-      updateLaws();
       // ---- stop lines: camera or police witness, with optional game-time laws
       const D = G.dir || 1, pf = pv.s + D * pv.halfL, rf = rv.s + rv.halfL;
       if (G.state === 'race' && G.pFront !== null && pv.vLong > 0) { const j = crossedDir(G.pFront, pf, D); if (j) onStopLine(j, 'player'); }
@@ -1856,7 +1824,7 @@ function step(dt, draw = true) {
         }), dt, now, multiplayer.contacts) : [];
         containOnlineVehicle(pv, route);
       }
-      if (police && !multiplayer.active) for (const e of police.update(dt, { events, reds: G.reds, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
+      if (police && !multiplayer.active) for (const e of police.update(dt, { events, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
       for (const h of traffic.honks) handleHonk(h);
@@ -1953,7 +1921,6 @@ function step(dt, draw = true) {
     manual: pv.manual, limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     x: pv.x, z: pv.z, yaw: pv.yaw, rx: rv.x, rz: rv.z, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
-  st.cameras = enforcement.enabled ? [...(enforcement.cameras || []), ...(enforcement.redSites || [])] : [];
   st.gapUnit = gapUnit;
   if (multiplayer.active) {
     const telemetry = multiplayer.telemetry(pv), watching = multiplayer.spectating(), selected = watching ? remoteCars.get(watching.id) : player;
@@ -2191,10 +2158,6 @@ const multiplayer = new Multiplayer(CARS, {
   members: onlineMembers,
   world(snapshot, age) { receiveWorldLife(snapshot, age); },
   sharedWorld(packet) { if (world && !mapSwitch && multiplayer.worldReady) sharedWorld.receive(packet); },
-  fine(entry) {
-    if (entry.raceId !== multiplayer.lobby?.raceId || entry.generation !== multiplayer.lobby?.generation) return;
-    const fine = enforcement.record({ ...entry, now: G.t }); if (fine) finePhone.show(fine);
-  },
   start(lobby, id, resumeState = null) {
     if (!world || mapSwitch || !multiplayer.loaded) return;
     if (!resumeState) { applyDriving(); }

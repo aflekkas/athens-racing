@@ -226,9 +226,6 @@ body.fading #fade { opacity: 1; }
 #sigBox.R #sigTxt { color: #ff5a4a; } #sigBox.A #sigTxt { color: #ffc21a; } #sigBox.G #sigTxt { color: #4dff8e; }
 #sigBox.R.close { animation: sigpulse .45s ease-in-out infinite alternate; }
 @keyframes sigpulse { from { transform: scale(1); } to { transform: scale(1.07); } }
-#camflash { position: fixed; inset: 0; background: #fffdf6; opacity: 0; pointer-events: none; z-index: 7; }
-#camflash.on { animation: camflash .55s ease-out; }
-@keyframes camflash { 0% { opacity: .92; } 100% { opacity: 0; } }
 .pop.redlight { top: 30%; font-size: 78px; color: #fff; background: var(--red); padding: 0 40px 6px; clip-path: polygon(20px 0, 100% 0, calc(100% - 20px) 100%, 0 100%); text-shadow: 0 3px 0 rgba(0,0,0,.25); }
 .pop.redlight small { color: #ffe36b; font-size: 22px; }
 .pop.quote { top: 44%; left: auto; right: 7vw; transform: translate(0, -50%); font-size: 30px; color: #fff; text-align: right; animation-name: popR; }

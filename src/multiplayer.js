@@ -161,15 +161,6 @@ export class Multiplayer {
     this.send({ type: 'to-lobby' }); return true;
   }
   transferHost(id) { this.send({ type: 'transfer', to: id }); }
-  // Laws integration: call after a state sample so the server holds a fresh
-  // accepted snapshot near the site. No state cadence change. Acknowledgements
-  // arrive as hooks.fine({ id, kind, penalty, now }).
-  sendViolation(entry = {}) {
-    if (!this.lobby?.raceId) return false;
-    const { type, ...rest } = entry || {};
-    this.send({ type: 'violation', at: Date.now(), raceId: this.lobby.raceId, generation: this.lobby.generation || 0, ...rest });
-    return true;
-  }
   get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
@@ -301,7 +292,6 @@ export class Multiplayer {
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);
       else if (m.type === 'error') { this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left' || m.type === 'kicked') { this.left(); this.panel.hidden = false; if (m.message || m.reason) this.status(m.message || m.reason); if (m.type === 'kicked') { this.kickCooldown = { lobbyCode: m.lobbyCode, until: m.until }; this.hooks.kicked?.(m); } }
-      else if (m.type === 'violation-ack') { this.hooks.fine?.({ id: m.id, kind: m.kind, label: m.label, siteId: m.siteId, penaltySec: m.penaltySec, penalty: m.penalty, raceId: m.raceId, generation: m.generation, now: Date.now() }); }
       else if (m.type === 'checkpoint') { if (m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.applyCheckpoint(m); }
       else if (m.type === 'lobby') {
         this.creating = false; if (this.$) this.$('mp-create').disabled = false;

@@ -10,9 +10,9 @@ test('vehicle and road warnings become cluster tell-tales with ISO lamp colours'
     [{ id: 'tow' }, 'telltale', 'tow', 'warn'],
     [{ id: 'traction-control', text: 'TC OFF' }, 'telltale', 'esc-off', 'warn'],
     [{ id: 'traction-control', text: 'TC ON' }, 'telltale', 'esc', 'good'],
-    [{ id: 'fine:1', title: 'SPEED CAMERA', text: '+2.0 S' }, 'telltale', 'speed-camera', 'warn'],
-    [{ id: 'fine:2', title: 'RED LIGHT', tone: 'bad' }, 'telltale', 'red-light', 'bad'],
-    [{ id: 'fine:3', title: 'POLICE STOP' }, 'telltale', 'police', 'bad'],
+    [{ title: 'SPEED CAMERA' }, 'telltale', 'speed-camera', 'warn'],
+    [{ title: 'RED LIGHT', tone: 'bad' }, 'telltale', 'red-light', 'bad'],
+    [{ title: 'PULLED OVER', text: 'POLICE · HELD 10 S' }, 'telltale', 'police', 'bad'],
     [{ id: 'police-status', title: 'POLICE PURSUIT', tone: 'bad', slot: 'banner' }, 'telltale', 'police', 'bad'],
     [{ title: 'WATCH THE PAVEMENT!', tone: 'bad' }, 'telltale', 'pedestrian', 'bad'],
   ];

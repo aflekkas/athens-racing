@@ -16,8 +16,6 @@ export function noticeStyle(item = {}) {
   if (id === 'engine-condition') return pick('telltale', /BODY|DAMAGE|BENT/.test(all) ? 'damage' : /OIL/.test(all) ? 'oil' : 'engine', tone === 'bad' ? 'bad' : 'warn');
   if (id === 'tow') return pick('telltale', 'tow', 'warn');
   if (id === 'traction-control') return /OFF/.test(all) ? pick('telltale', 'esc-off', 'warn') : pick('telltale', 'esc', 'good');
-  if (id.startsWith('fine:') && has(all, /POLICE/)) return pick('telltale', 'police', 'bad');
-  if (id.startsWith('fine:')) return has(all, /RED|SIGNAL|LIGHT/) ? pick('telltale', 'red-light', 'bad') : pick('telltale', 'speed-camera', 'warn');
   if (id === 'police-status' || id === 'police-callout') return pick('telltale', 'police', tone === 'good' ? 'good' : tone === 'bad' ? 'bad' : 'warn');
   if (id === 'checkpoint') return pick('hud', 'u-turn', 'bad');
   if (id === 'objective-direction') return pick('hud', 'u-turn', 'warn');
@@ -28,7 +26,7 @@ export function noticeStyle(item = {}) {
   if (has(all, /\b(TC|ESC)\b|TRACTION/)) return /OFF/.test(all) ? pick('telltale', 'esc-off', 'warn') : pick('telltale', 'esc', 'good');
   if (has(all, /POLICE|BUSTED|TAKEDOWN|CAPTURED|LOST THEM|PURSUIT/)) return pick('telltale', 'police', tone === 'good' ? 'good' : 'bad');
   if (has(all, /RED LIGHT|SIGNAL/)) return pick('telltale', 'red-light', tone === 'bad' ? 'bad' : 'warn');
-  if (has(all, /SPEED|CAMERA FINE|RADAR/) && !has(all, /\bCAM\b/)) return pick('telltale', 'speed-camera', 'warn');
+  if (has(all, /SPEED|RADAR/) && !has(all, /\bCAM\b/)) return pick('telltale', 'speed-camera', 'warn');
   if (has(all, /PAVEMENT|PEDESTRIAN/)) return pick('telltale', 'pedestrian', 'bad');
   if (has(all, /CRASH|WRECK|BUMP|PAINT|DAMAGE/)) return pick('telltale', 'damage', tone === 'good' ? 'warn' : tone === 'bad' ? 'bad' : 'warn');
   if (has(all, /TOWED|RESET|TOW\b/)) return pick('telltale', 'tow', 'warn');

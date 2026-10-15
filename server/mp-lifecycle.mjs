@@ -145,7 +145,7 @@ export function isStaleGeneration(lobby, message) {
 }
 
 const clearRun = (lobby) => {
-  for (const p of lobby.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.enfPenalty = 0; p.enfSeen = null; p.course = null; }
+  for (const p of lobby.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.course = null; }
 };
 
 // Host cancels an active or finished race back to a waiting lobby.
@@ -230,26 +230,13 @@ export function stepPlayerObjective(lobby, playerId, nowMs, pose) {
 export function snapshotPlayerObjective(lobby, playerId) {
   const st = lobby.objectives?.get(playerId);
   if (!st) return null;
-  const snap = objectiveSnapshot(st);
-  return st.penaltySec ? { ...snap, penaltySec: st.penaltySec } : snap;
+  return objectiveSnapshot(st);
 }
 
 export function resultPlayerObjective(lobby, playerId) {
   const st = lobby.objectives?.get(playerId);
   if (!st) return null;
-  const res = objectiveResult(st);
-  return st.penaltySec ? { ...res, penaltySec: st.penaltySec } : res;
-}
-
-// Meaningful fine for objective modes (no finish to pad): cut the driver's
-// deadline on the same receiver-secs clock and record plain penalty seconds.
-// Bounded per fine; the next step timeups when the cut passes the deadline.
-export function applyObjectivePenalty(lobby, playerId, penaltySec) {
-  const st = lobby.objectives?.get(playerId);
-  if (!st) return 0;
-  const cut = Math.min(Math.max(0, Number(penaltySec) || 0), 300);
-  if (cut > 0) { st.deadline -= cut; st.penaltySec = (st.penaltySec || 0) + cut; }
-  return cut;
+  return objectiveResult(st);
 }
 
 export function objectiveRoundDone(lobby, playerId) {

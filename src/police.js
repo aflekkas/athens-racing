@@ -2,7 +2,7 @@
 // line of sight can witness an offence. Minor offences first request a stop;
 // sustained dangerous driving, refusal to stop, or a serious collision starts
 // pursuit. Heat below 1 has no stars; further stars require further offences.
-// Cameras only fine through enforcement.js. No camera dispatch or unseen heat.
+// Nothing is ever fined. No camera dispatch or unseen heat.
 // Hook API: pursuit live status; events.emit('pursuit', {phase,heat,level,time,kind}).
 // Speeding: up to +15 km/h is tolerated. From +25 a unit that sees you warns in
 // ~1 s and ~4.5 s in its view is a star (+50: ~0.6 s / 2.5 s); +16..24 warns in
@@ -201,7 +201,7 @@ export class Police {
   }
 
   // ---------------------------------------------------------------- per frame
-  /** ctx: { events (traffic.collide events this frame), reds (G.reds), racing, dir (event direction), eventId } */
+  /** ctx: { events (traffic.collide events this frame), racing, dir (event direction), eventId } */
   update(dt, ctx = {}) {
     const out = [];
     this.t += dt;
@@ -237,8 +237,7 @@ export class Police {
       if (speeding) hm.offence('speeding', dt * rate, true, { continuous: true, sustained: this.speedT >= HEAT.sustainedAfter - 1e-6 });
       if (wrongSide) hm.offence('wrongside', dt * HEAT.wrongSideHeat, true, { continuous: true, sustained: this.wrongT >= HEAT.sustainedAfter - 1e-6 });
     } else if (hm.state === 'pursuit' && seen && (fleeing || wrongSide)) hm.offence(wrongSide && !fleeing ? 'wrongside' : 'fleeing', dt * HEAT.pursuitFleeHeat, true, { continuous: true });
-    // G.reds includes camera/history counts. Only the stop-line's actual
-    // witness callback may add red-light heat; never infer it from a counter.
+    // Red lights add heat only through the stop line's witness callback (witnessedRed).
     for (const e of ctx.events || []) {
       if (e.who !== 'player' || !e.car || (e.kind !== 'crash' && e.kind !== 'bump')) continue;
       const k = e.car.cop;
@@ -296,7 +295,7 @@ export class Police {
     });
   }
 
-  /** Authoritative solo stop-line witness; online clients never call this. */
+  /** The stop line's witness callback: a unit that saw you run the red. */
   witnessedRed(P) {
     if (this.witnesses(P)) this.pending.push({ kind: 'red', amt: 0.3, witnessed: true });
   }
