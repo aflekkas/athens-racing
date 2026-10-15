@@ -52,3 +52,9 @@ Swearing ON by default; mixed pools select explicit lines 75% of the time. OFF s
 | rider-05 / rider | Πρόσεχε τον δρόμο! | Watch the road! | clean |
 | driver-tap-00 / tap | Ρε! | Hey! | clean |
 | driver-tap-01 / tap | Πρόσεχε! | Watch it! | clean |
+| driver-rage-00 / rage | Ρε μαλάκα, πού πας; | Where are you going, asshole? | explicit |
+| driver-rage-01 / rage | Άι γαμήσου! | Fuck off! | explicit |
+| driver-rage-02 / rage | Ρε ηλίθιε, φλας δεν έχεις; | You idiot, do you not have indicators? | explicit |
+| driver-rage-03 / rage | Τι κάνεις ρε βλάκα; | What are you doing, you fool? | explicit |
+| driver-rage-04 / rage | Πρόσεχε! Μου έκλεισες τον δρόμο! | Watch it! You cut me off! | clean |
+| driver-rage-05 / rage | Βγάλε φλας! Πού πας; | Use your indicators! Where are you going? | clean |

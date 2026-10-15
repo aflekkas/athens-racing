@@ -31,6 +31,7 @@ import { Audio } from './audio.js';
 import { VoiceReactions } from './voice.js';
 import { PoliceVoice, impactVoiceCue } from './police-voice.js';
 import { HumanVoiceEvents } from './human-voice.js';
+import { RoadRageDetector } from './road-rage-voice.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
@@ -130,10 +131,30 @@ function carVoicePosition(c) {
 }
 const policeVoice = new PoliceVoice(voices, carVoicePosition);
 const humanVoices = new HumanVoiceEvents(voices, (s,u) => traffic.route.point(s,u,new THREE.Vector3()));
-function playerImpactVoice(event) {
-  const cue = impactVoiceCue(event); if (!cue || !player) return;
+const roadRage = new RoadRageDetector(); let roadRageDt = 0;
+function updateRoadRage(dt) {
+  if (G.state !== 'race' || G.paused) { roadRage.reset(); roadRageDt=0; return; }
+  roadRageDt+=dt; if (roadRageDt<.1) return;
+  const elapsed=roadRageDt;roadRageDt=0;
+  const pv=player.veh, velocity=routeVel(pv,route), cars=[];
+  for(const c of traffic.cars) if(c.active && !c.crash && Math.abs(c.s-pv.s)<45) {
+    cars.push({speaker:c,s:c.s,u:c.u,vs:c.cross?c.xvs:c.dir*c.v,halfW:c.wid*.5,halfL:c.len*.5,mode:c.mode,cross:!!c.cross});
+  }
+  const rivals=multiplayer.active?remoteCars.values():grid;
+  for(const c of rivals) if(c.model.root.visible && Math.abs(c.veh.s-pv.s)<45) {
+    cars.push({speaker:c,s:c.veh.s,u:c.veh.u,vs:routeVel(c.veh,route).vs,halfW:c.veh.halfW,halfL:c.veh.halfL});
+  }
+  const anger=roadRage.update(elapsed,{s:pv.s,u:pv.u,vs:velocity.vs,halfW:pv.halfW,halfL:pv.halfL,direction:G.dir || 1},cars,input.brake);
+  // Shared player channel refuses overlap and retains the crash per-driver cooldown.
+  if(anger) playerBark('rage');
+}
+function playerBark(cue) {
   const appearance = player.driver?.appearance || normalizeDriverAppearance();
   return playerVoices.trigger('driver', player, () => carVoicePosition(player), { cue, gender: appearance.gender || 'male', older: appearance.old });
+}
+function playerImpactVoice(event) {
+  const cue = impactVoiceCue(event); if (!cue || !player) return;
+  return playerBark(cue);
 }
 const voicePoint = new THREE.Vector3(), voiceRotation = new THREE.Quaternion();
 function voiceRelative(p) {
@@ -163,7 +184,7 @@ const G = {
 canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); G.ctxLost = true; clearDriveInput(); });
 canvas.addEventListener('webglcontextrestored', () => { G.ctxLost = false; lightingRecoveryPending = true; });
 window.__game = G;
-window.__voice = { voices, playerVoices, policeVoice, humanVoices, playerImpactVoice, pedestrianVoice, driverVoice };
+window.__voice = { voices, playerVoices, policeVoice, humanVoices, roadRage, playerImpactVoice, pedestrianVoice, driverVoice };
 window.__audio = () => audio.levels && audio.levels();
 window.__bus = () => audio.busLevels && audio.busLevels();
 window.__dbg = () => ({ state: G.state, raceT: +G.raceT.toFixed(2), fps: Math.round(G.fps), pr: pixelRatio, kmh: Math.round(player.veh.kmh), gear: player.veh.gear, rpm: Math.round(player.veh.rpm), s: Math.round(player.veh.s), u: +player.veh.u.toFixed(2), rs: Math.round(rival.veh.s), rkmh: Math.round(rival.veh.kmh), ru: +rival.veh.u.toFixed(2), rlane: rival.ai.lane, rrev: rival.ai.revT > 0, rdbg: rival.ai.dbg, pdbg: player.ai && player.ai.dbg, crashes: G.crashes, pen: G.pen, scared: G.scared, peds: people.peds.filter((p) => p.active).length, onRoad: people.onRoad.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles });
@@ -1543,6 +1564,7 @@ function handleTrafficSounds() {
 function updateAudio(dt) {
   const voiceFrame = { enabled: ['race', 'onlineRace'].includes(G.state) || G.state === 'finished' && G.postT < 5, cockpit: G.cam === 'cockpit' && !player.spec.convertible, relative: voiceRelative };
   voices.update(voiceFrame); playerVoices.update(voiceFrame);
+  updateRoadRage(dt);
   if (!police?.enabled) policeVoice.reset();
   else if (voiceFrame.enabled) policeVoice.tick();
   if (voiceFrame.enabled) humanVoices.tick();

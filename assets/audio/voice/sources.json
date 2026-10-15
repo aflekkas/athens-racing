@@ -2745,6 +2745,198 @@
       "bytes": 6270,
       "sha256": "f3eb98bb79f8b54448024fd4c1efb1b3fea720cfd38db30ffa281d2eec6bf995",
       "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-00-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 8254,
+      "sha256": "bdbd0eb38c72dfbe7c02ad97fc1b88a44764d8fefcd67f49784880479769e20a",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-00-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 8360,
+      "sha256": "9252fdd3a28382bd0a25555bea6aaa78dd33e95b4ccdb3d97b13ab8cb11811ca",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-01-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13027,
+      "sha256": "a6d1a9c11d316bb2c4a214d4f49e5213e5d514f992365bd6695653b1b4dffbff",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-01-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12449,
+      "sha256": "624e8da97ae31396ca4ba3070143c91c70a1d5645d43436d0d9b90c6f9d1b661",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-02-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 9541,
+      "sha256": "b7da2034d3d736ab91f8185ba89540c459352d282adf50bfb6660d6075b386c9",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-02-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 9714,
+      "sha256": "cb2dc45934d3a7f090a443afe050938a9b8cafbdcb6f1d505c9c41c1431b7662",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-03-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 7959,
+      "sha256": "e08788a39aad976febd64a8d6ab01b1aa7c9429b6dcafa1f2f68e3c6fc314e2f",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-03-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 7973,
+      "sha256": "58c48234843af59f0fea0ccfa37d82d92b2a4a909c81e46ea6f0f47768adc2ff",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-04-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 10817,
+      "sha256": "cf68f809b1bca986856dab06db3227524adfadbdce522d7f2c79334c6fe48442",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-04-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 11011,
+      "sha256": "2c21b084de72b3720882076912d30a68eea09848011817d7f468c10d0e04255e",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-05-female-young.ogg",
+      "model": "rapunzelina",
+      "profile": "female-young",
+      "bytes": 13176,
+      "sha256": "a7b87a348540030d1aaced29ebe7d5095537f3756ff2f313252ad89061b82306",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-05-female-older.ogg",
+      "model": "rapunzelina",
+      "profile": "female-older",
+      "bytes": 12433,
+      "sha256": "4120509a08c056e63fb539878b83c2bdefd822ce226ed8558f0fbe074eecd88b",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-00-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8297,
+      "sha256": "c3a173a81929293d0c3247ab97bb2891e25385aa3788789a48b2aea0b1eaa8e0",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-00-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8370,
+      "sha256": "706e8bd1c67d982e500db23b7230f98cd8377e8f02a4bc1820c08b52375ce6fb",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-01-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 6011,
+      "sha256": "96a859cae4af66c39491f91fd70e53585c84530a640bf997da088014f4d23314",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-01-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 5908,
+      "sha256": "d7e14e91787ddd4ddc6256340408deb93409d6388e04f6a56c0de06d89f78286",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-02-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 10416,
+      "sha256": "27c08c85ad18c4a97d2362d3f2b98d75be53d2919a607e3673c922247cbd5fed",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-02-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 10521,
+      "sha256": "ed33f7d4cf7c8bc08428ad4cae9ec2cfdf03f549bc296df1c3b9c69bc9436850",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-03-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 8223,
+      "sha256": "cf2f818abcb901528584477ddf441553bab01513b48d863e904f55df0d77ac13",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-03-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 8177,
+      "sha256": "36ad1f0336ae2865e207f84fde082dd9fd78ed7b978bb5e530798c3cd3fd958b",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-04-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 11060,
+      "sha256": "17dd67336b5a028ba0e3ce5e10a8b3b5bbf4b53749b6e5a734d918f3c5b1b73f",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-04-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 11210,
+      "sha256": "0481c191e66be35ad58d4a11a6702a9a4899076eb8e4a2e5e497ffae6259eb80",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-05-male-young.ogg",
+      "model": "chreece",
+      "profile": "male-young",
+      "bytes": 9366,
+      "sha256": "024f16d8ea1c9ea094d35db331e48d2bdcbf0acc07480f2715a615ff0fff963d",
+      "processing": "voice-v1"
+    },
+    {
+      "file": "driver-rage-05-male-older.ogg",
+      "model": "chreece",
+      "profile": "male-older",
+      "bytes": 9467,
+      "sha256": "ce20ddb858870f856d44b27ac265d00376e8581fe4d366eb0e7985161da5e880",
+      "processing": "voice-v1"
     }
   ],
   "updated": "2026-10-15"

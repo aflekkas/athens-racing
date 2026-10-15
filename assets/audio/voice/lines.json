@@ -866,6 +866,66 @@
       "meaning": "Watch it!",
       "strong": false,
       "language": "clean"
+    },
+    {
+      "id": "driver-rage-00",
+      "category": "driver",
+      "cue": "rage",
+      "text": "Ρε μαλάκα, πού πας;",
+      "transliteration": "Re malaka, pou pas?",
+      "meaning": "Where are you going, asshole?",
+      "strong": true,
+      "language": "explicit"
+    },
+    {
+      "id": "driver-rage-01",
+      "category": "driver",
+      "cue": "rage",
+      "text": "Άι γαμήσου!",
+      "transliteration": "Ai gamisou!",
+      "meaning": "Fuck off!",
+      "strong": true,
+      "language": "explicit"
+    },
+    {
+      "id": "driver-rage-02",
+      "category": "driver",
+      "cue": "rage",
+      "text": "Ρε ηλίθιε, φλας δεν έχεις;",
+      "transliteration": "Re ilithie, flas den echeis?",
+      "meaning": "You idiot, do you not have indicators?",
+      "strong": true,
+      "language": "explicit"
+    },
+    {
+      "id": "driver-rage-03",
+      "category": "driver",
+      "cue": "rage",
+      "text": "Τι κάνεις ρε βλάκα;",
+      "transliteration": "Ti kaneis re vlaka?",
+      "meaning": "What are you doing, you fool?",
+      "strong": true,
+      "language": "explicit"
+    },
+    {
+      "id": "driver-rage-04",
+      "category": "driver",
+      "cue": "rage",
+      "text": "Πρόσεχε! Μου έκλεισες τον δρόμο!",
+      "transliteration": "Proseche! Mou ekleises ton dromo!",
+      "meaning": "Watch it! You cut me off!",
+      "strong": false,
+      "language": "clean"
+    },
+    {
+      "id": "driver-rage-05",
+      "category": "driver",
+      "cue": "rage",
+      "text": "Βγάλε φλας! Πού πας;",
+      "transliteration": "Vgale flas! Pou pas?",
+      "meaning": "Use your indicators! Where are you going?",
+      "strong": false,
+      "language": "clean"
     }
   ]
 }

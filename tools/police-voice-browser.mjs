@@ -68,9 +68,18 @@ try{
    if(!v.active)throw Error('classified voice did not play');
    human.push({category,mild,line:v.active.line,position:v.active.locate()});await wait(2800);
   }
+  const {RoadRageDetector}=await import('/src/road-rage-voice.js');const rage=[];
+  for(const mild of [false,true]){
+   v.reset();settings.mildLanguage=mild;
+   const detector=new RoadRageDetector(),speaker={},driver={},car={speaker,s:14,u:3,vs:12,halfW:1,halfL:2};
+   detector.update(.1,{s:0,u:0,vs:20,halfW:1,halfL:2},[car],0);
+   const anger=detector.update(.1,{s:0,u:0,vs:19.5,halfW:1,halfL:2},[{...car,u:1.8}],.6);
+   if(!anger || !await v.trigger('driver',driver,()=>({x:0,y:0,z:-2}),{cue:'rage',gender:'male'}))throw Error('cut-in bark missing');
+   rage.push({mild,severity:anger.severity,line:v.active.line});await wait(2800);
+  }
   const done=new Promise(r=>rec.onstop=r);rec.stop();await done;
   const bytes=new Uint8Array(await new Blob(chunks).arrayBuffer());let binary='';for(const b of bytes)binary+=String.fromCharCode(b);
-  await ctx.close();return{fired,transitions,crash,human,audio:btoa(binary)};
+  await ctx.close();return{fired,transitions,crash,human,rage,audio:btoa(binary)};
  });
  await writeFile(resolve(out,'scripted-chase.webm'),Buffer.from(report.audio,'base64'));delete report.audio;
  await page.screenshot({path:resolve(out,'scripted-chase.png')});

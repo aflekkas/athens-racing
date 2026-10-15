@@ -1,3 +1,4 @@
+import './road-rage-voice.test.mjs';
 import './human-voice.test.mjs';
 import './police-voice.test.mjs';
 import { test } from 'node:test';

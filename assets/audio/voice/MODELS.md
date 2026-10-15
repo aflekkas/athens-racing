@@ -66,3 +66,7 @@ Regenerate only missing clips with `build_voice.py MODEL --final --new-only`;
 all source text, English glosses and clean/explicit tags are in lines.json.
 These remain synthetic voices with processed loudspeaker character; acted
 shouting or native-listener pronunciation approval is not claimed.
+
+Road-rage extension: six additional driver phrases (96 total / 384 Ogg clips after retiring the eight artist phrases),
+using the same licensed models and original voice normalization. Cut-in barks
+share the player crash channel and require observed entry followed by braking.
