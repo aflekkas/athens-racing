@@ -197,7 +197,7 @@ export function renderResults(menu, mp) {
   if (personal) tiles.push(['BEST · EXACT SETUP', personal.exact ? fmt(personal.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', personal.route ? fmt(personal.route.time) : '—']);
   const acts = host && complete ? [C.button({ label: 'REMATCH', icon: 'arrow-counter-clockwise', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady, attrs: { 'data-default': '', 'data-fid': 'rematch' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } })]
     : [];
-  if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'share-network', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
+  if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'export', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
   if (complete) acts.push(C.button({ label: 'CHANGE CAR', icon: 'car-profile', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }));
   acts.push(C.button({ label: 'LEAVE LOBBY', icon: 'sign-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
   return C.screen({ cls: 'scr--results scr--mp scr--mp-results', kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
