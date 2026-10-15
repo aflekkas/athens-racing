@@ -1,16 +1,17 @@
-// POLICE: sparse map-anchored patrols. Only a real unit within 75 m and clear
+// POLICE: map-anchored patrols. Only a real unit within 135 m and clear
 // line of sight can witness an offence. Minor offences first request a stop;
 // sustained dangerous driving, refusal to stop, or a serious collision starts
 // pursuit. Heat below 1 has no stars; further stars require further offences.
 // Cameras only fine through enforcement.js. No camera dispatch or unseen heat.
 // Hook API: pursuit live status; events.emit('pursuit', {phase,heat,level,time,kind}).
-// Speeding: +30 km/h is tolerated; beyond it a unit warns after ~3 s and a star
-// needs ~12 s of witnessed speeding (+50 km/h: ~5 s). A drive-past is a warning:
-// the unit pulls out, catches up and keeps you in view to 170 m, so speeding on
-// becomes a pursuit; slow to the limit and it lets you go. No contact on a warning.
+// Speeding: up to +15 km/h is tolerated. From +25 a unit that sees you warns in
+// ~1 s and ~4.5 s in its view is a star (+50: ~0.6 s / 2.5 s); +16..24 warns in
+// 2.5 s, a star after 10 s. Blasting past a unit is a chase if you keep going: it
+// pulls out, catches up and keeps you in view to 170 m; slow down and it lets you
+// go. Wrong-way past a unit warns in ~1 s. Fleeing in sight: a star per 25 s.
 // Warning is lights/following with no wanted star. Stop nearby for 2 s to comply.
 // Losing sight drains suspicion. Pursuit: 3 s unseen -> cooldown, then 8 s at
-// one star (+2 s per extra star) unseen -> evaded. No time-based escalation.
+// one star (+2 s per extra star) unseen -> evaded. A lawful chase never escalates.
 // BUSTED needs a real pursuit (8 s in) and you held under ~9 km/h next to a unit
 // for 4 s (2.5 s boxed in by two). After any stop/escape the police stay quiet
 // for a while; reinforcements are capped at 3 and never appear in your view.
@@ -29,15 +30,18 @@ export const HEAT = {
   bustDecay: 1,        // s to drain a full bust meter once you get moving
   bustDist: 7.5,       // m centre to centre
   bustSpeed: 2.5,      // m/s (~9 km/h)
-  witnessRange: 75,    // m, for offences, including offences during a pursuit
+  witnessRange: 135,   // m with line of sight, for offences (parked, oncoming or following units alike)
   followRange: 170,    // m, a unit following you with lights (a warning) keeps you in view as far as a one-star chase
-  speedMargin: 30,     // km/h over the posted limit; exact +30 is tolerated
-  speedHeat: 0.08,     // ~3 s to a warning, 12.5 sustained witnessed seconds to the first star
+  speedMargin: 15,     // km/h over the posted limit that is ignored; exact +15 is tolerated
+  minorSpeedHeat: 0.1, // +16..24: a warning after 2.5 s in view, a star after 10 s
+  warnMargin: 25,      // km/h over: proper speeding
+  speedHeat: 0.22,     // +25..49: a warning in ~1.1 s, a star after ~4.5 s in view
   seriousMargin: 50,   // km/h over: flagrant speeding
-  seriousSpeedHeat: 0.2, // five sustained witnessed seconds to the first star
-  sustainedAfter: 8, seriousSustainedAfter: 4, // s of consecutive witnessed speeding before a star is possible
-  pursuitSpeedHeat: 0.05, // 20 further seconds of witnessed speeding per extra star
-  warningHeat: 0.25, warningGrace: 3, complyTime: 2, fleeAfter: 10, fleeMargin: 20,
+  seriousSpeedHeat: 0.4, // a warning in ~0.6 s, a star after 2.5 s in view
+  sustainedAfter: 2,   // s of consecutive witnessed offending before a continuous offence can give a star
+  wrongSideHeat: 0.25, // wrong side past a unit: a warning in 1 s, a star after 4 s
+  pursuitFleeHeat: 0.04, // fleeing (+20 over) in sight of a unit during a pursuit: 25 s per further star
+  warningHeat: 0.25, warningGrace: 3, complyTime: 2, fleeAfter: 6, fleeMargin: 20,
   quietAfter: 20,      // s after a bust / escape / release when minor offences are ignored and no patrol respawns
   maxChasers: 3, maxUnits: 4, // reinforcement caps (roadblock cars excluded from maxUnits)
   contactLevel: 2, contactAfter: 15, // PIT / box / ram only in a live pursuit of 2+ stars, 15 s in
@@ -189,7 +193,7 @@ export class Police {
   reset(enabled = this.enabled) {
     this.enabled = enabled && (this.traffic.allowClosedRoam || this.traffic.allowClosedPolice || !this.route.closed && !this.traffic.route?.closed); // free roam opts into patrols on every map
     if (!this.enabled) this.traffic.allowClosedPolice = false;
-    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.flagrantT = 0; this.pedT = -Infinity;
+    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.wrongT = 0; this.pedT = -Infinity;
     for (const c of this.traffic.cars) if (c.police) { c.active = false; c.m.root.visible = false; c.cop = null; c.crash = null; c.m.setStrobe?.(false, 0); }
     for (const b of this.blocks.slice()) this.clearBlock(b);
     this.patrols = patrolPlan(this.route, this.traffic.data, this.traffic.signals?.J); this.reinT = 10; this.blockT = 30;
@@ -224,13 +228,15 @@ export class Police {
     }
     // Fresh, short-range LOS for offences: pursuit tracking is not evidence.
     const witness = this.witnesses(P);
-    const lim = this.limitAt(P.s), speeding = witness && kmh > lim + HEAT.speedMargin, flagrant = speeding && kmh > lim + HEAT.seriousMargin;
-    const wrongSide = witness && kmh > 30 && P.u * D < -1.5;
+    const lim = this.limitAt(P.s), over = kmh - lim, speeding = witness && over > HEAT.speedMargin;
+    const wrongSide = witness && kmh > 30 && P.u * D < -1.5, fleeing = over > HEAT.fleeMargin;
     this.speedT = speeding ? this.speedT + dt : 0;
-    this.flagrantT = flagrant ? (this.flagrantT || 0) + dt : 0;
-    if (speeding) hm.offence('speeding', dt * (hm.active ? HEAT.pursuitSpeedHeat : flagrant ? HEAT.seriousSpeedHeat : HEAT.speedHeat), true,
-      { continuous: true, sustained: this.speedT >= HEAT.sustainedAfter - 1e-6 || this.flagrantT >= HEAT.seriousSustainedAfter - 1e-6 });
-    if (wrongSide) hm.offence('wrongside', dt * (hm.active ? 0.03 : 0.06), true, { continuous: true });
+    this.wrongT = wrongSide ? (this.wrongT || 0) + dt : 0;
+    if (!hm.active) {
+      const rate = over > HEAT.seriousMargin ? HEAT.seriousSpeedHeat : over >= HEAT.warnMargin ? HEAT.speedHeat : HEAT.minorSpeedHeat;
+      if (speeding) hm.offence('speeding', dt * rate, true, { continuous: true, sustained: this.speedT >= HEAT.sustainedAfter - 1e-6 });
+      if (wrongSide) hm.offence('wrongside', dt * HEAT.wrongSideHeat, true, { continuous: true, sustained: this.wrongT >= HEAT.sustainedAfter - 1e-6 });
+    } else if (hm.state === 'pursuit' && seen && (fleeing || wrongSide)) hm.offence(wrongSide && !fleeing ? 'wrongside' : 'fleeing', dt * HEAT.pursuitFleeHeat, true, { continuous: true });
     // G.reds includes camera/history counts. Only the stop-line's actual
     // witness callback may add red-light heat; never infer it from a counter.
     for (const e of ctx.events || []) {
@@ -250,7 +256,7 @@ export class Police {
     for (const p of this.pending) hm.offence(p.kind, p.amt, p.witnessed ?? witness);
     this.pending.length = 0;
     // ---- the state machine
-    const tr0 = hm.update(dt, { seen, offending: speeding || wrongSide, fleeing: kmh > lim + HEAT.fleeMargin, copNear: near > 0, copsNear: near, slow: Math.hypot(P.vs, P.vu) < HEAT.bustSpeed });
+    const tr0 = hm.update(dt, { seen, offending: speeding || wrongSide, fleeing, copNear: near > 0, copsNear: near, slow: Math.hypot(P.vs, P.vu) < HEAT.bustSpeed });
     for (const e of tr0) {
       out.push(e);
       if (e.phase === 'warning') this.warn();

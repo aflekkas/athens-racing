@@ -20,17 +20,17 @@ test('normal 120 km/h race through 2 km without cops never builds heat', t => {
   step(W, 60, {}, 1 / 60, dt => { W.traffic.racers[0].s += 120 / 3.6 * dt; });
   assert.equal(W.police.hm.heat, 0); assert.equal(W.police.hm.level, 0);
 });
-test('speed observation is consecutive; a brief pass decays out of sight', t => {
+test('speed observation is consecutive; a brief sighting decays out of sight', t => {
   const W = fixture(t); W.player(1000, 2, 90 / 3.6); const c = W.police.spawnCop(1060, 1);
-  step(W, 2); assert.equal(W.police.hm.level, 0); const heat = W.police.hm.heat;
-  c.s = 1100; step(W, 1); assert.ok(W.police.hm.heat < heat); assert.equal(W.police.speedT, 0);
-  c.s = 1060; step(W, 2); assert.equal(W.police.hm.level, 0);
+  step(W, .9); assert.equal(W.police.hm.state, 'idle'); const heat = W.police.hm.heat; assert.ok(heat > 0);
+  c.s = 1300; step(W, 1); assert.ok(W.police.hm.heat < heat); assert.equal(W.police.speedT, 0);
+  c.s = 1060; step(W, .9); assert.equal(W.police.hm.level, 0);
   c.s = 1300; step(W, 8); assert.equal(W.police.hm.heat, 0); assert.equal(W.police.hm.state, 'idle');
 });
-test('witness range boundaries are inclusive at 75 m, checked fresh for each offence', t => {
+test('witness range boundaries are inclusive at the witness range, checked fresh for each offence', t => {
   const W = fixture(t); W.player(1000, 2, 90 / 3.6); const c = W.police.spawnCop(1000, 1); c.u = 2;
-  c.s = 1075; assert.equal(W.police.witnesses(W.traffic.racers[0]), true);
-  c.s = 1075.01; c.cop.sees = true; assert.equal(W.police.witnesses(W.traffic.racers[0]), false);
+  c.s = 1000 + HEAT.witnessRange; assert.equal(W.police.witnesses(W.traffic.racers[0]), true);
+  c.s = 1000 + HEAT.witnessRange + .01; c.cop.sees = true; assert.equal(W.police.witnesses(W.traffic.racers[0]), false);
   step(W, 4); assert.equal(W.police.hm.heat, 0);
 });
 test('real LOS checks hills and walls even within 25 m and on the road', t => {
@@ -41,11 +41,11 @@ test('real LOS checks hills and walls even within 25 m and on the road', t => {
   assert.equal(W.police.los(c, W.traffic.racers[0]), false);
   step(W, 4); assert.equal(W.police.hm.heat, 0);
 });
-test('continued witnessed speeding takes 20 more seconds to the second star', t => {
+test('fleeing in sight of a unit takes ~25 more seconds to the second star', t => {
   const W = fixture(t); W.player(1000, 2, 90 / 3.6); W.police.spawnCop(1060, 1);
-  step(W, 12.5, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
-  step(W, 19, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
-  step(W, 1, {}, 1 / 60); assert.equal(W.police.hm.level, 2);
+  step(W, 4.6, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
+  step(W, 24.4, {}, 1 / 60); assert.equal(W.police.hm.level, 1);
+  step(W, 1.2, {}, 1 / 60); assert.equal(W.police.hm.level, 2);
 });
 test('a witnessed minor bump follows with lights, no reinforcements; stopping releases', t => {
   const W = fixture(t); W.player(1000, 2, 45 / 3.6); const c = W.police.spawnCop(1003, 1);
@@ -69,18 +69,19 @@ test('reset clears pedestrian/stop-line queues and warning counters', t => {
   W.police.witnessedRed(W.traffic.racers[0]); W.police.pedEvents([{ who: 'player', kind: 'dive' }]);
   W.police.reset(true); step(W, .1); assert.equal(W.police.hm.heat, 0); assert.equal(W.police.pending.length, 0);
 });
-test('map plans use real junction anchors, at most two roaming patrols and kilometre gaps', () => {
+test('map plans use real junction anchors, at most two roaming patrols, none at a start grid, a unit every few km', () => {
   const route = { length: 10988, curv: () => 0 };
   const data = JSON.parse(readFileSync(new URL('../data/map.json', import.meta.url)));
-  const plan = patrolPlan(route, data, [{ s: 230 }, { s: 4650 }]);
-  assert.equal(plan.find(p => p.id === 'vouliagmeni-junction').s, 230);
-  assert.equal(plan.find(p => p.id === 'varkiza-junction').s, 4650);
-  assert.equal(plan.filter(p => !p.fixed).length, 1); assert.equal(plan.length, 4);
-  const fixed = plan.filter(p => p.fixed).map(p => p.s).sort((a,b) => a-b);
-  assert.ok(fixed[1] - fixed[0] > 3000 && fixed[2] - fixed[1] > 800);
+  const plan = patrolPlan(route, data, [{ s: 230 }, { s: 2400 }, { s: 4650 }, { s: 7507 }]);
+  assert.equal(plan.find(p => p.id === 'varkiza-junction').s, 4650); assert.equal(plan.find(p => p.id === 'limanakia').s, 2400);
+  assert.ok(plan.filter(p => !p.fixed).length <= 2); assert.equal(plan.length, 5);
+  const ends = (plan, a, b) => { const all = [a, ...plan.map(p => p.s).sort((x, y) => x - y), b]; return Math.max(...all.slice(1).map((s, i) => s - all[i])); };
+  assert.ok(plan.filter(p => p.fixed).every(p => Math.abs(p.s - 241) > 1000 && Math.abs(p.s - 10548) > 1000), 'nobody parked at a grid');
+  assert.ok(ends(plan, 241, 10548) < 3300, 'a unit every ~3 km');
   const penteli = JSON.parse(readFileSync(new URL('../data/maps/penteli/map.json', import.meta.url)));
   const village = patrolPlan({ ...route, length: 10480 }, penteli);
-  assert.equal(village.length, 2); assert.equal(village[0].id, 'dionysos-village');
+  assert.equal(village.length, 4); assert.ok(village.filter(p => p.fixed).every(p => Math.abs(p.s - 292) > 1000));
+  assert.ok(ends(village, 292, 10188) < 3300);
 });
 test('fixed sites stream at their coordinates, not ahead of the player, and roam count stays bounded', t => {
   const W = fixture(t); W.traffic.data = { marks: [{id:'astir',s:545},{id:'lake',s:864},{id:'varkiza',s:4622}] };
@@ -101,8 +102,38 @@ test('a police scrape itself identifies the officer even when visibility is bloc
 });
 test('a minor contact never reduces existing suspicion; a witnessed severe impact is serious', t => {
   const W = fixture(t); W.player(1000, 2, 90 / 3.6); W.police.spawnCop(1060, 1);
-  step(W, 12.4, {}, 1 / 60); const heat = W.police.hm.heat;
+  step(W, 4.4, {}, 1 / 60); const heat = W.police.hm.heat; assert.equal(W.police.hm.level, 0);
   W.police.hm.offence('bump', .15, true); assert.ok(W.police.hm.heat >= heat); assert.equal(W.police.hm.level, 0);
   step(W, 1 / 60, { events: [{ who: 'player', kind: 'crash', car: {}, dv: 9 }] }, 1 / 60);
   assert.equal(W.police.hm.level, 1); assert.equal(W.police.hm.state, 'pursuit');
+});
+
+test('speeding thresholds: +15 ignored; +25 warns within 1.5 s and stars in 4-5 s; +50 stars in 2-3 s', () => {
+  assert.equal(measure({ trigger: '+15', kmh: 65, cop: 60 }).timeToWarning, null);
+  const at25 = measure({ trigger: '+25', kmh: 75, cop: 60 }), at51 = measure({ trigger: '+51', kmh: 101, cop: 60 });
+  assert.ok(at25.timeToWarning <= 1.5 && at25.timeToStar >= 4 && at25.timeToStar <= 5, JSON.stringify(at25));
+  assert.ok(at51.timeToStar >= 2 && at51.timeToStar <= 3, JSON.stringify(at51));
+  assert.ok(HEAT.witnessRange >= 120 && HEAT.witnessRange <= 150);
+});
+
+test('every road map meets a patrol within two minutes of race pace in either direction, none parked at a start grid', async () => {
+  const { Route } = await import('../src/map.js');
+  const { findJunctions } = await import('../src/signals.js');
+  for (const file of ['../data/map.json', '../data/maps/penteli/map.json']) {
+    const data = JSON.parse(readFileSync(new URL(file, import.meta.url))), route = new Route(data.route);
+    const plan = patrolPlan(route, data, findJunctions({ route, data }));
+    for (const [s0, dir] of [[route.start, 1], [route.finish, -1]]) {
+      const units = plan.map(p => ({ ...p })); let s = s0, t = 0, met = null;
+      while (t < 120 && met === null) { // race pace: 130 km/h, slower for bends; roaming units at ~50 km/h
+        let kc = 0; for (let d = 0; d <= 80; d += 10) kc = Math.max(kc, Math.abs(route.curv(s + dir * d)));
+        s += dir * Math.min(130 / 3.6, Math.sqrt(7 / Math.max(1e-4, kc))) * 0.25; t += 0.25;
+        for (const u of units) {
+          if (!u.fixed) u.s += u.dir * 13 * 0.25;
+          const a = route.point(s, 0), b = route.point(u.s, 0);
+          if (Math.hypot(a.x - b.x, a.z - b.z) < HEAT.witnessRange) { met = t; if (t < 15) assert.ok(!u.fixed, `${data.id}: ${u.id} at the grid`); }
+        }
+      }
+      assert.ok(met !== null && met >= 15, `${data.id} from ${Math.round(s0)} (${dir}): first unit at ${met} s`);
+    }
+  }
 });
