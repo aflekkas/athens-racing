@@ -8,7 +8,6 @@ import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
-import { waitForBootSession } from './boot-session.js';
 import * as ENV from './env.js';
 import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
@@ -237,12 +236,10 @@ async function boot() {
   multiplayer.loaded = true;
   showTitle();
   last = performance.now(); requestAnimationFrame(frame);
-  if (SKIP_MENU && !multiplayer.pendingCode) await waitForBootSession(multiplayer);
   if (multiplayer.active) await multiplayer.syncLobby();
-  else if (SKIP_MENU && !multiplayer.pendingCode) {
+  else if (SKIP_MENU && !multiplayer.token && !multiplayer.pendingCode) {
     await switchMap(initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
-    prepareEvent(Q.get('event') || 'quick'); resetRace();
-    G.cam = G.userCam; applyCamMode(); updateCamera(0, true); startCountdown();
+    prepareEvent(Q.get('event') || 'quick'); resetRace(); startCountdown();
   }
   document.body.classList.add('loaded');
   performance.mark('menu-ready'); tlog('ready');
@@ -561,7 +558,6 @@ function backOnRoad(pv, recovery = null) {
   }
   if (!route.closed) s = clamp(s, 0, route.length);
   const placement = roadRecoveryPose(route, pv, dir, s);
-  s = placement.s; // The helper also repairs non-finite or out-of-range anchors.
   const u = placement.u;
   const nitro = pv.nitro; beginCameraBlend();
   pv.reset(s, u, 0); pv.yaw = placement.yaw;
@@ -586,7 +582,7 @@ function stuckCheck(pv, dt) {
   const disabled = pv.engineStalled || pv.drivetrainBroken || EV.isWrecked(pv.maxImpactEbs);
   // Only on-road poses advance the recovery anchor; a circuit excursion cannot skip a checkpoint.
   if (!offroad && !inverted && !disabled && !G.towing && towOffer.hold <= 0) {
-    if (!pv._network && Math.abs(pv.u) + pv.halfW <= route.edge(pv.s)) towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = towOffer.stuckT = towOffer.severeT = G.stuckT = 0; return;
+    towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = towOffer.stuckT = towOffer.severeT = G.stuckT = 0; return;
   }
   const needed = towCondition({ offroad, beyond, water: pv.water, inverted, disabled, speed: pv.speed }, dt, towOffer);
   G.stuckT = towOffer.stuckT;
@@ -2004,7 +2000,7 @@ function step(dt, draw = true) {
   const vis = sunScreen.z < 1 && Math.abs(sunScreen.x) < 1.2 && Math.abs(sunScreen.y) < 1.2 ? 1 - Math.max(Math.abs(sunScreen.x), Math.abs(sunScreen.y)) / 1.2 : 0;
   u.uSun.value.set(sunScreen.x * 0.5 + 0.5, sunScreen.y * 0.5 + 0.5, vis * 0.8);
   bootFrameLog('frame-draw');
-  if (draw && multiplayer.panel.hidden) render();
+  if (draw && (multiplayer.panel.hidden || G.resultPhotoPending)) render();
   bootFrameLog('frame-done');
 }
 
@@ -2243,9 +2239,10 @@ const multiplayer = new Multiplayer(CARS, {
     }
     if (multiplayer.retired) multiplayer.hooks.wrecked();
     else if (multiplayer.me?.finish !== null && multiplayer.me?.finish !== undefined) {
-      if (G.pFinish === null) { hud.message('FINISH · <i>' + fmtTime(multiplayer.me.finish) + '</i> · WAITING FOR OTHER DRIVERS', 8); audio.beep(true); controls.releaseMouseLook(); }
+      const firstFinish = G.pFinish === null;
+      if (firstFinish) { hud.message('FINISH · <i>' + fmtTime(multiplayer.me.finish) + '</i> · WAITING FOR OTHER DRIVERS', 8); audio.beep(true); controls.releaseMouseLook(); }
       G.pFinish = multiplayer.me.finish; G.state = 'onlineFinished'; onlinePersonalResult();
-      if (!menu.open) { multiplayer.panel.hidden = false; multiplayer.__screens?.schedule(); }
+      if (firstFinish) { multiplayer.panel.hidden = false; multiplayer.__screens?.schedule(); }
     }
     G.raceT = G.pFinish ?? elapsed;
   },
