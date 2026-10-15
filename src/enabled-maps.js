@@ -2,7 +2,7 @@
 // Single source for which maps are playable: menus filter offerings through
 // getPlayableMaps/isMapEnabled, and the server rejects disabled maps in
 // create/options. Circuit and public-road maps share the same registry. No three.js/DOM: node imports this for validation.
-export const PLAYABLE_MAPS = Object.freeze(['riviera', 'megara', 'penteli']);
+export const PLAYABLE_MAPS = Object.freeze(['riviera', 'megara', 'penteli', 'psychiko']);
 
 export const isMapEnabled = (id) => PLAYABLE_MAPS.includes(id);
 

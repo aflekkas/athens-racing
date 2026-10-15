@@ -38,17 +38,17 @@ test('geometry packs reject invalid magic, versions and out-of-bounds views', ()
   const bad = pack.slice(0); new DataView(bad).setUint32(0, 0); assert.throws(() => decodeGeometryPack(bad));
   assert.throws(() => decodeGeometryPack(pack.slice(0, 16)));
 });
-for (const id of ['riviera', 'penteli']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, async () => {
+for (const id of ['riviera', 'penteli', 'psychiko']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, async () => {
   const bake = await generateMapBake(root, id), terrainPack = roundTrip(bake.terrain), roadsPack = roundTrip(bake.roads);
   // The worker uses raw (unshuffled) transferable packs; build bakes choose gzip-friendly byte planes.
   const workerTerrain = decodeGeometryPack(packGroup(bake.terrainGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, height: 0, source: 1 }, [bake.map.terrain.Hc, bake.network.source]));
   const workerRoads = decodeGeometryPack(packGroup(bake.roadsGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, stats: roadsPack.metadata.stats }));
   const network = new RoadNetwork(bake.map), scene = new THREE.Group();
-  const ter = restoreBakedTerrain(terrainPack, bake.map.terrain, network, scene, { coastal: id === 'riviera' });
+  const ter = restoreBakedTerrain(terrainPack, bake.map.terrain, network, scene, { coastal: id === 'riviera', gardens: id === 'psychiko' });
   const roads = restoreBakedRoads(roadsPack, network, scene);
   equalGroup(bake.terrainGroup, ter.group); equalGroup(bake.roadsGroup, roads);
   const rawNetwork = new RoadNetwork(bake.map), rawScene = new THREE.Group();
-  equalGroup(ter.group, restoreBakedTerrain(workerTerrain, bake.map.terrain, rawNetwork, rawScene, { coastal: id === 'riviera' }).group);
+  equalGroup(ter.group, restoreBakedTerrain(workerTerrain, bake.map.terrain, rawNetwork, rawScene, { coastal: id === 'riviera', gardens: id === 'psychiko' }).group);
   equalGroup(roads, restoreBakedRoads(workerRoads, rawNetwork, rawScene));
   assert.deepEqual(bake.map.terrain.Hc, terrainPack.arrays[0]); assert.deepEqual(network.source, bake.network.source);
   assert.equal(network.stats.triangles, bake.network.stats.triangles);
@@ -76,4 +76,22 @@ test('missing, disabled and corrupt baked downloads fall back without installing
     assert.equal(await loadBakedWorldData(map), null); assert.equal(map.terrain.Hc, undefined);
     delete map.data.bakedWorld; assert.equal(await loadBakedWorldData(map), null);
   } finally { globalThis.fetch = previousFetch; console.warn = warn; if (previousLocation === undefined) delete globalThis.location; else globalThis.location = previousLocation; }
+});
+
+test('split CDN downloads reconstruct the exact geometry; a missing piece falls back cleanly', async () => {
+  const terrain = gzipSync(new Uint8Array(encodeGeometryPack({map:'psychiko',grid:1,height:0,source:1,meshes:[]},[new Float32Array([42]),new Float32Array([43])])));
+  const roads = gzipSync(new Uint8Array(encodeGeometryPack({map:'psychiko',grid:1,meshes:[]},[new Float32Array([1,2,3])])));
+  // Split inside the gzip header and compressed payload, as CDN pieces are not individually gzip files.
+  const files = new Map([['/terrain',terrain],['/a',roads.subarray(0,5)],['/b',roads.subarray(5,41)],['/c',roads.subarray(41)]]);
+  const map = {id:'psychiko',data:{roadNetwork:{},bakedWorld:{version:1,compression:'gzip',terrain:'/terrain',roads:['/a','/b','/c']}},terrain:{GX:1,GZ:1}};
+  const before = globalThis.fetch, warn = console.warn;
+  try {
+    globalThis.fetch = async path => new Response(files.get(path)||'missing',{status:files.has(path)?200:404});
+    const decoded = await loadBakedWorldData(map);
+    assert.deepEqual(decoded.terrain.arrays[0],new Float32Array([42]));
+    assert.deepEqual(decoded.roads.arrays[0],new Float32Array([1,2,3]));
+    files.delete('/b');console.warn=()=>{};
+    assert.equal(await loadBakedWorldData(map),null);
+    assert.equal(map.terrain.Hc,undefined);
+  } finally {globalThis.fetch=before;console.warn=warn;}
 });

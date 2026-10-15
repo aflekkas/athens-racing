@@ -1,9 +1,11 @@
 // Production-only ESM bundle. Keep module-relative resource URLs anchored to their original source locations.
 import { build } from 'esbuild';
 import { MAPS } from '../src/map-catalog.js';
-import { readFile, writeFile, readdir, unlink } from 'node:fs/promises';
+import { readFile, writeFile, readdir, unlink, realpath } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 export async function bundleBrowser(root, out) {
+  // esbuild resolves symlinks before onLoad (macOS /var -> /private/var).
+  root = await realpath(root); out = await realpath(out);
   const result = await build({
     absWorkingDir: root, entryPoints: ['src/main.js', ...(await readFile(resolve(root, 'src/world-worker.js')).then(() => ['src/world-worker.js']).catch(() => []))], outdir: resolve(out, 'src'),
     entryNames: '[name]-[hash]', chunkNames: 'chunk-[hash]', bundle: true, splitting: true,

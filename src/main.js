@@ -733,7 +733,7 @@ function startCountdown() {
       document.body.classList.remove('counting'); document.body.classList.add('racing', 'started');
       hud.banner('FREE ROAM', map.definition?.name || map.id); return;
     }
-    const r = G.ev.r; hud.banner(G.ev.def.name, `${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
+    const r = G.ev.r; hud.banner(G.ev.def.name, map.id === 'psychiko' && r.closed ? `CIRCUIT · ${r.laps} LAPS · ${fmtDist(r.len)}` : `${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
   }
 }
 
@@ -904,6 +904,7 @@ function prepareEvent(e) {
   G.ev = { def, r }; G.dir = r.dir; startS = r.s0;
   traffic.dir = r.dir;
   hud.setRange(r.s0, r.s1);
+  world?.roadworks?.setEvent(def);
   traffic.allowClosedRoam = def.type === 'free';
   markers.group.visible = def.type !== 'free' && !isDrivingMode(def);
   if (def.type !== 'free' && !isDrivingMode(def)) markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });

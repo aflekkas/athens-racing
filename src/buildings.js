@@ -9,12 +9,12 @@ import { infillStreetIndex } from './infill-streets.js';
 
 const KIND = { apt: 0, villa: 1, hotel: 2, shop: 3, church: 4, roof: 5, shed: 6 };
 
-export function facadeMaterial() {
+export function facadeMaterial(psychiko = false) {
   // Facades are procedural but physically lit: photographed plaster (albedo/normal/roughness) tinted per building,
   // glazing with interior mapping (rooms with floor, ceiling and walls seen in parallax behind the glass) and
   // Fresnel reflections of the sky, aluminium roller shutters, window frames, shopfronts, villa shutters.
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0 });
-  mat.customProgramCacheKey = () => 'facade7';
+  mat.customProgramCacheKey = () => psychiko ? 'facade7-psychiko' : 'facade7';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, { tPD: { value: TX.plaster_diff }, tPN: { value: TX.plaster_nor }, tPR: { value: TX.plaster_arm }, tCD: { value: TX.concrete_diff }, tCN: { value: TX.concrete_nor } });
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 aB; attribute vec2 aF; varying vec4 vB; varying vec2 vF; varying vec3 vWN; varying vec3 vWP2;')
@@ -28,6 +28,7 @@ export function facadeMaterial() {
       float gRough = 0.85; float gMetal = 0.0; vec3 gEmit = vec3(0.0); vec3 gN = vec3(0, 0, 1); float gNK = 0.6; vec2 gUV; float gSpec = 1.0;
       vec3 wallCol(float k, float seed){
         float r = fract(seed * 7.13);
+        ${psychiko ? 'if(k<1.5)return r<.45?vec3(.80,.77,.70):r<.70?vec3(.69,.61,.47):r<.85?vec3(.57,.59,.54):r<.95?vec3(.61,.46,.32):vec3(.61,.55,.43);' : ''}
         if (k < 0.5) return r < 0.34 ? vec3(0.86, 0.84, 0.79) : r < 0.55 ? vec3(0.84, 0.76, 0.62) : r < 0.7 ? vec3(0.75, 0.73, 0.69) : r < 0.84 ? vec3(0.88, 0.69, 0.40) : r < 0.93 ? vec3(0.9, 0.88, 0.84) : vec3(0.66, 0.68, 0.66);
         if (k < 1.5) { float q = fract(seed * 3.7); return q < 0.6 ? vec3(0.93, 0.92, 0.88) : q < 0.85 ? vec3(0.91, 0.84, 0.7) : vec3(0.86, 0.64, 0.5); }
         if (k < 2.5) return r < 0.6 ? vec3(0.94, 0.93, 0.89) : vec3(0.79, 0.73, 0.61);
@@ -492,7 +493,8 @@ const ROAD_CLEAR = 16;
 export function buildBuildings(map, scene, heightC, labels, infill = []) {
   const { data, route } = map;
   if (location.search.includes('debug')) console.log('infill buildings', infill.length);
-  const mat = facadeMaterial();
+  const psychiko = map.id === 'psychiko';
+  const mat = facadeMaterial(psychiko);
   const detMat = detailMaterial();
   const groups = new Map(); // chunk -> arrays
   const CH = 500;
@@ -589,7 +591,7 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
       }
       // Street-facing ground-floor character; every addition stays in the existing chunk batch.
       const front = nx * frontage[0] + nz * frontage[1] > 0;
-      if (!decoratedFront && front && L > 5 && Math.abs(b.u) < 260 && k <= KIND.shop) {
+      if (!psychiko && !decoratedFront && front && L > 5 && Math.abs(b.u) < 260 && k <= KIND.shop) {
         decoratedFront = true;
         addFrontage(G.det, { ax, az, nx, nz, tx: (bx - ax) / L, tz: (bz - az) / L,
           L, gmin, roofTop, k, seed, rng, heightC, footprint: p, roofOccupied });
@@ -612,7 +614,7 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
     // spatial hash for prop placement
     const bb = { x0: 1e9, x1: -1e9, z0: 1e9, z1: -1e9 };
     for (let i = 0; i < n; i++) { bb.x0 = Math.min(bb.x0, p[i * 2]); bb.x1 = Math.max(bb.x1, p[i * 2]); bb.z0 = Math.min(bb.z0, p[i * 2 + 1]); bb.z1 = Math.max(bb.z1, p[i * 2 + 1]); }
-    const rec = { p, bb, top: roofTop, k, area, cx, cz, s: b.s, u: b.u, gmin, roofOccupied };
+    const rec = { pitched: psychiko && b.pitched, p, bb, top: roofTop, k, area, cx, cz, s: b.s, u: b.u, gmin, roofOccupied };
     for (let i = Math.floor(bb.x0 / HC); i <= Math.floor(bb.x1 / HC); i++) for (let j = Math.floor(bb.z0 / HC); j <= Math.floor(bb.z1 / HC); j++) { const kk = i * 100003 + j; if (!hashCell.has(kk)) hashCell.set(kk, []); hashCell.get(kk).push(rec); }
     if ((k === KIND.apt || k === KIND.villa || k === KIND.hotel) && area > 50) roofs.push(rec);
     if (k === KIND.church) domes.push(rec);
@@ -648,6 +650,7 @@ export function buildBuildings(map, scene, heightC, labels, infill = []) {
   const frames = new CellInstances(frameGeo, new THREE.MeshStandardMaterial({ color: '#8e9296', metalness: 0.7, roughness: 0.4 }), { cell: 500, far: 600, shadow: false });
   const sunYaw = Math.PI; // collectors face south (+z)
   for (const r of roofs) {
+    if (r.pitched || psychiko && rng.next()>.25) continue;
     if (Math.abs(r.u) > 420) continue;
     const cnt = Math.min(5, Math.max(1, Math.floor(r.area / 110)));
     for (let i = 0; i < cnt; i++) {

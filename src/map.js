@@ -43,6 +43,7 @@ export class Route {
   constructor(r, { corridors = [] } = {}) {
     this.step = r.step; this._t = 0;
     this.closed = !!r.closed;
+    this.streetCircuit = r.streetCircuit === true;
     const N = this.N = r.x.length;
     this.X = Float32Array.from(r.x); this.Z = Float32Array.from(r.z); this.Y = Float32Array.from(r.y);
     this.LN = Float32Array.from(r.lanes); this.DV = Float32Array.from(r.div);

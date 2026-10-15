@@ -9,7 +9,7 @@ import { getMapPersonalBest } from './personal-bests.js';
 
 const { esc, icon } = C;
 const playable = () => getPlayableMaps(MAPS).filter(m => TRACK_ROUTES[m.id]);
-const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : '#ff7868';
+const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : id === 'psychiko' ? '#d7cf83' : '#ff7868';
 function style() {
   if (document.getElementById('map-select-style')) return;
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);

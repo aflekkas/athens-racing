@@ -9,9 +9,13 @@ export async function loadBakedWorldData(map) {
     let generated = null;
     try { generated = await generatedWorld(map); } catch (e) { console.warn('World worker unavailable; using build buffers:', e.message); }
     const packs = generated ? [decodeGeometryPack(generated.terrain), decodeGeometryPack(generated.roads)] : await Promise.all([def.terrain, def.roads].map(async url => {
-      const r = await fetch(url); if (!r.ok) throw new Error(`Baked world HTTP ${r.status}`);
+      const download = async path => { const r = await fetch(path); if (!r.ok) throw new Error(`Baked world HTTP ${r.status}`); return r; };
+      // Large neighbourhood packs arrive in ordered CDN-sized pieces of one gzip stream.
+      const body = Array.isArray(url)
+        ? new Blob(await Promise.all(url.map(async part => (await download(part)).arrayBuffer()))).stream()
+        : (await download(url)).body;
       if (def.compression !== 'gzip' || typeof DecompressionStream === 'undefined') throw new Error('Baked compression unsupported');
-      const buffer = await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+      const buffer = await new Response(body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
       return decodeGeometryPack(buffer);
     }));
     for (const p of packs) if (p.metadata.map !== map.id || p.metadata.grid !== map.terrain.GX * map.terrain.GZ) throw new Error('Baked world belongs to a different map');

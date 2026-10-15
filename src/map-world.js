@@ -14,6 +14,7 @@ import { buildRoadside } from './roadside.js';
 import { buildSpeedSigns } from './speed-signs.js';
 import { buildWorldContext } from './world-context.js';
 import { buildRivieraLandmarks } from './riviera-landmarks.js';
+import { buildRoadworks } from './roadworks.js';
 import { buildStreetLife } from './street-life.js';
 import { Traffic } from './traffic.js';
 import { Signals, findJunctions } from './signals.js';
@@ -73,7 +74,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     progress('BUILDING TERRAIN', .25); await frameYield();
     const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
     const baked = await loadBakedWorld(map, network);
-    const terrainOptions = { coastal, farmland: map.id === 'megara', network, beachAreas: map.data.areas?.beach || [] };
+    const terrainOptions = { coastal, farmland: map.id === 'megara', gardens: map.id === 'psychiko', network, beachAreas: map.data.areas?.beach || [] };
     const ter = still(() => baked ? restoreBakedTerrain(baked.terrain, map.terrain, network, group, terrainOptions) : buildTerrain(map.terrain, route, [], group, terrainOptions), 'terrain');
     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
     if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
@@ -118,7 +119,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     signals ||= new Signals(map, group, road.group, assets.junctions);
     const people = custom?.people || new People(map, group, assets, natureGroup);
     const streetLife = buildStreetLife(map, group, ter.heightC, coastal ? custom : null);
-    if (route.closed) { people.dens = () => 0; people.anchors.length = 0; }
+    if (route.closed && !route.streetCircuit) { people.dens = () => 0; people.anchors.length = 0; }
     progress('FUELLING THE CARS', .85); await frameYield();
     const traffic = new Traffic(group, route, map.data);
     traffic.signals = signals; traffic.people = people; people.traffic = traffic;
@@ -127,6 +128,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     if (coastal) traffic.buildParkedRows(group, ground);
     const streetParking = network ? buildNetworkParking(network, group, ground) : [];
     ground.parked = (traffic.parkedCars || []).concat(custom?.obstacles || [], speedSigns.obstacles, streetParking, landmarks?.obstacles || [], streetLife.obstacles);
+    const roadworks = buildRoadworks(map, group, ground, assets);
     ground.constrainCamera = landmarks?.constrainCamera;
     traffic.ground = ground;
     if (coastal) { buildHumps(map, group, ter.heightC); buildSandTraps(ground, group); buildBarriers(map, group); }
@@ -135,7 +137,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     const lod = prepareSceneryLod(group, quality, map);
     group.matrixAutoUpdate = false; group.updateMatrix(); freezeStatic(staticRoots);
     let disposed = false;
-    return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, tyreWalls: custom?.tyreWalls,
+    return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, roadworks, tyreWalls: custom?.tyreWalls,
       dispose() {
         if (disposed) return; disposed = true;
         // Damage fragments are parented directly to scene, outside this map root.

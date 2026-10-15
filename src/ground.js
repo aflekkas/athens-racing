@@ -231,12 +231,12 @@ export class Ground {
     const sc = route.closed ? route.wrap(s) : clamp(s, 0, route.length);
     out.network = false; out.networkStep = 0;
     // Race progress stays in s/u; only the physical contact surface changes off the race carriageway.
-    if (au > route.edge(sc) + (route.closed ? 0 : ROAD.gutter) && this.network?.sample(x, z, this._net || (this._net = {}))) {
+    if (au > route.edge(sc) + (route.closed && !route.streetCircuit ? 0 : ROAD.gutter) && this.network?.sample(x, z, this._net || (this._net = {}))) {
       const n = this._net;
       out.y = n.y; out.surf = n.surf; out.water = 0; out.hump = 0; out.trap = null;
       out.network = true; out.networkStep = n.step; return out;
     }
-    if (route.closed) {
+    if (route.closed && !route.streetCircuit) {
       const edge = route.edge(sc), beyond = au - edge;
       out.water = 0; out.hump = 0; out.trap = null;
       if (beyond <= 0) { out.y = route.surfaceY(sc, u); out.surf = 'asphalt'; return out; }
@@ -364,7 +364,7 @@ export class Ground {
    * off a kerb is a drop. These wheel/ground contacts never consume the crash damage budget.
    */
   _curbs(v) {
-    if (this.route.closed) return; // low, rounded circuit kerbs are sampled per wheel in at()
+    if (this.route.closed && !this.route.streetCircuit) return; // low, rounded circuit kerbs are sampled per wheel in at()
     const route = this.route, sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
     const f = route.contactFrame?.(sc, v.u, v._f || (v._f = {})) || route.frame(sc, v._f || (v._f = {}));
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);

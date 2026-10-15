@@ -267,16 +267,16 @@ function makePalm() {
   const boot = new THREE.CylinderGeometry(0.42, 0.3, 1.1, 12, 3); boot.translate(0, -0.35, 0); barkUV(boot, 1.5, 1.0);
   return { trunk, crown, boot };
 }
-function makePine(seed) {
+function makePine(seed, mature = false) {
   // Aleppo pine: leaning trunk with a few limbs, umbrella canopy of flattened clumps (core + needle cards)
   const r = new RNG(seed);
   const trunk = new THREE.CylinderGeometry(0.14, 0.3, 1, 9, 6, true); trunk.translate(0, 0.5, 0); barkUV(trunk, 1.4, 10 / 2.0);
   const coreParts = [], cardParts = [];
   for (let i = 0; i < 6; i++) {
-    const sx = r.range(1.6, 2.6), sy = r.range(0.8, 1.2), sz = r.range(1.6, 2.6);
-    const cx = r.range(-2, 2), cy = r.range(-0.6, 0.6), cz = r.range(-2, 2);
+    const sx = mature ? r.range(2.4,3.7) : r.range(1.6, 2.6), sy = mature ? r.range(1.1,2.0) : r.range(0.8, 1.2), sz = mature ? r.range(2.4,3.7) : r.range(1.6, 2.6);
+    const cx = r.range(-2, 2), cy = mature ? r.range(-1.5,.8) : r.range(-0.6, 0.6), cz = r.range(-2, 2);
     const g = cardCluster(4, seed * 10 + i, ATL.pine, { r: [sx * 0.7, sy * 0.6, sz * 0.7], w: 3.1, h: 2.1, shell: 0.55 }); g.translate(cx, cy, cz); coreParts.push(g);
-    const c = cardCluster(18, seed * 100 + i, ATL.pine, { r: [sx, sy, sz], cy: 0, w: 1.7, h: 1.7, tilt: 0.9, outward: 0.6, shell: 0.75 });
+    const c = cardCluster(mature ? 14 : 18, seed * 100 + i, ATL.pine, { r: [sx, sy, sz], cy: 0, w: 1.7, h: 1.7, tilt: 0.9, outward: 0.6, shell: 0.75 });
     c.translate(cx, cy, cz); cardParts.push(c);
   }
   return { trunk, core: mergeGeos(coreParts), cards: mergeGeosAttr(cardParts, ['aAO']) };
@@ -386,6 +386,7 @@ function umbrellaGeo(straw) {
 // ------------------------------------------------------------------ main
 export function buildNature(map, scene, heightC, bld, assets) {
   const { data, route, terrain } = map;
+  const gardenScenery = data.psychiko?.scenery;
   const group = new THREE.Group(); scene.add(group);
   const rng = new RNG(2024);
   const pineTrunkMat = barkMaterial('pinebark', '#b8a898', 1.6);
@@ -396,30 +397,30 @@ export function buildNature(map, scene, heightC, bld, assets) {
   const extraAtlas = rivieraFoliageAtlas(), extraMat = leafMaterial(false, extraAtlas), extraFlowerMat = leafMaterial(true, extraAtlas);
   // Far LOD levels (cores, trunks, palms) use big cells: a few dozen triangles per instance, so drawing a whole
   // 0.8-1 km chunk is cheaper than the extra draw calls of small ones. Close card levels keep small cells.
-  const palmT = makePalm(), pineT = [makePine(1), makePine(2), makePine(3)];
+  const palmT = makePalm(), pineT = [makePine(1,!!gardenScenery), makePine(2,!!gardenScenery), makePine(3,!!gardenScenery)];
   const palmTrunk = new CellInstances(palmT.trunk, barkMaterial('palmbark', '#d8cbb8', 2.2), { far: 1800, cell: 800 });
   const palmCrown = new CellInstances(palmT.crown, frondMat, { far: 1800, cell: 800, colors: true });
   const fanCrown = new CellInstances(makeFanPalm(), extraMat, { far: 1800, cell: 800, colors: true });
   const palmBoot = new CellInstances(palmT.boot, barkMaterial('palmbark', '#a89880', 1.0), { far: 700, shadow: false });
-  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: 1000, far: 2000 });
-  const pineCore = pineT.map((t) => new CellInstances(t.core, leafMat, { cell: 1000, near: 390, far: 2600, colors: true, shadow: false }));
-  const pineCards = pineT.map((t) => new CellInstances(t.cards, leafMat, { cell: 250, far: 500, colors: true }));
+  const pineTrunk = new CellInstances(pineT[0].trunk, pineTrunkMat, { cell: gardenScenery ? 300 : 1000, far: gardenScenery ? 900 : 2000 });
+  const pineCore = pineT.map((t) => new CellInstances(t.core, leafMat, { cell: gardenScenery ? 500 : 1000, near: gardenScenery ? 170 : 390, far: gardenScenery ? 1000 : 2600, colors: true, shadow: false }));
+  const pineCards = pineT.map((t) => new CellInstances(t.cards, leafMat, { cell: gardenScenery ? 160 : 250, far: gardenScenery ? 220 : 500, colors: true }));
   const oleCards = [11, 12].map((seed) => cardCluster(30, seed, ATL.oleander, { r: [0.95, 0.7, 0.9], w: 1.1, h: 1.1, shell: 0.65 }));
   const lenCards = [13, 14].map((seed) => cardCluster(24, seed, ATL.lentisk, { r: [0.95, 0.65, 0.9], w: 1.05, h: 1.05, shell: 0.65 }));
-  const bushCore = [13, 14].map((seed) => new CellInstances(cardCluster(7, seed, ATL.lentisk, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), leafMat, { colors: true, cell: 800, near: 234, far: 900, shadow: false }));
-  const oleFar = [11, 12].map((seed) => new CellInstances(cardCluster(8, seed, ATL.oleander, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), flowerMat, { colors: true, cell: 800, near: 234, far: 900, shadow: false }));
-  const oleI = oleCards.map((g) => new CellInstances(g, flowerMat, { colors: true, cell: 250, far: 300, shadow: false }));
-  const lenI = lenCards.map((g) => new CellInstances(g, leafMat, { colors: true, cell: 250, far: 300, shadow: false }));
+  const bushCore = [13, 14].map((seed) => new CellInstances(cardCluster(7, seed, ATL.lentisk, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), leafMat, { colors: true, cell: gardenScenery ? 240 : 800, near: gardenScenery ? 93 : 234, far: gardenScenery ? 320 : 900, shadow: false }));
+  const oleFar = [11, 12].map((seed) => new CellInstances(cardCluster(8, seed, ATL.oleander, { r: [0.75, 0.5, 0.75], w: 1.5, h: 1.25 }), flowerMat, { colors: true, cell: gardenScenery ? 240 : 800, near: gardenScenery ? 93 : 234, far: gardenScenery ? 320 : 900, shadow: false }));
+  const oleI = oleCards.map((g) => new CellInstances(g, flowerMat, { colors: true, cell: gardenScenery ? 120 : 250, far: gardenScenery ? 120 : 300, shadow: false }));
+  const lenI = lenCards.map((g) => new CellInstances(g, leafMat, { colors: true, cell: gardenScenery ? 120 : 250, far: gardenScenery ? 120 : 300, shadow: false }));
   const rocks = [rockGeo(1), rockGeo(2), rockGeo(3)].map((g) => new CellInstances(g, rockMat, { colors: true, cell: 800, far: 900, shadow: false }));
   const cypCards = cardCluster(46, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 0.85, h: 1.5, tilt: 0.15, outward: 0.2 });
-  const cypCore = new CellInstances(cardCluster(16, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 1.0, h: 2.0, tilt: 0.15, outward: 0.2 }), leafMat, { near: 390, far: 2200, cell: 1000, colors: true, shadow: false });
-  const cypI = new CellInstances(cypCards, leafMat, { far: 500, cell: 250, colors: true });
+  const cypCore = new CellInstances(cardCluster(16, 21, ATL.pine, { r: [0.6, 3.8, 0.6], cy: 4.0, w: 1.0, h: 2.0, tilt: 0.15, outward: 0.2 }), leafMat, { near: gardenScenery ? 170 : 390, far: gardenScenery ? 1000 : 2200, cell: gardenScenery ? 500 : 1000, colors: true, shadow: false });
+  const cypI = new CellInstances(cypCards, leafMat, { far: gardenScenery ? 220 : 500, cell: gardenScenery ? 160 : 250, colors: true });
   const cypress = { add: (m) => { cypCore.add(m, CYP_TINT); cypI.add(m, CYP_TINT); } };
   const orangeCards = cardCluster(64, 31, ATL.citrus, { r: [1.5, 1.25, 1.5], cy: 2.9, w: 1.3, h: 1.3, shell: 0.65 });
-  const orangeCore = new CellInstances(cardCluster(16, 31, ATL.citrus, { r: [1.3, 1.05, 1.3], cy: 2.9, w: 1.8, h: 1.8 }), leafMat, { near: 390, far: 1700, cell: 1000, colors: true, shadow: false });
-  const orangeI = new CellInstances(orangeCards, leafMat, { far: 500, cell: 250, colors: true });
-  const oliveCards = new CellInstances(cardCluster(54, 63, EXTRA.olive, { r: [2.1, 1.45, 1.9], cy: 3.2, w: 1.9, h: 1.8 }), extraMat, { far: 500, cell: 300, colors: true });
-  const oliveFar = new CellInstances(cardCluster(15, 63, EXTRA.olive, { r: [1.9, 1.25, 1.7], cy: 3.2, w: 2.3, h: 2.2 }), extraMat, { near: 390, far: 2100, cell: 1000, colors: true, shadow: false });
+  const orangeCore = new CellInstances(cardCluster(16, 31, ATL.citrus, { r: [1.3, 1.05, 1.3], cy: 2.9, w: 1.8, h: 1.8 }), leafMat, { near: gardenScenery ? 170 : 390, far: gardenScenery ? 1000 : 1700, cell: gardenScenery ? 500 : 1000, colors: true, shadow: false });
+  const orangeI = new CellInstances(orangeCards, leafMat, { far: gardenScenery ? 220 : 500, cell: gardenScenery ? 160 : 250, colors: true });
+  const oliveCards = new CellInstances(cardCluster(54, 63, EXTRA.olive, { r: [2.1, 1.45, 1.9], cy: 3.2, w: 1.9, h: 1.8 }), extraMat, { far: gardenScenery ? 220 : 500, cell: gardenScenery ? 160 : 300, colors: true });
+  const oliveFar = new CellInstances(cardCluster(15, 63, EXTRA.olive, { r: [1.9, 1.25, 1.7], cy: 3.2, w: 2.3, h: 2.2 }), extraMat, { near: gardenScenery ? 170 : 390, far: gardenScenery ? 1000 : 2100, cell: gardenScenery ? 500 : 1000, colors: true, shadow: false });
   const oliveTrunkGeo = mergeGeos([-1, 1].map((side) => { const g = new THREE.CylinderGeometry(0.08, 0.24, 2.8, 7); g.rotateZ(side * 0.25); g.translate(side * 0.2, 1.35, 0); return g; }));
   const oliveTrunks = new CellInstances(oliveTrunkGeo, pineTrunkMat, { far: 1200, cell: 1000 });
   const bougainvillea = new CellInstances(cardCluster(22, 88, EXTRA.bougainvillea, { r: [1.1, 0.85, 0.75], cy: 0.6, w: 1.2, h: 1.5 }), extraFlowerMat, { far: 650, cell: 350, colors: true, shadow: false });
@@ -450,12 +451,13 @@ export function buildNature(map, scene, heightC, bld, assets) {
     palmBoot.add(M(cx, y + h - 0.3, cz, 0, rng.range(0, 6.28), 0, 1, 1, 1));
   };
   const addPine = (x, y, z, h = rng.range(7, 13)) => {
-    const lean = rng.range(-0.12, 0.12), yaw = rng.range(0, 6.28);
+    const lean = gardenScenery ? rng.range(-.26,.26) : rng.range(-0.12, 0.12), yaw = rng.range(0, 6.28);
     pineTrunk.add(M(x, y - 0.3, z, lean, yaw, 0, 1, h, 1, 'YXZ'));
     const tx = x + Math.sin(yaw) * Math.sin(lean) * h, tz = z + Math.cos(yaw) * Math.sin(lean) * h;
     const sc = h / 10, k = rng.int(0, 2);
     const m = M(tx, y + h - 0.6, tz, 0, rng.range(0, 6.28), 0, sc * rng.range(0.9, 1.2), sc, sc * rng.range(0.9, 1.2), 'YXZ');
     const tint = leafTint(); pineCore[k].add(m, tint); pineCards[k].add(m, tint);
+    if(gardenScenery) for(let j=0;j<3;j++) pineTrunk.add(M(x+(tx-x)*.65,y+h*.58,z+(tz-z)*.65, .65+j*.13,yaw+j*2.1,0,.35,h*.34,.35,'YXZ'));
   };
   const addBush = (x, y, z, s, colors) => {
     const k = rng.int(0, 1), c = rng.pick(colors);
@@ -464,17 +466,17 @@ export function buildNature(map, scene, heightC, bld, assets) {
     else { bushCore[k].add(m, c); lenI[k].add(m, c); }
   };
   const addRock = (x, y, z, s) => { rng.pick(rocks).add(M(x, y - s * 0.25, z, rng.range(-0.3, 0.3), rng.range(0, 6.28), rng.range(-0.3, 0.3), s, s, s, 'YXZ'), rng.pick(ROCKC)); };
-  const addOrange = (x, y, z) => {
-    smallTrunks.add(M(x, y, z, 0, 0, 0, 1)); const sc = rng.range(0.8, 1.1); const m = M(x, y, z, 0, rng.range(0, 6), 0, sc, sc, sc, 'YXZ');
+  const addOrange = (x, y, z, size = null, fruit = true) => {
+    smallTrunks.add(M(x, y, z, 0, 0, 0, 1)); const sc = size ?? rng.range(0.8, 1.1); const m = M(x, y, z, 0, rng.range(0, 6), 0, sc, sc, sc, 'YXZ');
     const tint = leafTint(); orangeCore.add(m, tint); orangeI.add(m, tint);
-    for (let i = 0; i < 12; i++) { const a = rng.range(0, 6.28), r = rng.range(1.0, 1.5) * sc; fruitPos.push([x + Math.cos(a) * r, y + 2.9 * sc + rng.range(-0.9, 0.7), z + Math.sin(a) * r]); }
+    for (let i = 0; i < (fruit ? 12 : 0); i++) { const a = rng.range(0, 6.28), r = rng.range(1.0, 1.5) * sc; fruitPos.push([x + Math.cos(a) * r, y + 2.9 * sc + rng.range(-0.9, 0.7), z + Math.sin(a) * r]); }
   };
 
   // A separate stream varies species while keeping every tree's placement reproducible.
   const variety = new RNG(9163);
   const BOUGAINVILLEA = ['#d8429b', '#b438b4', '#ee6ba9', '#faf1dd', '#e86955'].map((c) => new THREE.Color(c));
-  const addOlive = (x, y, z) => {
-    const sc = variety.range(0.8, 1.35), m = M(x, y, z, 0, variety.range(0, 6.28), 0, sc, sc * variety.range(0.85, 1.1), sc, 'YXZ');
+  const addOlive = (x, y, z, size = null) => {
+    const sc = size ?? variety.range(0.8, 1.35), m = M(x, y, z, 0, variety.range(0, 6.28), 0, sc, sc * variety.range(0.85, 1.1), sc, 'YXZ');
     const tint = new THREE.Color().setRGB(variety.range(0.9, 1.1), variety.range(0.96, 1.12), variety.range(0.9, 1.06));
     oliveTrunks.add(m); oliveCards.add(m, tint); oliveFar.add(m, tint);
   };
@@ -500,6 +502,21 @@ export function buildNature(map, scene, heightC, bld, assets) {
     return h;
   };
 
+  if (gardenScenery) {
+    for (const [x,z,type,h] of gardenScenery.trees) {
+      const y = Math.max(heightC(x,z), (map.roadNetwork?.height(x,z) ?? heightC(x,z)) - .2);
+      if (type===0) addPine(x,y,z,h);
+      else if(type===2) cypress.add(M(x,y,z,0,variety.range(0,6.28),0,1.2,h/8.7,1.2));
+      else if(type===3) addOlive(x,y,z,h/4.7);
+      else addOrange(x,y,z,h/4.2,type===4);
+    }
+    for(const q of gardenScenery.squares)for(let i=0;i<14;i++){const a=i*2.39996,r=q.radius-2,x=q.center[0]+Math.sin(a)*r,z=q.center[1]+Math.cos(a)*r;addBush(x,heightC(x,z)+.25,z,1.15,OLEANDER);}
+    const hedgeColors=['#38553a','#426039','#536c3e'].map(c=>new THREE.Color(c));
+    for(const [x,z,yaw,len,type,h] of gardenScenery.frontages) if(type===1) {
+      const y=Math.max(heightC(x,z),(map.roadNetwork?.height(x,z)??heightC(x,z))-.2);
+      for(const d of [-2,0,2]) addBush(x+Math.sin(yaw)*d,y+.55,z+Math.cos(yaw)*d,h*.62,hedgeColors);
+    }
+  } else {
   // ---- 1. street trees along the route (promenade palms, bitter oranges, median oleanders)
   for (let s = 0; s < route.length; s += 2) {
     const urb = route.urban(s), dv = route.div(s), mh = route.medHalf(s);
@@ -514,7 +531,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
       const sw = ROAD.sidewalk(route, s, side);
       if (urb > 0.5) {
         if (sea < 140 && s % 14 === (side > 0 ? 0 : 6)) { route.point(s, side * (e + sw - 1.0), pt); addPalm(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
-        else if (sea >= 140 && s % 10 === 4) { route.point(s, side * (e + 1.2), pt); if (!bld.inBuilding(pt.x, pt.z, 0.5)) addOrange(pt.x, pt.y + ROAD.curbH(route, s), pt.z); }
+        else if (sea >= 140 && s % 10 === 4) { route.point(s, side * (e + 1.2), pt); if (!bld.inBuilding(pt.x, pt.z, 0.5)) { if (route.streetCircuit && rng.chance(.65)) addPine(pt.x, pt.y + ROAD.curbH(route, s), pt.z, rng.range(8, 12)); else addOrange(pt.x, pt.y + ROAD.curbH(route, s), pt.z); } }
       } else {
         // cliff road: maquis on the verges, rocks below the guard rail, the odd pine
         if (s % 6 === 0) { route.point(s, side * (e + sw + rng.range(2, 9)), pt); const h = heightC(pt.x, pt.z); if (h > 0.4) { if (rng.chance(0.55)) addBush(pt.x, h, pt.z, rng.range(0.6, 1.4), MAQUIS); else addRock(pt.x, h, pt.z, rng.range(0.4, 1.3)); } }
@@ -541,7 +558,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
   for (const a of data.areas.scrub) if (a.c) scatter(a, 1 / 45, 700, (x, y, z, du) => { if (variety.chance(0.57)) addDryPlant(x, y, z); else if (rng.chance(0.85)) addBush(x, y, z, rng.range(0.6, 1.5), MAQUIS); else addRock(x, y, z, rng.range(0.5, 1.4)); });
   for (const a of data.areas.rock) if (a.c) scatter(a, 1 / 30, 600, (x, y, z) => addRock(x, y, z, rng.range(0.5, 2.2)));
   // gardens of the villas (Kavouri / Vouliagmeni): pines, cypresses, oleanders between houses
-  for (let s = 5800; s < 11000; s += 3.2) for (const side of [1, -1]) {
+  for (let s = route.streetCircuit ? 0 : 5800; s < (route.streetCircuit ? route.length : 11000); s += 3.2) for (const side of [1, -1]) {
     const u = side * (rng.chance(0.6) ? rng.range(12, 70) : rng.range(70, 320)); route.point(s, u, pt);
     const h = free(pt.x, pt.z, 3); if (h === null) continue;
     const r = rng.next();
@@ -565,6 +582,7 @@ export function buildNature(map, scene, heightC, bld, assets) {
       const ax = p[i], az = p[i + 1], bx = p[i + 2], bz = p[i + 3]; const L = Math.hypot(bx - ax, bz - az);
       for (let d = 0; d < L; d += 2.2) { const t = d / L; addRock(ax + (bx - ax) * t + rng.range(-1.5, 1.5), 0.6, az + (bz - az) * t + rng.range(-1.5, 1.5), rng.range(1.0, 2.0)); }
     }
+  }
   }
   for (const c of [palmTrunk, palmCrown, fanCrown, palmBoot, pineTrunk, ...pineCore, ...pineCards, ...bushCore, ...oleFar, ...oleI, ...lenI, ...rocks, cypCore, cypI, orangeCore, orangeI, smallTrunks, oliveTrunks, oliveCards, oliveFar, bougainvillea, phrygana, agave, pricklyPear]) c.build(group);
   {

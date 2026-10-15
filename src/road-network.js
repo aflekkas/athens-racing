@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { psychikoStreet } from './maps/psychiko-streets.js';
 import { TX } from './tex.js';
 import { batchStatic } from './batch.js';
 import { REFLECT_LAYER } from './env.js';
@@ -11,21 +12,23 @@ function area(poly){let sum=0;for(let i=1;i+1<poly.length;i++)sum+=cross(poly[0]
 function half(poly,a,b,inside){const out=[];for(let i=0,j=poly.length-1;i<poly.length;j=i++){const p=poly[j],q=poly[i],d=cross(a,b,p),e=cross(a,b,q),P=inside?d>=-1e-7:d<=1e-7,Q=inside?e>=-1e-7:e<=1e-7;if(P!==Q){const t=d/(d-e);out.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]);}if(Q)out.push(q);}return out;}
 function subtract(poly,clip){let rem=poly;const result=[];for(let i=0;rem.length>=3&&Math.abs(area(rem))>1e-5&&i<clip.length;i++){const a=clip[i],b=clip[(i+1)%clip.length],outer=half(rem,a,b,false);if(outer.length>=3&&Math.abs(area(outer))>1e-5)result.push(outer);rem=half(rem,a,b,true);}return result;}
 function capsule(s,r){const angle=Math.atan2(s.dz,s.dx),p=[];for(let j=0;j<=6;j++){const a=angle-Math.PI/2+j*Math.PI/6;p.push([s.bx+Math.cos(a)*r,s.bz+Math.sin(a)*r]);}for(let j=0;j<=6;j++){const a=angle+Math.PI/2+j*Math.PI/6;p.push([s.ax+Math.cos(a)*r,s.az+Math.sin(a)*r]);}return p;}
-export function roadNetworkMaterial(){const m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.94,vertexColors:true});m.customProgramCacheKey=()=> 'osm-road-network-v2';m.onBeforeCompile=sh=>{
+export function roadNetworkMaterial(psychiko=false){const m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.94,vertexColors:true});m.customProgramCacheKey=()=> psychiko?'osm-road-network-psychiko':'osm-road-network-v2';m.onBeforeCompile=sh=>{
  sh.uniforms.nAsphalt={value:TX.asphalt_diff};sh.uniforms.nPaving={value:TX.paver_diff};
  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 nUV; varying vec2 nWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nnUV=uv;nWorld=(modelMatrix*vec4(position,1.)).xz;');
  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 nUV; varying vec2 nWorld; uniform sampler2D nAsphalt; uniform sampler2D nPaving;').replace('#include <color_fragment>',`#include <color_fragment>
  float paving=step(.5,vColor.r);float grain=dot(texture2D(nAsphalt,nWorld*.24).rgb,vec3(.333));
  vec3 asphalt=mix(vec3(.14,.145,.15),vec3(.27,.23,.16),vColor.b)*(.72+grain*1.1);vec3 tile=texture2D(nPaving,nWorld*.31).rgb*.74;
  float fw=max(fwidth(nUV.x),.012);float line=1.-smoothstep(.055-fw,.055+fw,abs(nUV.x));
- float dash=step(fract(nUV.y/9.),.36);float paint=line*dash*vColor.g*(1.-paving);
+ ${psychiko?'line=1.-smoothstep(.05-fw,.05+fw,abs(abs(nUV.x)-.12));':''}
+ float dash=${psychiko?'1.':'step(fract(nUV.y/9.),.36)'};float paint=line*dash*vColor.g*(1.-paving);
  diffuseColor.rgb=mix(mix(asphalt,tile,paving),vec3(.72,.71,.66),paint);`);
  };return m;}
 export function buildRoadNetwork(network,scene){
- const root=new THREE.Group();root.name='surrounding-osm-roads';scene.add(root);const mat=roadNetworkMaterial(),tiles=new Map(),roadS=new Map();let triangles=0;
+ const root=new THREE.Group();root.name='surrounding-osm-roads';scene.add(root);const mat=roadNetworkMaterial(network.route.streetCircuit),tiles=new Map(),roadS=new Map();let triangles=0;
  for(const road of network.roads){let s=0;for(const seg of network.segments.filter(q=>q.road===road)){roadS.set(seg,s);s+=seg.L;}}
  function vertex(tile,p,seg,pavement){const u=((p[0]-seg.ax)*-seg.dz+(p[1]-seg.az)*seg.dx)/seg.L,s=roadS.get(seg)+((p[0]-seg.ax)*seg.dx+(p[1]-seg.az)*seg.dz)/seg.L;
   let paint=seg.road.sf==='asphalt'&&!seg.road.oneway&&!['residential','living_street','service'].includes(seg.road.h)?1:0;
+  if(network.route.streetCircuit)paint=psychikoStreet(seg.road.n,seg.az < -900).paint;
   if(paint)for(const other of network.candidates(...p))if(other.road.id!==seg.road.id&&network.distance(other,...p)<other.hw+2){paint=0;break;}
   tile.pos.push(p[0],network.height(...p)+(pavement?.14:0),p[1]);tile.uv.push(u,s);tile.col.push(pavement?1:0,paint,seg.road.sf==='gravel'?1:0);
  }

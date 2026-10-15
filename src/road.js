@@ -7,6 +7,7 @@ import { REFLECT_LAYER } from './env.js';
 import { clamp, smoothstep, canvasTex, CellInstances, M, RNG, lerp } from './util.js';
 import { LANE_W } from './map.js';
 import { terrainMaterial } from './terrain.js';
+import { psychikoSection } from './maps/psychiko-streets.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 
 const STEP = 2;
@@ -17,6 +18,7 @@ export const ROAD = {
   gutter: 0.55,
   /** pavement / shoulder width beyond the curb */
   sidewalk(route, s, side) {
+    if (route.streetCircuit) return 1.8;
     const urb = route.urban(s);
     const sea = side > 0 ? route.seaR(s) : route.seaL(s);
     const prom = sea < 140 ? 2.4 : 0; // the seaside promenade is wider (palms, benches)
@@ -34,10 +36,10 @@ export const ROAD = {
 // ------------------------------------------------------------------ materials
 // Asphalt: photographed asphalt (albedo / normal / roughness, anti-tiling) + macro variation, repaired patches,
 // tyre-polished wheel tracks, oil drips down the lane centres, a dusty gutter; worn thermoplastic markings.
-function asphaltMaterial() {
+function asphaltMaterial(psychiko = false) {
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0 });
   mat.userData.uniforms = { tAD: { value: TX.asphalt_diff }, tAN: { value: TX.asphalt_nor }, tAR: { value: TX.asphalt_arm }, uCross: { value: new Float32Array(16).fill(-9999) }, uStop: { value: new Float32Array(8).fill(-9999) }, uStopO: { value: new Float32Array(8).fill(-9999) } };
-  mat.customProgramCacheKey = () => 'asphalt6';
+  mat.customProgramCacheKey = () => psychiko ? 'asphalt6-psychiko' : 'asphalt6';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, mat.userData.uniforms);
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSU; attribute vec4 aEM; varying vec2 vSU; varying vec4 vEM;')
@@ -81,7 +83,7 @@ function asphaltMaterial() {
         base = mix(base, vec3(0.36, 0.33, 0.28), dust * 0.35);
         // ---- markings (white thermoplastic, chipped and worn by tyres)
         float m = 0.0;
-        m += band(au, e - 0.22, 0.15);                       // edge lines
+        ${psychiko ? '' : 'm += band(au, e - 0.22, 0.15);'}                       // edge lines
         if (dv > 0.5) m += band(au, mh + 0.22, 0.12);       // inner edge next to the median
         else { m += band(u, 0.12, 0.1) + band(u, -0.12, 0.1); } // double solid centre line
         float dash = band(fract(s / 9.0), 0.185, 0.37);
@@ -96,6 +98,7 @@ function asphaltMaterial() {
         float wearN = vn2(vec2(u * 9.0, s * 2.3)) * 0.55 + vn2(vec2(u * 31.0, s * 13.0)) * 0.45;
         float wearK = 0.32 + polish * 0.25 * heavy + (1.0 - lumA) * 0.25;
         float chip = smoothstep(wearK - 0.05, wearK + 0.08, wearN);
+        ${psychiko ? `m *= max(0., min(1., nl)); if(nl<-.5){vec2 bq=vec2(u,s)/vec2(.14,.22);float seam=step(.07,fract(bq.x+floor(bq.y)*.5))*step(.08,fract(bq.y));base=mix(vec3(.17,.13,.11),vec3(.29,.23,.20),seam)*(.85+.3*macro);}` : ''}
         paint = clamp(m, 0.0, 1.0) * (1.0 - gut) * chip;
         vec3 pcol = vec3(0.8, 0.8, 0.77) * (0.88 + 0.12 * alb.r / max(lumA, 0.05)) * (1.0 - polish * 0.15 * heavy);
         diffuseColor.rgb = mix(base, pcol, paint);
@@ -205,12 +208,13 @@ export function buildRoad(map, scene, heightC, assets) {
   const { route, data } = map;
   const legacyMedian = !map.id || map.id === 'riviera'; // preserve the original coast mesh
   const group = new THREE.Group(); scene.add(group);
-  const asphalt = asphaltMaterial();
+  const psychiko = map.id === 'psychiko';
+  const asphalt = asphaltMaterial(psychiko);
   const paving = pavingMaterial();
-  const curbMat = concreteMaterial('#e2ddd2', 1.6);
+  const curbMat = concreteMaterial(map.id === 'psychiko' ? '#bdb9ac' : '#e2ddd2', 1.6);
   const vergeMat = terrainMaterial();
   const P = () => new THREE.Vector3();
-  const sMin = -60, sMax = route.length + 60;
+  const sMin = route.closed ? 0 : -60, sMax = route.length + (route.closed ? 0 : 60);
   const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGrass = new THREE.Color('#62733a'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
 
   for (let c0 = sMin; c0 < sMax; c0 += CHUNK) {
@@ -222,7 +226,8 @@ export function buildRoad(map, scene, heightC, assets) {
       const e = route.edge(s), mh = route.medHalf(s), nl = route.lanesF(s), dv = route.div(s);
       medianRows.push((legacyMedian || dv > .01) && !route.localLayout?.portal(s));
       const eA = e + ROAD.gutter;
-      const em = [e, mh, nl, dv];
+      const section = psychiko ? psychikoSection(route,s) : null;
+      const em = [e, mh, section ? section.kind==='blocks' ? -1 : section.paint : nl, dv];
       const us = [-eA, -e, -mh, 0, mh, e, eA];
       road.row(us.map((u) => ({ p: route.point(s, u, P()), s, u, em })));
       // median island (raised when the avenue is divided)
@@ -316,7 +321,7 @@ function signTexture(route) {
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
-      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('RIVIERA RUN · START', w / 2, h / 2 + 6);
+      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6);
     });
   });
   return { tex, regions };
@@ -393,6 +398,7 @@ function buildFurniture(map, group, heightC, assets) {
   // -- direction / name signs at real places
   const sgPole = new THREE.CylinderGeometry(0.07, 0.07, 3.2, 8); sgPole.translate(0, 1.6, 0);
   const addSign = (s, key, w, h, height = 2.4, side = 1, poles = 1) => {
+    if (!Number.isFinite(s)) return;
     const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
     const u = side * (route.edge(s) + ROAD.gutter + 1.0);
     route.point(s, u, pt);
@@ -402,7 +408,7 @@ function buildFurniture(map, group, heightC, assets) {
     const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), metal); back.position.set(0, height + h / 2, -0.05); g.add(back);
   };
   const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
-  addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
+  if (map.id === 'riviera') addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.astir - 90, 'd_astir', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.lake - 160, 'd_lake', 4.2, 2.1, 2.2, 1, 2);
   addSign(mk.limanakia - 200, 'n_limanakia', 2.4, 0.6);
@@ -439,7 +445,8 @@ function buildFurniture(map, group, heightC, assets) {
     const banner2 = banner.clone(); banner2.rotation.y = 0; banner2.scale.x = -1; banner2.position.z = 0.05; g.add(banner2);
   };
   gantry(route.start, 'start', '#ff3d2e');
-  gantry(route.finish, 'finish', '#f2f2f2');
+  if (route.closed) route.fixedGantries = [route.start];
+  else gantry(route.finish, 'finish', '#f2f2f2');
 }
 
 function addBusStop(group, route, f, regions, signMat, assets) {
