@@ -47,6 +47,7 @@ test('publishReleaseData writes release.json, credits.json and the version meta 
     assert.equal(html.match(/<meta name="asr-version"/g).length, 1);
     const bundled = JSON.parse(html.match(/<script id="asr-release-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     assert.deepEqual(bundled.release, release);
+    assert.ok(!/<img[^>]+assets\/changelog/.test(html), 'boot HTML holds metadata, never image elements or image bytes');
     const credits = JSON.parse(await readFile(join(out, 'credits.json'), 'utf8'));
     assert.deepEqual(bundled.credits, credits);
     assert.ok(credits.team.length >= 2 && credits.sections.length >= 4);
@@ -154,4 +155,47 @@ test('credits text is plain and readable; licences are only those the file names
   assert.deepEqual(detectLicences('CC0 1.0 and CC BY 3.0, plus MIT; ODbL data; Apache-2.0'), ['CC0', 'CC BY 3.0', 'MIT', 'Apache-2.0', 'ODbL']);
   assert.deepEqual(detectLicences('all rights reserved'), []);
   assert.equal(basename(resolve(root, 'CREDITS.md')), 'CREDITS.md');
+});
+
+test('release screenshots exist, have alt text, are small lossy WebPs, and keep layout dimensions', async () => {
+  const { validateChangelogImages } = await import('./changelog-images.mjs');
+  const log = parseChangelog(readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8'));
+  const photos = await validateChangelogImages(root, log);
+  for (const version of ['2026.10.14.1', '2026.10.15.1', '2026.10.15.2', '2026.10.15.3']) {
+    const n = log.releases.find(n => n.version === version);
+    assert.ok(n.images.length >= 1 && n.images.length <= 3, `${version} needs 1–3 inspected backfill photos`);
+  }
+  assert.ok(photos.every(p => p.width >= 960 && p.width <= 1280 && p.height >= 200 && p.alt && p.caption));
+  const { UNCACHED } = await import('./release-cache.mjs');
+  for (const p of photos) assert.ok(UNCACHED.some(re => re.test('/' + p.src)), 'photos never enter service-worker boot prefetch');
+});
+
+test('media validation rejects missing, oversized, non-WebP and oversized-dimension images', async () => {
+  const { validateChangelogImages, MAX_IMAGE_BYTES, webpDimensions } = await import('./changelog-images.mjs');
+  const dir = await mkdtemp(join(tmpdir(), 'asr-picture-test-'));
+  const src = 'assets/changelog/2026.10.15.3/photo.webp';
+  const log = () => ({ unreleased: [], releases: [{ images: [{ src, alt: 'Real photo' }] }] });
+  try {
+    await mkdir(join(dir, 'assets/changelog/2026.10.15.3'), { recursive: true });
+    await assert.rejects(validateChangelogImages(dir, log()), /Missing changelog image/);
+    await writeFile(join(dir, src), Buffer.alloc(MAX_IMAGE_BYTES));
+    await assert.rejects(validateChangelogImages(dir, log()), /under 150 KB/);
+    await writeFile(join(dir, src), Buffer.from('this is not a WebP screenshot'));
+    await assert.rejects(validateChangelogImages(dir, log()), /not a WebP/);
+    const data = Buffer.from(readFileSync(resolve(root, 'assets/changelog/2026.10.15.3/golf-trims.webp')));
+    const frame = data.indexOf(Buffer.from('9d012a', 'hex'));
+    data.writeUInt16LE(2000, frame + 3);
+    await writeFile(join(dir, src), data);
+    await assert.rejects(validateChangelogImages(dir, log()), /1280 px wide/);
+    assert.throws(() => webpDimensions(Buffer.alloc(31)), /not a WebP/);
+    const missingAlt = log(); missingAlt.releases[0].images[0].alt = '';
+    await assert.rejects(validateChangelogImages(dir, missingAlt), /alt text/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('Unreleased without photos warns without blocking the automatic release train', async () => {
+  const { missingPicturesWarning } = await import('./changelog-images.mjs');
+  assert.match(missingPicturesWarning({ unreleased: ['A change.'], unreleasedImages: [] }), /WARNING:.*NO SCREENSHOTS/);
+  assert.equal(missingPicturesWarning({ unreleased: [], unreleasedImages: [] }), null);
+  assert.equal(missingPicturesWarning({ unreleased: ['A change.'], unreleasedImages: [{}] }), null);
 });

@@ -9,8 +9,12 @@ import { PLAYABLE_MAPS } from '../src/enabled-maps.js';
 import { bundleBrowser } from './bundle-browser.mjs';
 import { bakeWorlds } from './bake-world.mjs';
 import { buildRelease, publishRelease, CACHE_HEADERS } from './release-cache.mjs';
+import { missingPicturesWarning } from './changelog-images.mjs';
+import { parseChangelog } from '../src/release-notes.js';
 import { publishReleaseData } from './release-data.mjs';
 const root = resolve(import.meta.dirname, '..'), out = resolve(root, '.deploy/assets');
+const mediaWarning = missingPicturesWarning(parseChangelog(await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')));
+if (mediaWarning) console.warn(mediaWarning);
 await rm(resolve(root, '.deploy'), { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 let count = 0, bytes = 0, largest = { size: 0, path: '' };
@@ -44,7 +48,6 @@ const release = await buildRelease(out, { core: ['/src/', '/style.css', '/assets
 const swBytes = await publishRelease(root, out, release);
 // After the content build id exists, so the version, notes and credits never change it (see tools/release-data.mjs).
 const version = await publishReleaseData(root, out, { build: release.build });
-if (version.unreleased) console.warn(`CHANGELOG.md still has ${version.unreleased} Unreleased bullet(s): before promoting to prod, move them under a dated version (deploy/README.md, Release notes).`);
 if (version.unlistedAuthors.length) console.warn(`Git authors missing from CREDITS.md: ${version.unlistedAuthors.join(', ')} (listed as contributors for now).`);
 count = 0; bytes = 0; largest = { size: 0, path: '' };
 async function inventory(dir) {

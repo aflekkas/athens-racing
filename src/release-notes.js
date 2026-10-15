@@ -48,12 +48,12 @@ export const versionLabel = (version) => parseVersion(version) ? 'V' + version :
  */
 export function parseChangelog(text) {
   const src = String(text).replace(/\r\n?/g, '\n').replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ''));
-  const out = { unreleased: [], releases: [] };
-  let section = null, item = null, unreleasedSeen = false;
+  const out = { unreleased: [], unreleasedImages: [], releases: [] };
+  let section = null, item = null, lastItem = null, unreleasedSeen = false;
   const fail = (n, msg) => { throw new Error(`CHANGELOG.md:${n}: ${msg}`); };
   const close = (n) => {
     if (section?.version && !section.items.length) fail(n, `release ${section.version} has no bullets`);
-    section = item = null;
+    section = item = lastItem = null;
   };
   const lines = src.split('\n');
   lines.forEach((raw, i) => {
@@ -68,24 +68,34 @@ export function parseChangelog(text) {
         if (unreleasedSeen) fail(n, 'only one Unreleased section is allowed');
         unreleasedSeen = true;
         if (h[2]) fail(n, 'Unreleased has no date');
-        section = { items: out.unreleased };
+        section = { items: out.unreleased, images: out.unreleasedImages };
       } else {
         const v = parseVersion(h[1]);
         if (!v) fail(n, `not a version (YYYY.MM.DD.N): ${h[1]}`);
         if (h[2] && h[2] !== v.date) fail(n, `heading date ${h[2]} does not match version ${h[1]}`);
         const prev = out.releases.at(-1);
         if (prev && compareVersions(prev.version, h[1]) <= 0) fail(n, `${h[1]} must be older than ${prev.version} (newest first, no duplicates)`);
-        section = { version: h[1], date: v.date, items: [] };
+        section = { version: h[1], date: v.date, items: [], images: [] };
         out.releases.push(section);
       }
       return;
     }
     if (!section || !line.trim()) { item = null; return; }
+    const picture = /^(\s*)!\[([^\]]*)\]\(([^()\s]+)(?:\s+"([^"]*)")?\)$/.exec(line);
+    if (picture) {
+      const [, indent, alt, src, caption] = picture;
+      if (!alt.trim()) fail(n, 'images need meaningful alt text');
+      const path = /^assets\/changelog\/([\d.]+)\/[a-zA-Z0-9_-]+\.webp$/.exec(src);
+      if (!path || !parseVersion(path[1])) fail(n, 'image path must be assets/changelog/YYYY.MM.DD.N/name.webp');
+      if (indent && lastItem == null) fail(n, 'an indented image must follow a bullet');
+      section.images.push({ src, alt: alt.trim(), caption: caption?.trim() || alt.trim(), item: indent ? lastItem : null });
+      return;
+    }
     const bullet = /^[-*]\s+(\S.*)$/.exec(line);
-    if (bullet) { section.items.push(bullet[1].trim()); item = section.items.length - 1; return; }
+    if (bullet) { section.items.push(bullet[1].trim()); item = lastItem = section.items.length - 1; return; }
     if (/^\s+\S/.test(line) && item != null) { section.items[item] += ' ' + line.trim(); return; }
     if (/^#\s/.test(line)) return;
-    fail(n, `only "- " bullets are allowed under a release heading: ${line.trim().slice(0, 60)}`);
+    fail(n, `only "- " bullets and Markdown images are allowed under a release heading: ${line.trim().slice(0, 60)}`);
   });
   close(lines.length + 1);
   return out;

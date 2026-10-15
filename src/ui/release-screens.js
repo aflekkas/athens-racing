@@ -9,7 +9,7 @@ const { esc, icon } = C;
 export const SOURCE_URL = 'https://github.com/aflekkas/athens-racing';
 export const CONTRIBUTING_URL = SOURCE_URL + '/blob/staging/CONTRIBUTING.md';
 const CARD_ITEMS = 6;
-const SCREENS = ['whatsNew', 'credits', 'creditFile'];
+const SCREENS = ['whatsNew', 'credits', 'creditFile', 'releaseImage'];
 
 const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content || null;
 /** this build: { version, sha, build }; version is DEV_VERSION unless the deploy stamped one */
@@ -22,7 +22,7 @@ const racing = () => document.body.classList.contains('racing') || document.body
 // ---------------------------------------------------------------- state (module singleton: one menu, one page)
 // priorPlay is read once, at import, before this session writes anything, so a brand-new player is not taken for a returning one.
 const bundled = (() => { try { return JSON.parse(document.getElementById('asr-release-data')?.textContent || '{}'); } catch { return {}; } })();
-const state = { priorPlay: hasPriorPlay(), release: bundled.release || null, credits: bundled.credits || null, loading: {}, card: null, settled: false };
+const state = { priorPlay: hasPriorPlay(), release: bundled.release || null, credits: bundled.credits || null, loading: {}, card: null, cardPictures: false, settled: false };
 const fetchJson = (name) => fetch(new URL(name, document.baseURI), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))));
 /** null = not requested, false = unavailable (local dev), else the parsed file */
 function ensure(menu, key, file) {
@@ -41,7 +41,7 @@ function settle(menu, refresh = true) {
   if (verdict === 'none' && racing()) return;
   state.settled = true;
   if (verdict === 'record') markSeen(null, version);
-  else if (verdict === 'show') { state.card = { version, date: entry.date, items: entry.items }; if (refresh && menu.screen === 'title') menu.refresh(); }
+  else if (verdict === 'show') { state.card = { version, date: entry.date, items: entry.items, images: entry.images || [] }; if (refresh && menu.screen === 'title') menu.refresh(); }
 }
 function dismiss(menu) {
   if (!state.card) return;
@@ -73,6 +73,24 @@ export function renderAbout(menu) {
       ${C.option({ icon: 'wrench', title: 'CONTRIBUTE', desc: 'Pull requests go into the staging branch · read CONTRIBUTING.md', act: 'openLink', attrs: { 'data-url': CONTRIBUTING_URL } })}</div>`;
 }
 
+/** Image bytes are requested only when this gallery is mounted by an open screen or explicit card action. */
+function gallery(release, images = release.images || []) {
+  if (!images.length) return '';
+  return `<div class="release-gallery">${images.map(image => {
+    const index = release.images.indexOf(image);
+    const media = `<img src="${esc(image.src)}" alt="${esc(image.alt)}" loading="lazy" decoding="async" width="${image.width || 1280}" height="${image.height || 800}" />`;
+    return `<figure class="release-photo">${C.button({ label: media, variant: 'ghost', act: 'releaseImage', cls: 'release-photo__open', title: 'Open photo', attrs: { 'data-release': release.version, 'data-image': index, 'aria-label': image.caption } })}<figcaption>${esc(image.caption)}</figcaption></figure>`;
+  }).join('')}</div>`;
+}
+
+/** A full screen with the usual Back navigation, never a dialog. */
+export function renderImage(menu) {
+  const release = state.release?.notes?.find(n => n.version === menu.data.version);
+  const image = release?.images?.[menu.data.image];
+  const body = image ? `<figure class="release-image"><img src="${esc(image.src)}" alt="${esc(image.alt)}" decoding="async" /><figcaption>${esc(image.caption)}</figcaption></figure>` : empty('PHOTO NOT AVAILABLE');
+  return C.screen({ ...head(menu, "WHAT'S NEW"), cls: 'scr--info scr--release-image', title: 'PHOTO', body });
+}
+
 /** the What's new screen: every release, newest first */
 export function renderWhatsNew(menu) {
   ensure(menu, 'release', 'release.json');
@@ -82,7 +100,7 @@ export function renderWhatsNew(menu) {
   else if (!r?.notes?.length) body = empty('RELEASE NOTES COME WITH PUBLISHED BUILDS');
   else body = `<div class="panel scroll-y release-list" role="list">${r.notes.map((n, i) => `<section class="mi release ${n.version === now ? 'release--now' : ''}" role="listitem" aria-label="${esc(versionLabel(n.version))}">
       <header class="release__head"><h3 class="release__ver">${esc(versionLabel(n.version))}</h3><span class="release__date">${esc(formatDate(n.date))}</span>${n.version === now ? C.chip('THIS VERSION', { tone: 'accent' }) : i === 0 ? C.chip('LATEST') : ''}</header>
-      <ul class="release__items">${n.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></section>`).join('')}</div>`;
+      ${gallery(n, (n.images || []).filter(image => image.item == null))}<ul class="release__items">${n.items.map((t, j) => `<li>${esc(t)}${gallery(n, (n.images || []).filter(image => image.item === j))}</li>`).join('')}</ul></section>`).join('')}</div>`;
   return C.screen({ ...head(menu, 'ABOUT'), title: "WHAT'S NEW", body });
 }
 
@@ -125,6 +143,7 @@ export function titleExtras(menu) {
   return `<div class="title-meta">${C.button({ label: versionLabel(b.version), variant: 'ghost', size: 'sm', act: 'whatsNew', cls: 'title-meta__btn', title: "What's new" })}${C.button({ label: 'CREDITS', variant: 'ghost', size: 'sm', act: 'credits', cls: 'title-meta__btn' })}</div>${card ? `
     <aside class="news-card" aria-label="What's new in ${esc(card.version)}"><div class="news-card__head"><span class="kick">WHAT'S NEW IN ${esc(versionLabel(card.version))}</span><span class="news-card__date">${esc(formatDate(card.date))}</span></div>
       <ul class="news-card__list">${card.items.slice(0, CARD_ITEMS).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>${more > 0 ? `<p class="news-card__more">+ ${more} MORE IN WHAT'S NEW</p>` : ''}
+      ${card.images?.length ? state.cardPictures ? gallery(card) : C.button({ label: `VIEW ${card.images.length} PHOTO${card.images.length === 1 ? '' : 'S'}`, variant: 'ghost', size: 'sm', act: 'newsPictures' }) : ''}
       <div class="news-card__acts">${C.button({ label: 'GOT IT', icon: 'check', variant: 'primary', size: 'sm', act: 'dismissNews' })}${C.button({ label: "WHAT'S NEW", variant: 'ghost', size: 'sm', act: 'whatsNew' })}</div></aside>` : ''}`;
 }
 
@@ -132,8 +151,10 @@ export function titleExtras(menu) {
 /** a menu action; true when handled here. Any action taken on the title with the card up counts as dismissing it. */
 export function act(menu, el) {
   const a = el.dataset.act;
-  if (menu.screen === 'title' && state.card && a !== 'dismissNews') { markSeen(null, state.card.version); state.card = null; }
+  if (menu.screen === 'title' && state.card && !['dismissNews', 'newsPictures', 'releaseImage'].includes(a)) { markSeen(null, state.card.version); state.card = null; }
   switch (a) {
+    case 'newsPictures': state.cardPictures = true; menu.refresh(); return true;
+    case 'releaseImage': menu.show('releaseImage', { version: el.dataset.release, image: Number(el.dataset.image) }, true); return true;
     case 'dismissNews': dismiss(menu); return true;
     case 'whatsNew': menu.show('whatsNew', {}, true); return true;
     case 'credits': menu.show('credits', {}, true); return true;

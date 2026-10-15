@@ -329,6 +329,7 @@ export class Menu {
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
+  r_releaseImage() { return Release.renderImage(this); }
   r_whatsNew() { return Release.renderWhatsNew(this); }
   r_credits() { return Release.renderCredits(this); }
   r_creditFile() { return Release.renderCreditFile(this); }
