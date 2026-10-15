@@ -1,3 +1,4 @@
+import { WORLD_TRIANGLE_BUDGETS, triangleCount } from './world-art-direction.js';
 // Street-level Athens Riviera furniture. All dimensions are metres.
 // Reference shapes (viewed as reference only; no third-party images are shipped):
 // https://2steps.gr/index.asp?xkey=3680 — Limanakia limestone, timber kiosk and access steps.
@@ -5,17 +6,15 @@
 // https://commons.wikimedia.org/wiki/File:OASA_stop_3.png — blue/white OASA stop plate.
 // https://www.holprop.com/sale/villa-house/greece/attica/varkiza-vari/ — villa boundary walls.
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { CellInstances, GeoBatch, M, RNG, clamp, canvasTex, pointInPoly } from './util.js';
+import { CellInstances, GeoBatch, M, clamp, canvasTex, pointInPoly } from './util.js';
 import { ROAD } from './road.js';
-import { TX } from './tex.js';
 
 const CELL = 180;
 const WHITE = '#e9e7de', BLUE = '#175997', IRON = '#323f43', STEEL = '#a8afb0';
 
 function materials() {
   const pbr = (roughness, metalness = 0, extra = {}) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness, ...extra });
-  const scanned = (key) => pbr(.9, 0, TX[key + '_diff'] ? { map: TX[key + '_diff'], normalMap: TX[key + '_nor'], normalScale: new THREE.Vector2(.45, .45) } : {});
+  const scanned = () => pbr(1);
   // One atlas for every sign, including stop information and the canteen menu.
   const atlas = canvasTex(1024, 1024, (c) => {
     const labels = [ ['ΟΑΣΑ  ·  OASA', BLUE, '#ffffff'], ['ΣΤΑΣΗ  /  BUS STOP', '#ffffff', BLUE],
@@ -52,7 +51,7 @@ class Model {
     this.batches.get(key).add(geo, matrix, color); geo.dispose(); return this;
   }
   box(key, x, y, z, w, h, d, color, bevel = 0, rx = 0) {
-    const g = bevel ? new RoundedBoxGeometry(w, h, d, 1, Math.min(bevel, w / 3, h / 3, d / 3)) : new THREE.BoxGeometry(w, h, d);
+    const g = new THREE.BoxGeometry(w, h, d);
     return this.add(key, g, M(x, y, z, rx), color);
   }
   rod(key, a, b, r, color, r2 = r, sides = 8) {
@@ -68,177 +67,24 @@ class Model {
   solid(x, z, hw, hl, yaw = 0) { this.obstacles.push({ x, z, yaw, hl, hw }); return this; }
   finish() {
     this.parts = [...this.batches].map(([key, batch]) => ({ key, geometry: batch.build(), material: this.mats[key] }));
+    const triangles=this.parts.reduce((n,p)=>n+triangleCount(p.geometry),0); const category=this.name==='stairs'?'stairFlight':this.name==='stop'||this.name==='parking'?'sign':'streetProp';
+    if(triangles>WORLD_TRIANGLE_BUDGETS[category])throw new Error('Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing. '+this.name+': '+triangles);
     this.batches.clear(); return this;
   }
 }
 
-function shelter(mats) {
-  const m = new Model('shelter', mats, { hw: 2.28, hl: 1.03 });
-  m.box('concrete', 0, -.09, 0, 4.5, .22, 2.0, '#b7b4a9', .025);
-  for (const x of [-2, 2]) for (const z of [-.72, .72]) {
-    m.box('metal', x, 1.22, z, .075, 2.44, .075, IRON, .009);
-    m.box('metal', x, .06, z, .20, .05, .20, STEEL, .01);
-    for (const dx of [-.065, .065]) m.rod('metal', [x + dx, .08, z], [x + dx, .097, z], .016, IRON);
-    m.solid(x, z, .065, .065);
-  }
-  m.box('metal', 0, 2.45, 0, 4.5, .11, 1.98, IRON, .035);
-  m.box('paint', 0, 2.54, 0, 4.55, .085, 2.02, '#c5cccf', .035);
-  m.box('paint', 0, 2.36, .98, 4.48, .22, .035, BLUE, .01);
-  m.label(0, 0, 2.36, 1.003, 3.35, .19);
-  // Rear panes and short side wings; the street-facing side stays open.
-  for (const x of [-1.31, 0, 1.31]) {
-    m.box('glass', x, 1.29, -.73, 1.24, 1.88, .018, '#b4d4d9');
-    m.box('metal', x - .64, 1.28, -.74, .028, 2.0, .035, STEEL);
-    for (const y of [1.02, 1.12]) m.box('paint', x, y, -.713, 1.20, .023, .009, WHITE);
-  }
-  m.box('glass', -2, 1.29, -.12, .018, 1.88, 1.2, '#b4d4d9');
-  m.box('paint', 1.99, 1.31, -.11, .055, 1.83, 1.17, BLUE, .02);
-  m.label(1, 1.958, 1.77, -.11, .93, .25, -Math.PI / 2);
-  m.label(6, 1.957, 1.39, -.11, .94, .25, -Math.PI / 2);
-  m.solid(0, -.74, 2.04, .035); m.solid(-2, -.12, .04, .61); m.solid(2, -.12, .05, .61);
-  for (const x of [-1.05, 1.05]) {
-    m.box('metal', x, .26, -.37, .065, .46, .42, IRON, .014);
-    m.box('metal', x, .63, -.57, .05, .5, .055, IRON);
-  }
-  for (let i = 0; i < 5; i++) m.box('metal', 0, .49, -.57 + i * .09, 2.8, .045, .074, '#8f9999', .015);
-  for (let i = 0; i < 3; i++) m.box('metal', 0, .70 + i * .09, -.60, 2.8, .065, .035, '#8f9999', .012);
-  for (const x of [-1.28, 0, 1.28]) m.rod('metal', [x, .49, -.16], [x, .73, -.16], .022, IRON);
-  m.solid(0, -.37, 1.43, .27);
-  return m.finish();
-}
-
-function stopPole(mats, parking = false) {
-  const m = new Model(parking ? 'parking' : 'stop', mats, { hw: .35, hl: .2 });
-  m.rod('metal', [0, -.12, 0], [0, 2.85, 0], .035, '#b8bfc0');
-  m.box('concrete', 0, -.07, 0, .28, .23, .28, '#b2aea5', .03);
-  m.box('paint', 0, 2.57, 0, .62, parking ? .65 : .73, .045, WHITE, .045);
-  if (parking) { m.label(2, 0, 2.57, .026, .56, .59); m.label(2, 0, 2.57, -.026, .56, .59, Math.PI); }
-  else for (const side of [-1, 1]) {
-    m.label(0, 0, 2.80, side * .026, .57, .19, side < 0 ? Math.PI : 0);
-    m.label(1, 0, 2.57, side * .026, .57, .20, side < 0 ? Math.PI : 0);
-    m.label(6, 0, 2.35, side * .026, .57, .16, side < 0 ? Math.PI : 0);
-  }
-  if (!parking) m.box('paint', 0, 1.83, 0, .24, .42, .09, BLUE, .015);
-  m.solid(0, 0, .14, .14); return m.finish();
-}
-
-function bin(mats) {
-  const m = new Model('bin', mats, { hw: .36, hl: .36 });
-  m.rod('metal', [0, .12, 0], [0, .83, 0], .255, '#486e67', .30, 16);
-  m.rod('metal', [0, .80, 0], [0, .86, 0], .32, IRON, .32, 16);
-  m.rod('rubber', [0, .857, 0], [0, .865, 0], .255, '#161d1c', .255, 16);
-  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8; m.rod('metal', [Math.cos(a) * .258, .16, Math.sin(a) * .258], [Math.cos(a) * .300, .78, Math.sin(a) * .300], .009, '#73908a'); }
-  for (const x of [-.32, .32]) m.box('metal', x, .43, 0, .035, .86, .045, IRON, .007);
-  m.box('concrete', 0, -.045, 0, .70, .13, .52, '#aaa99e', .025);
-  m.solid(0, 0, .35, .32); return m.finish();
-}
-
-function canteen(mats) {
-  const m = new Model('canteen', mats, { hw: 2.85, hl: 1.75 });
-  m.box('metal', 0, .49, 0, 4.7, .14, 2.12, IRON, .03);
-  m.box('paint', 0, 1.0, 0, 4.55, .84, 2.06, '#e7e2cc', .07);
-  m.box('paint', 0, 1.87, -.98, 4.55, 1.65, .10, WHITE, .035);
-  for (const x of [-2.2, 2.2]) m.box('paint', x, 1.89, 0, .13, 1.67, 2.06, WHITE, .03);
-  m.box('rubber', 0, 1.42, .89, 3.65, .16, .045, '#272d27');
-  m.box('paint', 0, 2.60, 0, 4.65, .22, 2.16, WHITE, .055);
-  m.box('paint', 0, .95, 1.035, 4.50, .18, .024, '#487c77');
-  m.box('metal', 0, 1.38, 1.15, 3.88, .07, .55, STEEL, .028);
-  m.box('paint', 0, 2.42, 1.10, 3.95, .065, 1.25, '#c5c7b7', .025, -.17);
-  for (const x of [-1.86, 1.86]) m.rod('metal', [x, 1.42, 1.01], [x, 2.46, 1.64], .019, STEEL);
-  m.label(3, 0, 2.60, 1.084, 2.60, .18);
-  m.label(5, 0, 1.12, 1.052, 2.9, .21);
-  m.box('paint', 1.63, 1.71, -.51, .51, 1.1, .55, WHITE, .025);
-  m.box('glass', 1.63, 1.76, -.226, .39, .73, .016, '#94bec5');
-  for (let i = 0; i < 6; i++) m.rod('paint', [-.8 + i * .19, 1.43, -.62], [-.8 + i * .19, 1.68, -.62], .045, i % 2 ? '#497d68' : '#b8883e');
-  for (const x of [-1.3, 1.3]) for (const z of [-1.06, 1.06]) {
-    m.rod('rubber', [x, .36, z - .12], [x, .36, z + .12], .35, '#252b2b', .35, 16);
-    m.rod('metal', [x, .36, z - .135], [x, .36, z + .135], .17, '#a4a8a3', .17, 12);
-    m.box('paint', x, .68, z, .90, .10, .32, WHITE, .045);
-  }
-  m.rod('metal', [-2.2, .43, -.72], [-2.78, .4, 0], .035, STEEL);
-  m.rod('metal', [-2.2, .43, .72], [-2.78, .4, 0], .035, STEEL);
-  for (const x of [-2, 2]) m.rod('metal', [x, -.10, -.8], [x, .50, -.8], .025, STEEL);
-  m.solid(0, 0, 2.35, 1.20); m.solid(-2.58, 0, .25, .40);
-  return m.finish();
-}
-
-function shack(mats) {
-  const m = new Model('shack', mats, { hw: 2.85, hl: 2.22 });
-  m.box('wood', 0, .06, 0, 5.4, .20, 3.8, '#86755b', .025);
-  for (let i = 0; i < 23; i++) m.box('wood', -2.58 + i * .235, .18, 0, .222, .04, 3.75, i % 3 ? '#aa9371' : '#bdab86', .007);
-  for (const x of [-2.47, 2.47]) for (const z of [-1.65, 1.65]) m.box('wood', x, 1.46, z, .14, 2.90, .14, '#b5a384', .018);
-  m.box('wood', 0, 1.5, -1.65, 4.95, 2.65, .12, '#81745a');
-  for (let i = 0; i < 27; i++) m.box('wood', -2.4 + i * .185, 1.5, -1.575, .17, 2.6, .045, i % 4 ? '#a59779' : '#c0b497', .005);
-  for (const x of [-2.46, 2.46]) m.box('wood', x, .76, 0, .12, 1.15, 3.25, '#a58d6b');
-  m.box('wood', 0, .80, 1.38, 4.95, 1.20, .13, '#849686');
-  for (let i = 0; i < 27; i++) m.box('wood', -2.40 + i * .185, .80, 1.46, .168, 1.15, .045, i % 3 ? '#92a49a' : '#b1beb0', .006);
-  m.box('wood', 0, 1.43, 1.44, 5.16, .11, .61, '#d2c3a3', .035);
-  m.box('wood', 0, 2.87, 0, 5.65, .12, 4.34, '#a28a65', .025, -.04);
-  for (let i = 0; i < 57; i++) m.rod('wood', [-2.77 + i * .098, 2.88, -2.15], [-2.77 + i * .098, 3.05, 2.15], .036, i % 3 ? '#bdaa80' : '#8c7957', .028, 6);
-  m.box('wood', 0, 2.65, 1.70, 4.96, .30, .06, '#d0c09d', .02);
-  m.label(4, 0, 2.65, 1.736, 4.40, .25);
-  m.box('wood', 0, 1.52, -1.45, 3.5, .07, .35, '#c7b18a');
-  for (let i = 0; i < 9; i++) m.rod('paint', [-1.4 + i * .31, 1.57, -1.4], [-1.4 + i * .31, 1.9, -1.4], .04, i % 3 ? '#4c7967' : '#a47c45');
-  m.label(5, 0, 1.99, -1.57, 2.1, .25);
-  m.solid(0, 0, 2.55, 1.90); return m.finish();
-}
-
-function wall(mats) {
-  const m = new Model('wall', mats, { hw: 1.53, hl: .34 }), rng = new RNG(712);
-  // Recessed mortar joints, staggered irregular limestone courses and projecting coping.
-  m.box('concrete', 0, .66, 0, 3.03, 1.68, .48, '#99968b');
-  for (let row = 0; row < 5; row++) {
-    let x = -1.50;
-    while (x < 1.49) {
-      const w = Math.min(rng.range(.32, .77), 1.50 - x);
-      if (w < .03) break;
-      m.box('stone', x + w / 2, -.11 + row * .305 + .15, 0, w - .018, .285, rng.range(.52, .59), rng.pick(['#b3b3a8', '#bdbbb0', '#a5aaa5', '#c5c2b5']), .035);
-      x += w;
-    }
-  }
-  for (let x = -1.125; x < 1.5; x += .75) m.box('concrete', x, 1.49, 0, .744, .14, .65, '#c3c1b4', .018);
-  m.solid(0, 0, 1.52, .33); return m.finish();
-}
-
-function villa(mats) {
-  const m = new Model('villa', mats, { hw: 3.12, hl: .36 });
-  m.box('plaster', 0, .32, 0, 6.12, .85, .36, '#eeeee2', .035);
-  m.box('concrete', 0, .78, 0, 6.15, .09, .45, '#dedccd', .018);
-  for (const x of [-3, 0, 3]) {
-    m.box('plaster', x, .79, 0, .30, 1.80, .38, WHITE, .025);
-    m.box('concrete', x, 1.71, 0, .40, .10, .47, '#e4e0d3', .025);
-  }
-  for (const x of [-1.5, 1.5]) for (const y of [.97, 1.52]) m.box('metal', x, y, 0, 2.8, .038, .038, IRON, .005);
-  for (let i = 0; i < 30; i++) {
-    const x = -2.87 + i * .198;
-    if (Math.abs(x) < .2 || Math.abs(x) > 2.85) continue;
-    m.box('metal', x, 1.21, 0, .020, .84, .024, IRON, .004);
-    m.rod('metal', [x, 1.63, 0], [x, 1.72, 0], .042, IRON, 0, 4);
-    if (i % 3 === 0) m.add('metal', new THREE.TorusGeometry(.095, .012, 5, 12), M(x + .098, 1.25, 0), IRON);
-  }
-  m.solid(0, 0, 3.10, .25); return m.finish();
-}
-
-function stairs(mats, tops = null, bottoms = null) {
-  const n = 18, run = .31;
-  tops ||= Array.from({ length: n }, (_, i) => -i * .17);
-  bottoms ||= tops.map(y => y - .42);
-  const m = new Model('stairs', mats, { hw: 1.05, hl: n * run / 2, z: n * run / 2 });
-  for (let i = 0; i < n; i++) {
-    const h = Math.max(.18, tops[i] - bottoms[i]);
-    m.box('concrete', 0, tops[i] - h / 2, i * run + run / 2, 1.9, h, run + .012, i % 4 ? '#bebcb0' : '#aaa99c', .013);
-    m.box('stone', 0, tops[i] + .013, i * run + .05, 1.89, .027, .12, '#cecec1', .008);
-  }
-  for (const x of [-.87, .87]) {
-    for (let i = 0; i < n; i += 3) {
-      const z = i * run + .10, y = tops[i];
-      m.rod('metal', [x, y, z], [x, y + 1.02, z], .025, STEEL);
-      m.box('metal', x, y + .026, z, .13, .025, .13, IRON, .008);
-    }
-    for (let i = 0; i < n - 1; i++) for (const h of [.56, 1.02]) m.rod('metal', [x, tops[i] + h, i * run + .10], [x, tops[i + 1] + h, (i + 1) * run + .10], .023, STEEL);
-  }
-  m.solid(0, n * run / 2, .98, n * run / 2); return m.finish();
-}
+function shelter(mats){const m=new Model('shelter',mats,{hw:2.28,hl:1.03});
+ m.box('paint',0,2.5,0,4.5,.16,2,WHITE);for(const x of [-2,2])for(const z of [-.72,.72])m.box('metal',x,1.25,z,.09,2.5,.09,IRON).solid(x,z,.065,.065);
+ m.box('glass',0,1.3,-.73,4,1.9,.03,'#b4d4d9').solid(0,-.74,2.04,.035);
+ m.box('metal',0,.49,-.35,2.8,.10,.45,STEEL).solid(0,-.37,1.43,.27);
+ m.box('metal',0,.76,-.60,2.8,.45,.06,STEEL);m.label(0,0,2.48,1.01,3.35,.19);return m.finish();}
+function stopPole(mats,parking=false){const m=new Model(parking?'parking':'stop',mats,{hw:.35,hl:.2});m.box('metal',0,1.4,0,.07,2.8,.07,STEEL);m.box('paint',0,2.57,0,.62,.73,.045,WHITE);m.label(parking?2:0,0,2.57,.026,.56,.59);m.solid(0,0,.14,.14);return m.finish();}
+function bin(mats){const m=new Model('bin',mats,{hw:.36,hl:.36});m.box('paint',0,.44,0,.6,.82,.6,'#486e67');m.box('metal',0,.87,0,.65,.06,.65,IRON);m.solid(0,0,.35,.32);return m.finish();}
+function canteen(mats){const m=new Model('canteen',mats,{hw:2.85,hl:1.75});m.box('paint',0,1.3,0,4.55,2.6,2.06,WHITE);m.box('glass',0,1.8,1.04,3.5,.7,.03,'#344b50');m.label(3,0,2.4,1.06,2.6,.18);m.solid(0,0,2.3,1.1);return m.finish();}
+function shack(mats){const m=new Model('shack',mats,{hw:2.85,hl:2.22});m.box('paint',0,1.4,0,5.4,2.8,4.2,'#c6bda8');m.solid(0,0,2.7,2.1);return m.finish();}
+function wall(mats){const m=new Model('wall',mats,{hw:1.53,hl:.34});m.box('stone',0,.65,0,3,1.3,.6,'#b6ac98');m.solid(0,0,1.5,.3);return m.finish();}
+function villa(mats){const m=new Model('villa',mats,{hw:3.12,hl:.36});m.box('plaster',0,.65,0,6.2,1.3,.5,WHITE);m.solid(0,0,3.1,.25);return m.finish();}
+function stairs(mats,tops=null,bottoms=null){const n=18,run=.31;tops||=Array.from({length:n},(_,i)=>-i*.17);bottoms||=tops.map(y=>y-.42);const m=new Model('stairs',mats,{hw:1.05,hl:n*run/2,z:n*run/2});for(let i=0;i<n;i++){const h=Math.max(.18,tops[i]-bottoms[i]);m.box('concrete',0,tops[i]-h/2,i*run+run/2,1.9,h,run+.012,'#bebcb0');}m.solid(0,n*run/2,.98,n*run/2);return m.finish();}
 
 /** Shared model library for tools/roadside.html. Front faces +Z, widths run along X. */
 export function createRoadsideModels() {

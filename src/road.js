@@ -1,3 +1,4 @@
+import { squarePost, signFace } from './world-prop-geometries.js';
 // The road: a continuous spline sweep along the real route with banking, shader-drawn markings,
 // curbs, pavements/shoulders, planted median, guard rails and road furniture.
 import * as THREE from 'three';
@@ -211,7 +212,7 @@ export function buildRoad(map, scene, heightC, assets) {
   const vergeMat = terrainMaterial();
   const P = () => new THREE.Vector3();
   const sMin = -60, sMax = route.length + 60;
-  const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGrass = new THREE.Color('#62733a'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
+  const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
 
   for (let c0 = sMin; c0 < sMax; c0 += CHUNK) {
     const c1 = Math.min(sMax, c0 + CHUNK);
@@ -229,7 +230,7 @@ export function buildRoad(map, scene, heightC, assets) {
       const mhH = 0.2 * smoothstep(0.25, 0.6, dv);
       const y0 = route.surfaceY(s, 0);
       const mrow = [[-mh, 0, cConc], [-mh, mhH, cConc], [-mh + 0.16, mhH, cConc], [mh - 0.16, mhH, cConc], [mh, mhH, cConc], [mh, 0, cConc]];
-      med.row(mrow.map(([u, h, c], i) => { const p = route.point(s, u, P()); p.y += h + (i === 2 || i === 3 ? 0.02 : 0); return { p, s, u, c: (i === 2 || i === 3) && mh > 0.6 ? (Math.sin(s * 0.7) > 0 ? cSoil : cGrass) : c }; }));
+      med.row(mrow.map(([u, h, c], i) => { const p = route.point(s, u, P()); p.y += h + (i === 2 || i === 3 ? 0.02 : 0); return { p, s, u, c: (i === 2 || i === 3) && mh > 0.6 ? cSoil : c }; }));
       // curbs + pavements both sides
       const ch = ROAD.curbH(route, s);
       for (const side of [1, -1]) {
@@ -272,7 +273,7 @@ export function buildRoad(map, scene, heightC, assets) {
 }
 
 // ------------------------------------------------------------------ furniture
-function signTexture(route) {
+export function signTexture(route) {
   // Bilingual Greek / Latin atlas; geographic labels, not sign transcriptions.
   const W = 2048, H = 1024;
   const regions = {};
@@ -288,8 +289,8 @@ function signTexture(route) {
       lines.forEach(([txt, arrow, km], i) => {
         const yy = 60 + i * 70;
         const [greek, latin] = txt.split(' / ');
-        g.font = font(31); g.textAlign = 'left'; g.fillText(greek, 92, yy - 17, w - 128);
-        g.font = font(27); g.fillText(latin || greek, 92, yy + 17, w - 128);
+        g.font = font(31); g.textAlign = 'left'; g.fillText(greek, 92, yy - 17, w - (km ? 192 : 128));
+        g.font = font(27); g.fillText(latin || greek, 92, yy + 17, w - (km ? 192 : 128));
         if (km) { g.textAlign = 'right'; g.fillText(km, w - 34, yy); }
         g.save(); g.translate(52, yy); g.rotate(arrow); g.beginPath(); g.moveTo(0, -24); g.lineTo(18, 0); g.lineTo(6, 0); g.lineTo(6, 22); g.lineTo(-6, 22); g.lineTo(-6, 0); g.lineTo(-18, 0); g.closePath(); g.fill(); g.restore();
       });
@@ -312,11 +313,11 @@ function signTexture(route) {
     panel('finish', 1024, 256, (w, h) => {
       for (let i = 0; i < 32; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#111' : '#fff'; g.fillRect(i * 32, j * 32, 32, 32); }
       g.fillStyle = 'rgba(10,12,16,.92)'; g.fillRect(150, 50, w - 300, h - 100);
-      g.fillStyle = '#fff'; g.font = `italic 900 120px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('FINISH · ' + route.to.toUpperCase(), w / 2, h / 2 + 6);
+      g.fillStyle = '#fff'; g.font = `italic 900 120px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('FINISH · ' + route.to.toUpperCase(), w / 2, h / 2 + 6, w - 336);
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
-      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('RIVIERA RUN · START', w / 2, h / 2 + 6);
+      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('RIVIERA RUN · START', w / 2, h / 2 + 6, w - 128);
     });
   });
   return { tex, regions };
@@ -337,8 +338,8 @@ function buildFurniture(map, group, heightC, assets) {
   const pt = new THREE.Vector3();
 
   // -- street lamps: double-arm on the median, single-arm on pavements, none on the cliff road
-  const poleGeo = new THREE.CylinderGeometry(0.07, 0.12, 9.5, 8); poleGeo.translate(0, 4.75, 0);
-  const armGeo = new THREE.CylinderGeometry(0.045, 0.05, 2.2, 6); armGeo.rotateZ(Math.PI / 2); armGeo.translate(1.1, 9.2, 0);
+  const poleGeo = squarePost(.14,9.5,.24,'lamp'); poleGeo.translate(0, 4.75, 0);
+  const armGeo = squarePost(.09,2.2,.10,'lamp'); armGeo.rotateZ(Math.PI / 2); armGeo.translate(1.1, 9.2, 0);
   const headGeo = new THREE.BoxGeometry(0.75, 0.16, 0.32); headGeo.translate(2.25, 9.15, 0);
   const lampPole = new CellInstances(poleGeo, metal, { far: 1600 }), lampArm = new CellInstances(armGeo, metal, { far: 900, shadow: false }), lampHeadI = new CellInstances(headGeo, lampHead, { shadow: false, far: 900 });
   for (let s = 10; s < route.length; s += 36) {
@@ -361,7 +362,7 @@ function buildFurniture(map, group, heightC, assets) {
 
   // Selective coastal drop protection shares its runs with Ground collision.
   const railRuns = buildRivieraRails(map, group, heightC, assets, ROAD);
-  const reflGeo = new THREE.BoxGeometry(.1, 1, .1); reflGeo.translate(0, .5, 0);
+  const reflGeo = squarePost(.1,1); reflGeo.translate(0, .5, 0);
   const reflPosts = new CellInstances(reflGeo, white, {shadow:false, far:500});
   for (const side of [-1, 1]) for (let s=0; s<route.length; s+=50) {
     if (route.urban(s)>=.5 || assets.network?.mouth(s,side,3) || railRuns.some(r=>r.side===side&&s>=r.pts[0].s&&s<=r.pts.at(-1).s)) continue;
@@ -391,7 +392,7 @@ function buildFurniture(map, group, heightC, assets) {
   assets.crossings = crossings; assets.stops = stops; assets.stopsO = stopsO;
 
   // -- direction / name signs at real places
-  const sgPole = new THREE.CylinderGeometry(0.07, 0.07, 3.2, 8); sgPole.translate(0, 1.6, 0);
+  const sgPole = new THREE.BoxGeometry(0.07*2, 3.2, 0.07*2); sgPole.translate(0, 1.6, 0);
   const addSign = (s, key, w, h, height = 2.4, side = 1, poles = 1) => {
     const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
     const u = side * (route.edge(s) + ROAD.gutter + 1.0);
@@ -433,7 +434,7 @@ function buildFurniture(map, group, heightC, assets) {
     const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
     const wHalf = route.edge(s) + 1.2;
     const g = new THREE.Group(); route.point(s, 0, pt); g.position.copy(pt); g.rotation.y = yaw + Math.PI; group.add(g);
-    const leg = new THREE.BoxGeometry(0.5, 7.5, 0.5); leg.translate(0, 3.75, 0);
+    const leg = squarePost(.5,7.5,.5,'gantry'); leg.translate(0, 3.75, 0);
     for (const sx of [-1, 1]) { const l = new THREE.Mesh(leg, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); l.position.x = sx * wHalf; l.castShadow = true; g.add(l); }
     const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, 0); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
     const banner2 = banner.clone(); banner2.rotation.y = 0; banner2.scale.x = -1; banner2.position.z = 0.05; g.add(banner2);

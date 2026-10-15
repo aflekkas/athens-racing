@@ -8,6 +8,12 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Known terrain issue: some distant slopes still show small sky-coloured gaps; a terrain fix is being tracked separately.
+  <!-- Pre-existing in 935cc47 per terrain-owner review. Evidence: .scratch/simplify-world/after-penteli-mid-afternoon.png; .scratch/simplify-world/after-riviera-owner-candidate-afternoon.png. -->
+
+- Race through a cleaner Athens: open mountain slopes, simple building blocks and blocky roadside objects, without trees or beach furniture.
+  ![Simplified Riviera road, hills and building blocks](assets/changelog/2026.10.15.4/simple-world.webp "Clear roads, open hills and simple shapes.")
+
 - Turn dynamic resolution on or off in Video settings; the road can adapt under load while the HUD stays sharp.
   ![Dynamic resolution enabled in the Video settings](assets/changelog/2026.10.15.3/dynamic-resolution.webp "The picture adapts. Your HUD stays sharp.")
 

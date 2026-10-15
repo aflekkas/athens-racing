@@ -1,3 +1,4 @@
+import { assertWorldBudget } from './world-art-direction.js';
 // Municipal 1100 L bins and Greek municipal labels, batched by 180 m cells.
 // Artistic scenery placement is illustrative, not an OSM inventory of municipal bins.
 import * as THREE from 'three';
@@ -39,21 +40,11 @@ class BinLabelBatch {
 export function municipalBinGeometry(recycling = false) {
   const batch = new GeoBatch(), green = recycling ? '#22689a' : '#26725a', lid = recycling ? '#18547f' : '#205846';
   const box = (w, h, d, x, y, z, color) => { const g = new THREE.BoxGeometry(w, h, d); batch.add(g, M(x, y, z), color); g.dispose(); };
-  const body = new THREE.BoxGeometry(1.34, 1.03, 1.02, 2, 2, 1), p = body.attributes.position;
-  for (let i = 0; i < p.count; i++) { const y = p.getY(i), taper = .88 + (y + .515) * .12; p.setXYZ(i, p.getX(i) * taper, y, p.getZ(i) * taper - (y === 0 && p.getX(i) === 0 ? .035 : 0)); }
-  body.computeVertexNormals(); batch.add(body, M(0, .79, 0), green); body.dispose();
-  box(1.43, .12, 1.10, 0, 1.35, 0, lid); box(1.25, .08, .88, 0, 1.43, -.035, lid);
-  for (const x of [-.53, .53]) { box(.22, .06, .12, x, 1.51, .37, '#36413c'); box(.08, .10, .12, x, 1.36, -.56, '#7c8b84'); }
-  for (const x of [-.73, .73]) box(.11, .18, .26, x, 1.08, -.15, '#66736c');
-  // Four small swivel casters, visible rubber tyres and metal forks.
-  for (const x of [-.49, .49]) for (const z of [-.37, .37]) {
-    box(.10, .15, .10, x, .24, z, '#a0a6a0');
-    const wheel = new THREE.CylinderGeometry(.115, .115, .085, 8); wheel.rotateZ(Math.PI / 2);
-    batch.add(wheel, M(x, .12, z), '#252c2a'); wheel.dispose();
-    box(.012, .08, .08, x + .05, .12, z, '#91998e');
-  }
-  for (const x of [-.45, -.15, .15, .45]) box(.035, .75, .027, x, .8, .506, lid);
-  return batch.build();
+  box(1.34,1.03,1.02,0,.79,0,green);
+  box(1.43,.12,1.10,0,1.35,0,lid);
+  for(const x of [-.49,.49])for(const z of [-.37,.37])box(.12,.22,.22,x,.12,z,'#252c2a');
+
+  return assertWorldBudget('streetProp',batch.build());
 }
 
 export function buildStreetLife(map, scene, heightC, roadside = null) {

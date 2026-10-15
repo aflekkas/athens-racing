@@ -1,3 +1,4 @@
+import { squarePost, signFace } from './world-prop-geometries.js';
 import * as THREE from 'three';
 import { CellInstances, canvasTex } from './util.js';
 import { roadSignLayout } from './road-sign-layout.js';
@@ -24,7 +25,7 @@ export function buildRoadSigns(map,parent,heightC) {
   });
   const faceMat=new THREE.MeshStandardMaterial({map:atlas,alphaTest:.2,roughness:.7,side:THREE.DoubleSide});
   const metal=new THREE.MeshStandardMaterial({color:'#91999d',metalness:.55,roughness:.5});
-  const posts=new CellInstances(new THREE.CylinderGeometry(.045,.045,1,6),metal,{cell:500,far:750});
+  const posts=new CellInstances(squarePost(.09,1),metal,{cell:500,far:750});
   const faces=new Map();
   for(const sign of layout){const key=sign.kind+'|'+(sign.text||'');let pool=faces.get(key);const board=sign.kind==='direction'||sign.kind==='village',w=board?2.8:.8,h=board?1.15:.8;
     if(!pool){const i=keys.indexOf(key),geometry=new THREE.PlaneGeometry(1,1),uv=geometry.attributes.uv;for(let k=0;k<uv.count;k++)uv.setXY(k,(i%cols+uv.getX(k))/cols,1-(Math.floor(i/cols)+1-uv.getY(k))/rows);pool=new CellInstances(geometry,faceMat,{cell:500,far:750,shadow:false});faces.set(key,pool);}

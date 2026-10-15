@@ -1,0 +1,44 @@
+{
+  "budgets": {
+    "stairFlight": 256,
+    "building": 40,
+    "streetProp": 150,
+    "sign": 60,
+    "pedestrian": 400,
+    "lamp": 96,
+    "gantry": 150,
+    "barrierPost": 12
+  },
+  "buildings": {
+    "data/map.json": {
+      "count": 627,
+      "min": 12,
+      "max": 36
+    },
+    "data/maps/megara/map.json": {
+      "count": 11,
+      "min": 12,
+      "max": 36
+    },
+    "data/maps/penteli/map.json": {
+      "count": 13,
+      "min": 12,
+      "max": 36
+    }
+  },
+  "streetModels": {
+    "shelter": 98,
+    "stop": 26,
+    "parking": 26,
+    "bin": 24,
+    "canteen": 26,
+    "shack": 12,
+    "wall": 12,
+    "villa": 12,
+    "stairs": 216
+  },
+  "pedestrians": {
+    "min": 204,
+    "max": 264
+  }
+}

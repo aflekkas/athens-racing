@@ -9,7 +9,7 @@ export function createTyreWalls(group, map, heightC, obstacles) {
   const rubber = new THREE.MeshStandardMaterial({ color: 0x242624, roughness: 1 });
   const metal = new THREE.MeshStandardMaterial({ color: 0x787a72, roughness: .7, metalness: .35 });
   // Flattened torus: a visible open centre, rounded sidewalls, four touching tyres per stack.
-  const geo = new THREE.TorusGeometry(.34, .16, 8, 24).rotateX(Math.PI / 2).scale(1, .87, 1);
+  const geo = new THREE.TorusGeometry(.34, .16, 4, 8).rotateX(Math.PI / 2).scale(1, .87, 1);
   // Grooves cross the outer tread; sidewalls retain rounded shoulders and an open bore.
   material.onBeforeCompile = shader => {
     shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 tyreLocal;').replace('#include <begin_vertex>', '#include <begin_vertex>\ntyreLocal = position;');

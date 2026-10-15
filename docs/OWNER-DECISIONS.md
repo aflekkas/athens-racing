@@ -16,3 +16,5 @@ These choices were made deliberately by the owner (Alexandros Lekkas). Don't cha
 | 2026-10-15 | **No street-photo proof rule** for any road or map. Maps are generated **bare simple** from OSM roads plus elevation: road shapes, terrain and building blocks. The goal is to build out all of Athens at minimal cost. | "I relax 100%, we don't need the photo rule for any streets." Supersedes the 2026-10-13 street-view rule. |
 
 2026-10-15: Title screen = the 2026-10-14 night design (aceb5bd), owner-chosen; don't redesign without asking.
+
+2026-10-15: Simplified world: no trees/vegetation, clean terrain, block buildings. **Blocky low-poly versions of real things; triangle budgets.** Real mountains, roads and re-entry shoulders retained. Buildings ≤40 triangles; street props ≤150; signs ≤60; pedestrians ≤400. No beach umbrellas, sun loungers or other beach furniture. Buildings have no windows, facade bands, balconies or roof details. Square lamp/gantry/post budgets live in `src/world-art-direction.js`; an 18-step beach stair flight has a documented 256-triangle ceiling. Guard: `tools/world-art-direction.test.mjs`. Ask the owner before changing.

@@ -1,3 +1,4 @@
+import { squarePost, signFace } from './world-prop-geometries.js';
 // Greek Ρ-32 speed-limit signs and OSM speed-camera posts, built from the
 // mapped sign nodes and limit changes in the map data (tools/speed-signs.mjs).
 // One InstancedMesh per part (posts, backs, one face texture per posted value,
@@ -27,7 +28,7 @@ function faceTexture(v) {
     g.beginPath(); g.arc(128, 128, 107, 0, Math.PI * 2); g.stroke();
     g.fillStyle = '#111314'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.font = `900 ${label.length > 2 ? 104 : 132}px system-ui, sans-serif`;
-    g.fillText(label, 128, 136);
+    g.fillText(label, 128, 136, 174);
   });
 }
 
@@ -46,8 +47,8 @@ export function buildSpeedSigns(map, parent, heightC) {
 
   const metal = new THREE.MeshStandardMaterial({ color: '#8f979b', roughness: 0.55, metalness: 0.5 });
   const backMat = new THREE.MeshStandardMaterial({ color: '#7e8589', roughness: 0.6, metalness: 0.35, side: THREE.DoubleSide });
-  const postGeo = new THREE.CylinderGeometry(0.04, 0.05, POST_H, 8); postGeo.translate(0, POST_H / 2, 0);
-  const faceGeo = new THREE.CircleGeometry(SIGN_D / 2, 28);
+  const postGeo = new THREE.BoxGeometry(0.04*2, POST_H, 0.05*2); postGeo.translate(0, POST_H / 2, 0);
+  const faceGeo = signFace(SIGN_D / 2);
   const headGeo = new THREE.BoxGeometry(0.55, 0.32, 0.28);
 
   const posts = new CellInstances(postGeo, metal, { cell: CELL, far: FAR, shadow: true, receive: false });
