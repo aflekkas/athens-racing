@@ -42,7 +42,7 @@ For the current VPS, install `deploy/paraliaki-racing.service` in `~/.config/sys
 
 ## Contributing
 
-All changes go through a pull request into `main`; CI must pass and @aflekkas reviews every PR. PRs that change anything visible need screenshots or video. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your first PR.
+All changes go through a pull request into `staging`, which deploys to the staging site; `prod` is production and only receives tested promotions from `staging`. CI must pass and @aflekkas reviews every PR. PRs that change anything visible need screenshots or video. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your first PR.
 
 ## Data and credits
 

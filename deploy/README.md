@@ -57,7 +57,7 @@ The existing VPS service on port 8000 is independent. Deploying Workers does not
 
 ## GitHub Actions and the required API token
 
-The CI workflow runs on PRs and pushes to main/staging. It installs from the lockfile, runs all four required test gates, checks syntax and the full browser import graph, then dry-runs the Worker bundle. Pushes deploy staging from `staging` and production from `main`, then fetch HTML/module/asset and complete a `/ws` create-lobby round trip. Deploys require a passing test job. Without an API token the workflow reports a notice and skips deployment; a green test run alone does **not** mean GitHub deployed a Worker. The first staging deployment used the VPS OAuth login.
+The CI workflow runs on PRs and pushes to prod/staging. It installs from the lockfile, runs all four required test gates, checks syntax and the full browser import graph, then dry-runs the Worker bundle. Pushes deploy staging from `staging` and production from `prod`, then fetch HTML/module/asset and complete a `/ws` create-lobby round trip. Deploys require a passing test job. Without an API token the workflow reports a notice and skips deployment; a green test run alone does **not** mean GitHub deployed a Worker. The first staging deployment used the VPS OAuth login.
 
 Create the CI token yourself; never copy the Wrangler OAuth token into GitHub:
 
@@ -73,7 +73,7 @@ gh secret set CLOUDFLARE_API_TOKEN --repo aflekkas/athens-street-racers
 gh secret set CLOUDFLARE_ACCOUNT_ID --repo aflekkas/athens-street-racers --body d6f3d2dc5817687a91d74ccd257bad9e
 ```
 
-The account-ID secret is already set. After adding the token, rerun the most recent staging CI run in GitHub Actions, or use `gh run rerun <run-id> --repo aflekkas/athens-street-racers`. Only a successful deploy step followed by the live smoke step confirms automated deployment. Production awaits the orchestrator's approval and a push to main.
+The account-ID secret is already set. After adding the token, rerun the most recent staging CI run in GitHub Actions, or use `gh run rerun <run-id> --repo aflekkas/athens-street-racers`. Only a successful deploy step followed by the live smoke step confirms automated deployment. Production awaits the orchestrator's approval and a promotion of a tested `staging` commit to `prod`.
 
 ## Free-tier headroom
 
@@ -132,3 +132,13 @@ away and is destroyed when Sound settings closes. It cannot share WebAudio;
 its API volume follows master × music. ERT stream endpoints are documented in
 the research but are not shipped as presets without station/rights permission.
 No music source requires a Cloudflare paid feature or a streaming proxy.
+
+## Branches
+
+| Branch | Deploys to | Who updates it |
+|---|---|---|
+| `staging` (default) | https://athens-street-racers-staging.aflekkas.workers.dev | PRs from contributor branches, after CI and code-owner review |
+| `prod` | https://athens-street-racers.aflekkas.workers.dev | The maintainer only, by promoting a commit already tested on staging |
+
+`main` was renamed to `prod` on 2026-10-15; GitHub redirects old `main` references. Both branches are protected (PR + `test` check + code-owner approval, no force-pushes). Promote with a fast-forward of `prod` to the tested `staging` commit, then deploy production from a clean `git archive` of that exact commit and run `tools/deploy-smoke.mjs --race` against each map.
+
