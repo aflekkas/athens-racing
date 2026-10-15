@@ -129,7 +129,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .evs__route .ico--route { vertical-align: -.15em; color: var(--hu-ice); }
 .evs__facts { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .evs__facts .stat-tile:nth-child(odd):last-child { grid-column: 1 / -1; }
-.evs__facts .stat-tile__v { font-size: var(--t-lg); }
+.evs__facts .stat-tile__v { font-size: var(--t-lg); white-space: normal; } /* a long value wraps, never ellipsises */
 /* personal bests: one quiet line under the facts, only when a time exists */
 .evs__best { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-4); margin: var(--s-4) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--hu-hair);
   font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
@@ -246,6 +246,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .scr--setup .scr__body, .scr--results .scr__body, .scr--car .scr__body { overflow-y: auto; padding: 6px; margin: -6px; } /* room for focus rings */
   .setup-layout, .res-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
   .setup__event, .setup__form .setup__fields, .res-main, .res-side, .car-info { max-height: none; overflow: visible; }
+  .setup__event { box-sizing: border-box; width: 100%; } /* stacked: the summary spans the column like the form under it */
   .car-stage { flex: none; height: max(12rem, 34vh); }
   /* settings: the rail becomes a scrolling tab strip above the list */
   .scr--settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; }

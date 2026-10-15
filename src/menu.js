@@ -371,10 +371,10 @@ export class Menu {
     }
     if (rows[0]) rows[0] = rows[0].replace('<div class="mi field', '<div data-default="" class="mi field'); // open on the first choice
     const note = '';
-    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode ? 'SESSION SETUP' : 'RACE SETUP',
+    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${this.eventSummary(runDef, r, runDef.id)}</aside>
-        <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}YOUR RACE</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
+        <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}${def.type === 'free' ? 'YOUR SESSION' : 'YOUR RACE'}</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
           <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}</div>${note}
           <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'HOST / CREATE GAME' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
   }
