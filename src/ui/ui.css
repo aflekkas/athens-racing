@@ -119,7 +119,7 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .card__text { margin: 0; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
 .card__foot { margin-top: auto; padding-top: var(--s-2); display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-sm); letter-spacing: .06em; color: var(--c-text-2); }
 .card:hover { border-color: var(--hu-hair-2); background: var(--hu-sheen), rgba(28, 36, 46, .82); }
-.card.focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.2rem 2.6rem rgba(0,0,0,.5); transform: translateY(-3px); }
+.card.focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.2rem 2.6rem rgba(0,0,0,.5); }
 .card::after { content: ""; position: absolute; left: 50%; bottom: .4rem; width: 1.6rem; height: 3px; margin-left: -.8rem; border-radius: 3px; background: var(--hu-ice); box-shadow: 0 0 8px var(--hu-ice);
   opacity: 0; transform: scaleX(.2); transition: opacity var(--dur) var(--ease), transform .24s var(--ease); pointer-events: none; }
 .card.selected::after { opacity: 1; transform: none; }
@@ -323,6 +323,8 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 /* ---------------------------------------------------------------- scroll areas */
 .scroll-y { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.2) transparent; }
+/* focus scrolls an item in with room for its 4px ring, so a scroll container never cuts the ring or border */
+:where(.scroll-y, .scroll-x, .mode-grid, .scr__body) .mi { scroll-margin: 8px; }
 .scroll-y::-webkit-scrollbar, .scroll-x::-webkit-scrollbar { width: 6px; height: 6px; }
 .scroll-y::-webkit-scrollbar-thumb, .scroll-x::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 3px; }
 .scroll-x { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.2) transparent; }

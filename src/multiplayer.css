@@ -67,7 +67,7 @@
 .mp-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); }
 .mp-actions > .btn:not(.btn--sm) { min-width: 11rem; min-height: 3rem; }
 .mp-actions > .btn.is-on { --btn-fg: var(--tt-green, #38e07b); --btn-bd: rgba(56,224,123,.5); }
-.mp-side { grid-column: 2; grid-row: 1 / -1; z-index: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: var(--s-3); padding: 2px 4px 2px 2px; }
+.mp-side { grid-column: 2; grid-row: 1 / -1; z-index: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: var(--s-3); padding: 6px; margin: -4px -2px -4px -4px; }
 .mp-side > .panel { flex: none; padding: var(--s-4); }
 .mp-side__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .mp-side .tabs { flex: 1 1 auto; }
@@ -115,9 +115,9 @@
 .scr--mp-results .res-actions { flex-wrap: wrap; }
 /* phones: the car shrinks to the top, the panels stack below it and the page scrolls */
 @media (max-width: 860px) {
-  .scr--showroom .scr__body { overflow-y: auto; overscroll-behavior: contain; }
+  .scr--showroom .scr__body { overflow-y: auto; overscroll-behavior: contain; padding: 6px; margin: -6px; } /* room for focus rings */
   .mp-show { display: flex; flex-direction: column; flex: none; gap: var(--s-3); }
-  .mp-stage { flex: none; height: max(12rem, 30vh); margin: 0 calc(var(--pad-screen-x) * -1); }
+  .mp-stage { flex: none; height: max(12rem, 30vh); margin: 0 calc(var(--pad-screen-x) * -1 - 6px); }
   .mp-show__cap { position: absolute; left: 0; right: 0; top: 0; }
   .mp-show__title { font-size: var(--t-2xl); }
   .mp-show__sub { display: none; }
