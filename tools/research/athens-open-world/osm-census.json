@@ -1,0 +1,208 @@
+{
+  "source": "https://download.geofabrik.de/europe/greece-latest.osm.pbf",
+  "downloadDate": "2026-10-15",
+  "pbfBytes": 341944784,
+  "pbfSha256": "7087cf00b0e47833c40837b9ee7cc5c3020420decc3980406d3b8f0b5d62a6f3",
+  "replicationTimestamp": "2026-10-14T20:21:12Z",
+  "projection": {
+    "lat0": 37.98,
+    "lon0": 23.73,
+    "mlat": 110996.07140642505,
+    "mlon": 87856.39439993475
+  },
+  "masks": {
+    "a_south": [
+      [
+        23.665,
+        37.95
+      ],
+      [
+        23.76,
+        37.955
+      ],
+      [
+        23.8,
+        37.915
+      ],
+      [
+        23.845,
+        37.865
+      ],
+      [
+        23.9,
+        37.84
+      ],
+      [
+        23.9,
+        37.775
+      ],
+      [
+        23.75,
+        37.775
+      ],
+      [
+        23.68,
+        37.88
+      ]
+    ],
+    "b_basin": [
+      [
+        23.665,
+        37.935
+      ],
+      [
+        23.716,
+        37.92
+      ],
+      [
+        23.758,
+        37.889
+      ],
+      [
+        23.801,
+        37.929
+      ],
+      [
+        23.819,
+        37.973
+      ],
+      [
+        23.844,
+        38.012
+      ],
+      [
+        23.864,
+        38.053
+      ],
+      [
+        23.823,
+        38.082
+      ],
+      [
+        23.75,
+        38.08
+      ],
+      [
+        23.694,
+        38.06
+      ],
+      [
+        23.669,
+        38.01
+      ]
+    ],
+    "c_attica": {
+      "osmRelation": 957716
+    }
+  },
+  "scope": {
+    "a_south": {
+      "roadKm": 2181.254,
+      "mainRoadKm": 1964.957,
+      "serviceRoadKm": 216.297,
+      "restrictedRoadKm": 27.223,
+      "roadWays": 14654,
+      "buildings": 87351,
+      "buildingRelations": 106,
+      "levelsTagged": 1524,
+      "heightTagged": 23,
+      "bridges": 103,
+      "tunnels": 30,
+      "byHighwayKm": {
+        "living_street": 14.368,
+        "motorway": 1.036,
+        "motorway_link": 3.111,
+        "primary": 86.788,
+        "primary_link": 4.938,
+        "residential": 1395.097,
+        "secondary": 94.027,
+        "secondary_link": 1.055,
+        "service": 216.297,
+        "tertiary": 265.721,
+        "tertiary_link": 1.121,
+        "trunk": 44.516,
+        "trunk_link": 10.272,
+        "unclassified": 42.905
+      },
+      "occupied512Cells": 614,
+      "geometryJsonBytes": 49047226,
+      "geometryGzipBytes": 14857525,
+      "extractSha256": "d6aeb0d126444c4798bb29046da8806c16fdac6b252ec873651734b2a54a3c39",
+      "maskAreaKm2IncludingWater": 262.5649163138355
+    },
+    "b_basin": {
+      "roadKm": 5729.382,
+      "mainRoadKm": 5181.146,
+      "serviceRoadKm": 548.236,
+      "restrictedRoadKm": 108.965,
+      "roadWays": 45575,
+      "buildings": 310295,
+      "buildingRelations": 666,
+      "levelsTagged": 5011,
+      "heightTagged": 2515,
+      "bridges": 367,
+      "tunnels": 235,
+      "byHighwayKm": {
+        "living_street": 71.027,
+        "motorway": 82.004,
+        "motorway_link": 46.046,
+        "primary": 197.045,
+        "primary_link": 16.537,
+        "residential": 3605.092,
+        "road": 0.089,
+        "secondary": 319.831,
+        "secondary_link": 9.245,
+        "service": 548.147,
+        "tertiary": 709.542,
+        "tertiary_link": 3.398,
+        "trunk": 28.796,
+        "trunk_link": 10.4,
+        "unclassified": 82.183
+      },
+      "occupied512Cells": 948,
+      "geometryJsonBytes": 178361562,
+      "geometryGzipBytes": 52551247,
+      "extractSha256": "e267e9a786bc8fda62dbed570b13bef7e6701340b20fb9e4084a95eef8156160",
+      "maskAreaKm2IncludingWater": 247.75693765375317
+    },
+    "c_attica": {
+      "roadKm": 23187.986,
+      "mainRoadKm": 20467.402,
+      "serviceRoadKm": 2720.584,
+      "restrictedRoadKm": 842.82,
+      "roadWays": 130844,
+      "buildings": 429971,
+      "buildingRelations": 901,
+      "levelsTagged": 16856,
+      "heightTagged": 2794,
+      "bridges": 1038,
+      "tunnels": 382,
+      "byHighwayKm": {
+        "living_street": 139.175,
+        "motorway": 338.31,
+        "motorway_link": 101.364,
+        "primary": 581.975,
+        "primary_link": 33.159,
+        "residential": 12428.149,
+        "road": 0.089,
+        "secondary": 1435.528,
+        "secondary_link": 21.281,
+        "service": 2720.495,
+        "tertiary": 2744.244,
+        "tertiary_link": 7.939,
+        "trunk": 160.612,
+        "trunk_link": 21.226,
+        "unclassified": 2454.441
+      },
+      "occupied512Cells": 10664,
+      "geometryJsonBytes": 280517487,
+      "geometryGzipBytes": 85192890,
+      "extractSha256": "20364109f9318cdaa64f4c0f196fb82422ad53da6e06a00f136140f2b17351b4",
+      "maskAreaKm2IncludingWater": 10788.778292125235
+    }
+  },
+  "errors": {
+    "unassembledBuildingRelations": 13
+  },
+  "elapsedSeconds": 1186.4
+}

@@ -1,0 +1,121 @@
+$ npm test
+exit: 0
+  ---
+  duration_ms: 156.002825
+  type: 'test'
+  ...
+# Subtest: message persistence and alarm failures retain their original exception and log their phase
+ok 52 - message persistence and alarm failures retain their original exception and log their phase
+  ---
+  duration_ms: 10.657675
+  type: 'test'
+  ...
+# Subtest: telemetry checkpoints the whole arena at most once per two seconds, while transitions persist immediately
+ok 53 - telemetry checkpoints the whole arena at most once per two seconds, while transitions persist immediately
+  ---
+  duration_ms: 32.478955
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23650.455635
+
+$ node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
+exit: 0
+PASS  straight stability: corolla wet TC off  [peak 0.49 deg, heading 0.33 deg, offset 0.64 m]
+PASS  straight stability: corolla wet TC on  [peak 0.49 deg, heading 0.33 deg, offset 0.64 m]
+PASS  power/lift/countersteer recovery: huracan wet TC off  [peak 9.2 deg, final -0.01 deg, latch 0.00, exit 75.8 km/h]
+PASS  power/lift/countersteer recovery: huracan wet TC on  [peak 3.2 deg, final -0.00 deg, latch 0.00, exit 71.4 km/h]
+PASS  power/lift/countersteer recovery: carrera wet TC off  [peak 45.4 deg, final -0.00 deg, latch 0.00, exit 57.5 km/h]
+PASS  power/lift/countersteer recovery: carrera wet TC on  [peak 6.6 deg, final 0.00 deg, latch 0.00, exit 56.6 km/h]
+PASS  power/lift/countersteer recovery: z4 wet TC off  [peak 46.9 deg, final 0.00 deg, latch 0.00, exit 48.8 km/h]
+PASS  power/lift/countersteer recovery: z4 wet TC on  [peak 8.5 deg, final -0.00 deg, latch 0.00, exit 52.0 km/h]
+PASS  power/lift/countersteer recovery: e36 wet TC off  [peak 45.7 deg, final -0.00 deg, latch 0.00, exit 55.2 km/h]
+PASS  power/lift/countersteer recovery: e36 wet TC on  [peak 9.6 deg, final 0.00 deg, latch 0.00, exit 54.6 km/h]
+PASS  walking-speed U-turn/unwind: huracan wet TC off  [turn 189.9 deg, final yaw rate 0.000]
+PASS  walking-speed U-turn/unwind: carrera wet TC off  [turn 191.0 deg, final yaw rate 0.000]
+PASS  walking-speed U-turn/unwind: z4 wet TC off  [turn 193.5 deg, final yaw rate 0.000]
+PASS  walking-speed U-turn/unwind: e36 wet TC off  [turn 195.9 deg, final yaw rate -0.000]
+PASS  walking-speed U-turn/unwind: corolla wet TC off  [turn 198.8 deg, final yaw rate 0.000]
+PASS  catalogue braking in huracan wet TC off  [100-0 40.9 m]
+PASS  catalogue braking in carrera wet TC off  [100-0 44.5 m]
+PASS  911 half-pedal braking authority: carrera wet TC off  [100-0 53.7 m]
+PASS  catalogue braking in z4 wet TC off  [100-0 45.0 m]
+PASS  catalogue braking in corolla wet TC off  [100-0 52.5 m]
+PASS  reset placement riviera: road centreline, whole car on road, race direction, checkpoint-safe anchor respected  [604 off-road samples, 0 invalid]
+PASS  reset placement megara: road centreline, whole car on road, race direction, checkpoint-safe anchor respected  [112 off-road samples, 0 invalid]
+PASS  reset placement penteli: road centreline, whole car on road, race direction, checkpoint-safe anchor respected  [576 off-road samples, 0 invalid]
+
+433 passed, 0 failed
+
+$ node tools/events-test.mjs
+exit: 0
+  ---
+  duration_ms: 1.711861
+  type: 'test'
+  ...
+# Subtest: map event registration isolates maps without changing Riviera
+ok 10 - map event registration isolates maps without changing Riviera
+  ---
+  duration_ms: 13.984731
+  type: 'test'
+  ...
+# Subtest: race setup: defaults stay official, choices make a separate custom variant
+ok 11 - race setup: defaults stay official, choices make a separate custom variant
+  ---
+  duration_ms: 11.841748
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 438.299328
+
+$ node tools/check-syntax.mjs
+exit: 0
+Syntax checked 265 JavaScript modules.
+
+$ node tools/check-browser-imports.mjs
+exit: 0
+Browser import graph checked: 211 modules.
+
+$ npx wrangler deploy --env staging --dry-run
+exit: 0
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1366 files from the assets directory /tmp/athens-open-world-research/.deploy/assets
+Total Upload: 625.13 KiB / gzip: 167.00 KiB
+Your Worker has access to the following bindings:
+Binding                                            Resource            
+env.GAME (GameArena)                               Durable Object      
+env.PRESENCE (FriendsPresence)                     Durable Object      
+env.ACCOUNTS (athens-racing-accounts-staging)      D1 Database         
+env.ASSETS                                         Assets              
+
+--dry-run: exiting now.
+
+Census consistency: all three gzip extracts fully read; record counts, raw bytes, compressed bytes, SHA-256 and rounded road-class totals match osm-census.json. 13 unassembled country building relations excluded and disclosed.
