@@ -20,7 +20,7 @@ export function initGhostLap(ctx) {
 }
 class GhostLap {
   constructor(ctx) {
-    this.ctx = ctx; this.store = new GhostStore(); this.spins = [];
+    this.ctx = ctx; this.store = new GhostStore(); this.spin = 0;
     events.on('start', p => this.start(p)); events.on('split', p => this.split(p));
     events.on('finish', r => this.finish(r)); events.on('abort', () => { this.recorder = null; this.hideGhost(); });
     onSettings((s, key) => { if (key === 'ghostEnabled' && !s.ghostEnabled) this.hideGhost(); });
@@ -28,17 +28,16 @@ class GhostLap {
     this.delta = document.createElement('div'); this.delta.id = 'ghost-delta'; this.delta.hidden = true; document.body.append(this.delta);
   }
   capture(dt = 0) {
-    return [this.ctx.player()].map((c, i) => {
-      const v = c.veh;
-      const r = c.model.wheels[0]?.r || .33; this.spins[i] = (this.spins[i] || 0) - v.vLong * dt / r;
-      q.setFromEuler(euler.set(Math.atan(v.grade || 0), v.yaw, Math.atan(v.bank || 0), 'YXZ'));
-      return { position: [v.x, v.y, v.z], quaternion: q.toArray(), speed: v.vLong, steer: v.steer, spin: this.spins[i], s: v.s,
-        brake: i === 0 ? this.ctx.input.brake > .3 : !!c.lastBrake, damage: v.damage,
-        pitch: v.pose.pitch, roll: v.pose.roll, heave: v.pose.heave };
-    });
+    const c = this.ctx.player(), v = c.veh, r = c.model.wheels[0]?.r || .33;
+    this.spin -= v.vLong * dt / r;
+    q.setFromEuler(euler.set(Math.atan(v.grade || 0), v.yaw, Math.atan(v.bank || 0), 'YXZ'));
+    return [{ position: [v.x, v.y, v.z], quaternion: q.toArray(), speed: v.vLong, steer: v.steer, spin: this.spin, s: v.s,
+      brake: this.ctx.input.brake > .3, damage: v.damage,
+      pitch: v.pose.pitch, roll: v.pose.roll, heave: v.pose.heave }];
   }
+
   start(p) {
-    this.hideGhost(); this.spins = []; this.recorder = null;
+    this.hideGhost(); this.spin = 0; this.recorder = null;
     if (this.ctx.online() || !['timetrial', 'sprint'].includes(p.type)) return;
     const run = p.run, routeKey = `${Math.round(run.r.s0)}>${Math.round(run.r.s1)}`;
     this.recorder = new Recorder([{ car: p.car, name: 'YOU' }],
