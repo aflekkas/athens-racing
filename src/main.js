@@ -256,7 +256,7 @@ async function boot() {
   await texReady; uploadTextures(renderer);
   tlog('textures');
   updateLod();
-  try { await renderer.compileAsync(scene, camera); } catch (e) { /* older drivers: compile on first frame */ }
+  await compileScene();
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
   tlog('compiled');
   onResize();
@@ -344,7 +344,7 @@ async function switchMap(id = 'riviera') {
     document.body.classList.remove('racing', 'counting');
     post.resetHistory?.(); onResize(); updateLod();
     // the new world's shaders (and shadow depth variants) compile behind the loading screen, not mid-race
-    try { await renderer.compileAsync(scene, camera); } catch (e) { /* older drivers: compile on first frame */ }
+    await compileScene();
     if (renderer.shadowMap.enabled) warmShadowPrograms();
     const url = new URL(location.href); url.searchParams.set('map', map.id); history.replaceState(null, '', url);
     last = performance.now();
@@ -1925,6 +1925,18 @@ function step(dt, draw = true) {
   bootFrameLog('frame-done');
 }
 
+// Build every material's program behind the loading screen. The main view draws into post's linear HDR target, never
+// the sRGB canvas, and the output colour space is part of a program's key: compiled against the canvas, every material
+// compiled a second time on its first appearance mid-race (traffic glass, buses: hitches near the Riviera tunnel).
+async function compileScene() {
+  const target = renderer.getRenderTarget();
+  let done;
+  try { renderer.setRenderTarget(post?.sceneRT ?? null); done = renderer.compileAsync(scene, camera); }
+  catch (e) { /* older drivers: compile on first frame */ }
+  finally { renderer.setRenderTarget(target); }
+  try { await done; } catch (e) { /* compile on first frame */ }
+}
+
 // The shadow depth programs (instanced, skinned, alpha-tested...) compile at load instead of as a hitch when a new kind
 // of caster first enters the shadow range (compileAsync never builds them): one shadow pass over every caster on the
 // map, the distance-hidden ones included, into a 1×1 map with an empty main view (compile cost, no fill).
@@ -1935,7 +1947,14 @@ function warmShadowPrograms() {
   shadow.mapSize.set(1, 1); shadow.map?.dispose(); shadow.map = null;
   Object.assign(cam, { left: -30000, right: 30000, top: 30000, bottom: -30000, near: -30000, far: 30000 }); cam.updateProjectionMatrix();
   camera.far = camera.near * 1.001; camera.updateProjectionMatrix(); // nothing in the main view: compileAsync built those programs
-  try { renderer.shadowMap.autoUpdate = true; renderer.setRenderTarget(rt); renderer.render(scene, camera); }
+  // three draws the shadow map before it sets up the frame's lights, so depth programs are keyed by the light state of
+  // the scene's previous render: none after the water reflection (its camera sees no lights), all of them otherwise.
+  // Warm both: a render that sees no lights, then two shadow passes.
+  try {
+    renderer.setRenderTarget(rt);
+    const mask = camera.layers.mask; camera.layers.mask = 0; renderer.render(scene, camera); camera.layers.mask = mask;
+    renderer.shadowMap.autoUpdate = true; renderer.render(scene, camera); renderer.render(scene, camera);
+  }
   catch (e) { console.warn('Shadow shader warm-up skipped:', e?.message || e); } // best effort: they compile on first use
   finally {
     for (const o of hidden) o.visible = false;
