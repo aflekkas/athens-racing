@@ -77,7 +77,7 @@ test('new trim IDs reach server and deployment catalogues, with exactly one nitr
   for(const m of CAR_MODELS)for(const id of m.trims){const c=CARS.find(c=>c.id===id);assert(c.zeroTo100>0);assert(c.visual.rim>=13&&c.visual.rim<=21);}
   assert(CAR_MODELS.filter(m=>m.trims.length>=2).length>=15);
 });
-test('body and trim use shared segmented controls, filtering forbidden body-engine combinations',async()=>{
+test('body uses shared segments beside trim arrows, filtering forbidden body-engine combinations',async()=>{
  const {renderCarSelect}=await import('../src/car-select.js');
  const html=renderCarSelect({index:CARS.findIndex(c=>c.id==='mini'),detail:true,allowedCars:['mini','mini_jcw']});
  assert.match(html,/data-key="carBody"/);assert.match(html,/data-trim-current="mini"/);assert.match(html,/HARDTOP/);assert.match(html,/CONVERTIBLE/);assert.match(html,/role="radiogroup"/);assert(!html.includes('<select'));

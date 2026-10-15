@@ -16,7 +16,7 @@ try{
  await page.goto(`http://127.0.0.1:${app.server.address().port}/?menu&simhook&quality=low&fixedres&map=penteli`,{waitUntil:'domcontentloaded'});
  console.log('DOM READY');await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:180000});console.log('LOADED');await page.evaluate(()=>{window.__holdFrame=true;});
  const show=async id=>{await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.show('car',{index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});},id);await page.waitForSelector('#carStage canvas');await page.waitForTimeout(500);};
- const capture=async name=>{await page.evaluate(()=>__flow.menu.carView?.captureFrame?.());await page.screenshot({timeout:120000,path:resolve(out,name+'.png')});};
+ const capture=async name=>{await page.evaluate(()=>__flow.menu.carView?.captureFrame?.());await page.screenshot({timeout:120000,path:resolve(out,name+'.png')});console.log('CAPTURE',name);};
  for(const id of (process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){await show(id);await capture('garage-'+id);}
  if(!process.env.TRIM_ONLY){
  await show('cle200');await capture('garage-cle200');

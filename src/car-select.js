@@ -183,8 +183,8 @@ export function mountCarSelect(root, index, opts = {}) {
     const nextModel=new CarModel(nextSpec,{plate:driverName.plate()});new Cockpit(nextSpec,nextModel);studioMaterials(nextModel);
     nextModel.root.rotation.y=turntable.angle;scene.add(nextModel.root);old.root.removeFromParent();old.disposeDamage?.();
     old.root.traverse(o=>{if(o.geometry&&!o.geometry.userData.shared)o.geometry.dispose();});
-    const nextMaterials=new Set();nextModel.root.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])nextMaterials.add(m);});
-    for(const [original,copy]of materialCopies)if(!nextMaterials.has(copy)){copy.dispose();materialCopies.delete(original);}
+    const nextMaterials=new Set(),nextTextures=new Set();nextModel.root.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){nextMaterials.add(m);for(const v of Object.values(m))if(v?.isTexture)nextTextures.add(v);}});
+    for(const [original,copy]of materialCopies)if(!nextMaterials.has(copy)){for(const v of Object.values(copy))if(v?.isCanvasTexture&&!nextTextures.has(v))v.dispose();copy.dispose();materialCopies.delete(original);}
     model=nextModel;index=next;
     const menu=window.__flow?.menu;if(menu){menu.data={...menu.data,index,detail:true};C.morph(root,renderCarSelect(menu.data));C.indicators(root);}
     renderer.render(scene,camera);return true;
