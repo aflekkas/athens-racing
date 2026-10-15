@@ -497,7 +497,9 @@ export class People {
     const v = A.veh, vx = A.fx * v.vLong + A.rx * (v.vLat || 0), vz = A.fz * v.vLong + A.rz * (v.vLat || 0);
     // Keep the vehicle reference: contact planes follow the live car as it brakes or turns.
     const car = { x: v.x, y: v.y || 0, z: v.z, yaw: v.yaw, halfL: v.halfL, halfW: v.halfW, height: v.spec?.height || 1.4, vx, vz, veh: v };
-    const b = this.bodies.spawn({s:p.s,x:p.x,y:p.wy ?? p.y,z:p.z,yaw:p.yaw,scale:p.look.k,wH:p.look.wH,wT:p.look.wT,vx,vz,seed:p.slot,car,owner:p.slot});
+    // Transfer an already-built close rig, preserving clothes, face and hair without building on impact.
+    const rig = this.crowd?.near.get(p.look); if (rig) this.crowd.near.delete(p.look);
+    const b = this.bodies.spawn({rig,look:p.look,s:p.s,x:p.x,y:p.wy ?? p.y,z:p.z,yaw:p.yaw,scale:p.look.k,wH:p.look.wH,wT:p.look.wT,vx,vz,seed:p.slot,car,owner:p.slot});
     const dv = pedestrianThump(v, A.v, p.x - v.x, p.z - v.z);
     this.events.push({dv, kind:'hit', target:'pedestrian', who:A.kind, p, body:b, sev:A.v, x:p.x,y:p.wy ?? p.y,z:p.z});
     this.despawn(p);

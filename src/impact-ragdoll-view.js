@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { createHumanRig, makeLook } from './human.js';
 import { RNG } from './util.js';
 import { PARENTS, RagdollPool } from './impact-ragdoll.js';
-// Three prebuilt skinned meshes, reusing crowd clothing and hair. No per-frame mesh creation.
+// Three prebuilt pairs of skinned meshes, reusing crowd clothing and hair. No per-frame mesh creation.
 export class ImpactBodies extends RagdollPool {
  constructor(scene,ground){
   super();this.ground=ground;this.v=new THREE.Vector3();this.d=new THREE.Vector3();this.inv=new THREE.Quaternion();this.side=new THREE.Vector3();this.up=new THREE.Vector3();this.forward=new THREE.Vector3();this.basis=new THREE.Matrix4();
@@ -20,11 +20,22 @@ export class ImpactBodies extends RagdollPool {
    b.rig.mesh.visible=false;scene.add(b.rig.mesh);
   }
  }
- spawn(o){const b=super.spawn(o);b.rig.mesh.visible=false;b.rig=o.kind==='rider'?b.riderRig:b.pedRig;b.look=o.kind==='rider'?b.riderLook:b.pedLook;b.rig.mesh.visible=true;b.helmet.visible=o.kind==='rider';return b;}
+ release(b){
+  if(!b.borrowedRig)return;
+  const r=b.borrowedRig;r.mesh.removeFromParent();r.mesh.geometry.dispose();r.skeleton.dispose();
+  for(const p of r.pedals){p.pedal.geometry.dispose();p.crank.geometry.dispose();}
+  b.borrowedRig=null;b.rig=b.pedRig;b.look=b.pedLook;
+ }
+ spawn(o){
+  const b=super.spawn(o);b.rig.mesh.visible=false;this.release(b);
+  b.rig=o.kind==='rider'?b.riderRig:o.rig||b.pedRig;b.look=o.kind==='rider'?b.riderLook:o.rig?o.look:b.pedLook;
+  if(o.rig){b.borrowedRig=o.rig;o.rig.mesh.material=b.pedRig.mesh.material;for(const c of o.rig.mesh.children)if(!c.isBone)c.visible=false;}
+  b.rig.mesh.visible=true;b.helmet.visible=o.kind==='rider';return b;
+ }
  render(){
   for(const b of this.bodies){
    b.pedRig.mesh.visible=b.riderRig.mesh.visible=false;
-   const {mesh,bones}=b.rig;mesh.visible=b.active;if(!b.active)continue;
+   const {mesh,bones}=b.rig;mesh.visible=b.active;if(!b.active){this.release(b);continue;}
    mesh.material.opacity=b.opacity;const p=b.p,k=b.look.k;
    mesh.position.set(0,0,0);mesh.rotation.set(0,0,0);mesh.scale.setScalar(k);
    for(let i=0;i<16;i++){
