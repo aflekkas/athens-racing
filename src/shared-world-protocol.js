@@ -5,6 +5,7 @@ export const WORLD_CARS = 66;
 export const WORLD_CONES = 256;
 export const CAR = Object.freeze({ ID: 0, S: 1, U: 2, VS: 3, VU: 4, YAW: 5, W: 6, Y: 7, VY: 8, ROLL: 9, PITCH: 10, GY: 11, DIR: 12, FLAGS: 13, WHEEL: 14, STEER: 15, FRONT: 16, REAR: 17, LEFT: 18, RIGHT: 19, BLINK: 20, ROLLV: 21, PITCHV: 22, DAMAGE: 23 });
 export const ZONES = ['front', 'rear', 'left', 'right'];
+export const nearestWorldS = (s, focus, period) => period > 0 ? s + Math.round((focus - s) / period) * period : s;
 export const worldOwner = lobby => {
   const eligible = p => p.loaded === true && p.connected !== false && !p.dnf;
   const players = Array.isArray(lobby?.players) ? lobby.players : [...(lobby?.players?.values() || [])];

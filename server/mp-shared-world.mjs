@@ -1,6 +1,6 @@
-import { worldOwner, worldPackets, WorldAssembler, validConeRow } from '../src/shared-world-protocol.js';
+import { worldOwner, worldPackets, WorldAssembler, validConeRow, nearestWorldS } from '../src/shared-world-protocol.js';
 
-export function createSharedWorldRelay(send) {
+export function createSharedWorldRelay(send, { period = () => 0 } = {}) {
   const assemblers = new WeakMap(), contacts = new WeakMap();
   const matches = (l, m) => l && ['countdown', 'race'].includes(l.status) && m.raceId === l.raceId && m.generation === (l.generation || 0);
   const cached = l => l.sharedWorld?.raceId === l.raceId && l.sharedWorld.generation === (l.generation || 0) ? l.sharedWorld : null;
@@ -43,9 +43,9 @@ export function createSharedWorldRelay(send) {
       if (m.kind === 'car') {
         if (body.length !== 9 || body[0] < 0 || body[0] >= 66 || body.slice(1, 3).some(n => Math.abs(n) > 300) || body.slice(3, 5).some(n => Math.abs(n) > 6000) || Math.abs(body[5]) > 10000 || body[6] < 0 || body[6] > 6000 || body[7] < 0 || body[7] > 3 || body[8] < 0 || body[8] > 10000) return false;
         const row = cached(l)?.rows.find(r => r[0] === body[0]);
-        if (!row || Math.abs(row[1] / 100 - c.state.s) > 30 || Math.abs(row[2] / 100 - c.state.u) > 12) return false;
+        if (!row || Math.abs(nearestWorldS(row[1] / 100, c.state.s, period(l)) - c.state.s) > 30 || Math.abs(row[2] / 100 - c.state.u) > 12) return false;
       } else if (m.kind === 'cone') {
-        if (!validConeRow(body) || Math.abs(body[1] / 100 - c.state.s) > 20 || Math.abs(body[2] / 100 - c.state.u) > 8) return false;
+        if (!validConeRow(body) || Math.abs(nearestWorldS(body[1] / 100, c.state.s, period(l)) - c.state.s) > 20 || Math.abs(body[2] / 100 - c.state.u) > 8) return false;
       } else return false;
       state.nonce = m.nonce;
       send(target.ws, { type: 'world-contact', raceId: l.raceId, generation: l.generation || 0, playerId: c.id, kind: m.kind, nonce: m.nonce, body, at: now });

@@ -53,6 +53,11 @@ test('guest collisions reach the authority once, with proximity and bounded impu
   guest.state.s = 1000; assert.equal(relay.contact(guest, l, { ...m, nonce: 2 }, now), false);
   guest.state.s = 100; assert.equal(relay.contact(guest, l, { ...m, nonce: 3, kind: 'cone', body: [0, 10000, 300, 0, 2000, 300, 400, 0, 0, 3000] }, now), true);
 });
+test('circuit contact validation uses the same physical position across lap numbers',()=>{
+ const l=room(),relay=createSharedWorldRelay(deliver,{period:()=>2000}),now=Date.now();relay.frame(l.players.get('p0'),l,packets(now)[0],now);
+ const guest=l.players.get('p1');guest.state.s=4100;
+ assert.equal(relay.contact(guest,l,{type:'world-contact',raceId:l.raceId,generation:1,at:now,nonce:0,kind:'car',body:[0,5,1,200,0,50,300,1,600]},now),true);
+});
 test('five Hz full-fleet relay measures bounded free-plan message and CPU cost for eight clients', () => {
   const l = room(8), now = Date.now(), rows = Array.from({ length: 66 }, (_, i) => row(i)), cones = Array.from({ length: 32 }, (_, i) => [i, 10000, 300, 0, 0, 0, 0, 1571, 0, 0]);
   let outputs = 0, bytes = 0; const relay = createSharedWorldRelay((ws, data) => { outputs++; bytes += typeof data === 'string' ? Buffer.byteLength(data) : Buffer.byteLength(JSON.stringify(data)); });

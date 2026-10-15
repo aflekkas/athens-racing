@@ -1203,6 +1203,14 @@ export class Traffic {
   /** collide a physics vehicle against all traffic and cones; returns events */
   collide(actor, events, now) {
     const veh = actor.veh, route = this.route;
+    // The circuit is one physical world even when drivers are on different laps.
+    // Solve against the nearest lap copy, retaining canonical NPC/prop coordinates.
+    const copies = [];
+    if (this.online && route.closed && route.length > 0) for (const object of [...this.cars.filter(c => c.active), ...this.cones]) {
+      const shift = Math.round((veh.s - object.s) / route.length) * route.length;
+      object.s += shift; copies.push([object, shift]);
+    }
+    try {
     const ex = extents(veh, route);
     let rv = null;
     const A = this._A || (this._A = {}), B = this._B || (this._B = {});
@@ -1268,6 +1276,7 @@ export class Traffic {
       rv.vs *= 0.985; setRouteVel(veh, rv.f, rv.vs, rv.vu);
       events.push({ kind: 'cone', who: actor.kind, sev: sp });
     }
+    } finally { for (const [object, shift] of copies) object.s -= shift; }
   }
 
   /** a chasing police car driving into traffic (it is kinematic, like all drivers): a real impact, maybe a crash */
@@ -1473,10 +1482,11 @@ export class Traffic {
     this.proxies.begin();
     for (const c of this.cars) {
       if (!c.active) { if (c.m.damageDebris?.length) c.m.updateDamage?.(this.dtLast || 0.016); continue; } // only falling debris needs a pooled car's update
-      const vis = Math.abs(c.s - ps) < (this.drawRange || 650); // main.js: from the render distance
+      const distance = this.online && route.closed ? Math.abs(c.s + Math.round((ps - c.s) / route.length) * route.length - ps) : Math.abs(c.s - ps);
+      const vis = distance < (this.drawRange || 650); // main.js: from the render distance
       c.m.root.visible = vis; if (!vis) { c.m.updateDamage?.(this.dtLast || 0.016); continue; }
-      c.m.setLOD?.(Math.abs(c.s - ps)); // detail by distance (src/cars.js)
-      const lamps = Math.abs(c.s - ps) < PROXY_LAMP_RANGE; // 16 cm indicator boxes are sub-pixel beyond this
+      c.m.setLOD?.(distance); // detail by distance (src/cars.js)
+      const lamps = distance < PROXY_LAMP_RANGE; // 16 cm indicator boxes are sub-pixel beyond this
       if (c.m.accessories && c.lampsShown !== lamps) { c.lampsShown = lamps; for (const a of c.m.accessories) a.visible = lamps; }
       route.frame(c.s, f);
       route.point(c.s, c.u, _v);

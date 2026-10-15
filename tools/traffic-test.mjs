@@ -130,6 +130,12 @@ test('online traffic reports the applied impulse and cone kick through the multi
   T.collide({veh,kind:'player'},[],0);assert.equal(carHit[0],c);assert.ok(carHit[3]>.1);assert.equal(carHit[1].vs,0);assert.ok(carHit[2].vs<0);
   c.active=false;T.cones=[{s:veh.s,u:veh.u,y:0}];T.collide({veh,kind:'player'},[],1);assert.equal(coneHit[1],0);assert.equal(coneHit[0].hit,true);
 });
+test('online circuit traffic remains solid to a driver on another lap and restores its shared coordinates',()=>{
+  const {T,c}=world();T.route.closed=true;T.route.length=2000;c.s=996;c.v=0;c.mode='parked';
+  T.online={contactCar(){},contactCone(){}};c.m.setDamageSnapshot=()=>{};
+  const veh={s:3000,u:1.75,x:1.75,z:-1000,yaw:0,vLong:-10,vLat:0,w:0,halfL:2.2,halfW:.9,m:1500,Iz:2800},events=[];
+  T.collide({veh,kind:'player'},events,0);assert.ok(events.some(e=>e.dv>0));assert.ok(c.crash);assert.ok(c.s<1000);assert.ok(Math.abs(veh.s-3000)<1);
+});
 
 test('a hard-hit car settles as a wreck with hazards instead of resuming its drive', () => {
   const { T, c } = world();
