@@ -16,7 +16,22 @@ try{
  await page.goto(`http://127.0.0.1:${app.server.address().port}/?menu&simhook&quality=low&fixedres&map=${process.env.JAZZ?'megara&notraffic':'penteli'}`,{waitUntil:'domcontentloaded'});
  console.log('DOM READY');await page.waitForFunction(()=>document.body.classList.contains('loaded'),null,{timeout:180000});console.log('LOADED');await page.evaluate(()=>{window.__holdFrame=true;});
  const show=async id=>{await page.evaluate(async id=>{const {CARS}=await import('/src/cars.js');__flow.menu.show('car',{index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});},id);await page.waitForSelector('#carStage canvas');await page.waitForTimeout(500);};
- const capture=async name=>{await page.evaluate(()=>__flow.menu.carView?.captureFrame?.());const cdp=await page.context().newCDPSession(page);try{const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.writeFile(resolve(out,name+'.png'),Buffer.from(shot.data,'base64'));}finally{await cdp.detach();}console.log('CAPTURE',name);};
+ const capture=async name=>{
+  if(process.env.RENDERER_ONLY){
+   const result=await page.evaluate(name=>{
+    const garage=name.startsWith('garage-');
+    if(garage)__flow.menu.carView?.captureFrame?.();else __sim.render();
+    const canvas=garage?document.querySelector('#carStage canvas'):__sim.canvas;
+    return {image:canvas.toDataURL('image/png').split(',')[1],dom:{capture:'Actual WebGL renderer frame; HTML controls recorded separately.',name,trim:document.querySelector('[data-trim-current]')?.dataset.trimCurrent,text:document.body.innerText,classes:document.body.className}};
+   },name);
+   await fs.writeFile(resolve(out,name+'.png'),Buffer.from(result.image,'base64'));
+   await fs.writeFile(resolve(out,name+'.dom.json'),JSON.stringify(result.dom,null,2));
+  }else{
+   await page.evaluate(()=>__flow.menu.carView?.captureFrame?.());
+   const cdp=await page.context().newCDPSession(page);try{const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.writeFile(resolve(out,name+'.png'),Buffer.from(shot.data,'base64'));}finally{await cdp.detach();}
+  }
+  console.log('CAPTURE',name);
+ };
  for(const id of (process.env.CHASE_ONLY||process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){await show(id);await capture('garage-'+id);}
  if(!process.env.TRIM_ONLY&&!process.env.CHASE_ONLY&&!process.env.JAZZ){
  await show('cle200');await capture('garage-cle200');
@@ -47,6 +62,7 @@ try{
  }
  // Six actual stationary world views use the same spawn, camera and body colour.
  for(const id of (process.env.MINI_ONLY?[]:process.env.CAPTURE_IDS?process.env.CAPTURE_IDS.split(','):['panda_11','panda_100hp','golf','golf_r','cla','cla45s'])){
+   console.log('START',id);
    await page.evaluate(async id=>{await __flow.startEvent(__flow.freeRoamDef(),{car:id});},id);
    await page.waitForFunction(id=>__sim.player.spec.id===id&&!document.body.classList.contains('fading'),id,{timeout:120000});
    await page.waitForTimeout(1000);
