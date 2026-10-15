@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { filterCars, carCategory, GARAGE_CLASSES, GARAGE_CARS, inGarage, CAR_MODELS, carModel, migrateCarSelection, bodyTrim, trimChoices, stepTrim } from '../src/car-catalog.js';
 import { bindingLabel, gearboxMessage } from '../src/input-labels.js';
+import {engineProfile} from '../src/audio/engine-profiles.js';
 import { CARS } from '../src/cars.js';
 const cars=[{id:'panda',name:'Fiat Panda',power:44,mass:900,drive:'fwd'},{id:'z4',name:'BMW Z4',power:250,mass:1500,drive:'rwd'},{id:'huracan',name:'Lamborghini Huracán',power:470,mass:1500,drive:'awd'},{id:'cla',name:'Mercedes CLA',power:120,mass:1500,drive:'fwd'}];
 test('catalogue composes search, class, drivetrain and HP filters without losing original indices',()=>{assert.deepEqual(filterCars(cars,{search:'bmw',category:'sports',drive:'RWD',power:'high'}).map(x=>x.index),[1]);assert.equal(filterCars(cars,{category:'classic'}).length,0);assert.equal(carCategory(cars[0]),'city');assert.deepEqual(filterCars(cars,{sort:'power'}).map(x=>x.car.id),['panda','cla','z4','huracan']);});
@@ -57,7 +58,7 @@ test('garage renders the shared trim control, torque and a selectable model when
 test('generation labels match the existing represented Panda, Ibiza and Huracán',()=>{assert.match(carModel('panda').name,/169/);assert.match(carModel('ibiza').name,/6K/);assert.match(carModel('huracan').name,/EVO/);});
 
 test('MINI body and engine choices preserve all legacy IDs and respect host restrictions',()=>{
-  const m=carModel('mini');assert.equal(CAR_MODELS.length,17);assert.equal(m.bodies.length,2);
+  const m=carModel('mini');assert.equal(CAR_MODELS.length,18);assert.equal(m.bodies.length,2);
   assert.deepEqual(migrateCarSelection('mini'),{entry:'mini',trim:'mini',body:'convertible'});
   assert.deepEqual(migrateCarSelection({entry:'mini_jcw',trim:'mini_jcw'}),{entry:'mini',trim:'mini_jcw',body:'hardtop'});
   for(let i=0;i<3;i++){
@@ -95,4 +96,15 @@ test('trim arrows wrap within the current body and obey event and multiplayer re
 test('CLE offers a real PHEV without adding transient 48V ratings to continuous engine power',()=>{
  const p=CARS.find(c=>c.id==='cle300e');assert.deepEqual([p.power,p.torque,p.mass,p.drive,p.gears.length,p.zeroTo100],[230,550,2100,'rwd',9,6.3]);assert.equal(p.hybrid.type,'phev');assert.equal(p.hybrid.electricPowerKW,95);assert.equal(p.hybrid.icePowerKW,150);assert.equal(p.hybrid.simulation,'charged-blended-curve');
  for(const id of ['cle200','cle','cle450','cle53']){const c=CARS.find(c=>c.id===id);assert.equal(c.hybrid.type,'mhev');assert.equal(c.hybrid.electricPowerKW,17);assert.equal(c.hybrid.electricTorqueNm,205);}
+});
+
+test('Jazz GK factory manuals and fantasy RWD build stay distinct and host-filterable',()=>{
+ const get=id=>CARS.find(c=>c.id===id),a=get('jazz'),b=get('jazz_dynamic'),d=get('jazz_drift');
+ assert.deepEqual([a.power,a.torque,a.drive,a.gears.length],[75,123,'fwd',6]);
+ assert.deepEqual([b.power,b.torque,b.drive,b.gears.length],[96,155,'fwd',6]);
+ assert.equal(carCategory(d),'city');assert.equal(d.drive,'rwd');assert.equal(d.lsd,1);assert.equal(d.fantasy,true);
+ assert.match(d.name,/FANTASY/);assert.match(d.tag,/Fantasy/);assert.equal(d.power,149);assert.match(engineProfile(d).id,/-sport$/);assert(engineProfile(d).pops>engineProfile(a).pops);
+ assert(d.visual.wing&&d.visual.track>a.track&&d.visual.ride<a.visual.ride);assert.equal(d.visual.exhaust,1);
+ assert.deepEqual(trimChoices('jazz',{allowedCars:['jazz','jazz_drift']}),['jazz','jazz_drift']);
+ assert.equal(stepTrim('jazz',1,{allowedCars:['jazz','jazz_drift']}),'jazz_drift');
 });

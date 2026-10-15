@@ -419,6 +419,8 @@ export function damageSystem(car) { return installDamageSystem(car); }
 export function buildDetailedCar(car,kind,opts={}) {
   car.modelKind=kind in MODEL?kind:'octavia';const visual=car.spec.visual||{}, d={...MODEL[car.modelKind],amg:car.spec.visual?.amg ?? MODEL[car.modelKind].amg},low=!!opts.low;
   if(visual.amg && kind==='cle'){d.W=1.936;d.track=1.663;d.trackRear=1.691;}
+  if(visual.track)d.track=visual.track;
+  if(visual.tyreWidth)d.tyreF=d.tyreR=visual.tyreWidth;
   if(visual.rim)d.rim=visual.rim*.0254/2;
   if(visual.ride)car.body.position.y=visual.ride;
   car.dims={L:d.L,W:d.W,H:d.H};car.shape={...d,ws:[-d.header/(d.L/2),-d.cowl/(d.L/2)],roofT:[-d.roofBack/(d.L/2),-d.header/(d.L/2)]};
@@ -453,7 +455,7 @@ export function buildDetailedCar(car,kind,opts={}) {
     if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
     cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
   }
-  if(car.spec.visual?.lip)box(car.body,M.black,[d.W*.84,.035,.12],[0,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris'].includes(kind)?d.H-.04:d.rear+.035,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris'].includes(kind)?d.roofBack+.12:d.L/2-.11],.012,[0,0,0],'trim-spoiler-lip');
+  if(car.spec.visual?.lip)box(car.body,M.black,[d.W*.84,.035,.12],[0,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris','jazz'].includes(kind)?d.H-.04:d.rear+.035,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris','jazz'].includes(kind)?d.roofBack+.12:d.L/2-.11],.012,[0,0,0],'trim-spoiler-lip');
   if(car.spec.visual?.m){
     box(car.body,M.black,[d.W*.80,.09,.10],[0,.22,-d.L/2+.03],.012,[0,0,0],'m-front-splitter');
     box(car.body,M.black,[d.W*.76,.12,.10],[0,.24,d.L/2-.03],.012,[0,0,0],'m-rear-diffuser');
@@ -469,6 +471,12 @@ export function buildDetailedCar(car,kind,opts={}) {
     const xs=visual.m?[-.49,-.40]:n===4?[-.66,-.54,.54,.66]:n===2?(mid?[-.065,.065]:[-d.W*.30,d.W*.30]):[-d.W*.29];
     car.exhaust=xs.map(x=>exhaust(car.body,M,x,high?.626:.25,d.L/2+(high?.07:-.03)));
   }
+  if(visual.wing){
+    for(const x of [-.48,.48])box(car.body,M.black,[.045,.25,.10],[x,d.H+.045,d.roofBack+.20],.008,[0,0,0],'trim-wing-mount');
+    box(car.body,M.black,[d.W*.94,.055,.32],[0,d.H+.18,d.roofBack+.24],.015,[.06,0,0],'trim-big-rear-wing');
+    for(const x of [-d.W*.47,d.W*.47])box(car.body,M.black,[.025,.16,.35],[x,d.H+.20,d.roofBack+.24],.006,[0,0,0],'trim-wing-endplate');
+  }
+  if(visual.exhaustScale)car.body.traverse(o=>{if(/exhaust/.test(o.name))o.scale.multiplyScalar(visual.exhaustScale);});
   if(visual.kit){
     box(car.body,M.black,[d.W*.82,.055,.14],[0,.20,-d.L/2+.08],.012,[0,0,0],'trim-front-splitter');
     box(car.body,M.black,[d.W*.77,.11,.14],[0,.22,d.L/2-.04],.012,[0,0,0],'trim-rear-diffuser');

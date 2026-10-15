@@ -2,6 +2,7 @@
 // so old saves, event links, traffic and remote players retain their exact drivetrain.
 export const CAR_MODELS = [
   { id:'panda', name:'FIAT PANDA 169', trims:['panda','panda_11','panda_100hp'] },
+  { id:'jazz', name:'HONDA JAZZ GK', trims:['jazz','jazz_dynamic','jazz_drift'] },
   { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris','yaris_13','yaris_ts'] },
   { id:'ibiza', name:'SEAT IBIZA 6K', trims:['ibiza','ibiza_cupra'] },
   { id:'golf', name:'VOLKSWAGEN GOLF VII', trims:['golf','golf_gti','golf_gtd','golf_r'] },
@@ -20,7 +21,7 @@ export const CAR_MODELS = [
   { id:'e36', name:'BMW 3 SERIES E36', trims:['e36','e36_318i','e36_m3'] },
 ];
 export const GARAGE_CLASSES = [
-  ['city','CITY',['panda','yaris','ibiza','golf']],
+  ['city','CITY',['panda','jazz','yaris','ibiza','golf']],
   ['hot hatch','HOT HATCH',['mini','gr_yaris']],
   ['sedan/coupe','SEDAN / COUPE',['corolla','taxi','superb','cla','cle']],
   ['suv','SUV',['gla']],

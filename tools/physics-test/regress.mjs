@@ -292,10 +292,17 @@ for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','cle30
   const source = readFileSync(new URL('../../src/cars.js', import.meta.url),'utf8');
   const cars = Function('return '+source.split('export const CARS = ')[1].split('\n];')[0]+'\n];')();
   const launch = id => { const v=new Vehicle(cars.find(c=>c.id===id),route);v.reset(0,0,0);let t=0;while(v.kmh<100&&t<20){v.update(DT,{throttle:1,brake:0,steer:0});t+=DT;}return t; };
-  for(const [base,performance,margin=.85]of [['cle200','cle53'],['cle200','cle300e',.90],['e36','e36_m3'],['gla','gla45'],['panda_11','panda_100hp'],['yaris','yaris_ts'],['ibiza','ibiza_cupra'],['golf','golf_r'],['mini_cooper','mini_jcw'],['octavia_16tdi','octavia_rs'],['superb_15','superb_4x4'],['cla','cla45s'],['z4_20i','z4'],['e36_318i','e36_m3']]){
+  for(const [base,performance,margin=.85]of [['jazz','jazz_dynamic'],['cle200','cle53'],['cle200','cle300e',.90],['e36','e36_m3'],['gla','gla45'],['panda_11','panda_100hp'],['yaris','yaris_ts'],['ibiza','ibiza_cupra'],['golf','golf_r'],['mini_cooper','mini_jcw'],['octavia_16tdi','octavia_rs'],['superb_15','superb_4x4'],['cla','cla45s'],['z4_20i','z4'],['e36_318i','e36_m3']]){
     const slow=launch(base),fast=launch(performance);
     check(`trim acceleration: ${performance} quicker than ${base}`,fast<slow*margin,`${f2(fast)} vs ${f2(slow)} s`);
   }
+}
+
+// The fantasy Jazz must hold a real slide with throttle and steering inputs alone.
+{
+ const {jazzSlide}=await import('./jazz-slide.mjs');
+ const r=jazzSlide(Vehicle,catalogue().find(c=>c.id==='jazz_drift'),route);
+ check('Jazz Drift Spec: sustained 17–34 degree slide for at least five seconds',r.best>=5&&r.minSpeed>20&&r.peakBeta<1.4&&finite(r.v),`${f2(r.best)} s, minimum ${f1(r.minSpeed)} km/h, peak ${f1(r.peakBeta*180/Math.PI)} degrees`);
 }
 
 // Playtest 3: neutral steering stability, progressive power breakaway and driver recovery.

@@ -40,7 +40,7 @@ export function engineProfile(spec) {
   else if (type === 'na4' && /^(panda|yaris|ibiza|corolla)/.test(spec.id || '')) key = 'city4';
   let selected = ENGINE_PROFILES[key] || ENGINE_PROFILES.turbo4;
   // Sport exhaust calibrations belong to trim IDs, not every turbo commuter.
-  if (selected === ENGINE_PROFILES.turbo4 && /jcw|gti|cupra|_rs|golf_r|gla45|cla35|cla45/.test(spec.id || '')) {
+  if (selected === ENGINE_PROFILES.turbo4 && /jazz_drift|jcw|gti|cupra|_rs|golf_r|gla45|cla35|cla45/.test(spec.id || '')) {
     selected = Object.freeze({ ...selected, id: selected.id + '-sport', pops: .65 });
   }
   cache.set(spec, selected); return selected;

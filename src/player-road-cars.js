@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { buildHuracanShell, buildHuracanCabin } from './player-huracan.js';
 export const ROAD_MODELS = {
+ jazz: {L:4.028,W:1.694,H:1.550,wb:2.530,track:1.477,r:.302,rim:.1905,tyreF:.185,tyreR:.185,belt:1.02,front:.78,rear:1.03,cowl:-1.13,header:-.48,roofBack:1.32,back:1.82,seatZ:.10,eyeY:1.23,leather:'#333a43',doors:4,brand:'HONDA',stations:[[-2.014,.66,.76],[-1.65,.80,.84],[-1.13,.847,1.02],[.3,.83,1.03],[1.26,.847,1.04],[2.014,.73,1.02]]},
  e36: {L:4.433,W:1.698,H:1.393,wb:2.700,track:1.408,r:.309,rim:.1905,tyreF:.205,tyreR:.205,belt:.91,front:.77,rear:.88,cowl:-.83,header:-.35,roofBack:.81,back:1.37,seatZ:.26,eyeY:1.06,leather:'#43474c',doors:4,brand:'BMW',stations:[[-2.2165,.74,.77],[-1.75,.82,.81],[-1.35,.849,.88],[-.83,.82,.91],[.5,.82,.91],[1.35,.849,.92],[1.80,.82,.89],[2.2165,.76,.88]]},
 
  yaris: {L:3.615,W:1.660,H:1.500,wb:2.370,track:1.440,r:.282,rim:.165,tyreF:.155,tyreR:.155,belt:.95,front:.76,rear:.98,cowl:-.89,header:-.34,roofBack:1.09,back:1.63,seatZ:.19,eyeY:1.20,leather:'#526779',doors:4,brand:'TOYOTA',stations:[[-1.8075,.66,.76],[-1.40,.80,.85],[-.90,.83,.95],[.4,.80,.97],[1.19,.83,1.0],[1.8075,.72,.98]]},
@@ -56,6 +57,18 @@ export function buildRoadCar(car,d,M,low,plate,H){
   const badgeMat=textMaterial(d.brand,'#171b20','#dddddd',256,80);M.badge.map=badgeMat.map;M.badge.needsUpdate=true;
   const lamp=(s,points,rear=false)=>face(rear?M.tail:M.head,points.map(([x,y])=>[s*x,y]),rear?R+.004:F-.004,`${rear?'rear':'front'}-lamp-housing`);
   const badge=(text,w,h,y,z)=>mesh(p,new THREE.PlaneGeometry(w,h),textMaterial(text,null),[0,y,z],[0,z<0?Math.PI:0,0],'badge');
+  if(id==='jazz'){
+    face(M.black,[[-.58,.84],[-.44,.94],[.44,.94],[.58,.84],[.39,.69],[-.39,.69]],F-.008,'jazz-upper-grille');
+    face(M.black,[[-.56,.53],[.56,.53],[.48,.28],[-.48,.28]],F-.009,'jazz-lower-grille');
+    for(const s of [-1,1]){
+      lamp(s,[[.36,.91],[.72,.91],[.76,.77],[.50,.72]]);
+      line(p,M.chrome,[[s*.13,.86,F-.018],[s*.40,.81,F-.018],[s*.68,.81,F-.018]],.014,'jazz-chrome-wing');
+      lamp(s,[[.61,1.00],[.76,1.00],[.76,.72],[.60,.72]],true);
+      line(p,M.tail,[[s*.74,1.02,R+.013],[s*.68,1.27,R-.12],[s*.61,1.39,R-.23]],.032,'jazz-tall-tail-lamp');
+      line(p,M.paint,[[s*(W-.01),.81,-.65],[s*(W-.006),.96,.65],[s*(W-.035),1.02,1.5]],.012,'jazz-side-crease');
+    }
+    badge('H',.12,.10,.84,F-.021);badge('H',.10,.08,.96,R+.014);badge('JAZZ',.18,.045,.82,R+.015);
+  }
   if(id==='mini_jcw'){
     const trim=car.spec.trimLabel || 'JCW',jcw=trim==='JCW',sport=trim!=='COOPER';
     face(M.black,[[-.43,.80],[-.34,.86],[.34,.86],[.43,.80],[.37,.55],[-.37,.55]],F-.006,'jcw-hex-grille');
