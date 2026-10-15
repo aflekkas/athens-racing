@@ -1,5 +1,6 @@
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from 'three';
+import { brandBadgeMaterial, finishBrandBadges } from './brand-badges.js';
 import { MERCEDES_MODELS, buildMercedes } from './player-mercedes.js';
 import { ROAD_MODELS, buildRoadCar } from './player-road-cars.js';
 import { PASSENGER_MODELS, buildPassengerModel } from './traffic-passenger-models.js';
@@ -71,8 +72,7 @@ export function makePlateMaterial(number=nextRegistration()) {
   });
   return new THREE.MeshStandardMaterial({map,roughness:0.4});
 }
-function emblem(kind) {const map=canvasTex(128,128,(g)=>{g.fillStyle='#14171a';g.beginPath();g.arc(64,64,61,0,7);g.fill();g.strokeStyle='#ccd0d5';g.lineWidth=5;g.stroke();if(kind==='z4'){for(let i=0;i<4;i++){g.beginPath();g.moveTo(64,64);g.arc(64,64,39,i*Math.PI/2,(i+1)*Math.PI/2);g.closePath();g.fillStyle=i%2?'#eef1f4':'#2478bc';g.fill();}g.fillStyle='white';g.font='bold 19px Arial';g.textAlign='center';g.fillText('B M W',64,24);}else{g.fillStyle='#eff1f2';g.textAlign='center';g.font=`bold ${kind==='mini'?23:19}px Arial`;g.fillText(({mini:'MINI',carrera:'PORSCHE',gr_yaris:'TOYOTA',gtv:'ALFA',golf:'VW',corolla:'TOYOTA',dolphin:'BYD',atto3:'BYD'}[kind]||'ŠKODA'),64,72);}});return new THREE.MeshStandardMaterial({map,metalness:.45,roughness:.24});}
-function palette(car,d) {const paint=car.paint||new THREE.MeshPhysicalMaterial({color:car.spec.color,metalness:.48,roughness:.26,clearcoat:1,clearcoatRoughness:.08});paint.side=THREE.DoubleSide;return {paint,black:mat('#15191c',.64),rubber:mat('#151718',.89),seam:mat('#25292c',.67),chrome:mat('#c5cbd1',.23,.94),alloy:mat('#818b97',.3,.9),darkAlloy:mat('#252d37',.32,.78),glass:tintGlass(new THREE.MeshPhysicalMaterial({roughness:.08,metalness:0,transparent:true,side:THREE.DoubleSide,depthWrite:false}),d.open?'open':'cabin'),head:mat('#17242d',.19,.6),led:new THREE.MeshStandardMaterial({color:'#e6f4ff',emissive:'#cfedff',emissiveIntensity:1.5,roughness:.18}),tail:car.tail||new THREE.MeshStandardMaterial({color:'#6c1015',emissive:'#f62022',emissiveIntensity:.55,roughness:.24}),red:mat('#820713',.24),seat:mat(d.leather,.68),cloth:mat('#242628',.95),badge:emblem(car.modelKind)};}
+function palette(car,d) {const paint=car.paint||new THREE.MeshPhysicalMaterial({color:car.spec.color,metalness:.48,roughness:.26,clearcoat:1,clearcoatRoughness:.08});paint.side=THREE.DoubleSide;return {paint,black:mat('#15191c',.64),rubber:mat('#151718',.89),seam:mat('#25292c',.67),chrome:mat('#c5cbd1',.23,.94),alloy:mat('#818b97',.3,.9),darkAlloy:mat('#252d37',.32,.78),glass:tintGlass(new THREE.MeshPhysicalMaterial({roughness:.08,metalness:0,transparent:true,side:THREE.DoubleSide,depthWrite:false}),d.open?'open':'cabin'),head:mat('#17242d',.19,.6),led:new THREE.MeshStandardMaterial({color:'#e6f4ff',emissive:'#cfedff',emissiveIntensity:1.5,roughness:.18}),tail:car.tail||new THREE.MeshStandardMaterial({color:'#6c1015',emissive:'#f62022',emissiveIntensity:.55,roughness:.24}),red:mat('#820713',.24),seat:mat(d.leather,.68),cloth:mat('#242628',.95),badge:brandBadgeMaterial(car.spec)};}
 function widthAt(d,z) {const e=Math.max(0,(Math.abs(z)/(d.L/2)-.73)/.27);return d.W/2*(1-.095*e*e);}
 function topAt(d,z) {return z<d.cowl?lerp(d.front,d.belt,Math.sin(clamp((z+d.L/2)/(d.cowl+d.L/2),0,1)*Math.PI/2)):z>d.back?lerp(d.belt,d.rear,(z-d.back)/(d.L/2-d.back)):d.belt;}
 export function sideSkinX(d,z,y) {
@@ -365,8 +365,7 @@ function fascia(car,d,M,low,plate) {
   else if(!d.ev)car.exhaust.push(exhaust(p,M,-.59,.19,R-.13));
   disk(p,M.badge,mini?.042:.035,[0,d.front+.065,F+.065],[-.7,Math.PI,0]);
   disk(p,M.badge,.037,[0,d.rear-.095,R+.024]);
-  if(mini)for(const s of [-1,1])for(let i=0;i<3;i++)box(p,M.chrome,[.07-i*.014,.006,.008],[s*(.065-i*.006),d.rear-.09+i*.014,R+.024],.002);
-  if(!mini){const name=bmw?'Z4     M40i':d.ev?'B U I L D   Y O U R   D R E A M S':'Š K O D A';mesh(p,new THREE.PlaneGeometry(bmw?.46:.61,.044),textMaterial(name,null,'#dce0e4'),[0,d.rear-.205,R+.023]);}
+  if(bmw){const name='Z4     M40i';mesh(p,new THREE.PlaneGeometry(bmw?.46:.61,.044),textMaterial(name,null,'#dce0e4'),[0,d.rear-.205,R+.023]);}
   if(car.spec.taxi){const sign=new THREE.Group();p.add(sign);sign.position.set(0,d.H+.09,.05);box(sign,M.black,[.61,.035,.23],[0,-.078,0],.025);box(sign,mat('#e7dba6',.45),[.56,.15,.17],[0,0,0],.026);const tm=textMaterial('TAXI','#efe6b7','#141818');tm.emissive=new THREE.Color('#efe5bb');tm.emissiveMap=tm.map;tm.emissiveIntensity=.25;for(const s of [-1,1])mesh(sign,new THREE.PlaneGeometry(.48,.106),tm,[0,0,s*.087],[0,s<0?Math.PI:0,0]);}
 }
 // The new cars have their own lamps, bumpers and grilles; all fascia surfaces seat against the end caps.
@@ -489,6 +488,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   tintGlass(M.glass,d.open?'open':'cabin');
   if(playerModel||ROAD_MODELS[kind]||d.mercedes){M.glass.metalness=0;M.glass.roughness=.06;M.glass.ior=1.52;M.glass.envMapIntensity=.7;M.glass.forceSinglePass=true;}
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
+  finishBrandBadges(car);
   const grouped=groupPlayerParts(car,d);
   if(!grouped){
     for(const side of [-1,1]){const face=car[side<0?'mirrorL':'mirrorR'],g=new THREE.Group();g.name=side<0?'mirror_l':'mirror_r';car.body.add(g);g.attach(face);}

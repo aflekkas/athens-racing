@@ -173,6 +173,7 @@ export function buildMercedes(car,d,M,low,plate,H){
   };
   const stroke=(m,pts,z,r=.006,part)=>{if(suv||C){const dense=[pts[0]];for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/.045);for(let j=1;j<=n;j++)dense.push([mix(a[0],b[0],j/n),mix(a[1],b[1],j/n)]);}pts=dense;}const o=line(p,m,pts.map(([x,y])=>[x,y,(part?.startsWith('light_f')?S.lightFace:S.face)(x,z,y)+Math.sign(z)*(suv?.024:.014)]),r);if(part)o.userData.damagePart=part;return o;};
   const star=(x,y,z,r,m=M.chrome,part)=>{
+    if(m===M.chrome){const face=z+(z<0?-.035:.005),rotation=[0,z<0?Math.PI:0,0];mesh(p,new THREE.CircleGeometry(r,32),M.black,[x,y,face+(z<0?.001:-.001)],rotation,'brand-badge-mount');mesh(p,new THREE.PlaneGeometry(r*2.8,r*2.8),M.badge,[x,y,face],rotation,'brand-badge');return;}
     const o=mesh(p,new THREE.TorusGeometry(r,.004,4,24),m,[x,y,z]);if(part)o.userData.damagePart=part;
     for(let i=0;i<3;i++){const a=Math.PI/2+i*Math.PI*2/3;const q=line(p,m,[[x,y,z],[x+Math.cos(a)*r*.91,y+Math.sin(a)*r*.91,z]],r*.075);if(part)q.userData.damagePart=part;}
   };
@@ -222,6 +223,4 @@ export function buildMercedes(car,d,M,low,plate,H){
   if(!amg&&!suv&&!cla)for(const s of [-1,1]){const o=ring(p,M.chrome,.055,.009,[s*.62,.245,C?S.face(s*.62,R,.245)+.04:R+.043]);o.scale.set(1.65,.65,1);}
   car.plate=plate;M.plate=makePlateMaterial(plate);
   for(const end of [F,R]){const y=end<0?.44:.64,z=(suv||C)?S.face(0,end,y):end;box(p,M.black,[.535,.124,.019],[0,y,z+Math.sign(z)*.012],.006);mesh(p,new THREE.PlaneGeometry(.51,.108),M.plate,[0,y,z+Math.sign(z)*.025],[0,z<0?Math.PI:0,0],'registration');}
-  // Procedural badge reused on the steering wheel; not a downloaded logo texture.
-  const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#111419';ctx.fillRect(0,0,128,128);ctx.strokeStyle='#d4dbe0';ctx.lineWidth=5;ctx.beginPath();ctx.arc(64,64,54,0,Math.PI*2);ctx.stroke();for(let i=0;i<3;i++){const a=-Math.PI/2+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(64,64);ctx.lineTo(64+50*Math.cos(a),64+50*Math.sin(a));ctx.stroke();}const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;M.badge.map?.dispose();M.badge.map=tex;M.badge.needsUpdate=true;
 }

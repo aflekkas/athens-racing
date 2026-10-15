@@ -54,9 +54,8 @@ export function buildRoadCar(car,d,M,low,plate,H){
 
   // Fascia helpers retain named damage boundaries, optics and a matched Greek plate pair.
   const face=(m,points,z,name,holes=[])=>{const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();for(const points of holes){const hole=new THREE.Path();points.forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();shape.holes.push(hole);}const base=new THREE.ShapeGeometry(shape).toNonIndexed(),a=base.attributes.position,vertices=[];const n=10;for(let i=0;i<a.count;i+=3){const A=new THREE.Vector3().fromBufferAttribute(a,i),B=new THREE.Vector3().fromBufferAttribute(a,i+1),C=new THREE.Vector3().fromBufferAttribute(a,i+2);const q=(u,v)=>A.clone().addScaledVector(B.clone().sub(A),u/n).addScaledVector(C.clone().sub(A),v/n).toArray();for(let u=0;u<n;u++)for(let v=0;v<n-u;v++){vertices.push(...q(u,v),...q(u+1,v),...q(u,v+1));if(u+v<n-1)vertices.push(...q(u+1,v),...q(u+1,v+1),...q(u,v+1));}}base.dispose();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(vertices.length/3*2),2));g.computeVertexNormals();return mesh(p,g,m,[0,0,z],[0,0,0],name);};
-  const badgeMat=textMaterial(d.brand,'#171b20','#dddddd',256,80);M.badge.map=badgeMat.map;M.badge.needsUpdate=true;
   const lamp=(s,points,rear=false)=>face(rear?M.tail:M.head,points.map(([x,y])=>[s*x,y]),rear?R+.004:F-.004,`${rear?'rear':'front'}-lamp-housing`);
-  const badge=(text,w,h,y,z)=>mesh(p,new THREE.PlaneGeometry(w,h),textMaterial(text,null),[0,y,z],[0,z<0?Math.PI:0,0],'badge');
+  const badge=(text,w,h,y,z)=>{if(!['H','MINI','LAMBORGHINI','S','FIAT','TOYOTA','BMW'].includes(text))return;const size=text==='LAMBORGHINI'?.09:Math.max(w,h,.10);return mesh(p,new THREE.PlaneGeometry(size,size),M.badge,[0,y,z],[0,z<0?Math.PI:0,0],'brand-badge');};
   if(id==='jazz'){
     face(M.black,[[-.58,.84],[-.44,.94],[.44,.94],[.58,.84],[.39,.69],[-.39,.69]],F-.008,'jazz-upper-grille');
     face(M.black,[[-.56,.53],[.56,.53],[.48,.28],[-.48,.28]],F-.009,'jazz-lower-grille');
@@ -135,7 +134,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
     box(p,M.black,[1.50,.025,.22],[0,.15,F+.08],.012,[0,0,0],'front-splitter');
     for(let i=0;i<7;i++){const z=1.40+i*.105;surface(p,M.black,(u,v)=>{const x=(2*u-1)*.55,zz=z+(v-.5)*.035;return[x,deck(x,zz)+.005,zz];},20,2,'engine-cover-louvre');}
     surface(p,M.paint,(u,v)=>{const x=(2*u-1)*.78,z=R-.08+.07*v;return[x,deck(x,z)+.006+.010*v,z];},32,3,'evo-tail-spoiler');
-    badge('LAMBORGHINI',.20,.014,.777,R+.025);car.exhaust=[new THREE.Vector3(-.34,.626,R+.095),new THREE.Vector3(.34,.626,R+.095)];
+    badge('LAMBORGHINI',.09,.09,.735,R+.035);car.exhaust=[new THREE.Vector3(-.34,.626,R+.095),new THREE.Vector3(.34,.626,R+.095)];
   }
   if(['ibiza','panda','yaris','e36'].includes(id)){
     const amber=new THREE.MeshStandardMaterial({color:'#d87a26',roughness:.25,side:THREE.DoubleSide});

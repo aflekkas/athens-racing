@@ -106,7 +106,7 @@ function instrumentDial(g,{x,y,r,max,value,step=1,label='',red=Infinity,classic=
   g.textAlign='center';g.textBaseline='middle';
   for(let v=0;v<=max+.001;v+=step/5){const major=Math.abs(v/step-Math.round(v/step))<.005,a=Math.PI*.75+v/max*Math.PI*1.5;
     g.strokeStyle=v>=red?'#cb463d':classic?'#e5dec5':'#e1e7eb';g.lineWidth=major?2.7:1.2;g.beginPath();g.moveTo(x+Math.cos(a)*(r-5),y+Math.sin(a)*(r-5));g.lineTo(x+Math.cos(a)*(r-(major?17:10)),y+Math.sin(a)*(r-(major?17:10)));g.stroke();
-    if(major){g.fillStyle=classic?'#ece3ca':'#d7e0e8';g.font=`${Math.round(r*.18)}px Arial`;g.fillText(Math.round(v),x+Math.cos(a)*(r-31),y+Math.sin(a)*(r-31));}}
+    if(major){g.fillStyle=classic?'#ece3ca':'#d7e0e8';g.font=`${Math.round(r*(max>20?.14:.18))}px Arial`;const inset=Math.max(31,g.measureText(String(Math.round(v))).width/2+19);g.fillText(Math.round(v),x+Math.cos(a)*(r-inset),y+Math.sin(a)*(r-inset));}}
   const a=Math.PI*.75+clamp(value/max,0,1)*Math.PI*1.5;g.strokeStyle=classic?'#ece1c3':'#f16c4d';g.lineWidth=3.2;g.beginPath();g.moveTo(x-Math.cos(a)*r*.12,y-Math.sin(a)*r*.12);g.lineTo(x+Math.cos(a)*(r-21),y+Math.sin(a)*(r-21));g.stroke();
   g.fillStyle='#33383a';g.beginPath();g.arc(x,y,7,0,Math.PI*2);g.fill();g.fillStyle=classic?'#c1bca7':'#bbc7cf';g.font=`${Math.round(r*.12)}px Arial`;g.fillText(label,x,y+r*.47);
 }
@@ -143,10 +143,10 @@ export class Cockpit {
     if(spec.nativeFleet)return new FleetCockpit(spec,model);
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
-    const isMini=spec.id==='mini'||spec.id==='mini_jcw',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
-    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.id==='cle';
+    const isMini=spec.body==='mini'||spec.body==='mini_jcw',isBMW=spec.body==='z4',isSkoda=spec.body==='octavia'||spec.police||spec.body==='superb',isClassic=spec.body==='gtv',isPorsche=spec.body==='carrera',isYaris=spec.body==='gr_yaris';
+    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.body==='cle';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
-    const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.33,-.43));
+    const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.40,-.43));
     const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
     const alu=new THREE.MeshStandardMaterial({color:'#9ba1a6',metalness:.86,roughness:.32,envMap:CAR_ENV.tex});
     const gloss=new THREE.MeshPhysicalMaterial({color:'#101113',roughness:.22,clearcoat:.7,envMap:CAR_ENV.tex});
@@ -185,9 +185,15 @@ export class Cockpit {
     box(W*.35,.16,.028,trim,W*.275,topY-.26,faceZ+.037,.015);
     box(.10,.012,.012,alu,W*.29,topY-.215,faceZ+.056,.004);
     // Instrument cover is correctly sized for each dashboard; no universal half-cylinder hood.
-    const clusterX=spec.centerCluster?0:eye.x;
+    // Offset the Yaris centre display toward its driver so its right edge stays
+    // in the default 66-degree cockpit frustum at a 16:10 viewport.
+    const clusterX=spec.centerCluster?eye.x+.23:eye.x;
     const cw=isMini?.29:isPorsche?.48:isClassic?.38:isYaris?.42:.43,ch=isMini?.14:isClassic?.165:.17;
-    const cy=topY+(isMini?.025:isClassic?-.035:.015),cz=faceZ+(isYaris?.035:.106);
+    // Lower the column seven centimetres and lift the binnacle onto the dash.
+    // Keep the complete face above the projected rim from the stock eye point.
+    // A raised binnacle also clears the GR fascia, which used to cover its lower half.
+    const cy=eye.y-.20+ch/2,cz=faceZ+.106;
+    box(cw+.018,Math.max(.04,cy-ch/2-topY+.04),.065,trim,clusterX,(cy-ch/2+topY)/2-.01,cz-.04,.008);
     const ctex=this.clusterCanvas=document.createElement('canvas');ctex.width=1024;ctex.height=384;
     this.clusterTex=new THREE.CanvasTexture(ctex);this.clusterTex.colorSpace=THREE.SRGBColorSpace;this.clusterTex.anisotropy=4;
     const cluster=part(new THREE.PlaneGeometry(cw,ch),new THREE.MeshBasicMaterial({map:this.clusterTex,toneMapped:false,transparent:true}),clusterX,cy,cz,-.16,'instrument-cluster');
@@ -204,8 +210,8 @@ export class Cockpit {
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
-    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.id==='huracan'?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
-    const nw=spec.id==='huracan'?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.id==='huracan'?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
+    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(spec.body==='huracan'?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
+    const nw=spec.body==='huracan'?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=spec.body==='huracan'?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
     if(!isClassic&&!spec.oldDash){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
@@ -383,8 +389,8 @@ export class Cockpit {
     for (const sx of [-1, 1]) {
       const doorStart=g.children.length;
       const rail = new THREE.Mesh(new RoundedBoxGeometry(0.08, 0.05, 1.1, 1, 0.02), spec.body === 'mini' ? soft : trim);
-      rail.position.set(sx * ((model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03)-(spec.id==='huracan'?.08:isBMW?.10:isSkoda?.05:0)), (spec.body === 'mini' ? 0.97 : model.shape.belt + (spec.id==='huracan'?-.015:.02)), eye.z - 0.15); g.add(rail);
-      const doorX=sx*((model.shape.profile?model.shape.W/2-.18:W/2+.03)-(spec.id==='huracan'?.08:isBMW?.10:isSkoda?.05:0)),doorY=rail.position.y-.17;
+      rail.position.set(sx * ((model.shape.profile ? model.shape.W/2-.18 : W / 2 + 0.03)-(spec.body==='huracan'?.08:isBMW?.10:isSkoda?.05:0)), (spec.body === 'mini' ? 0.97 : model.shape.belt + (spec.body==='huracan'?-.015:.02)), eye.z - 0.15); g.add(rail);
+      const doorX=sx*((model.shape.profile?model.shape.W/2-.18:W/2+.03)-(spec.body==='huracan'?.08:isBMW?.10:isSkoda?.05:0)),doorY=rail.position.y-.17;
       const doorTrim=isBMW?trimMat('#69422b',{rough:.78,scale:.07,nk:.4}):isSkoda?fascia:soft;
       box(.045,.29,.77,doorTrim,doorX,doorY,eye.z-.13,.015,0,'door-card');
       box(.081,.035,.33,trim,doorX-sx*.04,doorY-.035,eye.z-.10,.014);
@@ -516,7 +522,7 @@ export class Cockpit {
     controls.shiftSerial=S.serial;
   }
   drawCluster(st){
-    const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.id;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';
+    const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.body==='octavia'?'taxi':this.spec.body;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';
     if(id==='mini'||id==='mini_jcw'){
       g.beginPath();g.roundRect(0,0,W,H,180);g.fill();
       g.strokeStyle='#8a969c';g.lineWidth=5;g.beginPath();g.roundRect(4,4,W-8,H-8,175);g.stroke();
@@ -531,8 +537,8 @@ export class Cockpit {
     }else if(id==='yaris'){
       g.fillRect(0,0,W,H);g.fillStyle='#91b7a6';g.font='110px monospace';g.textAlign='center';g.fillText(Math.round(st.kmh),510,215);g.font='28px monospace';g.fillText('km/h     '+st.gearLabel,510,264);g.font='20px monospace';g.fillText('ODO  184205       FUEL ▮▮▮▮',510,335);
     }else if(id==='huracan'){
-      g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'RPM ×1000',red:8.5});
-      g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,255);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,273);
+      g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'',red:8.5});
+      g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,232);g.font='17px Arial';g.fillText('RPM ×1000',510,285);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,310);
     }else if(id==='gtv'){
       // Transparent space between the separate period instrument pods.
       instrumentDial(g,{x:273,y:195,r:173,max:8,value:st.rpm/1000,step:1,label:'GIRI / MIN ×1000',red:5.8,classic:true});
@@ -543,20 +549,20 @@ export class Cockpit {
       // 991.1: five overlapping instruments, central tachometer and right-hand TFT.
       instrumentDial(g,{x:104,y:208,r:92,max:10,value:6,step:2,label:'°C'});
       instrumentDial(g,{x:298,y:203,r:127,max:330,value:st.kmh,step:30,label:'km/h'});
-      instrumentDial(g,{x:522,y:194,r:158,max:9,value:st.rpm/1000,step:1,label:'1/min ×1000',red:7.8});
+      instrumentDial(g,{x:522,y:194,r:158,max:9,value:st.rpm/1000,step:1,label:'',red:7.8});
       instrumentDial(g,{x:741,y:203,r:125,max:10,value:0,step:2,label:''});
       g.fillStyle='#0e1720';g.beginPath();g.arc(741,203,111,0,7);g.fill();g.strokeStyle='#96a8ad';g.lineWidth=2;g.beginPath();g.moveTo(669,241);g.lineTo(719,210);g.lineTo(756,157);g.lineTo(825,148);g.stroke();
-      g.fillStyle='#cbd5da';g.font='19px Arial';g.fillText('Navigation',741,123);g.font='14px Arial';g.fillText('Athens',741,268);
+      g.fillStyle='#cbd5da';g.font='19px Arial';g.fillText('Navigation',741,102);g.font='14px Arial';g.fillText('Athens',741,268);
       instrumentDial(g,{x:927,y:208,r:88,max:4,value:2.7,step:1,label:'bar'});
-      g.fillStyle='#eef0ee';g.font='italic 25px Georgia';g.fillText('Carrera',522,128);g.font='44px Arial';g.fillText(Math.round(st.kmh),522,257);g.font='18px Arial';g.fillText('km/h     '+st.gearLabel,522,284);
+      g.fillStyle='#eef0ee';g.font='italic 25px Georgia';g.fillText('Carrera',522,128);g.font='15px Arial';g.fillText('1/min ×1000',522,154);g.font='44px Arial';g.fillText(Math.round(st.kmh),522,257);g.font='18px Arial';g.fillText('km/h     '+st.gearLabel,522,284);
     }else if(id==='gr_yaris'){
-      g.fillRect(0,0,W,H);instrumentDial(g,{x:518,y:194,r:158,max:8,value:st.rpm/1000,step:1,label:'×1000 r/min',red:7});
-      g.fillStyle='#ebedf1';g.font='bold 58px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),180,169);g.font='22px Arial';g.fillText('km/h',180,204);g.font='bold 68px Arial';g.fillText(st.gearLabel,518,241);
-      g.fillStyle='#ba2f39';g.fillRect(45,294,192,6);g.font='20px Arial';g.fillStyle='#d7dbe1';g.fillText('GR-FOUR',150,277);g.fillText('53 : 47',150,338);
-      g.font='21px monospace';g.fillText('WATER   90°C',838,116);g.fillText('OIL     96°C',838,165);g.fillText('BOOST   0.0',838,214);g.fillStyle='#889398';g.font='17px Arial';g.fillText('GRAVEL',838,308);
-    }else if(id==='taxi'||id==='police_octavia'||id==='superb'){
-      g.fillRect(0,0,W,H);instrumentDial(g,{x:228,y:192,r:172,max:6,value:st.rpm/1000,step:1,label:'×1000 rpm',red:4.5});instrumentDial(g,{x:799,y:192,r:172,max:260,value:st.kmh,step:20,label:'km/h'});
-      g.fillStyle='#e0edf0';g.font='49px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),512,186);g.font='20px Arial';g.fillText('km/h',512,221);g.fillText(st.gearLabel,512,269);g.font='19px Arial';g.fillStyle='#9bcac7';g.fillText('23.0°C',512,49);g.fillText(id==='superb'?'SUPERB':'OCTAVIA',512,337);
+      g.fillRect(0,0,W,H);instrumentDial(g,{x:518,y:194,r:158,max:8,value:st.rpm/1000,step:1,label:'',red:7});
+      g.fillStyle='#ebedf1';g.font='bold 58px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),180,169);g.font='22px Arial';g.fillText('km/h',180,204);g.font='bold 68px Arial';g.fillText(st.gearLabel,518,241);g.font='17px Arial';g.fillText('×1000 r/min',518,285);
+      g.fillStyle='#ba2f39';g.fillRect(45,82,192,6);g.font='20px Arial';g.fillStyle='#d7dbe1';g.fillText('GR-FOUR',150,65);g.fillText('53 : 47',150,338);
+      g.font='21px monospace';g.fillText('WATER   90°C',838,95);g.fillText('OIL     96°C',838,140);g.fillText('BOOST   0.0',838,185);g.fillStyle='#889398';g.font='17px Arial';g.fillText('GRAVEL',838,340);
+    }else if(['taxi','police_octavia','superb','panda','jazz','ibiza','golf','e36','corolla','cla','cle','gla','gla45'].includes(id)){
+      const diesel=['taxi','superb','police_octavia'].includes(id),rpmMax=diesel?6:8;g.fillRect(0,0,W,H);instrumentDial(g,{x:228,y:192,r:172,max:rpmMax,value:st.rpm/1000,step:1,label:'×1000 rpm',red:st.redline/1000});instrumentDial(g,{x:799,y:192,r:172,max:260,value:st.kmh,step:20,label:'km/h'});
+      g.fillStyle='#e0edf0';g.font='49px Arial';g.textAlign='center';g.fillText(Math.round(st.kmh),512,186);g.font='20px Arial';g.fillText('km/h',512,221);g.fillText(st.gearLabel,512,269);g.font='19px Arial';g.fillStyle='#9bcac7';g.fillText('23.0°C',512,49);g.font='16px Arial';g.fillText(this.spec.short,512,337,190);
     }else{
       g.fillRect(0,0,W,H);const accent='#dd9a63';g.strokeStyle='#6f8291';g.lineWidth=5;
       for(const sx of [-1,1]){g.beginPath();g.moveTo(512+sx*178,336);g.lineTo(512+sx*373,277);g.lineTo(512+sx*417,87);g.lineTo(512+sx*280,35);g.stroke();}
@@ -564,7 +570,7 @@ export class Cockpit {
       g.strokeStyle=accent;g.lineWidth=9;g.beginPath();g.moveTo(690,335);g.lineTo(872,282);g.lineTo(890,282-clamp(st.rpm/st.redline,0,1)*180);g.stroke();
       g.strokeStyle='#8299a5';g.lineWidth=4;g.beginPath();g.moveTo(476,299);g.lineTo(514,211);g.lineTo(479,129);g.lineTo(544,86);g.stroke();g.fillStyle='#d0dce0';g.font='20px Arial';g.fillText(id==='z4'?'M40i':this.spec.short,512,39);g.fillText('+23.0°C',512,358);
     }
-    drawCockpitLamps(g, this.lampState || this.lamps.update(0, st));
+    drawCockpitLamps(g, this.lampState || this.lamps.update(0, st), id);
     this.clusterTex.needsUpdate=true;
   }
   // Keep a natural forward view. Door mirrors outside it are reached with

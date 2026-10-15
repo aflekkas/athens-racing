@@ -113,7 +113,8 @@ test('Jazz GK factory manuals and fantasy RWD build stay distinct and host-filte
 test('trim ride height survives live suspension poses while all four wheel centres stay grounded',async()=>{
  const previous=globalThis.document,noop=()=>{},gradient={addColorStop:noop};
  const ctx=new Proxy({measureText:()=>({width:50}),createLinearGradient:()=>gradient,createRadialGradient:()=>gradient},{get:(o,k)=>k in o?o[k]:noop,set:(o,k,v)=>(o[k]=v,true)});
- globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx})};
+ // Geometry-only tests do not decode images; TextureLoader still needs an image event target.
+ globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx}),createElementNS:()=>({addEventListener(){},removeEventListener(){}})};
  let car;
  try{
   const {CarModel}=await import('../src/cars.js'),{Vector3}=await import('three');
@@ -121,7 +122,10 @@ test('trim ride height survives live suspension poses while all four wheel centr
   for(const pose of [{heave:0,pitch:0,roll:0},{heave:.04,pitch:.03,roll:-.04}]){
    car.update(1/60,0,0,false,pose);car.root.updateMatrixWorld(true);
    assert(Math.abs(car.body.position.y-pose.heave-car.spec.visual.ride)<1e-8);
-   for(const wheel of car.wheels)assert(Math.abs(wheel.pivot.getWorldPosition(new Vector3()).y-wheel.restY)<1e-6,'trim lowering must preserve tyre contact height');
+   for(const wheel of car.wheels){
+    assert(Math.abs(wheel.pivot.getWorldPosition(new Vector3()).y-wheel.restY)<1e-6,'trim lowering must preserve tyre contact height');
+    wheel.spin.traverse(o=>{if(o.isMesh&&o.material.userData.brandBadge){const normal=new Vector3().fromBufferAttribute(o.geometry.attributes.normal,0).transformDirection(o.matrixWorld);assert(normal.x*wheel.side>.99,'centre cap faces outward so the logo is readable');}});
+   }
   }
  }finally{car?.disposeDamage?.();globalThis.document=previous;}
 });
@@ -137,7 +141,8 @@ test('every authored fleet body is reachable, while rivals only draw from race c
 
 test('native fleet builds finite geometry, correct wheel counts and usable cockpit stations',async()=>{
  const old=globalThis.document,noop=()=>{},g={addColorStop:noop},ctx=new Proxy({measureText:()=>({width:50}),createLinearGradient:()=>g,createRadialGradient:()=>g},{get:(o,k)=>k in o?o[k]:noop,set:(o,k,v)=>(o[k]=v,true)});
- globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx})};
+ // Geometry-only tests do not decode images; TextureLoader still needs an image event target.
+ globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx}),createElementNS:()=>({addEventListener(){},removeEventListener(){}})};
  try{const {CarModel}=await import('../src/cars.js'),{Cockpit}=await import('../src/cockpit.js');
   for(const spec of CARS.filter(c=>c.nativeFleet)){
    const car=new CarModel(spec),cockpit=new Cockpit(spec,car);
