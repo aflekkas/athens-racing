@@ -1,0 +1,93 @@
+[
+  {
+    "name": "finite real mesh vertices",
+    "pass": true,
+    "value": 106015
+  },
+  {
+    "name": "actual shell proportions include long deck and fixed wing",
+    "pass": true,
+    "value": [
+      2.522846922792404,
+      1.315000057220459,
+      5.190999984741211
+    ]
+  },
+  {
+    "name": "four wheels on 2.70m wheelbase",
+    "pass": true,
+    "value": [
+      [
+        -0.86,
+        0.355,
+        -1.21
+      ],
+      [
+        0.86,
+        0.355,
+        -1.21
+      ],
+      [
+        -0.86,
+        0.355,
+        1.4900000000000002
+      ],
+      [
+        0.86,
+        0.355,
+        1.4900000000000002
+      ]
+    ]
+  },
+  {
+    "name": "high central twin hex outlets",
+    "pass": true,
+    "value": [
+      [
+        -0.155,
+        0.72,
+        2.6214999999999997
+      ],
+      [
+        0.155,
+        0.72,
+        2.6214999999999997
+      ]
+    ]
+  },
+  {
+    "name": "flash on high",
+    "pass": true,
+    "value": 9
+  },
+  {
+    "name": "six axial noise-textured ribbons, no cone geometry",
+    "pass": true
+  },
+  {
+    "name": "flame attached through body pitch/roll 0",
+    "pass": true,
+    "value": 0
+  },
+  {
+    "name": "flame attached through body pitch/roll 1",
+    "pass": true,
+    "value": 0
+  },
+  {
+    "name": "mirror proxy keeps exhaust world position",
+    "pass": true
+  },
+  {
+    "name": "Potato no light or sparks",
+    "pass": true
+  },
+  {
+    "name": "effect reuses GPU resources over 1000 frames",
+    "pass": true,
+    "value": {
+      "geometries": 138,
+      "materials": 38
+    }
+  }
+]

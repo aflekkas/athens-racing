@@ -3,6 +3,7 @@ import * as THREE from 'three';
 export const AVENTADOR = {L:4.943,W:2.098,H:1.136,wb:2.70,track:1.72,r:.355,rim:.254,tyreF:.255,tyreR:.355,belt:.77,front:.48,rear:.84,cowl:-1.10,header:-.44,roofBack:.48,back:1.10,seatZ:-.03,eyeY:.89,seatBase:.29,seats:2,doors:2,leather:'#202322',axleOffset:.14};
 export function buildAventador(car,d,M,low,H){
  const {surface,patch,box,line,mesh,cabinFittings,wheels,makePlateMaterial}=H,p=car.body,F=-d.L/2,R=d.L/2;
+ M.tail.color.set('#8d0009');M.tail.emissive.set('#650002');M.tail.toneMapped=false;
  const polygon=(points,mat,name)=>{const a=[];for(let i=1;i<points.length-1;i++)a.push(...points[0],...points[i],...points[i+1]);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(a.length/3*2),2));g.computeVertexNormals();return mesh(p,g,mat,[0,0,0],[0,0,0],name);};
  const stations=[[F,.78,.43],[-2.12,.96,.58],[-1.21,1.049,.80],[-.7,.97,.78],[.25,.97,.80],[1.1,1.049,.88],[1.6,1.02,.88],[R,.88,.80]];
  const at=(z,k)=>{for(let i=1;i<stations.length;i++)if(z<=stations[i][0]){const a=stations[i-1],b=stations[i],t=(z-a[0])/(b[0]-a[0]);return a[k]+(b[k]-a[k])*t;}return stations.at(-1)[k];};

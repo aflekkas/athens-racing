@@ -424,7 +424,7 @@ export function updateWeather(dt) {
   let nc = 0;
   const on = W.lightsOn;
   const camIn = W.cam() === 'cockpit';
-  const pushCar = (root, wid, len, hy, brake, self) => {
+  const pushCar = (root, wid, len, hy, brake, self, crispTail=false) => {
     root.updateMatrixWorld();
     const e = root.matrixWorld.elements;
     _f.set(-e[8], -e[9], -e[10]).normalize(); // nose is -Z
@@ -438,7 +438,7 @@ export function updateWeather(dt) {
         _v.set(sx * wid * 0.36, hy, -len / 2 - 0.12).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.4;
         G.col.set([3.2 * front, 3.0 * front, 2.6 * front], n * 3); n++;
       }
-      const tb = (on ? 0.45 : 0) + (brake ? 1.6 : 0);
+      const tb = crispTail ? 0 : (on ? 0.45 : 0) + (brake ? 1.6 : 0);
       _v.set(sx * wid * 0.38, hy + 0.06, len / 2 + 0.1).applyMatrix4(root.matrixWorld); G.pos.set([_v.x, _v.y, _v.z], n * 3); G.size[n] = 0.3;
       G.col.set([tb * back, tb * back * 0.04, tb * back * 0.02], n * 3); n++;
     }
@@ -454,7 +454,7 @@ export function updateWeather(dt) {
     for (let i = 0; i < cars.length; i++) {
       const c = cars[i], m = c.model; if (!m.root.visible) continue;
       if (i === 0) G = W.selfGlow; // (pushed first: its slots are the self layer's)
-      pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0);
+      pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0, m.modelKind === 'aventador');
       if (i === 0) { const S = G; for (let k = n; k < S.n; k++) S.col.fill(0, k * 3, k * 3 + 3); S.p.visible = n > 0; for (const a of ['position', 'aSize', 'aCol']) S.g.attributes[a].needsUpdate = true; G = W.carGlow; n = 0; }
     }
     if (W.traffic) {

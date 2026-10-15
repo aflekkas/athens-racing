@@ -6,9 +6,9 @@ import {validateStateExtras} from '../server/mp-lifecycle.mjs';
 const state=()=>({rpm:7500,redline:8500,throttle:1,overrun:false,events:[]});
 test('ISR cut and engagement, lift and limiter each emit one synchronized pulse',()=>{
  const p=new ExhaustPulse(),s=state();p.update(.016,s);
- s.events.push({serial:1,type:'shift-start',direction:1});p.update(.016,s);assert.equal(p.kind,2);assert.equal(p.serial,1);
+ s.events.push({serial:1,type:'shift-start',direction:1});p.update(.016,s);assert.equal(p.kind,2);assert.equal(p.serial,1);assert.equal(p.life,.08);
  p.update(.016,s);assert.equal(p.serial,1);
- s.events.push({serial:2,type:'shift-end',direction:1});p.update(.016,s);assert.equal(p.serial,2);
+ s.events.push({serial:2,type:'shift-end',direction:1});p.update(.016,s);assert.equal(p.serial,2);assert.equal(p.kind,1,'engagement gives a small lick, not a second bang');assert.equal(p.life,.06);
  s.events.push({serial:3,type:'limiter-hit'});p.update(.016,s);assert.equal(p.kind,3);
  s.overrun=true;s.throttle=0;p.update(.016,s);assert.equal(p.kind,1);const n=p.serial;
  for(let i=0;i<120;i++)p.update(1/60,s);assert.ok(p.serial>n);assert.equal(p.life,0);

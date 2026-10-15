@@ -1,0 +1,10 @@
+[
+  {
+    "url": "http://127.0.0.1:42825/api/auth/config",
+    "status": 404
+  },
+  {
+    "url": "http://127.0.0.1:42825/release.json",
+    "status": 404
+  }
+]

@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- SVJ exhaust pops now throw flickering blue-white and orange jets, with crisp red rear lights.
+  ![Directional SVJ exhaust jets during an upshift](assets/changelog/2026.10.15.3/svj-flames-v2.webp "A sharp ISR bang and two hot jets.")
 - Steel guardrails protect steep coastal bends on the Riviera, with openings for side roads and beach paths.
   ![Steel guardrails beside a coastal bend on the Riviera](assets/changelog/2026.10.15.3/riviera-rails.webp "Coastal bends gain guardrails while beach access stays open.")
 
