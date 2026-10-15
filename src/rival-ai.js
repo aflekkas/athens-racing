@@ -332,6 +332,13 @@ export function shouldCommit(heldT, patience, gap, v, cooldown = 0, composure = 
   return heldT >= patience && cooldown <= 0 && composure <= 0 && close;
 }
 
+/** A street racer goes round a slower civilian at once: pull out while still
+ * a few car lengths back and arrive in the other lane, instead of queueing on
+ * its bumper first (from there a slow car cannot swing out). */
+export function civilianPass(racer, freeSpeed, leaderSpeed, gap, v, cooldown = 0, composure = 0) {
+  return !racer && cooldown <= 0 && composure <= 0 && freeSpeed - leaderSpeed > 2.5 && gap > 1.5 && gap < Math.max(14, v * 2.2);
+}
+
 /** Side for a pass: -1 / +1 in route u, or 0 to stay behind. roomLeft/Right
  * are the spare metres beside the car ahead along the passing stretch
  * (negative: no room). Prefers the inside of the next bend (the late-braking
@@ -445,7 +452,8 @@ export class RivalAI {
       const o = obs[i];
       if (o.d < -horizon || o.d > horizon + Math.max(0, -o.vs) * 5) continue;
       // The car we are passing is beside us by choice: only real overlap counts.
-      const target = o.key === passKey, lateral = veh.halfW + o.hu + (target ? 0.1 : buffer);
+      // A stationary car keeps still: a crawl may pass it at 0.15 m, more room at speed.
+      const target = o.key === passKey, lateral = veh.halfW + o.hu + (target ? 0.1 : o.vs < 0.5 && Math.abs(o.vu) < 0.3 ? Math.min(buffer, 0.15 + v * 0.02) : buffer);
       const time = clamp(o.d / Math.max(1, v - o.vs), 0, 3);
       const ou = o.u + clamp(o.vu * time, target ? -0.4 : -1.5, target ? 0.4 : 1.5);
       if (Math.abs(ou - u) > lateral) continue;
@@ -461,7 +469,9 @@ export class RivalAI {
       if (g > -veh.halfL * 2) {
         // Racers share the braking profile and can follow at a shorter
         // headway; civilians retain the larger stopping-space allowance.
-        const lv = Math.max(0, o.vs), standstill = o.racer ? 2.6 : 3;
+        // Behind a slow civilian keep a car length of pull-out room: from 3 m back
+        // a car at walking pace cannot swing out past it.
+        const lv = Math.max(0, o.vs), standstill = o.racer ? 2.6 : lv < 10 ? 5 : 3;
         const headway = o.racer ? 0.25 + (1 - p.aggression) * 0.1 : 0.35;
         const space = Math.max(0, g - standstill - lv * headway);
         speed = Math.min(speed, Math.sqrt(lv * lv + 2 * brake * 0.75 * space));
@@ -558,6 +568,9 @@ export class RivalAI {
         const o = obs[i];
         // Pulling out from behind the car ahead is not crossing it.
         if (o === leader && o.d - veh.halfL - o.hs > 0.8) continue;
+        // Anything about as slow as the car we are passing, standing in the passing
+        // lane anywhere along the move (a parked car at the kerb, a queue): not that side.
+        if (o !== leader && o.d > 0 && o.d < leader.d + reach + 10 && o.vs < leader.vs + 3 && Math.abs(o.u - u) < veh.halfW + o.hu + this._buffer) blocked = true;
         if (Math.abs(o.d) < veh.halfL + o.hs + 3 && o.u > Math.min(veh.u, u) - o.hu - veh.halfW && o.u < Math.max(veh.u, u) + o.hu + veh.halfW) blocked = true;
       }
       if (blocked) { if (side < 0) roomL = -1 - (r.safe ? 0 : 1); else roomR = -1 - (r.safe ? 0 : 1); }
@@ -671,6 +684,8 @@ export class RivalAI {
             plannedBrake = Math.max(plannedBrake, P.oncoming ? 0.85 : 0.35);
           } else if (verdict === 'cleared') {
             if (P.phase !== 'merge') { P.phase = 'merge'; P.mergeT = P.t; this.overtakes++; }
+            // Merging back toward another, slower civilian: that is a new pass to decide, not a lane to brake in.
+            if (leader && leader.key !== P.key && !leader.racer && leader.vs < v - 3) { this.pass = null; P.end = 'done'; this.cooldown = 0; }
             // Back onto the line only with a clear car length to the one we passed.
             desiredU = this._corridor(baseU, true, this._c[1]).safe ? baseU : clamp(veh.u, b.min, b.max);
             if (Math.abs(veh.u - baseU) < 0.6 || P.t - P.mergeT > 6) { this.pass = null; P.end = 'done'; this.cooldown = 0.8; this.heldT = 0; }
@@ -690,7 +705,7 @@ export class RivalAI {
     }
     // ---- the decision to go for it
     if (circuitPassRoom && !this.pass && !launchHold && !this.evade && leader && leader.vs >= 0 && this.sideT <= 0 && freeSpeed > 12 && this._slowAhead(80) > 12 &&
-      shouldCommit(this.heldT, p.patience, current.gap, v, this.cooldown, this.composure, v - leader.vs)) {
+      (civilianPass(leader.racer, freeSpeed, leader.vs, current.gap, v, this.cooldown, this.composure) || shouldCommit(this.heldT, p.patience, current.gap, v, this.cooldown, this.composure, v - leader.vs))) {
       this.sideT = 0.2; // re-scan for room five times a second, not every frame
       const choice = this._chooseSide(leader, baseU, v, freeSpeed, current.speed);
       if (choice.side) {
@@ -742,7 +757,7 @@ export class RivalAI {
       const o = obs[i];
       if (Math.abs(o.d) >= veh.halfL + o.hs + 4 && !roomFor(o, veh)) continue;
       if (o.racer && Math.abs(o.u - veh.u) < veh.halfW + o.hu + 3) holdAlongside = true;
-      const clearance = veh.halfW + o.hu + this._buffer;
+      const still = o.vs < 0.5 && Math.abs(o.vu) < 0.3, clearance = veh.halfW + o.hu + (still ? Math.min(this._buffer, 0.15 + v * 0.02) : this._buffer);
       if (Math.abs(desiredU - o.u) < clearance) {
         const side = veh.u >= o.u ? 1 : -1;
         desiredU = clamp(o.u + side * clearance, maneuverBounds.min, maneuverBounds.max);
@@ -803,7 +818,7 @@ export class RivalAI {
     if (uMin > uMax) uMin = uMax = veh.u;
     desiredU = clamp(desiredU, uMin, uMax);
     const goalOffset = desiredU - baseU;
-    const lateralRate = Math.min(2.1 + (1 - p.smooth) * 0.5 + (passing ? 0.4 * p.aggression : 0), 0.4 + v * 0.08);
+    const lateralRate = Math.min(2.1 + (1 - p.smooth) * 0.5 + (passing ? 0.4 * p.aggression : 0), 0.6 + v * 0.12);
     this.offset += clamp(goalOffset - this.offset, -lateralRate * dt, lateralRate * dt);
     // The smoothing lag must never carry the steering target into that car either.
     this.offset = clamp(this.offset, uMin - baseU, uMax - baseU);
