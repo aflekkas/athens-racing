@@ -83,6 +83,7 @@ try {
       a.user = { id: "me", displayName: null, plate: "GR-3842" };
       menu.show("accountName");
     });
+    await page.waitForTimeout(500);
     await page.screenshot({ path: resolve(out, `name-pick-${width}.png`) });
     await page.evaluate(() => {
       const a = menu.accounts;
@@ -130,6 +131,18 @@ try {
     await page.screenshot({
       path: resolve(out, `incoming-invite-${width}.png`),
     });
+    await page.locator('[data-field="account-name"]').fill("UNSAVED-NAME");
+    await page.locator('[data-field="account-plate"]').fill("GR-1111");
+    await page.locator('[data-field="account-friend"]').focus();
+    await page.evaluate(() => menu.refresh());
+    assert.equal(
+      await page.locator('[data-field="account-name"]').inputValue(),
+      "UNSAVED-NAME",
+    );
+    assert.equal(
+      await page.locator('[data-field="account-plate"]').inputValue(),
+      "GR-1111",
+    );
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > innerWidth,
     );
