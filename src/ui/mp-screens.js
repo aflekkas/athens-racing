@@ -193,7 +193,7 @@ export function renderResults(menu, mp) {
   const tiles = objective ? [] : [['TIME', me?.finish != null ? fmt(me.finish) : '—'], ['POSITION', me?.finish != null ? `${mine + 1} / ${ranked.length}` : 'DNF'], ['DRIVERS', String(ranked.length)]];
   const rows = ranked.map((p, i) => `<tr class="${p.id === mp.id ? 'me' : ''}"><td class="r-pos">${p.finish != null || objective ? 'P' + (i + 1) : '—'}</td><td>${esc(p.name)}<small>${esc(carOf(mp, p.car)?.short || '')}</small></td><td class="tnum">${objective ? esc(mp.resultRowText(p, i).split(' · ').slice(2).join(' · ')) : p.finish != null ? fmt(p.finish) : p.dnf === 'wrecked' ? 'WRECKED' : p.dnf ? 'DNF' : l.status === 'results' ? 'DNF' : 'RACING'}</td></tr>`).join('');
   const complete = l.status === 'results';
-  const personal = window.__game?.result?.personalBest;
+  const personal = globalThis.window?.__game?.result?.personalBest;
   if (personal) tiles.push(['BEST · EXACT SETUP', personal.exact ? fmt(personal.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', personal.route ? fmt(personal.route.time) : '—']);
   const acts = host && complete ? [C.button({ label: 'REMATCH', icon: 'arrow-counter-clockwise', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady, attrs: { 'data-default': '', 'data-fid': 'rematch' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } })]
     : [];
