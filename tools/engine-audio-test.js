@@ -6,6 +6,7 @@ export const specs = [
   { id: 'taxi', engine: 'diesel', idle: 800, redline: 5000 },
 ];
 export const synthSpecs = [
+  { id: 'p928', engine: 'v8', idle: 750, redline: 6600, cylinders: 8 },
   { id: 'huracan', engine: 'v10', idle: 900, redline: 8500, cylinders: 10 },
   { id: 'e36', engine: 'na6', idle: 750, redline: 6500, cylinders: 6 },
   { id: 'carrera', engine: 'flat6', idle: 800, redline: 7800, cylinders: 6 },

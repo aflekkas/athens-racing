@@ -25,6 +25,9 @@ import { Sirens } from './sirens.js';
 // pat: per-cylinder pulse strength (uneven headers / firing order -> warble); jit: cycle-to-cycle variation;
 // knock: diesel injection clatter; lp: tone filter range; whine: gearbox whine; pops: overrun crackle tendency
 export const ENGINE_SOUND = {
+  // Cross-plane 928 V8: eight even crank firings, uneven bank/header pulse strengths and a low burble.
+  // Procedural approximation; intentionally separate from flat-plane V8 profiles.
+  v8: { cyl: 8, f1: 115, f2: 1050, t1: .0072, t2: .0016, b: .34, thump: 1.12, pat: [1,.68,.91,.72,.98,.70,.88,.76], jit: .025, knock: 0, rasp: .16, lp: [620,6200], whine: .06, pops: .26, idleWobble: .035, gain: 1 },
   // Catalogue additions: synthesized firing pulses, not recordings of these models.
   na6: { cyl: 6, f1: 185, f2: 1600, t1: .0053, t2: .0012, b: .40, thump: .82, pat: [1,.98,.96,1,.97,.99], jit: .018, knock: 0, rasp: .19, lp: [850,7200], whine: .06, pops: .18, idleWobble: .02, gain: 1 },
   v10: { cyl: 10, f1: 290, f2: 2300, t1: .0035, t2: .001, b: .52, thump: .68, pat: [1,.92,.98,.94,1,.91,.97,.95,.99,.93], jit: .018, knock: 0, rasp: .26, lp: [1100,8500], whine: .10, pops: .70, idleWobble: .016, gain: 1 },

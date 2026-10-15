@@ -1,6 +1,7 @@
 // Screen approximations of period factory finishes; references live in tools/vehicle-model-notes.md.
 // Taxicab yellow is an additional fleet finish; GR Yaris grey includes the 2024 Ogier special edition.
 export const PAINTS = {
+  p928: [["Guards Red","#bd2629"],["Black","#17191c"],["Grand Prix White","#e6e6dd"],["Polar Silver Metallic","#b7c1c8"],["Amethyst Metallic","#504152"],["Midnight Blue Metallic","#242e48"],["Wimbledon Green Metallic","#315d54"]],
   cla: [['Obsidian Black Metallic','#111419'],['Polar White','#eeeeeb'],['Cosmos Black','#1b2028'],['Alpine Grey','#8e9398'],['Hyper Blue','#216498'],['Patagonia Red','#922536']],
   gla45: [['Mountain Grey','#737c83'],['Night Black','#14171b'],['Polar White','#ededeb'],['Digital White','#dce1dc'],['Denim Blue','#36536d'],['Patagonia Red','#98253b']],
   e36: [["Boston Green","#455948"],["Alpine White","#e3e4da"],["Calypso Red","#683443"],["Arctic Silver","#abb4b8"],["Avus Blue","#344c83"],["Faded Hellrot","#a85048"]],

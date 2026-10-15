@@ -208,6 +208,22 @@ export const CARS = [
     tyres: ['205/60 R15','205/60 R15'], frontW: 0.51, hcg: 0.48, track: 1.408, rsF: .58, usGrad: 2.3, susHz: 1.55, susZ: .52, rollK: 1.2, pitchK: 1.15, alphaPk: .13, mfC: 1.42, loadSens: .17, clA: 0, tc: .45, esc: .3, shiftT: .35, bias: .66, steerRate: 1.05, ebrake: .16,
     stats: { speed: .55, accel: .59, handling: .65, drift: .77 },
   },
+  // Porsche 928 GTS (1992–95), front 5.4 32V V8 + rear transaxle. Owner's manual technical data:
+  // p.104 engine 5397 cc, 257 kW @ 5700, 500 Nm @ 4250 https://www.manualslib.de/manual/248463/Porsche-928-Gts.html?page=104
+  // p.105 manual G28 ratios 3.775/2.519/1.795/1.358/1.000, final 2.727 https://www.manualslib.de/manual/248463/Porsche-928-Gts.html?page=105
+  // p.106 1620 kg DIN (manual), 225/45 ZR17 + 255/40 ZR17 https://www.manualslib.de/manual/248463/Porsche-928-Gts.html?page=106
+  // 275 km/h, 0–100 5.7 s: https://www.encycarpedia.com/nl/porsche/92-928-gts-coupe ; 350 PS: https://www.porsche.com/spain/accessoriesandservice/classic/models/928/928-gt-gts/
+  // 4.520 × 1.890 × 1.282 m, wheelbase 2.500 m (period Porsche data as briefed; see tools/models-more-notes.md).
+  {
+    id: 'p928', name: 'PORSCHE 928 GTS', short: '928 GTS', tag: '5.4 V8 · 350 PS. Front engine, rear transaxle. Five-speed manual.', color: '#bd2629', accent: '#b7bec3',
+    zeroTo100: 5.7, mass: 1620, power: 257, torque: 500, redline: 6600, idle: 750, gears: [3.775,2.519,1.795,1.358,1], final: 2.727, wheelR: .321,
+    torqueCurve: [[0,140],[750,180],[1500,310],[2500,420],[3500,480],[4250,500],[5000,480],[5700,430.55],[6200,385],[6600,330]], peakTorqueRpm: 4250, peakPowerRpm: 5700,
+    wheelbase: 2.5, length: 4.52, width: 1.89, cdA: .62, vmax: 275, grip: 1.10, gripRear: 1.04, steer: .56, yawI: 1.16, drift: 1, brake: 1.06, cyl: 8, pitch: 1, body: 'p928', cabinWidth: .78, drive: 'rwd', engine: 'v8', engineZone: 'front', playerDetail: true, trafficWeight: .15, oldDash: true, lsd: .40,
+    // Requested 18-inch Cup-style setup (period factory baseline was 17-inch; this is an upgrade).
+    // https://files.porsche.com/filestore/download/multimedia/en/classic-news-classicnews-summertire/default/ac14a7f5-837d-4416-ad26-08d6dde4ab54/Here-you-can-find-an-overview-of-all-approved-wheels.pdf
+    tyres: ['225/40 ZR18','265/35 ZR18'], frontW: .50, hcg: .45, track: 1.56, rsF: .54, usGrad: 1.8, susHz: 1.75, susZ: .58, rollK: .9, pitchK: .9, alphaPk: .125, mfC: 1.43, loadSens: .16, clA: 0, tc: .45, esc: .3, shiftT: .34, bias: .64, steerRate: 1.02, ebrake: .15,
+    stats: { speed: .90, accel: .82, handling: .82, drift: .83 },
+  },
 ];
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
