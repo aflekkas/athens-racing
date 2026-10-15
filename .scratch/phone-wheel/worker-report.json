@@ -1,0 +1,13 @@
+{
+  "base": "http://127.0.0.1:19874",
+  "checks": [
+    "built /wheel serves 200 without redirect and its bundled controller loads",
+    "cross-origin creation rejected",
+    "one phone enforced without disturbing paired game",
+    "real DO binary relay reaches game",
+    "real DO signalling reaches phone",
+    "phone unpair closes both sockets",
+    "game disconnect notifies phone immediately and starts close handshake"
+  ],
+  "pass": true
+}

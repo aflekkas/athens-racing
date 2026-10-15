@@ -1,0 +1,318 @@
+TAP version 13
+# Subtest: codes, game capability, single phone, expiry and unpair
+ok 1 - codes, game capability, single phone, expiry and unpair
+  ---
+  duration_ms: 45.719142
+  type: 'test'
+  ...
+# Subtest: rooms enforce session expiry and bounded relay traffic
+ok 2 - rooms enforce session expiry and bounded relay traffic
+  ---
+  duration_ms: 13.432213
+  type: 'test'
+  ...
+# Subtest: binary codec clamps nonfinite axes, preserves flags and handles sequence wrap/reordering
+ok 3 - binary codec clamps nonfinite axes, preserves flags and handles sequence wrap/reordering
+  ---
+  duration_ms: 0.79998
+  type: 'test'
+  ...
+# Subtest: last input held for <200ms then all controls release, including buttons
+ok 4 - last input held for <200ms then all controls release, including buttons
+  ---
+  duration_ms: 1.211467
+  type: 'test'
+  ...
+# Subtest: phone, keyboard and gamepad use most recently changed source without heartbeat stealing
+ok 5 - phone, keyboard and gamepad use most recently changed source without heartbeat stealing
+  ---
+  duration_ms: 29.971325
+  type: 'test'
+  ...
+# Subtest: iOS permission awaits user approval and denial/error can retry
+ok 6 - iOS permission awaits user approval and denial/error can retry
+  ---
+  duration_ms: 7.035372
+  type: 'test'
+  ...
+# Subtest: landscape motion calibrates, unwraps, filters and supports both rotations
+ok 7 - landscape motion calibrates, unwraps, filters and supports both rotations
+  ---
+  duration_ms: 0.700405
+  type: 'test'
+  ...
+# Subtest: WebRTC unavailable falls back to binary WebSocket and measures RTT
+ok 8 - WebRTC unavailable falls back to binary WebSocket and measures RTT
+  ---
+  duration_ms: 1.216196
+  type: 'test'
+  ...
+# Subtest: keyboard and gamepad last-active selection is independent of held opposite inputs
+ok 9 - keyboard and gamepad last-active selection is independent of held opposite inputs
+  ---
+  duration_ms: 1.664121
+  type: 'test'
+  ...
+# Subtest: phone receives impact feedback, one pulse per shift and a bounded limiter cadence
+ok 10 - phone receives impact feedback, one pulse per shift and a bounded limiter cadence
+  ---
+  duration_ms: 13.295348
+  type: 'test'
+  ...
+# Subtest: gravity roll keeps clockwise steering positive in portrait and on a natural-landscape tablet
+ok 11 - gravity roll keeps clockwise steering positive in portrait and on a natural-landscape tablet
+  ---
+  duration_ms: 0.34852
+  type: 'test'
+  ...
+# Bundled browser: 4 inputs, 4 ESM chunks, 613 bytes
+# Subtest: production chunks preserve source-relative resources and lazy imports while dev sources survive
+ok 12 - production chunks preserve source-relative resources and lazy imports while dev sources survive
+  ---
+  duration_ms: 319.704914
+  type: 'test'
+  ...
+# Bundled browser: 3 inputs, 4 ESM chunks, 299 bytes
+# Subtest: every map bake points to the published world worker, including Megara
+ok 13 - every map bake points to the published world worker, including Megara
+  ---
+  duration_ms: 112.956868
+  type: 'test'
+  ...
+# Subtest: Graphics menu writes preset, lighting, effects and a fixed resolution independently without the legacy reload control
+ok 14 - Graphics menu writes preset, lighting, effects and a fixed resolution independently without the legacy reload control
+  ---
+  duration_ms: 6.241942
+  type: 'test'
+  ...
+# Subtest: Graphics tab lists five presets, lighting and effects levels, and no adaptive or automatic modes
+ok 15 - Graphics tab lists five presets, lighting and effects levels, and no adaptive or automatic modes
+  ---
+  duration_ms: 27.749374
+  type: 'test'
+  ...
+# Subtest: Potato is genuinely minimal and presets never resolve to automatic behaviour
+ok 16 - Potato is genuinely minimal and presets never resolve to automatic behaviour
+  ---
+  duration_ms: 0.473211
+  type: 'test'
+  ...
+# Subtest: touch TC/ESC emits one toggle while held and its label follows settings
+ok 17 - touch TC/ESC emits one toggle while held and its label follows settings
+  ---
+  duration_ms: 42.449189
+  type: 'test'
+  ...
+# Subtest: production selected-car polling shows SEAT nitrous, hides MINI nitrous and keeps MODE on every car
+ok 18 - production selected-car polling shows SEAT nitrous, hides MINI nitrous and keeps MODE on every car
+  ---
+  duration_ms: 73.137049
+  type: 'test'
+  ...
+# Subtest: car switch while paused and resume discard stale touch nitrous and MODE presses
+ok 19 - car switch while paused and resume discard stale touch nitrous and MODE presses
+  ---
+  duration_ms: 22.377063
+  type: 'test'
+  ...
+# Subtest: every car accepts keyboard MODE taps
+ok 20 - every car accepts keyboard MODE taps
+  ---
+  duration_ms: 1.57729
+  type: 'test'
+  ...
+# Subtest: touch MODE and both gear buttons emit independent edges on every car
+ok 21 - touch MODE and both gear buttons emit independent edges on every car
+  ---
+  duration_ms: 234.401712
+  type: 'test'
+  ...
+# Subtest: quick TC/ESC has its own keyboard binding and one edge per key or pad press
+ok 22 - quick TC/ESC has its own keyboard binding and one edge per key or pad press
+  ---
+  duration_ms: 65.920821
+  type: 'test'
+  ...
+# Subtest: standard pad analog pedals, steering deadzone/curve and camera axes
+ok 23 - standard pad analog pedals, steering deadzone/curve and camera axes
+  ---
+  duration_ms: 48.750813
+  type: 'test'
+  ...
+# Subtest: keyboard pedals preserve their ramps while steering turns in, reverses and recentres
+ok 24 - keyboard pedals preserve their ramps while steering turns in, reverses and recentres
+  ---
+  duration_ms: 130.078415
+  type: 'test'
+  ...
+# Subtest: keyboard and controller action edges fire once, including short key taps and reconnects
+ok 25 - keyboard and controller action edges fire once, including short key taps and reconnects
+  ---
+  duration_ms: 13.118948
+  type: 'test'
+  ...
+# Subtest: standard face buttons, shoulders, D-pad and held look-back expose the expected actions
+ok 26 - standard face buttons, shoulders, D-pad and held look-back expose the expected actions
+  ---
+  duration_ms: 23.545409
+  type: 'test'
+  ...
+# Subtest: gamepad rebinding waits for neutral and does not dispatch the captured press
+ok 27 - gamepad rebinding waits for neutral and does not dispatch the captured press
+  ---
+  duration_ms: 18.60853
+  type: 'test'
+  ...
+# Subtest: removed photo shortcut preserves Space handbrake/menu confirm
+ok 28 - removed photo shortcut preserves Space handbrake/menu confirm
+  ---
+  duration_ms: 19.372172
+  type: 'test'
+  ...
+# Subtest: clearing drive input on pause does not retrigger held pad buttons or keyboard repeats
+ok 29 - clearing drive input on pause does not retrigger held pad buttons or keyboard repeats
+  ---
+  duration_ms: 0.95521
+  type: 'test'
+  ...
+# Subtest: bindings and tuning persist, defaults reset, invalid saved data is ignored
+ok 30 - bindings and tuning persist, defaults reset, invalid saved data is ignored
+  ---
+  duration_ms: 12.644564
+  type: 'test'
+  ...
+# Subtest: menu/panel gating, focused forms and blur cannot leave driving latched
+ok 31 - menu/panel gating, focused forms and blur cannot leave driving latched
+  ---
+  duration_ms: 13.630401
+  type: 'test'
+  ...
+# Subtest: rumble clamps dual-rumble impact values and tolerates unavailable devices
+ok 32 - rumble clamps dual-rumble impact values and tolerates unavailable devices
+  ---
+  duration_ms: 1.004332
+  type: 'test'
+  ...
+# Subtest: nitrous controls are inactive until the selected car permits them
+ok 33 - nitrous controls are inactive until the selected car permits them
+  ---
+  duration_ms: 11.648077
+  type: 'test'
+  ...
+# Subtest: M opens the big map, L selects gearbox mode, J selects music, and E/Q remain edge-triggered shifts
+ok 34 - M opens the big map, L selects gearbox mode, J selects music, and E/Q remain edge-triggered shifts
+  ---
+  duration_ms: 1.42707
+  type: 'test'
+  ...
+# Subtest: R tap tows once; R hold resets once without restarting or towing; Backspace resets
+ok 35 - R tap tows once; R hold resets once without restarting or towing; Backspace resets
+  ---
+  duration_ms: 12.964451
+  type: 'test'
+  ...
+# Subtest: gamepad left stick click toggles mode independently of bumpers and music
+ok 36 - gamepad left stick click toggles mode independently of bumpers and music
+  ---
+  duration_ms: 0.74073
+  type: 'test'
+  ...
+# Subtest: legacy M music and gearbox bindings migrate; music, gearbox mode and the map never share a key
+ok 37 - legacy M music and gearbox bindings migrate; music, gearbox mode and the map never share a key
+  ---
+  duration_ms: 0.780083
+  type: 'test'
+  ...
+# Subtest: a pointer lock granted after pause/quit is released without reopening pause
+ok 38 - a pointer lock granted after pause/quit is released without reopening pause
+  ---
+  duration_ms: 15.519963
+  type: 'test'
+  ...
+# Subtest: only an explicit production identity removes the environment badge
+ok 39 - only an explicit production identity removes the environment badge
+  ---
+  duration_ms: 1.500737
+  type: 'test'
+  ...
+# Subtest: Wrangler injects distinct build identities for staging and production
+ok 40 - Wrangler injects distinct build identities for staging and production
+  ---
+  duration_ms: 0.822453
+  type: 'test'
+  ...
+# Subtest: menu keyboard bindings work while the account button has DOM focus
+ok 41 - menu keyboard bindings work while the account button has DOM focus
+  ---
+  duration_ms: 24.489588
+  type: 'test'
+  ...
+# Subtest: D-pad and A continue to emit menu navigation actions
+ok 42 - D-pad and A continue to emit menu navigation actions
+  ---
+  duration_ms: 3.394356
+  type: 'test'
+  ...
+# Subtest: title hero waits for two frames and idle; cancelling a stale idle callback never imports the renderer
+ok 43 - title hero waits for two frames and idle; cancelling a stale idle callback never imports the renderer
+  ---
+  duration_ms: 0.982891
+  type: 'test'
+  ...
+# Subtest: garage thumbnails allocate only after intersection and render the saved paint
+ok 44 - garage thumbnails allocate only after intersection and render the saved paint
+  ---
+  duration_ms: 42.696869
+  type: 'test'
+  ...
+# Subtest: a cached car and paint needs no renderer; a new paint gets a distinct thumbnail
+ok 45 - a cached car and paint needs no renderer; a new paint gets a distinct thumbnail
+  ---
+  duration_ms: 13.524926
+  type: 'test'
+  ...
+# Subtest: leaving the garage during a lazy studio import disposes it without rendering
+ok 46 - leaving the garage during a lazy studio import disposes it without rendering
+  ---
+  duration_ms: 1.165853
+  type: 'test'
+  ...
+# Subtest: mini: real ShiftLeft events through production player polling and physics
+ok 47 - mini: real ShiftLeft events through production player polling and physics
+  ---
+  duration_ms: 498.967699
+  type: 'test'
+  ...
+# Subtest: golf: real ShiftLeft events through production player polling and physics
+ok 48 - golf: real ShiftLeft events through production player polling and physics
+  ---
+  duration_ms: 322.168495
+  type: 'test'
+  ...
+# Subtest: corolla: real ShiftLeft events through production player polling and physics
+ok 49 - corolla: real ShiftLeft events through production player polling and physics
+  ---
+  duration_ms: 373.752447
+  type: 'test'
+  ...
+# Subtest: ibiza: real ShiftLeft events through production player polling and physics
+ok 50 - ibiza: real ShiftLeft events through production player polling and physics
+  ---
+  duration_ms: 474.202997
+  type: 'test'
+  ...
+# Subtest: no native <select> in the game UI (src/ and index.html)
+ok 51 - no native <select> in the game UI (src/ and index.html)
+  ---
+  duration_ms: 199.996655
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2588.538064
