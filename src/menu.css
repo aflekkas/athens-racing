@@ -543,7 +543,7 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 .car-actions { display: grid; gap: .5rem; }
 
 /* The limit sign sits beside the dial (the gear and mode live on the cluster itself). */
-body #limitSign { left: calc(-2.625rem - 34px); bottom: calc(16px + 3.9rem - 24px); width: 48px; height: 48px; border-width: 6px; }
+body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32px); width: 60px; height: 60px; border-width: 7.5px; }
 
 @media(max-width:500px) { body.touch-driving #hud #dialBox { bottom: calc(208px + env(safe-area-inset-bottom)); } }
 

@@ -183,7 +183,7 @@ export class Hud {
       let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name; el.rRoad.textContent = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
     }
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
-    this.setLimit(st.limit);
+    this.setLimit(st.limit, st.unit === 'MPH' ? st.kmh * 1.609344 : st.kmh);
     this.drawTacho(st);
     if ((this.frame & 1) === 0 || this.bigMap) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2);
   }
@@ -324,18 +324,24 @@ export class Hud {
     g.font = '800 18px "Barlow Condensed", sans-serif'; g.fillStyle = st.manual ? '#ffb000' : 'rgba(255,255,255,.72)'; g.fillText(st.manual ? 'MAN' : 'AUTO', gx + 62, gy - 10);
   }
 
-  /** speed-limit sign hook: limit = {v, src} or null. Minimal styling on purpose:
-   *  TODO(UI) may restyle #limitSign freely without changing this behaviour. */
-  setLimit(limit) {
+  /** speed-limit sign: limit = {v, src} (km/h) or null; kmh = the car's speed in km/h. Over the limit the sign takes
+   *  data-over, which flashes it red a few times and then holds it lit, like a car's speed-limit assist (style.css).
+   *  Hysteresis (on above v + 3, off at v + 1 or below) keeps it from flickering at the threshold; the DOM is only
+   *  touched when the limit or the over state changes. */
+  setLimit(limit, kmh = 0) {
     const el = this.el;
     if (!el.limitSign || !el.limitV) return;
     const key = limit ? `${limit.v}|${limit.src || ''}` : '';
-    if (key === this.limitKey) return; this.limitKey = key;
-    el.limitSign.hidden = !limit;
-    if (limit) {
-      el.limitV.textContent = String(limit.v);
-      if (limit.src) el.limitSign.dataset.src = limit.src; else delete el.limitSign.dataset.src;
+    if (key !== this.limitKey) {
+      this.limitKey = key;
+      el.limitSign.hidden = !limit;
+      if (limit) {
+        el.limitV.textContent = String(limit.v);
+        if (limit.src) el.limitSign.dataset.src = limit.src; else delete el.limitSign.dataset.src;
+      }
     }
+    const over = !!limit && (this.limitOver ? kmh > limit.v + 1 : kmh > limit.v + 3);
+    if (over !== !!this.limitOver) { this.limitOver = over; el.limitSign.toggleAttribute('data-over', over); }
   }
   /** next traffic light widget: info = {main, d, wait} or null */
   signal(info) {
