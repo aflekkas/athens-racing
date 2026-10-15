@@ -71,7 +71,9 @@
   border: 1px solid transparent; border-radius: var(--r-3); background: rgba(255,255,255,.035); transition: background var(--dur) var(--ease), border-color var(--dur); }
 .mp-lobby-row:hover { background: rgba(255,255,255,.06); }
 .mp-lobby-row.focus { background: linear-gradient(90deg, rgba(111,208,255,.15), rgba(111,208,255,.03)); border-color: rgba(111,208,255,.5); }
-.mp-lobby-row.focus::after { content: ""; position: absolute; left: -1px; top: 22%; bottom: 22%; width: 3px; border-radius: 3px; background: var(--hu-ice); box-shadow: 0 0 10px var(--hu-ice); }
+.mp-lobby-row::after { content: ""; position: absolute; left: -1px; top: 22%; bottom: 22%; width: 3px; border-radius: 3px; background: var(--hu-ice); box-shadow: 0 0 10px var(--hu-ice);
+  opacity: 0; transform: scaleY(.3); transition: opacity var(--dur) var(--ease), transform .22s var(--ease); pointer-events: none; }
+.mp-lobby-row.focus::after { opacity: 1; transform: none; }
 .mp-lobby-row.off { opacity: .45; }
 .mp-lobby-row__main { min-width: 0; display: grid; gap: .15rem; }
 .mp-lobby-row__main b { font: 500 var(--t-lg) var(--f-sans); letter-spacing: .06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

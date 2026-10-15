@@ -139,10 +139,12 @@ export function toggle({ key, label, value = false, on = 'ON', off = 'OFF', icon
   return field(label, `<div class="switch ${value ? 'on' : ''}" role="switch" aria-checked="${!!value}"><span class="switch__track"><i class="switch__knob"></i></span><span class="switch__txt" data-on="${esc(on)}" data-off="${esc(off)}">${value ? on : off}</span></div>`,
     { icon: ic, note, cls, kind: 'toggle', key, type: 'bool', attrs: { 'data-value': String(!!value), ...attrs } });
 }
+/** the one "selected" surface of a tab bar / sidebar / segmented control: it slides to the chosen item (indicators()) */
+const IND = '<i class="sel-ind" data-ui-keep="ind" aria-hidden="true"></i>';
 const segOpts = (options, value, dflt) => options.map(([v, l, ic]) => `<span class="seg__opt ${String(v) === String(value) ? 'on' : ''} ${dflt != null && String(v) === String(dflt) ? 'dflt' : ''}" data-v="${esc(v)}">${icon(ic)}${l}</span>`).join('');
 /** options: [[value, label, icon?]]; dflt marks the event / factory default with a dot */
 export function segmented({ key, label, value, options, icon: ic, note, noteCls, dflt, type, attrs, cls } = {}) {
-  return field(label, `<div class="seg" role="radiogroup">${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
+  return field(label, `<div class="seg" role="radiogroup">${IND}${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
 }
 /** numeric (min / max / step / format) or a list (options: [[value, label]]) */
 export function stepper({ key, label, value, min, max, step = 1, format = 'int', options, icon: ic, note, noteCls, type, attrs } = {}) {
@@ -163,7 +165,7 @@ export function select({ key, label, value, options, icon: ic, note, type, attrs
 export function tabs({ key, value, options, cls = '', hint = true } = {}) {
   const h = hint ? `<span class="tabs__hint on-key">${kbd('Q')}</span><span class="tabs__hint on-pad">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key">${kbd('E')}</span><span class="tabs__hint on-pad">${kbd('RB', true)}</span>` : '';
-  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
+  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
 }
 
 // ------------------------------------------------------------------ values
@@ -194,6 +196,7 @@ export function setValue(el, v, doEmit = true) {
     const t = el.querySelector('.switch__txt'); if (t) t.textContent = v ? t.dataset.on : t.dataset.off;
   } else if (kind === 'choice' || kind === 'tabs') {
     for (const o of el.querySelectorAll('[data-v]')) { const on = o.dataset.v === String(v); o.classList.toggle('on', on); if (kind === 'tabs') o.setAttribute('aria-selected', on); }
+    indicators(el);
   } else if (kind === 'stepper') {
     const list = el.dataset.options ? optionsOf(el) : null, val = el.querySelector('.stepper__val');
     let atMin, atMax;
@@ -268,7 +271,10 @@ export function morph(root, html) {
   const t = document.createElement('template'); t.innerHTML = html; patchChildren(root, t.content);
 }
 function patchChildren(from, to) {
-  const next = [...to.childNodes], keep = [...from.childNodes].filter((n) => n.nodeType === 1 && n.hasAttribute('data-ui-keep'));
+  const keep = [...from.childNodes].filter((n) => n.nodeType === 1 && n.hasAttribute('data-ui-keep'));
+  // a keyed keep node (data-ui-keep="ind") in the new markup stands for the live one already here, which keeps its state
+  const keys = new Set(keep.map((n) => n.getAttribute('data-ui-keep')).filter(Boolean));
+  const next = [...to.childNodes].filter((n) => !(n.nodeType === 1 && keys.has(n.getAttribute('data-ui-keep'))));
   let cur = [...from.childNodes].filter((n) => !keep.includes(n));
   next.forEach((n, i) => {
     const old = cur[i];
@@ -288,6 +294,26 @@ function patchAttrs(old, n) {
   if (old.nodeName === 'INPUT' && old !== document.activeElement && old.value !== (n.getAttribute('value') ?? '')) old.value = n.getAttribute('value') ?? '';
 }
 
+/** slide every selection indicator under root to its chosen item. The first placement does not animate; later ones
+ *  glide (ui.css .sel-ind), because the indicator node survives in-place refreshes (morph keeps data-ui-keep="ind"). */
+export function indicators(root) {
+  if (!root?.querySelectorAll) return;
+  const bars = root.matches?.('.tabs, .seg') ? [root] : root.querySelectorAll('.tabs, .seg');
+  for (const bar of bars) {
+    const ind = bar.querySelector(':scope > .sel-ind'); if (!ind) continue;
+    const on = bar.querySelector(':scope > .on, :scope > [data-v].on');
+    if (!on || !on.offsetParent) { ind.style.opacity = '0'; continue; }
+    const x = on.offsetLeft, y = on.offsetTop, w = on.offsetWidth, h = on.offsetHeight;
+    const first = !ind.dataset.placed;
+    if (first) ind.style.transition = 'none';
+    ind.style.transform = `translate(${x}px, ${y}px)`; ind.style.width = w + 'px'; ind.style.height = h + 'px'; ind.style.opacity = '1';
+    if (first) { void ind.offsetWidth; ind.style.transition = ''; ind.dataset.placed = '1'; }
+  }
+}
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  let raf = 0; const all = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => indicators(document)); };
+  addEventListener('resize', all); document.fonts?.ready?.then(all);
+}
 export function bindRoot(root) {
   if (root.__uiBound) return; root.__uiBound = true;
   root.addEventListener('pointerdown', (e) => {
