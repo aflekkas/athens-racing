@@ -11,7 +11,10 @@ export function renderSignIn(a) {
     cls: "scr--account",
     back: false,
     kick: "ATHENS STREET RACERS",
-    title: "YOUR PLACE ON THE GRID",
+    title:
+      a.ready && !a.providers.length
+        ? "SIGN-IN IS COMING SOON"
+        : "YOUR PLACE ON THE GRID",
     body: `<div class="account-layout"><section class="account-intro"><p class="account-lede">One driver. Every road.</p><p>Save your garage and personal bests. Find your friends and head out together.</p><p>Your progress on this device comes with you.</p></section>${C.panel(
       "SIGN IN / CREATE ACCOUNT",
       `<p>New here? Signing in creates your account.</p>${a.ready ? "" : C.spinner()}${a.providers
@@ -23,7 +26,7 @@ export function renderSignIn(a) {
         )
         .join(
           "",
-        )}${a.providers.includes("email") ? `${field("email", "EMAIL ADDRESS", a.email || "", { type: "email", autocomplete: "email" })}${btn("EMAIL ME A CODE", "account-email")}${a.challenge ? `${field("code", "6-DIGIT CODE", "", { inputmode: "numeric", autocomplete: "one-time-code", maxlength: 6 })}${btn("VERIFY CODE", "account-verify", {}, "primary")}${a.devCode ? `<p class="account-dev">Development code: ${esc(a.devCode)}</p>` : ""}` : ""}` : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is temporarily unavailable.</p>" : ""}${a.ready ? btn("PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${btn("PRIVACY & YOUR DATA", "account-privacy", {}, "ghost")}</p>`,
+        )}${a.providers.includes("email") ? `${field("email", "EMAIL ADDRESS", a.email || "", { type: "email", autocomplete: "email" })}${btn("EMAIL ME A CODE", "account-email")}${a.challenge ? `${field("code", "6-DIGIT CODE", "", { inputmode: "numeric", autocomplete: "one-time-code", maxlength: 6 })}${btn("VERIFY CODE", "account-verify", {}, "primary")}${a.devCode ? `<p class="account-dev">Development code: ${esc(a.devCode)}</p>` : ""}` : ""}` : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is coming soon. Keep playing as usual.</p>" : ""}${a.ready ? btn(!a.providers.length ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${btn("PRIVACY & YOUR DATA", "account-privacy", {}, "ghost")}</p>`,
     )}</div>`,
   });
 }
@@ -81,6 +84,7 @@ export function install(menu) {
         menu.refresh();
       if (
         a.ready &&
+        a.required &&
         !a.offline &&
         (!a.user || !a.user.displayName) &&
         !bypass() &&
@@ -135,7 +139,10 @@ export function install(menu) {
     return result;
   };
   const gate = () =>
-    !bypass() && !a.offline && (!a.ready || !a.user || !a.user.displayName);
+    a.required &&
+    !bypass() &&
+    !a.offline &&
+    (!a.ready || !a.user || !a.user.displayName);
   menu.show = (screen, data, push) =>
     show(
       gate() &&
@@ -187,7 +194,7 @@ export function install(menu) {
         return;
       }
       if (kind === "offline") {
-        a.offline = true;
+        a.offline = a.providers.length > 0;
         banner();
         show("title");
         return;

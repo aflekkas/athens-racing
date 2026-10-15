@@ -61,7 +61,7 @@ try {
       const path = new URL(route.request().url()).pathname;
       const value =
         path === "/api/auth/config"
-          ? { providers: ["google", "discord", "email"] }
+          ? { providers: ["google", "discord", "email"], required: true }
           : path === "/api/auth/session"
             ? { user: null }
             : [];
@@ -168,6 +168,32 @@ try {
   await p.waitForFunction(() => window.__accountsReady && menu.accounts.ready);
   assert.equal(await p.evaluate(() => menu.screen), "accountPrivacy");
   await p.close();
+  const noProviderPage = await browser.newPage();
+  let sessionRequests = 0;
+  await noProviderPage.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname === "/api/auth/config")
+      return route.fulfill({ json: { providers: [], required: false } });
+    sessionRequests++;
+    return route.fulfill({
+      status: 503,
+      json: { error: "No account tables or credentials" },
+    });
+  });
+  await noProviderPage.goto("http://127.0.0.1:" + server.address().port);
+  await noProviderPage.waitForFunction(
+    () => window.__accountsReady && menu.accounts.ready,
+  );
+  assert.equal(await noProviderPage.evaluate(() => menu.screen), "title");
+  assert.equal(await noProviderPage.locator("#accounts-offline").count(), 0);
+  await noProviderPage.evaluate(() => menu.show("mode"));
+  assert.equal(await noProviderPage.evaluate(() => menu.screen), "mode");
+  await noProviderPage.evaluate(() => menu.show("account"));
+  assert.match(
+    await noProviderPage.locator(".scr__title").innerText(),
+    /COMING SOON/,
+  );
+  assert.equal(sessionRequests, 0);
+  await noProviderPage.close();
   await writeFile(
     resolve(out, "browser-report.json"),
     JSON.stringify(
@@ -176,6 +202,7 @@ try {
         offlineDegrade: true,
         guestBypass: true,
         privacyLink: true,
+        noProviderLegacyPlay: true,
       },
       null,
       2,

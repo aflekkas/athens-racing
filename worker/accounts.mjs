@@ -154,6 +154,15 @@ export async function accounts(request, env, fetcher = fetch) {
       p = url.pathname,
       db = env.ACCOUNTS,
       now = Date.now();
+    if (p === "/api/auth/config" && request.method === "GET") {
+      const enabled = db && env.SESSION_SECRET ? providers(env, url) : [];
+      return json({
+        providers: enabled,
+        required: enabled.some(
+          (provider) => provider !== "email" || Boolean(env.RESEND_API_KEY),
+        ),
+      });
+    }
     if (!db || !env.SESSION_SECRET)
       return json(
         { error: "Accounts are temporarily unavailable. Play offline." },
@@ -167,8 +176,6 @@ export async function accounts(request, env, fetcher = fetch) {
     )
       fail("Origin mismatch", 403);
     const s = await session(request, env);
-    if (p === "/api/auth/config")
-      return json({ providers: providers(env, url) });
     if (p === "/api/auth/session")
       return json(
         s

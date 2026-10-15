@@ -29,6 +29,7 @@ export class AccountsClient {
     this.user = null;
     this.csrf = null;
     this.providers = [];
+    this.required = false;
     this.friends = [];
     this.invites = [];
     this.presence = {};
@@ -60,11 +61,15 @@ export class AccountsClient {
   async init() {
     this.offline = false;
     try {
-      const [config, s] = await Promise.all([
-        this.api("/api/auth/config"),
-        this.api("/api/auth/session"),
-      ]);
+      const config = await this.api("/api/auth/config");
       this.providers = config.providers;
+      this.required = config.required === true;
+      if (!this.providers.length) {
+        this.user = null;
+        this.csrf = null;
+        return;
+      }
+      const s = await this.api("/api/auth/session");
       this.user = s.user;
       this.csrf = s.csrf;
       if (this.user) {

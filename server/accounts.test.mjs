@@ -721,3 +721,52 @@ test("Google signature verification rejects a tampered signature and expired ide
     { status: 401 },
   );
 });
+
+test("no real provider leaves legacy play enabled and configuration needs neither tables nor secrets", async () => {
+  const url = "https://athensracing.com/api/auth/config";
+  const noBindings = await accounts(new Request(url), {});
+  assert.deepEqual(await noBindings.json(), { providers: [], required: false });
+  const noTables = {
+    SESSION_SECRET: "test-secret",
+    ACCOUNTS: {
+      prepare() {
+        assert.fail("config must not query missing tables");
+      },
+    },
+  };
+  assert.deepEqual(await (await accounts(new Request(url), noTables)).json(), {
+    providers: [],
+    required: false,
+  });
+  const configOnly = {
+    ...noTables,
+    GOOGLE_CLIENT_ID: "client",
+    GOOGLE_CLIENT_SECRET: "secret",
+  };
+  assert.deepEqual(
+    await (await accounts(new Request(url), configOnly)).json(),
+    { providers: ["google"], required: true },
+  );
+  const staging = await (
+    await accounts(
+      new Request("https://staging.athensracing.com/api/auth/config"),
+      noTables,
+    )
+  ).json();
+  assert.deepEqual(staging, { providers: ["email"], required: false });
+  const calls = [];
+  const client = new AccountsClient({
+    storage: null,
+    fetcher: async (path) => {
+      calls.push(path);
+      if (path === "/api/auth/config")
+        return Response.json({ providers: [], required: false });
+      assert.fail("unconfigured auth must not query session/migration APIs");
+    },
+  });
+  await client.init();
+  assert.equal(client.required, false);
+  assert.equal(client.offline, false);
+  assert.equal(client.ready, true);
+  assert.deepEqual(calls, ["/api/auth/config"]);
+});

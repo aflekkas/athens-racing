@@ -5,7 +5,7 @@ The implementation creates no secrets and does not deploy. The following databas
 - Production `athens-racing-accounts`: `965f63b7-a248-415e-ba11-f5f4c15d8c79`
 - Staging `athens-racing-accounts-staging`: `5e3d1170-f253-4de6-bff4-8b8f2c0027f4`
 
-Bindings and SQL migrations are committed. No remote migrations have been applied. Use the free tiers; no paid plan is required. Check each provider's free quota before opening public registration.
+Bindings and SQL migrations are committed. The initial account migration has been applied remotely to both databases. Use the free tiers; no paid plan is required. Check each provider's free quota before opening public registration.
 
 1. Run `npx wrangler whoami` and verify the account ID above. From a clean reviewed checkout run:
    ```sh
@@ -43,9 +43,9 @@ Bindings and SQL migrations are committed. No remote migrations have been applie
    npx wrangler secret put DISCORD_CLIENT_SECRET --env production
    npx wrangler secret put RESEND_API_KEY --env production
    ```
-   Omit both secrets for any unwanted OAuth provider: the sign-in page hides it. Email is hidden in production without Resend. Missing SESSION_SECRET or D1 causes an offline fallback, not a broken game. For local development, use an ignored `.dev.vars` with a throwaway SESSION_SECRET and run `npx wrangler dev`; do not commit it. Development codes appear only for exact localhost/127.0.0.1/staging.athensracing.com hosts, never on production or workers.dev previews.
+   Omit both secrets for any unwanted OAuth provider: the sign-in page hides it. Email is hidden in production without Resend. Without SESSION_SECRET/D1 or a real configured provider, the game keeps its existing guest flow with optional sign-in. A configured auth outage falls back to offline play. For local development, use an ignored `.dev.vars` with a throwaway SESSION_SECRET and run `npx wrangler dev`; do not commit it. Development codes appear only for exact localhost/127.0.0.1/staging.athensracing.com hosts, never on production or workers.dev previews.
 6. Before public release, replace the privacy page's owner-contact instruction with the real controller name/contact in `src/ui/account-screen.js`; review retention and provider processor terms with the owner. Privacy is linked from sign-in at `/?privacy=1`. Export and deletion are in Account. Account deletion removes identity, sessions, friends and invites; local progress is retained intentionally and can be cleared in browser settings. No advertising identifiers are collected. D1's platform backup retention still applies; do not restore deleted accounts from backups without handling erasure records.
-7. The lead deploys staging, verifies real Google/Discord callbacks, email delivery, cookie flags, two-browser friend/invite flow, and the nightly expiration cleanup. Then the lead deploys production using the normal release process. This task has not deployed either environment. DO migration `v2-accounts` adds FriendsPresence alongside GameArena; daily cron deletes expired sessions, challenges, invites and rate limits. Existing race and leaderboard data are untouched.
+7. The release train deploys prod commits after its CI gates; it does not apply D1 migrations. The initial account schema has now been applied to both environments. Once the owner configures secrets, verify real Google/Discord callbacks, email delivery, cookie flags, two-browser friend/invite flow, and nightly expiration cleanup on staging before enabling production provider secrets. This task has not invoked a Worker deploy. DO migration `v2-accounts` adds FriendsPresence alongside GameArena; daily cron deletes expired sessions, challenges, invites and rate limits. Existing race and leaderboard data are untouched.
 
 ## Operation and limits
 
