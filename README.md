@@ -40,6 +40,10 @@ For the current VPS, install `deploy/paraliaki-racing.service` in `~/.config/sys
 | M | Radio on / off |
 | N | Next song |
 
+## Contributing
+
+All changes go through a pull request into `main`; CI must pass and @aflekkas reviews every PR. PRs that change anything visible need screenshots or video. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your first PR.
+
 ## Data and credits
 
 - Road network, coastline, buildings and points of interest: © OpenStreetMap contributors (ODbL), in `data/`.
