@@ -2,7 +2,7 @@
 
 A 3D browser racing game on real Greek roads: the Athens Riviera coast road, the Megara circuit, the Penteli hill climb and the Psychiko garden circuit. The Riviera runs along the coast road (Athinon-Souniou, EO91): from Vouliagmeni past Astir Beach and Lake Vouliagmeni, round the Limanakia coves, through Varkiza and along the bends to the Lomvarda cove. Leave the road if you like: pavements, dirt lay-bys and their humps are all drivable, and if you end up in the sea you're put back on the road. Race a rival through Athens traffic in the Mini Cooper S Cabrio, BMW Z4 M40i or Škoda Octavia taxi.
 
-Psychiko adds a 4.286 km public-road loop through Palaio Psychiko: Vasileos Pavlou, Diamantidou, Malakasi and Kallari, with EU-DEM hills, mapped villas, pine gardens and Greek street furniture. Choose the one-lap time trial, two-lap street race or Free Roam.
+Psychiko adds a 4.286 km public-road loop through Palaio Psychiko: Vasileos Pavlou, Diamantidou, Malakasi and Kallari, with EU-DEM hills, mapped villas, pine gardens and Greek street furniture. Choose Psychiko in Quick Race for the two-lap street race, or in Free Roam to explore it in traffic. The bundled one-lap time trial can be launched directly with `?map=psychiko&event=psychiko-tt`.
 
 Built with Three.js and a Node.js WebSocket lobby server. No build step.
 
