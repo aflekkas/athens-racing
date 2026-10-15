@@ -61,3 +61,27 @@ original procedural synthesis. See `assets/audio/engines/CREDITS.txt` and
 `sources.json` for exact source attribution, transformations and licence URLs.
 
 Every trim's profile is listed in `src/audio/README.md`. Voice code is unchanged.
+
+## Final frozen-archive gates
+
+Validated runtime commit: `8e47071a99b6bbef7c2861a12a6f5ff00119ceb6`, exported
+with `git archive HEAD` to `/tmp/vehicle-audio-complete-gate`. The shared index
+and working tree were never used for gates or changed by this task.
+
+- Vehicle audio unit tests: **8 passed**.
+- Browser import graph: **188 modules passed**.
+- Browser audio suite: **14 assets / 8 engine renders passed**, including
+  ignition/decode-failure handling and recorded bus/scooter loop guards.
+- `npm test`: **failed** in rival simulations (Astir–Varkiza unsafe field and
+  field/reference time; Megara lap/reference tolerance). All preceding TAP
+  stages passed. See `validation.json` and `npm-test.log`.
+- Physics regression: **365 passed, 4 failed**. Ibiza, Panda, Yaris and Panda 1.1
+  braking distances exceed the 50 m upper bound (53.9, 51.3, 53.4, 52.1 m).
+  See `physics-regression.log`. These tests execute headless vehicle physics,
+  not audio; the task does not modify their physics or tolerance assertions.
+
+Earlier integration snapshot `aae7655` had 355/355 physics checks passing but
+its full suite also failed rival checks. Later concurrent powertrain/catalogue
+changes are included in the frozen final snapshot above; no all-green gate
+claim is made. The per-car table includes all 56 trims in that snapshot, with
+40 using existing recorded banks and 16 using explicit procedural fallback.

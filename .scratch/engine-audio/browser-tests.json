@@ -9,14 +9,14 @@
     },
     {
       "car": "z4",
-      "rms": 0.0779,
-      "peak": 0.245,
+      "rms": 0.08,
+      "peak": 0.2515,
       "loops": 4
     },
     {
       "car": "taxi",
-      "rms": 0.0757,
-      "peak": 0.3111,
+      "rms": 0.0794,
+      "peak": 0.3193,
       "loops": 3
     }
   ],
@@ -26,35 +26,35 @@
       "engine": "v10",
       "cylinders": 10,
       "rms": 0.095,
-      "peak": 0.3079
+      "peak": 0.3073
     },
     {
       "car": "e36",
       "engine": "na6",
       "cylinders": 6,
-      "rms": 0.1492,
-      "peak": 0.3645
+      "rms": 0.1489,
+      "peak": 0.3643
     },
     {
       "car": "carrera",
       "engine": "flat6",
       "cylinders": 6,
-      "rms": 0.1467,
-      "peak": 0.364
+      "rms": 0.147,
+      "peak": 0.3646
     },
     {
       "car": "gr_yaris",
       "engine": "turbo3",
       "cylinders": 3,
-      "rms": 0.1156,
-      "peak": 0.3903
+      "rms": 0.116,
+      "peak": 0.3911
     },
     {
       "car": "gtv",
       "engine": "na4",
       "cylinders": 4,
-      "rms": 0.1299,
-      "peak": 0.4231
+      "rms": 0.1298,
+      "peak": 0.4227
     }
   ],
   "lifecycle": [

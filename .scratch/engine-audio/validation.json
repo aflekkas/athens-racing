@@ -1,0 +1,58 @@
+{
+  "validatedCommit": "8e47071a99b6bbef7c2861a12a6f5ff00119ceb6",
+  "archiveDirectory": "/tmp/vehicle-audio-complete-gate",
+  "method": "git archive HEAD exported when HEAD was validatedCommit; shared working tree and index untouched",
+  "npmTest": {
+    "exitCode": 1,
+    "failures": [
+      {
+        "check": "astir-varkiza: unsafe field",
+        "offroadFrames": 295,
+        "wallFrames": 0,
+        "pairContacts": 0,
+        "teleports": 0,
+        "maxStall": 0
+      },
+      {
+        "check": "astir-varkiza: field outside 4.97376201034737% perfect reference [0.029847345636819123,0.044978364837166884,0.06177474402730376]"
+      },
+      {
+        "check": "megara: steady laps outside 5.0% perfect reference (first lap 6.0% for grid launch) [[0.016115871073031363,0.006109121550453178,0.011197971688146957],[0.044340959708442984,0.001263956182852466,0.007183604479188643],[0.06382113821138202,0.012850221192332256,0.014155926473695457]]"
+      }
+    ],
+    "note": "All TAP test stages passed; script exited in tools/rivals-test.mjs, before the final road tests."
+  },
+  "physicsRegression": {
+    "command": "node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs",
+    "exitCode": 1,
+    "passed": 365,
+    "failed": 4,
+    "failures": [
+      "FAIL  catalogue ibiza (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 15.87 s, top 153.8 / 157, 100-0 53.9 m, wb 2.44 halfL 1.9065 halfW 0.82]",
+      "FAIL  catalogue panda (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 15.05 s, top 152.1 / 155, 100-0 51.3 m, wb 2.299 halfL 1.769 halfW 0.789]",
+      "FAIL  catalogue yaris (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 14.03 s, top 153.1 / 155, 100-0 53.4 m, wb 2.37 halfL 1.8075 halfW 0.83]",
+      "FAIL  catalogue panda_11 (fwd): finite, plausible acceleration, top near vmax, 100-0 28-50 m  [0-100 17.03 s, top 147.3 / 150, 100-0 52.1 m, wb 2.299 halfL 1.769 halfW 0.789]"
+    ]
+  },
+  "browserImports": {
+    "command": "node tools/check-browser-imports.mjs",
+    "exitCode": 0,
+    "modules": 188
+  },
+  "vehicleAudioUnit": {
+    "command": "node --test tools/vehicle-audio.test.mjs",
+    "exitCode": 0,
+    "passed": 8
+  },
+  "browserAudio": {
+    "passed": true,
+    "assets": 14,
+    "renderedEngineProfiles": 8,
+    "includes": "ignition lifecycle, decode failure, profile reuse, bus/scooter recorded loop guards, exhaust-rattle gates"
+  },
+  "audioCommits": [
+    "45daf8f5ffca9a049de663afdc3ed0749c2208ba",
+    "aae765566a13f3a928a5c0d2e61559da321164bc",
+    "8e47071a99b6bbef7c2861a12a6f5ff00119ceb6"
+  ]
+}
