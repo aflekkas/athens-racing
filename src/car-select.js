@@ -90,10 +90,12 @@ export function openCarPicker(options = {}) {
   menu.show('car', { ...options, garage: true, index: options.index ?? menu.h?.carIndex?.() ?? 0 }, true);
   return true;
 }
-export function mountCarSelect(root, index) {
-  const container = root.querySelector('#carStage');
+/** opts (all optional): container (default #carStage under root), lite (the multiplayer showroom: pixel ratio 1, a
+ *  small shadow map, 30 fps, no hint; it sits behind menu panels, so it stays light on the GPU) */
+export function mountCarSelect(root, index, opts = {}) {
+  const container = opts.container || root.querySelector('#carStage'), lite = !!opts.lite;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1 : 1.5));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   container.append(renderer.domElement);
@@ -115,14 +117,15 @@ export function mountCarSelect(root, index) {
   model.paintAccents = (model.paintAccents || []).map(cloneMaterial);
   model.materials.black = cloneMaterial(model.materials.black);
   scene.add(new THREE.HemisphereLight('#dceaff', '#303038', 2.2));
-  for (const [x,y,z,intensity] of [[-4,6,-3,3],[4,3,5,2]]) { const light = new THREE.DirectionalLight('#ffffff',intensity); light.position.set(x,y,z); if (x < 0) { light.castShadow=true; light.shadow.mapSize.set(1024,1024); Object.assign(light.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:20}); light.shadow.normalBias=.025; } scene.add(light); }
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(4.2,64).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:'#242d36',roughness:.7})); floor.position.y=-.02; floor.receiveShadow=true; scene.add(floor);
+  for (const [x,y,z,intensity] of [[-4,6,-3,3],[4,3,5,2]]) { const light = new THREE.DirectionalLight('#ffffff',intensity); light.position.set(x,y,z); if (x < 0) { light.castShadow=true; light.shadow.mapSize.set(lite ? 512 : 1024, lite ? 512 : 1024); Object.assign(light.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:20}); light.shadow.normalBias=.025; } scene.add(light); }
+  // lite (the multiplayer showroom): no floor disc, only the car's soft shadow on the screen's own backdrop
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(4.2,64).rotateX(-Math.PI/2),lite ? new THREE.ShadowMaterial({opacity:.5}) : new THREE.MeshStandardMaterial({color:'#242d36',roughness:.7})); floor.position.y=-.02; floor.receiveShadow=true; scene.add(floor);
   const camera = new THREE.PerspectiveCamera(35,1,.05,50);
   const resize = () => {
     const w = container.clientWidth, h = container.clientHeight; if (!w || !h) return;
     renderer.setSize(w,h); camera.aspect=w/h;
-    const distance = Math.max(8.3, 6.2 / camera.aspect);
-    camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,.65,0); camera.updateProjectionMatrix();
+    const distance = Math.max(8.3, 6.2 / camera.aspect) * (lite ? 1.12 : 1);
+    camera.position.set(distance*.64,distance*.32,distance*.69); camera.lookAt(0,lite ? .45 : .65,0); camera.updateProjectionMatrix();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
   const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, last = performance.now();
@@ -131,8 +134,9 @@ export function mountCarSelect(root, index) {
   const up = e => { if(e.pointerId!==pointer)return;pointer=null;turntable.dragging=false;container.classList.remove('dragging'); };
   container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
   for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
-  const hint=document.createElement('span');hint.className='car-stage__hint';hint.textContent='DRAG TO ROTATE · 360°';container.append(hint);
-  renderer.setAnimationLoop(now => { model.root.rotation.y=turntable.advance((now-last)/1000);last=now;renderer.render(scene,camera); });
+  const hint=document.createElement('span');hint.className='car-stage__hint';hint.textContent='DRAG TO ROTATE · 360°';if(!lite)container.append(hint);
+  let drawn = 0;
+  renderer.setAnimationLoop(now => { if (lite && now - drawn < 32) return; drawn = now; model.root.rotation.y=turntable.advance((now-last)/1000);last=now;renderer.render(scene,camera); });
   return {
     index, get rotation() { return turntable.angle; },
     captureFrame() { renderer.setAnimationLoop(null);  renderer.render(scene, camera); },

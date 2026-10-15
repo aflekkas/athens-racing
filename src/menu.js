@@ -79,7 +79,7 @@ export class Menu {
   }
   hide() {
     this.leaving(); this.mapView?.dispose(); this.mapView = null;
-    this.screen = this.shown = null; this.stack.length = 0; this.root.innerHTML = '';
+    this.screen = this.shown = null; this.stack.length = 0; MP.afterRender(this); this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui; MP.syncFlag(null);
   }
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
@@ -94,7 +94,9 @@ export class Menu {
     // Only a real screen change slides in; refreshes (a toggle, a tab) swap in place. Transitions stay off until the
     // new DOM has its focus state, so nothing visibly animates from an unfocused, unstyled first frame.
     this.shown = this.screen;
+    const mpStage = MP.detachStage(this); // the multiplayer showroom's live car carries over between its screens
     const fn = this['r_' + this.screen]; this.root.innerHTML = fn ? fn.call(this, this.data) : '';
+    MP.afterRender(this, mpStage);
     this.root.className = 's-' + this.screen + ' is-settling' + (entering ? ' is-entering' : '');
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
@@ -115,6 +117,7 @@ export class Menu {
     C.closeListbox();
     const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
     if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
+    MP.afterRender(this);
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
     this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item

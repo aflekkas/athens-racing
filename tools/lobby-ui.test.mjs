@@ -85,7 +85,9 @@ test('join lights up at six characters and lists open lobbies; full ones are not
   assert.doesNotMatch(renderMp(menu, mp, { tab: 'join' }), /off[^"]*" role="button" data-act="mpJoinCode"/);
   const list = renderMp(menu, mp, { tab: 'join' });
   assert.match(list, /data-code="QWE123"/); assert.match(list, /PENTELI/);
-  assert.match(list, /mp-lobby-row off" role="button" data-act="mpJoinLobby" data-code="FULL88"/);
+  assert.match(list, /list-row off[^"]*" role="button" data-act="mpJoinLobby" data-fid="lobby:FULL88"/, 'a full lobby is not selectable');
+  assert.doesNotMatch(list, /mpRefresh/, 'the list stays live without a REFRESH button');
+  assert.match(list, /id="carStage"[^>]*data-ui-keep="stage"/, 'the showroom stage survives in-place refreshes');
   const hostTab = renderMp(menu, mp, { tab: 'host' });
   assert.match(hostTab, /data-act="mpCreate"/); assert.match(hostTab, /data-key="map"/);
   form.code = '';

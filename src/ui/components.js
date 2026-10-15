@@ -3,7 +3,8 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
-//      segmented(), stepper(), select(), tabs(), option(), card(), panel(), stat(), keyHints(), progress(), spinner(),
+//      segmented(), stepper(), select(), tabs({ vertical }), option(), listRow(), textField(), card(), panel(), stat(), chip(),
+//      table(), keyHints(), progress(), spinner(),
 //      medal(), icon(name). Interactive builders emit a `.mi` row (the menu's focus item) carrying data-kind / data-key.
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
@@ -77,6 +78,21 @@ export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
   return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
 }
 export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map((t) => Array.isArray(t) ? stat(...t) : t).join('')}</div>`;
+/** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron */
+export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true } = {}) {
+  return `<div class="mi list-row ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('caret-right', 'list-row__go') : ''}</div>`;
+}
+/** a small status pill: tone '' | 'accent' | 'good' | 'warn' | 'bad' | 'gold' */
+export const chip = (text, { tone = '', icon: ic, cls = '', attrs } = {}) => `<span class="chip ${tone ? 'chip--' + tone : ''} ${cls}"${attrStr(attrs)}>${icon(ic)}<span>${text}</span></span>`;
+/** a classification / splits table: rows [{ pos, name, sub, value, me, tone, chip }] */
+export function table(rows, { cls = '' } = {}) {
+  return `<table class="r-table ${cls}">${rows.map((r) => `<tr class="${r.me ? 'me' : ''}">${r.pos != null ? `<td class="r-pos">${r.pos}</td>` : ''}<td>${r.name ?? ''}${r.sub ? `<small>${r.sub}</small>` : ''}${r.chip || ''}</td><td class="tnum ${r.tone || ''}">${r.value ?? ''}</td></tr>`).join('')}</table>`;
+}
+/** a text field in a normal focus row: OK puts the caret in it; Esc / Enter leave (the owner listens for 'input' on [data-field]) */
+export function textField({ name, label, value = '', placeholder = '', maxlength, fid, icon: ic, note, cls = '', inputCls = '', inputAttrs, attrs } = {}) {
+  const input = `<input class="text-field__input ${inputCls}"${attrStr({ 'data-field': name, value, placeholder, maxlength, 'aria-label': label, autocomplete: 'off', spellcheck: 'false', ...inputAttrs })}>`;
+  return field(label, input, { icon: ic, note, cls: 'text-field ' + cls, kind: 'text', attrs: { 'data-fid': fid || name, ...attrs } });
+}
 export const badge = (text, tone = '', ic) => `<span class="badge ${tone ? 'badge--' + tone : ''}">${icon(ic)}${text}</span>`;
 export const medal = (m, cls = '') => `<i class="medal ${m || 'none'} ${cls}" title="${m ? m.toUpperCase() : 'NO MEDAL'}"></i>`;
 export const progress = (value = 0, cls = '') => `<div class="progress ${cls}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(value * 100)}" style="--p:${value}"><i class="progress__fill"></i></div>`;
@@ -162,7 +178,8 @@ export function select({ key, label, value, options, icon: ic, note, type, attrs
     { icon: ic, note, kind: 'select', key, type, attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
 /** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
-export function tabs({ key, value, options, cls = '', hint = true } = {}) {
+export function tabs({ key, value, options, cls = '', hint = true, vertical = false } = {}) {
+  if (vertical) cls += ' tabs--rail';
   const h = hint ? `<span class="tabs__hint on-key">${kbd('Q')}</span><span class="tabs__hint on-pad">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key">${kbd('E')}</span><span class="tabs__hint on-pad">${kbd('RB', true)}</span>` : '';
   return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
@@ -214,7 +231,7 @@ export function setValue(el, v, doEmit = true) {
 /** left / right on a row. Returns true if the row is adjustable */
 export function step(el, d) {
   if (el?.localName === 'ui-select') return el.step(d);
-  const kind = el?.dataset.kind; if (!kind) return false;
+  const kind = el?.dataset.kind; if (!kind || kind === 'text') return false;
   if (kind === 'slider') { setValue(el, +el.dataset.value + d * (+el.dataset.step || 0.05)); return true; }
   if (kind === 'toggle') { setValue(el, !(el.dataset.value === 'true')); return true; }
   if (kind === 'stepper' && !el.dataset.options) { setValue(el, +el.dataset.value + d * (+el.dataset.step || 1)); return true; }
@@ -232,6 +249,7 @@ export function step(el, d) {
 export function activate(el) {
   if (el?.localName === 'ui-select') { el.open(); return true; }
   const kind = el?.dataset.kind; if (!kind) return false;
+  if (kind === 'text') { const input = el.querySelector('input'); if (input && document.activeElement !== input) { input.focus(); input.select?.(); } return true; }
   if (kind === 'select') { openListbox(el); return true; }
   if (kind === 'slider') return true;
   return step(el, 1);
@@ -247,6 +265,7 @@ export function handleClick(e) {
   if (kind === 'toggle') { step(row, 1); return true; }
   if (kind === 'select') { openListbox(row); return true; }
   if (kind === 'slider') return true; // pointerdown handles it
+  if (kind === 'text') { if (e.target.localName !== 'input') activate(row); return true; }
   return false;
 }
 function dragSlider(e, el, track, onValue, onDone) {
