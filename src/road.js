@@ -316,7 +316,7 @@ function signTexture(route) {
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
-      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + route.from.toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6);
+      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6);
     });
   });
   return { tex, regions };
