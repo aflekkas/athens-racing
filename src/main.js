@@ -2184,7 +2184,7 @@ const multiplayer = new Multiplayer(CARS, {
     document.body.classList.remove('racing', 'counting');
   },
 });
-const sharedWorld = new SharedWorld(multiplayer, () => ({ traffic, player, remotes: [...remoteCars].map(([id, car]) => ({ car, member: multiplayer.lobby?.players.find(p => p.id === id) })) }));
+const sharedWorld = new SharedWorld(multiplayer, () => ({ traffic, player, G, remotes: [...remoteCars].map(([id, car]) => ({ car, member: multiplayer.lobby?.players.find(p => p.id === id) })) }));
 window.__sharedWorld = sharedWorld;
 window.__multiplayer = multiplayer;
 // Browsers stop rAF in hidden tabs. Keep online cars coasting and broadcasting without drawing.

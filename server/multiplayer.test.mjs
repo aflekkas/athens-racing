@@ -166,7 +166,7 @@ test('host route/traffic choices clear ready votes; reverse finish follows event
   a.send({ type: 'ready', ready: true, version: a.version }); await room(a); await room(b);
   a.send({ type: 'options', eventId: 'quick', traffic: true, config: { reverse: true } });
   const changed = (await room(a)).lobby; await room(b);
-  assert.equal(changed.event.dir, -1); assert.equal(changed.traffic, false); assert.ok(changed.players.every(p => !p.ready));
+  assert.equal(changed.event.dir, -1); assert.equal(changed.traffic, true); assert.ok(changed.players.every(p => !p.ready));
   const l = await readyAndStart(a, b); await a.next(m => m.type === 'lobby' && m.lobby.status === 'race');
   a.send({ type: 'state', raceId: l.raceId, state: state(10) });
   await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === a.id && p.state?.s === 10));

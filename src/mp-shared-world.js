@@ -32,6 +32,7 @@ export class SharedWorld {
   constructor(mp, runtime) { this.mp = mp; this.runtime = runtime; this.assembler = new WorldAssembler(); this.predictions = new Map(); this.cooldowns = new Map(); this.seq = 0; this.nonce = 0; this.stats = { sent: 0, bytes: 0, contactsSent: 0, contactsReceived: 0, received: 0 }; }
   configure() {
     const r = this.runtime(), l = this.mp.lobby, key = l?.raceId ? `${l.raceId}:${l.generation}` : null;
+    if (key && r.G) r.G.trafficMul = l.config?.traffic || 0;
     if (this.traffic !== r.traffic || this.key !== key) {
       if (this.traffic) { this.traffic.online = null; this.traffic.onlineFoci = null; this.traffic.onlineBudget = null; }
       this.traffic = r.traffic; this.key = key; this.authority = false; this.frame = null; this.seq = 0; this.lastSent = -Infinity; this.assembler.clear(); this.predictions.clear(); this.cooldowns.clear();
