@@ -15,7 +15,10 @@ const server=createServer(async(req,res)=>{try{
  res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.html':'text/html','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(data);
 }catch{res.writeHead(404);res.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await pw.chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||resolve(homedir(),'.cache/ms-playwright/chromium-1234/chrome-linux64/chrome'),args:['--no-sandbox','--enable-webgl','--ignore-gpu-blocklist','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const ids=process.argv.slice(2).length?process.argv.slice(2):['riviera','penteli'];
+if(ids.some(id=>!['riviera','penteli'].includes(id)))throw Error('Expected riviera or penteli');
 const report={capture:'Renderer frames plus live DOM state; PNGs exclude HTML overlays.',maps:[],errors:[]};
+try { const previous=JSON.parse(await fs.readFile(resolve(out,'browser-report.json'),'utf8')); report.maps=previous.maps.filter(row=>!ids.includes(row.id)); } catch {}
 async function capture(page,path) {
  // Compositor screenshots can stall under SwiftShader. Preserve the real renderer
  // frame and record the live DOM separately; no UI is drawn into the exported image.
@@ -24,7 +27,7 @@ async function capture(page,path) {
  const dom=await page.evaluate(()=>({classes:document.body.className,text:document.body.innerText,warning:document.body.classList.contains('offtrack-warning'),notices:[...document.querySelectorAll('.race-notice')].map(n=>({text:n.textContent,kind:n.dataset.kind}))}));
  await fs.writeFile(path.replace('.png','.json'),JSON.stringify(dom,null,2));
 }
-try{for(const id of ['riviera','penteli']){
+try{for(const id of ids){
  const page=await browser.newPage({viewport:{width:960,height:600}});
  page.setDefaultTimeout(600000);
  page.on('pageerror',e=>{report.errors.push(String(e));console.log('ERROR',String(e));});
