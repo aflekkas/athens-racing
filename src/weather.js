@@ -15,6 +15,9 @@ export const setConditions = (c) => ENV.setConditions(c);
 export const getConditions = () => ENV.getConditions();
 if (typeof window !== 'undefined') { window.__setConditions = setConditions; window.__conditions = getConditions; }
 
+// the player's own lamp glows live on their own layer: only the main view draws it, never the rear-view mirror pass
+// (it shoots from inside our car, with the car hidden, and would see our tail lamps from behind)
+export const SELF_LAYER = 3;
 const NL = 12, NC = 6;       // analytic lamps / car lights evaluated per road pixel (LOW: fewer, see init)
 // Wet asphalt reaches 0.76 of dry grip; road water builds and dries in wet-grip.js.
 const lum = (v) => 0.2126 * v.x + 0.7152 * v.y + 0.0722 * v.z;
@@ -290,7 +293,7 @@ export function disposeWeather() {
   if (!W) return;
   W.offConditions?.();
   const geometries = new Set(), materials = new Set();
-  for (const object of [W.lampGlow?.p, W.carGlow?.p, W.rain?.mesh, W.spray?.pts, W.spot, W.spot?.target]) {
+  for (const object of [W.lampGlow?.p, W.carGlow?.p, W.selfGlow?.p, W.rain?.mesh, W.spray?.pts, W.spot, W.spot?.target]) {
     object?.removeFromParent();
     object?.traverse(o => { if (o.geometry) geometries.add(o.geometry); for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) materials.add(m); });
   }
@@ -333,6 +336,7 @@ export function initWeather(ctx) {
   W.lampGlow.g.attributes.position.needsUpdate = true; W.lampGlow.g.attributes.aSize.needsUpdate = true;
   W.lampGlow.p.visible = false; scene.add(W.lampGlow.p);
   W.carGlow = pointsOf(4 * 72, W.glowMat); W.carGlow.p.visible = false; scene.add(W.carGlow.p);
+  W.selfGlow = pointsOf(4, W.glowMat); W.selfGlow.p.visible = false; W.selfGlow.p.layers.set(SELF_LAYER); scene.add(W.selfGlow.p); W.camera.layers.enable(SELF_LAYER);
   // -- the player's headlights: one real shadowless spot light on every tier (always in the scene so switching never
   // recompiles), aimed level: it lights what stands in the beam (walls, signs, cars); the road pattern is analytic
   {
@@ -414,7 +418,7 @@ export function updateWeather(dt) {
     W.near.forEach(([d2, i], k) => { const p = L[i]; a.set([p.x, p.y, p.z, 34 * st.lamps * (1 - Math.min(1, Math.sqrt(d2) / 420))], k * 4); });
   } else if (!lampOn) WXU.wxLamp.value.fill(0);
   // ---- car lamps: glows for everyone, road pools for the rival + nearest traffic, a spot light for the player
-  const G = W.carGlow; let n = 0;
+  let G = W.carGlow, n = 0;
   const cp = WXU.wxCarP.value, cd = WXU.wxCarD.value; cp.fill(0);
   let nc = 0;
   const on = W.lightsOn;
@@ -445,9 +449,12 @@ export function updateWeather(dt) {
     }
   };
   if (on || f % 2 === 0) {
+    W.selfGlow.p.visible = false;
     for (let i = 0; i < cars.length; i++) {
       const c = cars[i], m = c.model; if (!m.root.visible) continue;
+      if (i === 0) G = W.selfGlow; // (pushed first: its slots are the self layer's)
       pushCar(m.root, m.dims.W, m.dims.L, 0.68, (m.tail?.emissiveIntensity || 0) > 2, i === 0);
+      if (i === 0) { const S = G; for (let k = n; k < S.n; k++) S.col.fill(0, k * 3, k * 3 + 3); S.p.visible = n > 0; for (const a of ['position', 'aSize', 'aCol']) S.g.attributes[a].needsUpdate = true; G = W.carGlow; n = 0; }
     }
     if (W.traffic) {
       carList.length = 0;
