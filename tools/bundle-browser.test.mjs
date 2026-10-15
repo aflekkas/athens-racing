@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { bundleBrowser } from './bundle-browser.mjs';
+import { MAPS } from '../src/map-catalog.js';
 test('production chunks preserve source-relative resources and lazy imports while dev sources survive', async () => {
   const root = await mkdtemp(resolve(tmpdir(), 'asr-bundle-')), out = resolve(root, '.deploy/assets'), previous = globalThis.location;
   try {
@@ -37,12 +38,12 @@ test('every map bake points to the published world worker, including Megara', as
     await writeFile(resolve(root, 'src/main.js'), 'export const boot = true;');
     await writeFile(resolve(root, 'src/world-worker.js'), 'onmessage = () => postMessage({ok:true});');
     await writeFile(resolve(out, 'index.html'), '<script type="module" src="./src/main.js"></script>');
-    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+    for (const path of MAPS.map(map => map.dataUrl)) {
       await mkdir(resolve(out, path, '..'), {recursive:true});
       await writeFile(resolve(out, path), JSON.stringify({bakedWorld:{version:1,terrain:'terrain',roads:'roads'}}));
     }
     await bundleBrowser(root, out);
-    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+    for (const path of MAPS.map(map => map.dataUrl)) {
       const data = JSON.parse(await readFile(resolve(out, path), 'utf8'));
       assert.match(data.bakedWorld.worker, /^\.\/src\/world-worker-.+\.js$/);
       await readFile(resolve(out, data.bakedWorld.worker));

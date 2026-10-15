@@ -1,6 +1,6 @@
 # Greater Athens selector map
 
-Runtime files: `assets/maps/attica.svg` and `src/attica-map-data.js`, **368,010 bytes combined** after adding Megara. Entirely offline: no tile service, API key, GIS dependency or geographic network request in the game. The SVG combines a DEM/urban/minor-road WebP background with vector coastline, major roads and place labels. Interactive route paths are separate SVG overlays.
+Runtime files: `assets/maps/attica.svg` and `src/attica-map-data.js`, **368,283 bytes combined** with all four tracks. Entirely offline: no tile service, API key, GIS dependency or geographic network request in the game. The SVG combines a DEM/urban/minor-road WebP background with vector coastline, major roads and place labels. Interactive route paths are separate SVG overlays.
 
 Coverage: **23.00–24.50 E, 37.70–38.24 N**, Expanded source extent surrounding Riviera/Varkiza/Lomvarda through Psychiko and Penteli/Dionysos; the default viewport fits all four route bounds with 8% padding. Web Mercator, aspect preserved in all layouts. Megara Circuit is included in West Attica. The 5 km scale updates during camera easing and manual zoom (scale at the crop's central latitude; Mercator scale variation across the displayed Athens region is under 0.5%).
 
