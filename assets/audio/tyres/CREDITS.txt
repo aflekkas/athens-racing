@@ -1,4 +1,4 @@
-ATHENS STREET RACERS — CONTACT-PATCH AUDIO (sound v2)
+ATHENS RACING — CONTACT-PATCH AUDIO (sound v2)
 
 Rolling, scrub, kerb rumble, grit, stick/slip resonances and lock-up chirps:
 original procedural synthesis implemented in src/audio.js (TyreVoice).

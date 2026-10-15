@@ -73,10 +73,10 @@ def main():
         assert 'text/html' in headers['content-type']
         p = HeadParser(); p.feed(body.decode())
         m = p.meta
-        assert p.title == 'Athens Street Racers — Free Browser Racing'
+        assert p.title == 'ATHENS RACING — Free Browser Racing'
         assert 140 <= len(m['description']) <= 160
         assert p.links['canonical'] == origin + '/'
-        expected = {'og:type':'website', 'og:site_name':'Athens Street Racers', 'og:title':'Athens Street Racers', 'og:url':origin+'/', 'og:image':origin+'/assets/share/og-image.jpg', 'og:image:type':'image/jpeg', 'og:image:width':'1200', 'og:image:height':'630', 'og:locale':'en_US', 'twitter:card':'summary_large_image', 'twitter:title':'Athens Street Racers', 'twitter:image':origin+'/assets/share/og-image.jpg', 'theme-color':'#07090c', 'color-scheme':'dark', 'apple-mobile-web-app-title':'Athens Street Racers', 'apple-mobile-web-app-capable':'yes', 'application-name':'Athens Street Racers', 'viewport':'width=device-width, initial-scale=1, viewport-fit=cover'}
+        expected = {'og:type':'website', 'og:site_name':'ATHENS RACING', 'og:title':'ATHENS RACING', 'og:url':origin+'/', 'og:image':origin+'/assets/share/og-image.jpg', 'og:image:type':'image/jpeg', 'og:image:width':'1200', 'og:image:height':'630', 'og:locale':'en_US', 'twitter:card':'summary_large_image', 'twitter:title':'ATHENS RACING', 'twitter:image':origin+'/assets/share/og-image.jpg', 'theme-color':'#07090c', 'color-scheme':'dark', 'apple-mobile-web-app-title':'ATHENS RACING', 'apple-mobile-web-app-capable':'yes', 'application-name':'ATHENS RACING', 'viewport':'width=device-width, initial-scale=1, viewport-fit=cover'}
         for k, v in expected.items(): assert m[k] == v, (k, m.get(k), v)
         assert m['og:description'] == m['twitter:description'] == m['description']
         assert m['og:image:alt'] == m['twitter:image:alt'] and m['og:image:alt']
@@ -102,7 +102,7 @@ def main():
     sitemap, _ = get('/sitemap.xml','Twitterbot/1.0')
     assert ('<loc>'+origin+'/</loc>').encode() in sitemap
     manifest, _ = get('/assets/manifest.webmanifest','Applebot/0.1')
-    assert json.loads(manifest)['name'] == 'Athens Street Racers'
+    assert json.loads(manifest)['name'] == 'ATHENS RACING'
     print('PASS: all metadata, JSON-LD, JPEG responses, cache headers, robots, sitemap and manifest')
 
 if __name__ == '__main__': main()

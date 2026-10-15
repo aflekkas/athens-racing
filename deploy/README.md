@@ -1,8 +1,12 @@
-# Athens Street Racers — Cloudflare deployment
+# ATHENS RACING — Cloudflare deployment
 
 Staging: https://staging.athensracing.com
 
-Production: https://athensracing.com (also https://www.athensracing.com). The Cloudflare worker names remain `athens-street-racers` and `athens-street-racers-staging`.
+Production: https://athensracing.com (also https://www.athensracing.com). The Cloudflare worker names remain `athens-street-racers` and `athens-street-racers-staging` to preserve deployed state. Do not rename these Workers, Durable Object classes, bindings or D1 names when changing the public brand.
+
+Worker fallback URLs (not canonical or share URLs): https://athens-street-racers.aflekkas.workers.dev and https://athens-street-racers-staging.aflekkas.workers.dev.
+
+Keep all `paraliaki.*` localStorage keys unchanged so existing player saves survive. The `asr-*` service-worker cache names also remain unchanged; this rename does not create abandoned caches.
 
 Account: **Aflekkas@gmail.com's Account**, `d6f3d2dc5817687a91d74ccd257bad9e`. Never deploy into the other accounts returned by `wrangler whoami`.
 

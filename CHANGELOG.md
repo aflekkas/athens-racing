@@ -1,12 +1,15 @@
-# Athens Street Racers release notes
+# ATHENS RACING release notes
 
-What changed in Athens Street Racers, newest first. This file is shown to players in the game (Settings > About > What's new), so write for them:
+What changed in ATHENS RACING, newest first. This file is shown to players in the game (Settings > About > What's new), so write for them:
 short, plain bullets, no file names, no commit hashes, no internal jargon. Say what you can now see, hear or do.
 
 Each release is `## YYYY.MM.DD.N`: the date, then a counter for that day (`.1` is the first release of the day, `.2` the next).
 The newest section is the version `tools/prepare-deploy.mjs` stamps into the build. `deploy/README.md` explains the release step.
 
 ## Unreleased
+
+- Welcome to ATHENS RACING: a new name and bold A-and-red-slash logo. Your saved progress stays with you.
+  ![The ATHENS RACING title screen](assets/changelog/2026.10.15.3/athens-racing-title.webp "ATHENS RACING. Real roads. Nothing but time.")
 
 - Release notes now include photos you can open full screen.
   ![The release notes screen with photos, captions and player-facing changes](assets/changelog/2026.10.15.3/release-gallery.webp "Browse release photos and open them full screen.")

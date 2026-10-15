@@ -20,7 +20,7 @@ await out(svg, 192, 'icon-192.png');
 await out(svg, 512, 'icon-512.png');
 await out(maskable, 512, 'icon-maskable-512.png');
 writeFileSync(new URL('manifest.webmanifest', dir), JSON.stringify({
-  name: 'Athens Street Racers', short_name: 'Street Racers', description: 'Race real Greek roads: the Athens Riviera, the Megara circuit and the Penteli hill climb.',
+  name: 'ATHENS RACING', short_name: 'ATHENS RACING', description: 'Race real Greek roads: the Athens Riviera, the Megara circuit and the Penteli hill climb.',
   start_url: '../', scope: '../', display: 'fullscreen', orientation: 'landscape', background_color: '#07090c', theme_color: '#07090c',
   icons: [
     { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' },

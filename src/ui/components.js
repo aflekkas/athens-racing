@@ -1,6 +1,6 @@
 import { buildBadge } from '../build-environment.js';
 import { notifications, raceNotificationsActive } from './notifications.js';
-// UI COMPONENTS: the ATHENS STREET RACERS kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
+// UI COMPONENTS: the ATHENS RACING kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
 //
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
@@ -138,7 +138,7 @@ export function screen({ cls = '', kick = '', title = '', back = true, head = ''
 }
 /** the ASR mark (assets/icon.svg, also the favicon) */
 export const brandMark = (cls = '') => `<img class="brand-mark ${cls}" src="${new URL('../../assets/icon.svg', import.meta.url).href}" alt="" draggable="false"/>`;
-export const wordmark = (cls = '') => `<span class="wordmark ${cls}"><b>ATHENS</b><b>STREET RACERS</b></span>`;
+export const wordmark = (cls = '') => `<span class="wordmark ${cls}"><b>ATHENS</b><b>RACING</b></span>`;
 
 // ------------------------------------------------------------------ interactive builders (menu rows)
 /** a labelled row: field('MASTER', control, { icon, note, kind, key, attrs }) */

@@ -1,4 +1,4 @@
-# Athens Street Racers — real-game loudness audit
+# ATHENS RACING — real-game loudness audit
 
 2026-10-14. This section supersedes the historical offline targets below.
 
@@ -61,7 +61,7 @@ Browser console errors: zero. All accepted captures are duration-checked. Audio 
 # Historical offline ambience audit
 
 The following is retained for source provenance and past ambience work; its defaults, targets and fixture loudness tables are superseded by the real-game audit above.
-# Athens Street Racers — audio mix and ambience
+# ATHENS RACING — audio mix and ambience
 
 Audit and lead-review correction: 2026-10-13. Default settings; 20-second stereo OfflineAudioContext scenes at 32 kHz.
 Reference vehicle voice: recorded Z4 turbo-six, steady load 0.5; 2,300 / 3,600 / 5,100 RPM at 50 / 100 / 180 km/h. Cockpit fixtures exercise the closed-cabin `open: false` path; chase uses `open: true`. No radio unless explicitly labelled normal race. Coast proximity 0.7, town 0.3. Maps at idle use 750 RPM. These are reproducible mix fixtures, not driving-physics telemetry or a claim that every car has identical loudness.

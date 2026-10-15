@@ -1,5 +1,5 @@
 {
-  "name": "athens-street-racers",
+  "name": "athens-racing",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,5 +16,6 @@
     "esbuild": "^0.28.2",
     "wrangler": "^4.150.0",
     "three": "0.170.0"
-  }
+  },
+  "description": "ATHENS RACING \u2014 race real Athens roads in your browser."
 }

@@ -8,7 +8,7 @@ Without complete Google configuration, the game keeps the existing guest flow, w
 
 Create a project in Google Cloud and configure Google Auth Platform branding/consent:
 
-- App name: Athens Street Racers.
+- App name: ATHENS RACING.
 - Audience: External; add test users while in Testing, then publish the consent screen when ready.
 - Set the owner's support/contact address, homepage `https://athensracing.com`, privacy page `https://athensracing.com/?privacy=1`, and authorized domain `athensracing.com`.
 - Requested scopes are only `openid` and `profile`. The app stores the Google account ID, not a Google access token or email address.
