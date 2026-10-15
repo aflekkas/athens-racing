@@ -509,7 +509,7 @@ export function buildDetailedCar(car,kind,opts={}) {
 }
 export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawRate=0) {
   const d=MODEL[car.modelKind];
-  if(pose){car.body.position.y=pose.heave;car.body.rotation.set(pose.pitch,0,pose.roll,'YXZ');}
+  if(pose){car.body.position.y=pose.heave+(car.spec.visual?.ride||0);car.body.rotation.set(pose.pitch,0,pose.roll,'YXZ');}
   for(const w of car.wheels){
     // Physics steer is positive right; Three.js yaw is positive left.
     let angle=0;if(w.front&&Math.abs(steer)>.0001){const radius=d.wb/Math.tan(Math.abs(steer));angle=-Math.sign(steer)*Math.atan(d.wb/Math.max(.1,radius-Math.sign(steer)*w.side*d.track/2));}

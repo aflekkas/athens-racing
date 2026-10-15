@@ -108,3 +108,20 @@ test('Jazz GK factory manuals and fantasy RWD build stay distinct and host-filte
  assert.deepEqual(trimChoices('jazz',{allowedCars:['jazz','jazz_drift']}),['jazz','jazz_drift']);
  assert.equal(stepTrim('jazz',1,{allowedCars:['jazz','jazz_drift']}),'jazz_drift');
 });
+
+// Suspension moves the sprung body; trim lowering must never lower the tyre contact patches.
+test('trim ride height survives live suspension poses while all four wheel centres stay grounded',async()=>{
+ const previous=globalThis.document,noop=()=>{},gradient={addColorStop:noop};
+ const ctx=new Proxy({measureText:()=>({width:50}),createLinearGradient:()=>gradient,createRadialGradient:()=>gradient},{get:(o,k)=>k in o?o[k]:noop,set:(o,k,v)=>(o[k]=v,true)});
+ globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx})};
+ let car;
+ try{
+  const {CarModel}=await import('../src/cars.js'),{Vector3}=await import('three');
+  car=new CarModel(CARS.find(c=>c.id==='jazz_drift'));
+  for(const pose of [{heave:0,pitch:0,roll:0},{heave:.04,pitch:.03,roll:-.04}]){
+   car.update(1/60,0,0,false,pose);car.root.updateMatrixWorld(true);
+   assert(Math.abs(car.body.position.y-pose.heave-car.spec.visual.ride)<1e-8);
+   for(const wheel of car.wheels)assert(Math.abs(wheel.pivot.getWorldPosition(new Vector3()).y-wheel.restY)<1e-6,'trim lowering must preserve tyre contact height');
+  }
+ }finally{car?.disposeDamage?.();globalThis.document=previous;}
+});
