@@ -50,3 +50,25 @@ test('a menu-only client loads the resumed lobby track before loaded/start ackno
   assert.equal(m.worldReady,true); assert.equal(starts.length,1); assert.deepEqual(starts[0][2],{s:900});
   assert.deepEqual(sent[0],{type:'loaded',loaded:true,mapId:'penteli',version:'penteli-v1'});
 });
+
+test('idle saved tokens allow direct solo starts; resumed sessions identify their lobby first', async () => {
+  const { waitForBootSession } = await import('../src/boot-session.js');
+  for (const active of [false, true]) {
+    const ws = new EventTarget(), client = {token:'saved',connected:false,active:false,ws};
+    let settled=false;
+    const pending=waitForBootSession(client).then(()=>{settled=true;});
+    await Promise.resolve();assert.equal(settled,false);
+    ws.dispatchEvent(new Event('message'));await Promise.resolve();assert.equal(settled,false);
+    client.connected=!active;client.active=active;ws.dispatchEvent(new Event('message'));await pending;
+    assert.equal(settled,true);
+  }
+});
+
+test('an unreachable saved session cannot block an offline direct solo URL indefinitely', async t => {
+  const { waitForBootSession } = await import('../src/boot-session.js');
+  t.mock.timers.enable({apis:['setTimeout']});
+  let settled=false;
+  const pending=waitForBootSession({token:'stale',ws:new EventTarget()},8000).then(()=>{settled=true;});
+  await Promise.resolve();assert.equal(settled,false);
+  t.mock.timers.tick(8000);await pending;assert.equal(settled,true);
+});

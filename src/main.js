@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { loadMap, LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
+import { waitForBootSession } from './boot-session.js';
 import * as ENV from './env.js';
 import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
@@ -234,8 +235,9 @@ async function boot() {
   multiplayer.loaded = true;
   showTitle();
   last = performance.now(); requestAnimationFrame(frame);
+  if (SKIP_MENU && !multiplayer.pendingCode) await waitForBootSession(multiplayer);
   if (multiplayer.active) await multiplayer.syncLobby();
-  else if (SKIP_MENU && !multiplayer.token && !multiplayer.pendingCode) {
+  else if (SKIP_MENU && !multiplayer.pendingCode) {
     await switchMap(initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
     prepareEvent(Q.get('event') || 'quick'); resetRace(); startCountdown();
   }
