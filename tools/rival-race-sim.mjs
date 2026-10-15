@@ -34,7 +34,7 @@ const { RivalAI } = await import(process.env.AI ? new URL(process.env.AI, 'file:
 const arg = (name, dflt) => { const i = process.argv.indexOf('--' + name); return i > 0 ? process.argv[i + 1] : dflt; };
 const mapId = arg('map', 'riviera'), label = arg('label', 'after'), playerMode = arg('player', 'slow');
 const traceName = arg('trace', null), traceFrom = +arg('from', 0), traceTo = +arg('to', 1e9);
-const rivalsN = +arg('rivals', 3), seconds = +arg('seconds', 900);
+const rivalsN = +arg('rivals', EV.SP_RIVALS), seconds = +arg('seconds', 900);
 const root = new URL('../', import.meta.url), out = arg('out') ? pathToFileURL(resolvePath(arg('out')) + sep) : new URL('.scratch/rival-ai-v2/', root);
 mkdirSync(out, { recursive: true });
 const data = JSON.parse(readFileSync(new URL(mapId === 'penteli' ? 'data/maps/penteli/map.json' : 'data/map.json', root)));

@@ -19,7 +19,7 @@ import { isDrivingMode, createObjectiveState, stepObjectives, objectiveSnapshot,
 
 export const MP_RIVALS_MIN = 0;
 export const MP_RIVALS_MAX = MAX_RIVALS;
-export const MP_RIVALS_DEFAULT = 3;
+export const MP_RIVALS_DEFAULT = 2;
 export const MP_TRAFFIC_MIN = 0;
 export const MP_TRAFFIC_MAX = 2;
 export const MP_SESSION_DURATION_DEFAULT = 300;
@@ -55,7 +55,7 @@ export function sanitizeConfig(input, def = {}) {
   const out = {};
   if (input.rivals !== undefined) {
     const n = Math.round(Number(input.rivals));
-    if (!Number.isFinite(n) || n < MP_RIVALS_MIN || n > MP_RIVALS_MAX) return { error: 'AI rivals must be 0-11.' };
+    if (!Number.isFinite(n) || n < MP_RIVALS_MIN || n > MP_RIVALS_MAX) return { error: `AI rivals must be 0-${MP_RIVALS_MAX}.` };
     out.rivals = n;
   }
   if (input.traffic !== undefined) {

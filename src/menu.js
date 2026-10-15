@@ -16,7 +16,7 @@ import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
 import { resolveGraphics, PRESETS, PRESET_IDS, PRESET_LABELS, LEVEL_IDS } from './graphics.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
-import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS, POLICE_LEVELS } from './race-setup.js';
+import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, POLICE_LEVELS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
 import { mapTagline } from './menu-copy.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
@@ -349,7 +349,7 @@ export class Menu {
     const A = { 'data-scope': 'setup' }, rows = [];
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users-three', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
-        note: cur.rivals > PERF_RIVALS ? `${icon('warning')} MORE THAN ${PERF_RIVALS} RIVALS CAN LOWER THE FRAME RATE` : f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: cur.rivals > PERF_RIVALS ? 'warn' : '' }));
+        note: f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: '' }));
       if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'police-car', value: cur.police ? cur.policeLevel : 'off', attrs: A, options: [['off', 'OFF'], ...POLICE_LEVELS],
         note: !cur.police ? '' : cur.policeLevel === 'relaxed' ? 'LATE TO NOTICE, SLOW TO ESCALATE, FEW UNITS' : cur.policeLevel === 'tough' ? 'SHARP-EYED, LITTLE TOLERANCE, MORE UNITS' : 'A WARNING FROM +25 KM/H IN VIEW, A CHASE IF YOU KEEP GOING' }));
       if (f.key === 'busted' && cur.police) rows.push(C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: String(cur.busted), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['true', 'ON'], ['false', 'OFF']],

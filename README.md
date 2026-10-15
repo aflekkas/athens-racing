@@ -13,7 +13,7 @@ npm start
 
 Requires Node.js 22+. Open http://localhost:8000 and choose an event or multiplayer from the title menu. Sound starts on your first keypress.
 
-Before every solo event, **RACE SETUP** lets you change the number of AI rivals (0 to 11; three by default, with a frame-rate warning above five), the traffic (off to extreme), the time of day, the weather, the laps on circuits and the direction. Choices are saved per event. Changing the rivals, traffic, laps or direction makes a custom run: its records and ghosts are kept apart from the event's and it is not submitted to the online board.
+Before every solo event, **RACE SETUP** lets you change the number of AI rivals (0 to 2; two by default), the traffic (off to extreme), the time of day, the weather, the laps on circuits and the direction. Choices are saved per event. Changing the rivals, traffic, laps or direction makes a custom run: its records and ghosts are kept apart from the event's and it is not submitted to the online board.
 
 Choose **MULTIPLAYER** to discover public lobbies, create a lobby, or join with a six-character code. Invite-only lobbies are hidden from discovery; **COPY INVITE** shares a link. Drivers can choose any of the six stock cars while waiting. The host chooses a full, reverse, or segment route and traffic on/off; changing the route clears ready votes. Every driver clicks **READY**, then the host clicks **START RACE**. Up to eight drivers share a countdown, live standings, opponent cars, and server-timed results. **Esc** opens the online panel during a race. The host can arrange a rematch.
 
