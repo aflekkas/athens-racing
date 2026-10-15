@@ -368,7 +368,7 @@ export class Cockpit {
     const blink = st.rpm > st.redline * 0.97 && Math.sin(performance.now() * 0.05) > 0;
     this.shiftLeds.forEach((m, i) => { m.opacity = blink ? 1 : (i / 8 < k ? 1 : 0.1); });
     this.knob.position.x = this.lever.position.x = this.selectorX; // Automatic selector remains fixed while the gearbox changes.
-    if ((this.frame++ & 1) === 0) this.drawCluster(st);
+    if (this.detailed !== false && (this.frame++ & 1) === 0) this.drawCluster(st);
   }
   drawCluster(st){
     const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.id;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';
@@ -463,4 +463,7 @@ export class Cockpit {
   }
   disposeMirrors(){for(const m of this.mirrors)m.target?.dispose();if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
   setVisible(v) { if(this.lod.visible!==v)this.mirrorCadence?.reset();this.lod.visible = v; }
+  /** Full cabin (gauges, trim, controls) or the exterior dashboard the LOD uses beyond 15 m.
+   * Outside cockpit views the cabin is behind tinted glass ~5 m away: ~35 draws and a cluster upload per frame. */
+  setDetail(full) { if(this.detailed===full)return;this.detailed=full;this.lod.levels[1].distance=full?15:0; }
 }
