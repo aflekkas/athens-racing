@@ -1,3 +1,4 @@
+import { arenaAccountStatus } from './account-arena.mjs';
 import { accounts } from './accounts.mjs';
 export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
@@ -123,10 +124,7 @@ export class GameArena extends DurableObject {
         return new Response(null, { status: 101, webSocket: client });
       }
       if (path === '/api/account/live') {
-        const token=url.searchParams.get('token'), code=url.searchParams.get('code');
-        const c=token?this.core.sessions.get(token):null;
-        const l=c?c.lobby:code?this.core.lobbies.get(code):null;
-        return json({live:!!l,code:l?.code,map:l?.mapId,status:l?.status,host:!!c&&l?.host===c.id});
+        return json(arenaAccountStatus(this.core, url));
       }
       if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);
