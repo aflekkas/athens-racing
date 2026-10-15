@@ -609,7 +609,7 @@ label.group__note { display: block; }
 .road-sign span { margin-bottom: 7px; }.road-sign i { position:absolute;right:17px;top:12px;font:normal 40px var(--f-sans);color:#f6f5db; }
 .home__edition { position:absolute;top:27%;left:6%;right:6%;font:600 .66rem var(--f-cond);letter-spacing:.2em;color:#bdd0cf; }.home__edition span { float:right; }
 .home__road { position: absolute; width: 140%; height: 3px; background: #e5e3cf55; top: 74%; left: -20%; transform: rotate(-17deg); box-shadow: 0 9px #e5e3cf33; }
-.home__car { position: absolute; width: 125%; max-width: none; height: auto; left: -12%; top: 12%; filter: drop-shadow(0 24px 12px #050f17aa); z-index: 1; }
+.home__car { position: absolute; width: 66%; max-width: none; height: auto; left: 17%; top: 41%; filter: drop-shadow(0 24px 12px #050f17aa); z-index: 1; }
 .home__feature { position: absolute; left:6%; bottom:21%; z-index:2; display:flex;flex-direction:column;gap:5px; }
 .home__feature span, .home__session span { font:600 .63rem var(--f-cond);letter-spacing:.2em;color:#b4c6c8; }
 .home__feature b { font:900 italic clamp(1.7rem,2.7vw,3.5rem) var(--f-cond);letter-spacing:.02em;color:#fff; }
@@ -624,7 +624,7 @@ label.group__note { display: block; }
  .scr--title .hu-crumb { font-size:.6rem;letter-spacing:.1em; }.scr--title .hu-clock{display:none}.scr--title .hu-status__r{gap:10px}.build-badge{font-size:.6rem;padding-left:.4rem}.hu-driver{font-size:.65rem;padding-right:8px}
  .home.home--racing { grid-template-columns:1fr;grid-template-rows:260px auto;gap:22px; }.home__left{display:contents}.home--racing .title__mark{position:absolute;top:16px;left:15px;z-index:3;font-size:2.7rem;gap:.15em}.home__eyebrow{display:none}
  .home__hero{grid-row:1;}.road-sign{top:36%;left:6%;padding:7px 38px 7px 10px;outline-width:3px}.road-sign span,.road-sign b{font-size:.58rem;letter-spacing:.04em}.road-sign span{margin-bottom:3px}.road-sign i{font-size:25px;right:8px;top:7px}.home__edition{display:none}
- .home__car{width:100%;left:20%;top:18%;}.home__feature{bottom:28%;left:6%}.home__feature span{font-size:.48rem}.home__feature b{font-size:1.4rem}.home__feature small{display:none}
+ .home__car{width:55%;left:41%;top:42%;}.home__feature{bottom:28%;left:6%}.home__feature span{font-size:.48rem}.home__feature b{font-size:1.4rem}.home__feature small{display:none}
  .home__session{padding:12px 6%;gap:10px}.home__session b{font-size:.78rem}.home__session span{font-size:.48rem}.home__session small{font-size:.56rem}.home__session>div:first-child small{max-width:155px}.home__session-car{max-width:38%}
  .home__list{grid-row:2;gap:2px}.home__list .option{min-height:68px;padding:10px 14px}.home__list .option:first-child{min-height:82px;margin-bottom:3px}.home__list .option__title{font-size:1.35rem}.home__list .option:first-child .option__title{font-size:2rem}.home__list .option__desc{font-size:.75rem}
  .scr--title .title-meta{max-width:none;grid-row:3}.scr--title>.scr__foot{grid-row:4;justify-content:center}.scr--title>.scr__foot .hints{justify-content:center;gap:10px}.scr--title .hint{font-size:.52rem}.scr--title .title-meta .btn{font-size:.6rem;padding:0 8px}

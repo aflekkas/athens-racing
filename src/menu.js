@@ -316,7 +316,7 @@ export class Menu {
         ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Make it yours', act: 'settings' })}</nav></div>
       <section class="home__hero" aria-label="Featured garage car: Porsche 911 Carrera"><div class="road-sign"><span>ΠΑΡΑΛΙΑΚΗ</span><b>ATHENS RIVIERA</b><i>↗</i></div>
         <div class="home__edition">37° 49′ N &nbsp; 23° 47′ E <span>ATTICA / 01</span></div>
-        <div class="home__road" aria-hidden="true"></div><img class="home__car" src="./assets/menu/carrera.webp" width="1400" height="800" alt="In-game Porsche 911 Carrera, rear three-quarter view" fetchpriority="low" decoding="async" />
+        <div class="home__road" aria-hidden="true"></div><img class="home__car" src="./assets/menu/carrera.webp" width="744" height="288" alt="In-game Porsche 911 Carrera, rear three-quarter view" fetchpriority="low" decoding="async" />
         <div class="home__feature"><span>FROM THE GARAGE</span><b>911 CARRERA</b><small>REAR ENGINE / REAR WHEEL DRIVE</small></div>
         <div class="home__session"><div><span>YOUR NEXT ROAD</span><b>${esc(map.name)}</b><small>Riviera coast · Megara circuit · Penteli climb</small></div><div class="home__session-car"><span>READY TO DRIVE</span><b>${esc(car.short || car.name)}</b><small>${Math.round(car.power * 1.341)} HP · ${esc(car.drive.toUpperCase())}</small></div></div>
       </section></div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'START'], ['garage', 'GARAGE']])}</footer></div>`;
