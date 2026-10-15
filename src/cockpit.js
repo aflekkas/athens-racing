@@ -113,7 +113,7 @@ export class Cockpit {
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
     const isMini=spec.id==='mini'||spec.id==='mini_jcw',isBMW=spec.id==='z4',isSkoda=spec.id==='taxi'||spec.police||spec.id==='superb',isClassic=spec.id==='gtv',isPorsche=spec.id==='carrera',isYaris=spec.id==='gr_yaris';
-    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.id==='cle',isSL=spec.id==='sl65';
+    const isMercedes=spec.marque==='mercedes'&&!spec.oldDash,isMercCoupe=spec.id==='cle',isSL=spec.id==='sl65';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.33,-.43));
     const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
@@ -375,6 +375,10 @@ export class Cockpit {
       g.fillStyle='#d5d5cc';g.font='22px Arial';g.fillText('+23.0°C',690,68);g.fillText('12:41',350,68);g.fillText('0',811,340);g.fillText('1',811,56);
     }else if(id==='yaris'){
       g.fillRect(0,0,W,H);g.fillStyle='#91b7a6';g.font='110px monospace';g.textAlign='center';g.fillText(Math.round(st.kmh),510,215);g.font='28px monospace';g.fillText('km/h     '+st.gearLabel,510,264);g.font='20px monospace';g.fillText('ODO  184205       FUEL ▮▮▮▮',510,335);
+    }else if(id==='a160'){
+      // W168 facelift: analogue twin dials and a small amber LCD, no MBUX.
+      g.fillRect(0,0,W,H);instrumentDial(g,{x:255,y:192,r:171,max:220,value:st.kmh,step:20,label:'km/h'});instrumentDial(g,{x:768,y:192,r:171,max:7,value:st.rpm/1000,step:1,label:'1/min ×1000',red:6.2});
+      g.fillStyle='#a98b59';g.fillRect(408,263,207,51);g.fillStyle='#25291f';g.textAlign='center';g.font='23px monospace';g.fillText('184205  '+st.gearLabel,512,296);
     }else if(id==='huracan'){
       g.fillRect(0,0,W,H);instrumentDial(g,{x:510,y:192,r:165,max:10,value:st.rpm/1000,step:1,label:'RPM ×1000',red:8.5});
       g.fillStyle='#eeeeea';g.font='bold 70px monospace';g.textAlign='center';g.fillText(st.gearLabel,510,255);g.font='58px Arial';g.fillText(Math.round(st.kmh),160,200);g.font='22px Arial';g.fillText('km/h',160,236);g.fillStyle='#e7892b';g.font='20px Arial';g.fillText('STRADA',840,120);g.fillText('HURACÁN EVO',840,273);
