@@ -141,6 +141,7 @@ test('native fleet builds finite geometry, correct wheel counts and usable cockp
  try{const {CarModel}=await import('../src/cars.js'),{Cockpit}=await import('../src/cockpit.js');
   for(const spec of CARS.filter(c=>c.nativeFleet)){
    const car=new CarModel(spec),cockpit=new Cockpit(spec,car);
+   assert.equal(typeof cockpit.navCanvas.getContext('2d').fillRect,'function',spec.id+' HUD navigation canvas');assert(cockpit.navTex.isTexture);
    assert.equal(car.wheels.length,spec.twoWheeler?2:4,spec.id);assert.equal(car.dims.L,spec.length,spec.id);
    assert(cockpit.eye.y>.9&&Math.abs(cockpit.eye.z)<spec.length/2,spec.id+' camera inside authored body');
    car.root.traverse(o=>{for(const n of o.geometry?.attributes.position?.array||[])assert(Number.isFinite(n),spec.id);});

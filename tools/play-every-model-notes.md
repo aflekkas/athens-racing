@@ -40,7 +40,7 @@ All CoM heights, drag areas, spring/damper frequencies and brake/grip calibratio
 
 Bikes are feasible as **assisted** vehicles using four virtual contact patches with a narrow support footprint; the visual has two wheels, a seated native rider and speed/yaw-based lean. There is no balance/fall simulation. Scooter CVTs use six virtual automatic ratios; they are labelled approximations, not literal six-speed scooters. Bike steering and power are tuned to remain playable under those constraints.
 
-Native fleet cabins supply actual seats and dashboards. A live speed/gear instrument is added at the driver's station, and the camera sits at a measured sensible eye position. Bike view is rider-eye. Native mirrors retain geometry but have no dynamic render-to-texture view. Chase distance and target height scale with body length/height; the bus uses a 9.8 m following distance. Garage framing uses the same body dimensions.
+Native fleet cabins supply actual seats and dashboards. A live speed/gear instrument is added at the driver's station, and the camera sits at a measured sensible eye position. Bike view is rider-eye. Native mirrors retain geometry but have no dynamic render-to-texture view. Chase distance and target height scale with body length/height; the bus uses a 12.2 m following distance. Garage framing uses the same body dimensions.
 
 ## Verification and evidence
 
