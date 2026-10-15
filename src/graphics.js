@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { terrainChunkMaterial } from './terrain-layout.js';
 import { settings, setSetting } from './settings.js';
 import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 
@@ -207,9 +206,9 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
   if (terrain && !terrain.userData?.lowMaterials) {
   terrain.userData ||= {};
   terrain.userData.lowMaterials = true;
-  const ground = new THREE.MeshLambertMaterial({ vertexColors: true });
-  const coarse = ground.clone(); Object.assign(coarse, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 }); // see terrain.js
-  terrain.group.traverse(o => { if (o.isMesh) { o.userData.fullMaterial = o.material; o.userData.lowMaterial = terrainChunkMaterial(o.userData.coarseTerrain ? coarse : ground, o.userData.terrainDecode); o.material = o.userData.lowMaterial; } });
+  // Area colour/texture is part of the owner-locked look, including Effects Off.
+  // Keep the existing material and quantized-position decoder intact.
+  terrain.group.traverse(o => { if (o.isMesh) { o.userData.fullMaterial = o.material; o.userData.lowMaterial = o.material; } });
   }
 }
 

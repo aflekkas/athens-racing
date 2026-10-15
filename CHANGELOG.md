@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Hills regain subtle earth, scrub and rock colours, while bright plaster and muted accent colours make building blocks stand out.
+  ![Varied earth colours and contrasting Riviera building blocks](assets/changelog/2026.10.15.4/world-colour.webp "Subtle landscape texture, distinct building colours.")
+
 - The Citaro bus and delivery vehicles now settle smoothly after bumps and turns, with steadier suspension for scooters and motorbikes.
   ![The Citaro bus driving along the Riviera](assets/changelog/2026.10.15.3/bus-suspension.webp "A softer, controlled ride for the heavy fleet.")
 

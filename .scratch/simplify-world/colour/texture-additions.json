@@ -1,0 +1,26 @@
+[
+  {
+    "file": "assets/tex/withered_grass_diff.webp",
+    "bytes": 82138,
+    "width": 512,
+    "height": 512
+  },
+  {
+    "file": "assets/tex/withered_grass_nor.webp",
+    "bytes": 124990,
+    "width": 512,
+    "height": 512
+  },
+  {
+    "file": "assets/tex/coast_sand_01_nor.webp",
+    "bytes": 98120,
+    "width": 512,
+    "height": 512
+  },
+  {
+    "file": "assets/tex/rock_face_03_nor.webp",
+    "bytes": 94678,
+    "width": 512,
+    "height": 512
+  }
+]

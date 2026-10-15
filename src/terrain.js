@@ -4,6 +4,7 @@ import { buildTerrainPatchLods, installTerrainLods } from './terrain-lod.js';
 import { compactTerrainGeometry, restoreTerrainLayout } from './terrain-layout.js';
 import { REFLECT_LAYER } from './env.js';
 import { vnoise, fbm, smoothstep, clamp } from './util.js';
+import { TX, GLSL_HELPERS } from './tex.js';
 import { sampleTerrainHeight } from './terrain-contact.js';
 import { cutMountainRoads } from './road-cut.js';
 import { RoadTerrain } from './road-terrain.js';
@@ -11,9 +12,71 @@ import { limitTerrainSlopes } from './terrain-slope.js';
 import { installTerrainRefinement, TERRAIN_SUBDIVISIONS } from './terrain-refinement.js';
 
 const C = (h) => new THREE.Color(h);
+const CLASS_COL = [C('#b9a985'), C('#dcc8a0'), C('#b7ab95'), C('#8a7d57'), C('#9a937f'), C('#738440'), C('#5c6435'), C('#6d6b57'), C('#9c8b63')];
+const ROCK = C('#a9a194'), ROCK2 = C('#c4b9a6'), VERGE = C('#9d8f73'), DRYGRASS = C('#b8a46c'), MAQUIS = C('#5e6336');
+const LIME = C('#c2bdb2'), LIME2 = C('#8a857b'), GARDEN = C('#7d8350');
+
 export function terrainMaterial({ farmland = false } = {}) {
-  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: false });
-  mat.name = 'owner-clean-terrain';
+  // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
+  // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
+  mat.customProgramCacheKey = () => farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {
+      tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
+      tBD: { value: TX.sand_diff }, tBN: { value: TX.sand_nor }, tRD: { value: TX.rock_diff }, tRN: { value: TX.rock_nor },
+    });
+    sh.uniforms.tCD = { value: TX.concrete_diff }; sh.uniforms.tAD = { value: TX.asphalt_diff };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aU; varying float vU; varying vec3 vWP; varying vec3 vWN;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvU = aU;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+      uniform sampler2D tCD; uniform sampler2D tAD; varying float vU;
+      uniform sampler2D tGD; uniform sampler2D tGN; uniform sampler2D tSD; uniform sampler2D tSN; uniform sampler2D tBD; uniform sampler2D tBN; uniform sampler2D tRD; uniform sampler2D tRN;
+      varying vec3 vWP; varying vec3 vWN;
+      ${GLSL_HELPERS}
+      vec3 tN = vec3(0, 0, 1); float tRough = 0.95; vec2 tUV; float wRock = 0.0; vec2 rUV;`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+      {
+        vec2 p = vWP.xz;
+        vec3 vc = diffuseColor.rgb;
+        float steep = 1.0 - clamp(vWN.y, 0.0, 1.0);
+        float sat = max(vc.r, max(vc.g, vc.b)) - min(vc.r, min(vc.g, vc.b));
+        float lum = dot(vc, vec3(0.333));
+        float macro = fbm2(p * 0.012);
+        float mid = vn2(p * 0.09);
+        // layer weights
+        float wGrass = smoothstep(0.01, 0.06, vc.g - vc.b) * smoothstep(0.03, 0.09, vc.g - vc.r * 0.85) ;
+        float wSand = smoothstep(2.2, 0.8, vWP.y) * smoothstep(0.3, 0.45, lum) + smoothstep(0.55, 0.7, lum) * smoothstep(0.1, 0.16, sat) * 0.8;
+        wRock = smoothstep(0.32, 0.6, steep + (1.0 - smoothstep(0.04, 0.12, sat)) * 0.35 * smoothstep(0.3, 0.5, lum) + (mid - 0.5) * 0.2);
+        wSand = clamp(wSand, 0.0, 1.0) * (1.0 - wRock);
+        wGrass *= (1.0 - wRock) * (1.0 - wSand);
+        float wGround = max(0.0, 1.0 - wRock - wSand - wGrass);
+        tUV = p / 3.0;
+        vec3 g = texNoTile(tGD, tUV).rgb, gn = texture2D(tGN, tUV).xyz;
+        { float gm = dot(g, vec3(0.333)); g = mix(vec3(gm), g, 0.8); g = vec3(0.3) * vec3(1.04, 1.0, 0.92) + (g - 0.3) * 0.5; gn = mix(vec3(0.5, 0.5, 1.0), gn, 0.55); }
+        vec2 sUV = p / 3.0; vec3 sg = texNoTile(tSD, sUV).rgb, sgn = texture2D(tSN, sUV).xyz;
+        vec2 bUV = p / 3.5; vec3 b = texNoTile(tBD, bUV).rgb, bn = texture2D(tBN, bUV).xyz;
+        vec3 an = abs(vWN);
+        rUV = (an.x > an.z ? vWP.zy : vWP.xy) / 6.0; if (an.y > 0.75) rUV = p / 6.0;
+        vec3 r = texNoTile(tRD, rUV).rgb, rn = texture2D(tRN, rUV).xyz;
+        // limestone: greyer and paler than the scan, with the vertex tint for local variety
+        r = mix(vec3(dot(r, vec3(0.333))), r, 0.45) * vec3(1.15, 1.1, 1.02);
+        vec3 tint = vc / max(lum, 0.02);
+        vec3 col = g * mix(vec3(1.0), tint, 0.55) * 1.05 * wGround + sg * mix(vec3(1.0), tint, 0.35) * 0.95 * wGrass + b * 1.15 * wSand + r * mix(vec3(1.0), tint, 0.25) * wRock;
+        // Broad area colours and restrained texture detail; no painted shrub clumps or plot decals.
+        col = mix(vc, col, 0.45);
+        ${farmland ? 'col = mix(vc * (.74 + .48 * dot(sg, vec3(.333))), col, smoothstep(.22,.55,steep));' : ''}
+        col *= 0.95 + 0.10 * macro;
+        // wet sand / rock darkening at the waterline
+        col *= mix(0.55, 1.0, smoothstep(0.05, 0.6, vWP.y));
+        diffuseColor.rgb = col;
+        tN = (gn * wGround + sgn * wGrass + bn * wSand + rn * wRock) * 2.0 - 1.0;
+        tRough = mix(0.97, 0.88, wRock) * mix(0.6, 1.0, smoothstep(0.0, 0.5, vWP.y));
+      }`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = tRough;')
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, wRock > 0.5 ? rUV : tUV, tN, 0.35);');
+  };
   return mat;
 }
 
@@ -129,9 +192,29 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   if (!coastal && !farmland) cutMountainRoads(terrain, route, Hc, network);
   terrain.Hc = Hc;
 
-  const earth = C(farmland ? '#b3a484' : '#b7ab95'), sand = C('#dcc8a0');
-  const colorAt = (i, j, h, n, out) => out.copy(coastal && CL[j * GX + i] === 1 ? sand : earth);
-
+  const cropGreen = C('#78864c'), cropDry = C('#b6ae72'), cropVerge = C('#929c5a');
+  const colorAt = (i, j, h, n, out) => {
+    const id = j * GX + i, x = minX + i * T, z = minZ + j * T;
+    const cls = CL[id];
+    out.copy(CLASS_COL[cls] || CLASS_COL[8]);
+    const nz = vnoise(x * 0.013, z * 0.013), nz2 = vnoise(x * 0.07 + 9, z * 0.07);
+    if (farmland) {
+      // Megara is cultivated, gently rolling coastal plain. The circuit scenery
+      // adds satellite-traced gravel and paved polygons over these grass verges.
+      out.copy(cropGreen).lerp(cropDry, smoothstep(.25, .75, nz));
+      out.lerp(cropVerge, verge[id] * .3).multiplyScalar(.9 + .2 * nz2);
+      return out;
+    }
+    if (cls === 8 || cls === 3) out.lerp(nz > 0.5 ? DRYGRASS : MAQUIS, cls === 3 ? 0.45 * nz2 : 0.25 * nz2);
+    if (cls === 2) out.lerp(nz > 0.5 ? ROCK2 : ROCK, 0.5);
+    const steep = 1 - n.y;
+    if (steep > 0.25 && cls !== 1) out.lerp(nz2 > 0.5 ? ROCK2 : ROCK, smoothstep(0.25, 0.6, steep));
+    if (cls === 4 && h > 0.5) out.lerp(GARDEN, 0.35 + 0.35 * nz2); // gardens between houses read greener than bare concrete
+    if (rug[id] > 0) { out.lerp(nz2 > 0.45 ? LIME : LIME2, rug[id] * (0.55 + 0.45 * smoothstep(0.2, 0.6, steep))); if (nz > 0.62) out.lerp(MAQUIS, 0.35 * rug[id]); }
+    if (verge[id] > 0) out.lerp(VERGE, verge[id] * 0.7);
+    if (h > 60) out.lerp(MAQUIS, smoothstep(60, 180, h) * 0.35 * (1 - steep));
+    return out;
+  };
 
   // The source DEM is 10 m: road-edge constraints cannot survive interpolation
   // of those large triangles. Refine only the road/shoulder corridor; the

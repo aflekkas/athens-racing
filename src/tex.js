@@ -9,8 +9,9 @@ const LIST = {
   paver: ['floor_pavement', 'diff nor arm'],
   concrete: ['concrete_floor_worn_001', 'diff nor arm'],
   ground: ['dry_ground_01', 'diff nor'],
-  sand: ['coast_sand_01', 'diff'],
-  rock: ['rock_face_03', 'diff'],
+  grass: ['withered_grass', 'diff nor'],
+  sand: ['coast_sand_01', 'diff nor'],
+  rock: ['rock_face_03', 'diff nor'],
   leather: ['fabric_leather_02', 'nor arm'],
 };
 const SINGLE = { water: 'waternormals' };

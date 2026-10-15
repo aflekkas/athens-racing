@@ -13,8 +13,9 @@ TEX = {
     'floor_pavement': (['Diffuse', 'nor_gl', 'arm'], 1024),
     'concrete_floor_worn_001': (['Diffuse', 'nor_gl', 'arm'], 512),
     'dry_ground_01': (['Diffuse', 'nor_gl'], 512),
-    'coast_sand_01': (['Diffuse'], 512),
-    'rock_face_03': (['Diffuse'], 512),
+    'withered_grass': (['Diffuse', 'nor_gl'], 512),
+    'coast_sand_01': (['Diffuse', 'nor_gl'], 512),
+    'rock_face_03': (['Diffuse', 'nor_gl'], 512),
     'fabric_leather_02': (['nor_gl', 'arm'], 512),
 }
 SHORT = {'Diffuse': 'diff', 'nor_gl': 'nor', 'arm': 'arm', 'Rough': 'rough'}

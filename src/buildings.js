@@ -4,6 +4,7 @@ import { REFLECT_LAYER } from './env.js';
 import { RNG, GeoBatch, M, pointInPoly, polyArea, polyBounds, clamp } from './util.js';
 import { infillStreetIndex } from './infill-streets.js';
 import { WORLD_TRIANGLE_BUDGETS, assertWorldBudget } from './world-art-direction.js';
+export const BUILDING_PALETTE = Object.freeze(['#f4f5f6','#e9edf1','#ffffff','#d7dfe7','#f0f2f5','#b8d5e6','#c78472','#e2bf72']);
 export function facadeMaterial() { return new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}); }
 export class LabelAtlas {
   constructor(cols = 4, rows = 64, cw = 512, ch = 80) {
@@ -128,7 +129,7 @@ export function buildingBlockGeometry(points,height) {
 export function buildBuildings(map,scene,heightC,labels,infill=[]) {
   const group=new THREE.Group();group.name='block-buildings';scene.add(group);
   const chunks=new Map(),roofs=[],footprints=[];
-  const palette=map.id==='megara'?['#d2cbb9','#ded8c9','#bcb7a8']:['#ddd7c9','#d4cbbb','#c9c3b7'];
+  const palette=BUILDING_PALETTE;
   for(const b of [...(map.data.buildings||[]),...infill]){
     if(!b.p||b.p.length<6)continue;
     const p=Array.isArray(b.p[0])?b.p.flat():b.p,bb=polyBounds(p),cx=(bb.x0+bb.x1)/2,cz=(bb.z0+bb.z1)/2;

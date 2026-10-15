@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import * as THREE from 'three';
 import {WORLD_STYLE,WORLD_TRIANGLE_BUDGETS as budgets,triangleCount} from '../src/world-art-direction.js';
-import {buildingBlockGeometry,facadeMaterial} from '../src/buildings.js';
+import {buildingBlockGeometry,facadeMaterial,BUILDING_PALETTE} from '../src/buildings.js';
 import {terrainMaterial} from '../src/terrain.js';
 import {makeLook,createHumanRig,Crowd} from '../src/human.js';
 import {municipalBinGeometry} from '../src/street-life.js';
@@ -20,17 +20,17 @@ import {RNG} from '../src/util.js';
 const locked='Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing.';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('owner lock: no vegetation pipeline or detailed building renderer',()=>{
- assert.deepEqual(WORLD_STYLE,{vegetation:false,beachFurniture:false,buildings:'blocks',terrain:'clean',style:'blocky-real-things'},locked);
+ assert.deepEqual(WORLD_STYLE,{vegetation:false,beachFurniture:false,buildings:'blocks',terrain:'area-colour-texture',style:'blocky-real-things'},locked);
  for(const p of ['data/map.json','data/maps/megara/map.json','data/maps/penteli/map.json'])assert.equal(JSON.parse(read(p)).trees,undefined,locked);
  for(const p of ['src/nature.js','src/maps/penteli.js','src/maps/megara.js','src/world-context.js','src/buildings.js','src/hillside-cover.js'])assert.doesNotMatch(read(p),/pineTemplate|needleCards|cardCluster|foliageMaterial|addPalm|addPine|trees\.push|plantInstances|new DetailBatch|addFrontage|balcK|makePharmacyCross/,locked);
  for(const p of ['src/nature.js','src/people.js','src/world-context.js'])assert.doesNotMatch(read(p),/umbrellaGeo|parasolGeo|sunbeds|beachBedPose/,locked);
  for(const p of ['tools/build_map.mjs','tools/maps/penteli/build.mjs','tools/maps/megara/build.mjs'])assert.doesNotMatch(read(p),/trees\s*[:,]|trees\.push/,locked);
  assert.equal(existsSync(new URL('../tools/make_foliage.py',import.meta.url)),false,locked);
- assert.doesNotMatch(read('tools/fetch_tex.py'),/LEAVES|withered_grass|palm_tree_bark|pine_bark/,locked);
- assert.doesNotMatch(read('src/tex.js'),/foliage_atlas|palm_frond|pine_bark|palm_tree_bark|withered_grass|leaves_broad|leaves_narrow/,locked);
+ assert.doesNotMatch(read('tools/fetch_tex.py'),/LEAVES|palm_tree_bark|pine_bark/,locked);
+ assert.doesNotMatch(read('src/tex.js'),/foliage_atlas|palm_frond|pine_bark|palm_tree_bark|leaves_broad|leaves_narrow/,locked);
  assert.doesNotMatch(read('src/env.js').split('function islandMaterial()')[1],/float inz|c0\.r \*.*Math\.sin/,locked);
  assert.doesNotMatch(read('src/maps/penteli-surface.js'),/pGrass|coverPatch|phrygana/,locked);
- for(const m of [facadeMaterial(),terrainMaterial()]){assert.equal(m.map,null,locked);assert.equal(m.normalMap,null,locked);m.dispose();}
+ for(const m of [facadeMaterial()]){assert.equal(m.map,null,locked);assert.equal(m.normalMap,null,locked);m.dispose();}
 });
 test('every mapped building remains within the 40 triangle block budget',()=>{
  for(const p of ['data/map.json','data/maps/megara/map.json','data/maps/penteli/map.json'])for(const b of JSON.parse(read(p)).buildings){if(!b.p||b.p.length<6)continue;const g=buildingBlockGeometry(b.p.flat(),b.h||6);assert.ok(triangleCount(g)<=budgets.building,locked);g.dispose();}
@@ -82,4 +82,17 @@ test('gantry and atlas labels fit their usable panel width even with fallback fo
  }
  bannerTex('CAMERA 999 / FINISH','#111','#fff');assert.equal(calls.at(-1)[3],288,locked);
  new LabelAtlas().add('LONG MAP LABEL '.repeat(20),'#111','#fff');assert.equal(calls.at(-1)[3],476,locked);
+});
+
+test('terrain keeps area textures and boxes use a separate plaster/accent palette',()=>{
+ const material=terrainMaterial(),shader={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};
+ material.onBeforeCompile(shader);
+ for(const name of ['tGD','tSD','tBD','tRD'])assert.ok(name in shader.uniforms,locked);
+ assert.match(shader.fragmentShader,/float steep/,locked);
+ assert.doesNotMatch(shader.fragmentShader,/float shrub|vec3 garden|floor\(wp/,locked);
+ assert.ok(BUILDING_PALETTE.includes('#ffffff'),locked);
+ for(const c of BUILDING_PALETTE)assert.ok(!['#b7ab95','#dcc8a0','#b3a484'].includes(c),locked);
+ const mesh=new THREE.Mesh(new THREE.BoxGeometry(),material),group=new THREE.Group();group.add(mesh);
+ simplifyScenery(new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshBasicMaterial()),null,null,{group});
+ assert.equal(mesh.material,material,locked);
 });
