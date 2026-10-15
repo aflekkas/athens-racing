@@ -21,3 +21,6 @@ test('cell edges are continuous and outside-map recovery sentinel remains unchan
   for(const [x,z] of [[-1,0],[0,-1],[20,5],[5,20]])assert.equal(sampleTerrainHeight(t,H,x,z),-30);
   assert.equal(sampleTerrainHeight(t,H,0,0),10);
 });
+
+// Compact GPU layouts and the LOD/contact contract run in the normal gates.
+import './terrain-layout.test.mjs';

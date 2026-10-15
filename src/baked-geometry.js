@@ -1,5 +1,5 @@
 // Compact, lossless buffer container. JSON describes aligned typed-array views; no geometry is quantised.
-const TYPES = { Float32Array, Uint16Array, Uint32Array, Uint8Array };
+const TYPES = { Int8Array, Float32Array, Uint16Array, Uint32Array, Uint8Array };
 const MAGIC = 0x31525341; // ASR1
 export function encodeGeometryPack(metadata, arrays, shuffled = []) {
   let length = 0, viewsIndex = 0;

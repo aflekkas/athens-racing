@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { terrainWorldPositions } from '../src/terrain-layout.js';
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -16,8 +17,8 @@ function meshHeightSampler(group) {
   const bins=new Map(),size=8;
   group.traverse(mesh=>{
     if(!mesh.geometry?.index)return;
-    const p=mesh.geometry.attributes.position.array,ix=mesh.geometry.index.array;
-    for(let k=0;k<ix.length;k+=3){const a=ix[k]*3,b=ix[k+1]*3,c=ix[k+2]*3,det=(p[b+2]-p[c+2])*(p[a]-p[c])+(p[c]-p[b])*(p[a+2]-p[c+2]);if(Math.abs(det)<1e-9)continue;
+    const p=terrainWorldPositions(mesh),ix=mesh.geometry.index.array;
+    for(let k=0;k<(mesh.userData.terrainLod?.[0].count ?? ix.length);k+=3){const a=ix[k]*3,b=ix[k+1]*3,c=ix[k+2]*3,det=(p[b+2]-p[c+2])*(p[a]-p[c])+(p[c]-p[b])*(p[a+2]-p[c+2]);if(Math.abs(det)<1e-9)continue;
       const tri={p,a,b,c,det,source:mesh.userData};
       for(let x=Math.floor(Math.min(p[a],p[b],p[c])/size);x<=Math.floor(Math.max(p[a],p[b],p[c])/size);x++)for(let z=Math.floor(Math.min(p[a+2],p[b+2],p[c+2])/size);z<=Math.floor(Math.max(p[a+2],p[b+2],p[c+2])/size);z++){
         const key=x+','+z;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(tri);

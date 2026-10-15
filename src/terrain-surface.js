@@ -6,7 +6,7 @@ export function coarseTerrainSampler(terrain, group) {
   group.traverse(mesh => {
     if (!mesh.userData.coarseTerrain) return;
     const p = mesh.geometry.attributes.position, index = mesh.geometry.index;
-    for (let t = 0; t < index.count; t += 3) {
+    for (let t = 0; t < (mesh.userData.terrainLod?.[0].count ?? index.count); t += 3) {
       const ids = [index.getX(t), index.getX(t + 1), index.getX(t + 2)];
       const i = Math.round((Math.min(...ids.map(k => p.getX(k))) - terrain.minX) / step);
       const j = Math.round((Math.min(...ids.map(k => p.getZ(k))) - terrain.minZ) / step);
