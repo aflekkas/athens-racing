@@ -8,7 +8,7 @@ test('coarse beach contacts match rendered triangles, including a lowered seam a
   for (const heights of [[.2,2,1,.5],[2,.2,.5,1]]) {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position',new THREE.Float32BufferAttribute([0,heights[0],0,40,heights[1],0,0,heights[2],40,40,heights[3],40],3));
-    geometry.setIndex(Math.abs(heights[0]-heights[3])<Math.abs(heights[1]-heights[2])?[0,2,3,0,3,1]:[0,2,1,1,2,3]);
+    geometry.setIndex(Math.abs(heights[0]-heights[3])<Math.abs(heights[1]-heights[2])?[0,2,1,1,2,3]:[0,2,3,0,3,1]);
     const mesh = new THREE.Mesh(geometry); mesh.userData.coarseTerrain=true;
     const group = new THREE.Group(); group.add(mesh); group.updateMatrixWorld(true);
     const sample = coarseTerrainSampler({GX:9,GZ:9,minX:0,minZ:0,T:10},group);

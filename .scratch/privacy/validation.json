@@ -1,0 +1,19 @@
+{
+  "testedCommit": "2a32d7ae1be9210dc1d014c18d0a4dc635183dd4",
+  "gates": {
+    "wrangler": 0,
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "syntax": 0,
+    "physics": 0
+  },
+  "focusedTests": 4,
+  "screenshots": [
+    1280,
+    390
+  ],
+  "workerHostRoutes": "worker-routes.json",
+  "browserReport": "browser-report.json",
+  "publication": "Existing automatic release train; no manual push or deploy"
+}

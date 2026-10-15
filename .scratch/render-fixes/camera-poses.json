@@ -1,0 +1,44 @@
+{
+  "beach": {
+    "target": [
+      497.2,
+      0.54,
+      2810.8
+    ],
+    "cameraOffset": [
+      10,
+      18,
+      15
+    ],
+    "carStation": 518,
+    "carLateral": 20,
+    "fov": 58,
+    "near": 0.25
+  },
+  "roadChase": {
+    "station": 5129,
+    "lateral": 3,
+    "cameraBack": 7,
+    "cameraUp": 3.5,
+    "lookAhead": 5,
+    "lookUp": 1
+  },
+  "driving": {
+    "start": 5129,
+    "lateral": 3,
+    "initialSpeedMps": 12,
+    "frames": 8,
+    "physicsStepsPerFrame": 6,
+    "dt": 0.016666666666666666
+  },
+  "viewport": [
+    640,
+    400
+  ],
+  "softwareRenderer": "Chromium/SwiftShader",
+  "presets": [
+    "low",
+    "med",
+    "high"
+  ]
+}

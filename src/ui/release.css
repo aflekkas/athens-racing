@@ -55,3 +55,20 @@
 #ui.s-whatsNew, #ui.s-credits, #ui.s-creditFile { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%); }
 .about-stats .stat-tile__v { font-size: var(--t-lg); white-space: normal; overflow-wrap: anywhere; text-transform: none; }
 .credits .list-row__main b, .credits .list-row__main span { white-space: normal; overflow-wrap: anywhere; }
+
+/* Release photos use the flat head-unit surface. They mount only after opening notes or card photos. */
+.release { box-shadow: none; border: 1px solid var(--hu-hair); }
+.release.focus { box-shadow: none; border-color: var(--c-text-3); background: rgba(255,255,255,.04); }
+.release--now .release__ver, .news-card__head .kick { color: var(--c-text); }
+.release-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: var(--s-3); margin: var(--s-3) 0; }
+.release-photo { margin: 0; min-width: 0; }
+.release-photo__open.btn { display: block; width: 100%; min-height: 0; padding: 0; overflow: hidden; background: var(--ui-surface); border: 1px solid var(--hu-hair); border-radius: var(--r-2); box-shadow: none; }
+.release-photo__open.btn > span { display: block; }
+.release-photo__open.btn img { display: block; width: 100%; height: auto; }
+.release-photo__open.btn:hover, .release-photo__open.btn.focus { box-shadow: none; border-color: var(--c-text); outline-color: var(--c-text-3); background: var(--ui-surface); }
+.release-photo figcaption, .release-image figcaption { padding-top: var(--s-2); color: var(--c-text-2); font: 500 var(--t-sm)/1.5 var(--f-sans); }
+.news-card .release-gallery { grid-template-columns: 1fr; }
+#ui.s-releaseImage { background: var(--ui-surface); }
+.release-image { margin: 0; display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; min-height: 0; gap: var(--s-3); }
+.release-image img { width: 100%; min-height: 0; flex: 1; object-fit: contain; }
+.release-image figcaption { flex: none; text-align: center; }

@@ -44,6 +44,10 @@ npx wrangler deploy --env staging --dry-run
 
 All must exit 0. If you change physics, add or update a case in `tools/physics-test/regress.mjs`. If you change multiplayer, also run `node tools/deploy-smoke.mjs http://localhost:8000 --race` against a local server.
 
+## Release pictures
+
+Every player-visible change must add a plain-language bullet and its screenshot under `## Unreleased` in `CHANGELOG.md` before merging. Use real in-game captures without bugs, debug overlays or test-harness controls. See `deploy/README.md` for Markdown examples and image limits. The automatic release train cuts version sections and deploys green `prod` commits; contributors leave notes in Unreleased.
+
 ## What makes a good PR
 
 - **One feature or fix per PR.** Small PRs get merged fast; giant ones don't.

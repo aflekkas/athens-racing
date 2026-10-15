@@ -8,6 +8,7 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { resolve, relative, basename, dirname, sep } from 'node:path';
 import { promisify } from 'node:util';
+import { validateChangelogImages } from './changelog-images.mjs';
 import { parseChangelog } from '../src/release-notes.js';
 
 const run = promisify(execFile);
@@ -22,7 +23,7 @@ export async function gitSha(root, env = process.env) {
   const sha = await git(root, ['rev-parse', '--short=7', 'HEAD']);
   return sha && /^[0-9a-f]{7,}$/.test(sha) ? sha : null;
 }
-export async function readChangelog(root) { return parseChangelog(await text(root, 'CHANGELOG.md')); }
+export async function readChangelog(root) { const log = parseChangelog(await text(root, 'CHANGELOG.md')); await validateChangelogImages(root, log); return log; }
 /** the build's identity: the newest CHANGELOG section is the version */
 export async function buildReleaseInfo(root, { build, sha, changelog } = {}) {
   const log = changelog || await readChangelog(root);
@@ -30,8 +31,8 @@ export async function buildReleaseInfo(root, { build, sha, changelog } = {}) {
   if (!latest) throw new Error('CHANGELOG.md has no release section: add "## YYYY.MM.DD.N" (see deploy/README.md, Release notes)');
   return {
     version: latest.version, date: latest.date, sha: sha === undefined ? await gitSha(root) : sha, build: build || null,
-    notes: log.releases.map(({ version, date, items }) => ({ version, date, items })),
-    unreleased: log.unreleased.length,
+    notes: log.releases.map(({ version, date, items, images = [] }) => ({ version, date, items, images })),
+    unreleased: log.unreleased.length, unreleasedImages: log.unreleasedImages?.length || 0,
   };
 }
 

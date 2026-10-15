@@ -1,0 +1,27 @@
+{
+  "codeCommit": "34c70167aa2884e170529ba76e6d31e02a083b37",
+  "baselineProductionCommit": "21771a1",
+  "checks": {
+    "wrangler": 0,
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "render-surface": 0,
+    "syntax": 0,
+    "physics": 0
+  },
+  "sourceHashes": {
+    "src/terrain.js": "f75de6e5bafd473a831e3f8d7971b11784496fd87d43b7874812bad6d524d19d",
+    "src/map-world.js": "85f6cb2791e71ec4364dce5ffbda71be28bac9e5b015d2f441b6413d4e088da1",
+    "src/world-worker.js": "c5c8692232738233006a3acc4aabc056916a424ade7ce3926a3ccae30ceeb408",
+    "src/terrain-refinement.js": "93fc332be7a5b1fe0e6aa83a763afef7879f29c3236a2ca509e764491bc559f5",
+    "src/terrain-surface.js": "bac6e10ad5de10dbfd4d87092e07d32aa1dedbaa3a8ed03aae2bf33541629d07",
+    "src/beach-placement.js": "022ea9bc05dcd8c841f1ec97fd8e27841d0edb2d1edaee4b0851e62e379b7ddd",
+    "src/nature.js": "aa9372fa394ff3bdeeb6090ee4f9d239768ecafa45d2c28da415a2a9e6a34600",
+    "src/post.js": "320dc64059d423416c68c32f5406a215240776545255ae16361f02fc6244d46a",
+    "src/env.js": "ad30c9b854887081aa36d439cffa58d7439dcb0961ab2f18108b83a7e23d2b59",
+    "tools/bake-world.mjs": "b57d6ec50efd6e27a21a461b39264518c32bd19b3bb32ae1bfd8dcfbc5d5c63d",
+    "tools/render-surface.test.mjs": "1078265e6d104b370ec324a02b3f5ec00b77019bf859e879ac1f74b49056d8bd",
+    "tools/road-terrain-level.test.mjs": "de72d58f380090030569503ec602d73cec5787d3c017c11a76de0c565fa4931e"
+  }
+}

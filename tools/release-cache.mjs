@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { resolve, relative, extname, sep } from 'node:path';
 
 // streamed (range requests), crawler-only, or not used by the game at runtime
-export const UNCACHED = [/^\/assets\/audio\/music\//, /^\/assets\/share\//, /^\/data\/raw\//, /\.(md|txt)$/i, /^\/src\/service-worker\.js$/, /^\/(index\.html|robots\.txt|sitemap\.xml|_headers|sw\.js)$/];
+export const UNCACHED = [/^\/assets\/changelog\//, /^\/assets\/audio\/music\//, /^\/assets\/share\//, /^\/data\/raw\//, /\.(md|txt)$/i, /^\/src\/service-worker\.js$/, /^\/(index\.html|robots\.txt|sitemap\.xml|_headers|sw\.js)$/];
 export const CACHE_HEADERS = '/_c/*\n  Cache-Control: public, max-age=31536000, immutable\n/sw.js\n  Cache-Control: no-cache\n';
 export const hash16 = (buf) => createHash('sha256').update(buf).digest('hex').slice(0, 16);
 

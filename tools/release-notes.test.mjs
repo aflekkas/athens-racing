@@ -152,3 +152,23 @@ test('launch sequence: new player, then updates, dismissal remembered across lau
   assert.equal(launch('2026.10.15.2'), 'none', 'only once');
   assert.equal(launch('2026.10.16.1'), 'show', 'the next version shows again');
 });
+
+test('Markdown photos belong to a release or to the preceding indented bullet', () => {
+  const path = 'assets/changelog/2026.10.15.3/golf-trims.webp';
+  const log = parseChangelog(`## Unreleased\n- Soon.\n  ![Garage](${path})\n## 2026.10.15.3\n![Garage overview](${path} "Pick your trim.")\n- A change.\n\n  ![Engine choices](${path})\n- Another change.\n  ![Paint choices](${path} "Choose a colour.")`);
+  assert.equal(log.unreleasedImages[0].item, 0);
+  assert.deepEqual(log.releases[0].images.map(({ alt, caption, item }) => ({ alt, caption, item })), [
+    { alt: 'Garage overview', caption: 'Pick your trim.', item: null },
+    { alt: 'Engine choices', caption: 'Engine choices', item: 0 },
+    { alt: 'Paint choices', caption: 'Choose a colour.', item: 1 },
+  ]);
+  assert.deepEqual(log.releases[0].items, ['A change.', 'Another change.']);
+});
+
+test('photos require alt text and a safe local versioned WebP path', () => {
+  const p = 'assets/changelog/2026.10.15.3/photo.webp';
+  for (const image of [`![](${p})`, `![  ](${p})`, '![Photo](https://example.com/photo.webp)', '![Photo](assets/changelog/2026.10.15.3/../photo.webp)', '![Photo](assets/changelog/2026.02.30.1/photo.webp)', '![Photo](assets/changelog/2026.10.15.3/photo.png)']) {
+    assert.throws(() => parseChangelog(`## 2026.10.15.3\n- Change.\n${image}`), /alt text|image path/);
+  }
+  assert.throws(() => parseChangelog(`## 2026.10.15.3\n  ![Photo](${p})\n- Change.`), /must follow a bullet/);
+});

@@ -1,0 +1,71 @@
+{
+  "low": {
+    "before": {
+      "medianMs": 16.5,
+      "meanMs": 19.492,
+      "draws": [
+        86,
+        166
+      ]
+    },
+    "after": {
+      "medianMs": 13.25,
+      "meanMs": 15.175,
+      "draws": [
+        86,
+        166
+      ]
+    },
+    "pixels": {
+      "changedChannels": 47,
+      "meanChannelDifference": 0.0015889485677083334,
+      "maxChannelDifference": 106
+    }
+  },
+  "med": {
+    "before": {
+      "medianMs": 10.65,
+      "meanMs": 12.058,
+      "draws": [
+        98,
+        189
+      ]
+    },
+    "after": {
+      "medianMs": 14.75,
+      "meanMs": 18.054,
+      "draws": [
+        98,
+        189
+      ]
+    },
+    "pixels": {
+      "changedChannels": 1159,
+      "meanChannelDifference": 0.004352864583333334,
+      "maxChannelDifference": 22
+    }
+  },
+  "high": {
+    "before": {
+      "medianMs": 21.45,
+      "meanMs": 19.717,
+      "draws": [
+        131,
+        351
+      ]
+    },
+    "after": {
+      "medianMs": 18.65,
+      "meanMs": 21.533,
+      "draws": [
+        131,
+        351
+      ]
+    },
+    "pixels": {
+      "changedChannels": 1186,
+      "meanChannelDifference": 0.00439453125,
+      "maxChannelDifference": 22
+    }
+  }
+}

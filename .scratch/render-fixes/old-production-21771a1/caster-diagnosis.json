@@ -1,0 +1,33 @@
+{
+  "pole-band": {
+    "s": 154.30897834528693,
+    "u": -6.506059835309588,
+    "shadowPoint": [
+      1033.5300190342368,
+      9.754988910076893,
+      2407.872605335034
+    ],
+    "caster": {
+      "geometry": "CylinderGeometry",
+      "height": 9.5,
+      "instanceId": 0
+    }
+  },
+  "pole-band-caster-off": {
+    "s": 154.30897834528693,
+    "u": -6.506059835309588,
+    "shadowPoint": [
+      1033.5300190342368,
+      9.754988910076893,
+      2407.872605335034
+    ],
+    "caster": {
+      "geometry": "CylinderGeometry",
+      "height": 9.5,
+      "instanceId": 0
+    }
+  },
+  "orbit-0": {},
+  "orbit-1": {},
+  "orbit-2": {}
+}

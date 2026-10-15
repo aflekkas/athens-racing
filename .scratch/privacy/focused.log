@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: legal routes serve standalone crawlable HTML on production and staging
+ok 1 - legal routes serve standalone crawlable HTML on production and staging
+  ---
+  duration_ms: 23.720959
+  type: 'test'
+  ...
+# Subtest: www and alternate legal paths redirect to canonical documents
+ok 2 - www and alternate legal paths redirect to canonical documents
+  ---
+  duration_ms: 1.579343
+  type: 'test'
+  ...
+# Subtest: Worker intercepts legal routes before assets; sitemap and in-game entry points link documents
+ok 3 - Worker intercepts legal routes before assets; sitemap and in-game entry points link documents
+  ---
+  duration_ms: 55.616311
+  type: 'test'
+  ...
+# Subtest: local HTTP transport returns HTML without a game boot
+ok 4 - local HTTP transport returns HTML without a game boot
+  ---
+  duration_ms: 363.880795
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1095.333802

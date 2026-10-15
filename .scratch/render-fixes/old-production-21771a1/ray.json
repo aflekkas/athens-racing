@@ -1,0 +1,53 @@
+[
+  {
+    "y": -1.7053025658242404e-13,
+    "name": "",
+    "type": "PlaneGeometry",
+    "material": "ShaderMaterial",
+    "userData": {},
+    "normal": [
+      0,
+      1,
+      6.123233972817055e-17
+    ]
+  },
+  {
+    "y": -1.2544212752587107,
+    "name": "",
+    "type": "BufferGeometry",
+    "material": "MeshLambertMaterial",
+    "color": "ffffff",
+    "userData": {
+      "coarseTerrain": true
+    },
+    "normal": [
+      -0.034943262663592524,
+      0.9983789502477929,
+      -0.0449270530586908
+    ]
+  },
+  {
+    "y": -7979.68423879012,
+    "name": "night-sky",
+    "type": "SphereGeometry",
+    "material": "ShaderMaterial",
+    "userData": {},
+    "normal": [
+      -0.0464263884225218,
+      -0.995138354907262,
+      -0.08685761365884641
+    ]
+  },
+  {
+    "y": -8980.27586611948,
+    "name": "",
+    "type": "SphereGeometry",
+    "material": "ShaderMaterial",
+    "userData": {},
+    "normal": [
+      -0.03641359485269542,
+      -0.9978497635482789,
+      -0.05449678427712665
+    ]
+  }
+]

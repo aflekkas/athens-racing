@@ -1,3 +1,4 @@
+import { privacyLink, legalLinks } from './legal-links.js';
 import * as C from "./components.js";
 import { AccountsClient } from "../accounts-client.js";
 import { driverName } from "../driver-name.js";
@@ -17,7 +18,7 @@ export function renderSignIn(a) {
         : "YOUR PLACE ON THE GRID",
     body: `<div class="account-layout"><section class="account-intro"><p class="account-lede">One driver. Every road.</p><p>Save your garage and personal bests. Find your friends and head out together.</p><p>Your progress on this device comes with you.</p></section>${C.panel(
       "SIGN IN / CREATE ACCOUNT",
-      `<p>New here? Signing in creates your account.</p>${a.ready ? "" : C.spinner()}${a.providers.includes("google") ? btn("CONTINUE WITH GOOGLE", "account-oauth") : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is coming soon. Keep playing as usual.</p>" : ""}${a.ready ? btn(!a.providers.length ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${btn("PRIVACY & YOUR DATA", "account-privacy", {}, "ghost")}</p>`,
+      `<p>New here? Signing in creates your account.</p>${a.ready ? "" : C.spinner()}${a.providers.includes("google") ? btn("CONTINUE WITH GOOGLE", "account-oauth") : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is coming soon. Keep playing as usual.</p>" : ""}${a.ready ? btn(!a.providers.length ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${privacyLink} · <a class="mi legal-link" href="/terms" target="_blank" rel="noopener">Terms of service</a></p>`,
     )}</div>`,
   });
 }
@@ -60,7 +61,7 @@ export function renderPrivacy() {
     title: "YOUR DATA, YOUR CONTROL",
     body: C.panel(
       "ATHENS STREET RACERS ACCOUNTS",
-      `<p>We store your Google account ID, driver name, plate, saved game settings and progress, friendships, and short-lived lobby invitations. OAuth access tokens are never saved. Online status is shared only with accepted friends and disappears shortly after disconnecting.</p><p>Sign-in uses a necessary, secure session cookie. We use short-lived hashed rate-limit identifiers to prevent abuse. Expired sign-in challenges, sessions and invitations are removed automatically. We do not sell account data or use advertising trackers.</p><p>Cloudflare hosts account data; Google handles sign-in. We do not request or store your Google email address. Device progress remains on this browser for offline play.</p><p>In Account, export your data or permanently delete your account and its sessions, friends and invitations. Clearing browser storage removes local progress. Contact the site owner for EU access, correction or erasure requests. The owner must publish their contact details before enabling accounts publicly.</p>`,
+      `<p>Google sign-in connects your driver account, imported progress and friends. Accepted friends can see your online status. In Account, export your data or delete your account; separate leaderboard records and device storage remain.</p><p>Read the ${privacyLink} for the full details and contact information.</p>${legalLinks}`,
     ),
   });
 }
@@ -165,6 +166,10 @@ export function install(menu) {
   const value = (name) =>
     menu.root.querySelector(`[data-field="account-${name}"]`)?.value || "";
   menu.activate = (el) => {
+    if (el.matches("a.legal-link[href]")) {
+      el.click();
+      return;
+    }
     if (el.dataset.act === "account") {
       menu.show("account", {}, true);
       if (a.user) a.social().catch(() => {});

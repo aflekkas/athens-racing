@@ -1,5 +1,3 @@
-import { triangleHeight } from './road-network-surface.js';
-
 // The distant mesh has 40 m triangles, not the 10 m DEM used to build it.
 // Keep only its emitted cells (including lowered seam vertices), so prop/contact
 // queries cannot silently sample a different surface or fill an omitted cell.
@@ -13,19 +11,26 @@ export function coarseTerrainSampler(terrain, group) {
       const i = Math.round((Math.min(...ids.map(k => p.getX(k))) - terrain.minX) / step);
       const j = Math.round((Math.min(...ids.map(k => p.getZ(k))) - terrain.minZ) / step);
       const key = j * width + i;
-      let h = cells.get(key); if (!h) cells.set(key, h = new Float32Array(4).fill(NaN));
+      let cell = cells.get(key); if (!cell) cells.set(key, cell = { h: new Float32Array(4).fill(NaN), diagonal: false });
+      const h = cell.h; let corners = 0;
       for (const k of ids) {
         const x = Math.round((p.getX(k) - terrain.minX) / step) - i;
         const z = Math.round((p.getZ(k) - terrain.minZ) / step) - j;
-        h[z * 2 + x] = p.getY(k);
+        h[z * 2 + x] = p.getY(k); corners |= 1 << (z * 2 + x);
       }
+      // Seam lowering can change which height diagonal is shorter. Preserve
+      // the emitted indices rather than guessing a new triangulation.
+      cell.diagonal = !!((corners & 1) && (corners & 8));
     }
   });
   return (x, z) => {
     const i = Math.floor((x - terrain.minX) / step), j = Math.floor((z - terrain.minZ) / step);
     if (i < 0 || j < 0 || i >= width || j >= Math.ceil((terrain.GZ - 1) / 4)) return null;
-    const h = cells.get(j * width + i); if (!h) return null;
-    const y = triangleHeight({ minX: terrain.minX + i * step, minZ: terrain.minZ + j * step, T: step, GX: 2, GZ: 2 }, h, x, z);
+    const cell = cells.get(j * width + i); if (!cell) return null;
+    const [h00,h10,h01,h11] = cell.h, a=(x-terrain.minX-i*step)/step, b=(z-terrain.minZ-j*step)/step;
+    const y = cell.diagonal
+      ? (a>b ? h00+(h10-h00)*a+(h11-h10)*b : h00+(h11-h01)*a+(h01-h00)*b)
+      : (a+b<1 ? h00+(h10-h00)*a+(h01-h00)*b : h11+(h01-h11)*(1-a)+(h10-h11)*(1-b));
     return Number.isFinite(y) ? y : null;
   };
 }

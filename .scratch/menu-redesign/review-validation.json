@@ -1,0 +1,273 @@
+{
+  "errors": [],
+  "cases": [
+    {
+      "id": "mini_s",
+      "name": "MINI F56 · COOPER S",
+      "hero": "MINI F56 · COOPER S",
+      "garage": "MINI F56 · COOPER S",
+      "ready": "MINI F56 · COOPER S",
+      "paint": "#17191d",
+      "worlds": 0,
+      "badge": "DEV",
+      "footerDev": false
+    },
+    {
+      "id": "carrera_s",
+      "name": "PORSCHE 911 · CARRERA S",
+      "hero": "PORSCHE 911 · CARRERA S",
+      "garage": "PORSCHE 911 · CARRERA S",
+      "ready": "PORSCHE 911 · CARRERA S",
+      "paint": "#c02624",
+      "worlds": 0,
+      "badge": "DEV",
+      "footerDev": false
+    },
+    {
+      "id": "bus",
+      "name": "MERCEDES-BENZ CITARO O530 · ΟΣΥ",
+      "hero": "MERCEDES-BENZ CITARO O530 · ΟΣΥ",
+      "garage": "MERCEDES-BENZ CITARO O530 · ΟΣΥ",
+      "ready": "MERCEDES-BENZ CITARO O530 · ΟΣΥ",
+      "paint": "#1e6384",
+      "worlds": 0,
+      "badge": "DEV",
+      "footerDev": false
+    },
+    {
+      "id": "moto",
+      "name": "YAMAHA TRACER 900",
+      "hero": "YAMAHA TRACER 900",
+      "garage": "YAMAHA TRACER 900",
+      "ready": "YAMAHA TRACER 900",
+      "paint": "#8a1c25",
+      "worlds": 0,
+      "badge": "DEV",
+      "footerDev": false
+    },
+    {
+      "id": "mini",
+      "name": "MINI COOPER S CABRIO",
+      "hero": "MINI COOPER S CABRIO",
+      "garage": "MINI COOPER S CABRIO",
+      "ready": "MINI COOPER S CABRIO",
+      "paint": "#bd1626",
+      "worlds": 0,
+      "badge": "DEV",
+      "footerDev": false
+    }
+  ],
+  "nonblockingCancellation": true,
+  "studios": [
+    {
+      "carId": "panda",
+      "paint": "#92b5c8",
+      "geometries": 96,
+      "textures": 5,
+      "drawCalls": 102
+    },
+    {
+      "carId": "jazz",
+      "paint": "#dce4e7",
+      "geometries": 92,
+      "textures": 5,
+      "drawCalls": 98
+    },
+    {
+      "carId": "yaris",
+      "paint": "#315476",
+      "geometries": 95,
+      "textures": 5,
+      "drawCalls": 101
+    },
+    {
+      "carId": "ibiza",
+      "paint": "#8d4948",
+      "geometries": 98,
+      "textures": 5,
+      "drawCalls": 104
+    },
+    {
+      "carId": "golf",
+      "paint": "#526a83",
+      "geometries": 105,
+      "textures": 5,
+      "drawCalls": 111
+    },
+    {
+      "carId": "aygo",
+      "paint": "#dce2e5",
+      "geometries": 268,
+      "textures": 4,
+      "drawCalls": 268
+    },
+    {
+      "carId": "mini",
+      "paint": "#bd1626",
+      "geometries": 104,
+      "textures": 5,
+      "drawCalls": 110
+    },
+    {
+      "carId": "gr_yaris",
+      "paint": "#e7e8e3",
+      "geometries": 105,
+      "textures": 7,
+      "drawCalls": 114
+    },
+    {
+      "carId": "corolla",
+      "paint": "#d2d5d3",
+      "geometries": 105,
+      "textures": 5,
+      "drawCalls": 111
+    },
+    {
+      "carId": "taxi",
+      "paint": "#eebd19",
+      "geometries": 107,
+      "textures": 6,
+      "drawCalls": 113
+    },
+    {
+      "carId": "superb",
+      "paint": "#25475b",
+      "geometries": 105,
+      "textures": 5,
+      "drawCalls": 111
+    },
+    {
+      "carId": "cla",
+      "paint": "#111419",
+      "geometries": 100,
+      "textures": 5,
+      "drawCalls": 109
+    },
+    {
+      "carId": "cle",
+      "paint": "#929b9f",
+      "geometries": 98,
+      "textures": 5,
+      "drawCalls": 107
+    },
+    {
+      "carId": "gla",
+      "paint": "#b5bdc3",
+      "geometries": 107,
+      "textures": 5,
+      "drawCalls": 118
+    },
+    {
+      "carId": "qashqai",
+      "paint": "#dce2e5",
+      "geometries": 270,
+      "textures": 4,
+      "drawCalls": 270
+    },
+    {
+      "carId": "z4",
+      "paint": "#22679d",
+      "geometries": 101,
+      "textures": 6,
+      "drawCalls": 107
+    },
+    {
+      "carId": "carrera",
+      "paint": "#c6c9cb",
+      "geometries": 114,
+      "textures": 5,
+      "drawCalls": 123
+    },
+    {
+      "carId": "huracan",
+      "paint": "#ea701d",
+      "geometries": 88,
+      "textures": 5,
+      "drawCalls": 94
+    },
+    {
+      "carId": "gtv",
+      "paint": "#b52125",
+      "geometries": 120,
+      "textures": 6,
+      "drawCalls": 132
+    },
+    {
+      "carId": "e36",
+      "paint": "#455948",
+      "geometries": 96,
+      "textures": 5,
+      "drawCalls": 102
+    },
+    {
+      "carId": "dolphin",
+      "paint": "#dce2e5",
+      "geometries": 264,
+      "textures": 4,
+      "drawCalls": 264
+    },
+    {
+      "carId": "atto3",
+      "paint": "#dce2e5",
+      "geometries": 263,
+      "textures": 4,
+      "drawCalls": 263
+    },
+    {
+      "carId": "van",
+      "paint": "#dce2e5",
+      "geometries": 231,
+      "textures": 5,
+      "drawCalls": 231
+    },
+    {
+      "carId": "truck",
+      "paint": "#dce2e5",
+      "geometries": 185,
+      "textures": 6,
+      "drawCalls": 185
+    },
+    {
+      "carId": "bus",
+      "paint": "#edf0eb",
+      "geometries": 333,
+      "textures": 6,
+      "drawCalls": 333
+    },
+    {
+      "carId": "delivery",
+      "paint": "#dce2e5",
+      "geometries": 72,
+      "textures": 4,
+      "drawCalls": 72
+    },
+    {
+      "carId": "scooter",
+      "paint": "#dce2e5",
+      "geometries": 66,
+      "textures": 4,
+      "drawCalls": 66
+    },
+    {
+      "carId": "moto",
+      "paint": "#dce2e5",
+      "geometries": 73,
+      "textures": 4,
+      "drawCalls": 73
+    },
+    {
+      "carId": "police_octavia",
+      "paint": "#eceee9",
+      "geometries": 114,
+      "textures": 9,
+      "drawCalls": 125
+    },
+    {
+      "carId": "police_moto",
+      "paint": "#dce2e5",
+      "geometries": 91,
+      "textures": 8,
+      "drawCalls": 95
+    }
+  ]
+}

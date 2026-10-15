@@ -1,0 +1,44 @@
+TAP version 13
+# Subtest: only an explicit production identity removes the environment badge
+ok 1 - only an explicit production identity removes the environment badge
+  ---
+  duration_ms: 1.165942
+  type: 'test'
+  ...
+# Subtest: Wrangler injects distinct build identities for staging and production
+ok 2 - Wrangler injects distinct build identities for staging and production
+  ---
+  duration_ms: 0.793538
+  type: 'test'
+  ...
+# Subtest: menu keyboard bindings work while the account button has DOM focus
+ok 3 - menu keyboard bindings work while the account button has DOM focus
+  ---
+  duration_ms: 5.102265
+  type: 'test'
+  ...
+# Subtest: D-pad and A continue to emit menu navigation actions
+ok 4 - D-pad and A continue to emit menu navigation actions
+  ---
+  duration_ms: 3.727205
+  type: 'test'
+  ...
+# Subtest: title hero waits for two frames and idle; cancelling a stale idle callback never imports the renderer
+ok 5 - title hero waits for two frames and idle; cancelling a stale idle callback never imports the renderer
+  ---
+  duration_ms: 0.903093
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 129.695405
+Syntax checked 217 JavaScript modules.
+Browser import graph checked: 206 modules.
+Syntax checked 258 JavaScript modules.
+Browser import graph checked: 206 modules.

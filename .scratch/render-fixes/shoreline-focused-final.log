@@ -1,0 +1,18 @@
+TAP version 13
+# Subtest: riviera: rendered terrain clears every road and both six-metre shoulders remain drivable
+ok 1 - riviera: rendered terrain clears every road and both six-metre shoulders remain drivable
+  ---
+  duration_ms: 45103.158257
+  type: 'test'
+  ...
+# {"astirShoreline":{"x":497.2,"z":2810.8,"y":0.5439780461182111}}
+# {"samples":2525118,"maxAbove":-0.007688271580239103,"maxStep":0.1315225993454927,"maxSlope":0.5656855598191551,"worstAbove":{"s":9404,"u":-7.92,"source":{"terrainRefinement":5}},"worstStep":{"s":9468,"side":1,"source":{"terrainRefinement":5}},"worstSlope":{"s":7830,"side":1,"d":4.25,"source":{"terrainRefinement":5}}}
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45645.514045
