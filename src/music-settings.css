@@ -1,7 +1,7 @@
 .music-settings { margin-bottom: 20px; color: var(--c-text, #e6edf4); }
 .music-settings label { display: grid; gap: 8px; font-size: 12px; letter-spacing: .06em; }
-.music-settings select, .music-settings input[type=url] { width: 100%; min-height: 42px; padding: 9px 12px; color: inherit; background: var(--c-surface-2, #141d27); border: 1px solid var(--c-line-2, #3b4c5c); border-radius: 7px; font: inherit; }
-.music-settings select option { background: var(--c-surface-2, #141d27); color: #e6edf4; }
+.music-settings input[type=url] { width: 100%; min-height: 42px; padding: 9px 12px; color: inherit; background: var(--c-surface-2, #141d27); border: 1px solid var(--c-line-2, #3b4c5c); border-radius: 7px; font: inherit; }
+.music-settings ui-select { display: flex; width: 100%; margin-top: 6px; }
 .music-settings p { font-size: 12px; line-height: 1.55; color: var(--c-text-3, #a4b2bf); margin: 10px 0; }
 .music-settings .music-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 .music-settings button, .music-settings a { min-height: 38px; padding: 8px 12px; border-radius: 7px; border: 1px solid var(--c-line-2, #3b4c5c); color: inherit; background: var(--c-surface-3, #1c2936); font: inherit; font-size: 12px; text-decoration: none; }

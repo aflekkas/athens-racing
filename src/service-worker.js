@@ -89,12 +89,13 @@ async function fromCdn(request) {
   return res;
 }
 
-// Install: copy this release's files into the content cache. Core files (code, textures, map data) come from the
+// Install: copy this release's files into the content cache. Core menu files come from the
 // HTTP cache the first page load just filled, or the network; everything else is copied only if the HTTP cache
 // already has it. Each copy is verified against its manifest hash, so a stale HTTP entry is never stored.
 async function precache() {
   const cache = await caches.open(CONTENT), have = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
-  const todo = Object.keys(RELEASE.files).filter(p => !have.has(contentPath(p)));
+  // Map bundles and baked worlds are strictly demand-loaded, even with an older core manifest.
+  const todo = Object.keys(RELEASE.files).filter(p => !p.startsWith('/data/') && !have.has(contentPath(p)));
   const isCore = (p) => RELEASE.core.some(prefix => p.startsWith(prefix));
   let next = 0;
   async function lane() {

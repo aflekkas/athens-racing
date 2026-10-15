@@ -11,7 +11,7 @@ export function raceNotificationsActive(doc=globalThis.document) {
   const hud=doc.getElementById('hud'),lobby=doc.getElementById('multiplayer');
   return (body.classList.contains('racing')||body.classList.contains('counting'))&&!body.classList.contains('ui-open')&&!body.classList.contains('menu')&&(!lobby||lobby.hidden)&&!doc.querySelector('#loading.open,.modal-scrim')&&(!hud||!hud.hidden&&hud.style.display!=='none');
 }
-const OBSTACLES=['#posBox','#mapBox','#dialBox','#gearboxHud','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#driving-feedback','#touch-controls button','#touch-controls .touch-steer'];
+const OBSTACLES=['#posBox','#mapBox','#dialBox','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#driving-feedback','#touch-controls button','#touch-controls .touch-steer'];
 export class NotificationManager {
   constructor(){this.queue=new NotificationQueue();this.cards=new Map();this.nextAt=0;this.dirty=true;}
   post(value){const key=value.id||`${value.slot||'toast'}:${notificationText(value.title)}:${notificationText(value.text)}`,before=this.queue.items.get(key);const id=this.queue.post({...value,title:notificationText(value.title),text:notificationText(value.text)},now());if(before&&this.queue.items.get(id)===before)return id;this.dirty=true;this.mount();this.update();return id;}
@@ -58,9 +58,9 @@ export class NotificationManager {
   }
   menuFeedback(text,{tone='info',ms=3500}={}){
     if(typeof document==='undefined')return;this.mount();
-    const panel=document.querySelector('#multiplayer:not([hidden]) .mp-card')||document.querySelector('#ui .scr__head')||document.querySelector('#ui .scr');
+    const panel=document.querySelector('#ui .scr__head')||document.querySelector('#ui .scr');
     if(!panel)return this.toast(text,{tone});
-    let row=panel.querySelector('[data-menu-feedback]');if(!row){row=document.createElement('p');row.dataset.menuFeedback='';row.className='menu-feedback';row.setAttribute('role','status');const heading=panel.querySelector('.mp-heading');if(heading)heading.after(row);else panel.append(row);}
+    let row=panel.querySelector('[data-menu-feedback]');if(!row){row=document.createElement('p');row.dataset.menuFeedback='';row.dataset.uiKeep='';row.className='menu-feedback';row.setAttribute('role','status');panel.append(row);} // ui-keep: an in-place menu refresh leaves it up
     row.textContent=notificationText(text);row.dataset.tone=tone;clearTimeout(row.timer);row.timer=setTimeout(()=>row.remove(),ms);return row;
   }
 }

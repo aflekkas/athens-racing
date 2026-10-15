@@ -16,9 +16,12 @@ import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
 import { resolveGraphics, PRESETS, PRESET_IDS, PRESET_LABELS, LEVEL_IDS } from './graphics.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
-import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS } from './race-setup.js';
+import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, PERF_RIVALS, POLICE_LEVELS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
+import { mapTagline } from './menu-copy.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
+import * as MP from './ui/mp-screens.js';
+import { personalBestLabel } from './personal-bests.js';
 import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
@@ -40,12 +43,12 @@ export class Menu {
    * root: the #ui element. h: handlers from main.js
    *   quickRace(), openEvent(def | id), chooseCar(index, def, garage), multiplayer(), garage(), resume(), restart(), quit(), next(id)
    *   ctx() -> resolve context { route, marks, mapId }, carName() -> string, fmtTime(t), ui(forward) (click sound)
-   *   cancelBindings() (drop a half-done key capture), graphicsControl (the hidden graphics <select>), inputDevice()
+   *   cancelBindings() (drop a half-done key capture), graphicsControl (the hidden graphics <ui-select>), inputDevice()
    */
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all'; this.participants = 'solo';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this); MP.installMpScreens(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -64,18 +67,20 @@ export class Menu {
     this.screen = screen; this.data = data; this.focus = data.focus ?? null;
     document.body.classList.add('ui-open'); // before render: focus needs laid-out items
     document.body.dataset.ui = screen;
-    this.render();
+    this.render(); MP.syncFlag(screen);
+    MP.afterShow(this, screen);
+    if (screen === 'title' && this.mpBooting) { this.mpBooting = false; MP.openEntry(this, 'join'); } // an invite link waits for the title
   }
   pop() {
     const prev = this.stack.pop(); if (!prev) return false;
     this.leaving();
-    this.screen = prev.screen; this.data = prev.data; this.focus = prev.focus; this.render(); document.body.dataset.ui = this.screen;
+    this.screen = prev.screen; this.data = prev.data; this.focus = prev.focus; this.render(); document.body.dataset.ui = this.screen; MP.syncFlag(this.screen);
     return true;
   }
   hide() {
     this.leaving(); this.mapView?.dispose(); this.mapView = null;
     this.screen = this.shown = null; this.stack.length = 0; this.root.innerHTML = '';
-    document.body.classList.remove('ui-open'); delete document.body.dataset.ui;
+    document.body.classList.remove('ui-open'); delete document.body.dataset.ui; MP.syncFlag(null);
   }
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
   render({ morph = false } = {}) {
@@ -117,7 +122,7 @@ export class Menu {
   /** re-render in place (a value changed that other rows depend on); focus stays on the same item even when others
    *  appear or disappear (e.g. DEFAULTS becomes available) */
   refresh() {
-    const id = (el) => el && ['key', 'act', 'ev', 'mapId', 'action', 'color'].map((k) => el.dataset[k]).find((v) => v != null);
+    const id = (el) => el && ['fid', 'key', 'act', 'ev', 'mapId', 'action', 'color'].map((k) => el.dataset[k]).find((v) => v != null);
     const want = id(this.items()[this.focus]);
     this.data.keepScroll = true; this.render({ morph: true });
     if (want != null) { const i = this.items().findIndex((el) => id(el) === want); if (i >= 0 && i !== this.focus) this.setFocus(i, false); }
@@ -184,7 +189,7 @@ export class Menu {
   }
   back() {
     this.h.ui?.(false);
-    if (this.screen === 'settings' && this.data.returnLobby) { this.pop() || this.hide(); const mp=window.__multiplayer;if(mp?.panel)mp.panel.hidden=false;return; }
+    if (MP.isMpScreen(this.screen)) { MP.back(this); return; }
     if (this.screen === 'pause') { this.h.resume(); return; }
     if (this.screen === 'results') { this.h.quit('title'); return; }
     const cancel = this.screen === 'car' ? this.data.onCancel : null;
@@ -208,6 +213,7 @@ export class Menu {
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
+    if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'mapLoad': selectMap(this,this.data.mapId,true);break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
@@ -226,28 +232,29 @@ export class Menu {
       case 'setupAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
       case 'setupGo': this.startSetup(); break;
       case 'setupReset': saveSetup(this.setupKey(), {}); this.refresh(); C.ui.toast('DEFAULTS RESTORED', { icon: 'arrow-counter-clockwise' }); break;
-      case 'mp': case 'mpJoin': window.__multiplayer.open({ entry: 'join' }); break;
-      case 'mpHost': window.__multiplayer.open({ entry: 'host' }); break;
+      case 'mp': case 'mpJoin': MP.openEntry(this, 'join'); break;
+      case 'mpHost': MP.openEntry(this, 'host'); break;
       case 'garage': this.h.garage(); break;
-      case 'fines': this.show('fines',{},true);break;
       case 'settings': this.show('settings', { from: this.screen, tab: 'audio' }, true); break;
       case 'back': this.back(); break;
       case 'resume': this.h.resume(); break;
       case 'retire': { const mp=window.__multiplayer;C.ui.prompt({title:'RETIRE FROM THIS RACE?',body:'This records a DNF. You can watch the remaining drivers.',actions:[{id:'retire',label:'RETIRE · DNF',variant:'primary'},{id:'cancel',label:'KEEP RACING'}]}).then(choice=>{if(choice==='retire'){mp?.retire();this.h.resume();}});break;}
       case 'reset': window.__flow?.resetCar?.(); break;
-      case 'onlineLobby': this.hide();window.__multiplayer?.open();break;
+      case 'onlineLobby': MP.openRoom(this); break;
       case 'restart': this.h.restart(); break;
       case 'quit': this.h.quit('title'); break;
       case 'retry': this.h.restart(); break;
       case 'next': this.h.next(this.data.next); break;
       case 'list': this.h.quit('title'); break;
       case 'menu': this.h.quit('title'); break;
+      case 'shareResult': this.h.shareResult?.(); break;
       case 'replay': window.__replay?.watch?.(); break;
     }
   }
   /** a component value changed (keyboard, gamepad, mouse or touch) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
+    if (MP.isMpScreen(this.screen) && MP.change(this, { key, value, el })) return;
     if (scope === 'participants') { this.participants = value; this.refresh(); return; }
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {
@@ -264,7 +271,13 @@ export class Menu {
     }
     if (scope === 'input') { controlsChange(this, key, value, el); return; }
     if (scope === 'setup') {
-      const id = this.setupKey(), s = loadSetup(id), f = setupFields(this.setupDef(), { closed: this.isClosed() }).find((x) => x.key === key);
+      const id = this.setupKey(), s = loadSetup(id), fields = setupFields(this.setupDef(), { closed: this.isClosed() }), f = fields.find((x) => x.key === key);
+      if (key === 'police') { // one row: OFF / RELAXED / NORMAL / TOUGH
+        const on = value !== 'off', lf = fields.find((x) => x.key === 'policeLevel');
+        s.police = on === f?.dflt ? null : on;
+        if (on) s.policeLevel = value === lf?.dflt ? null : value;
+        saveSetup(id, s); this.refresh(); return;
+      }
       s[key] = f && value === f.dflt ? null : value;
       saveSetup(id, s); this.refresh(); return;
     }
@@ -277,7 +290,7 @@ export class Menu {
   r_title() {
     return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
       <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">Real roads of Attica: the Athens Riviera, Penteli hill climb and Psychiko garden circuit.</p></div>
+      <p class="title__tag">${esc(mapTagline(MAPS))}</p></div>
       <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
         ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
@@ -291,6 +304,12 @@ export class Menu {
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="mode-select">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
+
+  // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
+  r_mp(d) { return MP.renderMp(this, window.__multiplayer, d); }
+  r_mpLobby() { return MP.renderLobby(this, window.__multiplayer); }
+  r_mpCars() { return MP.renderCars(this, window.__multiplayer); }
+  r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
   r_mapConfirm() { return renderMapConfirm(this.data.mapId); }
@@ -308,18 +327,20 @@ export class Menu {
   // ---------------------------------------------------------------- events
   eventsHere() {
     const ctx = this.h.ctx();
-    return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : getEvents(ctx.mapId).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
+    return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : (ctx.events || getEvents(ctx.mapId)).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
   }
   /** Session facts; Quick Race has no event medals or event records. */
   eventSummary(e, r) {
     const n = rivalCount(e);
     const facts = e.type === 'free' ? [['SESSION', 'FREE ROAM', 'car-profile'], ['ROAD', TRAFFIC(e.traffic ?? 1), 'traffic-cone']] :
       [['DISTANCE', fmtDist(r.len), 'path'], ['ROUTE', routeLine(r), 'map-pin'], ['FIELD', `${n + 1} CARS`, 'users-three'], ['ROAD', r.closed ? 'CLOSED CIRCUIT' : TRAFFIC(e.traffic ?? 1), 'traffic-cone']];
-    return `<div class="evs__top">${C.badge(e.type === 'free' ? 'FREE ROAM' : 'QUICK RACE')}${r.reverse ? C.badge('REVERSE', 'cyan', 'arrows-left-right') : ''}</div><h3 class="evs__name">${esc(e.type === 'free' ? 'Explore the map' : 'Your race')}</h3>${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}`;
+    const pb = e.type === 'free' ? null : this.h.personalBests?.(e, r);
+    const records = pb ? C.stats([['BEST · EXACT SETUP', pb.exact ? this.h.fmtTime(pb.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', pb.route ? this.h.fmtTime(pb.route.time) : '—']]) : '';
+    return `${records}<div class="evs__top">${C.badge(e.type === 'free' ? 'FREE ROAM' : 'QUICK RACE')}${r.reverse ? C.badge('REVERSE', 'cyan', 'arrows-left-right') : ''}</div><h3 class="evs__name">${esc(e.type === 'free' ? 'Explore the map' : 'Your race')}</h3>${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}`;
   }
 
   // ---------------------------------------------------------------- race setup (event detail)
-  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), quick: true, name: 'QUICK RACE' }; }
+  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
   setupKey() { const d = this.setupDef(); return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {
@@ -329,7 +350,10 @@ export class Menu {
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users-three', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
         note: cur.rivals > PERF_RIVALS ? `${icon('warning')} MORE THAN ${PERF_RIVALS} RIVALS CAN LOWER THE FRAME RATE` : f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: cur.rivals > PERF_RIVALS ? 'warn' : '' }));
-      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'police-car', value: String(cur.police), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['false', 'OFF'], ['true', 'ON']] }));
+      if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'police-car', value: cur.police ? cur.policeLevel : 'off', attrs: A, options: [['off', 'OFF'], ...POLICE_LEVELS],
+        note: !cur.police ? '' : cur.policeLevel === 'relaxed' ? 'LATE TO NOTICE, SLOW TO ESCALATE, FEW UNITS' : cur.policeLevel === 'tough' ? 'SHARP-EYED, LITTLE TOLERANCE, MORE UNITS' : 'A WARNING FROM +25 KM/H IN VIEW, A CHASE IF YOU KEEP GOING' }));
+      if (f.key === 'busted' && cur.police) rows.push(C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: String(cur.busted), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['true', 'ON'], ['false', 'OFF']],
+        note: cur.busted ? 'STOP NEXT TO A UNIT IN A CHASE AND YOU ARE PULLED OVER' : 'THEY CHASE YOU, THEY NEVER ARREST YOU' }));
       if (f.key === 'traffic') rows.push(C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: cur.traffic, type: 'num', dflt: f.dflt, attrs: A, options: f.levels.map(([, v, l]) => [v, l]) }));
       if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'arrows-clockwise', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len)} IN TOTAL` }));
       if (f.key === 'reverse') rows.push(C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: String(cur.reverse), type: 'bool', dflt: 'false', attrs: A, options: [['false', closed ? 'CLOCKWISE' : 'FORWARD'], ['true', closed ? 'ANTI-CLOCKWISE' : 'REVERSE']] }));
@@ -342,12 +366,12 @@ export class Menu {
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${this.eventSummary(runDef, r, runDef.id)}</aside>
         <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}YOUR RACE</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
-          <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police)"/.test(row)).join('') : ''}</div>${note}
+          <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}</div>${note}
           <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'HOST / CREATE GAME' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
-    if (this.participants === 'multiplayer') { window.__multiplayer.open({ mapId: this.h.ctx().mapId, eventId: def.id, mode: def.type, config: lobbyConfigToRaceSetup(resolveSetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() })) }); return; }
+    if (this.participants === 'multiplayer') { MP.openEntry(this, 'host', { mapId: this.h.ctx().mapId, eventId: def.id, mode: def.type, config: lobbyConfigToRaceSetup(resolveSetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() })) }); return; }
     this.h.openEvent(runDef);
   }
 
@@ -369,10 +393,11 @@ export class Menu {
       const level=(key,title,note)=>C.segmented({key,label:title,value:v(key),options:[['preset','PRESET · '+L[P[key]]],...LEVEL_IDS.map(id=>[id,id==='med'?'MED':L[id]])],note,attrs:SET});
       const screen=Math.min(globalThis.devicePixelRatio||1,2),presetRes=Math.min(screen,P.pixelRatio)/screen;
       body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}PRESET</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS PRESET', value: gfx.preset, options: PRESET_IDS.map(id=>[id,L[id]]), note:presetNote+' · APPLIES LIVE', attrs: SET })}</div>
-        <div class="group graphics-detail"><h3 class="group__title">${icon('sun')}LIGHTING & EFFECTS</h3>${level('lighting','LIGHTING','SHADOWS AND SHINY CAR REFLECTIONS · OFF IS FASTEST')}${level('effects','EFFECTS','SMOOTH EDGES, GLOW, MOTION BLUR, SOFT CORNER SHADING, WORKING MIRRORS, SEA REFLECTIONS, RAIN DETAIL · OFF IS FASTEST')}</div>
+        <div class="group graphics-detail"><h3 class="group__title">${icon('sun')}LIGHTING & EFFECTS</h3>${level('lighting','LIGHTING','SHADOWS AND SHINY CAR REFLECTIONS · OFF IS FASTEST')}${level('effects','EFFECTS','SMOOTH EDGES, GLOW, MOTION BLUR, SOFT CORNER SHADING, MIRROR SHARPNESS, SEA REFLECTIONS, RAIN DETAIL · OFF IS FASTEST')}</div>
         <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · NEVER CHANGES BY ITSELF',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
         <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'PRESET · '+(P.drawDistance>=1000?P.drawDistance/1000+' KM':P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
-          ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>
+          ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}
+          ${C.toggle({ key: 'mirrors', label: 'MIRRORS', value: settings.mirrors !== false, note: 'SEE BEHIND YOU · ON AT EVERY PRESET · REAR-VIEW STRIP IN THE CHASE CAMERA', attrs: SET })}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
     } else if (tab === 'driving') {
       body = `<div class="group"><h3 class="group__title">${icon('steering-wheel')}ASSISTS</h3>${C.toggle({ key:'showTyreGrip',label:'SHOW TYRE GRIP',value:settings.showTyreGrip,attrs:SET })}${C.toggle({ key: 'aids', label: 'TRACTION / STABILITY · TC ESC', value: settings.aids, attrs: SET })}${C.toggle({ key: 'abs', label: 'BRAKING ASSIST · ABS', value: settings.abs, attrs: SET })}
@@ -399,13 +424,8 @@ export class Menu {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${window.__flow?.finePhone?.count?C.option({icon:'list',title:'FINES · '+window.__flow.finePhone.count,act:'fines'}):''}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
-  }
-
-  r_fines() {
-    const entries=window.__flow?.finePhone?.history?.()||[];
-    return C.screen({title:'FINES',kick:'GAME TIME PENALTIES',hints:[['back','BACK']],body:C.panel('THIS SESSION',`<table class="r-table">${entries.map(e=>`<tr><td>${esc(e.title)}<small>${esc(e.label||'')}</small></td><td>+${Number(e.penaltySec).toFixed(1)} S</td></tr>`).join('')}</table>`)});
   }
 
   // Mode owner handlers; UI owner can restyle these with the rest of the pause menu.
@@ -429,8 +449,9 @@ export class Menu {
     return C.screen({ cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
       body: `<div class="res-layout"><div class="res-main">
         <h2 class="res-title">${esc(d.title || '')}</h2>${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
+        ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
-        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${window.__replay?.watch ? act('replay', 'film-strip', 'WATCH REPLAY') : ''}${act('list', 'list', 'MAIN MENU')}</div>
+        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${window.__replay?.watch ? act('replay', 'film-strip', 'WATCH REPLAY') : ''}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
       </div><div class="res-side scroll-y">${field}${splits}</div></div>` });
   }
 }

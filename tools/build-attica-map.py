@@ -65,7 +65,7 @@ def build():
     coasts=[LineString(e['p']) for e in elements if e['t'].get('natural')=='coastline']
     # Use the shipped geographic race routes and corridor elevation data.
     routes={}; terrain=[]
-    for id,file,binfile in [('riviera','data/map.json','data/terrain.bin'),('megara','data/maps/megara/map.json','data/maps/megara/terrain.bin'),('penteli','data/maps/penteli/map.json','data/maps/penteli/terrain.bin'),('psychiko','data/maps/psychiko/map.json','data/maps/psychiko/terrain.bin')]:
+    for id,file,binfile in [('riviera','data/map.json','data/terrain.bin'),('megara','data/maps/megara/map.json','data/maps/megara/terrain.bin'),('penteli','data/maps/penteli/map.json','data/maps/penteli/terrain.bin')]:
         d=json.loads((ROOT/file).read_bytes()); p=d['proj']
         convert=lambda x,z:project(p['lon0']+x/p['mlon'],p['lat0']-z/p['mlat'])
         pts=list(LineString([convert(x,z) for x,z in zip(d['route']['x'],d['route']['z'])]).simplify(.35).coords)

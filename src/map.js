@@ -29,6 +29,7 @@
 // Route space: s = distance along the route (Vouliagmeni -> Lomvarda), u = lateral offset, + = right.
 import * as THREE from 'three';
 import { clamp, lerp, smoothstep } from './util.js';
+import { conformRoadElevations } from './road-elevation.js';
 import { getMap } from './map-catalog.js';
 import { LocalCarriageways } from './local-carriageways.js';
 import { loadBakedWorldData } from './baked-world-data.js';
@@ -42,7 +43,6 @@ export class Route {
   constructor(r, { corridors = [] } = {}) {
     this.step = r.step; this._t = 0;
     this.closed = !!r.closed;
-    this.streetCircuit = r.streetCircuit === true;
     const N = this.N = r.x.length;
     this.X = Float32Array.from(r.x); this.Z = Float32Array.from(r.z); this.Y = Float32Array.from(r.y);
     this.LN = Float32Array.from(r.lanes); this.DV = Float32Array.from(r.div);
@@ -82,6 +82,9 @@ export class Route {
       this.GR[i] = (this.Y[b] - this.Y[a]) / (2 * this.step);
     }
     this.setLocalCorridors(corridors);
+    conformRoadElevations(this);
+    // Axis reference heights must share the final profile used by contacts.
+    for(const bore of this.localCorridors)for(let i=0;i<bore.stations.length;i++)bore.axis3D[i][1]=bore.point(bore.stations[i],0,{}).y;
   }
   setLocalCorridors(metadata) { this.localLayout = metadata.length ? new LocalCarriageways(this, metadata) : null; this.localCorridors = this.localLayout?.bores || []; }
   contactFrame(s, u, out = {}) { if (this.localLayout?.contains(s)) return this.localLayout.frame(s,u,out); this.frame(s,out); out.mapped=false; return out; }

@@ -62,8 +62,14 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     if(scope===car.body&&car.spec?.mass)car[side<0?'mirrorL':'mirrorR']=glass;
     const tip=center.clone().add(new THREE.Vector3(-side*width*.28,-height*.2,-depth*.25).applyQuaternion(orientation));
     const stalkRadius=bike||classic?.009:car.modelKind==='huracan'?.026:modern?.020:.019;
-    const arm=new THREE.Mesh(armGeometry(hit.point,tip,stalkRadius),car.materials.black||car.materials.chrome||car.paint);arm.name='mirror-stalk';arm.userData.mirrorArm=true;group.add(arm);
-    group.userData.mirrorRoot=hit.point.toArray();group.userData.mirrorCenter=center.toArray();scope.updateWorldMatrix(true,true);const shellCenter=scope.worldToLocal(new THREE.Box3().setFromObject(shell).getCenter(V()));group.userData.mirrorTipOffset=tip.clone().sub(shellCenter).toArray();group.userData.mirrorRadius=stalkRadius;
+    // A dog-leg arm: door metal -> an elbow just below and behind the housing -> up into the housing. The door root sits
+    // on the glass side of the glass plane, so a straight arm pierced the glass; the upper leg now lies wholly behind
+    // that plane and the lower one crosses it clear below the glass.
+    const elbow=center.clone().add(new THREE.Vector3(-side*width*.18,-(height*.37+stalkRadius*1.6),-depth*.3).applyQuaternion(orientation));
+    const armMat=car.materials.black||car.materials.chrome||car.paint;
+    const arm=new THREE.Mesh(armGeometry(hit.point,elbow,stalkRadius),armMat);arm.name='mirror-stalk';arm.userData.mirrorArm=true;group.add(arm);
+    const upper=new THREE.Mesh(armGeometry(elbow,tip,stalkRadius),armMat);upper.name='mirror-stalk-upper';upper.userData.mirrorArm=true;group.add(upper);
+    group.userData.mirrorRoot=hit.point.toArray();group.userData.mirrorCenter=center.toArray();scope.updateWorldMatrix(true,true);const shellCenter=scope.worldToLocal(new THREE.Box3().setFromObject(shell).getCenter(V()));group.userData.mirrorTipOffset=tip.clone().sub(shellCenter).toArray();group.userData.mirrorElbowOffset=elbow.clone().sub(shellCenter).toArray();group.userData.mirrorRadius=stalkRadius;
   }
 }
 // Mirror stalks remain separate from body batches and are re-seated after each
@@ -81,8 +87,11 @@ export function refreshMirrorAttachments(car){
     const bodyPoint=car.body.worldToLocal(scope.localToWorld(root.clone()));
     car.damageLattice?.sample(bodyPoint.x,bodyPoint.y,bodyPoint.z,bodyPoint);
     root.add(bodyPoint);const hit=nearestSurface(root,supports,scope);if(!hit)continue;
-    const center=new THREE.Box3().setFromObject(housing).getCenter(V());scope.worldToLocal(center);center.add(new THREE.Vector3().fromArray(group.userData.mirrorTipOffset));
-    arm.geometry.dispose();arm.geometry=armGeometry(hit.point,center,group.userData.mirrorRadius);
+    const shellCenter=new THREE.Box3().setFromObject(housing).getCenter(V());scope.worldToLocal(shellCenter);
+    const center=shellCenter.clone().add(new THREE.Vector3().fromArray(group.userData.mirrorTipOffset)),upper=group.getObjectByName('mirror-stalk-upper');
+    const elbow=upper&&group.userData.mirrorElbowOffset?shellCenter.clone().add(new THREE.Vector3().fromArray(group.userData.mirrorElbowOffset)):null;
+    arm.geometry.dispose();arm.geometry=armGeometry(hit.point,elbow||center,group.userData.mirrorRadius);
+    if(elbow){upper.geometry.dispose();upper.geometry=armGeometry(elbow,center,group.userData.mirrorRadius);}
     arm.userData.attachmentRoot=hit.point.toArray();arm.userData.attachmentTip=center.toArray();
   }
 }

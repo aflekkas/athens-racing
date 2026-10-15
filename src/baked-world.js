@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { loadBakedWorldData } from './baked-world-data.js';
 import { terrainMaterial, sampleH } from './terrain.js';
+import { installTerrainRefinement } from './terrain-refinement.js';
 import { roadNetworkMaterial } from './road-network.js';
 
 export async function loadBakedWorld(map, network) {
@@ -28,6 +29,7 @@ export function restoreBakedTerrain(pack, terrain, network, scene, options) {
   coarse.onBeforeCompile = mat.onBeforeCompile; coarse.customProgramCacheKey = mat.customProgramCacheKey;
   Object.assign(coarse, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 });
   const group = restoreGroup(pack, [mat, coarse]); scene.add(group);
+  installTerrainRefinement(terrain,group);
   terrain.Hc = pack.arrays[pack.metadata.height]; network.source = pack.arrays[pack.metadata.source];
   return { group, material: mat, heightC: (x, z) => sampleH(terrain, terrain.Hc, x, z) };
 }

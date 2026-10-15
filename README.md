@@ -1,8 +1,6 @@
 # Athens Street Racers
 
-A 3D browser racing game on real Greek roads: the Athens Riviera coast road, the Megara circuit, the Penteli hill climb and the Psychiko garden circuit. The Riviera runs along the coast road (Athinon-Souniou, EO91): from Vouliagmeni past Astir Beach and Lake Vouliagmeni, round the Limanakia coves, through Varkiza and along the bends to the Lomvarda cove. Leave the road if you like: pavements, dirt lay-bys and their humps are all drivable, and if you end up in the sea you're put back on the road. Race a rival through Athens traffic in the Mini Cooper S Cabrio, BMW Z4 M40i or Škoda Octavia taxi.
-
-Psychiko adds a 4.286 km public-road loop through Palaio Psychiko: Vasileos Pavlou, Diamantidou, Malakasi and Kallari, with EU-DEM hills, mapped villas, pine gardens and Greek street furniture. Choose Psychiko in Quick Race for the two-lap street race, or in Free Roam to explore it in traffic.
+A 3D browser racing game on real Greek roads: the Athens Riviera coast road, the Megara circuit and the Penteli hill climb. The Riviera runs along the coast road (Athinon-Souniou, EO91): from Vouliagmeni past Astir Beach and Lake Vouliagmeni, round the Limanakia coves, through Varkiza and along the bends to the Lomvarda cove. Leave the road if you like: pavements, dirt lay-bys and their humps are all drivable, and if you end up in the sea you're put back on the road. Race a rival through Athens traffic in the Mini Cooper S Cabrio, BMW Z4 M40i or Škoda Octavia taxi.
 
 Built with Three.js and a Node.js WebSocket lobby server. No build step.
 
@@ -41,6 +39,10 @@ For the current VPS, install `deploy/paraliaki-racing.service` in `~/.config/sys
 | R / Enter | Restart |
 | M | Radio on / off |
 | N | Next song |
+
+## Contributing
+
+All changes go through a pull request into `main`; CI must pass and @aflekkas reviews every PR. PRs that change anything visible need screenshots or video. Read [CONTRIBUTING.md](CONTRIBUTING.md) before your first PR.
 
 ## Data and credits
 

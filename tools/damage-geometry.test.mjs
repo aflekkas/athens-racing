@@ -13,6 +13,17 @@ function model({ bakedMirror = false } = {}) {
   if(bakedMirror){const tag=new THREE.Group();tag.userData.mirrorAssembly=true;tag.userData.mirrorRoot=[-.9,.8,-.5];tag.userData.mirrorTipOffset=[0,0,0];body.add(tag);}
   return installDamageSystem({ root,body,paint,dims:{L:4.4,W:1.84,H:1.5},wheels:[] });
 }
+test('online absolute damage produces identical geometry after different impact histories and clocks', () => {
+  const a=model(),b=model();
+  a.setDamage('front',.3,{localPoint:{x:-.6,y:.8,z:-2},ebs:16});a.setDamage('front',.64,{localPoint:{x:.5,y:.6,z:-2},ebs:12});
+  b.setDamage('front',.64,{localPoint:{x:.1,y:.4,z:-2},ebs:20});b.setDamage('right',.2,{ebs:8});
+  const snapshot={front:.64,rear:.13,left:.28,right:.42};a.setDamageSnapshot(snapshot);b.setDamageSnapshot(snapshot);
+  for(let i=0;i<11;i++)a.updateDamage(.1);b.updateDamage(.01);
+  assert.deepEqual(a.damageMeshes.map(m=>Array.from(m.geometry.attributes.position.array)),b.damageMeshes.map(m=>Array.from(m.geometry.attributes.position.array)));
+  const parts=c=>c.damageParts.map(p=>({id:p.id,state:p.state,visible:p.node.visible,position:p.node.position.toArray(),rotation:p.node.rotation.toArray()}));
+  assert.deepEqual(parts(a),parts(b));assert.equal(a.damageDebris.length+b.damageDebris.length,0);
+  a.setDamageSnapshot({});b.setDamageSnapshot({});assert.deepEqual(a.damage,b.damage);a.disposeDamage();b.disposeDamage();
+});
 test('a physical wall crash produces visible deformation, broken parts and repairable state', () => {
   const car=model(),v=new Vehicle(spec,route),rest=car.damageMeshes.map(m=>m.geometry.attributes.position.array.slice());
   v.addDamage('front',60/3.6,{kind:'wall'});

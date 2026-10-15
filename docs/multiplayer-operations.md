@@ -17,7 +17,9 @@ For a clean deployment proof:
    Allow pending platform updates to settle (the Wrangler default deferred code
    update deadline is five minutes, in addition to global propagation). Run a
    separate warm-up and keep log-session configuration unchanged throughout
-   the proof. Do not count failures during propagation as a completed proof.
+   the proof. Wrangler can reconnect its tail session; after closing the CLI,
+   confirm the Worker tails API lists no remaining sessions before calling a
+   run unobserved. Do not count failures during propagation as a completed proof.
 2. Run twenty sequential full races without retrying failed rounds. Alternate
    Riviera and Penteli, retain each exit code and full log, and record the
    deployed version. For example:
@@ -25,7 +27,10 @@ For a clean deployment proof:
 3. Use `/health` for the arena instance ID and connection counts. A new instance
    after an idle period can be ordinary hibernation; a new instance accompanied
    by all sockets closing indicates replacement. Health contains no tokens.
-4. If a tail is necessary, open it before a separate reproduction run, allow its
+4. Distinguish arena replacement from an individual transport reset. A 1006
+   with an unchanged arena instance is insufficient evidence of a DO failure;
+   a control Worker socket that bypasses GameArena can isolate this distinction.
+5. If a tail is necessary, open it before a separate reproduction run, allow its
    update to settle, and retain its lifecycle notices as well as event logs.
    WebSocket logs can be delayed until connections close. Entry-point failures
    log phase, instance ID and the original stack and continue to throw.

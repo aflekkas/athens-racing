@@ -116,12 +116,6 @@ const MAPS = {
     rawNodes: () => readMaybeGz(path.join(ROOT, 'tools/maps/penteli/raw/osm.json')).elements,
     edgeAt: () => () => 6.8 / 2,
   },
-  psychiko: {
-    mapPath: 'data/maps/psychiko/map.json',
-    rawWays: () => readMaybeGz(path.join(ROOT, 'tools/maps/psychiko/raw/osm.json')).elements,
-    rawNodes: () => readMaybeGz(path.join(ROOT, 'tools/maps/psychiko/raw/osm.json')).elements,
-    edgeAt: () => () => 7 / 2,
-  },
   megara: {
     mapPath: 'data/maps/megara/map.json',
     rawWays: () => readJSON(path.join(ROOT, 'tools/maps/megara/raw/context.json')),
@@ -181,14 +175,12 @@ function inject(id) {
     }
   }
 
-  const routeWayIds = data[id]?.sourceWayIds;
-  const nearestRouteWay = routeWayIds ? wayTagIndex(ways.filter(w => routeWayIds.includes(w.id)), proj) : nearestWay;
-  // 1. route limits every 10 m from the nearest source route way
+  // 1. route limits every 10 m from the nearest OSM way
   const stations = [];
-  if (!closed || route.streetCircuit) {
+  if (!closed) {
     for (let s = 0; s <= length; s += 10) {
       const i = Math.round(s / route.step);
-      const q = nearestRouteWay(route.x[i], route.z[i]);
+      const q = nearestWay(route.x[i], route.z[i]);
       stations.push({ s, tag: q?.tags.maxspeed ?? null, urban: urban(s), highway: q?.tags.highway ?? '' });
     }
     route.speeds = buildRouteSpeeds(stations);
@@ -237,7 +229,7 @@ function inject(id) {
     const e = edgeAt(o.s);
     if (Math.abs(o.u) < e + 0.6) o.u = Math.round(o.dir * (e + 2.2) * 10) / 10;
   }
-  const inferred = closed && !route.streetCircuit ? [] : inferSigns(route.speeds, { edgeAt, closed });
+  const inferred = closed ? [] : inferSigns(route.speeds, { edgeAt, closed });
   data.speedSigns = mergeSigns(osm, inferred);
   data.speedCameras = cameras;
 

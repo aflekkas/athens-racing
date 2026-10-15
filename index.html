@@ -42,6 +42,7 @@
 <link rel="stylesheet" href="./style.css" />
 <link rel="stylesheet" href="./src/multiplayer.css" />
 <link rel="stylesheet" href="./src/menu.css" />
+<link rel="stylesheet" href="./src/menu-backdrop.css" />
 <link rel="stylesheet" id="headunit-css" href="./src/ui/headunit.css" />
 <script type="importmap">
 { "imports": {
@@ -88,14 +89,16 @@
 
 <div id="credit">Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Elevation EU-DEM v1.1 · <a href="./assets/audio/engines/CREDITS.txt" target="_blank" rel="noopener">Sound credits</a></div>
 
-<!-- loading screen (first boot and every map switch): src/ui/loading.js -->
-<div id="loading" class="open" role="status" aria-live="polite" aria-busy="true">
+<!-- Map loading appears only after choosing a session: src/ui/loading.js -->
+<div id="menu-backdrop" aria-hidden="true"></div>
+<div id="loading" role="status" aria-live="polite" aria-hidden="true" inert>
   <div class="ld-art" id="ldArt"></div>
   <div class="ld-shade"></div>
   <div class="ld-wrap">
     <div class="ld-brand"><img class="brand-mark" src="assets/icon.svg" alt="" /><span class="wordmark wordmark--sm"><b>ATHENS</b><b>STREET RACERS</b></span></div>
     <div class="ld-map">
       <div class="kick"><span id="ldKind">POINT TO POINT</span> <span class="ld-dot"></span> <span id="ldLen">10.3 KM</span></div>
+      <p class="kick" id="ldContext"></p>
       <h1 id="ldName">ATHENS RIVIERA</h1>
       <p id="ldSub">Vouliagmeni → Lomvarda</p>
     </div>
@@ -129,7 +132,6 @@
 <!-- title / events / settings / pause / results: src/menu.js -->
 <div id="ui"></div>
 <div id="fade"></div>
-<div id="camflash"></div>
 <div id="err"></div>
 <script type="module" src="./src/main.js"></script>
 </body>

@@ -265,7 +265,7 @@ function corners(o) {
  */
 export function buildRoadside(map, scene, heightC, assets = {}) {
   const { route, data } = map, { mats, models } = createRoadsideModels();
-  const group = new THREE.Group(); group.name = 'Greek residential roadside';
+  const group = new THREE.Group(); group.name = 'Athens Riviera roadside';
   const footing = new Model('footing', mats, { hw: .5, hl: .5 });
   footing.box('concrete', 0, -.5, 0, 1, 1, 1, '#bab8ac').solid(0, 0, .5, .5).finish();
   const obstacles = [], occupied = [], pools = new Map(), placements = [];
@@ -404,20 +404,15 @@ export function buildRoadside(map, scene, heightC, assets = {}) {
     }
     // A stop pole is only added for real OSM stops above, never an invented bus stop at the beach.
   }
-  // Short villa boundary runs leave driveways and mapped junctions open.
-  const villaRanges = route.streetCircuit
-    ? [{ from: 20, to: route.length - 20, sides: [-1, 1] }]
-    : Number.isFinite(marks.varkiza)
-      ? [{ from: Math.max(0, marks.varkiza - 370), to: Math.min(route.length, marks.varkiza + 440) }]
-      : [];
-  for (const range of villaRanges) for (let s = range.from; s < range.to; s += 29) {
-    if (route.urban(s) < .45) continue;
-    for (const side of range.sides || [-seaSide(s)]) {
-      if (route.streetCircuit && map.roadNetwork?.mouth(s, side, 12)) continue;
+  // Varkiza villa boundaries: short separated runs leave driveway openings and side streets clear.
+  if (Number.isFinite(marks.varkiza)) {
+    for (let s = Math.max(0, marks.varkiza - 370); s < Math.min(route.length, marks.varkiza + 440); s += 29) {
+      if (route.urban(s) < .45) continue;
+      const side = -seaSide(s);
       if ((data.sideRoads || []).some(r => Number.isFinite(r.s) && Math.abs(r.s - s) < 12)) continue;
       for (const ds of [-3, 3]) {
         const ss = s + ds, u = side * (route.edge(ss) + ROAD.gutter + ROAD.sidewalk(route, ss, side) + 1.35);
-        place('villa', ss, u, { slope: route.streetCircuit ? 1.2 : .42 });
+        place('villa', ss, u, { slope: .42 });
       }
     }
   }

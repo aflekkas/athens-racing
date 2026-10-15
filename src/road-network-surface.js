@@ -47,7 +47,8 @@ export class RoadNetwork {
  }
  mainInside(x,z){if(!this.nearMain(x,z))return false;const q=this.project(x,z);return (this.route.closed||q.s>=-60&&q.s<=this.route.length+60)&&Math.abs(q.u)<=this.route.edge(q.s)+this.mainMargin;}
  mouth(s,side,padding=0){const p=this.route.point(s,side*(this.route.edge(s)+this.mainMargin+.6));for(const seg of this.candidates(p.x,p.z))if(this.distance(seg,p.x,p.z)<seg.hw+padding)return true;return false;}
- height(x,z){const mesh=this.meshHeight(x,z);if(mesh!==null)return mesh;const dem=triangleHeight(this.terrain,this.source||this.terrain.H,x,z)+.055;if(!this.nearMain(x,z))return dem;const q=this.project(x,z),edge=this.route.edge(q.s)+this.mainMargin,au=Math.abs(q.u),t=!this.route.closed&&(q.s< -60||q.s>this.route.length+60)?1:smooth(edge,edge+24,au);const y=this.route.surfaceY(q.s,clamp(q.u,-edge,edge));return y*(1-t)+dem*t;}
+ height(x,z){const mesh=this.meshHeight(x,z);if(mesh!==null)return mesh;const terrain=this.terrain.refinedHeight?.(x,z);return terrain==null?this.baseHeight(x,z):terrain+.10;}
+ baseHeight(x,z){const dem=triangleHeight(this.terrain,this.source||this.terrain.H,x,z)+.055;if(!this.nearMain(x,z))return dem;const q=this.project(x,z),edge=this.route.edge(q.s)+this.mainMargin,au=Math.abs(q.u),t=!this.route.closed&&(q.s< -60||q.s>this.route.length+60)?1:smooth(edge+12,edge+32,au);const y=this.route.surfaceY(q.s,clamp(q.u,-edge,edge));return y*(1-t)+dem*t;}
  prepareTerrain(H,stamp,base=H){this.source=base.slice();const t=this.terrain;
   const carved=new Uint8Array(H.length);
   // A DEM cell ring around every strip protects interpolation from tall corners and disables invented rock relief.

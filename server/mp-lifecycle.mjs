@@ -10,9 +10,11 @@
 //               whose generation is present but stale (see isStaleGeneration).
 //   config      shared mode setup, same semantics as src/race-setup.js:
 //               { rivals, traffic, time, weather, reverse, police,
-//                 sessionDuration, enforcement }
+//                 sessionDuration, enforcement } plus the optional police setup
+//               policeLevel ('relaxed' | 'normal' | 'tough') and busted (bool);
+//               absent means NORMAL and can be busted.
 //   mode        derived from the event (its type string), never set directly.
-import { TIMES, WEATHERS, MAX_RIVALS } from '../src/race-setup.js';
+import { TIMES, WEATHERS, MAX_RIVALS, isPoliceLevel } from '../src/race-setup.js';
 import { isDrivingMode, createObjectiveState, stepObjectives, objectiveSnapshot, objectiveResult } from '../src/driving-objectives.js';
 
 export const MP_RIVALS_MIN = 0;
@@ -71,6 +73,11 @@ export function sanitizeConfig(input, def = {}) {
   }
   if (input.reverse !== undefined) out.reverse = input.reverse === true;
   if (input.police !== undefined) out.police = input.police === true;
+  if (input.policeLevel !== undefined) {
+    if (!isPoliceLevel(input.policeLevel)) return { error: 'Unknown police level.' };
+    out.policeLevel = input.policeLevel;
+  }
+  if (input.busted !== undefined) out.busted = input.busted !== false;
   if (input.sessionDuration !== undefined) {
     const d = Math.round(Number(input.sessionDuration));
     if (!Number.isFinite(d) || d < MP_SESSION_DURATION_MIN || d > MP_SESSION_DURATION_MAX) return { error: 'Session length must be 30-900 seconds.' };
@@ -128,9 +135,10 @@ export function effectiveEvent(def, config) {
 
 // Keys that offer a different race: everyone must re-ready. Time, weather,
 // rivals, session length and enforcement never invalidate readiness.
-const RACE_CHANGING_KEYS = ['traffic', 'reverse', 'police'];
+const RACE_CHANGING_KEYS = ['traffic', 'reverse', 'police', 'policeLevel', 'busted'];
+const KEY_DEFAULTS = { policeLevel: 'normal', busted: true };
 export function configInvalidates(prev = {}, next = {}) {
-  return RACE_CHANGING_KEYS.some(k => (prev[k] ?? null) !== (next[k] ?? null));
+  return RACE_CHANGING_KEYS.some(k => (prev[k] ?? KEY_DEFAULTS[k] ?? null) !== (next[k] ?? KEY_DEFAULTS[k] ?? null));
 }
 
 export function nextGeneration(lobby) {
@@ -145,7 +153,7 @@ export function isStaleGeneration(lobby, message) {
 }
 
 const clearRun = (lobby) => {
-  for (const p of lobby.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.enfPenalty = 0; p.enfSeen = null; p.course = null; }
+  for (const p of lobby.players.values()) { p.state = null; p.stateAt = null; p.finish = null; p.dnf = false; p.course = null; }
 };
 
 // Host cancels an active or finished race back to a waiting lobby.
@@ -230,26 +238,13 @@ export function stepPlayerObjective(lobby, playerId, nowMs, pose) {
 export function snapshotPlayerObjective(lobby, playerId) {
   const st = lobby.objectives?.get(playerId);
   if (!st) return null;
-  const snap = objectiveSnapshot(st);
-  return st.penaltySec ? { ...snap, penaltySec: st.penaltySec } : snap;
+  return objectiveSnapshot(st);
 }
 
 export function resultPlayerObjective(lobby, playerId) {
   const st = lobby.objectives?.get(playerId);
   if (!st) return null;
-  const res = objectiveResult(st);
-  return st.penaltySec ? { ...res, penaltySec: st.penaltySec } : res;
-}
-
-// Meaningful fine for objective modes (no finish to pad): cut the driver's
-// deadline on the same receiver-secs clock and record plain penalty seconds.
-// Bounded per fine; the next step timeups when the cut passes the deadline.
-export function applyObjectivePenalty(lobby, playerId, penaltySec) {
-  const st = lobby.objectives?.get(playerId);
-  if (!st) return 0;
-  const cut = Math.min(Math.max(0, Number(penaltySec) || 0), 300);
-  if (cut > 0) { st.deadline -= cut; st.penaltySec = (st.penaltySec || 0) + cut; }
-  return cut;
+  return objectiveResult(st);
 }
 
 export function objectiveRoundDone(lobby, playerId) {
@@ -334,11 +329,15 @@ export function pickTyreTelemetry(v) {
 // persist on c.state (numeric registry fields + engine/tyre objects).
 export function validateStateExtras(s, ctx = {}) {
   const extras = {};
+  if (typeof s?.braking === 'boolean') extras.braking = s.braking;
+  // The driver's own police pursuit (src/police.js encodePursuit), for the world authority's shared units.
+  if (Number.isSafeInteger(s?.pursuit) && s.pursuit >= 0 && s.pursuit <= 2047) extras.pursuit = s.pursuit;
   for (const [name, { min, max }] of telemetryFields) {
     const v = s?.[name];
     if (v === undefined) continue;
     if (Number.isFinite(v) && v >= min && v <= max) extras[name] = v;
   }
+  for (const [key, limit] of [['bodyHeave', 3], ['bodyPitch', 6.3], ['bodyRoll', 6.3]]) if (Number.isFinite(s?.[key]) && Math.abs(s[key]) <= limit) extras[key] = s[key];
   Object.assign(extras, pickEngine(s || {}));
   const tyres = pickTyreTelemetry(s?.tyreTelemetry);
   if (tyres !== undefined) extras.tyreTelemetry = tyres;

@@ -75,7 +75,7 @@ export function buildCourse(event, route) {
   for (const cp of event.checkpoints || []) { const d = (cp.s - event.s0) * dir; if (d > 0 && d < len) distances.add(d); }
   const gates = [...distances].sort((a, b) => a - b).map((d, i) => ({ id: `gate-${i + 1}`, d, s: event.s0 + dir * d, ...checkpointFrame(route, event.s0 + dir * d, dir) }));
   const start = roadFrame(route, event.s0);
-  return { s0: event.s0, dir, gates, passed: 0, missed: false, previous: { s: event.s0, u: 0, x: start.x, y: start.y, z: start.z }, previousTime: null };
+  return { s0: event.s0, dir, gates, passed: 0, missed: false, gateTimes: [], previous: { s: event.s0, u: 0, x: start.x, y: start.y, z: start.z }, previousTime: null };
 }
 export function courseStatus(course) {
   const gate = course.gates[course.passed];
@@ -89,7 +89,7 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
   const continuous = Math.abs(pose.s - prev.s) <= 30 + 150 * dt && (!finite(pose.x) || Math.hypot(pose.x - prev.x, pose.z - prev.z) <= 15 + 150 * dt);
   let gate = course.gates[course.passed];
   if (!recovery && continuous) while (gate) {
-    let crossed = false, valid = false;
+    let crossed = false, valid = false, crossingFraction = 1;
     // Five metres of station tolerance accommodates curved lane projection;
     // the physical crossing still decides whether the gate was actually passed.
     if (finite(pose.x) && finite(pose.z)) {
@@ -102,16 +102,18 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
         const x = prev.x + (pose.x - prev.x) * fraction, z = prev.z + (pose.z - prev.z) * fraction;
         const y = (prev.y || 0) + ((pose.y || 0) - (prev.y || 0)) * fraction;
         const lateral = (x - lane.x) * -lane.tz + (z - lane.z) * lane.tx;
-        if (Math.abs(lateral) <= lane.halfWidth && Math.abs(y - lane.y) <= 8) valid = true;
+        if (Math.abs(lateral) <= lane.halfWidth && Math.abs(y - lane.y) <= 8) { valid = true; crossingFraction = Math.min(crossingFraction, fraction); }
       }
     } else {
       crossed = d0 < gate.d && d1 >= gate.d;
+      crossingFraction = (gate.d - d0) / (d1 - d0);
       valid = Math.abs(pose.u ?? 0) <= gate.halfWidth; // geometry-free test fixtures
     }
     // Each carriageway has its own plane. Crossing the other bore's infinite
     // plane outside its width says nothing about the gate on our lane. Keep
     // the gate pending; the station tolerance below decides when it is missed.
     if (!crossed || !valid) break;
+    (course.gateTimes ||= [])[course.passed] = now - dt + dt * crossingFraction;
     course.passed++; course.missed = false; gate = course.gates[course.passed];
   }
   if (gate && d1 > gate.d + 5) course.missed = true;

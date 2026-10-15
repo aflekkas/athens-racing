@@ -11,17 +11,19 @@ export function patrolPlan(route, data = {}, junctions = []) {
   const roam = (id, fraction, dir) => ({ id, s: route.length * fraction, dir, fixed: false, moto: dir < 0 });
   let sites = [];
   if (mark('astir') != null && mark('varkiza') != null) {
-    // A village junction, Varkiza, one long straight and a single roaming car: sparse, so
-    // a unit is an event on the coast road rather than a fixture every kilometre.
+    // A car coming towards you from Limanakia, Limanakia, Varkiza, one long straight and the coast junction: a unit every
+    // 1-2 minutes of race pace in either direction, none parked at a start grid (you'd be warned leaving it).
     let straight = Math.min(route.length - 200, mark('varkiza') + 1400), best = Infinity;
     for (let s = mark('varkiza') + 900; s < Math.min(route.length - 200, mark('varkiza') + 2300); s += 40) {
       const bend = Math.max(...[-60, -30, 0, 30, 60].map(d => Math.abs(route.curv(s + d))));
       if (bend < best) { best = bend; straight = s; }
     }
-    sites = [fixed('vouliagmeni-junction', atJunction(220)), fixed('varkiza-junction', atJunction(mark('varkiza'))),
-      fixed('coast-speed-trap', straight), roam('coast-roam', .28, 1)];
+    sites = [fixed('limanakia', atJunction(mark('limanakia'))), fixed('varkiza-junction', atJunction(mark('varkiza'))),
+      fixed('coast-speed-trap', straight), fixed('coast-junction', atJunction(mark('coast'))), roam('coast-roam', .2, -1)];
   } else if (mark('dionysos') != null) {
-    sites = [fixed('dionysos-village', atJunction(mark('dionysos')), true), roam('penteli-roam', .78, -1)];
+    // Off the Dionysos grid: Rapentosa (a motorbike), Agios Petros, the top of the climb, and a car coming down.
+    sites = [fixed('rapentosa', atJunction(mark('rapentosa')), true), fixed('agios-petros', atJunction(mark('agios-petros'))),
+      fixed('penteli-climb', atJunction(mark('penteli-climb'))), roam('penteli-roam', .45, -1)];
   } else if (marks.length && !route.closed) {
     sites = [fixed('village-patrol', atJunction(marks[0].s)), roam('road-roam', .7, 1)];
   } else if (route.closed) {

@@ -1,8 +1,10 @@
+import { ReconnectHistory, reconnectDelay } from './reconnect-history.js';
 import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion, clientHello } from './multiplayer-protocol.js';
 import { renderLiveBoard } from './ui/live-board.js';
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
 import { StateSender } from './multiplayer-state.js';
+import { ServerClock } from './server-clock.js';
 import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 import { driverName } from './driver-name.js';
@@ -17,20 +19,23 @@ export class Multiplayer {
     this.cars = cars; this.hooks = hooks; this.id = null; this.lobby = null;
     this.offset = 0; this.latency = 0; this.peers = new Map(); this.startedRace = null;
     this.token = null; try { this.token = sessionStorage.getItem('paraliaki.session'); } catch {}
-    this.connected = false; this.resumeCount = 0; this.events = []; this.resumeState = null; this.spectateIndex = 0; this.spectateAt = 0;
+    this.connected = false; this.reconnectAttempt = 0; this.reconnectHistory = new ReconnectHistory(); this.resumeCount = 0; this.events = []; this.resumeState = null; this.spectateIndex = 0; this.spectateAt = 0;
     this.loaded = false; this.mapId = null; this.preparing = null; this.failedMap = null; this.pendingResume = false;
     this.maps = []; this.trackVersion = null; this.pendingCode = new URLSearchParams(location.search).get('lobby');
     this.stateBatching = false; this.finishSent = null; this.wreckedRace = null; this.wreckSent = false;
-    this.stateSender = new StateSender(packet => { if (this.connected && this.worldReady && this.lobby?.raceId === packet.raceId) { packet.generation = this.lobby?.generation || 0; this.send(packet); } });
+    this.stateSender = new StateSender(packet => {
+      this.reconnectHistory.record(packet);
+      if (this.connected && this.worldReady && this.lobby?.raceId === packet.raceId && !this.reconnectHistory.replaying) { packet.generation = this.lobby?.generation || 0; this.send(packet); }
+    });
     this.panel = document.createElement('section'); this.panel.id = 'multiplayer'; this.panel.hidden = true;
     this.panel.setAttribute('aria-label', 'Multiplayer lobbies');
     this.panel.setAttribute('role', 'dialog'); this.panel.setAttribute('aria-modal', 'true');
     this.panel.innerHTML = `<div class="mp-card"><div class="mp-heading"><div><small>ATHENS RIVIERA · LIVE RACING</small><h2>MULTIPLAYER</h2></div><button id="mp-close" aria-label="Close multiplayer">×</button></div>
       <p id="mp-status" role="status">Connecting…</p>
       <div id="mp-browser"><form id="mp-join-form" class="mp-join-hero"><div><small>HAVE AN INVITE?</small><h3>JOIN BY CODE</h3><p>Enter the host’s six-character lobby code.</p></div><label>LOBBY CODE<input id="mp-code" maxlength="6" placeholder="ABC123" aria-label="Lobby code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button type="submit">JOIN LOBBY →</button></form><input type="hidden" id="mp-car">
-      <details class="mp-create-fold"><summary>HOST / CREATE GAME</summary><div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<select id="mp-create-map"></select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div></details>
+      <details class="mp-create-fold"><summary>HOST / CREATE GAME</summary><div class="mp-create"><input id="mp-lobby-name" maxlength="28" placeholder="Lobby name" aria-label="Lobby name"><label class="mp-map-field">TRACK<ui-select id="mp-create-map"></ui-select></label><label class="mp-toggle-field"><input type="checkbox" id="mp-private"> Invite only</label><button id="mp-create">CREATE LOBBY</button></div></details>
       <div class="mp-section"><h3>BROWSE OPEN LOBBIES</h3><button id="mp-refresh">REFRESH</button></div><div id="mp-list"></div></div>
-      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<select id="mp-room-car"></select></label><label>TRACK<select id="mp-map"></select></label><label>MODE<select id="mp-event"></select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
+      <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<ui-select id="mp-room-car"></ui-select></label><label>TRACK<ui-select id="mp-map"></ui-select></label><label>MODE<ui-select id="mp-event"></ui-select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
       <button id="mp-leaderboard">VIEW BEST TIMES</button><div id="mp-times" hidden></div><p class="mp-note">2–8 drivers · Player collisions on · Shared traffic off · 10-minute race limit · Rejoin within 90 seconds after a disconnect</p></div>`;
     document.body.append(this.panel);
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
@@ -56,6 +61,7 @@ export class Multiplayer {
     $('mp-leaderboard').onclick = () => this.showLeaderboard();
     $('mp-copy').onclick = async () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('lobby', this.lobby.code); u.searchParams.set('map', this.lobby.mapId || 'riviera'); try { await navigator.clipboard.writeText(u.href); this.status('Invite link copied.'); } catch { this.status('Invite link: ' + u.href); } };
     driverName.onChange(name => { if (this.connected) this.send({ type: 'name', name }); });
+    this.connectionChip = document.createElement('aside'); this.connectionChip.className = 'mp-connection-chip'; this.connectionChip.hidden = true; this.connectionChip.setAttribute('role', 'status'); this.connectionChip.textContent = 'Reconnecting…'; document.body.append(this.connectionChip);
     this.connect();
     this.timer = setInterval(() => { if (this.ws?.readyState === WebSocket.OPEN) this.send({ type: 'ping', sent: Date.now() }); }, 30000);
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }
@@ -155,15 +161,6 @@ export class Multiplayer {
     this.send({ type: 'to-lobby' }); return true;
   }
   transferHost(id) { this.send({ type: 'transfer', to: id }); }
-  // Laws integration: call after a state sample so the server holds a fresh
-  // accepted snapshot near the site. No state cadence change. Acknowledgements
-  // arrive as hooks.fine({ id, kind, penalty, now }).
-  sendViolation(entry = {}) {
-    if (!this.lobby?.raceId) return false;
-    const { type, ...rest } = entry || {};
-    this.send({ type: 'violation', at: Date.now(), raceId: this.lobby.raceId, generation: this.lobby.generation || 0, ...rest });
-    return true;
-  }
   get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
@@ -215,14 +212,14 @@ export class Multiplayer {
   }
   hidePanel() { if (this.panel.contains(document.activeElement) || document.activeElement === this.button) document.activeElement.blur(); this.panel.hidden = true; this.hooks.clearInput(); this.hooks.panelClosed?.(); }
   close() { this.hidePanel(); }
-  send(data) { if (this.reloadRequired) return; if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(data)); else this.status('Multiplayer is offline. Reconnecting…'); }
+  send(data) { if (this.reloadRequired) return; if (this.ws?.readyState === WebSocket.OPEN) { try { this.ws.send(JSON.stringify(data)); } catch { this.retryConnection(this.ws); } } else this.status('Multiplayer is offline. Reconnecting…'); }
   action(type, extra) {
     const name = driverName.get();
     this.send({ type, name, ...this.hooks.appearance?.(), driverId: driverId(), car: this.$('mp-car').value, ...(type === 'create' ? { mapId: this.$('mp-create-map').value || 'riviera' } : {}), ...extra });
   }
   requireReload() {
     if (this.reloadRequired) return;
-    this.reloadRequired = true; this.connected = false;
+    this.reloadRequired = true; this.connected = false; this.connectionState(false);
     clearTimeout(this.reconnectTimer); clearInterval(this.timer);
     this.hooks.clearInput(); this.stateSender.reset();
     this.cancelRecovery('Game updated. Reload to reconnect.');
@@ -238,6 +235,22 @@ export class Multiplayer {
     button.onclick = () => location.reload();
     notice.append(label, button); document.body.append(notice);
   }
+  connectionState(reconnecting) {
+    this.reconnecting = reconnecting;
+    if (this.connectionChip) this.connectionChip.hidden = !reconnecting || !this.active;
+    if (!reconnecting) { this.reconnectAttempt = 0; clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+  }
+  retryConnection(ws) {
+    if (this.ws !== ws || this.reloadRequired || this.reconnectTimer != null) return;
+    this.connected = false; this.connectionState(true);
+    const delay = reconnectDelay(this.reconnectAttempt || 0); this.reconnectAttempt = (this.reconnectAttempt || 0) + 1;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (this.ws !== ws || this.reloadRequired) return;
+      try { ws.close(); } catch {}
+      this.connect();
+    }, delay);
+  }
   connect() {
     if (this.reloadRequired) return;
     const url = new URL('ws', location.href); url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'; url.pathname = '/ws'; url.search = ''; url.hash = '';
@@ -250,43 +263,51 @@ export class Multiplayer {
       if (this.ws !== ws || this.reloadRequired) return;
       if (e.data === 'alive') return;
       const m = JSON.parse(e.data);
+      if (Number.isFinite(m.now)) this.offset = (this.serverClock ||= new ServerClock()).observe(m.now, Date.now(), m.type === 'pong' ? m.sent : null);
       if (m.type === 'reload' && m.reason === 'update') { this.requireReload(); return; }
       if (m.type === 'hello') {
         if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { this.requireReload(); ws.close(UPDATE_CLOSE_CODE, 'Game updated, reload'); return; }
         // Immediate 10 Hz samples avoid an additional 100–200ms batching delay.
         this.stateBatching = false;
-        this.offset = m.now - Date.now(); if (!this.loaded) this.trackVersion = m.track.version;
+        if (!this.loaded) this.trackVersion = m.track.version;
         this.maps = getPlayableMaps(m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]);
         this.events = m.events || this.maps.flatMap(map => (map.events || []).map(e => ({ ...e, mapId: map.id })));
         for (const id of ['mp-create-map', 'mp-map']) { this.$(id).replaceChildren(); for (const map of this.maps) { const option = document.createElement('option'); option.value = map.id; option.textContent = map.name; this.$(id).append(option); } }
         if (this.maps.some(map => map.id === this.mapId)) this.$('mp-create-map').value = this.mapId;
         this.renderEvents(this.lobby?.mapId || 'riviera');
         if (this.token) this.send({ type: 'resume', token: this.token });
-        else { this.id = m.id; this.saveToken(m.token); this.connected = true; this.status('Connected · find a lobby or create your own.'); }
+        else { this.id = m.id; this.saveToken(m.token); this.connected = true; this.connectionState(false); this.status('Connected · find a lobby or create your own.'); }
         this.send({ type: 'name', name: driverName.get() });
       }
       else if (m.type === 'session') {
+        if (!m.resumed && this.active) { this.connected = false; this.status('Connection lost. Driving continues while we retry.'); this.retryConnection(ws); return; }
         this.id = m.id; this.saveToken(m.token);
         if (!m.resumed || !m.lobby) this.connected = true;
         if (!m.resumed) { this.left(); this.status('Your previous session expired. Join or create a lobby.'); }
         else if (!m.lobby) this.left();
       }
-      else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); this.offset = m.now - (m.sent + Date.now()) / 2; }
+      else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); }
       else if (m.type === 'world' && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.world?.(m.world, Math.max(0, (this.now() - m.now) / 1000));
+      else if (['world-frame', 'world-contact'].includes(m.type) && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.sharedWorld?.(m);
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);
       else if (m.type === 'error') { this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left' || m.type === 'kicked') { this.left(); this.panel.hidden = false; if (m.message || m.reason) this.status(m.message || m.reason); if (m.type === 'kicked') { this.kickCooldown = { lobbyCode: m.lobbyCode, until: m.until }; this.hooks.kicked?.(m); } }
-      else if (m.type === 'violation-ack') { this.hooks.fine?.({ id: m.id, kind: m.kind, label: m.label, siteId: m.siteId, penaltySec: m.penaltySec, penalty: m.penalty, raceId: m.raceId, generation: m.generation, now: Date.now() }); }
       else if (m.type === 'checkpoint') { if (m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.applyCheckpoint(m); }
       else if (m.type === 'lobby') {
         this.creating = false; if (this.$) this.$('mp-create').disabled = false;
         const joined = !this.lobby, previousCar = this.me?.car, previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
-        if (previousRace !== m.lobby.raceId) { this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
+        if (previousRace !== m.lobby.raceId) { this.reconnectHistory?.clear(); this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
         for (const member of m.lobby.players) {
           const prior = previousMembers?.find(p => p.id === member.id), peer = this.peers.get(member.id);
           if (peer && prior && (prior.car !== member.car || prior.connected === false && member.connected !== false)) delete peer.timeline;
         }
-        if (m.resume) { this.resumeState = m.state; this.pendingResume = true; this.connected = true; this.resumeCount++; }
+        if (m.resume) {
+          const continuing = this.reconnecting && this.startedRace === m.lobby.raceId && previousRace === m.lobby.raceId && this.worldReady;
+          this.resumeState = continuing ? null : m.state; this.pendingResume = !continuing; this.connected = true; this.resumeCount++;
+          if (continuing) { this.reconnectHistory?.resume(m.state); this.reconnectHistory?.flush(p => this.send(p), m.lobby.generation || 0, performance.now()); }
+          else this.reconnectHistory?.clear();
+          this.connectionState(false);
+        }
         if (joined) { this.peers.clear(); this.hooks.join(this.me.car); this.panel.hidden = false; }
         else if (previousCar !== this.me?.car) this.hooks.carChanged?.(this.me.car);
         if (this.me?.checkpoint) this.applyCheckpoint(this.me.checkpoint);
@@ -312,16 +333,15 @@ export class Multiplayer {
       if (this.reloadRequired || e.code === UPDATE_CLOSE_CODE) { this.requireReload(); return; }
       this.lastClose = { code: e.code, reason: e.reason, at: Date.now() };
       console.warn('Multiplayer socket closed', this.lastClose);
-      this.loadedKey = null; this.connected = false; this.hooks.clearInput();
+      this.loadedKey = null; this.connected = false;
       this.cancelRecovery('Connection lost before recovery completed.');
       this.stateSender.reset(); this.wreckSent = false;
       resetRemoteTimelines(this.peers);
       if (e.reason === 'Session resumed elsewhere') { this.left(); this.saveToken(null); this.status('This session is now open in another tab.'); return; }
       this.status(this.active ? 'Connection lost. Rejoining your race… (90-second reservation)' : 'Multiplayer is offline. Retrying…');
-      if (this.active) this.panel.hidden = false;
-      this.reconnectTimer = setTimeout(() => this.connect(), 1000);
+      this.retryConnection(ws);
     };
-    ws.onerror = () => { if (!this.reloadRequired) this.status('Multiplayer unavailable. Run the game with npm start.'); };
+    ws.onerror = () => { if (!this.reloadRequired) { this.status('Reconnecting…'); this.retryConnection(ws); } };
   }
   renderEvents(mapId) {
     const select = this.$('mp-event'), previous = select.value;
@@ -376,7 +396,7 @@ export class Multiplayer {
     return Promise.resolve();
   }
   saveToken(token) { this.token = token; try { if (token) sessionStorage.setItem('paraliaki.session', token); else sessionStorage.removeItem('paraliaki.session'); } catch {} }
-  left() { this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.carPickerOpen = false; this.cancelRecovery(); this.selection?.reset(); this.retiredRace = null; this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.stateSender.reset(); this.wreckedRace = null; this.wreckSent = false; this.resumeState = null; this.pendingResume = false; this.failedMap = null; this.loadedKey = this.appearanceKey = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
+  left() { this.connectionState(false); this.reconnectHistory?.clear(); this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.carPickerOpen = false; this.cancelRecovery(); this.selection?.reset(); this.retiredRace = null; this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.stateSender.reset(); this.wreckedRace = null; this.wreckSent = false; this.resumeState = null; this.pendingResume = false; this.failedMap = null; this.loadedKey = this.appearanceKey = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
   renderDiscovery(lobbies) {
     const list = this.$('mp-list'); list.replaceChildren();
     if (!lobbies.length) { const p = document.createElement('p'); p.textContent = 'No public lobbies yet. Create one and invite other drivers.'; list.append(p); }
@@ -490,7 +510,7 @@ export class Multiplayer {
   }
   progress(s) { const r = this.lobby?.event; return r ? (s - r.s0) * r.dir : s; }
   advanceClock() {
-    if (this.worldReady && this.connected && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(this.me?.finish ?? Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
+    if (this.worldReady && (this.connected || this.startedRace === this.lobby?.raceId) && ['countdown', 'race'].includes(this.lobby?.status)) this.hooks.clock(this.me?.finish ?? Math.max(0, (this.now() - this.lobby.startAt) / 1000), Math.max(0, (this.lobby.startAt - this.now()) / 1000));
   }
   spectating() {
     if (!this.active || (this.me?.finish == null && !this.retired) || this.lobby.status === 'results') return null;
@@ -520,7 +540,6 @@ export class Multiplayer {
     if (!this.lobby || !this.worldReady) return;
     this.hooks.remote(this.peers, dt);
     const l = this.lobby;
-    if (!this.connected) return;
     if (['countdown', 'race'].includes(l.status)) {
       this.advanceClock();
       if (this.now() >= l.startAt && this.me?.finish == null && !this.retired && !this.recoveryPending) {
@@ -529,6 +548,7 @@ export class Multiplayer {
         this.stateSender.sample(state, l.raceId, { batching: this.stateBatching, force });
       }
     }
+    if (this.connected) this.reconnectHistory?.flush(p => this.send(p), l.generation || 0, performance.now());
     if (performance.now() - (this.boardAt || 0) > 250) {
       if (this.board.contains?.(document.activeElement)) return;
       this.boardAt = performance.now(); renderLiveBoard(this,state);

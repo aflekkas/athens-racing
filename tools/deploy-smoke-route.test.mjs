@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolveMap } from '../server/map-definitions.mjs';
 import { smokeDrive, SMOKE_STEP } from './deploy-smoke-route.mjs';
-for (const id of ['riviera', 'megara', 'penteli', 'psychiko']) {
+for (const id of ['riviera', 'megara', 'penteli']) {
   const path = id === 'riviera' ? '../data/map.json' : `../data/maps/${id}/map.json`;
   const data = JSON.parse(await readFile(new URL(path, import.meta.url)));
   const map = resolveMap({ id }, data);

@@ -1,0 +1,6 @@
+/* Static head-unit map glass: zero world geometry, animation loop or GPU passes. */
+#menu-backdrop { position: fixed; inset: 0; z-index: 1; pointer-events: none; display: none;
+  background: linear-gradient(90deg, #070c14e8, #0a172c99 55%, #07101bd9), url('../assets/maps/attica.svg') 55% 50% / cover no-repeat, #0b1420; }
+body.menu-backdrop #menu-backdrop, body:not(.loaded) #menu-backdrop { display: block; }
+body.menu-backdrop #c { visibility: hidden; }
+#loading #ldContext { margin: 0 0 1rem; color: #a8d9ed; line-height: 1.5; letter-spacing: .12em; }

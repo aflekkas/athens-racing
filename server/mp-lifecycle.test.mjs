@@ -85,7 +85,8 @@ test('client adapter maps lobby config to race-setup semantics', () => {
   assert.deepEqual(configFromLobby(null).rivals, 3);
   assert.deepEqual(configFromLobby({ config: { rivals: 0, time: 'night' } }), { rivals: 0, traffic: 1, time: 'night', weather: 'clear', reverse: false, police: false, sessionDuration: 300, enforcement: null });
   assert.deepEqual(lobbyConfigToRaceSetup({ rivals: 99, traffic: 9, time: 'dusk', weather: 'snow', reverse: 1, police: 1 }).rivals, 11);
-  assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 3, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false });
+  assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 3, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false, policeLevel: 'normal', busted: true });
+  assert.deepEqual([lobbyConfigToRaceSetup({ police: true, policeLevel: 'tough', busted: false }), lobbyConfigToRaceSetup({ policeLevel: 'insane' })].map(c => [c.policeLevel, c.busted]), [['tough', false], ['normal', true]]);
   assert.equal(trafficBoolToLevel(true), 1); assert.equal(trafficBoolToLevel(false), 0);
   assert.equal(trafficLevelToBool(0.5), true); assert.equal(trafficLevelToBool(0), false);
   assert.equal(describeMode('sprint'), 'QUICK RACE'); assert.equal(describeMode('free'), 'FREE ROAM');
@@ -132,7 +133,7 @@ test('create seeds configurable Quick Race; removed modes rejected and circuit e
   send(a, { type: 'create', eventId: 'quick', config: { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true } });
   const l = lobbyOf(a);
   assert.equal(l.mode, 'sprint');
-  assert.deepEqual(l.config, { rivals: 11, traffic: 0, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
+  assert.deepEqual(l.config, { rivals: 11, traffic: 0.5, time: 'night', weather: 'rain', reverse: true, police: true, sessionDuration: 300, enforcement: null });
   assert.deepEqual([l.event.s0, l.event.s1, l.event.dir, l.event.routeKey], [15, 0, -1, '15>0']);
   send(a, { type: 'options', eventId: 'cab' });
   assert.match(errOf(a), /Mode unavailable/);
@@ -261,7 +262,7 @@ test('reversed runs finish at the mirrored line and skip the leaderboard', (t) =
   assert.equal(submissions.length, 0, 'reversed runs never touch the leaderboard');
 });
 
-test('telemetry extras relay validated; violations without sites stay silent', (t) => {
+test('telemetry extras relay validated; fine claims are never acknowledged', (t) => {
   const { core, socket, lobbyOf, advance } = harness(t);
   const a = socket(), b = socket();
   core.connect(a, 'one', { protocol: MULTIPLAYER_PROTOCOL }); core.connect(b, 'two', { protocol: MULTIPLAYER_PROTOCOL });
@@ -279,10 +280,10 @@ test('telemetry extras relay validated; violations without sites stay silent', (
   assert.equal(st.coolantTemp, undefined, 'out-of-range coolant is stripped, position survives');
   assert.equal(st.engineFailureReason, undefined);
   assert.equal(st.tyreTelemetry.understeer, false);
-  send(a, { type: 'violation', id: 'v1', kind: 'camera', s: 5, kmh: 200, raceId });
-  assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'empty site lists reject claims');
-  send(a, { type: 'violation', id: 'v1', kind: 'camera', s: 5, kmh: 200, raceId });
-  assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'duplicate rejected claims stay silent');
+  // Nothing is ever fined: a fine claim is not a message the server acts on, and no result carries penalty seconds.
+  send(a, { type: 'violation', id: 'v1', kind: 'camera', s: 5, kmh: 200, raceId, at: Date.now() });
+  assert.ok(!a.messages.some((m) => m.type === 'violation-ack'), 'no fine is ever acknowledged');
+  assert.equal(lobbyOf(a).players.find((p) => p.name === 'one')?.enfPenalty, undefined);
 });
 
 test('hibernation preserves Quick Race code, config and generation', (t) => {
@@ -375,3 +376,11 @@ test('three real clients converge on one room through concurrent create/edit/joi
   host.ws.close(); g1.ws.close(); g2.ws.close();
 });
 
+
+test('police setup in the lobby config: level and CAN BE BUSTED are validated and change the race', () => {
+  assert.deepEqual(sanitizeConfig({ police: true, policeLevel: 'relaxed', busted: false }).config, { police: true, policeLevel: 'relaxed', busted: false });
+  assert.ok(sanitizeConfig({ policeLevel: 'insane' }).error);
+  assert.equal(configInvalidates({ police: true }, { police: true, policeLevel: 'normal', busted: true }), false, 'absent = NORMAL, can be busted');
+  assert.equal(configInvalidates({ police: true }, { police: true, policeLevel: 'tough' }), true);
+  assert.equal(configInvalidates({ police: true, busted: true }, { police: true, busted: false }), true);
+});

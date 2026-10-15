@@ -5,10 +5,11 @@ import { MAP_VIEW, TRACK_ROUTES } from './attica-map-data.js';
 import { coverScale, routeBounds, fitTracks, focusTrack, clampCamera } from './map-select-camera.js';
 import { fmtDist } from './settings.js';
 import * as C from './ui/components.js';
+import { getMapPersonalBest } from './personal-bests.js';
 
 const { esc, icon } = C;
 const playable = () => getPlayableMaps(MAPS).filter(m => TRACK_ROUTES[m.id]);
-const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : id === 'psychiko' ? '#d7cf83' : '#ff7868';
+const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : '#ff7868';
 function style() {
   if (document.getElementById('map-select-style')) return;
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
@@ -16,7 +17,9 @@ function style() {
 const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'arrows-clockwise'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountains'] : ['POINT TO POINT', 'path'];
 function preview(map) {
   const [kind, ic] = KIND(map);
-  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div><button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
+  const pb = getMapPersonalBest(map.id), t = pb?.time;
+  const record = pb ? C.stat('ROUTE BEST · ANY CAR / SETUP', `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`, { icon: 'timer' }) + `<small>${C.esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'} · ${pb.setup.direction < 0 ? 'REVERSE' : 'FORWARD'}</small>` : C.stat('LOCAL ROUTE BEST', '—', { icon: 'timer' });
+  return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline"/><span>${icon(ic)} ${kind}</span></div><div class="map-preview__info"><div class="label map-selected-label">SELECTED TRACK</div><div class="map-preview-best">${record}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p><div class="map-track-distance"><small>ROUTE LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? ' / LAP' : ''}</b></div><button type="button" class="mi btn btn--primary" data-confirm-track data-map-id="${map.id}">${icon('flag-checkered')}<span>SELECT TRACK</span>${icon('caret-right')}</button></div>`;
 }
 export function renderMapSelect(selectedId = 'riviera', mode) {
   style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
@@ -34,7 +37,7 @@ export function mountMapSelect(root) {
   if (!map) return;
   const selectable = playable(), events = new AbortController(), { signal } = events;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let selected = card.dataset.map, active = selected, camera, home, baseScale = 1, view, drag, pinchDistance, pinching = false, swipe, frame = 0;
+  let selected = card.dataset.map, active = selected, camera, home, baseScale = 1, view, drag, pinchDistance, pinching = false, swipe, frame = 0, resizeFrame = 0;
   const bounds = routeBounds(selectable.map(m => TRACK_ROUTES[m.id]));
   const pointers = new Map();
   const scaleBar = map.querySelector('.map-scale');
@@ -105,14 +108,19 @@ export function mountMapSelect(root) {
   card.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){swipe=[e.clientX,e.clientY,e.pointerId];}},{signal});
   card.addEventListener('pointerup',e=>{if(!swipe||swipe[2]!==e.pointerId)return;const dx=e.clientX-swipe[0],dy=e.clientY-swipe[1];swipe=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4)cycle(dx<0?1:-1);},{signal});
   card.addEventListener('pointercancel',()=>{swipe=null;},{signal});
+  // ResizeObserver callbacks run during layout: defer writes to avoid another
+  // resize notification in the same delivery cycle (and the global error banner).
   const resize = new ResizeObserver(() => {
-    cancelAnimationFrame(frame);
-    const bounds = map.getBoundingClientRect();
-    view = { width: bounds.width, height: bounds.height };
-    if (!view.width || !view.height) return;
-    baseScale = coverScale(view, MAP_VIEW);
-    layer.style.width = `${MAP_VIEW.width * baseScale}px`; layer.style.height = `${MAP_VIEW.height * baseScale}px`;
-    home = fitTracks(view, MAP_VIEW, bounds); camera = { ...home }; sync();
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => {
+      cancelAnimationFrame(frame);
+      const rect = map.getBoundingClientRect();
+      view = { width: rect.width, height: rect.height };
+      if (!view.width || !view.height) return;
+      baseScale = coverScale(view, MAP_VIEW);
+      layer.style.width = `${MAP_VIEW.width * baseScale}px`; layer.style.height = `${MAP_VIEW.height * baseScale}px`;
+      home = fitTracks(view, MAP_VIEW, bounds); camera = { ...home }; sync();
+    });
   });resize.observe(map);
 
   return { preview:show, action(name){
@@ -120,14 +128,14 @@ export function mountMapSelect(root) {
     if(['right','shiftUp','mapNext'].includes(name)){cycle(1);return true;}
     if(name==='mapZoomIn')zoom(.3);else if(name==='mapZoomOut')zoom(-.3);else if(name==='mapReset'){animate(home);}else return false;
     return true;
-  }, dispose(){events.abort();resize.disconnect();cancelAnimationFrame(frame);} };
+  }, dispose(){events.abort();resize.disconnect();cancelAnimationFrame(frame);cancelAnimationFrame(resizeFrame);} };
 }
 export async function selectMap(menu, id, confirmed = false) {
   if (menu.mapLoading || !isMapEnabled(id)) return;
   if(!confirmed){menu.show('mapConfirm',{...menu.data,mapId:id},true);return;}
   menu.mapLoading = true;
   try {
-    await (menu.h.switchMap || window.__flow.switchMap)(id);
+    menu.h.selectMap(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
     if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
     else menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
@@ -137,5 +145,5 @@ export async function selectMap(menu, id, confirmed = false) {
 
 export function renderMapConfirm(id) {
   const map=MAPS.find(m=>m.id===id&&isMapEnabled(m.id));if(!map)return '';
-  return C.screen({cls:'scr--map-confirm',kick:'SELECTED TRACK · CONFIRM BEFORE LOADING',title:map.name,hints:[['confirm','LOAD TRACK'],['back','CHOOSE ANOTHER']],body:`<div class="map-confirm"><img src="${map.preview}" alt="${esc(map.name)} route"/><section class="panel"><h2>${esc(map.subtitle)}</h2><p>${fmtDist(map.length)} · ${KIND(map)[0]}</p>${C.button({label:'LOAD '+map.name,icon:'flag-checkered',variant:'primary',size:'lg',act:'mapLoad',attrs:{'data-default':''},block:true})}${C.button({label:'CHOOSE ANOTHER TRACK',act:'back',variant:'ghost',block:true})}</section></div>`});
+  return C.screen({cls:'scr--map-confirm',kick:'SELECTED TRACK',title:map.name,hints:[['confirm','CONTINUE'],['back','CHOOSE ANOTHER']],body:`<div class="map-confirm"><img src="${map.preview}" alt="${esc(map.name)} route"/><section class="panel"><h2>${esc(map.subtitle)}</h2><p>${fmtDist(map.length)} · ${KIND(map)[0]}</p>${C.button({label:'CONTINUE TO SETUP',icon:'flag-checkered',variant:'primary',size:'lg',act:'mapLoad',attrs:{'data-default':''},block:true})}${C.button({label:'CHOOSE ANOTHER TRACK',act:'back',variant:'ghost',block:true})}</section></div>`});
 }

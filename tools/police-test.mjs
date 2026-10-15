@@ -97,7 +97,7 @@ test('no bust meter outside a pursuit; takedowns add heat (no points)', () => {
 // ------------------------------------------------------------------ the runtime against a stub world
 import { world, step, drive } from './police-fixture.mjs';
 
-test('runtime: off unless enabled; five seconds of witnessed flagrant speeding starts pursuit; events emitted', () => {
+test('runtime: off unless enabled; two and a half seconds of witnessed flagrant speeding starts pursuit; events emitted', () => {
   const W = world(); W.player(1000, 1.9, 30);
   assert.deepEqual(step(W, 1), []); assert.equal(pursuit.state, 'off');
   W.police.reset(true);
@@ -108,10 +108,10 @@ test('runtime: off unless enabled; five seconds of witnessed flagrant speeding s
   step(W, 2);
   assert.equal(W.police.hm.state, 'idle'); assert.equal(W.police.hm.heat, 0);
   W.player(1000, 1.9, 30); // 108 km/h in a 50
-  step(W, 1.5);
+  step(W, 0.8);
   assert.equal(W.police.hm.state, 'warning'); assert.equal(W.police.hm.level, 0);
-  step(W, 2.3); assert.equal(W.police.hm.level, 0, 'not yet sustained');
-  step(W, 1.3);
+  step(W, 1.5); assert.equal(W.police.hm.level, 0, 'not yet a star');
+  step(W, 0.4);
   assert.equal(W.police.hm.state, 'pursuit'); assert.ok(W.police.hm.level >= 1);
   assert.ok(seen.includes('start')); assert.equal(pursuit.state, 'pursuit');
   assert.ok(cop.cop.chase && cop.cop.siren, 'the witness joins the chase');
@@ -211,16 +211,16 @@ test('explicit Police On setup enables circuit patrols and accepts unwrapped rac
   W.police.reset(false); assert.equal(W.traffic.allowClosedPolice, false);
 });
 
-test('runtime: a little over the limit past a unit is tolerated; +35 km/h past it is only a warning', () => {
+test('runtime: up to +15 km/h past a unit is tolerated; a +35 km/h blast past a parked unit is a chase', () => {
   const W = world(); W.police.reset(true); const cop = W.police.spawnCop(1000, 1); cop.mode = 'parked'; cop.v = 0;
-  W.player(900, 1.9, 75 / 3.6); // +25 in a 50, drives right past the unit
-  step(W, 10, {}, 1 / 30, dt => { W.traffic.racers[0].s += 75 / 3.6 * dt; cop.s = 1000; });
+  W.player(800, 1.9, 65 / 3.6); // +15 in a 50, drives right past the unit
+  step(W, 20, {}, 1 / 30, dt => { W.traffic.racers[0].s += 65 / 3.6 * dt; cop.s = 1000; });
   assert.equal(W.police.hm.state, 'idle'); assert.equal(W.police.hm.heat, 0);
   W.police.reset(true); const c2 = W.police.spawnCop(1000, 1); c2.mode = 'parked';
-  W.player(900, 1.9, 85 / 3.6); // +35: seen for ~150 m either side of the unit
-  step(W, 12, {}, 1 / 30, dt => { W.traffic.racers[0].s += 85 / 3.6 * dt; c2.s = 1000; c2.v = 0; });
-  assert.equal(W.police.hm.level, 0, 'a drive-past never gives a star');
-  assert.notEqual(W.police.hm.state, 'pursuit');
+  W.player(800, 1.9, 85 / 3.6); // +35: in view for ~270 m around the unit, even if it never moves
+  const out = step(W, 12, {}, 1 / 30, dt => { W.traffic.racers[0].s += 85 / 3.6 * dt; c2.s = 1000; c2.v = 0; });
+  assert.deepEqual(out.filter(e => ['warning', 'start'].includes(e.phase)).map(e => e.phase), ['warning', 'start']);
+  assert.equal(W.police.hm.state, 'pursuit');
   W.police.reset(false); W.police.offs.forEach(off => off());
 });
 
@@ -381,5 +381,46 @@ test('organic: stopping in a one-star pursuit is an arrest once the chase is est
   W.police.hm.begin(1);
   const out = drive(W, HEAT.bustAfter + HEAT.bustTime + 4);
   assert.ok(out.some(e => e.phase === 'busted'), JSON.stringify(out.map(e => e.phase)));
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+
+// ------------------------------------------------------------------ engagement in normal play (user retune, 2026-10-15)
+test('engage: a +40 blast past a parked unit facing either way, or an oncoming patrol, is a chase with a unit on you', () => {
+  for (const setup of ['parked-same', 'parked-facing', 'oncoming']) {
+    const W = world(); W.police.reset(true);
+    const cop = setup === 'parked-same' ? parkedUnit(W, 1000) : W.police.spawnCop(1000, -1);
+    if (setup === 'parked-facing') { cop.mode = 'parked'; cop.parkT = 1e9; cop.v = 0; cop.cop.keep = true; }
+    W.player(700, 1.9, 90 / 3.6);
+    let startAt = null, t = 0;
+    drive(W, 25, {}, 1 / 30, dt => {
+      cruise(W, 90)(dt); t += dt;
+      if (setup === 'oncoming' && !cop.cop.chase) { cop.s -= 13 * dt; cop.u = -1.9; } // a patrol coming the other way at ~50 km/h
+      if (startAt === null && W.police.hm.state === 'pursuit') startAt = t;
+    });
+    assert.ok(startAt !== null && startAt < 12, `${setup}: pursuit at ${startAt}`);
+    const P = W.traffic.racers[0], d = P.s - cop.s;
+    assert.ok(cop.cop.chase && cop.dir === 1 && d > 0 && d < 60, `${setup}: the unit turned and is on your tail (${Math.round(d)} m)`);
+    W.police.reset(false); W.police.offs.forEach(off => off());
+  }
+});
+
+test('engage: instant triggers in front of a unit', () => {
+  const fresh = (kmh = 45) => { const W = world(); W.police.reset(true); W.player(1000, 1.9, kmh / 3.6); const cop = W.police.spawnCop(1040, 1); return { W, cop }; };
+  const done = W => { W.police.reset(false); W.police.offs.forEach(off => off()); };
+  { const { W } = fresh(); W.police.witnessedRed(W.traffic.racers[0]); step(W, 1 / 30); assert.equal(W.police.hm.state, 'warning', 'red light in front of it'); done(W); }
+  { const { W, cop } = fresh(); step(W, 1 / 30, { events: [{ who: 'player', car: cop, kind: 'bump' }] }); assert.equal(W.police.hm.state, 'warning', 'bumping a police car'); done(W); }
+  { const { W, cop } = fresh(); step(W, 1 / 30, { events: [{ who: 'player', car: cop, kind: 'crash' }] }); assert.equal(W.police.hm.level, 1, 'ramming a police car'); done(W); }
+  { const { W } = fresh(); step(W, 1 / 30, { events: [{ who: 'player', car: {}, kind: 'crash', dv: 9 }] }); assert.equal(W.police.hm.level, 1, 'ramming traffic in view'); done(W); }
+  { const { W } = fresh(); step(W, 1 / 30, { events: [{ who: 'player', car: {}, kind: 'bump' }] }); assert.equal(W.police.hm.state, 'warning', 'bumping traffic in view'); done(W); }
+  { const { W } = fresh(); W.police.pedEvents([{ who: 'player', kind: 'dive' }]); step(W, 1 / 30); assert.equal(W.police.hm.state, 'warning', 'a pedestrian diving clear in view'); done(W); }
+  { const { W } = fresh(50); W.traffic.racers[0].u = -2; step(W, 1.1); assert.equal(W.police.hm.state, 'warning', 'wrong side past a unit'); done(W); }
+});
+
+test('engage: a one-star chase you keep fleeing grows to two stars in 20-30 s, with the unit on your tail', () => {
+  const W = world(); W.police.reset(true); const cop = parkedUnit(W, 1000); W.player(800, 1.9, 100 / 3.6);
+  let oneAt = null, twoAt = null, t = 0;
+  drive(W, 60, {}, 1 / 30, dt => { cruise(W, 100)(dt); t += dt; const l = W.police.hm.level; if (l >= 1 && oneAt === null) oneAt = t; if (l >= 2 && twoAt === null) twoAt = t; });
+  assert.ok(oneAt !== null && twoAt !== null && twoAt - oneAt >= 20 && twoAt - oneAt <= 30, `1 star at ${oneAt}, 2 at ${twoAt}`);
+  assert.ok(W.traffic.racers[0].s - cop.s < 40);
   W.police.reset(false); W.police.offs.forEach(off => off());
 });

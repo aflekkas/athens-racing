@@ -1,0 +1,34 @@
+name: Multiplayer staging smoke
+on:
+  workflow_dispatch:
+    inputs:
+      map:
+        description: Track
+        type: choice
+        options: [riviera, penteli, megara]
+        default: riviera
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Finish a race from the GitHub runner network
+        shell: bash
+        env:
+          SMOKE_MAP: ${{ inputs.map }}
+        run: |
+          set -euo pipefail
+          node tools/deploy-smoke.mjs https://athens-street-racers-staging.aflekkas.workers.dev --race --map="$SMOKE_MAP" | tee smoke.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multiplayer-smoke-${{ inputs.map }}
+          path: smoke.log

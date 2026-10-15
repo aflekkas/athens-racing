@@ -31,7 +31,7 @@ async function save(id, version, buffers) {
 export async function generatedWorld(map) {
   const def = map.data.bakedWorld;
   if (!def.worker || typeof Worker === 'undefined') return null;
-  const version = `${def.terrain}|${def.roads}`;
+  const version = `${def.terrain}|${def.roads}|${def.worker}`;
   const marker = `asr-world-version.${map.id}`;
   let known = false;
   try { known = localStorage.getItem(marker) === version; } catch {}

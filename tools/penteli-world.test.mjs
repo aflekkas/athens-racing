@@ -8,6 +8,7 @@ import {roadSignLayout,speedSignRecords} from '../src/road-sign-layout.js';
 import {penteliJunctions,PENTELI_GUARDRAILS} from '../src/maps/penteli-roadside.js';
 const data=JSON.parse(readFileSync(new URL('../data/maps/penteli/map.json',import.meta.url)));
 const route=new Route(data.route);route.urban=()=>0;
+route.district=s=>{let zone=data.zones[0];for(const q of data.zones)if(s>=q.s)zone=q;return zone.zone;};
 const bytes=readFileSync(new URL('../data/maps/penteli/terrain.bin',import.meta.url));
 const terrain=new Terrain(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));
 const map={id:'penteli',data,route,terrain};map.roadNetwork=new RoadNetwork(map);
@@ -32,10 +33,24 @@ test('signs face both approaches; inferred reverse limits match the entered zone
  const riviera={id:'riviera',data:{speedSigns:[{s:10,v:50,dir:1}]}};assert.equal(speedSignRecords(riviera),riviera.data.speedSigns);
 });
 
-test('Penteli verge contacts use rendered triangles and have no phantom sidewalk',async()=>{
+test('Penteli gravel contacts use rendered triangles and have no phantom sidewalk',async()=>{
  const THREE=await import('three'),{buildPenteliSurface}=await import('../src/maps/penteli-surface.js'),{PenteliGround}=await import('../src/maps/penteli-ground.js');
  const scene=new THREE.Group(),height=(x,z)=>terrain.height(x,z)-3,road=buildPenteliSurface(scene,map,height),ground=new PenteliGround(map,height,{network:map.roadNetwork},road);
  let tested=0;
- for(const mesh of road.group.children.filter(m=>m.name==='Penteli cut and fill verge')){const p=mesh.geometry.attributes.position.array,ix=mesh.geometry.index.array;for(let i=0;i<ix.length;i+=3*97){const ids=[ix[i]*3,ix[i+1]*3,ix[i+2]*3],x=ids.reduce((n,k)=>n+p[k],0)/3,z=ids.reduce((n,k)=>n+p[k+2],0)/3,y=ids.reduce((n,k)=>n+p[k+1],0)/3,q=route.project(x,z,null);if(map.roadNetwork.sample(x,z)||Math.abs(q.u)<=route.edge(q.s))continue;const hit=ground.at(x,z,q.s,q.u,{});assert.ok(hit.y>=y-1e-4);assert.equal(hit.networkStep,0);assert.notEqual(hit.surf,'pavement');tested++;}}
+ for(const mesh of road.group.children){const p=mesh.geometry.attributes.position.array,ix=mesh.geometry.index.array;for(let i=0;i<ix.length;i+=3*23){const ids=[ix[i]*3,ix[i+1]*3,ix[i+2]*3],x=ids.reduce((n,k)=>n+p[k],0)/3,z=ids.reduce((n,k)=>n+p[k+2],0)/3,y=ids.reduce((n,k)=>n+p[k+1],0)/3,q=route.project(x,z,null);if(map.roadNetwork.sample(x,z)||Math.abs(q.u)<=route.edge(q.s))continue;const hit=ground.at(x,z,q.s,q.u,{});assert.ok(hit.y>=y-1e-4);assert.equal(hit.networkStep,0);assert.notEqual(hit.surf,'pavement');tested++;}}
  assert.ok(tested>100);road.dispose();
+});
+
+
+test('Penteli rock decoration follows ground and leaves the six-metre re-entry shoulder clear',async()=>{
+ const THREE=await import('three'),{buildScenery}=await import('../src/maps/penteli.js');
+ const height=(x,z)=>terrain.height(x,z),scene=new THREE.Group(),world=buildScenery(scene,map,{heightC:height,assets:{network:map.roadNetwork}});
+ const cut=world.group.children.find(m=>m.name.startsWith('EP5 layered natural rock cutting'));
+ assert.ok(cut);const p=cut.geometry.attributes.position,ix=cut.geometry.index.array;let checked=0;
+ for(const i of new Set(ix)){
+  const x=p.getX(i),z=p.getZ(i),q=route.project(x,z,null);
+  assert.ok(Math.abs(q.u)>route.edge(q.s)+5.99,'rock cut never occupies the drivable shoulder');
+  assert.ok(Math.abs(p.getY(i)-height(x,z)-.015)<.002,'decorative rock cannot float above contact terrain');checked++;
+ }
+ assert.ok(checked>100);world.dispose();
 });

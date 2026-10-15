@@ -69,6 +69,7 @@ export class RemoteTimeline {
       this.mode = 'interpolate';
       const span = b.time - a.time, t = clamp((time - a.time) / span, 0, 1), p = { ...a.state };
       for (const key of fields) p[key] = a.state[key] + (b.state[key] - a.state[key]) * t;
+      for (const key of ['bodyHeave', 'bodyPitch', 'bodyRoll']) if (Number.isFinite(a.state[key]) && Number.isFinite(b.state[key])) p[key] = a.state[key] + (b.state[key] - a.state[key]) * t;
       p.yaw = a.state.yaw + angle(b.state.yaw - a.state.yaw) * t;
       // Hermite positions retain acceleration/turning between collapsed 5 Hz batches.
       // Limit tangents to the segment's displacement so noisy speeds cannot overshoot.

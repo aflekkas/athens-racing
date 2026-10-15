@@ -1,5 +1,6 @@
 // Browser adapter for replay.js. Owns ghost visuals, replay/photo controls and the camera override.
 import * as THREE from 'three';
+import { bestGhostEvent } from './personal-bests.js';
 import { Recorder, GhostStore, sampleReplay, encodeReplay, decodeReplay, ghostKey, ghostOpacity, MAX_REPLAY_BYTES } from './replay.js';
 import { CARS, CarModel } from './cars.js';
 import { events } from './events.js';
@@ -68,12 +69,12 @@ class ReplayMode {
     this.hideGhost(); this.spins = []; this.last = null; this.saved = null; this.lastSave = Promise.resolve(null);
     const run = p.run, routeKey = `${Math.round(run.r.s0)}>${Math.round(run.r.s1)}`;
     this.recorder = new Recorder(this.cars.map(c => ({ car: c.spec.id, name: c.name || 'YOU' })),
-      { eventId: p.eventId, car: p.car, routeKey, trackVersion: this.ctx.trackVersion(), type: p.type });
+      { eventId: p.eventId, car: p.car, routeKey, trackVersion: this.ctx.trackVersion(), type: p.type, pbEventId: this.ctx.G.bestSetup ? bestGhostEvent(this.ctx.G.bestSetup) : null });
     this.recorder.tick(0, this.capture()); this.startToken = (this.startToken || 0) + 1;
     const token = this.startToken;
-    if (p.type !== 'timetrial' || !settings.ghostEnabled || this.choices.get(p.eventId) === null) return;
+    if (!['timetrial', 'sprint'].includes(p.type) || !settings.ghostEnabled || this.choices.get(p.eventId) === null) return;
     const selected = this.choices.get(p.eventId), cached = selected ? this.store.cache.get(selected) : null;
-    Promise.resolve(cached || this.store.load(p.eventId, p.car)).then(r => {
+    Promise.resolve(cached || this.store.load(this.recorder?.metadata.pbEventId || p.eventId, p.car)).then(r => {
       if (token !== this.startToken || !this.recorder || !settings.ghostEnabled || !r || r.routeKey !== routeKey || r.trackVersion !== this.ctx.trackVersion()) return;
       this.ghostReplay = r; this.buildGhost(r.car);
     });
@@ -83,8 +84,8 @@ class ReplayMode {
     if (!this.recorder) return;
     this.last = this.recorder.finish({ time: result.time ?? this.recorder.elapsed, splits: result.splits, resultType: result.type });
     this.recorder = null; this.hideGhost();
-    if (result.type === 'timetrial' && result.valid && result.time != null && !this.last.truncated) {
-      this.lastSave = this.store.saveBest(this.last).then(s => {
+    if (['timetrial', 'sprint'].includes(result.type) && result.valid && result.time != null && !this.last.truncated) {
+      this.lastSave = Promise.resolve().then(() => result.personalBest?.eligible === false ? { saved: false, best: null, persistent: false } : this.store.saveBest({ ...this.last, eventId: this.last.pbEventId || this.last.eventId })).then(s => {
         this.saved = s;
         this.ctx.hud.message(s.saved ? (s.persistent ? 'BEST GHOST <i>SAVED</i>' : 'BEST GHOST <i>IN MEMORY · EXPORT TO KEEP</i>') : 'BEST GHOST <i>KEPT</i>', 4);
         return s;
@@ -163,8 +164,8 @@ class ReplayMode {
   makeReplayUI() {
     this.ui.innerHTML = `<div class="replay-title"><b>REPLAY</b><span>TRAFFIC HIDDEN · P PHOTO MODE</span><button data-close>BACK TO RESULTS</button></div>
       <div class="replay-timeline"><button data-play>PAUSE</button><output data-time></output><input aria-label="Replay timeline" data-scrub type="range" min="0" max="${this.last.duration}" step="0.01" value="${this.time}"></div>
-      <div class="replay-options"><label>SPEED <select data-speed aria-label="Replay speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option selected value="1">1×</option><option value="2">2×</option></select></label>
-      <label>CAMERA <select data-camera aria-label="Replay camera"><option value="director">AUTO DIRECTOR</option><option value="chase">CHASE</option><option value="cockpit">COCKPIT</option><option value="orbit">FREE ORBIT</option><option value="helicopter">HELICOPTER</option><option value="bumper">LOW BUMPER</option><option value="tv">TRACKSIDE TV</option></select></label>
+      <div class="replay-options"><label>SPEED <ui-select data-speed aria-label="Replay speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option selected value="1">1×</option><option value="2">2×</option></ui-select></label>
+      <label>CAMERA <ui-select data-camera aria-label="Replay camera"><option value="director">AUTO DIRECTOR</option><option value="chase">CHASE</option><option value="cockpit">COCKPIT</option><option value="orbit">FREE ORBIT</option><option value="helicopter">HELICOPTER</option><option value="bumper">LOW BUMPER</option><option value="tv">TRACKSIDE TV</option></ui-select></label>
       <button data-hud>SHOW HUD</button></div>`;
     this.ui.querySelector('[data-close]').onclick = () => this.close(); this.ui.querySelector('[data-play]').onclick = () => this.togglePlay();
     this.ui.querySelector('[data-scrub]').oninput = ev => this.scrub(+ev.target.value);
@@ -191,8 +192,8 @@ class ReplayMode {
     this.ui.innerHTML = `<div class="replay-title"><b>PHOTO MODE</b><span>DRAG TO LOOK · WASD MOVE · Q/E UP/DOWN · SHIFT FAST · WHEEL SPEED</span><button data-close>CLOSE · P / ESC</button></div>
       <div class="photo-options">${[['fov', 'FOV', 20, 110, 1], ['roll', 'ROLL', -3.14, 3.14, .01], ['focus', 'FOCUS · M', .5, 200, .5], ['dof', 'DEPTH OF FIELD', 0, 9, .1], ['exposure', 'EXPOSURE · EV', -3, 3, .1], ['contrast', 'CONTRAST', -1, 1, .05], ['saturation', 'SATURATION', 0, 2, .05], ['vignette', 'VIGNETTE', 0, 1, .02]].map(([key, label, min, max, step]) =>
         `<label>${label}<input aria-label="Photo ${key}" data-photo-key="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${s[key]}"><output>${s[key].toFixed(1)}</output></label>`).join('')}
-      <label>FILTER<select aria-label="Photo filter" data-filter>${PHOTO_FILTERS.map(f => `<option value="${f}">${f.toUpperCase()}</option>`).join('')}</select></label>
-      <label>EXPORT<select aria-label="Photo resolution" data-resolution><option value="2">2× SUPERSAMPLED</option><option value="3">3× SUPERSAMPLED</option></select></label><button data-save>SAVE PNG</button><output data-status></output></div>`;
+      <label>FILTER<ui-select aria-label="Photo filter" data-filter>${PHOTO_FILTERS.map(f => `<option value="${f}">${f.toUpperCase()}</option>`).join('')}</ui-select></label>
+      <label>EXPORT<ui-select aria-label="Photo resolution" data-resolution><option value="2">2× SUPERSAMPLED</option><option value="3">3× SUPERSAMPLED</option></ui-select></label><button data-save>SAVE PNG</button><output data-status></output></div>`;
     this.ui.querySelector('[data-close]').onclick = () => this.closePhoto();
     for (const input of this.ui.querySelectorAll('[data-photo-key]')) input.oninput = () => { s[input.dataset.photoKey] = +input.value; input.nextElementSibling.value = (+input.value).toFixed(1); this.ctx.post.setPhoto(s); };
     this.ui.querySelector('[data-filter]').onchange = ev => { s.filter = ev.target.value; this.ctx.post.setPhoto(s); };

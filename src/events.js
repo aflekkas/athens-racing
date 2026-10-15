@@ -304,19 +304,22 @@ export class EventRun {
     // checkpoints (only when crossed forwards: driving back and forth across a line doesn't count twice)
     while (this.cpIdx < this.r.checkpoints.length && validated >= this.r.checkpoints[this.cpIdx].d) {
       const cp = this.r.checkpoints[this.cpIdx], i = this.cpIdx++;
-      this.splits.push(p.t);
+      const gateIndex = this.course.gates.findIndex(g => g.d >= cp.d - 1e-7);
+      const crossedAt = this.course.gateTimes?.[gateIndex];
+      const timeAtLine = Number.isFinite(crossedAt) ? p.t - (this.checkpointClock - crossedAt) : p.t;
+      this.splits.push(timeAtLine);
       if (cp.lapEnd) {
-        const time = p.t - this.lapStart; this.lapTimes.push(time); this.lapStart = p.t;
-        const lap = { kind:'lap', eventId:this.id, lap:cp.lap, laps:this.r.laps, time, total:p.t };
+        const time = timeAtLine - this.lapStart; this.lapTimes.push(time); this.lapStart = timeAtLine;
+        const lap = { kind:'lap', eventId:this.id, lap:cp.lap, laps:this.r.laps, time, total:timeAtLine };
         events.emit('lap', lap); out.push(lap);
       }
       const best = this.best.bestSplits?.[i] ?? null;
-      const e = { kind: 'split', eventId: this.id, index: i, id: cp.id, name: cp.name, time: p.t, best, delta: best != null ? p.t - best : null, last: cp.id === 'finish' };
+      const e = { kind: 'split', eventId: this.id, index: i, id: cp.id, name: cp.name, time: timeAtLine, best, delta: best != null ? timeAtLine - best : null, last: cp.id === 'finish' };
       events.emit('split', e); out.push(e);
     }
     const surviving = this.type === 'pursuit' && this.def.rules?.goal === 'survive';
     if (surviving) { if (this.r.timeLimit && p.t >= this.r.timeLimit) out.push({ kind: 'timeup' }); }
-    else if (this.cpIdx >= this.r.checkpoints.length) out.push({ kind: 'finish' });
+    else if (this.cpIdx >= this.r.checkpoints.length) out.push({ kind: 'finish', time: this.splits.at(-1) ?? p.t });
     else if (this.r.timeLimit && p.t >= this.r.timeLimit) out.push({ kind: 'timeup' });
     this.lastProg = prog;
     return out;

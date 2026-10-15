@@ -971,8 +971,6 @@ export class Audio {
   }
   /** traffic-police whistle trill */
   whistle() { if (!this.ctx) return; for (const [at, d] of [[0, 0.18], [0.26, 0.6]]) this.tone({ f: 2950, dur: d, gain: 0.06, type: 'sine', at, vib: 140, vibF: 26, attack: 0.008 }); }
-  /** speed-camera shutter */
-  shutter() { if (!this.ctx) return; this.noise({ dur: 0.025, f: 3800, type: 'highpass', gain: 0.3 }); this.noise({ dur: 0.04, f: 2200, type: 'bandpass', q: 3, gain: 0.22, at: 0.08 }); this.tone({ f: 3400, slide: 1800, dur: 0.25, gain: 0.03, at: 0.12 }); }
   /** the blind-assist ticker on a crossing's green man */
   pedTick(fast = false, pan = 0) { if (!this.ctx) return; this.tone({ f: fast ? 1250 : 980, dur: 0.025, gain: 0.05, type: 'square', lp: 2400, pan }); }
   meow() { this.voice([{ v: 'i', dur: 0.1, f0: 720, f1: 820 }, { v: 'a', dur: 0.22, f0: 820, f1: 640 }, { v: 'u', dur: 0.15, f0: 640, f1: 520 }], 0.16, 0.2); }

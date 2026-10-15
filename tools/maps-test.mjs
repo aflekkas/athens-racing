@@ -60,7 +60,7 @@ try {
     let hint=route.start;
     // Traverse a complete centreline lap/run, including the loop seam, with small forward steps.
     const finish=route.closed?route.length*1.02:route.finish;
-    for(let s=route.start;s<finish;s+=3){const u=route.localLayout?.contains(s)?route.localLayout.centreU(s,1):0,p=route.point(s,u),q=route.project(p.x,p.z,hint,8);assert.ok(Math.abs(q.s-s)<.3,`${map.id} projection ${s}: ${q.s}`);hint=q.s;}
+    for(let s=route.start;s<finish;s+=3){const p=route.point(s,0),q=route.project(p.x,p.z,hint,8);assert.ok(Math.abs(q.s-s)<.3,`${map.id} projection ${s}: ${q.s}`);hint=q.s;}
     // Short physical drive on the actual map: finite state, positive progress, reliable surface profile.
     const car=new Vehicle(spec,route);car.reset(route.start,route.closed?0:route.laneU(route.start,0),0);
     const before=car.s;

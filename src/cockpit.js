@@ -8,12 +8,31 @@ import { clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
-import { MirrorCadence } from './mirror-cadence.js';
 import { COND_STATE } from './env.js';
 // Night in the cabin: a faint instrument / street-light spill on the cockpit's own trim (emissive, no extra light)
 // and door / rear-view glass that darkens with the scene. Both are display-referred, so they divide out the
 // exposure the night brings up everything else by (env.js COND_STATE).
 const CABIN_GLOW = { value: 0 };
+// Rear view: ONE low-res render from a rearward camera at the interior mirror, cropped per mirror (the interior glass
+// takes the centre, each door mirror looks back along its own flank into the next lane). Lower tiers only lower its
+// resolution, refresh rate and draw distance; Settings > Mirrors switches it off. The mirror pass has no shadows map
+// update and no post (the main view's exposure and grade apply to the glass like everything else).
+const REAR_H = 84, REAR_V = 26, REAR_PITCH = -2.5; // shared view: horizontal / vertical field (deg), aim below level
+// keyed by the EFFECTS level (graphics.js): even 'off' keeps working mirrors, just smaller, slower and shorter
+export const MIRROR_TIERS = {
+  off: { every: 3, far: 150, width: 384 }, low: { every: 3, far: 180, width: 512 }, med: { every: 2, far: 260, width: 640 },
+  high: { every: 2, far: 420, width: 896 }, ultra: { every: 1, far: 600, width: 1152 },
+};
+const MIRROR_VIEWS = { interior: { yaw: 0, hfov: 36 }, left: { yaw: 17, hfov: 26 }, right: { yaw: -17, hfov: 26 } }; // yaw > 0 toward the car's left
+// the crop of the shared view a glass shows: (u0, v0, du, dv), image u -> 1 is the car's left behind
+function rearWindow(yaw, hfov, aspect, out = new THREE.Vector4()) {
+  const r = THREE.MathUtils.degToRad, tH = Math.tan(r(REAR_H / 2)), tV = Math.tan(r(REAR_V / 2));
+  const a = Math.tan(r(yaw - hfov / 2)), b = Math.tan(r(yaw + hfov / 2)), dv = Math.min(1, Math.tan(r(hfov / 2)) / aspect / tV);
+  return out.set(0.5 + a / (2 * tH), 0.5 - dv / 2, (b - a) / (2 * tH), dv);
+}
+let DARK_GLASS;
+const darkGlass = () => DARK_GLASS ||= Object.assign(new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1), { needsUpdate: true });
+const _rp = new THREE.Vector3(), _rq = new THREE.Quaternion(), REAR_TILT = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(REAR_PITCH));
 const sceneLight = () => clamp(COND_STATE.ambient ?? 1, 0.03, 1) / Math.max(COND_STATE.exposure || 1, 0.05);
 const MIRROR_FLIP=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
 
@@ -280,16 +299,20 @@ export class Cockpit {
     // Dimensions are metres. The centre unit hangs from the windscreen header.
     const fallback=mirrorTex&&!mirrorTex.isRenderTargetTexture?mirrorTex:mirrorFallback().clone();
     this.mirrors=[];this.mirrorUpdates=0;this.mirrorFallback=fallback;this.ownsMirrorFallback=!(mirrorTex&&!mirrorTex.isRenderTargetTexture);
-    const addMirror=(mesh,name,width,height,hfov)=>{
+    this.rearCamera=new THREE.PerspectiveCamera(REAR_V,Math.tan(THREE.MathUtils.degToRad(REAR_H/2))/Math.tan(THREE.MathUtils.degToRad(REAR_V/2)),.3,600);this.rearTarget=null;
+    const addMirror=(mesh,name)=>{
       const geometry=mesh.geometry.clone(),uv=geometry.attributes.uv;
       for(let i=0;i<uv.count;i++)uv.setX(i,1-uv.getX(i));uv.needsUpdate=true;
-      mesh.geometry=geometry;mesh.material=new THREE.MeshBasicMaterial({map:fallback,toneMapped:false,side:THREE.DoubleSide});
-      const camera=new THREE.PerspectiveCamera(THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(hfov/2))/(width/height))),width/height,.08,600);
-      this.mirrors.push({name,mesh,camera,width,height,target:null,material:mesh.material,fallback});
+      geometry.computeBoundingBox();const [w,h]=geometry.boundingBox.getSize(new THREE.Vector3()).toArray().sort((a,b)=>b-a);
+      const view=MIRROR_VIEWS[name],win=rearWindow(view.yaw,view.hfov,w/Math.max(h,1e-3));
+      mesh.geometry=geometry;const material=mesh.material=new THREE.MeshBasicMaterial({map:fallback,toneMapped:false,side:THREE.DoubleSide});
+      material.customProgramCacheKey=()=>'cockpit-mirror-window-v1';
+      material.onBeforeCompile=sh=>{sh.uniforms.uMirWin={value:win};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform vec4 uMirWin;').replace('#include <uv_vertex>','#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vMapUv * uMirWin.zw + uMirWin.xy;\n#endif');};
+      this.mirrors.push({name,mesh,window:win,material,fallback});
     };
     const desiredMount=new THREE.Vector3(0,model.shape.H-.09,model.shape.header-.10);
     const root=nearestSurface(desiredMount,[model.windscreen],model.body).point;
-    const mirror=new THREE.Mesh(new THREE.PlaneGeometry(.25,.07));mirror.name='interior-rearview-face';
+    const mirror=new THREE.Mesh(new THREE.PlaneGeometry(.29,.08));mirror.name='interior-rearview-face';
     // A short forward/downward bracket follows the rake of the windscreen.
     // Keeping the glass behind the header made it dominate the driver's view.
     const mY=Math.min(model.shape.H-.135,root.y-.045);
@@ -300,16 +323,29 @@ export class Cockpit {
     const mZ=(windscreenHit?model.body.worldToLocal(windscreenHit.point).z:root.z-.14)+.045;
     mirror.position.set(0,mY,mZ);
     mirror.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),eye.clone().sub(mirror.position).normalize().add(new THREE.Vector3(0,0,1)).normalize());
-    const mframe=new THREE.Mesh(new RoundedBoxGeometry(.266,.084,.026,1,.008),new THREE.MeshStandardMaterial({color:'#0e0e0f',roughness:.4}));
+    const mframe=new THREE.Mesh(new RoundedBoxGeometry(.306,.094,.026,1,.008),new THREE.MeshStandardMaterial({color:'#0e0e0f',roughness:.4}));
     mframe.position.copy(mirror.position).add(new THREE.Vector3(0,0,-.015).applyQuaternion(mirror.quaternion));mframe.quaternion.copy(mirror.quaternion);
-    const tip=mframe.position.clone();
+    // The stalk leaves the BACK of the housing and runs forward / up into the windscreen, so every point of it lies
+    // behind the glass plane: it can never cross or show through the glass. (The raked screen puts the header
+    // point on the driver's side of the glass, which made a stalk to it cut across the face.)
+    const glassN=new THREE.Vector3(0,0,1).applyQuaternion(mirror.quaternion),glassUp=new THREE.Vector3(0,1,0).applyQuaternion(mirror.quaternion);
+    const tip=mframe.position.clone().addScaledVector(glassN,-.013).addScaledVector(glassUp,.012);
+    const stalkDir=glassN.clone().negate().addScaledVector(glassUp,.55).normalize();
+    model.windscreen.updateWorldMatrix(true,false);
+    const stalkHit=new THREE.Raycaster(model.body.localToWorld(tip.clone()),stalkDir.clone().transformDirection(model.body.matrixWorld),0,.45).intersectObject(model.windscreen,false)[0];
+    if(stalkHit)root.copy(model.body.worldToLocal(stalkHit.point.clone()));
+    else{
+      // no screen within reach: bring the mirror toward the driver until the header mount is behind its back face
+      const d=root.clone().sub(tip).dot(glassN);
+      if(d>-.01){const shift=glassN.clone().multiplyScalar(d+.01);mirror.position.add(shift);mframe.position.add(shift);tip.add(shift);}
+    }
     const mount=this.mirrorMount=new THREE.Mesh(new THREE.SphereGeometry(.015,8,6),mframe.material);mount.name='rearview-mount';mount.position.copy(root);
     const stem=this.mirrorStem=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,root.distanceTo(tip),6),mframe.material);stem.name='rearview-stalk';
     stem.position.copy(root).add(tip).multiplyScalar(.5);stem.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tip.sub(root).normalize());
-    g.add(mirror,mframe,stem,mount);addMirror(mirror,'interior',384,108,28);
+    g.add(mirror,mframe,stem,mount);addMirror(mirror,'interior');
     this.mirrorMat=mirror.material; // Inspector compatibility.
     for(const [key,name]of [['mirrorL','left'],['mirrorR','right']]){
-      const mesh=model[key];if(mesh)addMirror(mesh,name,256,112,20);
+      const mesh=model[key];if(mesh)addMirror(mesh,name);
     }
     // ---- door cards / A-pillars / headliner from the loft (closed cars)
     if (model.bodyMesh) {
@@ -437,32 +473,62 @@ export class Cockpit {
     }
     return Math.min(71,THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect)));
   }
-  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),far=600}={}){
-    const cadence=this.mirrorCadence??=new MirrorCadence();
+  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),quality='high',far}={}){
     if(!enabled){
-      cadence.reset();
-      // Low quality shows an inert dark surface, never a stale traffic image.
-      // (unlit, so it follows the scene's light: dark glass at night rather than a daylight grey under night exposure)
-      const k=sceneLight();for(const m of this.mirrors){if(m.material.map){m.material.map=null;m.material.needsUpdate=true;}m.material.color.set('#485158').multiplyScalar(k);}
+      this.rearLast=undefined;
+      // Mirrors off: dark glass that follows the scene's light (unlit, so never a daylight grey under night exposure)
+      // (a map stays bound either way: switching mirrors on / off never recompiles the glass)
+      const k=sceneLight(),glass=darkGlass();for(const m of this.mirrors){m.material.map=glass;m.material.color.set('#485158').multiplyScalar(k);}
       return;
     }
-    if(!cadence.due(now))return;
+    const T=MIRROR_TIERS[quality]||MIRROR_TIERS.high;
+    this.mirrorCalls=(this.mirrorCalls||0)+1;
+    if(this.rearLast!==undefined&&now>=this.rearLast&&now-this.rearLast<150&&this.mirrorCalls<T.every)return;
+    const height=Math.round(T.width*Math.tan(THREE.MathUtils.degToRad(REAR_V/2))/Math.tan(THREE.MathUtils.degToRad(REAR_H/2)));
+    if(this.rearTarget&&this.rearTarget.width!==T.width){this.rearTarget.dispose();this.rearTarget=null;}
+    if(!this.rearTarget){this.rearTarget=new THREE.WebGLRenderTarget(T.width,height,{depthBuffer:true});this.rearTarget.texture.name='mirror-rear-view';this.rearTarget.texture.colorSpace=THREE.SRGBColorSpace;}
+    const cam=this.rearCamera,f=far??T.far;if(cam.far!==f){cam.far=f;cam.updateProjectionMatrix();}
     const body=this.model.body,root=this.model.root,visible=root.visible,target=renderer.getRenderTarget(),shadow=renderer.shadowMap.autoUpdate;
     root.updateMatrixWorld(true);
-    // Compute camera poses before hiding our cabin. Opponents and traffic remain
-    // in the scene; each camera is at its own physical mirror, aimed rearward.
-    for(const m of this.mirrors){
-      if(m.camera.far!==far){m.camera.far=far;m.camera.updateProjectionMatrix();}
-      if(!m.target){m.target=new THREE.WebGLRenderTarget(m.width,m.height,{depthBuffer:true});m.target.texture.name='mirror-'+m.name;m.target.texture.colorSpace=THREE.SRGBColorSpace;}
-      m.mesh.geometry.computeBoundingBox();m.mesh.geometry.boundingBox.getCenter(m.camera.position);m.mesh.localToWorld(m.camera.position);body.getWorldQuaternion(m.camera.quaternion);
-      m.camera.quaternion.multiply(MIRROR_FLIP);m.camera.updateMatrixWorld(true);
-    }
+    // at the interior glass (our own car is hidden for the pass), aimed straight back and a little down
+    const interior=this.mirrors.find(m=>m.name==='interior')?.mesh;
+    if(interior){interior.geometry.computeBoundingBox();interior.geometry.boundingBox.getCenter(_rp);interior.localToWorld(cam.position.copy(_rp));}
+    else body.localToWorld(cam.position.set(0,this.model.shape?.H??1.2,0));
+    cam.quaternion.copy(body.getWorldQuaternion(_rq)).multiply(MIRROR_FLIP).multiply(REAR_TILT);cam.updateMatrixWorld(true);
     root.visible=false;renderer.shadowMap.autoUpdate=false;
-    try{for(const m of this.mirrors){renderer.setRenderTarget(m.target);renderer.render(scene,m.camera);if(m.material.map!==m.target.texture){m.material.map=m.target.texture;m.material.needsUpdate=true;}m.material.color.set(0xffffff);}this.mirrorUpdates++;cadence.rendered(now);}
-    finally{renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
+    try{
+      renderer.setRenderTarget(this.rearTarget);renderer.render(scene,cam);
+      for(const m of this.mirrors){m.material.map=this.rearTarget.texture;m.material.color.set(0xffffff);}
+      this.mirrorUpdates++;this.mirrorCalls=0;this.rearLast=now;
+    }finally{renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
   }
-  disposeMirrors(){for(const m of this.mirrors)m.target?.dispose();if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
-  setVisible(v) { if(this.lod.visible!==v)this.mirrorCadence?.reset();this.lod.visible = v; }
+  /** chase camera: the same rear view as a small rear-view strip at the top centre of the screen (after post) */
+  drawRearStrip(renderer,{exposure=1,wb=null}={}){
+    if(!this.rearTarget||this.rearLast===undefined)return;
+    const S=this.rearStrip??=(()=>{
+      const material=new THREE.ShaderMaterial({depthTest:false,depthWrite:false,transparent:true,
+        uniforms:{tMap:{value:null},uWin:{value:rearWindow(0,62,4.6)},uRect:{value:new THREE.Vector4()},uExp:{value:1},uWB:{value:new THREE.Vector3(1,1,1)},uPx:{value:new THREE.Vector2()}},
+        vertexShader:'uniform vec4 uRect; varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(mix(uRect.xy, uRect.zw, uv), 0.0, 1.0); }',
+        fragmentShader:`uniform sampler2D tMap; uniform vec4 uWin; uniform float uExp; uniform vec3 uWB; uniform vec2 uPx; varying vec2 vUv;
+          void main(){
+            vec2 q = vec2(uWin.x + (1.0 - vUv.x) * uWin.z, uWin.y + vUv.y * uWin.w); // a mirror: left-right reversed
+            vec3 c = texture2D(tMap, q).rgb * uExp * uWB;
+            c = clamp((c * (2.51 * c + 0.03)) / (c * (2.43 * c + 0.59) + 0.14), 0.0, 1.0);
+            vec2 e = min(vUv, 1.0 - vUv) * uPx; float edge = min(e.x, e.y);
+            c = mix(vec3(0.02), c, smoothstep(2.0, 3.5, edge));
+            gl_FragColor = vec4(pow(c, vec3(1.0 / 2.2)), smoothstep(0.0, 1.0, edge) * 0.96);
+          }`});
+      const scene=new THREE.Scene(),mesh=new THREE.Mesh(new THREE.PlaneGeometry(1,1),material);mesh.frustumCulled=false;scene.add(mesh);
+      return {scene,material,camera:new THREE.Camera()};
+    })();
+    const u=S.material.uniforms,size=renderer.getDrawingBufferSize(new THREE.Vector2()),w=Math.min(size.x*.3,size.y*.75),h=w/4.6,top=size.y*.012;
+    u.tMap.value=this.rearTarget.texture;u.uExp.value=exposure;if(wb)u.uWB.value.fromArray(wb);u.uPx.value.set(w,h);
+    u.uRect.value.set(-w/size.x,1-2*(top+h)/size.y,w/size.x,1-2*top/size.y);
+    const target=renderer.getRenderTarget(),auto=renderer.autoClear;renderer.setRenderTarget(null);renderer.autoClear=false;
+    try{renderer.render(S.scene,S.camera);}finally{renderer.autoClear=auto;renderer.setRenderTarget(target);}
+  }
+  disposeMirrors(){this.rearTarget?.dispose();this.rearTarget=null;if(this.rearStrip){this.rearStrip.material.dispose();this.rearStrip.scene.children[0].geometry.dispose();this.rearStrip=null;}if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
+  setVisible(v) { this.lod.visible = v; }
   /** Full cabin (gauges, trim, controls) or the exterior dashboard the LOD uses beyond 15 m.
    * Outside cockpit views the cabin is behind tinted glass ~5 m away: ~35 draws and a cluster upload per frame. */
   setDetail(full) { if(this.detailed===full)return;this.detailed=full;this.lod.levels[1].distance=full?15:0; }

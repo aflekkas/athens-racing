@@ -160,8 +160,8 @@ export class GameArena extends DurableObject {
       // loss (at most 43,200 arena KV writes/day, never one write per driver).
       // Lobby transitions and finishes still persist immediately.
       const after = this.core.clientData(ws);
-      const checkpoint = ['state', 'states'].includes(type) && after?.state && Date.now() - (this.persistedAt || 0) >= 2000;
-      if (!['state', 'states', 'ping', 'discover'].includes(type) || before !== after?.finish || checkpoint) await this.persist();
+      const checkpoint = ['state', 'states', 'world-frame', 'world-contact'].includes(type) && after?.state && Date.now() - (this.persistedAt || 0) >= 2000;
+      if (!['state', 'states', 'world-frame', 'world-contact', 'ping', 'discover'].includes(type) || before !== after?.finish || checkpoint) await this.persist();
       this.relay();
     });
   }

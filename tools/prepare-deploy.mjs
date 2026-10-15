@@ -33,10 +33,9 @@ for (const def of MAPS) {
   const map = resolveMap(def, data);
   maps.push({ ...map, definitions: [...map.definitions] });
 }
-// Content-addressed copies + the offline cache worker. Precached at install: code, styles, textures, icons, the
-// playable maps' data and the engine / world sounds (the rest is cached the first time the game asks for it).
-const release = await buildRelease(out, { core: ['/src/', '/style.css', '/assets/tex/', '/assets/icons/', '/assets/maps/', '/assets/audio/engines/', '/assets/audio/world/',
-  ...MAPS.filter(m => PLAYABLE_MAPS.includes(m.id)).flatMap(m => [m.dataUrl, m.terrainUrl]).map(p => '/' + p.replace(/^\.?\//, ''))] });
+// Content-addressed assets remain cached on demand. Installation only fetches the menu shell;
+// map data, generated worlds, textures and sounds must wait for a committed session.
+const release = await buildRelease(out, { core: ['/src/', '/style.css', '/assets/icons/', '/assets/maps/'] });
 const swBytes = await publishRelease(root, out, release);
 count = 0; bytes = 0; largest = { size: 0, path: '' };
 async function inventory(dir) {

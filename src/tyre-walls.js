@@ -98,7 +98,7 @@ export function createTyreWalls(group, map, heightC, obstacles) {
   return { path, finish, dynamics,
     update(dt, online = false) {
       if (online && dynamics.bodies.length) this.reset();
-      dynamics.enabled = !online; dynamics.update(dt); loose.count = dynamics.bodies.length;
+      dynamics.enabled = false; // tyre walls stay put: the user doesn't want tyres flying around dynamics.update(dt); loose.count = dynamics.bodies.length;
       dynamics.bodies.forEach((b, i) => {
         dummy.position.set(b.x, b.y, b.z); dummy.rotation.set(b.ax, b.ay, b.az); dummy.updateMatrix(); loose.setMatrixAt(i, dummy.matrix);
       });

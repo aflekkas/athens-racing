@@ -170,6 +170,7 @@ export function installDamageSystem(car){
     if((zone==='front'&&(impact.ebs||0)>12)||impact.roll)crackGlass(car);
   }
   car.setDamage=(zone,amount,impact)=>{
+    car.sharedDamage=false;car.damageSnapshotKey=null;
     if(!ZONES.includes(zone))return;const value=clamp(finite(Number(amount)),0,1),old=car.damage[zone];if(Math.abs(value-old)<.0001)return;
     if(impact){
       const d=car.dims,side=zone==='left'||zone==='right',p=impact.localPoint,n=impact.localNormal;
@@ -186,12 +187,22 @@ export function installDamageSystem(car){
     if(value>=old)parts(zone,value-old,impact||{},!impact);
     refreshMirrorAttachments(car);
   };
+  // Online deformation is rebuilt from absolute zone totals in a fixed order.
+  // Impact batching and private contact points cannot change the resulting mesh.
+  car.setDamageSnapshot=(zones)=>{
+    const values=ZONES.map(z=>Math.round(clamp(finite(zones?.[z]),0,1)*1000)/1000),key=values.join(':');
+    car.sharedDamage=true;if(car.damageSnapshotKey===key)return;
+    car.damageSnapshotKey=key;lattice.clear();restoreParts();
+    ZONES.forEach((z,i)=>{car.damage[z]=values[i];});
+    for(const z of ZONES)if(car.damage[z]){lattice.impact(z,car.damage[z]);parts(z,car.damage[z],{},true);}
+    if(values.some(Boolean)||records.some(r=>r.rest))deform(null);if(car.damage.front>=.35)crackGlass(car);refreshMirrorAttachments(car);
+  };
   car.updateDamage=(dt)=>{
     dt=clamp(finite(dt),0,.1);
-    for(const part of car.damageParts){for(const [, ,material]of part.materials){material.emissiveIntensity=0;material.emissive?.setHex(0);}if(part.state==='hanging'){part.node.position.y=part.position.y-.025-.035*part.damage;part.node.rotation.z=part.rotation.z+.018*Math.sin((car.damageTime||0)*7);}}
+    for(const part of car.damageParts){for(const [, ,material]of part.materials){material.emissiveIntensity=0;material.emissive?.setHex(0);}if(part.state==='hanging'){part.node.position.y=part.position.y-.025-.035*part.damage;part.node.rotation.z=part.rotation.z+(car.sharedDamage?0:.018*Math.sin((car.damageTime||0)*7));}}
     car.damageTime=(car.damageTime||0)+dt;
-    if(Math.abs(car.root.rotation.z)+Math.abs(car.body.rotation.z)>1.15&&Math.max(...Object.values(car.damage))>.2)crackGlass(car);
-    for(let i=0;i<(car.wheels||[]).length;i++){const w=car.wheels[i],index=(w.front?0:2)+(w.side>0?1:0),bend=car.wheelCamber?.[index]??((index%2?-1:1)*car.visualCornerDamage[index]);if(w.pivot)w.pivot.rotation.z=bend+Math.sin((w.angle||0)*2)*Math.abs(bend)*.12;}
+    if(!car.sharedDamage&&Math.abs(car.root.rotation.z)+Math.abs(car.body.rotation.z)>1.15&&Math.max(...Object.values(car.damage))>.2)crackGlass(car);
+    for(let i=0;i<(car.wheels||[]).length;i++){const w=car.wheels[i],index=(w.front?0:2)+(w.side>0?1:0),bend=car.sharedDamage?0:car.wheelCamber?.[index]??((index%2?-1:1)*car.visualCornerDamage[index]);if(w.pivot)w.pivot.rotation.z=bend+Math.sin((w.angle||0)*2)*Math.abs(bend)*.12;}
     for(let i=car.damageDebris.length-1;i>=0;i--){
       const item=car.damageDebris[i];if(!debrisPool.has(item)){car.damageDebris.splice(i,1);continue;}
       item.age+=dt;if(item.age>14){discard(item);car.damageDebris.splice(i,1);continue;}

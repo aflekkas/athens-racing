@@ -5,11 +5,13 @@ import { events } from '../src/events.js';
 import { pathToFileURL } from 'node:url';
 export const scenarios = [
   { trigger: '120 km/h; no cops', kmh: 120 },
-  { trigger: '+40 km/h; cop 60 m', kmh: 90, cop: 60, star: 12.5 },
-  { trigger: '+60 km/h; cop 60 m', kmh: 110, cop: 60, star: 5 },
-  { trigger: '+21 km/h; cop 60 m', kmh: 71, cop: 60 },
-  { trigger: '+30 km/h; cop 60 m', kmh: 80, cop: 60 },
-  { trigger: '+40 km/h; cop 130 m', kmh: 90, cop: 130 },
+  { trigger: '+15 km/h; cop 60 m', kmh: 65, cop: 60 },
+  { trigger: '+21 km/h; cop 60 m', kmh: 71, cop: 60, star: .25 / .1 + 6 }, // warned at 2.5 s, then 6 s of fleeing in view
+  { trigger: '+25 km/h; cop 60 m', kmh: 75, cop: 60, star: 1 / .22 },
+  { trigger: '+40 km/h; cop 60 m', kmh: 90, cop: 60, star: 1 / .22 },
+  { trigger: '+60 km/h; cop 60 m', kmh: 110, cop: 60, star: 1 / .4 },
+  { trigger: '+40 km/h; cop 130 m', kmh: 90, cop: 130, star: 1 / .22 },
+  { trigger: '+40 km/h; cop 140 m', kmh: 90, cop: 140 },
   { trigger: '+40 km/h; blocked LOS at 20 m', kmh: 90, cop: 20, blocked: true },
   { trigger: 'red; no cop', red: true },
   { trigger: 'red; cop 60 m', red: true, cop: 60 },
@@ -20,12 +22,12 @@ export const scenarios = [
   { trigger: 'traffic crash; cop 60 m', kind: 'crash', cop: 60 },
   { trigger: 'police bump', kind: 'bump', hitcop: true },
   { trigger: 'police crash', kind: 'crash', hitcop: true, star: 2 / 60 },
-  { trigger: 'wrong side; cop 60 m', wrong: true, cop: 60, star: 1 / .06 },
+  { trigger: 'wrong side; cop 60 m', wrong: true, cop: 60, star: 1 / .25 },
   { trigger: 'wrong side; no cop', wrong: true },
   { trigger: 'event speed camera; no cop', camera: true },
 ];
 export function measure(opts, { duration = 60, dt = 1 / 60 } = {}) {
-  const w = world(); w.police.reset(true); w.player(1000, opts.wrong ? -2 : 2, (opts.kmh || 45) / 3.6);
+  const w = world(); w.police.setTuning(opts.level, opts.busted); w.police.reset(true); w.player(1000, opts.wrong ? -2 : 2, (opts.kmh || 45) / 3.6);
   if (opts.blocked) w.police.los = () => false;
   const cop = opts.cop || opts.hitcop ? w.police.spawnCop(1000 + (opts.cop || 3), 1) : null;
   const result = { trigger: opts.trigger, timeToWarning: null, timeToStar: null, timeToPursuit: null };
