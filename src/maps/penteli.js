@@ -254,7 +254,7 @@ export function buildScenery(scene,map,{heightC=(x,z)=>map.terrain.height(x,z),a
   // Merge short runs by 240 m world cell and material. Culling and preset scaling
   // use the same scenery LOD policy as instanced posts, without whole-route beams.
   const railChunks=new Map();
-  const concrete=std('#b1ada3',{map:TX.concrete_diff});
+  const concrete=std('#b1ada3',{map:TX.concrete_diff,side:THREE.DoubleSide});
   const jersey=[[-.28,0],[-.28,.15],[-.13,.42],[-.09,.82],[.09,.82],[.13,.42],[.28,.15],[.28,0]];
   for(const run of rails){let chunk=[];let lastKey;
     const flush=()=>{if(chunk.length<2)return;const o=sweep(chunk,run.kind==='steel'?wBeam:jersey,run.kind==='steel'?metal:concrete,'mountain-guardrail');

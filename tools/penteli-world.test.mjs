@@ -45,6 +45,9 @@ test('Penteli gravel contacts use rendered triangles and have no phantom sidewal
 test('Penteli rock decoration follows ground and leaves the six-metre re-entry shoulder clear',async()=>{
  const THREE=await import('three'),{buildScenery}=await import('../src/maps/penteli.js');
  const height=(x,z)=>terrain.height(x,z),scene=new THREE.Group(),world=buildScenery(scene,map,{heightC:height,assets:{network:map.roadNetwork}});
+ const barriers=world.group.children.filter(m=>m.name.startsWith('Penteli barrier chunk'));
+ assert.ok(barriers.length>0);
+ for(const m of barriers){assert.ok(m.boundingSphere&&m.userData.lod&&m.userData.far);if(m.name.endsWith(':concrete'))assert.equal(m.material.side,THREE.DoubleSide,'both parapet faces remain visible on either road side');}
  const cut=world.group.children.find(m=>m.name.startsWith('EP5 layered natural rock cutting'));
  assert.ok(cut);const p=cut.geometry.attributes.position,ix=cut.geometry.index.array;let checked=0;
  for(const i of new Set(ix)){
