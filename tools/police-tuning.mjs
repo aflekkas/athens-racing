@@ -27,7 +27,7 @@ export const scenarios = [
   { trigger: 'event speed camera; no cop', camera: true },
 ];
 export function measure(opts, { duration = 60, dt = 1 / 60 } = {}) {
-  const w = world(); w.police.reset(true); w.player(1000, opts.wrong ? -2 : 2, (opts.kmh || 45) / 3.6);
+  const w = world(); w.police.setTuning(opts.level, opts.busted); w.police.reset(true); w.player(1000, opts.wrong ? -2 : 2, (opts.kmh || 45) / 3.6);
   if (opts.blocked) w.police.los = () => false;
   const cop = opts.cop || opts.hitcop ? w.police.spawnCop(1000 + (opts.cop || 3), 1) : null;
   const result = { trigger: opts.trigger, timeToWarning: null, timeToStar: null, timeToPursuit: null };

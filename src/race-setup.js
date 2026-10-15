@@ -17,6 +17,9 @@ export const TRAFFIC_LEVELS = Object.freeze([['off', 0, 'OFF'], ['light', 0.5, '
 export const TIMES = Object.freeze([['dawn', 'DAWN'], ['day', 'MIDDAY'], ['afternoon', 'AFTERNOON'], ['sunset', 'SUNSET'], ['night', 'NIGHT'], ['dynamic', 'DYNAMIC']]);
 export const WEATHERS = Object.freeze([['clear', 'CLEAR'], ['overcast', 'OVERCAST'], ['rain', 'RAIN'], ['dynamic', 'DYNAMIC']]);
 export const MAX_LAPS = 20;
+/** POLICE difficulty (src/police.js POLICE_LEVELS); OFF is police: false */
+export const POLICE_LEVELS = Object.freeze([['relaxed', 'RELAXED'], ['normal', 'NORMAL'], ['tough', 'TOUGH']]);
+export const isPoliceLevel = (v) => POLICE_LEVELS.some(([id]) => id === v);
 const KEY = 'paraliaki.raceSetup';
 const memStore = { m: new Map(), getItem(k) { return this.m.get(k) ?? null; }, setItem(k, v) { this.m.set(k, String(v)); } };
 const store = () => { try { return typeof localStorage !== 'undefined' ? localStorage : memStore; } catch { return memStore; } };
@@ -34,8 +37,10 @@ const baseLaps = (def) => Math.max(1, Math.floor(def.laps || 1));
 export function setupFields(def, { closed = false } = {}) {
   const out = [];
   if (def.type === 'sprint') out.push({ key: 'rivals', dflt: rivalCount(def), min: 0, max: MAX_RIVALS });
-  // UI owner: saved race-setup key is `police` (boolean); style its Off / On segmented control.
-  if (def.type !== 'pursuit') out.push({ key: 'police', dflt: def.rules?.police === true });
+  // Saved race-setup keys: `police` (boolean), `policeLevel` (POLICE_LEVELS id) and `busted` (can the police arrest you).
+  // The menu shows police + policeLevel as one OFF / RELAXED / NORMAL / TOUGH row, and CAN BE BUSTED while police are on.
+  if (def.type !== 'pursuit') out.push({ key: 'police', dflt: def.rules?.police === true },
+    { key: 'policeLevel', dflt: isPoliceLevel(def.rules?.policeLevel) ? def.rules.policeLevel : 'normal' }, { key: 'busted', dflt: def.rules?.busted !== false });
   if (!closed || def.type === 'sprint' || def.type === 'free' || isDrivingMode(def)) out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
   if (closed && def.type !== 'free' && !isDrivingMode(def)) out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
   if (!['pursuit', 'free'].includes(def.type) && !isDrivingMode(def)) out.push({ key: 'reverse', dflt: false });
@@ -63,6 +68,8 @@ export function resolveSetup(def, setup = {}, ctx = {}) {
     if (f.key === 'rivals' || f.key === 'laps') v = Number.isFinite(+v) && v !== null && v !== '' ? clamp(Math.round(+v), f.min, f.max) : f.dflt;
     else if (f.key === 'traffic') v = Number.isFinite(+v) && v !== null && v !== '' ? clamp(+v, 0, 2) : f.dflt;
     else if (f.key === 'police') v = v === true;
+    else if (f.key === 'policeLevel') v = isPoliceLevel(v) ? v : f.dflt;
+    else if (f.key === 'busted') v = v === true || v === false ? v : f.dflt;
     else if (f.key === 'reverse') v = v === true;
     else if (f.key === 'time') v = TIMES.some(([t]) => t === v) ? v : f.dflt;
     else if (f.key === 'weather') v = WEATHERS.some(([w]) => w === v) ? v : f.dflt;
@@ -73,7 +80,7 @@ export function resolveSetup(def, setup = {}, ctx = {}) {
 /** true when any choice differs from the event */
 export function isCustom(def, setup = {}, ctx = {}) {
   const cur = resolveSetup(def, setup, ctx);
-  return setupFields(def, ctx).some((f) => cur[f.key] !== f.dflt);
+  return setupFields(def, ctx).some((f) => cur[f.key] !== f.dflt && (cur.police || !['policeLevel', 'busted'].includes(f.key)));
 }
 
 /** a run definition with the choices applied (the input definition is not modified) */
@@ -81,7 +88,12 @@ export function applySetup(def, setup = {}, ctx = {}) {
   const fields = setupFields(def, ctx), cur = resolveSetup(def, setup, ctx), dflt = Object.fromEntries(fields.map((f) => [f.key, f.dflt]));
   const out = { ...def, baseId: def.baseId || def.id };
   const key = [];
-  if ('police' in cur) { out.rules = { ...(def.rules || {}), police: cur.police }; if (cur.police !== dflt.police) key.push('police' + Number(cur.police)); }
+  if ('police' in cur) {
+    out.rules = { ...(def.rules || {}), police: cur.police, policeLevel: cur.policeLevel, busted: cur.busted };
+    if (cur.police !== dflt.police) key.push('police' + Number(cur.police));
+    if (cur.police && cur.policeLevel !== dflt.policeLevel) key.push('pol-' + cur.policeLevel);
+    if (cur.police && cur.busted !== dflt.busted) key.push(cur.busted ? 'bust' : 'nobust');
+  }
   if ('rivals' in cur) {
     out.rivalCount = cur.rivals;
     if (Array.isArray(def.rivals)) out.rivals = def.rivals.slice(0, cur.rivals);

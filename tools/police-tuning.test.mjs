@@ -137,3 +137,72 @@ test('every road map meets a patrol within two minutes of race pace in either di
     }
   }
 });
+
+// ------------------------------------------------------------------ race setup POLICE level and CAN BE BUSTED
+import { POLICE_LEVELS, policeTuning } from '../src/police.js';
+import { POLICE_LEVELS as SETUP_LEVELS } from '../src/race-setup.js';
+test('POLICE levels: the setup list matches the tuning; NORMAL is the default tuning', () => {
+  assert.deepEqual(SETUP_LEVELS.map(([id]) => id), Object.keys(POLICE_LEVELS));
+  const n = policeTuning('normal'); for (const k of Object.keys(HEAT)) assert.equal(n[k], HEAT[k], k);
+  assert.equal(policeTuning('bogus').level, 'normal');
+  for (const level of Object.keys(POLICE_LEVELS)) { const t = policeTuning(level); assert.equal(t.contactLevel, 2); assert.equal(t.contactAfter, 15, `${level}: PIT/box/ram stay >=2 stars, 15 s in`); }
+});
+test('POLICE levels: RELAXED notices later and tolerates more, TOUGH sooner and less', () => {
+  const at = (level, kmh, cop = 60) => measure({ trigger: level, kmh, cop, level });
+  // +20 km/h: RELAXED ignores it, NORMAL warns slowly, TOUGH warns in about a second
+  assert.equal(at('relaxed', 70).timeToWarning, null);
+  assert.ok(at('normal', 70).timeToWarning > 2 && at('tough', 70).timeToWarning < 1.5);
+  // +12 km/h: only TOUGH cares
+  assert.equal(at('normal', 62).timeToWarning, null); assert.ok(at('tough', 62).timeToWarning !== null);
+  // +40 km/h with a unit 60 m away: stars come later on RELAXED and sooner on TOUGH
+  const star = level => at(level, 90).timeToStar;
+  assert.ok(star('relaxed') > star('normal') && star('normal') > star('tough'), JSON.stringify(['relaxed', 'normal', 'tough'].map(star)));
+  assert.ok(star('relaxed') >= 6 && star('relaxed') <= 9 && star('tough') >= 2.5 && star('tough') <= 3.5);
+  // witness range: 110 m is beyond RELAXED, 160 m only TOUGH
+  assert.equal(at('relaxed', 90, 110).timeToWarning, null); assert.ok(at('normal', 90, 110).timeToWarning !== null);
+  assert.equal(at('normal', 90, 160).timeToWarning, null); assert.ok(at('tough', 90, 160).timeToWarning !== null);
+});
+test('POLICE levels: escalation and reinforcements scale with the level', () => {
+  const twoStars = level => { const W = world(); W.police.setTuning(level); W.police.reset(true); W.player(1000, 2, 90 / 3.6); W.police.spawnCop(1060, 1);
+    let t = 0, one = null, two = null; for (; t < 90 && two === null; t += 1 / 30) { W.police.update(1 / 30, { racing: true, dir: 1 }); if (one === null && W.police.hm.level >= 1) one = t; if (W.police.hm.level >= 2) two = t; }
+    W.police.reset(false); W.police.offs.forEach(off => off()); return two - one; };
+  const r = twoStars('relaxed'), n = twoStars('normal'), g = twoStars('tough');
+  assert.ok(r > 35 && n >= 20 && n <= 30 && g < 20, JSON.stringify({ r, n, g }));
+  const chasers = level => { const W = world(); W.police.setTuning(level); W.police.reset(true); W.player(5000, 1.9, 30);
+    W.police.rng = { next: () => 0.1, range: (a) => a, chance: () => false, int: (a) => a }; W.police.hm.begin(5);
+    step(W, 120, {}, 1 / 30, dt => { W.traffic.racers[0].s += 30 * dt; for (const q of W.traffic.cars) if (q.cop?.chase && q.active) q.s = W.traffic.racers[0].s - 40; });
+    const n = W.traffic.cars.filter(q => q.active && q.cop?.chase && !q.cop.block).length; W.police.reset(false); W.police.offs.forEach(off => off()); return n; };
+  assert.deepEqual(['relaxed', 'normal', 'tough'].map(chasers), [2, 3, 4]);
+});
+test('CAN BE BUSTED off: stopped next to a chasing unit for a long time is never an arrest; the chase goes on', () => {
+  for (const busted of [true, false]) {
+    const W = world(); W.police.setTuning('normal', busted); W.police.reset(true); W.player(1000, 1.9, 0);
+    W.police.hm.begin(2); step(W, 0.05);
+    const c = W.traffic.cars.find(q => q.active && q.cop?.chase); const pin = () => { c.s = 1003; c.u = 1.9; c.v = 0; };
+    const out = step(W, 40, {}, 1 / 30, pin);
+    assert.equal(out.some(e => e.phase === 'busted'), busted, `busted ${busted}`);
+    if (!busted) { assert.equal(W.police.hm.state, 'pursuit'); assert.equal(W.police.hm.bust, 0); }
+    W.police.reset(false); W.police.offs.forEach(off => off());
+  }
+});
+test('the race setup and the lobby config carry the level and CAN BE BUSTED into the police', async () => {
+  const { events } = await import('../src/events.js');
+  const W = world();
+  events.emit('start', { eventId: 'quick~police1~pol-tough~nobust', type: 'sprint', def: { type: 'sprint', rules: { police: true, policeLevel: 'tough', busted: false } } });
+  assert.equal(W.police.C.level, 'tough'); assert.equal(W.police.C.canBust, false); assert.equal(W.police.hm.cfg.canBust, false);
+  events.emit('start', { eventId: 'quick~police1', type: 'sprint', def: { type: 'sprint', rules: { police: true } } });
+  assert.equal(W.police.C.level, 'normal'); assert.equal(W.police.C.canBust, true);
+  W.police.configureOnline({ raceId: 'r', generation: 1, config: { police: true, policeLevel: 'relaxed', busted: false } });
+  assert.equal(W.police.C.level, 'relaxed'); assert.equal(W.police.C.canBust, false);
+  W.police.reset(false); W.police.offs.forEach(off => off());
+});
+test('race setup: POLICE level and CAN BE BUSTED resolve, reach the rules, and keep their records apart', async () => {
+  const { resolveSetup, applySetup, isCustom } = await import('../src/race-setup.js');
+  const def = { id: 'quick', type: 'sprint', rules: {} };
+  assert.deepEqual(['police', 'policeLevel', 'busted'].map(k => resolveSetup(def, {})[k]), [false, 'normal', true]);
+  assert.deepEqual(['policeLevel', 'busted'].map(k => resolveSetup(def, { policeLevel: 'x', busted: 'no' })[k]), ['normal', true]);
+  const run = applySetup(def, { police: true, policeLevel: 'relaxed', busted: false });
+  assert.deepEqual([run.rules.police, run.rules.policeLevel, run.rules.busted, run.id], [true, 'relaxed', false, 'quick~police1~pol-relaxed~nobust']);
+  assert.equal(applySetup(def, { police: true }).id, 'quick~police1', 'NORMAL, can be busted: the plain police-on id');
+  assert.equal(isCustom(def, { policeLevel: 'tough' }), false, 'a saved level does not matter with police off');
+});

@@ -85,7 +85,8 @@ test('client adapter maps lobby config to race-setup semantics', () => {
   assert.deepEqual(configFromLobby(null).rivals, 3);
   assert.deepEqual(configFromLobby({ config: { rivals: 0, time: 'night' } }), { rivals: 0, traffic: 1, time: 'night', weather: 'clear', reverse: false, police: false, sessionDuration: 300, enforcement: null });
   assert.deepEqual(lobbyConfigToRaceSetup({ rivals: 99, traffic: 9, time: 'dusk', weather: 'snow', reverse: 1, police: 1 }).rivals, 11);
-  assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 3, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false });
+  assert.deepEqual(lobbyConfigToRaceSetup({}), { rivals: 3, traffic: 1, reverse: false, time: 'afternoon', weather: 'clear', police: false, policeLevel: 'normal', busted: true });
+  assert.deepEqual([lobbyConfigToRaceSetup({ police: true, policeLevel: 'tough', busted: false }), lobbyConfigToRaceSetup({ policeLevel: 'insane' })].map(c => [c.policeLevel, c.busted]), [['tough', false], ['normal', true]]);
   assert.equal(trafficBoolToLevel(true), 1); assert.equal(trafficBoolToLevel(false), 0);
   assert.equal(trafficLevelToBool(0.5), true); assert.equal(trafficLevelToBool(0), false);
   assert.equal(describeMode('sprint'), 'QUICK RACE'); assert.equal(describeMode('free'), 'FREE ROAM');
@@ -375,3 +376,11 @@ test('three real clients converge on one room through concurrent create/edit/joi
   host.ws.close(); g1.ws.close(); g2.ws.close();
 });
 
+
+test('police setup in the lobby config: level and CAN BE BUSTED are validated and change the race', () => {
+  assert.deepEqual(sanitizeConfig({ police: true, policeLevel: 'relaxed', busted: false }).config, { police: true, policeLevel: 'relaxed', busted: false });
+  assert.ok(sanitizeConfig({ policeLevel: 'insane' }).error);
+  assert.equal(configInvalidates({ police: true }, { police: true, policeLevel: 'normal', busted: true }), false, 'absent = NORMAL, can be busted');
+  assert.equal(configInvalidates({ police: true }, { police: true, policeLevel: 'tough' }), true);
+  assert.equal(configInvalidates({ police: true, busted: true }, { police: true, busted: false }), true);
+});

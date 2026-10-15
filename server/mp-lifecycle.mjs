@@ -10,9 +10,11 @@
 //               whose generation is present but stale (see isStaleGeneration).
 //   config      shared mode setup, same semantics as src/race-setup.js:
 //               { rivals, traffic, time, weather, reverse, police,
-//                 sessionDuration, enforcement }
+//                 sessionDuration, enforcement } plus the optional police setup
+//               policeLevel ('relaxed' | 'normal' | 'tough') and busted (bool);
+//               absent means NORMAL and can be busted.
 //   mode        derived from the event (its type string), never set directly.
-import { TIMES, WEATHERS, MAX_RIVALS } from '../src/race-setup.js';
+import { TIMES, WEATHERS, MAX_RIVALS, isPoliceLevel } from '../src/race-setup.js';
 import { isDrivingMode, createObjectiveState, stepObjectives, objectiveSnapshot, objectiveResult } from '../src/driving-objectives.js';
 
 export const MP_RIVALS_MIN = 0;
@@ -71,6 +73,11 @@ export function sanitizeConfig(input, def = {}) {
   }
   if (input.reverse !== undefined) out.reverse = input.reverse === true;
   if (input.police !== undefined) out.police = input.police === true;
+  if (input.policeLevel !== undefined) {
+    if (!isPoliceLevel(input.policeLevel)) return { error: 'Unknown police level.' };
+    out.policeLevel = input.policeLevel;
+  }
+  if (input.busted !== undefined) out.busted = input.busted !== false;
   if (input.sessionDuration !== undefined) {
     const d = Math.round(Number(input.sessionDuration));
     if (!Number.isFinite(d) || d < MP_SESSION_DURATION_MIN || d > MP_SESSION_DURATION_MAX) return { error: 'Session length must be 30-900 seconds.' };
@@ -128,9 +135,10 @@ export function effectiveEvent(def, config) {
 
 // Keys that offer a different race: everyone must re-ready. Time, weather,
 // rivals, session length and enforcement never invalidate readiness.
-const RACE_CHANGING_KEYS = ['traffic', 'reverse', 'police'];
+const RACE_CHANGING_KEYS = ['traffic', 'reverse', 'police', 'policeLevel', 'busted'];
+const KEY_DEFAULTS = { policeLevel: 'normal', busted: true };
 export function configInvalidates(prev = {}, next = {}) {
-  return RACE_CHANGING_KEYS.some(k => (prev[k] ?? null) !== (next[k] ?? null));
+  return RACE_CHANGING_KEYS.some(k => (prev[k] ?? KEY_DEFAULTS[k] ?? null) !== (next[k] ?? KEY_DEFAULTS[k] ?? null));
 }
 
 export function nextGeneration(lobby) {
