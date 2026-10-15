@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { wantedScreen, driverRow, shownValue, setPending, renderLobby, renderMp, renderCars, renderResults, form, isMpScreen, helpText } from '../src/ui/mp-screens.js';
+import { wantedScreen, driverRow, shownValue, setPending, renderLobby, renderMp, renderCars, renderResults, form, isMpScreen, helpText, change } from '../src/ui/mp-screens.js';
 
 // A Multiplayer stand-in with just the state the screens read (src/multiplayer.js owns the real one).
 function fakeMp({ host = true, players, status = 'waiting', lobbies } = {}) {
@@ -67,7 +67,7 @@ test('the host gets separate KICK and BLOCK on other drivers; guests see the set
   assert.match(host, /data-act="mpStart"/); assert.match(host, /data-scope="mpCfg"/);
   assert.match(host, /ALL 2 CARS/, 'allowed cars count garage cars only');
   assert.match(host, /data-key="traffic"/); assert.match(host, /data-key="reverse"/);
-  assert.doesNotMatch(host, /data-key="police"/, 'police is not offered online'); assert.match(host, /UNAVAILABLE ONLINE/);
+  assert.match(host, /data-key="policeMode"/, 'POLICE: OFF / RELAXED / NORMAL / TOUGH'); assert.doesNotMatch(host, /UNAVAILABLE ONLINE|data-key="busted"/, 'CAN BE BUSTED only while police are on');
   const guest = renderLobby(menu, fakeMp({ host: false }));
   assert.doesNotMatch(guest, /mpKick|mpBlock|mpStart|mpForce|data-scope="mpCfg"/);
   assert.match(guest, /ATHENS RIVIERA/); assert.match(guest, /NORMAL/); assert.match(guest, /data-act="mpReady"/);
@@ -111,4 +111,18 @@ test('a finisher sees live results before the rest of the field, with no early r
   assert.match(html, /80\.50/); assert.match(html, /RACING/);
   assert.match(html, /Live standings/); assert.match(html, /data-act="shareResult"/);
   assert.doesNotMatch(html, /data-act="mpStart"|data-act="mpToLobby"|data-act="mpCar"/);
+});
+
+test('the host sets POLICE and CAN BE BUSTED for everyone; guests read them', () => {
+  const mp = fakeMp(); mp.lobby.config = { ...mp.lobby.config, police: true, policeLevel: 'tough', busted: false };
+  const host = renderLobby(menu, mp);
+  assert.match(host, /data-key="policeMode"/); assert.match(host, /data-key="busted"/);
+  assert.match(renderLobby(menu, { ...fakeMp({ host: false }), lobby: { ...mp.lobby, host: 'a' } }), /TOUGH · NO ARRESTS/);
+  const sent = []; globalThis.window = { __multiplayer: { ...mp, setLobbyConfig: (p) => { sent.push(p); return true; } } };
+  const el = (key) => ({ dataset: { scope: 'mpCfg', key } }), m = { refresh() {} };
+  change(m, { key: 'policeMode', value: 'relaxed', el: el('policeMode') });
+  change(m, { key: 'policeMode', value: 'off', el: el('policeMode') });
+  change(m, { key: 'busted', value: 'true', el: el('busted') });
+  assert.deepEqual(sent, [{ police: true, policeLevel: 'relaxed' }, { police: false }, { busted: true }]);
+  delete globalThis.window;
 });

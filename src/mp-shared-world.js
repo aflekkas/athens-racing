@@ -4,8 +4,13 @@ import { RNG } from './util.js';
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const seed = text => [...text].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261) >>> 0;
 export function applySharedCar(traffic, row, age = 0, promote = false) {
-  const c = traffic.cars[row[0]]; if (!c || c.police) return;
+  const c = traffic.cars[row[0]]; if (!c) return;
   const fresh = !c.active, flags = row[CAR.FLAGS], k = !!(flags & 1), dir = row[CAR.DIR];
+  if (c.police) { // a shared unit: its lights, whether it is chasing and whom (grid slot)
+    const cop = c.cop || (c.cop = { mode: 'patrol', tactic: 'tail', tacT: 0, side: 0, losT: 0, sees: false, down: false, wasChasing: false });
+    cop.siren = !!(flags & 32); cop.chase = !!(flags & 64); cop.target = (flags >> 7 & 15) - 1; if (cop.target < 0) cop.target = null; cop.keep = true;
+    if (cop.chase) cop.wasChasing = true;
+  }
   if (fresh || promote) { traffic.initDrive(c, false); c.lane = Math.max(0, Math.round((Math.abs(row[CAR.U] / 100) - 1.5) / 3.3)); }
   c.active = true; c.dir = dir; c.s = row[CAR.S] / 100 + row[CAR.VS] / 100 * age; c.u = row[CAR.U] / 100 + row[CAR.VU] / 100 * age;
   c.v = Math.hypot(row[CAR.VS], row[CAR.VU]) / 100; c.uv = row[CAR.VU] / 100; c.v0 = traffic.roadSpeed(c.s) * (c.drv?.vf || 1);
@@ -55,11 +60,15 @@ export class SharedWorld {
     const r = this.configure(), l = this.mp.lobby; if (!this.key || !['countdown', 'race'].includes(l.status)) return;
     const tr = this.traffic;
     if (this.authority) {
-      const actors = [{ veh: r.player.veh, kind: 'player' }, ...r.remotes.filter(x => x.member?.loaded && x.member.connected !== false && !x.member.dnf).map(x => ({ veh: x.car.veh, kind: 'remote' }))];
+      const racing = r.remotes.filter(x => x.member?.loaded && x.member.connected !== false && !x.member.dnf);
+      const actors = [{ veh: r.player.veh, kind: 'player', slot: this.mp.me?.gridSlot ?? 0 }, ...racing.map(x => ({ veh: x.car.veh, kind: 'remote', slot: x.member.gridSlot }))];
       const foci = []; for (const a of actors) if (!foci.some(s => Math.abs(s - a.veh.s) < 250)) foci.push(a.veh.s);
       tr.onlineFoci = foci; tr.onlineBudget = Math.min(66, 18 + 12 * actors.length);
       const focus = foci[(this.focus = ((this.focus || 0) + 1) % Math.max(1, foci.length))] ?? r.player.veh.s;
       tr.update(dt, focus, actors);
+      // Shared police: this client runs every driver's units from the pursuit each driver's own client judged.
+      if (tr.police?.enabled && tr.police.online) tr.police.dispatch(dt, [{ slot: actors[0].slot, code: tr.police.pursuitCode() },
+        ...racing.map(x => ({ slot: x.member.gridSlot, code: this.mp.peers.get(x.id)?.state?.pursuit ?? 0 }))]);
       // Quantize the authority's damage too, so a threshold means the same thing on every screen.
       for (const c of tr.cars) if (c.active) c.m.setDamageSnapshot?.(Object.fromEntries(ZONES.map(z => [z, Math.round((c.dz?.[z] || 0) * 1000) / 1000])));
       if (this.mp.connected && this.mp.now() - this.lastSent >= 1000 / WORLD_HZ) this.publish();
@@ -68,7 +77,7 @@ export class SharedWorld {
   }
   publish() {
     const l = this.mp.lobby, at = this.mp.now(); this.lastSent = at;
-    const rows = this.traffic.cars.filter(c => c.active && !c.police).map(c => packCar(this.traffic, c)), cones = this.traffic.cones.flatMap((k, id) => k.hit ? [packCone(k, id)] : []);
+    const rows = this.traffic.cars.filter(c => c.active && (!c.police || c.cop)).map(c => packCar(this.traffic, c)), cones = this.traffic.cones.flatMap((k, id) => k.hit ? [packCone(k, id)] : []);
     const packets = worldPackets({ raceId: l.raceId, generation: l.generation || 0, seq: this.seq++, at }, rows, cones);
     for (const p of packets) { this.stats.sent++; this.stats.bytes += JSON.stringify(p).length; this.mp.send(p); }
     this.lastPublished = { rows, cones, at };
@@ -118,7 +127,7 @@ export class SharedWorld {
     const b = m.body;
     if (m.kind === 'cone') applySharedCone(this.traffic.cones[b[0]], b);
     else {
-      const c = this.traffic.cars[b[0]]; if (!c?.active || c.police) return;
+      const c = this.traffic.cars[b[0]]; if (!c?.active) return;
       const body = this.traffic.carBody(c, {}); c.s += b[1] / 100; c.u += b[2] / 100; body.vs += b[3] / 100; body.vu += b[4] / 100; body.w += b[5] / 1000;
       this.traffic.hitCar(c, body, b[6] / 100, ZONES[b[7]], this.traffic.t, { ebs: b[8] / 100, cheap: true });
     }

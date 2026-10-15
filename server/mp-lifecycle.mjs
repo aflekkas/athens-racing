@@ -330,6 +330,8 @@ export function pickTyreTelemetry(v) {
 export function validateStateExtras(s, ctx = {}) {
   const extras = {};
   if (typeof s?.braking === 'boolean') extras.braking = s.braking;
+  // The driver's own police pursuit (src/police.js encodePursuit), for the world authority's shared units.
+  if (Number.isSafeInteger(s?.pursuit) && s.pursuit >= 0 && s.pursuit <= 2047) extras.pursuit = s.pursuit;
   for (const [name, { min, max }] of telemetryFields) {
     const v = s?.[name];
     if (v === undefined) continue;

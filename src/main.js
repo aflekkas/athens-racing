@@ -605,7 +605,8 @@ function resetCar() {
 function recoverFromCapture() {
   if (G.state !== 'race' || G.towing) return;
   // Online the capture is the server's recovery hold (it costs the clock time), then you race on.
-  if (multiplayer.active) { police?.reset(police.enabled); tow(player.veh); hud.message('<i>CAPTURED</i> · RECOVERY HOLD', 4); return; }
+  // (the units are shared: only this driver's judge settles, and the world authority stands its units down)
+  if (multiplayer.active) { tow(player.veh); hud.message('<i>PULLED OVER</i> · RECOVERY HOLD', 4); return; }
   if (G.ev?.def.type === 'pursuit') { finishRace('busted'); return; }
   // Pulled over: held at the roadside while the clock runs (no fine, no added seconds), then you drive on.
   police?.reset(police.enabled);
@@ -1823,7 +1824,9 @@ function step(dt, draw = true) {
         }), dt, now, multiplayer.contacts) : [];
         containOnlineVehicle(pv, route);
       }
-      if (police && !multiplayer.active) for (const e of police.update(dt, { events, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
+      // Online the units are shared (src/mp-shared-world.js); this client judges only its own driver.
+      if (police && multiplayer.active && police.enabled && !sharedWorld.authority) traffic.setRacers(actors);
+      if (police) for (const e of police.update(dt, { events, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
       for (const h of traffic.honks) handleHonk(h);
@@ -2103,7 +2106,7 @@ function updateRacerMarkers() {
     return { id, name, player, distance, x: markerPoint.x, y: markerPoint.y, behind: markerView.z >= 0, viewX: markerView.x, viewY: markerView.y };
   }));
 }
-const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance } });
+const networkState = v => ({ ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance }, pursuit: police?.online ? police.pursuitCode() : 0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
@@ -2113,7 +2116,7 @@ function onlineWait() {
   document.body.classList.remove('racing', 'counting');
 }
 /** MP police: only the host's lobby setting turns them on; after onlineWait's resetRace. */
-function startOnlinePolice(lobby) { police?.configureOnline(lobby); police?.reset(false); }
+function startOnlinePolice(lobby) { police?.configureOnline(lobby, multiplayer.me?.gridSlot ?? 0); }
 function onlineMembers(members) {
   if (!world || mapSwitch || !multiplayer.loaded) return;
   const ids = new Set(members.map(p => p.id));
@@ -2221,7 +2224,7 @@ const multiplayer = new Multiplayer(CARS, {
     document.body.classList.remove('racing', 'counting');
   },
 });
-const sharedWorld = new SharedWorld(multiplayer, () => ({ traffic, player, G, remotes: [...remoteCars].map(([id, car]) => ({ car, member: multiplayer.lobby?.players.find(p => p.id === id) })) }));
+const sharedWorld = new SharedWorld(multiplayer, () => ({ traffic, player, G, remotes: [...remoteCars].map(([id, car]) => ({ id, car, member: multiplayer.lobby?.players.find(p => p.id === id) })) }));
 window.__sharedWorld = sharedWorld;
 window.__multiplayer = multiplayer;
 // Browsers stop rAF in hidden tabs. Keep online cars coasting and broadcasting without drawing.

@@ -426,12 +426,7 @@ export class Traffic {
     this.gather(actors);
     const pl = actors.find((a) => a.kind === 'player');
     // the racers in route space (what every driver watches for), and the wrecks people slow down to look at
-    this.racers.length = 0;
-    for (const a of actors) {
-      const r = routeVel(a.veh, route), ex = extents(a.veh, route);
-      this.racers.push({ a, kind: a.kind, s: a.veh.s, u: a.veh.u, vs: r.vs, vu: r.vu, hs: ex.hs, hu: ex.hu });
-    }
-    for (const c of this.cars) if (c.active && c.cop && c.cop.siren && !c.crash) this.racers.push({ a: c, kind: 'police', s: c.s, u: c.u, vs: c.dir * c.v, vu: c.uv || 0, hs: c.len * 0.5, hu: c.wid * 0.5 });
+    this.setRacers(actors);
     this.trackHeldRacers(dt);
     this.wrecks.length = 0;
     for (const c of this.cars) if (c.active && c.crash && c.crash.wreck) this.wrecks.push(c);
@@ -480,6 +475,17 @@ export class Traffic {
     return waited && (this.queueBehind(F) || escalate(F));
   }
 
+  /** the racers in route space; also used online by a client that only applies the shared world (no update) */
+  setRacers(actors) {
+    const route = this.route;
+    this.racers.length = 0;
+    for (const a of actors) {
+      const r = routeVel(a.veh, route), ex = extents(a.veh, route);
+      this.racers.push({ a, kind: a.kind, s: a.veh.s, u: a.veh.u, vs: r.vs, vu: r.vu, hs: ex.hs, hu: ex.hu });
+    }
+    for (const c of this.cars) if (c.active && c.cop && c.cop.siren && !c.crash) this.racers.push({ a: c, kind: 'police', s: c.s, u: c.u, vs: c.dir * c.v, vu: c.uv || 0, hs: c.len * 0.5, hu: c.wid * 0.5 });
+    return this.racers;
+  }
   updateParked(c, dt) {
     c.v = 0; c.acc = 0;
     c.parkT -= dt;

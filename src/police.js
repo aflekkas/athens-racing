@@ -15,6 +15,9 @@
 // BUSTED needs a real pursuit (8 s in) and you held under ~9 km/h next to a unit
 // for 4 s (2.5 s boxed in by two). After any stop/escape the police stay quiet
 // for a while; reinforcements are capped at 3 and never appear in your view.
+// Online (shared world): every client judges its own driver (heat, witnesses, bust) against the shared
+// units and sends pursuitCode() in its state; the world authority dispatches and drives the units for every
+// driver from those codes (dispatch). Units carry the grid slot of the driver they are after.
 import { events } from './events.js';
 import { routeLimitAt } from './speed-limit.js';
 import { patrolPlan } from './police-patrols.js';
@@ -167,6 +170,17 @@ export class HeatMachine {
 // ------------------------------------------------------------------ live status for the HUD / events
 export const pursuit = { enabled: false, state: 'off', heat: 0, level: 0, bustMeter: 0, evadeMeter: 0, time: 0, units: 0 };
 
+const STATES = ['idle', 'warning', 'pursuit', 'cooldown'];
+/** a driver's pursuit for the world authority: state, stars and seconds into the chase in one small integer */
+export function encodePursuit(state, level = 0, time = 0) {
+  const i = Math.max(0, STATES.indexOf(state));
+  return i + 4 * Math.max(0, Math.min(5, level | 0)) + 24 * Math.max(0, Math.min(80, Math.floor(time || 0)));
+}
+export function decodePursuit(code) {
+  const n = Number.isSafeInteger(code) && code >= 0 && code <= 2047 ? code : 0;
+  return { state: STATES[n % 4], level: Math.floor(n / 4) % 6, time: Math.floor(n / 24) };
+}
+
 /** a small seeded generator with the rng interface Police uses */
 export function seededRng(key) {
   let h = 2166136261; for (const ch of String(key)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
@@ -180,11 +194,12 @@ export class Police {
     this.hm = new HeatMachine(); this.setTuning();
     this.enabled = false; this.blocks = []; this.t = 0; this.P = null; this.D = 1;
     this.rng = { next: Math.random, range: (a, b) => a + Math.random() * (b - a), chance: (p) => Math.random() < p, int: (a, b) => a + Math.floor(Math.random() * (b - a + 1)) };
-    this.kmh = 0; this.eventId = null; this.pending = [];
+    this.kmh = 0; this.eventId = null; this.pending = []; this.online = null; this.targets = new Map(); this.slots = new Map();
     this.speeds = route.speeds && route.speeds.length ? route.speeds : [{ s: 0, v: 50 }];
     this.offs = [
       events.on('start', (p) => {
         const r = p.def?.rules || {};
+        this.online = null;
         this.eventId = p.eventId;
         // Police are only ever a race-setup choice (or a pursuit event's premise).
         const on = p.def?.type === 'pursuit' || r.police === true;
@@ -196,17 +211,20 @@ export class Police {
       events.on('abort', () => this.reset(false)),
     ];
   }
-  /** Multiplayer: police are the host's lobby setting. Every client runs the same map patrols from
-   *  the same race seed, each one pursuing its own driver (the only racer in its local traffic). */
-  configureOnline(lobby) {
+  /** Multiplayer: police are the host's lobby setting (level and CAN BE BUSTED included). The units are part of
+   *  the shared world (the world authority runs them); this client judges only its own driver, grid slot `slot`. */
+  configureOnline(lobby, slot = 0) {
     const on = (lobby?.config?.police ?? lobby?.event?.police) === true;
     this.traffic.allowClosedPolice = on;
     this.rng = seededRng(`${lobby?.raceId ?? ''}:${lobby?.generation ?? 0}`);
     this.eventId = lobby?.eventId ?? null;
     this.setTuning(lobby?.config?.policeLevel, lobby?.config?.busted);
     this.reset(on);
+    this.online = on ? { slot: Number.isSafeInteger(slot) ? slot : 0 } : null;
     return this.enabled;
   }
+  /** this driver's pursuit, for the world authority (see encodePursuit) */
+  pursuitCode() { const hm = this.hm; return this.enabled ? encodePursuit(hm.state, hm.level, hm.time) : 0; }
   /** the race setup's POLICE level and CAN BE BUSTED choice (the host's lobby config online) */
   setTuning(level = 'normal', canBust = true) { this.C = policeTuning(level, canBust); this.hm.cfg = this.C; return this.C; }
   /** posted limit (km/h) at route s */
@@ -216,7 +234,7 @@ export class Police {
   reset(enabled = this.enabled) {
     this.enabled = enabled && (this.traffic.allowClosedRoam || this.traffic.allowClosedPolice || !this.route.closed && !this.traffic.route?.closed); // free roam opts into patrols on every map
     if (!this.enabled) this.traffic.allowClosedPolice = false;
-    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.wrongT = 0; this.pedT = -Infinity;
+    this.hm.reset(); this.t = 0; this.P = null; this.pending.length = 0; this.targets = new Map(); this.slots = new Map(); this.contacts = new Map(); this.contactWitness = null; this.speedT = 0; this.wrongT = 0; this.pedT = -Infinity;
     for (const c of this.traffic.cars) if (c.police) { c.active = false; c.m.root.visible = false; c.cop = null; c.crash = null; c.m.setStrobe?.(false, 0); }
     for (const b of this.blocks.slice()) this.clearBlock(b);
     this.patrols = patrolPlan(this.route, this.traffic.data, this.traffic.signals?.J); this.reinT = 10; this.blockT = 30;
@@ -246,8 +264,9 @@ export class Police {
       const r = k.chase && hm.state === 'warning' ? this.C.followRange : range;
       if (k.losT <= 0 || d > r) { k.losT = 0.2 + rng.range(0, 0.1); k.sees = d <= r && this.los(c, P); }
       if (k.sees) seen = true;
-      if (k.chase && d < this.C.bustDist) near++;
-      if (k.chase) nearest = Math.min(nearest, d);
+      const mine = k.chase && (!this.online || k.target === this.online.slot);
+      if (mine && d < this.C.bustDist) near++;
+      if (mine) nearest = Math.min(nearest, d);
     }
     // Fresh, short-range LOS for offences: pursuit tracking is not evidence.
     const witness = this.witnesses(P);
@@ -281,13 +300,14 @@ export class Police {
     const tr0 = hm.update(dt, { seen, offending: speeding || wrongSide, fleeing, copNear: near > 0, copsNear: near, slow: Math.hypot(P.vs, P.vu) < this.C.bustSpeed });
     for (const e of tr0) {
       out.push(e);
+      if (this.online) continue; // online the world authority dispatches the units (dispatch)
       if (e.phase === 'warning') this.warn();
       if (e.phase === 'start' || e.phase === 'resume') this.engage(e.kind === 'event');
       if (e.phase === 'evaded' || e.phase === 'busted' || e.phase === 'released') this.standDown();
     }
     this.contactWitness = null;
     // ---- units: patrols, reinforcements, tactics, roadblocks
-    this.manage(dt);
+    if (!this.online) this.manage(dt);
     for (const e of out) this.announce(e);
     this.publish(nearest);
     return out;
@@ -314,7 +334,7 @@ export class Police {
   publish(nearest = 1e9) {
     const hm = this.hm;
     Object.assign(pursuit, {
-      enabled: this.enabled, state: this.enabled ? hm.state : 'off', heat: hm.heat, level: hm.level, bustMeter: hm.bust, evadeMeter: hm.evade, time: hm.time, units: this.traffic.cars.filter((c) => c.active && c.cop && c.cop.chase && !c.crash).length, nearest,
+      enabled: this.enabled, state: this.enabled ? hm.state : 'off', heat: hm.heat, level: hm.level, bustMeter: hm.bust, evadeMeter: hm.evade, time: hm.time, units: this.traffic.cars.filter((c) => c.active && c.cop && c.cop.chase && !c.crash && (!this.online || c.cop.target === this.online.slot)).length, nearest,
     });
   }
 
@@ -380,7 +400,13 @@ export class Police {
     return c;
   }
   /** a unit joins the chase */
-  enlist(c) { const k = c.cop; k.chase = true; k.keep = true; k.siren = true; k.wasChasing = true; c.mode = 'drive'; c.task = null; c.evade = null; c.ovt = null; c.hazard = false; c.blinkSide = 0; }
+  enlist(c, target = null) { const k = c.cop; k.chase = true; k.keep = true; k.siren = true; k.wasChasing = true; k.target = target; c.mode = 'drive'; c.task = null; c.evade = null; c.ovt = null; c.hazard = false; c.blinkSide = 0; }
+  /** one unit back to normal duties */
+  release(c) {
+    const k = c.cop, tr = this.traffic; if (!k || k.block) return;
+    k.chase = false; k.siren = false; k.keep = !!k.station; k.tactic = 'tail'; k.target = null;
+    if (!c.crash) { tr.initDrive(c); c.v0 = tr.roadSpeed(c.s) * c.drv.vf; }
+  }
   engage(fromEvent) {
     const P = this.P, D = this.D;
     // Units that can see you, or are close, join; at most the chase cap of them.
@@ -398,12 +424,8 @@ export class Police {
   /** after busted / evaded: everybody back to normal duties */
   standDown() {
     const tr = this.traffic;
-    for (const c of this.cops) {
-      const k = c.cop;
-      if (k.block) continue;
-      k.chase = false; k.siren = false; k.keep = !!k.station; k.tactic = 'tail';
-      if (!c.crash) { tr.initDrive(c); c.v0 = tr.roadSpeed(c.s) * c.drv.vf; }
-    }
+    void tr;
+    for (const c of this.cops) this.release(c);
     for (const b of this.blocks) b.done = true;
   }
   manage(dt) {
@@ -466,6 +488,82 @@ export class Police {
     for (const b of this.blocks.slice()) { const g = (b.s - P.s) * D; if (g < -120 || (b.done && Math.abs(g) > 400)) this.clearBlock(b); }
   }
 
+  /** who a unit is driving after: solo the player; online the driver in its grid slot (dispatch) */
+  targetOf(c) {
+    if (!this.online) return this.P ? { P: this.P, D: this.D, contact: this.contactAllowed() } : null;
+    return this.targets.get(c.cop?.target) || null;
+  }
+
+  // ---------------------------------------------------------------- online: the world authority's units for every driver
+  /** targets: [{ slot, code }] - each driver's grid slot and pursuitCode() (its own client judges it). The drivers'
+   *  road positions come from traffic.racers (actors carry their slot). Call after traffic.update. */
+  dispatch(dt, targets = []) {
+    if (!this.enabled || !this.online) return;
+    const tr = this.traffic, rng = this.rng, C = this.C, prev = this.targets, T = new Map();
+    for (const x of targets) {
+      const P = tr.racers.find((r) => r.a?.slot === x.slot && r.kind !== 'police'); if (!P) continue;
+      const d = decodePursuit(x.code), D = Math.abs(P.vs) > 3 ? Math.sign(P.vs) : prev.get(x.slot)?.D || this.D || 1;
+      T.set(x.slot, { ...d, slot: x.slot, P, D, contact: d.state === 'pursuit' && d.level >= C.contactLevel && d.time >= C.contactAfter - 1e-6 });
+    }
+    this.targets = T;
+    const cops = this.cops, all = [...T.values()];
+    const nearestTo = (s) => all.reduce((b, t) => !b || Math.abs(t.P.s - s) < Math.abs(b.P.s - s) ? t : b, null);
+    // ---- patrols stream at their map sites near any driver, never popping in in front of one
+    const settling = this.t > 0.5;
+    if (all.length) for (const site of this.patrols) {
+      if (site.car && (!site.car.active || site.car.cop?.station !== site.id)) site.car = null;
+      const near = nearestTo(site.s), gap = Math.abs(site.s - near.P.s);
+      if (site.fixed && site.car && !site.car.cop.chase && gap > 1100) { site.car.active = false; site.car.m.root.visible = false; site.car.cop = null; site.car = null; }
+      if (!site.car && (site.fixed ? gap < 900 : !site.started) && (!settling || all.every(t => Math.abs(site.s - t.P.s) > 350 || this.hidden(site.s, t.P)))) {
+        const c = this.spawnCop(site.s, site.dir, { mode: site.fixed ? 'radar' : 'patrol', moto: site.moto });
+        if (!c) continue;
+        site.car = c; site.started = true; c.cop.station = site.id; c.cop.keep = true;
+        if (site.fixed) { c.mode = 'parked'; c.parkT = 1e9; c.v = 0; c.u = tr.kerbU(c, site.s, -0.6); }
+      }
+      if (!site.fixed && site.car && !site.car.cop.chase && (site.car.s < 60 || site.car.s > this.route.length - 60)) site.car.dir = site.car.s < 60 ? 1 : -1;
+    }
+    const free = (t, within) => cops.filter(c => !c.crash && !c.cop.block && !c.cop.chase && this.distance(c, t.P) <= within).sort((a, b) => this.distance(a, t.P) - this.distance(b, t.P));
+    for (const t of all) {
+      const was = prev.get(t.slot), mine = cops.filter(c => c.cop.chase && !c.crash && c.cop.target === t.slot);
+      t.reinT = was?.reinT ?? 10;
+      if (t.state === 'idle') { for (const c of cops) if (c.cop.target === t.slot) this.release(c); continue; }
+      if (t.state === 'warning') {
+        // one following officer with lights, the nearest that can see this driver
+        if (!mine.length) { const c = free(t, C.followRange).find(q => this.los(q, t.P)); if (c) { this.enlist(c, t.slot); mine.push(c); } }
+        for (const c of mine) c.cop.tactic = c.dir !== t.D ? 'uturn' : (t.P.s - c.s) * t.D > 35 ? 'catch' : 'tail';
+        continue;
+      }
+      // ---- a pursuit: units nearby join at once; a unit from behind if nobody can drive after them
+      const want = Math.min(C.maxChasers, [0, 1, 2, 2, 3, 3][t.level] + (C.maxChasers > 3 && t.level >= 2 ? 1 : 0));
+      if (t.state === 'pursuit' && was?.state !== 'pursuit') {
+        for (const c of free(t, 200).slice(0, Math.max(0, want - mine.length))) { this.enlist(c, t.slot); mine.push(c); }
+        if (!mine.length) { const c = this.spawnBehind(t.P, t.D, 220, Math.max(10, t.P.vs * t.D + 5)); if (c) { this.enlist(c, t.slot); mine.push(c); } }
+      }
+      const units = cops.filter(c => !c.cop.block && !c.crash).length;
+      t.reinT -= dt;
+      if (t.state === 'pursuit' && mine.length < want && units < C.maxUnits + Math.max(0, all.length - 1) && t.reinT <= 0) {
+        t.reinT = rng.range(10, 16) * C.reinforceEvery / (0.7 + 0.15 * t.level);
+        const c = this.spawnBehind(t.P, t.D, rng.range(220, 300), Math.max(12, t.P.vs * t.D * 0.9 + 6), { moto: rng.chance(0.25) });
+        if (c) { this.enlist(c, t.slot); mine.push(c); }
+      }
+      // ---- units fallen far behind or gone far ahead go back to other duties
+      for (const c of mine) { const g = (t.P.s - c.s) * t.D; if (g > 520 || g < -900) { c.active = false; c.m.root.visible = false; c.cop = null; } }
+      // ---- tactics, ranked by distance: PIT / box / ram only when this driver's chase allows contact
+      const live = mine.filter(c => c.active && c.cop).sort((a, b) => Math.abs(a.s - t.P.s) - Math.abs(b.s - t.P.s));
+      live.forEach((c, i) => {
+        const k = c.cop; k.tacT -= dt;
+        if (k.tacT > 0) return;
+        k.tacT = 1.2 + rng.range(0, 0.8);
+        const gap = (t.P.s - c.s) * t.D;
+        k.tactic = t.state === 'cooldown' ? 'search' : c.dir !== t.D ? 'uturn' : gap > 35 ? 'catch'
+          : !t.contact ? 'tail' : t.level >= 4 && i === 0 ? 'ram' : t.level >= 3 && i === 1 ? 'box' : i === 0 && !c.type.scooter ? 'pit' : 'tail';
+        if (k.tactic !== 'pit' && k.tactic !== 'box') k.side = 0;
+      });
+    }
+    // a driver who left (or whose slot is unknown): their units go back to other duties
+    for (const c of cops) if (c.cop.chase && !T.has(c.cop.target)) this.release(c);
+  }
+
   /** park two units across your side of the road at the next junction ahead (else a straight), cones between them,
    *  one lane (or the shoulder / the oncoming lane on a narrow road) left open */
   roadblock() {
@@ -510,8 +608,9 @@ export class Police {
 
   // ---------------------------------------------------------------- a chasing unit's driving (kinematic, like all traffic)
   driveCop(c, dt) {
-    const tr = this.traffic, route = this.route, P = this.P, D = this.D, k = c.cop, hw = c.wid * 0.5;
-    if (!P) return;
+    const tr = this.traffic, route = this.route, k = c.cop, hw = c.wid * 0.5, T = this.targetOf(c);
+    if (!T) { c.v = Math.max(0, c.v - 6 * dt); c.s += c.dir * c.v * dt; c.wheel += c.v * dt; return; } // its driver is gone: pull up
+    const P = T.P, D = T.D;
     const moto = c.type.scooter, vmax = moto ? 64 : 61, aMax = moto ? 7.5 : 6.2;
     // ---- facing the wrong way: brake, swing round (a quick three-point / handbrake turn), go
     if (c.dir !== D && !k.turnT) {
@@ -522,7 +621,7 @@ export class Police {
     }
     const gap = (P.s - c.s) * D - (P.hs + c.len * 0.5); // bumper to bumper, + = the player is ahead
     // A tactic chosen a moment ago never outlives the escalation that allowed it (warning, cooldown, a bust).
-    const vP = P.vs * D, t = ['pit', 'ram', 'box'].includes(k.tactic) && !this.contactAllowed() ? 'tail' : k.tactic;
+    const vP = P.vs * D, t = ['pit', 'ram', 'box'].includes(k.tactic) && !T.contact ? 'tail' : k.tactic;
     let want = 6, uT = P.u;
     if (t === 'pit') {
       if (!k.side) { const room = (s) => (route.edge(c.s) - Math.abs(P.u + s * (P.hu + hw + 0.4))); k.side = room(1) > room(-1) ? 1 : -1; }

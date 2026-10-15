@@ -9,7 +9,7 @@
 //     (Menu.refresh -> C.morph touches only rows whose markup changed), so an update never rebuilds the screen,
 //     flashes, resets an input or moves focus; and the panel's hidden flag follows the menu screen.
 import * as C from './components.js';
-import { TIMES, WEATHERS, TRAFFIC_LEVELS } from '../race-setup.js';
+import { TIMES, WEATHERS, TRAFFIC_LEVELS, POLICE_LEVELS } from '../race-setup.js';
 import { configFromLobby, describeMode } from '../mp-setup.js';
 import { carCategory, classLabel, inGarage } from '../car-catalog.js';
 import { driverName } from '../driver-name.js';
@@ -24,8 +24,8 @@ const timeIcon = (v) => (v === 'night' ? 'moon' : v === 'sunset' || v === 'dawn'
 const label = (list, v) => list.find(([id]) => id === v)?.[1] || String(v ?? '').toUpperCase();
 const TRAFFIC = TRAFFIC_LEVELS.map(([, v, t]) => [v, t]);
 const trafficLabel = (v) => TRAFFIC.find(([x]) => +x === +v)?.[1] || 'NORMAL';
-// Police pursuits are not shared online yet (src/ui/lobby-setup.js history): the row stays visible, locked.
-const POLICE_NOTE = 'UNAVAILABLE ONLINE';
+// Police are part of the shared world (src/mp-shared-world.js): the host's POLICE level and CAN BE BUSTED apply to all.
+const policeLabel = (cfg) => cfg.police === true ? label(POLICE_LEVELS, cfg.policeLevel || 'normal') + (cfg.busted === false ? ' · NO ARRESTS' : '') : 'OFF';
 
 /** The Join / Host form survives screen switches and lobby updates (the menu may re-show 'mp' with fresh data). */
 export const form = { tab: 'join', code: '', name: '', map: null, mode: 'sprint', private: false };
@@ -121,6 +121,7 @@ export function renderLobby(menu, mp) {
   let session;
   if (host && waiting) {
     const time = shownValue('time', cfg.time), weather = shownValue('weather', cfg.weather), traffic = shownValue('traffic', cfg.traffic ?? 1), reverse = String(shownValue('reverse', cfg.reverse === true)), modeV = shownValue('mode', mode), mapV = shownValue('mapId', l.mapId || 'riviera');
+    const police = shownValue('police', cfg.police === true) === true, policeLevel = shownValue('policeLevel', cfg.policeLevel || 'normal'), busted = String(shownValue('busted', cfg.busted !== false));
     const garageCars = (mp.cars || []).filter(inGarage), allowedSet = new Set(mp.allowedCars), garage = garageCars.length, allowed = garageCars.filter((c) => allowedSet.has(c.id)).length;
     session = [
       C.select({ key: 'mapId', label: 'TRACK', icon: 'map-trifold', value: mapV, options: (mp.maps.length ? mp.maps : [{ id: mapV, name: mapName(mp, mapV) }]).map((m) => [m.id, esc(m.name)]), attrs: { ...A, ...(mp.preparing ? { 'aria-disabled': 'true' } : {}) } }),
@@ -129,13 +130,14 @@ export function renderLobby(menu, mp) {
       C.segmented({ key: 'weather', label: 'WEATHER', icon: weatherIcon(weather), value: weather, options: WEATHERS.map(([v, t]) => [v, t, weatherIcon(v)]), attrs: A }),
       C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: traffic, type: 'num', options: TRAFFIC, attrs: A }),
       ...(modeV === 'sprint' ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
-      `<div class="field mp-locked" title="Police pursuits are hidden until units and enforcement can be shared"><span class="field__label">${icon('police-car')}<span>POLICE & LAWS</span></span><div class="field__ctl">${C.badge(POLICE_NOTE)}</div></div>`,
+      C.segmented({ key: 'policeMode', label: 'POLICE & LAWS', icon: 'police-car', value: police ? policeLevel : 'off', options: [['off', 'OFF'], ...POLICE_LEVELS], attrs: A }),
+      ...(police ? [C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: busted, type: 'bool', options: [['true', 'ON'], ['false', 'OFF']], attrs: A })] : []),
       C.option({ icon: 'car', title: 'ALLOWED CARS', desc: allowed >= garage ? `ALL ${garage} CARS` : `${allowed} OF ${garage} CARS`, act: 'mpCars', attrs: { 'data-fid': 'cars' } }),
     ].join('');
   } else {
     session = C.stats([['TRACK', esc(mapName(mp, l.mapId)), { icon: 'map-trifold' }], ['MODE', esc(describeMode(mode)), { icon: 'flag-checkered' }],
       ['TIME OF DAY', esc(label(TIMES, cfg.time)), { icon: timeIcon(cfg.time) }], ['WEATHER', esc(label(WEATHERS, cfg.weather)), { icon: weatherIcon(cfg.weather) }],
-      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['DRIVERS', `${l.players.length}/${MAX_DRIVERS}`, { icon: 'users-three' }]], 'mp-facts');
+      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'police-car' }], ['DRIVERS', `${l.players.length}/${MAX_DRIVERS}`, { icon: 'users-three' }]], 'mp-facts');
   }
   const rows = l.players.map((p) => {
     const r = driverRow(p, l, mp.id), c = carOf(mp, r.car);
@@ -299,7 +301,13 @@ export function change(menu, { key, value, el }) {
   if (scope === 'mpHost') { form[key] = key === 'private' ? value === true || value === 'true' : value; menu.refresh(); return true; }
   if (scope === 'mpCfg') {
     if (key === 'mapId' && mp.preparing) { menu.refresh(); return true; }
-    const v = key === 'reverse' ? value === true || value === 'true' : key === 'traffic' ? Number(value) : value;
+    if (key === 'policeMode') { // one row: OFF / RELAXED / NORMAL / TOUGH
+      const patch = value === 'off' ? { police: false } : { police: true, policeLevel: value };
+      for (const [k, v] of Object.entries(patch)) setPending(k, v);
+      if (mp.setLobbyConfig(patch) === false) for (const k of Object.keys(patch)) pending.delete(k);
+      menu.refresh(); return true;
+    }
+    const v = key === 'reverse' || key === 'busted' ? value === true || value === 'true' : key === 'traffic' ? Number(value) : value;
     setPending(key, v);
     if (mp.setLobbyConfig({ [key]: v }) === false) pending.delete(key);
     menu.refresh(); return true;
