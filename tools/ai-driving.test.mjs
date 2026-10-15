@@ -232,3 +232,20 @@ test('far-rival-substep', () => {
   record('far-rival-substep', { fine, coarse }, []);
   if (!baseline) { assert.ok(coarse.ok); assert.ok(Math.abs(coarse.t / fine.t - 1) < 0.01, `${coarse.t} vs ${fine.t}`); assert.ok(coarse.beta < fine.beta + 0.03); }
 });
+// Real-traffic finding: an oncoming civilian drifting toward us, our kerb side occupied by a car alongside.
+// The old escape scored the far side of the oncoming car higher and drove across its path. Never cross it.
+for (const dir of [1, -1]) test(`no-escape-across-oncoming-${dir}`, () => {
+  const route = road({ wide: true }), bot = make(route, 500, dir * 2.4, 18, dir);
+  const beside = make(route, 500, dir * 5.9, 18, dir).veh;
+  const onc = obstacle(500 + dir * 80, -dir * 1.6, -dir * 12.5); onc.vu = dir * 1.5;
+  let crossed = false, contacts = 0;
+  for (let step = 0; step < 6 / dt; step++) {
+    beside.s = bot.veh.s; beside.z = -beside.s;
+    const input = bot.controller.update(dt, { racers: [{ veh: beside }], traffic: [onc] });
+    bot.veh.update(dt, input); onc.s += onc.vs * dt; onc.u = dir > 0 ? Math.min(onc.u + onc.vu * dt, -0.3) : Math.max(onc.u + onc.vu * dt, 0.3); // drifts to the centre line
+    if (Math.abs(onc.s - bot.veh.s) < 8 && Math.sign(bot.veh.u - onc.u) !== Math.sign(dir)) crossed = true;
+    if (overlap(bot.veh, onc, route) || overlap(bot.veh, { ...beside, hs: beside.halfL, hu: beside.halfW }, route)) contacts++;
+  }
+  record(`no-escape-across-oncoming-${dir}`, { crossed, contacts }, []);
+  if (!baseline) { assert.equal(crossed, false, 'escaped across the oncoming car'); assert.equal(contacts, 0); }
+});

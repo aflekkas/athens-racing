@@ -783,9 +783,12 @@ export class RivalAI {
         const escape = line.bounds(veh.s, true, false, this._b3);
         const kerb = dir > 0 ? escape.max : escape.min, inner = dir > 0 ? escape.min : escape.max;
         const clearance = veh.halfW + threat.hu + 0.8;
+        // Never escape across the oncoming car's own path: the far side of it is not a way out.
+        const beyond = (u) => Math.abs(veh.u - threat.u) > threat.hu + veh.halfW * 0.5 && Math.sign(u - threat.u) !== Math.sign(veh.u - threat.u);
         const score = (u) => Math.min(clearance, Math.abs(u - threat.u - clamp(threat.vu, -1.5, 1.5))) +
-          (u === kerb ? 0.8 : 0) - Math.abs(u - veh.u) * 0.1 - (this._corridor(u, true, this._c[1]).safe ? 0 : 10);
-        const u = score(kerb) >= score(inner) ? kerb : inner;
+          (u === kerb ? 0.8 : 0) - Math.abs(u - veh.u) * 0.1 - (this._corridor(u, true, this._c[1]).safe ? 0 : 10) - (beyond(u) ? 100 : 0);
+        const sk = score(kerb), si = score(inner);
+        const u = Math.max(sk, si) < -50 ? veh.u : sk >= si ? kerb : inner;
         this.evade = { key: threat.key, u, side: Math.sign(u - veh.u) || dir, lost: 0 };
         if (this.pass) this._passObj.end = 'evade';
         this.pass = null; passing = false; wide = false;
