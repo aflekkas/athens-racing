@@ -18,12 +18,14 @@ const browser=await pw.chromium.launch({headless:true,executablePath:process.env
 const report={maps:[],errors:[]};
 try{for(const id of ['riviera','penteli']){
  const page=await browser.newPage({viewport:{width:960,height:600}});
+ page.setDefaultTimeout(600000);
  page.on('pageerror',e=>{report.errors.push(String(e));console.log('ERROR',String(e));});
  await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>window.__freezeOfftrack&&cb.name==='frame'?0:raf(cb);});
  console.log('BOOT',id);
  await page.goto(`http://127.0.0.1:${server.address().port}/?menu&simhook&quality=low&fixedres&notraffic&map=${id}`,{waitUntil:'domcontentloaded',timeout:120000});
- await page.waitForFunction(()=>document.body.classList.contains('loaded')&&window.__sim?.ground,null,{timeout:600000});
- await page.evaluate(async()=>{window.__freezeOfftrack=true;await window.__flow.startEvent('quick');});
+ await page.waitForFunction(()=>document.body.classList.contains('loaded')&&window.__flow,null,{timeout:120000});
+ await page.evaluate(async()=>{await window.__flow.startEvent('quick');window.__freezeOfftrack=true;});
+ await page.waitForFunction(()=>window.__sim?.ground,null,{timeout:600000});
  await page.waitForTimeout(600);
  const setup=await page.evaluate(()=>{
   const sim=window.__sim,{route:r,ground,player:{veh:v},G,towOffer}=sim;
