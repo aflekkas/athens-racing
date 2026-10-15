@@ -47,7 +47,10 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
   const bend = selectedBend ?? cornerAt(route, kmh, cornerG), side = Math.sign(bend.k);
   const vehicle = new Vehicle(aids ? spec : { ...spec, tc: 0, esc: 0, edl: 0 }, route);
   if (!texture) vehicle.roadZ = () => 0;
-  if (gear) { vehicle.manual = true; vehicle.gear = gear; }
+  // Hold a useful physical gear for handling comparisons. Different real cruise
+  // schedules otherwise compare turn-in during unrelated shifts/kickdowns.
+  gear ??= spec.gears.findIndex(g => kmh / 3.6 / spec.wheelR * g * spec.final * 30 / Math.PI < spec.redline * .60) + 1;
+  vehicle.manual = true; vehicle.gear = gear;
   const pad = { id: 'driver-feel', index: 0, connected: true, axes: [side * (0.15 + 0.85 * inputScale), 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ value: 0 })) };
   const controls = new Input({ target: null, navigator: { getGamepads: () => device === 'gamepad' ? [pad] : [] }, document: null, storage: null });
   vehicle.steerAssist = assist ?? (device === 'gamepad' ? 0.35 : 1);
@@ -62,8 +65,9 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
   vehicle.reset(bend.s, route.closed ? 0 : route.laneU(bend.s, 0), kmh / 3.6);
   if (gear) vehicle.gear = gear;
   // Settle the rolling driveline before the keydown, rather than starting in
-  // first gear at 120 km/h. Only this preparation holds longitudinal speed.
-  for (let i = 0; i < 90; i++) {
+  // first gear at 120 km/h. Four seconds allows physical manual shifts and the
+  // conservative cruise schedule to settle. Only preparation holds longitudinal speed.
+  for (let i = 0; i < 240; i++) {
     vehicle.update(DT, { throttle: 0.2, brake: 0, steer: 0 });
     vehicle.vLong = kmh / 3.6;
   }

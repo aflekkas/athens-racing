@@ -27,3 +27,8 @@ The free asphalt pad removes walls and road limits, keeps the complete stock Veh
 The 40° hold uses a fixed countersteer/throttle controller for each chassis, requires four continuous seconds inside 30–50° at more than 20 km/h, and starts with an actual handbrake turn in second. Recovery is a specified 45° slide at 60 km/h with 0.5 rad/s yaw, matching initial corner wheel speeds/slip states, and no further state injection. The driver eases throttle over 0.8 s and uses sideslip/rate feedback to unwind steering. The gates are less than 1.2 g lateral acceleration, less than 1.3 g change in world velocity, less than 10° opposite-angle overshoot and alignment within four seconds. A 45° state with substantially greater angular momentum can still require more time/distance to recover; this test does not promise to catch every already-committed spin.
 
 The matrix includes 911, Z4, E36, GTV, GR Yaris and MINI. The tyre-curve check samples 10–100° and verifies no force discontinuity across sideways motion. Before/after traces and final clean-archive logs are recorded under `.scratch/tc-toggle/`.
+
+
+## 2026-10-15: per-trim powertrain realism
+
+See [POWERTRAIN.md](POWERTRAIN.md) for the complete 53-trim parameter table, sources versus simulation rules, gearbox equipment, sound event contract, regression tolerances and reproduction commands. Every parameter is in the literal CARS catalogue so browser, server/deploy readers and headless benches share it.

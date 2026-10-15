@@ -4,6 +4,7 @@
 // The handling tests use one controlled chassis and change only spec.drive (and the diff), so any FWD / RWD
 // difference comes from where the torque goes, not from tuning. Assists (TC / ESC / EDL) are off unless stated.
 import './register.mjs';
+import { catalogue, validatePowertrain } from './powertrain.mjs';
 import { readFileSync } from 'node:fs';
 const { Vehicle } = await import(process.env.PHYS || '../../src/physics.js');
 
@@ -54,6 +55,8 @@ function corner(drive, phase2, o = {}) {
   }
   return { v, before, after: { k: kappa(v), b: overAng(v) }, maxB, minK, maxK, ...tr };
 }
+
+for (const spec of catalogue()) { const errors = validatePowertrain(spec); check(`powertrain parameters ${spec.id}`, !errors.length, errors.join('; ')); }
 
 // ------------------------------------------------------------------ 1. determinism
 {
@@ -270,6 +273,17 @@ else {
     check(`catalogue ${spec.id} (${spec.drive}): finite, plausible acceleration, top near vmax, 100-0 28-50 m`, ok && t100 > (spec.zeroTo100 ? spec.zeroTo100*.70 : 3) && t100 < (spec.zeroTo100 ? spec.zeroTo100*1.40 : 14) && v.kmh > spec.vmax * 0.85 && v.kmh < spec.vmax * 1.05 && bd > 28 && bd < 50,
       `0-100 ${t100 && f2(t100)} s, top ${f1(v.kmh)} / ${spec.vmax}, 100-0 ${f1(bd)} m, wb ${v.wb} halfL ${v.halfL} halfW ${v.halfW}`);
   }
+}
+
+// Representative real-trim performance: tighter than the catalogue-wide sanity envelope.
+// 120s allows stock power/aero to approach terminal speed; 12% sprint / 3% top tolerances.
+for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','cle300e']) {
+  const spec = catalogue().find(c => c.id === id), v = new Vehicle(spec, route);
+  let t100 = null;
+  for (let i=0;i<120*60;i++) { v.update(DT,{ throttle:1,brake:0,steer:0 }); if (t100 === null && v.kmh>=100) t100=(i+1)*DT; }
+  check(`powertrain performance ${id}: 0–100 within 12%, top within 3% of trim figures`,
+    t100 !== null && Math.abs(t100/spec.zeroTo100-1)<.12 && Math.abs(v.kmh/spec.vmax-1)<.03,
+    `${f2(t100)} / ${spec.zeroTo100}s; ${f1(v.kmh)} / ${spec.vmax}km/h`);
 }
 
 // Same-generation engine choices must affect actual acceleration, not just the UI.

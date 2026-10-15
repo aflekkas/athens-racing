@@ -38,7 +38,7 @@ test('MINI first at 60kmh is selectable: small overshoot grace, real engagement 
   const v = mk('mini', 60); assert.equal(v.shiftManual(-1), true);
   assert.equal(v.engineDamage, 0, 'button press cannot damage an unengaged engine');
   assert.equal(v.shiftFeedback.reason, 'mechanical_overrev'); assert.equal(v.shiftFeedback.unsafe, true);
-  run(v, 0.3); assert.equal(v.gear, 1); assert.equal(v.engineDamage, 0); assert.equal(v.engineStalled, false);
+  run(v, (v.powertrain?.shiftTime ?? .2) + .1); assert.equal(v.gear, 1); assert.equal(v.engineDamage, 0); assert.equal(v.engineStalled, false);
   v.reset(0, 0, 5); v.gear = 6; v.syncWheels();
   for (let g = 5; g >= 1; g--) { assert.equal(v.shiftManual(-1), true); run(v, 0.8); assert.equal(v.gear, g); }
 });
@@ -46,7 +46,7 @@ test('MINI first at 60kmh is selectable: small overshoot grace, real engagement 
 test('a money shift can damage and destroy the engine, remains finite and reports failure', () => {
   const v = mk('mini', 110), predicted = predictedGearRpm(v, 1);
   assert.equal(v.shiftManual(-1), true); assert.equal(v.engineDamage, 0);
-  run(v, 0.3); assert.equal(v.gear, 1); assert.ok(v.engineDamage > 0.9);
+  run(v, (v.powertrain?.shiftTime ?? .2) + .1); assert.equal(v.gear, 1); assert.ok(v.engineDamage > 0.9);
   assert.equal(v.engineStalled, true); assert.equal(v.engHealth, 0);
   assert.equal(v.engineFailureReason, 'mechanical_overrev');
   assert.ok(v.rpm <= v.spec.redline * ENGINE_ABUSE.displayRatio);
@@ -56,7 +56,7 @@ test('a money shift can damage and destroy the engine, remains finite and report
 });
 
 test('one shift applies engagement shock once; subsequent wear is time-based and stops with the clutch open', () => {
-  const v = mk('taxi', 60); assert.equal(v.shiftManual(-1), true);
+  const v = mk('golf_gtd', 75); assert.equal(v.shiftManual(-1), true);
   for (let i = 0; i < 120 && v.pendingGear; i++) v.update(1 / 240, coast);
   assert.equal(v.pendingGear, 0);
   const shock = v.engineDamage; assert.ok(shock > 0.1);
@@ -68,18 +68,18 @@ test('one shift applies engagement shock once; subsequent wear is time-based and
 });
 
 test('moderate abuse impairs torque but can be escaped by upshifting; shift-time braking avoids damage', () => {
-  const v = mk('taxi', 60); assert.equal(v.shiftManual(-1), true); run(v, 0.25);
+  const v = mk('golf_gtd', 65); assert.equal(v.shiftManual(-1), true); run(v, (v.powertrain?.shiftTime ?? .2) + .1);
   assert.ok(v.engineDamage > 0 && v.engineDamage < 1); assert.ok(v.engHealth > 0 && v.engHealth < 1);
   run(v, 0.6); assert.equal(v.shiftManual(1), true); run(v, 0.5);
   const damage = v.engineDamage; run(v, 1); assert.equal(v.engineDamage, damage);
   const avoiding = mk('mini', 110); assert.equal(avoiding.shiftManual(-1), true);
-  avoiding.vLong = 0; avoiding.syncWheels(); run(avoiding, 0.3);
+  avoiding.vLong = 0; avoiding.syncWheels(); run(avoiding, (avoiding.powertrain?.shiftTime ?? .2) + .1);
   assert.equal(avoiding.engineDamage, 0, 'damage uses actual RPM at engagement rather than request RPM');
 });
 
 test('a safe request that becomes unsafe during the shift reports the original gear and actual engagement RPM', () => {
   const v = mk('mini', 50); assert.equal(v.shiftManual(-1), true); assert.equal(v.shiftFeedback.unsafe, false);
-  v.vLong = 100 / 3.6; v.syncWheels(); run(v, 0.3);
+  v.vLong = 100 / 3.6; v.syncWheels(); run(v, (v.powertrain?.shiftTime ?? .2) + .1);
   assert.equal(v.shiftFeedback.reason, 'mechanical_overrev'); assert.equal(v.shiftFeedback.unsafe, true);
   assert.equal(v.shiftFeedback.from, 2); assert.equal(v.shiftFeedback.to, 1);
   assert.ok(v.shiftFeedback.predictedRpm > v.spec.redline); assert.ok(v.engineDamage > 0);
@@ -123,7 +123,7 @@ test('easing off and airflow cool the engine; heat impairment recovers but mecha
 });
 
 test('tow/reset clears every abuse consequence and pending shift feedback without changing manual policy', () => {
-  const v = mk('mini', 110); v.shiftManual(-1); run(v, 0.3); const serial = v.shiftFeedback.serial;
+  const v = mk('mini', 110); v.shiftManual(-1); run(v, (v.powertrain?.shiftTime ?? .2) + .1); const serial = v.shiftFeedback.serial;
   v.radiatorDamage = 1; v.drivetrainBroken = true; v.coolantTemp = 145; v.reset(80, 2, 0);
   assert.equal(v.manual, true); assert.equal(v.engineDamage, 0); assert.equal(v.engineStalled, false);
   assert.equal(v.engineFailureReason, null); assert.equal(v.drivetrainBroken, false); assert.equal(v.coolantTemp, 90);
