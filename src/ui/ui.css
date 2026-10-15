@@ -240,7 +240,7 @@ body[data-input=touch] .hints { visibility: hidden; }
 .listbox__opt.hi { background: var(--hu-ice-tint); color: #fff; box-shadow: inset 0 0 0 1px rgba(111,208,255,.45); }
 .listbox__opt.dis { opacity: .35; pointer-events: none; }
 .listbox.is-closing { animation: ui-fold .14s var(--ease) both; }
-@keyframes ui-fold { to { opacity: 0; transform: translateY(-4px) scale(.98); } }
+@keyframes ui-fold { to { opacity: 0; } }
 .listbox__opt { transition: background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
 ui-select { display: inline-flex; } ui-select > option { display: none; }
 ui-select.off { opacity: .45; pointer-events: none; }
@@ -307,7 +307,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .modal__foot { margin-top: var(--s-3); }
 .modal__foot .hints { justify-content: flex-end; font-size: var(--t-2xs); }
 @keyframes ui-fade { from { opacity: 0; } }
-@keyframes ui-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+@keyframes ui-pop { from { opacity: 0; } } /* panels and dialogs fade in place: no scale-in, no bounce */
 
 /* ---------------------------------------------------------------- toast (menus: an infotainment notification pill) */
 .toasts { position: fixed; z-index: 160; top: max(1rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: grid; gap: var(--s-2); justify-items: center; pointer-events: none; width: max-content; max-width: calc(100vw - 2rem); }
