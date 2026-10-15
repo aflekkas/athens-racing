@@ -16,6 +16,14 @@ const server=createServer(async(req,res)=>{try{
 }catch{res.writeHead(404);res.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await pw.chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||resolve(homedir(),'.cache/ms-playwright/chromium-1234/chrome-linux64/chrome'),args:['--no-sandbox','--enable-webgl','--ignore-gpu-blocklist','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 const report={maps:[],errors:[]};
+async function capture(page,path) {
+ const cdp=await page.context().newCDPSession(page);
+ try {
+  const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await fs.writeFile(path,Buffer.from(shot.data,'base64'));
+ } finally { await cdp.detach(); }
+}
+
 try{for(const id of ['riviera','penteli']){
  const page=await browser.newPage({viewport:{width:960,height:600}});
  page.setDefaultTimeout(600000);
@@ -26,6 +34,7 @@ try{for(const id of ['riviera','penteli']){
  await page.waitForFunction(()=>document.body.classList.contains('loaded')&&window.__flow,null,{timeout:120000});
  await page.evaluate(async()=>{await window.__flow.startEvent('quick');window.__freezeOfftrack=true;});
  await page.waitForFunction(()=>window.__sim?.ground,null,{timeout:600000});
+ console.log('WORLD READY',id);
  await page.waitForTimeout(600);
  const setup=await page.evaluate(()=>{
   const sim=window.__sim,{route:r,ground,player:{veh:v},G,towOffer}=sim;
@@ -50,7 +59,8 @@ try{for(const id of ['riviera','penteli']){
   sim.render();return rows;
  });
  assert.ok(samples.some(x=>x.warning),'warning appears before tow');
- await page.screenshot({path:resolve(out,`${id}-warning.png`),timeout:120000});
+ console.log('WARNING',id,JSON.stringify(samples.at(-1)));
+ await capture(page,resolve(out,`${id}-warning.png`));
  const triggering=await page.evaluate(()=>{
   const sim=window.__sim,{route:r,player:{veh:v}}=sim,{s,side}=window.__excursion;
   for(let i=0;i<60&&!sim.G.towing;i++){
@@ -61,7 +71,7 @@ try{for(const id of ['riviera','penteli']){
  await page.waitForTimeout(900);
  const recovered=await page.evaluate(()=>{const sim=window.__sim,v=sim.player.veh;sim.render();return {s:v.s,u:v.u,edge:sim.route.edge(v.s),halfW:v.halfW,towing:sim.G.towing,notice:document.body.textContent.includes('Recovered to road'),warning:document.body.classList.contains('offtrack-warning'),draws:sim.renderer.info.render.calls,triangles:sim.renderer.info.render.triangles,memory:sim.renderer.info.memory};});
  assert.ok(Math.abs(recovered.u)+recovered.halfW<=recovered.edge);assert.ok(recovered.s<=setup.s+.01,'tow cannot advance progress');assert.equal(recovered.notice,true);
- await page.screenshot({path:resolve(out,`${id}-recovered.png`),timeout:120000});
+ await capture(page,resolve(out,`${id}-recovered.png`));
  report.maps.push({id,setup,samples,triggering,recovered});await fs.writeFile(resolve(out,'browser-report.json'),JSON.stringify(report,null,2));
  console.log('PASS',id,JSON.stringify(recovered));await page.close();
 }
