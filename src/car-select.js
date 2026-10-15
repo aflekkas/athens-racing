@@ -195,15 +195,38 @@ export function mountCarSelect(root, index, opts = {}) {
   root.addEventListener('click',onStepClick,true);document.addEventListener('keydown',onKey,true);
   let previousShoulders=[false,false],padFrame;
   const pollPad=()=>{const pads=navigator.getGamepads?.()||[];const buttons=[...pads].filter(Boolean).reduce((a,p)=>[a[0]||!!p.buttons[4]?.pressed,a[1]||!!p.buttons[5]?.pressed],[false,false]);for(let i=0;i<2;i++)if(!lite&&window.__flow?.menu?.screen==='car'&&buttons[i]&&!previousShoulders[i])step(i?1:-1);previousShoulders=buttons;padFrame=requestAnimationFrame(pollPad);};padFrame=requestAnimationFrame(pollPad);
-  let drawn = 0;
-  renderer.setAnimationLoop(now => { if (lite && now - drawn < 32) return; drawn = now; model.root.rotation.y=turntable.advance((now-last)/1000);last=now;renderer.render(scene,camera); });
+  let drawn = 0, showroomVisible = true, showroomRunning = false;
+  // The turntable keeps redrawing even when the menu is hidden behind the race or another screen: pause it
+  // while the stage is not visible (or the tab is), and render one frame on return so it never looks stale.
+  const showroomDraw = now => {
+    if (lite && now - drawn < 32) return; drawn = now;
+    model.root.rotation.y = turntable.advance((now - last) / 1000); last = now;
+    renderer.render(scene, camera);
+  };
+  const showroomResume = () => {
+    if (showroomRunning || !showroomVisible || document.hidden) return;
+    showroomRunning = true; last = performance.now(); renderer.setAnimationLoop(showroomDraw);
+  };
+  const showroomPause = (renderOnce = false) => {
+    if (showroomRunning) { renderer.setAnimationLoop(null); showroomRunning = false; }
+    if (renderOnce) renderer.render(scene, camera);
+  };
+  showroomRunning = true; renderer.setAnimationLoop(showroomDraw);
+  const showroomObserver = new IntersectionObserver(entries => {
+    showroomVisible = entries.some(e => e.isIntersecting);
+    if (showroomVisible) showroomResume(); else showroomPause();
+  });
+  showroomObserver.observe(container);
+  const showroomVis = () => { if (document.hidden) showroomPause(); else if (showroomVisible) showroomResume(); };
+  document.addEventListener('visibilitychange', showroomVis);
   return {
     get index() { return index; }, stepTrim:step, get rotation() { return turntable.angle; },
     captureFrame() { renderer.setAnimationLoop(null);  renderer.render(scene, camera); },
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {
       cancelAnimationFrame(padFrame);root.removeEventListener('click',onStepClick,true);document.removeEventListener('keydown',onKey,true);root.removeEventListener('ui:change',onTrim,true);root.removeEventListener('click',onConfirm,true);
-      renderer.setAnimationLoop(null); observer.disconnect();container.removeEventListener('pointerdown',down);container.removeEventListener('pointermove',move);for(const name of ['pointerup','pointercancel','lostpointercapture'])container.removeEventListener(name,up); model.disposeDamage?.();
+      document.removeEventListener('visibilitychange', showroomVis); showroomObserver.disconnect();
+      showroomRunning = false; renderer.setAnimationLoop(null); observer.disconnect();container.removeEventListener('pointerdown',down);container.removeEventListener('pointermove',move);for(const name of ['pointerup','pointercancel','lostpointercapture'])container.removeEventListener(name,up); model.disposeDamage?.();
       const geometry=new Set(), materials=new Set(), textures=new Set();
       scene.traverse(o=>{if(o.geometry && !o.geometry.userData.shared)geometry.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){materials.add(m);for(const v of Object.values(m))if(v?.isCanvasTexture)textures.add(v);}});
       for(const r of [...geometry,...materials,...textures])r.dispose();
