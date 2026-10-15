@@ -1,0 +1,18 @@
+{
+  "screenshots": [
+    {
+      "width": 1280,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "overflow": false
+    }
+  ],
+  "offlineDegrade": true,
+  "guestBypass": true,
+  "privacyLink": true,
+  "noProviderLegacyPlay": true
+}
