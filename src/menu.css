@@ -7,7 +7,7 @@ body.ui-open #hud { opacity: 0 !important; }
 body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 #ui .mi { cursor: pointer; }
 /* the screen sits on the live road view: dimmed, with a cool vignette like a screen bezel */
-#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks, #ui.s-mapConfirm {
+#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks {
   background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
 #ui.s-pause { background: linear-gradient(90deg, rgba(3,5,7,.78), rgba(3,5,7,.35) 46%, rgba(3,5,7,.1)); }
 #ui.s-car { background: radial-gradient(120% 90% at 32% 42%, #18222c, #070a0e 72%); }
@@ -17,12 +17,13 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .scr { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: var(--s-3);
   padding: max(var(--pad-screen-y), env(safe-area-inset-top)) max(var(--pad-screen-x), env(safe-area-inset-right)) max(calc(var(--pad-screen-y) * .5), env(safe-area-inset-bottom)) max(var(--pad-screen-x), env(safe-area-inset-left));
  }
-/* a new screen slides up a touch; it never fades, so the road view behind cannot flash through between screens */
 /* a screen without a title row keeps its body in the body row, so the soft-key bar stays at the bottom (Results) */
 :where(.scr > .scr__head:not(:has(.scr__title, .scr__headr, [data-menu-feedback]))) ~ .scr__body { grid-row: 3; }
 :where(.scr > .scr__head:not(:has(.scr__title, .scr__headr, [data-menu-feedback]))) ~ .scr__foot { grid-row: 4; }
-#ui.is-entering .scr { animation: hu-enter .22s var(--ease) both; }
-@keyframes hu-enter { from { transform: translateY(6px); } }
+/* a new screen settles in with a short, calm fade: no slide, no scale, no spring. It starts half-lit rather than
+   transparent, and the dimmed backdrop lives on #ui, so the road view never flashes through between screens. */
+#ui.is-entering .scr { animation: hu-enter .16s ease-out both; }
+@keyframes hu-enter { from { opacity: .5; } }
 #ui.is-settling *, #ui.is-settling *::before, #ui.is-settling *::after { transition: none !important; }
 /* status bar: Back owns the first slot; titles never share its row */
 .hu-status { display: flex; align-items: center; gap: var(--s-3); min-width: 0; min-height: 2.75rem; }
@@ -79,8 +80,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .home__tiles .option__desc { font-size: var(--t-xs); line-height: 1.4; }
 .home__tiles .option__go { display: none; }
 .home__tiles .option:hover { background: var(--hu-sheen), var(--hu-glass-hi); }
-.home__tiles .option.focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.4rem 3rem rgba(0,0,0,.5), var(--hu-edge); background: linear-gradient(180deg, rgba(111,208,255,.15), rgba(111,208,255,.02) 60%), var(--hu-glass-hi); transform: translateY(-2px); }
-.home__tiles .option { transition: transform .22s var(--ease), border-color .22s, box-shadow .22s, background .22s; }
+.home__tiles .option.focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.4rem 3rem rgba(0,0,0,.5), var(--hu-edge); background: linear-gradient(180deg, rgba(111,208,255,.15), rgba(111,208,255,.02) 60%), var(--hu-glass-hi); }
+.home__tiles .option { transition: border-color .22s, box-shadow .22s, background .22s; }
 /* the PLAY tile: tall, with a glowing route line like the navigation screen */
 .home__tiles .option:first-child { grid-row: 1 / 3; padding: var(--s-6); }
 .home__tiles .option:first-child::before { content: ""; position: absolute; inset: 8% -12% 30% 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Cpath d='M10 175C55 160 66 112 108 102s62 18 84-22 54-46 98-52' fill='none' stroke='%236fd0ff' stroke-opacity='.22' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M10 175C55 160 66 112 108 102s62 18 84-22 54-46 98-52' fill='none' stroke='%236fd0ff' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='175' r='6' fill='%23fff'/%3E%3Ccircle cx='290' cy='28' r='6' fill='none' stroke='%23fff' stroke-width='2.6'/%3E%3C/svg%3E") center / contain no-repeat; opacity: .55; pointer-events: none; transition: opacity .22s; }
@@ -101,7 +102,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .mode-select > .field { align-self: flex-start; min-width: min(30rem, 100%); background: var(--hu-sheen), var(--hu-glass); border: 1px solid var(--hu-hair); border-radius: var(--r-pill); padding-inline: var(--s-5) var(--s-2); }
 .mode-select > .field.focus { border-color: rgba(111,208,255,.6); }
 .mode-select > .field.focus::after { display: none; }
-.mode-grid { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: var(--s-4); min-height: 0; max-height: 28rem; overflow-y: auto; }
+.mode-grid { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: var(--s-4); min-height: 0; max-height: calc(28rem + 12px); overflow-y: auto;
+  padding: 6px; margin: -6px; } /* room inside the scroll box for the focus ring: a lit tile is never cropped */
 .mode-select > .field { flex: none; }
 .mode-tile { position: relative; display: flex; flex-direction: column; gap: var(--s-2); min-height: 12rem; padding: var(--s-6); border-radius: var(--r-4); overflow: hidden;
   background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair); box-shadow: var(--hu-shadow), var(--hu-edge);
@@ -112,16 +114,27 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .mode-tile__desc { max-width: 26rem; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-sm); line-height: 1.5; color: var(--c-text-3); }
 .mode-tile::before { content: ""; position: absolute; right: -8%; top: -10%; width: 60%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(111,208,255,.14), transparent 65%); opacity: 0; transition: opacity .22s; pointer-events: none; }
 .mode-tile:hover { background: var(--hu-sheen), var(--hu-glass-hi); }
-.mode-tile.focus { border-color: rgba(111,208,255,.8); background: linear-gradient(180deg, rgba(111,208,255,.14), rgba(111,208,255,.02) 60%), var(--hu-glass-hi); transform: translateY(-2px); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.4rem 3rem rgba(0,0,0,.5); }
+.mode-tile.focus { border-color: rgba(111,208,255,.8); background: linear-gradient(180deg, rgba(111,208,255,.14), rgba(111,208,255,.02) 60%), var(--hu-glass-hi); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.4rem 3rem rgba(0,0,0,.5); }
 .mode-tile.focus::before { opacity: 1; }
 .mode-tile.focus .mode-tile__ico { background: linear-gradient(180deg, #9ae0ff, var(--hu-ice-d)); color: var(--hu-lit-fg); box-shadow: 0 .3rem 1rem rgba(111,208,255,.35); }
 .mode-tile.focus .mode-tile__desc { color: var(--c-text-2); }
 
 /* the session summary (race setup): a navigation destination card */
-.evs__top { display: flex; gap: var(--s-2); flex-wrap: wrap; }
-.evs__name { margin: var(--s-4) 0 0; font-family: var(--f-sans); font-weight: 400; font-size: var(--t-2xl); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; }
+.evs__top { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; min-height: 1.6rem; }
+.evs__kick { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-kick); color: var(--hu-ice); text-transform: uppercase; }
+.evs__name { margin: var(--s-1) 0 0; font-family: var(--f-sans); font-weight: 400; font-size: var(--t-2xl); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; }
+/* the route reads in full (it wraps, never ellipsises) under the title, like a navigation destination */
+.evs__route { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-2) 0 0; font: 500 var(--t-md) / 1.35 var(--f-sans); letter-spacing: .04em; color: var(--c-text-2); text-transform: uppercase; }
+.evs__route > .ico { flex: none; width: 1.05em; height: 1.05em; margin-top: .15em; color: var(--c-text-3); }
+.evs__route .ico--route { vertical-align: -.15em; color: var(--hu-ice); }
 .evs__facts { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.evs__facts .stat-tile__v { font-size: var(--t-lg); }
+.evs__facts .stat-tile:nth-child(odd):last-child { grid-column: 1 / -1; }
+.evs__facts .stat-tile__v { font-size: var(--t-lg); white-space: normal; } /* a long value wraps, never ellipsises */
+/* personal bests: one quiet line under the facts, only when a time exists */
+.evs__best { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-4); margin: var(--s-4) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--hu-hair);
+  font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
+.evs__best > .ico { width: 1rem; height: 1rem; color: var(--c-gold); }
+.evs__best b { margin-left: .3em; font: 500 var(--t-md) var(--f-sans); letter-spacing: .02em; color: #fff; font-variant-numeric: tabular-nums; }
 
 /* ---------------------------------------------------------------- race setup */
 .setup-layout { flex: 1; display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1.3fr); gap: var(--s-5); min-height: 0; }
@@ -170,8 +183,6 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 /* ---------------------------------------------------------------- pause: a quick-settings sheet over the frozen road view */
 .scr--pause { grid-template-rows: minmax(0, 1fr) auto; }
 .pause-card { align-self: stretch; justify-self: start; width: min(26rem, 100%); max-height: 100%; overflow-y: auto; padding: var(--s-6) var(--s-4) var(--s-4); border-radius: var(--r-4); }
-#ui.is-entering .pause-card { animation: hu-sheet .24s var(--ease) both; }
-@keyframes hu-sheet { from { transform: translateX(-12px); } }
 .pause-card > .kick { padding: 0 var(--s-3); }
 .pause-card .title-xl { margin-top: var(--s-2); padding: 0 var(--s-3); font-size: var(--t-2xl); letter-spacing: .14em; }
 .pause__sub { margin-top: var(--s-2); padding: 0 var(--s-3); display: flex; align-items: center; gap: var(--s-2); font: 500 var(--t-lg) var(--f-sans); letter-spacing: .06em; color: var(--tt-amber); font-variant-numeric: tabular-nums; }
@@ -232,9 +243,10 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 @media (max-width: 860px) {
   .scr__headr { justify-content: flex-start; }
   .setup-layout, .res-layout, .car-layout { grid-template-columns: minmax(0, 1fr); }
-  .scr--setup .scr__body, .scr--results .scr__body, .scr--car .scr__body { overflow-y: auto; }
+  .scr--setup .scr__body, .scr--results .scr__body, .scr--car .scr__body { overflow-y: auto; padding: 6px; margin: -6px; } /* room for focus rings */
   .setup-layout, .res-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
   .setup__event, .setup__form .setup__fields, .res-main, .res-side, .car-info { max-height: none; overflow: visible; }
+  .setup__event { box-sizing: border-box; width: 100%; } /* stacked: the summary spans the column like the form under it */
   .car-stage { flex: none; height: max(12rem, 34vh); }
   /* settings: the rail becomes a scrolling tab strip above the list */
   .scr--settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; }
@@ -359,7 +371,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
 
 /* the floating MULTIPLAYER button and GRAPHICS select now live in the menus (title -> Multiplayer, Settings -> Graphics):
    keep them off the race HUD and out of the way of the menus */
-body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle, body.replay-active #mp-toggle,
+body.counting #mp-toggle, body.racing #mp-toggle, body.ui-open #mp-toggle, body.menu #mp-toggle,
 #graphics-quality { display: none !important; }
 
 /* short / narrow screens: the route bar sits between the (moved) minimap and the right-hand widgets, district
@@ -475,7 +487,7 @@ body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons
 .catalog-search input { appearance: none; width: 100%; min-width: 0; border: 0; background: transparent; color: white; font: 500 .9rem var(--f-sans); letter-spacing: .06em; outline: none; }
 .catalog-search input::placeholder { color: var(--c-text-3); }
 .catalog-search:focus-within { border-color: transparent; box-shadow: var(--focus-ring); }
-.car-grid { flex: 1; grid-auto-rows: max-content; display: grid; grid-template-columns: repeat(auto-fill,minmax(15rem,1fr)); align-content: start; gap: 1rem; padding: 3px 3px 1rem; min-height: 0; }
+.car-grid { flex: 1; grid-auto-rows: max-content; display: grid; grid-template-columns: repeat(auto-fill,minmax(15rem,1fr)); align-content: start; gap: 1rem; padding: 6px 6px 1rem; margin-inline: -3px; min-height: 0; }
 .car-group { grid-column: 1 / -1; display: flex; align-items: center; gap: .7rem; margin: .7rem 0 -.3rem; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .22em; color: var(--hu-text-2); }
 .car-group:first-child { margin-top: 0; }
 .car-grid .car-card { scroll-margin-top: 2.4rem; } /* focusing a card keeps its class header in view */
@@ -532,7 +544,7 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 .car-actions { display: grid; gap: .5rem; }
 
 /* The limit sign sits beside the dial (the gear and mode live on the cluster itself). */
-body #limitSign { left: calc(-2.625rem - 34px); bottom: calc(16px + 3.9rem - 24px); width: 48px; height: 48px; border-width: 6px; }
+body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32px); width: 60px; height: 60px; border-width: 7.5px; }
 
 @media(max-width:500px) { body.touch-driving #hud #dialBox { bottom: calc(208px + env(safe-area-inset-bottom)); } }
 

@@ -38,9 +38,9 @@ try{for(const cache of ['cold','warm']){await page.goto(`http://127.0.0.1:${serv
    await page.evaluate(()=>__flow.quit()); await page.waitForTimeout(400);
    const before=dataRequests.length;
    await click('play'); await click('quick');
-   // The normal selector UI previews then confirms the selected track.
+   // The normal selector UI previews the track; SELECT TRACK goes straight to race setup.
    await page.locator(`.track-pin[data-map-id="${id}"]`).evaluate(el=>el.click());
-   await page.locator('[data-confirm-track]').evaluate(el=>el.click()); await click('mapLoad');
+   await page.locator('[data-confirm-track]').evaluate(el=>el.click());
    await page.waitForFunction(()=>__flow.menu.screen==='setup');
    assert.equal(dataRequests.length,before,'track setup is catalogue only');
    await click('setupGo');
@@ -60,15 +60,14 @@ try{for(const cache of ['cold','warm']){await page.goto(`http://127.0.0.1:${serv
   }
   await page.evaluate(()=>{__sim.step(10,.05);__game.run.r.timeLimit=.01;__sim.step(1,.05);});
   assert.equal(await page.evaluate(()=>__game.state),'finished');
-  report.replay=await page.evaluate(()=>({watched:__replay.watch(),duration:__replay.last?.duration,routeMatches:__replay.ctx.route===__sim.route}));
-  assert.equal(report.replay.watched,true);assert.equal(report.replay.routeMatches,true);
-  await page.evaluate(()=>__sim.render());await snap('megara-replay');await page.evaluate(()=>__replay.close());
-  // Same-map restart reuses the world, and replay/photo controls still bind to it.
+  assert.equal(await page.locator('[data-action="replay"]').count(),0);
+  assert.equal(await page.locator('#replay-controls').count(),0);
+  // Same-map restart reuses the world.
   const sameMap=dataRequests.length;
   await page.evaluate(()=>__flow.startEvent(__flow.freeRoamDef())); await waitWorld('megara');
   await page.waitForTimeout(500); await page.evaluate(()=>{__sim.step(1,.05);__sim.render();});
   assert.equal(dataRequests.length,sameMap);
-  assert.equal(await page.evaluate(()=>__replay.ctx.route===__sim.route),true);
+  assert.equal(await page.evaluate(()=>__ghostLap.ctx.route===__sim.route),true);
   }
   // Returning to title and browsing host/join screens must not build another world.
   await page.evaluate(()=>__flow.quit());await page.waitForTimeout(400);

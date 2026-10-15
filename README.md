@@ -19,7 +19,7 @@ Choose **MULTIPLAYER** to discover public lobbies, create a lobby, or join with 
 
 Opponent cars are ghosts; optional traffic remains solid. Physics runs locally and the server validates movement and owns finish timing. Finished cars coast to a stop while the camera cycles through the remaining drivers. Races end when everyone finishes or after ten minutes. A dropped connection reserves your seat for 90 seconds, and the same browser tab automatically resumes after reconnect or reload, preserving progress, nitro, and damage. **LEAVE LOBBY** releases the seat immediately. Host control transfers to a connected driver. Lobbies and session tokens reset when the server restarts.
 
-`npm test` runs multiplayer, input, replay, progression, and physics checks. `/health` reports server status and `/api/lobbies` lists public lobbies. WebSockets use `/ws` on the same origin; an HTTPS reverse proxy must forward WebSocket upgrades. A Python static server supports solo only.
+`npm test` runs multiplayer, input, personal-best ghost, progression, and physics checks. `/health` reports server status and `/api/lobbies` lists public lobbies. WebSockets use `/ws` on the same origin; an HTTPS reverse proxy must forward WebSocket upgrades. A Python static server supports solo only.
 
 Best times are stored atomically in `.data/leaderboard.json`, excluded from git and static downloads, and survive server restarts. Online finish times submit automatically; valid solo event finishes use `src/leaderboard.js`. **VIEW BEST TIMES** shows the current route/car/traffic board. `GET /api/leaderboard` accepts `eventId`, `car`, `traffic`, and `limit` filters. `POST /api/leaderboard` accepts a completed solo result with `eventId`, `car`, `time` (seconds), `valid: true`, `driverId`, and `name`; it checks event distance, car IDs, and submission rate. Boards retain the best time per driver and the fastest 200 drivers per event/car/traffic/track version.
 
@@ -55,3 +55,5 @@ All changes go through a pull request into `staging`, which deploys to the stagi
 The scripts in `tools/` rebuild the map data, terrain and textures.
 
 Graphics defaults to automatic selection. Software rendering uses low graphics; choose **GRAPHICS: HIGH** or **GRAPHICS: LOW** to override. Low graphics keeps the driving, course, car geometry, and color grading, uses simpler sky/water/terrain shading and a shorter prop draw distance while disabling live reflections, shadows, multisample antialiasing, ambient occlusion, and bloom.
+
+Personal-best ghosts retain player-only lap samples for solo sprint and time-trial runs. Race replay playback and the photo editor have been removed; finish photos and result share cards remain. Existing saved ghosts stay compatible.

@@ -22,7 +22,7 @@ jobs:
       - run: npm test
       - run: node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
       - run: node tools/events-test.mjs
-      - run: node tools/replay.test.mjs
+      - run: node tools/ghost-lap.test.mjs
       - run: node tools/check-syntax.mjs
       - run: node tools/check-browser-imports.mjs
       - name: Validate Cloudflare bundle and asset sizes

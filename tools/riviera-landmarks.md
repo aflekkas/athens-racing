@@ -22,7 +22,7 @@ These are **beyond Varkiza near 37.8146 N, 23.8336 E**, not at the Limanakia cov
 
 ## Implementation and validation scope
 
-`src/riviera-landmarks.js` consumes the runtime `route.localCorridors` axes, builds two rock shells (2,340 triangles total), joins their shared rock pier, and registers 134 wall boxes outside the clear openings. `ground.constrainCamera(position, anchor)` mutates the desired camera position and returns whether it was constrained. Main's camera owner excludes cockpit, photo and replay cameras. Geometry shares existing rock textures and participates in scenery LOD.
+`src/riviera-landmarks.js` consumes the runtime `route.localCorridors` axes, builds two rock shells (2,340 triangles total), joins their shared rock pier, and registers 134 wall boxes outside the clear openings. `ground.constrainCamera(position, anchor)` mutates the desired camera position and returns whether it was constrained. Main's camera owner excludes cockpit cameras. Geometry shares existing rock textures and participates in scenery LOD.
 
 The Penteli terrain fix samples the exact rendered triangle instead of a bilinear patch. A production-mesh sweep checked 15,258 near-road, off-network triangle centroids: the previous contact error reached -0.544440 m at s=6003.4083, u=16.7857 (world x=2983.3333, z=1006.6667) and +0.668484 m elsewhere; corrected error is below 6e-13 m. This is terrain contact evidence, not a claim to fix the separate on-road launch issue owned by handling.
 

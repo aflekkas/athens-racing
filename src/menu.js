@@ -5,9 +5,9 @@
 // (lists, grids and card rails alike); on an adjustable row (slider, toggle, segmented, stepper, select) left / right
 // change its value. Menu items are not native <button>s on purpose: the input system ignores key events aimed at
 // focused form controls, so focus is drawn with a class and the keys keep flowing through flowAction().
-import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount } from './events.js';
+import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount, SP_RIVALS, MAX_RIVALS } from './events.js';
 import * as S from './settings.js';
-import { renderMapSelect, renderMapConfirm, selectMap, mountMapSelect } from './map-select.js';
+import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
 import { GARAGE_CARS } from './car-catalog.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
@@ -28,8 +28,12 @@ import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
 const { esc, icon } = C;
-const TRAFFIC = (d) => (d <= 0 ? 'CLOSED ROAD' : d < 0.6 ? 'LIGHT TRAFFIC' : d < 1.2 ? 'TRAFFIC' : d < 1.8 ? 'HEAVY TRAFFIC' : 'EXTREME TRAFFIC');
+const TRAFFIC = (d) => (d <= 0 ? 'CLOSED ROAD' : d < 0.6 ? 'LIGHT TRAFFIC' : d < 1.2 ? 'NORMAL TRAFFIC' : d < 1.8 ? 'HEAVY TRAFFIC' : 'EXTREME TRAFFIC');
 const arrow = (rev) => icon(rev ? 'arrow-left' : 'arrow-right', 'ico--route');
+const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+const count = (n) => NUM[n] || String(n);
+/** the Quick Race card line, from the real default and cap */
+const quickBlurb = () => SP_RIVALS >= MAX_RIVALS ? `Pick a map and go against ${count(SP_RIVALS)} locals, or fewer if you like.` : `Pick a map and go. ${count(SP_RIVALS)[0].toUpperCase() + count(SP_RIVALS).slice(1)} locals by default, up to ${count(MAX_RIVALS)}.`;
 const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`;
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
 C.registerFormat('laps', (v) => `${v} ${+v === 1 ? 'LAP' : 'LAPS'}`);
@@ -218,7 +222,6 @@ export class Menu {
     this.h.ui?.(true);
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
-      case 'mapLoad': selectMap(this,this.data.mapId,true);break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
@@ -251,7 +254,6 @@ export class Menu {
       case 'list': this.h.quit('title'); break;
       case 'menu': this.h.quit('title'); break;
       case 'shareResult': this.h.shareResult?.(); break;
-      case 'replay': window.__replay?.watch?.(); break;
     }
   }
   /** a component value changed (keyboard, gamepad, mouse or touch) */
@@ -305,7 +307,7 @@ export class Menu {
   r_mode() {
     const tile = (act, ic, title, desc) => `<div class="mi mode-tile" role="button" data-act="${act}"><span class="mode-tile__ico">${icon(ic)}</span><b class="mode-tile__title">${title}</b><span class="mode-tile__desc">${desc}</span></div>`;
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-select">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', 'Pick a map and go. Three locals by default, as many as you like.')}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
+      body: `<div class="mode-select">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -315,7 +317,6 @@ export class Menu {
   r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
-  r_mapConfirm() { return renderMapConfirm(this.data.mapId); }
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
 
   // ---------------------------------------------------------------- car
@@ -332,15 +333,20 @@ export class Menu {
     const ctx = this.h.ctx();
     return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : (ctx.events || getEvents(ctx.mapId)).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
   }
-  /** Session facts; Quick Race has no event medals or event records. */
+  /** Session facts; Quick Race has no event medals or event records. Best times show as one line, only once set. */
   eventSummary(e, r) {
-    const n = rivalCount(e);
-    const facts = e.type === 'free' ? [['SESSION', 'FREE ROAM', 'car-profile'], ['ROAD', TRAFFIC(e.traffic ?? 1), 'traffic-cone']] :
-      [['DISTANCE', fmtDist(r.len), 'path'], ['ROUTE', routeLine(r), 'map-pin'], ['FIELD', `${n + 1} CARS`, 'users-three'], ['ROAD', r.closed ? 'CLOSED CIRCUIT' : TRAFFIC(e.traffic ?? 1), 'traffic-cone']];
-    const pb = e.type === 'free' ? null : this.h.personalBests?.(e, r);
-    const records = pb ? C.stats([['BEST · EXACT SETUP', pb.exact ? this.h.fmtTime(pb.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', pb.route ? this.h.fmtTime(pb.route.time) : '—']]) : '';
-    return `${records}<div class="evs__top">${C.badge(e.type === 'free' ? 'FREE ROAM' : 'QUICK RACE')}${r.reverse ? C.badge('REVERSE', 'cyan', 'arrows-left-right') : ''}</div><h3 class="evs__name">${esc(e.type === 'free' ? 'Explore the map' : 'Your race')}</h3>${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}`;
+    const n = rivalCount(e), free = e.type === 'free';
+    const mapName = (MAPS.find((m) => m.id === this.h.ctx().mapId) || MAPS[0]).name;
+    const facts = free ? [['MAP', esc(mapName), 'map-trifold'], ['ROAD', TRAFFIC(e.traffic ?? 1), 'traffic-cone']] :
+      [['DISTANCE', fmtDist(r.len), 'path'], ['FIELD', n ? `${n + 1} CARS` : 'JUST YOU', 'users-three'], ['ROAD', r.closed ? 'CLOSED CIRCUIT' : TRAFFIC(e.traffic ?? 1), 'traffic-cone']];
+    const pb = free ? null : this.h.personalBests?.(e, r), T = (x) => this.h.fmtTime(x.time);
+    const best = [pb?.exact && `<span>BEST <b>${T(pb.exact)}</b></span>`,
+      pb?.route && (!pb.exact || pb.route.time < pb.exact.time) && `<span>ROUTE BEST <b>${T(pb.route)}</b> · ANY CAR</span>`].filter(Boolean);
+    return `<div class="evs__top"><span class="evs__kick">${free ? 'FREE ROAM' : 'QUICK RACE'}</span>${r.reverse ? C.badge('REVERSE', 'cyan', 'arrows-left-right') : ''}</div>
+      <h3 class="evs__name">${esc(free ? 'Explore the map' : 'Your race')}</h3>${free ? '' : `<p class="evs__route">${icon(r.closed ? 'arrows-clockwise' : 'map-pin')}<span>${routeLine(r)}</span></p>`}
+      ${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}${best.length ? `<p class="evs__best">${icon('timer')}${best.join('')}</p>` : ''}`;
   }
+
 
   // ---------------------------------------------------------------- race setup (event detail)
   setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
@@ -365,10 +371,10 @@ export class Menu {
     }
     if (rows[0]) rows[0] = rows[0].replace('<div class="mi field', '<div data-default="" class="mi field'); // open on the first choice
     const note = '';
-    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode ? 'SESSION SETUP' : 'RACE SETUP',
+    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
       body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${this.eventSummary(runDef, r, runDef.id)}</aside>
-        <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}YOUR RACE</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
+        <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}${def.type === 'free' ? 'YOUR SESSION' : 'YOUR RACE'}</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
           <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}</div>${note}
           <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'HOST / CREATE GAME' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
   }
@@ -454,7 +460,7 @@ export class Menu {
         <h2 class="res-title">${esc(d.title || '')}</h2>${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
         ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
-        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${window.__replay?.watch ? act('replay', 'film-strip', 'WATCH REPLAY') : ''}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
+        <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
       </div><div class="res-side scroll-y">${field}${splits}</div></div>` });
   }
 }

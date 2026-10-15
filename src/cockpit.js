@@ -9,6 +9,7 @@ import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
 import { COND_STATE } from './env.js';
+import { CockpitLamps, drawCockpitLamps, lampArtVersion } from './cockpit-telltales.js';
 // Night in the cabin: a faint instrument / street-light spill on the cockpit's own trim (emissive, no extra light)
 // and door / rear-view glass that darkens with the scene. Both are display-referred, so they divide out the
 // exposure the night brings up everything else by (env.js COND_STATE).
@@ -383,7 +384,8 @@ export class Cockpit {
     g.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = true; } });
     this.wheelEuler = new THREE.Euler(this.wheelTilt, 0, 0, 'XYZ');
     this.wheelInfo = { pos: wheelC, angle: 0, euler: this.wheelEuler, r, controls: this.controlTargets };
-    this.frame = 0;
+    this.lamps = new CockpitLamps();
+    this.clusterAge = 0;
   }
   /** steer: front wheel angle (rad) */
   update(dt, st) {
@@ -404,7 +406,14 @@ export class Cockpit {
     const blink = st.rpm > st.redline * 0.97 && Math.sin(performance.now() * 0.05) > 0;
     this.shiftLeds.forEach((m, i) => { m.opacity = blink ? 1 : (i / 8 < k ? 1 : 0.1); });
     this.knob.position.x = this.lever.position.x = this.selectorX; // Automatic selector remains fixed while the gearbox changes.
-    if (this.detailed !== false && (this.frame++ & 1) === 0) this.drawCluster(st);
+    this.lampState = this.lamps.update(dt, st);
+    this.clusterAge += Math.max(0, dt);
+    // Quantise to displayed precision. Stationary instruments upload nothing once the lamps settle.
+    const display = { ...st, kmh: Math.round(st.kmh), rpm: Math.round(st.rpm / 50) * 50 };
+    const key = [display.kmh, display.rpm, st.redline, st.gearLabel, lampArtVersion, ...this.lampState.map(l => l[1])].join('|');
+    if (this.detailed !== false && key !== this.clusterKey && (this.clusterAge >= .1 || this.clusterKey === undefined)) {
+      this.clusterAge = 0; this.clusterKey = key; this.drawCluster(display);
+    }
   }
   drawCluster(st){
     const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.id;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';
@@ -455,6 +464,7 @@ export class Cockpit {
       g.strokeStyle=accent;g.lineWidth=9;g.beginPath();g.moveTo(690,335);g.lineTo(872,282);g.lineTo(890,282-clamp(st.rpm/st.redline,0,1)*180);g.stroke();
       g.strokeStyle='#8299a5';g.lineWidth=4;g.beginPath();g.moveTo(476,299);g.lineTo(514,211);g.lineTo(479,129);g.lineTo(544,86);g.stroke();g.fillStyle='#d0dce0';g.font='20px Arial';g.fillText(id==='z4'?'M40i':this.spec.short,512,39);g.fillText('+23.0°C',512,358);
     }
+    drawCockpitLamps(g, this.lampState || this.lamps.update(0, st));
     this.clusterTex.needsUpdate=true;
   }
   // Keep a natural forward view. Door mirrors outside it are reached with

@@ -145,7 +145,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
     }else{
       for(const s of [-1,1]){face(M.chrome,[[s*.025,.79],[s*.17,.79],[s*.17,.61],[s*.025,.61]],F-.009,'e36-kidney-surround');face(M.black,[[s*.04,.775],[s*.152,.775],[s*.152,.625],[s*.04,.625]],F-.014,'e36-kidney-grille');for(let i=0;i<4;i++)box(p,M.chrome,[.006,.135,.006],[s*(.053+i*.028),.70,F-.019],.002);
         face(optic,[[s*.27,.79],[s*.72,.79],[s*.72,.64],[s*.27,.64]],F-.008,'front-lamp-housing');for(const x of [.37,.53]){disk(p,M.chrome,.060,[s*x,.715,F-.015],[0,Math.PI,0]);disk(p,M.led,.037,[s*x,.715,F-.018],[0,Math.PI,0]);}face(amber,[[s*.63,.79],[s*.73,.79],[s*.73,.64],[s*.63,.64]],F-.015,'indicator-lens');lamp(s,[[.36,.89],[.73,.89],[.73,.72],[.36,.72]],true);face(amber,[[s*.36,.89],[s*.73,.89],[s*.73,.835],[s*.36,.835]],R+.010,'rear-amber-lens');}
-      badge('BMW',.085,.032,.82,F-.010);badge('325i',.17,.033,.87,R+.012);
+      badge('BMW',.085,.032,.82,F-.010);badge(car.spec.visual?.m?'M3':'325i',.17,.033,.87,R+.012);
     }
     for(const end of [-1,1]){const z=end<0?F:R,edge=W*(.87+.01*(.48-.43)/(.61-.43));face(M.black,[[-edge,.48],[edge,.48],[W*.87,.43],[-W*.87,.43]],z+end*.01,end<0?'front-bumper-rub-strip':'rear-bumper-rub-strip');face(M.black,[[-W*.88,.61],[W*.88,.61],[edge,.48],[-edge,.48]],z+end*.01,end<0?'attached-front-rub-strip':'attached-rear-rub-strip');}
     face(M.black,[[-.50,.36],[.50,.36],[.48,.25],[-.48,.25]],F-.012,'lower-cooling-slot');
@@ -154,7 +154,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
   }
   M.plate=makePlateMaterial(plate);car.plate=plate;
   for(const s of [-1,1]){box(p,M.black,[.545,.125,.018],[0,s<0?(id==='huracan'?.255:.465):(id==='huracan'?.465:.53),s<0?F-.01:R+.01],.005,[0,0,0],'plate-carrier');mesh(p,new THREE.PlaneGeometry(.52,.112,12,2),M.plate,[0,s<0?(id==='huracan'?.255:.465):(id==='huracan'?.465:.53),s<0?F-.021:R+.021],[0,s<0?Math.PI:0,0],'registration');}
-  if(!car.exhaust)car.exhaust=[new THREE.Vector3(-W*.55,.245,R+.02)];
+  if(!car.exhaust)car.exhaust=(car.spec.visual?.m?[-.49,-.40]:[-W*.55]).map(x=>new THREE.Vector3(x,.245,R+.02));
   for(const v of car.exhaust){
     if(id==='huracan'){
       // Closed-thickness hexagonal tubes: outer jacket, dark bore, bevel and a recessed throat.

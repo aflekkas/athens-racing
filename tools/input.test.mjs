@@ -96,12 +96,12 @@ test('gamepad rebinding waits for neutral and does not dispatch the captured pre
   input.capture = { kind: 'gamepad', action: 'camera', ready: false }; key('keydown', 'Escape'); assert.equal(input.capture, null); input.destroy();
 });
 
-test('photo shortcut is removed and replay preserves Space handbrake/menu confirm', () => {
+test('removed photo shortcut preserves Space handbrake/menu confirm', () => {
   const { input, key } = setup(); key('keydown', 'KeyP'); input.update(1 / 60); assert.equal(input.actions.includes('photo'), false);
   assert.equal('photo' in input.bindings.keyboard, false);
   input.update(1 / 60); assert.equal(input.state.photo, undefined);
-  key('keydown', 'Space'); input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.confirm, true); assert.equal(input.state.replayPlay, true);
-  input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.replayPlay, false); input.destroy();
+  key('keydown', 'Space'); input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.confirm, true); assert.equal('replayPlay' in input.bindings.keyboard, false);
+  input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.replayPlay, undefined); input.destroy();
 });
 
 test('clearing drive input on pause does not retrigger held pad buttons or keyboard repeats', () => {

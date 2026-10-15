@@ -36,7 +36,7 @@ Keep your branch up to date with `git pull --rebase origin staging`. Never force
 npm test
 node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
 node tools/events-test.mjs
-node tools/replay.test.mjs
+node tools/ghost-lap.test.mjs
 node tools/check-syntax.mjs
 node tools/check-browser-imports.mjs
 npx wrangler deploy --env staging --dry-run
