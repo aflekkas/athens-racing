@@ -2,7 +2,7 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-15 21:40 UTC.
+Last updated: 2026-10-15 23:50 UTC.
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
@@ -47,6 +47,13 @@ Last updated: 2026-10-15 21:40 UTC.
 - [?] Real brand logos: trademark call is the owner's. Each brand has an on/off flag.
 
 ## World and rendering
+- [x] Simplified world: no vegetation or beach props, block props, simple pedestrians (`82ac93c`). Terrain colour/texture variation plus contrasting box buildings (`8940394`).
+- [ ] Pre-existing sky-coloured terrain wedges (Penteli mid, Riviera hillside): terrain agent, after its speed fixes.
+- [~] Terrain LOD speed fixes: selector ≤150 µs, build time back to original, baked-terrain test from 14 min down to under 2 (Astra).
+- [~] Low-poly vehicles (−94% triangles, no occupants, dark glass) plus 80% windscreen cockpit camera and seat sliders: landing next (Astra).
+- [~] Graphics lock (Lighting Off + Effects Off only) plus no chase-cam mirror (Opus).
+- [~] Title screen reverted to the 14 Oct night design; notices cleanup; tyre-grip panel removal (Sol).
+- [x] Bus/fleet suspension stabilised (`a92d24d`); body dynamics and wheel lift queued next (Sol).
 - [x] Beach above water, grounded props, shadow/AO flicker stabilised (`0b07849`…`34c7016`). The road stripe is a real streetlight shadow.
 - [ ] Mac-only near-black sand tint not reproduced on the VPS. Owner to re-check on the live site after the next deploy.
 - [ ] Mac GPU profiling of the render changes (VPS SwiftShader timings are noise).
