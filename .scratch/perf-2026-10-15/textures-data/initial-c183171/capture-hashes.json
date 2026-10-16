@@ -1,0 +1,135 @@
+[
+  {
+    "map": "riviera",
+    "pose": "menu",
+    "identical": false,
+    "before": "c84140eccb9b743fa589165fa015aa9e70ad4b07d3a783e4a58d520613d74b5d",
+    "after": "c0be984cc597e6323e5feab17993372499df993632b06a2cef5bf77b1000dd55"
+  },
+  {
+    "map": "riviera",
+    "pose": "front",
+    "identical": false,
+    "before": "4f7923a2a5e8ab08ea6e0fd6be13775b78980ead833efc4b03c6b3149cdaad64",
+    "after": "9febb913924f7513e7a9ff2b2d27616a8eff69f75a9157ca4cb5003347a4f15f"
+  },
+  {
+    "map": "riviera",
+    "pose": "road",
+    "identical": false,
+    "before": "bfbc80f5c7527b6272fd7bf6e9a06369c9b0e9f0292163976355199897a6117b",
+    "after": "3564f84b7fce58a4c485430b868e9001d3444bb0ef78a0825beb891d4d14b524"
+  },
+  {
+    "map": "riviera",
+    "pose": "badge",
+    "identical": false,
+    "before": "4cd71b9dddf8b12691120f50fe23b2246e6798522f7d5265f55f3a944794a6e9",
+    "after": "6d413a39a5b26387a13e4026f262a2627cbbe537c54e8769a092012b3bf8c7c0"
+  },
+  {
+    "map": "riviera",
+    "pose": "overview",
+    "identical": false,
+    "before": "5ce5ad9f718a3dabc1282d8724b86fa82a6b309650bf6026c581966e5279a099",
+    "after": "d88ebc59e6cc425b12bbc4112c9453e45aa25f18058dd3ebeadaed5dd8881acb"
+  },
+  {
+    "map": "riviera",
+    "pose": "atlas",
+    "identical": false,
+    "before": "d33544c3e13ebe6e8fa1574318b335e27d0ce5208a6ab565f8b54e83edf96a55",
+    "after": "2a87ef117959022f8b33d1fd305a47b33a23304d8b52656ad461b630f58d1aed"
+  },
+  {
+    "map": "penteli",
+    "pose": "menu",
+    "identical": false,
+    "before": "12e5289b0224c626842a1067fa745035b6d960ce62bbbc698c865525c55787f4",
+    "after": "9c0b81e01e7e83655d8f54516b33243aa535efae0878c3be0616063a60ef44f6"
+  },
+  {
+    "map": "penteli",
+    "pose": "front",
+    "identical": false,
+    "before": "833d9180538d3840e3cb1a74b6d0bc313bf3144ebe6a1e54695212013a6a2967",
+    "after": "35ac3d12036e7913d7a0d1844d56377df6ee12394a03a50d954d918a985d1eee"
+  },
+  {
+    "map": "penteli",
+    "pose": "road",
+    "identical": false,
+    "before": "41753a161f848fdbdd4a1e5486799078cffb5af7d3cb3e5b350180af6d5979e0",
+    "after": "a6773b3f7e4624de17da58df53ac2cf0c69ef49f0e1f898c6ba8480d02a46313"
+  },
+  {
+    "map": "penteli",
+    "pose": "badge",
+    "identical": false,
+    "before": "fb46d07a140c3149afe289d1fe0fd56594299124912c41d4da1eb4d1770350f0",
+    "after": "92ceb16e792688b916f564a052fdbbf3d6881d18876e0058b601f57aa5dc5665"
+  },
+  {
+    "map": "penteli",
+    "pose": "overview",
+    "identical": false,
+    "before": "35399fe338f913ae64b61f829ace6c9041baf2db235f36d567c383783446ddb2",
+    "after": "8fb99bf9e5bc0672d39967235d4a9db916971156519e5b36d685f3886512f772"
+  },
+  {
+    "map": "penteli",
+    "pose": "atlas",
+    "identical": false,
+    "before": "d33544c3e13ebe6e8fa1574318b335e27d0ce5208a6ab565f8b54e83edf96a55",
+    "after": "2a87ef117959022f8b33d1fd305a47b33a23304d8b52656ad461b630f58d1aed"
+  },
+  {
+    "map": "penteli",
+    "pose": "signs",
+    "identical": true,
+    "before": "6f1cc2aca95c397f9dfab14bfed7b803444b0a27859612a49b99354258df7d55",
+    "after": "6f1cc2aca95c397f9dfab14bfed7b803444b0a27859612a49b99354258df7d55"
+  },
+  {
+    "map": "megara",
+    "pose": "menu",
+    "identical": false,
+    "before": "7f033a9888c113efe5865747585bf121e4f0d0060bdaaba7b6dd7ebc421dda88",
+    "after": "2ba7b2760228407e91ae681adaa9f47fa2ac8d33457d83441013893fdd171542"
+  },
+  {
+    "map": "megara",
+    "pose": "front",
+    "identical": false,
+    "before": "54422eb913eeaa084b1017d40ba707f7b7cfa62141282b07836f4734604b0b4f",
+    "after": "9c63076fb306933f6a78b4c010de27bf15d49dc03adb6588c44cb4023a77edb0"
+  },
+  {
+    "map": "megara",
+    "pose": "road",
+    "identical": false,
+    "before": "a96bcdb35b21e6a43a3e0c7c070c5c2a84af84c78319b07cfa5bf01245c65721",
+    "after": "f921fedaf57a6d4d958309b5b33f900b13146183eb4886d21914c513fd42297e"
+  },
+  {
+    "map": "megara",
+    "pose": "badge",
+    "identical": false,
+    "before": "24820096aa6a86f351d935c40bb457f3f92b360fe4d6531c8309ae7bab4d344d",
+    "after": "86286e98d0e63b048c19fbb1a747548c078a48b1f3e1fda246b623bd3f8eee20"
+  },
+  {
+    "map": "megara",
+    "pose": "overview",
+    "identical": false,
+    "before": "21f28ef32f4516e6fd6fd702919885e26d313d773911ae186a89f23b4c5ef4bf",
+    "after": "e682991db5d7f98ec14e99035a9a4807a114a737f00139ce606aa5a4de1e4a3f"
+  },
+  {
+    "map": "megara",
+    "pose": "atlas",
+    "identical": false,
+    "before": "d33544c3e13ebe6e8fa1574318b335e27d0ce5208a6ab565f8b54e83edf96a55",
+    "after": "2a87ef117959022f8b33d1fd305a47b33a23304d8b52656ad461b630f58d1aed"
+  }
+]

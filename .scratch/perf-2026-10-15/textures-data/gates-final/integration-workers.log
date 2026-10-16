@@ -1,0 +1,27 @@
+{
+  meshoptWorkerRoundtrip: true,
+  support: {
+    astcSupported: true,
+    astcHDRSupported: false,
+    etc1Supported: true,
+    etc2Supported: true,
+    dxtSupported: true,
+    bptcSupported: true,
+    pvrtcSupported: false
+  },
+  textures: [
+    {
+      url: '/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2',
+      mips: 11,
+      width: 1024,
+      gpuBytes: 1398128
+    },
+    {
+      url: '/assets/tex/ktx2/atlas-ceed28679352a112.ktx2',
+      mips: 10,
+      width: 512,
+      gpuBytes: 349552
+    }
+  ],
+  errors: []
+}

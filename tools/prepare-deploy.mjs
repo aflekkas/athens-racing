@@ -1,5 +1,6 @@
 // An allowlist keeps server code, tools, credentials and scratch files off the CDN.
 import './check-browser-imports.mjs';
+import { buildTextures } from './build-textures.mjs';
 import { readdir, mkdir, readFile, writeFile, copyFile, rm, stat } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { MAPS } from '../src/map-catalog.js';
@@ -13,6 +14,8 @@ import { missingPicturesWarning } from './changelog-images.mjs';
 import { parseChangelog } from '../src/release-notes.js';
 import { publishReleaseData } from './release-data.mjs';
 const root = resolve(import.meta.dirname, '..'), out = resolve(root, '.deploy/assets');
+const textureManifest = await buildTextures(root);
+const activeKtx = new Set(Object.values(textureManifest).filter(entry => entry.enabled).map(entry => entry.url.slice(1)));
 const mediaWarning = missingPicturesWarning(parseChangelog(await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')));
 if (mediaWarning) console.warn(mediaWarning);
 await rm(resolve(root, '.deploy'), { recursive: true, force: true });
@@ -22,6 +25,7 @@ async function copy(path) {
   const info = await stat(path), rel = relative(root, path);
   if (info.isDirectory()) { for (const entry of await readdir(path, { withFileTypes: true })) if (!entry.name.startsWith('.') && !entry.isSymbolicLink()) await copy(resolve(path, entry.name)); return; }
   if (/\.orig$|\.test\.[cm]?js$|(?:^|\/)chain\.pid$/.test(rel)) return;
+  if (rel.startsWith('assets/tex/ktx2/') && !activeKtx.has(rel)) return;
   if (info.size > 25 * 1024 * 1024) throw new Error(`Cloudflare asset exceeds 25 MiB: ${rel}`);
   const dest = resolve(out, rel); await mkdir(resolve(dest, '..'), { recursive: true }); await copyFile(path, dest);
   count++; bytes += info.size; if (info.size > largest.size) largest = { path: rel, size: info.size };

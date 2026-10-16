@@ -1,0 +1,3042 @@
+{
+  "baselineSha": "71e05c36f909ac8c455f103883f583428a9c4962",
+  "implementationSha": "98f616d953c8dd2b36db4568ec43f6b08a5e0c62",
+  "mode": "paired HTTP packs",
+  "errors": [],
+  "runs": [
+    {
+      "side": "before",
+      "id": "riviera",
+      "round": 0,
+      "loadToRaceMs": 22063,
+      "peakHeapBytes": 513092441,
+      "errors": [],
+      "pendingScreens": false,
+      "metrics": {
+        "geometryBytes": 173690706,
+        "state": "race",
+        "assets": null,
+        "heapBytes": 475197606,
+        "requests": [
+          {
+            "url": "/before/src/ui/ui.css",
+            "bodyBytes": 11032,
+            "transferBytes": 11332
+          },
+          {
+            "url": "/before/style.css",
+            "bodyBytes": 5639,
+            "transferBytes": 5939
+          },
+          {
+            "url": "/before/src/multiplayer.css",
+            "bodyBytes": 3869,
+            "transferBytes": 4169
+          },
+          {
+            "url": "/before/src/menu.css",
+            "bodyBytes": 13397,
+            "transferBytes": 13697
+          },
+          {
+            "url": "/before/src/menu-backdrop.css",
+            "bodyBytes": 318,
+            "transferBytes": 618
+          },
+          {
+            "url": "/before/src/ui/headunit.css",
+            "bodyBytes": 2021,
+            "transferBytes": 2321
+          },
+          {
+            "url": "/before/src/ui/release.css",
+            "bodyBytes": 1820,
+            "transferBytes": 2120
+          },
+          {
+            "url": "/before/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/before/src/main-3YRFR3OE.js",
+            "bodyBytes": 278308,
+            "transferBytes": 278608
+          },
+          {
+            "url": "/before/src/ui/accounts.css",
+            "bodyBytes": 780,
+            "transferBytes": 1080
+          },
+          {
+            "url": "/before/assets/maps/attica.svg",
+            "bodyBytes": 54732,
+            "transferBytes": 55032
+          },
+          {
+            "url": "/before/src/chunk-FQV3IEG6.js",
+            "bodyBytes": 7854,
+            "transferBytes": 8154
+          },
+          {
+            "url": "/before/src/chunk-STAA4ZCR.js",
+            "bodyBytes": 2256,
+            "transferBytes": 2556
+          },
+          {
+            "url": "/before/src/chunk-EC4H47RW.js",
+            "bodyBytes": 1252,
+            "transferBytes": 1552
+          },
+          {
+            "url": "/before/src/chunk-MWFFRFAD.js",
+            "bodyBytes": 1829,
+            "transferBytes": 2129
+          },
+          {
+            "url": "/before/src/chunk-347U7WIR.js",
+            "bodyBytes": 402,
+            "transferBytes": 702
+          },
+          {
+            "url": "/before/src/chunk-FZIOR3CY.js",
+            "bodyBytes": 24063,
+            "transferBytes": 24363
+          },
+          {
+            "url": "/before/src/chunk-3JJ7MCGA.js",
+            "bodyBytes": 2197,
+            "transferBytes": 2497
+          },
+          {
+            "url": "/before/src/chunk-OKMQTPPP.js",
+            "bodyBytes": 2956,
+            "transferBytes": 3256
+          },
+          {
+            "url": "/before/src/chunk-7PW3PRJM.js",
+            "bodyBytes": 17495,
+            "transferBytes": 17795
+          },
+          {
+            "url": "/before/src/chunk-ZS2DHG2Z.js",
+            "bodyBytes": 4428,
+            "transferBytes": 4728
+          },
+          {
+            "url": "/before/src/chunk-FME47X7F.js",
+            "bodyBytes": 34605,
+            "transferBytes": 34905
+          },
+          {
+            "url": "/before/src/chunk-7KP4ETY3.js",
+            "bodyBytes": 814,
+            "transferBytes": 1114
+          },
+          {
+            "url": "/before/src/chunk-MIUZR7RV.js",
+            "bodyBytes": 361,
+            "transferBytes": 661
+          },
+          {
+            "url": "/before/src/chunk-7MSALDE3.js",
+            "bodyBytes": 594,
+            "transferBytes": 894
+          },
+          {
+            "url": "/before/src/chunk-7UTVUAKJ.js",
+            "bodyBytes": 826,
+            "transferBytes": 1126
+          },
+          {
+            "url": "/before/src/chunk-XFYCWMQM.js",
+            "bodyBytes": 114019,
+            "transferBytes": 114319
+          },
+          {
+            "url": "/before/src/chunk-BH5777OI.js",
+            "bodyBytes": 3742,
+            "transferBytes": 4042
+          },
+          {
+            "url": "/before/src/chunk-36TPW5C2.js",
+            "bodyBytes": 2209,
+            "transferBytes": 2509
+          },
+          {
+            "url": "/before/src/chunk-XOKIVDP5.js",
+            "bodyBytes": 2005,
+            "transferBytes": 2305
+          },
+          {
+            "url": "/before/src/chunk-GN3RS22L.js",
+            "bodyBytes": 154927,
+            "transferBytes": 155227
+          },
+          {
+            "url": "/before/src/chunk-N73I3IX4.js",
+            "bodyBytes": 190,
+            "transferBytes": 490
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/input.css",
+            "bodyBytes": 2234,
+            "transferBytes": 2534
+          },
+          {
+            "url": "/src/recovery-prompt.css",
+            "bodyBytes": 571,
+            "transferBytes": 871
+          },
+          {
+            "url": "/src/driving-feedback.css",
+            "bodyBytes": 936,
+            "transferBytes": 1236
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/music-settings.css",
+            "bodyBytes": 442,
+            "transferBytes": 742
+          },
+          {
+            "url": "/api/auth/config",
+            "bodyBytes": 22,
+            "transferBytes": 322
+          },
+          {
+            "url": "/before/src/chunk-ANLF453Z.js",
+            "bodyBytes": 102,
+            "transferBytes": 402
+          },
+          {
+            "url": "/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/src/ui/notifications.css",
+            "bodyBytes": 1624,
+            "transferBytes": 1924
+          },
+          {
+            "url": "/before/assets/maps/riviera.svg",
+            "bodyBytes": 50905,
+            "transferBytes": 51205
+          },
+          {
+            "url": "/before/data/map.json",
+            "bodyBytes": 200664,
+            "transferBytes": 200964
+          },
+          {
+            "url": "/before/data/terrain.bin",
+            "bodyBytes": 1339745,
+            "transferBytes": 1340045
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_diff.webp",
+            "bodyBytes": 382402,
+            "transferBytes": 382702
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_nor.webp",
+            "bodyBytes": 452932,
+            "transferBytes": 453232
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_arm.webp",
+            "bodyBytes": 229582,
+            "transferBytes": 229882
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_diff.webp",
+            "bodyBytes": 112682,
+            "transferBytes": 112982
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_nor.webp",
+            "bodyBytes": 136910,
+            "transferBytes": 137210
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_arm.webp",
+            "bodyBytes": 42276,
+            "transferBytes": 42576
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_diff.webp",
+            "bodyBytes": 9180,
+            "transferBytes": 9480
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_nor.webp",
+            "bodyBytes": 4252,
+            "transferBytes": 4552
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_arm.webp",
+            "bodyBytes": 14518,
+            "transferBytes": 14818
+          },
+          {
+            "url": "/before/assets/tex/dry_ground_01_diff.webp",
+            "bodyBytes": 63912,
+            "transferBytes": 64212
+          },
+          {
+            "url": "/before/assets/tex/dry_ground_01_nor.webp",
+            "bodyBytes": 52750,
+            "transferBytes": 53050
+          },
+          {
+            "url": "/before/assets/tex/withered_grass_diff.webp",
+            "bodyBytes": 82138,
+            "transferBytes": 82438
+          },
+          {
+            "url": "/before/assets/tex/withered_grass_nor.webp",
+            "bodyBytes": 124990,
+            "transferBytes": 125290
+          },
+          {
+            "url": "/before/assets/tex/coast_sand_01_diff.webp",
+            "bodyBytes": 60168,
+            "transferBytes": 60468
+          },
+          {
+            "url": "/before/assets/tex/coast_sand_01_nor.webp",
+            "bodyBytes": 98120,
+            "transferBytes": 98420
+          },
+          {
+            "url": "/before/assets/tex/rock_face_03_diff.webp",
+            "bodyBytes": 48450,
+            "transferBytes": 48750
+          },
+          {
+            "url": "/before/assets/tex/rock_face_03_nor.webp",
+            "bodyBytes": 94678,
+            "transferBytes": 94978
+          },
+          {
+            "url": "/before/assets/tex/fabric_leather_02_nor.webp",
+            "bodyBytes": 20234,
+            "transferBytes": 20534
+          },
+          {
+            "url": "/before/assets/tex/fabric_leather_02_arm.webp",
+            "bodyBytes": 77512,
+            "transferBytes": 77812
+          },
+          {
+            "url": "/before/assets/tex/waternormals.webp",
+            "bodyBytes": 64330,
+            "transferBytes": 64630
+          },
+          {
+            "url": "/before/data/baked/riviera-terrain-7139375f643bbfc4.bin.gz",
+            "bodyBytes": 16130864,
+            "transferBytes": 16131164
+          },
+          {
+            "url": "/before/data/baked/riviera-roads-b7fd1a84944b2cd0.bin.gz",
+            "bodyBytes": 19689626,
+            "transferBytes": 19689926
+          },
+          {
+            "url": "/assets/brand-badges/atlas.svg",
+            "bodyBytes": 21213,
+            "transferBytes": 21513
+          },
+          {
+            "url": "/assets/audio/engines/mini-start.wav",
+            "bodyBytes": 126204,
+            "transferBytes": 126504
+          },
+          {
+            "url": "/assets/audio/engines/mini-idle.wav",
+            "bodyBytes": 184242,
+            "transferBytes": 184542
+          },
+          {
+            "url": "/assets/audio/engines/mini-low.wav",
+            "bodyBytes": 80056,
+            "transferBytes": 80356
+          },
+          {
+            "url": "/assets/audio/engines/mini-mid.wav",
+            "bodyBytes": 183318,
+            "transferBytes": 183618
+          },
+          {
+            "url": "/assets/audio/engines/mini-high.wav",
+            "bodyBytes": 38346,
+            "transferBytes": 38646
+          },
+          {
+            "url": "/src/ghost-lap.css",
+            "bodyBytes": 329,
+            "transferBytes": 629
+          },
+          {
+            "url": "/src/map-select.css",
+            "bodyBytes": 3923,
+            "transferBytes": 4223
+          }
+        ],
+        "render": {
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "perfClass": "high",
+          "lowGraphics": true,
+          "pixelRatio": 1,
+          "drawDistance": 2000,
+          "geometries": 446,
+          "textures": 101,
+          "renderScale": 1
+        }
+      },
+      "signs": null
+    },
+    {
+      "side": "after",
+      "id": "riviera",
+      "round": 0,
+      "loadToRaceMs": 20892,
+      "peakHeapBytes": 490610172,
+      "errors": [],
+      "pendingScreens": false,
+      "metrics": {
+        "geometryBytes": 173690706,
+        "state": "race",
+        "assets": {
+          "textures": [
+            {
+              "url": "./assets/tex/asphalt_02_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 505,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/floor_pavement_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 517.5,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 517.3999999761581,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 517.2999999523163,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 517.1999999284744,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/dry_ground_01_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 517.1000000238419,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/dry_ground_01_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 516.8999999761581,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/withered_grass_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 868.1999999284744,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/coast_sand_01_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 868.3999999761581,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/coast_sand_01_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 868.2000000476837,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/rock_face_03_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 868.2000000476837,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/rock_face_03_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 868.1000000238419,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/fabric_leather_02_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 868.1000000238419,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/fabric_leather_02_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 869.5999999046326,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/waternormals.webp",
+              "codec": "image",
+              "decodeWallMs": 869.5,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 257012,
+              "decodeWallMs": 1903.6000000238419,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/asphalt_02_arm-af6fb7b93a68122f.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 260246,
+              "decodeWallMs": 1902.3000000715256,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/floor_pavement_arm-2d560c2c8599a309.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 136282,
+              "decodeWallMs": 1955.2000000476837,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/floor_pavement_diff-46f967277a85b9e0.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 215703,
+              "decodeWallMs": 1955.5,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/withered_grass_diff-08a113cee418a527.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 10,
+              "downloadBytes": 97167,
+              "decodeWallMs": 2172.5,
+              "gpuBytes": 349552,
+              "width": 512,
+              "height": 512,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/atlas-ceed28679352a112.ktx2",
+              "codec": "uastc",
+              "format": 37808,
+              "mipCount": 10,
+              "downloadBytes": 63090,
+              "decodeWallMs": 1190.6000000238419,
+              "gpuBytes": 349552,
+              "width": 512,
+              "height": 512,
+              "skippedMips": 0
+            }
+          ],
+          "maps": {
+            "riviera": {
+              "started": 3479,
+              "downloadBytes": 33194241,
+              "decodeWallMs": 3631.600000023842,
+              "inflateFetchWallMs": 2407.899999976158,
+              "bufferDecodeWallMs": 1223.7000000476837,
+              "peakHeapBytes": 487660052,
+              "codec": "meshopt",
+              "loadMs": 2348.8000000715256,
+              "geometryBytes": 143011262,
+              "firstRaceFrameMs": 20378.200000047684,
+              "gpu": {
+                "geometryBytes": 173690706,
+                "textureBytes": 67067943,
+                "gpuBytes": 240758649,
+                "note": "Scene buffer capacity; visibility-dependent residency may be lower. Excludes render targets, driver overhead and shader-uniform-only textures"
+              }
+            }
+          },
+          "textureLibraryReadyMs": 2232,
+          "textureWaitMs": 0.6000000238418579,
+          "textureUploadMs": 251.59999990463257,
+          "compileSceneMs": 423.60000002384186
+        },
+        "heapBytes": 421351480,
+        "requests": [
+          {
+            "url": "/src/ui/ui.css",
+            "bodyBytes": 11032,
+            "transferBytes": 11332
+          },
+          {
+            "url": "/style.css",
+            "bodyBytes": 5639,
+            "transferBytes": 5939
+          },
+          {
+            "url": "/src/multiplayer.css",
+            "bodyBytes": 3869,
+            "transferBytes": 4169
+          },
+          {
+            "url": "/src/menu.css",
+            "bodyBytes": 13397,
+            "transferBytes": 13697
+          },
+          {
+            "url": "/src/menu-backdrop.css",
+            "bodyBytes": 318,
+            "transferBytes": 618
+          },
+          {
+            "url": "/src/ui/headunit.css",
+            "bodyBytes": 2021,
+            "transferBytes": 2321
+          },
+          {
+            "url": "/src/ui/release.css",
+            "bodyBytes": 1820,
+            "transferBytes": 2120
+          },
+          {
+            "url": "/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/src/main-7FBL7PPS.js",
+            "bodyBytes": 278342,
+            "transferBytes": 278642
+          },
+          {
+            "url": "/src/ui/accounts.css",
+            "bodyBytes": 780,
+            "transferBytes": 1080
+          },
+          {
+            "url": "/assets/maps/attica.svg",
+            "bodyBytes": 54732,
+            "transferBytes": 55032
+          },
+          {
+            "url": "/src/chunk-STAA4ZCR.js",
+            "bodyBytes": 2256,
+            "transferBytes": 2556
+          },
+          {
+            "url": "/src/chunk-7MSALDE3.js",
+            "bodyBytes": 594,
+            "transferBytes": 894
+          },
+          {
+            "url": "/src/chunk-V7JITFXZ.js",
+            "bodyBytes": 7861,
+            "transferBytes": 8161
+          },
+          {
+            "url": "/src/chunk-TU5EQJWR.js",
+            "bodyBytes": 823,
+            "transferBytes": 1123
+          },
+          {
+            "url": "/src/chunk-EC4H47RW.js",
+            "bodyBytes": 1252,
+            "transferBytes": 1552
+          },
+          {
+            "url": "/src/chunk-E3T6UYQN.js",
+            "bodyBytes": 1837,
+            "transferBytes": 2137
+          },
+          {
+            "url": "/src/chunk-5CXBWKFV.js",
+            "bodyBytes": 24098,
+            "transferBytes": 24398
+          },
+          {
+            "url": "/src/chunk-347U7WIR.js",
+            "bodyBytes": 402,
+            "transferBytes": 702
+          },
+          {
+            "url": "/src/chunk-3JJ7MCGA.js",
+            "bodyBytes": 2197,
+            "transferBytes": 2497
+          },
+          {
+            "url": "/src/chunk-7PW3PRJM.js",
+            "bodyBytes": 17495,
+            "transferBytes": 17795
+          },
+          {
+            "url": "/src/chunk-OKMQTPPP.js",
+            "bodyBytes": 2956,
+            "transferBytes": 3256
+          },
+          {
+            "url": "/src/chunk-ZZ7KKHL7.js",
+            "bodyBytes": 4439,
+            "transferBytes": 4739
+          },
+          {
+            "url": "/src/chunk-H3BD7HRS.js",
+            "bodyBytes": 35635,
+            "transferBytes": 35935
+          },
+          {
+            "url": "/src/chunk-DSWWAANS.js",
+            "bodyBytes": 114149,
+            "transferBytes": 114449
+          },
+          {
+            "url": "/src/chunk-EBZRIIQ3.js",
+            "bodyBytes": 3742,
+            "transferBytes": 4042
+          },
+          {
+            "url": "/src/chunk-FPLAEXN6.js",
+            "bodyBytes": 2204,
+            "transferBytes": 2504
+          },
+          {
+            "url": "/src/chunk-G4TFXZWN.js",
+            "bodyBytes": 21655,
+            "transferBytes": 21955
+          },
+          {
+            "url": "/src/chunk-FF2MUEZW.js",
+            "bodyBytes": 849,
+            "transferBytes": 1149
+          },
+          {
+            "url": "/src/chunk-XOKIVDP5.js",
+            "bodyBytes": 2005,
+            "transferBytes": 2305
+          },
+          {
+            "url": "/src/chunk-MIUZR7RV.js",
+            "bodyBytes": 361,
+            "transferBytes": 661
+          },
+          {
+            "url": "/src/chunk-MDVVCAN5.js",
+            "bodyBytes": 138671,
+            "transferBytes": 138971
+          },
+          {
+            "url": "/src/chunk-N73I3IX4.js",
+            "bodyBytes": 190,
+            "transferBytes": 490
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/input.css",
+            "bodyBytes": 2234,
+            "transferBytes": 2534
+          },
+          {
+            "url": "/src/recovery-prompt.css",
+            "bodyBytes": 571,
+            "transferBytes": 871
+          },
+          {
+            "url": "/src/driving-feedback.css",
+            "bodyBytes": 936,
+            "transferBytes": 1236
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/music-settings.css",
+            "bodyBytes": 442,
+            "transferBytes": 742
+          },
+          {
+            "url": "/api/auth/config",
+            "bodyBytes": 22,
+            "transferBytes": 322
+          },
+          {
+            "url": "/src/chunk-ANLF453Z.js",
+            "bodyBytes": 102,
+            "transferBytes": 402
+          },
+          {
+            "url": "/src/ui/notifications.css",
+            "bodyBytes": 1624,
+            "transferBytes": 1924
+          },
+          {
+            "url": "/assets/maps/riviera.svg",
+            "bodyBytes": 50905,
+            "transferBytes": 51205
+          },
+          {
+            "url": "/src/chunk-DDRC5FTL.js",
+            "bodyBytes": 23324,
+            "transferBytes": 23624
+          },
+          {
+            "url": "/data/map.json",
+            "bodyBytes": 200664,
+            "transferBytes": 200964
+          },
+          {
+            "url": "/data/terrain.bin",
+            "bodyBytes": 1339745,
+            "transferBytes": 1340045
+          },
+          {
+            "url": "/assets/tex/asphalt_02_nor.webp",
+            "bodyBytes": 452932,
+            "transferBytes": 453232
+          },
+          {
+            "url": "/assets/tex/floor_pavement_nor.webp",
+            "bodyBytes": 136910,
+            "transferBytes": 137210
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+            "bodyBytes": 9180,
+            "transferBytes": 9480
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+            "bodyBytes": 4252,
+            "transferBytes": 4552
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+            "bodyBytes": 14518,
+            "transferBytes": 14818
+          },
+          {
+            "url": "/assets/tex/dry_ground_01_diff.webp",
+            "bodyBytes": 63912,
+            "transferBytes": 64212
+          },
+          {
+            "url": "/assets/tex/dry_ground_01_nor.webp",
+            "bodyBytes": 52750,
+            "transferBytes": 53050
+          },
+          {
+            "url": "/assets/tex/withered_grass_nor.webp",
+            "bodyBytes": 124990,
+            "transferBytes": 125290
+          },
+          {
+            "url": "/assets/tex/coast_sand_01_diff.webp",
+            "bodyBytes": 60168,
+            "transferBytes": 60468
+          },
+          {
+            "url": "/assets/tex/coast_sand_01_nor.webp",
+            "bodyBytes": 98120,
+            "transferBytes": 98420
+          },
+          {
+            "url": "/assets/tex/rock_face_03_diff.webp",
+            "bodyBytes": 48450,
+            "transferBytes": 48750
+          },
+          {
+            "url": "/assets/tex/rock_face_03_nor.webp",
+            "bodyBytes": 94678,
+            "transferBytes": 94978
+          },
+          {
+            "url": "/assets/tex/fabric_leather_02_nor.webp",
+            "bodyBytes": 20234,
+            "transferBytes": 20534
+          },
+          {
+            "url": "/assets/tex/fabric_leather_02_arm.webp",
+            "bodyBytes": 77512,
+            "transferBytes": 77812
+          },
+          {
+            "url": "/assets/tex/waternormals.webp",
+            "bodyBytes": 64330,
+            "transferBytes": 64630
+          },
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2",
+            "bodyBytes": 257012,
+            "transferBytes": 257312
+          },
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_arm-af6fb7b93a68122f.ktx2",
+            "bodyBytes": 260246,
+            "transferBytes": 260546
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_diff-46f967277a85b9e0.ktx2",
+            "bodyBytes": 215703,
+            "transferBytes": 216003
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_arm-2d560c2c8599a309.ktx2",
+            "bodyBytes": 136282,
+            "transferBytes": 136582
+          },
+          {
+            "url": "/assets/tex/ktx2/withered_grass_diff-08a113cee418a527.ktx2",
+            "bodyBytes": 97167,
+            "transferBytes": 97467
+          },
+          {
+            "url": "/data/baked/riviera-terrain-48507d417295263c.meshopt.gz",
+            "bodyBytes": 13503293,
+            "transferBytes": 13503593
+          },
+          {
+            "url": "/data/baked/riviera-roads-4837f6f0c9b2e7b1.meshopt.gz",
+            "bodyBytes": 19690948,
+            "transferBytes": 19691248
+          },
+          {
+            "url": "/assets/codecs/basis/dc5e5d6a8e3db70a/basis_transcoder.js",
+            "bodyBytes": 14640,
+            "transferBytes": 14940
+          },
+          {
+            "url": "/assets/codecs/basis/dc5e5d6a8e3db70a/basis_transcoder.wasm",
+            "bodyBytes": 527333,
+            "transferBytes": 527633
+          },
+          {
+            "url": "/src/chunk-BT2AKZ3F.js",
+            "bodyBytes": 6032,
+            "transferBytes": 6332
+          },
+          {
+            "url": "/assets/tex/ktx2/atlas-ceed28679352a112.ktx2",
+            "bodyBytes": 63090,
+            "transferBytes": 63390
+          },
+          {
+            "url": "/assets/audio/engines/mini-start.wav",
+            "bodyBytes": 126204,
+            "transferBytes": 126504
+          },
+          {
+            "url": "/assets/audio/engines/mini-idle.wav",
+            "bodyBytes": 184242,
+            "transferBytes": 184542
+          },
+          {
+            "url": "/assets/audio/engines/mini-low.wav",
+            "bodyBytes": 80056,
+            "transferBytes": 80356
+          },
+          {
+            "url": "/assets/audio/engines/mini-mid.wav",
+            "bodyBytes": 183318,
+            "transferBytes": 183618
+          },
+          {
+            "url": "/assets/audio/engines/mini-high.wav",
+            "bodyBytes": 38346,
+            "transferBytes": 38646
+          },
+          {
+            "url": "/src/ghost-lap.css",
+            "bodyBytes": 329,
+            "transferBytes": 629
+          },
+          {
+            "url": "/src/map-select.css",
+            "bodyBytes": 3923,
+            "transferBytes": 4223
+          }
+        ],
+        "render": {
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "perfClass": "high",
+          "lowGraphics": true,
+          "pixelRatio": 1,
+          "drawDistance": 2000,
+          "geometries": 446,
+          "textures": 101,
+          "renderScale": 1
+        }
+      },
+      "signs": null
+    },
+    {
+      "side": "before",
+      "id": "penteli",
+      "round": 0,
+      "loadToRaceMs": 10315,
+      "peakHeapBytes": 335619083,
+      "errors": [],
+      "pendingScreens": false,
+      "metrics": {
+        "geometryBytes": 85127999,
+        "state": "race",
+        "assets": null,
+        "heapBytes": 305799815,
+        "requests": [
+          {
+            "url": "/before/src/ui/ui.css",
+            "bodyBytes": 11032,
+            "transferBytes": 11332
+          },
+          {
+            "url": "/before/style.css",
+            "bodyBytes": 5639,
+            "transferBytes": 5939
+          },
+          {
+            "url": "/before/src/multiplayer.css",
+            "bodyBytes": 3869,
+            "transferBytes": 4169
+          },
+          {
+            "url": "/before/src/menu.css",
+            "bodyBytes": 13397,
+            "transferBytes": 13697
+          },
+          {
+            "url": "/before/src/menu-backdrop.css",
+            "bodyBytes": 318,
+            "transferBytes": 618
+          },
+          {
+            "url": "/before/src/ui/headunit.css",
+            "bodyBytes": 2021,
+            "transferBytes": 2321
+          },
+          {
+            "url": "/before/src/ui/release.css",
+            "bodyBytes": 1820,
+            "transferBytes": 2120
+          },
+          {
+            "url": "/before/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/before/src/main-3YRFR3OE.js",
+            "bodyBytes": 278308,
+            "transferBytes": 278608
+          },
+          {
+            "url": "/before/src/ui/accounts.css",
+            "bodyBytes": 780,
+            "transferBytes": 1080
+          },
+          {
+            "url": "/before/assets/maps/attica.svg",
+            "bodyBytes": 54732,
+            "transferBytes": 55032
+          },
+          {
+            "url": "/before/src/chunk-FQV3IEG6.js",
+            "bodyBytes": 7854,
+            "transferBytes": 8154
+          },
+          {
+            "url": "/before/src/chunk-STAA4ZCR.js",
+            "bodyBytes": 2256,
+            "transferBytes": 2556
+          },
+          {
+            "url": "/before/src/chunk-EC4H47RW.js",
+            "bodyBytes": 1252,
+            "transferBytes": 1552
+          },
+          {
+            "url": "/before/src/chunk-MWFFRFAD.js",
+            "bodyBytes": 1829,
+            "transferBytes": 2129
+          },
+          {
+            "url": "/before/src/chunk-FZIOR3CY.js",
+            "bodyBytes": 24063,
+            "transferBytes": 24363
+          },
+          {
+            "url": "/before/src/chunk-347U7WIR.js",
+            "bodyBytes": 402,
+            "transferBytes": 702
+          },
+          {
+            "url": "/before/src/chunk-3JJ7MCGA.js",
+            "bodyBytes": 2197,
+            "transferBytes": 2497
+          },
+          {
+            "url": "/before/src/chunk-7PW3PRJM.js",
+            "bodyBytes": 17495,
+            "transferBytes": 17795
+          },
+          {
+            "url": "/before/src/chunk-OKMQTPPP.js",
+            "bodyBytes": 2956,
+            "transferBytes": 3256
+          },
+          {
+            "url": "/before/src/chunk-ZS2DHG2Z.js",
+            "bodyBytes": 4428,
+            "transferBytes": 4728
+          },
+          {
+            "url": "/before/src/chunk-7KP4ETY3.js",
+            "bodyBytes": 814,
+            "transferBytes": 1114
+          },
+          {
+            "url": "/before/src/chunk-FME47X7F.js",
+            "bodyBytes": 34605,
+            "transferBytes": 34905
+          },
+          {
+            "url": "/before/src/chunk-MIUZR7RV.js",
+            "bodyBytes": 361,
+            "transferBytes": 661
+          },
+          {
+            "url": "/before/src/chunk-7MSALDE3.js",
+            "bodyBytes": 594,
+            "transferBytes": 894
+          },
+          {
+            "url": "/before/src/chunk-7UTVUAKJ.js",
+            "bodyBytes": 826,
+            "transferBytes": 1126
+          },
+          {
+            "url": "/before/src/chunk-BH5777OI.js",
+            "bodyBytes": 3742,
+            "transferBytes": 4042
+          },
+          {
+            "url": "/before/src/chunk-XFYCWMQM.js",
+            "bodyBytes": 114019,
+            "transferBytes": 114319
+          },
+          {
+            "url": "/before/src/chunk-36TPW5C2.js",
+            "bodyBytes": 2209,
+            "transferBytes": 2509
+          },
+          {
+            "url": "/before/src/chunk-XOKIVDP5.js",
+            "bodyBytes": 2005,
+            "transferBytes": 2305
+          },
+          {
+            "url": "/before/src/chunk-GN3RS22L.js",
+            "bodyBytes": 154927,
+            "transferBytes": 155227
+          },
+          {
+            "url": "/before/src/chunk-N73I3IX4.js",
+            "bodyBytes": 190,
+            "transferBytes": 490
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/input.css",
+            "bodyBytes": 2234,
+            "transferBytes": 2534
+          },
+          {
+            "url": "/src/recovery-prompt.css",
+            "bodyBytes": 571,
+            "transferBytes": 871
+          },
+          {
+            "url": "/src/driving-feedback.css",
+            "bodyBytes": 936,
+            "transferBytes": 1236
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/music-settings.css",
+            "bodyBytes": 442,
+            "transferBytes": 742
+          },
+          {
+            "url": "/api/auth/config",
+            "bodyBytes": 22,
+            "transferBytes": 322
+          },
+          {
+            "url": "/before/src/chunk-ANLF453Z.js",
+            "bodyBytes": 102,
+            "transferBytes": 402
+          },
+          {
+            "url": "/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/src/ui/notifications.css",
+            "bodyBytes": 1624,
+            "transferBytes": 1924
+          },
+          {
+            "url": "/before/assets/maps/penteli.svg",
+            "bodyBytes": 7580,
+            "transferBytes": 7880
+          },
+          {
+            "url": "/before/data/maps/penteli/map.json",
+            "bodyBytes": 107190,
+            "transferBytes": 107490
+          },
+          {
+            "url": "/before/data/maps/penteli/terrain.bin",
+            "bodyBytes": 1671758,
+            "transferBytes": 1672058
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_diff.webp",
+            "bodyBytes": 382402,
+            "transferBytes": 382702
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_nor.webp",
+            "bodyBytes": 452932,
+            "transferBytes": 453232
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_arm.webp",
+            "bodyBytes": 229582,
+            "transferBytes": 229882
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_diff.webp",
+            "bodyBytes": 112682,
+            "transferBytes": 112982
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_nor.webp",
+            "bodyBytes": 136910,
+            "transferBytes": 137210
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_arm.webp",
+            "bodyBytes": 42276,
+            "transferBytes": 42576
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_diff.webp",
+            "bodyBytes": 9180,
+            "transferBytes": 9480
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_nor.webp",
+            "bodyBytes": 4252,
+            "transferBytes": 4552
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_arm.webp",
+            "bodyBytes": 14518,
+            "transferBytes": 14818
+          },
+          {
+            "url": "/before/assets/tex/dry_ground_01_nor.webp",
+            "bodyBytes": 52750,
+            "transferBytes": 53050
+          },
+          {
+            "url": "/before/assets/tex/dry_ground_01_diff.webp",
+            "bodyBytes": 63912,
+            "transferBytes": 64212
+          },
+          {
+            "url": "/before/assets/tex/withered_grass_diff.webp",
+            "bodyBytes": 82138,
+            "transferBytes": 82438
+          },
+          {
+            "url": "/before/assets/tex/withered_grass_nor.webp",
+            "bodyBytes": 124990,
+            "transferBytes": 125290
+          },
+          {
+            "url": "/before/assets/tex/coast_sand_01_diff.webp",
+            "bodyBytes": 60168,
+            "transferBytes": 60468
+          },
+          {
+            "url": "/before/assets/tex/coast_sand_01_nor.webp",
+            "bodyBytes": 98120,
+            "transferBytes": 98420
+          },
+          {
+            "url": "/before/assets/tex/rock_face_03_diff.webp",
+            "bodyBytes": 48450,
+            "transferBytes": 48750
+          },
+          {
+            "url": "/before/assets/tex/rock_face_03_nor.webp",
+            "bodyBytes": 94678,
+            "transferBytes": 94978
+          },
+          {
+            "url": "/before/assets/tex/fabric_leather_02_nor.webp",
+            "bodyBytes": 20234,
+            "transferBytes": 20534
+          },
+          {
+            "url": "/before/assets/tex/fabric_leather_02_arm.webp",
+            "bodyBytes": 77512,
+            "transferBytes": 77812
+          },
+          {
+            "url": "/before/assets/tex/waternormals.webp",
+            "bodyBytes": 64330,
+            "transferBytes": 64630
+          },
+          {
+            "url": "/before/data/baked/penteli-terrain-9d9323a337f4bf9a.bin.gz",
+            "bodyBytes": 17426696,
+            "transferBytes": 17426996
+          },
+          {
+            "url": "/before/data/baked/penteli-roads-03093346fa175d06.bin.gz",
+            "bodyBytes": 5416687,
+            "transferBytes": 5416987
+          },
+          {
+            "url": "/before/src/chunk-LFAUJCSL.js",
+            "bodyBytes": 2068,
+            "transferBytes": 2368
+          },
+          {
+            "url": "/before/src/chunk-CQMYPCDI.js",
+            "bodyBytes": 794,
+            "transferBytes": 1094
+          },
+          {
+            "url": "/before/src/chunk-4KZATTS6.js",
+            "bodyBytes": 1680,
+            "transferBytes": 1980
+          },
+          {
+            "url": "/assets/brand-badges/atlas.svg",
+            "bodyBytes": 21213,
+            "transferBytes": 21513
+          },
+          {
+            "url": "/assets/audio/engines/mini-start.wav",
+            "bodyBytes": 126204,
+            "transferBytes": 126504
+          },
+          {
+            "url": "/assets/audio/engines/mini-idle.wav",
+            "bodyBytes": 184242,
+            "transferBytes": 184542
+          },
+          {
+            "url": "/assets/audio/engines/mini-low.wav",
+            "bodyBytes": 80056,
+            "transferBytes": 80356
+          },
+          {
+            "url": "/assets/audio/engines/mini-mid.wav",
+            "bodyBytes": 183318,
+            "transferBytes": 183618
+          },
+          {
+            "url": "/assets/audio/engines/mini-high.wav",
+            "bodyBytes": 38346,
+            "transferBytes": 38646
+          },
+          {
+            "url": "/src/ghost-lap.css",
+            "bodyBytes": 329,
+            "transferBytes": 629
+          },
+          {
+            "url": "/src/map-select.css",
+            "bodyBytes": 3923,
+            "transferBytes": 4223
+          }
+        ],
+        "render": {
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "perfClass": "high",
+          "lowGraphics": true,
+          "pixelRatio": 1,
+          "drawDistance": 2000,
+          "geometries": 349,
+          "textures": 82,
+          "renderScale": 1
+        }
+      },
+      "signs": {
+        "width": 1024,
+        "height": 768
+      }
+    },
+    {
+      "side": "after",
+      "id": "penteli",
+      "round": 0,
+      "loadToRaceMs": 13099,
+      "peakHeapBytes": 291366832,
+      "errors": [],
+      "pendingScreens": false,
+      "metrics": {
+        "geometryBytes": 85127999,
+        "state": "race",
+        "assets": {
+          "textures": [
+            {
+              "url": "./assets/tex/floor_pavement_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 152.69999992847443,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/asphalt_02_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 375.7000000476837,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 374.8000000715256,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 374.8000000715256,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 556.2000000476837,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/dry_ground_01_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 574.3000000715256,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/dry_ground_01_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 578.1000000238419,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/withered_grass_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 695.6999999284744,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/coast_sand_01_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 695.6999999284744,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/coast_sand_01_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 698.2999999523163,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/rock_face_03_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 698.5999999046326,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/rock_face_03_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 698.5,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/fabric_leather_02_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 698.5,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/fabric_leather_02_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 698.3999999761581,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/waternormals.webp",
+              "codec": "image",
+              "decodeWallMs": 698.3999999761581,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "/assets/tex/ktx2/asphalt_02_arm-af6fb7b93a68122f.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 260246,
+              "decodeWallMs": 1406.1000000238419,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 257012,
+              "decodeWallMs": 1423.3000000715256,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/withered_grass_diff-08a113cee418a527.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 10,
+              "downloadBytes": 97167,
+              "decodeWallMs": 1432.7999999523163,
+              "gpuBytes": 349552,
+              "width": 512,
+              "height": 512,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/floor_pavement_diff-46f967277a85b9e0.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 215703,
+              "decodeWallMs": 1436.7999999523163,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/floor_pavement_arm-2d560c2c8599a309.ktx2",
+              "codec": "etc1s",
+              "format": 36492,
+              "mipCount": 11,
+              "downloadBytes": 136282,
+              "decodeWallMs": 1465.5,
+              "gpuBytes": 1398128,
+              "width": 1024,
+              "height": 1024,
+              "skippedMips": 0
+            },
+            {
+              "url": "/assets/tex/ktx2/atlas-ceed28679352a112.ktx2",
+              "codec": "uastc",
+              "format": 37808,
+              "mipCount": 10,
+              "downloadBytes": 63090,
+              "decodeWallMs": 1031.6000000238419,
+              "gpuBytes": 349552,
+              "width": 512,
+              "height": 512,
+              "skippedMips": 0
+            }
+          ],
+          "maps": {
+            "penteli": {
+              "started": 4884.5,
+              "downloadBytes": 17073883,
+              "decodeWallMs": 1671.7999999523163,
+              "inflateFetchWallMs": 1227,
+              "bufferDecodeWallMs": 444.6999999284744,
+              "peakHeapBytes": 296584108,
+              "codec": "meshopt",
+              "loadMs": 1392.7999999523163,
+              "geometryBytes": 93299649,
+              "firstRaceFrameMs": 12686.899999976158,
+              "gpu": {
+                "geometryBytes": 85127999,
+                "textureBytes": 30477011,
+                "gpuBytes": 115605010,
+                "note": "Scene buffer capacity; visibility-dependent residency may be lower. Excludes render targets, driver overhead and shader-uniform-only textures"
+              }
+            }
+          },
+          "textureLibraryReadyMs": 1554,
+          "textureWaitMs": 0,
+          "textureUploadMs": 222.20000004768372,
+          "compileSceneMs": 406.39999997615814
+        },
+        "heapBytes": 250114688,
+        "requests": [
+          {
+            "url": "/src/ui/ui.css",
+            "bodyBytes": 11032,
+            "transferBytes": 11332
+          },
+          {
+            "url": "/style.css",
+            "bodyBytes": 5639,
+            "transferBytes": 5939
+          },
+          {
+            "url": "/src/multiplayer.css",
+            "bodyBytes": 3869,
+            "transferBytes": 4169
+          },
+          {
+            "url": "/src/menu.css",
+            "bodyBytes": 13397,
+            "transferBytes": 13697
+          },
+          {
+            "url": "/src/ui/headunit.css",
+            "bodyBytes": 2021,
+            "transferBytes": 2321
+          },
+          {
+            "url": "/src/menu-backdrop.css",
+            "bodyBytes": 318,
+            "transferBytes": 618
+          },
+          {
+            "url": "/src/ui/release.css",
+            "bodyBytes": 1820,
+            "transferBytes": 2120
+          },
+          {
+            "url": "/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/src/main-7FBL7PPS.js",
+            "bodyBytes": 278342,
+            "transferBytes": 278642
+          },
+          {
+            "url": "/src/ui/accounts.css",
+            "bodyBytes": 780,
+            "transferBytes": 1080
+          },
+          {
+            "url": "/assets/maps/attica.svg",
+            "bodyBytes": 54732,
+            "transferBytes": 55032
+          },
+          {
+            "url": "/src/chunk-STAA4ZCR.js",
+            "bodyBytes": 2256,
+            "transferBytes": 2556
+          },
+          {
+            "url": "/src/chunk-7MSALDE3.js",
+            "bodyBytes": 594,
+            "transferBytes": 894
+          },
+          {
+            "url": "/src/chunk-V7JITFXZ.js",
+            "bodyBytes": 7861,
+            "transferBytes": 8161
+          },
+          {
+            "url": "/src/chunk-TU5EQJWR.js",
+            "bodyBytes": 823,
+            "transferBytes": 1123
+          },
+          {
+            "url": "/src/chunk-EC4H47RW.js",
+            "bodyBytes": 1252,
+            "transferBytes": 1552
+          },
+          {
+            "url": "/src/chunk-E3T6UYQN.js",
+            "bodyBytes": 1837,
+            "transferBytes": 2137
+          },
+          {
+            "url": "/src/chunk-5CXBWKFV.js",
+            "bodyBytes": 24098,
+            "transferBytes": 24398
+          },
+          {
+            "url": "/src/chunk-347U7WIR.js",
+            "bodyBytes": 402,
+            "transferBytes": 702
+          },
+          {
+            "url": "/src/chunk-3JJ7MCGA.js",
+            "bodyBytes": 2197,
+            "transferBytes": 2497
+          },
+          {
+            "url": "/src/chunk-7PW3PRJM.js",
+            "bodyBytes": 17495,
+            "transferBytes": 17795
+          },
+          {
+            "url": "/src/chunk-OKMQTPPP.js",
+            "bodyBytes": 2956,
+            "transferBytes": 3256
+          },
+          {
+            "url": "/src/chunk-ZZ7KKHL7.js",
+            "bodyBytes": 4439,
+            "transferBytes": 4739
+          },
+          {
+            "url": "/src/chunk-DSWWAANS.js",
+            "bodyBytes": 114149,
+            "transferBytes": 114449
+          },
+          {
+            "url": "/src/chunk-H3BD7HRS.js",
+            "bodyBytes": 35635,
+            "transferBytes": 35935
+          },
+          {
+            "url": "/src/chunk-FPLAEXN6.js",
+            "bodyBytes": 2204,
+            "transferBytes": 2504
+          },
+          {
+            "url": "/src/chunk-EBZRIIQ3.js",
+            "bodyBytes": 3742,
+            "transferBytes": 4042
+          },
+          {
+            "url": "/src/chunk-G4TFXZWN.js",
+            "bodyBytes": 21655,
+            "transferBytes": 21955
+          },
+          {
+            "url": "/src/chunk-FF2MUEZW.js",
+            "bodyBytes": 849,
+            "transferBytes": 1149
+          },
+          {
+            "url": "/src/chunk-XOKIVDP5.js",
+            "bodyBytes": 2005,
+            "transferBytes": 2305
+          },
+          {
+            "url": "/src/chunk-MIUZR7RV.js",
+            "bodyBytes": 361,
+            "transferBytes": 661
+          },
+          {
+            "url": "/src/chunk-N73I3IX4.js",
+            "bodyBytes": 190,
+            "transferBytes": 490
+          },
+          {
+            "url": "/src/chunk-MDVVCAN5.js",
+            "bodyBytes": 138671,
+            "transferBytes": 138971
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/input.css",
+            "bodyBytes": 2234,
+            "transferBytes": 2534
+          },
+          {
+            "url": "/src/recovery-prompt.css",
+            "bodyBytes": 571,
+            "transferBytes": 871
+          },
+          {
+            "url": "/src/driving-feedback.css",
+            "bodyBytes": 936,
+            "transferBytes": 1236
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/music-settings.css",
+            "bodyBytes": 442,
+            "transferBytes": 742
+          },
+          {
+            "url": "/api/auth/config",
+            "bodyBytes": 22,
+            "transferBytes": 322
+          },
+          {
+            "url": "/src/chunk-ANLF453Z.js",
+            "bodyBytes": 102,
+            "transferBytes": 402
+          },
+          {
+            "url": "/src/ui/notifications.css",
+            "bodyBytes": 1624,
+            "transferBytes": 1924
+          },
+          {
+            "url": "/assets/maps/penteli.svg",
+            "bodyBytes": 7580,
+            "transferBytes": 7880
+          },
+          {
+            "url": "/src/chunk-DDRC5FTL.js",
+            "bodyBytes": 23324,
+            "transferBytes": 23624
+          },
+          {
+            "url": "/data/maps/penteli/map.json",
+            "bodyBytes": 107190,
+            "transferBytes": 107490
+          },
+          {
+            "url": "/data/maps/penteli/terrain.bin",
+            "bodyBytes": 1671758,
+            "transferBytes": 1672058
+          },
+          {
+            "url": "/assets/tex/asphalt_02_nor.webp",
+            "bodyBytes": 452932,
+            "transferBytes": 453232
+          },
+          {
+            "url": "/assets/tex/floor_pavement_nor.webp",
+            "bodyBytes": 136910,
+            "transferBytes": 137210
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+            "bodyBytes": 9180,
+            "transferBytes": 9480
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+            "bodyBytes": 4252,
+            "transferBytes": 4552
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+            "bodyBytes": 14518,
+            "transferBytes": 14818
+          },
+          {
+            "url": "/assets/tex/dry_ground_01_diff.webp",
+            "bodyBytes": 63912,
+            "transferBytes": 64212
+          },
+          {
+            "url": "/assets/tex/dry_ground_01_nor.webp",
+            "bodyBytes": 52750,
+            "transferBytes": 53050
+          },
+          {
+            "url": "/assets/tex/withered_grass_nor.webp",
+            "bodyBytes": 124990,
+            "transferBytes": 125290
+          },
+          {
+            "url": "/assets/tex/coast_sand_01_diff.webp",
+            "bodyBytes": 60168,
+            "transferBytes": 60468
+          },
+          {
+            "url": "/assets/tex/coast_sand_01_nor.webp",
+            "bodyBytes": 98120,
+            "transferBytes": 98420
+          },
+          {
+            "url": "/assets/tex/rock_face_03_diff.webp",
+            "bodyBytes": 48450,
+            "transferBytes": 48750
+          },
+          {
+            "url": "/assets/tex/rock_face_03_nor.webp",
+            "bodyBytes": 94678,
+            "transferBytes": 94978
+          },
+          {
+            "url": "/assets/tex/fabric_leather_02_nor.webp",
+            "bodyBytes": 20234,
+            "transferBytes": 20534
+          },
+          {
+            "url": "/assets/tex/fabric_leather_02_arm.webp",
+            "bodyBytes": 77512,
+            "transferBytes": 77812
+          },
+          {
+            "url": "/assets/tex/waternormals.webp",
+            "bodyBytes": 64330,
+            "transferBytes": 64630
+          },
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2",
+            "bodyBytes": 257012,
+            "transferBytes": 257312
+          },
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_arm-af6fb7b93a68122f.ktx2",
+            "bodyBytes": 260246,
+            "transferBytes": 260546
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_diff-46f967277a85b9e0.ktx2",
+            "bodyBytes": 215703,
+            "transferBytes": 216003
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_arm-2d560c2c8599a309.ktx2",
+            "bodyBytes": 136282,
+            "transferBytes": 136582
+          },
+          {
+            "url": "/assets/tex/ktx2/withered_grass_diff-08a113cee418a527.ktx2",
+            "bodyBytes": 97167,
+            "transferBytes": 97467
+          },
+          {
+            "url": "/data/baked/penteli-terrain-9306aecf0884161b.meshopt.gz",
+            "bodyBytes": 11653943,
+            "transferBytes": 11654243
+          },
+          {
+            "url": "/data/baked/penteli-roads-c04fdc9f6f803254.meshopt.gz",
+            "bodyBytes": 5419940,
+            "transferBytes": 5420240
+          },
+          {
+            "url": "/assets/codecs/basis/dc5e5d6a8e3db70a/basis_transcoder.js",
+            "bodyBytes": 14640,
+            "transferBytes": 14940
+          },
+          {
+            "url": "/assets/codecs/basis/dc5e5d6a8e3db70a/basis_transcoder.wasm",
+            "bodyBytes": 527333,
+            "transferBytes": 527633
+          },
+          {
+            "url": "/src/chunk-BT2AKZ3F.js",
+            "bodyBytes": 6032,
+            "transferBytes": 6332
+          },
+          {
+            "url": "/src/chunk-CW3J2WMB.js",
+            "bodyBytes": 2091,
+            "transferBytes": 2391
+          },
+          {
+            "url": "/src/chunk-5AOIJ6IO.js",
+            "bodyBytes": 794,
+            "transferBytes": 1094
+          },
+          {
+            "url": "/src/chunk-TE3D6VIG.js",
+            "bodyBytes": 1691,
+            "transferBytes": 1991
+          },
+          {
+            "url": "/assets/tex/ktx2/atlas-ceed28679352a112.ktx2",
+            "bodyBytes": 63090,
+            "transferBytes": 63390
+          },
+          {
+            "url": "/assets/audio/engines/mini-start.wav",
+            "bodyBytes": 126204,
+            "transferBytes": 126504
+          },
+          {
+            "url": "/assets/audio/engines/mini-idle.wav",
+            "bodyBytes": 184242,
+            "transferBytes": 184542
+          },
+          {
+            "url": "/assets/audio/engines/mini-mid.wav",
+            "bodyBytes": 183318,
+            "transferBytes": 183618
+          },
+          {
+            "url": "/assets/audio/engines/mini-low.wav",
+            "bodyBytes": 80056,
+            "transferBytes": 80356
+          },
+          {
+            "url": "/assets/audio/engines/mini-high.wav",
+            "bodyBytes": 38346,
+            "transferBytes": 38646
+          },
+          {
+            "url": "/src/ghost-lap.css",
+            "bodyBytes": 329,
+            "transferBytes": 629
+          },
+          {
+            "url": "/src/map-select.css",
+            "bodyBytes": 3923,
+            "transferBytes": 4223
+          }
+        ],
+        "render": {
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "perfClass": "high",
+          "lowGraphics": true,
+          "pixelRatio": 1,
+          "drawDistance": 2000,
+          "geometries": 349,
+          "textures": 82,
+          "renderScale": 1
+        }
+      },
+      "signs": {
+        "width": 1024,
+        "height": 768
+      }
+    },
+    {
+      "side": "before",
+      "id": "megara",
+      "round": 0,
+      "loadToRaceMs": 13158,
+      "peakHeapBytes": 114826637,
+      "errors": [],
+      "pendingScreens": false,
+      "metrics": {
+        "geometryBytes": 12578418,
+        "state": "race",
+        "assets": null,
+        "heapBytes": 88365234,
+        "requests": [
+          {
+            "url": "/before/src/ui/ui.css",
+            "bodyBytes": 11032,
+            "transferBytes": 11332
+          },
+          {
+            "url": "/before/style.css",
+            "bodyBytes": 5639,
+            "transferBytes": 5939
+          },
+          {
+            "url": "/before/src/multiplayer.css",
+            "bodyBytes": 3869,
+            "transferBytes": 4169
+          },
+          {
+            "url": "/before/src/menu.css",
+            "bodyBytes": 13397,
+            "transferBytes": 13697
+          },
+          {
+            "url": "/before/src/menu-backdrop.css",
+            "bodyBytes": 318,
+            "transferBytes": 618
+          },
+          {
+            "url": "/before/src/ui/headunit.css",
+            "bodyBytes": 2021,
+            "transferBytes": 2321
+          },
+          {
+            "url": "/before/src/ui/release.css",
+            "bodyBytes": 1820,
+            "transferBytes": 2120
+          },
+          {
+            "url": "/before/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/before/src/main-3YRFR3OE.js",
+            "bodyBytes": 278308,
+            "transferBytes": 278608
+          },
+          {
+            "url": "/before/src/ui/accounts.css",
+            "bodyBytes": 780,
+            "transferBytes": 1080
+          },
+          {
+            "url": "/before/assets/maps/attica.svg",
+            "bodyBytes": 54732,
+            "transferBytes": 55032
+          },
+          {
+            "url": "/before/src/chunk-FQV3IEG6.js",
+            "bodyBytes": 7854,
+            "transferBytes": 8154
+          },
+          {
+            "url": "/before/src/chunk-STAA4ZCR.js",
+            "bodyBytes": 2256,
+            "transferBytes": 2556
+          },
+          {
+            "url": "/before/src/chunk-EC4H47RW.js",
+            "bodyBytes": 1252,
+            "transferBytes": 1552
+          },
+          {
+            "url": "/before/src/chunk-MWFFRFAD.js",
+            "bodyBytes": 1829,
+            "transferBytes": 2129
+          },
+          {
+            "url": "/before/src/chunk-FZIOR3CY.js",
+            "bodyBytes": 24063,
+            "transferBytes": 24363
+          },
+          {
+            "url": "/before/src/chunk-347U7WIR.js",
+            "bodyBytes": 402,
+            "transferBytes": 702
+          },
+          {
+            "url": "/before/src/chunk-3JJ7MCGA.js",
+            "bodyBytes": 2197,
+            "transferBytes": 2497
+          },
+          {
+            "url": "/before/src/chunk-7PW3PRJM.js",
+            "bodyBytes": 17495,
+            "transferBytes": 17795
+          },
+          {
+            "url": "/before/src/chunk-OKMQTPPP.js",
+            "bodyBytes": 2956,
+            "transferBytes": 3256
+          },
+          {
+            "url": "/before/src/chunk-ZS2DHG2Z.js",
+            "bodyBytes": 4428,
+            "transferBytes": 4728
+          },
+          {
+            "url": "/before/src/chunk-FME47X7F.js",
+            "bodyBytes": 34605,
+            "transferBytes": 34905
+          },
+          {
+            "url": "/before/src/chunk-7KP4ETY3.js",
+            "bodyBytes": 814,
+            "transferBytes": 1114
+          },
+          {
+            "url": "/before/src/chunk-MIUZR7RV.js",
+            "bodyBytes": 361,
+            "transferBytes": 661
+          },
+          {
+            "url": "/before/src/chunk-7MSALDE3.js",
+            "bodyBytes": 594,
+            "transferBytes": 894
+          },
+          {
+            "url": "/before/src/chunk-7UTVUAKJ.js",
+            "bodyBytes": 826,
+            "transferBytes": 1126
+          },
+          {
+            "url": "/before/src/chunk-XFYCWMQM.js",
+            "bodyBytes": 114019,
+            "transferBytes": 114319
+          },
+          {
+            "url": "/before/src/chunk-BH5777OI.js",
+            "bodyBytes": 3742,
+            "transferBytes": 4042
+          },
+          {
+            "url": "/before/src/chunk-36TPW5C2.js",
+            "bodyBytes": 2209,
+            "transferBytes": 2509
+          },
+          {
+            "url": "/before/src/chunk-GN3RS22L.js",
+            "bodyBytes": 154927,
+            "transferBytes": 155227
+          },
+          {
+            "url": "/before/src/chunk-XOKIVDP5.js",
+            "bodyBytes": 2005,
+            "transferBytes": 2305
+          },
+          {
+            "url": "/before/src/chunk-N73I3IX4.js",
+            "bodyBytes": 190,
+            "transferBytes": 490
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/input.css",
+            "bodyBytes": 2234,
+            "transferBytes": 2534
+          },
+          {
+            "url": "/src/recovery-prompt.css",
+            "bodyBytes": 571,
+            "transferBytes": 871
+          },
+          {
+            "url": "/src/driving-feedback.css",
+            "bodyBytes": 936,
+            "transferBytes": 1236
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/music-settings.css",
+            "bodyBytes": 442,
+            "transferBytes": 742
+          },
+          {
+            "url": "/api/auth/config",
+            "bodyBytes": 22,
+            "transferBytes": 322
+          },
+          {
+            "url": "/before/src/chunk-ANLF453Z.js",
+            "bodyBytes": 102,
+            "transferBytes": 402
+          },
+          {
+            "url": "/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/src/ui/notifications.css",
+            "bodyBytes": 1624,
+            "transferBytes": 1924
+          },
+          {
+            "url": "/before/assets/maps/megara.svg",
+            "bodyBytes": 5854,
+            "transferBytes": 6154
+          },
+          {
+            "url": "/before/data/maps/megara/map.json",
+            "bodyBytes": 27283,
+            "transferBytes": 27583
+          },
+          {
+            "url": "/before/data/maps/megara/terrain.bin",
+            "bodyBytes": 390995,
+            "transferBytes": 391295
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_diff.webp",
+            "bodyBytes": 382402,
+            "transferBytes": 382702
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_nor.webp",
+            "bodyBytes": 452932,
+            "transferBytes": 453232
+          },
+          {
+            "url": "/before/assets/tex/asphalt_02_arm.webp",
+            "bodyBytes": 229582,
+            "transferBytes": 229882
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_diff.webp",
+            "bodyBytes": 112682,
+            "transferBytes": 112982
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_nor.webp",
+            "bodyBytes": 136910,
+            "transferBytes": 137210
+          },
+          {
+            "url": "/before/assets/tex/floor_pavement_arm.webp",
+            "bodyBytes": 42276,
+            "transferBytes": 42576
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_diff.webp",
+            "bodyBytes": 9180,
+            "transferBytes": 9480
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_nor.webp",
+            "bodyBytes": 4252,
+            "transferBytes": 4552
+          },
+          {
+            "url": "/before/assets/tex/concrete_floor_worn_001_arm.webp",
+            "bodyBytes": 14518,
+            "transferBytes": 14818
+          },
+          {
+            "url": "/before/assets/tex/dry_ground_01_diff.webp",
+            "bodyBytes": 63912,
+            "transferBytes": 64212
+          },
+          {
+            "url": "/before/assets/tex/dry_ground_01_nor.webp",
+            "bodyBytes": 52750,
+            "transferBytes": 53050
+          },
+          {
+            "url": "/before/assets/tex/withered_grass_diff.webp",
+            "bodyBytes": 82138,
+            "transferBytes": 82438
+          },
+          {
+            "url": "/before/assets/tex/withered_grass_nor.webp",
+            "bodyBytes": 124990,
+            "transferBytes": 125290
+          },
+          {
+            "url": "/before/assets/tex/coast_sand_01_diff.webp",
+            "bodyBytes": 60168,
+            "transferBytes": 60468
+          },
+          {
+            "url": "/before/assets/tex/coast_sand_01_nor.webp",
+            "bodyBytes": 98120,
+            "transferBytes": 98420
+          },
+          {
+            "url": "/before/assets/tex/rock_face_03_diff.webp",
+            "bodyBytes": 48450,
+            "transferBytes": 48750
+          },
+          {
+            "url": "/before/assets/tex/rock_face_03_nor.webp",
+            "bodyBytes": 94678,
+            "transferBytes": 94978
+          },
+          {
+            "url": "/before/assets/tex/fabric_leather_02_nor.webp",
+            "bodyBytes": 20234,
+            "transferBytes": 20534
+          },
+          {
+            "url": "/before/assets/tex/fabric_leather_02_arm.webp",
+            "bodyBytes": 77512,
+            "transferBytes": 77812
+          },
+          {
+            "url": "/before/assets/tex/waternormals.webp",
+            "bodyBytes": 64330,
+            "transferBytes": 64630
+          },
+          {
+            "url": "/before/data/baked/megara-terrain-176c4bbc273f3e12.bin.gz",
+            "bodyBytes": 1083291,
+            "transferBytes": 1083591
+          },
+          {
+            "url": "/before/data/baked/megara-roads-eb593c7fd1d9786f.bin.gz",
+            "bodyBytes": 301999,
+            "transferBytes": 302299
+          },
+          {
+            "url": "/before/src/chunk-BV5GTC4I.js",
+            "bodyBytes": 8715,
+            "transferBytes": 9015
+          },
+          {
+            "url": "/assets/brand-badges/atlas.svg",
+            "bodyBytes": 21213,
+            "transferBytes": 21513
+          },
+          {
+            "url": "/assets/audio/engines/mini-start.wav",
+            "bodyBytes": 126204,
+            "transferBytes": 126504
+          },
+          {
+            "url": "/assets/audio/engines/mini-idle.wav",
+            "bodyBytes": 184242,
+            "transferBytes": 184542
+          },
+          {
+            "url": "/assets/audio/engines/mini-low.wav",
+            "bodyBytes": 80056,
+            "transferBytes": 80356
+          },
+          {
+            "url": "/assets/audio/engines/mini-mid.wav",
+            "bodyBytes": 183318,
+            "transferBytes": 183618
+          },
+          {
+            "url": "/assets/audio/engines/mini-high.wav",
+            "bodyBytes": 38346,
+            "transferBytes": 38646
+          },
+          {
+            "url": "/src/ghost-lap.css",
+            "bodyBytes": 329,
+            "transferBytes": 629
+          },
+          {
+            "url": "/src/map-select.css",
+            "bodyBytes": 3923,
+            "transferBytes": 4223
+          }
+        ],
+        "render": {
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "perfClass": "high",
+          "lowGraphics": true,
+          "pixelRatio": 1,
+          "drawDistance": 2000,
+          "geometries": 207,
+          "textures": 41,
+          "renderScale": 1
+        }
+      },
+      "signs": null
+    },
+    {
+      "side": "after",
+      "id": "megara",
+      "round": 0,
+      "loadToRaceMs": 7646,
+      "peakHeapBytes": 106531516,
+      "errors": [],
+      "pendingScreens": false,
+      "metrics": {
+        "geometryBytes": 12578418,
+        "state": "race",
+        "assets": {
+          "textures": [
+            {
+              "url": "./assets/tex/asphalt_02_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 142.5,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/asphalt_02_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 142.29999995231628,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/asphalt_02_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 272.39999997615814,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/floor_pavement_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 272.3000000715256,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/floor_pavement_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 272.10000002384186,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/floor_pavement_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 272.2000000476837,
+              "gpuBytes": 5592405
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 297.5,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 297.5,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/concrete_floor_worn_001_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 304.7999999523163,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/dry_ground_01_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 307.2999999523163,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/withered_grass_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 314.39999997615814,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/dry_ground_01_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 333.7000000476837,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/withered_grass_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 346.2000000476837,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/coast_sand_01_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 359.60000002384186,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/coast_sand_01_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 366,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/rock_face_03_diff.webp",
+              "codec": "image",
+              "decodeWallMs": 370.89999997615814,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/fabric_leather_02_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 372.6999999284744,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/rock_face_03_nor.webp",
+              "codec": "image",
+              "decodeWallMs": 465.7999999523163,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/fabric_leather_02_arm.webp",
+              "codec": "image",
+              "decodeWallMs": 468.1999999284744,
+              "gpuBytes": 1398101
+            },
+            {
+              "url": "./assets/tex/waternormals.webp",
+              "codec": "image",
+              "decodeWallMs": 468.10000002384186,
+              "gpuBytes": 1398101
+            }
+          ],
+          "maps": {
+            "megara": {
+              "started": 3439.6999999284744,
+              "downloadBytes": 1173346,
+              "decodeWallMs": 139.5,
+              "inflateFetchWallMs": 63.300000071525574,
+              "bufferDecodeWallMs": 76.19999992847443,
+              "peakHeapBytes": 110384468,
+              "codec": "meshopt",
+              "loadMs": 257.5,
+              "geometryBytes": 5101938,
+              "firstRaceFrameMs": 7471.700000047684,
+              "gpu": {
+                "geometryBytes": 12578418,
+                "textureBytes": 80284345,
+                "gpuBytes": 92862763,
+                "note": "Scene buffer capacity; visibility-dependent residency may be lower. Excludes render targets, driver overhead and shader-uniform-only textures"
+              }
+            }
+          },
+          "textureLibraryReadyMs": 468.10000002384186,
+          "textureWaitMs": 0,
+          "textureUploadMs": 398.8000000715256,
+          "compileSceneMs": 261.89999997615814
+        },
+        "heapBytes": 89452217,
+        "requests": [
+          {
+            "url": "/src/ui/ui.css",
+            "bodyBytes": 11032,
+            "transferBytes": 11332
+          },
+          {
+            "url": "/style.css",
+            "bodyBytes": 5639,
+            "transferBytes": 5939
+          },
+          {
+            "url": "/src/multiplayer.css",
+            "bodyBytes": 3869,
+            "transferBytes": 4169
+          },
+          {
+            "url": "/src/menu.css",
+            "bodyBytes": 13397,
+            "transferBytes": 13697
+          },
+          {
+            "url": "/src/menu-backdrop.css",
+            "bodyBytes": 318,
+            "transferBytes": 618
+          },
+          {
+            "url": "/src/ui/headunit.css",
+            "bodyBytes": 2021,
+            "transferBytes": 2321
+          },
+          {
+            "url": "/src/ui/release.css",
+            "bodyBytes": 1820,
+            "transferBytes": 2120
+          },
+          {
+            "url": "/assets/icon.svg",
+            "bodyBytes": 280,
+            "transferBytes": 580
+          },
+          {
+            "url": "/src/main-7FBL7PPS.js",
+            "bodyBytes": 278342,
+            "transferBytes": 278642
+          },
+          {
+            "url": "/src/ui/accounts.css",
+            "bodyBytes": 780,
+            "transferBytes": 1080
+          },
+          {
+            "url": "/assets/maps/attica.svg",
+            "bodyBytes": 54732,
+            "transferBytes": 55032
+          },
+          {
+            "url": "/src/chunk-STAA4ZCR.js",
+            "bodyBytes": 2256,
+            "transferBytes": 2556
+          },
+          {
+            "url": "/src/chunk-7MSALDE3.js",
+            "bodyBytes": 594,
+            "transferBytes": 894
+          },
+          {
+            "url": "/src/chunk-V7JITFXZ.js",
+            "bodyBytes": 7861,
+            "transferBytes": 8161
+          },
+          {
+            "url": "/src/chunk-TU5EQJWR.js",
+            "bodyBytes": 823,
+            "transferBytes": 1123
+          },
+          {
+            "url": "/src/chunk-EC4H47RW.js",
+            "bodyBytes": 1252,
+            "transferBytes": 1552
+          },
+          {
+            "url": "/src/chunk-E3T6UYQN.js",
+            "bodyBytes": 1837,
+            "transferBytes": 2137
+          },
+          {
+            "url": "/src/chunk-5CXBWKFV.js",
+            "bodyBytes": 24098,
+            "transferBytes": 24398
+          },
+          {
+            "url": "/src/chunk-347U7WIR.js",
+            "bodyBytes": 402,
+            "transferBytes": 702
+          },
+          {
+            "url": "/src/chunk-3JJ7MCGA.js",
+            "bodyBytes": 2197,
+            "transferBytes": 2497
+          },
+          {
+            "url": "/src/chunk-OKMQTPPP.js",
+            "bodyBytes": 2956,
+            "transferBytes": 3256
+          },
+          {
+            "url": "/src/chunk-7PW3PRJM.js",
+            "bodyBytes": 17495,
+            "transferBytes": 17795
+          },
+          {
+            "url": "/src/chunk-ZZ7KKHL7.js",
+            "bodyBytes": 4439,
+            "transferBytes": 4739
+          },
+          {
+            "url": "/src/chunk-H3BD7HRS.js",
+            "bodyBytes": 35635,
+            "transferBytes": 35935
+          },
+          {
+            "url": "/src/chunk-DSWWAANS.js",
+            "bodyBytes": 114149,
+            "transferBytes": 114449
+          },
+          {
+            "url": "/src/chunk-EBZRIIQ3.js",
+            "bodyBytes": 3742,
+            "transferBytes": 4042
+          },
+          {
+            "url": "/src/chunk-FPLAEXN6.js",
+            "bodyBytes": 2204,
+            "transferBytes": 2504
+          },
+          {
+            "url": "/src/chunk-G4TFXZWN.js",
+            "bodyBytes": 21655,
+            "transferBytes": 21955
+          },
+          {
+            "url": "/src/chunk-FF2MUEZW.js",
+            "bodyBytes": 849,
+            "transferBytes": 1149
+          },
+          {
+            "url": "/src/chunk-XOKIVDP5.js",
+            "bodyBytes": 2005,
+            "transferBytes": 2305
+          },
+          {
+            "url": "/src/chunk-MIUZR7RV.js",
+            "bodyBytes": 361,
+            "transferBytes": 661
+          },
+          {
+            "url": "/src/chunk-N73I3IX4.js",
+            "bodyBytes": 190,
+            "transferBytes": 490
+          },
+          {
+            "url": "/src/chunk-MDVVCAN5.js",
+            "bodyBytes": 138671,
+            "transferBytes": 138971
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/input.css",
+            "bodyBytes": 2234,
+            "transferBytes": 2534
+          },
+          {
+            "url": "/src/recovery-prompt.css",
+            "bodyBytes": 571,
+            "transferBytes": 871
+          },
+          {
+            "url": "/src/driving-feedback.css",
+            "bodyBytes": 936,
+            "transferBytes": 1236
+          },
+          {
+            "url": "/assets/icons/sprite.svg",
+            "bodyBytes": 11595,
+            "transferBytes": 11895
+          },
+          {
+            "url": "/src/music-settings.css",
+            "bodyBytes": 442,
+            "transferBytes": 742
+          },
+          {
+            "url": "/api/auth/config",
+            "bodyBytes": 22,
+            "transferBytes": 322
+          },
+          {
+            "url": "/src/chunk-ANLF453Z.js",
+            "bodyBytes": 102,
+            "transferBytes": 402
+          },
+          {
+            "url": "/src/ui/notifications.css",
+            "bodyBytes": 1624,
+            "transferBytes": 1924
+          },
+          {
+            "url": "/assets/maps/megara.svg",
+            "bodyBytes": 5854,
+            "transferBytes": 6154
+          },
+          {
+            "url": "/data/maps/megara/map.json",
+            "bodyBytes": 27283,
+            "transferBytes": 27583
+          },
+          {
+            "url": "/data/maps/megara/terrain.bin",
+            "bodyBytes": 390995,
+            "transferBytes": 391295
+          },
+          {
+            "url": "/assets/tex/asphalt_02_diff.webp",
+            "bodyBytes": 382402,
+            "transferBytes": 382702
+          },
+          {
+            "url": "/assets/tex/asphalt_02_nor.webp",
+            "bodyBytes": 452932,
+            "transferBytes": 453232
+          },
+          {
+            "url": "/assets/tex/asphalt_02_arm.webp",
+            "bodyBytes": 229582,
+            "transferBytes": 229882
+          },
+          {
+            "url": "/assets/tex/floor_pavement_diff.webp",
+            "bodyBytes": 112682,
+            "transferBytes": 112982
+          },
+          {
+            "url": "/assets/tex/floor_pavement_nor.webp",
+            "bodyBytes": 136910,
+            "transferBytes": 137210
+          },
+          {
+            "url": "/assets/tex/floor_pavement_arm.webp",
+            "bodyBytes": 42276,
+            "transferBytes": 42576
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+            "bodyBytes": 9180,
+            "transferBytes": 9480
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+            "bodyBytes": 4252,
+            "transferBytes": 4552
+          },
+          {
+            "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+            "bodyBytes": 14518,
+            "transferBytes": 14818
+          },
+          {
+            "url": "/assets/tex/dry_ground_01_diff.webp",
+            "bodyBytes": 63912,
+            "transferBytes": 64212
+          },
+          {
+            "url": "/assets/tex/withered_grass_diff.webp",
+            "bodyBytes": 82138,
+            "transferBytes": 82438
+          },
+          {
+            "url": "/assets/tex/dry_ground_01_nor.webp",
+            "bodyBytes": 52750,
+            "transferBytes": 53050
+          },
+          {
+            "url": "/assets/tex/withered_grass_nor.webp",
+            "bodyBytes": 124990,
+            "transferBytes": 125290
+          },
+          {
+            "url": "/assets/tex/coast_sand_01_diff.webp",
+            "bodyBytes": 60168,
+            "transferBytes": 60468
+          },
+          {
+            "url": "/assets/tex/coast_sand_01_nor.webp",
+            "bodyBytes": 98120,
+            "transferBytes": 98420
+          },
+          {
+            "url": "/assets/tex/rock_face_03_diff.webp",
+            "bodyBytes": 48450,
+            "transferBytes": 48750
+          },
+          {
+            "url": "/assets/tex/rock_face_03_nor.webp",
+            "bodyBytes": 94678,
+            "transferBytes": 94978
+          },
+          {
+            "url": "/assets/tex/fabric_leather_02_nor.webp",
+            "bodyBytes": 20234,
+            "transferBytes": 20534
+          },
+          {
+            "url": "/assets/tex/fabric_leather_02_arm.webp",
+            "bodyBytes": 77512,
+            "transferBytes": 77812
+          },
+          {
+            "url": "/assets/tex/waternormals.webp",
+            "bodyBytes": 64330,
+            "transferBytes": 64630
+          },
+          {
+            "url": "/data/baked/megara-terrain-2206fe207e5678e6.meshopt.gz",
+            "bodyBytes": 871142,
+            "transferBytes": 871442
+          },
+          {
+            "url": "/data/baked/megara-roads-e4e2b128449f12c6.meshopt.gz",
+            "bodyBytes": 302204,
+            "transferBytes": 302504
+          },
+          {
+            "url": "/src/chunk-BT2AKZ3F.js",
+            "bodyBytes": 6032,
+            "transferBytes": 6332
+          },
+          {
+            "url": "/src/chunk-POQDDAKQ.js",
+            "bodyBytes": 8731,
+            "transferBytes": 9031
+          },
+          {
+            "url": "/assets/brand-badges/atlas.svg",
+            "bodyBytes": 21213,
+            "transferBytes": 21513
+          },
+          {
+            "url": "/assets/audio/engines/mini-start.wav",
+            "bodyBytes": 126204,
+            "transferBytes": 126504
+          },
+          {
+            "url": "/assets/audio/engines/mini-idle.wav",
+            "bodyBytes": 184242,
+            "transferBytes": 184542
+          },
+          {
+            "url": "/assets/audio/engines/mini-low.wav",
+            "bodyBytes": 80056,
+            "transferBytes": 80356
+          },
+          {
+            "url": "/assets/audio/engines/mini-mid.wav",
+            "bodyBytes": 183318,
+            "transferBytes": 183618
+          },
+          {
+            "url": "/assets/audio/engines/mini-high.wav",
+            "bodyBytes": 38346,
+            "transferBytes": 38646
+          },
+          {
+            "url": "/src/ghost-lap.css",
+            "bodyBytes": 329,
+            "transferBytes": 629
+          },
+          {
+            "url": "/src/map-select.css",
+            "bodyBytes": 3923,
+            "transferBytes": 4223
+          }
+        ],
+        "render": {
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "perfClass": "high",
+          "lowGraphics": true,
+          "pixelRatio": 1,
+          "drawDistance": 2000,
+          "geometries": 207,
+          "textures": 41,
+          "renderScale": 1
+        }
+      },
+      "signs": null
+    }
+  ]
+}

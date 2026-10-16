@@ -1,0 +1,65 @@
+[
+  {
+    "id": "riviera",
+    "before": {
+      "bytes": 35820490,
+      "decodeMs": 871.4395120000027,
+      "decodeCpuMs": 1064.965,
+      "decodedBytes": 143011262,
+      "sampledPeakHeapBytes": 22057928,
+      "sampledPeakArrayBufferBytes": 723254947,
+      "heapAfterDecodeBytes": 12722400
+    },
+    "after": {
+      "bytes": 33030820,
+      "decodeMs": 884.0809020000015,
+      "decodeCpuMs": 1120.795,
+      "decodedBytes": 143011262,
+      "sampledPeakHeapBytes": 22408848,
+      "sampledPeakArrayBufferBytes": 742682684,
+      "heapAfterDecodeBytes": 12798064
+    }
+  },
+  {
+    "id": "penteli",
+    "before": {
+      "bytes": 22843383,
+      "decodeMs": 1156.4622679999957,
+      "decodeCpuMs": 1046.494,
+      "decodedBytes": 93299649,
+      "sampledPeakHeapBytes": 26402552,
+      "sampledPeakArrayBufferBytes": 606592493,
+      "heapAfterDecodeBytes": 12078096
+    },
+    "after": {
+      "bytes": 17005153,
+      "decodeMs": 520.0286960000012,
+      "decodeCpuMs": 588.735,
+      "decodedBytes": 93299649,
+      "sampledPeakHeapBytes": 26459256,
+      "sampledPeakArrayBufferBytes": 522608256,
+      "heapAfterDecodeBytes": 12188528
+    }
+  },
+  {
+    "id": "megara",
+    "before": {
+      "bytes": 1385290,
+      "decodeMs": 32.29720200000156,
+      "decodeCpuMs": 37.835,
+      "decodedBytes": 5101938,
+      "sampledPeakHeapBytes": 12342872,
+      "sampledPeakArrayBufferBytes": 126632527,
+      "heapAfterDecodeBytes": 11590672
+    },
+    "after": {
+      "bytes": 1147465,
+      "decodeMs": 16.66599000000133,
+      "decodeCpuMs": 21.783,
+      "decodedBytes": 5101938,
+      "sampledPeakHeapBytes": 12385304,
+      "sampledPeakArrayBufferBytes": 34308615,
+      "heapAfterDecodeBytes": 11563368
+    }
+  }
+]

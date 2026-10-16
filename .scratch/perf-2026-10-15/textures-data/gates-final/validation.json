@@ -1,0 +1,13 @@
+{
+  "testedCodeSha": "2122bf600a10c59e6e4f116e994a4a04d40d5fd5",
+  "parent": "cd0e72a4e800a2dc7c4754ab8c9765ed98bd46fb",
+  "gates": {
+    "npm": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  },
+  "largestAssetBytes": 19690948
+}

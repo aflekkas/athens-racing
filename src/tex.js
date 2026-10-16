@@ -2,6 +2,8 @@
 // plus the GLSL helpers every surface shader shares: derivative-based normal mapping, stochastic
 // (anti-tiling) sampling, and value noise.
 import * as THREE from 'three';
+import { loadCompressedTexture } from './compressed-textures.js';
+import { assetMetrics, textureCodecsEnabled } from './asset-metrics.js';
 
 const BASE = './assets/tex/';
 const LIST = {
@@ -16,9 +18,13 @@ const LIST = {
 };
 const SINGLE = { water: 'waternormals' };
 
+/** Shared with the texture encoder so removed library entries produce no KTX2 assets. */
+export function textureSources() {
+  return [...Object.values(LIST).flatMap(([file, maps]) => maps.split(' ').map(m => `assets/tex/${file}_${m}.webp`)), ...Object.values(SINGLE).map(file => `assets/tex/${file}.webp`)];
+}
+
 export const TX = {};
-// Anisotropic filtering level for subsequently loaded textures (lower presets use less: cheaper sampling on
-// road surfaces at grazing angles). Applied live to already-loaded textures via setAnisotropy().
+// Shared anisotropic filtering level, applied to existing textures via setAnisotropy().
 let ANISO = 8;
 
 // Texture objects exist immediately (materials can reference them while the world is being built); the images
@@ -29,14 +35,16 @@ function load(key, url, srgb) {
   t.anisotropy = ANISO;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   return new Promise((res) => {
+    const started = performance.now();
     const img = new Image();
     img.decoding = 'async';
-    img.onload = () => { (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(() => { t.image = img; t.needsUpdate = true; res(t); }); };
+    img.onload = () => { (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(() => { t.image = img; t.needsUpdate = true; assetMetrics.textures.push({ url, codec: 'image', decodeWallMs: performance.now() - started, gpuBytes: Math.round(img.naturalWidth * img.naturalHeight * 4 * 4 / 3) }); res(t); }); };
     img.onerror = () => { // keep running without the file: a flat 1x1 stand-in
       const c = document.createElement('canvas'); c.width = c.height = 1; const g = c.getContext('2d');
       g.fillStyle = srgb ? '#a0a0a0' : '#8080ff'; g.fillRect(0, 0, 1, 1); t.image = c; t.needsUpdate = true; res(t);
     };
-    img.src = url;
+    if (!textureCodecsEnabled()) img.src = url;
+    else void loadCompressedTexture(t, url).then(loaded => { if (loaded) res(t); else img.src = url; });
   });
 }
 
@@ -47,11 +55,12 @@ export function loadTextures() {
   const jobs = [];
   for (const [key, [file, maps]] of Object.entries(LIST)) for (const m of maps.split(' ')) jobs.push(load(key + '_' + m, `${BASE}${file}_${m}.webp`, m === 'diff'));
   for (const [key, file] of Object.entries(SINGLE)) jobs.push(load(key, `${BASE}${file}.webp`, key !== 'water'));
-  return (pending = Promise.all(jobs));
+  const started = performance.now();
+  return (pending = Promise.all(jobs).then(textures => { assetMetrics.textureLibraryReadyMs = performance.now() - started; return textures; }));
 }
 /** upload everything to the GPU before the first frame */
-export function uploadTextures(renderer) { for (const t of Object.values(TX)) if (t.image) renderer.initTexture(t); }
-/** Live anisotropy level (1..8): cheap texture filtering on the light presets. High keeps 8. */
+export function uploadTextures(renderer) { for (const t of Object.values(TX)) if (t.image) { const start = performance.now(); renderer.initTexture(t); assetMetrics.textureUploadMs = (assetMetrics.textureUploadMs || 0) + performance.now() - start; } }
+/** Shared anisotropy level (1..8). The fixed graphics look uses 8. */
 export function setAnisotropy(n) {
   ANISO = Math.max(1, Math.min(8, Math.round(n) || 1));
   for (const t of Object.values(TX)) {

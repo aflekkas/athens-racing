@@ -1,0 +1,121 @@
+{
+  "baselineSha": "71e05c36f909ac8c455f103883f583428a9c4962",
+  "implementationSha": "73d7747173a14b22a3cd75b3e418eb46793f9e65",
+  "order": [
+    {
+      "round": 0,
+      "side": "before"
+    },
+    {
+      "round": 0,
+      "side": "after"
+    },
+    {
+      "round": 1,
+      "side": "after"
+    },
+    {
+      "round": 1,
+      "side": "before"
+    },
+    {
+      "round": 2,
+      "side": "before"
+    },
+    {
+      "round": 2,
+      "side": "after"
+    },
+    {
+      "round": 3,
+      "side": "after"
+    },
+    {
+      "round": 3,
+      "side": "before"
+    },
+    {
+      "round": 4,
+      "side": "before"
+    },
+    {
+      "round": 4,
+      "side": "after"
+    }
+  ],
+  "beforeMedianMs": 13594,
+  "afterMedianMs": 12696,
+  "beforeMadMs": 1037,
+  "afterMadMs": 320,
+  "pairedDeltaMedianMs": -2073,
+  "beforeMedianHeap": 341677864,
+  "afterMedianHeap": 285709342,
+  "pairs": [
+    {
+      "round": 0,
+      "beforeMs": 17924,
+      "afterMs": 12852,
+      "deltaMs": -5072,
+      "beforeBytes": 28224721,
+      "afterBytes": 23192201,
+      "textureWaitMs": 0.10000002384185791,
+      "textureReadyMs": 4978.699999928474,
+      "compileSceneMs": 243.39999997615814,
+      "inflateFetchWallMs": 8282.099999904633,
+      "bufferDecodeWallMs": 338.10000014305115
+    },
+    {
+      "round": 1,
+      "beforeMs": 12800,
+      "afterMs": 14879,
+      "deltaMs": 2079,
+      "beforeBytes": 28224721,
+      "afterBytes": 23192201,
+      "textureWaitMs": 0.10000002384185791,
+      "textureReadyMs": 4492.900000095367,
+      "compileSceneMs": 348.39999997615814,
+      "inflateFetchWallMs": 7438.399999976158,
+      "bufferDecodeWallMs": 386.7000000476837
+    },
+    {
+      "round": 2,
+      "beforeMs": 12557,
+      "afterMs": 12696,
+      "deltaMs": 139,
+      "beforeBytes": 28224721,
+      "afterBytes": 23192201,
+      "textureWaitMs": 0.10000002384185791,
+      "textureReadyMs": 4671.800000071526,
+      "compileSceneMs": 285.7999999523163,
+      "inflateFetchWallMs": 7749.700000047684,
+      "bufferDecodeWallMs": 290.6999999284744
+    },
+    {
+      "round": 3,
+      "beforeMs": 15666,
+      "afterMs": 12376,
+      "deltaMs": -3290,
+      "beforeBytes": 28224721,
+      "afterBytes": 23192201,
+      "textureWaitMs": 0,
+      "textureReadyMs": 4583.5,
+      "compileSceneMs": 230.79999995231628,
+      "inflateFetchWallMs": 7751,
+      "bufferDecodeWallMs": 301
+    },
+    {
+      "round": 4,
+      "beforeMs": 13594,
+      "afterMs": 11521,
+      "deltaMs": -2073,
+      "beforeBytes": 28224721,
+      "afterBytes": 23192201,
+      "textureWaitMs": 0.10000002384185791,
+      "textureReadyMs": 3776.2999999523163,
+      "compileSceneMs": 238,
+      "inflateFetchWallMs": 5980,
+      "bufferDecodeWallMs": 302.5
+    }
+  ],
+  "medianChangePercent": -6.605855524496096
+}

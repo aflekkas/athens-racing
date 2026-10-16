@@ -104,3 +104,35 @@ async function wheelFixture(root, out) {
   await writeFile(resolve(root, 'src/ui/phone-wheel-controller.js'), 'export const wheel = true;');
   await writeFile(resolve(out, 'src/ui/phone-wheel.html'), '<script type="module" src="/src/ui/phone-wheel-controller.js"></script>');
 }
+
+test('production meshopt worker boots and decodes after Function.toString serialization', async () => {
+  const { createContext, runInContext } = await import('node:vm');
+  const { MeshoptEncoder } = await import('./vendor/meshopt_encoder.mjs');
+  const root = await mkdtemp(resolve(tmpdir(), 'asr-codec-bundle-')), out = resolve(root,'.deploy/assets');
+  const oldWorker = globalThis.Worker, oldURL = URL.createObjectURL;
+  let blob;
+  try {
+    await mkdir(resolve(root,'src'),{recursive:true});await mkdir(resolve(out,'src'),{recursive:true});
+    await writeFile(resolve(root,'package.json'),'{"type":"module"}');
+    const decoder = new URL('../node_modules/three/examples/jsm/libs/meshopt_decoder.module.js',import.meta.url).pathname;
+    await writeFile(resolve(root,'src/main.js'),`export {MeshoptDecoder} from ${JSON.stringify(decoder)};`);
+    await writeFile(resolve(out,'index.html'),'<script type="module" src="./src/main.js"></script>');
+    await wheelFixture(root,out);
+    const meta=await bundleBrowser(root,out), output=Object.entries(meta.outputs).find(([,v])=>v.entryPoint==='src/main.js')[0];
+    const main=await import(pathToFileURL(resolve(root,output)));await main.MeshoptDecoder.ready;
+    globalThis.Worker=class { postMessage(){} };
+    URL.createObjectURL=value=>{blob=value;return oldURL(value);};
+    main.MeshoptDecoder.useWorkers(1);
+    assert.ok(blob);
+    let finish;
+    const response=new Promise(resolve=>{finish=resolve;});
+    const context=createContext({self:{postMessage:finish}});
+    runInContext(await blob.text(),context);await context.ready;
+    assert.equal(typeof context.self.onmessage,'function');
+    await MeshoptEncoder.ready;
+    const source=new Uint8Array(new Float32Array([1,2,3,4,5,6,7,8,9]).buffer),encoded=MeshoptEncoder.encodeVertexBuffer(source,3,12);
+    context.self.onmessage({data:{id:1,count:3,size:12,source:encoded,mode:'meshopt_decodeVertexBuffer'}});
+    const decoded=await response;
+    assert.equal(decoded.action,'resolve');assert.deepEqual([...decoded.value],[...source]);
+  } finally { globalThis.Worker=oldWorker;URL.createObjectURL=oldURL;await rm(root,{recursive:true,force:true}); }
+});
