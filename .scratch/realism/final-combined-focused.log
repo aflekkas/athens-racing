@@ -1,0 +1,185 @@
+TAP version 13
+# Subtest: baked block shading changes only existing colours, keeps roof bright and bases darker
+ok 1 - baked block shading changes only existing colours, keeps roof bright and bases darker
+  ---
+  duration_ms: 6.515341
+  type: 'test'
+  ...
+# Subtest: tile bakes do not recolour earlier blocks
+ok 2 - tile bakes do not recolour earlier blocks
+  ---
+  duration_ms: 0.213197
+  type: 'test'
+  ...
+# Subtest: realism helper cannot create real-time shadow, AO, reflection or post passes
+ok 3 - realism helper cannot create real-time shadow, AO, reflection or post passes
+  ---
+  duration_ms: 0.809417
+  type: 'test'
+  ...
+# Subtest: every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+ok 4 - every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+  ---
+  duration_ms: 9582.590268
+  type: 'test'
+  ...
+# Subtest: ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+ok 5 - ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+  ---
+  duration_ms: 2.650199
+  type: 'test'
+  ...
+# Subtest: all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+ok 6 - all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+  ---
+  duration_ms: 2655.359762
+  type: 'test'
+  ...
+# Subtest: rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+ok 7 - rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+  ---
+  duration_ms: 80.007124
+  type: 'test'
+  ...
+# Gantry clearance: 13510 real-cockpit/map/event/slot checks; legacy MINI obstruction detected.
+# Subtest: every map, event spawn and eight grid slots keep gantry legs outside the near cockpit view
+ok 8 - every map, event spawn and eight grid slots keep gantry legs outside the near cockpit view
+  ---
+  duration_ms: 5770.956795
+  type: 'test'
+  ...
+# Subtest: live spawn and gantry builders use the guarded helpers
+ok 9 - live spawn and gantry builders use the guarded helpers
+  ---
+  duration_ms: 3.593076
+  type: 'test'
+  ...
+# Subtest: one graphics look: no shadow, post, AO, bloom or reflection pass is enabled in the fixed config
+ok 10 - one graphics look: no shadow, post, AO, bloom or reflection pass is enabled in the fixed config
+  ---
+  duration_ms: 2.871031
+  type: 'test'
+  ...
+# Subtest: no graphics presets or lighting / effects levels in settings, the renderer config or the menus
+ok 11 - no graphics presets or lighting / effects levels in settings, the renderer config or the menus
+  ---
+  duration_ms: 6.925125
+  type: 'test'
+  ...
+# Subtest: the renderer never turns on shadows, the car probe, sea reflections or a post pass beyond tone mapping
+ok 12 - the renderer never turns on shadows, the car probe, sea reflections or a post pass beyond tone mapping
+  ---
+  duration_ms: 4.931239
+  type: 'test'
+  ...
+# Subtest: the chase / third-person camera renders no mirror and pays for no mirror pass
+ok 13 - the chase / third-person camera renders no mirror and pays for no mirror pass
+  ---
+  duration_ms: 3.226122
+  type: 'test'
+  ...
+# Subtest: every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+ok 14 - every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+  ---
+  duration_ms: 8732.063365
+  type: 'test'
+  ...
+# Subtest: rain is two texture layers and spray stays bounded at two cards per nine cars
+ok 15 - rain is two texture layers and spray stays bounded at two cards per nine cars
+  ---
+  duration_ms: 36.130919
+  type: 'test'
+  ...
+# Subtest: water splash has two quads, fades and supports the multiplayer reset contract
+ok 16 - water splash has two quads, fades and supports the multiplayer reset contract
+  ---
+  duration_ms: 1.439522
+  type: 'test'
+  ...
+# Subtest: rain overlays cannot add light, shadow, reflection, post or AO passes
+ok 17 - rain overlays cannot add light, shadow, reflection, post or AO passes
+  ---
+  duration_ms: 2.169804
+  type: 'test'
+  ...
+# Subtest: versions are YYYY.MM.DD.N: the date plus a counter for that day
+ok 18 - versions are YYYY.MM.DD.N: the date plus a counter for that day
+  ---
+  duration_ms: 6.329886
+  type: 'test'
+  ...
+# Subtest: versions order by date, then by the counter as a number
+ok 19 - versions order by date, then by the counter as a number
+  ---
+  duration_ms: 0.454527
+  type: 'test'
+  ...
+# Subtest: labels and dates read the same in every locale
+ok 20 - labels and dates read the same in every locale
+  ---
+  duration_ms: 0.245038
+  type: 'test'
+  ...
+# Subtest: parseChangelog reads sections newest first, ignoring comments and prose
+ok 21 - parseChangelog reads sections newest first, ignoring comments and prose
+  ---
+  duration_ms: 1.888489
+  type: 'test'
+  ...
+# Subtest: parseChangelog fails the build on mistakes instead of dropping notes
+ok 22 - parseChangelog fails the build on mistakes instead of dropping notes
+  ---
+  duration_ms: 0.884398
+  type: 'test'
+  ...
+# Subtest: the real CHANGELOG.md is valid, newest first, and written for players
+ok 23 - the real CHANGELOG.md is valid, newest first, and written for players
+  ---
+  duration_ms: 2.054959
+  type: 'test'
+  ...
+# Subtest: hasPriorPlay ignores what the game writes at startup and sees real play data
+ok 24 - hasPriorPlay ignores what the game writes at startup and sees real play data
+  ---
+  duration_ms: 2.49039
+  type: 'test'
+  ...
+# Subtest: seen version round-trips and ignores junk
+ok 25 - seen version round-trips and ignores junk
+  ---
+  duration_ms: 0.309757
+  type: 'test'
+  ...
+# Subtest: whatsNewDecision: show once per version, never in a race, never for a brand-new player
+ok 26 - whatsNewDecision: show once per version, never in a race, never for a brand-new player
+  ---
+  duration_ms: 0.70816
+  type: 'test'
+  ...
+# Subtest: launch sequence: new player, then updates, dismissal remembered across launches
+ok 27 - launch sequence: new player, then updates, dismissal remembered across launches
+  ---
+  duration_ms: 0.660351
+  type: 'test'
+  ...
+# Subtest: Markdown photos belong to a release or to the preceding indented bullet
+ok 28 - Markdown photos belong to a release or to the preceding indented bullet
+  ---
+  duration_ms: 0.651553
+  type: 'test'
+  ...
+# Subtest: photos require alt text and a safe local versioned WebP path
+ok 29 - photos require alt text and a safe local versioned WebP path
+  ---
+  duration_ms: 0.539366
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12654.463219

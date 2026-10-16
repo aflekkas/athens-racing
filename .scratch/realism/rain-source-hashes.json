@@ -1,0 +1,12 @@
+{
+  "candidate": "c30dfc4c445d158db78e46a0cb8373148d537b18",
+  "cockpitParent": "583673125c4b392e00e6fc5e653bb76e56b2650a",
+  "sha256": {
+    "src/weather.js": "6d70e8773a1581ea040ea48b4822e171f9fae5e42b06b5d7a7d0ec24b8e5c64e",
+    "src/ground.js": "9a117f295a7c81a017eaa5ea1fb717b8d38afd194922b0641102b5829a20f0a9",
+    "src/rain-overlays.js": "75989aa954563894f5ff3f924668a7d6facd71678ed163cc09f21e8cb66d7218",
+    "src/buildings.js": "30def93e1a889fd07bfd9da1204b98e4eaf2978b05b7933c2a6ec0c270c4dd8f",
+    "src/baked-realism.js": "e073ea5a260e5f5d7d9ed26e3655cca2e0187502d8f950ab9b1a2be147ab78cb",
+    "src/cockpit-rain.js": "ff2cab3c37f37b6df56dd7c0d9f18e236c6676b265ae7a4b2560d0af578045e7"
+  }
+}

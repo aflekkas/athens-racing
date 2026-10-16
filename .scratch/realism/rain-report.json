@@ -1,0 +1,182 @@
+{
+  "method": "Same scene and scripted camera poses; weather subsystem replaced in place",
+  "shots": [
+    {
+      "name": "rain-before-day-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 272,
+      "triangles": 1300781,
+      "points": 3224,
+      "geometryBytes": 173830730,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-before-day-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.165382033117,
+        6.091637229703328,
+        1499.9317449098887
+      ],
+      "quaternion": [
+        -0.021098756224233538,
+        -0.6410168909867844,
+        -0.01763240956282385,
+        0.7670340840460977
+      ],
+      "calls": 239,
+      "triangles": 1285646,
+      "points": 3224,
+      "geometryBytes": 173830730,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-before-night-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 274,
+      "triangles": 1301741,
+      "points": 3351,
+      "geometryBytes": 173830730,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-before-night-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.165382033117,
+        6.091637229703328,
+        1499.9317449098887
+      ],
+      "quaternion": [
+        -0.021098756224233538,
+        -0.6410168909867844,
+        -0.01763240956282385,
+        0.7670340840460977
+      ],
+      "calls": 241,
+      "triangles": 1286606,
+      "points": 3351,
+      "geometryBytes": 173830730,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-after-day-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 272,
+      "triangles": 1297189,
+      "points": 3004,
+      "geometryBytes": 173723390,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-after-day-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.165382033117,
+        6.091637229703328,
+        1499.9317449098887
+      ],
+      "quaternion": [
+        -0.021098756224233538,
+        -0.6410168909867844,
+        -0.01763240956282385,
+        0.7670340840460977
+      ],
+      "calls": 239,
+      "triangles": 1282054,
+      "points": 3004,
+      "geometryBytes": 173723390,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-after-night-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 274,
+      "triangles": 1298149,
+      "points": 3131,
+      "geometryBytes": 173723390,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    },
+    {
+      "name": "rain-after-night-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.165382033117,
+        6.091637229703328,
+        1499.9317449098887
+      ],
+      "quaternion": [
+        -0.021098756224233538,
+        -0.6410168909867844,
+        -0.01763240956282385,
+        0.7670340840460977
+      ],
+      "calls": 241,
+      "triangles": 1283014,
+      "points": 3131,
+      "geometryBytes": 173723390,
+      "textureBytes": 74159877.33333328,
+      "shadows": false
+    }
+  ],
+  "errors": []
+}

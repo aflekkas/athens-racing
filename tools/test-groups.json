@@ -123,7 +123,8 @@
     "tools/asset-codecs.test.mjs",
     "tools/psychiko-world.test.mjs",
     "tools/baked-realism.test.mjs",
-    "tools/gantry-clearance.test.mjs"
+    "tools/gantry-clearance.test.mjs",
+    "tools/rain-overlays.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
