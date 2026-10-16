@@ -43,3 +43,5 @@ terrain above road by 0.029907237601690895 m at {"road":31486943,"k":3,"u":-3,"s
 ```
 
 Raw full error lines: contact-npm-test.log and contact-baseline-terrain.log. No other failing test names. The user authorized committing with this known baseline failure; the roundabout agent owns it and the release train remains blocked until prod is green. No push or deployment was performed (Wrangler dry-run only).
+
+Committed source: `d3fb671f53271ccc242739c618f45f45ce2d56fb`, rebased over concurrent prod `a8b3df636d71746d746565376df7ecc43a13a991`. No owned source files changed concurrently. Recorded gates ran on the byte-identical airborne source candidate above, before the concurrent Psychiko terrain revision; no claim is made that the newer terrain tree was retested by this task.

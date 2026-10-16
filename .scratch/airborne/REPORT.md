@@ -1,5 +1,7 @@
 # Airborne implementation handoff
 
+**Update:** The current barrier JSON, frames, GIF and sequence sheet document the subsequent dissipative-contact fix. See [CONTACT-REPORT.md](CONTACT-REPORT.md) for current results, baseline regression failures and the authorized pre-existing terrain gate exception. The original launch implementation report below is historical.
+
 Source/gates commit: `6c682960eea2a4353363acf2032aa58732251aec`. All gates ran in clean `git archive HEAD` copies in `/tmp`, using the existing node_modules installation. Source commits use private indexes and commit-tree/update-ref; the shared working tree/index were never written. No push, deploy or subagents.
 
 ## Result
