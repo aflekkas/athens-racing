@@ -1,0 +1,678 @@
+{
+  "method": "Same frozen scene; baseline and candidate colour buffers; geometry identity asserted",
+  "shots": [
+    {
+      "name": "before-riviera-start-day-chase",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1059.685523383365,
+        9.539516304330899,
+        2513.761555647993
+      ],
+      "quaternion": [
+        0.006638204605285517,
+        0.9879439077433119,
+        0.0442507763915934,
+        -0.14820471713556918
+      ],
+      "calls": 241,
+      "triangles": 628941,
+      "geometryBytes": 174076122,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-start-day-chase",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1059.685523383365,
+        9.539516304330899,
+        2513.761555647993
+      ],
+      "quaternion": [
+        0.006638204605285517,
+        0.9879439077433119,
+        0.0442507763915934,
+        -0.14820471713556918
+      ],
+      "calls": 241,
+      "triangles": 628941,
+      "geometryBytes": 174076122,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-start-day-cockpit",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1061.602791031365,
+        7.794777823306438,
+        2521.316052727758
+      ],
+      "quaternion": [
+        -0.0018233404788742095,
+        0.9941774187799073,
+        0.03715760814044897,
+        -0.10112985501275093
+      ],
+      "calls": 177,
+      "triangles": 618727,
+      "geometryBytes": 174076122,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-start-day-cockpit",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1061.602791031365,
+        7.794777823306438,
+        2521.316052727758
+      ],
+      "quaternion": [
+        -0.0018233404788742095,
+        0.9941774187799073,
+        0.03715760814044897,
+        -0.10112985501275093
+      ],
+      "calls": 177,
+      "triangles": 618727,
+      "geometryBytes": 174076122,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-start-night-chase",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1059.685523383365,
+        9.539516304330899,
+        2513.761555647993
+      ],
+      "quaternion": [
+        0.006638204605285517,
+        0.9879439077433119,
+        0.0442507763915934,
+        -0.14820471713556918
+      ],
+      "calls": 235,
+      "triangles": 630189,
+      "geometryBytes": 174122634,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-start-night-chase",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1059.685523383365,
+        9.539516304330899,
+        2513.761555647993
+      ],
+      "quaternion": [
+        0.006638204605285517,
+        0.9879439077433119,
+        0.0442507763915934,
+        -0.14820471713556918
+      ],
+      "calls": 235,
+      "triangles": 630189,
+      "geometryBytes": 174122634,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-start-night-cockpit",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1061.602791031365,
+        7.794777823306438,
+        2521.316052727758
+      ],
+      "quaternion": [
+        -0.0018233404788742095,
+        0.9941774187799073,
+        0.03715760814044897,
+        -0.10112985501275093
+      ],
+      "calls": 179,
+      "triangles": 619687,
+      "geometryBytes": 174122634,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-start-night-cockpit",
+      "map": "riviera",
+      "s": 271,
+      "camera": [
+        1061.602791031365,
+        7.794777823306438,
+        2521.316052727758
+      ],
+      "quaternion": [
+        -0.0018233404788742095,
+        0.9941774187799073,
+        0.03715760814044897,
+        -0.10112985501275093
+      ],
+      "calls": 179,
+      "triangles": 619687,
+      "geometryBytes": 174122634,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-mid-day-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 257,
+      "triangles": 1296953,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-mid-day-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 257,
+      "triangles": 1296953,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-mid-day-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.1740214436986,
+        6.1088288935171775,
+        1499.9355090671745
+      ],
+      "quaternion": [
+        -0.01833582694175723,
+        -0.6410166806799923,
+        -0.018082123954503537,
+        0.7670948111763375
+      ],
+      "calls": 198,
+      "triangles": 1281568,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-mid-day-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.1740214436986,
+        6.1088288935171775,
+        1499.9355090671745
+      ],
+      "quaternion": [
+        -0.01833582694175723,
+        -0.6410166806799923,
+        -0.018082123954503537,
+        0.7670948111763375
+      ],
+      "calls": 198,
+      "triangles": 1281568,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-mid-night-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 259,
+      "triangles": 1297913,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-mid-night-chase",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3100.60448143492,
+        7.870692105747294,
+        1501.6733388772677
+      ],
+      "quaternion": [
+        -0.030067922862664607,
+        -0.5997002633527848,
+        -0.022558248254566683,
+        0.799341378626811
+      ],
+      "calls": 259,
+      "triangles": 1297913,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-riviera-mid-night-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.1740214436986,
+        6.1088288935171775,
+        1499.9355090671745
+      ],
+      "quaternion": [
+        -0.01833582694175723,
+        -0.6410166806799923,
+        -0.018082123954503537,
+        0.7670948111763375
+      ],
+      "calls": 200,
+      "triangles": 1282528,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "after-riviera-mid-night-cockpit",
+      "map": "riviera",
+      "s": 5494,
+      "camera": [
+        3108.1740214436986,
+        6.1088288935171775,
+        1499.9355090671745
+      ],
+      "quaternion": [
+        -0.01833582694175723,
+        -0.6410166806799923,
+        -0.018082123954503537,
+        0.7670948111763375
+      ],
+      "calls": 200,
+      "triangles": 1282528,
+      "geometryBytes": 173865810,
+      "textureBytes": 67685038.6666667,
+      "shadows": false
+    },
+    {
+      "name": "before-penteli-mid-day-chase",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2584.973423717962,
+        471.8029625010211,
+        755.4877621458073
+      ],
+      "quaternion": [
+        -0.015048763694254256,
+        -0.5787415021892449,
+        -0.01068235064969233,
+        0.815302211293216
+      ],
+      "calls": 131,
+      "triangles": 342270,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "after-penteli-mid-day-chase",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2584.973423717962,
+        471.8029625010211,
+        755.4877621458073
+      ],
+      "quaternion": [
+        -0.015048763694254256,
+        -0.5787415021892449,
+        -0.01068235064969233,
+        0.815302211293216
+      ],
+      "calls": 131,
+      "triangles": 342270,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "before-penteli-mid-day-cockpit",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2592.259082159311,
+        470.0439076249771,
+        752.819513941644
+      ],
+      "quaternion": [
+        -0.018128535494795886,
+        -0.5920641718036779,
+        -0.01332369231454708,
+        0.8055767200523773
+      ],
+      "calls": 60,
+      "triangles": 339416,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "after-penteli-mid-day-cockpit",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2592.259082159311,
+        470.0439076249771,
+        752.819513941644
+      ],
+      "quaternion": [
+        -0.018128535494795886,
+        -0.5920641718036779,
+        -0.01332369231454708,
+        0.8055767200523773
+      ],
+      "calls": 60,
+      "triangles": 339416,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "before-penteli-mid-night-chase",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2584.973423717962,
+        471.8029625010211,
+        755.4877621458073
+      ],
+      "quaternion": [
+        -0.015048763694254256,
+        -0.5787415021892449,
+        -0.01068235064969233,
+        0.815302211293216
+      ],
+      "calls": 133,
+      "triangles": 343230,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "after-penteli-mid-night-chase",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2584.973423717962,
+        471.8029625010211,
+        755.4877621458073
+      ],
+      "quaternion": [
+        -0.015048763694254256,
+        -0.5787415021892449,
+        -0.01068235064969233,
+        0.815302211293216
+      ],
+      "calls": 133,
+      "triangles": 343230,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "before-penteli-mid-night-cockpit",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2592.259082159311,
+        470.0439076249771,
+        752.819513941644
+      ],
+      "quaternion": [
+        -0.018128535494795886,
+        -0.5920641718036779,
+        -0.01332369231454708,
+        0.8055767200523773
+      ],
+      "calls": 62,
+      "triangles": 340376,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "after-penteli-mid-night-cockpit",
+      "map": "penteli",
+      "s": 5240,
+      "camera": [
+        2592.259082159311,
+        470.0439076249771,
+        752.819513941644
+      ],
+      "quaternion": [
+        -0.018128535494795886,
+        -0.5920641718036779,
+        -0.01332369231454708,
+        0.8055767200523773
+      ],
+      "calls": 62,
+      "triangles": 340376,
+      "geometryBytes": 85508035,
+      "textureBytes": 31356249.33333334,
+      "shadows": false
+    },
+    {
+      "name": "before-megara-overview-day-chase",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -91.4314375711752,
+        44.55500030517578,
+        -141.34209951212893
+      ],
+      "quaternion": [
+        -0.1518836693959574,
+        -0.7173812599480833,
+        -0.16520171310834705,
+        0.6595482338936156
+      ],
+      "calls": 87,
+      "triangles": 449336,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "after-megara-overview-day-chase",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -91.4314375711752,
+        44.55500030517578,
+        -141.34209951212893
+      ],
+      "quaternion": [
+        -0.1518836693959574,
+        -0.7173812599480833,
+        -0.16520171310834705,
+        0.6595482338936156
+      ],
+      "calls": 87,
+      "triangles": 449336,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "before-megara-overview-day-cockpit",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -41.93007311415306,
+        10.795945429131816,
+        -136.36060532904588
+      ],
+      "quaternion": [
+        -0.015028743136153194,
+        -0.7439724658048268,
+        -0.016742205823197957,
+        0.6678314200067312
+      ],
+      "calls": 72,
+      "triangles": 398369,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "after-megara-overview-day-cockpit",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -41.93007311415306,
+        10.795945429131816,
+        -136.36060532904588
+      ],
+      "quaternion": [
+        -0.015028743136153194,
+        -0.7439724658048268,
+        -0.016742205823197957,
+        0.6678314200067312
+      ],
+      "calls": 72,
+      "triangles": 398369,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "before-megara-overview-night-chase",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -91.4314375711752,
+        44.55500030517578,
+        -141.34209951212893
+      ],
+      "quaternion": [
+        -0.1518836693959574,
+        -0.7173812599480833,
+        -0.16520171310834705,
+        0.6595482338936156
+      ],
+      "calls": 89,
+      "triangles": 450296,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "after-megara-overview-night-chase",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -91.4314375711752,
+        44.55500030517578,
+        -141.34209951212893
+      ],
+      "quaternion": [
+        -0.1518836693959574,
+        -0.7173812599480833,
+        -0.16520171310834705,
+        0.6595482338936156
+      ],
+      "calls": 89,
+      "triangles": 450296,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "before-megara-overview-night-cockpit",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -41.93007311415306,
+        10.795945429131816,
+        -136.36060532904588
+      ],
+      "quaternion": [
+        -0.015028743136153194,
+        -0.7439724658048268,
+        -0.016742205823197957,
+        0.6678314200067312
+      ],
+      "calls": 74,
+      "triangles": 399265,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    },
+    {
+      "name": "after-megara-overview-night-cockpit",
+      "map": "megara",
+      "s": 999.7998995958199,
+      "camera": [
+        -41.93007311415306,
+        10.795945429131816,
+        -136.36060532904588
+      ],
+      "quaternion": [
+        -0.015028743136153194,
+        -0.7439724658048268,
+        -0.016742205823197957,
+        0.6678314200067312
+      ],
+      "calls": 74,
+      "triangles": 399265,
+      "geometryBytes": 12963834,
+      "textureBytes": 79852889.3333334,
+      "shadows": false
+    }
+  ],
+  "errors": []
+}

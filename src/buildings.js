@@ -1,5 +1,6 @@
 // Owner-locked: flat-roof footprint blocks, batched in 500 metre world cells.
 import * as THREE from 'three';
+import { bakeBlockShade } from './baked-realism.js';
 import { REFLECT_LAYER } from './env.js';
 import { RNG, GeoBatch, M, pointInPoly, polyArea, polyBounds, clamp } from './util.js';
 import { infillStreetIndex } from './infill-streets.js';
@@ -138,7 +139,9 @@ export function buildBuildings(map,scene,heightC,labels,infill=[]) {
     const h=Math.max(2.6,Number(b.h||b.height)||5.5),base=lo-.6,top=hi+h;
     const g=buildingBlockGeometry(p,top-base);g.translate(0,base,0);
     const key=Math.floor(cx/500)+','+Math.floor(cz/500);if(!chunks.has(key))chunks.set(key,new GeoBatch());
-    chunks.get(key).add(g,M(0,0,0),palette[Math.abs(Number(b.id)||0)%palette.length]);g.dispose();
+    const batch=chunks.get(key),start=batch.count;
+    batch.add(g,M(0,0,0),palette[Math.abs(Number(b.id)||0)%palette.length]);
+    bakeBlockShade(batch,start,base,top);g.dispose();
     footprints.push({p,bb});roofs.push({...b,p,bb,cx,cz,gmin:lo,top,area:Math.abs(polyArea(p)),roofOccupied:[]});
   }
   const material=facadeMaterial();

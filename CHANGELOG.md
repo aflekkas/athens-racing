@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Building blocks have brighter roofs, shaded sides and darker bases, adding depth without extra scenery.
+  ![Baked shading gives Riviera building blocks more depth](assets/changelog/2026.10.16.1/baked-building-depth.webp "Simple building shapes with shaded sides and grounded bases.")
+
 - Race two laps of Psychiko or explore its streets in free roam, with race-only roadworks. Map by Vassilis Perrotis (Vas-Per).
   ![Vas-Per’s Psychiko streets with simple footprint buildings](assets/changelog/2026.10.16.1/psychiko.webp "Psychiko by Vas-Per.")
 - Psychiko uses our simple building and terrain style. Vas-Per’s full garden version is saved under the psychiko-garden-original tag.

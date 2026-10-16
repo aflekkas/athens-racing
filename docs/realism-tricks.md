@@ -1,0 +1,13 @@
+# Baked building depth
+
+Owner constraints: `OWNER-DECISIONS.md`. Plain blocks, no facade details, vegetation, new lights, reflection views or screen-space effects.
+
+`src/baked-realism.js` exports `bakeBlockShade(batch, start, base, top, key?)`. It modifies the existing linear RGB colours of a `GeoBatch` after `add()` and before `build()`. Save `batch.count` before adding each block and pass that as `start`. Positions and normals must already be in world space; `base` and `top` are world Y bounds. Call once per newly appended block. Do not apply to an already shaded batch.
+
+Roofs retain their palette colour. Vertical faces retain 65–85% of it according to a fixed south-west key; bottom vertices receive a further 16% darkening, interpolated over the existing wall triangles. This is a broad modelling cue, not physically accurate ambient occlusion or a narrow contact shadow. No extra vertices, colour attributes, textures, materials, draw calls or frame callbacks. Existing building materials and their day/night response are unchanged.
+
+The default key is a normalized horizontal day-sun direction (azimuth 205 degrees). It deliberately stays fixed through the clock cycle: no runtime rebake or animated shadow. An offline Athens tile generator can pass its own normalized `{x,z}` key consistently for the whole tile set. Serialize the resulting colour buffer with the existing position/normal buffers. Do not bake again when restoring the tile. `buildBuildings()` uses this helper for Riviera, Penteli, Megara and Psychiko.
+
+Chosen scope: face shading and base darkening. Existing cars already have contact blobs. Extra decals, street furniture, additive cards and motion effects are deferred: they add geometry, overdraw or view changes and need separate visual justification. Windows remain forbidden by the owner's plain-building decision.
+
+Verification: `node --test tools/baked-realism.test.mjs`; `node tools/realism-benchmark.mjs`; `tools/browser-slot.sh node tools/realism-browser.mjs`. The benchmark requires `.scratch/realism/before-buildings.js`, extracted from the baseline commit, and measures paired alternating whole-building builds after warmup. Screenshot capture loads the baseline building source, builds candidate colour buffers with the same terrain height sampler, asserts exact position/normal equality, and swaps only the colour buffers in one frozen scene for each pair. This prevents actors from moving between before/after. Camera poses and full-scene renderer counters are recorded in `.scratch/realism/paired-report.json`. GPU timing on SwiftShader is not a performance claim.
