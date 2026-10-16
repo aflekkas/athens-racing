@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DrivingGuidance, curvature, brakingDistance, routeLineU, travelDirection } from '../src/driving-guidance.js';
-import { gripFeedback, damageFeedback, ENGINE_HOT_C } from '../src/driving-feedback-model.js';
+import { damageFeedback, ENGINE_HOT_C } from '../src/driving-feedback-model.js';
 
 const spec = { grip: 1, brake: 1, vmax: 250 };
 const car = (s = 50, speed = 25) => ({ s, u: 1.75, vLong: speed, spec });
@@ -15,14 +15,6 @@ const hairpin = (grade = 0) => ({ ...straight(grade), edge: () => 3.5, lanes: ()
     return out.set(20 - r * Math.cos(angle), grade * s, 150 + r * Math.sin(angle));
   } });
 
-test('grip mapping preserves front breakaway when force utilization falls', () => {
-  const a = { contact: true, utilization: .65, slipDemand: 1.8, saturated: true, sliding: true };
-  const feedback = gripFeedback({ front: a, rear: { ...a, utilization: .5, sliding: false, saturated: false }, understeer: true });
-  assert.equal(feedback.front.percent, 65); assert.equal(feedback.front.state, 'SLIDING');
-  assert.match(feedback.message, /Front grip exceeded.*ease steering/);
-  assert.equal(gripFeedback(null).available, false);
-  assert.equal(gripFeedback({ front: { ...a, contact: false }, rear: a }).front.state, 'NO CONTACT');
-});
 test('damage explains actual power loss, cause and remapped recovery action', () => {
   const impaired = { engineDamage: .65, engHealth: .35, coolantTemp: 100 };
   const m = damageFeedback(impaired, { towLabel: 'RB', repairAvailable: true, towCost: 'free in roam' });
@@ -88,4 +80,23 @@ test('ENGINE HOT waits for a temperature that actually wears the engine', () => 
   assert.equal(damageFeedback({ engHealth: 1, coolantTemp: 115 }).visible, false, 'ordinary warm-up stays quiet');
   assert.notEqual(damageFeedback({ engHealth: 1, coolantTemp: 124 }).title, 'ENGINE HOT');
   assert.equal(damageFeedback({ engHealth: 1, coolantTemp: ENGINE_HOT_C }).title, 'ENGINE HOT');
+});
+
+
+test('owner-locked: tyre-grip HUD cannot be restored; world braking line and physics telemetry stay separate',async()=>{
+  const {readFile,access}=await import('node:fs/promises');
+  const source=await readFile(new URL('../src/driving-feedback.js',import.meta.url),'utf8'),menu=await readFile(new URL('../src/menu.js',import.meta.url),'utf8');
+  const message='Owner-locked decision, see docs/OWNER-DECISIONS.md: no tyre-grip HUD or ASSISTS panel. Ask the owner before changing.';
+  assert.doesNotMatch(source,/createElement|showGrip|showTyreGrip|data-axle/,message);assert.doesNotMatch(menu,/showTyreGrip|SHOW TYRE GRIP/,message);
+  await assert.rejects(access(new URL('../src/driving-feedback.css',import.meta.url)),{code:'ENOENT'});
+  const {DrivingFeedback}=await import('../src/driving-feedback.js'),{Scene}=await import('three');
+  const previous=globalThis.localStorage;let stored=JSON.stringify({grip:true,line:true});
+  try{
+    globalThis.localStorage={getItem:()=>stored,setItem:(_,value)=>{stored=value;}};
+    const scene=new Scene(),feedback=new DrivingFeedback({scene,document:{createElement(){throw Error(message);}}});
+    assert.deepEqual(JSON.parse(stored),{line:true});assert.equal(feedback.root,undefined);
+    const vehicle={...car(),get tyreTelemetry(){throw Error('HUD must not consume tyre telemetry');}};
+    feedback.update({vehicle,route:straight()});assert.equal(scene.children.length,1);assert.ok(feedback.line.geometry.drawRange.count>0);
+    feedback.dispose();assert.equal(scene.children.length,0);
+  }finally{globalThis.localStorage=previous;}
 });

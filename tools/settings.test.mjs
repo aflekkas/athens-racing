@@ -141,10 +141,14 @@ test('resolution values are bounded on load and live writes', async () => {
   module.setSetting('perfClass', 'invalid'); assert.equal(module.settings.perfClass, 'auto');
 });
 
-test('fresh players start with the tyre grip display off', async () => {
-  const module = await preferences(memory());
-  assert.equal(module.settings.showTyreGrip, false);
-  assert.equal(module.DEFAULTS.showTyreGrip, false);
+test('owner-locked: tyre-grip HUD preference is removed and saved choices migrate without changing assists', async () => {
+  const storage=memory();storage.setItem('paraliaki.settings',JSON.stringify({showTyreGrip:true,aids:false,abs:true,music:.23,units:'mph'}));
+  const module=await preferences(storage);
+  assert.equal(Object.hasOwn(module.DEFAULTS,'showTyreGrip'),false,'Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before restoring the tyre-grip HUD.');
+  assert.equal(Object.hasOwn(module.settings,'showTyreGrip'),false);
+  const saved=JSON.parse(storage.getItem('paraliaki.settings'));assert.equal(Object.hasOwn(saved,'showTyreGrip'),false);
+  assert.equal(saved.music,.23);assert.equal(module.settings.aids,false);assert.equal(module.settings.abs,true);assert.equal(module.settings.units,'mph');
+  module.setSetting('showTyreGrip',true);assert.equal(Object.hasOwn(module.settings,'showTyreGrip'),false);
 });
 
 test('HUD motion respects reduced motion until explicitly chosen and rejects invalid values', async () => {

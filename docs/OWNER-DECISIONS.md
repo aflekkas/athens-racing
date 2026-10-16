@@ -35,5 +35,6 @@ Do not raise these limits or restore occupants/tinted cockpit glass without the 
 | 2026-10-15 | **No driver, hands, arms or other characters in enclosed vehicles; bikes alone retain a minimal blocky rider.** A steering wheel may remain only inside the cockpit's 20% obstruction budget. | “I don't want to have hands.” Camera work must not reintroduce character geometry. |
 
 | 2026-10-16 | **No phone-as-wheel controller** | “remove the phone remote thing.” No controller route, pairing, signalling or relay. Guard: `tools/owner-locked-no-phone-wheel.test.mjs`. Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing. |
+| 2026-10-16 | **No tyre-grip HUD.** | "Remove the tyre grip UI, it's stupid." The TYRE GRIP FRONT / REAR · ASSISTS panel, its setting and its menu toggle are removed and saved preferences are migrated. Guarded by `tools/driving-feedback.test.mjs` and `tools/settings.test.mjs`. |
 
 2026-10-16: Psychiko follows the locked simplified look: no trees or garden scenery, shared plain footprint building blocks in the contrasting palette, and terrain colour variation only. Keep Vas-Per’s road layout, roadworks and lap/race setup. His full garden version is preserved at tag `psychiko-garden-original` (54505cc).

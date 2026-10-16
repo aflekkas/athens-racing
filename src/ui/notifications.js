@@ -11,7 +11,7 @@ export function raceNotificationsActive(doc=globalThis.document) {
   const hud=doc.getElementById('hud'),lobby=doc.getElementById('multiplayer');
   return (body.classList.contains('racing')||body.classList.contains('counting'))&&!body.classList.contains('ui-open')&&!body.classList.contains('menu')&&(!lobby||lobby.hidden)&&!doc.querySelector('#loading.open,.modal-scrim')&&(!hud||!hud.hidden&&hud.style.display!=='none');
 }
-const OBSTACLES=['#accounts-offline','.wheel-hud','#posBox','#mapBox','#dialBox','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#driving-feedback','#touch-controls button','#touch-controls .touch-steer'];
+const OBSTACLES=['#accounts-offline','.wheel-hud','#posBox','#mapBox','#dialBox','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#touch-controls button','#touch-controls .touch-steer'];
 export class NotificationManager {
   constructor(){this.queue=new NotificationQueue();this.cards=new Map();this.nextAt=0;this.dirty=true;}
   post(value){
