@@ -1,5 +1,7 @@
 // One atlas, no per-car GPU textures. The flag controls every mounting.
 import * as THREE from 'three';
+import { loadCompressedTexture } from './compressed-textures.js';
+import { textureCodecsEnabled } from './asset-metrics.js';
 export const BRAND_BADGES = {
   alfaromeo: { enabled:true, cell:0 },
   bmw: { enabled:true, cell:1 },
@@ -21,7 +23,12 @@ let atlas;const materials=new Map();
 export function brandBadgeMaterial(spec){
   const brand=badgeBrand(spec),entry=BRAND_BADGES[brand],cell=entry?.enabled?entry.cell:15;
   if(materials.has(cell))return materials.get(cell);
-  if(!atlas){atlas=new THREE.TextureLoader().load('/assets/brand-badges/atlas.svg');atlas.colorSpace=THREE.SRGBColorSpace;atlas.anisotropy=1;atlas.name='shared-brand-badges';}
+  if(!atlas){
+    atlas=new THREE.Texture();atlas.colorSpace=THREE.SRGBColorSpace;atlas.anisotropy=1;atlas.name='shared-brand-badges';
+    const fallback=()=>new THREE.ImageLoader().load('/assets/brand-badges/atlas.svg',image=>{atlas.image=image;atlas.needsUpdate=true;});
+    if(!textureCodecsEnabled())fallback();
+    else void loadCompressedTexture(atlas,'/assets/brand-badges/atlas.svg').then(loaded=>{if(!loaded)fallback();});
+  }
   const m=new THREE.MeshStandardMaterial({map:atlas,transparent:true,depthWrite:false,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   m.name='brand-badge';m.userData.brandBadge=true;
   m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <uv_vertex>',`#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vMapUv * .25 + vec2(${(cell%4/4).toFixed(2)},${(1-(Math.floor(cell/4)+1)/4).toFixed(2)});\n#endif`);};

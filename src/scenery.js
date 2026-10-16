@@ -154,6 +154,7 @@ const texColor = new WeakMap();
 function averageTexture(tex) {
   if (texColor.has(tex)) return texColor.get(tex);
   let out = null;
+  if (tex.userData.averageColor) { out = new THREE.Color().setRGB(...tex.userData.averageColor, THREE.SRGBColorSpace); texColor.set(tex, out); return out; }
   try {
     const img = tex.image, cv = document.createElement('canvas'); cv.width = cv.height = 16;
     const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, 16, 16);

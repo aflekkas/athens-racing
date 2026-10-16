@@ -83,3 +83,6 @@ test('missing, disabled and corrupt baked downloads fall back without installing
     delete map.data.bakedWorld; assert.equal(await loadBakedWorldData(map), null);
   } finally { globalThis.fetch = previousFetch; console.warn = warn; if (previousLocation === undefined) delete globalThis.location; else globalThis.location = previousLocation; }
 });
+
+// Generic file codecs must preserve quantized vertex layouts as well as float packs.
+import './asset-codecs.test.mjs';

@@ -39,6 +39,8 @@ import { VoiceReactions } from './voice.js';
 import { PoliceVoice, impactVoiceCue } from './police-voice.js';
 import { HumanVoiceEvents } from './human-voice.js';
 import { RoadRageDetector } from './road-rage-voice.js';
+import { assetMetrics, heapBytes, estimateSceneMemory, setAssetCodecMap } from './asset-metrics.js';
+import { configureTextureCodecs } from './compressed-textures.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures, setAnisotropy } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
@@ -100,6 +102,7 @@ const cpuMetrics = new CpuMetrics(Q.has('cpuProfile'));
 window.__cpuMetrics = cpuMetrics;
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
+configureTextureCodecs(renderer);
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 // first run only: a silent performance check picks the 'auto' resolution / draw distance (never the look)
@@ -274,6 +277,7 @@ async function boot() {
 }
 
 async function loadFirstMap(id) {
+  setAssetCodecMap(id);
   const texReady = loadTextures(); // decodes in parallel with the world building below
   map = await loadMap(undefined, './', id);
   route = map.route;
@@ -304,10 +308,12 @@ async function loadFirstMap(id) {
   resetRace();
   updateCamera(0, true);
   lstat('WARMING TYRES', 0.95);
-  await texReady; uploadTextures(renderer);
+  const textureWaitStarted = performance.now();
+  await texReady; assetMetrics.textureWaitMs = performance.now() - textureWaitStarted; uploadTextures(renderer);
   tlog('textures');
   updateLod();
-  await compileScene();
+  const compileStarted = performance.now(); await compileScene();
+  assetMetrics.compileSceneMs = performance.now() - compileStarted;
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
   tlog('compiled');
   onResize();
@@ -348,7 +354,7 @@ function bindMapWeather() {
 async function switchMap(id = 'riviera', context = 'QUICK RACE') {
   if (mapSwitch) { await mapSwitch; return switchMap(id, context); }
   if (world && map?.id === id) return map;
-  getMap(id); selectedMapId = id;
+  getMap(id); selectedMapId = id; setAssetCodecMap(id);
   loading.show(id, context);
   mapSwitch = (async () => {
     const priorState = G.state, priorPaused = G.paused;
@@ -825,7 +831,7 @@ const MENU_STATES = ['menu', 'paused', 'results', 'garage'];
 let selectedMapId = initialMapId(Q);
 const evCtx = () => ({ map, mapId: map.id, route, marks: map.data.marks, events: map.events });
 const menuCtx = () => map?.id === selectedMapId ? evCtx() : menuMapContext(selectedMapId);
-function selectMenuMap(id) { getMap(id); selectedMapId = id; }
+function selectMenuMap(id) { getMap(id); selectedMapId = id; setAssetCodecMap(id); }
 const activeInputDevice = () => controls.drivingSource === 'phone' ? 'wheel' : controls.drivingSource;
 function syncSteeringAssist() {
   if (!player) return false;
@@ -2234,6 +2240,12 @@ function render() {
   post.comp.uDof.value = orbit ? 5.5 : 0;
   if (orbit) post.comp.uFocus.value = camera.position.distanceTo(_v1.set(player.veh.x, player.veh.y + 0.7, player.veh.z));
   post.render(G.lastDt || 1 / 60);
+  const metric = assetMetrics.maps[map.id];
+  if (metric && metric.firstRaceFrameMs == null && ['race', 'onlineRace'].includes(G.state)) {
+    metric.firstRaceFrameMs = performance.now() - metric.started;
+    metric.peakHeapBytes = Math.max(metric.peakHeapBytes || 0, heapBytes() || 0) || null;
+    metric.gpu = estimateSceneMemory(scene);
+  }
   if (photoCamera) { G.resultPhoto = captureResultFrame(canvas); G.resultPhotoPending = false; camera.position.copy(photoCamera.position); camera.quaternion.copy(photoCamera.quaternion); camera.fov = photoCamera.fov; camera.updateProjectionMatrix(); }
 }
 

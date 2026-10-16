@@ -1,0 +1,19 @@
+SERVER 42979
+NAV after riviera
+WARN Failed to load resource: net::ERR_FAILED
+HTTP 404 http://127.0.0.1:42979/api/auth/config
+WARN Failed to load resource: the server responded with a status of 404 (Not Found)
+MENU after riviera
+FIRST_FRAME after riviera 39981
+NAV after penteli
+WARN Failed to load resource: net::ERR_FAILED
+HTTP 404 http://127.0.0.1:42979/api/auth/config
+WARN Failed to load resource: the server responded with a status of 404 (Not Found)
+MENU after penteli
+FIRST_FRAME after penteli 13342
+NAV after megara
+WARN Failed to load resource: net::ERR_FAILED
+HTTP 404 http://127.0.0.1:42979/api/auth/config
+WARN Failed to load resource: the server responded with a status of 404 (Not Found)
+MENU after megara
+FIRST_FRAME after megara 9376

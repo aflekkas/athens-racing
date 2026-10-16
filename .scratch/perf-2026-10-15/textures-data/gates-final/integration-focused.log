@@ -1,0 +1,19 @@
+missing Failed to load resource: net::ERR_FAILED
+missing KTX2 unavailable, using image: /assets/tex/asphalt_02_diff.webp Failed to fetch
+missing Failed to load resource: net::ERR_FAILED
+missing KTX2 unavailable, using image: /assets/tex/asphalt_02_arm.webp Failed to fetch
+missing Failed to load resource: net::ERR_FAILED
+missing KTX2 unavailable, using image: /assets/tex/floor_pavement_diff.webp Failed to fetch
+missing Failed to load resource: net::ERR_FAILED
+missing KTX2 unavailable, using image: /assets/tex/floor_pavement_arm.webp Failed to fetch
+missing Failed to load resource: net::ERR_FAILED
+missing KTX2 unavailable, using image: /assets/tex/withered_grass_diff.webp Failed to fetch
+missing Failed to load resource: net::ERR_FAILED
+missing KTX2 unavailable, using image: /assets/brand-badges/atlas.svg Failed to fetch
+[
+  { side: 'before', compressed: 0, gpuBytes: 54525945 },
+  { side: 'after', compressed: 6, gpuBytes: 35651739 },
+  { side: 'etc2', compressed: 6, gpuBytes: 32680707 },
+  { side: 'unsupported', compressed: 0, gpuBytes: 54525945 },
+  { side: 'missing', compressed: 0, gpuBytes: 54525945 }
+]

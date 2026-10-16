@@ -118,7 +118,8 @@
     "tools/menu-copy.test.mjs",
     "tools/checkpoint-routes.test.mjs",
     "worker/arena-diagnostics.test.mjs",
-    "tools/world-art-direction.test.mjs"
+    "tools/world-art-direction.test.mjs",
+    "tools/asset-codecs.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

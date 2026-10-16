@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: unselected maps and the fresh menu never enable the texture transcoder
+ok 1 - unselected maps and the fresh menu never enable the texture transcoder
+  ---
+  duration_ms: 3.926256
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Float32Array, odd lengths, offsets and normalized layouts
+ok 2 - lossless generic meshopt: Float32Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 16.913154
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Float64Array, odd lengths, offsets and normalized layouts
+ok 3 - lossless generic meshopt: Float64Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 7.975281
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint8Array, odd lengths, offsets and normalized layouts
+ok 4 - lossless generic meshopt: Uint8Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 2.321877
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint8ClampedArray, odd lengths, offsets and normalized layouts
+ok 5 - lossless generic meshopt: Uint8ClampedArray, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 1.931138
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Int8Array, odd lengths, offsets and normalized layouts
+ok 6 - lossless generic meshopt: Int8Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 2.222642
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint16Array, odd lengths, offsets and normalized layouts
+ok 7 - lossless generic meshopt: Uint16Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 2.848898
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Int16Array, odd lengths, offsets and normalized layouts
+ok 8 - lossless generic meshopt: Int16Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 2.996624
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint32Array, odd lengths, offsets and normalized layouts
+ok 9 - lossless generic meshopt: Uint32Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 5.314623
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Int32Array, odd lengths, offsets and normalized layouts
+ok 10 - lossless generic meshopt: Int32Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 5.356481
+  type: 'test'
+  ...
+# Subtest: meshopt validates corrupt compressed data
+ok 11 - meshopt validates corrupt compressed data
+  ---
+  duration_ms: 103.501298
+  type: 'test'
+  ...
+# Real prod terrain types: Float32Array,Uint16Array,Uint8Array,Int8Array bounds/drawRange/LOD metadata preserved
+# Subtest: ASR2 preserves real map terrain buffers, attribute types, normalized flags and chunk metadata
+ok 12 - ASR2 preserves real map terrain buffers, attribute types, normalized flags and chunk metadata
+  ---
+  duration_ms: 3302.077978
+  type: 'test'
+  ...
+# Subtest: cached KTX2 candidates have complete mip chains, content-addressed names and stay below the asset limit
+ok 13 - cached KTX2 candidates have complete mip chains, content-addressed names and stay below the asset limit
+  ---
+  duration_ms: 29.565409
+  type: 'test'
+  ...
+# Subtest: streamed loader decodes normalized signed attributes and rejects corrupt packs without partial state
+ok 14 - streamed loader decodes normalized signed attributes and rejects corrupt packs without partial state
+  ---
+  duration_ms: 19.407843
+  type: 'test'
+  ...
+# Subtest: a successful lazy import never checks the network
+ok 15 - a successful lazy import never checks the network
+  ---
+  duration_ms: 2.952932
+  type: 'test'
+  ...
+# Subtest: same-release failures keep the original error and do not reload
+ok 16 - same-release failures keep the original error and do not reload
+  ---
+  duration_ms: 40.845289
+  type: 'test'
+  ...
+# Subtest: concurrent stale chunks check once and a release pair reloads only once
+ok 17 - concurrent stale chunks check once and a release pair reloads only once
+  ---
+  duration_ms: 1.88328
+  type: 'test'
+  ...
+# Subtest: a persisted guard and disabled storage both prevent repeated reloads
+ok 18 - a persisted guard and disabled storage both prevent repeated reloads
+  ---
+  duration_ms: 2.018721
+  type: 'test'
+  ...
+# Subtest: offline and unmanaged development pages never reload
+ok 19 - offline and unmanaged development pages never reload
+  ---
+  duration_ms: 0.62274
+  type: 'test'
+  ...
+# Subtest: a rollback to an unmanaged index reloads so the old worker can remove itself
+ok 20 - a rollback to an unmanaged index reloads so the old worker can remove itself
+  ---
+  duration_ms: 1.000395
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 4 inputs, 4 ESM chunks, 612 bytes
+# Subtest: production chunks preserve source-relative resources and lazy imports while dev sources survive
+ok 21 - production chunks preserve source-relative resources and lazy imports while dev sources survive
+  ---
+  duration_ms: 110.110582
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 5 inputs, 6 ESM chunks, 425 bytes
+# Subtest: every map bake points to the published world worker, including Megara
+ok 22 - every map bake points to the published world worker, including Megara
+  ---
+  duration_ms: 60.813446
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 255 inputs, 59 ESM chunks, 2269325 bytes
+# Bundled browser (cdn three.js): 253 inputs, 49 ESM chunks, 2130349 bytes
+# Subtest: real production graph keeps worlds, simulation and screens lazy and maps private
+ok 23 - real production graph keeps worlds, simulation and screens lazy and maps private
+  ---
+  duration_ms: 1846.051577
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 3 inputs, 3 ESM chunks, 23877 bytes
+# Subtest: production meshopt worker boots and decodes after Function.toString serialization
+ok 24 - production meshopt worker boots and decodes after Function.toString serialization
+  ---
+  duration_ms: 60.057487
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3640.748307

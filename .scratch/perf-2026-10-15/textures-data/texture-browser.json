@@ -1,0 +1,1356 @@
+{
+  "runs": [
+    {
+      "side": "before",
+      "rows": [
+        {
+          "url": "/assets/tex/asphalt_02_diff.webp",
+          "loadWallMs": 45.39999997615814,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 69.30000007152557
+        },
+        {
+          "url": "/assets/tex/asphalt_02_nor.webp",
+          "loadWallMs": 56,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 59.299999952316284
+        },
+        {
+          "url": "/assets/tex/asphalt_02_arm.webp",
+          "loadWallMs": 29.399999976158142,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 49.800000071525574
+        },
+        {
+          "url": "/assets/tex/floor_pavement_diff.webp",
+          "loadWallMs": 19.5,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 39.199999928474426
+        },
+        {
+          "url": "/assets/tex/floor_pavement_nor.webp",
+          "loadWallMs": 24.100000023841858,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 39.199999928474426
+        },
+        {
+          "url": "/assets/tex/floor_pavement_arm.webp",
+          "loadWallMs": 12.600000023841858,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 49.700000047683716
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+          "loadWallMs": 8,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 5.400000095367432
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+          "loadWallMs": 7.100000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 6.5
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+          "loadWallMs": 7.600000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 6.5
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_diff.webp",
+          "loadWallMs": 11.099999904632568,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 9.399999976158142
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_nor.webp",
+          "loadWallMs": 10.899999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.800000071525574
+        },
+        {
+          "url": "/assets/tex/withered_grass_diff.webp",
+          "loadWallMs": 16.600000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 13.099999904632568
+        },
+        {
+          "url": "/assets/tex/withered_grass_nor.webp",
+          "loadWallMs": 17,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 17.199999928474426
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_diff.webp",
+          "loadWallMs": 12,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.399999976158142
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_nor.webp",
+          "loadWallMs": 16.800000071525574,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.799999952316284
+        },
+        {
+          "url": "/assets/tex/rock_face_03_diff.webp",
+          "loadWallMs": 12,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 9.099999904632568
+        },
+        {
+          "url": "/assets/tex/rock_face_03_nor.webp",
+          "loadWallMs": 16.800000071525574,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.600000023841858
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_nor.webp",
+          "loadWallMs": 9.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 8
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_arm.webp",
+          "loadWallMs": 12.5,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.299999952316284
+        },
+        {
+          "url": "/assets/tex/waternormals.webp",
+          "loadWallMs": 11.5,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.400000095367432
+        },
+        {
+          "url": "/assets/brand-badges/atlas.svg",
+          "loadWallMs": 9.699999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 6.600000023841858
+        }
+      ],
+      "rawOnlyDecoderFetches": 0,
+      "assets": {
+        "textures": [],
+        "maps": {}
+      }
+    },
+    {
+      "side": "after",
+      "rows": [
+        {
+          "url": "/assets/tex/asphalt_02_diff.webp",
+          "loadWallMs": 177.10000002384186,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 1398128,
+          "format": 36492,
+          "uploadMs": 5.399999976158142
+        },
+        {
+          "url": "/assets/tex/asphalt_02_nor.webp",
+          "loadWallMs": 51.89999997615814,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 56.59999990463257
+        },
+        {
+          "url": "/assets/tex/asphalt_02_arm.webp",
+          "loadWallMs": 27.800000071525574,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 1398128,
+          "format": 36492,
+          "uploadMs": 2.399999976158142
+        },
+        {
+          "url": "/assets/tex/floor_pavement_diff.webp",
+          "loadWallMs": 21,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 1398128,
+          "format": 36492,
+          "uploadMs": 2.6999999284744263
+        },
+        {
+          "url": "/assets/tex/floor_pavement_nor.webp",
+          "loadWallMs": 20.899999976158142,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 34.199999928474426
+        },
+        {
+          "url": "/assets/tex/floor_pavement_arm.webp",
+          "loadWallMs": 17.5,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 1398128,
+          "format": 36492,
+          "uploadMs": 0.6000000238418579
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+          "loadWallMs": 6.799999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.800000071525574
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+          "loadWallMs": 6.199999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.299999952316284
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+          "loadWallMs": 7.899999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 6.5
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_diff.webp",
+          "loadWallMs": 13.199999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.100000023841858
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_nor.webp",
+          "loadWallMs": 11.199999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.399999976158142
+        },
+        {
+          "url": "/assets/tex/withered_grass_diff.webp",
+          "loadWallMs": 12.799999952316284,
+          "compressed": true,
+          "width": 512,
+          "height": 512,
+          "mips": 10,
+          "gpuBytes": 349552,
+          "format": 36492,
+          "uploadMs": 0.30000007152557373
+        },
+        {
+          "url": "/assets/tex/withered_grass_nor.webp",
+          "loadWallMs": 18.299999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 17.600000023841858
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_diff.webp",
+          "loadWallMs": 11.899999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.299999952316284
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_nor.webp",
+          "loadWallMs": 16,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 14.799999952316284
+        },
+        {
+          "url": "/assets/tex/rock_face_03_diff.webp",
+          "loadWallMs": 12.100000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 9.100000023841858
+        },
+        {
+          "url": "/assets/tex/rock_face_03_nor.webp",
+          "loadWallMs": 15.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.400000095367432
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_nor.webp",
+          "loadWallMs": 7.800000071525574,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_arm.webp",
+          "loadWallMs": 12.700000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12
+        },
+        {
+          "url": "/assets/tex/waternormals.webp",
+          "loadWallMs": 11.399999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 15.799999952316284
+        },
+        {
+          "url": "/assets/brand-badges/atlas.svg",
+          "loadWallMs": 16.899999976158142,
+          "compressed": true,
+          "width": 512,
+          "height": 512,
+          "mips": 10,
+          "gpuBytes": 349552,
+          "format": 37808,
+          "uploadMs": 0.5999999046325684
+        }
+      ],
+      "rawOnlyDecoderFetches": 0,
+      "assets": {
+        "textures": [
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2",
+            "codec": "etc1s",
+            "format": 36492,
+            "mipCount": 11,
+            "downloadBytes": 257012,
+            "decodeWallMs": 150.5,
+            "gpuBytes": 1398128,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_arm-af6fb7b93a68122f.ktx2",
+            "codec": "etc1s",
+            "format": 36492,
+            "mipCount": 11,
+            "downloadBytes": 260246,
+            "decodeWallMs": 27.600000023841858,
+            "gpuBytes": 1398128,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_diff-46f967277a85b9e0.ktx2",
+            "codec": "etc1s",
+            "format": 36492,
+            "mipCount": 11,
+            "downloadBytes": 215703,
+            "decodeWallMs": 20.699999928474426,
+            "gpuBytes": 1398128,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_arm-2d560c2c8599a309.ktx2",
+            "codec": "etc1s",
+            "format": 36492,
+            "mipCount": 11,
+            "downloadBytes": 136282,
+            "decodeWallMs": 17.399999976158142,
+            "gpuBytes": 1398128,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/withered_grass_diff-08a113cee418a527.ktx2",
+            "codec": "etc1s",
+            "format": 36492,
+            "mipCount": 10,
+            "downloadBytes": 97167,
+            "decodeWallMs": 12.699999928474426,
+            "gpuBytes": 349552,
+            "width": 512,
+            "height": 512,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/atlas-ceed28679352a112.ktx2",
+            "codec": "uastc",
+            "format": 37808,
+            "mipCount": 10,
+            "downloadBytes": 63090,
+            "decodeWallMs": 16.799999952316284,
+            "gpuBytes": 349552,
+            "width": 512,
+            "height": 512,
+            "skippedMips": 0
+          }
+        ],
+        "maps": {}
+      }
+    },
+    {
+      "side": "etc2",
+      "rows": [
+        {
+          "url": "/assets/tex/asphalt_02_diff.webp",
+          "loadWallMs": 169.70000004768372,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 699064,
+          "format": 37492,
+          "uploadMs": 3.6999999284744263
+        },
+        {
+          "url": "/assets/tex/asphalt_02_nor.webp",
+          "loadWallMs": 61.39999997615814,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 63
+        },
+        {
+          "url": "/assets/tex/asphalt_02_arm.webp",
+          "loadWallMs": 19.200000047683716,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 699064,
+          "format": 37492,
+          "uploadMs": 0.8999999761581421
+        },
+        {
+          "url": "/assets/tex/floor_pavement_diff.webp",
+          "loadWallMs": 16.100000023841858,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 699064,
+          "format": 37492,
+          "uploadMs": 1.3000000715255737
+        },
+        {
+          "url": "/assets/tex/floor_pavement_nor.webp",
+          "loadWallMs": 22,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 26.800000071525574
+        },
+        {
+          "url": "/assets/tex/floor_pavement_arm.webp",
+          "loadWallMs": 15.599999904632568,
+          "compressed": true,
+          "width": 1024,
+          "height": 1024,
+          "mips": 11,
+          "gpuBytes": 699064,
+          "format": 37492,
+          "uploadMs": 0.5
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+          "loadWallMs": 6.799999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.799999952316284
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+          "loadWallMs": 6.100000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.600000023841858
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+          "loadWallMs": 7.600000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 8.600000023841858
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_diff.webp",
+          "loadWallMs": 10.899999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.5
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_nor.webp",
+          "loadWallMs": 10.299999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.700000047683716
+        },
+        {
+          "url": "/assets/tex/withered_grass_diff.webp",
+          "loadWallMs": 11.200000047683716,
+          "compressed": true,
+          "width": 512,
+          "height": 512,
+          "mips": 10,
+          "gpuBytes": 174776,
+          "format": 37492,
+          "uploadMs": 0.20000004768371582
+        },
+        {
+          "url": "/assets/tex/withered_grass_nor.webp",
+          "loadWallMs": 18,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 17
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_diff.webp",
+          "loadWallMs": 11.799999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.399999976158142
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_nor.webp",
+          "loadWallMs": 15.799999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 14.399999976158142
+        },
+        {
+          "url": "/assets/tex/rock_face_03_diff.webp",
+          "loadWallMs": 12.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.199999928474426
+        },
+        {
+          "url": "/assets/tex/rock_face_03_nor.webp",
+          "loadWallMs": 17,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.899999976158142
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_nor.webp",
+          "loadWallMs": 8.399999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 9.200000047683716
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_arm.webp",
+          "loadWallMs": 13.299999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.800000071525574
+        },
+        {
+          "url": "/assets/tex/waternormals.webp",
+          "loadWallMs": 13.199999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.399999976158142
+        },
+        {
+          "url": "/assets/brand-badges/atlas.svg",
+          "loadWallMs": 23,
+          "compressed": true,
+          "width": 512,
+          "height": 512,
+          "mips": 10,
+          "gpuBytes": 349552,
+          "format": 37496,
+          "uploadMs": 0.7999999523162842
+        }
+      ],
+      "rawOnlyDecoderFetches": 0,
+      "assets": {
+        "textures": [
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_diff-a926866bf58d19d1.ktx2",
+            "codec": "etc1s",
+            "format": 37492,
+            "mipCount": 11,
+            "downloadBytes": 257012,
+            "decodeWallMs": 148.29999995231628,
+            "gpuBytes": 699064,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/asphalt_02_arm-af6fb7b93a68122f.ktx2",
+            "codec": "etc1s",
+            "format": 37492,
+            "mipCount": 11,
+            "downloadBytes": 260246,
+            "decodeWallMs": 19.100000023841858,
+            "gpuBytes": 699064,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_diff-46f967277a85b9e0.ktx2",
+            "codec": "etc1s",
+            "format": 37492,
+            "mipCount": 11,
+            "downloadBytes": 215703,
+            "decodeWallMs": 15.799999952316284,
+            "gpuBytes": 699064,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/floor_pavement_arm-2d560c2c8599a309.ktx2",
+            "codec": "etc1s",
+            "format": 37492,
+            "mipCount": 11,
+            "downloadBytes": 136282,
+            "decodeWallMs": 15.399999976158142,
+            "gpuBytes": 699064,
+            "width": 1024,
+            "height": 1024,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/withered_grass_diff-08a113cee418a527.ktx2",
+            "codec": "etc1s",
+            "format": 37492,
+            "mipCount": 10,
+            "downloadBytes": 97167,
+            "decodeWallMs": 11.100000023841858,
+            "gpuBytes": 174776,
+            "width": 512,
+            "height": 512,
+            "skippedMips": 0
+          },
+          {
+            "url": "/assets/tex/ktx2/atlas-ceed28679352a112.ktx2",
+            "codec": "uastc",
+            "format": 37496,
+            "mipCount": 10,
+            "downloadBytes": 63090,
+            "decodeWallMs": 22.899999976158142,
+            "gpuBytes": 349552,
+            "width": 512,
+            "height": 512,
+            "skippedMips": 0
+          }
+        ],
+        "maps": {}
+      }
+    },
+    {
+      "side": "unsupported",
+      "rows": [
+        {
+          "url": "/assets/tex/asphalt_02_diff.webp",
+          "loadWallMs": 59.799999952316284,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 51.299999952316284
+        },
+        {
+          "url": "/assets/tex/asphalt_02_nor.webp",
+          "loadWallMs": 48.10000002384186,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 54.300000071525574
+        },
+        {
+          "url": "/assets/tex/asphalt_02_arm.webp",
+          "loadWallMs": 29.300000071525574,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 39
+        },
+        {
+          "url": "/assets/tex/floor_pavement_diff.webp",
+          "loadWallMs": 19.5,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 24.899999976158142
+        },
+        {
+          "url": "/assets/tex/floor_pavement_nor.webp",
+          "loadWallMs": 21.200000047683716,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 27.199999928474426
+        },
+        {
+          "url": "/assets/tex/floor_pavement_arm.webp",
+          "loadWallMs": 13,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 31.200000047683716
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+          "loadWallMs": 6.600000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.700000047683716
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+          "loadWallMs": 6.699999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 5.600000023841858
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+          "loadWallMs": 7,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 8.300000071525574
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_diff.webp",
+          "loadWallMs": 10.199999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 30.100000023841858
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_nor.webp",
+          "loadWallMs": 9.299999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.600000023841858
+        },
+        {
+          "url": "/assets/tex/withered_grass_diff.webp",
+          "loadWallMs": 14.299999952316284,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.899999976158142
+        },
+        {
+          "url": "/assets/tex/withered_grass_nor.webp",
+          "loadWallMs": 16.5,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 17
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_diff.webp",
+          "loadWallMs": 11.5,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 8.899999976158142
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_nor.webp",
+          "loadWallMs": 15.400000095367432,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.800000071525574
+        },
+        {
+          "url": "/assets/tex/rock_face_03_diff.webp",
+          "loadWallMs": 10.599999904632568,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 9.899999976158142
+        },
+        {
+          "url": "/assets/tex/rock_face_03_nor.webp",
+          "loadWallMs": 14.899999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 14.100000023841858
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_nor.webp",
+          "loadWallMs": 8,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.599999904632568
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_arm.webp",
+          "loadWallMs": 13.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12.900000095367432
+        },
+        {
+          "url": "/assets/tex/waternormals.webp",
+          "loadWallMs": 12.399999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.200000047683716
+        },
+        {
+          "url": "/assets/brand-badges/atlas.svg",
+          "loadWallMs": 10.700000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.899999976158142
+        }
+      ],
+      "rawOnlyDecoderFetches": 0,
+      "assets": {
+        "textures": [],
+        "maps": {}
+      }
+    },
+    {
+      "side": "missing",
+      "rows": [
+        {
+          "url": "/assets/tex/asphalt_02_diff.webp",
+          "loadWallMs": 97.60000002384186,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 54.200000047683716
+        },
+        {
+          "url": "/assets/tex/asphalt_02_nor.webp",
+          "loadWallMs": 61.39999997615814,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 69.5
+        },
+        {
+          "url": "/assets/tex/asphalt_02_arm.webp",
+          "loadWallMs": 41.799999952316284,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 44.39999997615814
+        },
+        {
+          "url": "/assets/tex/floor_pavement_diff.webp",
+          "loadWallMs": 30.59999990463257,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 39
+        },
+        {
+          "url": "/assets/tex/floor_pavement_nor.webp",
+          "loadWallMs": 29.300000071525574,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 41.300000071525574
+        },
+        {
+          "url": "/assets/tex/floor_pavement_arm.webp",
+          "loadWallMs": 28,
+          "compressed": false,
+          "width": 1024,
+          "height": 1024,
+          "mips": 0,
+          "gpuBytes": 5592405,
+          "format": 1023,
+          "uploadMs": 46.799999952316284
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_diff.webp",
+          "loadWallMs": 18.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.100000023841858
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_nor.webp",
+          "loadWallMs": 7.5,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 5
+        },
+        {
+          "url": "/assets/tex/concrete_floor_worn_001_arm.webp",
+          "loadWallMs": 7.600000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 5.199999928474426
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_diff.webp",
+          "loadWallMs": 11.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 9.099999904632568
+        },
+        {
+          "url": "/assets/tex/dry_ground_01_nor.webp",
+          "loadWallMs": 10.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.700000047683716
+        },
+        {
+          "url": "/assets/tex/withered_grass_diff.webp",
+          "loadWallMs": 15.200000047683716,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.299999952316284
+        },
+        {
+          "url": "/assets/tex/withered_grass_nor.webp",
+          "loadWallMs": 16,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 13.199999928474426
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_diff.webp",
+          "loadWallMs": 11,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 8.200000047683716
+        },
+        {
+          "url": "/assets/tex/coast_sand_01_nor.webp",
+          "loadWallMs": 14,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 10.899999976158142
+        },
+        {
+          "url": "/assets/tex/rock_face_03_diff.webp",
+          "loadWallMs": 9.899999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 7.700000047683716
+        },
+        {
+          "url": "/assets/tex/rock_face_03_nor.webp",
+          "loadWallMs": 13.699999928474426,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 11.799999952316284
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_nor.webp",
+          "loadWallMs": 12.800000071525574,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 6.100000023841858
+        },
+        {
+          "url": "/assets/tex/fabric_leather_02_arm.webp",
+          "loadWallMs": 17.600000023841858,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 16.59999990463257
+        },
+        {
+          "url": "/assets/tex/waternormals.webp",
+          "loadWallMs": 13.300000071525574,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 12
+        },
+        {
+          "url": "/assets/brand-badges/atlas.svg",
+          "loadWallMs": 16.399999976158142,
+          "compressed": false,
+          "width": 512,
+          "height": 512,
+          "mips": 0,
+          "gpuBytes": 1398101,
+          "format": 1023,
+          "uploadMs": 6.600000023841858
+        }
+      ],
+      "rawOnlyDecoderFetches": 0,
+      "assets": {
+        "textures": [],
+        "maps": {}
+      }
+    }
+  ],
+  "errors": []
+}

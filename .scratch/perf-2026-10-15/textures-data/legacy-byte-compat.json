@@ -1,0 +1,11 @@
+{
+  "baseline": "71e05c3",
+  "formats": [
+    "Int8Array",
+    "Float32Array",
+    "Uint8Array",
+    "Uint16Array"
+  ],
+  "rawAndShuffledBitIdentical": true,
+  "float64OnlyUses8ByteAlignment": true
+}

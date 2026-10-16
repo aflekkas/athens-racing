@@ -1,5 +1,6 @@
 // Production-only ESM bundle; native source remains the development path.
 import { build } from 'esbuild';
+import { preserveCodecWorkerSource } from './serialized-codec-workers.mjs';
 import { MAPS } from '../src/map-catalog.js';
 import { readFile, writeFile, readdir, unlink, mkdir } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
@@ -42,8 +43,9 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
       });
       build.onLoad({ filter: /\.js$/ }, async args => {
         const path = slash(relative(root, args.path));
-        if (!path.startsWith('src/')) return;
-        let source = await readFile(args.path, 'utf8');
+        const codec = /\/(?:KTX2Loader|meshopt_decoder\.module)\.js$/.test(args.path);
+        if (!path.startsWith('src/') && !codec) return;
+        let source = await preserveCodecWorkerSource(args.path, await readFile(args.path, 'utf8'));
         if (path === 'src/cars.js') source = source.replace(/export const CARS = \[[\s\S]*?^\];/m, "import { CARS } from 'asr:car-data'; export { CARS };");
         source = source.replace(/(import\s*\{\s*CARS\s*\}\s*from\s*)['"]\.\/?cars\.js['"]/g, "$1'asr:car-data'");
         return { contents: source.replace(/\bimport\.meta\.url\b/g, `new URL(${JSON.stringify('/' + path)}, globalThis.location.href).href`), loader: 'js', resolveDir: resolve(args.path, '..') };

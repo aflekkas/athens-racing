@@ -1,16 +1,17 @@
 // Compact, lossless buffer container. JSON describes aligned typed-array views; no geometry is quantised.
-const TYPES = { Int8Array, Float32Array, Uint16Array, Uint32Array, Uint8Array };
+const TYPES = { Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint16Array, Uint32Array, Uint8Array, Uint8ClampedArray };
 const MAGIC = 0x31525341; // ASR1
 export function encodeGeometryPack(metadata, arrays, shuffled = []) {
   let length = 0, viewsIndex = 0;
+  const alignment = arrays.some(a => a.BYTES_PER_ELEMENT > 4) ? 8 : 4;
   const views = arrays.map(a => {
     if (!TYPES[a.constructor.name]) throw new Error('Unsupported baked array');
-    length = Math.ceil(length / 4) * 4;
+    length = Math.ceil(length / alignment) * alignment;
     const v = { type: a.constructor.name, offset: length, length: a.length, shuffled: shuffled[viewsIndex++] === true };
     length += a.byteLength; return v;
   });
   const json = new TextEncoder().encode(JSON.stringify({ version: 1, ...metadata, views }));
-  const start = Math.ceil((12 + json.length) / 4) * 4;
+  const start = Math.ceil((12 + json.length) / alignment) * alignment;
   const buffer = new ArrayBuffer(start + length), dv = new DataView(buffer);
   dv.setUint32(0, MAGIC, true); dv.setUint32(4, json.length, true); dv.setUint32(8, start, true);
   new Uint8Array(buffer, 12, json.length).set(json);
