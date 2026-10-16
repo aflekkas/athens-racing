@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Greek-style facades, rooftop details, street furniture and OpenStreetMap trees bring the roads to life. World detail in Graphics turns them off; your choice is saved.
+  ![Psychiko with World detail off and on](assets/changelog/2026.10.16.1/world-detail.webp "Choose the detail you want, without changing the lighting look.")
+
 - Sign poles sit behind their panels, so speed limits and directions stay readable. Start banners face the road correctly.
   ![Speed and direction signs with their posts behind the lettering](assets/changelog/2026.10.16.1/sign-mounts.webp "Clear signs on every road.")
 

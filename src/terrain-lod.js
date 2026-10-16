@@ -115,6 +115,7 @@ export function installTerrainLods(terrain, group) {
   // submission chunk remain free to coarsen. Old baked layouts keep their
   // legacy tile pins. A streamed tile releases pins with its contact data.
   const sample=terrain.refinedHeight;
+  terrain.sceneryHeight=sample; // Decoration samples exact support without pinning collision LOD.
   if(chunks.length)terrain.refinedHeight=(x,z)=>{
     for(let i=0;i<chunks.length;i++) {
       const c=chunks[i];

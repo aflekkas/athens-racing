@@ -139,7 +139,7 @@ test('Psychiko uses shared footprint boxes and budgeted square street props',asy
  const {psychikoLampGeometry}=await import('../src/maps/psychiko.js');
  const {triangleCount,WORLD_TRIANGLE_BUDGETS}=await import('../src/world-art-direction.js');
  const {buildingBlockGeometry}=await import('../src/buildings.js');
- assert.equal(data.trees,undefined);assert.deepEqual(Object.keys(data.psychiko.scenery),['furniture']);
+ assert.ok(data.vegetation?.length>0,'OSM vegetation records feed the budgeted detail layer');assert.deepEqual(Object.keys(data.psychiko.scenery),['furniture']);
  const lamp=psychikoLampGeometry();assert.equal(triangleCount(lamp),36);assert(triangleCount(lamp)<=WORLD_TRIANGLE_BUDGETS.lamp);lamp.dispose();
  for(const b of data.buildings){const g=buildingBlockGeometry(b.p,b.h);assert(triangleCount(g)<=40);g.dispose();}
  const shader=(await import('../src/terrain.js')).terrainMaterial({gardens:true});

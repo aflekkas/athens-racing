@@ -1,0 +1,34 @@
+[
+  {
+    "map": "riviera",
+    "detailUpdateMeanMs": 0.008296957999999705,
+    "p95Ms": 0.0012320000000727305,
+    "steps": 4000,
+    "records": 2447,
+    "maxTriangles": 3072
+  },
+  {
+    "map": "penteli",
+    "detailUpdateMeanMs": 0.0019424577499985388,
+    "p95Ms": 0.0006009999999605498,
+    "steps": 4000,
+    "records": 1598,
+    "maxTriangles": 3072
+  },
+  {
+    "map": "megara",
+    "detailUpdateMeanMs": 0.0024275425000014365,
+    "p95Ms": 0.00056100000006154,
+    "steps": 4000,
+    "records": 242,
+    "maxTriangles": 3072
+  },
+  {
+    "map": "psychiko",
+    "detailUpdateMeanMs": 0.01366796424999967,
+    "p95Ms": 0.0006110000001626759,
+    "steps": 4000,
+    "records": 5147,
+    "maxTriangles": 3072
+  }
+]

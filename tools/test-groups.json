@@ -128,7 +128,9 @@
     "tools/account-screen.test.mjs",
     "tools/gantry-clearance.test.mjs",
     "tools/sign-mount.test.mjs",
-    "tools/rain-overlays.test.mjs"
+    "tools/world-detail.test.mjs",
+    "tools/rain-overlays.test.mjs",
+    "tools/detail-budgets.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

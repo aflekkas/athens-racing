@@ -276,6 +276,7 @@ export function prepareSceneryLod(scene, quality = 'high', map = null) {
     }
     list.push(mesh);
   });
+  scene.traverse(o=>{if(o.worldDetailController)list.push({updateDetail:camera=>o.worldDetailController.update(camera)});});
   list.impostors = impostors;
   return list;
 }
@@ -284,6 +285,7 @@ const center = new THREE.Vector3();
 export function updateSceneryLod(list, camera) {
   const k = STATE.scale, horizon = STATE.horizon;
   for (const mesh of list) {
+    if(mesh.updateDetail){mesh.updateDetail(camera);continue;}
     center.copy(mesh.boundingSphere.center).applyMatrix4(mesh.matrixWorld);
     const d = Math.hypot(center.x-camera.position.x, center.z-camera.position.z), r = mesh.boundingSphere.radius;
     const u = mesh.userData, far = u.horizon ? horizon : u.far * k * detailK(u.far), near = (u.near || 0) * k * detailK((u.near || 0) / 0.78);

@@ -1,3 +1,4 @@
+import { worldDetailEnabled } from './world-detail-state.js';
 // Terrain meshes from the DEM/land-cover grid: a 10 m mesh along the route corridor and a 40 m mesh beyond.
 import * as THREE from 'three';
 import { stitchTerrainBoundaries, mergeTerrainTransitions, refinedTerrainBoundary } from './terrain-seams.js';
@@ -23,7 +24,7 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
   mat.customProgramCacheKey = () => farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, {
+    Object.assign(sh.uniforms, { uWorldDetail: worldDetailEnabled,
       tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
       tBD: { value: TX.sand_diff }, tBN: { value: TX.sand_nor }, tRD: { value: TX.rock_diff }, tRN: { value: TX.rock_nor },
     });
@@ -32,7 +33,7 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvU = aU;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      uniform sampler2D tCD; uniform sampler2D tAD; varying float vU;
+      uniform float uWorldDetail; uniform sampler2D tCD; uniform sampler2D tAD; varying float vU;
       uniform sampler2D tGD; uniform sampler2D tGN; uniform sampler2D tSD; uniform sampler2D tSN; uniform sampler2D tBD; uniform sampler2D tBN; uniform sampler2D tRD; uniform sampler2D tRN;
       varying vec3 vWP; varying vec3 vWN;
       ${GLSL_HELPERS}
@@ -41,6 +42,7 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
       {
         vec2 p = vWP.xz;
         vec3 vc = diffuseColor.rgb;
+        if(uWorldDetail<.5){ diffuseColor.rgb=vc; }else{
         float steep = 1.0 - clamp(vWN.y, 0.0, 1.0);
         float sat = max(vc.r, max(vc.g, vc.b)) - min(vc.r, min(vc.g, vc.b));
         float lum = dot(vc, vec3(0.333));
@@ -71,12 +73,15 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
         col *= 0.95 + 0.10 * macro;
         // wet sand / rock darkening at the waterline
         col *= mix(0.55, 1.0, smoothstep(0.05, 0.6, vWP.y));
+        float nearDetail=1.-smoothstep(160.,240.,distance(p,cameraPosition.xz));
+        if(nearDetail>0.){float grit=texture2D(tGD,p*1.6).r;col*=mix(1.,.86+grit*.28,nearDetail);}
         diffuseColor.rgb = col;
         tN = (gn * wGround + sgn * wGrass + bn * wSand + rn * wRock) * 2.0 - 1.0;
         tRough = mix(0.97, 0.88, wRock) * mix(0.6, 1.0, smoothstep(0.0, 0.5, vWP.y));
+        }
       }`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = tRough;')
-      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, wRock > 0.5 ? rUV : tUV, tN, 0.35);');
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nif(uWorldDetail>.5) normal = perturb(-vViewPosition, normal, wRock > 0.5 ? rUV : tUV, tN, 0.35);');
   };
   return mat;
 }

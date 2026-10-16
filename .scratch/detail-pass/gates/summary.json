@@ -1,0 +1,14 @@
+{
+  "sourceCandidate": "f7e7be769b7126b9c5d11ddffeca6e9567a13fdf",
+  "parent": "c5765b84ed40c1627f3abfbf30417539371aa85e",
+  "gates": {
+    "npm-test": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "staging-dry-run": 0
+  },
+  "note": "Initial npm attempt found an overlong changelog bullet. Shortened prose only, then reran that failed gate; the other five ran once on identical implementation source. Final archive differs from initial archive only in CHANGELOG and evidence prose. Final commit adds gate evidence and clarifies the existing controller access path in documentation.",
+  "visualReview": "All 20 fixed before/Off/On poses and actual Graphics On/Off UI reviewed."
+}
