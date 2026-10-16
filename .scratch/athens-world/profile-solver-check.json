@@ -1,0 +1,21 @@
+{
+  "validation": {
+    "algorithm": "difference-envelopes-1",
+    "iterations": 2,
+    "relaxations": 20364,
+    "maxViolation": 8.237854842718662e-14,
+    "pass_": true,
+    "error": null,
+    "maxAdjustment": 8.347472254972018
+  },
+  "sourceSolverValidation": {
+    "crossings": 144,
+    "iterations": 2000,
+    "maxViolation": 0.12870019585045034,
+    "pass": false,
+    "points": 287556,
+    "roads": 32102
+  },
+  "solverSha256": "223a41d7c79685cb903d60775229ba805f701e7d2764f84e442b05b7a2fe2048",
+  "seconds": 4.566985135083087
+}

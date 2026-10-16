@@ -1,0 +1,53 @@
+{
+  "JOIN": {
+    "queries": 5,
+    "seconds": 4.19296066404786,
+    "plan": [
+      [
+        5,
+        0,
+        0,
+        "SEARCH f USING INDEX feature_kind (kind=?)"
+      ],
+      [
+        12,
+        0,
+        0,
+        "SCAN s VIRTUAL TABLE INDEX 1:"
+      ],
+      [
+        33,
+        0,
+        0,
+        "USE TEMP B-TREE FOR ORDER BY"
+      ]
+    ],
+    "resultCount": 6
+  },
+  "CROSS JOIN": {
+    "queries": 5,
+    "seconds": 0.008403131971135736,
+    "plan": [
+      [
+        4,
+        0,
+        0,
+        "SCAN s VIRTUAL TABLE INDEX 2:B0D1B2D3"
+      ],
+      [
+        12,
+        0,
+        0,
+        "SEARCH f USING INTEGER PRIMARY KEY (rowid=?)"
+      ],
+      [
+        24,
+        0,
+        0,
+        "USE TEMP B-TREE FOR ORDER BY"
+      ]
+    ],
+    "resultCount": 6
+  },
+  "identicalResults": true
+}

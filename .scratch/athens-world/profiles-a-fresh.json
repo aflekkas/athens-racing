@@ -1,0 +1,27 @@
+{
+  "validation": {
+    "algorithm": "difference-envelopes-1",
+    "crossings": 144,
+    "error": null,
+    "iterations": 2,
+    "maxAdjustment": 8.347472254972018,
+    "maxViolation": 8.237854842718662e-14,
+    "pass": true,
+    "points": 287556,
+    "relaxations": 20364,
+    "roads": 32102
+  },
+  "freshRegeneration": {
+    "generationSeconds": 478.910121622961,
+    "peakRssBytes": 190337024
+  },
+  "probeInputEquality": {
+    "roads": true,
+    "points": true,
+    "samples": true,
+    "constraints": true,
+    "crossings": true
+  },
+  "source": "Road-only experimental stage input; pending comparison to completed clean.sqlite",
+  "releaseReady": false
+}

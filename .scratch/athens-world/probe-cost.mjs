@@ -1,0 +1,10 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {gunzipSync,gzipSync} from 'node:zlib';
+import {decodeGeometryPack} from '/tmp/athens-world-generator/src/baked-geometry.js';
+const root='/tmp/athens-world-cache/ground-probe/';
+const entries=JSON.parse(readFileSync(root+'entries.json','utf8'));const entry=Object.values(entries.tiles)[0];
+const compressed=readFileSync(root+entry.url),raw=gunzipSync(compressed),pack=decodeGeometryPack(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength));
+const tables=Object.entries(pack.metadata.tables).map(([name,index])=>{const a=pack.arrays[index];return {name,bytes:a.byteLength,isolatedGzipBytes:gzipSync(new Uint8Array(a.buffer,a.byteOffset,a.byteLength),{level:9}).byteLength};});
+const tableIndexes=new Set(Object.values(pack.metadata.tables));const meshBytes=pack.arrays.reduce((n,a,i)=>n+(tableIndexes.has(i)?0:a.byteLength),0);
+const result={purpose:'Single-cell provisional layout cost, not release hosting estimate. Isolated array gzip totals do not add to actual combined gzip size.',compressedBytes:compressed.byteLength,rawContainerBytes:raw.byteLength,meshArrayBytes:meshBytes,tableBytes:tables.reduce((n,t)=>n+t.bytes,0),tables:tables.sort((a,b)=>b.bytes-a.bytes),triangles:entry.triangles,drawCalls:pack.metadata.meshes.length,coveredKm2:.512**2,compressedBytesPerKm2:compressed.byteLength/(.512**2),releaseReady:false};
+writeFileSync('/tmp/athens-world-generator/.scratch/athens-world/probe-cost.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({...result,tables:result.tables.slice(0,8)}));

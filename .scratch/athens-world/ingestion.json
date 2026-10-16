@@ -1,0 +1,39 @@
+{
+  "attribution": "\u00a9 OpenStreetMap contributors (ODbL 1.0)",
+  "counts": {
+    "boundary": 1,
+    "building": 450582,
+    "coast": 1688,
+    "landcover": 11600,
+    "landuse": 25362,
+    "road": 184351,
+    "water": 795
+  },
+  "errors": {
+    "invalidArea": 6,
+    "unassembledOrOutsideBuildingRelations": 5
+  },
+  "inputs": {
+    "bounds": [
+      22.8,
+      37.4,
+      24.7,
+      38.6
+    ],
+    "codeSha256": "59a3b656051f6f61afcaed8f9247312afdf5ff3d2aec65d144eb562bfa74ffe4",
+    "extractionSha256": "a181d6cb28728c2803bf276f4745294da8557c0d4c52c1a7358d9148eb4b2c26",
+    "generator": 1,
+    "pbfSha256": "db17fa15807d29f115bd160937e34194255e8b6e61148ccb90dc19a0ef25dc15"
+  },
+  "projection": {
+    "lat0": 37.98,
+    "lon0": 23.73,
+    "mlat": 111320.0,
+    "mlon": 87745.27512677578
+  },
+  "restrictions": 7100,
+  "sourceBytes": 62333978,
+  "databaseBytes": 309506048,
+  "generationSeconds": 1098.26,
+  "peakRssBytes": 319578112
+}

@@ -1,0 +1,25 @@
+{
+  "purpose": "Candidate lane position from source graph/profile only; not approved for spawn or Riviera join.",
+  "road": "w459160388:0",
+  "station": 22.068853211702166,
+  "center": [
+    4559.384921731594,
+    5.517831215314593,
+    18642.955249295526
+  ],
+  "rightLane": [
+    4557.859930897227,
+    5.517831215314593,
+    18643.43940108484
+  ],
+  "width": 6.4,
+  "yaw": -2.8341786706194654,
+  "nominalLegacyY": 7.43,
+  "profileMinusLegacyY": -1.9121687846854067,
+  "releaseReady": false,
+  "remaining": [
+    "actual rendered lane/contact validation",
+    "building/kerb clearance",
+    "legacy Riviera projection and contact join"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "source": "data/map.json",
+  "sourceStage": "existing Riviera route start; graph match and contact join pending",
+  "sample": 121,
+  "routeStation": 241,
+  "lon": 23.782010363674438,
+  "lat": 37.812540452195904,
+  "sourceHeight": 7.43,
+  "awtPosition": [
+    4563.66367005717,
+    7.43,
+    18641.596861551607
+  ]
+}

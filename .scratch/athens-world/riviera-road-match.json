@@ -1,0 +1,109 @@
+{
+  "nominalAnchor": [
+    4563.66367005717,
+    18641.596861551607
+  ],
+  "cell": [
+    8,
+    36
+  ],
+  "nearest": [
+    {
+      "id": "w459160388",
+      "distance": 4.488972188378138,
+      "point": [
+        4559.385135882386,
+        18642.95517544141
+      ],
+      "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+      "width": 6.4,
+      "oneway": 1,
+      "public": true,
+      "layer": 0,
+      "bridge": false,
+      "tunnel": false
+    },
+    {
+      "id": "w459160393",
+      "distance": 6.164479513181611,
+      "point": [
+        4569.523001902582,
+        18639.681388243574
+      ],
+      "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+      "width": 6.4,
+      "oneway": 1,
+      "public": true,
+      "layer": 0,
+      "bridge": false,
+      "tunnel": false
+    },
+    {
+      "id": "w459160385",
+      "distance": 21.902898570028587,
+      "point": [
+        4570.533943370338,
+        18620.79935424012
+      ],
+      "name": "\u0395\u03c1\u03bc\u03bf\u03cd",
+      "width": 3.2,
+      "oneway": 1,
+      "public": true,
+      "layer": 0,
+      "bridge": false,
+      "tunnel": false
+    },
+    {
+      "id": "w1355912404",
+      "distance": 22.220455458587832,
+      "point": [
+        4556.154990778067,
+        18620.683507533882
+      ],
+      "name": "\u0395\u03c1\u03bc\u03bf\u03cd",
+      "width": 6.5,
+      "oneway": 0,
+      "public": true,
+      "layer": 0,
+      "bridge": false,
+      "tunnel": false
+    },
+    {
+      "id": "w657717627",
+      "distance": 22.520349524971778,
+      "point": [
+        4552.707472590406,
+        18621.921295999477
+      ],
+      "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+      "width": 9.6,
+      "oneway": 1,
+      "public": true,
+      "layer": 0,
+      "bridge": false,
+      "tunnel": false
+    },
+    {
+      "id": "w441628699",
+      "distance": 23.34011747412927,
+      "point": [
+        4562.87714997736,
+        18618.26999999952
+      ],
+      "name": "\u0395\u03c1\u03bc\u03bf\u03cd",
+      "width": 6.4,
+      "oneway": 1,
+      "public": true,
+      "layer": 0,
+      "bridge": false,
+      "tunnel": false
+    }
+  ],
+  "validatedSpawn": false,
+  "remaining": [
+    "lane offset",
+    "profile/contact height",
+    "Riviera join",
+    "connected public graph"
+  ]
+}

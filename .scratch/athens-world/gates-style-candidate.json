@@ -1,0 +1,13 @@
+{
+  "candidate": "b80ff73522c1e149a9ae881413f4d6d6493bc231",
+  "note": "Full green prior candidate; before buffer interning/byte-plane change and latest prod rebase.",
+  "exits": {
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "python": 0,
+    "syntax": 0,
+    "dry-run": 0,
+    "physics": 0
+  }
+}

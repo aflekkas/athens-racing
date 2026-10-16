@@ -1,0 +1,14 @@
+{
+  "purpose": "Offline packing experiment only. No production packer change or hosting projection.",
+  "beforeBytes": 1754577,
+  "afterBytes": 1380077,
+  "reductionPercent": 21.34417583269358,
+  "beforeArrays": 58,
+  "afterArrays": 47,
+  "afterRawContainerBytes": 3986516,
+  "allDecodedArrayBytesIdentical": true,
+  "structuralValidator": "pass",
+  "cpuSeconds": 0.281708,
+  "uses": "Existing shared ASR1 byte planes plus identical-array interning; no new codec",
+  "releaseReady": false
+}

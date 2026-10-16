@@ -1,0 +1,11 @@
+{
+  "testedCommit": "9b123776146f61d3b93d02de6bb1072f4c7b3390",
+  "results": {
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "syntax": 0,
+    "dry-run": 0,
+    "physics": 0
+  }
+}

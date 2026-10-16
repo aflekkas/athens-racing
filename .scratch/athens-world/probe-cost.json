@@ -1,0 +1,134 @@
+{
+  "purpose": "Single-cell provisional layout cost, not release hosting estimate. Isolated array gzip totals do not add to actual combined gzip size.",
+  "compressedBytes": 1754577,
+  "rawContainerBytes": 4312136,
+  "meshArrayBytes": 1299942,
+  "tableBytes": 2993030,
+  "tables": [
+    {
+      "name": "contactTriangles",
+      "bytes": 1058360,
+      "isolatedGzipBytes": 284411
+    },
+    {
+      "name": "fineTriangles",
+      "bytes": 635016,
+      "isolatedGzipBytes": 205507
+    },
+    {
+      "name": "ribbonVertices",
+      "bytes": 576180,
+      "isolatedGzipBytes": 124540
+    },
+    {
+      "name": "contactPositions",
+      "bytes": 324816,
+      "isolatedGzipBytes": 192088
+    },
+    {
+      "name": "finePositions",
+      "bytes": 324816,
+      "isolatedGzipBytes": 192088
+    },
+    {
+      "name": "contactLayers",
+      "bytes": 52918,
+      "isolatedGzipBytes": 86
+    },
+    {
+      "name": "buildingCorners",
+      "bytes": 8816,
+      "isolatedGzipBytes": 7402
+    },
+    {
+      "name": "coarseHeights",
+      "bytes": 4356,
+      "isolatedGzipBytes": 3737
+    },
+    {
+      "name": "buildings",
+      "bytes": 3728,
+      "isolatedGzipBytes": 1361
+    },
+    {
+      "name": "ribbons",
+      "bytes": 2160,
+      "isolatedGzipBytes": 1092
+    },
+    {
+      "name": "buildingHeights",
+      "bytes": 1864,
+      "isolatedGzipBytes": 1006
+    },
+    {
+      "name": "nodes",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "nodePositions",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "edges",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "edgePoints",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "edgeLayers",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "turns",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "junctions",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "junctionVertices",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "markings",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "signs",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "signTransforms",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "anchors",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    },
+    {
+      "name": "anchorTransforms",
+      "bytes": 0,
+      "isolatedGzipBytes": 20
+    }
+  ],
+  "triangles": 70576,
+  "drawCalls": 13,
+  "coveredKm2": 0.262144,
+  "compressedBytesPerKm2": 6693180.084228516,
+  "releaseReady": false
+}

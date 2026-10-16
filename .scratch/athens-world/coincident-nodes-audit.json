@@ -1,0 +1,11 @@
+{
+  "purpose": "Pinned-source topology audit. No consecutive repeated/coincident node IDs were found; new extracts must be audited again.",
+  "counts": {
+    "sameRefRepeat": 0,
+    "distinctRefsCoincident": 0,
+    "sharedCoincident": 0
+  },
+  "examples": [],
+  "releaseReady": false,
+  "roadWaysScanned": 184351
+}

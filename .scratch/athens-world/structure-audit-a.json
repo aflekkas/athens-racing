@@ -1,0 +1,21 @@
+{
+  "counts": {
+    "tunnel": 33,
+    "bridge": 106,
+    "tunnelLayerZero": 2
+  },
+  "layerZeroStructures": [
+    {
+      "id": "w268204023:0",
+      "kind": "tunnel",
+      "layer": 0
+    },
+    {
+      "id": "w429269657:0",
+      "kind": "tunnel",
+      "layer": 0
+    }
+  ],
+  "note": "These structure flags need geometric ordering/clearance review before tiles. A numeric layer alone is not a height.",
+  "releaseReady": false
+}

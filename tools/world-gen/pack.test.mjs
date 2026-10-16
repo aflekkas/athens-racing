@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { TILE_TABLES } from '../../src/world-tile-format.js';
+import { encodeTile, packTiles } from './pack.mjs';
+function fixture(x=0) {
+  const tables=Object.fromEntries(Object.keys(TILE_TABLES).map(k=>[k,[]]));
+  tables.coarseHeights=Array(1089).fill(0);
+  tables.finePositions=[0,0,0,512,0,0,0,0,512,512,0,512];
+  tables.fineTriangles=[0,2,1,1,2,3];
+  return {metadata:{tileVersion:1,world:'fixture',revision:'test',cell:[x,0],origin:[512*x,0,0],
+    ids:[''],strings:[''],palette:[[1,1,1]],meshes:[],terrain:{coarseSize:33,spacing:16},budgets:{triangles:0,buildingTriangles:0}},tables};
+}
+test('AWT spool uses shared codec deterministically and rejects wrapped integers',()=>{
+  assert.deepEqual(encodeTile(fixture()).bytes,encodeTile(fixture()).bytes);
+  const bad=fixture();bad.tables.nodes=[2**32,0];
+  assert.throws(()=>encodeTile(bad),/overflow/);
+  const huge=fixture();huge.arrays=[{type:'Float32Array',data:[1e100]}];
+  assert.throws(()=>encodeTile(huge),/overflow/);
+});
+test('Shared tables alias losslessly and every decoded view releases the raw container',()=>{
+  const input=fixture();input.tables.contactPositions=[...input.tables.finePositions];
+  const {decoded}=encodeTile(input),{tables,views}=decoded.metadata;
+  assert.equal(tables.contactPositions,tables.finePositions);
+  assert.deepEqual([...decoded.arrays[tables.finePositions]],input.tables.finePositions);
+  assert.ok(views.every(v=>v.shuffled===true));
+  assert.equal(new Set(decoded.arrays.map(a=>a.buffer)).size,decoded.arrays.length);
+});
+test('Spool validates every tile and neighbour seam before publishing entries',async()=>{
+  const root=await mkdtemp(join(tmpdir(),'awt-packer-test-'));
+  try {
+    const input=join(root,'input.ndjson'),output=join(root,'out');
+    await writeFile(input,[fixture(0),fixture(1)].map(JSON.stringify).join('\n'));
+    const entries=await packTiles(input,output);assert.equal(Object.keys(entries).length,2);
+    const published=await readFile(join(output,'entries.json'),'utf8');
+    assert.equal(JSON.parse(published).identity,'fixture:test');
+    const cracked=fixture(1);cracked.tables.finePositions[1]=1;
+    await writeFile(input,[fixture(0),cracked].map(JSON.stringify).join('\n'));
+    await assert.rejects(packTiles(input,join(root,'cracked')),/Cracked seam/);
+    await assert.rejects(readFile(join(root,'cracked','entries.json')),/ENOENT/);
+  } finally { await rm(root,{recursive:true,force:true}); }
+});

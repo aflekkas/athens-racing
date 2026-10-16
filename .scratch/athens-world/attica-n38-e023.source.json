@@ -1,0 +1,16 @@
+{
+  "bytes": 17292644,
+  "dataset": "Copernicus GLO-30 DSM",
+  "inputs": {
+    "algorithm": "pixel-window-halo1-v1",
+    "bounds": [
+      22.8,
+      37.4,
+      24.7,
+      38.6
+    ],
+    "sourceSha256": "c289c4a9b2c5c8b5b07e475129134bbb6b64b3ccb86d23eca3428b8e7f5bce28"
+  },
+  "sha256": "593ed89479962af1ac6836d669518d5175b81b04f7fae1acbc8e70dfec3052d4",
+  "verticalDatum": "EGM2008"
+}
