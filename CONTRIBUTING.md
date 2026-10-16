@@ -65,7 +65,7 @@ Some decisions are locked by the owner and listed in [`docs/OWNER-DECISIONS.md`]
 - Racing is about time only: no XP, levels, points, money, unlocks or text dialogue.
 - The HUD stays simple.
 - Terrain next to every drivable road blends to road level so a car can always drive back on (checked by tools/road-terrain-level.test.mjs).
-- UI: no native dropdowns (`<select>`), use the shared Select component; every selection/hover/focus state animates; all screens are built from the shared components in `src/ui/components.js` and update in place (no full re-render or flashing); menus are full screens, not pop-up dialogs.
+- UI: no native dropdowns (`<select>`), use the shared Select component; every selection/hover/focus state animates; all screens are built from the one shared component set in `src/ui/components.js` + `src/ui/ui.css`, derived from the pause-menu reference style, and update in place (no full re-render or flashing); screen stylesheets only lay components out (checked by tools/ui-components.test.mjs); menus are full screens, not pop-up dialogs, except the sign-in Dialog over the title screen (owner decision, docs/OWNER-DECISIONS.md).
 - Nitro only exists on the SEAT.
 - New roads and maps are generated bare-simple from OpenStreetMap and elevation data (road shapes, terrain, building blocks). No street-level photo proof is required (owner decision, docs/OWNER-DECISIONS.md).
 - Free Cloudflare plan only: no paid services, no new paid APIs.

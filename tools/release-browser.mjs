@@ -30,7 +30,7 @@ try {
       report.captures.push(file); console.log('Captured', file);
     };
     await boot();
-    assert.equal(await page.locator('.news-card').count(), 0, 'brand-new launch is quiet');
+    assert.equal(await page.locator('.news-panel').count(), 0, 'brand-new launch is quiet');
     const current = await page.evaluate(() => document.querySelector('meta[name="asr-version"]').content);
     report.build = await page.evaluate(() => Object.fromEntries(['version', 'sha', 'build'].map(key => [key, document.querySelector(`meta[name="asr-${key}"]`)?.content])));
     assert.equal(await page.evaluate(() => localStorage.getItem('paraliaki.releaseSeen')), current);
@@ -60,15 +60,15 @@ try {
     assert.match(await page.locator('.credit-sheet').innerText(), /Piper/i);
     // Persist only an older version, then reload: a returning player gets the current section.
     await page.evaluate(() => { localStorage.setItem('paraliaki.releaseSeen', '2026.10.15.2'); localStorage.setItem('paraliaki.car', 'seat'); });
-    await boot(); await page.waitForSelector('.news-card'); await snap('one-time-card');
-    assert.match(await page.locator('.news-card').innerText(), new RegExp(current.replaceAll('.', '\\.')));
-    assert.doesNotMatch(await page.locator('.news-card').innerText(), /Police now work in online races/);
+    await boot(); await page.waitForSelector('.news-panel'); await snap('one-time-card');
+    assert.match(await page.locator('.news-panel').innerText(), new RegExp(current.replaceAll('.', '\\.')));
+    assert.doesNotMatch(await page.locator('.news-panel').innerText(), /Police now work in online races/);
     // Even a title render while a race is active must never expose the card.
     await page.evaluate(() => { document.body.classList.add('racing'); __flow.menu.refresh(); });
-    assert.equal(await page.locator('.news-card').count(), 0);
+    assert.equal(await page.locator('.news-panel').count(), 0);
     await page.evaluate(() => { document.body.classList.remove('racing'); __flow.menu.refresh(); });
     await click('dismissNews'); await boot();
-    assert.equal(await page.locator('.news-card').count(), 0, 'dismissal survives reload');
+    assert.equal(await page.locator('.news-panel').count(), 0, 'dismissal survives reload');
     report.checks.push(`${width}: upgrade shows latest only; race hides card; dismissal survives reload`);
     await click('credits'); assert.equal(await page.locator('.credits').count(), 1, 'title credits action');
     // The existing HUD footer uses the same screen, with a return route.

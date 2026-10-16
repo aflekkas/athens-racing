@@ -1,63 +1,85 @@
 /* Multiplayer. The Join / Host, lobby, allowed-car and results screens are menu screens (src/ui/mp-screens.js via
    src/menu.js) and share the head-unit frame with every other menu; they are styled at the end of this file. The native
    #multiplayer panel of src/multiplayer.js stays in the DOM as transport state only and is never drawn. */
-#mp-toggle{position:fixed;right:22px;top:90px;z-index:30;display:inline-flex;align-items:center;gap:8px;background:var(--c-accent,#ff3b2f);color:#fff;border:0;border-radius:4px;padding:10px 16px;font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;cursor:pointer}
-#multiplayer,#multiplayer:not([hidden]){display:none!important}
-#mp-board[hidden]{display:none!important}
-
-#mp-board{position:fixed;top:145px;right:22px;z-index:25;min-width:175px;padding:12px 16px;border-radius:4px;border-left:3px solid var(--c-cyan,#29d8ff);background:rgba(8,10,14,.82);color:#fff;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;pointer-events:none}
-#mp-board b{display:block;color:var(--c-cyan,#29d8ff);margin-bottom:6px;letter-spacing:.16em;font-size:12px}#mp-board div{padding:3px 0}
-
-@media(max-width:700px), (max-height:550px) and (max-width:1000px){
-  #posBox{left:12px;top:12px;transform:scale(.68);transform-origin:top left}
-  #styleBox{display:none}#dialBox{width:170px;height:170px;right:8px;bottom:20px}
-  #mapBox{width:130px;height:130px;left:12px;bottom:25px}#mapLabel{font-size:9px;padding:3px 8px}
-  #routeBox{top:88px;width:90vw}#rZone{font-size:16px}#rRoad{font-size:10px}#rToGo{font-size:11px}
-  #routeBox .rt{gap:7px}#rticks .l{font-size:8px;letter-spacing:0}#sigBox{top:135px;transform:scale(.7);transform-origin:top right}
-  #mp-toggle{top:12px;right:12px;font-size:14px;padding:8px 11px}
-  #mp-board{top:130px;right:12px;min-width:125px;font-size:11px;padding:9px 12px}
-  #credit{font-size:8px}#msg{font-size:14px;max-width:80vw}#count{font-size:100px}
-
+#mp-toggle { position:fixed;right:22px;top:90px;z-index:30;display:inline-flex;align-items:center;gap:8px;background:var(--c-accent,#ff3b2f);color:#fff;border:0;border-radius:4px;padding:10px 16px;font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;cursor:pointer }
+#multiplayer, #multiplayer:not([hidden]) { display:none!important }
+#mp-board[hidden] { display:none!important }
+#mp-board { position:fixed;top:145px;right:22px;z-index:25;min-width:175px;padding:12px 16px;border-radius:4px;border-left:3px solid var(--c-cyan,#29d8ff);background:rgba(8,10,14,.82);color:#fff;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;pointer-events:none }
+#mp-board b { display:block;color:var(--c-cyan,#29d8ff);margin-bottom:6px;letter-spacing:.16em;font-size:12px }
+#mp-board div { padding:3px 0 }
+@media(max-width:700px), (max-height:550px) and (max-width:1000px) {
+  #posBox { left:12px;top:12px;transform:scale(.68);transform-origin:top left }
+  #styleBox { display:none }
+  #dialBox { width:170px;height:170px;right:8px;bottom:20px }
+  #mapBox { width:130px;height:130px;left:12px;bottom:25px }
+  #mapLabel { font-size:9px;padding:3px 8px }
+  #routeBox { top:88px;width:90vw }
+  #rZone { font-size:16px }
+  #rRoad { font-size:10px }
+  #rToGo { font-size:11px }
+  #routeBox .rt { gap:7px }
+  #rticks .l { font-size:8px;letter-spacing:0 }
+  #sigBox { top:135px;transform:scale(.7);transform-origin:top right }
+  #mp-toggle { top:12px;right:12px;font-size:14px;padding:8px 11px }
+  #mp-board { top:130px;right:12px;min-width:125px;font-size:11px;padding:9px 12px }
+  #credit { font-size:8px }
+  #msg { font-size:14px;max-width:80vw }
+  #count { font-size:100px }
 }
-
 /* Standings stay at the edge of the windscreen, with no running telemetry panel. */
-#mp-board{top:145px;right:14px;width:180px;min-width:0;max-height:250px;padding:9px 10px;font-size:12px;letter-spacing:.025em;border-left-width:2px;overflow:auto;box-sizing:border-box}
-#mp-board header{display:flex;align-items:center;justify-content:space-between;gap:8px}
-#mp-board b{margin:0;font-size:10px;letter-spacing:.12em}
-#mp-board .mp-latency{display:flex;align-items:center;gap:4px;color:#c1ccd6;font-size:9px;white-space:nowrap}
-.mp-latency::before{content:'';width:6px;height:6px;border-radius:50%;background:#62e9bf}.mp-latency[data-quality=fair]::before{background:#ffd34d}.mp-latency[data-quality=poor]::before{background:#f47676}
-#mp-board .mp-gaps{font-size:10px;color:#bdccd8;padding:5px 0;border-bottom:1px solid #ffffff19;white-space:pre}
-#mp-board ol{list-style:none;margin:4px 0 0;padding:0}#mp-board li{display:flex;gap:8px;align-items:center;line-height:1.5;font-size:12px}#mp-board li.me{color:#62e9bf}
-#mp-board .mp-position{width:23px;flex:none;font-size:10px;font-variant-numeric:tabular-nums;color:#a8b7c3}#mp-board .mp-driver-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#mp-board .mp-watch{display:flex;gap:3px;padding:3px 0;pointer-events:auto}#mp-board .mp-watch ui-select{width:0;min-width:0;flex:1;font-size:10px;min-height:26px;padding:0 6px;gap:4px}#mp-board .mp-watch button{padding:0 8px;min-height:26px}
-.mp-blocked-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:10px}
-@media(max-height:480px){#mp-board{top:86px;right:12px;width:168px;max-height:160px;padding:7px 9px}#mp-board li{font-size:11px}}
-@media(max-width:500px){#mp-board{top:132px;right:12px;width:154px;max-height:210px;padding:8px}body[data-mode=taxi] #mp-board,body[data-mode=getaway] #mp-board{top:360px}}
+#mp-board { top:145px;right:14px;width:180px;min-width:0;max-height:250px;padding:9px 10px;font-size:12px;letter-spacing:.025em;border-left-width:2px;overflow:auto;box-sizing:border-box }
+#mp-board header { display:flex;align-items:center;justify-content:space-between;gap:8px }
+#mp-board b { margin:0;font-size:10px;letter-spacing:.12em }
+#mp-board .mp-latency { display:flex;align-items:center;gap:4px;color:#c1ccd6;font-size:9px;white-space:nowrap }
+.mp-latency::before { content:'';width:6px;height:6px;border-radius:50%;background:#62e9bf }
+.mp-latency[data-quality=fair]::before { background:#ffd34d }
+.mp-latency[data-quality=poor]::before { background:#f47676 }
+#mp-board .mp-gaps { font-size:10px;color:#bdccd8;padding:5px 0;border-bottom:1px solid #ffffff19;white-space:pre }
+#mp-board ol { list-style:none;margin:4px 0 0;padding:0 }
+#mp-board li { display:flex;gap:8px;align-items:center;line-height:1.5;font-size:12px }
+#mp-board li.me { color:#62e9bf }
+#mp-board .mp-position { width:23px;flex:none;font-size:10px;font-variant-numeric:tabular-nums;color:#a8b7c3 }
+#mp-board .mp-driver-name { overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+#mp-board .mp-watch { display:flex;gap:3px;padding:3px 0;pointer-events:auto }
+#mp-board .mp-watch ui-select { width:0;min-width:0;flex:1;font-size:10px;min-height:26px;padding:0 6px;gap:4px }
+#mp-board .mp-watch button { padding:0 8px;min-height:26px }
+.mp-blocked-row { display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:10px }
+@media(max-height:480px) {
+  #mp-board { top:86px;right:12px;width:168px;max-height:160px;padding:7px 9px }
+  #mp-board li { font-size:11px }
+}
+@media(max-width:500px) {
+  #mp-board { top:132px;right:12px;width:154px;max-height:210px;padding:8px }
+  body[data-mode=taxi] #mp-board, body[data-mode=getaway] #mp-board { top:360px }
+}
 /* Short windscreens reserve the right corner for the dial and speed-limit sign. */
-@media(max-height:480px){#mp-board{top:90px;left:104px;right:auto;width:110px;max-height:90px;padding:6px}#mp-board ol{max-height:44px;overflow-y:auto;pointer-events:auto}#mp-board .mp-gaps{font-size:9px;padding:3px 0}#mp-board li{font-size:10px;gap:4px;line-height:1.4}#mp-board .mp-position{width:18px}#mp-board .mp-watch ui-select{min-height:20px}#mp-board .mp-watch button{min-height:20px;padding:0 5px}}
-
+@media(max-height:480px) {
+  #mp-board { top:90px;left:104px;right:auto;width:110px;max-height:90px;padding:6px }
+  #mp-board ol { max-height:44px;overflow-y:auto;pointer-events:auto }
+  #mp-board .mp-gaps { font-size:9px;padding:3px 0 }
+  #mp-board li { font-size:10px;gap:4px;line-height:1.4 }
+  #mp-board .mp-position { width:18px }
+  #mp-board .mp-watch ui-select { min-height:20px }
+  #mp-board .mp-watch button { min-height:20px;padding:0 5px }
+}
 /* Persistent update action; independent of whether the lobby/menu is open. */
-.mp-update-notice{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:16px;max-width:calc(100vw - 32px);padding:10px 14px;background:#101a21;color:#fff;border:1px solid #4ccce4;border-radius:8px;font:14px system-ui;box-shadow:0 4px 20px #0008}
-.mp-update-notice button{border:1px solid #4ccce4;border-radius:4px;background:#153541;color:#fff;padding:7px 12px;font:inherit;cursor:pointer}
-
-.mp-connection-chip{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:90;padding:6px 12px;border-radius:14px;background:#182126dc;color:#ffd176;font:600 12px system-ui;pointer-events:none}.mp-connection-chip[hidden]{display:none}
-
+.mp-update-notice { position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:16px;max-width:calc(100vw - 32px);padding:10px 14px;background:#101a21;color:#fff;border:1px solid #4ccce4;border-radius:8px;font:14px system-ui;box-shadow:0 4px 20px #0008 }
+.mp-update-notice button { border:1px solid #4ccce4;border-radius:4px;background:#153541;color:#fff;padding:7px 12px;font:inherit;cursor:pointer }
+.mp-connection-chip { position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:90;padding:6px 12px;border-radius:14px;background:#182126dc;color:#ffd176;font:600 12px system-ui;pointer-events:none }
+.mp-connection-chip[hidden] { display:none }
 /* ---------------------------------------------------------------- multiplayer screens */
 /* Showroom layout (Join / Host, lobby): like the home screen, no modal and no map world behind it. The selected car is
    a live studio render in the middle; a slim column of head-unit panels floats on the right. */
 #ui.s-mp, #ui.s-mpLobby { background: radial-gradient(90% 80% at 36% 48%, #1b2631 0%, #0b1016 55%, #05070a 100%); }
-#ui.s-mpCars, #ui.s-mpResults {
-  background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
+#ui.s-mpCars, #ui.s-mpResults { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
 .mp-show { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem); grid-template-rows: auto minmax(0, 1fr) auto; gap: var(--s-3) var(--s-6); }
 .mp-stage { grid-column: 1; grid-row: 1 / -1; position: relative; min-height: 0; z-index: 0; }
 .mp-stage canvas { display: block; width: 100% !important; height: 100% !important; touch-action: pan-y; }
 .mp-stage::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: 8%; height: 18%; border-radius: 50%; background: radial-gradient(closest-side, rgba(190,215,235,.05), transparent); pointer-events: none; }
 .mp-show__cap { grid-column: 1; grid-row: 1; z-index: 1; min-width: 0; pointer-events: none; }
 .mp-show__cap .chip { pointer-events: auto; }
-.mp-show__title { margin: .25rem 0 0; font: 300 var(--t-3xl)/1.05 var(--f-sans); letter-spacing: .08em; text-transform: uppercase; overflow-wrap: anywhere; }
 .mp-show__sub { margin: .4rem 0 0; font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); }
 .mp-show__meta { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
-.mp-code-chip { height: 2.1rem; font-size: var(--t-md); letter-spacing: .3em; font-variant-numeric: tabular-nums; }
 .mp-plate { grid-column: 1; grid-row: 3; z-index: 1; justify-self: center; display: grid; justify-items: center; gap: .2rem; text-align: center; max-width: 100%; }
 .mp-plate__name { font: 400 var(--t-2xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(0,0,0,.6); }
 .mp-plate__spec { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .18em; color: var(--hu-ice); min-height: 1em; }
@@ -66,8 +88,8 @@
 .mp-actions > .btn:not(.btn--sm) { min-width: 11rem; min-height: 3rem; }
 .mp-actions > .btn.is-on { --btn-fg: var(--tt-green, #38e07b); --btn-bd: rgba(56,224,123,.5); }
 .mp-side { grid-column: 2; grid-row: 1 / -1; z-index: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: var(--s-3); padding: 6px; margin: -4px -2px -4px -4px; }
-.mp-side > .panel { flex: none; padding: var(--s-4); }
-.mp-side__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.mp-side > .panel { flex: none; }
+.mp-side__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .mp-side .tabs { flex: 1 1 auto; }
 .mp-tools { display: flex; gap: var(--s-1); }
 .mp-status { height: auto; min-height: 1.9rem; padding: .35em .85em; white-space: normal; letter-spacing: .08em; max-width: 100%; }
@@ -92,16 +114,18 @@
 .mp-driver.me { background: rgba(255,255,255,.07); }
 .mp-driver__who { min-width: 0; display: flex; align-items: center; gap: var(--s-2); }
 .mp-driver__who b { min-width: 0; font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mp-driver__who .chip { height: 1.5rem; padding: 0 .6em; }
+.mp-driver__who .chip { height: 1.5rem; }
 .mp-driver__car { grid-column: 2; grid-row: 2; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); text-transform: uppercase; white-space: nowrap; }
 .mp-driver__state { grid-column: 3; grid-row: 1 / 3; text-align: right; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); white-space: nowrap; transition: color var(--dur); }
 .mp-driver__state[data-state=ready] { color: var(--tt-green, #38e07b); }
-.mp-driver__state[data-state=load] { color: var(--hu-ice); } .mp-driver__state[data-state=away] { color: var(--tt-amber, #ffb21a); }
+.mp-driver__state[data-state=load] { color: var(--hu-ice); }
+.mp-driver__state[data-state=away] { color: var(--tt-amber, #ffb21a); }
 .mp-dot { grid-row: 1 / 3; width: .55rem; height: .55rem; border-radius: 50%; background: var(--c-text-4, #5d6773); transition: background var(--dur), box-shadow var(--dur); }
 .mp-dot[data-state=ready] { background: var(--tt-green, #38e07b); }
-.mp-dot[data-state=load] { background: var(--hu-ice); } .mp-dot[data-state=away] { background: var(--tt-amber, #ffb21a); }
+.mp-dot[data-state=load] { background: var(--hu-ice); }
+.mp-dot[data-state=away] { background: var(--tt-amber, #ffb21a); }
 .mp-driver__ctl { grid-column: 2 / -1; display: flex; justify-content: flex-end; gap: var(--s-1); }
-.mp-driver__ctl .btn--sm { min-height: 2rem; padding: 0 var(--s-3); font-size: var(--t-xs); }
+.mp-driver__ctl .btn--sm { min-height: 2rem; }
 .mp-driver__ctl .mp-block { color: #ffafa7; }
 .mp-driver--blocked { grid-template-columns: minmax(0, 1fr) auto; }
 .mp-blocked { margin-top: var(--s-3); display: grid; gap: 2px; }
@@ -109,28 +133,30 @@
 .mp-help { margin: var(--s-3) var(--s-1) 0; font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); line-height: 1.45; }
 .mp-help:empty { display: none; }
 .mp-presets { display: flex; gap: var(--s-2); }
-.scr--mp-cars .field__label small { margin-left: .6em; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); }
 .scr--mp-results .res-actions { flex-wrap: wrap; }
 /* phones: the car shrinks to the top, the panels stack below it and the page scrolls */
 @media (max-width: 860px) {
-  .scr--showroom .scr__body { overflow-y: auto; overscroll-behavior: contain; padding: 6px; margin: -6px; } /* room for focus rings */
+  .scr--showroom .scr__body { overflow-y: auto; overscroll-behavior: contain; margin: -6px; }
+  /* room for focus rings */
   .mp-show { display: flex; flex-direction: column; flex: none; gap: var(--s-3); }
   .mp-stage { flex: none; height: max(12rem, 30vh); margin: 0 calc(var(--pad-screen-x) * -1 - 6px); }
   .mp-show__cap { position: absolute; left: 0; right: 0; top: 0; }
-  .mp-show__title { font-size: var(--t-2xl); }
   .mp-show__sub { display: none; }
   .mp-plate { justify-self: stretch; }
   .mp-plate__name { font-size: var(--t-xl); }
   .mp-side { overflow: visible; }
   .mp-actions > .btn:not(.btn--sm) { flex: 1 1 10rem; min-width: 0; }
 }
-@media (max-width: 560px) { .mp-side .tabs .tab .ico { display: none; } .mp-tools .btn span { display: none; } .mp-tools .btn { padding: 0 var(--s-3); } }
+@media (max-width: 560px) {
+  .mp-side .tabs .tab .ico { display: none; }
+  .mp-tools .btn span { display: none; }
+}
 /* short landscape: keep the two columns, a smaller car and titles */
 @media (max-height: 500px) {
   .mp-show { grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem); gap: var(--s-2) var(--s-4); }
-  .mp-show__title { font-size: var(--t-xl); } .mp-show__sub, .mp-help { display: none; }
-  .mp-plate__name { font-size: var(--t-lg); } .mp-actions > .btn:not(.btn--sm) { min-height: 2.5rem; min-width: 9rem; }
-  .mp-side > .panel { padding: var(--s-3); }
+  .mp-show__sub, .mp-help { display: none; }
+  .mp-plate__name { font-size: var(--t-lg); }
+  .mp-actions > .btn:not(.btn--sm) { min-height: 2.5rem; min-width: 9rem; }
 }
 @media (max-height: 500px) and (max-width: 860px) {
   .scr--showroom .scr__body { overflow: hidden; }

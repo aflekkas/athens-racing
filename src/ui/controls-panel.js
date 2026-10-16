@@ -32,7 +32,7 @@ function bindRow(action, label) {
   const b = input.bindings, cap = input.capture?.action === action ? input.capture.kind : null;
   const cell = (kind) => !(action in b[kind]) ? `<span class="bind__chip na">${C.kbd('—', kind === 'gamepad', 'kbd--empty')}</span>`
     : `<span class="bind__chip ${cap === kind ? 'wait' : ''}" data-bind="${kind}" role="button" aria-label="Rebind ${esc(label)} ${kind}">${cap === kind ? `<em>${kind === 'keyboard' ? 'PRESS A KEY' : 'PRESS A BUTTON'}</em>` : chips(kind, b[kind][action])}</span>`;
-  return `<div class="mi field bind" data-kind="bind" data-action="${action}"><span class="field__label"><span>${esc(label)}</span></span><div class="field__ctl bind__cols">${cell('keyboard')}${cell('gamepad')}</div></div>`;
+  return C.field(esc(label), `<div class="bind__cols">${cell('keyboard')}${cell('gamepad')}</div>`, { kind: 'bind', cls: 'bind', attrs: { 'data-action': action } });
 }
 export function renderControls(menu) {
   const s = input.settings, A = { 'data-scope': 'input' };

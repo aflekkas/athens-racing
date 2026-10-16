@@ -144,7 +144,7 @@ export class Menu {
     this.data.keepScroll = true; this.render({ morph: true });
     if (want != null) { const i = this.items().findIndex((el) => id(el) === want); if (i >= 0 && i !== this.focus) this.setFocus(i, false); }
   }
-  items() { return [...this.root.querySelectorAll('.mi:not(.off)')].filter((el) => el.offsetParent !== null || el.getClientRects().length); }
+  items() { const scope = this.root.querySelector('[data-dialog]') || this.root; return [...scope.querySelectorAll('.mi:not(.off)')].filter((el) => el.offsetParent !== null || el.getClientRects().length); }
   setFocus(i, scroll = true) {
     const it = this.items(); if (!it.length) return;
     this.focus = (i + it.length) % it.length;
@@ -319,18 +319,18 @@ export class Menu {
     return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
       <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
       <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
-      <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
-        ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage' })}
-        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
+      <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
+        ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin', cls: 'option--tile' })}
+        ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost', cls: 'option--tile' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
+        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}</div>
       </div><footer class="scr__foot">${Release.titleExtras(this)}${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {
-    const tile = (act, ic, title, desc) => `<div class="mi mode-tile" role="button" data-act="${act}"><span class="mode-tile__ico">${icon(ic)}</span><b class="mode-tile__title">${title}</b><span class="mode-tile__desc">${desc}</span></div>`;
+    const tile = (act, ic, title, desc) => C.option({ icon: ic, title, desc, act, cls: 'option--tile' });
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-select">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
+      body: `<div class="mode-layout">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -347,7 +347,7 @@ export class Menu {
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
 
   // ---------------------------------------------------------------- car
-  r_car(d) { return garage.renderCarSelect({...d, road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name}); }
+  r_car(d) { return garage.renderCarSelect(d); }
   confirmCar() {
     const c = CARS[this.data.index || 0];
     if (this.data.allowedCars && !this.data.allowedCars.includes(c.id)) return;
@@ -398,12 +398,13 @@ export class Menu {
     }
     if (rows[0]) rows[0] = rows[0].replace('<div class="mi field', '<div data-default="" class="mi field'); // open on the first choice
     const note = '';
-    return C.screen({ appearance: 'racing', road: (MAPS.find(m=>m.id===ctx.mapId)||MAPS[0]).name, car: this.h.carSpec?.()?.name || 'YOUR GARAGE', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
+    const map = MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
+    return C.screen({ cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="setup-layout"><aside class="panel panel--notch setup__event scroll-y">${C.routeHero(MAPS.find(m=>m.id===ctx.mapId)||MAPS[0])}${this.eventSummary(runDef, r, runDef.id)}</aside>
-        <section class="panel setup__form"><header class="panel__head"><h3 class="panel__title">${icon('sliders-horizontal')}${def.type === 'free' ? 'YOUR SESSION' : 'YOUR RACE'}</h3>${C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom })}</header>
-          <div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}</div>${note}
-          <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'HOST / CREATE GAME' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', size: 'lg', block: true, act: 'setupGo' })}</div></section></div>` });
+      body: `<div class="setup-layout">${C.panel('', `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}`, { cls: 'setup__event scroll-y' })}
+        ${C.panel(def.type === 'free' ? 'YOUR SESSION' : 'YOUR RACE', `<div class="setup__fields scroll-y">${this.participantChoice()}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}</div>${note}
+          <div class="setup__go">${C.button({ label: this.participants === 'multiplayer' ? 'HOST / CREATE GAME' : 'CHOOSE CAR', icon: this.participants === 'multiplayer' ? 'users-three' : 'car-profile', iconRight: 'caret-right', variant: 'primary', act: 'setupGo' })}</div>`,
+          { icon: 'sliders-horizontal', cls: 'setup__form', right: C.button({ label: 'DEFAULTS', icon: 'arrow-counter-clockwise', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) })}</div>` });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
@@ -418,7 +419,7 @@ export class Menu {
     const v = (k) => String(this.valueFor(k));
     let body = '';
     if (tab === 'driver') {
-      body = `<div class="group"><h3 class="group__title">${icon('user')}DRIVER NAME</h3><label class="group__note" for="driver-name">YOUR PLATE & ONLINE NAME</label><input id="driver-name" data-driver-name maxlength="16" value="${esc(driverName.get())}" aria-label="Driver name" autocomplete="off" autocapitalize="characters" spellcheck="false"><p class="group__note">3–16 LETTERS, NUMBERS OR HYPHENS. SAVED IN THIS BROWSER. NAMES CAN BE SHARED.</p>${C.option({ icon: 'check', title: 'SAVE DRIVER NAME', act: 'saveDriverName' })}</div>`;
+      body = `<div class="group"><h3 class="group__title">${icon('user')}DRIVER NAME</h3>${C.textField({ name: 'driver-name', label: 'YOUR PLATE & ONLINE NAME', value: driverName.get(), inputCls: 'plate-input', inputAttrs: { id: 'driver-name', 'data-driver-name': '', maxlength: 16, autocapitalize: 'characters' }, note: '3–16 LETTERS, NUMBERS OR HYPHENS. SAVED IN THIS BROWSER. NAMES CAN BE SHARED.' })}<div class="field-actions">${C.button({ label: 'SAVE DRIVER NAME', icon: 'check', act: 'saveDriverName', variant: 'primary', size: 'sm' })}</div></div>`;
     } else if (tab === 'audio') {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
       body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'swearing', label: 'SWEARING', value: !settings.mildLanguage, attrs: SET })}</div>`;
@@ -445,11 +446,10 @@ export class Menu {
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;
     } else if (tab === 'controls') body = renderControls(this);
     else if (tab === 'about') body = Release.renderAbout(this);
-    const profile = tab === 'video' ? resolveGraphics(settings) : null;
-    return C.screen({ appearance: tab === 'video' ? 'racing' : '', road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name, car: this.h.carSpec?.()?.name || 'YOUR GARAGE', cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
-      head: C.tabs({ key: 'settingsTab', value: tab, options: tabsList }),
+    return C.screen({ cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
+      head: C.tabs({ key: 'settingsTab', value: tab, options: tabsList, vertical: true }),
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['tabs', 'TAB'], ...(tab === 'controls' ? [['confirm', 'REBIND']] : []), ['back', 'BACK']],
-      body: tab === 'video' ? `<div class="video-layout"><aside class="video-hero">${C.routeHero({...(MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]),eyebrow:'TUNE YOUR VIEW',content:C.stats([['RESOLUTION',Math.round(profile.resolution*100)+'%']])})}<div class="video-hero__action"><p>YOUR ROADS. YOUR PICTURE.</p><span>Every change applies live.</span>${C.button({label:'BACK TO THE ROAD',act:'back',icon:'caret-right',variant:'primary'})}</div></aside><div class="set-panel panel scroll-y">${body}</div></div>` : `<div class="set-panel panel scroll-y">${body}</div>` });
+      body: `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
   leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
@@ -458,8 +458,16 @@ export class Menu {
   r_pause(d) {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
-    return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+    // THE REFERENCE STYLE (owner, 2026-10-16, docs/OWNER-DECISIONS.md): every other screen is derived from this sheet.
+    const rows = [C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } }),
+      ...(d.inFreeRoam ? [C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }), C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }), C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }), C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' })] : []),
+      d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' }),
+      window.__flow?.resetCar ? C.option({ icon: 'truck', title: 'RESET TO ROAD', act: 'reset' }) : '',
+      d.online ? C.option({ icon: 'users-three', title: 'LOBBY & HOST CONTROLS', act: 'onlineLobby' }) : '',
+      d.online && window.__multiplayer?.lobby?.status === 'race' && !window.__multiplayer?.retired && window.__multiplayer?.me?.finish == null ? C.option({ icon: 'flag-checkered', title: 'RETIRE · DNF', act: 'retire' }) : '',
+      C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' }), C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })];
+    const controls = `<div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div>`;
+    return `<div class="scr scr--pause">${C.panel('', `${C.sheetHead({ kick, title: 'PAUSED', status: d.sub ? esc(d.sub) : '' })}<div class="pause__list">${rows.join('')}</div>${controls}`, { cls: 'pause-sheet' })}
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
   }
 
@@ -481,9 +489,9 @@ export class Menu {
     const field = d.field?.length ? C.panel('CLASSIFICATION', `<table class="r-table">${d.field.map((f) => `<tr class="${f.me ? 'me' : ''}"><td class="r-pos">P${f.pos}</td><td>${esc(f.name)}<small>${esc(f.car || '')}</small></td><td class="tnum ${f.running ? 'run' : ''}">${f.time}</td></tr>`).join('')}</table>`, { icon: 'flag-checkered' }) : '';
     const tiles = (d.rows || []).filter(([k]) => !/EVENT BEST|MEDAL|RECORD/i.test(k)).map(([k, v, hi]) => C.stat(esc(k), v, { tone: hi ? 'hi' : '' }));
     const act = (a, ic, label, v = 'secondary') => C.button({ label, icon: ic, act: a, variant: v, attrs: a === 'retry' ? { 'data-default': '' } : null });
-    return C.screen({ cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
+    return C.screen({ cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, title: esc(d.title || ''), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
       body: `<div class="res-layout"><div class="res-main">
-        <h2 class="res-title">${esc(d.title || '')}</h2>${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
+        ${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
         ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
         <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>

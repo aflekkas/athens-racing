@@ -70,4 +70,4 @@
    The corner MULTIPLAYER toggle only opens the lobby, so it steps aside while the lobby is open and the close button stays clear. */
 :root body:has(#multiplayer:not([hidden])) #mp-toggle { display: none; }
 /* results: a stat value wraps rather than truncating on a phone ("212 KM/H" stays whole) */
-:root .res-stats .stat-tile__v { white-space: normal; overflow: visible; text-overflow: clip; }
+

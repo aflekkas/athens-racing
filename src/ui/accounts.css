@@ -1,67 +1,15 @@
-#ui .scr--account {
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  background: linear-gradient(
-    130deg,
-    rgba(11, 20, 25, 0.98),
-    rgba(15, 29, 36, 0.96)
-  );
-}
-.account-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: var(--s-5);
-  align-items: start;
-  max-width: 1100px;
-  width: 100%;
-  margin: auto;
-}
-.scr--account .scr__body {
-  overflow: auto;
-}
-.scr--account .panel {
-  margin-bottom: var(--s-4);
-}
-.scr--account .btn {
-  margin: 0.4rem 0.4rem 0.4rem 0;
-}
-.scr--account p {
-  line-height: 1.65;
-  color: var(--c-text-2);
-  max-width: 65ch;
-}
-.account-intro {
-  padding: 2rem 0;
-}
-.account-intro .account-lede {
-  font-size: clamp(1.8rem, 4vw, 3.5rem);
-  font-weight: 900;
-  line-height: 1.1;
-  color: var(--c-text);
-}
-.account-friend {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  align-items: center;
-}
-.account-friend small {
-  display: block;
-  letter-spacing: 0.08em;
-  margin-top: 0.4rem;
-  font-size: 0.7rem;
-  color: var(--c-text-2);
-}
-.account-error {
-  color: #ffb4a6 !important;
-}
-.account-dev {
-  color: #ffdc83 !important;
-}
-.account-small {
-  font-size: 0.75rem;
-}
+/* Account screens: layouts only. Every control, row and panel is a kit component (src/ui/ui.css). */
+.account-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--s-5); align-items: start; width: 100%; max-width: 68rem; margin: 0 auto; }
+.account-narrow { width: 100%; max-width: 34rem; margin: 0 auto; }
+.scr--account .scr__body { overflow-y: auto; }
+.account-side { display: grid; gap: var(--s-4); min-width: 0; }
+.account-id { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3) var(--s-4); }
+.account-profile .group__title { margin-top: var(--s-5); }
+.account-friends { display: grid; gap: 2px; }
+.account-add { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-3); }
+.account-add > .search { flex: 1; }
+.account-error { margin: var(--s-2) var(--s-4) 0; font: 500 var(--t-sm) var(--f-sans); color: #ffb4a6; }
+.account-error:empty { display: none; }
 #accounts-offline {
   position: fixed;
   bottom: 0;
@@ -76,37 +24,4 @@
   letter-spacing: 0.06em;
   pointer-events: none;
 }
-.hu-driver[data-act="account"] {
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s,
-    transform 0.2s;
-}
-.hu-driver[data-act="account"]:hover,
-.hu-driver[data-act="account"]:focus-visible {
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 2px #b8ef77;
-  transform: translateY(-1px);
-}
-@media (max-width: 650px) {
-  .account-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-  }
-  .account-intro {
-    padding: 0;
-  }
-  .account-intro .account-lede {
-    font-size: 1.6rem;
-  }
-  .account-friend {
-    flex-wrap: wrap;
-  }
-  .scr--account .scr__title {
-    font-size: 1.6rem;
-  }
-  .scr--account .field {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
+@media (max-width: 860px) { .account-layout { grid-template-columns: minmax(0, 1fr); } }

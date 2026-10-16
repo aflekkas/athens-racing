@@ -8,6 +8,15 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Every menu now shares one clean look, taken from the pause menu: the same panels, rows, buttons, lists and selection outline on every screen.
+  ![The garage with search and filters in one row and a full grid of cars](assets/changelog/2026.10.16.1/one-component-set.webp "One look everywhere. More cars in view.")
+- The garage shows more cars at once, with search and filters in one row at the top.
+- Sign in from a small window over the title screen, with the Google button. You can always play offline instead.
+  ![The sign-in window over the dimmed title screen](assets/changelog/2026.10.16.1/sign-in.webp "Continue with Google, or play offline.")
+- Your account lists your friends first and shows who is online. Friend requests and lobby invites share one Activity list, and your plate looks like a real plate.
+- Race notices now sit small in the top-left corner, clear of the road ahead, the mirrors and the minimap. A police pursuit shows as a small badge.
+  ![A police pursuit badge and a short tow notice in the top-left corner of the cockpit view](assets/changelog/2026.10.16.1/race-notices.webp "Notices out of your way.")
+- The tyre grip panel is gone.
 - Rain uses scrolling texture layers, matte wet-road patches and small tyre-wake cards; water splashes use textured mist and foam.
   ![Day rain before and after the inexpensive texture overlays](assets/changelog/2026.10.16.1/rain-overlays.webp "Day rain in chase and cockpit views before and after the overlay change.")
 

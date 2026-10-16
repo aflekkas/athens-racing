@@ -47,7 +47,7 @@ test('Worker intercepts legal routes before assets; sitemap and in-game entry po
   for (const path of ['/privacy', '/terms']) assert.ok(sitemap.includes(`https://athensracing.com${path}`));
   const accounts = await readFile(new URL('../src/ui/account-screen.js', import.meta.url), 'utf8');
   const release = await readFile(new URL('../src/ui/release-screens.js', import.meta.url), 'utf8');
-  assert.match(accounts, /account-small[^\n]*\$\{privacyLink\}/);
+  assert.match(accounts, /foot: `\$\{privacyLink\}/, 'the sign-in dialog footer links the privacy policy');
   assert.match(accounts, /Read the \$\{privacyLink\}/);
   assert.match(release, /CONTRIBUTING_URL[^\n]*\$\{legalLinks\}/);
   assert.match(release, /title: 'CREDITS'[^\n]*body: body \+ legalLinks/);
