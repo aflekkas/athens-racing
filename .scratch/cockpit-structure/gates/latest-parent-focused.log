@@ -1,0 +1,202 @@
+TAP version 13
+# Subtest: every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+ok 1 - every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+  ---
+  duration_ms: 16626.742527
+  type: 'test'
+  ...
+# Subtest: ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+ok 2 - ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+  ---
+  duration_ms: 8.322038
+  type: 'test'
+  ...
+# Subtest: all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+ok 3 - all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+  ---
+  duration_ms: 6107.752453
+  type: 'test'
+  ...
+# Subtest: rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+ok 4 - rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+  ---
+  duration_ms: 122.564765
+  type: 'test'
+  ...
+# Subtest: damage explains actual power loss, cause and remapped recovery action
+ok 5 - damage explains actual power loss, cause and remapped recovery action
+  ---
+  duration_ms: 6.300782
+  type: 'test'
+  ...
+# Subtest: known curvature and braking distance retain physical units
+ok 6 - known curvature and braking distance retain physical units
+  ---
+  duration_ms: 4.921953
+  type: 'test'
+  ...
+# Subtest: straight is green; hairpin advice changes with speed, weather and car grip
+ok 7 - straight is green; hairpin advice changes with speed, weather and car grip
+  ---
+  duration_ms: 16.76924
+  type: 'test'
+  ...
+# Subtest: line stays inside actual width and retains grade, reverse lane/direction
+ok 8 - line stays inside actual width and retains grade, reverse lane/direction
+  ---
+  duration_ms: 1.632121
+  type: 'test'
+  ...
+# Subtest: downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+ok 9 - downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+  ---
+  duration_ms: 4.025772
+  type: 'test'
+  ...
+# Subtest: closed circuit wraps and clamps surveyed racing line without terrain chords
+ok 10 - closed circuit wraps and clamps surveyed racing line without terrain chords
+  ---
+  duration_ms: 0.705384
+  type: 'test'
+  ...
+# Subtest: free roam follows actual heading and backing direction; explicit reverse race stays fixed
+ok 11 - free roam follows actual heading and backing direction; explicit reverse race stays fixed
+  ---
+  duration_ms: 10.477014
+  type: 'test'
+  ...
+# Subtest: ENGINE HOT waits for a temperature that actually wears the engine
+ok 12 - ENGINE HOT waits for a temperature that actually wears the engine
+  ---
+  duration_ms: 0.258361
+  type: 'test'
+  ...
+# Subtest: owner-locked: tyre-grip HUD cannot be restored; world braking line and physics telemetry stay separate
+ok 13 - owner-locked: tyre-grip HUD cannot be restored; world braking line and physics telemetry stay separate
+  ---
+  duration_ms: 92.872627
+  type: 'test'
+  ...
+# Subtest: owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+ok 14 - owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+  ---
+  duration_ms: 5.359828
+  type: 'test'
+  ...
+# Subtest: visibility rejects opaque dash but passes clear glass
+ok 15 - visibility rejects opaque dash but passes clear glass
+  ---
+  duration_ms: 2.842337
+  type: 'test'
+  ...
+# Subtest: seat adjustments clamp, persist independently per car, reload, and reset
+ok 16 - seat adjustments clamp, persist independently per car, reload, and reset
+  ---
+  duration_ms: 3.057267
+  type: 'test'
+  ...
+# Subtest: screen station stays in vehicle coordinates on translated and rotated vehicles
+ok 17 - screen station stays in vehicle coordinates on translated and rotated vehicles
+  ---
+  duration_ms: 1.797379
+  type: 'test'
+  ...
+# Subtest: POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+ok 18 - POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+  ---
+  duration_ms: 4.322015
+  type: 'test'
+  ...
+# Subtest: every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+ok 19 - every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+  ---
+  duration_ms: 12329.401031
+  type: 'test'
+  ...
+# Subtest: old all-aids-off migrates ABS and quick TC/ESC persists without changing ABS
+ok 20 - old all-aids-off migrates ABS and quick TC/ESC persists without changing ABS
+  ---
+  duration_ms: 22.359466
+  type: 'test'
+  ...
+# Subtest: comfortable master default migrates the old default once and preserves explicit volumes
+ok 21 - comfortable master default migrates the old default once and preserves explicit volumes
+  ---
+  duration_ms: 31.617709
+  type: 'test'
+  ...
+# Subtest: saved volumes remain usable when storage writes are denied
+ok 22 - saved volumes remain usable when storage writes are denied
+  ---
+  duration_ms: 3.851197
+  type: 'test'
+  ...
+# Subtest: quieter tyres migrate the old default once without changing custom levels or master
+ok 23 - quieter tyres migrate the old default once without changing custom levels or master
+  ---
+  duration_ms: 26.956383
+  type: 'test'
+  ...
+# Subtest: steering assist defaults follow the active device until explicitly selected
+ok 24 - steering assist defaults follow the active device until explicitly selected
+  ---
+  duration_ms: 10.940278
+  type: 'test'
+  ...
+# Subtest: Off / Light / Full apply live, persist and take priority over device defaults
+ok 25 - Off / Light / Full apply live, persist and take priority over device defaults
+  ---
+  duration_ms: 15.60494
+  type: 'test'
+  ...
+# Subtest: invalid saved steering assist returns to the adaptive default
+ok 26 - invalid saved steering assist returns to the adaptive default
+  ---
+  duration_ms: 1.415788
+  type: 'test'
+  ...
+# Subtest: resolution persists and notifies live subscribers; graphics presets are gone
+ok 27 - resolution persists and notifies live subscribers; graphics presets are gone
+  ---
+  duration_ms: 16.723294
+  type: 'test'
+  ...
+# Subtest: old graphics / lighting / effects saves load cleanly: the preset becomes a performance class only
+ok 28 - old graphics / lighting / effects saves load cleanly: the preset becomes a performance class only
+  ---
+  duration_ms: 8.206733
+  type: 'test'
+  ...
+# Subtest: resolution values are bounded on load and live writes
+ok 29 - resolution values are bounded on load and live writes
+  ---
+  duration_ms: 2.351291
+  type: 'test'
+  ...
+# Subtest: owner-locked: tyre-grip HUD preference is removed and saved choices migrate without changing assists
+ok 30 - owner-locked: tyre-grip HUD preference is removed and saved choices migrate without changing assists
+  ---
+  duration_ms: 7.031072
+  type: 'test'
+  ...
+# Subtest: HUD motion respects reduced motion until explicitly chosen and rejects invalid values
+ok 31 - HUD motion respects reduced motion until explicitly chosen and rejects invalid values
+  ---
+  duration_ms: 13.200268
+  type: 'test'
+  ...
+# Subtest: retired phone controller preferences are dropped from memory and saved settings
+ok 32 - retired phone controller preferences are dropped from memory and saved settings
+  ---
+  duration_ms: 5.137322
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23499.684307

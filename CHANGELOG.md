@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Cockpits regain body frames, connected dashboards and branded steering wheels. Mounted wipers clear small, subtle rain drops.
+  ![SVJ cockpit and rainy 911 before and after](assets/changelog/2026.10.16.1/cockpit-structure.webp "A visible cabin and steering wheel, with a clear view of the road.")
+
 - Building blocks have brighter roofs, shaded sides and darker bases, adding depth without extra scenery.
   ![Baked shading gives Riviera building blocks more depth](assets/changelog/2026.10.16.1/baked-building-depth.webp "Simple building shapes with shaded sides and grounded bases.")
 

@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+ok 1 - every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+  ---
+  duration_ms: 17152.424206
+  type: 'test'
+  ...
+# Subtest: ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+ok 2 - ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+  ---
+  duration_ms: 3.914634
+  type: 'test'
+  ...
+# Subtest: all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+ok 3 - all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+  ---
+  duration_ms: 5698.61216
+  type: 'test'
+  ...
+# Subtest: rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+ok 4 - rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+  ---
+  duration_ms: 129.741478
+  type: 'test'
+  ...
+# Subtest: owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+ok 5 - owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+  ---
+  duration_ms: 9.67624
+  type: 'test'
+  ...
+# Subtest: visibility rejects opaque dash but passes clear glass
+ok 6 - visibility rejects opaque dash but passes clear glass
+  ---
+  duration_ms: 11.333628
+  type: 'test'
+  ...
+# Subtest: seat adjustments clamp, persist independently per car, reload, and reset
+ok 7 - seat adjustments clamp, persist independently per car, reload, and reset
+  ---
+  duration_ms: 11.964485
+  type: 'test'
+  ...
+# Subtest: screen station stays in vehicle coordinates on translated and rotated vehicles
+ok 8 - screen station stays in vehicle coordinates on translated and rotated vehicles
+  ---
+  duration_ms: 4.159531
+  type: 'test'
+  ...
+# Subtest: POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+ok 9 - POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+  ---
+  duration_ms: 15.252661
+  type: 'test'
+  ...
+# Subtest: every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+ok 10 - every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+  ---
+  duration_ms: 13794.376201
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23901.776005

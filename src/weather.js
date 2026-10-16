@@ -1,3 +1,4 @@
+import {cockpitDropMaterial} from './cockpit-rain.js';
 // Conditions in the world: what the time of day and the weather (env.js) mean for everything that isn't sky.
 //  - night: street lamps lit with light pools on the road (analytic, in the road / pavement shaders: no real
 //    lights), lit windows, car head / tail lamps (emissive + glow sprites; the player gets one real shadowless spot
@@ -236,49 +237,7 @@ class Spray {
 }
 
 // ---- drops on the cockpit windscreen, cleared by two wipers
-function dropMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime: ENV.U.time, uRain: { value: 0 }, uAmb: { value: new THREE.Vector3(0.3, 0.3, 0.3) }, uWipe: { value: 1.25 } },
-    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: /* glsl */`uniform float uTime; uniform float uRain; uniform vec3 uAmb; uniform float uWipe; varying vec2 vUv;
-      float h1(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-      const float TAU = 6.2831853, SWEEP = 2.3, ARM = 0.66;
-      // seconds since the arm pivoting at P last passed over m (both arms run in phase)
-      float since(vec2 m, vec2 P, float w, float omega){
-        vec2 r = m - P; if (length(r) > ARM || r.y < 0.0) return 1e3;
-        float phi = atan(r.y, r.x); float s = (3.14159 - phi) / SWEEP; if (s < 0.0 || s > 1.0) return 1e3;
-        float w0 = acos(clamp(1.0 - 2.0 * s, -1.0, 1.0));
-        return min(mod(w - w0, TAU), mod(w - (TAU - w0), TAU)) / omega;
-      }
-      float blade(vec2 m, vec2 P, float a){ vec2 dir = vec2(cos(a), sin(a)); vec2 r = m - P; float t = clamp(dot(r, dir), 0.0, ARM); return 1.0 - smoothstep(0.004, 0.009, length(r - dir * t)) * 1.0; }
-      void main(){
-        vec2 m = vec2(vUv.x * 1.3, vUv.y * 0.75);
-        float omega = TAU / uWipe, w = mod(uTime * omega, TAU);
-        vec2 P1 = vec2(0.3, -0.04), P2 = vec2(0.92, -0.04);
-        float ts = min(since(m, P1, w, omega), since(m, P2, w, omega));
-        // drops land at random times, sitting in a jittered grid of cells
-        vec2 cell = m / 0.03; vec2 ci = floor(cell); vec2 cf = fract(cell);
-        float hA = h1(ci), hB = h1(ci + 17.3), hC = h1(ci + 41.7);
-        float tLand = hA * 2.2 / max(uRain, 0.05) + hC * 0.4;
-        float age = mod(uTime + hB * 37.0, 1e4);
-        float on = step(tLand, min(ts, age));
-        vec2 c = vec2(0.25 + 0.5 * hB, 0.25 + 0.5 * hC);
-        float rad = 0.16 + 0.22 * hA;
-        vec2 dv = cf - c; float dd = length(dv) / rad;
-        float drop = (1.0 - smoothstep(0.8, 1.0, dd)) * on;
-        // a lens: dark rim, a bright fleck where it catches the sky, the world showing (blurred) through
-        vec3 col = uAmb * (0.55 + 0.9 * smoothstep(0.7, 0.0, length(dv / rad + vec2(0.35, -0.4)))) * (0.6 + 0.4 * smoothstep(1.0, 0.6, dd));
-        float a = drop * (0.32 + 0.4 * smoothstep(0.6, 1.0, dd));
-        // the blades themselves
-        float a1 = 3.14159 - SWEEP * (0.5 - 0.5 * cos(w));
-        float b = max(blade(m, P1, a1), blade(m, P2, a1));
-        col = mix(col, vec3(0.012), b); a = max(a, b * 0.96);
-        if (a < 0.004) discard;
-        gl_FragColor = vec4(col, a);
-      }`,
-    transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, side: THREE.DoubleSide,
-  });
-}
+function dropMaterial(){return cockpitDropMaterial(ENV.U.time);}
 
 // ------------------------------------------------------------------ state
 let W = null;
@@ -502,16 +461,17 @@ export function updateWeather(dt) {
   // ---- windscreen drops (cockpit view only)
   if (player && player.model !== W.lastModel) {
     W.lastModel = player.model;
-    const ws = player.model.windscreen;
+    const ws = player.model.cockpitWindscreen || player.model.windscreen;
     if (W.drops) W.drops.removeFromParent();
     W.drops = null;
     if (ws && ws.geometry.attributes.uv) {
       W.drops = new THREE.Mesh(ws.geometry, W.dropMat);
       W.drops.position.copy(ws.position); W.drops.quaternion.copy(ws.quaternion); W.drops.scale.copy(ws.scale);
       W.drops.renderOrder = 8; W.drops.castShadow = false; W.drops.frustumCulled = false;
-      ws.parent.add(W.drops);
+      (ws.parent || player.model.body).add(W.drops);
     }
   }
+  player?.model.updateCockpitWipers?.(ENV.U.time.value,st.rain>0&&camIn);
   if (W.drops) {
     W.drops.visible = st.rain > 0 && camIn;
     const amb = ENV.CU.uSkyIrr.value, k = 0.22 / Math.max(st.exposure, 0.5);

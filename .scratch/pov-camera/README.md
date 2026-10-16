@@ -1,3 +1,7 @@
+# Current fixture refresh: visible cockpit structure (2026-10-16)
+
+The current mask-audit/source hashes, after colour frames and part-ID masks validate the owner-required visible shell and steering wheel. See `../cockpit-structure/README.md` and its complete real-production-before/final-after evidence. The generator’s `before` field is only the legacy eye/exterior-visible reference pose on the current model; it is not the ghost-fix baseline. The following 2026-10-15 camera report and world sheets are historical, superseded where they describe hiding the steering wheel or all own-car structure.
+
 # POV camera audit (integration candidate — not released)
 
 Owner requirement: at least 80% of the default rendered cockpit frame is unobstructed exterior through the windscreen/open cockpit. The vehicle's opaque surfaces share at most 20%. The ID pass counts vehicle obstruction, not road-coloured pixels: sky and scenery through the windscreen count as clear view. HTML HUD overlays are outside this vehicle-mask measurement.

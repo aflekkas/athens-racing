@@ -75,3 +75,18 @@ The Settings browser test saved height +0.08 m and position −0.08 m under the 
 The per-configuration physics identity comparison above applies to the controlled vehicle-only benchmark pair. Final landing retains the separately authorized `a92d24d` suspension changes and passes its expanded 1,141-regression suite. Shared vehicle primitives and cockpit visibility form one fleet-wide change, so they land atomically after complete fleet validation.
 
 Final latest-parent integration snapshot `097ff79bed6ccfcd560bb2bcd60917aa2cc8abbf` (parent `3f43a7f`) passed 168 tests plus one expected archive git-author skip, syntax and browser imports. This set includes both POV guards, every vehicle budget/night-light transition, notices, camera controls, release assets, world owner rules and test wiring. Logs are in `gates-landing/`. Final landing adds only this report, gate logs and the evidence viewer to that tested source tree.
+
+## Owner correction: visible cockpit structure, 2026-10-16
+
+The ghost cockpit regression is corrected with a connected low-poly shell, visible rotating branded steering wheel, mounted mirrors/wipers and a small tiled windscreen texture overlay. This deliberately restores visible geometry. It is not a draw-call reduction claim. All 70 configurations remain at or below 828 visible interior triangles; each car wheel is 110 triangles. Default clear view is 82.6446–92.8583% including the structure.
+
+Matched Riviera camera pose comparisons use a6471544 cockpit runtime before and the new candidate after, in the same 87558ec world. The exact-source audit and full release gates retain parent f525f45; final integration also retains b09b85c (tyre-grip HUD removal) and 87f0d64 (building colour shading), with affected checks plus physics repeated in a fresh archive. Full provenance, all 32 world pairs, two rain pairs and counts are in [cockpit-structure](../../cockpit-structure/README.md).
+
+| Rain main scene | Draw calls before → after | Triangles before → after |
+|---|---:|---:|
+| 911 | 194 → 219 | 673022 → 673264 |
+| SVJ | 188 → 210 | 672478 → 672684 |
+
+The windscreen overlay itself remains one draw and decreases from eight to two triangles, with one shared 128×128 alpha tile and no per-drop objects. These counts reset renderer.info and render the main scene, excluding mirror/post/UI passes. No GPU timing or FPS claims on SwiftShader.
+
+[911 before](../../cockpit-structure/before-carrera-rain.webp) · [911 after](../../cockpit-structure/after-carrera-rain.webp) · [SVJ before](../../cockpit-structure/before-aventador_svj-rain.webp) · [SVJ after](../../cockpit-structure/after-aventador_svj-rain.webp) · [all 70 triangle/mask rows](../../cockpit-structure/TRIANGLES-AND-MASKS.md) · [all scene counts](../../cockpit-structure/SCENE-COUNTS.md).

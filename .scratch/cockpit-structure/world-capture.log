@@ -1,0 +1,70 @@
+[browser-slot] slot 3 acquired (ticket 1184, waited 0s)
+before MENU
+before WORLD
+before aygo {"dry":{"calls":183,"triangles":668984}}
+before qashqai {"dry":{"calls":185,"triangles":669136}}
+before dolphin {"dry":{"calls":181,"triangles":668696}}
+before atto3 {"dry":{"calls":181,"triangles":668696}}
+before van {"dry":{"calls":176,"triangles":668056}}
+before truck {"dry":{"calls":178,"triangles":668120}}
+before bus {"dry":{"calls":177,"triangles":639720}}
+before delivery {"dry":{"calls":186,"triangles":669196}}
+before scooter {"dry":{"calls":186,"triangles":669196}}
+before moto {"dry":{"calls":186,"triangles":669196}}
+before police_octavia {"dry":{"calls":191,"triangles":669358}}
+before police_moto {"dry":{"calls":186,"triangles":669196}}
+before panda {"dry":{"calls":187,"triangles":668918}}
+before jazz {"dry":{"calls":188,"triangles":668934}}
+before yaris {"dry":{"calls":191,"triangles":669358}}
+before ibiza {"dry":{"calls":192,"triangles":669366}}
+before golf {"dry":{"calls":191,"triangles":669358}}
+before mini {"dry":{"calls":192,"triangles":669382}}
+before gr_yaris {"dry":{"calls":191,"triangles":669358}}
+before gla {"dry":{"calls":191,"triangles":669358}}
+before corolla {"dry":{"calls":191,"triangles":669358}}
+before taxi {"dry":{"calls":192,"triangles":669372}}
+before superb {"dry":{"calls":191,"triangles":669358}}
+before cla {"dry":{"calls":191,"triangles":669358}}
+before cle {"dry":{"calls":191,"triangles":669358}}
+before z4 {"dry":{"calls":192,"triangles":669382}}
+before carrera {"dry":{"calls":192,"triangles":669414},"rain":{"calls":194,"triangles":673022}}
+before aventador_svj {"dry":{"calls":186,"triangles":668870},"rain":{"calls":188,"triangles":672478}}
+before huracan {"dry":{"calls":185,"triangles":668438}}
+before gtv {"dry":{"calls":192,"triangles":669446}}
+before e36 {"dry":{"calls":192,"triangles":669446}}
+before mini_jcw {"dry":{"calls":192,"triangles":669382}}
+after MENU
+after WORLD
+after aygo {"dry":{"calls":195,"triangles":669056}}
+after qashqai {"dry":{"calls":208,"triangles":669412}}
+after dolphin {"dry":{"calls":204,"triangles":668972}}
+after atto3 {"dry":{"calls":204,"triangles":668972}}
+after van {"dry":{"calls":198,"triangles":668320}}
+after truck {"dry":{"calls":200,"triangles":668384}}
+after bus {"dry":{"calls":199,"triangles":639984}}
+after delivery {"dry":{"calls":192,"triangles":669268}}
+after scooter {"dry":{"calls":192,"triangles":669268}}
+after moto {"dry":{"calls":192,"triangles":669268}}
+after police_octavia {"dry":{"calls":216,"triangles":669606}}
+after police_moto {"dry":{"calls":192,"triangles":669268}}
+after panda {"dry":{"calls":213,"triangles":669178}}
+after jazz {"dry":{"calls":215,"triangles":669206}}
+after yaris {"dry":{"calls":217,"triangles":669618}}
+after ibiza {"dry":{"calls":218,"triangles":669626}}
+after golf {"dry":{"calls":216,"triangles":669606}}
+after mini {"dry":{"calls":217,"triangles":669630}}
+after gr_yaris {"dry":{"calls":216,"triangles":669606}}
+after gla {"dry":{"calls":216,"triangles":669606}}
+after corolla {"dry":{"calls":217,"triangles":669618}}
+after taxi {"dry":{"calls":217,"triangles":669620}}
+after superb {"dry":{"calls":217,"triangles":669618}}
+after cla {"dry":{"calls":216,"triangles":669606}}
+after cle {"dry":{"calls":216,"triangles":669606}}
+after z4 {"dry":{"calls":216,"triangles":669618}}
+after carrera {"dry":{"calls":217,"triangles":669662},"rain":{"calls":219,"triangles":673264}}
+after aventador_svj {"dry":{"calls":208,"triangles":669082},"rain":{"calls":210,"triangles":672684}}
+after huracan {"dry":{"calls":210,"triangles":668686}}
+after gtv {"dry":{"calls":218,"triangles":669706}}
+after e36 {"dry":{"calls":218,"triangles":669706}}
+after mini_jcw {"dry":{"calls":218,"triangles":669642}}
+Terminated

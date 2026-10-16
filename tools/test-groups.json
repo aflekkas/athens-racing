@@ -2,6 +2,7 @@
   "unit": [
     "tools/pov-owner-lock.test.mjs",
     "tools/pov-camera.test.mjs",
+    "tools/cockpit-structure.test.mjs",
     "tools/vehicle-budgets.test.mjs",
     "tools/world-tile-scene.test.mjs",
     "tools/world-tile-stream.test.mjs",
