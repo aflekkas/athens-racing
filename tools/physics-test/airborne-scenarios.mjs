@@ -1,3 +1,4 @@
+import { angularVelocity } from '../../src/airborne-dynamics.js';
 // Deterministic controlled surfaces; used by Node regressions AND browser evidence.
 export const flatAirborneRoute = {
   GR:null,length:1e5,closed:false,frame:(s,o={})=>Object.assign(o,{tx:0,tz:-1,rx:1,rz:0,grade:0,bank:0}),
@@ -41,7 +42,17 @@ export function scenarioStep(v,name,i) {
   v.update(1/60,input);
 }
 export function runAirborneScenario(Vehicle,specs,name,Ground=null) {
-  const v=scenarioVehicle(Vehicle,specs,name,Ground),trace=[];
+  const v=scenarioVehicle(Vehicle,specs,name,Ground),trace=[],contacts=[];
+  // Observe the real Ground entrypoint, independently of the contact solver.
+  // This also works on the unfixed implementation for before/after evidence.
+  const energy=()=>.5*v.m*(v.speed**2+v.vy**2)+.5*v.rigid.L.reduce((sum,L,i)=>sum+L*angularVelocity(v)[i],0)+v.m*9.81*v.rigid.cy;
+  let time=0;
+  const resolve=v.resolveBodyContact;
+  v.resolveBodyContact=function(dt,...args){
+    const before=v.rigid?energy():null;time+=dt;
+    resolve.call(v,dt,...args);
+    if(before!==null&&v.rigid?.contact)contacts.push({t:time,before,after:energy(),cy:v.rigid.cy,vy:v.vy});
+  };
   let maxAir=0,airTime=0,maxRoll=0,maxHeight=0,minY=Infinity,peakLanding=0;
   for(let i=0;i<480;i++) {
     scenarioStep(v,name,i);
@@ -49,7 +60,22 @@ export function runAirborneScenario(Vehicle,specs,name,Ground=null) {
     maxRoll=Math.max(maxRoll,Math.acos(Math.max(-1,Math.min(1,up))));
     if(v.air){airTime+=1/60;maxAir=Math.max(maxAir,v.y-v.route.surfaceY(v.s,v.u));}
     maxHeight=Math.max(maxHeight,v.y-v.route.surfaceY(v.s,v.u));minY=Math.min(minY,v.y-v.route.surfaceY(v.s,v.u));peakLanding=Math.max(peakLanding,v.landingSpeed||0);
-    if(i%3===0)trace.push({t:(i+1)/60,x:v.x,y:v.y,z:v.z,yaw:v.yaw,air:v.air,bodyDynamic:v.bodyDynamic,q:q?.slice(),pose:{...v.pose},vy:v.vy,roll:Math.acos(Math.max(-1,Math.min(1,up))),speed:v.speed,load:v.corners.map(c=>c.Fz)});
+    if(name==='barrier'||i%3===0)trace.push({cy:v.y+v.hcg+(v.pose.heave||0),angularSpeed:v.angularSpeed,contact:!!v.rigid?.contact,t:(i+1)/60,x:v.x,y:v.y,z:v.z,yaw:v.yaw,air:v.air,bodyDynamic:v.bodyDynamic,q:q?.slice(),pose:{...v.pose},vy:v.vy,roll:Math.acos(Math.max(-1,Math.min(1,up))),speed:v.speed,load:v.corners.map(c=>c.Fz)});
   }
-  return {name,maxAir,airTime,maxRoll,maxHeight,minY,peakLanding,final:{y:v.y,vy:v.vy,speed:v.speed,air:v.air,bodyDynamic:v.bodyDynamic,pose:v.pose},trace};
+  const firstGroundContact=contacts.find(c=>c.t>.2&&c.vy<1)?.t??null;
+  const reboundPeaks=[];
+  let valley=null;
+  for(let i=1;i<trace.length-1;i++){
+    const p=trace[i];if(firstGroundContact===null||p.t<firstGroundContact)continue;
+    if(p.cy<=trace[i-1].cy&&p.cy<trace[i+1].cy)valley=p;
+    if(valley&&p.cy>=trace[i-1].cy&&p.cy>trace[i+1].cy){
+      if(p.cy-valley.cy>.01)reboundPeaks.push({t:p.t,height:p.cy,contactHeight:valley.cy,rise:p.cy-valley.cy});
+      valley=null;
+    }
+  }
+  const rest=p=>p.speed<.2&&Math.abs(p.vy)<.2&&p.angularSpeed<.2;
+  let lastMoving=trace.findLastIndex(p=>!rest(p));
+  const restAt=lastMoving<trace.length-1?trace[lastMoving+1].t:null;
+  const timeToRest=firstGroundContact!==null&&restAt!==null?restAt-firstGroundContact:null;
+  return {firstGroundContact,reboundPeaks,restAt,timeToRest,contacts,name,maxAir,airTime,maxRoll,maxHeight,minY,peakLanding,final:{y:v.y,vy:v.vy,speed:v.speed,air:v.air,bodyDynamic:v.bodyDynamic,pose:v.pose},trace};
 }

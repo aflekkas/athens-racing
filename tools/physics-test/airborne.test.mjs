@@ -60,3 +60,41 @@ test('a hard player contact can launch the local body without changing the remot
   assert.equal(hits.length,1);assert.ok(local.bodyDynamic&&local.vy>1);
   assert.equal(JSON.stringify({x:remote.x,y:remote.y,z:remote.z,vLong:remote.vLong,vLat:remote.vLat,w:remote.w}),before);
 });
+
+// Ground pulls in real Three geometry; isolate its browser-road stub in the
+// existing damage harness so these gates exercise the actual barrier _hit path.
+let barrierContactRun;
+async function barrierContacts(){
+  if(!barrierContactRun){
+    const {execFileSync}=await import('node:child_process');
+    barrierContactRun=JSON.parse(execFileSync(process.execPath,['--import','./tools/damage-test-register.mjs','--input-type=module','-e',`
+      import { Vehicle } from './src/physics.js';
+      import { Ground } from './src/ground.js';
+      import { catalogue } from './tools/physics-test/powertrain.mjs';
+      import { runAirborneScenario } from './tools/physics-test/airborne-scenarios.mjs';
+      console.log(JSON.stringify(runAirborneScenario(Vehicle,catalogue(),'barrier',Ground)));
+    `],{cwd:new URL('../../',import.meta.url),encoding:'utf8',maxBuffer:4*1024*1024}));
+  }
+  return barrierContactRun;
+}
+test('barrier ground contacts: rebound peaks decay and rise at most 0.6 m',async()=>{
+  const r=await barrierContacts();assert.ok(r.firstGroundContact>1&&r.firstGroundContact<2);
+  const launchPeak=Math.max(...r.trace.filter(p=>p.t<r.firstGroundContact).map(p=>p.cy));
+  let previous=launchPeak;
+  for(const peak of r.reboundPeaks){
+    assert.ok(peak.height<=previous+.005,`peak ${peak.height} exceeds previous ${previous}`);
+    assert.ok(peak.rise<=.6,`rebound rises ${peak.rise} m from ${peak.contactHeight}`);
+    previous=peak.height;
+  }
+  // Check every subsequent pose too, so an uncompleted rebound cannot escape.
+  assert.ok(r.trace.filter(p=>p.t>=r.firstGroundContact).every(p=>p.cy<=launchPeak+.005));
+});
+test('barrier ground contacts never increase total kinetic plus potential energy',async()=>{
+  const r=await barrierContacts();assert.ok(r.contacts.length>100,'measure substep contacts, including settled support');
+  for(const c of r.contacts)assert.ok(c.after<=c.before+1e-6,`t=${c.t}: contact added ${c.after-c.before} J`);
+});
+test('barrier comes to persistent rest within 3 s of first touchdown',async()=>{
+  const r=await barrierContacts();
+  assert.ok(r.timeToRest!==null&&r.timeToRest<=3,`rest after ${r.timeToRest} s (speed/vy/spin all < 0.2)`);
+  assert.ok(r.trace.filter(p=>p.t>=r.restAt).every(p=>p.speed<.2&&Math.abs(p.vy)<.2&&p.angularSpeed<.2));
+});

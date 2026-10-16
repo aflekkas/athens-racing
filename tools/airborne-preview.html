@@ -16,7 +16,7 @@ let vehicle,car,road,name,index,kerb,barrier;
 function setup(scenario){
  name=scenario;index=0;if(car)scene.remove(car.root);if(road){scene.remove(road);road.geometry.dispose();}if(kerb)scene.remove(kerb);if(barrier)scene.remove(barrier);
  vehicle=scenarioVehicle(Vehicle,CARS,name,Ground);car=new CarModel(vehicle.spec);car.root.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(car.root);
- const geo=new THREE.PlaneGeometry(40,400,20,400).rotateX(-Math.PI/2),p=geo.attributes.position;
+ const geo=new THREE.PlaneGeometry(200,400,20,400).rotateX(-Math.PI/2),p=geo.attributes.position;
  for(let i=0;i<p.count;i++){p.setZ(i,p.getZ(i)-140);p.setY(i,vehicle.route.surfaceY(-p.getZ(i),p.getX(i))-.01);}geo.computeVertexNormals();road=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:'#65696c',roughness:.95}));road.receiveShadow=true;scene.add(road);
  for(const side of [-1,1]) {
   const lineGeo=new THREE.PlaneGeometry(.12,400,1,400).rotateX(-Math.PI/2),a=lineGeo.attributes.position;

@@ -25,6 +25,10 @@ function invInertia(v,u) {
   const B=v.rigid,local=rotate(inverse(B.q),u),I=inertia(v);
   return rotate(B.q,local.map((x,i)=>x/I[i]));
 }
+function mechanicalEnergy(v) {
+  const u=worldVelocity(v);
+  return .5*v.m*dot(u,u)+.5*dot(v.rigid.L,angularVelocity(v))+v.m*G*v.rigid.cy;
+}
 export function angularVelocity(v) { return v.rigid ? invInertia(v,v.rigid.L) : [v.pose.pitchV||0,-v.w,v.pose.rollV||0]; }
 export function startFlight(v,vertical=v.vy||0) {
   if(v.rigid)return;
@@ -88,6 +92,7 @@ function finishFlight(v,y,grade,bank,slope,impact) {
 }
 export function stepFlight(v,dt,y,grade=0,bank=0,slope=0) {
   const B=v.rigid;if(!B)return;
+  const energyBefore=mechanicalEnergy(v);
   B.age+=dt;B.contact=false;
   v.vy-=G*dt; B.cy+=v.vy*dt;
   const vel=worldVelocity(v),omega=angularVelocity(v),q=B.q;
@@ -103,30 +108,61 @@ export function stepFlight(v,dt,y,grade=0,bank=0,slope=0) {
   const top=(v.spec.height||1.45)-v.hcg;
   for(const xx of [-v.halfW*.92,v.halfW*.92])for(const zz of [-v.halfL*.88,v.halfL*.88])for(const yy of [Math.min(.2,v.hcg*.3)-v.hcg,top])points.push([xx,yy,zz]);
   // Contact positions and their terrain samples stay fixed during the impulse
-  // iterations. Reuse them rather than projecting onto the road 8x per point.
-  const samples=points.map(p=>{const r=rotate(B.q,p);return {p,r,floor:heightAt(v,v.x+r[0],v.z+r[2])};});
+  // iterations. Reuse them rather than projecting onto the road per solver pass.
+  const samples=points.map((p,index)=>{const r=rotate(B.q,p);return {p,r,hull:index>=4,floor:heightAt(v,v.x+r[0],v.z+r[2])};});
   let lowest=Infinity;
   for(const {r,floor} of samples)lowest=Math.min(lowest,B.cy+r[1]-floor);
   const hitSpeed=Math.max(0,slope-v.vy);
-  if(lowest<=.015&&upright&&hitSpeed>=0&&v.vy<=slope+.1&&Math.hypot(omega[0],omega[2])<2.2&&B.age>.02){finishFlight(v,y,grade,bank,slope,hitSpeed);return;}
+  // A crushed, tumbling body must settle before the spring model takes over;
+  // an early handoff otherwise restores rolling wheels in the middle of a scrape.
+  if(lowest<=.015&&upright&&(!B.crushed||v.speed<.2&&up[1]>.99&&Math.hypot(omega[0],omega[2])<.5)&&hitSpeed>=0&&v.vy<=slope+.1&&Math.hypot(omega[0],omega[2])<2.2&&B.age>.02){finishFlight(v,y,grade,bank,slope,hitSpeed);return;}
   // Sequential impulses on the oriented hull, with positional projection only
-  // for penetration. Eight passes resolve roof/side support without a road snap.
+  // for penetration. Sixteen passes resolve roof/side support without a road snap.
   let impact=0,deepest=0;
-  for(let pass=0;pass<8;pass++)for(const {r,floor} of samples){
-    const gap=B.cy+r[1]-floor;
-    if(gap>.008)continue;
-    B.contact=true;deepest=Math.max(deepest,-gap);
-    const velNow=worldVelocity(v),o=angularVelocity(v),cp=cross(o,r).map((x,i)=>x+velNow[i]);
-    if(cp[1]<0){
-      impact=Math.max(impact,-cp[1]);const arm=cross(r,[0,1,0]),eff=1/v.m+dot(arm,invInertia(v,arm));
-      const j=-(1+(cp[1]<-2?.08:0))*cp[1]/eff;
-      rigidImpulse(v,[0,j,0],r);
-      const planar=Math.hypot(cp[0],cp[2]);
-      if(planar>.001){const tangent=[cp[0]/planar,0,cp[2]/planar],ta=cross(r,tangent),te=1/v.m+dot(ta,invInertia(v,ta)),jt=Math.min(j*.55,planar/te);rigidImpulse(v,tangent.map(x=>-x*jt),r);}
+  const contacts=samples.filter(({r,floor})=>B.cy+r[1]-floor<=.008).map(sample=>{
+    const cp=cross(angularVelocity(v),sample.r).map((x,i)=>x+worldVelocity(v)[i]);
+    impact=Math.max(impact,-cp[1]);
+    deepest=Math.max(deepest,sample.floor-B.cy-sample.r[1]);
+    return {...sample,normal:0,tangent:[0,0,0],bounce:cp[1]<-2?-.12*cp[1]:0};
+  });
+  B.contact=contacts.length>0;
+  for(let pass=0;pass<16;pass++)for(const c of contacts){
+    const {r}=c,arm=cross(r,[0,1,0]),eff=1/v.m+dot(arm,invInertia(v,arm));
+    const cp=cross(angularVelocity(v),r).map((x,i)=>x+worldVelocity(v)[i]);
+    // Accumulated impulses can unwind as neighbouring contacts/friction change
+    // the constraint. Repeated one-way impulses turn a tumbling corner into a pogo.
+    const normal=Math.max(0,c.normal+(c.bounce-cp[1])/eff);
+    rigidImpulse(v,[0,normal-c.normal,0],r);c.normal=normal;
+    const slip=cross(angularVelocity(v),r).map((x,i)=>x+worldVelocity(v)[i]);
+    const planar=Math.hypot(slip[0],slip[2]);
+    if(planar>.000001){
+      const tangent=[slip[0]/planar,0,slip[2]/planar],ta=cross(r,tangent),te=1/v.m+dot(ta,invInertia(v,ta));
+      let next=c.tangent.map((x,i)=>x-tangent[i]*planar/te);
+      const length=Math.hypot(...next),limit=(c.hull||!upright?.65:.55)*c.normal;
+      if(length>limit)next=next.map(x=>x*limit/length);
+      rigidImpulse(v,next.map((x,i)=>x-c.tangent[i]),r);c.tangent=next;
     }
   }
   // The substep cannot tunnel through the support plane, including on its roof.
-  B.cy+=deepest;v.y=B.cy-v.hcg;v.yAir=v.y;v.air=B.contact?0:1;
+  // A hard hull strike crushes the contact patch rather than vaulting a rigid
+  // corner over asphalt. Dissipate the unresolved spin and bound
+  // CoM rebound by the same low restitution as the contact normal. Wheel-edge
+  // pivots remain free to roll a tall vehicle over.
+  const hullImpact=contacts.length>0&&!upright&&impact>2&&vel[1]<-.5;
+  if(hullImpact){
+    B.crushed=true;
+    const u=worldVelocity(v);u[1]=Math.min(u[1],.12*Math.max(0,-vel[1]));setVelocity(v,u);
+    B.L=B.L.map(x=>x*.2);
+  }
+  B.cy+=deepest;
+  if(B.contact){
+    // Projection raises potential energy. Pay for it from the remaining kinetic
+    // energy, including spin: a corner must not act as a powered launch ramp.
+    const kinetic=.5*v.m*dot(worldVelocity(v),worldVelocity(v))+.5*dot(B.L,angularVelocity(v));
+    const budget=Math.max(0,energyBefore-v.m*G*B.cy);
+    if(kinetic>budget){const scale=Math.sqrt(budget/kinetic);setVelocity(v,worldVelocity(v).map(x=>x*scale));B.L=B.L.map(x=>x*scale);}
+  }
+  v.y=B.cy-v.hcg;v.yAir=v.y;v.air=B.contact?0:1;
   if(B.contact){v.bumpHit=Math.max(v.bumpHit,clamp(impact*.12,0,1));if(impact>v.landingSpeed+1||!v.landingSpeed){v.landingSpeed=impact;landingDamage(v,impact);} }
   else v.landingSpeed=0;
   v.w=-angularVelocity(v)[1];

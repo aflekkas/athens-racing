@@ -53,3 +53,36 @@ node --test tools/airborne-network.test.mjs
 ```
 
 The captured crest, barrier and bus sequences were opened and visually inspected. Scene shadows make wheel/road separation visible, and each frame records time, speed, height, vertical velocity, tilt and contact state.
+
+## Dissipative tumble contacts · 2026-10-16
+
+The original hull solve had three sources of excessive rebound: friction used
+slip measured before the normal impulse, successive passes could only add
+normal impulse, and penetration projection added unbudgeted potential energy.
+A rapidly spinning rigid corner could also vault the body upward even while
+losing some energy overall.
+
+Contacts now accumulate normal and tangential impulses, allowing earlier
+impulses to unwind as the manifold converges. Slip is recomputed after each
+normal solve. Restitution is 0.12, scraping Coulomb friction is 0.65 (ordinary
+upright wheel-edge pivots retain 0.55). A hard descending non-upright strike
+uses a plastic crush approximation: at most 12% vertical rebound and 20% retained
+angular momentum, dissipating spin rather than repeatedly vaulting on a corner.
+Crushed bodies retain the rigid scraping solve until aligned and nearly stopped;
+this prevents the spring handoff from instantly restoring freely rolling wheels
+mid-crash. Intact crest landings still hand directly into suspension.
+
+Each hull-contact substep budgets total translational kinetic, rotational
+kinetic and gravitational potential energy from before gravity/orientation
+integration. Penetration projection is charged against the remaining kinetic
+energy. `airborne-scenarios.mjs` independently wraps the public Ground contact
+entrypoint to measure energy before/after every actual hull solve, including
+settled support. The three new tests use the production Ground._hit barrier
+path in the existing damage harness, and all three fail numerically on fe3ef4f.
+
+The refreshed before/after JSON includes true CoM (`cy`), full 60 Hz barrier
+traces and per-substep contact energy. `maxHeight` retains the historical root
+height convention (`cy - hcg`); CoM is 0.45 m higher for the 911. Rebound peaks
+are local maxima with more than 1 cm prominence above their preceding minimum;
+rest requires horizontal speed, absolute vertical speed and angular speed all
+below 0.2 continuously through the remaining 8 s simulation.
