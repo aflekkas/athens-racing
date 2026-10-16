@@ -100,3 +100,5 @@ carriageway is `osm:way:459160393`. Require the generator's lane/contact-validat
 anchor with the emitted manifest before using it as a spawn; neither approximate
 point above is approved for placement. Evidence is the generator's
 `.scratch/athens-world/riviera-road-match.json`.
+
+Implementation note (2026-10-15): GPU residency counts BufferAttribute allocation identities, including the index role and terrain-decode wrapper, rather than just typed-array backing storage. Matching attributes and indices within a tile share wrappers; CPU backing allocations remain deduplicated separately. GPU staging/warm-up is experimental and is not yet accepted against the 50 ms activation gate.

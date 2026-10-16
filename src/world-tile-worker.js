@@ -22,7 +22,7 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal) {
   const buffer=await limitedBuffer(stream,entry.decodedBytes),pack=decodeGeometryPack(buffer),checked=validateWorldTile(pack,{world,revision,cell});
   const contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4));
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.
-  let gpuBytes=0;const gpuViews=new Set();
+  let gpuBytes=0;const gpuViews=new Map();
   for(const mesh of pack.metadata.meshes) {
     const p=pack.arrays[mesh.attributes.position.array],n=p.length/3,decode=mesh.userData?.terrainDecode;
     const residual=decode?pack.arrays[mesh.attributes.aHeightResidual.array]:null,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
@@ -31,10 +31,13 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal) {
       min[axis]=Math.min(min[axis],value);max[axis]=Math.max(max[axis],value);
     }
     if(n)mesh.bounds={box:[...min,...max],sphere:[...min.map((v,i)=>(v+max[i])/2),Math.hypot(...min.map((v,i)=>(max[i]-v)/2))]};
-    const views=new Set(Object.values(mesh.attributes).map(a=>pack.arrays[a.array]));if(mesh.index!=null)views.add(pack.arrays[mesh.index]);
-    for(const v of views)gpuViews.add(v);
+    for(const [name,a]of Object.entries(mesh.attributes)){
+      const key=`${a.array}:${a.itemSize}:${!!a.normalized}`+(name==='position'&&decode?`:terrain:${JSON.stringify(decode)}`:'');
+      gpuViews.set(key,pack.arrays[a.array].byteLength);
+    }
+    if(mesh.index!=null)gpuViews.set(`index:${mesh.index}`,pack.arrays[mesh.index].byteLength);
   }
-  for(const v of gpuViews)gpuBytes+=v.byteLength;
+  for(const bytes of gpuViews.values())gpuBytes+=bytes;
   const bytes=residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify(pack.metadata)).byteLength;
   if(bytes>entry.decodedBytes)throw new Error('Tile resident budget understated');
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');

@@ -13,7 +13,7 @@ export class WorldTileScene {
       for(const m of packet.metadata.meshes){
         const g=new THREE.BufferGeometry();owned.push(g);
         for(const [name,a] of Object.entries(m.attributes)){const key=`${a.array}:${a.itemSize}:${!!a.normalized}`;if(!attributes.has(key))attributes.set(key,new THREE.BufferAttribute(packet.arrays[a.array],a.itemSize,a.normalized));g.setAttribute(name,attributes.get(key));}
-        if(m.index!=null)g.setIndex(new THREE.BufferAttribute(packet.arrays[m.index],1));
+        if(m.index!=null){const key=`index:${m.index}`;if(!attributes.has(key))attributes.set(key,new THREE.BufferAttribute(packet.arrays[m.index],1));g.setIndex(attributes.get(key));}
         if(m.drawRange)g.setDrawRange(m.drawRange.start,m.drawRange.count??Infinity);
         if(!m.bounds)throw new Error('Tile worker omitted bounds');
         g.boundingBox=new THREE.Box3(new THREE.Vector3(...m.bounds.box.slice(0,3)),new THREE.Vector3(...m.bounds.box.slice(3)));
@@ -22,7 +22,11 @@ export class WorldTileScene {
         const mk=`${rgb.join(',')}:${vertexColors}:${!!m.userData?.terrainDecode}`;
         const material=self.resources.acquire(mk,()=>new THREE.MeshBasicMaterial({color:new THREE.Color(...rgb),vertexColors,side:THREE.FrontSide}));materialKeys.push(mk);
         const mesh=new THREE.Mesh(g,material);mesh.name=m.name||'';mesh.userData={...m.userData};mesh.renderOrder=m.renderOrder||0;
-        if(m.userData?.terrainDecode){restoreTerrainLayout(mesh);owned.push(mesh.material);}
+        if(m.userData?.terrainDecode){
+          restoreTerrainLayout(mesh);owned.push(mesh.material);
+          const a=m.attributes.position,key=`${a.array}:${a.itemSize}:${!!a.normalized}:terrain:${JSON.stringify(m.userData.terrainDecode)}`;
+          if(attributes.has(key))g.setAttribute('position',attributes.get(key));else attributes.set(key,g.attributes.position);
+        }
         root.add(mesh);yield;
       }
     }
