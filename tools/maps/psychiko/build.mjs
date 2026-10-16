@@ -30,9 +30,9 @@ const areas=Object.fromEntries(['beach','lake','pool','scrub','rock','cliff','wo
 const boundary=boundaryRing(load('boundaries'),P);
 const garden=load('garden-route');
 const drawnRing=X.map((x,i)=>[x,Z[i]]);
-const buildings=[],trees=[],sideRoads=[],landmarks=[];
+const buildings=[],sideRoads=[],landmarks=[];
 const flatten=ps=>ps.flatMap(p=>p.map(r));
-for(const e of osm){const t=e.tags||{};if(e.type==='node'){if(t.natural==='tree'){const p=P(e),q=nearest(...p,450);if(q)trees.push([r(p[0]),r(p[1]),0]);}continue;}if(e.type!=='way')continue;const ps=geometry(e);if(ps.length<2)continue;
+for(const e of osm){const t=e.tags||{};if(e.type==='node')continue;if(e.type!=='way')continue;const ps=geometry(e);if(ps.length<2)continue;
  const center=ps.reduce((s,p)=>[s[0]+p[0]/ps.length,s[1]+p[1]/ps.length],[0,0]);const q=nearest(...center,1800);if(!q)continue;
  if(t.building&&ps.length>3&&(q.d<400||inside(center,boundary)||inside(center,drawnRing))){if(ps.some(p=>nearest(...p,15)?.d<8))continue;const k=t.building==='church'?'church':!['apartments','commercial','retail','school'].includes(t.building)?'villa':'apt';const pick=((Math.imul(e.id,2654435761)>>>0)%1000)/1000;const lv=+t['building:levels']||(pick<.67?2:3);buildings.push({p:flatten(ps.slice(0,-1)),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:k!=='church'&&pick<.45,s:q.s,u:r(q.u),id:e.id,name:t['name:en']||t.name});if(k==='church')landmarks.push({id:e.id,kind:'church',p:flatten(ps),name:t.name});}
  let cls=t.landuse==='quarry'?'quarry':t.natural==='wood'||t.landuse==='forest'?'wood':t.natural==='scrub'||t.natural==='heath'?'scrub':t.natural==='bare_rock'||t.natural==='scree'?'rock':t.landuse==='residential'?'residential':t.amenity==='parking'?'parking':t.leisure==='park'||t.landuse==='village_green'?'park':null;
@@ -48,10 +48,10 @@ for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6
 for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=demAt(x,z);const q=nearest(x,z,55);if(q&&q.d<48){const f=clamp((q.d-7)/37,0,1),t=f*f*(3-2*f);h=(Y[q.i]-.25)*(1-t)+h*t;}H[id]=Math.round(h*10);}}
 const header=Buffer.alloc(32);header.writeInt32LE(GX,0);header.writeInt32LE(GZ,4);header.writeFloatLE(minX,8);header.writeFloatLE(minZ,12);header.writeFloatLE(T,16);fs.writeFileSync(path.join(out,'terrain.bin'),Buffer.concat([header,Buffer.from(H.buffer),Buffer.from(CL.buffer)]));
 const marks=R.stations.map((q,i)=>({id:'station-'+i,name:R.names.findLast(n=>n.s<=q.s)?.name.toUpperCase()||'PSYCHIKO',sub:i?'Palaio Psychiko / Filothei streets':'Start / finish · Diamantidou',s:q.s})).sort((a,b)=>a.s-b.s);
-const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO DRAWN LOOP TT',disabled:true,blurb:'One lap through the drawn neighbourhood loop. Tight roundabouts and leafy avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals on the user-drawn neighbourhood loop.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
+const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO DRAWN LOOP TT',disabled:true,blurb:'One lap through the drawn neighbourhood loop. Tight roundabouts and neighbourhood avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals on the user-drawn neighbourhood loop.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
 const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
 const stats={startElevation:Y[a],finishElevation:Y[b],ascent:r(ascent),descent:r(descent),maxGrade:r(maxGrade*100),elevationSource:dem.source};
-const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:R.names,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,trees,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{stats,sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
+const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:R.names,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{stats,sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
 // Real OSM stops; only route-side stops, not nearby stops on a different avenue.
 for(const e of osm)if(e.type==='node'&&(e.tags?.highway==='bus_stop'||e.tags?.public_transport==='platform')){const p=P(e),q=nearest(...p,20);if(q)data.furniture.push({t:'bus_stop',s:q.s,u:r(q.u),x:r(p[0]),z:r(p[1]),id:e.id});}
 
@@ -102,7 +102,8 @@ data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  }
  return chosen;
 });
-data.psychiko.scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')));
+const scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')));
+data.psychiko.scenery={furniture:scenery.furniture};
 fs.writeFileSync(path.join(out,'map.json'),JSON.stringify(data));
 inject('psychiko');
 fs.writeFileSync(path.join(dir,'raw/profile.json'),JSON.stringify({step,start:R.start,finish:R.finish,raw:Yraw,smoothed:Y,stats}));

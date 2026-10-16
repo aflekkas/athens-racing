@@ -21,7 +21,7 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
   // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
   // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
-  mat.customProgramCacheKey = () => gardens ? 'terrain-owner-area-psychiko-gardens' : farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
+  mat.customProgramCacheKey = () => farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, {
       tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
@@ -68,7 +68,6 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
         // Broad area colours and restrained texture detail; no painted shrub clumps or plot decals.
         col = mix(vc, col, 0.45);
         ${farmland ? 'col = mix(vc * (.74 + .48 * dot(sg, vec3(.333))), col, smoothstep(.22,.55,steep));' : ''}
-        ${gardens ? `float gardenMask=smoothstep(.15,.65,vU);vec3 lawn=mix(vec3(.065,.12,.035),vec3(.18,.245,.075),macro)*(.72+dot(sg,vec3(.333))*.9); col=mix(col,lawn,gardenMask);` : ''}
         col *= 0.95 + 0.10 * macro;
         // wet sand / rock darkening at the waterline
         col *= mix(0.55, 1.0, smoothstep(0.05, 0.6, vWP.y));
@@ -253,7 +252,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
       const i0 = Math.max(0, i - step), i1 = Math.min(GX - 1, i + step), j0 = Math.max(0, j - step), j1 = Math.min(GZ - 1, j + step);
       n.set((hAt(i0, j) - hAt(i1, j)) / ((i1 - i0) * T), 1, (hAt(i, j0) - hAt(i, j1)) / ((j1 - j0) * T)).normalize();
       colorAt(i, j, h, n, c);
-      pos.push(minX + i * T, h, minZ + j * T); col.push(c.r, c.g, c.b); urb.push((CL[j * GX + i] === 4 || gardens && [5,6].includes(CL[j * GX + i])) && h > 0.8 ? 1 : 0);
+      pos.push(minX + i * T, h, minZ + j * T); col.push(c.r, c.g, c.b); urb.push((CL[j * GX + i] === 4) && h > 0.8 ? 1 : 0);
       vid[k] = pos.length / 3 - 1; return vid[k];
     };
     for (let b = 0; b + 1 < nz; b++) for (let a = 0; a + 1 < nx; a++) {

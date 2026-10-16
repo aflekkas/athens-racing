@@ -1,3 +1,4 @@
+import { assertWorldBudget } from './world-art-direction.js';
 import * as THREE from 'three';
 
 /** One solid cross-street box per OSM exit. The same list drives visuals and physics. */
@@ -11,7 +12,7 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
   const blocks = map.data.roadworks || [], orange = new THREE.MeshStandardMaterial({ color: '#ec601c', roughness: .85 });
   const white = new THREE.MeshStandardMaterial({ color: '#eee8d6', roughness: .85 });
   const dark = new THREE.MeshStandardMaterial({ color: '#32373c', roughness: .95 });
-  const box = new THREE.BoxGeometry(1, 1, 1), cone = new THREE.ConeGeometry(.23, .68, 8);
+  const box = assertWorldBudget('barrierPost',new THREE.BoxGeometry(1, 1, 1)), cone = assertWorldBudget('streetProp',new THREE.ConeGeometry(.23, .68, 4));
   function mesh(parent, geometry, material, x, y, z, sx = 1, sy = 1, sz = 1) {
     const m = new THREE.Mesh(geometry, material); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
   }
@@ -29,9 +30,8 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
     }
     // Striped barricade rail and road-closed sign face the race route.
     mesh(root, box, white, .05, 1.14, 0, .12, .25, Math.min(4, b.hl * 2));
-    for (let z = -1.6; z < 1.8; z += .55) {
-      const stripe = mesh(root, box, orange, .12, 1.14, z, .015, .25, .25); stripe.rotation.x = -.4;
-    }
+    // A single orange inset keeps the rail assembly at 24 triangles.
+    mesh(root, box, orange, .12, 1.14, 0, .015, .25, 1.2);
     for (const z of [-b.hl + .3, b.hl - .3]) {
       mesh(root, box, dark, 1.6, .035, z, .5, .07, .5);
       mesh(root, cone, orange, 1.6, .41, z);

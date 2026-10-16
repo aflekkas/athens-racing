@@ -8,7 +8,7 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
-- Explore the Psychiko Garden Circuit: a two-lap street race, surrounding free-roam streets and race-only roadworks. Map by Vassilis Perrotis (Vas-Per).
+- Explore the Psychiko Garden Circuit: a two-lap street race, surrounding free-roam streets and race-only roadworks. Map by Vassilis Perrotis (Vas-Per), adapted to the shared simple terrain and building-block style. His original garden version is preserved under the `psychiko-garden-original` tag.
   ![Vas-Per’s Psychiko garden streets, villas and planting](assets/changelog/2026.10.16.1/psychiko.webp "Psychiko by Vas-Per.")
 
 - Removed the phone-as-steering-wheel controller.

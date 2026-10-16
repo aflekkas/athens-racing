@@ -133,3 +133,15 @@ test('catalogue-only Psychiko launch preserves the authored two laps before the 
  assert.equal(pending.laps,authored.laps);
  assert.equal(resolve(pending,{route,marks:data.marks}).len,resolve(authored,{route,marks:data.marks}).len);
 });
+
+
+test('Psychiko uses shared footprint boxes and budgeted square street props',async()=>{
+ const {psychikoLampGeometry}=await import('../src/maps/psychiko.js');
+ const {triangleCount,WORLD_TRIANGLE_BUDGETS}=await import('../src/world-art-direction.js');
+ const {buildingBlockGeometry}=await import('../src/buildings.js');
+ assert.equal(data.trees,undefined);assert.deepEqual(Object.keys(data.psychiko.scenery),['furniture']);
+ const lamp=psychikoLampGeometry();assert.equal(triangleCount(lamp),36);assert(triangleCount(lamp)<=WORLD_TRIANGLE_BUDGETS.lamp);lamp.dispose();
+ for(const b of data.buildings){const g=buildingBlockGeometry(b.p,b.h);assert(triangleCount(g)<=40);g.dispose();}
+ const shader=(await import('../src/terrain.js')).terrainMaterial({gardens:true});
+ assert.equal(shader.customProgramCacheKey(),'terrain-owner-area');
+});
