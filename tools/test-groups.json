@@ -138,7 +138,10 @@
     "tools/world-tile-roads.test.mjs",
     "tools/world-development.test.mjs",
     "tools/world-detail.test.mjs",
-    "tools/detail-budgets.test.mjs"
+    "tools/detail-budgets.test.mjs",
+    "tools/road-asphalt.test.mjs",
+    "tools/airborne-network.test.mjs",
+    "tools/roundabouts.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
@@ -154,7 +157,8 @@
     "tools/traffic-test.mjs",
     "tools/traffic-race.test.mjs",
     "tools/damage-mechanics.test.mjs",
-    "tools/rivals-test.mjs"
+    "tools/rivals-test.mjs",
+    "tools/physics-test/airborne.test.mjs"
   ],
   "damage": [
     "tools/damage-geometry.test.mjs",

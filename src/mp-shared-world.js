@@ -12,6 +12,7 @@ export function applySharedCar(traffic, row, age = 0, promote = false) {
     if (cop.chase) cop.wasChasing = true;
   }
   if (fresh || promote) { traffic.initDrive(c, false); c.lane = Math.max(0, Math.round((Math.abs(row[CAR.U] / 100) - 1.5) / 3.3)); }
+  c._world=null;c._roundabout=null;c._sharedPosition=true;
   c.active = true; c.dir = dir; c.s = row[CAR.S] / 100 + row[CAR.VS] / 100 * age; c.u = row[CAR.U] / 100 + row[CAR.VU] / 100 * age;
   c.v = Math.hypot(row[CAR.VS], row[CAR.VU]) / 100; c.uv = row[CAR.VU] / 100; c.v0 = traffic.roadSpeed(c.s) * (c.drv?.vf || 1);
   c.mode = flags & 4 ? 'parked' : 'drive'; c.parkT = 1e9; c.braking = !!(flags & 16); c.acc = 0;

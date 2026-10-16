@@ -3,9 +3,9 @@
     "riviera": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "penteli": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "megara": "195ce8b322f2297034be56c8e38b8899321c2bb3",
-    "psychiko": "195ce8b322f2297034be56c8e38b8899321c2bb3"
+    "psychiko": "Current authored-height-preserving base geometry with optional detail Off (height reference 492f14e)"
   },
-  "method": "Fixed car, stations and camera poses; settled conditions and cold terrain LOD selected with the real selector; shared immutable production terrain bakes; immutable prod baseline and live On/Off candidate",
+  "method": "Source-identical earlier measurements retained for Riviera, Penteli and Megara; Psychiko uses current runtime-built terrain/roads with authored world-space heights, fixed day/night chase/cockpit cameras, and detail Off/On. SwiftShader; no timing claims.",
   "browserErrors": [],
   "sourceHashes": {
     "src/world-detail.js": "6bd79db555ff9621dc3266b61c3a0241cc002ee9526204fc3c1494ccd421fcf8",
@@ -20,7 +20,7 @@
     "data/map.json": "702e5f0940896675ef9d7806f8d7bb8799f8599692178f0c5d7b7e041ef15447",
     "data/maps/penteli/map.json": "6df1ac6460958a0a9841c7b03df255931a7a27ccdcba457745bfdb390b62bb07",
     "data/maps/megara/map.json": "b1d6873460ce7676f6a22f7804f22453e7aad2c9d41642f869d9b39b031e37c7",
-    "data/maps/psychiko/map.json": "1f461989c5326c4ca971907b17baa819f28f5f8cf73644133ea549ce4e1e864b"
+    "data/maps/psychiko/map.json": "3f519114268b73704547607afc000abedfd840e6ca38817137053cfe4e603957"
   },
   "rows": [
     {
@@ -1147,69 +1147,63 @@
       "name": "psychiko-mid-day-chase",
       "map": "psychiko",
       "before": {
-        "name": "before-on-psychiko-mid-day-chase",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -33.09357668553586,
-          201.77000427246094,
-          -523.069634583408
+          -148.9176237489736,
+          200.25500488281247,
+          -467.55510208771915
         ],
         "quaternion": [
-          -0.03322951421124884,
-          -0.556488988956063,
-          -0.022282270367511646,
-          0.8298911404414511
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
-        "calls": 796,
-        "triangles": 1304269,
-        "geometryBytes": 231074648,
-        "textureBytes": 92255577.33333337,
+        "calls": 1349,
+        "triangles": 1404654,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "off": {
-        "name": "after-off-psychiko-mid-day-chase",
-        "detail": false,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -33.09357668553586,
-          201.77000427246094,
-          -523.069634583408
+          -148.9176237489736,
+          200.25500488281247,
+          -467.55510208771915
         ],
         "quaternion": [
-          -0.03322951421124884,
-          -0.556488988956063,
-          -0.022282270367511646,
-          0.8298911404414511
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
-        "calls": 796,
-        "triangles": 1304269,
-        "geometryBytes": 234861196,
-        "textureBytes": 92255577.33333337,
+        "calls": 1349,
+        "triangles": 1404654,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "on": {
-        "name": "after-on-psychiko-mid-day-chase",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -33.09357668553586,
-          201.77000427246094,
-          -523.069634583408
+          -148.9176237489736,
+          200.25500488281247,
+          -467.55510208771915
         ],
         "quaternion": [
-          -0.03322951421124884,
-          -0.556488988956063,
-          -0.022282270367511646,
-          0.8298911404414511
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
-        "calls": 798,
-        "triangles": 1307329,
-        "geometryBytes": 234861196,
-        "textureBytes": 95139161.33333336,
+        "calls": 1351,
+        "triangles": 1407600,
+        "geometryBytes": 252453962,
+        "textureBytes": 98284889.33333336,
         "shadows": false
       }
     },
@@ -1217,69 +1211,63 @@
       "name": "psychiko-mid-day-cockpit",
       "map": "psychiko",
       "before": {
-        "name": "before-on-psychiko-mid-day-cockpit",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -25.889029158974935,
-          200.01094939641698,
-          -525.949714849746
+          -151.4045440118883,
+          198.58000488281246,
+          -474.9151764765368
         ],
         "quaternion": [
-          -0.01832135664824407,
-          -0.5802254620998147,
-          -0.013057276387004994,
-          0.8141451028870577
+          -0.02228105100485711,
+          0.13853599317189044,
+          0.0031175859567542192,
+          0.9901018200265057
         ],
-        "calls": 780,
-        "triangles": 1427975,
-        "geometryBytes": 231074648,
-        "textureBytes": 92255577.33333337,
+        "calls": 1208,
+        "triangles": 1420577,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "off": {
-        "name": "after-off-psychiko-mid-day-cockpit",
-        "detail": false,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -25.889029158974935,
-          200.01094939641698,
-          -525.949714849746
+          -151.4045440118883,
+          198.58000488281246,
+          -474.9151764765368
         ],
         "quaternion": [
-          -0.01832135664824407,
-          -0.5802254620998147,
-          -0.013057276387004994,
-          0.8141451028870577
+          -0.02228105100485711,
+          0.13853599317189044,
+          0.0031175859567542192,
+          0.9901018200265057
         ],
-        "calls": 780,
-        "triangles": 1427975,
-        "geometryBytes": 234861196,
-        "textureBytes": 92255577.33333337,
+        "calls": 1208,
+        "triangles": 1420577,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "on": {
-        "name": "after-on-psychiko-mid-day-cockpit",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -25.889029158974935,
-          200.01094939641698,
-          -525.949714849746
+          -151.4045440118883,
+          198.58000488281246,
+          -474.9151764765368
         ],
         "quaternion": [
-          -0.01832135664824407,
-          -0.5802254620998147,
-          -0.013057276387004994,
-          0.8141451028870577
+          -0.02228105100485711,
+          0.13853599317189044,
+          0.0031175859567542192,
+          0.9901018200265057
         ],
-        "calls": 782,
-        "triangles": 1431035,
-        "geometryBytes": 234861196,
-        "textureBytes": 95139161.33333336,
+        "calls": 1210,
+        "triangles": 1423495,
+        "geometryBytes": 252453962,
+        "textureBytes": 98284889.33333336,
         "shadows": false
       }
     },
@@ -1287,69 +1275,63 @@
       "name": "psychiko-mid-night-chase",
       "map": "psychiko",
       "before": {
-        "name": "before-on-psychiko-mid-night-chase",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -33.09357668553586,
-          201.77000427246094,
-          -523.069634583408
+          -148.9176237489736,
+          200.25500488281247,
+          -467.55510208771915
         ],
         "quaternion": [
-          -0.03322951421124884,
-          -0.556488988956063,
-          -0.022282270367511646,
-          0.8298911404414511
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
-        "calls": 798,
-        "triangles": 1305229,
-        "geometryBytes": 231074648,
-        "textureBytes": 92255577.33333337,
+        "calls": 1351,
+        "triangles": 1405614,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "off": {
-        "name": "after-off-psychiko-mid-night-chase",
-        "detail": false,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -33.09357668553586,
-          201.77000427246094,
-          -523.069634583408
+          -148.9176237489736,
+          200.25500488281247,
+          -467.55510208771915
         ],
         "quaternion": [
-          -0.03322951421124884,
-          -0.556488988956063,
-          -0.022282270367511646,
-          0.8298911404414511
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
-        "calls": 798,
-        "triangles": 1305229,
-        "geometryBytes": 234861196,
-        "textureBytes": 92255577.33333337,
+        "calls": 1351,
+        "triangles": 1405614,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "on": {
-        "name": "after-on-psychiko-mid-night-chase",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -33.09357668553586,
-          201.77000427246094,
-          -523.069634583408
+          -148.9176237489736,
+          200.25500488281247,
+          -467.55510208771915
         ],
         "quaternion": [
-          -0.03322951421124884,
-          -0.556488988956063,
-          -0.022282270367511646,
-          0.8298911404414511
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
-        "calls": 800,
-        "triangles": 1308289,
-        "geometryBytes": 234861196,
-        "textureBytes": 95139161.33333336,
+        "calls": 1353,
+        "triangles": 1408560,
+        "geometryBytes": 252453962,
+        "textureBytes": 98284889.33333336,
         "shadows": false
       }
     },
@@ -1357,69 +1339,63 @@
       "name": "psychiko-mid-night-cockpit",
       "map": "psychiko",
       "before": {
-        "name": "before-on-psychiko-mid-night-cockpit",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -25.889029158974935,
-          200.01094939641698,
-          -525.949714849746
+          -151.4045440118883,
+          198.58000488281246,
+          -474.9151764765368
         ],
         "quaternion": [
-          -0.01832135664824407,
-          -0.5802254620998147,
-          -0.013057276387004994,
-          0.8141451028870577
+          -0.02228105100485711,
+          0.13853599317189044,
+          0.0031175859567542192,
+          0.9901018200265057
         ],
-        "calls": 782,
-        "triangles": 1428935,
-        "geometryBytes": 231074648,
-        "textureBytes": 92255577.33333337,
+        "calls": 1210,
+        "triangles": 1421537,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "off": {
-        "name": "after-off-psychiko-mid-night-cockpit",
-        "detail": false,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -25.889029158974935,
-          200.01094939641698,
-          -525.949714849746
+          -151.4045440118883,
+          198.58000488281246,
+          -474.9151764765368
         ],
         "quaternion": [
-          -0.01832135664824407,
-          -0.5802254620998147,
-          -0.013057276387004994,
-          0.8141451028870577
+          -0.02228105100485711,
+          0.13853599317189044,
+          0.0031175859567542192,
+          0.9901018200265057
         ],
-        "calls": 782,
-        "triangles": 1428935,
-        "geometryBytes": 234861196,
-        "textureBytes": 92255577.33333337,
+        "calls": 1210,
+        "triangles": 1421537,
+        "geometryBytes": 252453962,
+        "textureBytes": 95401305.33333334,
         "shadows": false
       },
       "on": {
-        "name": "after-on-psychiko-mid-night-cockpit",
-        "detail": true,
         "map": "psychiko",
-        "s": 2980.4666438296495,
+        "s": 3188.6738331440815,
         "camera": [
-          -25.889029158974935,
-          200.01094939641698,
-          -525.949714849746
+          -151.4045440118883,
+          198.58000488281246,
+          -474.9151764765368
         ],
         "quaternion": [
-          -0.01832135664824407,
-          -0.5802254620998147,
-          -0.013057276387004994,
-          0.8141451028870577
+          -0.02228105100485711,
+          0.13853599317189044,
+          0.0031175859567542192,
+          0.9901018200265057
         ],
-        "calls": 784,
-        "triangles": 1431995,
-        "geometryBytes": 234861196,
-        "textureBytes": 95139161.33333336,
+        "calls": 1212,
+        "triangles": 1424455,
+        "geometryBytes": 252453962,
+        "textureBytes": 98284889.33333336,
         "shadows": false
       }
     }

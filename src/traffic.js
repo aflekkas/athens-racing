@@ -1,3 +1,4 @@
+import {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield} from './roundabouts.js';
 // Athens traffic on the real lanes of the coast road. Every vehicle has a driver with a personality
 // (desired speed, headway, patience, politeness, how much they bother to indicate) and runs:
 //  - IDM car-following with jerk-limited acceleration (smooth speeding up, progressive braking, hard stops when needed)
@@ -198,6 +199,7 @@ export class Traffic {
     let k = 0; for (let d = -10; d <= 40; d += 10) k = Math.max(k, Math.abs(r.curv(s + d)));
     return Math.min(kmh / 3.6, Math.sqrt(2.6 / Math.max(1e-4, k)));
   }
+  point(c,out){const p=circulatingPoint(this.route,c,out);if(c._sharedPosition&&!c.crash&&this.ground&&this.route.roundabouts?.length)p.y=this.ground.at(p.x,p.z,c.s,c.u,{}).y;return p;}
   laneCount(s) { return Math.max(1, this.route.lanes(s)); }
   laneUOf(c, s, lane = c.lane) {
     const l = Math.min(lane, this.laneCount(s) - 1);
@@ -277,7 +279,7 @@ export class Traffic {
     Object.assign(c, {
       mode: 'drive', uT: c.u, uv: 0, acc: 0, accT: 0, lcEval: this.rng.range(0.2, 1.2), lcT: 0, lcDelay: 0, blinkSide: 0, hazard: false,
       ovt: null, split: false, task: null, evade: null, yieldT: 0, yieldU: undefined, yieldFor: null, seeT: 0, flashT: 0, shakenT: 0, quirkT: this.rng.range(4, 30), lastJ: null, stuckT: 0, heldT: 0, honkCool: this.rng.range(1, 3), waitT: 0, brakeT: 0, lastStop: -1e9, wheel: c.wheel || 0, yawLC: 0,
-      hs: c.len * 0.5, hu: c.wid * 0.5, sigJ: -1, sigGo: false, cross: null, crash: null,
+      _roundabout:null,_world:null,_sharedPosition:false,hs: c.len * 0.5, hu: c.wid * 0.5, sigJ: -1, sigGo: false, cross: null, crash: null,
     });
   }
 
@@ -517,9 +519,32 @@ export class Traffic {
     if (ok) { c.mode = 'drive'; c.uT = lu; c.v = 0.5; c.lane = this.laneCount(c.s) - 1; c.lcT = 2.5; c.waitT = 0; }
   }
 
+  // Circulation has its own world path. Project its actual position back to
+  // route space so collision and traffic queries see the car where it is drawn.
+  driveRoundabout(c,dt){
+    const route=this.route;
+    if(!c._roundabout){const r=trafficRoundaboutRange(route,c),p=this.point(c,{}),start=ringStation(p.x,p.z,r.p),exit=route.point(c.dir>0?r.s1:r.s0,0),end=ringStation(exit.x,exit.z,r.p),reverse=c.dir<0?r.reverse:null;
+      c._roundabout=reverse?{r,path:reverse.path,travel:c._sharedPosition?polylineStation(p.x,p.z,reverse.path).s:Math.max(0,Math.min(reverse.length,(reverse.s1-route.wrap(c.s))/(reverse.s1-reverse.s0)*reverse.length)),length:reverse.length,entryDistance:reverse.entryDistance,exitDistance:reverse.exitDistance,exitS:reverse.s0,entryS:reverse.s1}:{r,start:start.s,travel:0,length:(end.s-start.s+start.length)%start.length,entryDistance:0,exitDistance:Infinity,exitS:c.dir>0?r.s1:r.s0,entryS:c.s};c._sharedPosition=false;c.task=null;c.ovt=null;c.split=false;c.evade=null;
+    }
+    const k=c._roundabout,r=k.r,sample=s=>k.path?polylinePoint(k.path,s,{}):ringPoint(r.p,k.start+s,{}),at=sample(k.travel),station=ringStation(at.x,at.z,r.p);k.circulating=k.travel>=k.entryDistance&&k.travel<=k.exitDistance;let gap=Infinity,leader=5;
+    const approaching=[];
+    const entry=k.path?sample(k.entryDistance):at,entryAt=ringStation(entry.x,entry.z,r.p);
+    for(const other of this.cars){if(other===c||!other.active||other._roundabout?.r.id!==r.id)continue;const o=other._roundabout,p=other._world||this.point(other,{}),q=ringStation(p.x,p.z,r.p);
+      if(o.circulating)approaching.push({id:other,circulating:true,distance:(entryAt.s-q.s+q.length)%q.length,speed:other.v});
+      const distance=k.circulating&&o.circulating?(q.s-station.s+station.length)%station.length-(c.len+other.len)/2:k.path&&o.path&&other.dir===c.dir?o.travel-k.travel-(c.len+other.len)/2:Infinity;
+      if(distance>-.5&&distance<gap){gap=Math.max(.1,distance);leader=other.v;}
+    }
+    for(const racer of this.racers){const v=racer.a?.veh;if(!v)continue;const q=ringStation(v.x,v.z,r.p);if(q.d>r.w/2)continue;approaching.push({id:v,circulating:true,distance:(entryAt.s-q.s+q.length)%q.length,speed:Math.max(0,v.vLong)});if(k.circulating){const distance=(q.s-station.s+station.length)%station.length-c.len/2-v.halfL;if(distance>-.5&&distance<gap){gap=Math.max(.1,distance);leader=Math.max(0,v.vLong);}}}
+    if(!k.circulating&&k.travel<k.entryDistance&&roundaboutYield({id:c},approaching)){const entryGap=Math.max(0,k.entryDistance-k.travel-c.len/2-2);if(entryGap<gap){gap=entryGap;leader=0;}}
+    const speed=Math.min(this.roadSpeed(c.s)*c.drv.vf,k.circulating?Math.sqrt(station.length/Math.PI):8);c.acc=this.idm(c,c.v,speed,gap,leader);c.v=Math.max(0,c.v+c.acc*dt);k.travel+=Math.min(c.v*dt,Math.max(0,gap));
+    const p=sample(Math.min(k.length,k.travel)),q=route.project(p.x,p.z,c.s,120);c.s=q.s;c.u=q.u;c._world={...p,y:this.ground?.at(p.x,p.z,q.s,q.u,{}).y??route.y(q.s)};c.uv=0;c.yawLC=0;c.braking=c.acc<-.9;c.wheel+=c.v*dt;
+    if(k.travel>=k.length){c.s=k.exitS+c.dir*.1;c.u=this.laneUOf(c,c.s);c.uT=c.u;c._roundabout=null;c._world=null;}
+  }
+
   /** one driver's decisions + motion */
   drive(c, dt, pl) {
     const route = this.route, rng = this.rng, d = c.drv;
+    if(c._roundabout||trafficRoundaboutRange(route,c)){this.driveRoundabout(c,dt);return;}
     const n = this.laneCount(c.s), hw = c.wid * 0.5, scoot = c.type.scooter;
     if (c.lane > n - 1 && !c.task) { c.lane = n - 1; c.lcT = 2; }
     const laneU = this.laneUOf(c, c.s);
@@ -529,6 +554,9 @@ export class Traffic {
     const uLo = Math.min(c.u, c.uT), uHi = Math.max(c.u, c.uT);
     const L = this.lead(c, (uLo + uHi) / 2, hw + (uHi - uLo) / 2, 160, scoot ? 0.12 : 0.22);
     let gap = L.gap, lv = L.lv;
+    const yieldGap=route.roundabouts?.length?entryYieldDistance(route,c,[...this.cars,...(this.racers||[]).map(r=>r.a?.veh||r)]):null;
+    if(yieldGap!==null&&yieldGap<gap){gap=yieldGap;lv=0;}
+
     // red lights (stop line), pedestrians are already in the obstacle list
     let sigGap = null;
     if (this.signals) { const sd = this.signals.stopFor(c.s + c.dir * c.len * 0.5, c.dir, c.v, c); if (sd !== null) sigGap = Math.max(0.2, sd); }
@@ -568,7 +596,7 @@ export class Traffic {
     c.acc = acc > c.acc ? Math.min(acc, c.acc + jerkUp * dt) : Math.max(acc, c.acc - jerkDn * dt);
     if (c.v <= 0 && c.acc < 0) c.acc = 0;
     c.v = Math.max(0, c.v + c.acc * dt);
-    c.s += c.dir * c.v * dt;
+    c.s += c.dir * Math.min(c.v * dt,yieldGap===null?Infinity:yieldGap);
     // hard stops chirp the tyres (taxis grabbing a fare, someone cut in)
     if (c.acc < -5.5 && c.v > 5 && !c.chirp) { c.chirp = true; this.sounds.push({ kind: 'skid', c }); } else if (c.acc > -2) c.chirp = false;
     // ---- lateral: critically damped towards uT, lateral speed limited by forward speed (no crab-walking).
@@ -1175,6 +1203,7 @@ export class Traffic {
     const k = c.crash, a = k ? k.yaw : c.cross ? c.xyaw : c.yawLC || 0;
     B.s = c.s; B.u = c.u; B.phi = a + (c.dir < 0 ? Math.PI : 0); B.hl = c.len * 0.5; B.hw = c.wid * 0.5;
     B.vs = k ? k.vs : c.cross ? c.xvs : c.mode === 'parked' ? 0 : c.dir * c.v; B.vu = k ? k.vu : c.cross ? c.xvu : c.mode === 'parked' ? 0 : c.uv || 0;
+    if(c._world&&!k){const f=this.route.frame(c.s,{}),p=c._world,along=p.tx*f.tx+p.tz*f.tz,across=p.tx*f.rx+p.tz*f.rz;B.phi=Math.atan2(across,along);B.vs=c.v*along;B.vu=c.v*across;}
     B.w = k ? k.w : 0; B.m = c.mass; B.I = c.I;
     return B;
   }
@@ -1187,6 +1216,7 @@ export class Traffic {
   }
   /** apply a crash impulse to a traffic car: (re)enter the crash state; a real hit wrecks it */
   hitCar(c, B, dv, zone, now, impact = {}) {
+    c._world=null;c._roundabout=null;
     const big = dv > (c.type.scooter ? 1.2 : 2.4);
     if (!c.crash) {
       c.crash = { t: 0, vs: 0, vu: 0, w: 0, yaw: c.cross ? c.xyaw : c.yawLC || 0, y: 0, vy: 0, roll: 0, rollV: 0, pitch: 0, pitchV: 0, brake: 0, wreck: false, gy: 0, onSide: false };
@@ -1244,6 +1274,7 @@ export class Traffic {
     const A = this._A || (this._A = {}), B = this._B || (this._B = {});
     for (const c of this.cars) {
       if (!c.active) continue;
+      if (veh.bodyDynamic && veh.y > route.surfaceY(c.s,c.u) + (c.type.bus ? 3.1 : c.type.shape === 'van' ? 2.5 : 1.5) + (c.crash?.y || 0)) continue;
       const ds = c.s - veh.s; if (Math.abs(ds) > 14) { if (actor.kind === 'player') c.pRel = Math.sign(ds); continue; }
       const du = c.u - veh.u;
       const cyaw = c.crash ? c.crash.yaw : c.cross ? c.xyaw : 0, cc = Math.abs(Math.cos(cyaw)), cs = Math.abs(Math.sin(cyaw));
@@ -1289,6 +1320,10 @@ export class Traffic {
       else if (c.mode !== 'parked') { c.v = Math.max(0, c.dir * B.vs); c.shakenT = 2; } // a nudge: brake, glare
       this.online?.contactCar(c, beforeOnline, B, dvB, zoneOf(B, ct.ps, ct.pu), impactB);
       if (actor.kind === 'player') c.pHitT = now;
+      const normalX = -(rv.f.tx*ct.ns+rv.f.rx*ct.nu), normalZ = -(rv.f.tz*ct.ns+rv.f.rz*ct.nu);
+      veh.impactDynamics?.({dv: dvA, nx: normalX, nz: normalZ,
+        forward: -(impactA.localPoint?.z || 0), right: impactA.localPoint?.x || 0,
+        height: impactA.localPoint?.y ?? .45, kind: 'car', yawSolved: true});
       const sev = r.vn;
       if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', target: impactTarget(c.type), sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB, ...impactA });
     }
@@ -1366,7 +1401,7 @@ export class Traffic {
     const au = Math.abs(c.u), eA = route.edge(c.s) + ROAD.gutter;
     let mu = 0.9, drag = 0, gy = 0, water = 0;
     if (g && au > eA - 0.2) {
-      const p = route.point(c.s, c.u, _v), q = g.at(p.x, p.z, c.s, c.u, this._gq || (this._gq = {}));
+      const p = this.point(c, _v), q = g.at(p.x, p.z, c.s, c.u, this._gq || (this._gq = {}));
       const S = SURF[q.surf] || SURF.asphalt; mu = 0.9 * S.mu; drag = S.drag; water = q.water;
       gy = q.y - route.surfaceY(c.s, c.u);
     } else if (au > eA) { mu = 0.7; drag = 0.6; }
@@ -1425,7 +1460,7 @@ export class Traffic {
     if (route.div(c.s) > 0.45) { const mh = route.medHalf(c.s) + hu * 0.9; if (c.u > 0 && c.u < mh) lo = mh; else if (c.u < 0 && c.u > -mh) hi = -mh; }
     if (c.u > hi) { c.u = hi; this.wallHit(c, 0, -1); } else if (c.u < lo) { c.u = lo; this.wallHit(c, 0, 1); }
     if (g) {
-      const p = route.point(c.s, c.u, _v), f = route.frame(c.s, this._cf || (this._cf = {}));
+      const p = this.point(c, _v), f = route.frame(c.s, this._cf || (this._cf = {}));
       for (const x of [c.len * 0.5 - c.wid * 0.5, -(c.len * 0.5 - c.wid * 0.5)]) {
         const wx = p.x + (f.tx * fs + f.rx * fu) * x, wz = p.z + (f.tz * fs + f.rz * fu) * x;
         const h = g.walls(wx, wz, c.wid * 0.5, this._gw || (this._gw = {}));
@@ -1545,7 +1580,8 @@ export class Traffic {
       const lamps = distance < PROXY_LAMP_RANGE; // 16 cm indicator boxes are sub-pixel beyond this
       if (c.m.accessories && c.lampsShown !== lamps) { c.lampsShown = lamps; for (const a of c.m.accessories) a.visible = lamps; }
       route.frame(c.s, f);
-      route.point(c.s, c.u, _v);
+      this.point(c, _v);
+      if(c._world){f.tx=c._world.tx*c.dir;f.tz=c._world.tz*c.dir;}
       const k = c.crash;
       // a car on its side rests on the edge of the body: lift by half its width
       c.m.root.position.set(_v.x, _v.y + (k ? k.y + k.gy + c.wid * 0.5 * Math.max(0, Math.abs(Math.sin(k.roll)) - 0.1) : 0), _v.z);

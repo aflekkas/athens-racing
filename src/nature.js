@@ -1,5 +1,6 @@
 // Owner-locked: coast amenities only; no vegetation scenery.
 import * as THREE from 'three';
+import {ASPHALT_GLSL} from './road-asphalt.js';
 import {assertWorldBudget} from './world-art-direction.js';
 import { REFLECT_LAYER } from './env.js';
 import { RNG, CellInstances, M, pointInPoly, polyBounds } from './util.js';
@@ -136,20 +137,21 @@ function buildSideStreets(list, group, heightC, route) {
   const nn = g.attributes.normal; for (let i = 0; i < nn.count; i++) if (nn.getY(i) < 0) nn.setXYZ(i, -nn.getX(i), -nn.getY(i), -nn.getZ(i));
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   // textured: worn asphalt for streets, concrete paving slabs for footpaths (vertex colour tells them apart)
-  mat.customProgramCacheKey = () => 'side6';
+  mat.customProgramCacheKey = () => 'side7-world-asphalt';
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, { tAD: { value: TX.asphalt_diff }, tAN: { value: TX.asphalt_nor }, tPD: { value: TX.paver_diff }, tPN: { value: TX.paver_nor } });
+    Object.assign(sh.uniforms, { roadAlbedo: { value: TX.asphalt_diff }, roadNormal: { value: TX.asphalt_nor }, tAD: { value: TX.asphalt_diff }, tAN: { value: TX.asphalt_nor }, tPD: { value: TX.paver_diff }, tPN: { value: TX.paver_nor } });
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSW;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvSW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
       uniform sampler2D tAD; uniform sampler2D tAN; uniform sampler2D tPD; uniform sampler2D tPN; varying vec3 vSW; vec3 sN; vec2 sUV;
-      ${GLSL_HELPERS}`)
+      ${GLSL_HELPERS}
+${ASPHALT_GLSL}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
       {
         float foot = step(0.3, vColor.r);
         sUV = vSW.xz / (foot > 0.5 ? 3.2 : 4.2);
         vec3 a = texNoTile(tAD, sUV).rgb, pv = texture2D(tPD, sUV).rgb;
         sN = (foot > 0.5 ? texture2D(tPN, sUV).xyz : texNoTile(tAN, sUV).xyz) * 2.0 - 1.0;
-        diffuseColor.rgb = foot > 0.5 ? pv * 1.05 : mix(vec3(dot(a, vec3(0.333))), a, 0.5) * 1.5 * (0.8 + 0.4 * fbm2(vSW.xz * 0.05));
+        diffuseColor.rgb = foot > 0.5 ? pv * 1.05 : roadAsphalt(vSW.xz,100.,0.);
       }`)
       .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nvec3 upV = normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz); if (dot(normal, upV) < 0.0) normal = -normal;\nnormal = perturb(-vViewPosition, normal, sUV, sN, 1.0);');
   };

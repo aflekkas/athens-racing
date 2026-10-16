@@ -1,3 +1,5 @@
+import {buildRoadGraph} from './road-graph.js';
+import {islandRing,insideIsland} from './roundabouts.js';
 // One spatial/height model shared by roads, terrain carving and wheel contacts. No rendering dependencies.
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -9,7 +11,7 @@ export function triangleHeight(t,H,x,z){
  return a+b<1?h00+(h10-h00)*a+(h01-h00)*b:h11+(h01-h11)*(1-a)+(h10-h11)*(1-b);
 }
 export class RoadNetwork {
- constructor(map){this.mainMargin=map.id==='penteli'?.04:map.route.closed?0:.55;this.route=map.route;this.terrain=map.terrain;this.roads=map.data.roadNetwork?.roads||[];this.cells=new Map();this.segments=[];this.C=32;this.stats={length:map.data.roadNetwork?.length||0,roads:this.roads.length};
+ constructor(map){this.mainMargin=map.id==='penteli'?.04:map.route.closed?0:.55;this.route=map.route;this.terrain=map.terrain;this.roads=map.data.roadNetwork?.roads||[];this.islands=(map.data.roadNetwork?.roundabouts||[]).map(r=>{const ring=islandRing(r.p,r.w/2+.12);return{...r,ring,minX:Math.min(...ring.map(p=>p[0])),maxX:Math.max(...ring.map(p=>p[0])),minZ:Math.min(...ring.map(p=>p[1])),maxZ:Math.max(...ring.map(p=>p[1]))};});this.cells=new Map();this.segments=[];this.C=32;this.stats={length:map.data.roadNetwork?.length||0,roads:this.roads.length};
   this.routeCells=new Map();
   for(let i=0;i<(this.route.N||0);i+=Math.max(1,Math.floor(8/this.route.step))){const k=`${Math.floor(this.route.X[i]/64)},${Math.floor(this.route.Z[i]/64)}`;if(!this.routeCells.has(k))this.routeCells.set(k,[]);this.routeCells.get(k).push(i);}
   this.routeNear=new Set();
@@ -21,6 +23,7 @@ export class RoadNetwork {
    for(let x=Math.floor((Math.min(ax,bx)-R)/this.C);x<=Math.floor((Math.max(ax,bx)+R)/this.C);x++)for(let z=Math.floor((Math.min(az,bz)-R)/this.C);z<=Math.floor((Math.max(az,bz)+R)/this.C);z++){const k=`${x},${z}`;if(!this.cells.has(k))this.cells.set(k,[]);this.cells.get(k).push(seg);}
   }
  }
+ get graph(){return this._graph ||= buildRoadGraph(this.roads);}
  candidates(x,z){return this.cells.get(`${Math.floor(x/this.C)},${Math.floor(z/this.C)}`)||[];}
  nearMain(x,z){return !this.routeCells.size||this.routeNear.has(`${Math.floor(x/64)},${Math.floor(z/64)}`);}
  installSurface(tiles){this.surfaceCells=new Map();
@@ -42,7 +45,8 @@ export class RoadNetwork {
   return this.route.project(x,z,best<0?null:best*this.route.step,12);
  }
  distance(seg,x,z){const t=clamp(((x-seg.ax)*seg.dx+(z-seg.az)*seg.dz)/seg.L2,0,1);return Math.hypot(x-seg.ax-seg.dx*t,z-seg.az-seg.dz*t);}
- sample(x,z,out={}){let best=null,margin=-Infinity,asphalt=false;for(const s of this.candidates(x,z)){const d=this.distance(s,x,z),paved=d<=s.hw,inside=d<=s.hw+s.sw;if(!inside)continue;const m=s.hw-d;if(paved&&!asphalt||paved===asphalt&&m>margin){best=s;margin=m;asphalt=paved;}}
+ islandAt(x,z){return this.islands.find(r=>x>=r.minX&&x<=r.maxX&&z>=r.minZ&&z<=r.maxZ&&insideIsland(x,z,r.ring));}
+ sample(x,z,out={}){if(this.islandAt(x,z))return null;let best=null,margin=-Infinity,asphalt=false;for(const s of this.candidates(x,z)){const d=this.distance(s,x,z),paved=d<=s.hw,inside=d<=s.hw+s.sw;if(!inside)continue;const m=s.hw-d;if(paved&&!asphalt||paved===asphalt&&m>margin){best=s;margin=m;asphalt=paved;}}
   if(!best)return null;out.segment=best;out.step=asphalt?0:.14;out.surf=asphalt?best.road.sf:'pavement';out.y=this.height(x,z)+out.step;return out;
  }
  mainInside(x,z){if(!this.nearMain(x,z))return false;const q=this.project(x,z);return (this.route.closed||q.s>=-60&&q.s<=this.route.length+60)&&Math.abs(q.u)<=this.route.edge(q.s)+this.mainMargin;}

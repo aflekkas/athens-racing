@@ -84,11 +84,11 @@ test('attachment stays within a conservative 2KiB budget with full telemetry; re
  const restored=createGameCore(opts);restored.restore(saved,new Map([...core.clients].map(c=>[c.token,c.ws])));
  assert.equal(restored.clientData(a).course.passed,1);assert.equal(restored.clientData(a).course.previous.s,90);
 });
-test('contact slows rear-ending car, separates sides, ignores stale proxies and never launches vertically',()=>{
+test('proxy contact uses mass share, separates sides, ignores stale peers and preserves remote authority',()=>{
  const route={project:(x,z)=>({s:-z,u:x}),length:1000,edge:()=>5,point:(s,u)=>({x:u,y:0,z:-s})};
  const local={x:0,y:0,z:0,yaw:0,s:0,u:0,vLong:30,vLat:0,w:0,halfW:1,halfL:2,m:1500,route,damage:0,addDamage(){this.damage++;}};
  const remote={...local,z:-3,vLong:10};const contacts=new Map();
- const hits=resolvePlayerContacts(local,[{id:'remote',vehicle:remote}],1/60,1000,contacts);assert.equal(hits.length,1);assert.equal(local.vLong,22);assert.equal(local.y,0);assert.equal(local.damage,1);
+ const hits=resolvePlayerContacts(local,[{id:'remote',vehicle:remote}],1/60,1000,contacts);assert.equal(hits.length,1);assert.equal(local.vLong,20,'equal masses share closing speed without the old 8 m/s impact cap');assert.equal(local.y,0);assert.equal(local.damage,1);
  resolvePlayerContacts(local,[{id:'remote',vehicle:remote}],1/60,1016,contacts);assert.equal(local.damage,1,'continuous contact cannot repeatedly damage');
  assert.equal(resolvePlayerContacts(local,[{id:'remote',vehicle:remote,age:351}],1/60,2000).length,0);
  const side={...local,x:1.5,z:local.z,vLong:local.vLong};assert.ok(resolvePlayerContacts(local,[{id:'side',vehicle:side}],1/60,3000).length);

@@ -658,13 +658,15 @@ function stuckCheck(pv, dt) {
   }
   const beyond = pv._network ? 0 : Math.abs(pv.u) - route.edge(pv.s); // side streets are valid roads, not a recovery zone
   const offroad = !!pv.offroad || beyond > 0.5 || pv.water > 0.05;
-  const inverted = Math.abs(pv.pose.roll) > Math.PI / 2 || Math.abs(pv.pose.pitch) > Math.PI / 2;
+  const q = pv.rigid?.q || pv.bodyQ;
+  const inverted = pv.bodyDynamic && q ? 1 - 2 * (q[0] ** 2 + q[2] ** 2) < .35 :
+    Math.abs(pv.pose.roll) > Math.PI / 2 || Math.abs(pv.pose.pitch) > Math.PI / 2;
   const disabled = pv.engineStalled || pv.drivetrainBroken || EV.isWrecked(pv.maxImpactEbs);
   // Only on-road poses advance the recovery anchor; a circuit excursion cannot skip a checkpoint.
-  if (!offroad && !inverted && !disabled && !G.towing && towOffer.hold <= 0) {
+  if (!offroad && !inverted && !disabled && !pv.bodyDynamic && !pv.air && !G.towing && towOffer.hold <= 0) {
     if (!pv._network && Math.abs(pv.u) + pv.halfW <= route.edge(pv.s)) towOffer.safe = { s: pv.s, u: pv.u }; closeTowOffer(); towOffer.offT = towOffer.stuckT = towOffer.severeT = G.stuckT = 0; return;
   }
-  const needed = towCondition({ offroad, beyond, water: pv.water, inverted, disabled, speed: pv.speed }, dt, towOffer);
+  const needed = towCondition({ offroad, beyond, water: pv.water, inverted, disabled, speed: Math.hypot(pv.speed, pv.vy || 0, pv.angularSpeed || 0) }, dt, towOffer);
   G.stuckT = towOffer.stuckT;
   if (needed && towOffer.hold <= 0) offerTow();
 }
@@ -1441,7 +1443,7 @@ function syncCar(c, dt) {
   c.model.steamAmount = multiplayer.active ? 0 : v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
   if(!multiplayer.active)c.remoteExhaust=null;
   if(c.model.exhaustFlames)c.model.exhaustFlames.update(dt,c.remoteExhaust||v.powertrainSignals,c.remoteExhaust?c.remoteExhaust.exhaustEnabled:exhaustPopsEnabled(c.spec),quality);
-  if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
+  if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.bodyDynamic ? (v._rigidVisualPose ||= { heave: 0, pitch: 0, roll: 0 }) : v.pose, v.corners || v.wheel, v.bodyDynamic ? 0 : v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
   if (c !== player) {
     const distance = camera.position.distanceTo(c.model.root.position);

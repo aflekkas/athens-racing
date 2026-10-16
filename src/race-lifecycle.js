@@ -1,3 +1,4 @@
+import { angularVelocity, restoreRigidState } from './airborne-dynamics.js';
 // Selection is keyed by driver identity, never a timer or lobby array position.
 export class SpectatorSelection {
   constructor() { this.reset(); }
@@ -59,6 +60,11 @@ const engineFields = ['impactMechanical', 'maxImpactEbs', 'engineDamage', 'engHe
 export function spectatorState(vehicle) {
   const state = Object.fromEntries(engineFields.filter(k => vehicle[k] !== undefined).map(k => [k, vehicle[k]]));
   for (const [field, key] of [['bodyHeave', 'heave'], ['bodyPitch', 'pitch'], ['bodyRoll', 'roll']]) if (Number.isFinite(vehicle.pose?.[key])) state[field] = vehicle.pose[key];
+  state.vy = vehicle.vy || 0; state.bodyDynamic = !!vehicle.bodyDynamic; state.air = !!vehicle.air;
+  if (vehicle.rigid) {
+    state.bodyQ = vehicle.rigid.q.slice();
+    [state.angularX, state.angularY, state.angularZ] = angularVelocity(vehicle);
+  }
   const tyres = vehicle.tyreTelemetry;
   if (tyres) {
     const axle = a => Object.fromEntries(['utilization', 'slipDemand', 'saturated', 'sliding', 'contact'].map(k => [k, a[k]]));
@@ -68,6 +74,8 @@ export function spectatorState(vehicle) {
 }
 export function applySpectatorState(vehicle, snapshot) {
   if (vehicle.pose) for (const [field, key] of [['bodyHeave', 'heave'], ['bodyPitch', 'pitch'], ['bodyRoll', 'roll']]) vehicle.pose[key] = snapshot[field] || 0;
+  vehicle.bodyDynamic = snapshot.bodyDynamic === true; vehicle.air = snapshot.air ? 1 : 0;
+  vehicle.bodyQ = snapshot.bodyQ || null; vehicle.vy = snapshot.vy || 0;
   vehicle.remoteTyreTelemetry = snapshot.tyreTelemetry || null;
   vehicle.remoteEngineTelemetry = Number.isFinite(snapshot.engHealth);
   for (const key of engineFields) vehicle[key] = snapshot[key];
@@ -92,5 +100,6 @@ export function restoreVehicleState(vehicle, state) {
     if (descriptor && (!('value' in descriptor) || !descriptor.writable)) continue;
     vehicle[key] = value;
   }
+  if (typeof vehicle.step === 'function') restoreRigidState(vehicle, state);
   return vehicle;
 }

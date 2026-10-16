@@ -1,0 +1,36 @@
+{
+  "sourceCandidate": "e2f2c010ba6c78a895415285f45c3f2db31a5220",
+  "cleanArchiveParent": "c113cf75195020f0adb052758d92377757151440",
+  "gates": {
+    "npm-test": 1,
+    "physics-regress": 0,
+    "events": 0,
+    "syntax": 0,
+    "browser-imports": 0,
+    "worker-dry-run": 0
+  },
+  "baselineFailure": {
+    "testNames": [
+      "psychiko: rendered terrain clears every road and both six-metre shoulders remain drivable"
+    ],
+    "identicalFullErrorLines": true,
+    "errorPrefix": "error: 'terrain above road by 0.029907237601690895 m at {\"road\":31486943,\"k\":3,\"u\":-3,\"source\":{\"terrainRefinement\":4,\"terrainD"
+  },
+  "baselineTerrainExit": 1,
+  "exception": "User explicitly authorized commit with the identical baseline terrain failure documented; roundabout agent owns the failure.",
+  "physicsChecks": {
+    "passed": 1146,
+    "failed": 0
+  },
+  "baselineAirborneTests": {
+    "passed": 9,
+    "failed": 3
+  },
+  "fixedAirborneTests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "committedSource": "d3fb671f53271ccc242739c618f45f45ce2d56fb",
+  "committedParent": "a8b3df636d71746d746565376df7ecc43a13a991",
+  "rebaseNote": "The roundabout agent advanced prod while gates ran. None of the owned source/evidence paths changed; the fix was reapplied with a private index over the new parent. Gate results refer to sourceCandidate over cleanArchiveParent, not the later concurrent terrain revision."
+}

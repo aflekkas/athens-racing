@@ -1,5 +1,5 @@
-// Kinematic remote proxies: bounded horizontal impulses, no vertical/angular
-// launch and no modification of remote authoritative state. Both owners resolve
+// Kinematic remote proxies: the local owner resolves its 3D impact; remote
+// authoritative state is never modified. Both owners resolve
 // their own half of the contact. Stale streams and recovery ghosts are ignored.
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const velocity = v => ({ x: -Math.sin(v.yaw) * v.vLong + Math.cos(v.yaw) * v.vLat, z: -Math.cos(v.yaw) * v.vLong - Math.sin(v.yaw) * v.vLat });
@@ -22,7 +22,7 @@ export function resolvePlayerContacts(local, proxies, dt, now, contacts = new Ma
     const a = velocity(local), b = velocity(remote);
     const closing = Math.max(0, -((a.x-b.x)*normal.x + (a.z-b.z)*normal.z));
     const share = (remote.m || remote.spec?.mass || 1500) / ((local.m || 1500) + (remote.m || remote.spec?.mass || 1500));
-    const impulse = Math.min(8, closing * share);
+    const impulse = Math.min(45, closing * share);
     a.x += normal.x*impulse; a.z += normal.z*impulse;
     local.vLong = -a.x*Math.sin(local.yaw) - a.z*Math.cos(local.yaw);
     local.vLat = a.x*Math.cos(local.yaw) - a.z*Math.sin(local.yaw);
@@ -30,9 +30,13 @@ export function resolvePlayerContacts(local, proxies, dt, now, contacts = new Ma
     local.x += normal.x*push; local.z += normal.z*push;
     const projected = local.route?.project(local.x, local.z, local.s, 6);
     if (projected) { local.s = projected.s; local.u = projected.u; }
-    local.w = clamp(local.w || 0, -1.5, 1.5);
+
     const r = axes(local)[0], f = axes(local)[1];
     const side = normal.x*r.x + normal.z*r.z, front = normal.x*f.x + normal.z*f.z;
+    local.impactDynamics?.({dv: impulse, nx: normal.x, nz: normal.z,
+      forward: clamp((remote.x-local.x)*f.x+(remote.z-local.z)*f.z,-local.halfL,local.halfL),
+      right: clamp((remote.x-local.x)*r.x+(remote.z-local.z)*r.z,-local.halfW,local.halfW),
+      height: Math.max(.3, Math.min(local.hcg || .5, remote.hcg || .5)), kind: 'car'});
     const zone = Math.abs(front) > Math.abs(side) ? front < 0 ? 'front' : 'rear' : side < 0 ? 'right' : 'left';
     if (closing > 2 && now - (contacts.get(id) ?? -Infinity) > 600) {
       local.addDamage?.(zone, impulse, { kind: 'player', sev: Math.min(closing, 16), car: { mass: remote.m || remote.spec?.mass || 1500 } });
@@ -44,7 +48,7 @@ export function resolvePlayerContacts(local, proxies, dt, now, contacts = new Ma
 }
 
 export function containOnlineVehicle(vehicle, route) {
-  if (!route || route.closed) return;
+  if (!route || route.closed || vehicle.bodyDynamic) return;
   const s = clamp(vehicle.s, 3, route.length - 3), edge = Math.max(4, route.edge(s) + 8), u = clamp(vehicle.u, -edge, edge);
   if (s === vehicle.s && u === vehicle.u) return;
   const point = route.point(s, u);

@@ -155,7 +155,7 @@ export function mountCarSelect(root, index, opts = {}) {
   const up = e => { if(e.pointerId!==pointer)return;const swipe=touch?e.clientX-pointerStart:0;pointer=null;if(e.type==='pointerup' && Math.abs(swipe)>60 && performance.now()-pointerAt<350)step(swipe<0?1:-1);turntable.dragging=false;container.classList.remove('dragging'); };
   container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
   for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
-  const hint=document.createElement('span');hint.className='car-stage__hint';hint.textContent='DRAG TO ROTATE · SWIPE TO CHANGE TRIM';if(!lite)container.append(hint);
+  const hint=document.createElement('span');hint.className='car-stage__hint';hint.setAttribute('aria-hidden','true');hint.textContent='DRAG TO ROTATE · SWIPE TO CHANGE TRIM';if(!lite)container.append(hint);
   const rules=()=>window.__flow?.menu?.data || {};
   const swapTo = next => {
     if(next===index)return false;

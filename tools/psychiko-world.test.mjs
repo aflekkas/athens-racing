@@ -41,12 +41,12 @@ test('all public junction exits have exactly one solid race closure, with no rac
  const {gunzipSync}=await import('node:zlib');
  const osm=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements;
  const course=JSON.parse(readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url)));
- // Independently count graph degree minus the two raced neighbours at each node.
+ // Independently count non-raced half-edges. A junction may be visited twice after taking the legal roundabout exit.
  const graph=new Map();for(const w of osm.filter(publicRoad))for(let i=1;i<w.nodes.length;i++)for(const [a,b] of [[w.nodes[i-1],w.nodes[i]],[w.nodes[i],w.nodes[i-1]]]){if(!graph.has(a))graph.set(a,new Set());graph.get(a).add(b);}
- const chain=course.sourceNodeIds.slice(0,-1),exits=[];
+ const chain=course.sourceNodeIds.slice(0,-1),exits=[],raced=new Set(course.sourceNodeIds.slice(1).flatMap((b,i)=>[`${course.sourceNodeIds[i]}:${b}`,`${b}:${course.sourceNodeIds[i]}`]));
  for(let i=0;i<chain.length;i++){const node=chain[i],prev=chain[(i-1+chain.length)%chain.length],next=chain[(i+1)%chain.length];
   assert(graph.get(node).has(prev)&&graph.get(node).has(next));
-  for(const other of graph.get(node))if(other!==prev&&other!==next)exits.push({id:`${node}:${other}`});
+  for(const other of graph.get(node))if(!raced.has(`${node}:${other}`)&&!exits.some(e=>e.id===`${node}:${other}`))exits.push({id:`${node}:${other}`});
  }
  assert.equal(data.roadworks.length,exits.length);assert.equal(new Set(data.roadworks.map(b=>b.id)).size,exits.length);
  assert.deepEqual(data.roadworks.map(b=>b.id).sort(),exits.map(b=>b.id).sort());

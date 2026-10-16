@@ -1,3 +1,4 @@
+import {islandDistance} from './roundabouts.js';
 // Distance to the union of modelled road strips, including finite road ends.
 // Spatial capsules keep the per-player query independent of map size.
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
@@ -8,7 +9,7 @@ export function roadEdgeDistance(x,z,a,b,width) {
 }
 export class DrivableCorridor {
   constructor(route,network=null,terrain=null) {
-    this.cells=new Map(); this.cell=64; this.terrain=terrain;
+    this.network=network;this.cells=new Map(); this.cell=64; this.terrain=terrain;
     const add=(a,b,w)=>{
       const seg={a,b,w};
       for(let i=Math.floor((Math.min(a.x,b.x)-w)/64);i<=Math.floor((Math.max(a.x,b.x)+w)/64);i++)
@@ -26,6 +27,7 @@ export class DrivableCorridor {
   }
   distance(x,z,limit=96) {
     if(!Number.isFinite(x)||!Number.isFinite(z))return Infinity;
+    const island=this.network?.islandAt?.(x,z);if(island)return islandDistance(x,z,island.ring);
     const C=this.cell, seen=new Set();let best=Infinity;
     for(let i=Math.floor((x-limit)/C);i<=Math.floor((x+limit)/C);i++)for(let j=Math.floor((z-limit)/C);j<=Math.floor((z+limit)/C);j++)
       for(const s of this.cells.get(`${i},${j}`)||[]){if(seen.has(s))continue;seen.add(s);best=Math.min(best,roadEdgeDistance(x,z,s.a,s.b,s.w));if(best===0)return 0;}

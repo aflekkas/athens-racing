@@ -264,8 +264,8 @@ body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons
   .scr--car .car-layout { align-items: stretch; }
 }
 /* Binding-aware controls stay compact at race start, and can be expanded in pause. */
-.driving-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .85rem; }
-.driving-controls > span { display: inline-flex; align-items: center; gap: .4rem; }
+.driving-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .85rem; pointer-events: none; cursor: default; }
+.driving-controls > span { display: inline-flex; align-items: center; gap: .4rem; pointer-events: none; }
 .driving-controls b { font: 700 .7rem var(--f-cond); letter-spacing: .05em; color: #d2dbe5; }
 #drivingHints { position: fixed; z-index: 24; left: 50%; bottom: 1.5rem; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 3rem); display: flex; align-items: center; gap: 1rem; padding: .7rem 1rem; border: 1px solid var(--c-line-2); border-radius: var(--r-3); background: #0b1119ed; color: white; }
 #drivingHints[hidden], #drivingTip[hidden] { display: none; }
@@ -300,7 +300,7 @@ body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32p
 body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; padding: 2px 0; font-size: 9px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .car-stage { touch-action: none; cursor: grab; }
 .car-stage.dragging { cursor: grabbing; }
-.car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; color: var(--c-text-3); font: 600 .7rem var(--f-cond); letter-spacing: .16em; }
+.car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; cursor: default; color: var(--c-text-3); font: 600 .7rem var(--f-cond); letter-spacing: .16em; }
 #race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); cursor: pointer; }
 #race-settings .ico { width: 18px; height: 18px; }
 #race-settings:focus-visible { outline: 2px solid #ffc21a; }
