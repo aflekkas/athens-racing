@@ -53,3 +53,9 @@ Set ROAD_REPOSITORY when running from an archive without .git; the debug/before
 runners read baseline 492f14e through git show without changing a checkout.
 
 The fixed-pose detail budget was refreshed for Psychiko after rerouting: `detail-budget/report.json` and eight On/Off PNGs record day/night chase/cockpit poses. Each On pose adds two draws and fewer than 3,000 triangles to its current base/Off pose. Other maps retain byte-identical source data and their existing budget measurements.
+
+Elevation is preserved geographically using the authored road-bed reference in
+`tools/maps/psychiko/raw/height-reference.json`. Changing a junction arc's length
+must not move a stale distance/elevation table onto different streets. New arcs
+use the local DEM delta from the nearest authored road point. A regression keeps
+unchanged streets within 0.65 m and their mean difference below 0.08 m.

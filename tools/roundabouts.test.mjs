@@ -77,3 +77,9 @@ test('shared-world snapshots render the actual road-space position and resume th
  applySharedCar(guest,row,0);assert(remote._sharedPosition);const displayed=circulatingPoint(r,remote,{});assert(Math.hypot(displayed.x-point.x,displayed.z-point.z)<1);
  applySharedCar(guest,row,0,true);Traffic.prototype.driveRoundabout.call(guest,remote,1/60);assert(remote._roundabout);assert(Math.hypot(remote._world.x-point.x,remote._world.z-point.z)<1);assert(!remote._sharedPosition);
 });
+test('legal junction detours preserve authored heights on unchanged streets',()=>{
+ const old=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/height-reference.json',import.meta.url)));let total=0,count=0;
+ for(let i=0;i<data.route.x.length;i+=10){const x=data.route.x[i],z=data.route.z[i];let nearest=Infinity,height=0;for(let j=1;j<old.x.length;j++){const ax=old.x[j-1],az=old.z[j-1],dx=old.x[j]-ax,dz=old.z[j]-az,t=Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz||1))),distance=(x-ax-dx*t)**2+(z-az-dz*t)**2;if(distance<nearest){nearest=distance;height=old.y[j-1]+(old.y[j]-old.y[j-1])*t;}}
+  if(nearest<4){const difference=Math.abs(data.route.y[i]-height);assert(difference<.65,`unrelated street height shifted at ${i*data.route.step}: ${difference}`);total+=difference;count++;}}
+ assert(count>200);assert(total/count<.08);
+});

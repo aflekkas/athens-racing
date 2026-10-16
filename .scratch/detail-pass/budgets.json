@@ -3,9 +3,9 @@
     "riviera": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "penteli": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "megara": "195ce8b322f2297034be56c8e38b8899321c2bb3",
-    "psychiko": "61833e8 (base geometry with optional detail Off)"
+    "psychiko": "Current authored-height-preserving base geometry with optional detail Off (height reference 492f14e)"
   },
-  "method": "Fixed car, stations and camera poses; settled conditions and cold terrain LOD selected with the real selector; shared immutable production terrain bakes; immutable prod baseline and live On/Off candidate; Psychiko refreshed after legal roundabout rerouting, with current base geometry/Off as the component baseline; unchanged maps retain their source-identical measurements.",
+  "method": "Source-identical earlier measurements retained for Riviera, Penteli and Megara; Psychiko uses current runtime-built terrain/roads with authored world-space heights, fixed day/night chase/cockpit cameras, and detail Off/On. SwiftShader; no timing claims.",
   "browserErrors": [],
   "sourceHashes": {
     "src/world-detail.js": "6bd79db555ff9621dc3266b61c3a0241cc002ee9526204fc3c1494ccd421fcf8",
@@ -20,7 +20,7 @@
     "data/map.json": "702e5f0940896675ef9d7806f8d7bb8799f8599692178f0c5d7b7e041ef15447",
     "data/maps/penteli/map.json": "6df1ac6460958a0a9841c7b03df255931a7a27ccdcba457745bfdb390b62bb07",
     "data/maps/megara/map.json": "b1d6873460ce7676f6a22f7804f22453e7aad2c9d41642f869d9b39b031e37c7",
-    "data/maps/psychiko/map.json": "250c8c36050c70b0625e50fbb96c6258a298b55dc90bbbfeed5e4ea80d755b92"
+    "data/maps/psychiko/map.json": "3f519114268b73704547607afc000abedfd840e6ca38817137053cfe4e603957"
   },
   "rows": [
     {
@@ -1151,18 +1151,18 @@
         "s": 3188.6738331440815,
         "camera": [
           -148.9176237489736,
-          194.81812667779067,
+          200.25500488281247,
           -467.55510208771915
         ],
         "quaternion": [
-          -0.05603187675938844,
-          -0.1595698882937429,
-          -0.009072060407256123,
-          0.9855534370376425
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
         "calls": 1349,
-        "triangles": 1541413,
-        "geometryBytes": 274920878,
+        "triangles": 1404654,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1171,18 +1171,18 @@
         "s": 3188.6738331440815,
         "camera": [
           -148.9176237489736,
-          194.81812667779067,
+          200.25500488281247,
           -467.55510208771915
         ],
         "quaternion": [
-          -0.05603187675938844,
-          -0.1595698882937429,
-          -0.009072060407256123,
-          0.9855534370376425
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
         "calls": 1349,
-        "triangles": 1541413,
-        "geometryBytes": 274920878,
+        "triangles": 1404654,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1191,18 +1191,18 @@
         "s": 3188.6738331440815,
         "camera": [
           -148.9176237489736,
-          194.81812667779067,
+          200.25500488281247,
           -467.55510208771915
         ],
         "quaternion": [
-          -0.05603187675938844,
-          -0.1595698882937429,
-          -0.009072060407256123,
-          0.9855534370376425
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
         "calls": 1351,
-        "triangles": 1544359,
-        "geometryBytes": 274920878,
+        "triangles": 1407600,
+        "geometryBytes": 252453962,
         "textureBytes": 98284889.33333336,
         "shadows": false
       }
@@ -1215,7 +1215,7 @@
         "s": 3188.6738331440815,
         "camera": [
           -151.4045440118883,
-          193.14312667779066,
+          198.58000488281246,
           -474.9151764765368
         ],
         "quaternion": [
@@ -1224,9 +1224,9 @@
           0.0031175859567542192,
           0.9901018200265057
         ],
-        "calls": 1207,
-        "triangles": 1548365,
-        "geometryBytes": 274920878,
+        "calls": 1208,
+        "triangles": 1420577,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1235,7 +1235,7 @@
         "s": 3188.6738331440815,
         "camera": [
           -151.4045440118883,
-          193.14312667779066,
+          198.58000488281246,
           -474.9151764765368
         ],
         "quaternion": [
@@ -1244,9 +1244,9 @@
           0.0031175859567542192,
           0.9901018200265057
         ],
-        "calls": 1207,
-        "triangles": 1548365,
-        "geometryBytes": 274920878,
+        "calls": 1208,
+        "triangles": 1420577,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1255,7 +1255,7 @@
         "s": 3188.6738331440815,
         "camera": [
           -151.4045440118883,
-          193.14312667779066,
+          198.58000488281246,
           -474.9151764765368
         ],
         "quaternion": [
@@ -1264,9 +1264,9 @@
           0.0031175859567542192,
           0.9901018200265057
         ],
-        "calls": 1209,
-        "triangles": 1551283,
-        "geometryBytes": 274920878,
+        "calls": 1210,
+        "triangles": 1423495,
+        "geometryBytes": 252453962,
         "textureBytes": 98284889.33333336,
         "shadows": false
       }
@@ -1279,18 +1279,18 @@
         "s": 3188.6738331440815,
         "camera": [
           -148.9176237489736,
-          194.81812667779067,
+          200.25500488281247,
           -467.55510208771915
         ],
         "quaternion": [
-          -0.05603187675938844,
-          -0.1595698882937429,
-          -0.009072060407256123,
-          0.9855534370376425
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
         "calls": 1351,
-        "triangles": 1542373,
-        "geometryBytes": 274920878,
+        "triangles": 1405614,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1299,18 +1299,18 @@
         "s": 3188.6738331440815,
         "camera": [
           -148.9176237489736,
-          194.81812667779067,
+          200.25500488281247,
           -467.55510208771915
         ],
         "quaternion": [
-          -0.05603187675938844,
-          -0.1595698882937429,
-          -0.009072060407256123,
-          0.9855534370376425
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
         "calls": 1351,
-        "triangles": 1542373,
-        "geometryBytes": 274920878,
+        "triangles": 1405614,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1319,18 +1319,18 @@
         "s": 3188.6738331440815,
         "camera": [
           -148.9176237489736,
-          194.81812667779067,
+          200.25500488281247,
           -467.55510208771915
         ],
         "quaternion": [
-          -0.05603187675938844,
-          -0.1595698882937429,
-          -0.009072060407256123,
-          0.9855534370376425
+          -0.041531443635845544,
+          -0.1596860519006989,
+          -0.006724311003946744,
+          0.9862708997326303
         ],
         "calls": 1353,
-        "triangles": 1545319,
-        "geometryBytes": 274920878,
+        "triangles": 1408560,
+        "geometryBytes": 252453962,
         "textureBytes": 98284889.33333336,
         "shadows": false
       }
@@ -1343,7 +1343,7 @@
         "s": 3188.6738331440815,
         "camera": [
           -151.4045440118883,
-          193.14312667779066,
+          198.58000488281246,
           -474.9151764765368
         ],
         "quaternion": [
@@ -1352,9 +1352,9 @@
           0.0031175859567542192,
           0.9901018200265057
         ],
-        "calls": 1209,
-        "triangles": 1549325,
-        "geometryBytes": 274920878,
+        "calls": 1210,
+        "triangles": 1421537,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1363,7 +1363,7 @@
         "s": 3188.6738331440815,
         "camera": [
           -151.4045440118883,
-          193.14312667779066,
+          198.58000488281246,
           -474.9151764765368
         ],
         "quaternion": [
@@ -1372,9 +1372,9 @@
           0.0031175859567542192,
           0.9901018200265057
         ],
-        "calls": 1209,
-        "triangles": 1549325,
-        "geometryBytes": 274920878,
+        "calls": 1210,
+        "triangles": 1421537,
+        "geometryBytes": 252453962,
         "textureBytes": 95401305.33333334,
         "shadows": false
       },
@@ -1383,7 +1383,7 @@
         "s": 3188.6738331440815,
         "camera": [
           -151.4045440118883,
-          193.14312667779066,
+          198.58000488281246,
           -474.9151764765368
         ],
         "quaternion": [
@@ -1392,9 +1392,9 @@
           0.0031175859567542192,
           0.9901018200265057
         ],
-        "calls": 1211,
-        "triangles": 1552243,
-        "geometryBytes": 274920878,
+        "calls": 1212,
+        "triangles": 1424455,
+        "geometryBytes": 252453962,
         "textureBytes": 98284889.33333336,
         "shadows": false
       }

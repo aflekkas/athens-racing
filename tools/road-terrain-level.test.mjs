@@ -48,10 +48,10 @@ for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||proc
     t.diagnostic(JSON.stringify({astirShoreline:{x,z,y}}));
   }
   let count=0,maxStep=0,maxSlope=0,maxAbove=-Infinity,worstStep,worstSlope,worstAbove;
-  const carriage=(x,z,y,where)=>{const delta=h(x,z)-y;count++;if(delta>maxAbove){maxAbove=delta;worstAbove={...where,source:h.source};} };
+  const carriage=(x,z,y,where)=>{if(n.islandAt?.(x,z))return;const delta=h(x,z)-y;count++;if(delta>maxAbove){maxAbove=delta;worstAbove={...where,source:h.source};} };
   const shoulder=(point,edgeY,where)=>{
-    let previousPoint=point(0),prev=h(...previousPoint);const step=Math.abs(prev-edgeY);if(step>maxStep){maxStep=step;worstStep={...where,source:h.source};}
-    for(let d=.25;d<=6;d+=.25){const currentPoint=point(d),y=h(...currentPoint),distance=Math.hypot(currentPoint[0]-previousPoint[0],currentPoint[1]-previousPoint[1]),slope=Math.abs(y-prev)/Math.max(1e-6,distance);if(slope>maxSlope){maxSlope=slope;worstSlope={...where,d,source:h.source};}prev=y;previousPoint=currentPoint;count++;}
+    let previousPoint=point(0);if(n.islandAt?.(...previousPoint))return;let prev=h(...previousPoint);const step=Math.abs(prev-edgeY);if(step>maxStep){maxStep=step;worstStep={...where,source:h.source};}
+    for(let d=.25;d<=6;d+=.25){const currentPoint=point(d);if(n.islandAt?.(...currentPoint))break;const y=h(...currentPoint),distance=Math.hypot(currentPoint[0]-previousPoint[0],currentPoint[1]-previousPoint[1]),slope=Math.abs(y-prev)/Math.max(1e-6,distance);if(slope>maxSlope){maxSlope=slope;worstSlope={...where,d,source:h.source};}prev=y;previousPoint=currentPoint;count++;}
   };
   // Sample every route segment, at most two metres apart. Raised medians
   // and the rock between twin tunnel bores are outside the carriageways.
@@ -59,6 +59,8 @@ for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||proc
     for(const side of [-1,1]){const p=r.point(s,side*e);carriage(p.x,p.z,p.y,{s,side});shoulder(d=>{const p=r.point(s,side*(e+d));return [p.x,p.z];},p.y,{s,side});}
   }
   // Every drivable side-road segment, including street junctions and sidewalks.
+  // A roundabout island is excluded from the carriageway and terminates its inner shoulder.
+  // Its raised contact and off-road recovery semantics are checked in roundabouts.test.mjs.
   for(const seg of n.segments){const steps=Math.max(1,Math.ceil(seg.L/2));for(let k=0;k<=steps;k++){
     const x=seg.ax+seg.dx*k/steps,z=seg.az+seg.dz*k/steps,e=seg.hw+seg.sw;
     for(let u=-seg.hw;u<=seg.hw+.001;u+=1){const xx=x-seg.dz/seg.L*u,zz=z+seg.dx/seg.L*u;carriage(xx,zz,n.height(xx,zz),{road:seg.road.id,k,u});}
