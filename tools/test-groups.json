@@ -138,7 +138,8 @@
     "tools/world-tile-roads.test.mjs",
     "tools/world-development.test.mjs",
     "tools/world-detail.test.mjs",
-    "tools/detail-budgets.test.mjs"
+    "tools/detail-budgets.test.mjs",
+    "tools/road-asphalt.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
