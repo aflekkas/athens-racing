@@ -25,15 +25,6 @@ try {
   assert.equal(requested.some(url => new URL(url).pathname.startsWith('/data/')), false, 'fresh menu must fetch zero map files (including service worker installation)');
   assert.equal(await page.evaluate(() => !!window.__game?.mapId), false, 'fresh menu owns no world');
   await page.screenshot({ path: resolve(out, 'menu.png') });
-  const phone = await context.newPage();
-  phone.on('pageerror', error => { errors.push(error.stack); console.error(error.stack); });
-  const phoneRequests = []; phone.on('request', request => phoneRequests.push(request.url()));
-  await phone.setViewportSize({ width: 390, height: 844 });
-  await phone.goto(app.url + '/wheel', { waitUntil: 'domcontentloaded' });
-  await phone.waitForSelector('#wheel-code');
-  assert.equal(phoneRequests.some(url => new URL(url).pathname.startsWith('/data/')), false);
-  await phone.screenshot({ path: resolve(out, 'phone-wheel.png') });
-  await phone.close();
   // Exercise account and multiplayer lazy loaders as well as the garage handover.
   await page.evaluate(() => window.__flow.menu.show('account', {}, true));
   await page.waitForFunction(() => window.__flow.menu.screen === 'account');

@@ -57,13 +57,3 @@ The scripts in `tools/` rebuild the map data, terrain and textures.
 Graphics defaults to automatic selection. Software rendering uses low graphics; choose **GRAPHICS: HIGH** or **GRAPHICS: LOW** to override. Low graphics keeps the driving, course, car geometry, and color grading, uses simpler sky/water/terrain shading and a shorter prop draw distance while disabling live reflections, shadows, multisample antialiasing, ambient occlusion, and bloom.
 
 Personal-best ghosts retain player-only lap samples for solo sprint and time-trial runs. Race replay playback and the photo editor have been removed; finish photos and result share cards remain. Existing saved ghosts stay compatible.
-
-## Use your phone as a steering wheel
-
-On the game screen, open **Settings → Controls → Use phone as wheel**, or choose it from Pause. Scan the QR code with your phone camera, or open `/wheel` on the same site and enter the eight-character code. Codes expire after five minutes; only one phone can join. No install or account is needed.
-
-Hold the phone in landscape with the screen facing you. Tap **Tap to start** and allow motion access on iPhone, then tap **Calibrate centre** while holding the phone straight. Set full lock from 60° to 120°. Slide upward in the right pedal for throttle and the left pedal for brake. The centre buttons control the handbrake, gears, look back, camera and pause. Return to the game screen to drive; the most recently changed controls take over from keyboard or gamepad.
-
-Both screens show P2P or WebSocket and round-trip latency. WebRTC uses public STUN only; when a direct connection is unavailable, the WebSocket relay works automatically. Missing input centres steering and releases all pedals after 200 ms. Tap **Unpair** on either screen to disconnect; a lost connection needs a fresh code. Keep both screens open. The phone requests fullscreen, landscape and a screen wake lock where supported. Android can vibrate for driving feedback; iPhone flashes instead.
-
-Production, staging and localhost use their own pairing rooms. Motion sensors need HTTPS on a real phone: for local phone testing use a trusted HTTPS tunnel or local TLS server, not an unsecured LAN IP.

@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Removed the phone-as-steering-wheel controller.
+
 - One graphics look for everyone: the clean, fast Lighting Off and Effects Off picture. Presets are gone, and the chase camera no longer shows a rear-view mirror.
   ![The chase camera on the Riviera with the one graphics look and no rear-view strip](assets/changelog/2026.10.15.4/one-graphics-look.webp "One clean look, and a clear view over the car.")
 

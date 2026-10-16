@@ -167,3 +167,15 @@ test('HUD motion respects reduced motion until explicitly chosen and rejects inv
     assert.equal((await preferences(old)).settings.hudMotion, 'subtle', 'a later deliberate Subtle survives reloads');
   } finally { globalThis.matchMedia = previous; }
 });
+
+test('retired phone controller preferences are dropped from memory and saved settings', async () => {
+  const storage = memory();
+  storage.setItem('paraliaki.settings', JSON.stringify({ phoneWheel: true, phoneWheelHaptics: true, phone_wheelLock: 90, touchSteering: 'tilt', master: 0.3 }));
+  const { settings, setSetting } = await preferences(storage);
+  for (const value of [settings, JSON.parse(storage.getItem('paraliaki.settings'))]) {
+    assert.ok(!Object.keys(value).some(key => /^phone.?wheel/i.test(key)));
+    assert.equal(value.master, 0.3);
+  }
+  setSetting('phoneWheel', true);
+  assert.equal(settings.phoneWheel, undefined);
+});

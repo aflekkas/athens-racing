@@ -12,7 +12,6 @@ Its module workers remain bundled because document import maps do not apply to w
 `ASR_CLIENT_BUNDLE=source` restores native source deployment. Neither changes the multiplayer
 protocol or the build metadata sent by the client. Auth policy/session initialization remains eager;
 the account screen implementation waits until account UI or a required sign-in flow needs it.
-The phone-wheel controller page has a separate hashed entry; its pairing screen loads on demand.
 Privacy and terms are server-rendered HTML.
 
 External sourcemaps (with sources) are emitted to `.deploy/sourcemaps/src/`, outside public assets.
@@ -42,7 +41,7 @@ The browser check uses the pinned Playwright dev dependency and its installed Ch
 `PLAYWRIGHT_MODULE` and `CHROME_BIN` override them; the VPS defaults remain supported.
 CI runs the check after its staging dry-run build.
 It verifies a fresh title (including service worker install) makes zero `/data/` requests and owns
-no map, boots the separate phone-wheel page, then starts a Quick Race on each map through the real car picker.
+no map, then starts a Quick Race on each map through the real car picker.
 The harness advances the real countdown and camera transition before capturing each race. Evidence goes to
 `.scratch/bundle-check` (`BUNDLE_EVIDENCE` overrides it).
 

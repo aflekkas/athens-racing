@@ -23,10 +23,6 @@
       {
         "name": "PRESENCE",
         "class_name": "FriendsPresence"
-      },
-      {
-        "name": "WHEEL",
-        "class_name": "PhoneWheelRoom"
       }
     ]
   },
@@ -48,6 +44,10 @@
       "new_sqlite_classes": [
         "PhoneWheelRoom"
       ]
+    },
+    {
+      "tag": "v4-remove-phone-wheel",
+      "deleted_classes": ["PhoneWheelRoom"]
     }
   ],
   "env": {
@@ -71,10 +71,6 @@
           {
             "name": "PRESENCE",
             "class_name": "FriendsPresence"
-          },
-          {
-            "name": "WHEEL",
-            "class_name": "PhoneWheelRoom"
           }
         ]
       },
@@ -116,10 +112,6 @@
           {
             "name": "PRESENCE",
             "class_name": "FriendsPresence"
-          },
-          {
-            "name": "WHEEL",
-            "class_name": "PhoneWheelRoom"
           }
         ]
       },

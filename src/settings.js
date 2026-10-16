@@ -53,6 +53,9 @@ function load() {
   const out = { ...DEFAULTS, hudMotion: reducedMotion() ? 'off' : DEFAULTS.hudMotion };
   try {
     const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
+    const retired = Object.keys(saved).filter(key => /^phone.?wheel/i.test(key));
+    for (const key of retired) delete saved[key];
+    if (retired.length) { try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {} }
     Object.assign(out, saved);
     // Preserve the old all-aids-off choice when separating ABS from TC/ESC.
     if (saved.abs === undefined) out.abs = saved.aids !== false;

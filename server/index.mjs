@@ -1,4 +1,3 @@
-import { WheelRoom, wheelCode, validWheelCode } from './phone-wheel.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
 import { connectionProtocol } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
@@ -33,7 +32,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
   const core = createGameCore({ maps, cars: CARS, carSpecs, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
   const { clients, lobbies, discover } = core;
-  const postLimits = new Map(), wheelRooms = new Map();
+  const postLimits = new Map();
   const server = http.createServer(async (req, res) => {
     const headers = { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' };
     try {
@@ -42,12 +41,6 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const url = new URL(req.url, 'http://localhost');
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
-      if (path === '/api/wheel' && req.method === 'POST') {
-        if (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) { json(403, { error: 'Origin mismatch.' }); return; }
-        if (wheelRooms.size >= 1024) { json(429, { error: 'Try again later.' }); return; }
-        const code = wheelCode(), room = new WheelRoom(); wheelRooms.set(code, room);
-        res.setHeader('Cache-Control', 'no-store'); json(200, { code, ...room.create() }); return;
-      }
       if (path === '/api/leaderboard') {
         if (req.method === 'GET') { json(200, leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, limit: url.searchParams.get('limit') })); return; }
         if (req.method !== 'POST') { json(405, { error: 'Use GET or POST.' }); return; }
@@ -65,8 +58,8 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       if (path === '/api/lobbies') { res.writeHead(200, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(discover().lobbies)); return; }
       if (path.startsWith('/api/') || path.startsWith('/auth/')) { json(404, { error: 'Not found.' }); return; }
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, headers); res.end(); return; }
-      const allowed = path === '/' || path === '/index.html' || path === '/wheel' || path === '/style.css' || /^\/(src|assets|data)\/[a-zA-Z0-9_./-]+$/.test(path);
-      const file = resolve(root, '.' + (path === '/' ? '/index.html' : path === '/wheel' ? '/src/ui/phone-wheel.html' : path));
+      const allowed = path === '/' || path === '/index.html' || path === '/style.css' || /^\/(src|assets|data)\/[a-zA-Z0-9_./-]+$/.test(path);
+      const file = resolve(root, '.' + (path === '/' ? '/index.html' : path));
       if (!allowed || path.split('/').some(s => s.startsWith('.')) || !file.startsWith(root + '/')) { res.writeHead(404, headers); res.end('Not found'); return; }
       const info = await stat(file); if (!info.isFile()) throw new Error('Not a file');
       res.writeHead(200, { ...headers, 'Content-Type': TYPES[extname(file)] || 'application/octet-stream', 'Content-Length': info.size });
@@ -76,27 +69,20 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const wss = new WebSocketServer({ noServer: true, maxPayload: 16384 });
   server.on('upgrade', (req, socket, head) => {
     try {
-      if (!['/ws', '/api/wheel/ws'].includes(new URL(req.url, 'http://localhost').pathname) || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) || clients.size >= 256) { socket.destroy(); return; }
+      if (new URL(req.url, 'http://localhost').pathname !== '/ws' || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) || clients.size >= 256) { socket.destroy(); return; }
       wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req));
     } catch { socket.destroy(); }
   });
   wss.on('connection', (ws, req) => {
-    const url = new URL(req.url, 'http://localhost');
-    if (url.pathname === '/api/wheel/ws') {
-      const code = url.searchParams.get('c'), room = validWheelCode(code) && wheelRooms.get(code);
-      if (!room?.join(ws, url.searchParams.get('role'), url.searchParams.get('token'))) { ws.close(1008, 'Code expired or already in use'); return; }
-      ws.on('message', (bytes, binary) => room.message(ws, binary ? bytes : bytes.toString()));
-      ws.on('close', () => { room.close(); wheelRooms.delete(code); }); ws.on('error', () => room.close()); return;
-    }
     if (!core.connect(ws, req.socket.remoteAddress, connectionProtocol(new URL(req.url, 'http://localhost')))) return;
     ws.on('pong', () => core.pong(ws));
     ws.on('message', bytes => core.message(ws, bytes));
     ws.on('close', () => core.disconnect(ws));
     ws.on('error', () => ws.close());
   });
-  const tick = setInterval(() => { core.tick(); for (const [code, room] of wheelRooms) if (Date.now() >= room.data.expires) { room.close(); wheelRooms.delete(code); } for (const [ip, limit] of postLimits) if (Date.now() - limit.at > 60000) postLimits.delete(ip); }, 100);
+  const tick = setInterval(() => { core.tick(); for (const [ip, limit] of postLimits) if (Date.now() - limit.at > 60000) postLimits.delete(ip); }, 100);
   const heartbeat = setInterval(() => { for (const c of clients) { if (!c.alive) c.ws.terminate(); else { c.alive = false; c.ws.ping(); } } }, 15000);
-  const close = async () => { clearInterval(tick); clearInterval(heartbeat); for (const room of wheelRooms.values()) room.close(); for (const c of clients) c.ws.terminate(); await new Promise(r => wss.close(r)); await new Promise(r => server.close(r)); await leaderboard.flush(); };
+  const close = async () => { clearInterval(tick); clearInterval(heartbeat); for (const c of clients) c.ws.terminate(); await new Promise(r => wss.close(r)); await new Promise(r => server.close(r)); await leaderboard.flush(); };
   return { server, close, lobbies, track, leaderboard };
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
