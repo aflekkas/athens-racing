@@ -1,0 +1,76 @@
+{
+  "testedSource": "6203c8ac9767cd726f029718f17b0a5cf2aac148",
+  "base": "87558ec5d2f2dd916b32b6e9fc6e78a290b18571",
+  "originalTag": "psychiko-garden-original",
+  "originalCommit": "54505ccfe33499cf6e1ed00b0519bd6cc05d0c10",
+  "preserved": {
+    "route": true,
+    "roadworks": true,
+    "roadNetwork": true,
+    "buildings": true
+  },
+  "buildingFootprints": 3507,
+  "raceClosures": 92,
+  "events": [
+    {
+      "id": "psychiko-tt",
+      "laps": 1,
+      "rivals": 0
+    },
+    {
+      "id": "psychiko-race",
+      "laps": 2,
+      "rivals": 2
+    }
+  ],
+  "screenshotsInspected": [
+    "afternoon-start-chase",
+    "afternoon-start-cockpit",
+    "afternoon-mid-chase",
+    "afternoon-mid-cockpit",
+    "night-start-chase",
+    "night-start-cockpit",
+    "night-mid-chase",
+    "night-mid-cockpit",
+    "afternoon-overview",
+    "night-overview"
+  ],
+  "captureSource": "35d6c67cc8ae5a354d5c1ea01eff9040d566156e",
+  "unchangedCaptureFiles": {
+    "src/maps/psychiko.js": true,
+    "src/map.js": true,
+    "src/road.js": true,
+    "src/road-network.js": true,
+    "src/roadworks.js": true,
+    "src/terrain.js": true,
+    "src/cars.js": true,
+    "src/graphics.js": true,
+    "src/cockpit.js": true,
+    "src/pov-camera.js": true,
+    "src/env.js": true,
+    "data/maps/psychiko/map.json": true,
+    "data/maps/psychiko/terrain.bin": true
+  },
+  "authoredCommits": [
+    {
+      "original": "2c9b1f30616d9b3318cfa5b894fb171ef9b6e461",
+      "ported": "4a855c8e654e895cb7b3f29919f6d4ab3f8000da",
+      "author": "Vassilis Perrotis <vassilisperrotis@gmail.com> 2026-10-15T12:13:01-05:00"
+    },
+    {
+      "original": "231510e0ee0f27f9602fb9b0cb8caabc1e3f0fe8",
+      "ported": "e52f0957652c23723c5f537806942098e0666ba2",
+      "author": "Vassilis Perrotis <vassilisperrotis@gmail.com> 2026-10-15T13:36:04-05:00"
+    },
+    {
+      "original": "f0745b8889781d865087ce712fc8bdafc81f916a",
+      "ported": "93da904462e0b0a0efccb0001b471de1033ddbf8",
+      "author": "Vassilis Perrotis <vassilisperrotis@gmail.com> 2026-10-15T15:06:15-05:00"
+    },
+    {
+      "original": "54505ccfe33499cf6e1ed00b0519bd6cc05d0c10",
+      "ported": "c58db0e2136cf1856b827688e2c2c2ed48e30ce2",
+      "author": "Vassilis Perrotis <vassilisperrotis@gmail.com> 2026-10-15T15:38:04-05:00"
+    }
+  ]
+}

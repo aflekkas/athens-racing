@@ -1,0 +1,30 @@
+[browser-slot] slot 1 acquired (ticket 1170, waited 0s)
+USING BAKED REVIEW BUFFERS
+URL http://127.0.0.1:46395
+CONSOLE 2026-10-16T02:23:16.441Z log ready 70 abs 5370
+HTTP 404 http://127.0.0.1:46395/api/auth/config
+CONSOLE 2026-10-16T02:23:16.716Z error Failed to load resource: the server responded with a status of 404 (Not Found)
+HTTP 404 http://127.0.0.1:46395/release.json
+CONSOLE 2026-10-16T02:23:16.716Z error Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE 2026-10-16T02:23:18.908Z log map 2549 abs 7849
+CONSOLE 2026-10-16T02:23:30.556Z log traffic+post 14201 abs 19501
+CONSOLE 2026-10-16T02:23:31.180Z log textures 14817 abs 20117
+CONSOLE 2026-10-16T02:23:32.009Z warning THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+CONSOLE 2026-10-16T02:23:32.041Z log compiled 15687 abs 20987
+CONSOLE 2026-10-16T02:23:32.797Z log first-frame 16441 abs 21741
+CONSOLE 2026-10-16T02:23:32.809Z log frame-simulation 16455 abs 21755
+CONSOLE 2026-10-16T02:23:32.824Z log frame-visuals 16464 abs 21764
+CONSOLE 2026-10-16T02:23:32.828Z log frame-hud 16470 abs 21770
+CONSOLE 2026-10-16T02:23:32.829Z log frame-draw 16473 abs 21773
+CONSOLE 2026-10-16T02:23:32.829Z log frame-done 16473 abs 21773
+SCREENSHOT afternoon-start-chase
+SCREENSHOT afternoon-start-cockpit
+SCREENSHOT afternoon-mid-chase
+SCREENSHOT afternoon-mid-cockpit
+SCREENSHOT night-start-chase
+SCREENSHOT night-start-cockpit
+SCREENSHOT night-mid-chase
+SCREENSHOT night-mid-cockpit
+SCREENSHOT afternoon-overview
+SCREENSHOT night-overview
+PASS {"errors":[],"shots":["afternoon-start-chase","afternoon-start-cockpit","afternoon-mid-chase","afternoon-mid-cockpit","night-start-chase","night-start-cockpit","night-mid-chase","night-mid-cockpit","afternoon-overview","night-overview"],"captureMethod":"Native game-canvas PNG at fixed camera poses","terrainSource":"current deterministic baked buffers","catalogue":4,"race":{"map":"psychiko","event":"psychiko-race","rivals":2,"laps":2,"roadworks":true,"trafficDisabled":true},"overview":{"gpu":"ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)","perfClass":"low","lowGraphics":true,"pixelRatio":0.8,"drawDistance":1000,"geometries":615,"textures":48,"fps":54.18195201828881,"renderScale":"auto"},"free":{"roadworks":false,"trafficDisabled":false,"traffic":11,"police":true}}

@@ -1,0 +1,185 @@
+TAP version 13
+# Subtest: a successful lazy import never checks the network
+ok 1 - a successful lazy import never checks the network
+  ---
+  duration_ms: 5.200168
+  type: 'test'
+  ...
+# Subtest: same-release failures keep the original error and do not reload
+ok 2 - same-release failures keep the original error and do not reload
+  ---
+  duration_ms: 34.485516
+  type: 'test'
+  ...
+# Subtest: concurrent stale chunks check once and a release pair reloads only once
+ok 3 - concurrent stale chunks check once and a release pair reloads only once
+  ---
+  duration_ms: 3.75708
+  type: 'test'
+  ...
+# Subtest: a persisted guard and disabled storage both prevent repeated reloads
+ok 4 - a persisted guard and disabled storage both prevent repeated reloads
+  ---
+  duration_ms: 2.822068
+  type: 'test'
+  ...
+# Subtest: offline and unmanaged development pages never reload
+ok 5 - offline and unmanaged development pages never reload
+  ---
+  duration_ms: 0.498348
+  type: 'test'
+  ...
+# Subtest: a rollback to an unmanaged index reloads so the old worker can remove itself
+ok 6 - a rollback to an unmanaged index reloads so the old worker can remove itself
+  ---
+  duration_ms: 0.696999
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 4 inputs, 4 ESM chunks, 612 bytes
+# Subtest: production chunks preserve source-relative resources and lazy imports while dev sources survive
+ok 7 - production chunks preserve source-relative resources and lazy imports while dev sources survive
+  ---
+  duration_ms: 161.903334
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 5 inputs, 6 ESM chunks, 425 bytes
+# Subtest: every map bake points to the published world worker, including Megara
+ok 8 - every map bake points to the published world worker, including Megara
+  ---
+  duration_ms: 79.084514
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 258 inputs, 62 ESM chunks, 2276319 bytes
+# Bundled browser (cdn three.js): 256 inputs, 52 ESM chunks, 2138705 bytes
+# Subtest: real production graph keeps worlds, simulation and screens lazy and maps private
+ok 9 - real production graph keeps worlds, simulation and screens lazy and maps private
+  ---
+  duration_ms: 3224.97091
+  type: 'test'
+  ...
+# Bundled browser (bundled three.js): 3 inputs, 3 ESM chunks, 23877 bytes
+# Subtest: production meshopt worker boots and decodes after Function.toString serialization
+ok 10 - production meshopt worker boots and decodes after Function.toString serialization
+  ---
+  duration_ms: 101.305942
+  type: 'test'
+  ...
+# Subtest: catalogue-only setup resolves all tracks without reading map bundles
+ok 11 - catalogue-only setup resolves all tracks without reading map bundles
+  ---
+  duration_ms: 10.965088
+  type: 'test'
+  ...
+# Subtest: direct event URLs select their owning map before any bundle loads
+ok 12 - direct event URLs select their owning map before any bundle loads
+  ---
+  duration_ms: 0.707648
+  type: 'test'
+  ...
+# Subtest: service worker install never fetches map bundles, including an older data core list
+ok 13 - service worker install never fetches map bundles, including an older data core list
+  ---
+  duration_ms: 114.003027
+  type: 'test'
+  ...
+# Subtest: a menu-only client loads the resumed lobby track before loaded/start acknowledgements
+ok 14 - a menu-only client loads the resumed lobby track before loaded/start acknowledgements
+  ---
+  duration_ms: 84.899095
+  type: 'test'
+  ...
+# (node:3949967) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: idle saved tokens allow direct solo starts; resumed sessions identify their lobby first
+ok 15 - idle saved tokens allow direct solo starts; resumed sessions identify their lobby first
+  ---
+  duration_ms: 3.141322
+  type: 'test'
+  ...
+# Subtest: an unreachable saved session cannot block an offline direct solo URL indefinitely
+ok 16 - an unreachable saved session cannot block an offline direct solo URL indefinitely
+  ---
+  duration_ms: 8.013009
+  type: 'test'
+  ...
+# Subtest: versions are YYYY.MM.DD.N: the date plus a counter for that day
+ok 17 - versions are YYYY.MM.DD.N: the date plus a counter for that day
+  ---
+  duration_ms: 11.808459
+  type: 'test'
+  ...
+# Subtest: versions order by date, then by the counter as a number
+ok 18 - versions order by date, then by the counter as a number
+  ---
+  duration_ms: 0.416316
+  type: 'test'
+  ...
+# Subtest: labels and dates read the same in every locale
+ok 19 - labels and dates read the same in every locale
+  ---
+  duration_ms: 0.25221
+  type: 'test'
+  ...
+# Subtest: parseChangelog reads sections newest first, ignoring comments and prose
+ok 20 - parseChangelog reads sections newest first, ignoring comments and prose
+  ---
+  duration_ms: 5.442789
+  type: 'test'
+  ...
+# Subtest: parseChangelog fails the build on mistakes instead of dropping notes
+ok 21 - parseChangelog fails the build on mistakes instead of dropping notes
+  ---
+  duration_ms: 1.267461
+  type: 'test'
+  ...
+# Subtest: the real CHANGELOG.md is valid, newest first, and written for players
+ok 22 - the real CHANGELOG.md is valid, newest first, and written for players
+  ---
+  duration_ms: 2.838098
+  type: 'test'
+  ...
+# Subtest: hasPriorPlay ignores what the game writes at startup and sees real play data
+ok 23 - hasPriorPlay ignores what the game writes at startup and sees real play data
+  ---
+  duration_ms: 6.232261
+  type: 'test'
+  ...
+# Subtest: seen version round-trips and ignores junk
+ok 24 - seen version round-trips and ignores junk
+  ---
+  duration_ms: 0.456029
+  type: 'test'
+  ...
+# Subtest: whatsNewDecision: show once per version, never in a race, never for a brand-new player
+ok 25 - whatsNewDecision: show once per version, never in a race, never for a brand-new player
+  ---
+  duration_ms: 0.83715
+  type: 'test'
+  ...
+# Subtest: launch sequence: new player, then updates, dismissal remembered across launches
+ok 26 - launch sequence: new player, then updates, dismissal remembered across launches
+  ---
+  duration_ms: 3.908331
+  type: 'test'
+  ...
+# Subtest: Markdown photos belong to a release or to the preceding indented bullet
+ok 27 - Markdown photos belong to a release or to the preceding indented bullet
+  ---
+  duration_ms: 0.813566
+  type: 'test'
+  ...
+# Subtest: photos require alt text and a safe local versioned WebP path
+ok 28 - photos require alt text and a safe local versioned WebP path
+  ---
+  duration_ms: 0.646744
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3996.885912

@@ -1,0 +1,97 @@
+
+ ⛅️ wrangler 4.151.0
+────────────────────
+[custom build] Running: ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs
+[custom build] Browser import graph checked: 239 modules.
+[custom build] 
+[custom build] Baked riviera terrain: 16130864 bytes
+[custom build] 
+[custom build] Meshopt riviera terrain: 13503293 bytes
+[custom build] 
+[custom build] Baked riviera roads: 19689626 bytes
+[custom build] 
+[custom build] Meshopt riviera roads: 19690948 bytes
+[custom build] 
+[custom build] Baked riviera in 225783 ms
+[custom build] 
+[custom build] Baked megara terrain: 1083291 bytes
+[custom build] 
+[custom build] Meshopt megara terrain: 871142 bytes
+[custom build] 
+[custom build] Baked megara roads: 301999 bytes
+[custom build] 
+[custom build] Meshopt megara roads: 302204 bytes
+[custom build] 
+[custom build] Baked megara in 5275 ms
+[custom build] 
+[custom build] Baked penteli terrain: 17426696 bytes
+[custom build] 
+[custom build] Meshopt penteli terrain: 11653943 bytes
+[custom build] 
+[custom build] Baked penteli roads: 5416687 bytes
+[custom build] 
+[custom build] Meshopt penteli roads: 5419940 bytes
+[custom build] 
+[custom build] Baked penteli in 111645 ms
+[custom build] 
+[custom build] Baked psychiko terrain: 9846011 bytes
+[custom build] 
+[custom build] Meshopt psychiko terrain: 7297428 bytes
+[custom build] 
+[custom build] Baked psychiko roads: 36615374 bytes
+[custom build] 
+[custom build] Meshopt psychiko roads: 36610985 bytes
+[custom build] 
+[custom build] Baked psychiko in 260536 ms
+[custom build] 
+[custom build] Bundled browser (bundled three.js): 252 inputs, 57 ESM chunks, 2236705 bytes
+[custom build] 
+[custom build] {
+[custom build]   "assets": 1433,
+[custom build]   "bytes": 482101856,
+[custom build]   "largest": {
+[custom build]     "path": "_c/509e78098cfd1c5f.gz",
+[custom build]     "size": 20971520
+[custom build]   },
+[custom build]   "release": {
+[custom build]     "version": "2026.10.15.3",
+[custom build]     "sha": null,
+[custom build]     "build": "5503045a10df",
+[custom build]     "files": 687,
+[custom build]     "copies": 687,
+[custom build]     "swBytes": 50519
+[custom build]   },
+[custom build]   "maps": [
+[custom build]     {
+[custom build]       "id": "riviera",
+[custom build]       "version": "4718fbec",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "psychiko",
+[custom build]       "version": "12190da4",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1470 files from the assets directory /tmp/psychiko-gates/.deploy/assets
+Total Upload: 731.19 KiB / gzip: 193.06 KiB
+Your Worker has access to the following bindings:
+Binding                                            Resource            
+env.GAME (GameArena)                               Durable Object      
+env.PRESENCE (FriendsPresence)                     Durable Object      
+env.ACCOUNTS (athens-racing-accounts-staging)      D1 Database         
+env.ASSETS                                         Assets              
+
+--dry-run: exiting now.

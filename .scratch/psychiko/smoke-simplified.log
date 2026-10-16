@@ -1,0 +1,28 @@
+{"proof":"health","base":"http://127.0.0.1:46457","entry":"/src/main.js","build":null,"health":{"ok":true,"clients":0,"lobbies":0,"track":{"start":241,"finish":10548,"version":"4718fbec"}}}
+{"proof":"matching Quick Race + Free Roam catalogues","mapId":"psychiko","events":[{"id":"psychiko-race","type":"sprint"},{"id":"free:psychiko","type":"free"}]}
+{
+  "proof": "create → join → ready → start → snapshot → checkpoints → finish",
+  "base": "http://127.0.0.1:46457",
+  "protocol": 7,
+  "legacy": false,
+  "mapId": "psychiko",
+  "eventId": "psychiko-race",
+  "checkpoints": 157,
+  "raceId": "8cf02807-0e40-40f0-a9eb-cc8562af1ebc",
+  "startAt": 1792117167840,
+  "reconnects": 0,
+  "results": [
+    {
+      "id": "9c84121f-c03e-49bb-8e52-2121fd9049df",
+      "finish": 100.49600005149841,
+      "dnf": false
+    },
+    {
+      "id": "25a222dd-3842-471b-9841-04abde614ca0",
+      "finish": 100.49900007247925,
+      "dnf": false
+    }
+  ]
+}
+PASS: assets, private paths, playable map catalogue and /ws create-lobby round trip at http://127.0.0.1:46457
+{"proof":"reconnect summary","reconnects":0}
