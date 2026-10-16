@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const memory = () => ({ values: new Map(), getItem(key) { return this.values.get(key) ?? null; }, setItem(key, value) { this.values.set(key, value); } });
+const memory = () => ({ values: new Map(), getItem(key) { return this.values.get(key) ?? null; }, setItem(key, value) { this.values.set(key, value); }, removeItem(key) { this.values.delete(key); } });
 let serial = 0;
 async function preferences(storage) {
   globalThis.localStorage = storage;
@@ -97,22 +97,38 @@ test('invalid saved steering assist returns to the adaptive default', async () =
   assert.equal(module.settings.steeringAssist, null);
 });
 
-test('quality and resolution persist separately and notify live subscribers', async () => {
+test('resolution persists and notifies live subscribers; graphics presets are gone', async () => {
   const storage = memory(), module = await preferences(storage), changes = [];
   const off = module.onSettings((s, key) => changes.push([key, s[key]]));
-  module.setSetting('graphics', 'ultra');
+  module.setSetting('graphics', 'ultra'); module.setSetting('lighting', 'high'); module.setSetting('effects', 'high');
   module.setSetting('renderScale', .65);
   module.setSetting('pixelRatioCap', 2);
-  assert.deepEqual(changes, [['graphics', 'ultra'], ['renderScale', .65], ['pixelRatioCap', 2]]);
-  assert.equal(storage.getItem('paraliaki.graphics'), 'ultra');
+  assert.deepEqual(changes, [['renderScale', .65], ['pixelRatioCap', 2]]);
+  assert.equal(storage.getItem('paraliaki.graphics'), null);
   const saved = JSON.parse(storage.getItem('paraliaki.settings'));
   assert.equal(saved.renderScale, .65); assert.equal(saved.pixelRatioCap, 2);
-  module.setSetting('graphics', 'low');
-  assert.equal(module.settings.renderScale, .65); assert.equal(module.settings.pixelRatioCap, 2);
+  for (const k of ['graphics', 'lighting', 'effects', 'motionBlur']) assert.equal(k in saved, false, k);
   const restored = await preferences(storage);
-  assert.equal(restored.settings.graphics, 'low'); assert.equal(restored.settings.renderScale, .65);
+  assert.equal(restored.settings.renderScale, .65); assert.equal('graphics' in restored.settings, false);
   module.setSetting('renderScale', 'auto'); assert.equal(module.settings.renderScale, 'auto');
   off();
+});
+
+test('old graphics / lighting / effects saves load cleanly: the preset becomes a performance class only', async () => {
+  const storage = memory();
+  storage.setItem('paraliaki.settings', JSON.stringify({ lighting: 'ultra', effects: 'high', motionBlur: false, renderScale: .8, master: .3 }));
+  storage.setItem('paraliaki.graphics', 'ultra');
+  const module = await preferences(storage);
+  for (const k of ['graphics', 'lighting', 'effects', 'motionBlur']) assert.equal(k in module.settings, false, k);
+  assert.equal(module.settings.perfClass, 'high'); assert.equal(module.settings.renderScale, .8); assert.equal(module.settings.master, .3);
+  assert.equal(storage.getItem('paraliaki.graphics'), null);
+  const saved = JSON.parse(storage.getItem('paraliaki.settings'));
+  assert.deepEqual(Object.keys(saved).filter(k => ['graphics', 'lighting', 'effects', 'motionBlur'].includes(k)), []);
+  assert.equal(saved.perfClass, 'high'); assert.equal(saved.master, .3);
+  const potato = memory(); potato.setItem('paraliaki.graphics', 'potato');
+  assert.equal((await preferences(potato)).settings.perfClass, 'potato');
+  const junk = memory(); junk.setItem('paraliaki.graphics', 'banana');
+  assert.equal((await preferences(junk)).settings.perfClass, 'auto');
 });
 
 test('resolution values are bounded on load and live writes', async () => {
@@ -122,7 +138,7 @@ test('resolution values are bounded on load and live writes', async () => {
   module.setSetting('renderScale', .1); assert.equal(module.settings.renderScale, .5);
   module.setSetting('pixelRatioCap', 10); assert.equal(module.settings.pixelRatioCap, 2);
   module.setSetting('renderScale', 'invalid'); assert.equal(module.settings.renderScale, 'auto');
-  module.setSetting('graphics', 'invalid'); assert.equal(module.settings.graphics, 'auto');
+  module.setSetting('perfClass', 'invalid'); assert.equal(module.settings.perfClass, 'auto');
 });
 
 test('fresh players start with the tyre grip display off', async () => {

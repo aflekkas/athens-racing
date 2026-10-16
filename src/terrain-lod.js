@@ -105,7 +105,7 @@ export function installTerrainLods(terrain, group) {
       const dx=Math.max(b.min.x-e[12],0,e[12]-b.max.x),dy=Math.max(b.min.y-e[13],0,e[13]-b.max.y),dz=Math.max(b.min.z-e[14],0,e[14]-b.max.z);
       renderer.getDrawingBufferSize(viewport);
       const focal=viewport.y * Math.abs(camera.projectionMatrix.elements[5]) * .5;
-      const preset=group.userData.terrainPreset || (TERRAIN_LOD_PIXELS[settings.graphics] ? settings.graphics : startupPreset) || 'high';
+      const preset=group.userData.terrainPreset || (TERRAIN_LOD_PIXELS[settings.perfClass] ? settings.perfClass : startupPreset) || 'high';
       const next=selectTerrainLod(levels,state.current,Math.hypot(dx,dy,dz),focal,preset,state.pinned);
       if(next!==state.current){state.current=next;g.setDrawRange(levels[next].start,levels[next].count);}
     };
@@ -287,7 +287,7 @@ function createSelection(group) {
     lastRenderer=renderer;lastFrame=frame;
     const e=camera.matrixWorld.elements,pr=camera.projectionMatrix.elements;
     renderer.getDrawingBufferSize(viewport);
-    const focal=viewport.y*Math.abs(pr[5])*.5,preset=group.userData.terrainPreset || (TERRAIN_LOD_PIXELS[settings.graphics]?settings.graphics:startupPreset) || 'high';
+    const focal=viewport.y*Math.abs(pr[5])*.5,preset=group.userData.terrainPreset || (TERRAIN_LOD_PIXELS[settings.perfClass]?settings.perfClass:startupPreset) || 'high';
     let moved=lastCamera!==camera,reset=moved,configuration=focal!==lastFocal||preset!==lastPreset;
     for(let i=0;i<16;i++){if(e[i]!==matrix[i])moved=true;if(pr[i]!==projection[i])configuration=true;}
     // Dynamic resolution and speed-dependent FOV must not force a full sweep.

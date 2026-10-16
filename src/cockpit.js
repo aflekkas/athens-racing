@@ -13,6 +13,7 @@ import { TX, GLSL_HELPERS } from './tex.js';
 import { CAR_ENV } from './cars.js';
 import { nearestSurface } from './vehicle-mirrors.js';
 import { COND_STATE } from './env.js';
+import { RENDER } from './graphics.js';
 import { CockpitLamps, drawCockpitLamps, lampArtVersion } from './cockpit-telltales.js';
 import { shiftGateOffset, selectShiftKind, shiftAnimDuration, shiftEnvelope, smootherstep, cockpitShiftHardware } from './cockpit-controls.js';
 // Night in the cabin: a faint instrument / street-light spill on the cockpit's own trim (emissive, no extra light)
@@ -20,15 +21,14 @@ import { shiftGateOffset, selectShiftKind, shiftAnimDuration, shiftEnvelope, smo
 // exposure the night brings up everything else by (env.js COND_STATE).
 const CABIN_GLOW = { value: 0 };
 // Rear view: ONE low-res render from a rearward camera at the interior mirror, cropped per mirror (the interior glass
-// takes the centre, each door mirror looks back along its own flank into the next lane). Lower tiers only lower its
-// resolution, refresh rate and draw distance; Settings > Mirrors switches it off. The mirror pass has no shadows map
+// takes the centre, each door mirror looks back along its own flank into the next lane). One fixed resolution,
+// refresh rate and draw distance; Settings > Mirrors switches it off. The mirror pass has no shadows map
 // update and no post (the main view's exposure and grade apply to the glass like everything else).
 const REAR_H = 84, REAR_V = 26, REAR_PITCH = -2.5; // shared view: horizontal / vertical field (deg), aim below level
-// keyed by the EFFECTS level (graphics.js): even 'off' keeps working mirrors, just smaller, slower and shorter
-export const MIRROR_TIERS = {
-  off: { every: 3, far: 150, width: 384 }, low: { every: 3, far: 180, width: 512 }, med: { every: 2, far: 260, width: 640 },
-  high: { every: 2, far: 420, width: 896 }, ultra: { every: 1, far: 600, width: 1152 },
-};
+// The mirror view is fixed with the one graphics look (graphics.js RENDER.mirror: every n-th frame, far plane m, width px).
+/** Owner-locked (docs/OWNER-DECISIONS.md): mirrors render only from inside the car. The chase / third-person camera
+ * shows no mirror and no rear-view strip, and skips the mirror pass entirely. */
+export const mirrorsInView = (cam) => cam === 'cockpit';
 const MIRROR_VIEWS = { interior: { yaw: 0, hfov: 36 }, left: { yaw: 17, hfov: 26 }, right: { yaw: -17, hfov: 26 } }; // yaw > 0 toward the car's left
 // the crop of the shared view a glass shows: (u0, v0, du, dv), image u -> 1 is the car's left behind
 function rearWindow(yaw, hfov, aspect, out = new THREE.Vector4()) {
@@ -472,7 +472,7 @@ export class Cockpit {
     }
     return Math.min(71,THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect)));
   }
-  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),quality='high',far}={}){
+  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),far}={}){
     if(!enabled){
       this.rearLast=undefined;
       // Mirrors off: dark glass that follows the scene's light (unlit, so never a daylight grey under night exposure)
@@ -480,7 +480,7 @@ export class Cockpit {
       const k=sceneLight(),glass=darkGlass();for(const m of this.mirrors){m.material.map=glass;m.material.color.set('#485158').multiplyScalar(k);}
       return;
     }
-    const T=MIRROR_TIERS[quality]||MIRROR_TIERS.high;
+    const T=RENDER.mirror;
     this.mirrorCalls=(this.mirrorCalls||0)+1;
     if(this.rearLast!==undefined&&now>=this.rearLast&&now-this.rearLast<150&&this.mirrorCalls<T.every)return;
     const height=Math.round(T.width*Math.tan(THREE.MathUtils.degToRad(REAR_V/2))/Math.tan(THREE.MathUtils.degToRad(REAR_H/2)));
@@ -502,32 +502,7 @@ export class Cockpit {
       this.mirrorUpdates++;this.mirrorCalls=0;this.rearLast=now;
     }finally{this.model.exhaustFlames?.endMirror();renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
   }
-  /** chase camera: the same rear view as a small rear-view strip at the top centre of the screen (after post) */
-  drawRearStrip(renderer,{exposure=1,wb=null}={}){
-    if(!this.rearTarget||this.rearLast===undefined)return;
-    const S=this.rearStrip??=(()=>{
-      const material=new THREE.ShaderMaterial({depthTest:false,depthWrite:false,transparent:true,
-        uniforms:{tMap:{value:null},uWin:{value:rearWindow(0,62,4.6)},uRect:{value:new THREE.Vector4()},uExp:{value:1},uWB:{value:new THREE.Vector3(1,1,1)},uPx:{value:new THREE.Vector2()}},
-        vertexShader:'uniform vec4 uRect; varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(mix(uRect.xy, uRect.zw, uv), 0.0, 1.0); }',
-        fragmentShader:`uniform sampler2D tMap; uniform vec4 uWin; uniform float uExp; uniform vec3 uWB; uniform vec2 uPx; varying vec2 vUv;
-          void main(){
-            vec2 q = vec2(uWin.x + (1.0 - vUv.x) * uWin.z, uWin.y + vUv.y * uWin.w); // a mirror: left-right reversed
-            vec3 c = texture2D(tMap, q).rgb * uExp * uWB;
-            c = clamp((c * (2.51 * c + 0.03)) / (c * (2.43 * c + 0.59) + 0.14), 0.0, 1.0);
-            vec2 e = min(vUv, 1.0 - vUv) * uPx; float edge = min(e.x, e.y);
-            c = mix(vec3(0.02), c, smoothstep(2.0, 3.5, edge));
-            gl_FragColor = vec4(pow(c, vec3(1.0 / 2.2)), smoothstep(0.0, 1.0, edge) * 0.96);
-          }`});
-      const scene=new THREE.Scene(),mesh=new THREE.Mesh(new THREE.PlaneGeometry(1,1),material);mesh.frustumCulled=false;scene.add(mesh);
-      return {scene,material,camera:new THREE.Camera()};
-    })();
-    const u=S.material.uniforms,size=renderer.getDrawingBufferSize(new THREE.Vector2()),w=Math.min(size.x*.3,size.y*.75),h=w/4.6,top=size.y*.012;
-    u.tMap.value=this.rearTarget.texture;u.uExp.value=exposure;if(wb)u.uWB.value.fromArray(wb);u.uPx.value.set(w,h);
-    u.uRect.value.set(-w/size.x,1-2*(top+h)/size.y,w/size.x,1-2*top/size.y);
-    const target=renderer.getRenderTarget(),auto=renderer.autoClear;renderer.setRenderTarget(null);renderer.autoClear=false;
-    try{renderer.render(S.scene,S.camera);}finally{renderer.autoClear=auto;renderer.setRenderTarget(target);}
-  }
-  disposeMirrors(){this.rearTarget?.dispose();this.rearTarget=null;if(this.rearStrip){this.rearStrip.material.dispose();this.rearStrip.scene.children[0].geometry.dispose();this.rearStrip=null;}if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
+  disposeMirrors(){this.rearTarget?.dispose();this.rearTarget=null;if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
   setVisible(v) { this.wheel.visible=false;this.lod.visible = v; setVehicleCockpitView(this.model,v); }
   /** Full cabin (gauges, trim, controls) or the exterior dashboard the LOD uses beyond 15 m.
    * Outside cockpit views the cabin is behind tinted glass ~5 m away: ~35 draws and a cluster upload per frame. */

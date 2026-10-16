@@ -55,6 +55,7 @@
     "tools/service-worker.test.mjs",
     "tools/render-scale.test.mjs",
     "tools/graphics-menu.test.mjs",
+    "tools/owner-locked-graphics.test.mjs",
     "tools/local-carriageways.test.mjs",
     "tools/generated-world-cache.test.mjs",
     "tools/bundle-browser.test.mjs",

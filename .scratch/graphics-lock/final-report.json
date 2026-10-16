@@ -1,0 +1,112 @@
+{
+  "variant": "final",
+  "maps": {
+    "riviera": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "perfClass": "high",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 721,
+        "textures": 50,
+        "fps": 33.06820835114532,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 421,
+        "triangles": 856924,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 348,
+        "triangles": 895379,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 423,
+        "triangles": 857884,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 350,
+        "triangles": 896339,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "penteli": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "perfClass": "high",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 489,
+        "textures": 45,
+        "fps": 33.1119941883149,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 320,
+        "triangles": 1757759,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 239,
+        "triangles": 1735094,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 322,
+        "triangles": 1757631,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 241,
+        "triangles": 1736054,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    }
+  },
+  "errors": []
+}

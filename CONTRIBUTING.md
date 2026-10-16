@@ -56,6 +56,10 @@ Every player-visible change must add a plain-language bullet and its screenshot 
 - **Performance**: if you add models, effects or scenery, say what it costs (draw calls and triangles from the in-game stats, or frame time) on Low and High. The game must stay smooth on laptops.
 - **Multiplayer**: anything that affects the shared world must look the same for every player. If it can't be synced, it must be hidden online.
 
+## Owner-locked decisions
+
+Some decisions are locked by the owner and listed in [`docs/OWNER-DECISIONS.md`](docs/OWNER-DECISIONS.md). Don't change, revert or "improve" any of them, even by accident in an unrelated PR, without the owner's written OK. Guard tests enforce several of them (for example `tools/owner-locked-graphics.test.mjs` locks the one graphics look and the mirror-free chase camera), and they fail with "Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing." Never edit or delete a guard test to get CI green. Ask the owner instead.
+
 ## Game design rules (please don't fight these)
 
 - Racing is about time only: no XP, levels, points, money, unlocks or text dialogue.
