@@ -1,0 +1,12 @@
+{
+  "candidate": "ad3f7efbe7acc53c37020058e4e9f3942ee1e5f2",
+  "base": "195ce8b322f2297034be56c8e38b8899321c2bb3",
+  "gates": {
+    "npm": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  }
+}

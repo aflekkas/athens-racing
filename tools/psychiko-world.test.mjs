@@ -145,3 +145,26 @@ test('Psychiko uses shared footprint boxes and budgeted square street props',asy
  const shader=(await import('../src/terrain.js')).terrainMaterial({gardens:true});
  assert.equal(shader.customProgramCacheKey(),'terrain-owner-area');
 });
+
+test('close OSM fronts retain their source centroids and road-edge distances after box conversion',async()=>{
+ const {frontageAudit}=await import('./psychiko-frontage-audit.mjs');
+ for(const row of frontageAudit()){
+  assert.equal(row.missing,false,`${row.street}: omitted OSM building ${row.id}`);
+  assert(row.centroidError<=.10,`${row.id}: box centroid shifted ${row.centroidError} m from OSM`);
+  assert(row.nearestEdgeError<=.10,`${row.id}: frontage setback changed ${row.nearestEdgeError} m from OSM`);
+ }
+});
+
+test('owner lock: road closures only in races, never in free roam',async()=>{
+ const THREE=await import('three'),{buildRoadworks,roadworksForEvent}=await import('../src/roadworks.js'),{freeRoam}=await import('../src/events.js');
+ const free=freeRoam('psychiko'),races=data.events.filter(e=>['sprint','timetrial'].includes(e.type)),base=[{kind:'ordinary-prop'}],ground={parked:base,heightC:()=>100};
+ const works=buildRoadworks(map,new THREE.Group(),ground);
+ for(const def of [free,...races,free,races.at(-1),free]){
+  works.setEvent(def);const racing=def.type!=='free';
+  assert.equal(works.group.visible,racing);assert.equal(works.active,racing);
+  assert.equal(ground.parked.filter(p=>p.kind==='roadworks').length,racing?data.roadworks.length:0);
+  if(!racing){assert.equal(ground.parked,base);assert.deepEqual(roadworksForEvent(data,def),[]);}
+ }
+ assert.deepEqual(roadworksForEvent(data,{...races[0],free:true}),[]);
+ assert.deepEqual(roadworksForEvent(data,undefined),[]);
+});

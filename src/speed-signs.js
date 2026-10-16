@@ -1,3 +1,4 @@
+import { signFaceOffset } from './sign-mount.js';
 import { squarePost, signFace } from './world-prop-geometries.js';
 // Greek Ρ-32 speed-limit signs and OSM speed-camera posts, built from the
 // mapped sign nodes and limit changes in the map data (tools/speed-signs.mjs).
@@ -78,8 +79,8 @@ export function buildSpeedSigns(map, parent, heightC) {
     const y = groundAt(V.x, V.z, s, u), yaw = yawFor(s, dir);
     const nx = Math.sin(yaw), nz = Math.cos(yaw);
     posts.addTRS(V.x, y, V.z, yaw, 1, 1, 1);
-    faceMatFor(v).addTRS(V.x, y + FACE_Y, V.z, yaw, 1, 1, 1);
-    backs.addTRS(V.x - nx * 0.02, y + FACE_Y, V.z - nz * 0.02, yaw + Math.PI, 1, 1, 1);
+    faceMatFor(v).addTRS(V.x + nx * signFaceOffset(.10), y + FACE_Y, V.z + nz * signFaceOffset(.10), yaw, 1, 1, 1);
+    backs.addTRS(V.x + nx * (signFaceOffset(.10) - .02), y + FACE_Y, V.z + nz * (signFaceOffset(.10) - .02), yaw + Math.PI, 1, 1, 1);
     obstacles.push({ x: V.x, z: V.z, yaw, hw: 0.15, hl: 0.15 });
     counts.signs++;
   };

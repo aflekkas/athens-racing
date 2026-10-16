@@ -119,3 +119,22 @@ test('an ahead contact tile can replace a less urgent neighbour when the safety 
  s.update({x:1200,z:1,vx:70,contacts:[{x:1200,z:1}]});await settle(s,8);
  assert.ok(s.readyAt(1537,1),'velocity lookahead must not deadlock behind equally wanted cosmetic neighbours');assert.ok(s.readyAt(1200,1));assert.ok(s.readyAt(1,1),'spawn remains pinned');assert.ok(s.residentBytes+s.reservedBytes<=330);s.dispose();
 });
+
+
+test('a city-scale owner chain stays one hop for loading, readiness, pins and teleport',async()=>{
+ const m=manifest(218),jobs=[];
+ for(let x=0;x<217;x++)m.tiles[`${x},0`].dependencies=[`${x+1},0`];
+ const s=new WorldTileStream(m,{nearRing:0,load:async j=>{jobs.push(j.cell[0]);return packet(j.cell);},adapter:adapter(),capBytes:500,transientBytes:500});
+ assert.deepEqual([...s.pins.keys()],['0,0','1,0']);
+ s.update({x:10,z:10});await settle(s,8);
+ assert.deepEqual(jobs,[0,1]);assert.equal(s.readyAt(10,10),true);
+ assert.equal(s.readyAt(520,10),false,'an owner-only cell has not independently requested its owners');
+ let moved=false;await s.teleport({x:10,z:10},()=>{moved=true;},{nextFrame:tick});
+ assert.equal(moved,true);assert.deepEqual(jobs,[0,1]);
+ const release=s.pin('tow','1,0');assert.deepEqual([...s.pins.keys()],['0,0','1,0','2,0']);
+ s.spawnRelease();assert.deepEqual([...s.pins.keys()],['1,0','2,0']);
+ s.update({x:520,z:10});await settle(s,8);
+ assert.deepEqual(jobs,[0,1,2]);assert.equal(s.readyAt(520,10),true);
+ assert.equal(s.tiles.has('3,0'),false);release();assert.equal(s.pins.size,0);
+ s.dispose();assert.equal(s.residentBytes,0);
+});

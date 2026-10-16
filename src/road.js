@@ -1,3 +1,4 @@
+import { signFaceOffset } from './sign-mount.js';
 import { gantryLegFrame } from './gantry-legs.js';
 import { squarePost, signFace } from './world-prop-geometries.js';
 // The road: a continuous spline sweep along the real route with banking, shader-drawn markings,
@@ -330,7 +331,7 @@ export function signTexture(route) {
 }
 function uvRect(geo, r) { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, r[0] + (r[2] - r[0]) * uv.getX(i), r[1] + (r[3] - r[1]) * uv.getY(i)); return geo; }
 
-function buildFurniture(map, group, heightC, assets) {
+export function buildFurniture(map, group, heightC, assets) {
   const { route, data } = map;
   const rng = new RNG(77);
   const metal = new THREE.MeshStandardMaterial({ color: '#7d8186', metalness: 0.85, roughness: 0.38 });
@@ -406,8 +407,8 @@ function buildFurniture(map, group, heightC, assets) {
     route.point(s, u, pt);
     const g = new THREE.Group(); g.position.copy(pt); g.rotation.y = yaw; group.add(g);
     for (let i = 0; i < poles; i++) { const p = new THREE.Mesh(sgPole, metal); p.scale.y = (height + h * 0.5) / 3.2; p.position.x = poles === 1 ? 0 : (i - 0.5) * w * 0.7; p.castShadow = true; g.add(p); }
-    const plate = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(w, h), regions[key]), signMat); plate.position.set(0, height + h / 2, -0.06); plate.rotation.y = Math.PI; plate.castShadow = true; g.add(plate);
-    const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), metal); back.position.set(0, height + h / 2, -0.05); g.add(back);
+    const plate = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(w, h), regions[key]), signMat); plate.position.set(0, height + h / 2, -signFaceOffset(.14)); plate.rotation.y = Math.PI; plate.castShadow = true; g.add(plate);
+    const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), metal); back.position.set(0, height + h / 2, -signFaceOffset(.14) + .02); g.add(back);
   };
   const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
   if (map.id === 'riviera') addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
@@ -432,16 +433,16 @@ function buildFurniture(map, group, heightC, assets) {
       route.point(s, side * (route.edge(s) + ROAD.gutter + 1.6), pt);
       const g = new THREE.Group(); g.position.copy(pt); g.rotation.y = yaw; group.add(g);
       const p = new THREE.Mesh(sgPole, metal); p.scale.y = 0.4; g.add(p);
-      const geo = uvRect(new THREE.PlaneGeometry(0.7, 0.7), regions.chev); if (side > 0) geo.scale(-1, 1, 1);
-      const plate = new THREE.Mesh(geo, signMat); plate.position.set(0, 1.25, -0.04); plate.rotation.y = Math.PI; g.add(plate);
+      const geo = uvRect(new THREE.PlaneGeometry(0.7, 0.7), regions.chev); if (side > 0) { const uv = geo.attributes.uv, r = regions.chev; for (let i = 0; i < uv.count; i++) uv.setX(i, r[0] + r[2] - uv.getX(i)); }
+      const plate = new THREE.Mesh(geo, signMat); plate.position.set(0, 1.25, -signFaceOffset(.14)); plate.rotation.y = Math.PI; g.add(plate);
     }
   }
   // start / finish gantries
   const gantry = (s, key, tint) => {
     const wHalf = route.edge(s) + 1.2;
     const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); group.add(g);
-    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, 0); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
-    const banner2 = banner.clone(); banner2.rotation.y = 0; banner2.scale.x = -1; banner2.position.z = 0.05; g.add(banner2);
+    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
+    const banner2 = banner.clone(); banner2.rotation.set(0, 0, 0); banner2.position.z = signFaceOffset(.5); g.add(banner2);
   };
   gantry(route.start, 'start', '#ff3d2e');
   if (route.closed) route.fixedGantries = [route.start];

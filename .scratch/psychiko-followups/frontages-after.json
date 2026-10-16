@@ -1,0 +1,62 @@
+[
+  {
+    "id": 423843655,
+    "street": "Sismanoglou",
+    "missing": false,
+    "sourceCentroid": [
+      -158.17586298302598,
+      -410.99828501632044
+    ],
+    "boxCentroid": [
+      -158.17676879685055,
+      -410.9949134878614
+    ],
+    "centroidError": 0.003491089061413786,
+    "sourceNearestEdge": 6.784699494728348,
+    "boxNearestEdge": 6.784854126737688,
+    "nearestEdgeError": 0.00015463200934018317,
+    "sourceKerbDistance": 3.484699494728348,
+    "boxKerbDistance": 3.4848541267376882,
+    "s": 2777.995015283819
+  },
+  {
+    "id": 307559043,
+    "street": "Bizaniou",
+    "missing": false,
+    "sourceCentroid": [
+      344.17846498174595,
+      -1139.2172201625565
+    ],
+    "boxCentroid": [
+      344.20149280595655,
+      -1139.2361356415677
+    ],
+    "centroidError": 0.029800604592808106,
+    "sourceNearestEdge": 5.956015779756012,
+    "boxNearestEdge": 5.955608914496613,
+    "nearestEdgeError": 0.0004068652593982591,
+    "sourceKerbDistance": 2.6560157797560118,
+    "boxKerbDistance": 2.6556089144966135,
+    "s": 4047.1233136356454
+  },
+  {
+    "id": 308022552,
+    "street": "Davaki",
+    "missing": false,
+    "sourceCentroid": [
+      -195.3810859484417,
+      -1311.9511110630585
+    ],
+    "boxCentroid": [
+      -195.38257765371597,
+      -1311.9509451207691
+    ],
+    "centroidError": 0.0015009068820945083,
+    "sourceNearestEdge": 7.7663443586475776,
+    "boxNearestEdge": 7.766207811502757,
+    "nearestEdgeError": 0.0001365471448204758,
+    "sourceKerbDistance": 4.216344358647578,
+    "boxKerbDistance": 4.216207811502757,
+    "s": 5184.560910724499
+  }
+]

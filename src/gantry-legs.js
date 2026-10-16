@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { signFaceOffset } from './sign-mount.js';
 import { squarePost } from './world-prop-geometries.js';
 // Shared by the rendered arches and the cockpit-clearance raycast guard.
 export function gantryLegFrame(route, s, material, kind = 'road', dir = 1) {
@@ -16,5 +17,19 @@ export function gantryLegFrame(route, s, material, kind = 'road', dir = 1) {
 // Megara's existing single batched cantilever pier; keep it in the prop batch.
 export function megaraGantryPier(route, s) {
   const p = route.point(s, -route.edge(s) - 1.2);
-  return { x: p.x, y: route.frame(s, {}).y + 3.35, z: p.z, width: 1.5, height: 6.7, depth: .6, yaw: route.heading(s) };
+  return { x: p.x, y: route.frame(s, {}).y + 3.35, z: p.z, width: 1.5, height: 6.7, depth: .6, yaw: Math.atan2(-route.frame(s, {}).tx, -route.frame(s, {}).tz) };
+}
+
+export function megaraGantryLabels(route, s, makeLabel) {
+  const group = new THREE.Group(), f = route.frame(s, {});
+  const p = route.point(s, -route.edge(s) - 1.2 + 6);
+  const yaw = Math.atan2(-f.tx, -f.tz), offset = signFaceOffset(.7);
+  const front = makeLabel('START', 5.8, 1.05, '#eeeee5', '#111111');
+  for (const side of [1, -1]) {
+    const label = side === 1 ? front : front.clone();
+    label.position.set(p.x - side * f.tx * offset, f.y + 6.36, p.z - side * f.tz * offset);
+    label.rotation.set(0, yaw + (side < 0 ? Math.PI : 0), 0);
+    group.add(label);
+  }
+  return group;
 }

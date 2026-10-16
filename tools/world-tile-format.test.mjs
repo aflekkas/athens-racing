@@ -32,3 +32,27 @@ test('contact indices, buildings and layer row alignment are checked before allo
   p.arrays[p.metadata.tables.contactLayers] = new Int8Array(1);
   assert.throws(() => validateWorldTile(p), /vertex/);
 });
+
+
+test('manifest building-owner lists reject missing, duplicate and self references but permit cycles',async()=>{
+ const {validateWorldManifest}=await import('../src/world-tile-format.js');
+ const entry=()=>({url:'tile.gz',sha256:'0'.repeat(64),bytes:1,decodedBytes:1,triangles:0,dependencies:[]});
+ const m={tileVersion:1,tileMetres:512,world:'athens',revision:'test',projection:{lat0:37.98,lon0:23.73,mlat:111320,mlon:87700},spawn:{cell:[0,0],anchor:'spawn:0'},tiles:{'0,0':entry(),'1,0':entry()}};
+ for(const deps of [['1,0','1,0'],['0,0'],['2,0'],[null]]){m.tiles['0,0'].dependencies=deps;assert.throws(()=>validateWorldManifest(m),/dependencies/);}
+ m.tiles['0,0'].dependencies=['1,0'];m.tiles['1,0'].dependencies=['0,0'];assert.equal(validateWorldManifest(m),m);
+});
+
+test('optional World detail validates facade rows, stable seeds and half-open vegetation ownership',async()=>{
+ const {worldDetailSeed}=await import('../src/world-tile-format.js');
+ assert.equal(worldDetailSeed('way/123'),3327974463);assert.equal(worldDetailSeed('relation/123'),4265439598);assert.equal(worldDetailSeed('Ποσειδώνος'),3300873462);
+ const p=fixture(),add=a=>{p.arrays.push(a);return p.arrays.length-1;};
+ p.metadata.ids.push('osm:way:123');p.arrays[p.metadata.tables.buildings]=new Uint32Array([1,0,4,0]);p.arrays[p.metadata.tables.buildingCorners]=new Float32Array([0,0,0,2,2,2,2,0]);p.arrays[p.metadata.tables.buildingHeights]=new Float32Array([2,8]);
+ const d=p.metadata.extensions={worldDetail:{version:1,buildings:{facadeStyle:add(new Uint8Array([7])),detailSeed:add(new Uint32Array([worldDetailSeed('way/123')]))},vegetation:{positionHeight:add(new Float32Array([10,2,20,0])),kind:add(new Uint8Array([2])),seed:add(new Uint32Array([0xffffffff]))}}};
+ assert.equal(validateWorldTile(p).triangles,0);const ext=d.worldDetail;
+ for(const [array,index,bad,pattern]of [[ext.buildings.facadeStyle,0,8,/facadeStyle/],[ext.vegetation.positionHeight,0,512,/position/],[ext.vegetation.positionHeight,1,NaN,/nonfinite/],[ext.vegetation.positionHeight,3,-1,/height/],[ext.vegetation.kind,0,3,/kind/]]){
+  const a=p.arrays[array],saved=a[index];a[index]=bad;assert.throws(()=>validateWorldTile(p),pattern);a[index]=saved;
+ }
+ ext.buildings.roofPropSeed=ext.buildings.detailSeed;assert.throws(()=>validateWorldTile(p),/alias/);delete ext.buildings.roofPropSeed;
+ ext.version=2;assert.throws(()=>validateWorldTile(p),/version/);ext.version=1;
+ p.arrays[ext.buildings.detailSeed]=new Uint32Array(0);assert.throws(()=>validateWorldTile(p),/building row count/);
+});

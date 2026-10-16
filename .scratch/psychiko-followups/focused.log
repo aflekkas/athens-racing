@@ -1,0 +1,143 @@
+TAP version 13
+# Subtest: Psychiko is offered with the same geometry version in solo, selector and multiplayer
+ok 1 - Psychiko is offered with the same geometry version in solo, selector and multiplayer
+  ---
+  duration_ms: 30.866467
+  type: 'test'
+  ...
+# Subtest: carved street bed clears both full carriageways and pavements at the lap seam
+ok 2 - carved street bed clears both full carriageways and pavements at the lap seam
+  ---
+  duration_ms: 4529.43122
+  type: 'test'
+  ...
+# Subtest: both authored events pass every gate and finish with correct lap counts
+ok 3 - both authored events pass every gate and finish with correct lap counts
+  ---
+  duration_ms: 46.581606
+  type: 'test'
+  ...
+# Subtest: route projections preserve unwrapped progress and elevation across laps
+ok 4 - route projections preserve unwrapped progress and elevation across laps
+  ---
+  duration_ms: 6.62315
+  type: 'test'
+  ...
+# Subtest: all public junction exits have exactly one solid race closure, with no raced edge blocked
+ok 5 - all public junction exits have exactly one solid race closure, with no raced edge blocked
+  ---
+  duration_ms: 478.923566
+  type: 'test'
+  ...
+# Subtest: race → free roam → race toggles every visual/collider and invalidates cached collision cells
+ok 6 - race → free roam → race toggles every visual/collider and invalidates cached collision cells
+  ---
+  duration_ms: 107.821112
+  type: 'test'
+  ...
+# Subtest: every preserved garden-course centreline sample remains on drivable asphalt
+ok 7 - every preserved garden-course centreline sample remains on drivable asphalt
+  ---
+  duration_ms: 22.431803
+  type: 'test'
+  ...
+# Subtest: whole municipal street network and the interior of the drawing are included
+ok 8 - whole municipal street network and the interior of the drawing are included
+  ---
+  duration_ms: 547.803036
+  type: 'test'
+  ...
+# Subtest: real vehicle physics cannot cross any roadworks box at 90 km/h; the same paths are open in free roam
+ok 9 - real vehicle physics cannot cross any roadworks box at 90 km/h; the same paths are open in free roam
+  ---
+  duration_ms: 4322.564494
+  type: 'test'
+  ...
+# Subtest: Psychiko uses the shared two-rival grid and road-aware auto-tow corridor
+ok 10 - Psychiko uses the shared two-rival grid and road-aware auto-tow corridor
+  ---
+  duration_ms: 74.799961
+  type: 'test'
+  ...
+# Subtest: Psychiko permits the shared police runtime in free roam and with online police enabled
+ok 11 - Psychiko permits the shared police runtime in free roam and with online police enabled
+  ---
+  duration_ms: 5.893039
+  type: 'test'
+  ...
+# Subtest: catalogue-only Psychiko launch preserves the authored two laps before the bundle loads
+ok 12 - catalogue-only Psychiko launch preserves the authored two laps before the bundle loads
+  ---
+  duration_ms: 1.920037
+  type: 'test'
+  ...
+# Subtest: Psychiko uses shared footprint boxes and budgeted square street props
+ok 13 - Psychiko uses shared footprint boxes and budgeted square street props
+  ---
+  duration_ms: 292.035934
+  type: 'test'
+  ...
+# Subtest: close OSM fronts retain their source centroids and road-edge distances after box conversion
+ok 14 - close OSM fronts retain their source centroids and road-edge distances after box conversion
+  ---
+  duration_ms: 808.736364
+  type: 'test'
+  ...
+# Subtest: owner lock: road closures only in races, never in free roam
+ok 15 - owner lock: road closures only in races, never in free roam
+  ---
+  duration_ms: 43.71202
+  type: 'test'
+  ...
+# UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().
+# Subtest: owner lock: no vegetation pipeline or detailed building renderer
+ok 16 - owner lock: no vegetation pipeline or detailed building renderer
+  ---
+  duration_ms: 73.756797
+  type: 'test'
+  ...
+# Subtest: every mapped building remains within the 40 triangle block budget
+ok 17 - every mapped building remains within the 40 triangle block budget
+  ---
+  duration_ms: 667.944773
+  type: 'test'
+  ...
+# Subtest: near and instanced pedestrians fit the owner budget with all appearance combinations
+ok 18 - near and instanced pedestrians fit the owner budget with all appearance combinations
+  ---
+  duration_ms: 712.121901
+  type: 'test'
+  ...
+# Subtest: street models, signs, lamps, gantry primitives fit category budgets
+ok 19 - street models, signs, lamps, gantry primitives fit category budgets
+  ---
+  duration_ms: 19.278037
+  type: 'test'
+  ...
+# Subtest: Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+ok 20 - Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+  ---
+  duration_ms: 7.789482
+  type: 'test'
+  ...
+# Subtest: gantry and atlas labels fit their usable panel width even with fallback fonts
+ok 21 - gantry and atlas labels fit their usable panel width even with fallback fonts
+  ---
+  duration_ms: 3.715672
+  type: 'test'
+  ...
+# Subtest: terrain keeps area textures and boxes use a separate plaster/accent palette
+ok 22 - terrain keeps area textures and boxes use a separate plaster/accent palette
+  ---
+  duration_ms: 1.738528
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12464.694443

@@ -1,4 +1,4 @@
-import { megaraGantryPier } from '../gantry-legs.js';
+import { megaraGantryPier, megaraGantryLabels } from '../gantry-legs.js';
 import { buildBuildings } from '../buildings.js';
 // Megara scenery, georeferenced to the OSM bundle and Esri reference in SOURCES.md.
 // Ground references: BIKEIT Megara gallery, May 2023; RallyDiaries paddock/start photos.
@@ -215,14 +215,14 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   shelter(345,966,8,57,-.16);shelter(154,943,16,46,-.2);shelter(710,727,53,8,-.13);
   // START gantry at the timing line. Photographed asymmetrical cantilever and checkerboard pier.
   const startS=circuit.startS??0, frame=route.frame(startS,{}),gantryY=frame.y;
-  function gantryBox(u,h,s,w,d,hh,mat){const p=route.point(startS+s,u);batch.box(p.x,gantryY+h,p.z,w,hh,d,mat,route.heading(startS));}
+  function gantryBox(u,h,s,w,d,hh,mat){const p=route.point(startS+s,u);batch.box(p.x,gantryY+h,p.z,w,hh,d,mat,Math.atan2(-frame.tx,-frame.tz));}
   const support=-route.edge(startS)-1.2;
   const pier=megaraGantryPier(route, startS);
   batch.box(pier.x,pier.y,pier.z,pier.width,pier.height,pier.depth,white,pier.yaw);gantryBox(support+5.3,6.3,0,12.1,.7,1.6,white);
   for(let row=0;row<8;row++)for(let col=0;col<2;col++)if((row+col)%2===0)gantryBox(support+(col-.5)*.72,.55+row*.72,-.325,.70,.02,.70,black);
   gantryBox(support+7,4.98,0,3.5,.48,.7,black);
   gantryBox(support+7,4.98,-.26,2.9,.035,.36,red);
-  if(assets.makeLabel){const label=assets.makeLabel('START',5.8,1.05,'#eeeee5','#111111');const p=route.point(startS-.37,support+6);label.position.set(p.x,gantryY+6.36,p.z);label.rotation.y=route.heading(startS);group.add(label);const rear=label.clone();const q=route.point(startS+.37,support+6);rear.position.set(q.x,gantryY+6.36,q.z);rear.rotation.y+=Math.PI;group.add(rear);}
+  if(assets.makeLabel)group.add(megaraGantryLabels(route,startS,assets.makeLabel));
   // Timing booth alongside the gantry and a narrow painted start stripe.
   const booth=route.point(startS+3,support-3);batch.box(booth.x,booth.y+1.45,booth.z,2,2.9,2.1,white,route.heading(startS));
   const window=route.point(startS+1.91,support-3);batch.box(window.x,window.y+1.8,window.z,1.35,.95,.08,glass,route.heading(startS));

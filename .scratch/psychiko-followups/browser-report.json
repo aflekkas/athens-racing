@@ -1,0 +1,53 @@
+{
+  "errors": [],
+  "shots": [
+    "before-sismanoglou",
+    "before-bizaniou",
+    "before-davaki",
+    "after-sismanoglou",
+    "after-bizaniou",
+    "after-davaki",
+    "after-race-closures",
+    "after-free-open"
+  ],
+  "poses": [
+    {
+      "id": 423843655,
+      "street": "Sismanoglou",
+      "s": 2777.995015283819,
+      "centroid": [
+        -158.17586298302598,
+        -410.99828501632044
+      ]
+    },
+    {
+      "id": 307559043,
+      "street": "Bizaniou",
+      "s": 4047.1233136356454,
+      "centroid": [
+        344.17846498174595,
+        -1139.2172201625565
+      ]
+    },
+    {
+      "id": 308022552,
+      "street": "Davaki",
+      "s": 5184.560910724499,
+      "centroid": [
+        -195.3810859484417,
+        -1311.9511110630585
+      ]
+    }
+  ],
+  "capture": "native game-canvas PNG; identical source camera coordinates and conditions",
+  "psychiko-race": {
+    "event": "sprint",
+    "visible": true,
+    "colliders": 92
+  },
+  "free": {
+    "event": "free",
+    "visible": false,
+    "colliders": 0
+  }
+}
