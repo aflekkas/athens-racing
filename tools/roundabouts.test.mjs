@@ -1,3 +1,4 @@
+import {wheelGround} from '../src/wheel-ground.js';
 import * as THREE from 'three';import {buildRoadNetwork} from '../src/road-network.js';
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {gunzipSync} from 'node:zlib';
 import {roundaboutLoops,legalRoundaboutCourse} from './roundabouts.mjs';
@@ -34,7 +35,7 @@ test('racing line, checkpoints, and both civilian travel directions stay outside
 test('island contact is grass and the recovery corridor excludes its interior',()=>{
  const bytes=fs.readFileSync(new URL('../data/maps/psychiko/terrain.bin',import.meta.url)),terrain=new Terrain(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));r.urban=()=>.85;r.seaR=r.seaL=()=>999;
  const map={id:'psychiko',route:r,terrain,data},network=new RoadNetwork(map),ground=new Ground(map,(x,z)=>terrain.height(x,z),{network}),corridor=new DrivableCorridor(r,network,terrain);
- for(const island of network.islands){const x=island.ring.reduce((s,p)=>s+p[0]/island.ring.length,0),z=island.ring.reduce((s,p)=>s+p[1]/island.ring.length,0);if(!insideIsland(x,z,island.ring))continue;assert.equal(network.sample(x,z),null);assert(corridor.distance(x,z)>0);const q=r.project(x,z);assert.equal(ground.at(x,z,q.s,q.u,{}).surf,'grass');}
+ for(const island of network.islands){const x=island.ring.reduce((s,p)=>s+p[0]/island.ring.length,0),z=island.ring.reduce((s,p)=>s+p[1]/island.ring.length,0);if(!insideIsland(x,z,island.ring))continue;assert.equal(network.sample(x,z),null);assert(corridor.distance(x,z)>0);const q=r.project(x,z);const contact=ground.at(x,z,q.s,q.u,{});assert.equal(contact.surf,'grass');assert.equal(wheelGround(r,{},contact,q.s,0).paved,false,'island contact overrides even an overlapping closed-route strip');assert.equal(wheelGround(r,{},contact,q.s,0).step,.14);}
 });
 test('entry yields to a circulating car approaching the merge, then releases the gap',()=>{
  assert(roundaboutYield({id:1},[{id:2,circulating:true,distance:25,speed:6}]));assert(!roundaboutYield({id:1},[{id:2,circulating:false,distance:0,speed:6}]));assert(!roundaboutYield({id:1},[{id:2,circulating:true,distance:100,speed:2}]));
