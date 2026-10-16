@@ -27,6 +27,7 @@ export function buildPlayerFleet(car){
 }
 export function animatePlayerFleet(car,dt,speed,steer,brake,pose,axles,yawRate){
  const s=car.spec;
+ if(car.bodyDynamic)pose={heave:0,pitch:0,roll:0};
  car.body.position.y=pose?.heave||0;
  car.body.rotation.set(pose?.pitch||0,0,s.twoWheeler?THREE.MathUtils.clamp(-Math.atan(speed*yawRate/9.81),-.6,.6):pose?.roll||0,'YXZ');
  for(const w of car.wheels){

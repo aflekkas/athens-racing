@@ -327,6 +327,8 @@ export class Ground {
    * The crash dents the body there: addDamage with the contact's closing speed, zone, local point and normal.
    */
   _hit(v, nx, nz, pen, k, collider = null) {
+    const base = this.at?.(v.x,v.z,v.s,v.u,{})?.y ?? v.y;
+    if (v.bodyDynamic && v.y > base + (collider?.height ?? (collider?.kind === 'bollard' ? 1 : 3))) return;
     const restitution = clamp(collider?.restitution ?? 0.15, 0, 1);
     // Soft barriers absorb crush energy; apply the square root to EBS, not a second delta-v.
     const damageScale = clamp(collider?.damageScale ?? 1, 0, 1);
@@ -351,10 +353,14 @@ export class Ground {
     const tx = wvx + nx * vn, tz = wvz + nz * vn; // tangential part
     const nvx = tx * keep + nx * vn * restitution, nvz = tz * keep + nz * vn * restitution;
     v.vLong = nvx * fx + nvz * fz; v.vLat = nvx * rx + nvz * rz;
-    v.w *= 1 - Math.min(0.6, vn * 0.05);
+
     if (vn > v.wallHit) { v.wallNx = nx; v.wallNz = nz; }
     v.wallHit = Math.max(v.wallHit, vn);
-    if (v.bodyKick) v.bodyKick(vn * 0.04, 0, -vn * 0.2 * Math.sign(nx * rx + nz * rz)); else { v.pose.rollV += vn * 0.2 * Math.sign(nx * rx + nz * rz); v.pose.heaveV += vn * 0.04; }
+    const dF = -(nx * fx + nz * fz), dR = -(nx * rx + nz * rz);
+    v.impactDynamics?.({dv: vn * (1 + restitution), nx, nz,
+      forward: k !== undefined ? k + dF * v.halfW : dF * v.halfL,
+      right: dR * v.halfW, height: collider?.contactHeight ?? .45,
+      kind: collider?.kind, lift: Math.sqrt(damageScale)});
     if (v.syncWheels) v.syncWheels(); else for (const W of v.corners || v.wheel) W.vw = v.vLong;
   }
   /**
@@ -407,6 +413,7 @@ export class Ground {
         const J = meff * vn * (glance ? 1.35 : 0.3 * sev);
         // climbing, part of the blow goes up through the spring rather than round the car's centre
         v.vLong += J * jx / v.m; v.vLat += J * jy / v.m; v.w += J * arm / v.Iz * (glance ? 1 : 0.5);
+        v.impactDynamics?.({dv: J / v.m, nx: -nx, nz: -nz, forward: cx, right: cy, height: h, kind: 'kerb', lift: glance ? 0 : 1, yawSolved: true});
         if (glance) { // stays on the road: put the wheel back on this side of the kerb line
           const pen = Math.abs(u - kerbU) + 0.02;
           v.x -= nx * pen; v.z -= nz * pen; v.u -= nside * pen; prev[i] = was;
@@ -438,7 +445,7 @@ export class Ground {
     // guard rails (the only walls the road itself has)
     const lim = this.limits(v.s, v.halfW, v._lim || (v._lim = {}));
     const exploring = v._network && this.network?.sample(v.x, v.z);
-    if (!exploring && (v.u > lim.max || v.u < lim.min)) {
+    if (!exploring && v.y - route.surfaceY(v.s,v.u) < 1.1 && (v.u > lim.max || v.u < lim.min)) {
       const f = route.contactFrame?.(v.s, v.u, v._f || (v._f = {})) || route.frame(v.s, v._f || (v._f = {})), side = v.u > lim.max ? 1 : -1;
       this._hit(v, -f.rx * side, -f.rz * side, side > 0 ? v.u - lim.max : lim.min - v.u);
       v.u = side > 0 ? lim.max : lim.min;
@@ -456,7 +463,7 @@ export class Ground {
     const gy = g.y - g.hump, pgy = v._gt ?? gy;
     const tooHigh = gy - route.y((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length))) > MAX_ABOVE && gy > pgy;
     const tooFar = Math.abs(v.u) - route.edge((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length))) > MAX_OFF && Math.abs(v.u) > Math.abs(v._gu ?? 0);
-    if (d > 1e-4 && (this.blocked(pgy, gy, d) || !g.network && (tooHigh || tooFar))) {
+    if (!v.bodyDynamic && d > 1e-4 && (this.blocked(pgy, gy, d) || !g.network && (tooHigh || tooFar))) {
       // wall normal from the terrain gradient
       const e = 0.8, q = this._q || (this._q = {});
       const hx = this.at(v.x + e, v.z, v.s, v.u, q).y - this.at(v.x - e, v.z, v.s, v.u, q).y;
@@ -507,17 +514,9 @@ export class Ground {
     // would add the kerb twice once all four wheels have climbed onto the pavement.
     const centrePlane = wheelGround(route, ROAD, g, v.s, v.u, this._wg).plane;
     const yG = onRoad && !mapped ? route.surfaceY(sv, v.u) : astride ? (yF + yB) / 2 : Math.max(centrePlane, (yF + yB) / 2);
-    if (v.air === undefined) { v.air = 0; v.vy = 0; v.yAir = yG; }
     const paved = onRoad || g.surf === 'pavement' || g.surf === 'asphalt' || g.surf === 'verge';
-    const vyS = paved ? 0 : clamp((yF - yB) / v.wb * v.vLong, -20, 20);
-    if (v.air) {
-      v.vy -= 9.81 * dt; v.yAir += v.vy * dt;
-      if (v.yAir <= yG) { v.bumpHit = Math.max(v.bumpHit, clamp((vyS - v.vy) * 0.12, 0, 1)); if (v.bodyKick) v.bodyKick(Math.min(0, v.vy - vyS) * 0.5); else v.pose.heaveV += Math.min(0, v.vy - vyS) * 0.05; v.air = 0; v.yAir = yG; }
-      v.y = Math.max(v.yAir, yG);
-    } else if (!paved && v.vy > vyS + 9.81 * dt * 1.3 && v.vy > 1.2) {
-      v.air = 1; v.yAir = v._gy ?? yG; v.y = yG;
-    } else v.y = yG;
-    if (!v.air) v.vy = vyS;
+    if (v.resolveBodyContact) v.resolveBodyContact(dt, yG, v.gradeG ?? ((fw.grade || 0) * ft + (fw.bank || 0) * fr), onRoad && !mapped ? (fw.grade || 0) * rt + (fw.bank || 0) * rr : v.bank || 0);
+    else v.y = yG;
     v._gx = v.x; v._gz = v.z; v._gy = v.y; v._gt = g.y - g.hump; v._gu = v.u;
     // grip / drag (airborne: no grip), water
     // Each tyre keeps its own grip and slip curve. Resistance remains a body-level average.
@@ -530,10 +529,10 @@ export class Ground {
       const softGroundMultiplier = W.traction ?? 1;
       const grip = surfaceGrip * wetMultiplier;
       mu += grip / 4; dr += W.drag / 4; res += (W.res || 0) / 4; soft += (W.soft || 0) / 4; bow += (W.bow || 0) / 4;
-      v.wheelMu[i] = v.air ? 0.02 : grip * softGroundMultiplier;
+      v.wheelMu[i] = v.bodyDynamic ? 0 : grip * softGroundMultiplier;
       v.wheelPeak[i] = W.peak ?? 1; v.wheelSlide[i] = W.slide ?? null; v.wheelSlideV[i] = W.slideV ?? null;
     }
-    v.surf = g.surf; v.surfMu = v.air ? 0.02 : mu; v.surfDrag = dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;
+    v.surf = g.surf; v.surfMu = v.bodyDynamic ? 0 : mu; v.surfDrag = v.bodyDynamic ? 0 : dr; v.surfRes = v.air ? 0 : res; v.surfSoft = v.air ? 0 : soft; v.surfBow = v.air ? 0 : bow;
     v._network = !!g.network;
     if (!paved) { // thick maquis up the hillside / far from the road
       const sc = (route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length));
@@ -542,12 +541,12 @@ export class Ground {
     }
     v.offroad = onRoad || g.surf === 'pavement' || g.surf === 'asphalt' ? 0 : 1;
     // dug in: the car settles into its ruts
-    if (v.dig > 0 && !v.air) v.y -= 0.12 * v.dig;
+    if (v.dig > 0 && !v.bodyDynamic) v.y -= 0.12 * v.dig;
     v.water = g.water;
-    if (g.water > 0) { v.sink = Math.min(1, (v.sink || 0) + dt * 0.45); v.y = Math.max(g.y, WATER_Y - 0.35 - 1.2 * v.sink); v.surfDrag = SURF.water.drag; }
+    if (g.water > 0 && !v.air) { v.sink = Math.min(1, (v.sink || 0) + dt * 0.45); v.y = Math.max(g.y, WATER_Y - 0.35 - 1.2 * v.sink); v.surfDrag = SURF.water.drag; }
     else v.sink = 0;
     // last place you were safely on the road, for the respawn
-    if (onRoad && Math.abs(v.u) < route.edge(v.s) && (route.closed || (v.s > 0 && v.s < route.length))) { if (!v.safe) v.safe = {}; v.safe.s = v.s; v.safe.u = v.u; }
+    if (onRoad && !v.bodyDynamic && Math.abs(v.u) < route.edge(v.s) && (route.closed || (v.s > 0 && v.s < route.length))) { if (!v.safe) v.safe = {}; v.safe.s = v.s; v.safe.u = v.u; }
   }
 }
 

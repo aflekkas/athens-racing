@@ -1244,6 +1244,7 @@ export class Traffic {
     const A = this._A || (this._A = {}), B = this._B || (this._B = {});
     for (const c of this.cars) {
       if (!c.active) continue;
+      if (veh.y > route.surfaceY(c.s,c.u) + (c.type.bus ? 3.1 : c.type.shape === 'van' ? 2.5 : 1.5) + (c.crash?.y || 0)) continue;
       const ds = c.s - veh.s; if (Math.abs(ds) > 14) { if (actor.kind === 'player') c.pRel = Math.sign(ds); continue; }
       const du = c.u - veh.u;
       const cyaw = c.crash ? c.crash.yaw : c.cross ? c.xyaw : 0, cc = Math.abs(Math.cos(cyaw)), cs = Math.abs(Math.sin(cyaw));
@@ -1289,6 +1290,10 @@ export class Traffic {
       else if (c.mode !== 'parked') { c.v = Math.max(0, c.dir * B.vs); c.shakenT = 2; } // a nudge: brake, glare
       this.online?.contactCar(c, beforeOnline, B, dvB, zoneOf(B, ct.ps, ct.pu), impactB);
       if (actor.kind === 'player') c.pHitT = now;
+      const normalX = -(rv.f.tx*ct.ns+rv.f.rx*ct.nu), normalZ = -(rv.f.tz*ct.ns+rv.f.rz*ct.nu);
+      veh.impactDynamics?.({dv: dvA, nx: normalX, nz: normalZ,
+        forward: -(impactA.localPoint?.z || 0), right: impactA.localPoint?.x || 0,
+        height: impactA.localPoint?.y ?? .45, kind: 'car', yawSolved: true});
       const sev = r.vn;
       if (sev > 0.5) events.push({ kind: sev > 11 ? 'crash' : sev > 4 ? 'bump' : 'scrape', target: impactTarget(c.type), sev, car: c, who: actor.kind, side: Math.sign(du), heavy: c.mass > 3000 || sev > 16, oncoming: c.dir * this.dir < 0, zone: zoneOf(A, ct.ps, ct.pu), dv: dvA, dvCar: dvB, ...impactA });
     }
