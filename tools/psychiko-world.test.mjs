@@ -101,3 +101,15 @@ test('real vehicle physics cannot cross any roadworks box at 90 km/h; the same p
   else assert(furthest>8,`${b.id}: free-roam path was blocked`);
  }
 });
+
+test('Psychiko uses the shared two-rival grid and road-aware auto-tow corridor',async()=>{
+ const {gridFor,freeRoam}=await import('../src/events.js');
+ const {DrivableCorridor,corridorRecovery}=await import('../src/drivable-corridor.js');
+ const race=data.events.find(e=>e.id==='psychiko-race');
+ assert.equal(gridFor(race).length,2);
+ const corridor=new DrivableCorridor(route,map.roadNetwork,terrain);
+ for(let s=0;s<route.length;s+=31){const p=route.point(s,0);assert.equal(corridor.distance(p.x,p.z),0);}
+ for(const seg of map.roadNetwork.segments.filter((_,i)=>i%37===0))assert.equal(corridor.distance((seg.ax+seg.bx)/2,(seg.az+seg.bz)/2),0);
+ for(const free of [false,true])assert.equal(corridorRecovery({distance:60,mapId:'psychiko',freeRoam:free},0,{}).tow,true);
+ assert.equal(freeRoam('psychiko').mapId,'psychiko');
+});

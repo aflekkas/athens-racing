@@ -235,7 +235,8 @@ export class RacingLine {
         const angle = Math.atan(veh.wb * Math.abs(this.k[i]));
         while (limit > 1.4 && angle > caps.lock(limit) * 0.94) limit = Math.max(1.4, limit - 0.5);
       }
-      v[i] = limit;
+      // Narrow street junctions need room for the full body to turn.
+      v[i] = this.route.streetCircuit ? Math.max(1.4, limit * .55) : limit;
     }
     // Cyclic passes converge even when the limiting bend spans the lap seam.
     for (let pass = 0; pass < (this.closed ? 8 : 3); pass++) {
@@ -871,8 +872,11 @@ export class RivalAI {
         targetSpeed = Math.min(targetSpeed, Math.sqrt(curveSpeed * curveSpeed + 2 * brakeV * 0.6 * Math.max(0, d - 10)));
       }
     }
-    const look = Math.max(2.4, Math.min(5 + v * 0.3, 22, 0.45 / Math.max(1e-4, kAhead)));
-    const targetS = veh.s + dir * look;
+    const look = route.streetCircuit
+      ? Math.max(2.4, Math.min(5 + v * .3, 22, .45 / Math.max(1e-4, kAhead)))
+      : Math.max(2.4, Math.min(5 + v * 0.3, 22, 0.45 / Math.max(1e-4, kAhead)));
+    const junctionLook = route.streetCircuit && Math.abs(route.curv(veh.s + dir * 4)) > .16 ? 6.5 : look;
+    const targetS = veh.s + dir * junctionLook;
     const hold = !this.evade && !oncoming && holdAlongside;
     let target;
     // Still across the centre line (after an escape or a pass): the target may

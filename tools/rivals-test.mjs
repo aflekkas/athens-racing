@@ -188,7 +188,7 @@ const allSegments = allSprints ? [...EV.EVENTS.filter((e) => e.type === 'sprint'
   const drivers = EV.gridFor(def).map((d) => baseline ? raceDrivers.find((old) => old.id === d.id) || d : d);
   return [def.id, r.s0, r.s1, drivers, def.traffic === 0, def.car];
 }) : [ ['riviera', route.start, route.finish, raceDrivers], ['astir-varkiza', data.marks.find((m) => m.id === 'astir').s, data.marks.find((m) => m.id === 'varkiza').s, raceDrivers] ];
-if (process.env.RIVAL_SEGMENT && !['megara', 'penteli-race'].includes(process.env.RIVAL_SEGMENT) && !allSegments.some(([name]) => name === process.env.RIVAL_SEGMENT)) throw new Error('Unknown RIVAL_SEGMENT');
+if (process.env.RIVAL_SEGMENT && !['megara', 'penteli-race', 'psychiko-race'].includes(process.env.RIVAL_SEGMENT) && !allSegments.some(([name]) => name === process.env.RIVAL_SEGMENT)) throw new Error('Unknown RIVAL_SEGMENT');
 const segments = proofOnly ? [] : allSegments.filter(([name]) => !process.env.RIVAL_SEGMENT || name === process.env.RIVAL_SEGMENT);
 const results = [], failures = [];
 for (const [name, s0, finish, drivers, closedRoad = false, carId] of segments) {
@@ -226,6 +226,21 @@ if (allSprints && !proofOnly && (!process.env.RIVAL_SEGMENT || process.env.RIVAL
   route = riviera;
   spec = defaultSpec;
 }
+if (!baseline && !proofOnly && (!process.env.RIVAL_SEGMENT || process.env.RIVAL_SEGMENT === 'psychiko-race')) {
+  const riviera = route, psychiko = JSON.parse(readFileSync(new URL('data/maps/psychiko/map.json', root)));
+  route = makeRoute(psychiko);
+  for (const def of psychiko.events.filter((e) => e.type === 'sprint')) {
+    spec = eventSpec(def.car);
+    const r = EV.resolve(def, { route, marks: psychiko.marks });
+    const drivers = EV.gridFor(def).map((d) => baseline ? raceDrivers.find((old) => old.id === d.id) || d : d);
+    const reference = baseline ? null : runRace(def.id, r.s0, r.s1, true, drivers, 0, def.traffic === 0);
+    const field = runRace(def.id, r.s0, r.s1, false, drivers, 0, def.traffic === 0);
+    const gridReferences = baseline ? [] : [reference, ...[1, 2].map((slot) => runRace(def.id, r.s0, r.s1, true, drivers, slot, def.traffic === 0))];
+    evaluate(def.id, reference, field, gridReferences);
+  }
+  route = riviera;
+  spec = defaultSpec;
+}
 function evaluate(name, reference, field, gridReferences = []) {
   const poleTotalRatios = reference ? field.times.map((t) => t === null ? null : t / reference.times[0] - 1) : null;
   const referenceTimes = reference ? field.times.map((_, i) => gridReferences[i]?.times[0] ?? reference.times[0]) : null;
@@ -241,7 +256,7 @@ function evaluate(name, reference, field, gridReferences = []) {
     // pace p needs 1/p - 1 longer than a perfect one), so the gate is 3% or the designed deficit of the slowest entrant + 1.5% for racing each other.
     const tolerance = Math.max(0.03, ...field.drivers.map((id) => 1 / module.driverPersonality(raceDrivers.find((d) => d.id === id)).pace - 1 + 0.015));
     if (ratios.some((ratio) => ratio === null || Math.abs(ratio) > tolerance)) failures.push(`${name}: field outside ${tolerance * 100}% perfect reference ${JSON.stringify(ratios)}`);
-    if (lapRatios && (field.lapTimes.some((laps) => laps.length !== 3) || lapRatios.some((laps) => laps.some((ratio, i) => !Number.isFinite(ratio) || Math.abs(ratio) > (i === 0 ? tolerance + 0.01 : tolerance))))) failures.push(`${name}: steady laps outside ${(tolerance * 100).toFixed(1)}% perfect reference (first lap ${(tolerance * 100 + 1).toFixed(1)}% for grid launch) ${JSON.stringify(lapRatios)}`);
+    if (lapRatios && (field.lapTimes.some((laps) => laps.length !== Math.round(field.length / route.length)) || lapRatios.some((laps) => laps.some((ratio, i) => !Number.isFinite(ratio) || Math.abs(ratio) > (i === 0 ? tolerance + 0.01 : tolerance))))) failures.push(`${name}: steady laps outside ${(tolerance * 100).toFixed(1)}% perfect reference (first lap ${(tolerance * 100 + 1).toFixed(1)}% for grid launch) ${JSON.stringify(lapRatios)}`);
     if (gridReferences.some((r) => r.offroadFrames || r.wallFrames || r.teleports || r.maxStall > 4 || r.times[0] === null)) failures.push(`${name}: matching-grid perfect reference failed clean completion`);
   }
 }

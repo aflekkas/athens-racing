@@ -1,13 +1,15 @@
+import { loadPsychikoTextures } from './psychiko-textures.js';
 // Palaio Psychiko uses the shared Greek street kit and actual OSM villa footprints.
 import * as THREE from 'three';
 import { buildRoad } from '../road.js';
-import { buildBuildings } from '../buildings.js';
-import { buildNature } from '../nature.js';
+import { buildBuildings } from './psychiko-buildings.js';
+import { buildNature } from './psychiko-nature.js';
 import { buildPsychikoGardens } from './psychiko-gardens.js';
 import { People } from '../people.js';
 import { batchStatic } from '../batch.js';
 
-export function buildScenery(scene, map, { heightC, assets } = {}) {
+export async function buildScenery(scene, map, { heightC, assets } = {}) {
+  await loadPsychikoTextures();
   const group = new THREE.Group(); group.name = 'psychiko-garden-streets'; scene.add(group);
   const road = buildRoad(map, group, heightC, assets);
   assets.asphalt = road.asphalt;

@@ -21,7 +21,7 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
   // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
   // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
-  mat.customProgramCacheKey = () => farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
+  mat.customProgramCacheKey = () => gardens ? 'terrain-owner-area-psychiko-gardens' : farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, {
       tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
@@ -68,6 +68,7 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
         // Broad area colours and restrained texture detail; no painted shrub clumps or plot decals.
         col = mix(vc, col, 0.45);
         ${farmland ? 'col = mix(vc * (.74 + .48 * dot(sg, vec3(.333))), col, smoothstep(.22,.55,steep));' : ''}
+        ${gardens ? `float gardenMask=smoothstep(.15,.65,vU);vec3 lawn=mix(vec3(.065,.12,.035),vec3(.18,.245,.075),macro)*(.72+dot(sg,vec3(.333))*.9); col=mix(col,lawn,gardenMask);` : ''}
         col *= 0.95 + 0.10 * macro;
         // wet sand / rock darkening at the waterline
         col *= mix(0.55, 1.0, smoothstep(0.05, 0.6, vWP.y));
