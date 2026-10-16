@@ -1,4 +1,5 @@
-import { squarePost, signFace } from './world-prop-geometries.js';
+import { gantryLegFrame } from './gantry-legs.js';
+import { signFace } from './world-prop-geometries.js';
 // Event markers in the world: start / finish arches for events that don't use the fixed gantries of the full
 // route (segments, reverse runs), and speed-camera posts for speed-trap events. Rebuilt per event, cheap.
 import * as THREE from 'three';
@@ -37,12 +38,9 @@ export class EventMarkers {
   }
   arch(s, text, tint, dir, offset = 0) {
     s += offset * dir;
-    const route = this.route, f = route.frame(s, {}), half = route.edge(s) + 1.2;
-    const g = new THREE.Group(); g.position.set(f.x, route.y(s), f.z);
-    g.rotation.y = Math.atan2(f.tx, f.tz) + (dir > 0 ? Math.PI : 0); // the banner faces oncoming racers
+    const route = this.route, half = route.edge(s) + 1.2;
     const poleM = new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 });
-    const leg = squarePost(.45,7,.45,'gantry'); leg.translate(0, 3.5, 0);
-    for (const sx of [-1, 1]) { const l = new THREE.Mesh(leg, poleM); l.position.x = sx * half; l.castShadow = true; g.add(l); }
+    const g = gantryLegFrame(route, s, poleM, 'event', dir);
     const tex = bannerTex(text, text === 'START' ? '#d8261d' : '#0c0f14', '#ffffff');
     const ban = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, half * 0.38), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
     ban.position.y = 6.4; g.add(ban);

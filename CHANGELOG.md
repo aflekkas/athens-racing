@@ -8,6 +8,18 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Rain uses scrolling texture layers, matte wet-road patches and small tyre-wake cards; water splashes use textured mist and foam.
+  ![Day rain before and after the inexpensive texture overlays](assets/changelog/2026.10.16.1/rain-overlays.webp "Day rain in chase and cockpit views before and after the overlay change.")
+
+- Free roam starts clear of the START gantry; race grids sit farther back so posts do not block the cockpit view.
+  ![Riviera MINI cockpit before and after moving the free-roam spawn](assets/changelog/2026.10.16.1/gantry-clearance.webp "The red START post is clear of the new free-roam starting view.")
+
+- Cockpits regain body frames, connected dashboards and branded steering wheels. Mounted wipers clear small, subtle rain drops.
+  ![SVJ cockpit and rainy 911 before and after](assets/changelog/2026.10.16.1/cockpit-structure.webp "A visible cabin and steering wheel, with a clear view of the road.")
+
+- Building blocks have brighter roofs, shaded sides and darker bases, adding depth without extra scenery.
+  ![Baked shading gives Riviera building blocks more depth](assets/changelog/2026.10.16.1/baked-building-depth.webp "Simple building shapes with shaded sides and grounded bases.")
+
 - Race two laps of Psychiko or explore its streets in free roam, with race-only roadworks. Map by Vassilis Perrotis (Vas-Per).
   ![Vas-Per’s Psychiko streets with simple footprint buildings](assets/changelog/2026.10.16.1/psychiko.webp "Psychiko by Vas-Per.")
 - Psychiko uses our simple building and terrain style. Vas-Per’s full garden version is saved under the psychiko-garden-original tag.

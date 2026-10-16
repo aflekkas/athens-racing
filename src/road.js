@@ -1,3 +1,4 @@
+import { gantryLegFrame } from './gantry-legs.js';
 import { squarePost, signFace } from './world-prop-geometries.js';
 // The road: a continuous spline sweep along the real route with banking, shader-drawn markings,
 // curbs, pavements/shoulders, planted median, guard rails and road furniture.
@@ -437,11 +438,8 @@ function buildFurniture(map, group, heightC, assets) {
   }
   // start / finish gantries
   const gantry = (s, key, tint) => {
-    const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
     const wHalf = route.edge(s) + 1.2;
-    const g = new THREE.Group(); route.point(s, 0, pt); g.position.copy(pt); g.rotation.y = yaw + Math.PI; group.add(g);
-    const leg = squarePost(.5,7.5,.5,'gantry'); leg.translate(0, 3.75, 0);
-    for (const sx of [-1, 1]) { const l = new THREE.Mesh(leg, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); l.position.x = sx * wHalf; l.castShadow = true; g.add(l); }
+    const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); group.add(g);
     const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, 0); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
     const banner2 = banner.clone(); banner2.rotation.y = 0; banner2.scale.x = -1; banner2.position.z = 0.05; g.add(banner2);
   };

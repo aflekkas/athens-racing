@@ -16,8 +16,11 @@ export const BRAND_BADGES = {
   skoda: { enabled:true, cell:10 },
   toyota: { enabled:true, cell:11 },
   volkswagen: { enabled:true, cell:12 },
+  nissan: { enabled:true, cell:13 },
+  byd: { enabled:true, cell:14 },
+  isuzu: { enabled:true, cell:16 },
 };
-const BRANDS={panda:'fiat',jazz:'honda',yaris:'toyota',gr_yaris:'toyota',corolla:'toyota',ibiza:'seat',golf:'volkswagen',mini:'mini',mini_hardtop:'mini',mini_jcw:'mini',z4:'bmw',e36:'bmw',carrera:'porsche',aventador:'lamborghini',huracan:'lamborghini',gtv:'alfaromeo',octavia:'skoda',taxi:'skoda',superb:'skoda',police_octavia:'skoda',gla:'mercedes',gla45:'mercedes',cla:'mercedes',cle:'mercedes',mx5:'mazda'};
+const BRANDS={panda:'fiat',jazz:'honda',yaris:'toyota',gr_yaris:'toyota',corolla:'toyota',ibiza:'seat',golf:'volkswagen',mini:'mini',mini_hardtop:'mini',mini_jcw:'mini',z4:'bmw',e36:'bmw',carrera:'porsche',aventador:'lamborghini',huracan:'lamborghini',gtv:'alfaromeo',octavia:'skoda',taxi:'skoda',superb:'skoda',police_octavia:'skoda',gla:'mercedes',gla45:'mercedes',cla:'mercedes',cle:'mercedes',mx5:'mazda',aygo:'toyota',qashqai:'nissan',qashqai_dci:'nissan',dolphin:'byd',atto3:'byd',van:'fiat',van_150:'fiat',truck:'isuzu',bus:'mercedes',delivery:'honda',police_moto:'bmw'};
 export function badgeBrand(spec){return spec.marque||BRANDS[spec.body]||BRANDS[spec.id];}
 let atlas;const materials=new Map();
 export function brandBadgeMaterial(spec){
@@ -31,7 +34,7 @@ export function brandBadgeMaterial(spec){
   }
   const m=new THREE.MeshStandardMaterial({map:atlas,transparent:true,depthWrite:false,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   m.name='brand-badge';m.userData.brandBadge=true;
-  m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <uv_vertex>',`#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vMapUv * .25 + vec2(${(cell%4/4).toFixed(2)},${(1-(Math.floor(cell/4)+1)/4).toFixed(2)});\n#endif`);};
+  m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <uv_vertex>',`#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vMapUv * vec2(.25,.20) + vec2(${(cell%4/4).toFixed(2)},${(1-(Math.floor(cell/4)+1)/5).toFixed(2)});\n#endif`);};
   m.customProgramCacheKey=()=>`brand-badge-${cell}`;materials.set(cell,m);return m;
 }
 // Body construction uses varied shell shapes. Seat missing medallions on the

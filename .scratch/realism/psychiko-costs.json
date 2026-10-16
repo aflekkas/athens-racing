@@ -1,0 +1,19 @@
+{
+  "map": "psychiko",
+  "before": {
+    "buildMs": 660.5699030000001,
+    "drawCalls": 28,
+    "triangles": 78044,
+    "geometryBytes": 10301808,
+    "textureBytes": 0
+  },
+  "after": {
+    "buildMs": 575.5587630000001,
+    "drawCalls": 28,
+    "triangles": 78044,
+    "geometryBytes": 10301808,
+    "textureBytes": 0,
+    "bakeOnlyMedianMs": 3.987188999999944,
+    "bakeOnlyP95Ms": 11.382730000000038
+  }
+}

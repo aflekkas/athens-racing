@@ -1,0 +1,6 @@
+import fs from 'node:fs/promises';import sharp from 'sharp';
+const out='.scratch/cockpit-structure',rows=JSON.parse(await fs.readFile('.scratch/pov-camera/mask-audit.json'));
+const esc=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;');
+const world=process.argv.includes('--world'),ids=world?JSON.parse(await fs.readFile(out+'/after-world.json')).map(r=>r.id):rows.map(r=>r.id);
+for(let start=0;start<ids.length;start+=4){const parts=[];for(let j=0;j<4&&start+j<ids.length;j++){const id=ids[start+j];for(let k=0;k<2;k++){const phase=k?'after':'before',path=world?`${out}/${phase}-${id}-dry.webp`:k?`.scratch/pov-camera/after-${id}-image.png`:`${out}/before-${id}-image.webp`;parts.push({input:await sharp(await fs.readFile(path).catch(()=>fs.readFile(path.replace(/png$/,'webp')))).resize(640,400).png().toBuffer(),left:k*640,top:j*430+30});const label=esc(`${id} / ${phase}`+(k&&!world?` / clear ${rows.find(r=>r.id===id).after.windscreenPercent.toFixed(2)}%`:''));parts.push({input:Buffer.from(`<svg width="640" height="30"><text x="8" y="22" font-family="DejaVu Sans" font-size="17" fill="white">${label}</text></svg>`),left:k*640,top:j*430});}}
+await sharp({create:{width:1280,height:1720,channels:3,background:'#12161a'}}).composite(parts).webp({quality:90}).toFile(`${out}/${world?'world-':''}contact-${String(start/4+1).padStart(2,'0')}.webp`);}

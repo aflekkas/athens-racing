@@ -1,8 +1,9 @@
+import {buildCockpitStructure} from './cockpit-structure.js';
 import {drawPovInstruments} from './pov-instruments.js';
 import {derivePovEye} from './pov-camera.js';
 import {setVehicleCockpitView} from './glass-tint.js';
 // First-person interior: dashboard, instrument cluster with live gauges (canvas texture), shift lights,
-// steering wheel the driver's hands hold, centre nav screen, working rear-view + door mirrors (render target),
+// steering wheel and controls, centre nav screen, working rear-view + door mirrors (render target),
 // and an interior shell (headliner, pillars, door cards) generated from the body loft for closed cars.
 import * as THREE from './vehicle-primitives.js';
 import {FleetCockpit} from './fleet-cockpit.js';
@@ -146,7 +147,7 @@ export class Cockpit {
     const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.body==='cle';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.40,-.43));
-    const trim=TRIM(),soft=trimMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
+    const trim=TRIM();
     const alu=new THREE.MeshStandardMaterial({color:'#9ba1a6',metalness:.86,roughness:.32,envMap:CAR_ENV.tex});
     const gloss=new THREE.MeshPhysicalMaterial({color:'#101113',roughness:.22,clearcoat:.7,envMap:CAR_ENV.tex});
     const leatherTop=trimMat(isBMW?'#171412':'#141416',{rough:.64,scale:.08,nk:.45});
@@ -154,14 +155,9 @@ export class Cockpit {
     const part=(geo,mat,x,y,z,rx=0,name='')=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);o.rotation.x=rx;o.name=name;g.add(o);return o;};
     const box=(w,h,d,mat,x,y,z,r=.008,rx=0,name='')=>part(Math.min(w,h,d)<.012?new THREE.BoxGeometry(w,h,d):new RoundedBoxGeometry(w,h,d,1,Math.min(r,w/3,h/3,d/3)),mat,x,y,z,rx,name);
     const label=(text,w,h,x,y,z,colour='#d7dcdf',rx=0)=>part(new THREE.PlaneGeometry(w,h),labelMaterial(text,colour),x,y,z,rx);
-    let wsZ,wsY,W;
-    if(spec.body==='mini'){wsZ=model.shape.cowl;wsY=model.shape.belt;W=model.dash.w;}
-    else{const sh=model.shape;wsZ=-sh.ws[1]*sh.L/2+.05;wsY=sh.belt+.03;W=sh.W*(spec.cabinWidth??(spec.fleet?.82:isMercedes?.80:isPorsche?.78:isYaris?.84:.92));}
-    // Owner-directed thin dash: keep eye/mirror/steering mounts stable while
-    // instruments sit below the forward sightline. No raised centre display.
+    // Keep the instrument/controls anchors; the connected low-poly shell is
+    // fitted after deriving the seated eye.
     const topY=eye.y-.44,faceZ=eye.z-.95;
-    box(W*.96,.055,.13,soft,0,topY-.025,faceZ,.005,0,'thin-dashboard-band');
-    box(W*.94,.008,.015,isClassic?wood:alu,0,topY,faceZ+.07,0,0,'dashboard-trim');
     const cw=isClassic?.34:.38,ch=.09,cy=eye.y-.43,cz=faceZ+.08;
     const clusterX=eye.x;
     const ctex=this.clusterCanvas=document.createElement('canvas');ctex.width=1024;ctex.height=384;
@@ -206,8 +202,8 @@ export class Cockpit {
       const pedal=box(.06,.014,.105,alu,x,.31,faceZ-.02,.003,-.5);
       for(let j=-1;j<=1;j++)box(.052,.002,.005,trim,x,.321+j*.008,faceZ-.02+j*.023,.001,-.5);
     }
-    if(spec.taxi){box(.19,.066,.05,trim,.35,topY+.015,faceZ);label('TAXI  € 4.00',.175,.045,.35,topY+.015,faceZ+.027,'#b7d3a3');}
-    // Wheel dimensions and driver IK hooks stay unchanged. Distinct hub/trim shapes matter at this range.
+    if(spec.taxi){box(.19,.066,.05,trim,.35,topY-.085,faceZ);label('TAXI  € 4.00',.175,.045,.35,topY-.085,faceZ+.027,'#b7d3a3');}
+    // Preserve steering/paddle control anchors. The fitted POV rim is built below.
     const wheel=this.wheel=new THREE.Group();wheel.name='steering-wheel';wheel.position.copy(wheelC);wheel.rotation.order='XYZ';this.wheelTilt=-.36;
     const spin=this.wheelSpin=new THREE.Group();wheel.add(spin);const r=.18;
     const rim=new THREE.Mesh(new THREE.TorusGeometry(r,isClassic?.011:.019,8,48),isClassic?wood:trimMat('#151617',{rough:.62,scale:.04,nk:.6}));spin.add(rim);
@@ -296,11 +292,12 @@ export class Cockpit {
     this.wheelInfo = { pos: wheelC, angle: 0, euler: this.wheelEuler, r, controls: this.controlTargets };
     this.lamps = new CockpitLamps();
     this.clusterAge = 0;this.lod.visible=false;
-    derivePovEye(model,this);
+    derivePovEye(model,this);buildCockpitStructure(model,this);
   }
   /** steer: front wheel angle (rad) */
   update(dt, st) {
     CABIN_GLOW.value = 0.3 * clamp(1 - (COND_STATE.ambient ?? 1) * 1.6, 0, 1) / Math.max(COND_STATE.exposure || 1, 0.05);
+    this.updateStructure(st);
     const ang = -st.steerInput * 2.35;
     this.wheelSpin.rotation.z = ang; this.wheelInfo.angle = ang;
     const controls=this.controlTargets;

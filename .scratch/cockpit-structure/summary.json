@@ -1,0 +1,17 @@
+{
+  "configs": 70,
+  "worldPairs": 32,
+  "rainPairs": 2,
+  "clearViewRange": [
+    82.64462890625,
+    92.85830078125
+  ],
+  "maxInteriorTriangles": 828,
+  "steeringTriangles": 110,
+  "rain": {
+    "meshes": 1,
+    "triangles": 2,
+    "textureSize": 128
+  },
+  "poseMaxDelta": 0
+}

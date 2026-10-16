@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: baked block shading changes only existing colours, keeps roof bright and bases darker
+ok 1 - baked block shading changes only existing colours, keeps roof bright and bases darker
+  ---
+  duration_ms: 6.970498
+  type: 'test'
+  ...
+# Subtest: tile bakes do not recolour earlier blocks
+ok 2 - tile bakes do not recolour earlier blocks
+  ---
+  duration_ms: 0.206936
+  type: 'test'
+  ...
+# Subtest: realism helper cannot create real-time shadow, AO, reflection or post passes
+ok 3 - realism helper cannot create real-time shadow, AO, reflection or post passes
+  ---
+  duration_ms: 0.876414
+  type: 'test'
+  ...
+# Subtest: rain is two texture layers and spray stays bounded at two cards per nine cars
+ok 4 - rain is two texture layers and spray stays bounded at two cards per nine cars
+  ---
+  duration_ms: 39.765052
+  type: 'test'
+  ...
+# Subtest: water splash has two quads, fades and supports the multiplayer reset contract
+ok 5 - water splash has two quads, fades and supports the multiplayer reset contract
+  ---
+  duration_ms: 1.380052
+  type: 'test'
+  ...
+# Subtest: rain overlays cannot add light, shadow, reflection, post or AO passes
+ok 6 - rain overlays cannot add light, shadow, reflection, post or AO passes
+  ---
+  duration_ms: 1.194636
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 316.535709

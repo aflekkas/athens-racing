@@ -1,15 +1,17 @@
+import {cockpitDropMaterial} from './cockpit-rain.js';
 // Conditions in the world: what the time of day and the weather (env.js) mean for everything that isn't sky.
 //  - night: street lamps lit with light pools on the road (analytic, in the road / pavement shaders: no real
 //    lights), lit windows, car head / tail lamps (emissive + glow sprites; the player gets one real shadowless spot
 //    light, every tier), shaped low-beam patterns on the road for the player, the rival and the nearest traffic
-//  - rain: instanced streaks around the camera, a wet road (darker, glossy, puddles that mirror the sky and the
-//    lamps), spray behind cars, drops and wipers on the cockpit windscreen, less grip (ground.js WEATHER)
+//  - rain: two scrolling streak texture layers, static wet-road and puddle tint, pooled tyre wake cards;
+//    cockpit drops remain a separate overlay. Wet-grip physics is independent.
 // API: setConditions({time, weather}) / getConditions() (plain data: events and multiplayer exchange it),
 // initWeather(ctx) once the world is built (before the shaders compile), updateWeather(dt) every drawn frame.
 import * as THREE from 'three';
 import * as ENV from './env.js';
 import { WEATHER, advanceRoadWetness } from './wet-grip.js';
 import { setCarLights } from './vehicle-models.js';
+import { createRain, SprayCards as Spray, rainAtlas } from './rain-overlays.js';
 
 export const setConditions = (c) => ENV.setConditions(c);
 export const getConditions = () => ENV.getConditions();
@@ -24,7 +26,7 @@ const lum = (v) => 0.2126 * v.x + 0.7152 * v.y + 0.0722 * v.z;
 
 // ---- uniforms shared by every material the weather touches
 const WXU = {
-  wxWet: { value: 0 }, wxRain: { value: 0 }, wxNight: { value: 0 }, wxTime: ENV.U.time,
+  wxOverlay: { value: rainAtlas() }, wxWet: { value: 0 }, wxRain: { value: 0 }, wxNight: { value: 0 }, wxTime: ENV.U.time,
   wxLamp: { value: new Float32Array(NL * 4) }, wxLampC: { value: new THREE.Vector3(1.0, 0.78, 0.5) },
   wxCarP: { value: new Float32Array(NC * 4) }, wxCarD: { value: new Float32Array(NC * 4) }, wxCarC: { value: new THREE.Vector3(1.0, 0.95, 0.86) },
   wxDay: { value: 1 }, wxWin: { value: 0 },
@@ -38,30 +40,19 @@ const WX_VS = `
   vWxP = (modelMatrix * vec4(transformed, 1.0)).xyz;
 #endif`;
 const WX_FS_PARS = /* glsl */`
-uniform float wxWet; uniform float wxRain; uniform float wxNight; uniform float wxTime;
+uniform sampler2D wxOverlay; uniform float wxWet; uniform float wxRain; uniform float wxNight; uniform float wxTime;
 uniform vec4 wxLamp[${NL}]; uniform vec3 wxLampC; uniform vec4 wxCarP[${NC}]; uniform vec4 wxCarD[${NC}]; uniform vec3 wxCarC;
 varying vec3 vWxP;
 float wxH(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float wxN(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3. - 2. * f);
   return mix(mix(wxH(i), wxH(i + vec2(1, 0)), u.x), mix(wxH(i + vec2(0, 1)), wxH(i + vec2(1, 1)), u.x), u.y); }
 float wxPuddle = 0.0;`;
-// before the material is set up: a wet surface is darker and glossier, puddles are flat mirrors with ripples
+// Static texture-mask tint: no animated normals, gloss or reflection response.
 const WX_WET = /* glsl */`
 if (wxWet > 0.0) {
-  vec2 q = vWxP.xz;
-  float n = wxN(q * 0.21) * 0.62 + wxN(q * 0.83 + 7.0) * 0.38;
-  float bias = 0.0;
-  #ifdef WX_ASPHALT
-    bias = gut * 0.22 + polish * 0.1; // water stands along the kerb and in the worn wheel tracks
-  #endif
-  wxPuddle = smoothstep(0.6, 0.7, n + bias) * smoothstep(0.3, 0.8, wxWet);
-  diffuseColor.rgb *= mix(1.0, 0.52, wxWet) * (1.0 - 0.3 * wxPuddle);
-  roughnessFactor = mix(roughnessFactor, roughnessFactor * 0.42, wxWet);
-  roughnessFactor = mix(roughnessFactor, 0.03, wxPuddle);
-  // raindrop rings in the puddles (cheap: two scrolling noise layers)
-  vec2 rp = q * 5.0;
-  vec2 rip = vec2(wxN(rp + wxTime * 1.7) - wxN(rp + 3.1 - wxTime * 1.3), wxN(rp.yx - wxTime * 1.5) - wxN(rp.yx + 5.2 + wxTime * 1.1));
-  normal = normalize(mix(normal, nonPerturbedNormal, wxPuddle * 0.92) + vec3(rip * 0.06 * wxRain * wxPuddle, 0.0));
+  float mask = texture2D(wxOverlay, vWxP.xz * 0.035).b;
+  wxPuddle = mask * smoothstep(0.3, 0.8, wxWet);
+  diffuseColor.rgb *= mix(1.0, 0.68, wxWet) * (1.0 - 0.22 * wxPuddle);
 }`;
 // after the scene lights: street lamps (down-lights) and car headlamps (spots), lit analytically in world space
 const WX_LIGHTS = /* glsl */`
@@ -158,127 +149,8 @@ function pointsOf(n, mat) {
   return { p, pos, size, col, g, n };
 }
 
-// ---- rain: instanced camera-facing streaks in a box that travels with the camera (all motion on the GPU)
-function createRain(n) {
-  const base = new THREE.PlaneGeometry(1, 1); base.translate(0, 0.5, 0);
-  const g = new THREE.InstancedBufferGeometry(); g.index = base.index; g.setAttribute('position', base.attributes.position);
-  const off = new Float32Array(n * 4); for (let i = 0; i < off.length; i++) off[i] = Math.random();
-  g.setAttribute('aOff', new THREE.InstancedBufferAttribute(off, 4)); g.instanceCount = n;
-  const mat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() }, uCamVel: { value: new THREE.Vector3() }, uBox: { value: new THREE.Vector3(44, 26, 44) },
-      uCol: { value: new THREE.Vector3(0.5, 0.5, 0.5) }, uAlpha: { value: 0 }, uWind: { value: new THREE.Vector3(1.2, 0, 0.6) }, uNear: { value: 1.2 } },
-    vertexShader: /* glsl */`attribute vec4 aOff; uniform float uTime; uniform vec3 uCam; uniform vec3 uCamVel; uniform vec3 uBox; uniform vec3 uWind; uniform float uNear;
-      varying float vA; varying float vY;
-      void main(){
-        vec3 vel = vec3(uWind.x, -8.5 * (0.8 + 0.4 * aOff.w), uWind.z);
-        vec3 c = uCam - uBox * 0.5;
-        vec3 p = c + mod(aOff.xyz * uBox + vel * uTime - c, uBox);
-        vec3 rel = vel - uCamVel; float sp = length(rel); vec3 dir = rel / max(sp, 1e-3);
-        float len = clamp(sp * 0.028, 0.18, 1.8);
-        vec3 toC = cameraPosition - p; float d = length(toC);
-        vec3 side = normalize(cross(dir, toC / max(d, 1e-3)));
-        vec3 wp = p + dir * (position.y - 0.5) * len + side * position.x * (0.007 + d * 0.0009);
-        vA = smoothstep(uNear, uNear + 1.5, d) * (1.0 - smoothstep(14.0, 22.0, d));
-        vY = position.y;
-        gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
-      }`,
-    fragmentShader: /* glsl */`uniform vec3 uCol; uniform float uAlpha; varying float vA; varying float vY;
-      void main(){ float a = uAlpha * vA * sin(vY * 3.14159); if (a < 0.003) discard; gl_FragColor = vec4(uCol, a); }`,
-    transparent: true, depthWrite: false,
-  });
-  const mesh = new THREE.Mesh(g, mat); mesh.frustumCulled = false; mesh.renderOrder = 7; mesh.visible = false;
-  return { mesh, mat };
-}
-
-// ---- spray thrown up behind wheels on a wet road (CPU particles, soft sprites lit by the ambient light)
-class Spray {
-  constructor(scene, n) {
-    this.n = n; this.k = 0;
-    const g = new THREE.BufferGeometry();
-    this.pos = new Float32Array(n * 3).fill(-1e5); this.vel = new Float32Array(n * 3); this.life = new Float32Array(n); this.age = new Float32Array(n);
-    this.size = new Float32Array(n); this.alpha = new Float32Array(n);
-    g.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
-    g.setAttribute('aSize', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
-    g.setAttribute('aAlpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage));
-    this.mat = new THREE.ShaderMaterial({
-      uniforms: { uScale: { value: 600 }, uCol: { value: new THREE.Vector3(0.6, 0.6, 0.6) } },
-      vertexShader: `attribute float aSize; attribute float aAlpha; uniform float uScale; varying float vA;
-        void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = clamp(aSize * uScale / max(0.1, -mv.z), 0.0, 300.0); vA = aAlpha; }`,
-      fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ vec2 p = gl_PointCoord * 2.0 - 1.0; float r = dot(p, p); if (r > 1.0) discard; gl_FragColor = vec4(uCol, vA * (1.0 - r) * (1.0 - r)); }`,
-      transparent: true, depthWrite: false,
-    });
-    this.pts = new THREE.Points(g, this.mat); this.pts.frustumCulled = false; this.pts.renderOrder = 5; this.pts.visible = false;
-    scene.add(this.pts); this.g = g; this.live = 0;
-  }
-  emit(x, y, z, vx, vy, vz, a) {
-    const k = this.k; this.k = (k + 1) % this.n;
-    this.pos[k * 3] = x; this.pos[k * 3 + 1] = y; this.pos[k * 3 + 2] = z;
-    this.vel[k * 3] = vx; this.vel[k * 3 + 1] = vy; this.vel[k * 3 + 2] = vz;
-    this.life[k] = 0.7 + Math.random() * 0.5; this.age[k] = 0; this.alpha[k] = a; this.live = 2;
-  }
-  update(dt) {
-    if (this.live <= 0) return;
-    let any = false;
-    for (let k = 0; k < this.n; k++) {
-      if (this.life[k] <= 0) continue;
-      const t = (this.age[k] += dt) / this.life[k];
-      if (t >= 1) { this.life[k] = 0; this.alpha[k] = 0; this.pos[k * 3 + 1] = -1e5; continue; }
-      any = true;
-      const d = Math.exp(-2.2 * dt);
-      this.vel[k * 3] *= d; this.vel[k * 3 + 2] *= d; this.vel[k * 3 + 1] = this.vel[k * 3 + 1] * d - 2.5 * dt;
-      for (let a = 0; a < 3; a++) this.pos[k * 3 + a] += this.vel[k * 3 + a] * dt;
-      this.size[k] = 0.5 + 2.6 * Math.sqrt(t);
-      this.alpha[k] *= 1 - dt * 1.4;
-    }
-    if (!any) this.live--;
-    for (const a of ['position', 'aSize', 'aAlpha']) this.g.attributes[a].needsUpdate = true;
-  }
-}
-
 // ---- drops on the cockpit windscreen, cleared by two wipers
-function dropMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime: ENV.U.time, uRain: { value: 0 }, uAmb: { value: new THREE.Vector3(0.3, 0.3, 0.3) }, uWipe: { value: 1.25 } },
-    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: /* glsl */`uniform float uTime; uniform float uRain; uniform vec3 uAmb; uniform float uWipe; varying vec2 vUv;
-      float h1(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-      const float TAU = 6.2831853, SWEEP = 2.3, ARM = 0.66;
-      // seconds since the arm pivoting at P last passed over m (both arms run in phase)
-      float since(vec2 m, vec2 P, float w, float omega){
-        vec2 r = m - P; if (length(r) > ARM || r.y < 0.0) return 1e3;
-        float phi = atan(r.y, r.x); float s = (3.14159 - phi) / SWEEP; if (s < 0.0 || s > 1.0) return 1e3;
-        float w0 = acos(clamp(1.0 - 2.0 * s, -1.0, 1.0));
-        return min(mod(w - w0, TAU), mod(w - (TAU - w0), TAU)) / omega;
-      }
-      float blade(vec2 m, vec2 P, float a){ vec2 dir = vec2(cos(a), sin(a)); vec2 r = m - P; float t = clamp(dot(r, dir), 0.0, ARM); return 1.0 - smoothstep(0.004, 0.009, length(r - dir * t)) * 1.0; }
-      void main(){
-        vec2 m = vec2(vUv.x * 1.3, vUv.y * 0.75);
-        float omega = TAU / uWipe, w = mod(uTime * omega, TAU);
-        vec2 P1 = vec2(0.3, -0.04), P2 = vec2(0.92, -0.04);
-        float ts = min(since(m, P1, w, omega), since(m, P2, w, omega));
-        // drops land at random times, sitting in a jittered grid of cells
-        vec2 cell = m / 0.03; vec2 ci = floor(cell); vec2 cf = fract(cell);
-        float hA = h1(ci), hB = h1(ci + 17.3), hC = h1(ci + 41.7);
-        float tLand = hA * 2.2 / max(uRain, 0.05) + hC * 0.4;
-        float age = mod(uTime + hB * 37.0, 1e4);
-        float on = step(tLand, min(ts, age));
-        vec2 c = vec2(0.25 + 0.5 * hB, 0.25 + 0.5 * hC);
-        float rad = 0.16 + 0.22 * hA;
-        vec2 dv = cf - c; float dd = length(dv) / rad;
-        float drop = (1.0 - smoothstep(0.8, 1.0, dd)) * on;
-        // a lens: dark rim, a bright fleck where it catches the sky, the world showing (blurred) through
-        vec3 col = uAmb * (0.55 + 0.9 * smoothstep(0.7, 0.0, length(dv / rad + vec2(0.35, -0.4)))) * (0.6 + 0.4 * smoothstep(1.0, 0.6, dd));
-        float a = drop * (0.32 + 0.4 * smoothstep(0.6, 1.0, dd));
-        // the blades themselves
-        float a1 = 3.14159 - SWEEP * (0.5 - 0.5 * cos(w));
-        float b = max(blade(m, P1, a1), blade(m, P2, a1));
-        col = mix(col, vec3(0.012), b); a = max(a, b * 0.96);
-        if (a < 0.004) discard;
-        gl_FragColor = vec4(col, a);
-      }`,
-    transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, side: THREE.DoubleSide,
-  });
-}
+function dropMaterial(){return cockpitDropMaterial(ENV.U.time);}
 
 // ------------------------------------------------------------------ state
 let W = null;
@@ -344,8 +216,8 @@ export function initWeather(ctx) {
     W.spot.castShadow = false; scene.add(W.spot); scene.add(W.spot.target);
   }
   // -- rain, spray
-  W.rain = createRain(6000); scene.add(W.rain.mesh);
-  W.spray = new Spray(scene, 600);
+  W.rain = createRain(); scene.add(W.rain.mesh);
+  W.spray = new Spray(scene);
   W.dropMat = dropMaterial();
   W.offConditions = ENV.onConditions(apply);
   applyWeatherQuality(q);
@@ -363,9 +235,7 @@ export function applyWeatherQuality(quality) {
     W.nl = nl; W.nc = nc;
     W.scene.traverse(o => { for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) if (m.userData.wx === 'wx-road') m.needsUpdate = true; });
   }
-  W.rain.mesh.geometry.instanceCount = low ? 1800 : med ? 3500 : 6000;
-  W.spray.n = low ? 220 : med ? 400 : 600; W.spray.k %= W.spray.n;
-  W.spray.g.setDrawRange(0, W.spray.n);
+
 }
 
 function apply(cond, st, changed) {
@@ -475,24 +345,23 @@ export function updateWeather(dt) {
       W.spot.target.position.set(0, 0.5, -player.model.dims.L / 2 - 30).applyMatrix4(r.matrixWorld); W.spot.target.updateMatrixWorld();
     }
   }
-  // ---- rain
+  // ---- rain: two scrolling texture layers and two pooled wake cards per nearby car
+  W.spray.begin();
   if (st.rain > 0 || WEATHER.wet > .01) {
     const ru = W.rain.mat.uniforms;
-    ru.uTime.value = (ru.uTime.value + dt) % 1000; ru.uCam.value.copy(cam.position); ru.uCamVel.value.copy(W.camVel);
+    ru.uTime.value = (ru.uTime.value + dt) % 1000;
     const amb = ENV.CU.uSkyIrr.value, k = 0.16 / Math.max(st.exposure, 0.5);
     ru.uCol.value.set(amb.x, amb.y, amb.z).multiplyScalar(k * 1.3).addScalar(st.lamps * 0.02);
     ru.uAlpha.value = 0.42 * st.rain;
-    ru.uNear.value = camIn ? 1.6 : 0.6;
     // spray off the tyres
-    W.spray.mat.uniforms.uScale.value = pxPerM;
     W.spray.mat.uniforms.uCol.value.copy(ru.uCol.value).multiplyScalar(1.5);
     const sprayCar = (root, wid, len, v) => {
-      if (W.online || v < 7 || Math.random() > (W.low ? 0.4 : 1)) return;
+      if (W.online || v < 7) return;
       const e = root.matrixWorld.elements; _f.set(-e[8], 0, -e[10]).normalize();
       for (const sx of [-1, 1]) {
-        _v.set(sx * wid * 0.4, 0.25, len / 2 - 0.4).applyMatrix4(root.matrixWorld);
+        _v.set(sx * wid * 0.4, 0.4 + v * .009, len / 2 + .25 + v * .025).applyMatrix4(root.matrixWorld);
         const a = Math.min(0.35, (v - 7) / 40) * WEATHER.wet;
-        W.spray.emit(_v.x, _v.y, _v.z, _f.x * v * 0.35 + (Math.random() - 0.5) * 2, 0.8 + Math.random() * 1.6, _f.z * v * 0.35 + (Math.random() - 0.5) * 2, a);
+        W.spray.add(_v.x, _v.y, _v.z, v, a);
       }
     };
     for (const c of cars) if (c.model.root.visible) sprayCar(c.model.root, c.model.dims.W, c.model.dims.L, Math.abs(c.veh.vLong));
@@ -502,16 +371,17 @@ export function updateWeather(dt) {
   // ---- windscreen drops (cockpit view only)
   if (player && player.model !== W.lastModel) {
     W.lastModel = player.model;
-    const ws = player.model.windscreen;
+    const ws = player.model.cockpitWindscreen || player.model.windscreen;
     if (W.drops) W.drops.removeFromParent();
     W.drops = null;
     if (ws && ws.geometry.attributes.uv) {
       W.drops = new THREE.Mesh(ws.geometry, W.dropMat);
       W.drops.position.copy(ws.position); W.drops.quaternion.copy(ws.quaternion); W.drops.scale.copy(ws.scale);
       W.drops.renderOrder = 8; W.drops.castShadow = false; W.drops.frustumCulled = false;
-      ws.parent.add(W.drops);
+      (ws.parent || player.model.body).add(W.drops);
     }
   }
+  player?.model.updateCockpitWipers?.(ENV.U.time.value,st.rain>0&&camIn);
   if (W.drops) {
     W.drops.visible = st.rain > 0 && camIn;
     const amb = ENV.CU.uSkyIrr.value, k = 0.22 / Math.max(st.exposure, 0.5);

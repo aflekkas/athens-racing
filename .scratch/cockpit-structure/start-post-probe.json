@@ -1,0 +1,149 @@
+{
+  "source": "src/road.js fixed gantry at route.start; exact dimensions, colour and transform",
+  "results": [
+    {
+      "phase": "before",
+      "id": "mini",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": [
+        {
+          "name": "red-start-gantry-leg",
+          "parent": "fixed-road-start-gantry",
+          "distance": 5.098182211740293,
+          "point": [
+            1048.2578989330825,
+            9.859702946479672,
+            2494.269519920336
+          ],
+          "color": "ff3d2e"
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "id": "carrera",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": [
+        {
+          "name": "red-start-gantry-leg",
+          "parent": "fixed-road-start-gantry",
+          "distance": 5.195949486431151,
+          "point": [
+            1048.216195196627,
+            9.718794699784961,
+            2494.2820882789047
+          ],
+          "color": "ff3d2e"
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "id": "aventador_svj",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": [
+        {
+          "name": "red-start-gantry-leg",
+          "parent": "fixed-road-start-gantry",
+          "distance": 4.981778419221321,
+          "point": [
+            1048.4692240931927,
+            9.551150896074466,
+            2494.437608617031
+          ],
+          "color": "ff3d2e"
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "id": "bus",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": []
+    },
+    {
+      "phase": "after",
+      "id": "mini",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": [
+        {
+          "name": "red-start-gantry-leg",
+          "parent": "fixed-road-start-gantry",
+          "distance": 5.098182211740293,
+          "point": [
+            1048.2578989330825,
+            9.859702946479672,
+            2494.269519920336
+          ],
+          "color": "ff3d2e"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "id": "carrera",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": [
+        {
+          "name": "red-start-gantry-leg",
+          "parent": "fixed-road-start-gantry",
+          "distance": 5.195949486431151,
+          "point": [
+            1048.216195196627,
+            9.718794699784961,
+            2494.2820882789047
+          ],
+          "color": "ff3d2e"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "id": "aventador_svj",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": [
+        {
+          "name": "red-start-gantry-leg",
+          "parent": "fixed-road-start-gantry",
+          "distance": 4.981778419221321,
+          "point": [
+            1048.4692240931927,
+            9.551150896074466,
+            2494.437608617031
+          ],
+          "color": "ff3d2e"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "id": "bus",
+      "ndc": [
+        0.8,
+        0.6
+      ],
+      "hits": []
+    }
+  ]
+}

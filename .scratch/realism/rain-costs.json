@@ -1,0 +1,59 @@
+{
+  "atlasStartupMedianMs": 16.69852800000001,
+  "atlasStartupCpuMedianMs": 14.658,
+  "method": "100 warmup + 1000 sampled updates; locked low weather: 9 cars, baseline 7 emissions (~40% of 18), candidate 18 anchored wakes at 30 m/s; CPU only",
+  "before": {
+    "fallingInstances": 1800,
+    "sprayParticles": 220,
+    "allocatedFallingInstances": 6000,
+    "allocatedSprayParticles": 600,
+    "drawCalls": 2,
+    "triangles": 3600,
+    "geometryBytes": 108060,
+    "textureBytes": 0,
+    "cpuMs": {
+      "median": 0.007975000000016053,
+      "p95": 0.008955999999983533
+    },
+    "cpuBatchMs": 0.0062656
+  },
+  "after": {
+    "fallingLayers": 2,
+    "sprayCards": 18,
+    "simulatedParticles": 0,
+    "drawCalls": 2,
+    "triangles": 40,
+    "geometryBytes": 720,
+    "textureBytes": 65536,
+    "cpuMs": {
+      "median": 0.0029550000000142518,
+      "p95": 0.0079950000000224
+    },
+    "cpuBatchMs": 0.0033218
+  },
+  "splash": {
+    "before": {
+      "particles": 420,
+      "triangles": 80,
+      "drawCalls": 2,
+      "geometryBytes": 8144,
+      "textureBytes": 5461.333333333333,
+      "cpuMs": {
+        "median": 0.003998000000024149,
+        "p95": 0.0047989999999344946
+      }
+    },
+    "after": {
+      "particles": 0,
+      "cards": 2,
+      "triangles": 4,
+      "drawCalls": 2,
+      "geometryBytes": 280,
+      "extraTextureBytes": 0,
+      "cpuMs": {
+        "median": 0.0007209999999986394,
+        "p95": 0.0007520000000340588
+      }
+    }
+  }
+}

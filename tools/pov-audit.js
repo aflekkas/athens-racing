@@ -8,7 +8,7 @@ export function auditPov(model,cockpit,camera){
  let road=0,total=0;for(let d=8;d<=12;d++)for(let x=-1.5;x<=1.5;x+=.25){total++;if(visible(point(cockpit.eye.x+x,0,-model.dims.L/2-d)))road++;}
  const cluster=cockpit.povCluster||cockpit.group?.getObjectByName('instrument-cluster')||cockpit.display;
  let blocked=0,rim=0,count=0,lamps=0;
- const wheel=cockpit.wheel||cockpit.steering,wheelMeshes=[];if(wheel?.visible)wheel?.traverse(o=>{if(o.isMesh)wheelMeshes.push(o);});
+ const wheel=cockpit.povSteering||cockpit.wheel||cockpit.steering,wheelMeshes=[];if(wheel?.visible)wheel?.traverse(o=>{if(o.isMesh)wheelMeshes.push(o);});
  const cp=(x,y)=>cluster.localToWorld(new T.Vector3((x-.5)*cluster.geometry.parameters.width,(.5-y)*cluster.geometry.parameters.height,0));
  if(cluster){for(let y=.1;y<1;y+=.1)for(let x=.05;x<1;x+=.1){const p=cp(x,y);count++;if(!visible(p))blocked++;if(!unobstructed(eye,p,wheelMeshes))rim++;}
  for(const [x,y]of cockpitLampLayout(model.cockpitView?'pov':model.spec.body))if(!visible(cp(x/1024,y/(model.cockpitView?192:384))))lamps++;}
