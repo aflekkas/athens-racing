@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Sit in each car’s own cockpit again: its dashboard, instruments, vents and steering wheel, with a slightly higher seat for a clear view of the road.
+  ![Restored 911 dashboard and five instruments from the raised driver seat](assets/changelog/2026.10.16.1/authored-interiors.webp "Each car’s own interior, with the road in view.")
+
 - Greek-style facades, rooftop details, street furniture and OpenStreetMap trees bring the roads to life. World detail in Graphics turns them off; your choice is saved.
   ![Psychiko with World detail off and on](assets/changelog/2026.10.16.1/world-detail.webp "Choose the detail you want, without changing the lighting look.")
 

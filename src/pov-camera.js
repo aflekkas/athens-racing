@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import {DEFAULTS} from './settings.js';
 
-// Owner-locked: default cockpit view reserves >=80% of the frame for the road.
-// The mesh ID-pass guard in tools/pov-camera-mask.mjs validates every config.
-export const POV_MIN_WINDSCREEN = .80;
+// Owner clarified: seated camera, substantial cabin, roughly 65–70% road/window.
+// Percentage is a reported proxy with a soft warning band, never a geometry
+// stripping target. Road, instruments, structure and identity are hard guards.
+export const POV_MIN_WINDSCREEN = .55;
+export const POV_MAX_WINDSCREEN = .78;
 const v=()=>new THREE.Vector3();
 export function opaqueCabinMeshes(model,includeDriver=false){
  const meshes=[];model.body.traverse(o=>{if(!o.isMesh)return;let visible=true;for(let p=o;p&&p!==model.body;p=p.parent)if(!p.visible||(!includeDriver&&p.name==='driver'))visible=false;
@@ -22,19 +23,12 @@ export function windscreenBounds(model){
 export function derivePovEye(model,cockpit){
  const eye=model.seat.clone(),glass=windscreenBounds(model),wheel=cockpit.steering||cockpit.wheel;
  if(wheel)eye.x=model.body.worldToLocal(wheel.getWorldPosition(v())).x;
- const cluster=cockpit.group?.getObjectByName('instrument-cluster')||cockpit.display;
- cockpit.eyePitch=-.055;
- eye.z-=.04;
- if(cluster){
-  const centre=model.body.worldToLocal(cluster.getWorldPosition(v()));
-  // Put the actual instrument face in the bottom band at default cockpit FOV.
-  // This retains the authored seated station and never moves its geometry.
-  const down=.055+Math.atan(.80*Math.tan(THREE.MathUtils.degToRad(DEFAULTS.cockpitFov/2)));
-  eye.y=centre.y+Math.max(.15,eye.z-centre.z)*Math.tan(down);
-  eye.y=THREE.MathUtils.clamp(eye.y,model.seat.y-.04,model.seat.y+.16);
- }else eye.y+=.08;
- if(glass&&!model.spec.twoWheeler)eye.y=Math.min(eye.y,glass.max.y-.08);
- cockpit.eye=eye;cockpit.eyePitch=-.055;
+ cockpit.eyePitch=-.07;
+ eye.z=model.seat.z-(model.spec.nativeFleet?.03:.05);
+ eye.y=model.spec.nativeFleet?model.seat.y+.06:Math.min(model.seat.y+.15,model.shape.H-.11);
+ if(glass&&!model.spec.twoWheeler)eye.y=Math.min(eye.y,glass.max.y+.08);
+ if(model.spec.twoWheeler){eye.copy(model.seat).add(new THREE.Vector3(0,-.05,.35));cockpit.eyePitch=-.12;}
+ cockpit.eye=eye;
  cockpit.eyeGeometry={windscreen:glass?{min:glass.min.toArray(),max:glass.max.toArray()}:null,legacyEye:model.seat.toArray()};
  return eye;
 }

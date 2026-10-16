@@ -1,0 +1,9654 @@
+[
+  {
+    "id": "mini",
+    "geometryBytes": 403120,
+    "exterior": 3296,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1808,
+    "rider": 0,
+    "beforeInterior": 554,
+    "roadFromEye": 5.915,
+    "aperture": 58.19765625,
+    "unobstructed": 53.78330078125,
+    "eye": [
+      -0.371305,
+      1.305,
+      0.24
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 86254,
+        "minX": 374,
+        "maxX": 1279,
+        "minY": 581,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 45203,
+        "minX": 400,
+        "maxX": 1279,
+        "minY": 496,
+        "maxY": 600
+      },
+      "pillar": {
+        "pixels": 33428,
+        "minX": 203,
+        "maxX": 394,
+        "minY": 150,
+        "maxY": 581
+      },
+      "header": {
+        "pixels": 88990,
+        "minX": 224,
+        "maxX": 1279,
+        "minY": 107,
+        "maxY": 207
+      },
+      "door-top": {
+        "pixels": 35450,
+        "minX": 37,
+        "maxX": 399,
+        "minY": 563,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13194,
+        "minX": 572,
+        "maxX": 707,
+        "minY": 659,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 7595,
+        "minX": 159,
+        "maxX": 1049,
+        "minY": 208,
+        "maxY": 604
+      },
+      "wiper": {
+        "pixels": 1556,
+        "minX": 398,
+        "maxX": 1235,
+        "minY": 584,
+        "maxY": 594
+      },
+      "binnacle": {
+        "pixels": 17099,
+        "minX": 554,
+        "maxX": 725,
+        "minY": 570,
+        "maxY": 694
+      },
+      "console": {
+        "pixels": 55733,
+        "minX": 253,
+        "maxX": 1159,
+        "minY": 556,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "z4",
+    "geometryBytes": 340284,
+    "exterior": 2642,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1372,
+    "rider": 0,
+    "beforeInterior": 554,
+    "roadFromEye": 5.332,
+    "aperture": 47.90693359375,
+    "unobstructed": 43.891796875,
+    "eye": [
+      -0.40076,
+      1.19,
+      0.42
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 99652,
+        "minX": 326,
+        "maxX": 1279,
+        "minY": 583,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 41115,
+        "minX": 377,
+        "maxX": 1279,
+        "minY": 494,
+        "maxY": 582
+      },
+      "pillar": {
+        "pixels": 56913,
+        "minX": 0,
+        "maxX": 367,
+        "minY": 88,
+        "maxY": 566
+      },
+      "header": {
+        "pixels": 93089,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 105
+      },
+      "door-top": {
+        "pixels": 42190,
+        "minX": 0,
+        "maxX": 377,
+        "minY": 541,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 11822,
+        "minX": 574,
+        "maxX": 705,
+        "minY": 678,
+        "maxY": 779
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 11313,
+        "minX": 149,
+        "maxX": 1279,
+        "minY": 106,
+        "maxY": 578
+      },
+      "wiper": {
+        "pixels": 3008,
+        "minX": 376,
+        "maxX": 1272,
+        "minY": 562,
+        "maxY": 576
+      },
+      "binnacle": {
+        "pixels": 22174,
+        "minX": 537,
+        "maxX": 742,
+        "minY": 569,
+        "maxY": 694
+      },
+      "console": {
+        "pixels": 61908,
+        "minX": 169,
+        "maxX": 1110,
+        "minY": 545,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "taxi",
+    "geometryBytes": 361772,
+    "exterior": 2874,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1356,
+    "rider": 0,
+    "beforeInterior": 576,
+    "roadFromEye": 5.7445,
+    "aperture": 46.65478515625,
+    "unobstructed": 44.31884765625,
+    "eye": [
+      -0.393235,
+      1.3099999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 114406,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 551,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 23920,
+        "minX": 427,
+        "maxX": 1279,
+        "minY": 499,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 29743,
+        "minX": 212,
+        "maxX": 422,
+        "minY": 143,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 58888,
+        "minX": 251,
+        "maxX": 1279,
+        "minY": 79,
+        "maxY": 152
+      },
+      "door-top": {
+        "pixels": 49684,
+        "minX": 0,
+        "maxX": 427,
+        "minY": 516,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5788,
+        "minX": 240,
+        "maxX": 1076,
+        "minY": 153,
+        "maxY": 543
+      },
+      "wiper": {
+        "pixels": 2141,
+        "minX": 427,
+        "maxX": 1154,
+        "minY": 534,
+        "maxY": 545
+      },
+      "binnacle": {
+        "pixels": 20784,
+        "minX": 541,
+        "maxX": 738,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 58033,
+        "minX": 208,
+        "maxX": 1220,
+        "minY": 534,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 85768,
+        "minX": 138,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 78
+      }
+    }
+  },
+  {
+    "id": "carrera",
+    "geometryBytes": 343720,
+    "exterior": 2822,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1550,
+    "rider": 0,
+    "beforeInterior": 828,
+    "roadFromEye": 4.305499999999999,
+    "aperture": 50.8123046875,
+    "unobstructed": 50.030859375,
+    "eye": [
+      -0.38872,
+      1.15,
+      0.31
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 129352,
+        "minX": 412,
+        "maxX": 1279,
+        "minY": 529,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 8002,
+        "minX": 460,
+        "maxX": 1231,
+        "minY": 493,
+        "maxY": 508
+      },
+      "pillar": {
+        "pixels": 44804,
+        "minX": 119,
+        "maxX": 1279,
+        "minY": 55,
+        "maxY": 497
+      },
+      "header": {
+        "pixels": 54918,
+        "minX": 150,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 77
+      },
+      "door-top": {
+        "pixels": 62203,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 8993,
+        "minX": 255,
+        "maxX": 1264,
+        "minY": 78,
+        "maxY": 506
+      },
+      "wiper": {
+        "pixels": 2736,
+        "minX": 459,
+        "maxX": 1101,
+        "minY": 489,
+        "maxY": 498
+      },
+      "binnacle": {
+        "pixels": 23140,
+        "minX": 529,
+        "maxX": 750,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 50212,
+        "minX": 166,
+        "maxX": 1113,
+        "minY": 642,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "gr_yaris",
+    "geometryBytes": 398624,
+    "exterior": 3421,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1398,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.897500000000001,
+    "aperture": 46.2416015625,
+    "unobstructed": 45.3328125,
+    "eye": [
+      -0.388075,
+      1.305,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 118377,
+        "minX": 373,
+        "maxX": 1279,
+        "minY": 535,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 9306,
+        "minX": 503,
+        "maxX": 1279,
+        "minY": 519,
+        "maxY": 560
+      },
+      "pillar": {
+        "pixels": 34600,
+        "minX": 171,
+        "maxX": 426,
+        "minY": 136,
+        "maxY": 541
+      },
+      "header": {
+        "pixels": 68761,
+        "minX": 206,
+        "maxX": 1279,
+        "minY": 66,
+        "maxY": 148
+      },
+      "door-top": {
+        "pixels": 46900,
+        "minX": 0,
+        "maxX": 431,
+        "minY": 524,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6913,
+        "minX": 224,
+        "maxX": 1104,
+        "minY": 149,
+        "maxY": 556
+      },
+      "wiper": {
+        "pixels": 276,
+        "minX": 1149,
+        "maxX": 1173,
+        "minY": 543,
+        "maxY": 555
+      },
+      "binnacle": {
+        "pixels": 20734,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 53579,
+        "minX": 246,
+        "maxX": 1055,
+        "minY": 548,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 74174,
+        "minX": 107,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 65
+      }
+    }
+  },
+  {
+    "id": "gtv",
+    "geometryBytes": 404460,
+    "exterior": 3757,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1728,
+    "rider": 0,
+    "beforeInterior": 678,
+    "roadFromEye": 5.9399999999999995,
+    "aperture": 52.107421875,
+    "unobstructed": 48.27216796875,
+    "eye": [
+      -0.3397,
+      1.1649999999999998,
+      0.14
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 162060,
+        "minX": 390,
+        "maxX": 1279,
+        "minY": 553,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 39273,
+        "minX": 456,
+        "maxX": 1264,
+        "minY": 477,
+        "maxY": 552
+      },
+      "pillar": {
+        "pixels": 40215,
+        "minX": 211,
+        "maxX": 1279,
+        "minY": 87,
+        "maxY": 533
+      },
+      "header": {
+        "pixels": 81045,
+        "minX": 260,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 102
+      },
+      "door-top": {
+        "pixels": 55340,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 512,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 13606,
+        "minX": 448,
+        "maxX": 831,
+        "minY": 538,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 2906,
+        "minX": 604,
+        "maxX": 675,
+        "minY": 690,
+        "maxY": 765
+      },
+      "wheel-badge": {
+        "pixels": 1356,
+        "minX": 619,
+        "maxX": 660,
+        "minY": 707,
+        "maxY": 750
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5224,
+        "minX": 312,
+        "maxX": 1107,
+        "minY": 103,
+        "maxY": 522
+      },
+      "wiper": {
+        "pixels": 4211,
+        "minX": 456,
+        "maxX": 1143,
+        "minY": 533,
+        "maxY": 546
+      },
+      "binnacle": {
+        "pixels": 11264,
+        "minX": 554,
+        "maxX": 725,
+        "minY": 581,
+        "maxY": 651
+      },
+      "console": {
+        "pixels": 23718,
+        "minX": 289,
+        "maxX": 1014,
+        "minY": 659,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "golf",
+    "geometryBytes": 339336,
+    "exterior": 2670,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 6.7775,
+    "aperture": 46.58173828125,
+    "unobstructed": 42.74560546875,
+    "eye": [
+      -0.386785,
+      1.2999999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 106248,
+        "minX": 391,
+        "maxX": 1279,
+        "minY": 555,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 39282,
+        "minX": 447,
+        "maxX": 1279,
+        "minY": 476,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 25588,
+        "minX": 294,
+        "maxX": 444,
+        "minY": 166,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 48235,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 103,
+        "maxY": 170
+      },
+      "door-top": {
+        "pixels": 48889,
+        "minX": 0,
+        "maxX": 447,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6204,
+        "minX": 246,
+        "maxX": 1070,
+        "minY": 171,
+        "maxY": 546
+      },
+      "wiper": {
+        "pixels": 2949,
+        "minX": 446,
+        "maxX": 1153,
+        "minY": 529,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 54026,
+        "minX": 223,
+        "maxX": 1047,
+        "minY": 535,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 103933,
+        "minX": 201,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 102
+      }
+    }
+  },
+  {
+    "id": "corolla",
+    "geometryBytes": 339528,
+    "exterior": 2672,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 5.965,
+    "aperture": 45.6083984375,
+    "unobstructed": 43.12744140625,
+    "eye": [
+      -0.3827,
+      1.293,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 109603,
+        "minX": 397,
+        "maxX": 1279,
+        "minY": 549,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 25405,
+        "minX": 458,
+        "maxX": 1265,
+        "minY": 491,
+        "maxY": 545
+      },
+      "pillar": {
+        "pixels": 24185,
+        "minX": 315,
+        "maxX": 1279,
+        "minY": 178,
+        "maxY": 532
+      },
+      "header": {
+        "pixels": 47937,
+        "minX": 365,
+        "maxX": 1279,
+        "minY": 112,
+        "maxY": 179
+      },
+      "door-top": {
+        "pixels": 48986,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 506,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5749,
+        "minX": 269,
+        "maxX": 1067,
+        "minY": 180,
+        "maxY": 539
+      },
+      "wiper": {
+        "pixels": 3339,
+        "minX": 457,
+        "maxX": 1128,
+        "minY": 524,
+        "maxY": 535
+      },
+      "binnacle": {
+        "pixels": 20610,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 52723,
+        "minX": 234,
+        "maxX": 1038,
+        "minY": 532,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 111194,
+        "minX": 210,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 111
+      }
+    }
+  },
+  {
+    "id": "superb",
+    "geometryBytes": 367368,
+    "exterior": 2962,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1342,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 8.5805,
+    "aperture": 44.326953125,
+    "unobstructed": 41.1880859375,
+    "eye": [
+      -0.40076,
+      1.2899999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 133313,
+        "minX": 413,
+        "maxX": 1279,
+        "minY": 516,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 32142,
+        "minX": 466,
+        "maxX": 1224,
+        "minY": 451,
+        "maxY": 512
+      },
+      "pillar": {
+        "pixels": 19838,
+        "minX": 341,
+        "maxX": 1279,
+        "minY": 173,
+        "maxY": 498
+      },
+      "header": {
+        "pixels": 38168,
+        "minX": 384,
+        "maxX": 1279,
+        "minY": 120,
+        "maxY": 174
+      },
+      "door-top": {
+        "pixels": 64771,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 477,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4035,
+        "minX": 305,
+        "maxX": 1014,
+        "minY": 175,
+        "maxY": 504
+      },
+      "wiper": {
+        "pixels": 3281,
+        "minX": 466,
+        "maxX": 1093,
+        "minY": 493,
+        "maxY": 503
+      },
+      "binnacle": {
+        "pixels": 19214,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 574,
+        "maxY": 688
+      },
+      "console": {
+        "pixels": 57490,
+        "minX": 215,
+        "maxX": 1049,
+        "minY": 525,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 116832,
+        "minX": 229,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 119
+      }
+    }
+  },
+  {
+    "id": "police_octavia",
+    "geometryBytes": 386632,
+    "exterior": 3154,
+    "lod1": 552,
+    "lod2": 272,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1342,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 7.2445,
+    "aperture": 44.1646484375,
+    "unobstructed": 40.73984375,
+    "eye": [
+      -0.393235,
+      1.3279999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 112704,
+        "minX": 412,
+        "maxX": 1279,
+        "minY": 544,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 35070,
+        "minX": 460,
+        "maxX": 1250,
+        "minY": 470,
+        "maxY": 540
+      },
+      "pillar": {
+        "pixels": 22280,
+        "minX": 317,
+        "maxX": 1279,
+        "minY": 188,
+        "maxY": 527
+      },
+      "header": {
+        "pixels": 43544,
+        "minX": 364,
+        "maxX": 1279,
+        "minY": 128,
+        "maxY": 189
+      },
+      "door-top": {
+        "pixels": 53510,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 503,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4890,
+        "minX": 287,
+        "maxX": 1053,
+        "minY": 190,
+        "maxY": 534
+      },
+      "wiper": {
+        "pixels": 3443,
+        "minX": 459,
+        "maxX": 1115,
+        "minY": 521,
+        "maxY": 531
+      },
+      "binnacle": {
+        "pixels": 20050,
+        "minX": 544,
+        "maxX": 735,
+        "minY": 572,
+        "maxY": 690
+      },
+      "console": {
+        "pixels": 53799,
+        "minX": 264,
+        "maxX": 1054,
+        "minY": 529,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 129292,
+        "minX": 177,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 127
+      }
+    }
+  },
+  {
+    "id": "mini_jcw",
+    "geometryBytes": 326372,
+    "exterior": 2498,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1834,
+    "rider": 0,
+    "beforeInterior": 578,
+    "roadFromEye": 5.977,
+    "aperture": 46.84775390625,
+    "unobstructed": 43.31396484375,
+    "eye": [
+      -0.371305,
+      1.25,
+      0.29000000000000004
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 107584,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 550,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 36186,
+        "minX": 419,
+        "maxX": 1279,
+        "minY": 485,
+        "maxY": 553
+      },
+      "pillar": {
+        "pixels": 27337,
+        "minX": 267,
+        "maxX": 415,
+        "minY": 153,
+        "maxY": 530
+      },
+      "header": {
+        "pixels": 50480,
+        "minX": 318,
+        "maxX": 1279,
+        "minY": 92,
+        "maxY": 159
+      },
+      "door-top": {
+        "pixels": 49984,
+        "minX": 0,
+        "maxX": 418,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13194,
+        "minX": 572,
+        "maxX": 707,
+        "minY": 659,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6458,
+        "minX": 202,
+        "maxX": 1030,
+        "minY": 160,
+        "maxY": 542
+      },
+      "wiper": {
+        "pixels": 4564,
+        "minX": 418,
+        "maxX": 1186,
+        "minY": 530,
+        "maxY": 543
+      },
+      "binnacle": {
+        "pixels": 14724,
+        "minX": 558,
+        "maxX": 721,
+        "minY": 572,
+        "maxY": 673
+      },
+      "console": {
+        "pixels": 60856,
+        "minX": 177,
+        "maxX": 1144,
+        "minY": 554,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 94002,
+        "minX": 200,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 91
+      }
+    }
+  },
+  {
+    "id": "cle",
+    "geometryBytes": 424964,
+    "exterior": 3525,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.325,
+    "aperture": 49.09892578125,
+    "unobstructed": 48.13251953125,
+    "eye": [
+      -0.400115,
+      1.23,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 151658,
+        "minX": 399,
+        "maxX": 1279,
+        "minY": 502,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 9896,
+        "minX": 406,
+        "maxX": 1205,
+        "minY": 479,
+        "maxY": 510
+      },
+      "pillar": {
+        "pixels": 32711,
+        "minX": 194,
+        "maxX": 403,
+        "minY": 77,
+        "maxY": 494
+      },
+      "header": {
+        "pixels": 70737,
+        "minX": 235,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 87
+      },
+      "door-top": {
+        "pixels": 54162,
+        "minX": 0,
+        "maxX": 406,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6866,
+        "minX": 213,
+        "maxX": 1147,
+        "minY": 88,
+        "maxY": 498
+      },
+      "wiper": {
+        "pixels": 3949,
+        "minX": 406,
+        "maxX": 1164,
+        "minY": 490,
+        "maxY": 500
+      },
+      "binnacle": {
+        "pixels": 20528,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 66923,
+        "minX": 61,
+        "maxX": 1279,
+        "minY": 557,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "gla",
+    "geometryBytes": 330372,
+    "exterior": 2548,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.835,
+    "aperture": 52.329296875,
+    "unobstructed": 49.54384765625,
+    "eye": [
+      -0.39431,
+      1.395,
+      0.13
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 98931,
+        "minX": 401,
+        "maxX": 1279,
+        "minY": 549,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 28523,
+        "minX": 440,
+        "maxX": 1272,
+        "minY": 486,
+        "maxY": 552
+      },
+      "pillar": {
+        "pixels": 26952,
+        "minX": 259,
+        "maxX": 435,
+        "minY": 118,
+        "maxY": 524
+      },
+      "header": {
+        "pixels": 49439,
+        "minX": 300,
+        "maxX": 1279,
+        "minY": 64,
+        "maxY": 127
+      },
+      "door-top": {
+        "pixels": 43842,
+        "minX": 0,
+        "maxX": 439,
+        "minY": 514,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5754,
+        "minX": 244,
+        "maxX": 1028,
+        "minY": 128,
+        "maxY": 540
+      },
+      "wiper": {
+        "pixels": 2044,
+        "minX": 439,
+        "maxX": 1143,
+        "minY": 532,
+        "maxY": 543
+      },
+      "binnacle": {
+        "pixels": 20630,
+        "minX": 541,
+        "maxX": 738,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 69668,
+        "minX": 206,
+        "maxX": 1279,
+        "minY": 523,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 65140,
+        "minX": 225,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 63
+      }
+    }
+  },
+  {
+    "id": "gla45",
+    "geometryBytes": 370404,
+    "exterior": 2965,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.6015,
+    "aperture": 59.89169921875,
+    "unobstructed": 58.53525390625,
+    "eye": [
+      -0.39753499999999997,
+      1.315,
+      0.13
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 124911,
+        "minX": 399,
+        "maxX": 1279,
+        "minY": 505,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 13890,
+        "minX": 414,
+        "maxX": 1170,
+        "minY": 479,
+        "maxY": 521
+      },
+      "pillar": {
+        "pixels": 38337,
+        "minX": 223,
+        "maxX": 411,
+        "minY": 0,
+        "maxY": 500
+      },
+      "header": {
+        "pixels": 2873,
+        "minX": 322,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 2
+      },
+      "door-top": {
+        "pixels": 48197,
+        "minX": 0,
+        "maxX": 413,
+        "minY": 483,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6827,
+        "minX": 261,
+        "maxX": 1139,
+        "minY": 3,
+        "maxY": 496
+      },
+      "wiper": {
+        "pixels": 3908,
+        "minX": 413,
+        "maxX": 1164,
+        "minY": 501,
+        "maxY": 511
+      },
+      "binnacle": {
+        "pixels": 20630,
+        "minX": 541,
+        "maxX": 738,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 87470,
+        "minX": 65,
+        "maxX": 1279,
+        "minY": 523,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "cla",
+    "geometryBytes": 425732,
+    "exterior": 3533,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1814,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.254,
+    "aperture": 44.70107421875,
+    "unobstructed": 44.6982421875,
+    "eye": [
+      -0.39345,
+      1.2149999999999999,
+      0.15999999999999998
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 99430,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 478,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 29,
+        "minX": 427,
+        "maxX": 455,
+        "minY": 483,
+        "maxY": 483
+      },
+      "pillar": {
+        "pixels": 19335,
+        "minX": 320,
+        "maxX": 414,
+        "minY": 134,
+        "maxY": 464
+      },
+      "header": {
+        "pixels": 41543,
+        "minX": 369,
+        "maxX": 1279,
+        "minY": 76,
+        "maxY": 133
+      },
+      "door-top": {
+        "pixels": 54930,
+        "minX": 0,
+        "maxX": 415,
+        "minY": 446,
+        "maxY": 785
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 3680,
+        "minX": 270,
+        "maxX": 1004,
+        "minY": 134,
+        "maxY": 461
+      },
+      "wiper": {
+        "pixels": 3065,
+        "minX": 415,
+        "maxX": 1140,
+        "minY": 463,
+        "maxY": 472
+      },
+      "binnacle": {
+        "pixels": 19708,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 575,
+        "maxY": 690
+      },
+      "console": {
+        "pixels": 152554,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 520,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 72416,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 75
+      }
+    }
+  },
+  {
+    "id": "aventador_svj",
+    "geometryBytes": 230836,
+    "exterior": 1474,
+    "lod1": 516,
+    "lod2": 236,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1478,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.3915,
+    "aperture": 37.00126953125,
+    "unobstructed": 36.58984375,
+    "eye": [
+      -0.45106999999999997,
+      1.0259999999999998,
+      -0.08
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 159340,
+        "minX": 385,
+        "maxX": 1279,
+        "minY": 515,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 4213,
+        "minX": 476,
+        "maxX": 1190,
+        "minY": 507,
+        "maxY": 514
+      },
+      "pillar": {
+        "pixels": 36416,
+        "minX": 138,
+        "maxX": 427,
+        "minY": 147,
+        "maxY": 513
+      },
+      "header": {
+        "pixels": 95183,
+        "minX": 144,
+        "maxX": 1279,
+        "minY": 53,
+        "maxY": 161
+      },
+      "door-top": {
+        "pixels": 82216,
+        "minX": 0,
+        "maxX": 428,
+        "minY": 479,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 9216,
+        "minX": 585,
+        "maxX": 694,
+        "minY": 664,
+        "maxY": 794
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 10460,
+        "minX": 166,
+        "maxX": 1279,
+        "minY": 162,
+        "maxY": 507
+      },
+      "wiper": {
+        "pixels": 4211,
+        "minX": 428,
+        "maxX": 1226,
+        "minY": 499,
+        "maxY": 510
+      },
+      "binnacle": {
+        "pixels": 21948,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 36713,
+        "minX": 242,
+        "maxX": 1090,
+        "minY": 660,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 63017,
+        "minX": 39,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 52
+      }
+    }
+  },
+  {
+    "id": "huracan",
+    "geometryBytes": 347364,
+    "exterior": 2700,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1478,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 3.9,
+    "aperture": 50.8341796875,
+    "unobstructed": 50.833203125,
+    "eye": [
+      -0.415595,
+      1.02,
+      -0.11
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 147540,
+        "minX": 397,
+        "maxX": 1279,
+        "minY": 530,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 10,
+        "minX": 408,
+        "maxX": 417,
+        "minY": 545,
+        "maxY": 545
+      },
+      "pillar": {
+        "pixels": 44770,
+        "minX": 365,
+        "maxX": 756,
+        "minY": 55,
+        "maxY": 541
+      },
+      "header": {
+        "pixels": 29407,
+        "minX": 790,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 91
+      },
+      "door-top": {
+        "pixels": 81127,
+        "minX": 0,
+        "maxX": 441,
+        "minY": 499,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 9216,
+        "minX": 585,
+        "maxX": 694,
+        "minY": 664,
+        "maxY": 794
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 12315,
+        "minX": 112,
+        "maxX": 1279,
+        "minY": 92,
+        "maxY": 543
+      },
+      "wiper": {
+        "pixels": 5354,
+        "minX": 409,
+        "maxX": 1257,
+        "minY": 520,
+        "maxY": 533
+      },
+      "binnacle": {
+        "pixels": 21064,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 570,
+        "maxY": 684
+      },
+      "console": {
+        "pixels": 31510,
+        "minX": 277,
+        "maxX": 1079,
+        "minY": 673,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "ibiza",
+    "geometryBytes": 284516,
+    "exterior": 2062,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 5.1265,
+    "aperture": 54.91064453125,
+    "unobstructed": 52.42001953125,
+    "eye": [
+      -0.35259999999999997,
+      1.23,
+      0.22000000000000003
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 119954,
+        "minX": 422,
+        "maxX": 1279,
+        "minY": 556,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 25504,
+        "minX": 448,
+        "maxX": 1261,
+        "minY": 504,
+        "maxY": 559
+      },
+      "pillar": {
+        "pixels": 34499,
+        "minX": 254,
+        "maxX": 1279,
+        "minY": 97,
+        "maxY": 541
+      },
+      "header": {
+        "pixels": 68159,
+        "minX": 305,
+        "maxX": 1279,
+        "minY": 17,
+        "maxY": 106
+      },
+      "door-top": {
+        "pixels": 44181,
+        "minX": 29,
+        "maxX": 1279,
+        "minY": 519,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6821,
+        "minX": 250,
+        "maxX": 1068,
+        "minY": 107,
+        "maxY": 550
+      },
+      "wiper": {
+        "pixels": 3009,
+        "minX": 447,
+        "maxX": 1125,
+        "minY": 538,
+        "maxY": 550
+      },
+      "binnacle": {
+        "pixels": 21056,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 28901,
+        "minX": 262,
+        "maxX": 1279,
+        "minY": 672,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 16732,
+        "minX": 287,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 16
+      }
+    }
+  },
+  {
+    "id": "panda",
+    "geometryBytes": 273380,
+    "exterior": 1946,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1380,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.819,
+    "aperture": 53.3654296875,
+    "unobstructed": 52.70078125,
+    "eye": [
+      -0.33927,
+      1.39,
+      0.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 104022,
+        "minX": 420,
+        "maxX": 1279,
+        "minY": 584,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 6806,
+        "minX": 600,
+        "maxX": 1063,
+        "minY": 560,
+        "maxY": 583
+      },
+      "pillar": {
+        "pixels": 45120,
+        "minX": 238,
+        "maxX": 427,
+        "minY": 125,
+        "maxY": 634
+      },
+      "header": {
+        "pixels": 71359,
+        "minX": 300,
+        "maxX": 1279,
+        "minY": 41,
+        "maxY": 134
+      },
+      "door-top": {
+        "pixels": 19582,
+        "minX": 205,
+        "maxX": 430,
+        "minY": 615,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 9315,
+        "minX": 195,
+        "maxX": 1085,
+        "minY": 135,
+        "maxY": 658
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 22570,
+        "minX": 534,
+        "maxX": 745,
+        "minY": 567,
+        "maxY": 696
+      },
+      "console": {
+        "pixels": 22025,
+        "minX": 429,
+        "maxX": 1279,
+        "minY": 688,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 41152,
+        "minX": 253,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 40
+      }
+    }
+  },
+  {
+    "id": "yaris",
+    "geometryBytes": 268388,
+    "exterior": 1894,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1394,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.6975,
+    "aperture": 48.48017578125,
+    "unobstructed": 48.2513671875,
+    "eye": [
+      -0.3569,
+      1.3499999999999999,
+      0.14
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 118771,
+        "minX": 421,
+        "maxX": 1279,
+        "minY": 573,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 2343,
+        "minX": 511,
+        "maxX": 1068,
+        "minY": 559,
+        "maxY": 572
+      },
+      "pillar": {
+        "pixels": 33044,
+        "minX": 257,
+        "maxX": 1279,
+        "minY": 149,
+        "maxY": 579
+      },
+      "header": {
+        "pixels": 57650,
+        "minX": 307,
+        "maxX": 1279,
+        "minY": 81,
+        "maxY": 157
+      },
+      "door-top": {
+        "pixels": 26976,
+        "minX": 157,
+        "maxX": 1279,
+        "minY": 561,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6154,
+        "minX": 260,
+        "maxX": 1051,
+        "minY": 158,
+        "maxY": 593
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 46457,
+        "minX": 832,
+        "maxX": 1062,
+        "minY": 404,
+        "maxY": 627
+      },
+      "console": {
+        "pixels": 25078,
+        "minX": 323,
+        "maxX": 1279,
+        "minY": 669,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 82998,
+        "minX": 204,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 80
+      }
+    }
+  },
+  {
+    "id": "e36",
+    "geometryBytes": 286052,
+    "exterior": 2078,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1474,
+    "rider": 0,
+    "beforeInterior": 678,
+    "roadFromEye": 6.4265,
+    "aperture": 49.38515625,
+    "unobstructed": 46.22998046875,
+    "eye": [
+      -0.36507,
+      1.21,
+      0.21000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 134354,
+        "minX": 417,
+        "maxX": 1279,
+        "minY": 538,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 32309,
+        "minX": 445,
+        "maxX": 1263,
+        "minY": 476,
+        "maxY": 541
+      },
+      "pillar": {
+        "pixels": 25026,
+        "minX": 299,
+        "maxX": 1279,
+        "minY": 143,
+        "maxY": 522
+      },
+      "header": {
+        "pixels": 47988,
+        "minX": 348,
+        "maxX": 1279,
+        "minY": 83,
+        "maxY": 148
+      },
+      "door-top": {
+        "pixels": 50128,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 501,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5234,
+        "minX": 256,
+        "maxX": 1007,
+        "minY": 149,
+        "maxY": 530
+      },
+      "wiper": {
+        "pixels": 3606,
+        "minX": 444,
+        "maxX": 1124,
+        "minY": 520,
+        "maxY": 531
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 33654,
+        "minX": 220,
+        "maxX": 1022,
+        "minY": 665,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 81369,
+        "minX": 252,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 82
+      }
+    }
+  },
+  {
+    "id": "cle200",
+    "geometryBytes": 424964,
+    "exterior": 3525,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.325,
+    "aperture": 49.09892578125,
+    "unobstructed": 48.13251953125,
+    "eye": [
+      -0.400115,
+      1.23,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 151658,
+        "minX": 399,
+        "maxX": 1279,
+        "minY": 502,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 9896,
+        "minX": 406,
+        "maxX": 1205,
+        "minY": 479,
+        "maxY": 510
+      },
+      "pillar": {
+        "pixels": 32711,
+        "minX": 194,
+        "maxX": 403,
+        "minY": 77,
+        "maxY": 494
+      },
+      "header": {
+        "pixels": 70737,
+        "minX": 235,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 87
+      },
+      "door-top": {
+        "pixels": 54162,
+        "minX": 0,
+        "maxX": 406,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6866,
+        "minX": 213,
+        "maxX": 1147,
+        "minY": 88,
+        "maxY": 498
+      },
+      "wiper": {
+        "pixels": 3949,
+        "minX": 406,
+        "maxX": 1164,
+        "minY": 490,
+        "maxY": 500
+      },
+      "binnacle": {
+        "pixels": 20528,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 66923,
+        "minX": 61,
+        "maxX": 1279,
+        "minY": 557,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "cle450",
+    "geometryBytes": 428804,
+    "exterior": 3565,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      84,
+      84,
+      84,
+      84
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.325,
+    "aperture": 49.09892578125,
+    "unobstructed": 48.13251953125,
+    "eye": [
+      -0.400115,
+      1.23,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 151658,
+        "minX": 399,
+        "maxX": 1279,
+        "minY": 502,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 9896,
+        "minX": 406,
+        "maxX": 1205,
+        "minY": 479,
+        "maxY": 510
+      },
+      "pillar": {
+        "pixels": 32711,
+        "minX": 194,
+        "maxX": 403,
+        "minY": 77,
+        "maxY": 494
+      },
+      "header": {
+        "pixels": 70737,
+        "minX": 235,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 87
+      },
+      "door-top": {
+        "pixels": 54162,
+        "minX": 0,
+        "maxX": 406,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6866,
+        "minX": 213,
+        "maxX": 1147,
+        "minY": 88,
+        "maxY": 498
+      },
+      "wiper": {
+        "pixels": 3949,
+        "minX": 406,
+        "maxX": 1164,
+        "minY": 490,
+        "maxY": 500
+      },
+      "binnacle": {
+        "pixels": 20528,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 66923,
+        "minX": 61,
+        "maxX": 1279,
+        "minY": 557,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "cle53",
+    "geometryBytes": 346628,
+    "exterior": 2709,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.325,
+    "aperture": 48.511328125,
+    "unobstructed": 47.49892578125,
+    "eye": [
+      -0.41624,
+      1.23,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 153976,
+        "minX": 390,
+        "maxX": 1279,
+        "minY": 502,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 10367,
+        "minX": 394,
+        "maxX": 1230,
+        "minY": 479,
+        "maxY": 510
+      },
+      "pillar": {
+        "pixels": 33475,
+        "minX": 165,
+        "maxX": 390,
+        "minY": 75,
+        "maxY": 494
+      },
+      "header": {
+        "pixels": 73000,
+        "minX": 201,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 87
+      },
+      "door-top": {
+        "pixels": 52431,
+        "minX": 0,
+        "maxX": 394,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 7044,
+        "minX": 198,
+        "maxX": 1168,
+        "minY": 88,
+        "maxY": 498
+      },
+      "wiper": {
+        "pixels": 4124,
+        "minX": 393,
+        "maxX": 1186,
+        "minY": 490,
+        "maxY": 500
+      },
+      "binnacle": {
+        "pixels": 20528,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 68482,
+        "minX": 37,
+        "maxX": 1279,
+        "minY": 557,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "e36_m3",
+    "geometryBytes": 300260,
+    "exterior": 2226,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      84,
+      84,
+      84,
+      84
+    ],
+    "interior": 1474,
+    "rider": 0,
+    "beforeInterior": 678,
+    "roadFromEye": 6.4265,
+    "aperture": 49.38515625,
+    "unobstructed": 46.22998046875,
+    "eye": [
+      -0.36507,
+      1.21,
+      0.21000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 134354,
+        "minX": 417,
+        "maxX": 1279,
+        "minY": 538,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 32309,
+        "minX": 445,
+        "maxX": 1263,
+        "minY": 476,
+        "maxY": 541
+      },
+      "pillar": {
+        "pixels": 25026,
+        "minX": 299,
+        "maxX": 1279,
+        "minY": 143,
+        "maxY": 522
+      },
+      "header": {
+        "pixels": 47988,
+        "minX": 348,
+        "maxX": 1279,
+        "minY": 83,
+        "maxY": 148
+      },
+      "door-top": {
+        "pixels": 50128,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 501,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5234,
+        "minX": 256,
+        "maxX": 1007,
+        "minY": 149,
+        "maxY": 530
+      },
+      "wiper": {
+        "pixels": 3606,
+        "minX": 444,
+        "maxX": 1124,
+        "minY": 520,
+        "maxY": 531
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 33654,
+        "minX": 220,
+        "maxX": 1022,
+        "minY": 665,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 81369,
+        "minX": 252,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 82
+      }
+    }
+  },
+  {
+    "id": "panda_11",
+    "geometryBytes": 273380,
+    "exterior": 1946,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1380,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.819,
+    "aperture": 53.3654296875,
+    "unobstructed": 52.70078125,
+    "eye": [
+      -0.33927,
+      1.39,
+      0.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 104022,
+        "minX": 420,
+        "maxX": 1279,
+        "minY": 584,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 6806,
+        "minX": 600,
+        "maxX": 1063,
+        "minY": 560,
+        "maxY": 583
+      },
+      "pillar": {
+        "pixels": 45120,
+        "minX": 238,
+        "maxX": 427,
+        "minY": 125,
+        "maxY": 634
+      },
+      "header": {
+        "pixels": 71359,
+        "minX": 300,
+        "maxX": 1279,
+        "minY": 41,
+        "maxY": 134
+      },
+      "door-top": {
+        "pixels": 19582,
+        "minX": 205,
+        "maxX": 430,
+        "minY": 615,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 9315,
+        "minX": 195,
+        "maxX": 1085,
+        "minY": 135,
+        "maxY": 658
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 22570,
+        "minX": 534,
+        "maxX": 745,
+        "minY": 567,
+        "maxY": 696
+      },
+      "console": {
+        "pixels": 22025,
+        "minX": 429,
+        "maxX": 1279,
+        "minY": 688,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 41152,
+        "minX": 253,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 40
+      }
+    }
+  },
+  {
+    "id": "panda_100hp",
+    "geometryBytes": 285284,
+    "exterior": 2070,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1380,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.819,
+    "aperture": 53.3654296875,
+    "unobstructed": 52.70078125,
+    "eye": [
+      -0.33927,
+      1.39,
+      0.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 104022,
+        "minX": 420,
+        "maxX": 1279,
+        "minY": 584,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 6806,
+        "minX": 600,
+        "maxX": 1063,
+        "minY": 560,
+        "maxY": 583
+      },
+      "pillar": {
+        "pixels": 45120,
+        "minX": 238,
+        "maxX": 427,
+        "minY": 125,
+        "maxY": 634
+      },
+      "header": {
+        "pixels": 71359,
+        "minX": 300,
+        "maxX": 1279,
+        "minY": 41,
+        "maxY": 134
+      },
+      "door-top": {
+        "pixels": 19582,
+        "minX": 205,
+        "maxX": 430,
+        "minY": 615,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 9315,
+        "minX": 195,
+        "maxX": 1085,
+        "minY": 135,
+        "maxY": 658
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 22570,
+        "minX": 534,
+        "maxX": 745,
+        "minY": 567,
+        "maxY": 696
+      },
+      "console": {
+        "pixels": 22025,
+        "minX": 429,
+        "maxX": 1279,
+        "minY": 688,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 41152,
+        "minX": 253,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 40
+      }
+    }
+  },
+  {
+    "id": "yaris_13",
+    "geometryBytes": 268388,
+    "exterior": 1894,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1394,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.6975,
+    "aperture": 48.48017578125,
+    "unobstructed": 48.2513671875,
+    "eye": [
+      -0.3569,
+      1.3499999999999999,
+      0.14
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 118771,
+        "minX": 421,
+        "maxX": 1279,
+        "minY": 573,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 2343,
+        "minX": 511,
+        "maxX": 1068,
+        "minY": 559,
+        "maxY": 572
+      },
+      "pillar": {
+        "pixels": 33044,
+        "minX": 257,
+        "maxX": 1279,
+        "minY": 149,
+        "maxY": 579
+      },
+      "header": {
+        "pixels": 57650,
+        "minX": 307,
+        "maxX": 1279,
+        "minY": 81,
+        "maxY": 157
+      },
+      "door-top": {
+        "pixels": 26976,
+        "minX": 157,
+        "maxX": 1279,
+        "minY": 561,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6154,
+        "minX": 260,
+        "maxX": 1051,
+        "minY": 158,
+        "maxY": 593
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 46457,
+        "minX": 832,
+        "maxX": 1062,
+        "minY": 404,
+        "maxY": 627
+      },
+      "console": {
+        "pixels": 25078,
+        "minX": 323,
+        "maxX": 1279,
+        "minY": 669,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 82998,
+        "minX": 204,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 80
+      }
+    }
+  },
+  {
+    "id": "yaris_ts",
+    "geometryBytes": 280292,
+    "exterior": 2018,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1394,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.6975,
+    "aperture": 48.48017578125,
+    "unobstructed": 48.2513671875,
+    "eye": [
+      -0.3569,
+      1.3499999999999999,
+      0.14
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 118771,
+        "minX": 421,
+        "maxX": 1279,
+        "minY": 573,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 2343,
+        "minX": 511,
+        "maxX": 1068,
+        "minY": 559,
+        "maxY": 572
+      },
+      "pillar": {
+        "pixels": 33044,
+        "minX": 257,
+        "maxX": 1279,
+        "minY": 149,
+        "maxY": 579
+      },
+      "header": {
+        "pixels": 57650,
+        "minX": 307,
+        "maxX": 1279,
+        "minY": 81,
+        "maxY": 157
+      },
+      "door-top": {
+        "pixels": 26976,
+        "minX": 157,
+        "maxX": 1279,
+        "minY": 561,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6154,
+        "minX": 260,
+        "maxX": 1051,
+        "minY": 158,
+        "maxY": 593
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 46457,
+        "minX": 832,
+        "maxX": 1062,
+        "minY": 404,
+        "maxY": 627
+      },
+      "console": {
+        "pixels": 25078,
+        "minX": 323,
+        "maxX": 1279,
+        "minY": 669,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 82998,
+        "minX": 204,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 80
+      }
+    }
+  },
+  {
+    "id": "ibiza_cupra",
+    "geometryBytes": 296420,
+    "exterior": 2186,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 5.1265,
+    "aperture": 54.91064453125,
+    "unobstructed": 52.42001953125,
+    "eye": [
+      -0.35259999999999997,
+      1.23,
+      0.22000000000000003
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 119954,
+        "minX": 422,
+        "maxX": 1279,
+        "minY": 556,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 25504,
+        "minX": 448,
+        "maxX": 1261,
+        "minY": 504,
+        "maxY": 559
+      },
+      "pillar": {
+        "pixels": 34499,
+        "minX": 254,
+        "maxX": 1279,
+        "minY": 97,
+        "maxY": 541
+      },
+      "header": {
+        "pixels": 68159,
+        "minX": 305,
+        "maxX": 1279,
+        "minY": 17,
+        "maxY": 106
+      },
+      "door-top": {
+        "pixels": 44181,
+        "minX": 29,
+        "maxX": 1279,
+        "minY": 519,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6821,
+        "minX": 250,
+        "maxX": 1068,
+        "minY": 107,
+        "maxY": 550
+      },
+      "wiper": {
+        "pixels": 3009,
+        "minX": 447,
+        "maxX": 1125,
+        "minY": 538,
+        "maxY": 550
+      },
+      "binnacle": {
+        "pixels": 21056,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 28901,
+        "minX": 262,
+        "maxX": 1279,
+        "minY": 672,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 16732,
+        "minX": 287,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 16
+      }
+    }
+  },
+  {
+    "id": "golf_gti",
+    "geometryBytes": 357384,
+    "exterior": 2858,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 6.7775,
+    "aperture": 46.58173828125,
+    "unobstructed": 42.74560546875,
+    "eye": [
+      -0.386785,
+      1.2999999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 106248,
+        "minX": 391,
+        "maxX": 1279,
+        "minY": 555,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 39282,
+        "minX": 447,
+        "maxX": 1279,
+        "minY": 476,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 25588,
+        "minX": 294,
+        "maxX": 444,
+        "minY": 166,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 48235,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 103,
+        "maxY": 170
+      },
+      "door-top": {
+        "pixels": 48889,
+        "minX": 0,
+        "maxX": 447,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6204,
+        "minX": 246,
+        "maxX": 1070,
+        "minY": 171,
+        "maxY": 546
+      },
+      "wiper": {
+        "pixels": 2949,
+        "minX": 446,
+        "maxX": 1153,
+        "minY": 529,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 54026,
+        "minX": 223,
+        "maxX": 1047,
+        "minY": 535,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 103933,
+        "minX": 201,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 102
+      }
+    }
+  },
+  {
+    "id": "golf_gtd",
+    "geometryBytes": 357384,
+    "exterior": 2858,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 6.7775,
+    "aperture": 46.58173828125,
+    "unobstructed": 42.74560546875,
+    "eye": [
+      -0.386785,
+      1.2999999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 106248,
+        "minX": 391,
+        "maxX": 1279,
+        "minY": 555,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 39282,
+        "minX": 447,
+        "maxX": 1279,
+        "minY": 476,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 25588,
+        "minX": 294,
+        "maxX": 444,
+        "minY": 166,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 48235,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 103,
+        "maxY": 170
+      },
+      "door-top": {
+        "pixels": 48889,
+        "minX": 0,
+        "maxX": 447,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6204,
+        "minX": 246,
+        "maxX": 1070,
+        "minY": 171,
+        "maxY": 546
+      },
+      "wiper": {
+        "pixels": 2949,
+        "minX": 446,
+        "maxX": 1153,
+        "minY": 529,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 54026,
+        "minX": 223,
+        "maxX": 1047,
+        "minY": 535,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 103933,
+        "minX": 201,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 102
+      }
+    }
+  },
+  {
+    "id": "golf_r",
+    "geometryBytes": 369672,
+    "exterior": 2986,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 6.7775,
+    "aperture": 46.58173828125,
+    "unobstructed": 42.74560546875,
+    "eye": [
+      -0.386785,
+      1.2999999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 106248,
+        "minX": 391,
+        "maxX": 1279,
+        "minY": 555,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 39282,
+        "minX": 447,
+        "maxX": 1279,
+        "minY": 476,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 25588,
+        "minX": 294,
+        "maxX": 444,
+        "minY": 166,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 48235,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 103,
+        "maxY": 170
+      },
+      "door-top": {
+        "pixels": 48889,
+        "minX": 0,
+        "maxX": 447,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6204,
+        "minX": 246,
+        "maxX": 1070,
+        "minY": 171,
+        "maxY": 546
+      },
+      "wiper": {
+        "pixels": 2949,
+        "minX": 446,
+        "maxX": 1153,
+        "minY": 529,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 54026,
+        "minX": 223,
+        "maxX": 1047,
+        "minY": 535,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 103933,
+        "minX": 201,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 102
+      }
+    }
+  },
+  {
+    "id": "mini_cooper",
+    "geometryBytes": 301796,
+    "exterior": 2242,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1834,
+    "rider": 0,
+    "beforeInterior": 578,
+    "roadFromEye": 5.977,
+    "aperture": 46.84775390625,
+    "unobstructed": 43.31396484375,
+    "eye": [
+      -0.371305,
+      1.25,
+      0.29000000000000004
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 107584,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 550,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 36186,
+        "minX": 419,
+        "maxX": 1279,
+        "minY": 485,
+        "maxY": 553
+      },
+      "pillar": {
+        "pixels": 27337,
+        "minX": 267,
+        "maxX": 415,
+        "minY": 153,
+        "maxY": 530
+      },
+      "header": {
+        "pixels": 50480,
+        "minX": 318,
+        "maxX": 1279,
+        "minY": 92,
+        "maxY": 159
+      },
+      "door-top": {
+        "pixels": 49984,
+        "minX": 0,
+        "maxX": 418,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13194,
+        "minX": 572,
+        "maxX": 707,
+        "minY": 659,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6458,
+        "minX": 202,
+        "maxX": 1030,
+        "minY": 160,
+        "maxY": 542
+      },
+      "wiper": {
+        "pixels": 4564,
+        "minX": 418,
+        "maxX": 1186,
+        "minY": 530,
+        "maxY": 543
+      },
+      "binnacle": {
+        "pixels": 14724,
+        "minX": 558,
+        "maxX": 721,
+        "minY": 572,
+        "maxY": 673
+      },
+      "console": {
+        "pixels": 60856,
+        "minX": 177,
+        "maxX": 1144,
+        "minY": 554,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 94002,
+        "minX": 200,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 91
+      }
+    }
+  },
+  {
+    "id": "mini_s",
+    "geometryBytes": 322148,
+    "exterior": 2454,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1834,
+    "rider": 0,
+    "beforeInterior": 578,
+    "roadFromEye": 5.977,
+    "aperture": 46.84775390625,
+    "unobstructed": 43.31396484375,
+    "eye": [
+      -0.371305,
+      1.25,
+      0.29000000000000004
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 107584,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 550,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 36186,
+        "minX": 419,
+        "maxX": 1279,
+        "minY": 485,
+        "maxY": 553
+      },
+      "pillar": {
+        "pixels": 27337,
+        "minX": 267,
+        "maxX": 415,
+        "minY": 153,
+        "maxY": 530
+      },
+      "header": {
+        "pixels": 50480,
+        "minX": 318,
+        "maxX": 1279,
+        "minY": 92,
+        "maxY": 159
+      },
+      "door-top": {
+        "pixels": 49984,
+        "minX": 0,
+        "maxX": 418,
+        "minY": 510,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13194,
+        "minX": 572,
+        "maxX": 707,
+        "minY": 659,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6458,
+        "minX": 202,
+        "maxX": 1030,
+        "minY": 160,
+        "maxY": 542
+      },
+      "wiper": {
+        "pixels": 4564,
+        "minX": 418,
+        "maxX": 1186,
+        "minY": 530,
+        "maxY": 543
+      },
+      "binnacle": {
+        "pixels": 14724,
+        "minX": 558,
+        "maxX": 721,
+        "minY": 572,
+        "maxY": 673
+      },
+      "console": {
+        "pixels": 60856,
+        "minX": 177,
+        "maxX": 1144,
+        "minY": 554,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 94002,
+        "minX": 200,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 91
+      }
+    }
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "geometryBytes": 396976,
+    "exterior": 3232,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1808,
+    "rider": 0,
+    "beforeInterior": 554,
+    "roadFromEye": 5.915,
+    "aperture": 58.19765625,
+    "unobstructed": 53.78330078125,
+    "eye": [
+      -0.371305,
+      1.305,
+      0.24
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 86254,
+        "minX": 374,
+        "maxX": 1279,
+        "minY": 581,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 45203,
+        "minX": 400,
+        "maxX": 1279,
+        "minY": 496,
+        "maxY": 600
+      },
+      "pillar": {
+        "pixels": 33428,
+        "minX": 203,
+        "maxX": 394,
+        "minY": 150,
+        "maxY": 581
+      },
+      "header": {
+        "pixels": 88990,
+        "minX": 224,
+        "maxX": 1279,
+        "minY": 107,
+        "maxY": 207
+      },
+      "door-top": {
+        "pixels": 35450,
+        "minX": 37,
+        "maxX": 399,
+        "minY": 563,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13194,
+        "minX": 572,
+        "maxX": 707,
+        "minY": 659,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 7595,
+        "minX": 159,
+        "maxX": 1049,
+        "minY": 208,
+        "maxY": 604
+      },
+      "wiper": {
+        "pixels": 1556,
+        "minX": 398,
+        "maxX": 1235,
+        "minY": 584,
+        "maxY": 594
+      },
+      "binnacle": {
+        "pixels": 17099,
+        "minX": 554,
+        "maxX": 725,
+        "minY": 570,
+        "maxY": 694
+      },
+      "console": {
+        "pixels": 55733,
+        "minX": 253,
+        "maxX": 1159,
+        "minY": 556,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "corolla_15",
+    "geometryBytes": 339528,
+    "exterior": 2672,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 5.965,
+    "aperture": 45.6083984375,
+    "unobstructed": 43.12744140625,
+    "eye": [
+      -0.3827,
+      1.293,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 109603,
+        "minX": 397,
+        "maxX": 1279,
+        "minY": 549,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 25405,
+        "minX": 458,
+        "maxX": 1265,
+        "minY": 491,
+        "maxY": 545
+      },
+      "pillar": {
+        "pixels": 24185,
+        "minX": 315,
+        "maxX": 1279,
+        "minY": 178,
+        "maxY": 532
+      },
+      "header": {
+        "pixels": 47937,
+        "minX": 365,
+        "maxX": 1279,
+        "minY": 112,
+        "maxY": 179
+      },
+      "door-top": {
+        "pixels": 48986,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 506,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5749,
+        "minX": 269,
+        "maxX": 1067,
+        "minY": 180,
+        "maxY": 539
+      },
+      "wiper": {
+        "pixels": 3339,
+        "minX": 457,
+        "maxX": 1128,
+        "minY": 524,
+        "maxY": 535
+      },
+      "binnacle": {
+        "pixels": 20610,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 52723,
+        "minX": 234,
+        "maxX": 1038,
+        "minY": 532,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 111194,
+        "minX": 210,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 111
+      }
+    }
+  },
+  {
+    "id": "octavia_16tdi",
+    "geometryBytes": 361772,
+    "exterior": 2874,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1356,
+    "rider": 0,
+    "beforeInterior": 576,
+    "roadFromEye": 5.7445,
+    "aperture": 46.65478515625,
+    "unobstructed": 44.31884765625,
+    "eye": [
+      -0.393235,
+      1.3099999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 114406,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 551,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 23920,
+        "minX": 427,
+        "maxX": 1279,
+        "minY": 499,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 29743,
+        "minX": 212,
+        "maxX": 422,
+        "minY": 143,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 58888,
+        "minX": 251,
+        "maxX": 1279,
+        "minY": 79,
+        "maxY": 152
+      },
+      "door-top": {
+        "pixels": 49684,
+        "minX": 0,
+        "maxX": 427,
+        "minY": 516,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5788,
+        "minX": 240,
+        "maxX": 1076,
+        "minY": 153,
+        "maxY": 543
+      },
+      "wiper": {
+        "pixels": 2141,
+        "minX": 427,
+        "maxX": 1154,
+        "minY": 534,
+        "maxY": 545
+      },
+      "binnacle": {
+        "pixels": 20784,
+        "minX": 541,
+        "maxX": 738,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 58033,
+        "minX": 208,
+        "maxX": 1220,
+        "minY": 534,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 85768,
+        "minX": 138,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 78
+      }
+    }
+  },
+  {
+    "id": "octavia_rs",
+    "geometryBytes": 377132,
+    "exterior": 3034,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1342,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 5.7445,
+    "aperture": 46.65478515625,
+    "unobstructed": 44.31884765625,
+    "eye": [
+      -0.393235,
+      1.3099999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 117814,
+        "minX": 342,
+        "maxX": 1279,
+        "minY": 551,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 23920,
+        "minX": 427,
+        "maxX": 1279,
+        "minY": 499,
+        "maxY": 550
+      },
+      "pillar": {
+        "pixels": 29743,
+        "minX": 212,
+        "maxX": 422,
+        "minY": 143,
+        "maxY": 534
+      },
+      "header": {
+        "pixels": 58888,
+        "minX": 251,
+        "maxX": 1279,
+        "minY": 79,
+        "maxY": 152
+      },
+      "door-top": {
+        "pixels": 49684,
+        "minX": 0,
+        "maxX": 427,
+        "minY": 516,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5788,
+        "minX": 240,
+        "maxX": 1076,
+        "minY": 153,
+        "maxY": 543
+      },
+      "wiper": {
+        "pixels": 2141,
+        "minX": 427,
+        "maxX": 1154,
+        "minY": 534,
+        "maxY": 545
+      },
+      "binnacle": {
+        "pixels": 20784,
+        "minX": 541,
+        "maxX": 738,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 54625,
+        "minX": 208,
+        "maxX": 1066,
+        "minY": 534,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 85768,
+        "minX": 138,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 78
+      }
+    }
+  },
+  {
+    "id": "superb_15",
+    "geometryBytes": 367368,
+    "exterior": 2962,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1342,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 8.5805,
+    "aperture": 44.326953125,
+    "unobstructed": 41.1880859375,
+    "eye": [
+      -0.40076,
+      1.2899999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 133313,
+        "minX": 413,
+        "maxX": 1279,
+        "minY": 516,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 32142,
+        "minX": 466,
+        "maxX": 1224,
+        "minY": 451,
+        "maxY": 512
+      },
+      "pillar": {
+        "pixels": 19838,
+        "minX": 341,
+        "maxX": 1279,
+        "minY": 173,
+        "maxY": 498
+      },
+      "header": {
+        "pixels": 38168,
+        "minX": 384,
+        "maxX": 1279,
+        "minY": 120,
+        "maxY": 174
+      },
+      "door-top": {
+        "pixels": 64771,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 477,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4035,
+        "minX": 305,
+        "maxX": 1014,
+        "minY": 175,
+        "maxY": 504
+      },
+      "wiper": {
+        "pixels": 3281,
+        "minX": 466,
+        "maxX": 1093,
+        "minY": 493,
+        "maxY": 503
+      },
+      "binnacle": {
+        "pixels": 19214,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 574,
+        "maxY": 688
+      },
+      "console": {
+        "pixels": 57490,
+        "minX": 215,
+        "maxX": 1049,
+        "minY": 525,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 116832,
+        "minX": 229,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 119
+      }
+    }
+  },
+  {
+    "id": "superb_4x4",
+    "geometryBytes": 385416,
+    "exterior": 3150,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1342,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 8.5805,
+    "aperture": 44.326953125,
+    "unobstructed": 41.1880859375,
+    "eye": [
+      -0.40076,
+      1.2899999999999998,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 133313,
+        "minX": 413,
+        "maxX": 1279,
+        "minY": 516,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 32142,
+        "minX": 466,
+        "maxX": 1224,
+        "minY": 451,
+        "maxY": 512
+      },
+      "pillar": {
+        "pixels": 19838,
+        "minX": 341,
+        "maxX": 1279,
+        "minY": 173,
+        "maxY": 498
+      },
+      "header": {
+        "pixels": 38168,
+        "minX": 384,
+        "maxX": 1279,
+        "minY": 120,
+        "maxY": 174
+      },
+      "door-top": {
+        "pixels": 64771,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 477,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4035,
+        "minX": 305,
+        "maxX": 1014,
+        "minY": 175,
+        "maxY": 504
+      },
+      "wiper": {
+        "pixels": 3281,
+        "minX": 466,
+        "maxX": 1093,
+        "minY": 493,
+        "maxY": 503
+      },
+      "binnacle": {
+        "pixels": 19214,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 574,
+        "maxY": 688
+      },
+      "console": {
+        "pixels": 57490,
+        "minX": 215,
+        "maxX": 1049,
+        "minY": 525,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 116832,
+        "minX": 229,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 119
+      }
+    }
+  },
+  {
+    "id": "cla250",
+    "geometryBytes": 425732,
+    "exterior": 3533,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.254,
+    "aperture": 44.70107421875,
+    "unobstructed": 44.6982421875,
+    "eye": [
+      -0.39345,
+      1.2149999999999999,
+      0.15999999999999998
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 152347,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 478,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 29,
+        "minX": 427,
+        "maxX": 455,
+        "minY": 483,
+        "maxY": 483
+      },
+      "pillar": {
+        "pixels": 19335,
+        "minX": 320,
+        "maxX": 414,
+        "minY": 134,
+        "maxY": 464
+      },
+      "header": {
+        "pixels": 41543,
+        "minX": 369,
+        "maxX": 1279,
+        "minY": 76,
+        "maxY": 133
+      },
+      "door-top": {
+        "pixels": 54930,
+        "minX": 0,
+        "maxX": 415,
+        "minY": 446,
+        "maxY": 785
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 3680,
+        "minX": 270,
+        "maxX": 1004,
+        "minY": 134,
+        "maxY": 461
+      },
+      "wiper": {
+        "pixels": 3065,
+        "minX": 415,
+        "maxX": 1140,
+        "minY": 463,
+        "maxY": 472
+      },
+      "binnacle": {
+        "pixels": 20068,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 572,
+        "maxY": 690
+      },
+      "console": {
+        "pixels": 99277,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 520,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 72416,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 75
+      }
+    }
+  },
+  {
+    "id": "cla35",
+    "geometryBytes": 437636,
+    "exterior": 3657,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.254,
+    "aperture": 44.70107421875,
+    "unobstructed": 44.6982421875,
+    "eye": [
+      -0.39345,
+      1.2149999999999999,
+      0.15999999999999998
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 152347,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 478,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 29,
+        "minX": 427,
+        "maxX": 455,
+        "minY": 483,
+        "maxY": 483
+      },
+      "pillar": {
+        "pixels": 19335,
+        "minX": 320,
+        "maxX": 414,
+        "minY": 134,
+        "maxY": 464
+      },
+      "header": {
+        "pixels": 41543,
+        "minX": 369,
+        "maxX": 1279,
+        "minY": 76,
+        "maxY": 133
+      },
+      "door-top": {
+        "pixels": 54930,
+        "minX": 0,
+        "maxX": 415,
+        "minY": 446,
+        "maxY": 785
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 3680,
+        "minX": 270,
+        "maxX": 1004,
+        "minY": 134,
+        "maxY": 461
+      },
+      "wiper": {
+        "pixels": 3065,
+        "minX": 415,
+        "maxX": 1140,
+        "minY": 463,
+        "maxY": 472
+      },
+      "binnacle": {
+        "pixels": 20068,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 572,
+        "maxY": 690
+      },
+      "console": {
+        "pixels": 99277,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 520,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 72416,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 75
+      }
+    }
+  },
+  {
+    "id": "cla45s",
+    "geometryBytes": 357764,
+    "exterior": 2825,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.254,
+    "aperture": 44.70107421875,
+    "unobstructed": 44.6982421875,
+    "eye": [
+      -0.39345,
+      1.2149999999999999,
+      0.15999999999999998
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 152347,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 478,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 29,
+        "minX": 427,
+        "maxX": 455,
+        "minY": 483,
+        "maxY": 483
+      },
+      "pillar": {
+        "pixels": 19335,
+        "minX": 320,
+        "maxX": 414,
+        "minY": 134,
+        "maxY": 464
+      },
+      "header": {
+        "pixels": 41543,
+        "minX": 369,
+        "maxX": 1279,
+        "minY": 76,
+        "maxY": 133
+      },
+      "door-top": {
+        "pixels": 54930,
+        "minX": 0,
+        "maxX": 415,
+        "minY": 446,
+        "maxY": 785
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 3680,
+        "minX": 270,
+        "maxX": 1004,
+        "minY": 134,
+        "maxY": 461
+      },
+      "wiper": {
+        "pixels": 3065,
+        "minX": 415,
+        "maxX": 1140,
+        "minY": 463,
+        "maxY": 472
+      },
+      "binnacle": {
+        "pixels": 20068,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 572,
+        "maxY": 690
+      },
+      "console": {
+        "pixels": 99277,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 520,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 72416,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 75
+      }
+    }
+  },
+  {
+    "id": "gla250",
+    "geometryBytes": 330372,
+    "exterior": 2548,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.835,
+    "aperture": 52.329296875,
+    "unobstructed": 49.54384765625,
+    "eye": [
+      -0.39431,
+      1.395,
+      0.13
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 98931,
+        "minX": 401,
+        "maxX": 1279,
+        "minY": 549,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 28523,
+        "minX": 440,
+        "maxX": 1272,
+        "minY": 486,
+        "maxY": 552
+      },
+      "pillar": {
+        "pixels": 26952,
+        "minX": 259,
+        "maxX": 435,
+        "minY": 118,
+        "maxY": 524
+      },
+      "header": {
+        "pixels": 49439,
+        "minX": 300,
+        "maxX": 1279,
+        "minY": 64,
+        "maxY": 127
+      },
+      "door-top": {
+        "pixels": 43842,
+        "minX": 0,
+        "maxX": 439,
+        "minY": 514,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5754,
+        "minX": 244,
+        "maxX": 1028,
+        "minY": 128,
+        "maxY": 540
+      },
+      "wiper": {
+        "pixels": 2044,
+        "minX": 439,
+        "maxX": 1143,
+        "minY": 532,
+        "maxY": 543
+      },
+      "binnacle": {
+        "pixels": 20630,
+        "minX": 541,
+        "maxX": 738,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 69668,
+        "minX": 206,
+        "maxX": 1279,
+        "minY": 523,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 65140,
+        "minX": 225,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 63
+      }
+    }
+  },
+  {
+    "id": "z4_20i",
+    "geometryBytes": 328380,
+    "exterior": 2518,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1372,
+    "rider": 0,
+    "beforeInterior": 554,
+    "roadFromEye": 5.332,
+    "aperture": 48.16611328125,
+    "unobstructed": 44.1509765625,
+    "eye": [
+      -0.40076,
+      1.19,
+      0.42
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 99652,
+        "minX": 326,
+        "maxX": 1279,
+        "minY": 583,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 41115,
+        "minX": 377,
+        "maxX": 1279,
+        "minY": 494,
+        "maxY": 582
+      },
+      "pillar": {
+        "pixels": 56913,
+        "minX": 0,
+        "maxX": 367,
+        "minY": 88,
+        "maxY": 566
+      },
+      "header": {
+        "pixels": 93089,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 105
+      },
+      "door-top": {
+        "pixels": 42190,
+        "minX": 0,
+        "maxX": 377,
+        "minY": 541,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 11822,
+        "minX": 574,
+        "maxX": 705,
+        "minY": 678,
+        "maxY": 779
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 11322,
+        "minX": 149,
+        "maxX": 1279,
+        "minY": 106,
+        "maxY": 578
+      },
+      "wiper": {
+        "pixels": 3008,
+        "minX": 376,
+        "maxX": 1272,
+        "minY": 562,
+        "maxY": 576
+      },
+      "binnacle": {
+        "pixels": 22174,
+        "minX": 537,
+        "maxX": 742,
+        "minY": 569,
+        "maxY": 694
+      },
+      "console": {
+        "pixels": 61908,
+        "minX": 169,
+        "maxX": 1110,
+        "minY": 545,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "z4_30i",
+    "geometryBytes": 328380,
+    "exterior": 2518,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1372,
+    "rider": 0,
+    "beforeInterior": 554,
+    "roadFromEye": 5.332,
+    "aperture": 48.16611328125,
+    "unobstructed": 44.1509765625,
+    "eye": [
+      -0.40076,
+      1.19,
+      0.42
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 99652,
+        "minX": 326,
+        "maxX": 1279,
+        "minY": 583,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 41115,
+        "minX": 377,
+        "maxX": 1279,
+        "minY": 494,
+        "maxY": 582
+      },
+      "pillar": {
+        "pixels": 56913,
+        "minX": 0,
+        "maxX": 367,
+        "minY": 88,
+        "maxY": 566
+      },
+      "header": {
+        "pixels": 93089,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 105
+      },
+      "door-top": {
+        "pixels": 42190,
+        "minX": 0,
+        "maxX": 377,
+        "minY": 541,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 11822,
+        "minX": 574,
+        "maxX": 705,
+        "minY": 678,
+        "maxY": 779
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 11322,
+        "minX": 149,
+        "maxX": 1279,
+        "minY": 106,
+        "maxY": 578
+      },
+      "wiper": {
+        "pixels": 3008,
+        "minX": 376,
+        "maxX": 1272,
+        "minY": 562,
+        "maxY": 576
+      },
+      "binnacle": {
+        "pixels": 22174,
+        "minX": 537,
+        "maxX": 742,
+        "minY": 569,
+        "maxY": 694
+      },
+      "console": {
+        "pixels": 61908,
+        "minX": 169,
+        "maxX": 1110,
+        "minY": 545,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "carrera_s",
+    "geometryBytes": 374440,
+    "exterior": 3142,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1550,
+    "rider": 0,
+    "beforeInterior": 828,
+    "roadFromEye": 4.305499999999999,
+    "aperture": 50.8123046875,
+    "unobstructed": 50.030859375,
+    "eye": [
+      -0.38872,
+      1.15,
+      0.31
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 129352,
+        "minX": 412,
+        "maxX": 1279,
+        "minY": 529,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 8002,
+        "minX": 460,
+        "maxX": 1231,
+        "minY": 493,
+        "maxY": 508
+      },
+      "pillar": {
+        "pixels": 44804,
+        "minX": 119,
+        "maxX": 1279,
+        "minY": 55,
+        "maxY": 497
+      },
+      "header": {
+        "pixels": 54918,
+        "minX": 150,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 77
+      },
+      "door-top": {
+        "pixels": 62203,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 8993,
+        "minX": 255,
+        "maxX": 1264,
+        "minY": 78,
+        "maxY": 506
+      },
+      "wiper": {
+        "pixels": 2736,
+        "minX": 459,
+        "maxX": 1101,
+        "minY": 489,
+        "maxY": 498
+      },
+      "binnacle": {
+        "pixels": 23140,
+        "minX": 529,
+        "maxX": 750,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 50212,
+        "minX": 166,
+        "maxX": 1113,
+        "minY": 642,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "carrera_gts",
+    "geometryBytes": 374440,
+    "exterior": 3142,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1550,
+    "rider": 0,
+    "beforeInterior": 828,
+    "roadFromEye": 4.305499999999999,
+    "aperture": 50.8123046875,
+    "unobstructed": 50.030859375,
+    "eye": [
+      -0.38872,
+      1.15,
+      0.31
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 129352,
+        "minX": 412,
+        "maxX": 1279,
+        "minY": 529,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 8002,
+        "minX": 460,
+        "maxX": 1231,
+        "minY": 493,
+        "maxY": 508
+      },
+      "pillar": {
+        "pixels": 44804,
+        "minX": 119,
+        "maxX": 1279,
+        "minY": 55,
+        "maxY": 497
+      },
+      "header": {
+        "pixels": 54918,
+        "minX": 150,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 77
+      },
+      "door-top": {
+        "pixels": 62203,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 8993,
+        "minX": 255,
+        "maxX": 1264,
+        "minY": 78,
+        "maxY": 506
+      },
+      "wiper": {
+        "pixels": 2736,
+        "minX": 459,
+        "maxX": 1101,
+        "minY": 489,
+        "maxY": 498
+      },
+      "binnacle": {
+        "pixels": 23140,
+        "minX": 529,
+        "maxX": 750,
+        "minY": 570,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 50212,
+        "minX": 166,
+        "maxX": 1113,
+        "minY": 642,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "huracan_rwd",
+    "geometryBytes": 344676,
+    "exterior": 2672,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1478,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 3.9,
+    "aperture": 50.8341796875,
+    "unobstructed": 50.833203125,
+    "eye": [
+      -0.415595,
+      1.02,
+      -0.11
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 147540,
+        "minX": 397,
+        "maxX": 1279,
+        "minY": 530,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 10,
+        "minX": 408,
+        "maxX": 417,
+        "minY": 545,
+        "maxY": 545
+      },
+      "pillar": {
+        "pixels": 44770,
+        "minX": 365,
+        "maxX": 756,
+        "minY": 55,
+        "maxY": 541
+      },
+      "header": {
+        "pixels": 29407,
+        "minX": 790,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 91
+      },
+      "door-top": {
+        "pixels": 81127,
+        "minX": 0,
+        "maxX": 441,
+        "minY": 499,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 9216,
+        "minX": 585,
+        "maxX": 694,
+        "minY": 664,
+        "maxY": 794
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 12315,
+        "minX": 112,
+        "maxX": 1279,
+        "minY": 92,
+        "maxY": 543
+      },
+      "wiper": {
+        "pixels": 5354,
+        "minX": 409,
+        "maxX": 1257,
+        "minY": 520,
+        "maxY": 533
+      },
+      "binnacle": {
+        "pixels": 21064,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 570,
+        "maxY": 684
+      },
+      "console": {
+        "pixels": 31510,
+        "minX": 277,
+        "maxX": 1079,
+        "minY": 673,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "gtv1750",
+    "geometryBytes": 404460,
+    "exterior": 3757,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1728,
+    "rider": 0,
+    "beforeInterior": 678,
+    "roadFromEye": 5.9399999999999995,
+    "aperture": 50.92490234375,
+    "unobstructed": 47.0896484375,
+    "eye": [
+      -0.3397,
+      1.1649999999999998,
+      0.14
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 162060,
+        "minX": 390,
+        "maxX": 1279,
+        "minY": 553,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 39273,
+        "minX": 456,
+        "maxX": 1264,
+        "minY": 477,
+        "maxY": 552
+      },
+      "pillar": {
+        "pixels": 40215,
+        "minX": 211,
+        "maxX": 1279,
+        "minY": 87,
+        "maxY": 533
+      },
+      "header": {
+        "pixels": 81045,
+        "minX": 260,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 102
+      },
+      "door-top": {
+        "pixels": 55340,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 512,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 13606,
+        "minX": 448,
+        "maxX": 831,
+        "minY": 538,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 2906,
+        "minX": 604,
+        "maxX": 675,
+        "minY": 690,
+        "maxY": 765
+      },
+      "wheel-badge": {
+        "pixels": 1356,
+        "minX": 619,
+        "maxX": 660,
+        "minY": 707,
+        "maxY": 750
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 9323,
+        "minX": 217,
+        "maxX": 1107,
+        "minY": 103,
+        "maxY": 546
+      },
+      "wiper": {
+        "pixels": 4211,
+        "minX": 456,
+        "maxX": 1143,
+        "minY": 533,
+        "maxY": 546
+      },
+      "binnacle": {
+        "pixels": 11264,
+        "minX": 554,
+        "maxX": 725,
+        "minY": 581,
+        "maxY": 651
+      },
+      "console": {
+        "pixels": 23718,
+        "minX": 289,
+        "maxX": 1014,
+        "minY": 659,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "e36_318i",
+    "geometryBytes": 286052,
+    "exterior": 2078,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1474,
+    "rider": 0,
+    "beforeInterior": 678,
+    "roadFromEye": 6.4265,
+    "aperture": 49.38515625,
+    "unobstructed": 46.22998046875,
+    "eye": [
+      -0.36507,
+      1.21,
+      0.21000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 134354,
+        "minX": 417,
+        "maxX": 1279,
+        "minY": 538,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 32309,
+        "minX": 445,
+        "maxX": 1263,
+        "minY": 476,
+        "maxY": 541
+      },
+      "pillar": {
+        "pixels": 25026,
+        "minX": 299,
+        "maxX": 1279,
+        "minY": 143,
+        "maxY": 522
+      },
+      "header": {
+        "pixels": 47988,
+        "minX": 348,
+        "maxX": 1279,
+        "minY": 83,
+        "maxY": 148
+      },
+      "door-top": {
+        "pixels": 50128,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 501,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 5234,
+        "minX": 256,
+        "maxX": 1007,
+        "minY": 149,
+        "maxY": 530
+      },
+      "wiper": {
+        "pixels": 3606,
+        "minX": 444,
+        "maxX": 1124,
+        "minY": 520,
+        "maxY": 531
+      },
+      "binnacle": {
+        "pixels": 20894,
+        "minX": 540,
+        "maxX": 739,
+        "minY": 571,
+        "maxY": 692
+      },
+      "console": {
+        "pixels": 33654,
+        "minX": 220,
+        "maxX": 1022,
+        "minY": 665,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 81369,
+        "minX": 252,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 82
+      }
+    }
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "geometryBytes": 415024,
+    "exterior": 3420,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1808,
+    "rider": 0,
+    "beforeInterior": 554,
+    "roadFromEye": 5.915,
+    "aperture": 58.19765625,
+    "unobstructed": 53.78330078125,
+    "eye": [
+      -0.371305,
+      1.305,
+      0.24
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 86254,
+        "minX": 374,
+        "maxX": 1279,
+        "minY": 581,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 45203,
+        "minX": 400,
+        "maxX": 1279,
+        "minY": 496,
+        "maxY": 600
+      },
+      "pillar": {
+        "pixels": 33428,
+        "minX": 203,
+        "maxX": 394,
+        "minY": 150,
+        "maxY": 581
+      },
+      "header": {
+        "pixels": 88990,
+        "minX": 224,
+        "maxX": 1279,
+        "minY": 107,
+        "maxY": 207
+      },
+      "door-top": {
+        "pixels": 35450,
+        "minX": 37,
+        "maxX": 399,
+        "minY": 563,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13194,
+        "minX": 572,
+        "maxX": 707,
+        "minY": 659,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 7595,
+        "minX": 159,
+        "maxX": 1049,
+        "minY": 208,
+        "maxY": 604
+      },
+      "wiper": {
+        "pixels": 1556,
+        "minX": 398,
+        "maxX": 1235,
+        "minY": 584,
+        "maxY": 594
+      },
+      "binnacle": {
+        "pixels": 17099,
+        "minX": 554,
+        "maxX": 725,
+        "minY": 570,
+        "maxY": 694
+      },
+      "console": {
+        "pixels": 55733,
+        "minX": 253,
+        "maxX": 1159,
+        "minY": 556,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "cle300e",
+    "geometryBytes": 426500,
+    "exterior": 3541,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1800,
+    "rider": 0,
+    "beforeInterior": 548,
+    "roadFromEye": 6.325,
+    "aperture": 49.09892578125,
+    "unobstructed": 48.13251953125,
+    "eye": [
+      -0.400115,
+      1.23,
+      0.15000000000000002
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 151658,
+        "minX": 399,
+        "maxX": 1279,
+        "minY": 502,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 9896,
+        "minX": 406,
+        "maxX": 1205,
+        "minY": 479,
+        "maxY": 510
+      },
+      "pillar": {
+        "pixels": 32711,
+        "minX": 194,
+        "maxX": 403,
+        "minY": 77,
+        "maxY": 494
+      },
+      "header": {
+        "pixels": 70737,
+        "minX": 235,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 87
+      },
+      "door-top": {
+        "pixels": 54162,
+        "minX": 0,
+        "maxX": 406,
+        "minY": 472,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6866,
+        "minX": 213,
+        "maxX": 1147,
+        "minY": 88,
+        "maxY": 498
+      },
+      "wiper": {
+        "pixels": 3949,
+        "minX": 406,
+        "maxX": 1164,
+        "minY": 490,
+        "maxY": 500
+      },
+      "binnacle": {
+        "pixels": 20528,
+        "minX": 542,
+        "maxX": 737,
+        "minY": 571,
+        "maxY": 691
+      },
+      "console": {
+        "pixels": 66923,
+        "minX": 61,
+        "maxX": 1279,
+        "minY": 557,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "jazz",
+    "geometryBytes": 269540,
+    "exterior": 1906,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      76,
+      76,
+      76,
+      76
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.813999999999999,
+    "aperture": 48.272265625,
+    "unobstructed": 48.272265625,
+    "eye": [
+      -0.36421,
+      1.38,
+      0.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 120724,
+        "minX": 364,
+        "maxX": 1279,
+        "minY": 547,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 28860,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 145,
+        "maxY": 531
+      },
+      "header": {
+        "pixels": 50739,
+        "minX": 330,
+        "maxX": 1279,
+        "minY": 83,
+        "maxY": 152
+      },
+      "door-top": {
+        "pixels": 57341,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 515,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4791,
+        "minX": 307,
+        "maxX": 1279,
+        "minY": 153,
+        "maxY": 539
+      },
+      "wiper": {
+        "pixels": 1833,
+        "minX": 469,
+        "maxX": 1064,
+        "minY": 531,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 19662,
+        "minX": 544,
+        "maxX": 735,
+        "minY": 573,
+        "maxY": 689
+      },
+      "console": {
+        "pixels": 44365,
+        "minX": 370,
+        "maxX": 1011,
+        "minY": 527,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 83050,
+        "minX": 230,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 82
+      }
+    }
+  },
+  {
+    "id": "jazz_dynamic",
+    "geometryBytes": 279140,
+    "exterior": 2006,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.813999999999999,
+    "aperture": 48.272265625,
+    "unobstructed": 48.272265625,
+    "eye": [
+      -0.36421,
+      1.38,
+      0.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 120724,
+        "minX": 364,
+        "maxX": 1279,
+        "minY": 547,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 28860,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 145,
+        "maxY": 531
+      },
+      "header": {
+        "pixels": 50739,
+        "minX": 330,
+        "maxX": 1279,
+        "minY": 83,
+        "maxY": 152
+      },
+      "door-top": {
+        "pixels": 57341,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 515,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4791,
+        "minX": 307,
+        "maxX": 1279,
+        "minY": 153,
+        "maxY": 539
+      },
+      "wiper": {
+        "pixels": 1833,
+        "minX": 469,
+        "maxX": 1064,
+        "minY": 531,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 19662,
+        "minX": 544,
+        "maxX": 735,
+        "minY": 573,
+        "maxY": 689
+      },
+      "console": {
+        "pixels": 44365,
+        "minX": 370,
+        "maxX": 1011,
+        "minY": 527,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 83050,
+        "minX": 230,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 82
+      }
+    }
+  },
+  {
+    "id": "jazz_drift",
+    "geometryBytes": 286124,
+    "exterior": 2070,
+    "lod1": 516,
+    "lod2": 236,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 1382,
+    "rider": 0,
+    "beforeInterior": 562,
+    "roadFromEye": 4.813999999999999,
+    "aperture": 48.272265625,
+    "unobstructed": 48.272265625,
+    "eye": [
+      -0.36421,
+      1.38,
+      0.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 120724,
+        "minX": 364,
+        "maxX": 1279,
+        "minY": 547,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 28860,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 145,
+        "maxY": 531
+      },
+      "header": {
+        "pixels": 50739,
+        "minX": 330,
+        "maxX": 1279,
+        "minY": 83,
+        "maxY": 152
+      },
+      "door-top": {
+        "pixels": 57341,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 515,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 4791,
+        "minX": 307,
+        "maxX": 1279,
+        "minY": 153,
+        "maxY": 539
+      },
+      "wiper": {
+        "pixels": 1833,
+        "minX": 469,
+        "maxX": 1064,
+        "minY": 531,
+        "maxY": 541
+      },
+      "binnacle": {
+        "pixels": 19662,
+        "minX": 544,
+        "maxX": 735,
+        "minY": 573,
+        "maxY": 689
+      },
+      "console": {
+        "pixels": 44365,
+        "minX": 370,
+        "maxX": 1011,
+        "minY": 527,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 83050,
+        "minX": 230,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 82
+      }
+    }
+  },
+  {
+    "id": "aygo",
+    "geometryBytes": 193168,
+    "exterior": 2436,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 5.6075,
+    "aperture": 56.73798828125,
+    "unobstructed": 55.41416015625,
+    "eye": [
+      -0.35,
+      1.22,
+      0.13
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 109741,
+        "minX": 380,
+        "maxX": 1279,
+        "minY": 565,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 13556,
+        "minX": 463,
+        "maxX": 1235,
+        "minY": 506,
+        "maxY": 546
+      },
+      "pillar": {
+        "pixels": 33261,
+        "minX": 193,
+        "maxX": 1279,
+        "minY": 87,
+        "maxY": 524
+      },
+      "header": {
+        "pixels": 63120,
+        "minX": 232,
+        "maxX": 1279,
+        "minY": 26,
+        "maxY": 102
+      },
+      "door-top": {
+        "pixels": 50772,
+        "minX": 6,
+        "maxX": 1279,
+        "minY": 506,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 31990,
+        "minX": 405,
+        "maxX": 874,
+        "minY": 494,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 9196,
+        "minX": 577,
+        "maxX": 702,
+        "minY": 680,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 3294,
+        "minX": 613,
+        "maxX": 666,
+        "minY": 703,
+        "maxY": 763
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 2434,
+        "minX": 278,
+        "maxX": 403,
+        "minY": 486,
+        "maxY": 536
+      },
+      "wiper": {
+        "pixels": 1865,
+        "minX": 462,
+        "maxX": 1106,
+        "minY": 525,
+        "maxY": 537
+      },
+      "binnacle": {
+        "pixels": 15240,
+        "minX": 480,
+        "maxX": 799,
+        "minY": 525,
+        "maxY": 681
+      },
+      "console": {
+        "pixels": 8229,
+        "minX": 874,
+        "maxX": 1112,
+        "minY": 735,
+        "maxY": 777
+      },
+      "vent": {
+        "pixels": 1353,
+        "minX": 450,
+        "maxX": 535,
+        "minY": 751,
+        "maxY": 766
+      },
+      "headliner": {
+        "pixels": 27632,
+        "minX": 203,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 25
+      }
+    }
+  },
+  {
+    "id": "qashqai",
+    "geometryBytes": 198584,
+    "exterior": 2522,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 7.358499999999999,
+    "aperture": 53.12744140625,
+    "unobstructed": 50.29453125,
+    "eye": [
+      -0.39,
+      1.35,
+      0.17
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 120573,
+        "minX": 358,
+        "maxX": 1279,
+        "minY": 552,
+        "maxY": 790
+      },
+      "deck": {
+        "pixels": 29009,
+        "minX": 443,
+        "maxX": 1274,
+        "minY": 469,
+        "maxY": 529
+      },
+      "pillar": {
+        "pixels": 28171,
+        "minX": 173,
+        "maxX": 1276,
+        "minY": 112,
+        "maxY": 508
+      },
+      "header": {
+        "pixels": 55288,
+        "minX": 204,
+        "maxX": 1279,
+        "minY": 59,
+        "maxY": 124
+      },
+      "door-top": {
+        "pixels": 53555,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 491,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 31990,
+        "minX": 405,
+        "maxX": 874,
+        "minY": 494,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 9196,
+        "minX": 577,
+        "maxX": 702,
+        "minY": 680,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 3294,
+        "minX": 613,
+        "maxX": 666,
+        "minY": 703,
+        "maxY": 763
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 2082,
+        "minX": 269,
+        "maxX": 385,
+        "minY": 470,
+        "maxY": 517
+      },
+      "wiper": {
+        "pixels": 2661,
+        "minX": 442,
+        "maxX": 1131,
+        "minY": 509,
+        "maxY": 520
+      },
+      "binnacle": {
+        "pixels": 10916,
+        "minX": 497,
+        "maxX": 782,
+        "minY": 516,
+        "maxY": 656
+      },
+      "console": {
+        "pixels": 6949,
+        "minX": 825,
+        "maxX": 1100,
+        "minY": 699,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 1789,
+        "minX": 398,
+        "maxX": 511,
+        "minY": 684,
+        "maxY": 726
+      },
+      "headliner": {
+        "pixels": 65741,
+        "minX": 128,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 58
+      }
+    }
+  },
+  {
+    "id": "qashqai_dci",
+    "geometryBytes": 198584,
+    "exterior": 2522,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 7.358499999999999,
+    "aperture": 53.12744140625,
+    "unobstructed": 50.29453125,
+    "eye": [
+      -0.39,
+      1.35,
+      0.17
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 120573,
+        "minX": 358,
+        "maxX": 1279,
+        "minY": 552,
+        "maxY": 790
+      },
+      "deck": {
+        "pixels": 29009,
+        "minX": 443,
+        "maxX": 1274,
+        "minY": 469,
+        "maxY": 529
+      },
+      "pillar": {
+        "pixels": 28171,
+        "minX": 173,
+        "maxX": 1276,
+        "minY": 112,
+        "maxY": 508
+      },
+      "header": {
+        "pixels": 55288,
+        "minX": 204,
+        "maxX": 1279,
+        "minY": 59,
+        "maxY": 124
+      },
+      "door-top": {
+        "pixels": 53555,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 491,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 31990,
+        "minX": 405,
+        "maxX": 874,
+        "minY": 494,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 9196,
+        "minX": 577,
+        "maxX": 702,
+        "minY": 680,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 3294,
+        "minX": 613,
+        "maxX": 666,
+        "minY": 703,
+        "maxY": 763
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 2082,
+        "minX": 269,
+        "maxX": 385,
+        "minY": 470,
+        "maxY": 517
+      },
+      "wiper": {
+        "pixels": 2661,
+        "minX": 442,
+        "maxX": 1131,
+        "minY": 509,
+        "maxY": 520
+      },
+      "binnacle": {
+        "pixels": 10916,
+        "minX": 497,
+        "maxX": 782,
+        "minY": 516,
+        "maxY": 656
+      },
+      "console": {
+        "pixels": 6949,
+        "minX": 825,
+        "maxX": 1100,
+        "minY": 699,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 1789,
+        "minX": 398,
+        "maxX": 511,
+        "minY": 684,
+        "maxY": 726
+      },
+      "headliner": {
+        "pixels": 65741,
+        "minX": 128,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 58
+      }
+    }
+  },
+  {
+    "id": "dolphin",
+    "geometryBytes": 196016,
+    "exterior": 2454,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 6.465,
+    "aperture": 49.5189453125,
+    "unobstructed": 47.052734375,
+    "eye": [
+      -0.3717,
+      1.36,
+      0.07
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 68432,
+        "minX": 382,
+        "maxX": 1279,
+        "minY": 540,
+        "maxY": 752
+      },
+      "deck": {
+        "pixels": 25254,
+        "minX": 455,
+        "maxX": 1215,
+        "minY": 489,
+        "maxY": 539
+      },
+      "pillar": {
+        "pixels": 21601,
+        "minX": 251,
+        "maxX": 1279,
+        "minY": 184,
+        "maxY": 520
+      },
+      "header": {
+        "pixels": 33700,
+        "minX": 283,
+        "maxX": 1279,
+        "minY": 144,
+        "maxY": 188
+      },
+      "door-top": {
+        "pixels": 47736,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 504,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 25678,
+        "minX": 434,
+        "maxX": 845,
+        "minY": 520,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 8434,
+        "minX": 577,
+        "maxX": 702,
+        "minY": 686,
+        "maxY": 774
+      },
+      "wheel-badge": {
+        "pixels": 2520,
+        "minX": 616,
+        "maxX": 663,
+        "minY": 706,
+        "maxY": 758
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 1825,
+        "minX": 295,
+        "maxX": 403,
+        "minY": 486,
+        "maxY": 529
+      },
+      "wiper": {
+        "pixels": 2391,
+        "minX": 454,
+        "maxX": 1085,
+        "minY": 521,
+        "maxY": 531
+      },
+      "binnacle": {
+        "pixels": 6678,
+        "minX": 524,
+        "maxX": 755,
+        "minY": 538,
+        "maxY": 666
+      },
+      "console": {
+        "pixels": 19061,
+        "minX": 775,
+        "maxX": 1098,
+        "minY": 538,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 2476,
+        "minX": 417,
+        "maxX": 520,
+        "minY": 656,
+        "maxY": 693
+      },
+      "headliner": {
+        "pixels": 158443,
+        "minX": 76,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 143
+      }
+    }
+  },
+  {
+    "id": "atto3",
+    "geometryBytes": 194032,
+    "exterior": 2422,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 574,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 7.0475,
+    "aperture": 50.9396484375,
+    "unobstructed": 47.84462890625,
+    "eye": [
+      -0.39375,
+      1.405,
+      0.07
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 81735,
+        "minX": 323,
+        "maxX": 1279,
+        "minY": 556,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 31693,
+        "minX": 422,
+        "maxX": 1279,
+        "minY": 479,
+        "maxY": 546
+      },
+      "pillar": {
+        "pixels": 34654,
+        "minX": 70,
+        "maxX": 413,
+        "minY": 116,
+        "maxY": 519
+      },
+      "header": {
+        "pixels": 69034,
+        "minX": 93,
+        "maxX": 1279,
+        "minY": 55,
+        "maxY": 129
+      },
+      "door-top": {
+        "pixels": 47910,
+        "minX": 0,
+        "maxX": 422,
+        "minY": 508,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 31990,
+        "minX": 405,
+        "maxX": 874,
+        "minY": 494,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 11070,
+        "minX": 568,
+        "maxX": 711,
+        "minY": 680,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 3294,
+        "minX": 613,
+        "maxX": 666,
+        "minY": 703,
+        "maxY": 763
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 2160,
+        "minX": 241,
+        "maxX": 360,
+        "minY": 489,
+        "maxY": 535
+      },
+      "wiper": {
+        "pixels": 2485,
+        "minX": 421,
+        "maxX": 1154,
+        "minY": 526,
+        "maxY": 537
+      },
+      "binnacle": {
+        "pixels": 8318,
+        "minX": 507,
+        "maxX": 772,
+        "minY": 514,
+        "maxY": 658
+      },
+      "console": {
+        "pixels": 12262,
+        "minX": 812,
+        "maxX": 1180,
+        "minY": 561,
+        "maxY": 746
+      },
+      "vent": {
+        "pixels": 1069,
+        "minX": 386,
+        "maxX": 465,
+        "minY": 680,
+        "maxY": 738
+      },
+      "headliner": {
+        "pixels": 67727,
+        "minX": 5,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 54
+      }
+    }
+  },
+  {
+    "id": "van",
+    "geometryBytes": 232952,
+    "exterior": 3070,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 7.6565,
+    "aperture": 72.40400390625,
+    "unobstructed": 72.00302734375,
+    "eye": [
+      -0.464,
+      1.8800000000000001,
+      -1.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 89279,
+        "minX": 415,
+        "maxX": 1279,
+        "minY": 508,
+        "maxY": 660
+      },
+      "deck": {
+        "pixels": 4106,
+        "minX": 499,
+        "maxX": 1181,
+        "minY": 661,
+        "maxY": 671
+      },
+      "pillar": {
+        "pixels": 25574,
+        "minX": 397,
+        "maxX": 1279,
+        "minY": 40,
+        "maxY": 543
+      },
+      "header": {
+        "pixels": 22124,
+        "minX": 426,
+        "maxX": 1279,
+        "minY": 13,
+        "maxY": 45
+      },
+      "door-top": {
+        "pixels": 11440,
+        "minX": 305,
+        "maxX": 1279,
+        "minY": 651,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 22248,
+        "minX": 450,
+        "maxX": 829,
+        "minY": 535,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 5900,
+        "minX": 590,
+        "maxX": 689,
+        "minY": 689,
+        "maxY": 770
+      },
+      "wheel-badge": {
+        "pixels": 2144,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 708,
+        "maxY": 756
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 13566,
+        "minX": 0,
+        "maxX": 416,
+        "minY": 632,
+        "maxY": 701
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 6796,
+        "minX": 537,
+        "maxX": 742,
+        "minY": 561,
+        "maxY": 664
+      },
+      "console": {
+        "pixels": 29353,
+        "minX": 815,
+        "maxX": 1084,
+        "minY": 596,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 1415,
+        "minX": 455,
+        "maxX": 518,
+        "minY": 586,
+        "maxY": 613
+      },
+      "headliner": {
+        "pixels": 11157,
+        "minX": 418,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 12
+      }
+    }
+  },
+  {
+    "id": "van_150",
+    "geometryBytes": 232952,
+    "exterior": 3070,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 7.6565,
+    "aperture": 72.40400390625,
+    "unobstructed": 72.00302734375,
+    "eye": [
+      -0.464,
+      1.8800000000000001,
+      -1.05
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 89279,
+        "minX": 415,
+        "maxX": 1279,
+        "minY": 508,
+        "maxY": 660
+      },
+      "deck": {
+        "pixels": 4106,
+        "minX": 499,
+        "maxX": 1181,
+        "minY": 661,
+        "maxY": 671
+      },
+      "pillar": {
+        "pixels": 25574,
+        "minX": 397,
+        "maxX": 1279,
+        "minY": 40,
+        "maxY": 543
+      },
+      "header": {
+        "pixels": 22124,
+        "minX": 426,
+        "maxX": 1279,
+        "minY": 13,
+        "maxY": 45
+      },
+      "door-top": {
+        "pixels": 11440,
+        "minX": 305,
+        "maxX": 1279,
+        "minY": 651,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 22248,
+        "minX": 450,
+        "maxX": 829,
+        "minY": 535,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 5900,
+        "minX": 590,
+        "maxX": 689,
+        "minY": 689,
+        "maxY": 770
+      },
+      "wheel-badge": {
+        "pixels": 2144,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 708,
+        "maxY": 756
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 13566,
+        "minX": 0,
+        "maxX": 416,
+        "minY": 632,
+        "maxY": 701
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 6796,
+        "minX": 537,
+        "maxX": 742,
+        "minY": 561,
+        "maxY": 664
+      },
+      "console": {
+        "pixels": 29353,
+        "minX": 815,
+        "maxX": 1084,
+        "minY": 596,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 1415,
+        "minX": 455,
+        "maxX": 518,
+        "minY": 586,
+        "maxY": 613
+      },
+      "headliner": {
+        "pixels": 11157,
+        "minX": 418,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 12
+      }
+    }
+  },
+  {
+    "id": "truck",
+    "geometryBytes": 183384,
+    "exterior": 2016,
+    "lod1": 198,
+    "lod2": 198,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 534,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 8.87,
+    "aperture": 40.95166015625,
+    "unobstructed": 40.95166015625,
+    "eye": [
+      -0.456,
+      2.04,
+      -1.83
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 146378,
+        "minX": 216,
+        "maxX": 1279,
+        "minY": 548,
+        "maxY": 784
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 19974,
+        "minX": 326,
+        "maxX": 1279,
+        "minY": 230,
+        "maxY": 547
+      },
+      "header": {
+        "pixels": 17321,
+        "minX": 366,
+        "maxX": 1279,
+        "minY": 205,
+        "maxY": 230
+      },
+      "door-top": {
+        "pixels": 1371,
+        "minX": 276,
+        "maxX": 377,
+        "minY": 785,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 30938,
+        "minX": 409,
+        "maxX": 870,
+        "minY": 498,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 8801,
+        "minX": 579,
+        "maxX": 700,
+        "minY": 681,
+        "maxY": 780
+      },
+      "wheel-badge": {
+        "pixels": 3190,
+        "minX": 613,
+        "maxX": 666,
+        "minY": 703,
+        "maxY": 762
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 6788,
+        "minX": 23,
+        "maxX": 297,
+        "minY": 493,
+        "maxY": 606
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 10638,
+        "minX": 499,
+        "maxX": 780,
+        "minY": 520,
+        "maxY": 658
+      },
+      "console": {
+        "pixels": 9610,
+        "minX": 868,
+        "maxX": 1150,
+        "minY": 690,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 5313,
+        "minX": 281,
+        "maxX": 399,
+        "minY": 676,
+        "maxY": 721
+      },
+      "headliner": {
+        "pixels": 226691,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 204
+      }
+    }
+  },
+  {
+    "id": "bus",
+    "geometryBytes": 262408,
+    "exterior": 3404,
+    "lod1": 210,
+    "lod2": 210,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 532,
+    "rider": 0,
+    "beforeInterior": 362,
+    "roadFromEye": 8.84,
+    "aperture": 62.65595703125,
+    "unobstructed": 62.65595703125,
+    "eye": [
+      -0.66,
+      1.9200000000000002,
+      -4.91
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 203672,
+        "minX": 102,
+        "maxX": 1279,
+        "minY": 588,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 39553,
+        "minX": 281,
+        "maxX": 374,
+        "minY": 0,
+        "maxY": 587
+      },
+      "header": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "door-top": {
+        "pixels": 32933,
+        "minX": 0,
+        "maxX": 354,
+        "minY": 521,
+        "maxY": 799
+      },
+      "wheel-rim": {
+        "pixels": 17492,
+        "minX": 376,
+        "maxX": 903,
+        "minY": 606,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 3660,
+        "minX": 580,
+        "maxX": 699,
+        "minY": 753,
+        "maxY": 799
+      },
+      "wheel-badge": {
+        "pixels": 1812,
+        "minX": 613,
+        "maxX": 666,
+        "minY": 765,
+        "maxY": 799
+      },
+      "tank": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "handlebars": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 19417,
+        "minX": 34,
+        "maxX": 283,
+        "minY": 85,
+        "maxY": 554
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 8472,
+        "minX": 476,
+        "maxX": 803,
+        "minY": 490,
+        "maxY": 596
+      },
+      "console": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "delivery",
+    "geometryBytes": 69192,
+    "exterior": 1244,
+    "lod1": 298,
+    "lod2": 298,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 156,
+    "rider": 252,
+    "beforeInterior": 76,
+    "roadFromEye": 5.765,
+    "aperture": 93.296875,
+    "unobstructed": 93.296875,
+    "eye": [
+      0,
+      1.469,
+      0.5
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 3915,
+        "minX": 579,
+        "maxX": 700,
+        "minY": 487,
+        "maxY": 549
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "header": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "door-top": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-rim": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-hub": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-badge": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "tank": {
+        "pixels": 35722,
+        "minX": 511,
+        "maxX": 768,
+        "minY": 613,
+        "maxY": 799
+      },
+      "handlebars": {
+        "pixels": 17658,
+        "minX": 455,
+        "maxX": 824,
+        "minY": 515,
+        "maxY": 619
+      },
+      "mirror-mount": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "console": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "scooter",
+    "geometryBytes": 64152,
+    "exterior": 1172,
+    "lod1": 298,
+    "lod2": 298,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 156,
+    "rider": 252,
+    "beforeInterior": 76,
+    "roadFromEye": 5.8125,
+    "aperture": 93.2830078125,
+    "unobstructed": 93.2830078125,
+    "eye": [
+      0,
+      1.482,
+      0.5
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 3915,
+        "minX": 579,
+        "maxX": 700,
+        "minY": 487,
+        "maxY": 549
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "header": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "door-top": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-rim": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-hub": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-badge": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "tank": {
+        "pixels": 33984,
+        "minX": 512,
+        "maxX": 767,
+        "minY": 619,
+        "maxY": 799
+      },
+      "handlebars": {
+        "pixels": 19545,
+        "minX": 443,
+        "maxX": 836,
+        "minY": 522,
+        "maxY": 626
+      },
+      "mirror-mount": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "console": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "moto",
+    "geometryBytes": 70180,
+    "exterior": 1230,
+    "lod1": 254,
+    "lod2": 254,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 144,
+    "rider": 252,
+    "beforeInterior": 76,
+    "roadFromEye": 5.83,
+    "aperture": 90.85732421875,
+    "unobstructed": 90.85732421875,
+    "eye": [
+      0,
+      1.5199999999999998,
+      0.5
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 3915,
+        "minX": 579,
+        "maxX": 700,
+        "minY": 487,
+        "maxY": 549
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "header": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "door-top": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-rim": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-hub": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-badge": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "tank": {
+        "pixels": 60857,
+        "minX": 467,
+        "maxX": 812,
+        "minY": 536,
+        "maxY": 799
+      },
+      "handlebars": {
+        "pixels": 15156,
+        "minX": 389,
+        "maxX": 890,
+        "minY": 615,
+        "maxY": 658
+      },
+      "mirror-mount": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "console": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  },
+  {
+    "id": "police_moto",
+    "geometryBytes": 84180,
+    "exterior": 1470,
+    "lod1": 278,
+    "lod2": 278,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 192,
+    "rider": 252,
+    "beforeInterior": 76,
+    "roadFromEye": 5.611,
+    "aperture": 88.18056640625,
+    "unobstructed": 88.18056640625,
+    "eye": [
+      0,
+      1.4749999999999999,
+      0.5
+    ],
+    "structure": {
+      "dash": {
+        "pixels": 3915,
+        "minX": 579,
+        "maxX": 700,
+        "minY": 487,
+        "maxY": 549
+      },
+      "deck": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "pillar": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "header": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "door-top": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-rim": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-hub": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wheel-badge": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "tank": {
+        "pixels": 77522,
+        "minX": 454,
+        "maxX": 825,
+        "minY": 500,
+        "maxY": 799
+      },
+      "handlebars": {
+        "pixels": 25781,
+        "minX": 352,
+        "maxX": 927,
+        "minY": 492,
+        "maxY": 629
+      },
+      "mirror-mount": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "wiper": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "binnacle": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "console": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      }
+    }
+  }
+]

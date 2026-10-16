@@ -90,3 +90,23 @@ Matched Riviera camera pose comparisons use a6471544 cockpit runtime before and 
 The windscreen overlay itself remains one draw and decreases from eight to two triangles, with one shared 128×128 alpha tile and no per-drop objects. These counts reset renderer.info and render the main scene, excluding mirror/post/UI passes. No GPU timing or FPS claims on SwiftShader.
 
 [911 before](../../cockpit-structure/before-carrera-rain.webp) · [911 after](../../cockpit-structure/after-carrera-rain.webp) · [SVJ before](../../cockpit-structure/before-aventador_svj-rain.webp) · [SVJ after](../../cockpit-structure/after-aventador_svj-rain.webp) · [all 70 triangle/mask rows](../../cockpit-structure/TRIANGLES-AND-MASKS.md) · [all scene counts](../../cockpit-structure/SCENE-COUNTS.md).
+
+
+## Authored cockpit restoration — 2026-10-16
+
+Owner chose distinct original interiors over the thin generic shell. Cockpit budget is 12,000 triangles; actual current cockpit counts are 144–1,834. Exterior/LOD/wheel geometry and gameplay anchors remain unchanged. No GPU/FPS claim. Eight matched day-only pairs were requested by the lead wrap-up; rain runtime is unchanged and its texture/wiper tests pass. Every config and exact counts: [all vehicles](../../real-interiors/EVERY-VEHICLE.md). Matched pictures: [world sheets](../../real-interiors/sheets/).
+
+# Matched Riviera render counters
+
+One main-scene render at the same start pose, FOV 66°, time 8.25 s. These are deterministic draw calls/triangles, not SwiftShader GPU or FPS estimates. Day comparisons keep the same vehicle, pose and FOV. The restored seated eye changes the frustum, so scene-count differences include the resulting visibility changes. Rain sweep was omitted under the lead wrap-up instruction. The world weather code is unchanged by this pass.
+
+| Vehicle | Day calls before → after | Day triangles before → after |
+|---|---:|---:|
+| mini | 182 → 198 | 625228 → 627334 |
+| carrera | 186 → 202 | 625476 → 627114 |
+| aventador_svj | 182 → 202 | 625368 → 626998 |
+| cle | 186 → 203 | 625428 → 627384 |
+| e36 | 187 → 203 | 625520 → 627044 |
+| gtv | 189 → 205 | 625536 → 627240 |
+| bus | 175 → 180 | 616966 → 617868 |
+| delivery | 162 → 168 | 625074 → 625910 |

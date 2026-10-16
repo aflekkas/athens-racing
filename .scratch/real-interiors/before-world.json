@@ -1,0 +1,235 @@
+[
+  {
+    "id": "mini",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 182,
+        "triangles": 625228
+      },
+      "eye": [
+        1056.2973959514923,
+        8.02143155519317,
+        2512.3565268478446
+      ],
+      "quaternion": [
+        0.0007712186220210308,
+        0.9927266500911593,
+        0.04371079638583926,
+        -0.1121720540060559
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "carrera",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 186,
+        "triangles": 625476
+      },
+      "eye": [
+        1056.2989776385982,
+        7.862352213734252,
+        2512.278849200391
+      ],
+      "quaternion": [
+        0.0008114486370756784,
+        0.992731726420382,
+        0.04359653998733847,
+        -0.11217130921340679
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "aventador_svj",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 182,
+        "triangles": 625368
+      },
+      "eye": [
+        1056.4465614656835,
+        7.740886452321798,
+        2512.641488983264
+      ],
+      "quaternion": [
+        0.0006802464462850925,
+        0.9927287906001969,
+        0.04366149856523392,
+        -0.11217289833681213
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "cle",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 186,
+        "triangles": 625428
+      },
+      "eye": [
+        1056.345498067487,
+        7.938540427422478,
+        2512.4353250696145
+      ],
+      "quaternion": [
+        0.0007026226311812587,
+        0.9927258880903161,
+        0.043727318604225074,
+        -0.11217280884606506
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "e36",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 187,
+        "triangles": 625520
+      },
+      "eye": [
+        1056.2984399640843,
+        7.919748760226662,
+        2512.383692924385
+      ],
+      "quaternion": [
+        0.0009278379723697359,
+        0.9927282832305658,
+        0.04367520256616803,
+        -0.11217027891377884
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "gtv",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 189,
+        "triangles": 625536
+      },
+      "eye": [
+        1056.2896062498373,
+        7.872329924171103,
+        2512.455920636461
+      ],
+      "quaternion": [
+        0.0010576315878977707,
+        0.9927305810344518,
+        0.04362395585722659,
+        -0.11216873615134798
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "bus",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 175,
+        "triangles": 616966
+      },
+      "eye": [
+        1057.7262856048387,
+        8.514355546031547,
+        2517.3505055500605
+      ],
+      "quaternion": [
+        -0.0004029757467751559,
+        0.992739674429444,
+        0.04338766486597359,
+        -0.11218416537884053
+      ],
+      "overlays": [
+        {
+          "name": "",
+          "visible": false,
+          "triangles": 2,
+          "texture": "cockpit-droplet-alpha-tile"
+        }
+      ]
+    },
+    "rain": null
+  },
+  {
+    "id": "delivery",
+    "phase": "before",
+    "dry": {
+      "render": {
+        "calls": 162,
+        "triangles": 625074
+      },
+      "eye": [
+        1055.9629042030144,
+        8.289640598992806,
+        2512.58471957008
+      ],
+      "quaternion": [
+        -0.0003841444626940453,
+        0.9927321845081375,
+        0.04355868287498446,
+        -0.1121842387366852
+      ],
+      "overlays": []
+    },
+    "rain": null
+  }
+]

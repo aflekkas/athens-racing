@@ -1,3 +1,9 @@
+# Current audit: authored interiors restored
+
+The 2026-10-16 restoration supersedes the earlier percentage targets and generic shell documented below. Current per-config values: [EVERY-VEHICLE.md](../real-interiors/EVERY-VEHICLE.md). Current reviewed sheets/world pairs: [real-interiors](../real-interiors/README.md). The current mask/source-hash files drive npm test; older world shots and review notes below are historical.
+
+---
+
 # Current fixture refresh: visible cockpit structure (2026-10-16)
 
 The current mask-audit/source hashes, after colour frames and part-ID masks validate the owner-required visible shell and steering wheel. See `../cockpit-structure/README.md` and its complete real-production-before/final-after evidence. The generator’s `before` field is only the legacy eye/exterior-visible reference pose on the current model; it is not the ghost-fix baseline. The following 2026-10-15 camera report and world sheets are historical, superseded where they describe hiding the steering wheel or all own-car structure.

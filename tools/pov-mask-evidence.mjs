@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';import {createHash} from 'node:crypto';import {inflateSync} from 'node:zlib';
 const hash=s=>createHash('sha256').update(s).digest('hex');
 export async function povSourceHashes(){
- const names=(await fs.readdir('src')).filter(n=>/^(cars|car-catalog|vehicle-.*|glass-tint|player-.*|traffic-.*-models|police-models|cockpit.*|fleet-cockpit|pov-.*|seat-position)\.js$/.test(n)).map(n=>'src/'+n).sort();
+ const names=(await fs.readdir('src')).filter(n=>/^(cars|car-catalog|vehicle-.*|glass-tint|player-.*|traffic-.*-models|police-models|cockpit.*|fleet-(cockpit|interiors|instruments)|pov-.*|seat-position)\.js$/.test(n)).map(n=>'src/'+n).sort();
  names.push('tools/pov-mask.js','tools/cockpit-structure-mask.js','tools/pov-audit.js','src/brand-badges.js','assets/brand-badges/atlas.svg');const hashes={};for(const n of names)hashes[n]=hash(await fs.readFile(n));
  const {TEXTURE_MANIFEST}=await import('../src/texture-manifest.js');const badge=TEXTURE_MANIFEST['/assets/brand-badges/atlas.svg'];hashes['src/texture-manifest.js#badge']=hash(JSON.stringify(badge)+hash(await fs.readFile('.'+badge.url)));
  const weather=await fs.readFile('src/weather.js','utf8');hashes['src/weather.js#cockpit-rain']=hash(weather.slice(weather.indexOf('// ---- drops on the cockpit windscreen'),weather.indexOf('// ------------------------------------------------------------------ state'))+weather.slice(weather.indexOf('  // ---- windscreen drops (cockpit view only)')));
