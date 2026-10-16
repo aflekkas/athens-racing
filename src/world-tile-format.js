@@ -19,6 +19,33 @@ export function tileKey(x, z) { return `${Math.floor(x / TILE_METRES)},${Math.fl
 export function tileTables(pack) {
   return Object.fromEntries(Object.keys(TILE_TABLES).map(k => [k, pack.arrays[pack.metadata.tables[k]]]));
 }
+/** Optional owner-authorized detail data; base AWT surfaces remain independently usable. */
+function validateWorldDetail(m,arrays,buildingCount) {
+  const d=m.extensions?.worldDetail;if(d==null)return;
+  if(d.version!==1||!d.buildings||!d.vegetation)fail('worldDetail version/tables');
+  const array=(index,type,stride,label)=>{
+    if(!integer(index)||arrays[index]?.constructor.name!==type||arrays[index].length%stride)fail(`worldDetail ${label}`);
+    return arrays[index];
+  };
+  const styles=array(d.buildings.facadeStyle,'Uint8Array',1,'facadeStyle'),seeds=array(d.buildings.detailSeed,'Uint32Array',1,'detailSeed');
+  if(styles.length!==buildingCount||seeds.length!==buildingCount)fail('worldDetail building row count');
+  for(const style of styles)if(style>7)fail('worldDetail facadeStyle');
+  if(Object.hasOwn(d.buildings,'roofPropSeed'))fail('worldDetail roofPropSeed alias is not wire data');
+  const p=array(d.vegetation.positionHeight,'Float32Array',4,'positionHeight'),kinds=array(d.vegetation.kind,'Uint8Array',1,'kind'),treeSeeds=array(d.vegetation.seed,'Uint32Array',1,'seed');
+  if(kinds.length!==p.length/4||treeSeeds.length!==kinds.length)fail('worldDetail vegetation row count');
+  for(let row=0;row<kinds.length;row++){
+    const i=row*4;
+    if(kinds[row]>2)fail('worldDetail vegetation kind');
+    for(let j=0;j<4;j++)if(!Number.isFinite(p[i+j]))fail('worldDetail vegetation nonfinite');
+    if(p[i]<0||p[i]>=TILE_METRES||p[i+2]<0||p[i+2]>=TILE_METRES||p[i+3]<0)fail('worldDetail vegetation position/height');
+  }
+}
+/** FNV-1a over UTF-8 source IDs, e.g. way/123 or relation/123 (not a split-part ID). */
+export function worldDetailSeed(sourceId) {
+  if(typeof sourceId!=='string'||!sourceId)fail('worldDetail source ID');
+  let hash=2166136261;for(const byte of new TextEncoder().encode(sourceId))hash=Math.imul(hash^byte,16777619)>>>0;return hash;
+}
+
 /** Reject malformed data before any three.js or physics resources are allocated. */
 export function validateWorldTile(pack, expected = {}) {
   const m = pack?.metadata, arrays = pack?.arrays;
@@ -73,6 +100,7 @@ export function validateWorldTile(pack, expected = {}) {
     if (k === 'anchors') id(t[k][i+2], 'anchor edge');
     if (t[k][i+stride-2] > maxKind) fail(`${k} kind`); ref(t[k][i+stride-1], m.strings.length, `${k} text`);
   }
+  validateWorldDetail(m,arrays,count('buildings'));
   if (!m.budgets || !integer(m.budgets.triangles) || !integer(m.budgets.buildingTriangles) || m.budgets.buildingTriangles > 40) fail('triangle budgets');
   if (!Array.isArray(m.meshes)) fail('meshes');
   let triangles = 0;

@@ -1,6 +1,6 @@
 # Athens world tiles, AWT/1
 
-Status: **Draft v1.2**, generator/runtime interchange contract, 2026-10-15. Schema identifier **`AWT/1`**, integer `tileVersion: 1`. Validator: `src/world-tile-format.js`, `validateWorldTile({metadata, arrays})`; run `node tools/validate-world-tiles.mjs <manifest.json>` on an emitted directory. This document supersedes the scenery, graphics-preset and street-photo requirements in the research plan. Bare OSM road shapes, clean elevation terrain, plain building boxes (at most 40 triangles per building), racing signs/gantries; no vegetation or beach props. One Lighting Off / Effects Off look. Terrain colour varies with slope, elevation and OSM landuse: dry earth, rock, scrub tones, coastal sand and urban ground. Building colours are white/light plaster, light greys and muted Greek accents; building colours must not reuse beige terrain tones. Scrub is a terrain colour category, never vegetation geometry. Bake these colours offline into the shared palette/normalised vertex-colour attributes; no per-tile textures or runtime style selector.
+Status: **Draft v1.3**, generator/runtime interchange contract, 2026-10-15. Schema identifier **`AWT/1`**, integer `tileVersion: 1`. Validator: `src/world-tile-format.js`, `validateWorldTile({metadata, arrays})`; run `node tools/validate-world-tiles.mjs <manifest.json>` on an emitted directory. This document supersedes the scenery, graphics-preset and street-photo requirements in the research plan. Bare OSM road shapes, clean elevation terrain, plain building boxes (at most 40 triangles per building), racing signs/gantries; the base layer has no vegetation or beach props. The owner-authorized optional World detail layer below supersedes the earlier blanket vegetation prohibition. One Lighting Off / Effects Off look. Terrain colour varies with slope, elevation and OSM landuse: dry earth, rock, scrub tones, coastal sand and urban ground. Building colours are white/light plaster, light greys and muted Greek accents; building colours must not reuse beige terrain tones. Scrub is a terrain colour category, never vegetation geometry. Bake these colours offline into the shared palette/normalised vertex-colour attributes; no per-tile textures or runtime style selector.
 
 ## Coordinates and ownership
 
@@ -129,3 +129,56 @@ manifest validator rejects missing, duplicate and self owner references; the
 generator additionally proves positive-area footprint intersection and that
 every intersecting external owner is listed. No tile wire-layout change is
 needed. This clarification supersedes recursive traversal in the draft runtime.
+
+
+### Optional World detail extension, version 1 (2026-10-16)
+
+AWT/1 keeps the bare road/terrain/building core. The subsequently authorized
+World detail On/Off layer uses optional `metadata.extensions.worldDetail`.
+The runtime/schema owner owns this contract and validator; the offline generator
+owns extraction and emission; the realism renderer owns facade/roof/vegetation
+meshes, their budgets and the single World detail toggle. Older consumers may
+ignore the extension and still render/drive the complete core. Do not encode
+required surfaces or routing information in this extension.
+
+```js
+extensions: {worldDetail: {
+  version: 1,
+  buildings: {facadeStyle: <array index>, detailSeed: <array index>},
+  vegetation: {positionHeight: <array index>, kind: <array index>, seed: <array index>}
+}}
+```
+
+All five arrays are required when the extension is present; empty arrays represent
+an absent feature. Building `facadeStyle` is Uint8, one value 0–7 per core building
+row. Building `detailSeed` is Uint32, one seed per core building row. Derive it
+using FNV-1a over the UTF-8 original source key (`way/123` or `relation/123`),
+with initial value 2166136261, XOR each byte then multiply by 16777619 modulo
+2^32. Split building parts retain their parent's seed. `worldDetailSeed(sourceId)`
+in the validator module implements this exact operation, including non-ASCII
+bytes. The canonical wire name is `detailSeed`; do not emit `roofPropSeed`.
+An intermediate importer accepting both aliases must reject unequal values.
+The renderer derives roof props from `detailSeed`; there is no second roof seed.
+
+Vegetation `positionHeight` is Float32 stride 4: `[localX, baseY, localZ, height]`,
+metres. XZ belongs to the half-open cell `[0,512)`; baseY is the generator's
+conformed terrain height in the manifest vertical datum. Height is positive when
+known, or exactly zero when source height is absent (the renderer's shared,
+versioned species/seed defaults determine height). Do not encode absence as NaN.
+Vegetation `kind` is Uint8 stride 1: 0 broadleaf, 1 conifer, 2 palm. Vegetation
+`seed` is Uint32 stride 1; both arrays have one element per position row. Derive
+source-backed seeds from stable UTF-8 OSM source IDs; generated row/area instances
+include a deterministic source-relative ordinal in the key. Never use unseeded
+randomness or tile emission order. No vegetation owner dependencies: emit each
+instance once in its position's half-open cell.
+
+These arrays are part of the shared ASR container and byte-residency accounting.
+Keep core `meshes` independently complete: optional detail meshes are generated
+by the renderer and are not baked invisibly into required core meshes. The
+existing core triangle count remains the exact sum of core mesh triangles;
+renderer-owned detail budgets/counts must be reported separately. Extension
+version/type/stride/count/range validation runs in `validateWorldTile` before
+activation. Unknown `worldDetail.version` fails closed.
+
+
+Detail authorization does not by itself change numeric triangle ceilings. Include extra building geometry in the <=40-triangle building budget unless the owner explicitly revises that budget. The realism renderer owns visual tests and the World detail setting.
