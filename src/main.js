@@ -77,7 +77,7 @@ import { RENDER, resolveGraphics, applyRenderResolution, releaseSceneryVariants,
 import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
-import { loading } from './ui/loading.js';
+import { loading, errorCode } from './ui/loading.js';
 import { kbd, ui, icon } from './ui/components.js';
 import { drivingHints } from './ui/driving-hints.js';
 import { updateEngineHud } from './engine-hud.js';
@@ -413,7 +413,10 @@ async function switchMap(id = 'riviera', context = 'QUICK RACE') {
     last = performance.now();
     return map;
   })();
-  try { const loaded = await mapSwitch; selectedMapId = loaded.id; return loaded; } finally { mapSwitch = null; loading.hide(); }
+  // A failed load stays on the loading screen as a calm, recoverable pause (Retry / Return to menu); callers may attach their own retry.
+  try { const loaded = await mapSwitch; selectedMapId = loaded.id; loading.hide(); return loaded; }
+  catch (error) { loading.fail({ code: errorCode(error) }); throw error; }
+  finally { mapSwitch = null; }
 }
 window.__switchMap = switchMap;
 window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: scene.children.filter(o => o.name.startsWith('map-world:')).map(o => o.name), lastDisposal: lastMapDisposal, memory: { ...renderer.info.memory }, weatherWidgets: document.querySelectorAll('#police-hud').length });
@@ -1002,7 +1005,8 @@ async function startEvent(id, opts = {}) {
     G.pendingEvent = def; restart(idx);
   } catch (error) {
     console.error('[map] start failed', error); showTitle();
-    ui.toast('COULD NOT LOAD THIS TRACK · PLEASE TRY AGAIN', { icon: 'warning', tone: 'bad' });
+    if (loading.open) loading.fail({ retry: () => startEvent(id, opts) });
+    else ui.toast('COULD NOT LOAD THIS TRACK · PLEASE TRY AGAIN', { icon: 'warning', tone: 'bad' });
   }
 }
 function openEvent(id, index = G.carIdx) {
