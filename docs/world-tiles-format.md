@@ -8,7 +8,7 @@ Status: **Draft v1.2**, generator/runtime interchange contract, 2026-10-15. Sche
 
 Athens world projection is equirectangular: `lat0=37.98`, `lon0=23.73`, `mlat=111320`, `mlon=111320*cos(lat0*pi/180)`. `x=(lon-lon0)*mlon`, `z=(lat0-lat)*mlat`, metres, +Y up, +X east, +Z south. Manifest stores these exact constants and vertical datum/source. Heights are metres above the manifest datum; never derive bridge elevation from OSM layer. Existing maps retain their projection in separate world manifests; generator reprojects once when joining them. Logical/game/network/replay coordinates are double world metres. Only rendering coordinates subtract a floating origin.
 
-Cell `(tx,tz)` owns `[512tx,512(tx+1)) × [512tz,512(tz+1))`. Metadata `origin:[512tx,0,512tz]`. All positions in tile tables are local XYZ metres except building corner XZ and global graph IDs. Boundary vertices lie on the closed square for triangulation; an exact boundary contact query selects the half-open owner. Clip triangles at cell boundaries; never partition by centroid. Road ribbons, junction polygons, contacts and fine terrain share the same canonical border vertices. No overlapping contact owners. Crossing buildings belong to their centroid cell; manifest tile `dependencies` names every owner cell whose building bounds intersects the tile. Duplicate IDs across a tile's rows are forbidden.
+Cell `(tx,tz)` owns `[512tx,512(tx+1)) × [512tz,512(tz+1))`. Metadata `origin:[512tx,0,512tz]`. All positions in tile tables are local XYZ metres except building corner XZ and global graph IDs. Boundary vertices lie on the closed square for triangulation; an exact boundary contact query selects the half-open owner. Clip triangles at cell boundaries; never partition by centroid. Road ribbons, junction polygons, contacts and fine terrain share the same canonical border vertices. No overlapping contact owners. Crossing buildings belong to their centroid cell; manifest tile `dependencies` names each distinct owner cell whose actual footprint intersects the tile with positive area (not merely its bounding box); omit the tile itself. Duplicate IDs across a tile's rows are forbidden.
 
 Solve elevations and road profiles globally before clipping. Bake with >=64 m halo, or larger than every conformance filter. Ground-level roads constrain terrain; bridges/tunnels preserve separate layers, portal/deck transitions and clearance. Canonical boundary XZ uses a global millimetre lattice; boundary Y is one shared Float32 value, copied bit-for-bit by neighbours. No independent per-tile DEM/conformance pass. Marking station distances are global along the graph edge. Fine terrain boundary must include coarse 16 m samples; transition triangles stitch every intermediate vertex, including LOD changes. Skirts cannot serve as contacts. Road intrusion <=5 mm, road/shoulder step <=0.15 m and shoulder slope <=30 degrees over 6 m remain acceptance gates.
 
@@ -102,3 +102,30 @@ point above is approved for placement. Evidence is the generator's
 `.scratch/athens-world/riviera-road-match.json`.
 
 Implementation note (2026-10-15): GPU residency counts BufferAttribute allocation identities, including the index role and terrain-decode wrapper, rather than just typed-array backing storage. Matching attributes and indices within a tile share wrappers; CPU backing allocations remain deduplicated separately. GPU staging/warm-up is experimental and is not yet accepted against the 50 ms activation gate.
+
+
+### Building owners: bounded one-hop requests (AWT/1 clarification, 2026-10-16)
+
+`dependencies` contains only direct building-owner cells. For each independently
+requested base cell B, the complete required set is `{B} ∪ dependencies(B)`.
+Loading an owner from this set does **not** recursively request its dependencies.
+An owner becomes a base only when independently selected by a player/actor ring,
+velocity prefetch, contact footprint, spawn pin or tow/teleport target. Union the
+sets for all such base requests; deduplicate tile allocations. A chain of 218
+owner references therefore requests two cells from a single-cell base, not 218.
+
+Admission priorities, reference-counted pins, readiness and teleport completion
+all use exactly this one-hop set. B is ready once B and each direct owner are
+active, even if an owner’s own owner is absent. Cyclic owner references are legal
+and do not imply recursive readiness. Release a base pin’s complete set together;
+shared owners remain pinned until the last referencing base releases them.
+Byte caps still apply; insufficient capacity leaves the base explicitly unready,
+without expanding the set or inventing contact.
+
+Each tile contains its own complete clipped terrain, contact and graph segments.
+Do not encode surface, terrain, graph or routing reachability as owner
+dependencies. Further graph exploration requests spatial cells explicitly. The
+manifest validator rejects missing, duplicate and self owner references; the
+generator additionally proves positive-area footprint intersection and that
+every intersecting external owner is listed. No tile wire-layout change is
+needed. This clarification supersedes recursive traversal in the draft runtime.

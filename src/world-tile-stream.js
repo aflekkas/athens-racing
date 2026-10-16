@@ -48,7 +48,9 @@ export class WorldTileStream {
     let released=false;
     return ()=>{if(released)return;released=true;for(const k of keys){const refs=this.pins.get(k);refs?.delete(token);if(!refs?.size)this.pins.delete(k);}};
   }
-  dependencies(key,seen=new Set()) {if(seen.has(key))return seen;seen.add(key);for(const d of this.entry(key)?.dependencies||[])this.dependencies(d,seen);return seen;}
+  // Owners loaded only to complete this base cell never become new base requests.
+  // This same one-hop set drives admission, pins, readiness and teleports.
+  dependencies(key) {return new Set([key,...(this.entry(key)?.dependencies||[])]);}
   update({x,z,vx=0,vz=0,latencySeconds=0,interest=[],contacts=[]}) {
     if(this.disposed)return;
     this.position={x,z};
