@@ -1,0 +1,26 @@
+{
+  "world": "megara",
+  "edges": 112,
+  "samples": 232163,
+  "maxDelta": 0.000009565316958060066,
+  "missing": 0,
+  "worst": {
+    "tiles": [
+      "-1,-1",
+      "0,-1"
+    ],
+    "station": 425.9638366699219,
+    "referenceY": 9.1991548538208,
+    "heights": [
+      9.19914519025479,
+      9.199154755571747
+    ],
+    "flags": [
+      1,
+      1
+    ]
+  },
+  "transitionSamples": 22,
+  "maxTransitionDelta": 0.10000043637727973,
+  "failures": []
+}

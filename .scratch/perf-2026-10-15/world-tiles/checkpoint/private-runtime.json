@@ -1,0 +1,74 @@
+{
+  "revision": "9fb9370614c7b2b2ded2685274406cfb1d090aa1c656bc02e7d3ec3da6ac44d3",
+  "developmentOnly": true,
+  "releaseReady": false,
+  "spawn": {
+    "x": 2324.1220092773438,
+    "y": 16.312020070253602,
+    "z": 13057.307189941406,
+    "yaw": 2.9831650257110596,
+    "edge": "osm:way:24826358:0-0:f:4:25",
+    "kind": 1,
+    "name": "Λαοδίκης",
+    "layer": 0
+  },
+  "width": {
+    "left": 4.004371746336503,
+    "right": 1.5982041841030141,
+    "width": 5.602575930439517
+  },
+  "edges": 310,
+  "nodes": 172,
+  "turns": 7,
+  "anchors": 230,
+  "maxAnchorFrameMs": 6.899999976158142,
+  "gps": {
+    "edges": [
+      "osm:way:24826358:0-0:f:4:25",
+      "osm:way:24826330:2-0:f:4:25",
+      "osm:way:24826470:2-0:f:4:25",
+      "osm:way:24826470:3-0:f:4:25",
+      "osm:way:24826470:4-0:f:4:25",
+      "osm:way:24815235:5-0:b:4:25",
+      "osm:way:1110577966:2-0:f:4:25"
+    ],
+    "seconds": 34.395833411880936
+  },
+  "traffic": {
+    "placementHeld": false,
+    "count": 4,
+    "moves": 120,
+    "holds": 0,
+    "missing": 0,
+    "maxFrameMs": 4.5,
+    "longTasks": []
+  },
+  "residentBytes": 10939811,
+  "metrics": {
+    "loadedBytes": 2736034,
+    "evictions": 0,
+    "failures": 0,
+    "peakResidentBytes": 10939811,
+    "peakReservedBytes": 25988485,
+    "maxActivationMs": 1.7999999523162842,
+    "activationLongTasks": 0
+  },
+  "uploads": {
+    "calls": 105,
+    "maxBytes": 32768,
+    "maxCallMs": 1.600000023841858,
+    "liveBuffers": 64
+  },
+  "glError": 0,
+  "tow": {
+    "x": 2352.262420654297,
+    "y": 21.79694938659668,
+    "z": 12881.248588562012,
+    "yaw": 2.9830408096313477,
+    "edge": "osm:way:1110577966:2-0:f:4:25",
+    "kind": 1,
+    "name": "Λαοδίκης",
+    "layer": 0
+  },
+  "errors": []
+}

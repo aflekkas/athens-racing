@@ -106,18 +106,21 @@ export function validateWorldTile(pack, expected = {}) {
   let triangles = 0;
   for (const mesh of m.meshes) {
     if (!mesh.attributes?.position || !integer(mesh.material) || mesh.material >= m.palette.length) fail('mesh');
-    let vertices;
+    let vertices; const attributeCounts=[];
     for (const [name, a] of Object.entries(mesh.attributes)) {
-      if (!integer(a.array) || !arrays[a.array] || !integer(a.itemSize, 1) || arrays[a.array].length % a.itemSize) fail('mesh attribute');
-      const n = arrays[a.array].length / a.itemSize; if (name === 'position') { if (a.itemSize !== 3) fail('position stride'); vertices = n; }
+      if (!integer(a.array) || !arrays[a.array] || !integer(a.itemSize, 1) || a.itemSize > 4 || arrays[a.array].length % a.itemSize) fail('mesh attribute');
+      const n = arrays[a.array].length / a.itemSize; attributeCounts.push(n); if (arrays[a.array].constructor.name === 'Float32Array') for (const v of arrays[a.array]) if (!Number.isFinite(v)) fail('mesh attribute nonfinite'); if (name === 'position') { if (a.itemSize !== 3) fail('position stride'); vertices = n; }
     }
-    if (vertices > 65535) fail('mesh vertex budget');
+    // A bounded draw may share a tile-wide canonical terrain table. Uint32
+    // indices avoid a second copy of exact contact positions in dense cells.
+    if (vertices < 3 || vertices > 524288) fail('mesh vertex budget');
+    if (attributeCounts.some(n => n !== vertices)) fail('mesh attribute length');
     let indices = vertices;
     if (mesh.index != null) {
       const index = arrays[mesh.index]; if (!index || !['Uint16Array','Uint32Array'].includes(index.constructor.name)) fail('mesh index');
       for (const v of index) ref(v, vertices, 'mesh vertex'); indices = index.length;
     }
-    if (indices % 3 || indices / 3 > 16384) fail('mesh triangle budget'); triangles += indices / 3;
+    if (indices < 3 || indices % 3 || indices / 3 > 16384) fail('mesh triangle budget'); triangles += indices / 3;
   }
   if (triangles !== m.budgets.triangles) fail('triangle accounting');
   return { metadata: m, arrays, tables: t, bytes: residentArrayBytes(arrays), triangles };
@@ -136,20 +139,29 @@ export function validateWorldManifest(m) {
   if (!Array.isArray(m.spawn.cell) || m.spawn.cell.length !== 2 || !m.spawn.cell.every(Number.isSafeInteger) || !m.tiles[m.spawn.cell.join(',')] || typeof m.spawn.anchor !== 'string') fail('spawn');
   return m;
 }
-/** Canonical edge strings are small relative to a pack; CLI hashes and discards them per tile. */
-export function tileEdgeSignatures(pack) {
-  const m = pack.metadata, t = tileTables(pack);
-  const number = v => Object.is(v, -0) ? '-0' : String(v);
-  return [0,1,2,3].map(side => {
-    const axis = side < 2 ? 0 : 2, value = (side % 2) * TILE_METRES, samples = new Set();
-    for (const name of ['finePositions','contactPositions']) {
-      const p = t[name];
-      for (let i=0;i<p.length;i+=3) if (p[i+axis] === value) samples.add(`${name}:${number(p[i]+m.origin[0])},${number(p[i+2]+m.origin[2])},${number(p[i+1])}`);
-    }
-    const heights = [];
-    for (let i=0;i<33;i++) heights.push(number(t.coarseHeights[side<2 ? i*33+(side%2)*32 : (side%2)*32*33+i]));
-    return JSON.stringify([heights,[...samples].sort()]);
-  });
+/** Boundary polylines exclude a triangle that merely touches an edge at one point.
+ * Such a tangent owns no shared edge and must not invent a neighbour contact. */
+function boundarySamples(m,t,axis,value){
+ const samples=new Set(),number=v=>Object.is(v,-0)?'-0':String(v);
+ for(const[name,triangles,stride]of [['finePositions',t.fineTriangles,3],['contactPositions',t.contactTriangles,5]]){
+  const p=t[name],vertices=new Set(),segments=new Set(),point=id=>`${number(p[id*3]+m.origin[0])},${number(p[id*3+2]+m.origin[2])},${number(p[id*3+1])}`;
+  for(let i=0;i<triangles.length;i+=stride)for(let edge=0;edge<3;edge++){
+   const a=triangles[i+edge],b=triangles[i+(edge+1)%3];
+   if(p[a*3+axis]===value&&p[b*3+axis]===value&& (p[a*3]!==p[b*3]||p[a*3+2]!==p[b*3+2])){vertices.add(a);vertices.add(b);segments.add([point(a),point(b)].sort().join('|'));}
+  }
+  for(const segment of segments)samples.add(`${name}:segment:${segment}`);
+  for(const vertex of vertices){const i=vertex*3;samples.add(`${name}:${number(p[i]+m.origin[0])},${number(p[i+2]+m.origin[2])},${number(p[i+1])}`);}
+ }
+ return samples;
+}
+/** CLI retains only four hashes per tile, never decoded packs. */
+export function tileEdgeSignatures(pack){
+ const m=pack.metadata,t=tileTables(pack),number=v=>Object.is(v,-0)?'-0':String(v);
+ return [0,1,2,3].map(side=>{
+  const axis=side<2?0:2,value=(side%2)*TILE_METRES,samples=boundarySamples(m,t,axis,value),heights=[];
+  for(let i=0;i<33;i++)heights.push(number(t.coarseHeights[side<2?i*33+(side%2)*32:(side%2)*32*33+i]));
+  return JSON.stringify([heights,[...samples].sort()]);
+ });
 }
 /** Compare all canonical terrain/contact samples on the common edge, including missing vertices. */
 export function validateTileSeam(a, b) {
@@ -157,10 +169,7 @@ export function validateTileSeam(a, b) {
   if (am.world !== bm.world || am.revision !== bm.revision || Math.abs(dx)+Math.abs(dz) !== 1) fail('seam neighbours');
   const at = tileTables(a), bt = tileTables(b);
   const boundary = (m, t, side) => {
-    const samples = new Set(), axis = dx ? 0 : 2, boundaryValue = side * TILE_METRES;
-    for (const name of ['finePositions', 'contactPositions']) {
-      const p = t[name]; for (let i = 0; i < p.length; i += 3) if (p[i+axis] === boundaryValue) samples.add(`${name}:${p[i]+m.origin[0]},${p[i+2]+m.origin[2]},${p[i+1]}`);
-    }
+    const axis=dx?0:2,samples=boundarySamples(m,t,axis,side*TILE_METRES);
     const edge = [];
     for (let i = 0; i < 33; i++) edge.push(t.coarseHeights[dx ? i*33+side*32 : side*32*33+i]);
     return { samples, edge };

@@ -1,0 +1,26 @@
+{
+  "world": "penteli",
+  "edges": 449,
+  "samples": 986943,
+  "maxDelta": 0.0002866906159262328,
+  "missing": 0,
+  "worst": {
+    "tiles": [
+      "-6,-7",
+      "-5,-7"
+    ],
+    "station": 0,
+    "referenceY": -30,
+    "heights": [
+      -29.999999999999318,
+      -29.99971330938339
+    ],
+    "flags": [
+      2,
+      2
+    ]
+  },
+  "transitionSamples": 261,
+  "maxTransitionDelta": 0.10004431599463715,
+  "failures": []
+}

@@ -29,7 +29,7 @@ Required metadata:
   budgets:{ triangles:<integer>, buildingTriangles:<integer <=40 per building> } }
 ```
 
-Every table is required, using a zero-length array for absent features. IDs in rows reference `ids`; index zero means unknown/none only where explicitly allowed. IDs are stable world-wide strings, retaining full 64-bit OSM IDs. Node/edge references are **world ID indexes**, resolved through each tile's ID dictionary, not array row numbers; dictionary order may differ between tiles. Portals repeat node IDs/positions exactly. Strings are UTF-8 JSON, zero is the empty string. Attribute/table arrays may alias a shared underlying buffer; count unique buffers once for residency. All arrays are little-endian on wire through the codec.
+Every table is required, using a zero-length array for absent features. IDs in rows reference `ids`; index zero means unknown/none only where explicitly allowed. IDs are stable world-wide strings, retaining full 64-bit OSM IDs. Node/edge references are **world ID indexes**, resolved through each tile's ID dictionary, not array row numbers; dictionary order may differ between tiles. Portals repeat node IDs/positions exactly. Strings are UTF-8 JSON, zero is the empty string. Attribute/table arrays may alias a shared underlying buffer; count unique buffers once for residency. All arrays are little-endian on wire through the codec. When using the existing ASR1 byte-plane encoder hints, copying every array (including Uint8 colours) releases the raw decompression container after decode; mixing copied arrays with a byte view can retain both allocations. Compare unshuffled and all-plane gzip output offline. Keep this choice inside the shared codec API, and measure unique backing-buffer residency.
 
 | Table | Type / stride | Fields, in order |
 |---|---|---|
@@ -60,7 +60,7 @@ Every table is required, using a zero-length array for absent features. IDs in r
 
 Edge flags bits: 0 one-way (every edge is directed; two-way roads emit reverse edges), 1 bridge, 2 tunnel, 3 restricted, 4 primary race route. Contact flags bits: 0 drivable asphalt, 1 terrain, 2 shoulder, 3 barrier. `surfaceId` is a world ID dictionary index. Unknown lane/speed is 0; routing must apply manifest defaults explicitly. Reverse edges share physical surface IDs but never duplicate contact triangles. Lane count describes travel direction; explicit lane-specific turn restrictions use separately identified lane edges. Layer arrays align with rows. Markings' edge ID indexes must be exactly representable as Float32 (<2^24); other ID fields use Uint32. On clipped edges, endpoints are stable portal nodes, edge IDs use `osm:way:<id>:<segment>:<direction>:<cell>`; `ids` also retains original way IDs. No fabricated connectivity at planar crossings with different layers.
 
-Render only the fine mesh near roads; coarse heights may remain metadata/contact fallback without a second overlapping rendered mesh. Render meshes are accelerators of these canonical surfaces, using the shared packGroup descriptors and terrain layout. They must cover all rendered roads, terrain, boxes and signs. A tile may split meshes by material and bounded activation job; each mesh <=16384 triangles and <=65535 vertices. Offline validator checks structural tables; generator must additionally validate polygon winding, triangle area, grade separation, actual rendered/contact equivalence and shared-edge equality. `validateTileSeam(a,b)` checks canonical boundary vertices for exact equal heights; run for every adjacent emitted pair, both terrain and contacts. Seam validation does not substitute for manifold/topology checks.
+Render only the fine mesh near roads; coarse heights may remain metadata/contact fallback without a second overlapping rendered mesh. Render meshes are accelerators of these canonical surfaces, using the shared packGroup descriptors and terrain layout. They must cover all rendered roads, terrain, boxes and signs. A tile may split meshes by material and bounded activation job; each activation draw <=16384 triangles. A tile-wide shared attribute table may contain up to 524288 vertices; use Uint32 indices above 65535. A draw references at most 49152 vertices. Sharing the exact canonical Float32 contact positions is allowed when it costs less than a separate quantized render table; quantized rendering uses the existing terrain layout and residual, never a second codec. Offline validator checks structural tables; generator must additionally validate polygon winding, triangle area, grade separation, actual rendered/contact equivalence and shared-edge equality. `validateTileSeam(a,b)` checks canonical boundary vertices for exact equal heights; run for every adjacent emitted pair, both terrain and contacts. Seam validation does not substitute for manifold/topology checks.
 
 ## Manifest, deployment and caching
 
@@ -83,7 +83,7 @@ Planning target, **not measured output**: 0.25–1 MiB compressed/km² for simpl
 
 ## Runtime and release gates
 
-Absent → loading → ready → active → retiring → disposed. Fetch/decompress/decode/build contact indexes in workers with bounded inflight jobs and reservations. Use revision + request generation to drop stale transfers. Only bounded mesh-object creation and scene attachment happen on main thread, <=2 ms/frame; a single unbounded synchronous callback cannot meet that promise. Account compressed/transient buffers, retained backing buffers, CPU contacts/graph, GPU bytes and shared assets with references. Evict unpinned LRU detail before contacts; preserve 20% headroom. Keep spawn, last-safe and pending tow cells pinned; never step physics into an unready cell. Teleports await target neighbourhood before moving actors, then release old pins. Failures retain safe contacts and expose retry; never whole-map-generate as fallback.
+Absent → loading → preparing → ready → active → retiring → disposed. Fetch/decompress/decode/build contact indexes in workers with bounded inflight jobs and reservations. Use revision + request generation to drop stale transfers. Precompute geometry descriptors and bounds in workers. On the main thread, allocate GPU buffers and upload at most 32 KiB per iterator step, build bounded mesh objects, then attach atomically, target <=4 ms/frame; a single unbounded synchronous callback cannot meet that promise. Warm declared render/program variants and their first draw at map start, before control; reject undeclared variants during play. Reserve two decoded byte budgets plus compressed bytes per inflight decode, covering the decompression container and decoded copies. Account compressed/transient buffers, retained backing buffers, CPU contacts/graph, GPU bytes and shared assets with references. Evict unpinned LRU detail before contacts; preserve 20% headroom. Keep spawn, last-safe and pending tow cells pinned; never step physics into an unready cell. Teleports await target neighbourhood before moving actors, then release old pins. Generated-city failures retain safe contacts and expose retry; never generate an entire city as fallback. The existing three-map migration may automatically restore its legacy map on startup failure, without a settings change.
 
 Safety ring around player, cosmetic outer rings and >=1 km velocity lookahead at 250 km/h; increase by measured p95 fetch/decode latency plus five seconds. Budget admission precedes allocation. Atomic render/contact activation, canonical seam geometry and neighbour-aware LOD ensure crack-free contact/render. Origin rebase in 512 m increments beyond 2048 m render displacement; logical routes, multiplayer/replay coordinates and hashes stay in global metres. Rebase camera, visible objects, particles and physics adapters atomically in a frame, including pending worker results. Distant Athens coordinates remain double until subtraction.
 
@@ -101,7 +101,24 @@ anchor with the emitted manifest before using it as a spawn; neither approximate
 point above is approved for placement. Evidence is the generator's
 `.scratch/athens-world/riviera-road-match.json`.
 
-Implementation note (2026-10-15): GPU residency counts BufferAttribute allocation identities, including the index role and terrain-decode wrapper, rather than just typed-array backing storage. Matching attributes and indices within a tile share wrappers; CPU backing allocations remain deduplicated separately. GPU staging/warm-up is experimental and is not yet accepted against the 50 ms activation gate.
+
+Generated-world entry must use `WorldTileStream.spawn(move, {halfWidth,
+halfLength})` with the actual vehicle footprint. It resolves the emitted spawn
+anchor (kind 0 spawn or kind 1 tow) only after activation, checks its public directed edge and matching
+physical surface/layer, and requires contact below the complete footprint.
+A cell centre or nearby graph projection is not an approved fallback. Anchor
+yaw follows the vehicle convention: forward is `[-sin(yaw), -cos(yaw)]` in XZ.
+The legacy three-map adapter keeps its existing route placement while migration
+is gated; that placement is not an approved generated-city anchor.
+
+Region bundles are emitted with `node tools/pack-world-tiles.mjs <world.json>
+<empty-output-directory>`. The tool preserves each compressed tile and SHA-256,
+orders cells spatially, caps bundles at 24 MiB, and writes a Range index in the
+new `world.json`. Deploy the output directory, without the individual source
+tiles. `validate-world-tiles.mjs` reads only the selected range and retains four
+edge hashes per tile. Immutable range caching stores only requested slices,
+keyed by bundle content hash plus byte interval, and reconstructs a 206 response;
+cache quota denial still permits the validated network response.
 
 
 ### Building owners: bounded one-hop requests (AWT/1 clarification, 2026-10-16)
@@ -181,4 +198,69 @@ version/type/stride/count/range validation runs in `validateWorldTile` before
 activation. Unknown `worldDetail.version` fails closed.
 
 
-Detail authorization does not by itself change numeric triangle ceilings. Include extra building geometry in the <=40-triangle building budget unless the owner explicitly revises that budget. The realism renderer owns visual tests and the World detail setting.
+Runtime worker and bounded validators dispatch ASR1/ASR2 through
+`src/world-tile-codec.js:decodeTilePack(buffer, decodedBytes)`. It checks declared
+decoded allocation sizes against the tile reservation before delegating to the
+shared `decodeGeometryPack` or asynchronous `decodeMeshoptPack`; it contains no
+codec implementation. The container magic selects the shared codec independently
+of AWT/1, so no manifest codec toggle or alternate geometry layout is required.
+
+
+Detail authorization does not by itself change numeric triangle ceilings. The
+renderer must include extra building geometry in the <=40-triangle building
+budget unless the owner explicitly revises that budget. Visual feature tests and
+the World detail setting belong to the realism renderer, not to seed validation.
+
+Measured migration coverage at the current source snapshot (2026-10-16):
+Riviera 37,790,852 bytes / 138 occupied cells = 1,044,642 bytes/km²; Penteli
+23,053,892 / 240 = 366,432 bytes/km²; Megara 1,544,807 / 64 = 92,078 bytes/km².
+These use occupied cell area, including sparse/coastal portions, and are not
+whole-city density estimates. The generator's single styled Glyfada probe is
+1,380,077 bytes per 512 m cell, approximately 5,264,576 bytes/km²; extrapolating
+that dense sample to all 10,664 occupied Attica cells would be 14.72 GB. It is a
+capacity scenario, not an emitted playable world. At <=24 MiB per packed file
+this needs at least 585 bundles (spatial boundaries add overhead), far below
+20,000 files even with immutable copies and the current game. Actual inventory
+and bundle output remain deployment gates; these figures do not justify R2.
+
+
+### Private runtime checkpoint (2026-10-16)
+
+No player entry point imports or enables this runtime. Existing map loading,
+service worker and Workers routing remain unchanged. The offline legacy conversion helper is inert. The unlanded build patch
+uses `ASR_WORLD_TILES=1` and emits descriptors with `default:false`; that build
+hook is not active in this checkpoint.
+`?streaming=0` remains the planned kill switch in the unlanded player adapter;
+`?streaming=1` alone does not activate anything on prod at this checkpoint.
+
+Run the private localhost viewer explicitly:
+
+```sh
+node tools/world-development.mjs .scratch/athens-world/development-world/glyfada/manifest.json 8795
+```
+
+It binds 127.0.0.1 and requires `developmentOnly:true, releaseReady:false`.
+Only listed artifact files are exposed. The viewer uses the shared tile worker,
+scene adapter, road graph, generated contact spawn, GPS and validated tow. Its
+traffic vehicles are adapter probes; this is not native driving acceptance.
+The generator preserves the bounded fixture in `.scratch/athens-world/development-world/glyfada/`; it remains outside the static deploy. Larger source artifacts stay external to Git. The
+standalone release-staging helper rejects development/incomplete manifests.
+
+Ribbon lateral is measured relative to its referenced directed edge: for a
+unit tangent `(tx,tz)`, positive lateral points right `(-tz,tx)`. Reversing the
+reference edge reverses the lateral sign. Station follows that reference.
+Physical width must be station-local, never directional lane count or a maximum
+width for the whole physical surface. `WorldTileRoads.width` intersects the
+canonical road contact triangles in nearby CSR cells by surface/layer, so
+clipped neighbours, reverse directions and local narrowing retain their actual
+physical boundaries. Ambiguous or incomplete sections reject traffic placement.
+
+Seam identity and equal render/contact vertices do not establish drivability:
+the two-cell fixture has known steep micro-triangles pending a continuous height
+field fix from the generator. Keep driving acceptance blocked until that fix
+and physical grade/conformance audits pass.
+
+Range bundles remain experimental: this checkout's local Wrangler asset server
+returned HTTP 200/full-file for Range, while the tile loader requires 206. The
+current file count permits individual immutable files; do not activate packed
+publication without an end-to-end hosting test. No R2 dependency is introduced.

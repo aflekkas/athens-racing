@@ -1,0 +1,26 @@
+{
+  "world": "riviera",
+  "edges": 235,
+  "samples": 608622,
+  "maxDelta": 0.00004103179035297444,
+  "missing": 0,
+  "worst": {
+    "tiles": [
+      "10,3",
+      "10,4"
+    ],
+    "station": 472.5,
+    "referenceY": 60.750003814697266,
+    "heights": [
+      48.7888053519774,
+      48.78876432018705
+    ],
+    "flags": [
+      2,
+      2
+    ]
+  },
+  "transitionSamples": 705,
+  "maxTransitionDelta": 0.10005861617180933,
+  "failures": []
+}

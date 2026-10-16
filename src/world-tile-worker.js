@@ -1,6 +1,7 @@
-import { decodeGeometryPack } from './baked-geometry.js';
+import { decodeTilePack } from './world-tile-codec.js';
 import { validateWorldTile, residentArrayBytes } from './world-tile-format.js';
 import { buildTileContactIndex } from './world-tile-contact.js';
+import { tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
 const controllers = new Map();
 async function limitedBuffer(stream,limit) {
   const reader=stream.getReader(),chunks=[]; let bytes=0;
@@ -19,7 +20,11 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal) {
   const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',compressed))].map(v=>v.toString(16).padStart(2,'0')).join('');
   if(compressed.byteLength!==entry.bytes||hash!==entry.sha256)throw new Error('Tile integrity failure');
   const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
-  const buffer=await limitedBuffer(stream,entry.decodedBytes),pack=decodeGeometryPack(buffer),checked=validateWorldTile(pack,{world,revision,cell});
+  const buffer=await limitedBuffer(stream,entry.decodedBytes);
+  return prepareTilePacket(await decodeTilePack(buffer,entry.decodedBytes),{entry,world,revision,cell});
+}
+export function prepareTilePacket(pack,{entry,world,revision,cell}){
+  const checked=validateWorldTile(pack,{world,revision,cell});
   const contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4));
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.
   let gpuBytes=0;const gpuViews=new Map();
@@ -38,10 +43,11 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal) {
     if(mesh.index!=null)gpuViews.set(`index:${mesh.index}`,pack.arrays[mesh.index].byteLength);
   }
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
-  const bytes=residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify(pack.metadata)).byteLength;
+  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack);
+  const bytes=residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
   if(bytes>entry.decodedBytes)throw new Error('Tile resident budget understated');
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
-  return {...pack,contactIndex,bytes,gpuBytes};
+  return {...pack,contactIndex,bytes,gpuBytes,gpuPlan,renderVariants};
 }
 if(typeof self!=='undefined'&&typeof document==='undefined')self.onmessage=async({data})=>{
   if(data.cancel){controllers.get(data.id)?.abort();return;}

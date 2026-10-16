@@ -29,3 +29,18 @@ test('shared plain/quantized attributes and indices allocate one GPU buffer per 
   }
  }finally{globalThis.fetch=originalFetch;}
 });
+
+test('GPU buffer uploads yield in bounded chunks and cancellation releases allocations before first render',()=>{
+ const live=new Map(),writes=[],elementBuffers=new Set();let bound=null,next=0,vao=null;
+ const gl={COPY_WRITE_BUFFER:1,COPY_WRITE_BUFFER_BINDING:2,STATIC_DRAW:3,FLOAT:4,UNSIGNED_SHORT:5,ELEMENT_ARRAY_BUFFER:6,VERTEX_ARRAY_BINDING:7,
+  createBuffer(){const b=++next;live.set(b,null);return b;},getParameter(target){return target===this.VERTEX_ARRAY_BINDING?vao:bound;},createVertexArray(){return {};},bindVertexArray(value){vao=value;},deleteVertexArray(){},bindBuffer(target,buffer){if(target===this.ELEMENT_ARRAY_BUFFER){assert.ok(vao,'EBO classification must not mutate the render VAO');elementBuffers.add(buffer);}else bound=buffer;},
+  bufferData(_,size){live.set(bound,new Uint8Array(size));},bufferSubData(_,offset,bytes){writes.push(bytes.length);live.get(bound).set(bytes,offset);},deleteBuffer(buffer){assert.ok(live.delete(buffer),'allocation must be released exactly once');}};
+ const p=fixture(),position=p.arrays.length;p.arrays.push(new Float32Array(60000*3));p.arrays[position][100]=42;
+ const index=p.arrays.length;p.arrays.push(new Uint16Array([0,1,2]));p.metadata.meshes=[{attributes:{position:{array:position,itemSize:3}},index,material:0,bounds:{box:[0,0,0,1,1,1],sphere:[0,0,0,2]}}];
+ const adapter=new WorldTileScene(new THREE.Scene(),{renderer:{getContext:()=>gl},uploadChunkBytes:32768});
+ const cancelled=adapter.prepare('0,0',p,{x:0,z:0});cancelled.steps.next();cancelled.steps.next();assert.equal(live.size,1);cancelled.dispose();cancelled.dispose();assert.equal(live.size,0);
+ const build=adapter.prepare('0,0',p,{x:0,z:0});let steps=0;for(const step of build.steps){steps++;void step;}
+ assert.ok(steps>20,'large buffer must span many activation steps');assert.ok(Math.max(...writes)<=32768);assert.equal(bound,null,'uploader must restore the GL copy-buffer binding');
+ const handle=build.commit(),mesh=handle.root.children[0];assert.ok(mesh.geometry.attributes.position.isGLBufferAttribute);assert.ok(elementBuffers.has(mesh.geometry.index.buffer),'index buffers must be classified before COPY_WRITE uploads');assert.equal(vao,null);assert.equal(new Float32Array(live.get(mesh.geometry.attributes.position.buffer).buffer)[100],42);
+ handle.dispose();assert.equal(live.size,0);assert.equal(adapter.uploadMetrics.liveBuffers,0);adapter.dispose();
+});
