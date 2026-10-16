@@ -30,6 +30,10 @@ const POWER_MUL = 1;    // catalogue power / torque as quoted (spec.powerMul can
 const H = 1 / 240;
 const J_WHEEL = 1.1;    // kg m^2 per wheel (tyre + rim + brake disc)
 const ETA = 0.92;       // driveline efficiency
+// Pedal-to-force gain: full pedal is past the tyres' limit on every car (ABS decides); half pedal gives ~0.75-0.9 g
+// on a sports car (was 1.15: half a pad trigger felt like coasting, the "weak brakes" report).
+const BRAKE_GAIN = 1.3;
+const ABS_GAIN = 80;      // ABS pressure regulator: 1/s of pressure per unit of normalised slip error
 
 // torque curves: [rpm / redline, fraction of peak torque]; the power cap in torqueMax() shapes the top end.
 // lsd: locking coefficient of the stock differential, |T_left - T_right| <= lsd * |T_axle| (0 = open diff)
@@ -97,9 +101,11 @@ export class Vehicle {
     this.slideK = spec.slideGrip ?? clamp(1 - (C - 1.3) * 0.5, 0.78, 0.97);
     this.slope0 = C * this.mfB; // d f / d s at the origin (the steepest point of the curve)
     this.lsd = spec.lsd ?? this.eng.lsd ?? 0;
-    // friction ellipse: a tyre's driving / braking peak is ~10% above its cornering peak (longer contact-patch
-    // footprint along the rolling direction); sets launch traction and stopping distances
-    this.muX = spec.muX ?? 1.1;
+    // friction ellipse: a tyre's driving / braking peak is a little above its cornering peak (longer contact-patch
+    // footprint along the rolling direction); sets launch traction and stopping distances. 4%, was 10%: on top of grip
+    // values already calibrated to instrumented skidpad figures, 10% gave the Huracan a longitudinal mu of 1.36 and
+    // braking 15% above its cornering (real: 5-8%)
+    this.muX = spec.muX ?? 1.04;
     this.slideV = spec.slideV ?? 0.09; // progressive friction loss at high sliding speed (spinning / locked rubber)
     // suspension natural frequency -> spring / damper per unit mass (kS / cS: legacy, kept for external readers)
     const wn = 2 * Math.PI * (spec.susHz ?? 1.8);
@@ -116,6 +122,7 @@ export class Vehicle {
     // (the tyres alone give ~0.45 deg/g on a nose-heavy car, slightly less than nothing on a tail-heavy one)
     this.kComp = Math.max(0, usG - 0.45 + 4.5 * Math.max(0, 0.5 - fw)) / 57.3; // rad of road-wheel angle per g of front-axle force
     this.gripR = spec.gripRear ?? 1;                                     // rear tyres vs front (staggered sizes)
+    this.ayCap = this.maxLatAccel(25);
     this.damageFx();
   }
   reset(s, u, speed = 0) {
@@ -196,12 +203,12 @@ export class Vehicle {
   maxBrakeDecel(v = 20) {
     const sp = this.spec, m = this.m, fw = sp.frontW ?? 0.55, bias = sp.bias ?? 0.65;
     const DF = 0.5 * RHO * (sp.clA ?? 0) * v * v, aeroF = sp.aeroF ?? 0.45, drag = 0.5 * RHO * sp.cdA * v * v;
-    const Fb = sp.brake * sp.grip * m * G * 1.15;
+    const Fb = sp.brake * sp.grip * m * G * BRAKE_GAIN;
     let a = sp.grip * G;
     for (let it = 0; it < 12; it++) {
       const dLong = m * a * this.hcg / this.wb;
       const gF = this._axleCap(m * G * fw + DF * aeroF + dLong, 0, true) * this.muX, gR = this._axleCap(m * G * (1 - fw) + DF * (1 - aeroF) - dLong, 0, false) * this.muX;
-      const abs = sp.abs === false ? 0.85 : 0.94;                     // ABS cycling (or locked wheels without it)
+      const abs = sp.abs === false ? 0.85 : 0.95;                     // ABS cycling (or locked wheels without it)
       a = 0.5 * a + 0.5 * ((Math.min(Fb * bias, gF) + Math.min(Fb * (1 - bias), gR)) * abs + drag) / m;
     }
     return a;
@@ -558,7 +565,9 @@ export class Vehicle {
     this.flickT = Math.max(0, this.flickT - dt); this.bigSteerT += dt;
     if (Math.abs(sIn) > 0.5) {
       // (a lift-off with the car loaded up: a quick lane change on the throttle isn't a feint)
-      if (Math.sign(sIn) !== this.bigSteerSide && this.bigSteerT < 0.8 && vt > 12 && thrIn < 0.3 && Math.abs(this.ay) > 4) { this.driftLatch = 1; this.flickT = 0.7; }
+      // The flick is lift + reversal + a brake dab (left foot or handbrake). A lifted reversal alone is every
+      // S-bend at the limit: latching there switched ESC off and spun gripped cars.
+      if (Math.sign(sIn) !== this.bigSteerSide && this.bigSteerT < 0.8 && vt > 12 && thrIn < 0.3 && (brk > 0.1 || inp.handbrake) && Math.abs(this.ay) > 4) { this.driftLatch = 1; this.flickT = 0.7; }
       this.bigSteerSide = Math.sign(sIn); this.bigSteerT = 0;
     }
     // With aids on, RWD throttle permits bounded power rotation through the
@@ -598,7 +607,12 @@ export class Vehicle {
     // onto the same peak on the other side of thF, so in a slide full opposite lock catches it. steerAssist: 1 full,
     // ~0.35 light (analog stick / wheel: the driver can still over-drive the fronts), 0 off (raw rack ratio)
     const thF = Math.atan2(vy + this.a * this.w, Math.max(2, av)), aOpt = this.aPk * (sp.steerPk ?? 1) * wetPeakScale(this.surf);
-    const into = Math.max(0, thF * Math.sign(sIn || 1) + aOpt);   // room towards the input side
+    // Yaw damping: thF contains a*w/v, so tracking it cancels the front axle's natural yaw damping and a step input
+    // overshot the grip-limited yaw rate by ~50% (the S-bend pendulum that then swung the tail out). Up to the yaw
+    // rate the tyres can hold the assist still tracks it in full (sharp turn-in); beyond it, it stops chasing the
+    // extra yaw, as a fixed steering wheel would.
+    const yawLim = this.ayCap / Math.max(5, vt), yawOver = Math.max(0, this.w * Math.sign(sIn || 1) - yawLim) * this.a / Math.max(2, av) * (sp.yawDamp ?? 4) * (1 - this.driftLatch);
+    const into = Math.max(0, thF * Math.sign(sIn || 1) + aOpt - yawOver);   // room towards the input side
     // compliance: the front axle's lateral force (as a share of its static load) bends the wheels back out of the turn
     const comp = this.kComp * clamp(this.wheel[0].Fy / (this.m * G * (sp.frontW ?? 0.55)), -1.5, 1.5);
     // A small, per-car mid-input boost makes short keyboard taps and stick
@@ -607,14 +621,19 @@ export class Vehicle {
     const intent = sIn * (1 + response * (1 - Math.abs(sIn)));
     const assisted = clamp(intent * into + comp + helper, -(rack + 0.5), rack + 0.5);
     // Deliberate slides use the rack directly; do not fight their countersteer.
-    const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
+    // The latch only hands the driver the raw rack once the car is actually sliding. A quick lift-and-reverse
+    // through an S-bend arms the flick latch; dropping the assist there at 4-5 deg of sideslip put the fronts at
+    // ~2x their peak slip (plough) and then spun the car. Handbrake / flick / power slides pass 9 deg within a few
+    // frames, so drift entries and countersteer keep the raw rack.
+    const latchSteer = this.driftLatch * (this.handbrakeTurn ? 1 : smoothstep(0.07, 0.16, Math.abs(beta)));
+    const A = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - latchSteer);
     let target = lerp(raw, assisted, A);
     // Light assist must still catch gross front-tyre over-driving. At road
     // speeds the raw rack can ask for twice peak slip, so blending it with
     // 35% assist alone makes full stick scrub away ~20% of lateral grip.
     // Leave a small amount of scrub for feedback, and release the guard for
     // deliberate slides / counter-steer or when the driver disables assist.
-    const guard = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - this.driftLatch);
+    const guard = clamp(this.steerAssist ?? 1, 0, 1) * smoothstep(4, 9, vt) * (1 - latchSteer);
     // Same-sign sideslip during a slow understeering turn is not a rear
     // slide to catch. Only opposite-yaw countersteer needs the raw guard exit.
     const catchingSlide = counter > 0 && sliding && sIn * this.w < 0;
@@ -627,7 +646,7 @@ export class Vehicle {
       const frontTravel = Math.min(
         Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[0])) * side,
         Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[1])) * side);
-      const useful = Math.max(0, frontTravel + aOpt * (sp.steerSlipGuard ?? 1.02) + comp * side);
+      const useful = Math.max(0, frontTravel + aOpt * (sp.steerSlipGuard ?? 1.02) + comp * side - yawOver);
       const excess = Math.max(0, Math.abs(target) - useful);
       target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
     }
@@ -796,7 +815,7 @@ export class Vehicle {
 
     // ---------------- brakes (bias per car), ABS per wheel; handbrake on the rear
     const brakeIn = this.reverse ? thrIn : brk;
-    const Fbrake = brakeIn * sp.brake * mu0 * this.m * G * 1.15;
+    const Fbrake = brakeIn * sp.brake * mu0 * this.m * G * BRAKE_GAIN;
     const bias = sp.bias ?? 0.65;
     const hbF = inp.handbrake && !(burnout && sR > 0) ? this.m * G * 0.45 : 0;
     const lineF = burnout && sR > 0 ? this.m * G * 0.7 : 0; // per front wheel during a brake stand
@@ -870,7 +889,9 @@ export class Vehicle {
       Si.kx = cap[i] * this.muX * this.slope0 / (this.kPk * (this.wheelPeak?.[i] ?? 1) * wetPeakScale(this._wsurf?.[i] || this.surf) * Si.vref);
       Si.p = dt / (mw + dt * Si.kx);
       Si.brk = (front ? Fbrake * bias : Fbrake * (1 - bias)) * 0.5;
-      Si.Fb = Si.brk * Wc.abs + (front ? lineF : hbF + this.rearDrag * cap[i]) + Wc.esc + Wc.edl;
+      // ESC's single-wheel braking goes through the same ABS modulator as the pedal (as the real hydraulic unit
+      // does). Added outside it, the stability brake locked an already-braked outer front and ploughed the car.
+      Si.Fb = (Si.brk + Wc.esc) * Wc.abs + (front ? lineF : hbF + this.rearDrag * cap[i]) + Wc.edl;
       Si.sg = Math.abs(Wc.vw) > 1e-3 ? Math.sign(Wc.vw) : 0;
       Si.G = -tyre(i, Wc.vw, tt).Fx - Si.Fb * Si.sg;
     }
@@ -915,7 +936,19 @@ export class Vehicle {
       // slip is signed along the wheel's x axis: spin / lock are measured against the direction of drive / travel
       const sxT = t1.sx * (Si.vgx < 0 ? -1 : 1), sxD = t1.sx * dirD;
       // spec.abs = false: driver aids off
-      if (sp.abs !== false && Si.brk > 0 && !(i >= 2 && hbF) && av > 2 && sxT < -1.15) { Wc.abs = Math.max(0.35, Wc.abs - dt * 9); this.absOn = true; }
+      // The release threshold is on the combined slip: a cornering tyre already uses part of its friction budget
+      // sideways, so a longitudinal-only limit let a steered, braked tyre sit at ~1.5x its combined peak (past the
+      // peak both components fall and the force swings rearwards: braking into a bend ploughed). Straight-line
+      // braking keeps the old 1.15 limit. The rears are held below their combined peak (cornering brake control /
+      // EBD): an over-braked rear in a trail-braked bend swapped its side force for brake force and spun the car.
+      const absLim = i < 2 ? Math.max(0.65, Math.sqrt(Math.max(0, 1.3225 - t1.sy * t1.sy)))
+        : Math.max(0.15, Math.sqrt(Math.max(0, 1.21 - t1.sy * t1.sy)));
+      // Pressure is regulated on the slip error (integral action, so the tyre settles at its target slip whatever
+      // the pedal over-force) instead of bang-bang dumps to a 35% floor whenever 1.15x peak was crossed: that cycle
+      // swung the tyre between ~0.4x and 1.5x its peak slip, and a light inner wheel still locked on the floor.
+      const absOn = sp.abs !== false && (Si.brk > 0 || Wc.esc > 0) && !(i >= 2 && hbF) && av > 2;
+      const slipErr = -sxT - absLim / 1.15;
+      if (absOn && (slipErr > 0 || Wc.abs < 1)) { Wc.abs = clamp(Wc.abs - dt * slipErr * ABS_GAIN, 0.02, 1); if (Wc.abs < 0.98) this.absOn = true; }
       else Wc.abs = Math.min(1, Wc.abs + dt * 4);
       if ((i < 2 ? sF : sR) > 0) maxSpin = Math.max(maxSpin, sxD);
       maxLock = Math.max(maxLock, -sxT);
@@ -951,7 +984,9 @@ export class Vehicle {
     // that brake modulation for you, so throttle + counter-steer sustain the drift. Straighten up and it lets go.
     // (AWD / RWD: only the feint's dab, the rally driver's handbrake flick in the feint: a car with rear grip to spare
     // understeers through a plain feint; once it's sliding the throttle (rear-biased coupling on AWD) holds it)
-    const flickDab = this.flickT > 0 && Math.sign(this.w) === Math.sign(inp.steer) && Math.abs(this.w) > 0.2;
+    // The dab is the driver's left foot: it needs the brake pedal. Without it every lifted S-bend reversal at the
+    // limit armed the flick and dragged the rears automatically, spinning a gripped car.
+    const flickDab = this.flickT > 0 && brk > 0.1 && Math.sign(this.w) === Math.sign(inp.steer) && Math.abs(this.w) > 0.2;
     const dragWant = this.driftLatch > 0.5 && ((sR === 0 && sliding && thrIn > 0.15) || flickDab) && !inp.handbrake && !this.reverse;
     // like the driver's hand on the lever it feathers to hold the slide angle: more drag below the car's natural drift
     // angle, less above it, damped by how fast the angle is changing (steering + throttle still place the car)
@@ -1021,8 +1056,14 @@ export class Vehicle {
     this.tcOn = this.tcCut > 0.05 || C4.some((c) => c.edl > 50);
     const escK = (burnout || inp.handbrake ? 0 : sp.esc ?? 0.4) * (1 - this.driftLatch) * smoothstep(3, 10, vt);
     this.escOn = false;
-    const wGrip = sp.grip * G / Math.max(5, vt);
-    const wDes = clamp(vx * Math.tan(delta) / this.wb, -wGrip, wGrip);
+    // Reference yaw: what the driver asked for. With the steering assist the input means "this share of the grip"
+    // (full = turn at the limit) and the road-wheel angle is the assist's own output, which it trims as the car
+    // rotates; the kinematic yaw of that angle made ESC brake the outer front of a car that was merely using the
+    // grip it had been asked to use (lift / trail-brake rotation killed, the line ran wide).
+    const wGrip = this.ayCap / Math.max(5, vt);
+    const wKin = vx * Math.tan(delta) / this.wb;
+    const wAsk = Math.sign(sIn) * Math.max(Math.abs(wKin), Math.abs(intent) * wGrip);
+    const wDes = clamp(lerp(wKin, wAsk, A), -wGrip, wGrip);
     const over = this.w - wDes;
     let Mreq = 0;
     // Let TC manage mild powered RWD rotation. Fade yaw-catching brakes in
@@ -1040,7 +1081,9 @@ export class Vehicle {
     C4[0].esc = Mreq < 0 ? Math.min(0.9 * cap[0], -Mreq / t2) : 0;
     C4[1].esc = Mreq > 0 ? Math.min(0.9 * cap[1], Mreq / t2) : 0;
     C4[2].esc = C4[3].esc = 0;
-    if (Math.abs(Mreq) > 1) { this.escOn = true; this.escCut = Math.min(0.9 * Math.min(1, escK * 2), this.escCut + dt * escK * 9); }
+    // Engine cut only helps when the driven wheels are at the rear: on a front-driven car a throttle cut against
+    // oversteer is a lift-off, which tucks the tail further in, so ESC leaves most of the drive in.
+    if (Math.abs(Mreq) > 1) { this.escOn = true; this.escCut = Math.min(0.9 * Math.min(1, escK * 2) * (sR > 0 ? 1 : 0.3), this.escCut + dt * escK * 9); }
     else this.escCut = Math.max(0, this.escCut - dt * 2);
 
     // ---------------- aero / rolling resistance / grade, then integrate (body frame)
@@ -1069,7 +1112,7 @@ export class Vehicle {
       else { this.digB = Math.min(1, this.digB + pile * (1 - this.digF)); this.digF = Math.max(0, this.digF - fill); }
     } else { this.digF = Math.max(0, this.digF - dt * 2); this.digB = Math.max(0, this.digB - dt * 2); }
     // Runoff may slow the car, but ruts must not become a permanent immobilizer.
-    const rutFill = thrIn < 0.1 && brk < 0.1 ? dt * 0.35 : 0;
+    const rutFill = thrIn < 0.1 && brk < 0.1 ? dt * 0.4 : 0; // 0.4/s: a rut dug to its 0.45 cap is free after a 2 s lift
     this.digF = clamp(this.digF - rutFill, 0, 0.45);
     this.digB = clamp(this.digB - rutFill, 0, 0.45);
     this.dig = Math.max(this.digF, this.digB);

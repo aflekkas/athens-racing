@@ -45,7 +45,7 @@ const ENTRIES = {
   // (deliberate: full lock and full throttle. With the steering assist, input maps onto the front tyres' grip, so 0.75
   // would be a car at 75% of its front grip, nowhere near breaking the rear)
   powerOver(spec) { const c = rolling({ ...spec, tc: 0, esc: 0, edl: 0 }, 45); for (let i = 0; i < 60; i++) c.update(dt, { throttle: 0.3, brake: 0, steer: 0.55 }); for (let i = 0; i < 90 && (i < 30 || Math.abs(B(c)) < 0.1); i++) c.update(dt, { throttle: 1, brake: 0, steer: 1 }); if (Math.abs(B(c)) < 0.1 && spec.drive !== 'fwd') for (let i = 0; i < 12; i++) c.update(dt, { throttle: 1, brake: 0, steer: 0.8, handbrake: true }); return c; }, // aids off; a low-power car may need an explicit handbrake/clutch-kick seed
-  feint(spec) { const c = rolling(spec, 80); for (let i = 0; i < 24; i++) c.update(dt, { throttle: 0.5, brake: 0, steer: -0.7 }); for (let i = 0; i < 36; i++) c.update(dt, { throttle: 0, brake: 0, steer: 0.9 }); return c; },
+  feint(spec) { const c = rolling(spec, 80); for (let i = 0; i < 24; i++) c.update(dt, { throttle: 0.5, brake: 0, steer: -0.7 }); for (let i = 0; i < 36; i++) c.update(dt, { throttle: 0, brake: i < 9 ? 0.4 : 0, steer: 0.9 }); return c; }, // the flick: lift, reverse and dab the brake (a lifted reversal alone is an ordinary S-bend)
 };
 
 const only = process.argv[2];

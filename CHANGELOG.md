@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Sharper handling: cars hold their line when you brake into a corner or swing through an S-bend, instead of ploughing or spinning. Brakes stay steerable.
+  ![A Huracán trail-braking through a tight Megara hairpin](assets/changelog/2026.10.16.1/sharper-handling.webp "Brake late, turn in, keep your line.")
+
 - Every menu now shares one clean look, taken from the pause menu: the same panels, rows, buttons, lists and selection outline on every screen.
   ![The garage with search and filters in one row and a full grid of cars](assets/changelog/2026.10.16.1/one-component-set.webp "One look everywhere. More cars in view.")
 - The garage shows more cars at once, with search and filters in one row at the top.

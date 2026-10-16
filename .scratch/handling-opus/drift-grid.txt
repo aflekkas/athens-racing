@@ -1,0 +1,78 @@
+== huracan (awd)
+  PASS handbrake entry b -8°  0.3 rad after 0.15 s, held 7.8 s in 0.3-0.6 rad, avg 30°, min 58 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+  PASS powerOver entry b -3°  0.3 rad after 0.52 s, held 7.5 s in 0.3-0.6 rad, avg 29°, min 88 km/h  [thr 0.5 kS 3 kW 0.5 tgt 0.4]
+  FAIL feint     entry b -5°  0.3 rad after 3.72 s, held 4.3 s in 0.3-0.6 rad, avg 29°, min 101 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+  PASS transition into the opposite drift: held 4.2 s, avg 32°, min 99 km/h  [thr 0.9 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 5.2° (latch off 5.2°)
+BEFORE == huracan (awd)
+BEFORE   PASS handbrake entry b -5°  0.3 rad after 0.33 s, held 7.7 s in 0.3-0.6 rad, avg 30°, min 60 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+BEFORE   PASS powerOver entry b -3°  0.3 rad after 0.52 s, held 7.5 s in 0.3-0.6 rad, avg 31°, min 90 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+BEFORE   PASS feint     entry b -11°  0.3 rad after 0.10 s, held 7.9 s in 0.3-0.6 rad, avg 24°, min 64 km/h  [thr 0.7 kS 1.5 kW 0.5 tgt 0.4]
+BEFORE   PASS transition into the opposite drift: held 4.2 s, avg 32°, min 97 km/h  [thr 0.9 kS 3 kW 0.5]
+BEFORE   PASS keyboard slalom @100 on throttle stays gripped: max beta 14.5° (latch off 14.5°)
+== aventador_svj (awd)
+  PASS handbrake entry b -8°  0.3 rad after 0.13 s, held 7.9 s in 0.3-0.6 rad, avg 31°, min 58 km/h  [thr 0.7 kS 1.5 kW 0.5 tgt 0.4]
+  FAIL powerOver entry b -6°  0.3 rad after 3.52 s, held 1.6 s in 0.3-0.6 rad, avg 21°, min 115 km/h  [thr 0.9 kS 1.5 kW 0.5 tgt 0.4]
+  PASS feint     entry b -4°  0.3 rad after 1.03 s, held 7.0 s in 0.3-0.6 rad, avg 31°, min 81 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.5]
+  PASS transition into the opposite drift: held 4.2 s, avg 32°, min 91 km/h  [thr 0.9 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 3.8° (latch off 3.8°)
+BEFORE == aventador_svj (awd)
+BEFORE   PASS handbrake entry b -4°  0.3 rad after 0.32 s, held 7.7 s in 0.3-0.6 rad, avg 28°, min 58 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+BEFORE   FAIL powerOver entry b -6°  0.3 rad after -, held 0.0 s in 0.3-0.6 rad, avg 0°, min - km/h  [thr 0.5 kS 1.5 kW 0 tgt 0.4]
+BEFORE   FAIL feint     entry b -13°  0.3 rad after 0.07 s, held 2.7 s in 0.3-0.6 rad, avg 27°, min 63 km/h  [thr 0.9 kS 1.5 kW 0.5 tgt 0.5]
+BEFORE   PASS transition into the opposite drift: held 4.2 s, avg 32°, min 99 km/h  [thr 1 kS 3 kW 0.5]
+BEFORE   PASS keyboard slalom @100 on throttle stays gripped: max beta 11.9° (latch off 11.9°)
+== z4 (rwd)
+  PASS handbrake entry b -8°  0.3 rad after 0.12 s, held 7.9 s in 0.3-0.6 rad, avg 27°, min 51 km/h  [thr 0.7 kS 1.5 kW 0.5 tgt 0.4]
+  PASS powerOver entry b -6°  0.3 rad after 0.40 s, held 7.6 s in 0.3-0.6 rad, avg 28°, min 59 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+  PASS feint     entry b -6°  0.3 rad after 0.67 s, held 7.3 s in 0.3-0.6 rad, avg 26°, min 66 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+  PASS aided power rotation: beta 6.2°, rear 1.58 peak, latch false
+  PASS transition into the opposite drift: held 4.2 s, avg 30°, min 71 km/h  [thr 0.9 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 6.0° (latch off 6.0°)
+BEFORE == z4 (rwd)
+BEFORE   PASS handbrake entry b -8°  0.3 rad after 0.12 s, held 7.9 s in 0.3-0.6 rad, avg 26°, min 51 km/h  [thr 0.7 kS 1.5 kW 0.5 tgt 0.4]
+BEFORE   PASS powerOver entry b -6°  0.3 rad after 0.32 s, held 7.7 s in 0.3-0.6 rad, avg 28°, min 59 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+BEFORE   PASS feint     entry b -12°  0.3 rad after 0.07 s, held 7.9 s in 0.3-0.6 rad, avg 28°, min 52 km/h  [thr 0.9 kS 1.5 kW 0.5 tgt 0.4]
+BEFORE   PASS aided power rotation: beta 5.4°, rear 1.59 peak, latch false
+BEFORE   PASS transition into the opposite drift: held 4.2 s, avg 31°, min 77 km/h  [thr 1 kS 3 kW 0.5]
+BEFORE   PASS keyboard slalom @100 on throttle stays gripped: max beta 14.2° (latch off 14.2°)
+== carrera (rwd)
+  PASS handbrake entry b -10°  0.3 rad after 0.08 s, held 7.9 s in 0.3-0.6 rad, avg 23°, min 42 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+  PASS powerOver entry b -6°  0.3 rad after 1.23 s, held 6.8 s in 0.3-0.6 rad, avg 26°, min 55 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+  PASS feint     entry b -10°  0.3 rad after 0.22 s, held 7.8 s in 0.3-0.6 rad, avg 32°, min 71 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+  PASS aided power rotation: beta 4.2°, rear 1.91 peak, latch false
+  PASS transition into the opposite drift: held 4.1 s, avg 28°, min 57 km/h  [thr 1 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 5.9° (latch off 5.9°)
+BEFORE == carrera (rwd)
+BEFORE   PASS handbrake entry b -9°  0.3 rad after 0.10 s, held 7.9 s in 0.3-0.6 rad, avg 23°, min 42 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+BEFORE   PASS powerOver entry b -6°  0.3 rad after 0.62 s, held 7.4 s in 0.3-0.6 rad, avg 28°, min 51 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+BEFORE   PASS feint     entry b -15°  0.3 rad after 0.02 s, held 6.9 s in 0.3-0.6 rad, avg 34°, min 61 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.5]
+BEFORE   PASS aided power rotation: beta 7.3°, rear 1.97 peak, latch false
+BEFORE   PASS transition into the opposite drift: held 4.2 s, avg 28°, min 57 km/h  [thr 1 kS 3 kW 0.5]
+BEFORE   PASS keyboard slalom @100 on throttle stays gripped: max beta 16.8° (latch off 16.8°)
+== e36_m3 (rwd)
+  PASS handbrake entry b -6°  0.3 rad after 0.20 s, held 7.8 s in 0.3-0.6 rad, avg 27°, min 58 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+  PASS powerOver entry b -6°  0.3 rad after 1.00 s, held 7.0 s in 0.3-0.6 rad, avg 27°, min 55 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+  PASS feint     entry b -5°  0.3 rad after 0.57 s, held 7.4 s in 0.3-0.6 rad, avg 27°, min 76 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+  PASS aided power rotation: beta 6.8°, rear 1.61 peak, latch false
+  PASS transition into the opposite drift: held 4.3 s, avg 29°, min 73 km/h  [thr 1 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 7.0° (latch off 7.0°)
+BEFORE == e36_m3 (rwd)
+BEFORE   PASS handbrake entry b -6°  0.3 rad after 0.20 s, held 7.8 s in 0.3-0.6 rad, avg 27°, min 57 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+BEFORE   PASS powerOver entry b -6°  0.3 rad after 0.62 s, held 7.4 s in 0.3-0.6 rad, avg 28°, min 50 km/h  [thr 0.7 kS 3 kW 0.2 tgt 0.4]
+BEFORE   PASS feint     entry b -9°  0.3 rad after 0.17 s, held 7.8 s in 0.3-0.6 rad, avg 27°, min 66 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+BEFORE   PASS aided power rotation: beta 7.3°, rear 1.67 peak, latch false
+BEFORE   PASS transition into the opposite drift: held 4.2 s, avg 29°, min 74 km/h  [thr 1 kS 3 kW 0.5]
+BEFORE   PASS keyboard slalom @100 on throttle stays gripped: max beta 13.8° (latch off 13.8°)
+== golf_gti (fwd)
+  PASS handbrake entry b -5°  0.3 rad after 0.23 s, held 7.8 s in 0.3-0.6 rad, avg 21°, min 46 km/h  [thr 0.9 kS 3 kW 0.5 tgt 0.4]
+  n/a  powerOver entry b 1°  0.3 rad after -, held 0.0 s in 0.3-0.6 rad, avg 0°, min - km/h  [thr 0.5 kS 1.5 kW 0 tgt 0.4]
+  PASS feint     entry b -4°  0.3 rad after 0.62 s, held 6.1 s in 0.3-0.6 rad, avg 25°, min 35 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+  PASS transition into the opposite drift: held 4.1 s, avg 20°, min 51 km/h  [thr 1 kS 3 kW 0.5]
+  PASS keyboard slalom @100 on throttle stays gripped: max beta 7.0° (latch off 7.0°)
+BEFORE == golf_gti (fwd)
+BEFORE   PASS handbrake entry b -5°  0.3 rad after 0.25 s, held 7.7 s in 0.3-0.6 rad, avg 22°, min 37 km/h  [thr 0.7 kS 1.5 kW 0.5 tgt 0.4]
+BEFORE   n/a  powerOver entry b 1°  0.3 rad after -, held 0.0 s in 0.3-0.6 rad, avg 0°, min - km/h  [thr 0.5 kS 1.5 kW 0 tgt 0.4]
+BEFORE   PASS feint     entry b -8°  0.3 rad after 0.15 s, held 5.4 s in 0.3-0.6 rad, avg 25°, min 33 km/h  [thr 0.7 kS 3 kW 0.5 tgt 0.4]
+BEFORE   PASS transition into the opposite drift: held 4.0 s, avg 21°, min 36 km/h  [thr 0.7 kS 3 kW 0.5]
+BEFORE   PASS keyboard slalom @100 on throttle stays gripped: max beta 13.1° (latch off 13.1°)
