@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Psychiko’s close-set building fronts are back in their real positions. Roadworks guide races and leave every street open in free roam.
+  ![Restored close-frontage homes along Sismanoglou in Psychiko](assets/changelog/2026.10.16.1/psychiko-frontages.webp "Real fronts, with room for their gardens.")
+
 - Sharper handling: cars hold their line when you brake into a corner or swing through an S-bend, instead of ploughing or spinning. Brakes stay steerable.
   ![A Huracán trail-braking through a tight Megara hairpin](assets/changelog/2026.10.16.1/sharper-handling.webp "Brake late, turn in, keep your line.")
 
