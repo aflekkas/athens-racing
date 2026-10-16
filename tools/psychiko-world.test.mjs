@@ -113,3 +113,23 @@ test('Psychiko uses the shared two-rival grid and road-aware auto-tow corridor',
  for(const free of [false,true])assert.equal(corridorRecovery({distance:60,mapId:'psychiko',freeRoam:free},0,{}).tow,true);
  assert.equal(freeRoam('psychiko').mapId,'psychiko');
 });
+
+test('Psychiko permits the shared police runtime in free roam and with online police enabled',async()=>{
+ const {Police}=await import('../src/police.js');
+ const traffic={route,data,cars:[],allowClosedRoam:true};
+ const police=new Police(traffic,route);
+ try{
+  police.reset(true);assert.equal(police.enabled,true);assert(police.patrols.length>0);
+  traffic.allowClosedRoam=false;
+  assert.equal(police.configureOnline({config:{police:true},raceId:'psychiko-test'}),true);
+  assert.equal(police.configureOnline({config:{police:false}}),false);
+ }finally{for(const off of police.offs)off();}
+});
+
+
+test('catalogue-only Psychiko launch preserves the authored two laps before the bundle loads',async()=>{
+ const {quickMapEvent}=await import('../src/menu-map.js');
+ const pending=quickMapEvent('psychiko'),authored=data.events.find(e=>e.id==='psychiko-race');
+ assert.equal(pending.laps,authored.laps);
+ assert.equal(resolve(pending,{route,marks:data.marks}).len,resolve(authored,{route,marks:data.marks}).len);
+});

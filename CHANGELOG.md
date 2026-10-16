@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Explore the Psychiko Garden Circuit: a two-lap street race, surrounding free-roam streets and race-only roadworks. Map by Vassilis Perrotis (Vas-Per).
+  ![Vas-Per’s Psychiko garden streets, villas and planting](assets/changelog/2026.10.16.1/psychiko.webp "Psychiko by Vas-Per.")
+
 - Removed the phone-as-steering-wheel controller.
 
 - One graphics look for everyone: the clean, fast Lighting Off and Effects Off picture. Presets are gone, and the chase camera no longer shows a rear-view mirror.
