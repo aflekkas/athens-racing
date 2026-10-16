@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Tow and reset get you moving sooner, and race positions follow the course you have actually driven. Psychiko starts in reverse with room behind the gantry and separate records for the new direction.
+
 - Loading stays busy while the track unpacks and builds. Pausing a download stops its connection; Retry continues from the saved parts.
 
 - Riviera keeps downloading on slow connections. After a dropped connection, retry with completed parts kept, or choose to build the track on your device.
