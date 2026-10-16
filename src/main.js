@@ -96,11 +96,11 @@ const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
 
 function fail(e) { console.error(e); const el = $('err'); el.style.display = 'block'; el.textContent = 'Error: ' + (e && e.message || e); }
 window.addEventListener('error', (e) => fail(e.error || e.message));
-const lstat = (t, f) => {
+const lstat = (t, f, detail) => {
   const pending = assetMetrics.maps[loading.mapId];
   // World preloading overlaps HUD/sky work. Keep the actual pending operation
   // visible when a builder announces its terrain milestone before awaiting it.
-  loading.progress(t === 'BUILDING TERRAIN' && pending && !pending.loadMs ? pending.phase || t : t, f);
+  loading.progress(t === 'BUILDING TERRAIN' && pending && !pending.loadMs ? pending.phase || t : t, f, detail);
 };
 
 // ------------------------------------------------------------------ renderer

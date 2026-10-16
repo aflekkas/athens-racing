@@ -8,9 +8,9 @@ import vm from 'node:vm';
 import { buildRelease, publishRelease, hash16, CACHE_HEADERS } from './release-cache.mjs';
 
 const root = resolve(import.meta.dirname, '..');
-async function loadWorker(release) {
+async function loadWorker(release, environment = {}) {
   const self = { location: { origin: 'https://asr.test' }, ASR_RELEASE: release };
-  vm.runInNewContext(await readFile(resolve(root, 'src/service-worker.js'), 'utf8'), { self, URL, Response, crypto, caches: undefined, fetch: undefined });
+  vm.runInNewContext(await readFile(resolve(root, 'src/service-worker.js'), 'utf8'), { self, URL, Response, crypto, caches: undefined, fetch: undefined, setTimeout, clearTimeout, ...environment });
   return self.ASR_SW;
 }
 
@@ -76,4 +76,23 @@ test('a release publishes immutable content-addressed copies, a worker and the p
     assert.equal(changed.files['/src/b.js'], release.files['/src/b.js']); // unchanged files keep their URL
     assert.match(CACHE_HEADERS, /\/_c\/\*\n  Cache-Control: public, max-age=31536000, immutable/);
   } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+
+test('content responses stream before caching finishes; cache write failure never re-downloads',async()=>{
+ let send,finishWrite,requests=0;const lifetime=[];
+ const cache={match:async()=>null,put:async(key,response)=>{await response.arrayBuffer();await new Promise(resolve=>{finishWrite=resolve;});throw Error('quota exceeded');}};
+ const sw=await loadWorker({build:'x',files:{'/data/world.gz':'a'.repeat(16)},core:[]},{caches:{open:async()=>cache},fetch:async()=>{requests++;return new Response(new ReadableStream({start(c){send=c;}}));}});
+ const result=await sw.fromContent(new Request('https://asr.test/data/world.gz'),'/data/world.gz',{waitUntil:p=>lifetime.push(p)});
+ assert.equal(requests,1);const reader=result.body.getReader();send.enqueue(new Uint8Array([1,2]));assert.deepEqual((await reader.read()).value,new Uint8Array([1,2]));assert.equal(finishWrite,undefined,'cache still receiving body');send.close();assert.equal((await reader.read()).done,true);
+ await new Promise(resolve=>setImmediate(resolve));finishWrite();await Promise.all(lifetime);assert.equal(requests,1,'quota failure cannot repeat a useful transfer');
+});
+for(const unavailable of ['throws','blocked'])test(`content download works when Cache Storage ${unavailable}`,async()=>{
+ let requests=0;const sw=await loadWorker({build:'x',files:{'/data/world.gz':'a'.repeat(16)},core:[]},{caches:{open(){if(unavailable==='throws')throw Error('storage unavailable');return new Promise(()=>{});}},fetch:async()=>{requests++;return new Response('world');}});
+ const result=await sw.fromContent(new Request('https://asr.test/data/world.gz'),'/data/world.gz');assert.equal(await result.text(),'world');assert.equal(requests,1);
+});
+test('an explicit reload bypasses a bad content cache without clearing unrelated content',async()=>{
+ let matches=0,options;const cache={match:async()=>{matches++;return new Response('bad');},put:async()=>{}};
+ const sw=await loadWorker({build:'x',files:{'/data/world.gz':'a'.repeat(16)},core:[]},{caches:{open:async()=>cache},fetch:async(url,opts)=>{options=opts;return new Response('good');}});
+ const result=await sw.fromContent(new Request('https://asr.test/data/world.gz',{cache:'reload'}),'/data/world.gz');assert.equal(await result.text(),'good');assert.equal(matches,0);assert.equal(options.cache,'reload');
 });

@@ -38,3 +38,19 @@ test('a changed generator bundle cannot reuse a previously committed terrain cac
   globalThis.Worker=class{constructor(){generated++;}postMessage(){queueMicrotask(()=>this.onmessage({data:{terrain:new ArrayBuffer(8),roads:new ArrayBuffer(8)}}));}terminate(){}};
   await generatedWorld(map);assert.equal(generated,1);assert.equal(reads,1,'only the optional save touches IndexedDB');
 }));
+
+test('blocked IndexedDB cannot trap the production cache lookup',()=>globals(async()=>{
+  let request,created=0;
+  globalThis.location={search:''};globalThis.localStorage={getItem:()=>version};
+  globalThis.Worker=class{constructor(){created++;}};
+  globalThis.indexedDB={open(){request={};queueMicrotask(()=>request.onblocked());return request;}};
+  assert.equal(await generatedWorld(map,{cachedOnly:true}),null);assert.equal(created,0);
+}));
+test('worker progress does not resolve or terminate generation before buffers arrive',()=>globals(async()=>{
+  let instance,terminated=0;const progress=[];
+  globalThis.location={search:''};globalThis.localStorage={getItem:()=>null};globalThis.indexedDB={open(){throw Error('optional storage unavailable');}};
+  globalThis.Worker=class{constructor(){instance=this;}postMessage(){}terminate(){terminated++;}};
+  const pending=generatedWorld(map,{onProgress:detail=>progress.push(detail)});let completed=false;pending.then(()=>{completed=true;});
+  instance.onmessage({data:{type:'progress',stage:'roads',step:2,steps:4}});await Promise.resolve();assert.equal(completed,false);assert.equal(terminated,0);assert.equal(progress[0].stage,'roads');
+  instance.onmessage({data:{terrain:new ArrayBuffer(8),roads:new ArrayBuffer(8)}});await pending;assert.equal(terminated,1);
+}));
