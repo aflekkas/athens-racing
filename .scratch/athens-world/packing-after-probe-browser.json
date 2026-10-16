@@ -1,0 +1,64 @@
+{
+  "purpose": "Single-cell offline appearance probe. No manifest, graph integration, structures or conformance acceptance.",
+  "errors": [],
+  "poses": {
+    "overview": {
+      "frame": 2,
+      "calls": 13,
+      "triangles": 70576,
+      "points": 0,
+      "lines": 0,
+      "road": "w24826358:0",
+      "roadName": "Λαοδίκης",
+      "camera": [
+        700,
+        487.2581543151778,
+        700
+      ],
+      "target": [
+        275.1152870776973,
+        18.890899487501315,
+        271.20785214670104
+      ],
+      "buildings": 233
+    },
+    "street": {
+      "frame": 3,
+      "calls": 13,
+      "triangles": 70576,
+      "points": 0,
+      "lines": 0,
+      "road": "w24826358:0",
+      "roadName": "Λαοδίκης",
+      "camera": [
+        277.0094006337267,
+        18.215318380485986,
+        259.35828110649527
+      ],
+      "target": [
+        275.1152870776973,
+        18.890899487501315,
+        271.20785214670104
+      ],
+      "buildings": 233
+    },
+    "junction": {
+      "frame": 4,
+      "calls": 13,
+      "triangles": 70576,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        294.8364723481045,
+        18.23042399544699,
+        147.81709403818786
+      ],
+      "target": [
+        298.625,
+        19.268808640816285,
+        124.1180000000004
+      ],
+      "buildings": 233
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "purpose": "Offline report optimization experiment, not applied to current candidate",
+  "points": 1000,
+  "inside": 987,
+  "beforeCpuSeconds": 0.127622919,
+  "afterCpuSeconds": 0.0052891579999999605,
+  "identicalResults": true,
+  "maskCoordinates": 30222,
+  "cleanSha256": "dd84f9186bc625045f62d4cf78dcdc0bb498b09e62215a296337a1b49dcd4c03"
+}

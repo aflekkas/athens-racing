@@ -1,0 +1,36 @@
+{
+  "inputs": {
+    "codeSha256": "56d5c7fe16041c88d4ea042b5bebfe2b0c60385d70ca6c12ea222e24eff84c4f",
+    "schema": "athens-source-1",
+    "sourceSha256": "c7b270984cb19293e4b90b2456bc412dbd1954347e80aa62d997591da159de74"
+  },
+  "counts": {
+    "building": 449208,
+    "coast": 1688,
+    "landcover": 11600,
+    "landuse": 25362,
+    "restriction": 7100,
+    "road": 379985,
+    "water": 795
+  },
+  "rejected": {
+    "footprint-invalid-holes-or-budget": 1374
+  },
+  "releaseReady": false,
+  "blockers": [
+    "tile packing and validation pending",
+    "ground/structure height solve pending",
+    "routing restriction evaluation pending"
+  ],
+  "metrics": {
+    "databaseBytes": 908300288,
+    "generationSeconds": 1366.049,
+    "peakRssBytes": 156987392
+  },
+  "sha256": "dd84f9186bc625045f62d4cf78dcdc0bb498b09e62215a296337a1b49dcd4c03",
+  "closedStageMasks": {
+    "a_south": true,
+    "b_basin": true,
+    "c_attica_mainland": true
+  }
+}

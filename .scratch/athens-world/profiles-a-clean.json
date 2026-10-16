@@ -1,0 +1,57 @@
+{
+  "validation": {
+    "algorithm": "difference-envelopes-1",
+    "crossings": 144,
+    "error": null,
+    "iterations": 2,
+    "maxAdjustment": 8.347472254972018,
+    "maxViolation": 8.237854842718662e-14,
+    "pass": true,
+    "points": 287556,
+    "relaxations": 20364,
+    "roads": 32102
+  },
+  "inputs": {
+    "codeSha256": "f2ddceed0820e356e870efbfe4c9403f5c5ad1f295098e45abe7c3853a617096",
+    "dem": [
+      {
+        "name": "attica-n37-e023.tif",
+        "sha256": "0c6e0c971f28d4a8965af835239adc87fc205a379a09356b0814488c4329f799"
+      },
+      {
+        "name": "attica-n38-e023.tif",
+        "sha256": "593ed89479962af1ac6836d669518d5175b81b04f7fae1acbc8e70dfec3052d4"
+      }
+    ],
+    "sourceSha256": "dd84f9186bc625045f62d4cf78dcdc0bb498b09e62215a296337a1b49dcd4c03",
+    "stage": "a_south"
+  },
+  "sha256": "9d827f3fc108adc0df2243555bc83f08838cd9a4bbda783a33505897c17a1426",
+  "metrics": {
+    "generationSeconds": 342.2303285630187,
+    "peakRssBytes": 194105344
+  },
+  "comparisonWithExperimentalInput": {
+    "roads": {
+      "rows": 32102,
+      "differences": 0
+    },
+    "points": {
+      "rows": 287556,
+      "differences": 0
+    },
+    "samples": {
+      "rows": 329516,
+      "differences": 0
+    },
+    "constraints": {
+      "rows": 297558,
+      "differences": 0
+    },
+    "crossings": {
+      "rows": 144,
+      "differences": 0
+    }
+  },
+  "releaseReady": false
+}

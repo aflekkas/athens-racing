@@ -1,0 +1,52 @@
+{
+  "a_south": {
+    "buildingCount": 87171,
+    "generationSeconds": 45.297,
+    "intermediateBytesCompressed": 19239323,
+    "intermediateSha256": "6db439a2cb65b200cd4260c9c38d121f4e2343c744967d1f7c0ee70b0041ca18",
+    "largestTile": null,
+    "maxAwtBuildingTriangles": 40,
+    "maxBuildingTriangles": 40,
+    "occupiedSourceCells": 614,
+    "publicRoadKm": 2100.826,
+    "rejectedBuildings": 180,
+    "roadEdges": 31294,
+    "roadKm": 2181.065,
+    "sourceBuildingCount": 87351,
+    "status": "intermediate-only",
+    "tileCount": null,
+    "validation": {
+      "buildingBudget": "pass",
+      "conformance": "not-run",
+      "contactCoverage": "not-run",
+      "seams": "not-run"
+    }
+  },
+  "b_basin": {
+    "buildingCount": 332141,
+    "generationSeconds": 212.755,
+    "intermediateBytesCompressed": 74550430,
+    "intermediateSha256": "0ccf9b0ec31512d9ecff37c970a7d85b6ebccb14978f6bdb8ccb4e62192febe0",
+    "largestTile": null,
+    "maxAwtBuildingTriangles": 40,
+    "maxBuildingTriangles": 40,
+    "occupiedSourceCells": 1393,
+    "publicRoadKm": 6686.711,
+    "rejectedBuildings": 993,
+    "roadEdges": 109920,
+    "roadKm": 6944.544,
+    "sourceBuildingCount": 333134,
+    "status": "intermediate-only",
+    "tileCount": null,
+    "validation": {
+      "buildingBudget": "pass",
+      "conformance": "not-run",
+      "contactCoverage": "not-run",
+      "seams": "not-run"
+    }
+  },
+  "c_attica_mainland": {
+    "status": "incomplete",
+    "reason": "Disk full during source export; not a tile validation result"
+  }
+}

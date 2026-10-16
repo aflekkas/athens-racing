@@ -1,0 +1,17 @@
+{
+  "overview": {
+    "beforeSha256": "3758ce35908268ec74b42c11d41d0651c01f2dd8a29a641a1e7b1893b10f20ec",
+    "afterSha256": "3758ce35908268ec74b42c11d41d0651c01f2dd8a29a641a1e7b1893b10f20ec",
+    "identicalPngBytes": true
+  },
+  "street": {
+    "beforeSha256": "7ab5d1b98da29c31cca810dedca0ae0277af7ef2930533aa2e4f039ee10d5944",
+    "afterSha256": "7ab5d1b98da29c31cca810dedca0ae0277af7ef2930533aa2e4f039ee10d5944",
+    "identicalPngBytes": true
+  },
+  "junction": {
+    "beforeSha256": "606db73feecfaf3bd5794114a7d089a6ada924a59a4204a3373d08bbd39fffb3",
+    "afterSha256": "606db73feecfaf3bd5794114a7d089a6ada924a59a4204a3373d08bbd39fffb3",
+    "identicalPngBytes": true
+  }
+}

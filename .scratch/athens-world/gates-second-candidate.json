@@ -1,0 +1,13 @@
+{
+  "candidate": "9431458fd4bd46ee5d4415bfd5caa44d4e097a6e",
+  "note": "Previous candidate, before solver/role-ID fixes and latest prod rebase; not the final tree.",
+  "exits": {
+    "events": 0,
+    "npm-test": 0,
+    "imports": 0,
+    "python": 0,
+    "syntax": 0,
+    "dry-run": 0,
+    "physics": 0
+  }
+}

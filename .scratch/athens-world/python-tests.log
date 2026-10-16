@@ -1,0 +1,14 @@
+..../tmp/athens-world-cache/venv/lib/python3.12/site-packages/rasterio/transform.py:178: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+  return Affine.translation(west, north) * Affine.scale(xsize, -ysize)
+/tmp/athens-world-generator/tools/world-gen/elevation.py:38: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+  col,row=~d.transform*(xx,yy);col-=.5;row-=.5
+/tmp/athens-world-cache/venv/lib/python3.12/site-packages/numpy/ma/core.py:3524: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+  super(MaskedArray, type(self)).shape.__set__(self, shape)
+......../tmp/athens-world-generator/tools/world-gen/ingest.py:133: DeprecationWarning: The 'shapely.ops.transform()' function is deprecated. Use 'shapely.transform()' or 'shapely.transform_coordseq()' instead. See https://shapely.readthedocs.io/en/latest/manual.html#shapely.ops.transform for more details.
+  geom = transform(lambda x,y,z=None: project(x,y), shape(json.loads(factory.create_multipolygon(area))))
+....
+----------------------------------------------------------------------
+Ran 16 tests in 4.270s
+
+OK

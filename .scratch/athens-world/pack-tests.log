@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: npm test reaches every tools/server/worker test directly or through imports
+ok 1 - npm test reaches every tools/server/worker test directly or through imports
+  ---
+  duration_ms: 285.724251
+  type: 'test'
+  ...
+# Subtest: coverage guard catches an unwired test and follows imported suites and globs
+ok 2 - coverage guard catches an unwired test and follows imported suites and globs
+  ---
+  duration_ms: 9.225495
+  type: 'test'
+  ...
+# Subtest: AWT spool uses shared codec deterministically and rejects wrapped integers
+ok 3 - AWT spool uses shared codec deterministically and rejects wrapped integers
+  ---
+  duration_ms: 48.163982
+  type: 'test'
+  ...
+# Subtest: Shared tables alias losslessly and every decoded view releases the raw container
+ok 4 - Shared tables alias losslessly and every decoded view releases the raw container
+  ---
+  duration_ms: 7.002001
+  type: 'test'
+  ...
+# Subtest: Spool validates every tile and neighbour seam before publishing entries
+ok 5 - Spool validates every tile and neighbour seam before publishing entries
+  ---
+  duration_ms: 90.764011
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 776.16762

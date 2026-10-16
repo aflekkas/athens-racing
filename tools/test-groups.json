@@ -151,6 +151,7 @@
     "tools/physics-test/recovery.test.mjs"
   ],
   "world": [
-    "tools/world-tests.test.mjs"
+    "tools/world-tests.test.mjs",
+    "tools/world-gen/pack.test.mjs"
   ]
 }

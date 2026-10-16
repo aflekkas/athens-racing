@@ -1,0 +1,19 @@
+{
+  "baselineCandidate": "b80ff73522c1e149a9ae881413f4d6d6493bc231",
+  "afterCandidate": "pending",
+  "before": {
+    "compressedBytes": 1754577,
+    "cpuArrayBackingBytes": 4312136,
+    "cpuSecondsPerEncode": 0.5750966666666667
+  },
+  "after": {
+    "compressedBytes": 1380077,
+    "cpuArrayBackingBytes": 3968156,
+    "cpuSecondsPerEncode": 0.5087806666666667
+  },
+  "allTableAndMeshArrayBytesIdentical": true,
+  "baselineWireBytesReproducedExactly": true,
+  "triangles": 70576,
+  "meshes": 13,
+  "note": "Same real Glyfada input; changes only interning and shared codec byte planes. Browser comparison follows. Not a full-stage hosting estimate."
+}
