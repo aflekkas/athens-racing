@@ -119,7 +119,8 @@
     "tools/checkpoint-routes.test.mjs",
     "worker/arena-diagnostics.test.mjs",
     "tools/world-art-direction.test.mjs",
-    "tools/asset-codecs.test.mjs"
+    "tools/asset-codecs.test.mjs",
+    "tools/psychiko-world.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

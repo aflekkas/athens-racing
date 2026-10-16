@@ -25,7 +25,7 @@ export function worldFixture(id) {
       const map = await loadMap(undefined, './', id, { preload: false });
       const network = new RoadNetwork(map), scene = new Group(); map.roadNetwork = network;
       const terrain = buildTerrain(map.terrain, map.route, [], scene, {
-        coastal: id === 'riviera', farmland: id === 'megara', network, beachAreas: map.data.areas?.beach || [],
+        coastal: id === 'riviera', farmland: id === 'megara', gardens: id === 'psychiko', network, beachAreas: map.data.areas?.beach || [],
       });
       const roadsGroup = buildRoadNetwork(network, scene);
       return { map, network, terrain, terrainGroup: terrain.group, roadsGroup };
