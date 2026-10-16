@@ -1,0 +1,39 @@
+psychiko: speeds=[30@0 50@350~ 20@450 60@990 50@1080~ 30@2280 50@2480~ 30@3010 50@3330~ 60@5650 30@5780]
+  signs: 2 (2 mapped nodes, 0 inferred) cameras: 0
+  network roads with limits: 102 tagged + 462 defaulted; side roads: 35 + 350
+  osm sign: s=115 u=5.7 v=30 dir=1
+  osm sign: s=5907 u=5.7 v=30 dir=1
+{
+  "length": 5960.933287659299,
+  "stats": {
+    "startElevation": 214.7,
+    "finishElevation": 214.7,
+    "ascent": 81.73,
+    "descent": 81.73,
+    "maxGrade": 10,
+    "elevationSource": "EU-DEM v1.1 (25 m) via api.opentopodata.org; bilinear samples at 100 m; coastal no-data=-5 m"
+  },
+  "GX": 361,
+  "GZ": 381,
+  "buildings": 3541,
+  "sideRoads": 385,
+  "areas": {
+    "beach": 0,
+    "lake": 0,
+    "pool": 0,
+    "scrub": 23,
+    "rock": 4,
+    "cliff": 0,
+    "wood": 37,
+    "park": 106,
+    "marina": 0,
+    "pier": 0,
+    "breakwater": 0,
+    "parking": 47,
+    "golf": 0,
+    "pitch": 0,
+    "residential": 60,
+    "fuel": 0,
+    "quarry": 0
+  }
+}

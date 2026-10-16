@@ -1,0 +1,116 @@
+{
+  "base": "22ea3635b2c11cdc287a3bb075c49a3fb09ddff8",
+  "testedCode": "bcef41a74560ca391402e63165d3273406802bd4",
+  "oldBuildings": 3507,
+  "newBuildings": 3541,
+  "restoredWayIds": [
+    213205102,
+    307559030,
+    307559043,
+    307559050,
+    307559055,
+    307559065,
+    307559071,
+    307559077,
+    307864214,
+    307864261,
+    308022552,
+    308022553,
+    308022583,
+    308199210,
+    423408224,
+    423601342,
+    423684976,
+    423843651,
+    423843654,
+    423843655,
+    423843657,
+    423843660,
+    423843662,
+    423843663,
+    423843670,
+    423843671,
+    423843672,
+    423850538,
+    423850553,
+    424024741,
+    424024743,
+    424032963,
+    424032969,
+    424036097
+  ],
+  "existingFootprintsUnchanged": true,
+  "unchanged": {
+    "route": true,
+    "roadNetwork": true,
+    "roadworks": true
+  },
+  "excludedActualRaceOverlap": 423850532,
+  "liveSourceChecks": [
+    {
+      "way": 423843655,
+      "url": "https://api.openstreetmap.org/api/0.6/way/423843655/full.json",
+      "version": 1,
+      "timestamp": "2016-06-09T10:19:07Z",
+      "sameNodes": true,
+      "maxCoordinateDifferenceDegrees": 0.0
+    },
+    {
+      "way": 308022552,
+      "url": "https://api.openstreetmap.org/api/0.6/way/308022552/full.json",
+      "version": 1,
+      "timestamp": "2014-10-16T10:45:28Z",
+      "sameNodes": true,
+      "maxCoordinateDifferenceDegrees": 0.0
+    },
+    {
+      "way": 307559043,
+      "url": "https://api.openstreetmap.org/api/0.6/way/307559043/full.json",
+      "version": 1,
+      "timestamp": "2014-10-13T10:46:21Z",
+      "sameNodes": true,
+      "maxCoordinateDifferenceDegrees": 0.0
+    }
+  ],
+  "terrainBytesUnchanged": true,
+  "capturedCode": "80f93d1ed5beedc882dc144febfbbeab1d37779e",
+  "runtimeUnchangedAfterRebase": false,
+  "fullGates": {
+    "code": "5fc6b7430ae19e3d51102e245304e784bee6697a",
+    "parent": "bb2333e16bae99d2d3fe69fdd18faeada4f0682a",
+    "exits": {
+      "syntax": 0,
+      "imports": 0,
+      "events": 0,
+      "physics": 0,
+      "npm-test": 0,
+      "staging-dry-run": 0
+    }
+  },
+  "fastRebaseChanges": [
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/RESULTS.md",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/events.log.gz",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/gates.json",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/imports.log.gz",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/npm.log.gz",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/physics.log.gz",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/syntax.log.gz",
+    ".scratch/perf-2026-10-15/world-tiles/owner-dependencies/wrangler.log.gz",
+    "docs/world-tiles-format.md",
+    "src/world-tile-format.js",
+    "src/world-tile-stream.js",
+    "tools/world-tile-format.test.mjs",
+    "tools/world-tile-stream.test.mjs"
+  ],
+  "classicPsychikoRuntimeUnchanged": true,
+  "finalAffectedChecks": {
+    "code": "bcef41a74560ca391402e63165d3273406802bd4",
+    "parent": "22ea3635b2c11cdc287a3bb075c49a3fb09ddff8",
+    "exits": {
+      "affected": 0,
+      "syntax": 0,
+      "imports": 0,
+      "events": 0
+    }
+  }
+}

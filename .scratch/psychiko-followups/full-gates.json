@@ -1,0 +1,12 @@
+{
+  "code": "5fc6b7430ae19e3d51102e245304e784bee6697a",
+  "parent": "bb2333e16bae99d2d3fe69fdd18faeada4f0682a",
+  "exits": {
+    "syntax": 0,
+    "imports": 0,
+    "events": 0,
+    "physics": 0,
+    "npm-test": 0,
+    "staging-dry-run": 0
+  }
+}
