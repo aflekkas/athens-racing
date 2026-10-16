@@ -11,5 +11,6 @@ Real in-game screenshots, inspected before inclusion, converted to 1280 px wide 
 | 2026.10.14.1/riviera.webp | .scratch/play-every-model/bus-riviera-chase.png | Riviera roadside and coastline |
 | 2026.10.15.3/release-gallery.webp | .scratch/release-notes/pictures/gallery-source-1280.png, build e520f68; crop y64–754 | Photo release notes for Unreleased (top account strip and bottom offline status excluded) |
 | 2026.10.15.3/riviera-rails.webp | .scratch/riviera-rails/after-2860-fullres.png | Riviera coastal guardrails; production chase camera, Potato preset at 1280 × 800 |
+| 2026.10.16.1/sharper-handling.webp | .scratch/handling-opus/hairpin-huracan-after.webp | Trail-braked Megara hairpin, eight chase-camera frames (production Ground) |
 
 Keep filenames stable: a later release may reuse an earlier screenshot. See deploy/README.md and CONTRIBUTING.md for the Unreleased workflow and automated limits.

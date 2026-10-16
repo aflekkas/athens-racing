@@ -988,7 +988,8 @@ export class RivalAI {
     if (v > 8 && (Math.abs(veh.ay) > latV * 0.6 || Math.abs(beta) > 0.025 && caps.rearSlip() > 0.8)) throttle = Math.min(throttle, 0.55);
     if (veh.wheelspin > 0.25 && v > 4) throttle *= 1 - clamp(veh.wheelspin * 0.45, 0, 0.6);
     let brake = held ? 0.4 : clamp(Math.max(signalBrake, plannedBrake > 0.65 ? plannedBrake : 0, error < -0.15 ? clamp(-error * 0.38, 0, 1) : 0), 0, 1);
-    if (v > 6 && here.gap > 8 && Math.abs(beta) > 0.04 && caps.rearSlip() > 1.15) brake *= clamp(1.15 / caps.rearSlip(), 0.25, 1);
+    // (from 3 m/s: a trail-braked RWD rear also lets go in tight street corners)
+    if (v > 3 && here.gap > 8 && Math.abs(beta) > 0.04 && caps.rearSlip() > 1.15) brake *= clamp(1.15 / caps.rearSlip(), 0.25, 1);
     // Ordinary service brake must not accidentally select reverse while queuing.
     const safeBrake = veh.vLong < 1 && brake > 0 ? Math.min(0.45, brake) : brake;
     const nitro = veh.spec.nitrous === true && !this.perfect && !held && error > 3 && v > 15 && Math.abs(steer) < 0.18 && kAhead < 0.0015 && here.gap > v * 3 && veh.nitro > 0.15;

@@ -108,3 +108,17 @@ Both builds also complete the real browser Ground/barrier path. These use the sa
 | gamepad | 75.133 → 75.033 | 0 → 0 | 0 → 0 | 38.02 → 38.06 |
 
 All per-corner minima and lap samples are in `laps-ground-before.json` / `laps-ground-after.json`; `summary.json` retains the scalar and corner tables without the full traces. The baseline was already capable of a clean scripted lap: the evidence supports a targeted reduction in scrub, not a claim that this modest patch transformed an unplayable baseline into a fast one.
+
+## 2026-10-16: root cause of the "crazy understeer" and weak brakes
+
+The follow-up in `.scratch/handling-opus/README.md` measured the remaining complaint. Grip and plain turn-in were
+fine. The understeer came from the electronics and the assist whenever the driver braked, lifted or reversed at the
+limit:
+- ESC braking bypassed ABS and locked the outer front.
+- The ABS limit ignored slip angle.
+- A lifted S-bend latched "flick" drift mode: raw rack plus an automatic rear-brake dab.
+- The assist cancelled front yaw damping.
+- The ESC yaw reference collapsed as the assist trimmed the wheel angle.
+- The friction ellipse added 10 % of braking grip on top of skidpad-calibrated grip.
+
+`tools/physics-test/corner-entry.test.mjs` guards the 80 km/h corner entry and S-bend.

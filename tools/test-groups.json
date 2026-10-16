@@ -139,6 +139,7 @@
     "tools/physics-test/playtest-handling.test.mjs",
     "tools/physics-test/tyre-impact.test.mjs",
     "tools/physics-test/wet.test.mjs",
+    "tools/physics-test/corner-entry.test.mjs",
     "tools/traffic-test.mjs",
     "tools/traffic-race.test.mjs",
     "tools/damage-mechanics.test.mjs",
