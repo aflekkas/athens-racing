@@ -1244,7 +1244,7 @@ export class Traffic {
     const A = this._A || (this._A = {}), B = this._B || (this._B = {});
     for (const c of this.cars) {
       if (!c.active) continue;
-      if (veh.y > route.surfaceY(c.s,c.u) + (c.type.bus ? 3.1 : c.type.shape === 'van' ? 2.5 : 1.5) + (c.crash?.y || 0)) continue;
+      if (veh.bodyDynamic && veh.y > route.surfaceY(c.s,c.u) + (c.type.bus ? 3.1 : c.type.shape === 'van' ? 2.5 : 1.5) + (c.crash?.y || 0)) continue;
       const ds = c.s - veh.s; if (Math.abs(ds) > 14) { if (actor.kind === 'player') c.pRel = Math.sign(ds); continue; }
       const du = c.u - veh.u;
       const cyaw = c.crash ? c.crash.yaw : c.cross ? c.xyaw : 0, cc = Math.abs(Math.cos(cyaw)), cs = Math.abs(Math.sin(cyaw));
