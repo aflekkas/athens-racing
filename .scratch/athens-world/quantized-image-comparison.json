@@ -1,0 +1,17 @@
+{
+  "overview": {
+    "identical": false,
+    "beforeSha256": "c521de2bfb22cb782b1acdb9dc1ce6039b2d1e09a009c784747106bdf76b917c",
+    "afterSha256": "67680d021eb51f43b87bbf7296f91acbe8494dc87ac897a8ba1f8dc5c394b88e"
+  },
+  "street": {
+    "identical": true,
+    "beforeSha256": "6ec5d100e0354ebe47c98525f0d88992aca2ab09adf0ebc3afc8fc61ff204322",
+    "afterSha256": "6ec5d100e0354ebe47c98525f0d88992aca2ab09adf0ebc3afc8fc61ff204322"
+  },
+  "junction": {
+    "identical": true,
+    "beforeSha256": "a75482be04c116843ce98f11b01fdb5f423ec27cc48bf69c40c892ac37031efa",
+    "afterSha256": "a75482be04c116843ce98f11b01fdb5f423ec27cc48bf69c40c892ac37031efa"
+  }
+}

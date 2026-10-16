@@ -28,12 +28,12 @@ export class WorldRoadGraph {
     return true;
   }
   /** Bounded Dijkstra on loaded shards. Unknown/unloaded destinations return null for worker routing/prefetch. */
-  route(from,to,{defaultSpeedKph=50,maxVisited=50000}={}){
+  route(from,to,{defaultSpeedKph=50,maxVisited=50000,initialEdge=null,terminalEdge=null}={}){
     if(!this.nodes.has(from)||!this.nodes.has(to))return null;
-    const start=JSON.stringify([from,null]),queue=[{node:from,via:null,cost:0,key:start}],dist=new Map([[start,0]]),previous=new Map();let visited=0;
+    const start=JSON.stringify([from,initialEdge]),queue=[{node:from,via:initialEdge,cost:0,key:start}],dist=new Map([[start,0]]),previous=new Map();let visited=0;
     while(queue.length&&visited++<maxVisited){queue.sort((a,b)=>b.cost-a.cost);const q=queue.pop();
       if(dist.get(q.key)!==q.cost)continue;
-      if(q.node===to){const path=[];let key=q.key;while(previous.has(key)){const p=previous.get(key);path.push(p.edge);key=p.key;}return {edges:path.reverse(),seconds:q.cost};}
+      if(q.node===to&&(!terminalEdge||this.legal(q.via,terminalEdge))){const path=[];let key=q.key;while(previous.has(key)){const p=previous.get(key);path.push(p.edge);key=p.key;}return {edges:path.reverse(),seconds:q.cost};}
       for(const id of this.outgoing.get(q.node)||[]){
         const e=this.edges.get(id)?.value;if(!e||!this.legal(q.via,e)||!this.nodes.has(e.to))continue;
         const speed=(e.speedKph||defaultSpeedKph)/3.6;if(!(speed>0))continue;

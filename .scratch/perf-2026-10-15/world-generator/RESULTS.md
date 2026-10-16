@@ -45,3 +45,25 @@ Same-camera screenshots were captured through the browser slot and inspected:
 All three PNG pairs are byte-identical (`packing-image-comparison.json`), and
 all table/mesh bytes match after decoding (`packing-comparison.json`).
 The cell remains a nonplayable geometry probe, not a hosting-budget pass.
+
+
+## Rejected compact-layout experiment
+
+On the same canonical Glyfada pair, Float32 output used 2,735,921 gzip bytes;
+terrain-u16 with normals, urban blend and Y residual used 2,865,235 bytes.
+First-cell actual worker residency increased 5,446,046 → 5,609,565 bytes and GPU
+storage increased 1,061,772 → 1,142,314 bytes. Contacts and topology are unchanged;
+2,765 graph points and 2,048 shared-edge samples still pass. This is not an
+optimization and remains opt-in. Timing on this shared software-rendered VPS
+is not evidence of a GPU improvement. Raw worker metrics and same-camera
+images are in `quantized-worker-check.json`, `quantized-image-comparison.json`,
+`float32-probe-glyfada-{overview,street,junction}.png` and
+`quantized-probe-glyfada-{overview,street,junction}.png` under the Athens evidence
+directory. All three quantized views were inspected.
+
+The DEM sampler separately caches CRS/bounds/inverse-affine setup. A 10,000-point
+sample produced byte-identical Float64 heights (SHA-256
+50742136bf86639c51a15762c0d28ae8df7652608d3052c4a33194e4f09339e6).
+Observed CPU time was 1.540878377 → 0.217262984 seconds, limited to that sampler.
+This does not imply a seven-fold full-generation speedup. Reproduction and raw
+metrics are `benchmark-elevation.py` and `elevation-cache-benchmark.json`.

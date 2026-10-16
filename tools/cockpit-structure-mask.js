@@ -1,5 +1,5 @@
 import * as T from 'three';
-export const STRUCTURE_ROLES=['dash','deck','pillar','header','door-top','wheel-rim','wheel-hub','wheel-badge','tank','handlebars','mirror-mount','wiper'];
+export const STRUCTURE_ROLES=['dash','deck','pillar','header','door-top','wheel-rim','wheel-hub','wheel-badge','tank','handlebars','mirror-mount','wiper','binnacle','console','vent','headliner'];
 // One colour per semantic part, with every other vehicle surface still writing
 // depth. This catches hidden, occluded and off-screen geometry, not just names.
 export function renderStructureMask(renderer,model,camera,width=1280,height=800){

@@ -1,12 +1,14 @@
 // Owner-locked: flat-roof footprint blocks, batched in 500 metre world cells.
 import * as THREE from 'three';
+import { createFacadeAtlas, attachFacadeAtlas } from './facade-atlas.js';
+import { buildingStyle } from './world-detail-policy.js';
 import { bakeBlockShade } from './baked-realism.js';
 import { REFLECT_LAYER } from './env.js';
 import { RNG, GeoBatch, M, pointInPoly, polyArea, polyBounds, clamp } from './util.js';
 import { infillStreetIndex } from './infill-streets.js';
 import { WORLD_TRIANGLE_BUDGETS, assertWorldBudget } from './world-art-direction.js';
 export const BUILDING_PALETTE = Object.freeze(['#f4f5f6','#e9edf1','#ffffff','#d7dfe7','#f0f2f5','#b8d5e6','#c78472','#e2bf72']);
-export function facadeMaterial() { return new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}); }
+export function facadeMaterial(atlas) { const m=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}); return atlas?attachFacadeAtlas(m,atlas):m; }
 export class LabelAtlas {
   constructor(cols = 4, rows = 64, cw = 512, ch = 80) {
     this.cols = cols; this.rows = rows; this.cw = cw; this.ch = ch; this.n = 0;
@@ -141,10 +143,16 @@ export function buildBuildings(map,scene,heightC,labels,infill=[]) {
     const key=Math.floor(cx/500)+','+Math.floor(cz/500);if(!chunks.has(key))chunks.set(key,new GeoBatch());
     const batch=chunks.get(key),start=batch.count;
     batch.add(g,M(0,0,0),palette[Math.abs(Number(b.id)||0)%palette.length]);
-    bakeBlockShade(batch,start,base,top);g.dispose();
+    bakeBlockShade(batch,start,base,top);
+    batch.facade ||= [];const style=buildingStyle(b);
+    for(let i=start;i<batch.count;i++){
+      const j=i*3,nx=batch.nor[j],ny=batch.nor[j+1],nz=batch.nor[j+2];
+      batch.facade.push(((batch.pos[j]-cx)*nz-(batch.pos[j+2]-cz)*nx)/5.5,(batch.pos[j+1]-base)/3.1,style,Math.abs(ny)>.5?1:0);
+    }
+    g.dispose();
     footprints.push({p,bb});roofs.push({...b,p,bb,cx,cz,gmin:lo,top,area:Math.abs(polyArea(p)),roofOccupied:[]});
   }
-  const material=facadeMaterial();
-  for(const [key,batch] of chunks){const g=batch.build(),m=new THREE.Mesh(g,material);m.name='building-blocks:'+key;m.castShadow=true;m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);g.computeBoundingSphere();m.boundingSphere=g.boundingSphere;m.userData={lod:true,far:6000,impostor:false,worldCategory:'building'};group.add(m);}
+  const material=facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
+  for(const [key,batch] of chunks){const g=batch.build();g.setAttribute('aFacade',new THREE.Float32BufferAttribute(batch.facade,4));const m=new THREE.Mesh(g,material);m.name='building-blocks:'+key;m.castShadow=true;m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);g.computeBoundingSphere();m.boundingSphere=g.boundingSphere;m.userData={lod:true,far:6000,impostor:false,worldCategory:'building'};group.add(m);}
   return {group,roofs,inBuilding:(x,z,pad=0)=>footprints.some(b=>x>=b.bb.x0-pad&&x<=b.bb.x1+pad&&z>=b.bb.z0-pad&&z<=b.bb.z1+pad&&pointInPoly(x,z,b.p))};
 }

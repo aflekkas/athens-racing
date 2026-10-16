@@ -34,6 +34,8 @@ test('no graphics presets or lighting / effects levels in settings, the renderer
   const html = Object.assign(Object.create(Menu.prototype), { h: {} }).r_settings({ tab: 'video', from: 'pause' });
   for (const key of ['graphics', 'lighting', 'effects', 'motionBlur']) assert.doesNotMatch(html, new RegExp(`data-key="${key}"`), `Settings > Graphics must not offer "${key}". ${LOCK}`);
   assert.doesNotMatch(html, /POTATO|ULTRA|PRESET|LIGHTING|EFFECTS|MOTION BLUR/, `Settings > Graphics must not offer presets or lighting / effects levels. ${LOCK}`);
+  assert.equal(DEFAULTS.worldDetail,true,LOCK);
+  assert.equal((html.match(/data-key="worldDetail"/g)||[]).length,1,LOCK+' exactly one World detail control');
   const menu = src('src/menu.js'), main = src('src/main.js'), onboarding = src('src/ui/graphics-onboarding.js');
   assert.doesNotMatch(menu + main, /graphicsControl|graphics-quality|PRESET_IDS|LEVEL_IDS|applyQualityTier/, `no hidden preset control. ${LOCK}`);
   assert.doesNotMatch(onboarding, /prompt\s*\(|potato|ultra|Graphics preset/i, `the first-run check must stay silent: no quality prompt. ${LOCK}`);

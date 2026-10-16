@@ -28,7 +28,7 @@ export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', mirrors: true, ghostEnabled: true,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', worldDetail: true, mirrors: true, ghostEnabled: true,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -114,6 +114,7 @@ function load() {
   out.mildLanguage = out.mildLanguage === true;
   out.dynamicResolution = out.dynamicResolution !== false;
   out.mirrors = out.mirrors !== false;
+  out.worldDetail = out.worldDetail !== false;
   if (!HUD_MOTION_VALUES.includes(out.hudMotion)) out.hudMotion = reducedMotion() ? 'off' : DEFAULTS.hudMotion;
   if (![300, 500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
   for (const key of [...Object.keys(CAMERA_RANGES), ...CAMERA_FLAGS]) out[key] = cameraValue(key, out[key]);
@@ -128,7 +129,7 @@ export function setSetting(key, value) {
   if (key === 'renderScale') value = resolutionValue(value);
   if (key === 'frameCap') { value = +value; if (!FRAME_CAPS.includes(value)) return; }
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
-  if (key === 'dynamicResolution' || key === 'mildLanguage' || key === 'aids' || key === 'abs') value = value === true;
+  if (key === 'worldDetail' || key === 'dynamicResolution' || key === 'mildLanguage' || key === 'aids' || key === 'abs') value = value === true;
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);
   if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));
   if (!(key in DEFAULTS) || settings[key] === value) return;

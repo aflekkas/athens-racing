@@ -1,0 +1,27 @@
+{
+  "candidate": "0557beabd3ebb171ae3e83354934a697656c7421",
+  "base": "9c0cb33197106a5fc882109479c861df40d465cf",
+  "gates": {
+    "npm": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  },
+  "completedUTC": "2026-10-16T14:33:00.700657+00:00",
+  "scope": "Inactive runtime; no player/build/config changes; external development fixture only",
+  "staticInventory": {
+    "files": 1446,
+    "bytes": 484080273,
+    "largest": {
+      "bytes": 20971520,
+      "path": "data/baked/psychiko-roads-e06f9552cfc291d6.part-0.bin.gz"
+    },
+    "privateWorldArtifacts": []
+  },
+  "landingParent": "5b633e4517df55a365f6b6102c3f371bdd476bcd",
+  "rebasedSourceOverlap": [],
+  "supplementalRebaseTests": 58,
+  "supplementalPrivateBrowser": "private-runtime.json"
+}

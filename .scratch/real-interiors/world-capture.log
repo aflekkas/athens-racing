@@ -1,0 +1,21 @@
+[browser-slot] slot 1 acquired (ticket 1280, waited 0s)
+after MENU
+after WORLD
+after mini {"dry":{"calls":198,"triangles":627334}}
+after carrera {"dry":{"calls":202,"triangles":627114}}
+after aventador_svj {"dry":{"calls":202,"triangles":626998}}
+after cle {"dry":{"calls":203,"triangles":627384}}
+after e36 {"dry":{"calls":203,"triangles":627044}}
+after gtv {"dry":{"calls":205,"triangles":627240}}
+after bus {"dry":{"calls":180,"triangles":617868}}
+after delivery {"dry":{"calls":168,"triangles":625910}}
+before MENU
+before WORLD
+before mini {"dry":{"calls":182,"triangles":625228}}
+before carrera {"dry":{"calls":186,"triangles":625476}}
+before aventador_svj {"dry":{"calls":182,"triangles":625368}}
+before cle {"dry":{"calls":186,"triangles":625428}}
+before e36 {"dry":{"calls":187,"triangles":625520}}
+before gtv {"dry":{"calls":189,"triangles":625536}}
+before bus {"dry":{"calls":175,"triangles":616966}}
+before delivery {"dry":{"calls":162,"triangles":625074}}

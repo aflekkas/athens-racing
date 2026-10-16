@@ -32,22 +32,28 @@ function triangle(positions,indices,i,x,z) {
   return {y:u*ay+v*by+w*cy, nx:((bz-cz)*(ay-cy)+(cz-az)*(by-cy))/det, nz:((cx-bx)*(ay-cy)+(ax-cx)*(by-cy))/det};
 }
 /** referenceY/layer are mandatory for unambiguous bridge/tunnel contacts. */
-export function sampleTileContact(t,index,x,z,{referenceY=0,layer=null,requiredFlags=0}={}) {
-  if(x<0||z<0||x>=512||z>=512)return null;
-  const cell=Math.floor(z/16)*GRID+Math.floor(x/16); let best=null,score=Infinity;
+export function sampleTileContact(t,index,x,z,{referenceY=0,layer=null,requiredFlags=0,includeBoundary=false}={}) {
+  if(x<0||z<0||x>512||z>512||!includeBoundary&&(x===512||z===512))return null;
+  const cell=Math.min(31,Math.floor(z/16))*GRID+Math.min(31,Math.floor(x/16)); let best=null,score=Infinity;const groups=new Map();
   for(let k=index.offsets[cell];k<index.offsets[cell+1];k++) {
     const ref=index.refs[k],fine=!!(ref&0x80000000),row=ref&0x7fffffff,i=row*(fine?3:5);
     const flags=fine?2:t.contactTriangles[i+4],surfaceLayer=fine?0:t.contactLayers[row];
     if(flags&8 || requiredFlags && !(flags&requiredFlags) || layer!==null&&surfaceLayer!==layer)continue;
     const sample=triangle(fine?t.finePositions:t.contactPositions,fine?t.fineTriangles:t.contactTriangles,i,x,z);
     if(!sample)continue;
-    // At a road/terrain overlap use road contact when elevations are effectively equal.
-    const d=Math.abs(sample.y-referenceY)+(fine?.001:0);
-    if(d<score){score=d;best={...sample,flags,layer:surfaceLayer,surface:fine?0:t.contactTriangles[i+3]};}
+    // Contact is the top road (or terrain) face within a physical layer.
+    // Choosing the face nearest referenceY let a lower overlapping road fan
+    // steal contact on only one side of a tile border. Height selects BETWEEN
+    // layers, preserving bridge/tunnel selection, never beneath the top face.
+    const key=surfaceLayer*2+(fine?1:0),previous=groups.get(key);
+    if(!previous||sample.y>previous.y)groups.set(key,{...sample,flags,layer:surfaceLayer,surface:fine?0:t.contactTriangles[i+3],fine});
   }
-  if(best)return best;
+  for(const sample of groups.values()){
+    const d=Math.abs(sample.y-referenceY)+(sample.fine?.001:0);if(d<score){score=d;best=sample;}
+  }
+  if(best){delete best.fine;return best;}
   // Canonical coarse triangles, matching the existing shortest-height-diagonal rule.
-  const fx=x/16,fz=z/16,ix=Math.floor(fx),iz=Math.floor(fz),u=fx-ix,v=fz-iz,k=iz*33+ix,H=t.coarseHeights;
+  const fx=x/16,fz=z/16,ix=Math.min(31,Math.floor(fx)),iz=Math.min(31,Math.floor(fz)),u=fx-ix,v=fz-iz,k=iz*33+ix,H=t.coarseHeights;
   const a=H[k],b=H[k+1],c=H[k+33],d=H[k+34]; let y,nx,nz;
   if(Math.abs(a-d)<Math.abs(b-c)) {
     if(u>v){nx=b-a;nz=d-b;y=a+nx*u+nz*v;}else{nx=d-c;nz=c-a;y=a+nx*u+nz*v;}

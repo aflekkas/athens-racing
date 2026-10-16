@@ -1,0 +1,24 @@
+[
+  {
+    "cell": [
+      4,
+      25
+    ],
+    "anchors": 113,
+    "bad": [],
+    "margin": 0.03,
+    "halfLength": 7,
+    "halfWidth": 1.5
+  },
+  {
+    "cell": [
+      5,
+      25
+    ],
+    "anchors": 124,
+    "bad": [],
+    "margin": 0.03,
+    "halfLength": 7,
+    "halfWidth": 1.5
+  }
+]

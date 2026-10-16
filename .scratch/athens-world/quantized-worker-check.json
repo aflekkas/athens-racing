@@ -1,0 +1,18 @@
+{
+  "purpose": "Actual fetchTilePacket hash/decode/index/bounds/accounting path, same local tile and current runtime for both encodings.",
+  "runtimeBase": "195ce8b322f2297034be56c8e38b8899321c2bb3",
+  "before": {
+    "residentBytes": 5446046,
+    "gpuBytes": 1061772,
+    "contactIndexBytes": 607420,
+    "contactReferences": 150830,
+    "cpuSeconds": 0.403622
+  },
+  "after": {
+    "residentBytes": 5609565,
+    "gpuBytes": 1142314,
+    "contactIndexBytes": 607420,
+    "contactReferences": 150830,
+    "cpuSeconds": 0.533122
+  }
+}

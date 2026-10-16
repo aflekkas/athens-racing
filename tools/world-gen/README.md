@@ -213,8 +213,8 @@ Those tiny fixtures are not evidence of real-world conformance.
 
 ## Remaining release gates
 
-Global road profiles, junction surfaces, bridges/tunnels and Riviera contact
-joining must be solved before tile clipping. Emit AWT through the shared
+Global centre-line profiles are available; full junction/shoulder acceptance,
+bridges/tunnels and Riviera contact joining still require validation. Emit AWT through the shared
 `encodeGeometryPack`, never a second codec. Validate every tile structurally,
 then rendered/contact equivalence, road intrusion ≤5 mm, shoulders ≤15 cm step
 and ≤30° slope across six metres, exact adjacent seams, triangle budgets and
@@ -228,3 +228,93 @@ or building-budget pass cannot substitute for those acceptance checks.
 
 Attribution is in [CREDITS.md](CREDITS.md), automatically discovered by the game's
 Credits builder. Retain source manifests and ODbL notices with derived data.
+
+## Follow-up source layers (not runtime activation)
+
+`graph.py profiles-a.sqlite graph-a.sqlite` streams profile samples into directed
+512 m graph fragments with stable portal IDs and shared Float32 heights.
+The first stage-A pass has 56,412 edges and 27,777 nodes across 618 cells
+(including profile halo). Portal identity passes; this is not proof of rendered
+contact coverage or compiled runtime turn restrictions.
+
+`vegetation.py attica.osm.pbf vegetation.sqlite` is a separate streamed pass over
+the same reduced extract. It preserves explicit trees, 10 m tree-row samples,
+and 20 m park placement candidates in distinct provenance classes. Park points
+are not surveyed trees. Rendering stays disabled; road/building exclusion and
+the shared detail LOD/budget validation remain required before runtime placement.
+This pass does not invalidate or duplicate the road/building source cache.
+
+`report.py ... --stage c_attica_mainland` can rerun just one source census.
+Each completed stage writes its own metrics JSON; gzip output is renamed only
+when complete. A/B completed before the interrupted disk-full C export: A has
+2,181.065 road km and 87,171 accepted buildings; B (A union basin) has 6,944.544
+road km and 332,141 accepted buildings. These are not playable tile metrics.
+
+Isolated trees were not retained by the original way-complete geometry extract.
+`vegetation-nodes.py` streams the pinned Greece PBF without a location index and
+writes only tagged tree nodes inside the Attica bbox. The supplement contains
+25,860 nodes in 143,029 bytes, SHA-256
+`e1a86714ef6d890e75f0730f57a0d32faa3ff5a7aa84beb18829a75ad7b7973b`.
+The full Greece PBF was deleted immediately after supplement verification.
+Retained raw OSM plus DEM is now **88,360,923 bytes**. Run `vegetation.py` on this
+supplement into `vegetation-trees.sqlite`; it is authoritative for explicit
+nodes (deduplicate by source ID against the original pass). Tree rows and park
+candidates come from the original pass. Garden/forest placement is not yet
+extracted. No point layer is enabled in the game by these source tools.
+
+`details.py source.sqlite clean.sqlite building-details.sqlite` adds optional
+records for all 449,208 accepted source buildings without regenerating their
+footprints. Facade styles use the shared 0–7 convention. `detailSeed` is uint32
+FNV-1a over UTF-8 `way/123` or `relation/123`; `roofPropSeed` aliases it in this
+intermediate layer. The optional AWT contract landed in `c5765b8`; these intermediate records
+are not emitted until placement/exclusion checks are complete. Base meshes and their 40-triangle limit stay unchanged.
+
+
+## Ground-cell development emitter
+
+`tiles.py` streams one cell at a time and fingerprints all source databases,
+DEM crops and generator modules. It has no absolute cache paths. Pipe its NDJSON
+straight to `pack.mjs /dev/stdin OUTPUT` to avoid retaining a large raw spool:
+
+```sh
+set -o pipefail
+"$CACHE/venv/bin/python" tools/world-gen/tiles.py \
+  --profiles "$CACHE/profiles-a.sqlite" --source "$CACHE/clean.sqlite" \
+  --graph "$CACHE/graph-a.sqlite" --turns "$CACHE/turns-a.sqlite" \
+  --dem "$CACHE/attica-n37-e023.tif" --dem "$CACHE/attica-n38-e023.tif" \
+  --cell 4,25 --cell 5,25 2> "$CACHE/ground-build.log" \
+  | node tools/world-gen/pack.mjs /dev/stdin "$CACHE/ground-cells"
+```
+
+The packer runs the shared AWT validator on each tile and its decoded bytes,
+and validates every emitted neighbour seam before publishing `entries.json`.
+This emitter deliberately rejects cells intersecting unresolved layered roads.
+It does not yet emit coast/sea, signs or structures, and always marks metadata
+`developmentOnly:true`, `releaseReady:false`. Entries are not a release manifest.
+Ground road/kerb/pavement render tops and fine/contact tops share one partition.
+Tow candidates fit an entire 14 m × 3 m body on public asphalt with a 3 cm margin
+and avoid building footprints. Runtime checks still apply. `turns.py` compiles
+node restrictions, conservative via-way entry prohibitions and fail-closed
+unsupported restrictions from the source cache and clipped graph.
+
+Building dependencies are direct positive-area footprint owners only. Runtime
+expands one hop from requested cells, never recursively from owner-only cells
+(contract `22ea363`). Local terrain, contacts and clipped graph need no dependency
+closure. The bounded two-cell integration fixture omits buildings whose owners
+are outside its explicit coverage; that omission is not acceptable for full A.
+
+The Glyfada development pair has exact seams, 2,765 sampled graph points with no
+missing asphalt contacts, and maximum graph/contact height error 0.0019 mm.
+Its corrected ribbon directions are in `development-manifest.json` evidence.
+This is not stage-A playability evidence. Full-region tile counts, byte totals,
+conformance and contact acceptance remain pending. Stage-C source census is
+20,528.952 road km and 418,345 accepted buildings across 8,267 occupied source
+cells; occupied source cells are not emitted tile counts. Regenerable census
+NDJSON gzip exports were deleted after their hashes and metrics were committed;
+canonical SQLite caches remain in the single cache directory.
+
+`quantize.py` is an opt-in layout experiment, not the default emitter. The shared
+integer terrain decoder preserves contact heights, but the required normal,
+urban-blend and residual attributes increased measured pair transfer and first
+cell residency. See the performance report before enabling it. No runtime codec
+or rendering path is introduced by the generator.

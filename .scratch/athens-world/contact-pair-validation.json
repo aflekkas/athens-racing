@@ -1,0 +1,28 @@
+{
+  "tiles": [
+    {
+      "key": "4,25",
+      "bytes": 1352083,
+      "triangles": 57572,
+      "surfaceTriangles": 53054,
+      "graphEdges": 141
+    },
+    {
+      "key": "5,25",
+      "bytes": 1383838,
+      "triangles": 57157,
+      "surfaceTriangles": 52448,
+      "graphEdges": 169
+    }
+  ],
+  "topEquivalence": "pass",
+  "seamIdentity": "pass",
+  "seamSamples": 2048,
+  "maxSeamError": 1.8761406650469326e-7,
+  "graphPoints": 2765,
+  "missingGraphContacts": 0,
+  "missingPoints": [],
+  "maxGraphError": 0.0000018985589349540533,
+  "boundaryPointsRequiringNeighbours": 43,
+  "releaseReady": false
+}

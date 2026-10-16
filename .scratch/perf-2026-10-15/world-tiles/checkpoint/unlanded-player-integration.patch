@@ -1,0 +1,437 @@
+--- a/src/baked-world-data.js
++++ b/src/baked-world-data.js
+@@ -1,10 +1,12 @@
+ // Start map-specific downloads as soon as map data arrives, alongside HUD and sky construction.
++import { legacyTilesEnabled } from './world-tile-flag.js';
+ import { generatedWorld } from './generated-world-cache.js';
+ import { assetMetrics, assetCodecsEnabled, heapBytes } from './asset-metrics.js';
+ import { decodeMeshoptPack } from './meshopt-pack.js';
+ import { decodeGeometryPack } from './baked-geometry.js';
+ 
+ export async function loadBakedWorldData(map) {
++  if (legacyTilesEnabled(map)) return null;
+   const def = map.data.bakedWorld;
+   if (!def || def.version !== 1 || !map.data.roadNetwork || ['nobake', 'noroadnetwork'].some(key => new URLSearchParams(typeof location === 'undefined' ? '' : location.search).has(key))) return null;
+   try {
+--- a/src/main.js
++++ b/src/main.js
+@@ -294,7 +294,7 @@
+     const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube; scene.environment = baked.env;
+     ({ sun } = ENV.createLights(scene));
+   }
+-  world = await buildMapWorld(map, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
++  world = await buildMapWorld(map, { scene, renderer, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
+   bindMapWorld(world);
+   policeHud ||= new PoliceHud();
+   post ||= createPost(renderer, scene, camera); window.__post = post;
+@@ -369,7 +369,7 @@
+     let nextMap, nextWorld;
+     try {
+       nextMap = await loadMap(undefined, './', id);
+-      nextWorld = await buildMapWorld(nextMap, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
++      nextWorld = await buildMapWorld(nextMap, { scene, renderer, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
+     } catch (error) { nextMap?.dispose?.(); G.state = priorState; G.paused = priorPaused; throw error; }
+     if (G.run && !G.run.done) G.run.abort('map-change');
+     window.__ghostLap?.hideGhost();
+@@ -409,6 +409,7 @@
+   try { const loaded = await mapSwitch; selectedMapId = loaded.id; return loaded; } finally { mapSwitch = null; loading.hide(); }
+ }
+ window.__switchMap = switchMap;
++window.__worldTiles = () => world?.tiles?.stream || null;
+ window.__mapRuntime = () => ({ mapId: map?.id, switching: !!mapSwitch, worlds: scene.children.filter(o => o.name.startsWith('map-world:')).map(o => o.name), lastDisposal: lastMapDisposal, memory: { ...renderer.info.memory }, weatherWidgets: document.querySelectorAll('#police-hud').length });
+ 
+ // ------------------------------------------------------------------ cars
+@@ -605,7 +606,7 @@
+   }
+   if (pv.water <= 0.05) G.sinkT = 0;
+ }
+-function backOnRoad(pv, recovery = null, { reset = false } = {}) {
++function backOnRoad(pv, recovery = null, { reset = false, preview = false } = {}) {
+   const online = multiplayer.active, dir = online ? multiplayer.lobby.event?.dir || 1 : G.dir || 1;
+   const sf = towOffer.safe || pv.safe || { s: G.ev.r.s0, u: 0 };
+   // Road projection gives the nearest point on all maps, including unwrapped circuit laps.
+@@ -619,6 +620,7 @@
+   const placement = roadRecoveryPose(route, pv, dir, s);
+   s = placement.s; // The helper also repairs non-finite or out-of-range anchors.
+   const u = placement.u;
++  if (preview) return placement;
+   const nitro = pv.nitro; beginCameraBlend();
+   pv.reset(s, u, 0); pv.yaw = placement.yaw;
+   if (online && !recovery) multiplayer.stateSender.discontinuity();
+@@ -678,6 +680,12 @@
+     try { if (multiplayer.active) recovery = await multiplayer.recover(); }
+     catch (error) { if (current()) { G.towing = false; document.body.classList.remove('fading'); hud.message(error.message, 4); } return; }
+     if (!current()) return;
++    if (world?.tiles) {
++      const pose = backOnRoad(pv, recovery, { reset, preview: true }), target = route.point(pose.s, pose.u);
++      try { await world.tiles.stream.teleport(target, () => {}); }
++      catch (error) { if (current()) { G.towing = false; document.body.classList.remove('fading'); hud.message(error.message, 4); } return; }
++      if (!current()) return;
++    }
+     G.towing = false;
+     if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
+     // Both controls share checkpoint limits; online keeps the server's anchor.
+@@ -1037,9 +1045,18 @@
+ function teleportLandmark(id) {
+   if (!inFreeRoam()) return false;
+   const mark = map.data.marks.find(m => m.id === id); if (!mark) return false;
+-  beginCameraBlend(0.8); placeVeh(player.veh, mark.s, route.closed ? 0 : route.laneU(mark.s, 0), 1);
+-  resetTowOffer(); traffic.reset(mark.s); people.reset(mark.s); syncCar(player, 0); updateCamera(0, true);
+-  return true;
++  const currentWorld = world, currentPlayer = player, generation = soloStart;
++  const u = route.closed ? 0 : route.laneU(mark.s, 0);
++  const move = () => {
++    if (world !== currentWorld || player !== currentPlayer || soloStart !== generation) return false;
++    beginCameraBlend(0.8); placeVeh(player.veh, mark.s, u, 1);
++    resetTowOffer(); traffic.reset(mark.s); people.reset(mark.s); syncCar(player, 0); updateCamera(0, true);
++    return true;
++  };
++  if (!currentWorld?.tiles) return move();
++  let moved = false;
++  return currentWorld.tiles.stream.teleport(route.point(mark.s, u), () => { moved = move(); })
++    .then(() => moved, () => false);
+ }
+ function openRoamConditions() { if (inFreeRoam()) menu.show('roamConditions', { conditions: window.__conditions() }, true); }
+ function openRoamLandmarks() { if (inFreeRoam()) menu.show('roamLandmarks', { landmarks: map.data.marks }, true); }
+@@ -1866,6 +1883,7 @@
+   }
+   perfOverlay.frame(wallDt);
+   G.fps = G.fps ? G.fps * 0.95 + 0.05 / Math.max(1e-3, (now - (G.lastNow || now - 16)) / 1000) : 60; G.lastNow = now;
++  if (world?.tiles && player) world.tiles.update(player.veh, [rival?.veh, ...grid.map(c => c.veh), ...traffic.cars.filter(c => c.active).map(c => c.m.root.position)]);
+   const reps = +(Q.get('turbo') || 1);
+   const slices = Math.max(1, Math.ceil(dt / (1 / 60)));
+   try { for (let i = 0; i < reps; i++) for (let j = 0; j < slices; j++) step(dt / slices, i === reps - 1 && j === slices - 1); } catch (e) { if (G.ctxLost || renderer.getContext().isContextLost()) return; fail(e); throw e; }
+@@ -1884,6 +1902,7 @@
+   // A queued first frame can predate boot's clock reset. Integrators require a positive timestep.
+   if (!(dt > 0) || mapSwitch) return;
+   if (!world || !player || G.state === 'menu') { readInput(dt); return; }
++  if (world.tiles && !world.tiles.contactReady(player.veh, dt)) { if (draw) render(); return; }
+   G.t += dt; frameN++;
+   bootFrameLog('first-frame');
+   readInput(dt);
+@@ -2234,7 +2253,8 @@
+   const orbit = G.cam === 'orbit';
+   post.comp.uDof.value = orbit ? 5.5 : 0;
+   if (orbit) post.comp.uFocus.value = camera.position.distanceTo(_v1.set(player.veh.x, player.veh.y + 0.7, player.veh.z));
+-  post.render(G.lastDt || 1 / 60);
++  if (world.tiles) world.tiles.renderOrigin(camera, () => post.render(G.lastDt || 1 / 60));
++  else post.render(G.lastDt || 1 / 60);
+   const metric = assetMetrics.maps[map.id];
+   if (metric && metric.firstRaceFrameMs == null && ['race', 'onlineRace'].includes(G.state)) {
+     metric.firstRaceFrameMs = performance.now() - metric.started;
+--- a/src/map-world.js
++++ b/src/map-world.js
+@@ -5,6 +5,7 @@
+ import * as ENV from './env.js';
+ import { Ground, Splash, buildHumps, buildBarriers, buildSandTraps } from './ground.js';
+ import { buildTerrain } from './terrain.js';
++import { legacyTilesEnabled, loadLegacyTileWorld } from './world-tile-legacy.js';
+ import { loadBakedWorld, restoreBakedTerrain, restoreBakedRoads } from './baked-world.js';
+ import { buildRoad } from './road.js';
+ import { RoadNetwork } from './road-network-surface.js';
+@@ -58,30 +59,33 @@
+   return counts;
+ }
+ 
+-export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = false, quality = lowGraphics ? 'low' : 'high', progress = () => {} }) {
++export async function buildMapWorld(map, { scene, renderer, sky, skyCube, lowGraphics = false, quality = lowGraphics ? 'low' : 'high', progress = () => {} }) {
+   const group = new THREE.Group(); group.name = 'map-world:' + map.id;
+   const coastal = !map.id || map.id === 'riviera';
+   const route = map.route;
+   const network = map.data.roadNetwork && !new URLSearchParams(location.search).has('noroadnetwork') ? new RoadNetwork(map) : null;
+   map.roadNetwork = network;
+-  let water = null, custom = null;
++  let water = null, custom = null, tiles = null;
+   scene.add(group);
+   // the static builders' roots (freezeStatic below); `still(() => build())` collects what a builder adds to the group
+   const staticRoots = [], still = (build, label) => { const n = group.children.length, out = build(); for (const o of group.children.slice(n)) { o.name ||= label; staticRoots.push(o); } return out; };
+   try {
+     progress('BUILDING TERRAIN', .25); await frameYield();
+     const infill = []; // Owner: represent mapped building footprints only.
+-    const baked = await loadBakedWorld(map, network);
++    if(network&&legacyTilesEnabled(map))try{tiles=await loadLegacyTileWorld(map,network,group,{renderer});}
++    catch(error){map.streamingFailed=true;map.streamingFallbackReason=error.message;map.bakedWorld=null;progress('LOADING MAP',.25);}
++
++    const baked = tiles ? null : await loadBakedWorld(map, network);
+     const terrainOptions = { coastal, farmland: map.id === 'megara', gardens: map.id === 'psychiko', network, beachAreas: map.data.areas?.beach || [] };
+-    const ter = still(() => baked ? restoreBakedTerrain(baked.terrain, map.terrain, network, group, terrainOptions) : buildTerrain(map.terrain, route, [], group, terrainOptions), 'terrain');
++    const ter = tiles || still(() => baked ? restoreBakedTerrain(baked.terrain, map.terrain, network, group, terrainOptions) : buildTerrain(map.terrain, route, [], group, terrainOptions), 'terrain');
+     if (coastal) { water = ENV.createWater(skyCube, map.terrain, ENV.makeDepthTexture(map.terrain)); group.add(water.mesh); }
+-    if (lowGraphics) simplifyScenery(sky, skyCube, water, ter);
++    if (lowGraphics) simplifyScenery(sky, skyCube, water, tiles ? null : ter);
+     const labels = new LabelAtlas();
+     const assets = { labels, water, makeLabel: (t, w, h, bg, fg) => { const r = labels.add(t, bg, fg); return r ? labels.plane(r, w, h) : new THREE.Group(); } };
+     progress(coastal ? 'PAVING POSEIDONOS AVENUE' : 'BUILDING ' + (map.definition?.name || map.id).toUpperCase(), .4); await frameYield();
+     assets.junctions = coastal ? findJunctions(map) : [];
+     assets.network = network;
+-    if (network) still(() => baked ? restoreBakedRoads(baked.roads, network, group) : buildRoadNetwork(network, group), 'road-network');
++    if (network && !tiles) still(() => baked ? restoreBakedRoads(baked.roads, network, group) : buildRoadNetwork(network, group), 'road-network');
+     let road, natureGroup, signals;
+     if (coastal) {
+       const { buildRiviera } = await importWithUpdate(() => import('./maps/riviera.js'));
+@@ -125,12 +129,13 @@
+     const lod = prepareSceneryLod(group, quality, map);
+     group.matrixAutoUpdate = false; group.updateMatrix(); freezeStatic(staticRoots);
+     let disposed = false;
+-    return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, roadworks, tyreWalls: custom?.tyreWalls,
++    return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, roadworks, tyreWalls: custom?.tyreWalls, tiles,
+       dispose() {
+         if (disposed) return; disposed = true;
+         people.bodies.dispose?.();
+         // Damage fragments are parented directly to scene, outside this map root.
+         for (const car of traffic.cars) car.m?.disposeDamage?.();
++        tiles?.dispose();
+         const counts = disposeMapGroup(group, scene);
+         // LabelAtlas can be empty on an inland map, hence not reachable through a mesh.
+         labels.tex.dispose(); labels.mat.dispose();
+@@ -138,5 +143,5 @@
+         return counts;
+       },
+     };
+-  } catch (error) { disposeMapGroup(group, scene); water?.dispose?.(); map.dispose?.(); throw error; }
++  } catch (error) { tiles?.dispose(); disposeMapGroup(group, scene); water?.dispose?.(); map.dispose?.(); throw error; }
+ }
+--- a/src/service-worker.js
++++ b/src/service-worker.js
+@@ -28,7 +28,8 @@
+   const u = new URL(url);
+   if (u.origin === scope) {
+     if (u.pathname === '/' || u.pathname === '/index.html') return mode === 'navigate' ? 'page' : null;
+-    if (hasRange || !files[u.pathname]) return null;
++    if (!files[u.pathname]) return null;
++    if (hasRange) return /^\/data\/(?:tiles|worlds)\//.test(u.pathname) && u.pathname.endsWith('.awt') ? 'tile-range' : null;
+     return 'content';
+   }
+   return CDN_HOSTS.has(u.host) ? 'cdn' : null;
+@@ -64,6 +65,26 @@
+   } catch { /* offline: the plain request below fails the same way */ }
+   return fetch(request); // e.g. an old worker after a deploy removed its /_c/ copy
+ }
++// Cache a requested compressed tile slice, rather than fetching its whole region.
++// Cache Storage rejects 206 responses; the internal entry is 200 and replay is 206.
++// Its immutable bundle hash + exact byte interval prevent release/range collisions.
++async function fromTileRange(request, path) {
++  const match = /^bytes=(\d+)-(\d+)$/.exec(request.headers.get('range') || '');
++  if (!match) return fetch(request);
++  const start=Number(match[1]), end=Number(match[2]), length=end-start+1;
++  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start<0 || length<1 || length>25*1024*1024) return fetch(request);
++  const immutable=contentPath(path), key=`${immutable}?asr-range=${start}-${end}`, cache=await caches.open(CONTENT);
++  const hit=await cache.match(key);
++  if (hit) return new Response(hit.body,{status:206,headers:hit.headers});
++  const response=await fetch(immutable,{headers:{Range:`bytes=${start}-${end}`}});
++  const range=/^bytes (\d+)-(\d+)\/(\d+)$/.exec(response.headers.get('Content-Range')||'');
++  if (response.status!==206 || !range || Number(range[1])!==start || Number(range[2])!==end || Number(range[3])<=end) return response;
++  const body=await response.arrayBuffer();
++  if (body.byteLength!==length) return new Response(null,{status:502});
++  const headers=new Headers(response.headers);headers.set('Content-Length',String(length));
++  try { await cache.put(key,new Response(body,{status:200,headers})); } catch { /* quota denial must not interrupt driving */ }
++  return new Response(body,{status:206,headers});
++}
+ async function fromPage(request) {
+   const cache = await caches.open(PAGES);
+   try {
+@@ -126,10 +147,11 @@
+     // another release is loading (the network has its files), or this worker removed itself: hands off
+     if (route && Date.now() < bypassUntil && (route !== 'page' || bypassUntil === Infinity)) return;
+     if (route === 'content') e.respondWith(fromContent(r, new URL(r.url).pathname));
++    else if (route === 'tile-range') e.respondWith(fromTileRange(r, new URL(r.url).pathname));
+     else if (route === 'page') e.respondWith(fromPage(r));
+     else if (route === 'cdn') e.respondWith(fromCdn(r));
+   });
+   self.addEventListener('message', (e) => { if (e.data === 'asr-build') e.source?.postMessage({ build: RELEASE.build }); });
+ }
+ // node tests (tools/service-worker.test.mjs) evaluate this file and call these
+-self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf };
++self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf, fromTileRange };
+--- a/tools/prepare-deploy.mjs
++++ b/tools/prepare-deploy.mjs
+@@ -8,6 +8,7 @@
+ import { resolveMap } from '../server/map-definitions.mjs';
+ import { PLAYABLE_MAPS } from '../src/enabled-maps.js';
+ import { bundleBrowser } from './bundle-browser.mjs';
++import { stageWorldArtifact } from './world-artifacts.mjs';
+ import { bakeWorlds } from './bake-world.mjs';
+ import { buildRelease, publishRelease, CACHE_HEADERS } from './release-cache.mjs';
+ import { missingPicturesWarning } from './changelog-images.mjs';
+@@ -32,6 +33,11 @@
+ }
+ for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src', 'assets', 'data']) await copy(resolve(root, path));
+ await bakeWorlds(root, out, PLAYABLE_MAPS);
++if(process.env.ASR_WORLD_MANIFEST){
++  const artifact=await stageWorldArtifact(resolve(process.env.ASR_WORLD_MANIFEST),out);
++  await writeFile(resolve(root,'.deploy/world-artifact.json'),JSON.stringify(artifact,null,2));
++  console.log('External world artifact',JSON.stringify(artifact));
++}
+ // Explicit Wrangler build commands set ASR_BUILD_ENV; unknown deployment IDs remain visibly staging.
+ const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV || 'staging';
+ const indexPath = resolve(out, 'index.html');
+--- a/tools/release-cache.mjs
++++ b/tools/release-cache.mjs
+@@ -9,7 +9,7 @@
+ 
+ // streamed (range requests), crawler-only, or not used by the game at runtime
+ export const UNCACHED = [/^\/assets\/changelog\//, /^\/assets\/audio\/music\//, /^\/assets\/share\//, /^\/data\/raw\//, /\.(md|txt)$/i, /^\/src\/service-worker\.js$/, /^\/(index\.html|robots\.txt|sitemap\.xml|_headers|sw\.js)$/];
+-export const CACHE_HEADERS = '/src/KTX2Loader-*\n  Cache-Control: public, max-age=31536000, immutable\n/src/meshopt_decoder.module-*\n  Cache-Control: public, max-age=31536000, immutable\n/assets/codecs/basis/*\n  Cache-Control: public, max-age=31536000, immutable\n/assets/tex/ktx2/*\n  Cache-Control: public, max-age=31536000, immutable\n/data/baked/*\n  Cache-Control: public, max-age=31536000, immutable\n/_c/*\n  Cache-Control: public, max-age=31536000, immutable\n/sw.js\n  Cache-Control: no-cache\n';
++export const CACHE_HEADERS = '/src/KTX2Loader-*\n  Cache-Control: public, max-age=31536000, immutable\n/src/meshopt_decoder.module-*\n  Cache-Control: public, max-age=31536000, immutable\n/assets/codecs/basis/*\n  Cache-Control: public, max-age=31536000, immutable\n/assets/tex/ktx2/*\n  Cache-Control: public, max-age=31536000, immutable\n/data/worlds/*\n  Cache-Control: public, max-age=31536000, immutable\n/data/baked/*\n  Cache-Control: public, max-age=31536000, immutable\n/_c/*\n  Cache-Control: public, max-age=31536000, immutable\n/sw.js\n  Cache-Control: no-cache\n';
+ export const hash16 = (buf) => createHash('sha256').update(buf).digest('hex').slice(0, 16);
+ 
+ async function walk(dir, out = []) {
+--- a/tools/service-worker.test.mjs
++++ b/tools/service-worker.test.mjs
+@@ -8,9 +8,9 @@
+ import { buildRelease, publishRelease, hash16, CACHE_HEADERS } from './release-cache.mjs';
+ 
+ const root = resolve(import.meta.dirname, '..');
+-async function loadWorker(release) {
++async function loadWorker(release, context = {}) {
+   const self = { location: { origin: 'https://asr.test' }, ASR_RELEASE: release };
+-  vm.runInNewContext(await readFile(resolve(root, 'src/service-worker.js'), 'utf8'), { self, URL, Response, crypto, caches: undefined, fetch: undefined });
++  vm.runInNewContext(await readFile(resolve(root, 'src/service-worker.js'), 'utf8'), { self, URL, Response, Headers, Request, crypto, caches: undefined, fetch: undefined, ...context });
+   return self.ASR_SW;
+ }
+ 
+@@ -77,3 +77,20 @@
+     assert.match(CACHE_HEADERS, /\/_c\/\*\n  Cache-Control: public, max-age=31536000, immutable/);
+   } finally { await rm(dir, { recursive: true, force: true }); }
+ });
++
++
++for(const prefix of ['/data/tiles/city','/data/worlds/athens/0123456789abcdef'])test(`regional tile ranges cache only requested bytes under immutable bundle hashes: ${prefix}`,async()=>{
++  const path=prefix+'/region-x.awt';
++  const entries=new Map(), requests=[];
++  const cache={match:async key=>entries.get(key)?.clone(),put:async(key,response)=>{assert.equal(response.status,200);entries.set(key,response.clone());}};
++  const files={[path]:'a'.repeat(16)};
++  const sw=await loadWorker({build:'one',files,core:[]},{caches:{open:async()=>cache},fetch:async(url,options)=>{requests.push([url,options]);return new Response(new Uint8Array([1,2,3]),{status:206,headers:{'Content-Range':'bytes 4-6/100','Content-Length':'3'}});}});
++  const req=new Request('https://asr.test'+path,{headers:{Range:'bytes=4-6'}});
++  assert.equal(sw.routeOf('GET',req.url,'cors',true),'tile-range');
++  for(let i=0;i<2;i++){const response=await sw.fromTileRange(req,new URL(req.url).pathname);assert.equal(response.status,206);assert.equal(response.headers.get('Content-Range'),'bytes 4-6/100');assert.deepEqual([...new Uint8Array(await response.arrayBuffer())],[1,2,3]);}
++  assert.equal(requests.length,1);assert.equal(requests[0][0],'/_c/'+ 'a'.repeat(16)+'.awt');assert.equal(requests[0][1].headers.Range,'bytes=4-6');
++  files[path]='b'.repeat(16);
++  await sw.fromTileRange(req,new URL(req.url).pathname);assert.equal(requests.length,2,'changed bundle cannot reuse old slice');
++  const noSpace=await loadWorker({build:'two',files,core:[]},{caches:{open:async()=>({match:async()=>null,put:async()=>{throw Error('quota');}})},fetch:async()=>new Response(new Uint8Array([1,2,3]),{status:206,headers:{'Content-Range':'bytes 4-6/100'}})});
++  assert.equal((await noSpace.fromTileRange(req,new URL(req.url).pathname)).status,206);
++});
+--- a/tools/tow-road-placement.test.mjs
++++ b/tools/tow-road-placement.test.mjs
+@@ -18,9 +18,9 @@
+   if(options.checkpoint!=null)G.run={r:{s0:0,checkpoints:[{d:options.checkpoint}]},cpIdx:0,progress:s=>s};
+   const safe={s:options.safe??v.s,u:0},towOffer={safe},player={veh:v};
+   const multiplayer={active:!!options.online,retired:false,lobby:{raceId:'test',event:{dir:G.dir}},recover:async()=>({s:options.serverS??safe.s,until:5000}),now:()=>0,stateSender:{discontinuity(){}}};
+-  const api=Function('G','multiplayer','towOffer','route','recoveryPosition','roadRecoveryPose','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications',
++  const api=Function('world','G','multiplayer','towOffer','route','recoveryPosition','roadRecoveryPose','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications',
+     section('function backOnRoad(', 'function stuckCheck(')+section('function tow(', 'function resetCar(')+'return {tow,backOnRoad};')(
+-    G,multiplayer,towOffer,route,recoveryPosition,roadRecoveryPose,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>true,{message(){}},{dismiss(){}});
++    null,G,multiplayer,towOffer,route,recoveryPosition,roadRecoveryPose,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>true,{message(){}},{dismiss(){}});
+   return {G,towOffer,...api,async flush(){while(callbacks.length)await callbacks.shift()(()=>true);}};
+ }
+ for(const def of MAPS)test(`${def.id}: real T/R paths place off-road cars on the race surface in both directions`,async t=>{
+--- a/wrangler.jsonc
++++ b/wrangler.jsonc
+@@ -12,7 +12,7 @@
+   "assets": {
+     "directory": ".deploy/assets",
+     "binding": "ASSETS",
+-    "run_worker_first": true
++    "run_worker_first": ["/*", "!/_c/*", "!/data/tiles/*", "!/data/worlds/*"]
+   },
+   "durable_objects": {
+     "bindings": [
+--- a/server/canonical-host.test.mjs
++++ b/server/canonical-host.test.mjs
+@@ -20,9 +20,9 @@
+   assert.equal(canonicalHostRedirect(new Request('https://www.athensracing.com/api/account/profile', { method: 'POST', body: '{}' })), null);
+ });
+ 
+-test('all assets pass through the Worker and canonicalization runs before APIs and assets', async () => {
++test('documents and named assets keep canonical redirects while immutable content and tiles bypass Worker billing', async () => {
+   const config = JSON.parse(await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
+-  assert.equal(config.assets.run_worker_first, true);
++  assert.deepEqual(config.assets.run_worker_first, ['/*','!/_c/*','!/data/tiles/*','!/data/worlds/*']);
+   const worker = await readFile(new URL('../worker/index.mjs', import.meta.url), 'utf8');
+   assert.ok(worker.indexOf('canonicalHostRedirect(request)') < worker.indexOf('legalPage(request)'));
+   assert.ok(worker.indexOf('canonicalHostRedirect(request)') < worker.indexOf('env.ASSETS.fetch(request)'));
+--- a/server/privacy.test.mjs
++++ b/server/privacy.test.mjs
+@@ -42,7 +42,7 @@
+   const worker = await readFile(new URL('../worker/index.mjs', import.meta.url), 'utf8');
+   assert.ok(worker.indexOf('legalPage(request)') < worker.indexOf('env.ASSETS.fetch(request)'));
+   const config = JSON.parse((await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8')));
+-  assert.equal(config.assets.run_worker_first, true, 'all assets must reach the Worker for host canonicalization');
++  assert.deepEqual(config.assets.run_worker_first, ['/*','!/_c/*','!/data/tiles/*','!/data/worlds/*'], 'legal documents stay Worker-first; only immutable content and tile data bypass');
+   const sitemap = await readFile(new URL('../sitemap.xml', import.meta.url), 'utf8');
+   for (const path of ['/privacy', '/terms']) assert.ok(sitemap.includes(`https://athensracing.com${path}`));
+   const accounts = await readFile(new URL('../src/ui/account-screen.js', import.meta.url), 'utf8');
+--- a/src/terrain.js
++++ b/src/terrain.js
+@@ -90,7 +90,7 @@
+  * Build terrain meshes. `corridorPts` is an array of [x,z,r] stamps marking the detailed area.
+  * clampFn(x, z) -> max height allowed (keeps the ground under the road and pavements) or Infinity.
+  */
+-export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, gardens = false, network = null, beachAreas = [] } = {}) {
++export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, gardens = false, network = null, beachAreas = [], tileCoverage = false } = {}) {
+   const { GX, GZ, T, minX, minZ, H, C: CL } = terrain;
+   const mat = terrainMaterial({ farmland, gardens });
+   // ---------------------------------------------------------------- corridor mask (10 m vertices)
+@@ -278,10 +278,14 @@
+     return g;
+   };
+   const inFine = (i, j, i2, j2) => mask[j * GX + i] && mask[j * GX + i2] && mask[j2 * GX + i] && mask[j2 * GX + i2];
+-  let fineGeo = build(1, (i,j,i2,j2) => inFine(i,j,i2,j2) && !refined.has(j * GX + i));
+-  // coarse outside: drop vertices that are deep inside the fine area so they hide under it
+-  const C4 = 4;
+-  const coarseGeo = build(C4, (i, j, i2, j2) => !(inFine(i, j, i, j) && inFine(i2, j2, i2, j2) && inFine(i, j2, i, j2) && inFine(i2, j, i2, j)),
++  // A four-corner mask does not prove that the sixteen enclosed fine cells
++  // exist. It previously removed coarse cells over holes in the fine mask.
++  // Assign each coarse block wholly to one resolution, using the original
++  // cell coverage; shared block borders can then be stitched canonically.
++  const C4 = 4, fineBlocks = new Set(), blockKey = (i,j) => Math.floor(i/C4)+','+Math.floor(j/C4);
++  if(tileCoverage)for(let j=0;j<GZ-1;j++)for(let i=0;i<GX-1;i++)if(inFine(i,j,i+1,j+1)||refined.has(j*GX+i))fineBlocks.add(blockKey(i,j));
++  let fineGeo = build(1, (i,j,i2,j2) => (tileCoverage?fineBlocks.has(blockKey(i,j)):inFine(i,j,i2,j2)) && !refined.has(j * GX + i));
++  const coarseGeo = build(C4, (i,j,i2,j2) => tileCoverage?!fineBlocks.has(blockKey(i,j)):!(inFine(i,j,i,j)&&inFine(i2,j2,i2,j2)&&inFine(i,j2,i,j2)&&inFine(i2,j,i2,j)),
+     (i, j) => { let all = true; for (let dj = -C4; dj <= C4 && all; dj += C4) for (let di = -C4; di <= C4 && all; di += C4) { const a = Math.min(GX - 1, Math.max(0, i + di)), b = Math.min(GZ - 1, Math.max(0, j + dj)); if (!mask[b * GX + a]) all = false; } return all ? 3 : 0; });
+   // split the fine mesh into tiles for culling
+   const group = new THREE.Group();
+--- a/tools/bake-world.mjs
++++ b/tools/bake-world.mjs
+@@ -1,5 +1,6 @@
+ // Run the existing deterministic generators in Node using exactly the browser's three.js version.
+ import * as THREE from 'three';
++import { bakeExistingTiles } from './tile-existing-worlds.mjs';
+ import { encodeMeshoptPack } from './meshopt-pack.mjs';
+ import { readFile, writeFile, mkdir } from 'node:fs/promises';
+ import { resolve } from 'node:path';
+@@ -20,7 +21,7 @@
+     return gzipSync(planes).length < gzipSync(raw).length;
+   });
+ }
+-export async function generateMapBake(root, id) {
++export async function generateMapBake(root, id, {tileCoverage=false}={}) {
+   const originalFetch = globalThis.fetch, originalLocation = globalThis.location;
+   // loadMap uses fetch in the browser; here its input is the clean build's local map bundle.
+   globalThis.fetch = async url => new Response(await readFile(resolve(root, String(url))));
+@@ -28,7 +29,7 @@
+   try {
+     const map = await loadMap(undefined, './', id), network = new RoadNetwork(map), scene = new THREE.Group();
+     map.roadNetwork = network;
+-    const ter = buildTerrain(map.terrain, map.route, [], scene, { coastal: id === 'riviera', farmland: id === 'megara', gardens: id === 'psychiko', network, beachAreas: map.data.areas?.beach || [] });
++    const ter = buildTerrain(map.terrain, map.route, [], scene, { tileCoverage, coastal: id === 'riviera', farmland: id === 'megara', gardens: id === 'psychiko', network, beachAreas: map.data.areas?.beach || [] });
+     const terrain = packGroup(ter.group, { map: id, grid: map.terrain.GX * map.terrain.GZ, height: 0, source: 1 }, [map.terrain.Hc, network.source], chooseShuffling);
+     const roads = buildRoadNetwork(network, scene);
+     return { map, network, terrain, roads: packGroup(roads, { map: id, grid: map.terrain.GX * map.terrain.GZ, stats: { triangles: network.stats.triangles, tiles: network.stats.tiles } }, [], chooseShuffling), terrainGroup: ter.group, roadsGroup: roads };
+@@ -38,7 +39,7 @@
+   const dir = resolve(out, 'data/baked'); await mkdir(dir, { recursive: true });
+   const policy = {};
+   for (const id of ids) {
+-    const t = performance.now(), bake = await generateMapBake(root, id), paths = {}, meshopt = {};
++    const t = performance.now(), bake = await generateMapBake(root, id, {tileCoverage:process.env.ASR_WORLD_TILES==='1'&&['riviera','megara','penteli'].includes(id)}), paths = {}, meshopt = {};
+     let legacyBytes = 0, compactBytes = 0, meshoptViews = 0;
+     for (const kind of ['terrain', 'roads']) {
+       const bytes = gzipSync(new Uint8Array(bake[kind]), { level: 9 });
+@@ -85,6 +86,7 @@
+     policy[id] = { geometry: validated && savedBytes > (meshoptViews ? 32 * 1024 : 0), textures: validated && savedBytes > 1024 * 1024, savedBytes, meshoptViews };
+     meshopt.enabled = policy[id].geometry;
+     data.bakedWorld = { version: 1, compression: 'gzip', ...paths, meshopt };
++    if (process.env.ASR_WORLD_TILES === '1' && ['riviera','megara','penteli'].includes(id)) data.worldTiles = await bakeExistingTiles(bake, out);
+     await writeFile(path, JSON.stringify(data));
+     console.log(`Baked ${id} in ${Math.round(performance.now() - t)} ms`);
+     bake.terrainGroup.traverse(m => m.geometry?.dispose()); bake.roadsGroup.traverse(m => m.geometry?.dispose());

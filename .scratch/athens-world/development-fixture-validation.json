@@ -1,0 +1,25 @@
+{
+  "glyfada": {
+    "tiles": 2,
+    "bytes": 2736034,
+    "decodedBytes": 7541920,
+    "triangles": 114729,
+    "bytesPerKm2": 5218570.709228516
+  },
+  "riviera": {
+    "tiles": 1,
+    "bytes": 613495,
+    "decodedBytes": 1669615,
+    "triangles": 24921,
+    "bytesPerKm2": 2340297.6989746094
+  },
+  "rivieraSpawn": {
+    "id": "anchor:tow:osm:way:459160388:0-0:f:8:36",
+    "local": [
+      466.9681091308594,
+      5.699690818786621,
+      231.2852783203125,
+      -2.94152569770813
+    ]
+  }
+}

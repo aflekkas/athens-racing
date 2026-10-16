@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+ok 1 - every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+  ---
+  duration_ms: 19626.984066
+  type: 'test'
+  ...
+# Subtest: ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+ok 2 - ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+  ---
+  duration_ms: 2.503316
+  type: 'test'
+  ...
+# Subtest: all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+ok 3 - all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+  ---
+  duration_ms: 4848.76787
+  type: 'test'
+  ...
+# Subtest: rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+ok 4 - rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+  ---
+  duration_ms: 209.964062
+  type: 'test'
+  ...
+# Subtest: authored cockpit families retain different furniture and cluster artwork, never the uniform POV strip
+ok 5 - authored cockpit families retain different furniture and cluster artwork, never the uniform POV strip
+  ---
+  duration_ms: 794.415629
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 26214.001875

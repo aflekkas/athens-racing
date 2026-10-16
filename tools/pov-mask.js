@@ -1,13 +1,14 @@
 import * as T from 'three';
 // Black = every visible opaque vehicle surface (including instruments and mirrors).
-// White = unobstructed exterior through the glass/open cockpit. No road-colour heuristic.
-export function renderPovMask(renderer,model,camera,width=640,height=400){
+// White = window/open-cockpit aperture, including the bonnet seen outside.
+// Road clearance is independently ray-tested to <=10 m; no road-colour heuristic.
+export function renderPovMask(renderer,model,camera,width=640,height=400,windowAperture=true){
  const scene=new T.Scene();scene.background=new T.Color(0xffffff);
  const parent=model.root.parent,oldIndex=parent?.children.indexOf(model.root);scene.add(model.root);
  const originals=[],materials=[];
  model.root.traverse(o=>{if(!o.isMesh)return;originals.push([o,o.material]);const convert=m=>{
   const instrument=/instrument|mirror/.test(o.name)||m===model.cockpit?.material;
-  const clear=m.transparent&&!instrument;
+  const clear=(m.transparent&&!instrument)||(windowAperture&&o.userData.cockpitStructure==='deck');
   const mask=new T.MeshBasicMaterial({color:0x000000,side:m.side,transparent:clear,opacity:clear?0:1,depthWrite:!clear});materials.push(mask);return mask;
  };o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);});
  const target=new T.WebGLRenderTarget(width,height,{depthBuffer:true}),previous=renderer.getRenderTarget(),oldTone=renderer.toneMapping,oldShadow=renderer.shadowMap.enabled;

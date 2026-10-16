@@ -7,7 +7,7 @@ export const VEHICLE_BUDGETS=Object.freeze({
   lod1:999,
   lod2:299,
   wheel:149,
-  cockpit:2999,
+  cockpit:12000,
   bikeRider:599,
   enclosedOccupants:0,
   cockpitGlass:0,

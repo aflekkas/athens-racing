@@ -1,0 +1,25 @@
+{
+  "releasedCockpitBaseline": "85a37e6a1b2d4c1947feb0f500ea97c623e5da6f",
+  "authoredRestorationSource": "6c89a4a^:src/cockpit.js",
+  "worldParent": "c5765b84ed40c1627f3abfbf30417539371aa85e",
+  "fov": 66,
+  "seatOffsets": {
+    "height": 0,
+    "position": 0
+  },
+  "worldSubset": [
+    "mini",
+    "carrera",
+    "aventador_svj",
+    "cle",
+    "e36",
+    "gtv",
+    "bus",
+    "delivery"
+  ],
+  "weather": "clear",
+  "environmentTime": 8.25,
+  "scope": "70 rendered defaults plus 8 day-only world pairs per lead wrap-up; no full rain sweep",
+  "landingParent": "9c0cb33197106a5fc882109479c861df40d465cf",
+  "parentRebaseNote": "World-detail parent preserved after the controlled capture; cockpit/camera geometry and rendered-mask sources unchanged. Both comparison phases used the documented capture world parent."
+}

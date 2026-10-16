@@ -121,6 +121,46 @@ test('an ahead contact tile can replace a less urgent neighbour when the safety 
 });
 
 
+test('generated spawn requires an emitted public-road anchor and its complete contact footprint',async()=>{
+ const m=manifest(1);
+ function roadPacket(z=10,y=0){
+  const p=fixture();p.metadata.ids=['','spawn:0','edge:road','node:a','node:b','surface:road'];
+  const set=(name,a)=>p.arrays[p.metadata.tables[name]]=a;
+  set('edges',new Uint32Array([2,3,4,0,2,0,1,50,1,5]));set('edgePoints',new Float32Array([0,0,10,512,0,10]));set('edgeLayers',new Int8Array([0]));
+  set('contactPositions',new Float32Array([0,0,0,512,0,0,0,0,20,512,0,20]));set('contactTriangles',new Uint32Array([0,2,1,5,1,1,2,3,5,1]));set('contactLayers',new Int8Array(2));
+  set('anchors',new Uint32Array([1,0,2,0,0]));set('anchorTransforms',new Float32Array([10,y,z,-Math.PI/2]));
+  return{...p,bytes:80,contactIndex:buildTileContactIndex(tileTables(p))};
+ }
+ const s=new WorldTileStream(m,{nearRing:0,load:async()=>roadPacket()});let moved=null;
+ await s.spawn(p=>{moved=p;},{nextFrame:tick});assert.equal(moved.x,10);assert.equal(moved.z,10);assert.equal(moved.layer,0);s.dispose();
+ const tow=new WorldTileStream(m,{nearRing:0,load:async()=>{const p=roadPacket();p.arrays[p.metadata.tables.anchors][3]=1;return p;}});await tow.spawn(p=>assert.equal(p.kind,1),{nextFrame:tick});tow.dispose();
+ for(const [z,y]of [[30,0],[10,2],[.25,0]]){
+  const bad=new WorldTileStream(m,{nearRing:0,load:async()=>roadPacket(z,y)});
+  await assert.rejects(bad.spawn(()=>assert.fail('unvalidated spawn moved the car'),{nextFrame:tick}),/spawn (contact|footprint)/);bad.dispose();
+ }
+ const reversed=new WorldTileStream(m,{nearRing:0,load:async()=>{const p=roadPacket();p.arrays[p.metadata.tables.anchorTransforms][3]=Math.PI/2;return p;}});
+ await assert.rejects(reversed.spawn(()=>assert.fail('wrong-way spawn moved the car'),{nextFrame:tick}),/heading mismatch/);reversed.dispose();
+ const absent=new WorldTileStream(m,{nearRing:0,load:async j=>packet(j.cell)});
+ await assert.rejects(absent.spawn(()=>assert.fail('nominal point must not be used'),{nextFrame:tick}),/anchor missing/);absent.dispose();
+});
+
+test('shader preparation gates activation and cancelled warmups cannot revive discarded tiles',async()=>{
+ const pending=[],a=adapter();a.warmup=()=>new Promise(resolve=>pending.push(resolve));
+ const s=new WorldTileStream(manifest(1),{nearRing:0,adapter:a,load:async j=>packet(j.cell),capBytes:500});
+ s.update({x:1,z:1});await tick();s.activateFrame();
+ assert.equal(s.tiles.get('0,0').state,'preparing');assert.equal(s.readyAt(1,1),false);assert.equal(a.committed,0);assert.equal(s.residentBytes,80);
+ s.dispose();assert.equal(s.residentBytes,0);assert.equal(s.reservedBytes,0);
+ pending[0]();await tick();s.activateFrame();assert.equal(s.tiles.size,0);assert.equal(a.committed,0);assert.equal(s.transientBytes,0);assert.equal(s.inflight,0);
+});
+
+test('failed shader preparation releases residency and retry can complete activation',async()=>{
+ let fail=true;const a=adapter();a.warmup=async()=>{if(fail)throw new Error('shader preparation failed');};
+ const s=new WorldTileStream(manifest(1),{nearRing:0,adapter:a,load:async j=>packet(j.cell),capBytes:500});
+ s.update({x:1,z:1});await tick();assert.equal(s.tiles.get('0,0').state,'failed');assert.equal(s.residentBytes,0);assert.equal(s.reservedBytes,0);assert.equal(s.transientBytes,0);assert.equal(a.committed,0);
+ fail=false;s.retry('0,0');await settle(s);assert.equal(s.readyAt(1,1),true);s.dispose();assert.equal(s.residentBytes,0);assert.equal(a.disposed,a.committed);
+});
+
+
 test('a city-scale owner chain stays one hop for loading, readiness, pins and teleport',async()=>{
  const m=manifest(218),jobs=[];
  for(let x=0;x<217;x++)m.tiles[`${x},0`].dependencies=[`${x+1},0`];
@@ -137,4 +177,15 @@ test('a city-scale owner chain stays one hop for loading, readiness, pins and te
  assert.deepEqual(jobs,[0,1,2]);assert.equal(s.readyAt(520,10),true);
  assert.equal(s.tiles.has('3,0'),false);release();assert.equal(s.pins.size,0);
  s.dispose();assert.equal(s.residentBytes,0);
+});
+
+test('tile workers reuse the shared ASR2 decoder and reject allocation expansion before decoding',async()=>{
+ const {fetchTilePacket}=await import('../src/world-tile-worker.js'),{encodeGeometryPack}=await import('../src/baked-geometry.js'),{encodeMeshoptPack}=await import('./meshopt-pack.mjs'),{decodeTilePack}=await import('../src/world-tile-codec.js');
+ const {gzipSync}=await import('node:zlib'),{createHash}=await import('node:crypto');const p=fixture(),raw=encodeGeometryPack(p.metadata,p.arrays),compact=await encodeMeshoptPack(raw),body=gzipSync(compact),original=globalThis.fetch;
+ const entry={bytes:body.length,decodedBytes:1024*1024,triangles:0,sha256:createHash('sha256').update(body).digest('hex')};
+ try{globalThis.fetch=async()=>new Response(body);const decoded=await fetchTilePacket({url:'http://local/tile',entry,world:'athens',revision:'test',cell:[0,0]});assert.deepEqual([...decoded.arrays[p.metadata.tables.coarseHeights]],[...p.arrays[p.metadata.tables.coarseHeights]]);}finally{globalThis.fetch=original;}
+ // A small valid container can name a huge output buffer; no WASM allocation
+ // should occur before this declaration is checked against the tile reservation.
+ const json=new TextEncoder().encode(JSON.stringify({version:2,views:[{type:'Uint8Array',length:1000000,codec:'ATTRIBUTES',count:250000,stride:4,offset:0,byteLength:0}]})),buffer=new ArrayBuffer(12+json.length),view=new DataView(buffer);view.setUint32(0,0x32525341,true);view.setUint32(4,json.length,true);view.setUint32(8,buffer.byteLength,true);new Uint8Array(buffer,12).set(json);
+ await assert.rejects(decodeTilePack(buffer,16384),/decoded byte budget/);
 });

@@ -18,9 +18,11 @@ test('canonical terrain seams reject one bit changes and missing boundary contac
   const a = fixture(), b = fixture([1,0]); assert.equal(validateTileSeam(a,b),true);
   b.arrays[b.metadata.tables.coarseHeights][0] = .00001; assert.throws(() => validateTileSeam(a,b), /cracked seam/);
   b.arrays[b.metadata.tables.coarseHeights][0] = 0;
-  a.arrays[a.metadata.tables.contactPositions] = new Float32Array([512,1,2]);
+  a.arrays[a.metadata.tables.contactPositions] = new Float32Array([512,1,2,512,1,3,511,1,2]);
+  a.arrays[a.metadata.tables.contactTriangles] = new Uint32Array([0,1,2,0,1]);
   assert.throws(() => validateTileSeam(a,b), /cracked seam/);
-  b.arrays[b.metadata.tables.contactPositions] = new Float32Array([0,1,2]); assert.equal(validateTileSeam(a,b),true);
+  b.arrays[b.metadata.tables.contactPositions] = new Float32Array([0,1,2,0,1,3,1,1,2]);
+  b.arrays[b.metadata.tables.contactTriangles] = new Uint32Array([0,1,2,0,1]); assert.equal(validateTileSeam(a,b),true);
 });
 test('retained bytes count shared backing allocations once', () => {
   const buffer = new ArrayBuffer(100); assert.equal(residentArrayBytes([new Float32Array(buffer,0,5),new Uint8Array(buffer,20,10)]),100);
@@ -31,6 +33,29 @@ test('contact indices, buildings and layer row alignment are checked before allo
   assert.throws(() => validateWorldTile(p), /layer row/);
   p.arrays[p.metadata.tables.contactLayers] = new Int8Array(1);
   assert.throws(() => validateWorldTile(p), /vertex/);
+});
+
+
+test('bounded activation draws can share a dense canonical Float32 terrain table using Uint32 indices',()=>{
+  const p=fixture(),position=p.metadata.tables.finePositions;
+  p.arrays[position]=new Float32Array(70000*3);
+  const index=p.arrays.length;p.arrays.push(new Uint32Array([69997,69998,69999]));
+  p.metadata.meshes=[{attributes:{position:{array:position,itemSize:3}},index,material:0}];p.metadata.budgets.triangles=1;
+  assert.equal(validateWorldTile(p).triangles,1);
+  const color=p.arrays.length;p.arrays.push(new Uint8Array(3));p.metadata.meshes[0].attributes.color={array:color,itemSize:3};
+  assert.throws(()=>validateWorldTile(p),/attribute length/);
+  delete p.metadata.meshes[0].attributes.color;p.arrays[position][0]=NaN;
+  assert.throws(()=>validateWorldTile(p),/nonfinite/);
+});
+
+test('a triangle tangent at one boundary vertex owns no shared boundary segment',()=>{
+ const a=fixture(),b=fixture([1,0]);b.arrays[b.metadata.tables.contactPositions]=new Float32Array([0,1,20,1,1,19,1,1,21]);b.arrays[b.metadata.tables.contactTriangles]=new Uint32Array([0,1,2,0,1]);assert.equal(validateTileSeam(a,b),true);
+});
+
+test('matching boundary vertices do not hide different boundary segment topology',()=>{
+ const a=fixture(),b=fixture([1,0]);
+ for(const[p,x]of[[a,512],[b,0]]){p.arrays[p.metadata.tables.finePositions]=new Float32Array([x,0,0,x,0,20,x,0,40,x===0?1:511,0,20]);}
+ a.arrays[a.metadata.tables.fineTriangles]=new Uint32Array([0,1,3,1,2,3]);b.arrays[b.metadata.tables.fineTriangles]=new Uint32Array([0,2,3,1,2,3]);assert.throws(()=>validateTileSeam(a,b),/cracked seam/);
 });
 
 

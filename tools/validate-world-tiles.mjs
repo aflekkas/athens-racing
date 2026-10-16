@@ -2,7 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
-import { decodeGeometryPack } from '../src/baked-geometry.js';
+import { readTileBytes } from './pack-world-tiles.mjs';
+import { decodeTilePack } from '../src/world-tile-codec.js';
 import { validateWorldManifest, validateWorldTile, tileEdgeSignatures } from '../src/world-tile-format.js';
 export async function validateDirectory(path) {
   const manifest = validateWorldManifest(JSON.parse(await readFile(path, 'utf8'))), edges = new Map();
@@ -10,11 +11,10 @@ export async function validateDirectory(path) {
   for (const [key, entry] of Object.entries(manifest.tiles)) {
     const url = new URL(entry.url, 'https://local/' + path.replace(/^\//,''));
     if (url.origin !== 'https://local') throw new Error('Validator accepts local tile files only');
-    let body = await readFile(resolve(dirname(path), entry.url));
-    if (entry.range) body = body.subarray(entry.range.offset, entry.range.offset + entry.range.length);
+    const body = await readTileBytes(path, entry);
     if (body.length !== entry.bytes || createHash('sha256').update(body).digest('hex') !== entry.sha256) throw new Error(`Tile integrity ${key}`);
-    const raw = gunzipSync(body), buffer = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
-    const pack = decodeGeometryPack(buffer), result = validateWorldTile(pack, { world: manifest.world, revision: manifest.revision, cell: key.split(',').map(Number) });
+    const raw = gunzipSync(body,{maxOutputLength:entry.decodedBytes}), buffer = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+    const pack = await decodeTilePack(buffer,entry.decodedBytes), result = validateWorldTile(pack, { world: manifest.world, revision: manifest.revision, cell: key.split(',').map(Number) });
     if (result.bytes > entry.decodedBytes || result.triangles !== entry.triangles) throw new Error(`Tile accounting ${key}`);
     bytes += body.length; decodedBytes += result.bytes; triangles += result.triangles; edges.set(key,tileEdgeSignatures(pack).map(value => createHash('sha256').update(value).digest('hex')));
   }

@@ -1,0 +1,60 @@
+{
+  "purpose": "Single-cell offline appearance probe. No manifest, graph integration, structures or conformance acceptance.",
+  "errors": [],
+  "poses": {
+    "overview": {
+      "frame": 2,
+      "calls": 7,
+      "triangles": 24921,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        700,
+        472.964648998783,
+        700
+      ],
+      "target": [
+        371.17815955330326,
+        7.60366039276123,
+        25.813470323644957
+      ],
+      "buildings": 3
+    },
+    "street": {
+      "frame": 3,
+      "calls": 5,
+      "triangles": 24891,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        364.1171569824219,
+        7.60366039276123,
+        35.51616287231445
+      ],
+      "target": [
+        371.17815955330326,
+        7.60366039276123,
+        25.813470323644957
+      ],
+      "buildings": 3
+    },
+    "junction": {
+      "frame": 4,
+      "calls": 5,
+      "triangles": 24891,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        364.1171569824219,
+        7.60366039276123,
+        35.51616287231445
+      ],
+      "target": [
+        371.17815955330326,
+        7.60366039276123,
+        25.813470323644957
+      ],
+      "buildings": 3
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "before": {
+    "cpuSeconds": 1.5408783769999999,
+    "samples": 10000,
+    "sha256": "50742136bf86639c51a15762c0d28ae8df7652608d3052c4a33194e4f09339e6"
+  },
+  "after": {
+    "cpuSeconds": 0.217262984,
+    "samples": 10000,
+    "sha256": "50742136bf86639c51a15762c0d28ae8df7652608d3052c4a33194e4f09339e6"
+  },
+  "exactFloat64Equality": true
+}

@@ -30,7 +30,7 @@ export class TileWorkerPool {
 }
 /** No world data is allocated until the caller constructs this after session selection. */
 export class WorldTileStream {
-  constructor(manifest,{baseURL,load,adapter,capBytes=64*1024*1024,transientBytes=32*1024*1024,concurrency=2,nearRing=1,safetyRing=0,lookaheadSeconds=12,activationMs=2,now=()=>performance.now(),retryMs=500}={}) {
+  constructor(manifest,{baseURL,load,adapter,capBytes=64*1024*1024,transientBytes=32*1024*1024,concurrency=2,nearRing=1,safetyRing=0,lookaheadSeconds=12,activationMs=4,now=()=>performance.now(),retryMs=500}={}) {
     this.manifest=validateWorldManifest(manifest);this.baseURL=baseURL||'http://localhost/';
     this.pool=load?null:new TileWorkerPool({size:concurrency});this.load=load||((job,signal)=>this.pool.load(job,signal));
     this.adapter=adapter;this.capBytes=capBytes;this.transientCap=transientBytes;this.concurrency=concurrency;
@@ -71,7 +71,7 @@ export class WorldTileStream {
     for(const key of this.contactKeys)if(this.entry(key))for(const d of this.dependencies(key))this.wanted.set(d,-.5);
     for(const key of this.pins.keys())this.wanted.set(key,-1);
     // Latest-interest generation cancels stale fetches before new reservations are admitted.
-    for(const [key,tile] of this.tiles)if(!this.wanted.has(key)&&tile.state==='loading')this.remove(key);
+    for(const [key,tile] of this.tiles)if(!this.wanted.has(key)&&['loading','preparing'].includes(tile.state))this.remove(key);
     const ox=Math.abs(x-this.origin.x)>2048?Math.floor(x/TILE_METRES)*TILE_METRES:this.origin.x;
     const oz=Math.abs(z-this.origin.z)>2048?Math.floor(z/TILE_METRES)*TILE_METRES:this.origin.z;
     if(ox!==this.origin.x||oz!==this.origin.z){const previous=this.origin;this.origin={x:ox,z:oz};this.adapter?.rebase?.(this.origin,previous);}
@@ -84,11 +84,11 @@ export class WorldTileStream {
       if(this.inflight>=this.concurrency)break;
       const old=this.tiles.get(key);if(old&&old.state!=='failed')continue;
       if(old&&(old.attempts>=3||old.retryAt>this.now()))continue;
-      const entry=this.entry(key),reserved=entry.decodedBytes,transient=entry.decodedBytes+entry.bytes;
+      const entry=this.entry(key),reserved=entry.decodedBytes,transient=entry.decodedBytes*2+entry.bytes;
       if(transient>this.transientCap-this.transientBytes)continue;
       const admission=(this.wanted.get(key)??0)>=10?this.capBytes*.8:this.capBytes;
       while(this.residentBytes+this.reservedBytes+reserved>admission){
-        const candidates=[...this.tiles].filter(([k,t])=>!this.pins.has(k)&&!this.contactKeys?.has(k)&&(!this.wanted.has(k)||this.wanted.get(k)>this.wanted.get(key))&&['active','ready'].includes(t.state)).sort((a,b)=>(this.wanted.get(b[0])??100)-(this.wanted.get(a[0])??100)||a[1].used-b[1].used);
+        const candidates=[...this.tiles].filter(([k,t])=>!this.pins.has(k)&&!this.contactKeys?.has(k)&&(!this.wanted.has(k)||this.wanted.get(k)>this.wanted.get(key))&&['active','ready','preparing'].includes(t.state)).sort((a,b)=>(this.wanted.get(b[0])??100)-(this.wanted.get(a[0])??100)||a[1].used-b[1].used);
         if(!candidates.length)break;this.remove(candidates[0][0]);this.metrics.evictions++;
       }
       if(this.residentBytes+this.reservedBytes+reserved>admission)continue;
@@ -101,11 +101,14 @@ export class WorldTileStream {
         if(!Number.isSafeInteger(packet.bytes)||packet.bytes<0||packet.bytes>reserved)throw new Error('Tile exceeded reservation');
         packet.tables=tileTables(packet);
         this.reservedBytes-=tile.reserved;tile.reserved=0;
-        tile.packet=packet;tile.state='ready';tile.used=this.now();this.residentBytes+=packet.bytes;tile.bytes=packet.bytes;
+        tile.packet=packet;tile.state='preparing';tile.used=this.now();this.residentBytes+=packet.bytes;tile.bytes=packet.bytes;
         this.metrics.loadedBytes+=entry.bytes;this.metrics.peakResidentBytes=Math.max(this.metrics.peakResidentBytes,this.residentBytes);
+        const warming=this.adapter?.warmup?.(tile.packet);packet=null;
+        if(warming)return Promise.resolve(warming).then(()=>{if(!this.disposed&&this.tiles.get(key)===tile)tile.state='ready';});
+        tile.state='ready';
       }).catch(error=>{
         if(this.tiles.get(key)!==tile||this.disposed)return;
-        tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs*2**(tile.attempts-1);this.metrics.failures++;
+        this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs*2**(tile.attempts-1);this.metrics.failures++;
       }).finally(()=>{
         if(tile.reserved){this.reservedBytes-=tile.reserved;tile.reserved=0;}
         this.transientBytes-=tile.transient;tile.transient=0;this.inflight--;
@@ -119,11 +122,15 @@ export class WorldTileStream {
     for(const [key] of [...this.wanted].sort((a,b)=>a[1]-b[1])){
       const tile=this.tiles.get(key);if(!tile||tile.state!=='ready')continue;
       try{
+        let at=this.now();
         tile.build??=this.adapter?.prepare?.(key,tile.packet,this.origin)||{steps:[][Symbol.iterator](),commit:()=>null,dispose:()=>{}};
         do{
-          const at=this.now(),step=tile.build.steps.next(),duration=this.now()-at;
+          const step=tile.build.steps.next();
+          if(step.done){tile.handle=tile.build.commit();tile.state='active';tile.used=this.now();}
+          const duration=this.now()-at;
           this.metrics.maxActivationMs=Math.max(this.metrics.maxActivationMs,duration);if(duration>50)this.metrics.activationLongTasks++;
-          if(step.done){tile.handle=tile.build.commit();tile.state='active';tile.used=this.now();break;}
+          if(step.done)break;
+          at=this.now();
         }while(this.now()-start<this.activationMs);
       }catch(error){tile.build?.dispose();this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.build=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs;this.metrics.failures++;}
       if(this.now()-start>=this.activationMs)break;
@@ -135,7 +142,56 @@ export class WorldTileStream {
   contact(x,z,options){
     const tile=this.tiles.get(tileKey(x,z));if(!this.readyAt(x,z))return null;tile.used=this.now();
     const [cx,cz]=tile.packet.metadata.cell;
-    return sampleTileContact(tile.packet.tables,tile.packet.contactIndex,x-cx*TILE_METRES,z-cz*TILE_METRES,options);
+    const sample=sampleTileContact(tile.packet.tables,tile.packet.contactIndex,x-cx*TILE_METRES,z-cz*TILE_METRES,options);
+    if(sample){sample.surfaceId=tile.packet.metadata.ids[sample.surface]||null;sample.tile=tileKey(x,z);}
+    return sample;
+  }
+  anchor(id){
+    let found=null;
+    for(const tile of this.tiles.values()){
+      if(tile.state!=='active')continue;
+      const {metadata:m,tables:t}=tile.packet;
+      for(let i=0;i<t.anchors.length;i+=5){
+        if(m.ids[t.anchors[i]]!==id)continue;
+        const p=t.anchors[i+1]*4,point={x:m.origin[0]+t.anchorTransforms[p],y:t.anchorTransforms[p+1],z:m.origin[2]+t.anchorTransforms[p+2],yaw:t.anchorTransforms[p+3],edge:m.ids[t.anchors[i+2]],kind:t.anchors[i+3],name:m.strings[t.anchors[i+4]]};
+        if(found&&['x','y','z','yaw','edge','kind'].some(k=>found[k]!==point[k]))throw new Error('Conflicting tile anchor');
+        found=point;
+      }
+    }
+    return found;
+  }
+  /** Generated worlds enter at an emitted lane/contact anchor, never a guessed cell centre. */
+  async spawn(move,{halfWidth=1,halfLength=2.5,heightTolerance=.025,...options}={}){
+    const [cx,cz]=this.manifest.spawn.cell;
+    return this.teleport({x:(cx+.5)*512,z:(cz+.5)*512},async()=>{
+      const anchor=this.anchor(this.manifest.spawn.anchor);
+      if(!anchor||![0,1].includes(anchor.kind)||tileKey(anchor.x,anchor.z)!==this.manifest.spawn.cell.join(','))throw new Error('Validated spawn anchor missing');
+      let road=null;
+      for(const tile of this.tiles.values())if(tile.state==='active'){
+        const {metadata:m,tables:t}=tile.packet;
+        for(let i=0;i<t.edges.length;i+=10)if(m.ids[t.edges[i]]===anchor.edge){
+          let best=Infinity,alignment=-1;
+          for(let j=t.edges[i+3];j<t.edges[i+3]+t.edges[i+4]-1;j++){
+            const a=j*3,b=(j+1)*3,ax=t.edgePoints[a]+m.origin[0],az=t.edgePoints[a+2]+m.origin[2],dx=t.edgePoints[b]-t.edgePoints[a],dz=t.edgePoints[b+2]-t.edgePoints[a+2],length=Math.hypot(dx,dz);
+            if(!length)continue;
+            const f=Math.max(0,Math.min(1,((anchor.x-ax)*dx+(anchor.z-az)*dz)/(length*length))),d=Math.hypot(anchor.x-ax-f*dx,anchor.z-az-f*dz);
+            if(d<best){best=d;alignment=(-Math.sin(anchor.yaw)*dx-Math.cos(anchor.yaw)*dz)/length;}
+          }
+          road={layer:t.edgeLayers[i/10],flags:t.edges[i+8],surface:m.ids[t.edges[i+9]],alignment};
+        }
+      }
+      if(!road||road.flags&8)throw new Error('Validated spawn road unavailable');
+      if(road.alignment<.5)throw new Error('Validated spawn heading mismatch');
+      const centre=this.contact(anchor.x,anchor.z,{referenceY:anchor.y,layer:road.layer,requiredFlags:1});
+      if(!centre||centre.surfaceId!==road.surface||Math.abs(centre.y-anchor.y)>heightTolerance)throw new Error('Validated spawn contact mismatch');
+      const sin=Math.sin(anchor.yaw),cos=Math.cos(anchor.yaw);
+      for(const along of [-halfLength,0,halfLength])for(const across of [-halfWidth,0,halfWidth]){
+        const x=anchor.x-sin*along+cos*across,z=anchor.z-cos*along-sin*across;
+        const sample=this.contact(x,z,{referenceY:anchor.y,layer:road.layer,requiredFlags:1});
+        if(!sample||sample.surfaceId!==road.surface)throw new Error('Validated spawn footprint unavailable');
+      }
+      await move({...anchor,y:centre.y,layer:road.layer});
+    },options);
   }
   async teleport({x,z},move,{signal,timeoutMs=30000,nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve))}={}){
     const releases=[],targets=[],start=this.now(),[cx,cz]=tileKey(x,z).split(',').map(Number);

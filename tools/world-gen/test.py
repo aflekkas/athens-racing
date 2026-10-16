@@ -24,6 +24,123 @@ import rasterio
 from rasterio.transform import from_origin
 
 
+class LayoutTests(unittest.TestCase):
+    def test_layout_rejects_off_lattice_geometry_and_preserves_zero_crossing(self):
+        from layout import compact_positions,vertex_normals
+        from surfaces import f32
+        with self.assertRaises(ValueError):compact_positions([.003,0,0])
+        with self.assertRaises(ValueError):compact_positions([700,0,0])
+        values=[f32(v) for v in [0,-1.2345,0,512,123.45678,512,3.81,.000124,236.71]]
+        q,r,d=compact_positions(values)
+        restored=[]
+        for i in range(len(values)//3):
+            for axis in range(3):
+                high=f32(d['offset'][axis]+q[i*3+axis]*d['scale'][axis])
+                restored.append(f32(high+r[i]) if axis==1 else high)
+        self.assertEqual(restored,values)
+        self.assertEqual(vertex_normals([0,0,0,0,1,1,1,0,0],[0,1,2]),[0,90,-90]*3)
+
+
+class TurnTests(unittest.TestCase):
+    def test_node_uturn_only_and_conditional_rules(self):
+        from turns import compile_turns
+        for rule,to,expected in [('no_left_turn',2,{'left'}),('no_u_turn',1,{'reverse'}),('only_straight_on',1,{'reverse','left'})]:
+            db=sqlite3.connect(':memory:');db.execute('CREATE TABLE edge_index(id TEXT,a TEXT,b TEXT,way TEXT)')
+            db.executemany('INSERT INTO edge_index VALUES(?,?,?,?)',[('in','a','osm:node:9','w1'),('reverse','osm:node:9','a','w1'),('straight','osm:node:9','b','w1'),('left','osm:node:9','c','w2')])
+            members=[['w',1,'from'],['n',9,'via'],['w',to,'to']]
+            compile_turns(db,[(10,json.dumps({'restriction':rule}),json.dumps(members))])
+            self.assertEqual({r[0] for r in db.execute('SELECT to_edge FROM turns WHERE from_edge=?',('in',))},expected);db.close()
+        db=sqlite3.connect(':memory:');db.execute('CREATE TABLE edge_index(id TEXT,a TEXT,b TEXT,way TEXT)');db.execute("INSERT INTO edge_index VALUES('in','a','osm:node:9','w1')")
+        audit=compile_turns(db,[(11,json.dumps({'restriction:conditional':'no_left_turn @ (Mo-Fr)'}),json.dumps([['w',1,'from'],['n',9,'via'],['w',2,'to']]))])
+        self.assertEqual(audit,{'unsupported-fail-closed':1});self.assertEqual(db.execute('SELECT edge FROM blocked').fetchone()[0],'in');db.close()
+
+
+class DetailTests(unittest.TestCase):
+    def test_shared_seed_contract_and_semantic_facades(self):
+        from details import fnv1a,building_details
+        self.assertEqual(fnv1a('hello'),0x4f9f2cab)
+        a=building_details('w123',{'building':'apartments'})
+        self.assertEqual(a['detailSeed'],fnv1a('way/123'))
+        self.assertEqual(a['roofPropSeed'],a['detailSeed'])
+        self.assertIn(a['facadeStyle'],(1,2,3))
+        self.assertEqual(building_details('r123',{'shop':'bakery'})['facadeStyle'],4)
+        self.assertEqual(building_details('w123',{'building':'warehouse'})['facadeStyle'],7)
+        self.assertNotEqual(a['detailSeed'],building_details('r123',{})['detailSeed'])
+
+
+class PrecisionSurfaceTests(unittest.TestCase):
+    def test_lateral_is_right_of_referenced_direction(self):
+        from street_details import ribbon_lateral
+        line=LineString([(0,0),(10,0)])
+        self.assertEqual(ribbon_lateral(line,5,2),(5,2))
+        self.assertEqual(ribbon_lateral(line,5,2,False),(5,-2))
+        self.assertEqual(ribbon_lateral(LineString([(0,0),(0,10)]),-2,5),(5,2))
+
+    def test_snapped_end_caps_cover_graph_nodes(self):
+        from street_details import ribbon_polygon
+        from shapely import set_precision
+        from shapely.geometry import Point
+        # Actual Glyfada endpoint fractions that exposed missing asphalt.
+        for a,b in [((24.184,159.451),(44.177,201.137)),((54.745,281.068),(69.171,338.892))]:
+            polygon=set_precision(ribbon_polygon(LineString([a,b]),5.6),.01)
+            for point in (a,b):self.assertTrue(polygon.contains(Point(point)))
+
+    def test_pavement_bevel_is_continuous_and_returns_to_terrain(self):
+        from street_details import pavement_lift
+        self.assertEqual(pavement_lift(0),0)
+        self.assertAlmostEqual(pavement_lift(.09),.05)
+        self.assertAlmostEqual(pavement_lift(.18),.1)
+        self.assertAlmostEqual(pavement_lift(1.8),.1)
+        self.assertAlmostEqual(pavement_lift(2.3),.05)
+        self.assertEqual(pavement_lift(2.8),0)
+        for boundary in (0,.18,1.8,2.8):
+            self.assertLess(abs(pavement_lift(boundary+1e-7)-pavement_lift(boundary-1e-7)),1e-6)
+
+    def test_real_glyfada_neighbour_has_no_precision_holes(self):
+        from street_details import pavement_regions
+        fixture=json.loads(Path(__file__).with_name('fixtures').joinpath('precision-junction.json').read_text())
+        roads=[]
+        for road in fixture['roads']:
+            line=LineString(road['points']);roads.append(dict(road,line=line,polygon=line.buffer(road['width']/2,cap_style=2,join_style=2)))
+        union,kerb,pave=pavement_regions(roads)
+        mesh=ground_mesh(fixture['cell'],roads,lambda x,z:0,[kerb.boundary,pave.boundary])
+        result=validate_partition(mesh)
+        self.assertAlmostEqual(result['area'],512**2,places=6)
+        # Same global features, independently emitted neighbours: precision
+        # rounding must not move a border crossing to opposite centimetres.
+        left=ground_mesh([4,25],roads,lambda x,z:0,[kerb.boundary,pave.boundary])
+        validate_partition(left)
+        def edge(m,x):
+            p=m['positions'];return {(p[i+1],p[i+2]) for i in range(0,len(p),3) if p[i]==x}
+        self.assertEqual(edge(left,512),edge(mesh,0))
+
+
+class VegetationTests(unittest.TestCase):
+    def test_park_candidates_preserve_holes_and_world_lattice(self):
+        from vegetation import candidates
+        park=Polygon([(0,0),(80,0),(80,80),(0,80)],holes=[[(30,30),(50,30),(50,50),(30,50)]])
+        points=list(candidates(park));self.assertEqual(len(points),8)
+        self.assertNotIn((40,40),points)
+        self.assertEqual(points,list(candidates(park)))
+        self.assertTrue(all(x%20==0 and z%20==0 for x,z in points))
+
+
+class GraphTests(unittest.TestCase):
+    def test_canonical_portals_direction_and_boundary_ownership(self):
+        from graph import chunks,directed
+        road=dict(id='w123:0',fromNode='1',toNode='2',forward=True,backward=True,publicForward=True,publicBackward=False,oneway=0,bridge=False,tunnel=False,layer=0)
+        fixtures=[[[500,7,500,0],[530,13,530,42.426407]], [[-10,1,-10,0],[1030,5,1030,1470.782105]], [[512,0,-1,0],[512,1,1025,1026]], [[500,0,10,0],[530,3,10,30],[500,6,20,61.622777]]]
+        for points in fixtures:
+            parts=chunks(points);edges=list(directed(road,points))
+            self.assertEqual(len(edges),len(parts)*2)
+            for a,b in zip(edges[::2],edges[1::2]):
+                self.assertEqual(a['fromNode'],b['toNode']);self.assertEqual(a['points'],list(reversed(b['points'])))
+                self.assertEqual(a['flags'],0);self.assertEqual(b['flags'],8)
+            for a,b in zip(edges[::2],edges[2::2]):
+                self.assertEqual(a['toNode'],b['fromNode']);self.assertEqual(a['points'][-1],b['points'][0])
+        self.assertTrue(all(p['cell'][0]==1 for p in chunks(fixtures[2])))
+
+
 class ModelTests(unittest.TestCase):
     def test_access_precedence_and_direction(self):
         r=road_tags(dict(highway='primary',access='no',motorcar='yes',oneway='-1',layer='1',bridge='yes'))

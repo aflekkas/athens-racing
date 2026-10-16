@@ -1,0 +1,95 @@
+[
+  {
+    "map": "riviera",
+    "baseline": [
+      {
+        "cache": "cold",
+        "ttccMs": 100615.79999995232,
+        "mapTransferBytes": 1550795,
+        "residentMapBytes": 377877265
+      },
+      {
+        "cache": "warm",
+        "ttccMs": 28468.300000071526,
+        "mapTransferBytes": 0,
+        "residentMapBytes": 377877265
+      }
+    ],
+    "unlandedExperimentalPlayerAdapter": [
+      {
+        "cache": "cold",
+        "ttccMs": 22655.700000047684,
+        "mapTransferBytes": 10156578,
+        "residentMapBytes": 124700244
+      },
+      {
+        "cache": "warm",
+        "ttccMs": 21199,
+        "mapTransferBytes": 0,
+        "residentMapBytes": 124700244
+      }
+    ]
+  },
+  {
+    "map": "megara",
+    "baseline": [
+      {
+        "cache": "cold",
+        "ttccMs": 38676.299999952316,
+        "mapTransferBytes": 420512,
+        "residentMapBytes": 30798943
+      },
+      {
+        "cache": "warm",
+        "ttccMs": 17535.899999976158,
+        "mapTransferBytes": 0,
+        "residentMapBytes": 30798943
+      }
+    ],
+    "unlandedExperimentalPlayerAdapter": [
+      {
+        "cache": "cold",
+        "ttccMs": 26312.700000047684,
+        "mapTransferBytes": 1423259,
+        "residentMapBytes": 27152387
+      },
+      {
+        "cache": "warm",
+        "ttccMs": 22389.199999928474,
+        "mapTransferBytes": 0,
+        "residentMapBytes": 27152387
+      }
+    ]
+  },
+  {
+    "map": "penteli",
+    "baseline": [
+      {
+        "cache": "cold",
+        "ttccMs": 87355.5,
+        "mapTransferBytes": 1791510,
+        "residentMapBytes": 213699239
+      },
+      {
+        "cache": "warm",
+        "ttccMs": 21124.699999928474,
+        "mapTransferBytes": 0,
+        "residentMapBytes": 213699239
+      }
+    ],
+    "unlandedExperimentalPlayerAdapter": [
+      {
+        "cache": "cold",
+        "ttccMs": 26601.800000071526,
+        "mapTransferBytes": 11262567,
+        "residentMapBytes": 112637590
+      },
+      {
+        "cache": "warm",
+        "ttccMs": 18218.900000095367,
+        "mapTransferBytes": 0,
+        "residentMapBytes": 112637590
+      }
+    ]
+  }
+]

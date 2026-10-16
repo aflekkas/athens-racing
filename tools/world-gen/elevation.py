@@ -14,6 +14,14 @@ class Elevation:
         if not self.datasets:
             raise ValueError('No elevation rasters supplied')
         self.metadata = [dict(path=Path(d.name).name,crs=str(d.crs),resolution=list(d.res),nodata=d.nodata) for d in self.datasets]
+        # Dataset bounds/inverse transforms are immutable. Rasterio's property
+        # access reconstructs Affine objects; doing that per sample dominates
+        # a road/terrain bake with hundreds of thousands of height queries.
+        geographic=rasterio.crs.CRS.from_epsg(4326)
+        self.sampling=[]
+        for d in self.datasets:
+            inverse=~d.transform
+            self.sampling.append((d.crs==geographic,d.bounds,(inverse.a,inverse.b,inverse.c,inverse.d,inverse.e,inverse.f)))
 
     @lru_cache(maxsize=256)
     def block(self, index, col, row):
@@ -30,12 +38,14 @@ class Elevation:
     def height(self,x,z):
         lon,lat=unproject(x,z)
         for i,d in enumerate(self.datasets):
-            if d.crs == rasterio.crs.CRS.from_epsg(4326):xx,yy=lon,lat
+            geographic,bounds,inverse=self.sampling[i]
+            if geographic:xx,yy=lon,lat
             else:
                 xx,yy=transform('EPSG:4326',d.crs,[lon],[lat]);xx=xx[0];yy=yy[0]
-            if not (d.bounds.left<=xx<d.bounds.right and d.bounds.bottom<yy<=d.bounds.top):
+            if not (bounds.left<=xx<bounds.right and bounds.bottom<yy<=bounds.top):
                 continue
-            col,row=~d.transform*(xx,yy);col-=.5;row-=.5
+            a,b,c,d_,e,f=inverse
+            col=xx*a+yy*b+c-.5;row=xx*d_+yy*e+f-.5
             c=math.floor(col);r=math.floor(row);u=col-c;v=row-r
             return ((1-u)*self.pixel(i,c,r)+u*self.pixel(i,c+1,r))*(1-v)+((1-u)*self.pixel(i,c,r+1)+u*self.pixel(i,c+1,r+1))*v
         raise ValueError(f'No DEM coverage for {lon},{lat}; never substitute a flat zero plane')
