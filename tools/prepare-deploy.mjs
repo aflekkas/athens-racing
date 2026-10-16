@@ -32,7 +32,8 @@ await bakeWorlds(root, out, PLAYABLE_MAPS);
 const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV || 'staging';
 const indexPath = resolve(out, 'index.html');
 await writeFile(indexPath, (await readFile(indexPath, 'utf8')).replace('</head>', `<meta name="asr-environment" content="${buildEnvironment === 'production' ? 'production' : 'staging'}">\n</head>`));
-await bundleBrowser(root, out);
+// ASR_CLIENT_BUNDLE=source is an operational rollback; development never invokes this tool.
+const browser = process.env.ASR_CLIENT_BUNDLE === 'source' ? null : await bundleBrowser(root, out);
 await writeFile(resolve(out, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/assets/share/*\n  Cache-Control: public, max-age=86400, stale-while-revalidate=604800\n  Content-Type: image/jpeg\n' + CACHE_HEADERS);
 const maps = [];
 for (const def of MAPS) {
@@ -44,7 +45,7 @@ for (const def of MAPS) {
 }
 // Content-addressed assets remain cached on demand. Installation only fetches the menu shell;
 // map data, generated worlds, textures and sounds must wait for a committed session.
-const release = await buildRelease(out, { core: ['/src/', '/style.css', '/assets/icons/', '/assets/maps/'] });
+const release = await buildRelease(out, { core: [...(browser?.initial || ['/src/']), '/src/offline-cache.js', '/style.css', '/assets/icons/', '/assets/maps/'] });
 const swBytes = await publishRelease(root, out, release);
 // After the content build id exists, so the version, notes and credits never change it (see tools/release-data.mjs).
 const version = await publishReleaseData(root, out, { build: release.build });

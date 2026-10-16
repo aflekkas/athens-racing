@@ -11,7 +11,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +27,21 @@ jobs:
       - run: node tools/check-browser-imports.mjs
       - name: Validate Cloudflare bundle and asset sizes
         run: npx wrangler deploy --env staging --dry-run
+      - name: Install headless browser
+        run: npx playwright install --with-deps chromium
+      - name: Boot the production menu and race on every map
+        run: npm run check:bundle
+      - name: Retain private client sourcemaps and bundle metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-debug-${{ github.sha }}-validation
+          path: |
+            .deploy/sourcemaps/
+            .deploy/browser-metafile.json
+            .scratch/bundle-check/
+          retention-days: 30
+          if-no-files-found: error
+          include-hidden-files: true
   deploy:
     needs: test
     if: github.event_name == 'push'
@@ -66,6 +81,17 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env ${{ env.DEPLOY_ENV }}
+      - name: Upload private client sourcemaps for this release
+        if: steps.credentials.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-debug-${{ github.sha }}-${{ env.DEPLOY_ENV }}
+          path: |
+            .deploy/sourcemaps/
+            .deploy/browser-metafile.json
+          retention-days: 30
+          if-no-files-found: error
+          include-hidden-files: true
       - name: Smoke test live deployment
         if: steps.credentials.outputs.ready == 'true'
         env:

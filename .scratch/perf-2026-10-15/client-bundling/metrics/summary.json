@@ -1,0 +1,362 @@
+{
+  "before-source": {
+    "cold": {
+      "timeToMenuMs": {
+        "median": 1488.2999999523163,
+        "mean": 1661.5800000190734,
+        "min": 1384.5,
+        "max": 2449.100000023842
+      },
+      "cdpRequests": {
+        "median": 251,
+        "mean": 251,
+        "min": 251,
+        "max": 251
+      },
+      "cdpNetworkRequests": {
+        "median": 249,
+        "mean": 249,
+        "min": 249,
+        "max": 249
+      },
+      "cdpTransferBytes": {
+        "median": 1581168,
+        "mean": 1581112.8,
+        "min": 1580893,
+        "max": 1581442
+      },
+      "cdpDecodedBytes": {
+        "median": 4552638,
+        "mean": 4552638,
+        "min": 4552638,
+        "max": 4552638
+      },
+      "parseCompileMs": {
+        "median": 851.207,
+        "mean": 978.6894,
+        "min": 798.477,
+        "max": 1414.929
+      },
+      "scriptDurationMs": {
+        "median": 788.434,
+        "mean": 971.0136,
+        "min": 761.783,
+        "max": 1700.445
+      }
+    },
+    "warm": {
+      "timeToMenuMs": {
+        "median": 1005.5,
+        "mean": 1020.7399999856949,
+        "min": 980,
+        "max": 1086
+      },
+      "cdpRequests": {
+        "median": 251,
+        "mean": 251,
+        "min": 251,
+        "max": 251
+      },
+      "cdpNetworkRequests": {
+        "median": 1,
+        "mean": 1,
+        "min": 1,
+        "max": 1
+      },
+      "cdpTransferBytes": {
+        "median": 60050,
+        "mean": 60050,
+        "min": 60050,
+        "max": 60050
+      },
+      "cdpDecodedBytes": {
+        "median": 4513642,
+        "mean": 4513642,
+        "min": 4513642,
+        "max": 4513642
+      },
+      "parseCompileMs": {
+        "median": 30.893,
+        "mean": 32.6348,
+        "min": 29.424,
+        "max": 41.599
+      },
+      "scriptDurationMs": {
+        "median": 861.797,
+        "mean": 858.86,
+        "min": 818.4590000000001,
+        "max": 895.627
+      }
+    }
+  },
+  "before-bundled": {
+    "cold": {
+      "timeToMenuMs": {
+        "median": 1303.7999999523163,
+        "mean": 1278.699999976158,
+        "min": 1057.1999999284744,
+        "max": 1437.1999999284744
+      },
+      "cdpRequests": {
+        "median": 52,
+        "mean": 52,
+        "min": 52,
+        "max": 52
+      },
+      "cdpNetworkRequests": {
+        "median": 50,
+        "mean": 50,
+        "min": 50,
+        "max": 50
+      },
+      "cdpTransferBytes": {
+        "median": 1106476,
+        "mean": 1106476,
+        "min": 1106476,
+        "max": 1106476
+      },
+      "cdpDecodedBytes": {
+        "median": 2828196,
+        "mean": 2828196,
+        "min": 2828196,
+        "max": 2828196
+      },
+      "parseCompileMs": {
+        "median": 201.773,
+        "mean": 216.133,
+        "min": 184.034,
+        "max": 271.103
+      },
+      "scriptDurationMs": {
+        "median": 1005.949,
+        "mean": 969.8648,
+        "min": 787.59,
+        "max": 1076.115
+      }
+    },
+    "warm": {
+      "timeToMenuMs": {
+        "median": 999.9000000953674,
+        "mean": 1043.860000038147,
+        "min": 943.8999999761581,
+        "max": 1280.2000000476837
+      },
+      "cdpRequests": {
+        "median": 52,
+        "mean": 52,
+        "min": 52,
+        "max": 52
+      },
+      "cdpNetworkRequests": {
+        "median": 1,
+        "mean": 1,
+        "min": 1,
+        "max": 1
+      },
+      "cdpTransferBytes": {
+        "median": 60059,
+        "mean": 60059,
+        "min": 60059,
+        "max": 60059
+      },
+      "cdpDecodedBytes": {
+        "median": 2789200,
+        "mean": 2789200,
+        "min": 2789200,
+        "max": 2789200
+      },
+      "parseCompileMs": {
+        "median": 27.163,
+        "mean": 32.14,
+        "min": 24.731,
+        "max": 52.772
+      },
+      "scriptDurationMs": {
+        "median": 908.9699999999999,
+        "mean": 943.5338,
+        "min": 850.286,
+        "max": 1149.651
+      }
+    }
+  },
+  "after-bundled": {
+    "cold": {
+      "timeToMenuMs": {
+        "median": 354.39999997615814,
+        "mean": 353.3,
+        "min": 296.39999997615814,
+        "max": 409.7000000476837
+      },
+      "cdpRequests": {
+        "median": 43,
+        "mean": 43,
+        "min": 43,
+        "max": 43
+      },
+      "cdpNetworkRequests": {
+        "median": 41,
+        "mean": 41,
+        "min": 41,
+        "max": 41
+      },
+      "cdpTransferBytes": {
+        "median": 693506,
+        "mean": 693506,
+        "min": 693506,
+        "max": 693506
+      },
+      "cdpDecodedBytes": {
+        "median": 1750588,
+        "mean": 1750588,
+        "min": 1750588,
+        "max": 1750588
+      },
+      "parseCompileMs": {
+        "median": 111.592,
+        "mean": 121.4024,
+        "min": 105.628,
+        "max": 167.104
+      },
+      "scriptDurationMs": {
+        "median": 73.282,
+        "mean": 69.9512,
+        "min": 52.592,
+        "max": 81.398
+      }
+    },
+    "warm": {
+      "timeToMenuMs": {
+        "median": 105.70000004768372,
+        "mean": 284.18000004291537,
+        "min": 79.90000009536743,
+        "max": 1024.8000000715256
+      },
+      "cdpRequests": {
+        "median": 42,
+        "mean": 42,
+        "min": 42,
+        "max": 42
+      },
+      "cdpNetworkRequests": {
+        "median": 1,
+        "mean": 1,
+        "min": 1,
+        "max": 1
+      },
+      "cdpTransferBytes": {
+        "median": 59848,
+        "mean": 59848,
+        "min": 59848,
+        "max": 59848
+      },
+      "cdpDecodedBytes": {
+        "median": 1711175,
+        "mean": 1711175,
+        "min": 1711175,
+        "max": 1711175
+      },
+      "parseCompileMs": {
+        "median": 20.143,
+        "mean": 22.565,
+        "min": 18.278,
+        "max": 27.982
+      },
+      "scriptDurationMs": {
+        "median": 38.779,
+        "mean": 37.239,
+        "min": 32.010999999999996,
+        "max": 42.179
+      }
+    }
+  },
+  "after-cdn": {
+    "cold": {
+      "timeToMenuMs": {
+        "median": 337.60000002384186,
+        "mean": 362.10000002384186,
+        "min": 325.5,
+        "max": 432.3000000715256
+      },
+      "cdpRequests": {
+        "median": 44,
+        "mean": 44,
+        "min": 44,
+        "max": 44
+      },
+      "cdpNetworkRequests": {
+        "median": 42,
+        "mean": 42,
+        "min": 42,
+        "max": 42
+      },
+      "cdpTransferBytes": {
+        "median": 807440,
+        "mean": 807440,
+        "min": 807440,
+        "max": 807440
+      },
+      "cdpDecodedBytes": {
+        "median": 2482160,
+        "mean": 2482160,
+        "min": 2482160,
+        "max": 2482160
+      },
+      "parseCompileMs": {
+        "median": 132.939,
+        "mean": 144.0988,
+        "min": 114.004,
+        "max": 219.353
+      },
+      "scriptDurationMs": {
+        "median": 74.333,
+        "mean": 75.074,
+        "min": 61.369,
+        "max": 91.63399999999999
+      }
+    },
+    "warm": {
+      "timeToMenuMs": {
+        "median": 91.29999995231628,
+        "mean": 102.61999998092651,
+        "min": 80,
+        "max": 151.10000002384186
+      },
+      "cdpRequests": {
+        "median": 43,
+        "mean": 43,
+        "min": 43,
+        "max": 43
+      },
+      "cdpNetworkRequests": {
+        "median": 1,
+        "mean": 1,
+        "min": 1,
+        "max": 1
+      },
+      "cdpTransferBytes": {
+        "median": 60059,
+        "mean": 60059,
+        "min": 60059,
+        "max": 60059
+      },
+      "cdpDecodedBytes": {
+        "median": 2442747,
+        "mean": 2442747,
+        "min": 2442747,
+        "max": 2442747
+      },
+      "parseCompileMs": {
+        "median": 20.44,
+        "mean": 21.1484,
+        "min": 18.317,
+        "max": 25.447
+      },
+      "scriptDurationMs": {
+        "median": 39.464,
+        "mean": 39.405,
+        "min": 30.252000000000002,
+        "max": 50.658
+      }
+    }
+  }
+}

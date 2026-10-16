@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node server/index.mjs",
     "test": "node tools/run-tests.mjs",
-    "test:full": "node tools/run-tests.mjs --full"
+    "test:full": "node tools/run-tests.mjs --full",
+    "check:bundle": "bash tools/browser-slot.sh node tools/check-bundle.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -15,8 +16,9 @@
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "wrangler": "^4.150.0",
-    "three": "0.170.0"
+    "playwright": "1.64.0",
+    "three": "0.170.0",
+    "wrangler": "^4.150.0"
   },
   "description": "ATHENS RACING \u2014 race real Athens roads in your browser."
 }

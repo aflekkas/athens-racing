@@ -1,0 +1,9 @@
+{
+  "chrome": "Google Chrome for Testing 151.0.7922.34",
+  "node": "v22.23.3",
+  "system": "Linux-6.8.0-139-generic-x86_64-with-glibc2.39",
+  "viewport": "1280x720, DPR 1",
+  "renderer": "SwiftShader",
+  "samples": 40,
+  "iterations": 5
+}

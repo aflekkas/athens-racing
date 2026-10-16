@@ -1,3 +1,4 @@
+import { importWithUpdate } from '../client-release.js';
 // MULTIPLAYER SCREENS: Join / Host, the lobby room, allowed cars and results, rendered by src/menu.js as ordinary head-unit
 // screens (C.screen: the same status bar, Back, focus / gamepad navigation, slide-in and soft-key bar as every other menu).
 // src/multiplayer.js keeps transport, lobby state and its native #multiplayer panel. That panel stays in the DOM, never
@@ -201,7 +202,7 @@ export function afterRender(menu, kept = null) {
   if (studio && studio.el === el && studio.carId === id) return;
   disposeStage(); if (index < 0) return;
   const token = mounting;
-  import('../car-select.js').then(({ mountCarSelect }) => {
+  importWithUpdate(() => import('../car-select.js')).then(({ mountCarSelect }) => {
     if (token !== mounting || !el.isConnected) return;
     try { studio = { carId: id, el, view: mountCarSelect(menu.root, index, { container: el, lite: true }) }; } catch (error) { console.warn('Showroom unavailable:', error?.message || error); }
   });

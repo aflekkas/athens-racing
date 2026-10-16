@@ -1,0 +1,32 @@
+{
+  "baseline": "71e05c36f909ac8c455f103883f583428a9c4962",
+  "measuredAndGatedCandidate": "115cb73b3511a53442cfbf76f614b6b25bc4144d",
+  "browserCandidate": "23c2378cf22ef2c10b9fa83adb6bc724f33b74e0",
+  "browserRuntimeAndBundlerIdentical": true,
+  "gates": {
+    "npm-test": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  },
+  "navigations": 40,
+  "pageErrors": 0,
+  "mapRequests": 0,
+  "traceFiles": 40,
+  "smoke": {
+    "maps": [
+      "riviera",
+      "megara",
+      "penteli"
+    ],
+    "exits": [
+      0,
+      0,
+      0
+    ],
+    "protocolMismatchReload": true,
+    "compatibleDifferentBuildAccepted": true
+  }
+}

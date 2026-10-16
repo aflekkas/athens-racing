@@ -1,3 +1,4 @@
+import { importWithUpdate } from '../client-release.js';
 // No renderer, model or texture work is allowed before the menu has painted.
 // This controller is cancellable while its dynamic import / shader compilation is pending.
 export function mountTitleHero(root, spec, paint) {
@@ -6,7 +7,7 @@ export function mountTitleHero(root, spec, paint) {
   const start = async () => {
     if (stopped || !host?.isConnected) return;
     try {
-      const { createHeroStudio } = await import('../title-hero-studio.js');
+      const { createHeroStudio } = await importWithUpdate(() => import('../title-hero-studio.js'));
       if (stopped || !host?.isConnected) return;
       studio = createHeroStudio();
       studio.setVehicle(spec, paint);

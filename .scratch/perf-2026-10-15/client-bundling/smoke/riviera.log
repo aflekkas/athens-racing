@@ -1,0 +1,28 @@
+{"proof":"health","base":"http://127.0.0.1:42941","entry":"/src/boot-BXDETCH4.js","build":"bbec90c2877e","health":{"ok":true,"clients":0,"lobbies":1,"track":{"start":241,"finish":10548,"version":"4718fbec"}}}
+{"proof":"matching Quick Race + Free Roam catalogues","mapId":"riviera","events":[{"id":"quick","type":"sprint"},{"id":"free:riviera","type":"free"}]}
+{
+  "proof": "create → join → ready → start → snapshot → checkpoints → finish",
+  "base": "http://127.0.0.1:42941",
+  "protocol": 7,
+  "legacy": false,
+  "mapId": "riviera",
+  "eventId": "quick",
+  "checkpoints": 134,
+  "raceId": "0ece3239-ffdf-4dbe-97c9-8b0472e28628",
+  "startAt": 1792114547064,
+  "reconnects": 0,
+  "results": [
+    {
+      "id": "4d4a09f2-5142-4b63-b9ff-d150c29a7e81",
+      "finish": 86.42037796974182,
+      "dnf": false
+    },
+    {
+      "id": "1468f024-3588-4a2e-b4f4-f49d4a364280",
+      "finish": 86.42121195793152,
+      "dnf": false
+    }
+  ]
+}
+PASS: assets, private paths, playable map catalogue and /ws create-lobby round trip at http://127.0.0.1:42941
+{"proof":"reconnect summary","reconnects":0}

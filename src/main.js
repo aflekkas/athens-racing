@@ -1,6 +1,7 @@
 import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
+import { importWithUpdate } from './client-release.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
 import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
@@ -65,7 +66,7 @@ import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSt
 import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
-import { buildMapWorld } from './map-world.js';
+const buildMapWorld = async (...args) => (await importWithUpdate(() => import('./map-world.js'))).buildMapWorld(...args);
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
@@ -135,7 +136,7 @@ const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
-const audio = new Audio();
+const audio = window.__bootAudio || new Audio();
 const voices = new VoiceReactions(audio, { settings });
 const playerVoices = new VoiceReactions(audio, { settings });
 function carVoicePosition(c) {
@@ -258,7 +259,8 @@ async function boot() {
   initFlow();
   // loaded means the app can respond to a lobby; mapId/version still gate the loaded/ready protocol.
   multiplayer.loaded = true;
-  showTitle();
+  if (window.__bootMenu && menu.open) G.state = 'menu';
+  else showTitle();
   last = performance.now(); requestAnimationFrame(frame);
   if (SKIP_MENU && !multiplayer.pendingCode) await waitForBootSession(multiplayer);
   if (multiplayer.active) await multiplayer.syncLobby();
@@ -844,7 +846,7 @@ function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorag
 function initFlow() {
   let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
-  menu = new Menu($('ui'), {
+  const handlers = {
     quickRace: () => openEvent('quick'), openEvent, multiplayer: () => multiplayer.open(), garage: openGarage, selectMap: selectMenuMap, switchMap,
     chooseCar: (index, def, garage) => {
       try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}
@@ -858,7 +860,9 @@ function initFlow() {
     ctx: menuCtx, inputDevice: activeInputDevice, carName: () => CARS[G.carIdx].name, carSpec: () => CARS[G.carIdx], manual: () => player?.veh.manual ?? settings.transmission === 'manual', fmtTime, ui: (fwd) => audio.ui?.(fwd),
     personalBests: (def, r, car) => getPersonalBests(bestSetup(def, r, car)), shareResult,
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(),
-  });
+  };
+  menu = window.__bootMenu || new Menu($('ui'), handlers);
+  Object.assign(menu.h, handlers);
   onSettings(onFlowSettings); onFlowSettings(settings, null);
   // A police arrest holds you at the roadside; shaking them off wins an escape.
   EV.events.on('pursuit', (p) => {
@@ -870,7 +874,7 @@ function initFlow() {
   });
   EV.events.on('start', () => { G.pursuit = null; });
   // the leaderboard (multiplayer owner) gets every finished solo event
-  import('./leaderboard.js').then((m) => { if (m?.submitResult) EV.events.on('finish', (r) => { try { m.submitResult(r); } catch (e) { console.warn(e); } }); }).catch(() => {});
+  importWithUpdate(() => import('./leaderboard.js')).then((m) => { if (m?.submitResult) EV.events.on('finish', (r) => { try { m.submitResult(r); } catch (e) { console.warn(e); } }); }).catch(() => {});
 }
 
 function mapEvent(id) {
@@ -2408,4 +2412,4 @@ document.addEventListener('visibilitychange', () => {
 });
 if (Q.has('debug')) { window.__vehicle = () => player?.veh; window.__onlineCars = () => [...remoteCars].map(([id, c]) => ({ id, car: c.spec.id, visible: c.model.root.visible, s: c.veh.s })); }
 
-boot().catch(fail);
+export const gameReady = boot().catch(error => { fail(error); throw error; });
