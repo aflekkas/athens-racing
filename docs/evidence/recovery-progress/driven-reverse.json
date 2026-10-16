@@ -1,0 +1,34 @@
+{
+  "kind": "actual Vehicle.update at 60Hz on synthetic road; no pose changes before overtake",
+  "changes": [
+    {
+      "now": 0.016666666666666666,
+      "order": "AI > third > human",
+      "metres": [
+        16.133309883432958,
+        8.083338450160682,
+        0.24996801473321284
+      ]
+    },
+    {
+      "now": 0.8,
+      "order": "AI > human > third",
+      "metres": [
+        22.378310965524634,
+        12.216372569946543,
+        12.052014827256016
+      ]
+    },
+    {
+      "now": 1.8666666666666667,
+      "order": "human > AI > third",
+      "metres": [
+        31.111983957594475,
+        30.94344207572567,
+        17.628471861174603
+      ]
+    }
+  ],
+  "earned": 646.8433065667577,
+  "recoveryStation": 1353.1566934332423
+}

@@ -27,6 +27,7 @@
     "server/accounts.test.mjs",
     "server/world-life.test.mjs",
     "server/race-recovery.test.mjs",
+    "server/race-progress-trace.test.mjs",
     "server/mp-shared-world.test.mjs",
     "server/customization-multiplayer.test.mjs",
     "server/session-transport.test.mjs",
@@ -147,6 +148,7 @@
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
+    "tools/race-progress-sim.test.mjs",
     "tools/physics-test/manual.test.mjs",
     "tools/physics-test/engine-abuse.test.mjs",
     "tools/physics-test/driver-feel.test.mjs",

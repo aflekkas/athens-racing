@@ -191,7 +191,7 @@ export class Multiplayer {
   sendWreck() {
     if (this.connected && this.retired && !this.me?.dnf && !this.wreckSent) { this.wreckSent = true; this.send({ type: 'dnf', raceId: this.lobby.raceId, generation: this.lobby.generation, reason: 'retired' }); }
   }
-  recover() {
+  recover({ capture = false } = {}) {
     if (!this.connected || this.retired || this.me?.finish != null || this.lobby?.status !== 'race') return Promise.reject(new Error('Recovery is unavailable.'));
     if (this.recoveryPending) return this.recoveryPending.promise;
     this.stateSender.discontinuity();
@@ -200,7 +200,7 @@ export class Multiplayer {
     const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
     const timer = setTimeout(() => this.cancelRecovery('Recovery timed out. Try again.'), 8000);
     this.recoveryPending = { raceId, motionEpoch, promise, resolve, reject, timer };
-    this.send({ type: 'recover', raceId, generation: this.lobby.generation, motionEpoch }); return promise;
+    this.send({ type: 'recover', raceId, generation: this.lobby.generation, motionEpoch, capture }); return promise;
   }
   cancelRecovery(message = 'The race changed before recovery completed.') {
     if (!this.recoveryPending) return;
@@ -541,7 +541,7 @@ export class Multiplayer {
   async showLeaderboard() {
     const box = this.$('mp-times'); box.hidden = false; box.textContent = 'Loading best times…';
     try {
-      const entries = await getLeaderboard({ mapId: this.lobby?.mapId || this.mapId || 'riviera', eventId: this.lobby?.eventId || 'quick', car: this.me?.car || this.$('mp-car').value, traffic: this.lobby?.traffic ?? false });
+      const entries = await getLeaderboard({ mapId: this.lobby?.mapId || this.mapId || 'riviera', eventId: this.lobby?.eventId || 'quick', car: this.me?.car || this.$('mp-car').value, traffic: this.lobby?.traffic ?? false, reverse: this.lobby?.config?.reverse === true });
       box.replaceChildren(); const title = document.createElement('h3'); title.textContent = 'BEST TIMES · ' + (this.lobby?.event?.name || 'QUICK RACE'); box.append(title);
       if (!entries.length) { const row = document.createElement('p'); row.textContent = 'No recorded times yet.'; box.append(row); }
       entries.forEach((e, i) => { const row = document.createElement('p'); row.textContent = `${i + 1}. ${e.name} · ${e.time.toFixed(2)} s · ${e.car}`; box.append(row); });

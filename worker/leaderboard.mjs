@@ -1,4 +1,4 @@
-import { resultContext, validResult, resultEntry } from '../server/leaderboard-policy.mjs';
+import { resultContext, validResult, resultEntry, leaderboardVersion } from '../server/leaderboard-policy.mjs';
 
 export function createSqlLeaderboard(sql, maps, cars) {
   sql.exec(`CREATE TABLE IF NOT EXISTS times (
@@ -20,8 +20,8 @@ export function createSqlLeaderboard(sql, maps, cars) {
     sql.exec('DELETE FROM times WHERE key IN (SELECT key FROM times WHERE board = ? ORDER BY time, at LIMIT -1 OFFSET 200)', board);
     return { saved: true, best: entry.time };
   };
-  const list = ({ mapId = 'riviera', eventId, car, traffic, limit = 50 } = {}) => {
-    const args = [mapId, maps.get(mapId)?.track.version || ''], clauses = ['mapId = ?', 'version = ?'];
+  const list = ({ mapId = 'riviera', eventId, car, traffic, reverse = false, limit = 50 } = {}) => {
+    const args = [mapId, leaderboardVersion(mapId, maps.get(mapId)?.track.version || '', reverse)], clauses = ['mapId = ?', 'version = ?'];
     for (const [k, v] of [['eventId', eventId], ['car', car], ['traffic', traffic === undefined ? undefined : +traffic]]) if (v !== undefined && v !== null && v !== '') { clauses.push(`${k} = ?`); args.push(v); }
     return [...sql.exec(`SELECT entry FROM times WHERE ${clauses.join(' AND ')} ORDER BY time, at LIMIT ?`, ...args, Math.max(1, Math.min(100, Number(limit) || 50)))].map(row => { const { driverId, ...entry } = JSON.parse(row.entry); return entry; });
   };
