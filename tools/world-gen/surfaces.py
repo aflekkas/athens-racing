@@ -5,7 +5,7 @@ surface layer, and must separately validate rendered grades and clearance.
 """
 import math
 import struct
-from shapely import constrained_delaunay_triangles, set_precision
+from shapely import constrained_delaunay_triangles, set_precision, union_all
 from shapely.geometry import LineString, Point, box
 from shapely.ops import polygonize, unary_union
 from shapely.strtree import STRtree
@@ -35,20 +35,23 @@ def ground_mesh(cell,roads,height,boundaries=()):
         for a,b in (((ox+n,oz),(ox+n+2,oz)),((ox+n,oz+512),(ox+n+2,oz+512)),
                     ((ox,oz+n),(ox,oz+n+2)),((ox+512,oz+n),(ox+512,oz+n+2))):
             lines.append(LineString([a,b]))
-    for z in range(oz,oz+512,16):
-        for x in range(ox,ox+512,16):
+    for z in range(oz-16,oz+528,16):
+        for x in range(ox-16,ox+528,16):
             square=box(x,z,x+16,z+16);lines.append(square.boundary)
             if near is not None and near.intersects(square):
                 for n in (4,8,12):
                     lines.append(LineString([(x+n,z),(x+n,z+16)]))
                     lines.append(LineString([(x,z+n),(x+16,z+n)]))
+    # Preserve full global feature segments until noding. Clipping and rounding
+    # their endpoints independently shifts border intersections by a centimetre.
+    # A grid halo supplies identical intersection context on both sides.
     if union is not None:
-        clipped=snap(union.intersection(bounds))
+        clipped=union
         if not clipped.is_empty:lines.append(clipped.boundary)
     for boundary in boundaries:
-        clipped=snap(boundary.intersection(bounds))
+        clipped=snap(boundary)
         if not clipped.is_empty:lines.append(clipped)
-    noded=snap(unary_union(lines))
+    noded=union_all(lines,grid_size=.01)
     positions=[];triangles=[];owners=[];keys={}
     def vertex(p):
         key=(round(p[0]*100),round(p[1]*100))
@@ -99,9 +102,26 @@ class SurfaceHeight:
         p=self.positions
         self.polygons=[Polygon([(p[v*3],p[v*3+2]) for v in self.indices[i:i+3]]) for i in range(0,len(self.indices),3)]
         self.tree=STRtree(self.polygons)
+        self.borders=[]
+        for axis,value in ((0,0),(0,512),(2,0),(2,512)):
+            other=2 if axis==0 else 0
+            samples={p[i+other]:p[i+1] for i in range(0,len(p),3) if p[i+axis]==value}
+            self.borders.append(sorted(samples.items()))
 
     def __call__(self,x,z):
         x-=self.ox;z-=self.oz;point=Point(x,z);p=self.positions
+        # Interpolate shared border segments directly. Adjacent triangle
+        # barycentric arithmetic may otherwise differ by one Float32 ULP.
+        side=0 if x==0 else 1 if x==512 else 2 if z==0 else 3 if z==512 else None
+        if side is not None:
+            from bisect import bisect_left
+            samples=self.borders[side];at=z if side<2 else x
+            i=bisect_left(samples,(at,-math.inf))
+            if i<len(samples) and samples[i][0]==at:return samples[i][1]
+            if 0<i<len(samples):
+                a,y=samples[i-1];b,yy=samples[i]
+                return y+(yy-y)*(at-a)/(b-a)
+            raise ValueError('Missing canonical boundary contact')
         for face in sorted(int(i) for i in self.tree.query(point)):
             if not self.polygons[face].covers(point):continue
             a,b,c=self.indices[face*3:face*3+3]

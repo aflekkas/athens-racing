@@ -1,0 +1,10 @@
+{
+  "cell": [
+    4,
+    25
+  ],
+  "surfaceTriangles": 52918,
+  "renderContactFineExact": true,
+  "compressedBytes": 1451717,
+  "scope": "Top surfaces only. Vertical kerbs, structures, seam/grade coverage and graph contacts require separate validation."
+}

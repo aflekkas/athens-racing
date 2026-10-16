@@ -1,6 +1,6 @@
 {
   "baselineCandidate": "b80ff73522c1e149a9ae881413f4d6d6493bc231",
-  "afterCandidate": "pending",
+  "afterCandidate": "ec81013c934eea87fa206c69a9995b35c65906f5",
   "before": {
     "compressedBytes": 1754577,
     "cpuArrayBackingBytes": 4312136,

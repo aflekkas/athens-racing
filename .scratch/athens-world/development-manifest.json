@@ -1,0 +1,38 @@
+{
+  "manifest": "/tmp/athens-world-cache/athens-development-oriented/manifest.json",
+  "revision": "9fb9370614c7b2b2ded2685274406cfb1d090aa1c656bc02e7d3ec3da6ac44d3",
+  "spawn": {
+    "cell": [
+      4,
+      25
+    ],
+    "anchor": "anchor:tow:osm:way:24826358:0-0:f:4:25"
+  },
+  "spawnRoad": "Λαοδίκης",
+  "spawnLocal": [
+    276.12200927734375,
+    16.31201934814453,
+    257.30718994140625,
+    2.9831650257110596
+  ],
+  "spawnWorld": [
+    2324.1220092773438,
+    16.31201934814453,
+    13057.307189941406
+  ],
+  "nearest": {
+    "edge": "osm:way:24826358:0-0:f:4:25",
+    "x": 2325.3069943287837,
+    "y": 16.330865229913865,
+    "z": 13057.496510845276,
+    "yaw": 2.983165079818028,
+    "layer": 0,
+    "name": "Λαοδίκης",
+    "distance": 1.200013323583669
+  },
+  "graphNodes": 172,
+  "graphEdges": 310,
+  "graphTurns": 7,
+  "bytes": 2736034,
+  "releaseReady": false
+}

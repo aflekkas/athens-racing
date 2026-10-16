@@ -75,3 +75,41 @@ def road_markings(roads,cell,height):
                             if (points[1][0]-points[0][0])*(points[2][1]-points[0][1])-(points[1][1]-points[0][1])*(points[2][0]-points[0][0])>0:points.reverse()
                             for x,z in points:ix.append(len(ps)//3);ps.extend([x-ox,height(x,z)+.015,z-oz])
     return ps,ix
+
+
+def pavement_lift(distance,kerb_width=.18,pavement_width=1.8,rise=.10):
+    """Continuous, drivable bevel with a flat pavement and a 1 m outer blend.
+
+    Distance is to the global road union, not a tile-local clipped outline.
+    This gives every shared vertex one height, including centimetre slivers
+    around snapped junction boundaries. The kerb rises by 10 cm across 18 cm.
+    """
+    if distance<=0 or distance>=pavement_width+1:return 0.
+    return rise*min(1.,distance/kerb_width,max(0.,pavement_width+1-distance))
+
+
+def ribbon_polygon(line,width,cap_extension=.02):
+    """Butt-ended road with a 2 cm endpoint allowance for the 1 cm mesh lattice.
+
+    Without this allowance, snapping a diagonal end cap can put its graph node
+    just outside the asphalt. Keep the graph/stations on the original line.
+    """
+    from shapely.geometry import LineString
+    points=list(line.coords)
+    if len(points)<2 or line.length<=0:raise ValueError('Empty road ribbon')
+    a,b=points[0],points[1];dx,dz=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dz)
+    if not length:raise ValueError('Repeated road endpoint')
+    points[0]=(a[0]-dx/length*cap_extension,a[1]-dz/length*cap_extension)
+    a,b=points[-2],points[-1];dx,dz=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dz)
+    if not length:raise ValueError('Repeated road endpoint')
+    points[-1]=(b[0]+dx/length*cap_extension,b[1]+dz/length*cap_extension)
+    return LineString(points).buffer(width/2,cap_style=2,join_style=2)
+
+
+def ribbon_lateral(line, x, z, forward=True):
+    """Signed distance to the reference edge's right, including reverse edges."""
+    point=Point(x,z);station=line.project(point);center=line.interpolate(station)
+    a=line.interpolate(max(0,station-.05));b=line.interpolate(min(line.length,station+.05))
+    dx,dz=b.x-a.x,b.y-a.y;length=math.hypot(dx,dz)
+    if length<1e-9:raise ValueError('Ribbon reference has no tangent')
+    return station,((x-center.x)*-dz+(z-center.y)*dx)/length*(1 if forward else -1)

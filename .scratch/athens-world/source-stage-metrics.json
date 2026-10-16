@@ -1,4 +1,27 @@
 {
+  "c_attica_mainland": {
+    "buildingCount": 418345,
+    "generationSeconds": 222.503,
+    "intermediateBytesCompressed": 103566497,
+    "intermediateSha256": "9b25baa04badf3514e76374533fe19a749a7e1f155e327d006308560a39058dc",
+    "largestTile": null,
+    "maxAwtBuildingTriangles": 40,
+    "maxBuildingTriangles": 40,
+    "occupiedSourceCells": 8267,
+    "publicRoadKm": 19496.517,
+    "rejectedBuildings": 1297,
+    "roadEdges": 253789,
+    "roadKm": 20528.952,
+    "sourceBuildingCount": 419642,
+    "status": "intermediate-only",
+    "tileCount": null,
+    "validation": {
+      "buildingBudget": "pass",
+      "conformance": "not-run",
+      "contactCoverage": "not-run",
+      "seams": "not-run"
+    }
+  },
   "a_south": {
     "buildingCount": 87171,
     "generationSeconds": 45.297,
@@ -44,9 +67,5 @@
       "contactCoverage": "not-run",
       "seams": "not-run"
     }
-  },
-  "c_attica_mainland": {
-    "status": "incomplete",
-    "reason": "Disk full during source export; not a tile validation result"
   }
 }

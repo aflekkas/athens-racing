@@ -1,0 +1,14 @@
+{
+  "sourceUrl": "https://download.geofabrik.de/europe/greece-261014.osm.pbf",
+  "sourceSha256": "7087cf00b0e47833c40837b9ee7cc5c3020420decc3980406d3b8f0b5d62a6f3",
+  "sha256": "e1a86714ef6d890e75f0730f57a0d32faa3ff5a7aa84beb18829a75ad7b7973b",
+  "bytes": 143029,
+  "treeNodes": 25860,
+  "bounds": [
+    22.8,
+    37.4,
+    24.7,
+    38.6
+  ],
+  "seconds": 344.6244220690569
+}

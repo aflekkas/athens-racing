@@ -1,0 +1,573 @@
+{
+  "purpose": "Pre-cleanup canonical cache inventory; no full Greece PBF retained. Temporary probes can be removed after archival gates.",
+  "files": [
+    {
+      "path": "/tmp/athens-world-cache/Copernicus_DSM_COG_10_N37_00_E023_00_DEM.tif.source.json",
+      "bytes": 246
+    },
+    {
+      "path": "/tmp/athens-world-cache/Copernicus_DSM_COG_10_N38_00_E023_00_DEM.tif.source.json",
+      "bytes": 246
+    },
+    {
+      "path": "/tmp/athens-world-cache/add-probe-graph.py",
+      "bytes": 2407
+    },
+    {
+      "path": "/tmp/athens-world-cache/add-turns-anchors.py",
+      "bytes": 3406
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica-n37-e023.source.json",
+      "bytes": 389
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica-n37-e023.tif",
+      "bytes": 8591272
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica-n38-e023.source.json",
+      "bytes": 390
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica-n38-e023.tif",
+      "bytes": 17292644
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica-tree-nodes.osm.pbf",
+      "bytes": 143029
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica-tree-nodes.osm.source.json",
+      "bytes": 377
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica.osm.pbf",
+      "bytes": 62333978
+    },
+    {
+      "path": "/tmp/athens-world-cache/attica.osm.source.json",
+      "bytes": 76017
+    },
+    {
+      "path": "/tmp/athens-world-cache/audit-surface.py",
+      "bytes": 908
+    },
+    {
+      "path": "/tmp/athens-world-cache/benchmark-elevation.py",
+      "bytes": 1148
+    },
+    {
+      "path": "/tmp/athens-world-cache/building-details.log",
+      "bytes": 325
+    },
+    {
+      "path": "/tmp/athens-world-cache/building-details.metrics.json",
+      "bytes": 370
+    },
+    {
+      "path": "/tmp/athens-world-cache/building-details.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/building-details.sqlite",
+      "bytes": 61227008
+    },
+    {
+      "path": "/tmp/athens-world-cache/check-anchor-bodies.py",
+      "bytes": 1138
+    },
+    {
+      "path": "/tmp/athens-world-cache/check-halo-seam.py",
+      "bytes": 589
+    },
+    {
+      "path": "/tmp/athens-world-cache/check-partition-fixed.py",
+      "bytes": 766
+    },
+    {
+      "path": "/tmp/athens-world-cache/clean.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/clean.log",
+      "bytes": 1241068
+    },
+    {
+      "path": "/tmp/athens-world-cache/clean.metrics.json",
+      "bytes": 82
+    },
+    {
+      "path": "/tmp/athens-world-cache/clean.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/clean.sqlite",
+      "bytes": 908300288
+    },
+    {
+      "path": "/tmp/athens-world-cache/clip.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/clip.log",
+      "bytes": 47920
+    },
+    {
+      "path": "/tmp/athens-world-cache/coincident-nodes-audit.py",
+      "bytes": 1134
+    },
+    {
+      "path": "/tmp/athens-world-cache/compare-packing.mjs",
+      "bytes": 2694
+    },
+    {
+      "path": "/tmp/athens-world-cache/connectivity-a.py",
+      "bytes": 5149
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-experiment-edit.py",
+      "bytes": 1839
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-neighbour-oriented.ndjson",
+      "bytes": 9966974
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-neighbour.log",
+      "bytes": 181
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-neighbour.ndjson",
+      "bytes": 9965244
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-pair-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-pair.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-probe-oriented.ndjson",
+      "bytes": 9751800
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-probe.log",
+      "bytes": 181
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-probe.ndjson",
+      "bytes": 9751037
+    },
+    {
+      "path": "/tmp/athens-world-cache/contact-tile-experiment.py",
+      "bytes": 16073
+    },
+    {
+      "path": "/tmp/athens-world-cache/continuous-check.log",
+      "bytes": 2638
+    },
+    {
+      "path": "/tmp/athens-world-cache/continuous-check.ndjson",
+      "bytes": 9750661
+    },
+    {
+      "path": "/tmp/athens-world-cache/credits-capture.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/credits-capture.log",
+      "bytes": 58
+    },
+    {
+      "path": "/tmp/athens-world-cache/dependency-audit.py",
+      "bytes": 1356
+    },
+    {
+      "path": "/tmp/athens-world-cache/elevation-before.py",
+      "bytes": 1984
+    },
+    {
+      "path": "/tmp/athens-world-cache/emitter-check.log",
+      "bytes": 2857
+    },
+    {
+      "path": "/tmp/athens-world-cache/emitter-check.ndjson",
+      "bytes": 13908564
+    },
+    {
+      "path": "/tmp/athens-world-cache/fetch-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/fetch.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/fetch.log",
+      "bytes": 670
+    },
+    {
+      "path": "/tmp/athens-world-cache/fresh-profile-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/fresh-profile.py",
+      "bytes": 489
+    },
+    {
+      "path": "/tmp/athens-world-cache/graph-a.log",
+      "bytes": 352
+    },
+    {
+      "path": "/tmp/athens-world-cache/graph-a.metrics.json",
+      "bytes": 378
+    },
+    {
+      "path": "/tmp/athens-world-cache/graph-a.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/graph-a.sqlite",
+      "bytes": 50020352
+    },
+    {
+      "path": "/tmp/athens-world-cache/graph-clip-prototype.py",
+      "bytes": 3644
+    },
+    {
+      "path": "/tmp/athens-world-cache/greece-261014.osm.pbf.source.json",
+      "bytes": 176
+    },
+    {
+      "path": "/tmp/athens-world-cache/ground-tile-experiment.py",
+      "bytes": 10278
+    },
+    {
+      "path": "/tmp/athens-world-cache/ingest.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/ingest.log",
+      "bytes": 43478
+    },
+    {
+      "path": "/tmp/athens-world-cache/launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/minimise-partition.py",
+      "bytes": 1093
+    },
+    {
+      "path": "/tmp/athens-world-cache/next-python.log",
+      "bytes": 1102
+    },
+    {
+      "path": "/tmp/athens-world-cache/packing-browser.log",
+      "bytes": 97
+    },
+    {
+      "path": "/tmp/athens-world-cache/packing-experiment.mjs",
+      "bytes": 2425
+    },
+    {
+      "path": "/tmp/athens-world-cache/packing-worker-check.mjs",
+      "bytes": 1632
+    },
+    {
+      "path": "/tmp/athens-world-cache/pipeline.log",
+      "bytes": 26
+    },
+    {
+      "path": "/tmp/athens-world-cache/prepare-probe.py",
+      "bytes": 1844
+    },
+    {
+      "path": "/tmp/athens-world-cache/prepare-profile-source.py",
+      "bytes": 1857
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-bake.errors.log",
+      "bytes": 46
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-bake.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-browser.errors.log",
+      "bytes": 97
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-browser.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-browser.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-cost.mjs",
+      "bytes": 1590
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-launch.log",
+      "bytes": 46
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-pack.errors.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-pack.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-pack.log",
+      "bytes": 28
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-recapture.log",
+      "bytes": 97
+    },
+    {
+      "path": "/tmp/athens-world-cache/probe-source.sqlite",
+      "bytes": 360448
+    },
+    {
+      "path": "/tmp/athens-world-cache/profile-field.py",
+      "bytes": 320
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a-clean.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a-clean.log",
+      "bytes": 794
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a-fresh.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a-fresh.log",
+      "bytes": 794
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a-probe.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a.log",
+      "bytes": 681
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a.metrics.json",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-a.sqlite",
+      "bytes": 71618560
+    },
+    {
+      "path": "/tmp/athens-world-cache/profiles-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/quantized-pair.ndjson",
+      "bytes": 20730446
+    },
+    {
+      "path": "/tmp/athens-world-cache/report-c-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/report-c.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/report-c.log",
+      "bytes": 576
+    },
+    {
+      "path": "/tmp/athens-world-cache/report.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/report.log",
+      "bytes": 2440
+    },
+    {
+      "path": "/tmp/athens-world-cache/resolve-profile-probe.log",
+      "bytes": 171
+    },
+    {
+      "path": "/tmp/athens-world-cache/resolve-profile-probe.py",
+      "bytes": 1879
+    },
+    {
+      "path": "/tmp/athens-world-cache/riviera-probe.log",
+      "bytes": 179
+    },
+    {
+      "path": "/tmp/athens-world-cache/riviera-probe.ndjson",
+      "bytes": 4157782
+    },
+    {
+      "path": "/tmp/athens-world-cache/roads-a.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/roads-a.log",
+      "bytes": 12
+    },
+    {
+      "path": "/tmp/athens-world-cache/run-after-clip.py",
+      "bytes": 1600
+    },
+    {
+      "path": "/tmp/athens-world-cache/run-probe.py",
+      "bytes": 1234
+    },
+    {
+      "path": "/tmp/athens-world-cache/run-profiles-now.sh",
+      "bytes": 584
+    },
+    {
+      "path": "/tmp/athens-world-cache/run-profiles.py",
+      "bytes": 844
+    },
+    {
+      "path": "/tmp/athens-world-cache/source.metrics.json",
+      "bytes": 81
+    },
+    {
+      "path": "/tmp/athens-world-cache/source.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/source.sqlite",
+      "bytes": 309506048
+    },
+    {
+      "path": "/tmp/athens-world-cache/surface-4-25.json.gz",
+      "bytes": 566639
+    },
+    {
+      "path": "/tmp/athens-world-cache/surface-5-25.json.gz",
+      "bytes": 550433
+    },
+    {
+      "path": "/tmp/athens-world-cache/surface-8-36.json.gz",
+      "bytes": 263924
+    },
+    {
+      "path": "/tmp/athens-world-cache/surfaces-before.py",
+      "bytes": 5752
+    },
+    {
+      "path": "/tmp/athens-world-cache/tree-cleanup.log",
+      "bytes": 48
+    },
+    {
+      "path": "/tmp/athens-world-cache/tree-cleanup.py",
+      "bytes": 658
+    },
+    {
+      "path": "/tmp/athens-world-cache/tree-supplement-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/tree-supplement.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/tree-supplement.log",
+      "bytes": 536
+    },
+    {
+      "path": "/tmp/athens-world-cache/turns-a.log",
+      "bytes": 411
+    },
+    {
+      "path": "/tmp/athens-world-cache/turns-a.metrics.json",
+      "bytes": 454
+    },
+    {
+      "path": "/tmp/athens-world-cache/turns-a.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/turns-a.sqlite",
+      "bytes": 184320
+    },
+    {
+      "path": "/tmp/athens-world-cache/update-report.py",
+      "bytes": 2060
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation-launch.log",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation-trees.log",
+      "bytes": 386
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation-trees.metrics.json",
+      "bytes": 430
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation-trees.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation-trees.sqlite",
+      "bytes": 4608000
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation.exit",
+      "bytes": 2
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation.log",
+      "bytes": 799
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation.metrics.json",
+      "bytes": 439
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation.sha256",
+      "bytes": 65
+    },
+    {
+      "path": "/tmp/athens-world-cache/vegetation.sqlite",
+      "bytes": 15876096
+    },
+    {
+      "path": "/tmp/athens-world-cache/verify-clean-profiles.py",
+      "bytes": 1150
+    },
+    {
+      "path": "/tmp/athens-world-cache/verify-profile-source.log",
+      "bytes": 239
+    },
+    {
+      "path": "/tmp/athens-world-cache/verify-profile-source.py",
+      "bytes": 1809
+    }
+  ]
+}

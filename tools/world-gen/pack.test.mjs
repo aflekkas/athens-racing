@@ -42,3 +42,11 @@ test('Spool validates every tile and neighbour seam before publishing entries',a
     await assert.rejects(readFile(join(root,'cracked','entries.json')),/ENOENT/);
   } finally { await rm(root,{recursive:true,force:true}); }
 });
+
+test('Python terrain layout reconstructs exact contacts through the shared runtime decoder',async()=>{
+  const {TerrainPosition}=await import('../../src/terrain-layout.js');
+  const {readFile}=await import('node:fs/promises');
+  const fixture=JSON.parse(await readFile(new URL('./fixtures/terrain-layout.json',import.meta.url),'utf8'));
+  const attribute=new TerrainPosition(new Uint16Array(fixture.quantized),fixture.decode,new Float32Array(fixture.residual));
+  for(let i=0;i<attribute.count;i++)assert.deepEqual([attribute.getX(i),attribute.getY(i),attribute.getZ(i)],fixture.positions.slice(i*3,i*3+3));
+});

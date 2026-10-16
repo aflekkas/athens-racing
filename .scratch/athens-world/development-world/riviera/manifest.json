@@ -1,0 +1,112 @@
+{
+  "tileVersion": 1,
+  "world": "athens-development",
+  "revision": "f9193323b84f44507d35c8127f9f5cb75373f45f3a9be4b5e3e15c6662683f88",
+  "tileMetres": 512,
+  "projection": {
+    "lat0": 37.98,
+    "lon0": 23.73,
+    "mlat": 111320,
+    "mlon": 87745.27512677578
+  },
+  "elevation": {
+    "datum": "EGM2008",
+    "source": "Copernicus GLO-30 DSM, road-conformed; not surveyed road levels",
+    "sha256": "f3debf08c8a7e929eb62409d87eac4ee945adcabe99e89c55e174008780ca58f"
+  },
+  "defaults": {
+    "speedKph": 50
+  },
+  "palette": [
+    [
+      1,
+      1,
+      1
+    ],
+    [
+      0.052860647023180246,
+      0.06480326669290577,
+      0.07227185068231748
+    ],
+    [
+      0.9046611743911496,
+      0.9130986517934192,
+      0.8962693533742664
+    ],
+    [
+      0.7912979403326302,
+      0.8148465722161012,
+      0.8227857543962835
+    ],
+    [
+      0.6583748172794485,
+      0.6938717612919899,
+      0.7304607400903537
+    ],
+    [
+      0.5583403896342679,
+      0.6444796819705821,
+      0.7156935005064807
+    ],
+    [
+      0.5711248294648731,
+      0.665387298282272,
+      0.6239603916750761
+    ],
+    [
+      0.6866853124353135,
+      0.5972017883637634,
+      0.6375968739940326
+    ],
+    [
+      0.386429433787049,
+      0.4019777798321958,
+      0.39675523072562685
+    ],
+    [
+      0.665387298282272,
+      0.6866853124353135,
+      0.6724431569576875
+    ],
+    [
+      0.3049873140698863,
+      0.3277780980565422,
+      0.3277780980565422
+    ],
+    [
+      0.7835377915261935,
+      0.7835377915261935,
+      0.7230551289219693
+    ]
+  ],
+  "spawn": {
+    "cell": [
+      8,
+      36
+    ],
+    "anchor": "anchor:tow:osm:way:459160388:0-0:f:8:36"
+  },
+  "tiles": {
+    "8,36": {
+      "url": "./8-36-2bae2a3d77f2a98e1a3f9b632c3f5b500afbabc698c0d0550b0c5bea1ade2b27.bin.gz",
+      "sha256": "2bae2a3d77f2a98e1a3f9b632c3f5b500afbabc698c0d0550b0c5bea1ade2b27",
+      "bytes": 613495,
+      "decodedBytes": 9084578,
+      "dependencies": [],
+      "triangles": 24921
+    }
+  },
+  "developmentOnly": true,
+  "releaseReady": false,
+  "coverage": {
+    "cells": [
+      "8,36"
+    ],
+    "excludedBuildingOwnerCells": []
+  },
+  "notes": [
+    "One-cell inactive Riviera geometry fixture. NOT stage A; no connection to the separate Glyfada fixture.",
+    "Coast/sea, structures, signs and complete physical conformance remain unimplemented or unvalidated.",
+    "Manifest spawn is generated from the emitted contact surface, never from legacy Riviera height."
+  ]
+}

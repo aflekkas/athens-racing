@@ -1,0 +1,133 @@
+{
+  "tileVersion": 1,
+  "world": "athens-development-glyfada",
+  "revision": "9fb9370614c7b2b2ded2685274406cfb1d090aa1c656bc02e7d3ec3da6ac44d3",
+  "tileMetres": 512,
+  "projection": {
+    "lat0": 37.98,
+    "lon0": 23.73,
+    "mlat": 111320,
+    "mlon": 87745.27512677578
+  },
+  "elevation": {
+    "datum": "EGM2008",
+    "source": "Copernicus GLO-30 DSM, road-conformed; not surveyed road levels",
+    "sha256": "f3debf08c8a7e929eb62409d87eac4ee945adcabe99e89c55e174008780ca58f"
+  },
+  "defaults": {
+    "speedKph": 50
+  },
+  "palette": [
+    [
+      1,
+      1,
+      1
+    ],
+    [
+      0.052860647023180246,
+      0.06480326669290577,
+      0.07227185068231748
+    ],
+    [
+      0.9046611743911496,
+      0.9130986517934192,
+      0.8962693533742664
+    ],
+    [
+      0.7912979403326302,
+      0.8148465722161012,
+      0.8227857543962835
+    ],
+    [
+      0.6583748172794485,
+      0.6938717612919899,
+      0.7304607400903537
+    ],
+    [
+      0.5583403896342679,
+      0.6444796819705821,
+      0.7156935005064807
+    ],
+    [
+      0.5711248294648731,
+      0.665387298282272,
+      0.6239603916750761
+    ],
+    [
+      0.6866853124353135,
+      0.5972017883637634,
+      0.6375968739940326
+    ],
+    [
+      0.386429433787049,
+      0.4019777798321958,
+      0.39675523072562685
+    ],
+    [
+      0.665387298282272,
+      0.6866853124353135,
+      0.6724431569576875
+    ],
+    [
+      0.3049873140698863,
+      0.3277780980565422,
+      0.3277780980565422
+    ],
+    [
+      0.7835377915261935,
+      0.7835377915261935,
+      0.7230551289219693
+    ]
+  ],
+  "spawn": {
+    "cell": [
+      4,
+      25
+    ],
+    "anchor": "anchor:tow:osm:way:24826358:0-0:f:4:25"
+  },
+  "tiles": {
+    "4,25": {
+      "url": "./4-25-a2d2a4fd2f14060968158747f5e2f85d465844985b91f7031fb59f50a25d2f47.bin.gz",
+      "sha256": "a2d2a4fd2f14060968158747f5e2f85d465844985b91f7031fb59f50a25d2f47",
+      "bytes": 1352207,
+      "decodedBytes": 20263102,
+      "dependencies": [
+        "5,25"
+      ],
+      "triangles": 57572
+    },
+    "5,25": {
+      "url": "./5-25-01658aa503f3b65a2b87eccd4efdca94ed5869da695ada834c59125308e546c6.bin.gz",
+      "sha256": "01658aa503f3b65a2b87eccd4efdca94ed5869da695ada834c59125308e546c6",
+      "bytes": 1383827,
+      "decodedBytes": 20537680,
+      "dependencies": [
+        "4,25"
+      ],
+      "triangles": 57157
+    }
+  },
+  "developmentOnly": true,
+  "releaseReady": false,
+  "coverage": {
+    "cells": [
+      "4,25",
+      "5,25"
+    ],
+    "excludedBuildingOwnerCells": [
+      "3,24",
+      "3,25",
+      "4,24",
+      "4,26",
+      "5,24",
+      "5,26",
+      "6,25"
+    ]
+  },
+  "notes": [
+    "Two-cell integration fixture; NOT stage A. Buildings owned outside this bounded fixture are omitted.",
+    "Float32 render layout remains experimental. Production quantization, structure/coast/sign emission and full coverage remain pending.",
+    "Unknown/conditional turn rules fail closed; supported via-way prohibitions conservatively forbid entry."
+  ]
+}
