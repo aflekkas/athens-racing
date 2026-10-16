@@ -80,7 +80,7 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .map-spec--best b { color: var(--hu-text, #e4effa); }
 #ui.s-maps .map-spec--best > span { color: var(--hu-text-3, #869cad); font: 500 11px var(--f-sans, sans-serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #ui.s-maps .map-preview .btn { width: 100%; justify-content: center; }
-#ui.s-maps .map-cycle-hint { display: none; padding: .75rem 1rem; text-align: center; color: var(--hu-text-3, var(--c-text-3, #7e93a5)); border-top: 1px solid var(--c-line, #ffffff12); font: 500 9px var(--f-sans, sans-serif); letter-spacing: .06em; }
+#ui.s-maps .map-cycle-hint { display: none; padding: .75rem 1rem; text-align: center; color: var(--hu-text-3, var(--c-text-3, #7e93a5)); border-top: 1px solid var(--c-line, #ffffff12); font: 500 9px var(--f-sans, sans-serif); letter-spacing: .06em; pointer-events: none; cursor: default; }
 @media (max-width: 700px) and (min-height: 501px) {
   #ui.s-maps .attica-layout { display: flex; flex-direction: column; flex: none; gap: .75rem; }
   #ui.s-maps .attica-map { height: 42vh; min-height: 19rem; flex: none; }

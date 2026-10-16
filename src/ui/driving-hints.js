@@ -17,7 +17,7 @@ export function controlsStrip({ device='keyboard', car, manual=false }={}) {
   const labels=[['handbrake','HANDBRAKE'],['tractionControl','TC / ESC'],['camera','CAMERA'],['tow','TOW'],['map','BIG MAP']];
   labels.unshift(['shiftUp',manual?'SHIFT UP':'PADDLE UP'],['shiftDown',manual?'SHIFT DOWN':'PADDLE DOWN']);
   labels.unshift(['transmission','MANUAL / AUTO']);
-  return `<div class="driving-controls">${labels.map(([act,label])=>`<span>${C.kbd(C.esc(bindingLabel(input.bindings,act,device)),device==='gamepad')}<b>${label}</b></span>`).join('')}${device==='keyboard'?'<span>'+C.kbd('MOUSE')+'<b>LOOK · CLICK ROAD TO CAPTURE</b></span>':''}</div>`;
+  return `<div class="driving-controls" aria-hidden="true">${labels.map(([act,label])=>`<span>${C.kbd(C.esc(bindingLabel(input.bindings,act,device)),device==='gamepad')}<b>${label}</b></span>`).join('')}${device==='keyboard'?'<span>'+C.kbd('MOUSE')+'<b>LOOK · CLICK ROAD TO CAPTURE</b></span>':''}</div>`;
 }
 export const drivingHints={
   saved,lastState:null,

@@ -101,7 +101,8 @@ export const progress = (value = 0, cls = '') => `<div class="progress ${cls}" r
 export const spinner = () => '<span class="spinner" role="status" aria-label="Loading"></span>';
 export function setProgress(el, v) { if (!el) return; v = clamp(+v || 0, 0, 1); el.style.setProperty('--p', v); el.setAttribute('aria-valuenow', Math.round(v * 100)); }
 
-// key hints: logical names shown as keyboard keycaps or controller buttons depending on body[data-input]
+// key hints (the soft-key bar): purely informational. Never focusable, clickable or in the .mi
+// focus order; the named input actions (keys / gamepad / touch buttons) drive everything they describe.
 const KB = (k) => `<kbd class="kbd">${k}</kbd>`, PAD = (k, c = '') => `<kbd class="kbd kbd--pad ${c}">${k}</kbd>`;
 const HINT_KEYS = {
   confirm: [KB('ENTER'), PAD('A', 'pa')], back: [KB('ESC'), PAD('B', 'pb')], select: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD('D-PAD')],
@@ -110,7 +111,7 @@ const HINT_KEYS = {
   tabs: [KB('Q') + KB('E'), PAD('LB') + PAD('RB')], restart: [KB('R'), PAD('VIEW')], garage: [KB('G'), null],
 };
 export function keyHints(list, cls = '') {
-  return `<div class="hints ${cls}">${list.map(([k, label, padKey]) => {
+  return `<div class="hints ${cls}" aria-hidden="true">${list.map(([k, label, padKey]) => {
     let [kb, pad] = HINT_KEYS[k] || [KB(k), padKey ? PAD(padKey) : null];
     const actions = ({ transmission:['transmission'], shiftUp:['shiftUp'], shiftDown:['shiftDown'], confirm:['confirm'], back:['back'], select:['up','down'], updown:['up','down'], leftright:['menuLeft','menuRight'], tabs:['shiftDown','shiftUp'], restart:['restart'], garage:['garage'] })[k];
     const bindings = hintBindings?.();
@@ -210,8 +211,8 @@ export function select({ key, label, value, options, icon: ic, note, type, attrs
 /** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
 export function tabs({ key, value, options, cls = '', hint = true, vertical = false } = {}) {
   if (vertical) cls += ' tabs--rail';
-  const h = hint ? `<span class="tabs__hint on-key">${kbd('Q')}</span><span class="tabs__hint on-pad">${kbd('LB', true)}</span>` : '';
-  const h2 = hint ? `<span class="tabs__hint on-key">${kbd('E')}</span><span class="tabs__hint on-pad">${kbd('RB', true)}</span>` : '';
+  const h = hint ? `<span class="tabs__hint on-key" aria-hidden="true">${kbd('Q')}</span><span class="tabs__hint on-pad" aria-hidden="true">${kbd('LB', true)}</span>` : '';
+  const h2 = hint ? `<span class="tabs__hint on-key" aria-hidden="true">${kbd('E')}</span><span class="tabs__hint on-pad" aria-hidden="true">${kbd('RB', true)}</span>` : '';
   return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
 }
 
