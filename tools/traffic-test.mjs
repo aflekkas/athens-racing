@@ -1,3 +1,4 @@
+import * as roundaboutHelpers from '../src/roundabouts.js';
 // node --import ./tools/physics-test/register.mjs --test tools/traffic-test.mjs
 // Run the actual traffic decisions/contact solver without loading the WebGL model library.
 import test from 'node:test';
@@ -12,9 +13,9 @@ import { damageIncrement, equivalentBarrierSpeed } from '../src/damage-math.js';
 const source = readFileSync(new URL('../src/traffic.js', import.meta.url), 'utf8')
   .replace(/^import .*;$/gm, '').replace(/^export /gm, '');
 const { Traffic, obbContact, impulse } = new Function(
-  'THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed', 'impactTarget',
-  source + '\nreturn { Traffic, obbContact, impulse };',
-)(THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed, impactTarget);
+  'THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed', 'impactTarget', 'roundaboutHelpers',
+  'const {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield}=roundaboutHelpers;\n'+source + '\nreturn { Traffic, obbContact, impulse };',
+)(THREE, RNG, clamp, lerp, smoothstep, { gutter: 0.3 }, 3.5, damageIncrement, equivalentBarrierSpeed, impactTarget, roundaboutHelpers);
 
 function world() {
   const T = Object.create(Traffic.prototype);

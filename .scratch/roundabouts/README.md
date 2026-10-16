@@ -51,3 +51,5 @@ Reproduce captures with:
 `BROWSER_SLOTS=1 bash tools/browser-slot.sh node tools/roundabout-debug.mjs`
 Set ROAD_REPOSITORY when running from an archive without .git; the debug/before
 runners read baseline 492f14e through git show without changing a checkout.
+
+The fixed-pose detail budget was refreshed for Psychiko after rerouting: `detail-budget/report.json` and eight On/Off PNGs record day/night chase/cockpit poses. Each On pose adds two draws and fewer than 3,000 triangles to its current base/Off pose. Other maps retain byte-identical source data and their existing budget measurements.

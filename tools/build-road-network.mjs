@@ -40,8 +40,8 @@ export function extractRoadNetwork(data, elements, {radius=550,excludeWays=[],bo
   }finish();
  }
  const length=roads.reduce((sum,r)=>sum+r.p.slice(2).filter((_,i)=>i%2===0).reduce((s,_,i)=>s+Math.hypot(r.p[2*i+2]-r.p[2*i],r.p[2*i+3]-r.p[2*i+1]),0),0);
- const used=new Set(roads.map(r=>r.roundabout));
- return {version:2,radius,roundabouts:loops.filter(l=>used.has(l.id)||l.ways.some(id=>excluded.has(id))).map(({id,ways,p,w})=>({id,ways,p,w})),source:'OpenStreetMap highway ways · © OpenStreetMap contributors (ODbL)',length:round(length),roads};
+ const used=new Set(roads.map(r=>r.roundabout)),roundabouts=loops.filter(l=>used.has(l.id)||l.ways.some(id=>excluded.has(id))).map(({id,ways,p,w})=>({id,ways,p,w}));
+ return {version:2,radius,...(roundabouts.length?{roundabouts}:{}),source:'OpenStreetMap highway ways · © OpenStreetMap contributors (ODbL)',length:round(length),roads};
 }
 export function readNetworkSource(root,id){
  const read=p=>JSON.parse(fs.readFileSync(resolve(root,p)));
