@@ -5,6 +5,13 @@ network result as resolution. The player's screenshot of `DOWNLOAD UNAVAILABLE Â
 GENERATING TERRAIN + ROADS`, 25%, and 78 seconds proves that release's automatic
 generation fallback ran. Authentication is outside this change.
 
+The screenshot alone does not identify the player's exact `downloadError` or
+browser capabilities. The timeout was reproduced independently below; unsupported
+decompression, network and storage failures also receive explicit handling. The
+old 25% was a main.js milestone before `buildMapWorld` awaited the buffer load,
+not a measured download percentage. No claim of resolution on the player's
+unidentified device follows from the VPS measurements.
+
 ## Measured causes
 
 The deployed loader imposed an absolute 45-second deadline on 35,902,203 bytes
@@ -118,9 +125,44 @@ tests cover >45-second useful progress, idle timeout/retry, dropped body with
 non-native/exposed-but-unsupported gzip, explicit generation, corrupt generated
 cache, blocked storage, streaming before cache completion and quota failure.
 Three existing pack-compatibility checks and all 13 notes/detail budget guards
-also pass. Syntax: 325 modules; browser imports: 260 modules. Full
-committed-archive gates are recorded after completion. The unchanged existing
-detail guard's source hashes pass without adjusting budgets or tolerances.
+also pass. The unchanged detail guard's source hashes pass without adjusting
+budgets or tolerances.
+
+The clean committed archive `/tmp/athens-loading-eea9cff.KxXS39` tested exact
+implementation `eea9cffddcf2060da93c64b06946a4c875a2a0dd`. Retained results:
+
+| Check | Result | Log in `.scratch/loading-p0/` |
+| --- | --- | --- |
+| `npm test`: unit | 1,067 pass, 2 existing skips, exit 0 | `archive-npm-test.log` |
+| `npm test`: damage | 56 pass, exit 0 | `archive-npm-test.log` |
+| `npm test`: physics | 232 pass, exit 0 | `archive-npm-test.log` |
+| `npm test`: world / overall | **Incomplete after task cancellation.** Last reported subtest 23 passed; no failure, world summary or overall exit status recorded. | `archive-npm-test.log` |
+| Separate physics regression | 1,146 pass, 0 fail, exit 0 | `physics-regress.log`, `physics-regress.exit` |
+| Events | 11 pass, 0 fail | `events.log` |
+| Ghost lap | 10 pass, 0 fail | `ghost.log` |
+| Syntax | 325 modules checked | `archive-syntax.log` |
+| Browser imports | 260 modules checked | `archive-imports.log` |
+| Focused recovery/cache tests | 25 pass | `focused-tests.log` |
+| Existing pack compatibility | 3 pass | `pack-compat-tests.log` |
+| Release notes / detail budget | 13 pass | `notes-detail-tests.log` |
+
+Logs are retained under the implementation worktree
+`/home/dev/.t3/worktrees/paraliaki-racing/t3-11ef0eb0/`. The world log includes
+the passing complete Riviera generated/baked attribute, index and wheel-surface
+equality check. It does not establish completion of all remaining world tests.
+No branch-independent failure was recorded in this archive run. No gates were
+weakened, and the unfinished overall gate is not green. No heavy checks were
+restarted after cancellation; no owned test/server processes remained at handoff.
+
+Both live domains were rechecked through native-browser `/release.json` and
+still reported `e72722c`, build `7b2e125491b6`, version `2026.10.15.3`.
+This follow-up implementation was not deployed.
+
+Independent integration review of `eea9cff` plus the Opus UI identified two
+follow-up gaps: cancelling response bodies rejected at header validation, and
+clearing the UI's determinate download state during inflate. The reviewer owns
+those fixes in its isolated integration tree. They are not silently claimed as
+fixed or validated by this implementation's retained results.
 
 Integration requires both this transport commit and the Opus UI commits above:
 the previous UI cannot display the new recovery actions. The combined scratch
