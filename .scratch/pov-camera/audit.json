@@ -1,0 +1,4019 @@
+[
+  {
+    "id": "mini",
+    "name": "MINI COOPER S CABRIO",
+    "before": {
+      "pitch": -3.061631508210037,
+      "eye": [
+        -0.3713049999999498,
+        1.1800000000000068,
+        0.2899999999999636
+      ],
+      "roadVisible": 76.92307692307692,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 19.11764705882353,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7484999895095825,
+            0.9739999771118164,
+            -0.6650000214576721
+          ],
+          "max": [
+            0.7484999895095825,
+            1.3880000114440918,
+            -0.23000000417232513
+          ]
+        },
+        "legacyEye": [
+          -0.371305,
+          1.16,
+          0.29
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 339,
+        "triangles": 973058
+      },
+      "windscreenPercent": 52.09384765625,
+      "openPixels": 533441,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051159212877839,
+      "eye": [
+        -0.3713050000000635,
+        1.220945123956028,
+        0.25
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7484999895095825,
+            0.9739999771118164,
+            -0.6650000214576721
+          ],
+          "max": [
+            0.7484999895095825,
+            1.3880000114440918,
+            -0.23000000417232513
+          ]
+        },
+        "legacyEye": [
+          -0.371305,
+          1.16,
+          0.29
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 288,
+        "triangles": 970446
+      },
+      "windscreenPercent": 87.813671875,
+      "openPixels": 899212,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "z4",
+    "name": "BMW Z4 M40i",
+    "before": {
+      "pitch": -3.06153313215902,
+      "eye": [
+        -0.40076000000004797,
+        1.0600000000000023,
+        0.46999999999934516
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 19.852941176470587,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8169999718666077,
+            0.8840000033378601,
+            -0.5049999952316284
+          ],
+          "max": [
+            0.8169999718666077,
+            1.2769999504089355,
+            0.12999999523162842
+          ]
+        },
+        "legacyEye": [
+          -0.40076,
+          1.04,
+          0.47
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 337,
+        "triangles": 973422
+      },
+      "windscreenPercent": 47.48115234375,
+      "openPixels": 486207,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510606982194695,
+      "eye": [
+        -0.4007599999999343,
+        1.1009451239560235,
+        0.4299999999998363
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8169999718666077,
+            0.8840000033378601,
+            -0.5049999952316284
+          ],
+          "max": [
+            0.8169999718666077,
+            1.2769999504089355,
+            0.12999999523162842
+          ]
+        },
+        "legacyEye": [
+          -0.40076,
+          1.04,
+          0.47
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 289,
+        "triangles": 971406
+      },
+      "windscreenPercent": 85.86533203125,
+      "openPixels": 879261,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "taxi",
+    "name": "\u0160KODA OCTAVIA TAXI",
+    "before": {
+      "pitch": -3.061557592965188,
+      "eye": [
+        -0.3932349999996062,
+        1.1800000000000066,
+        0.19999999999981805
+      ],
+      "roadVisible": 92.3076923076923,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 61.76470588235294,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7994999885559082,
+            0.9940000176429749,
+            -0.9549999833106995
+          ],
+          "max": [
+            0.7994999885559082,
+            1.4429999589920044,
+            -0.3499999940395355
+          ]
+        },
+        "legacyEye": [
+          -0.393235,
+          1.16,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 339,
+        "triangles": 973724
+      },
+      "windscreenPercent": 44.42890625,
+      "openPixels": 454952,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051085292113067,
+      "eye": [
+        -0.3932349999997199,
+        1.2209451239560563,
+        0.1600000000003092
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7994999885559082,
+            0.9940000176429749,
+            -0.9549999833106995
+          ],
+          "max": [
+            0.7994999885559082,
+            1.4429999589920044,
+            -0.3499999940395355
+          ]
+        },
+        "legacyEye": [
+          -0.393235,
+          1.16,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 289,
+        "triangles": 971396
+      },
+      "windscreenPercent": 87.5888671875,
+      "openPixels": 896910,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "carrera",
+    "name": "PORSCHE 911 CARRERA",
+    "before": {
+      "pitch": -3.06139372682659,
+      "eye": [
+        -0.3887199999997505,
+        1.02000000000001,
+        0.3599999999992178
+      ],
+      "roadVisible": 44.61538461538461,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 50.73529411764706,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7644613981246948,
+            0.8940258026123047,
+            -0.8850000500679016
+          ],
+          "max": [
+            0.7644613981246948,
+            1.2769421339035034,
+            -0.16497012972831726
+          ]
+        },
+        "legacyEye": [
+          -0.38872,
+          1,
+          0.36
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 346,
+        "triangles": 973594
+      },
+      "windscreenPercent": 40.33916015625,
+      "openPixels": 413073,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.050921130089779,
+      "eye": [
+        -0.38871999999997786,
+        1.0609451239560312,
+        0.3199999999987994
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.761096259353714,
+      "headerIntrusion": 2.2058823529411766,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7644613981246948,
+            0.8940258026123047,
+            -0.8850000500679016
+          ],
+          "max": [
+            0.7644613981246948,
+            1.2769421339035034,
+            -0.16497012972831726
+          ]
+        },
+        "legacyEye": [
+          -0.38872,
+          1,
+          0.36
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 289,
+        "triangles": 971438
+      },
+      "windscreenPercent": 87.2265625,
+      "openPixels": 893200,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "gr_yaris",
+    "name": "TOYOTA GR YARIS",
+    "before": {
+      "pitch": -3.0615993349992503,
+      "eye": [
+        -0.3880749999999581,
+        1.1749999999999832,
+        0.19999999999981816
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 56.61764705882353,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.762499988079071,
+            0.9940000176429749,
+            -0.8849999904632568
+          ],
+          "max": [
+            0.762499988079071,
+            1.4279999732971191,
+            -0.3100000023841858
+          ]
+        },
+        "legacyEye": [
+          -0.388075,
+          1.155,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 337,
+        "triangles": 974025
+      },
+      "windscreenPercent": 45.4982421875,
+      "openPixels": 465902,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0511270218817645,
+      "eye": [
+        -0.3880750000000718,
+        1.2159451239560186,
+        0.1599999999998545
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.762499988079071,
+            0.9940000176429749,
+            -0.8849999904632568
+          ],
+          "max": [
+            0.762499988079071,
+            1.4279999732971191,
+            -0.3100000023841858
+          ]
+        },
+        "legacyEye": [
+          -0.388075,
+          1.155,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 288,
+        "triangles": 971382
+      },
+      "windscreenPercent": 88.32392578125,
+      "openPixels": 904437,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "gtv",
+    "name": "ALFA ROMEO 2000 GTV",
+    "before": {
+      "pitch": -3.0616040658136603,
+      "eye": [
+        -0.33969999999999345,
+        1.0349999999999966,
+        0.19000000000005457
+      ],
+      "roadVisible": 80,
+      "clusterOcclusion": 32,
+      "rimOcclusion": 32,
+      "telltalesBlocked": 6,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 32.35294117647059,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.6502182483673096,
+            0.8939999938011169,
+            -0.8149999976158142
+          ],
+          "max": [
+            0.6502182483673096,
+            1.3009999990463257,
+            -0.27000001072883606
+          ]
+        },
+        "legacyEye": [
+          -0.3397,
+          1.015,
+          0.19
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 348,
+        "triangles": 974739
+      },
+      "windscreenPercent": 47.5365234375,
+      "openPixels": 486774,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0511317412951033,
+      "eye": [
+        -0.33969999999999345,
+        1.0759451239560462,
+        0.1499999999996362
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0.7352941176470589,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.6502182483673096,
+            0.8939999938011169,
+            -0.8149999976158142
+          ],
+          "max": [
+            0.6502182483673096,
+            1.3009999990463257,
+            -0.27000001072883606
+          ]
+        },
+        "legacyEye": [
+          -0.3397,
+          1.015,
+          0.19
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 289,
+        "triangles": 970990
+      },
+      "windscreenPercent": 87.05107421875,
+      "openPixels": 891403,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "golf",
+    "name": "VOLKSWAGEN GOLF 1.4 TSI",
+    "before": {
+      "pitch": -3.061573430123557,
+      "eye": [
+        -0.386784999999918,
+        1.1699999999999875,
+        0.20000000000027285
+      ],
+      "roadVisible": 75.38461538461539,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 60.294117647058826,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7444999814033508,
+            1.0049999952316284,
+            -0.8650000095367432
+          ],
+          "max": [
+            0.7444999814033508,
+            1.4140000343322754,
+            -0.3700000047683716
+          ]
+        },
+        "legacyEye": [
+          -0.386785,
+          1.15,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 334,
+        "triangles": 973460
+      },
+      "windscreenPercent": 44.49951171875,
+      "openPixels": 455675,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051101124292609,
+      "eye": [
+        -0.3867849999996906,
+        1.2109451239560372,
+        0.16000000000030923
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7444999814033508,
+            1.0049999952316284,
+            -0.8650000095367432
+          ],
+          "max": [
+            0.7444999814033508,
+            1.4140000343322754,
+            -0.3700000047683716
+          ]
+        },
+        "legacyEye": [
+          -0.386785,
+          1.15,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 288,
+        "triangles": 971382
+      },
+      "windscreenPercent": 88.883984375,
+      "openPixels": 910172,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "corolla",
+    "name": "TOYOTA COROLLA 1.6",
+    "before": {
+      "pitch": -3.0615446203150416,
+      "eye": [
+        -0.3827000000002272,
+        1.163000000000011,
+        0.20000000000027285
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 61.76470588235294,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7350000143051147,
+            0.9950000047683716,
+            -0.9049999713897705
+          ],
+          "max": [
+            0.7350000143051147,
+            1.3969999551773071,
+            -0.36000001430511475
+          ]
+        },
+        "legacyEye": [
+          -0.3827,
+          1.143,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 334,
+        "triangles": 973362
+      },
+      "windscreenPercent": 44.7705078125,
+      "openPixels": 458450,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051072315301707,
+      "eye": [
+        -0.3827000000002272,
+        1.2039451239560464,
+        0.16000000000030923
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7350000143051147,
+            0.9950000047683716,
+            -0.9049999713897705
+          ],
+          "max": [
+            0.7350000143051147,
+            1.3969999551773071,
+            -0.36000001430511475
+          ]
+        },
+        "legacyEye": [
+          -0.3827,
+          1.143,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 288,
+        "triangles": 971382
+      },
+      "windscreenPercent": 88.3943359375,
+      "openPixels": 905158,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "superb",
+    "name": "\u0160KODA SUPERB 2.0 TSI",
+    "before": {
+      "pitch": -3.061511224980092,
+      "eye": [
+        -0.4007599999999911,
+        1.1600000000000108,
+        0.19999999999936335
+      ],
+      "roadVisible": 13.846153846153847,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 66.17647058823529,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7770000100135803,
+            1.0149999856948853,
+            -1.0449999570846558
+          ],
+          "max": [
+            0.7770000100135803,
+            1.4299999475479126,
+            -0.4699999988079071
+          ]
+        },
+        "legacyEye": [
+          -0.40076,
+          1.14,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 333,
+        "triangles": 967496
+      },
+      "windscreenPercent": 42.1255859375,
+      "openPixels": 431366,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051038913999083,
+      "eye": [
+        -0.4007600000001048,
+        1.2009451239560462,
+        0.15999999999939973
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7770000100135803,
+            1.0149999856948853,
+            -1.0449999570846558
+          ],
+          "max": [
+            0.7770000100135803,
+            1.4299999475479126,
+            -0.4699999988079071
+          ]
+        },
+        "legacyEye": [
+          -0.40076,
+          1.14,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 286,
+        "triangles": 965172
+      },
+      "windscreenPercent": 89.67109375,
+      "openPixels": 918232,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "police_octavia",
+    "name": "\u0160KODA OCTAVIA POLICE",
+    "before": {
+      "pitch": -3.0615576290184108,
+      "eye": [
+        -0.393235000000118,
+        1.1980000000000077,
+        0.1999999999993634
+      ],
+      "roadVisible": 67.6923076923077,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 69.8529411764706,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7595000267028809,
+            1.0199999809265137,
+            -0.9649999737739563
+          ],
+          "max": [
+            0.7595000267028809,
+            1.4320000410079956,
+            -0.38999998569488525
+          ]
+        },
+        "legacyEye": [
+          -0.393235,
+          1.178,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 344,
+        "triangles": 971268
+      },
+      "windscreenPercent": 43.061328125,
+      "openPixels": 440948,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510853272680203,
+      "eye": [
+        -0.39323499999989064,
+        1.2389451239560432,
+        0.15999999999939976
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7595000267028809,
+            1.0199999809265137,
+            -0.9649999737739563
+          ],
+          "max": [
+            0.7595000267028809,
+            1.4320000410079956,
+            -0.38999998569488525
+          ]
+        },
+        "legacyEye": [
+          -0.393235,
+          1.178,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 289,
+        "triangles": 968780
+      },
+      "windscreenPercent": 88.83740234375,
+      "openPixels": 909695,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "mini_jcw",
+    "name": "MINI JOHN COOPER WORKS",
+    "before": {
+      "pitch": -3.0616409997013734,
+      "eye": [
+        -0.3713049999998361,
+        1.1199999999999903,
+        0.3400000000001455
+      ],
+      "roadVisible": 0,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 55.14705882352941,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7484999895095825,
+            0.9739999771118164,
+            -0.6949999928474426
+          ],
+          "max": [
+            0.7484999895095825,
+            1.3869999647140503,
+            -0.23999999463558197
+          ]
+        },
+        "legacyEye": [
+          -0.371305,
+          1.1,
+          0.34
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 335,
+        "triangles": 967218
+      },
+      "windscreenPercent": 40.334765625,
+      "openPixels": 413028,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051168709512026,
+      "eye": [
+        -0.37130499999972244,
+        1.1609451239560258,
+        0.29999999999972715
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7484999895095825,
+            0.9739999771118164,
+            -0.6949999928474426
+          ],
+          "max": [
+            0.7484999895095825,
+            1.3869999647140503,
+            -0.23999999463558197
+          ]
+        },
+        "legacyEye": [
+          -0.371305,
+          1.1,
+          0.34
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 288,
+        "triangles": 965196
+      },
+      "windscreenPercent": 88.9265625,
+      "openPixels": 910608,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "cle",
+    "name": "MERCEDES-BENZ CLE 300 4MATIC",
+    "before": {
+      "pitch": -3.06146895597068,
+      "eye": [
+        -0.400114999999971,
+        1.1000000000000083,
+        0.19999999999981805
+      ],
+      "roadVisible": 80,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 52.94117647058823,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8525000214576721,
+            0.9850000143051147,
+            -0.9850000143051147
+          ],
+          "max": [
+            0.8525000214576721,
+            1.343000054359436,
+            -0.3199999928474426
+          ]
+        },
+        "legacyEye": [
+          -0.400115,
+          1.08,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 328,
+        "triangles": 968156
+      },
+      "windscreenPercent": 38.70966796875,
+      "openPixels": 396387,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0509965792763816,
+      "eye": [
+        -0.4001150000000847,
+        1.1409451239560295,
+        0.15999999999985445
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0.7352941176470589,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8525000214576721,
+            0.9850000143051147,
+            -0.9850000143051147
+          ],
+          "max": [
+            0.8525000214576721,
+            1.343000054359436,
+            -0.3199999928474426
+          ]
+        },
+        "legacyEye": [
+          -0.400115,
+          1.08,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 286,
+        "triangles": 965172
+      },
+      "windscreenPercent": 87.652734375,
+      "openPixels": 897564,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "gla",
+    "name": "MERCEDES-BENZ GLA 200",
+    "before": {
+      "pitch": -3.0615527145896553,
+      "eye": [
+        -0.3943100000000186,
+        1.2650000000000006,
+        0.1799999999998363
+      ],
+      "roadVisible": 80,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 58.8235294117647,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7820000052452087,
+            1.0789999961853027,
+            -0.9850000143051147
+          ],
+          "max": [
+            0.7820000052452087,
+            1.5540000200271606,
+            -0.4699999988079071
+          ]
+        },
+        "legacyEye": [
+          -0.39431,
+          1.245,
+          0.18
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 332,
+        "triangles": 967052
+      },
+      "windscreenPercent": 44.5677734375,
+      "openPixels": 456374,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051080404169231,
+      "eye": [
+        -0.39431000000035965,
+        1.3059451239560218,
+        0.13999999999987267
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7820000052452087,
+            1.0789999961853027,
+            -0.9850000143051147
+          ],
+          "max": [
+            0.7820000052452087,
+            1.5540000200271606,
+            -0.4699999988079071
+          ]
+        },
+        "legacyEye": [
+          -0.39431,
+          1.245,
+          0.18
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 286,
+        "triangles": 965172
+      },
+      "windscreenPercent": 89.5970703125,
+      "openPixels": 917474,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "cla",
+    "name": "MERCEDES-BENZ CLA \u00b7 200",
+    "before": {
+      "pitch": -3.061535720758636,
+      "eye": [
+        -0.39344999999968866,
+        1.0850000000000077,
+        0.21000000000003632
+      ],
+      "roadVisible": 0,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 64.70588235294117,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8429999947547913,
+            1.0119999647140503,
+            -1.0149999856948853
+          ],
+          "max": [
+            0.8429999947547913,
+            1.3730000257492065,
+            -0.47999998927116394
+          ]
+        },
+        "legacyEye": [
+          -0.39345,
+          1.065,
+          0.21
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 330,
+        "triangles": 968182
+      },
+      "windscreenPercent": 36.34794921875,
+      "openPixels": 372203,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510633976774715,
+      "eye": [
+        -0.39344999999968866,
+        1.1259451239560432,
+        0.16999999999961798
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8429999947547913,
+            1.0119999647140503,
+            -1.0149999856948853
+          ],
+          "max": [
+            0.8429999947547913,
+            1.3730000257492065,
+            -0.47999998927116394
+          ]
+        },
+        "legacyEye": [
+          -0.39345,
+          1.065,
+          0.21
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 286,
+        "triangles": 965172
+      },
+      "windscreenPercent": 89.7998046875,
+      "openPixels": 919550,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "aventador_svj",
+    "name": "LAMBORGHINI AVENTADOR SVJ",
+    "before": {
+      "pitch": -3.0614211564879046,
+      "eye": [
+        -0.4510699999999588,
+        0.9099999999999966,
+        -0.03000000000020009
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 27.941176470588236,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8399999737739563,
+            0.7799999713897705,
+            -1.100000023841858
+          ],
+          "max": [
+            0.8399999737739563,
+            1.1160000562667847,
+            -0.4399999976158142
+          ]
+        },
+        "legacyEye": [
+          -0.45106999999999997,
+          0.89,
+          -0.03
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 312,
+        "triangles": 965766
+      },
+      "windscreenPercent": 43.234765625,
+      "openPixels": 442724,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0509485923330373,
+      "eye": [
+        -0.45107000000007247,
+        0.950945123956032,
+        -0.07000000000016371
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.8399999737739563,
+            0.7799999713897705,
+            -1.100000023841858
+          ],
+          "max": [
+            0.8399999737739563,
+            1.1160000562667847,
+            -0.4399999976158142
+          ]
+        },
+        "legacyEye": [
+          -0.45106999999999997,
+          0.89,
+          -0.03
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 281,
+        "triangles": 964204
+      },
+      "windscreenPercent": 87.88896484375,
+      "openPixels": 899983,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "huracan",
+    "name": "LAMBORGHINI HURAC\u00c1N EVO",
+    "before": {
+      "pitch": -3.0614262148750866,
+      "eye": [
+        -0.41559499999982563,
+        0.8900000000000006,
+        -0.05999999999994543
+      ],
+      "roadVisible": 76.92307692307692,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 98.52941176470588,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.800000011920929,
+            0.7686234712600708,
+            -1.0199999809265137
+          ],
+          "max": [
+            0.800000011920929,
+            1.0795308351516724,
+            -0.46000000834465027
+          ]
+        },
+        "legacyEye": [
+          -0.415595,
+          0.87,
+          -0.06
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 315,
+        "triangles": 966464
+      },
+      "windscreenPercent": 30.69228515625,
+      "openPixels": 314289,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0509536613452757,
+      "eye": [
+        -0.41559499999982563,
+        0.9309451239560218,
+        -0.09999999999990905
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.800000011920929,
+            0.7686234712600708,
+            -1.0199999809265137
+          ],
+          "max": [
+            0.800000011920929,
+            1.0795308351516724,
+            -0.46000000834465027
+          ]
+        },
+        "legacyEye": [
+          -0.415595,
+          0.87,
+          -0.06
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 280,
+        "triangles": 963388
+      },
+      "windscreenPercent": 86.48330078125,
+      "openPixels": 885589,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "ibiza",
+    "name": "SEAT IBIZA 1.4 CLX",
+    "before": {
+      "pitch": -3.061651331133429,
+      "eye": [
+        -0.35259999999999536,
+        1.1000000000000085,
+        0.2699999999990723
+      ],
+      "roadVisible": 93.84615384615384,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 38.23529411764706,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7049999833106995,
+            0.9240000247955322,
+            -0.824999988079071
+          ],
+          "max": [
+            0.7049999833106995,
+            1.3869999647140503,
+            -0.25
+          ]
+        },
+        "legacyEye": [
+          -0.35259999999999997,
+          1.08,
+          0.27
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 329,
+        "triangles": 966710
+      },
+      "windscreenPercent": 49.39228515625,
+      "openPixels": 505777,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0511790447905938,
+      "eye": [
+        -0.35259999999999536,
+        1.1409451239560298,
+        0.2299999999991087
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7049999833106995,
+            0.9240000247955322,
+            -0.824999988079071
+          ],
+          "max": [
+            0.7049999833106995,
+            1.3869999647140503,
+            -0.25
+          ]
+        },
+        "legacyEye": [
+          -0.35259999999999997,
+          1.08,
+          0.27
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 288,
+        "triangles": 965180
+      },
+      "windscreenPercent": 88.74677734375,
+      "openPixels": 908767,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "panda",
+    "name": "FIAT PANDA 1.2",
+    "before": {
+      "pitch": -3.061693296482727,
+      "eye": [
+        -0.3392700000000559,
+        1.2600000000000193,
+        0.09999999999990905
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 47.05882352941177,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.6740000247955322,
+            0.984000027179718,
+            -0.8550000190734863
+          ],
+          "max": [
+            0.6740000247955322,
+            1.5130000114440918,
+            -0.3799999952316284
+          ]
+        },
+        "legacyEye": [
+          -0.33927,
+          1.24,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 319,
+        "triangles": 966634
+      },
+      "windscreenPercent": 53.34375,
+      "openPixels": 546240,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051220997980526,
+      "eye": [
+        -0.33926999999994223,
+        1.3009451239560406,
+        0.05999999999994543
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.6740000247955322,
+            0.984000027179718,
+            -0.8550000190734863
+          ],
+          "max": [
+            0.6740000247955322,
+            1.5130000114440918,
+            -0.3799999952316284
+          ]
+        },
+        "legacyEye": [
+          -0.33927,
+          1.24,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 283,
+        "triangles": 964252
+      },
+      "windscreenPercent": 87.2744140625,
+      "openPixels": 893690,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "yaris",
+    "name": "TOYOTA YARIS 1.0 VVT-i",
+    "before": {
+      "pitch": -3.061677260100623,
+      "eye": [
+        -0.35689999999999605,
+        1.219999999999999,
+        0.18999999999959988
+      ],
+      "roadVisible": 80,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 55.88235294117647,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7149999737739563,
+            0.9639999866485596,
+            -0.9350000023841858
+          ],
+          "max": [
+            0.7149999737739563,
+            1.4730000495910645,
+            -0.3400000035762787
+          ]
+        },
+        "legacyEye": [
+          -0.3569,
+          1.2,
+          0.19
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 327,
+        "triangles": 971230
+      },
+      "windscreenPercent": 48.1677734375,
+      "openPixels": 493238,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0512049589858514,
+      "eye": [
+        -0.35689999999988237,
+        1.2609451239560487,
+        0.14999999999963623
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7149999737739563,
+            0.9639999866485596,
+            -0.9350000023841858
+          ],
+          "max": [
+            0.7149999737739563,
+            1.4730000495910645,
+            -0.3400000035762787
+          ]
+        },
+        "legacyEye": [
+          -0.3569,
+          1.2,
+          0.19
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 290,
+        "triangles": 969260
+      },
+      "windscreenPercent": 88.86982421875,
+      "openPixels": 910027,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "e36",
+    "name": "BMW 325i E36",
+    "before": {
+      "pitch": -3.0614790608555733,
+      "eye": [
+        -0.3650699999998892,
+        1.0800000000000267,
+        0.2599999999993088
+      ],
+      "roadVisible": 63.07692307692308,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 52.205882352941174,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.734000027179718,
+            0.9240000247955322,
+            -0.875
+          ],
+          "max": [
+            0.734000027179718,
+            1.3660000562667847,
+            -0.3499999940395355
+          ]
+        },
+        "legacyEye": [
+          -0.36507,
+          1.06,
+          0.26
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster"
+      ],
+      "render": {
+        "calls": 330,
+        "triangles": 971478
+      },
+      "windscreenPercent": 44.82470703125,
+      "openPixels": 459005,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510066853344093,
+      "eye": [
+        -0.3650700000000029,
+        1.1209451239560337,
+        0.2199999999997999
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.734000027179718,
+            0.9240000247955322,
+            -0.875
+          ],
+          "max": [
+            0.734000027179718,
+            1.3660000562667847,
+            -0.3499999940395355
+          ]
+        },
+        "legacyEye": [
+          -0.36507,
+          1.06,
+          0.26
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 291,
+        "triangles": 969828
+      },
+      "windscreenPercent": 89.6001953125,
+      "openPixels": 917506,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "jazz",
+    "name": "HONDA JAZZ 1.3 i-VTEC",
+    "before": {
+      "pitch": -3.0616190000957606,
+      "eye": [
+        -0.36421000000012776,
+        1.250000000000014,
+        0.10000000000036377
+      ],
+      "roadVisible": 96.92307692307692,
+      "clusterOcclusion": 48,
+      "rimOcclusion": 48,
+      "telltalesBlocked": 10,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 54.411764705882355,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7319999933242798,
+            1.034000039100647,
+            -1.1749999523162842
+          ],
+          "max": [
+            0.7319999933242798,
+            1.5230000019073486,
+            -0.47999998927116394
+          ]
+        },
+        "legacyEye": [
+          -0.36421,
+          1.23,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 326,
+        "triangles": 971270
+      },
+      "windscreenPercent": 47.7947265625,
+      "openPixels": 489418,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0511467111681854,
+      "eye": [
+        -0.36421000000035514,
+        1.2909451239560352,
+        0.060000000000400164
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7319999933242798,
+            1.034000039100647,
+            -1.1749999523162842
+          ],
+          "max": [
+            0.7319999933242798,
+            1.5230000019073486,
+            -0.47999998927116394
+          ]
+        },
+        "legacyEye": [
+          -0.36421,
+          1.23,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "interior",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 287,
+        "triangles": 968836
+      },
+      "windscreenPercent": 88.607421875,
+      "openPixels": 907340,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "aygo",
+    "name": "TOYOTA AYGO II 1.0 VVT-i",
+    "before": {
+      "pitch": -3.0616780165417414,
+      "eye": [
+        -0.3499999999999659,
+        1.1800000000000068,
+        0.16000000000030923
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 14,
+      "rimOcclusion": 14,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 51.470588235294116,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.6524999737739563,
+            0.9649999737739563,
+            -0.8650000095367432
+          ],
+          "max": [
+            0.6524999737739563,
+            1.4220000505447388,
+            -0.38999998569488525
+          ]
+        },
+        "legacyEye": [
+          -0.35,
+          1.16,
+          0.16
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 366,
+        "triangles": 970732
+      },
+      "windscreenPercent": 55.40859375,
+      "openPixels": 567384,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051205708325981,
+      "eye": [
+        -0.3499999999999659,
+        1.1389850881133299,
+        0.12000000000034561
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.6524999737739563,
+            0.9649999737739563,
+            -0.8650000095367432
+          ],
+          "max": [
+            0.6524999737739563,
+            1.4220000505447388,
+            -0.38999998569488525
+          ]
+        },
+        "legacyEye": [
+          -0.35,
+          1.16,
+          0.16
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 281,
+        "triangles": 968878
+      },
+      "windscreenPercent": 89.41416015625,
+      "openPixels": 915601,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "qashqai",
+    "name": "NISSAN QASHQAI J11 1.2 DIG-T",
+    "before": {
+      "pitch": -3.0615704744297623,
+      "eye": [
+        -0.3899999999998158,
+        1.3100000000000165,
+        0.1999999999998181
+      ],
+      "roadVisible": 84.61538461538461,
+      "clusterOcclusion": 14,
+      "rimOcclusion": 14,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 69.11764705882354,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7480000257492065,
+            1.1050000190734863,
+            -0.8949999809265137
+          ],
+          "max": [
+            0.7480000257492065,
+            1.5520000457763672,
+            -0.4000000059604645
+          ]
+        },
+        "legacyEye": [
+          -0.39,
+          1.29,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "road",
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 367,
+        "triangles": 970698
+      },
+      "windscreenPercent": 48.78486328125,
+      "openPixels": 499557,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510981649230535,
+      "eye": [
+        -0.3899999999999295,
+        1.2689850881133395,
+        0.15999999999939973
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7480000257492065,
+            1.1050000190734863,
+            -0.8949999809265137
+          ],
+          "max": [
+            0.7480000257492065,
+            1.5520000457763672,
+            -0.4000000059604645
+          ]
+        },
+        "legacyEye": [
+          -0.39,
+          1.29,
+          0.2
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 283,
+        "triangles": 969510
+      },
+      "windscreenPercent": 89.20546875,
+      "openPixels": 913464,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "dolphin",
+    "name": "BYD DOLPHIN COMFORT",
+    "before": {
+      "pitch": -3.061536173852457,
+      "eye": [
+        -0.3717000000000326,
+        1.3200000000000076,
+        0.09999999999945433
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 14,
+      "rimOcclusion": 14,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 93.38235294117646,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7300000190734863,
+            1.0750000476837158,
+            -1.065000057220459
+          ],
+          "max": [
+            0.7300000190734863,
+            1.531999945640564,
+            -0.6100000143051147
+          ]
+        },
+        "legacyEye": [
+          -0.3717,
+          1.3,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 366,
+        "triangles": 970722
+      },
+      "windscreenPercent": 45.77548828125,
+      "openPixels": 468741,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510638737434466,
+      "eye": [
+        -0.3717000000001463,
+        1.2789850881133165,
+        0.059999999999945444
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7300000190734863,
+            1.0750000476837158,
+            -1.065000057220459
+          ],
+          "max": [
+            0.7300000190734863,
+            1.531999945640564,
+            -0.6100000143051147
+          ]
+        },
+        "legacyEye": [
+          -0.3717,
+          1.3,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 279,
+        "triangles": 968590
+      },
+      "windscreenPercent": 89.29267578125,
+      "openPixels": 914357,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "atto3",
+    "name": "BYD ATTO 3 DESIGN",
+    "before": {
+      "pitch": -3.0615301696430697,
+      "eye": [
+        -0.39375000000012506,
+        1.365000000000009,
+        0.0999999999994543
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 14,
+      "rimOcclusion": 14,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 76.47058823529412,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7825000286102295,
+            1.1349999904632568,
+            -0.9750000238418579
+          ],
+          "max": [
+            0.7825000286102295,
+            1.5770000219345093,
+            -0.4300000071525574
+          ]
+        },
+        "legacyEye": [
+          -0.39375,
+          1.345,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 362,
+        "triangles": 970650
+      },
+      "windscreenPercent": 48.241015625,
+      "openPixels": 493988,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0510578701141955,
+      "eye": [
+        -0.3937499999998977,
+        1.3239850881133322,
+        0.05999999999994543
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.7825000286102295,
+            1.1349999904632568,
+            -0.9750000238418579
+          ],
+          "max": [
+            0.7825000286102295,
+            1.5770000219345093,
+            -0.4300000071525574
+          ]
+        },
+        "legacyEye": [
+          -0.39375,
+          1.345,
+          0.1
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 279,
+        "triangles": 968590
+      },
+      "windscreenPercent": 88.95947265625,
+      "openPixels": 910945,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "van",
+    "name": "FIAT DUCATO L2H2 2.3 MULTIJET 130",
+    "before": {
+      "pitch": -3.061378247204937,
+      "eye": [
+        -0.4639999999998281,
+        1.8399999999999892,
+        -1.0200000000004366
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 14,
+      "rimOcclusion": 14,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.925000011920929,
+            1.309999942779541,
+            -1.940000057220459
+          ],
+          "max": [
+            0.925000011920929,
+            2.1600000858306885,
+            -1.309999942779541
+          ]
+        },
+        "legacyEye": [
+          -0.464,
+          1.82,
+          -1.02
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": false,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster"
+      ],
+      "render": {
+        "calls": 307,
+        "triangles": 968006
+      },
+      "windscreenPercent": 76.2662109375,
+      "openPixels": 780966,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0509057952435987,
+      "eye": [
+        -0.4639999999998281,
+        1.7989850881133123,
+        -1.0600000000004002
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.925000011920929,
+            1.309999942779541,
+            -1.940000057220459
+          ],
+          "max": [
+            0.925000011920929,
+            2.1600000858306885,
+            -1.309999942779541
+          ]
+        },
+        "legacyEye": [
+          -0.464,
+          1.82,
+          -1.02
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": false,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 274,
+        "triangles": 967398
+      },
+      "windscreenPercent": 89.27119140625,
+      "openPixels": 914137,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "truck",
+    "name": "ISUZU NPR 75-190 BOX TRUCK",
+    "before": {
+      "pitch": -3.061438665582471,
+      "eye": [
+        -0.4560000000000741,
+        1.9999999999999858,
+        -1.800000000000182
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 14,
+      "rimOcclusion": 14,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 100,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.9150000214576721,
+            1.3600000143051147,
+            -3.203000068664551
+          ],
+          "max": [
+            0.9150000214576721,
+            2.190000057220459,
+            -2.8399999141693115
+          ]
+        },
+        "legacyEye": [
+          -0.456,
+          1.98,
+          -1.8
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [
+        "cluster",
+        "header"
+      ],
+      "render": {
+        "calls": 301,
+        "triangles": 964208
+      },
+      "windscreenPercent": 47.7099609375,
+      "openPixels": 488550,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0509659959341096,
+      "eye": [
+        -0.4560000000001878,
+        1.9589850881132946,
+        -1.8400000000001455
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.9150000214576721,
+            1.3600000143051147,
+            -3.203000068664551
+          ],
+          "max": [
+            0.9150000214576721,
+            2.190000057220459,
+            -2.8399999141693115
+          ]
+        },
+        "legacyEye": [
+          -0.456,
+          1.98,
+          -1.8
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 275,
+        "triangles": 963350
+      },
+      "windscreenPercent": 85.5958984375,
+      "openPixels": 876502,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "bus",
+    "name": "MERCEDES-BENZ CITARO O530 \u00b7 \u039f\u03a3\u03a5",
+    "before": {
+      "pitch": -3.0616227448414595,
+      "eye": [
+        -0.6599999999997975,
+        1.8800000000000092,
+        -4.8799999999996535
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 30.88235294117647,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -1.2000000476837158,
+            1.274999976158142,
+            -6.00600004196167
+          ],
+          "max": [
+            1.2000000476837158,
+            2.625,
+            -6.00600004196167
+          ]
+        },
+        "legacyEye": [
+          -0.66,
+          1.86,
+          -4.88
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 303,
+        "triangles": 963494
+      },
+      "windscreenPercent": 75.26064453125,
+      "openPixels": 770669,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051150077741972,
+      "eye": [
+        -0.6599999999997975,
+        1.8712400836330114,
+        -4.920000000000072
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0.7352941176470589,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -1.2000000476837158,
+            1.274999976158142,
+            -6.00600004196167
+          ],
+          "max": [
+            1.2000000476837158,
+            2.625,
+            -6.00600004196167
+          ]
+        },
+        "legacyEye": [
+          -0.66,
+          1.86,
+          -4.88
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": false,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 275,
+        "triangles": 962838
+      },
+      "windscreenPercent": 86.66494140625,
+      "openPixels": 887449,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "delivery",
+    "name": "HONDA SH150i DELIVERY",
+    "before": {
+      "pitch": -3.0618004172241804,
+      "eye": [
+        -1.1368683772161603e-13,
+        1.5389999999999873,
+        0.15000000000009095
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": null,
+        "legacyEye": [
+          0,
+          1.5190000000000001,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 291,
+        "triangles": 970418
+      },
+      "windscreenPercent": 94.77744140625,
+      "openPixels": 970521,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051327689388456,
+      "eye": [
+        -1.1368683772161603e-13,
+        1.4979850881133103,
+        0.10999999999967258
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": null,
+        "legacyEye": [
+          0,
+          1.5190000000000001,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 282,
+        "triangles": 969780
+      },
+      "windscreenPercent": 97.09775390625,
+      "openPixels": 994281,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "scooter",
+    "name": "PIAGGIO BEVERLY 300 HPE",
+    "before": {
+      "pitch": -3.0617420156494104,
+      "eye": [
+        -2.8421709430404007e-13,
+        1.5519999999999783,
+        0.15000000000009095
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": null,
+        "legacyEye": [
+          0,
+          1.532,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 292,
+        "triangles": 971378
+      },
+      "windscreenPercent": 95.18017578125,
+      "openPixels": 974645,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.051269293623981,
+      "eye": [
+        -5.684341886080802e-14,
+        1.5109850881133298,
+        0.11000000000012733
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": null,
+        "legacyEye": [
+          0,
+          1.532,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 283,
+        "triangles": 970740
+      },
+      "windscreenPercent": 97.074609375,
+      "openPixels": 994044,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "moto",
+    "name": "YAMAHA TRACER 900",
+    "before": {
+      "pitch": -3.0617537926682705,
+      "eye": [
+        2.2737367544323206e-13,
+        1.5900000000000034,
+        0.1500000000005457
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.532963265626826,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.1599999964237213,
+            1.0411589458944421,
+            -0.7153443447140543
+          ],
+          "max": [
+            0.1599999964237213,
+            1.368841054105558,
+            -0.6246556552859458
+          ]
+        },
+        "legacyEye": [
+          0,
+          1.5699999999999998,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 290,
+        "triangles": 971322
+      },
+      "windscreenPercent": 95.77451171875,
+      "openPixels": 980731,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0512810694706545,
+      "eye": [
+        1.1368683772161603e-13,
+        1.5489850881133407,
+        0.11000000000012733
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.1599999964237213,
+            1.0411589458944421,
+            -0.7153443447140543
+          ],
+          "max": [
+            0.1599999964237213,
+            1.368841054105558,
+            -0.6246556552859458
+          ]
+        },
+        "legacyEye": [
+          0,
+          1.5699999999999998,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 283,
+        "triangles": 970740
+      },
+      "windscreenPercent": 96.63486328125,
+      "openPixels": 989541,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  },
+  {
+    "id": "police_moto",
+    "name": "BMW R 1250 RT \u00b7 \u0394\u0399.\u0391\u03a3.",
+    "before": {
+      "pitch": -3.0617581937475657,
+      "eye": [
+        0,
+        1.5450000000000017,
+        0.15000000000009095
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 46.53296326562682,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.23999999463558197,
+            1.0427892538346202,
+            -0.7273472598420047
+          ],
+          "max": [
+            0.23999999463558197,
+            1.4572107461653798,
+            -0.6126527401579954
+          ]
+        },
+        "legacyEye": [
+          0,
+          1.525,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 299,
+        "triangles": 971422
+      },
+      "windscreenPercent": 91.58837890625,
+      "openPixels": 937865,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "pitch": -3.0512854701119685,
+      "eye": [
+        0,
+        1.5039850881133248,
+        0.11000000000012733
+      ],
+      "roadVisible": 100,
+      "clusterOcclusion": 0,
+      "rimOcclusion": 0,
+      "telltalesBlocked": 0,
+      "horizonFromTop": 45.76109625935371,
+      "headerIntrusion": 0,
+      "geometry": {
+        "windscreen": {
+          "min": [
+            -0.23999999463558197,
+            1.0427892538346202,
+            -0.7273472598420047
+          ],
+          "max": [
+            0.23999999463558197,
+            1.4572107461653798,
+            -0.6126527401579954
+          ]
+        },
+        "legacyEye": [
+          0,
+          1.525,
+          0.15
+        ]
+      },
+      "mirrors": [
+        {
+          "name": "left",
+          "inView": true,
+          "clear": true
+        },
+        {
+          "name": "right",
+          "inView": true,
+          "clear": true
+        }
+      ],
+      "nearPlaneObstructions": 0,
+      "visibleCharacters": [],
+      "flags": [],
+      "render": {
+        "calls": 283,
+        "triangles": 970740
+      },
+      "windscreenPercent": 96.43515625,
+      "openPixels": 987496,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    }
+  }
+]

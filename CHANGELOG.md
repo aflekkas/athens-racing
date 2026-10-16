@@ -8,6 +8,13 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Cockpit views put the road first, with compact readable instruments, no hands, and per-car seat height and position controls.
+
+  ![A clear Riviera cockpit view with a compact instrument band](assets/changelog/2026.10.15.3/pov-camera.webp "More road in view. Your seat position, saved for each car.")
+
+- Drive blocky cars, buses, trucks and bikes with simpler shapes, dark exterior windows and clear, hands-free cockpit views.
+  ![Blocky MINI, SVJ, Athens bus and motorcycle](assets/changelog/2026.10.15.4/lowpoly-vehicles.webp "Familiar silhouettes, fewer polygons, and an open view of the road.")
+
 - Race notices are smaller and clearer. Related warnings combine, tow actions work with touch and controllers, and alerts stay clear of the driving instruments.
   ![One compact engine warning with a working tow and repair action](assets/changelog/2026.10.15.3/compact-race-notices.webp "One warning. One recovery action.")
 

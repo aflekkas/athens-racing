@@ -7,7 +7,6 @@ import { trimMat } from './cockpit.js';
 import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetailedModel } from './vehicle-models.js';
 import {buildPlayerFleet,animatePlayerFleet} from './player-fleet.js';
 import { fleetModel } from './traffic-fleet.js';
-export { Driver } from './driver.js';
 import { migrateCarSelection } from './car-catalog.js';
 import { savedPaint, setPaint } from './vehicle-paint.js';
 export { setPaint } from './vehicle-paint.js';
@@ -1954,8 +1953,8 @@ export const CAR_ENV = { tex: null };
 const envd = (m) => { if (CAR_ENV.tex) m.envMap = CAR_ENV.tex; return m; };
 export function setCarEnv(tex) { CAR_ENV.tex = tex; if (SHARED) for (const m of Object.values(SHARED)) if (m && m.isMaterial) m.envMap = tex; }
 export function paintMaterial(hex, metallic = 0.4) {
-  // two-layer car paint: metallic base coat under a glossy clear coat
-  return envd(new THREE.MeshPhysicalMaterial({ color: hex, metalness: metallic, roughness: 0.42 - metallic * 0.2, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 1.0 }));
+  // Simple paint on faceted owner-directed vehicle surfaces.
+  return envd(new THREE.MeshStandardMaterial({ color: hex, metalness: metallic, roughness: .42, flatShading:true, envMapIntensity: 1.0 }));
 }
 function tailMaterial() { return envd(new THREE.MeshPhysicalMaterial({ color: '#4a0303', emissive: '#ff1a0a', emissiveIntensity: 1.2, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 })); }
 

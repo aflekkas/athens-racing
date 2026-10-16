@@ -1,3 +1,4 @@
+import {tintGlass} from './glass-tint.js';
 // A single, static studio view of the real selected vehicle. No map/world dependencies are constructed.
 import * as THREE from 'three';
 import { CARS, CarModel, setPaint } from './cars.js';
@@ -40,7 +41,7 @@ export function createHeroStudio() {
         if (!clones.has(original)) {
           const m = original.clone();
           if (m.isMeshStandardMaterial || m.isMeshPhongMaterial) {m.envMap = env.texture; m.envMapIntensity = original.transparent ? 1.35 : .85;}
-          if (original === model.materials?.glass) {m.color.set('#668f94');m.opacity=.38;m.roughness=.045;m.metalness=0;m.depthWrite=false;m.forceSinglePass=true;}
+          if (original.userData.vehicleGlass) tintGlass(m);
           if (interiors.has(original)) m.clippingPlanes = planes;
           for(const value of Object.values(original)) if(value?.isCanvasTexture && !value.userData.shared) ownedTextures.add(value);
           clones.set(original,m);ownedMaterials.add(m);

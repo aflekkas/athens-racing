@@ -1,0 +1,733 @@
+{
+  "sampleNdc": [
+    0,
+    0.3
+  ],
+  "autoClear": true,
+  "autoClearColor": true,
+  "autoClearDepth": true,
+  "passes": [
+    [
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 235.64773408091628,
+        "ancestors": [
+          "Mesh",
+          "buildings",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-facade"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 8965.00555248577,
+        "ancestors": [
+          "Mesh",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "ShaderMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          1050.2654761380059,
+          8.471308582923918,
+          2489.9181038424913
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    [
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 67.84963889795266,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 68.17093657110435,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 68.25313581088339,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 69.38365677883132,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 69.49403520466157,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "scenery-impostor",
+        "type": "Mesh",
+        "distance": 70.83307506553972,
+        "ancestors": [
+          "scenery-impostor",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshLambertMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 8971.950497215486,
+        "ancestors": [
+          "Mesh",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "ShaderMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          1050.2654761380059,
+          8.471308582923918,
+          2489.9181038424913
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    [
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 67.5159299616541,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 67.6606360889971,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 67.91905482027998,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "scenery-impostor",
+        "type": "Mesh",
+        "distance": 69.83976649661159,
+        "ancestors": [
+          "scenery-impostor",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshLambertMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 70.58763001331397,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 70.89658300026723,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 8976.323886981767,
+        "ancestors": [
+          "Mesh",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "ShaderMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          1050.2654761380059,
+          8.471308582923918,
+          2489.9181038424913
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    [
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 67.88657886497406,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 68.16157095670027,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 68.21744917219365,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 69.92002102002952,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 69.96090325018399,
+        "ancestors": [
+          "Mesh",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {
+              "wx": "wx-leaf"
+            }
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "scenery-impostor",
+        "type": "Mesh",
+        "distance": 70.67267820580221,
+        "ancestors": [
+          "scenery-impostor",
+          "nature",
+          "map-world:riviera",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "MeshLambertMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "",
+        "type": "Mesh",
+        "distance": 8972.163766366026,
+        "ancestors": [
+          "Mesh",
+          "Scene"
+        ],
+        "material": [
+          {
+            "name": "",
+            "type": "ShaderMaterial",
+            "transparent": false,
+            "opacity": 1,
+            "userData": {}
+          }
+        ],
+        "position": [
+          1050.2654761380059,
+          8.471308582923918,
+          2489.9181038424913
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  ]
+}

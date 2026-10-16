@@ -1,0 +1,56 @@
+[
+  {
+    "id": "moto",
+    "view": 0,
+    "triangles": 4080,
+    "drawCalls": 74,
+    "geometries": 73,
+    "textures": 2,
+    "heap": 29400000
+  },
+  {
+    "id": "moto",
+    "view": 1,
+    "triangles": 4080,
+    "drawCalls": 74,
+    "geometries": 73,
+    "textures": 2,
+    "heap": 29400000
+  },
+  {
+    "id": "moto",
+    "view": 2,
+    "triangles": 1022,
+    "drawCalls": 20,
+    "geometries": 75,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "police_moto",
+    "view": 0,
+    "triangles": 4424,
+    "drawCalls": 96,
+    "geometries": 91,
+    "textures": 9,
+    "heap": 29400000
+  },
+  {
+    "id": "police_moto",
+    "view": 1,
+    "triangles": 4424,
+    "drawCalls": 96,
+    "geometries": 91,
+    "textures": 9,
+    "heap": 29400000
+  },
+  {
+    "id": "police_moto",
+    "view": 2,
+    "triangles": 1078,
+    "drawCalls": 28,
+    "geometries": 93,
+    "textures": 11,
+    "heap": 29400000
+  }
+]

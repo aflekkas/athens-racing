@@ -1,0 +1,110 @@
+[
+  {
+    "id": "corolla_15",
+    "view": 0,
+    "triangles": 34118,
+    "drawCalls": 111,
+    "geometries": 105,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "corolla_15",
+    "view": 1,
+    "triangles": 34118,
+    "drawCalls": 111,
+    "geometries": 105,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "corolla_15",
+    "view": 2,
+    "triangles": 25284,
+    "drawCalls": 80,
+    "geometries": 129,
+    "textures": 8,
+    "heap": 29400000
+  },
+  {
+    "id": "octavia_16tdi",
+    "view": 0,
+    "triangles": 54396,
+    "drawCalls": 109,
+    "geometries": 105,
+    "textures": 11,
+    "heap": 29400000
+  },
+  {
+    "id": "octavia_16tdi",
+    "view": 1,
+    "triangles": 54396,
+    "drawCalls": 109,
+    "geometries": 105,
+    "textures": 11,
+    "heap": 29400000
+  },
+  {
+    "id": "octavia_16tdi",
+    "view": 2,
+    "triangles": 45326,
+    "drawCalls": 87,
+    "geometries": 132,
+    "textures": 15,
+    "heap": 29400000
+  },
+  {
+    "id": "octavia_rs",
+    "view": 0,
+    "triangles": 56380,
+    "drawCalls": 107,
+    "geometries": 105,
+    "textures": 17,
+    "heap": 29400000
+  },
+  {
+    "id": "octavia_rs",
+    "view": 1,
+    "triangles": 56380,
+    "drawCalls": 107,
+    "geometries": 105,
+    "textures": 17,
+    "heap": 29400000
+  },
+  {
+    "id": "octavia_rs",
+    "view": 2,
+    "triangles": 45080,
+    "drawCalls": 80,
+    "geometries": 128,
+    "textures": 19,
+    "heap": 29400000
+  },
+  {
+    "id": "superb_15",
+    "view": 0,
+    "triangles": 34464,
+    "drawCalls": 111,
+    "geometries": 111,
+    "textures": 21,
+    "heap": 29400000
+  },
+  {
+    "id": "superb_15",
+    "view": 1,
+    "triangles": 34464,
+    "drawCalls": 111,
+    "geometries": 111,
+    "textures": 21,
+    "heap": 29400000
+  },
+  {
+    "id": "superb_15",
+    "view": 2,
+    "triangles": 25568,
+    "drawCalls": 83,
+    "geometries": 137,
+    "textures": 23,
+    "heap": 29400000
+  }
+]

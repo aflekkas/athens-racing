@@ -1,3 +1,4 @@
+import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
 import { openPhoneWheel, renderPhoneWheel, unpairPhoneWheel } from './ui/phone-wheel-game.js';
 import {setExhaustPops} from './exhaust-pops.js';
 import { install as installAccounts } from './ui/account-screen.js';
@@ -38,6 +39,7 @@ const count = (n) => NUM[n] || String(n);
 /** the Quick Race card line, from the real default and cap */
 const quickBlurb = () => SP_RIVALS >= MAX_RIVALS ? `Pick a map and go against ${count(SP_RIVALS)} locals, or fewer if you like.` : `Pick a map and go. ${count(SP_RIVALS)[0].toUpperCase() + count(SP_RIVALS).slice(1)} locals by default, up to ${count(MAX_RIVALS)}.`;
 const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`;
+C.registerFormat('seatCm',v=>(v>0?'+':'')+Math.round(v*100)+' cm');
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
 C.registerFormat('laps', (v) => `${v} ${+v === 1 ? 'LAP' : 'LAPS'}`);
 C.registerFormat('deg', (v) => Math.round(v) + '°');
@@ -226,6 +228,7 @@ export class Menu {
     if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
+      case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'phoneWheel': openPhoneWheel(this); break;
       case 'phoneWheelUnpair': unpairPhoneWheel(); this.back(); break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
@@ -277,6 +280,7 @@ export class Menu {
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
+      if(key.startsWith('seat-')){setSeatPosition(this.h.carSpec?.()?.id,key.slice(5),value);return;}
       if (key === 'swearing') { setSetting('mildLanguage', !value); return; }
       if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;if(this.root)this.refresh();return; }
       if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));if(this.root)this.refresh();return;}
@@ -297,7 +301,7 @@ export class Menu {
       saveSetup(id, s); this.refresh(); return;
     }
   }
-  valueFor(key) { if (key === 'swearing') return !settings.mildLanguage; return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
+  valueFor(key) { if(key.startsWith('seat-'))return seatPosition(this.h.carSpec?.()?.id)[key.slice(5)]; if (key === 'swearing') return !settings.mildLanguage; return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
   /** settings changed elsewhere (e.g. the steering assist following the active device) */
   refreshValues() { for (const el of this.root.querySelectorAll('[data-scope=setting][data-key]')) C.setValue(el, String(this.valueFor(el.dataset.key)), false); }
 
@@ -437,7 +441,7 @@ export class Menu {
     } else if (tab === 'camera') {
       const sl = (k, label, min, max, step, format) => has(k) ? C.slider({ key: k, label, value: settings[k], min, max, step, format, attrs: SET }) : '';
       const tg = (k, label) => has(k) ? C.toggle({ key: k, label, value: settings[k], attrs: SET }) : '';
-      body = `<div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
+      body = `<div class="group"><h3 class="group__title">SEAT · ${esc(this.h.carSpec?.()?.name||'CURRENT CAR')}</h3>${[['height','SEAT HEIGHT'],['position','SEAT POSITION']].map(([key,label])=>C.slider({key:'seat-'+key,label,value:seatPosition(this.h.carSpec?.()?.id)[key],min:-.08,max:.08,step:.01,format:'seatCm',note:key==='height'?'LOWER / HIGHER · SAVED FOR THIS CAR':'BACK / FORWARD · SAVED FOR THIS CAR',attrs:SET})).join('')}${C.button({label:'RESET SEAT',act:'seatReset',variant:'ghost',icon:'arrow-counter-clockwise'})}</div><div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
         <div class="group"><h3 class="group__title">${icon('mouse')}FREE LOOK</h3>${sl('mouseSensitivity', 'LOOK SENSITIVITY', 0.25, 3, 0.05, 'x')}${tg('invertLookY', 'INVERT LOOK Y')}
           <p class="group__note">Click the racing view to look around. Hold and drag if the pointer cannot be locked. The right stick also looks.</p></div>
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;

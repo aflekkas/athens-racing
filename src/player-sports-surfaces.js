@@ -1,8 +1,8 @@
 // Close-view refinements for the 991.1 Carrera, facelift GR Yaris and Bertone 2000 GTV.
 // Original procedural geometry; source photographs are recorded in the vehicle notes.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 import { tintGlass } from './glass-tint.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoundedBoxGeometry } from './vehicle-primitives.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const v = p => new THREE.Vector3(...p);
@@ -12,7 +12,8 @@ const material = (color,roughness=.4,metalness=0) => new THREE.MeshStandardMater
 function add(p,g,m,name,pos=[0,0,0],rot=[0,0,0]) {const o=new THREE.Mesh(g,m);o.name=name;o.position.set(...pos);o.rotation.set(...rot);p.add(o);return o;}
 function box(p,m,size,pos,name,rad=.01){const fine=Math.min(...size)<.012;return add(p,fine?new THREE.BoxGeometry(...size):new RoundedBoxGeometry(...size,1,Math.min(rad,...size.map(x=>x/2))),m,name,pos);}
 function tube(p,m,points,r,name,closed=false){const c=new THREE.CatmullRomCurve3(points.map(v),closed,'centripetal');return add(p,new THREE.TubeGeometry(c,(points.length===2?1:Math.min(32,Math.max(8,points.length*2))),r,4,closed),m,name);}
-function surface(p,m,fn,nu,nv,name){const a=[],uv=[],ix=[];for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){a.push(...fn(i/nu,j/nv));uv.push(i/nu,j/nv);}for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const k=i*(nv+1)+j;ix.push(k,k+nv+1,k+1,k+1,k+nv+1,k+nv+2);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return add(p,g,m,name);}
+function surface(p,m,fn,nu,nv,name){
+  nu=Math.min(nu, /body-side|painted-side/.test(name||" ")?24:4); nv=Math.min(nv,/body-side|painted-side/.test(name||" ")?2:1);const a=[],uv=[],ix=[];for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){a.push(...fn(i/nu,j/nv));uv.push(i/nu,j/nv);}for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const k=i*(nv+1)+j;ix.push(k,k+nv+1,k+1,k+1,k+nv+1,k+nv+2);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.userData.vehicleGrid={nu,nv};g.computeVertexNormals();return add(p,g,m,name);}
 function polygon(p,m,points,name){const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();return add(p,new THREE.ShapeGeometry(shape,16),m,name,[0,0,points[0][2]]);}
 function ellipse(p,m,rx,ry,pos,name){const o=add(p,new THREE.CircleGeometry(1,24),m,name,pos);o.scale.set(rx,ry,1);return o;}
 function textMat(label,fg='#d1d5d6',bg=null){const c=document.createElement('canvas');c.width=512;c.height=96;const g=c.getContext('2d');if(bg){g.fillStyle=bg;g.fillRect(0,0,512,96);}g.fillStyle=fg;g.font='italic 52px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(label,256,52);const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map,transparent:true,depthWrite:false,roughness:.3,metalness:.4,side:THREE.DoubleSide});}
@@ -171,7 +172,7 @@ function carreraGlasshouse(car,d,M){
 }
 function windowSeals(car,M){
   const panes=[];car.body.traverse(o=>{if(o.isMesh&&['windscreen','rear-glass','front-door-glass','rear-door-glass'].includes(o.name))panes.push(o);});
-  for(const o of panes){const a=o.geometry.attributes.position,nv=o.name==='windscreen'?10:o.name==='rear-glass'?12:10,nu=(a.count/(nv+1))-1,pts=[];
+  for(const o of panes){const a=o.geometry.attributes.position,nv=o.geometry.userData.vehicleGrid?.nv??(o.name==='windscreen'?10:o.name==='rear-glass'?12:10),nu=(a.count/(nv+1))-1,pts=[];
     const point=i=>[a.getX(i),a.getY(i)+.0015,a.getZ(i)];
     for(let i=0;i<=nu;i+=2)pts.push(point(i*(nv+1)));
     pts.push(point(nu*(nv+1)));for(let j=1;j<=nv;j+=2)pts.push(point(nu*(nv+1)+j));pts.push(point(a.count-1));
@@ -188,7 +189,7 @@ function subdivideEndTrim(car,d){
     const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry,a=g.attributes.position,uv=g.attributes.uv,out=[],tex=[];let changed=false;
     for(let i=0;i<a.count;i+=3){const p=[0,1,2].map(j=>new THREE.Vector3().fromBufferAttribute(a,i+j)),t=uv?[0,1,2].map(j=>new THREE.Vector2().fromBufferAttribute(uv,i+j)):null;
       const emit=(p,t)=>{out.push(p.x,p.y,p.z);if(t)tex.push(t.x,t.y);};
-      const split=(p,t,depth=0)=>{const edge=[p[0].distanceToSquared(p[1]),p[1].distanceToSquared(p[2]),p[2].distanceToSquared(p[0])],max=Math.max(...edge);if(max<.18*.18||depth===8){p.forEach((q,j)=>emit(q,t?.[j]));return;}changed=true;const i=edge.indexOf(max),j=(i+1)%3,k=(i+2)%3,m=p[i].clone().lerp(p[j],.5),mt=t?t[i].clone().lerp(t[j],.5):null;split([p[i],m,p[k]],t?[t[i],mt,t[k]]:null,depth+1);split([m,p[j],p[k]],t?[mt,t[j],t[k]]:null,depth+1);};
+      const split=(p,t,depth=0)=>{const edge=[p[0].distanceToSquared(p[1]),p[1].distanceToSquared(p[2]),p[2].distanceToSquared(p[0])],max=Math.max(...edge);if(max<1.2*1.2||depth===2){p.forEach((q,j)=>emit(q,t?.[j]));return;}changed=true;const i=edge.indexOf(max),j=(i+1)%3,k=(i+2)%3,m=p[i].clone().lerp(p[j],.5),mt=t?t[i].clone().lerp(t[j],.5):null;split([p[i],m,p[k]],t?[t[i],mt,t[k]]:null,depth+1);split([m,p[j],p[k]],t?[mt,t[j],t[k]]:null,depth+1);};
       split(p,t);
     }
     if(changed){const outG=new THREE.BufferGeometry();outG.setAttribute('position',new THREE.Float32BufferAttribute(out,3));if(uv)outG.setAttribute('uv',new THREE.Float32BufferAttribute(tex,2));const welded=mergeVertices(outG,.00001);welded.computeVertexNormals();outG.dispose();o.geometry.dispose();o.geometry=welded;}

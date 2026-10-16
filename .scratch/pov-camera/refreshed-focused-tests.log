@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+ok 1 - owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+  ---
+  duration_ms: 27.440206
+  type: 'test'
+  ...
+# Subtest: visibility rejects opaque dash but passes clear glass
+ok 2 - visibility rejects opaque dash but passes clear glass
+  ---
+  duration_ms: 14.815374
+  type: 'test'
+  ...
+# Subtest: seat adjustments clamp, persist independently per car, reload, and reset
+ok 3 - seat adjustments clamp, persist independently per car, reload, and reset
+  ---
+  duration_ms: 25.801692
+  type: 'test'
+  ...
+# Subtest: screen station stays in vehicle coordinates on translated and rotated vehicles
+ok 4 - screen station stays in vehicle coordinates on translated and rotated vehicles
+  ---
+  duration_ms: 1.888861
+  type: 'test'
+  ...
+# Subtest: POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+ok 5 - POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+  ---
+  duration_ms: 20.652896
+  type: 'test'
+  ...
+# Subtest: every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+ok 6 - every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+  ---
+  duration_ms: 9159.577992
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10150.95776

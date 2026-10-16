@@ -1,9 +1,11 @@
+import {tintGlass} from './glass-tint.js';
+import {blockyFleetWheels} from './vehicle-wheel.js';
 // Reference-proportioned Athens two-wheel fleet. Metres, +Y up, -Z forward.
 // Honda: hondanews.eu/eu/en/motorcycles/media/pressreleases/34935/sh150i-press-pack
 // Piaggio: wlassets.piaggio.com/wlassets/piaggio/master/tech_spec/Beverly/2021/EN_NewBeverly_300/original/EN_NewBeverly_300.pdf
 // Yamaha: cdn2.yamaha-motor.eu/prod/product-assets/2019/MT09TR/Factsheets/2019-MT09TR_bg-BG.pdf
 // BMW: bmw-motorrad.ie/en/models/tour/r1250rt/technicaldata.html
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 import { seatMirrors } from './vehicle-mirrors.js';
 import { makePlateMaterial, nextRegistration } from './vehicle-models.js';
 export const BIKE_SPECS={
@@ -18,13 +20,13 @@ export function buildBikeModel(type,color,rng,opts={}){
  const root=new THREE.Group(),body=new THREE.Group();root.add(body);body.name=d.name;
  const paint=material(color||'#a8adb0',.28,.25),black=material('#171b20',.72),silver=material('#a1abb1',.25,.75),rubber=material('#16191b',.94),seat=material(id==='scooter'?'#342b28':'#202126',.92),engine=material('#454b50',.55,.65),uniform=material(tour?'#182e50':delivery?'#ba3436':'#3b4652',.9);
  const tail=new THREE.MeshStandardMaterial({color:'#b32129',emissive:'#ff1625',emissiveIntensity:.5}),head=new THREE.MeshStandardMaterial({color:'#eaf4f9',emissive:'#e1f1ff',emissiveIntensity:1.1});
- const glass=new THREE.MeshStandardMaterial({color:'#adc3cf',transparent:true,opacity:.34,side:THREE.DoubleSide,roughness:.14,depthWrite:false});
+ const glass=tintGlass(new THREE.MeshStandardMaterial({side:THREE.DoubleSide}));
  const materials={paint,black,silver,rubber,seat,engine,uniform,tail,head,glass};
  const add=(g,m,p=[0,0,0],parent=body,name='')=>{const o=new THREE.Mesh(g,m);o.position.set(...p);parent.add(o);o.name=name;return o;};
  const box=(m,size,p,parent=body,name='')=>add(new THREE.BoxGeometry(...size),m,p,parent,name);
  const beam=(m,a,b,r=.025,parent=body)=>{const av=new THREE.Vector3(...a),bv=new THREE.Vector3(...b);const o=add(new THREE.CylinderGeometry(r,r,av.distanceTo(bv),low?3:8),m, [0,0,0],parent);o.position.copy(av).add(bv).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),bv.sub(av).normalize());return o;};
  // Cross-section loft: independent widths/heights along the body form sculpted fairings.
- const shell=(m,rings,parent=body,name='')=>{const n=low?4:12,p=[],idx=[];for(const [z,y,w,h]of rings)for(let j=0;j<n;j++){const a=j/n*Math.PI*2;p.push(Math.cos(a)*w,y+Math.sin(a)*h,z);}for(let i=0;i<rings.length-1;i++)for(let j=0;j<n;j++){const a=i*n+j,b=i*n+(j+1)%n,c=a+n,e=b+n;idx.push(a,b,c,b,e,c);}for(let j=1;j<n-1;j++){idx.push(0,j+1,j);const k=(rings.length-1)*n;idx.push(k,k+j,k+j+1);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();return add(g,m,[0,0,0],parent,name);};
+ const shell=(m,rings,parent=body,name='')=>{const n=low?4:6,p=[],idx=[];for(const [z,y,w,h]of rings)for(let j=0;j<n;j++){const a=j/n*Math.PI*2;p.push(Math.cos(a)*w,y+Math.sin(a)*h,z);}for(let i=0;i<rings.length-1;i++)for(let j=0;j<n;j++){const a=i*n+j,b=i*n+(j+1)%n,c=a+n,e=b+n;idx.push(a,b,c,b,e,c);}for(let j=1;j<n-1;j++){idx.push(0,j+1,j);const k=(rings.length-1)*n;idx.push(k,k+j,k+j+1);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();return add(g,m,[0,0,0],parent,name);};
  const mark=(o,n)=>{o.userData.damagePart=n;return o;};
  const wheels=[];
  for(const front of [true,false]){
@@ -81,5 +83,5 @@ export function buildBikeModel(type,color,rng,opts={}){
  }
  root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
  const shape={...d,axleF:-d.wb/2,axleR:d.wb/2,wheelR:d.r};
- const car={root,body,paint,tail,wheels,plate,materials,dims:{L:d.L,W:d.W,H:d.H},shape,modelKind:id,spec:{color:color||'#a8adb0',model:d.name},police:tour};seatMirrors(car,body,{bike:true});return car;
+ const car={root,body,paint,tail,wheels,plate,materials,dims:{L:d.L,W:d.W,H:d.H},shape,modelKind:id,spec:{color:color||'#a8adb0',model:d.name},police:tour};seatMirrors(car,body,{bike:true});blockyFleetWheels(car);return car;
 }

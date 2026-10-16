@@ -1,14 +1,15 @@
 // Player-only F57 / G29 / Octavia IV coachwork. Metres, nose -Z.
 // Separate body fields keep every arch, panel seam and shoulder on the same surface.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 import { tintGlass } from './glass-tint.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoundedBoxGeometry } from './vehicle-primitives.js';
 const mix=(a,b,t)=>a+(b-a)*t;
 const clamp=t=>Math.max(0,Math.min(1,t));
 const V=p=>new THREE.Vector3(...p);
 function profile(points,z){for(let i=1;i<points.length;i++)if(z<=points[i][0]){const a=points[i-1],b=points[i],t=clamp((z-a[0])/(b[0]-a[0]));return mix(a[1],b[1],t*t*(3-2*t));}return points.at(-1)[1];}
 function mesh(p,g,m,name){const o=new THREE.Mesh(g,m);o.name=name;p.add(o);return o;}
-function surface(p,m,fn,nu,nv,name){const pos=[],uv=[],idx=[];for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){pos.push(...fn(i/nu,j/nv));uv.push(i/nu,j/nv);}for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const k=i*(nv+1)+j;idx.push(k,k+nv+1,k+1,k+1,k+nv+1,k+nv+2);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return mesh(p,g,m,name);}
+function surface(p,m,fn,nu,nv,name){
+  nu=Math.min(nu, /body-side|painted-side/.test(name||" ")?24:4); nv=Math.min(nv,/body-side|painted-side/.test(name||" ")?2:1);const pos=[],uv=[],idx=[];for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){pos.push(...fn(i/nu,j/nv));uv.push(i/nu,j/nv);}for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const k=i*(nv+1)+j;idx.push(k,k+nv+1,k+1,k+1,k+nv+1,k+nv+2);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.userData.vehicleGrid={nu,nv};g.computeVertexNormals();return mesh(p,g,m,name);}
 function line(p,m,pts,r=.003,name='panel-gap'){return mesh(p,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(V)),name==='grille-mesh'?6:Math.min(48,Math.max(12,pts.length)),r,name==='grille-mesh'?3:4,false),m,name);}
 function box(p,m,size,pos,r=.02,name=''){const o=mesh(p,new RoundedBoxGeometry(...size,1,Math.min(r,...size.map(x=>x/2))),m,name);o.position.set(...pos);return o;}
 function patch(p,m,pts,name){return surface(p,m,(u,v)=>V(pts[0]).lerp(V(pts[1]),u).lerp(V(pts[3]).lerp(V(pts[2]),u),v).toArray(),8,5,name);}
@@ -74,7 +75,7 @@ export function refineOriginalPlayer(car,d,M,low=false){
     const shape=new THREE.Shape();shape.moveTo(...outline[0]);for(let i=1;i<=outline.length;i++){const a=outline[i%outline.length],b=outline[(i+1)%outline.length];shape.quadraticCurveTo(a[0],a[1],mix(a[0],b[0],.17),mix(a[1],b[1],.17));}shape.closePath();
     const grille=mesh(p,new THREE.ExtrudeGeometry(shape,{depth:.014,bevelEnabled:true,bevelSegments:1,curveSegments:6,steps:1,bevelSize:.007,bevelThickness:.006}),M.black,'mini-hex-grille');grille.position.set(0,.595,F-.038);grille.rotation.y=Math.PI;
     const rim=shape.getPoints(56).map(v=>[v.x,v.y+.595,F-.061]);line(p,M.chrome,rim,.009,'mini-grille-surround');
-    if(!low)for(let row=0;row<5;row++)for(let col=0;col<15;col++){const x=-.33+col*.047+(row%2)*.0235,y=.51+row*.039;if(Math.abs(x)>.36)continue;const pts=[];for(let i=0;i<=6;i++){const a=i*Math.PI/3;pts.push([x+Math.cos(a)*.023,y+Math.sin(a)*.023,F-.063]);}line(p,M.darkAlloy,pts,.0014,'grille-mesh');}
+    if(!low)for(let row=0;row<3;row++)for(let col=0;col<8;col++){const x=-.33+col*.094+(row%2)*.0235,y=.51+row*.078;if(Math.abs(x)>.36)continue;const pts=[];for(let i=0;i<=6;i++){const a=i*Math.PI/3;pts.push([x+Math.cos(a)*.040,y+Math.sin(a)*.032,F-.063]);}line(p,M.darkAlloy,pts,.0014,'grille-mesh');}
     for(const o of p.children)if(o.isMesh){if(o.name==='registration'&&o.position.z<0)o.position.z=F-.087;if(o.material===M.black&&Math.abs(o.position.x)<.01&&Math.abs(o.position.y-.40)<.01&&o.position.z<F)o.position.z=F-.068;if((o.name==='registration'||o.material===M.black)&&Math.abs(o.position.x)<.01&&Math.abs(o.position.y-.50)<.01&&o.position.z>R)o.position.y=.62;}
     line(p,M.seam,[[-.49,.855,R+.002],[-.49,.60,R+.002],[-.43,.52,R+.002],[.43,.52,R+.002],[.49,.60,R+.002],[.49,.855,R+.002]],.0025,'boot-shut-line');
     // Convex red lens and chrome surround replace the flat, square rear light boxes.

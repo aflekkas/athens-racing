@@ -1,0 +1,96 @@
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+MENU LOADED
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ce.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ds.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+RIVIERA LOADED
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+RESUME SKIP mini
+RESUME SKIP z4
+RESUME SKIP taxi
+RESUME SKIP carrera
+RESUME SKIP gr_yaris
+RESUME SKIP gtv
+RESUME SKIP golf
+RESUME SKIP corolla
+RESUME SKIP superb
+RESUME SKIP police_octavia
+RESUME SKIP mini_jcw
+RESUME SKIP cle
+RESUME SKIP gla
+RESUME SKIP cla
+RESUME SKIP aventador_svj
+RESUME SKIP huracan
+RESUME SKIP ibiza
+RESUME SKIP panda
+RESUME SKIP yaris
+RESUME SKIP e36
+RESUME SKIP jazz
+RESUME SKIP aygo
+RESUME SKIP qashqai
+RESUME SKIP dolphin
+RESUME SKIP atto3
+RESUME SKIP van
+RESUME SKIP truck
+RESUME SKIP bus
+BROWSER CAR START delivery
+BROWSER CAR SWITCHED delivery
+BROWSER SCENE RENDERED delivery
+BROWSER CAPTURE delivery before
+BROWSER AUDIT delivery before
+BROWSER CAPTURE delivery after
+BROWSER AUDIT delivery after
+BROWSER DONE delivery
+delivery {"pitch":-3.051327689388456,"eye":[-1.1368683772161603e-13,1.4979850881133103,0.10999999999967258],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":null,"legacyEye":[0,1.5190000000000001,0.15]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":true,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":282,"triangles":969780},"windscreenPercent":97.09775390625,"openPixels":994281,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START scooter
+BROWSER CAR SWITCHED scooter
+BROWSER SCENE RENDERED scooter
+BROWSER CAPTURE scooter before
+BROWSER AUDIT scooter before
+BROWSER CAPTURE scooter after
+BROWSER AUDIT scooter after
+Debugger listening on ws://127.0.0.1:9229/ebb3cd58-9c32-4553-ade5-4643c1f0cc82
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+BROWSER DONE scooter
+scooter {"pitch":-3.051269293623981,"eye":[-5.684341886080802e-14,1.5109850881133298,0.11000000000012733],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":null,"legacyEye":[0,1.532,0.15]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":true,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":283,"triangles":970740},"windscreenPercent":97.074609375,"openPixels":994044,"totalPixels":1024000,"width":1280,"height":800}
+Debugger ending on ws://127.0.0.1:9229/ebb3cd58-9c32-4553-ade5-4643c1f0cc82
+For help, see: https://nodejs.org/learn/getting-started/debugging
+BROWSER CAR START moto
+BROWSER CAR SWITCHED moto
+BROWSER SCENE RENDERED moto
+BROWSER CAPTURE moto before
+BROWSER AUDIT moto before
+BROWSER CAPTURE moto after
+BROWSER AUDIT moto after
+BROWSER DONE moto
+moto {"pitch":-3.0512810694706545,"eye":[1.1368683772161603e-13,1.5489850881133407,0.11000000000012733],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.1599999964237213,1.0411589458944421,-0.7153443447140543],"max":[0.1599999964237213,1.368841054105558,-0.6246556552859458]},"legacyEye":[0,1.5699999999999998,0.15]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":true,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":283,"triangles":970740},"windscreenPercent":96.63486328125,"openPixels":989541,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START police_moto
+BROWSER CAR SWITCHED police_moto
+BROWSER SCENE RENDERED police_moto
+BROWSER CAPTURE police_moto before
+BROWSER AUDIT police_moto before
+BROWSER CAPTURE police_moto after
+BROWSER AUDIT police_moto after
+BROWSER DONE police_moto
+police_moto {"pitch":-3.0512854701119685,"eye":[0,1.5039850881133248,0.11000000000012733],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.23999999463558197,1.0427892538346202,-0.7273472598420047],"max":[0.23999999463558197,1.4572107461653798,-0.6126527401579954]},"legacyEye":[0,1.525,0.15]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":true,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":283,"triangles":970740},"windscreenPercent":96.43515625,"openPixels":987496,"totalPixels":1024000,"width":1280,"height":800}
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/ebb3cd58-9c32-4553-ade5-4643c1f0cc82
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/ebb3cd58-9c32-4553-ade5-4643c1f0cc82
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/ebb3cd58-9c32-4553-ade5-4643c1f0cc82
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/ebb3cd58-9c32-4553-ade5-4643c1f0cc82
+For help, see: https://nodejs.org/learn/getting-started/debugging

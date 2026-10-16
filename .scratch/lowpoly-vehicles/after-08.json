@@ -1,0 +1,110 @@
+[
+  {
+    "id": "yaris_ts",
+    "view": 0,
+    "triangles": 2054,
+    "drawCalls": 73,
+    "geometries": 67,
+    "textures": 4,
+    "heap": 14300000
+  },
+  {
+    "id": "yaris_ts",
+    "view": 1,
+    "triangles": 2054,
+    "drawCalls": 73,
+    "geometries": 67,
+    "textures": 4,
+    "heap": 14300000
+  },
+  {
+    "id": "yaris_ts",
+    "view": 2,
+    "triangles": 350,
+    "drawCalls": 15,
+    "geometries": 78,
+    "textures": 7,
+    "heap": 14300000
+  },
+  {
+    "id": "ibiza_cupra",
+    "view": 0,
+    "triangles": 2222,
+    "drawCalls": 78,
+    "geometries": 74,
+    "textures": 9,
+    "heap": 14300000
+  },
+  {
+    "id": "ibiza_cupra",
+    "view": 1,
+    "triangles": 2222,
+    "drawCalls": 78,
+    "geometries": 74,
+    "textures": 9,
+    "heap": 14300000
+  },
+  {
+    "id": "ibiza_cupra",
+    "view": 2,
+    "triangles": 350,
+    "drawCalls": 15,
+    "geometries": 85,
+    "textures": 11,
+    "heap": 14300000
+  },
+  {
+    "id": "golf_gti",
+    "view": 0,
+    "triangles": 2900,
+    "drawCalls": 89,
+    "geometries": 87,
+    "textures": 13,
+    "heap": 14300000
+  },
+  {
+    "id": "golf_gti",
+    "view": 1,
+    "triangles": 2900,
+    "drawCalls": 89,
+    "geometries": 87,
+    "textures": 13,
+    "heap": 14300000
+  },
+  {
+    "id": "golf_gti",
+    "view": 2,
+    "triangles": 334,
+    "drawCalls": 14,
+    "geometries": 98,
+    "textures": 15,
+    "heap": 14300000
+  },
+  {
+    "id": "golf_gtd",
+    "view": 0,
+    "triangles": 2900,
+    "drawCalls": 88,
+    "geometries": 88,
+    "textures": 17,
+    "heap": 14300000
+  },
+  {
+    "id": "golf_gtd",
+    "view": 1,
+    "triangles": 2900,
+    "drawCalls": 88,
+    "geometries": 88,
+    "textures": 17,
+    "heap": 14300000
+  },
+  {
+    "id": "golf_gtd",
+    "view": 2,
+    "triangles": 334,
+    "drawCalls": 14,
+    "geometries": 99,
+    "textures": 19,
+    "heap": 14300000
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "render": {
+    "frame": 100,
+    "calls": 401,
+    "triangles": 803260,
+    "points": 6580,
+    "lines": 0
+  },
+  "geometryBytes": 172353218,
+  "textureBytes": 52293632,
+  "heap": 410000000,
+  "requests": 250,
+  "transferBytes": 5320171,
+  "encodedBytes": 5246671,
+  "camera": [
+    1048.7975954879926,
+    9.535156622202097,
+    2476.0593994055166
+  ],
+  "player": [
+    1050.5369373340975,
+    7.785156623032825,
+    2481.382433309448
+  ],
+  "trafficCount": 25,
+  "rivals": 2,
+  "errors": []
+}

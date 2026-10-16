@@ -1,0 +1,1025 @@
+TAP version 13
+# Subtest: H-pattern gates: lateral pairs with forward odd gears and a far-right reverse
+ok 1 - H-pattern gates: lateral pairs with forward odd gears and a far-right reverse
+  ---
+  duration_ms: 16.380532
+  type: 'test'
+  ...
+# Subtest: cockpit hardware: E36 stick, CLE paddles, 911 both, explicit gearbox fields win
+ok 2 - cockpit hardware: E36 stick, CLE paddles, 911 both, explicit gearbox fields win
+  ---
+  duration_ms: 11.970271
+  type: 'test'
+  ...
+# Subtest: shift kind: lever for sticks, paddle flicks for DCT, silence in D
+ok 3 - shift kind: lever for sticks, paddle flicks for DCT, silence in D
+  ---
+  duration_ms: 0.79409
+  type: 'test'
+  ...
+# Subtest: shift timing follows the gearbox inside a readable window
+ok 4 - shift timing follows the gearbox inside a readable window
+  ---
+  duration_ms: 3.795685
+  type: 'test'
+  ...
+# Subtest: ignition checks every bulb, seatbelt clears, restart checks bulbs again
+ok 5 - ignition checks every bulb, seatbelt clears, restart checks bulbs again
+  ---
+  duration_ms: 2.309774
+  type: 'test'
+  ...
+# Subtest: intervention flashes and holds brief TC/ABS pulses; disabling TC shows OFF
+ok 6 - intervention flashes and holds brief TC/ABS pulses; disabling TC shows OFF
+  ---
+  duration_ms: 13.263551
+  type: 'test'
+  ...
+# Subtest: damage severity, temperature, wheels, brake and lighting follow vehicle state
+ok 7 - damage severity, temperature, wheels, brake and lighting follow vehicle state
+  ---
+  duration_ms: 4.893651
+  type: 'test'
+  ...
+# Subtest: live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+ok 8 - live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+  ---
+  duration_ms: 22.398818
+  type: 'test'
+  ...
+# Subtest: production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+ok 9 - production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+  ---
+  duration_ms: 29.528718
+  type: 'test'
+  ...
+# Subtest: production aid settings preserve a live manual gear and a temporary paddle override
+ok 10 - production aid settings preserve a live manual gear and a temporary paddle override
+  ---
+  duration_ms: 19.559727
+  type: 'test'
+  ...
+# Subtest: live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+ok 11 - live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+  ---
+  duration_ms: 0.579049
+  type: 'test'
+  ...
+# Subtest: grip mapping preserves front breakaway when force utilization falls
+ok 12 - grip mapping preserves front breakaway when force utilization falls
+  ---
+  duration_ms: 2.551275
+  type: 'test'
+  ...
+# Subtest: damage explains actual power loss, cause and remapped recovery action
+ok 13 - damage explains actual power loss, cause and remapped recovery action
+  ---
+  duration_ms: 20.59686
+  type: 'test'
+  ...
+# Subtest: known curvature and braking distance retain physical units
+ok 14 - known curvature and braking distance retain physical units
+  ---
+  duration_ms: 0.732736
+  type: 'test'
+  ...
+# Subtest: straight is green; hairpin advice changes with speed, weather and car grip
+ok 15 - straight is green; hairpin advice changes with speed, weather and car grip
+  ---
+  duration_ms: 68.979108
+  type: 'test'
+  ...
+# Subtest: line stays inside actual width and retains grade, reverse lane/direction
+ok 16 - line stays inside actual width and retains grade, reverse lane/direction
+  ---
+  duration_ms: 18.974276
+  type: 'test'
+  ...
+# Subtest: downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+ok 17 - downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+  ---
+  duration_ms: 1.237667
+  type: 'test'
+  ...
+# Subtest: closed circuit wraps and clamps surveyed racing line without terrain chords
+ok 18 - closed circuit wraps and clamps surveyed racing line without terrain chords
+  ---
+  duration_ms: 15.003564
+  type: 'test'
+  ...
+# Subtest: free roam follows actual heading and backing direction; explicit reverse race stays fixed
+ok 19 - free roam follows actual heading and backing direction; explicit reverse race stays fixed
+  ---
+  duration_ms: 20.984011
+  type: 'test'
+  ...
+# Subtest: ENGINE HOT waits for a temperature that actually wears the engine
+ok 20 - ENGINE HOT waits for a temperature that actually wears the engine
+  ---
+  duration_ms: 17.059527
+  type: 'test'
+  ...
+# Subtest: vehicle and road warnings become cluster tell-tales with ISO lamp colours
+ok 21 - vehicle and road warnings become cluster tell-tales with ISO lamp colours
+  ---
+  duration_ms: 11.844757
+  type: 'test'
+  ...
+# Subtest: navigation and objectives are head-up cues; tips and media are infotainment cards
+ok 22 - navigation and objectives are head-up cues; tips and media are infotainment cards
+  ---
+  duration_ms: 16.884019
+  type: 'test'
+  ...
+# Subtest: every tell-tale renders as an SVG and as a CSS mask
+ok 23 - every tell-tale renders as an SVG and as a CSS mask
+  ---
+  duration_ms: 1.481301
+  type: 'test'
+  ...
+# Subtest: simultaneous sources share one prioritized banner and two prioritized toasts
+ok 24 - simultaneous sources share one prioritized banner and two prioritized toasts
+  ---
+  duration_ms: 46.390366
+  type: 'test'
+  ...
+# Subtest: duplicate bursts never multiply notices or restart their display lifetime
+ok 25 - duplicate bursts never multiply notices or restart their display lifetime
+  ---
+  duration_ms: 24.17531
+  type: 'test'
+  ...
+# Subtest: menus suppress all slots, pause remaining display time and drop stale queued warnings
+ok 26 - menus suppress all slots, pause remaining display time and drop stale queued warnings
+  ---
+  duration_ms: 19.78203
+  type: 'test'
+  ...
+# Subtest: persistent safety warnings survive preemption but disappear when their cause clears
+ok 27 - persistent safety warnings survive preemption but disappear when their cause clears
+  ---
+  duration_ms: 0.90147
+  type: 'test'
+  ...
+# Subtest: bounded queue drops the lowest priority burst and reports shown notices only once
+ok 28 - bounded queue drops the lowest priority burst and reports shown notices only once
+  ---
+  duration_ms: 0.849613
+  type: 'test'
+  ...
+# Subtest: visibility policy rejects pause/settings/lobby/loading/modal contexts
+ok 29 - visibility policy rejects pause/settings/lobby/loading/modal contexts
+  ---
+  duration_ms: 0.603685
+  type: 'test'
+  ...
+# Subtest: objective off-course warning uses the shared slot and clears without a separate banner
+ok 30 - objective off-course warning uses the shared slot and clears without a separate banner
+  ---
+  duration_ms: 21.981661
+  type: 'test'
+  ...
+# Subtest: five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+ok 31 - five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+  ---
+  duration_ms: 1.220094
+  type: 'test'
+  ...
+# Subtest: a renewed actionable warning replaces its old DOM node after dismissal
+ok 32 - a renewed actionable warning replaces its old DOM node after dismissal
+  ---
+  duration_ms: 18.115495
+  type: 'test'
+  ...
+# Subtest: engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+ok 33 - engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+  ---
+  duration_ms: 1.261341
+  type: 'test'
+  ...
+# Subtest: one route-direction warning wins across checkpoint, objective and wrong-way producers
+ok 34 - one route-direction warning wins across checkpoint, objective and wrong-way producers
+  ---
+  duration_ms: 0.776446
+  type: 'test'
+  ...
+# Subtest: same copy from different producers merges visually without hiding unrelated notices
+ok 35 - same copy from different producers merges visually without hiding unrelated notices
+  ---
+  duration_ms: 0.387482
+  type: 'test'
+  ...
+# Subtest: related police callouts preempt persistent status without duplicating it as a toast
+ok 36 - related police callouts preempt persistent status without duplicating it as a toast
+  ---
+  duration_ms: 22.812589
+  type: 'test'
+  ...
+# Subtest: mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+ok 37 - mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+  ---
+  duration_ms: 1.118475
+  type: 'test'
+  ...
+# Subtest: gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+ok 38 - gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+  ---
+  duration_ms: 0.570653
+  type: 'test'
+  ...
+# Subtest: merged cross-producer duplicates never return later or restart the original lifetime
+ok 39 - merged cross-producer duplicates never return later or restart the original lifetime
+  ---
+  duration_ms: 0.352797
+  type: 'test'
+  ...
+# Subtest: dismissing an alias clears its merged event, including its original visible card
+ok 40 - dismissing an alias clears its merged event, including its original visible card
+  ---
+  duration_ms: 14.197553
+  type: 'test'
+  ...
+# Subtest: manager dismissal resolves a merged producer alias
+ok 41 - manager dismissal resolves a merged producer alias
+  ---
+  duration_ms: 0.313273
+  type: 'test'
+  ...
+# Subtest: a higher-priority duplicate upgrades the visible action without extending its lifetime
+ok 42 - a higher-priority duplicate upgrades the visible action without extending its lifetime
+  ---
+  duration_ms: 0.31147
+  type: 'test'
+  ...
+# Subtest: phone disconnection and rejected shifts retain their actual severity
+ok 43 - phone disconnection and rejected shifts retain their actual severity
+  ---
+  duration_ms: 1.612536
+  type: 'test'
+  ...
+# Subtest: safe placement finds room for the critical action before accepting a short low-priority gap
+ok 44 - safe placement finds room for the critical action before accepting a short low-priority gap
+  ---
+  duration_ms: 0.272548
+  type: 'test'
+  ...
+# Subtest: a higher-priority route banner cannot suppress the actionable recovery fallback
+ok 45 - a higher-priority route banner cannot suppress the actionable recovery fallback
+  ---
+  duration_ms: 25.691145
+  type: 'test'
+  ...
+# Subtest: actual mirror projection reserves its glass and frame at different aspect ratios
+ok 46 - actual mirror projection reserves its glass and frame at different aspect ratios
+  ---
+  duration_ms: 415.82983
+  type: 'test'
+  ...
+# Subtest: owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+ok 47 - owner windscreen budget uses the actual screen and steering side, preserving the authored cabin datum
+  ---
+  duration_ms: 11.998072
+  type: 'test'
+  ...
+# Subtest: visibility rejects opaque dash but passes clear glass
+ok 48 - visibility rejects opaque dash but passes clear glass
+  ---
+  duration_ms: 12.533281
+  type: 'test'
+  ...
+# Subtest: seat adjustments clamp, persist independently per car, reload, and reset
+ok 49 - seat adjustments clamp, persist independently per car, reload, and reset
+  ---
+  duration_ms: 17.295827
+  type: 'test'
+  ...
+# Subtest: screen station stays in vehicle coordinates on translated and rotated vehicles
+ok 50 - screen station stays in vehicle coordinates on translated and rotated vehicles
+  ---
+  duration_ms: 1.896254
+  type: 'test'
+  ...
+# Subtest: POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+ok 51 - POV hides exterior draw surfaces and restores them without hiding instruments or mirrors
+  ---
+  duration_ms: 13.544636
+  type: 'test'
+  ...
+# Subtest: every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+ok 52 - every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+  ---
+  duration_ms: 7879.596728
+  type: 'test'
+  ...
+# Subtest: the newest CHANGELOG section is the build version; the build id and SHA ride along
+ok 53 - the newest CHANGELOG section is the build version; the build id and SHA ride along
+  ---
+  duration_ms: 25.258728
+  type: 'test'
+  ...
+# Subtest: gitSha prefers the environment (a git-archive copy has no .git) and rejects junk
+ok 54 - gitSha prefers the environment (a git-archive copy has no .git) and rejects junk
+  ---
+  duration_ms: 122.908254
+  type: 'test'
+  ...
+# Subtest: publishReleaseData writes release.json, credits.json and the version meta tags
+ok 55 - publishReleaseData writes release.json, credits.json and the version meta tags
+  ---
+  duration_ms: 657.364248
+  type: 'test'
+  ...
+# Subtest: every credits / licence file in the repo is in the generated Credits screen
+ok 56 - every credits / licence file in the repo is in the generated Credits screen
+  ---
+  duration_ms: 667.295408
+  type: 'test'
+  ...
+# Subtest: a credits file added anywhere is picked up by name
+ok 57 - a credits file added anywhere is picked up by name
+  ---
+  duration_ms: 151.919487
+  type: 'test'
+  ...
+# Subtest: the team is Alexandros and Vassilis; agents and bots are the AI note, not people
+ok 58 - the team is Alexandros and Vassilis; agents and bots are the AI note, not people
+  ---
+  duration_ms: 204.438676
+  type: 'test'
+  ...
+# Subtest: every human git author is listed in CREDITS.md (skipped without .git)
+ok 59 - every human git author is listed in CREDITS.md (skipped without .git) # SKIP no git history here
+  ---
+  duration_ms: 0.436734
+  type: 'test'
+  ...
+# Subtest: data, fonts, audio and software sections come from the repo files, not from memory
+ok 60 - data, fonts, audio and software sections come from the repo files, not from memory
+  ---
+  duration_ms: 177.816747
+  type: 'test'
+  ...
+# Subtest: credits text is plain and readable; licences are only those the file names
+ok 61 - credits text is plain and readable; licences are only those the file names
+  ---
+  duration_ms: 0.86928
+  type: 'test'
+  ...
+# Subtest: release screenshots exist, have alt text, are small lossy WebPs, and keep layout dimensions
+ok 62 - release screenshots exist, have alt text, are small lossy WebPs, and keep layout dimensions
+  ---
+  duration_ms: 140.879449
+  type: 'test'
+  ...
+# Subtest: media validation rejects missing, oversized, non-WebP and oversized-dimension images
+ok 63 - media validation rejects missing, oversized, non-WebP and oversized-dimension images
+  ---
+  duration_ms: 79.012188
+  type: 'test'
+  ...
+# Subtest: Unreleased without photos warns without blocking the automatic release train
+ok 64 - Unreleased without photos warns without blocking the automatic release train
+  ---
+  duration_ms: 0.806754
+  type: 'test'
+  ...
+# Subtest: the actual content manifest omits changelog photos even with a broad asset core
+ok 65 - the actual content manifest omits changelog photos even with a broad asset core
+  ---
+  duration_ms: 53.107816
+  type: 'test'
+  ...
+# Subtest: versions are YYYY.MM.DD.N: the date plus a counter for that day
+ok 66 - versions are YYYY.MM.DD.N: the date plus a counter for that day
+  ---
+  duration_ms: 39.523055
+  type: 'test'
+  ...
+# Subtest: versions order by date, then by the counter as a number
+ok 67 - versions order by date, then by the counter as a number
+  ---
+  duration_ms: 0.514859
+  type: 'test'
+  ...
+# Subtest: labels and dates read the same in every locale
+ok 68 - labels and dates read the same in every locale
+  ---
+  duration_ms: 8.422358
+  type: 'test'
+  ...
+# Subtest: parseChangelog reads sections newest first, ignoring comments and prose
+ok 69 - parseChangelog reads sections newest first, ignoring comments and prose
+  ---
+  duration_ms: 12.005987
+  type: 'test'
+  ...
+# Subtest: parseChangelog fails the build on mistakes instead of dropping notes
+ok 70 - parseChangelog fails the build on mistakes instead of dropping notes
+  ---
+  duration_ms: 13.522865
+  type: 'test'
+  ...
+# Subtest: the real CHANGELOG.md is valid, newest first, and written for players
+ok 71 - the real CHANGELOG.md is valid, newest first, and written for players
+  ---
+  duration_ms: 18.843021
+  type: 'test'
+  ...
+# Subtest: hasPriorPlay ignores what the game writes at startup and sees real play data
+ok 72 - hasPriorPlay ignores what the game writes at startup and sees real play data
+  ---
+  duration_ms: 11.548735
+  type: 'test'
+  ...
+# Subtest: seen version round-trips and ignores junk
+ok 73 - seen version round-trips and ignores junk
+  ---
+  duration_ms: 0.382113
+  type: 'test'
+  ...
+# Subtest: whatsNewDecision: show once per version, never in a race, never for a brand-new player
+ok 74 - whatsNewDecision: show once per version, never in a race, never for a brand-new player
+  ---
+  duration_ms: 0.620827
+  type: 'test'
+  ...
+# Subtest: launch sequence: new player, then updates, dismissal remembered across launches
+ok 75 - launch sequence: new player, then updates, dismissal remembered across launches
+  ---
+  duration_ms: 15.352074
+  type: 'test'
+  ...
+# Subtest: Markdown photos belong to a release or to the preceding indented bullet
+ok 76 - Markdown photos belong to a release or to the preceding indented bullet
+  ---
+  duration_ms: 0.564242
+  type: 'test'
+  ...
+# Subtest: photos require alt text and a safe local versioned WebP path
+ok 77 - photos require alt text and a safe local versioned WebP path
+  ---
+  duration_ms: 0.503328
+  type: 'test'
+  ...
+# Subtest: old all-aids-off migrates ABS and quick TC/ESC persists without changing ABS
+ok 78 - old all-aids-off migrates ABS and quick TC/ESC persists without changing ABS
+  ---
+  duration_ms: 34.899979
+  type: 'test'
+  ...
+# Subtest: comfortable master default migrates the old default once and preserves explicit volumes
+ok 79 - comfortable master default migrates the old default once and preserves explicit volumes
+  ---
+  duration_ms: 36.605147
+  type: 'test'
+  ...
+# Subtest: saved volumes remain usable when storage writes are denied
+ok 80 - saved volumes remain usable when storage writes are denied
+  ---
+  duration_ms: 5.845976
+  type: 'test'
+  ...
+# Subtest: quieter tyres migrate the old default once without changing custom levels or master
+ok 81 - quieter tyres migrate the old default once without changing custom levels or master
+  ---
+  duration_ms: 33.503707
+  type: 'test'
+  ...
+# Subtest: steering assist defaults follow the active device until explicitly selected
+ok 82 - steering assist defaults follow the active device until explicitly selected
+  ---
+  duration_ms: 7.892551
+  type: 'test'
+  ...
+# Subtest: Off / Light / Full apply live, persist and take priority over device defaults
+ok 83 - Off / Light / Full apply live, persist and take priority over device defaults
+  ---
+  duration_ms: 18.147905
+  type: 'test'
+  ...
+# Subtest: invalid saved steering assist returns to the adaptive default
+ok 84 - invalid saved steering assist returns to the adaptive default
+  ---
+  duration_ms: 2.356493
+  type: 'test'
+  ...
+# Subtest: quality and resolution persist separately and notify live subscribers
+ok 85 - quality and resolution persist separately and notify live subscribers
+  ---
+  duration_ms: 20.74773
+  type: 'test'
+  ...
+# Subtest: resolution values are bounded on load and live writes
+ok 86 - resolution values are bounded on load and live writes
+  ---
+  duration_ms: 3.763865
+  type: 'test'
+  ...
+# Subtest: fresh players start with the tyre grip display off
+ok 87 - fresh players start with the tyre grip display off
+  ---
+  duration_ms: 6.707232
+  type: 'test'
+  ...
+# Subtest: HUD motion respects reduced motion until explicitly chosen and rejects invalid values
+ok 88 - HUD motion respects reduced motion until explicitly chosen and rejects invalid values
+  ---
+  duration_ms: 24.56729
+  type: 'test'
+  ...
+# Subtest: npm test reaches every tools/server/worker test directly or through imports
+ok 89 - npm test reaches every tools/server/worker test directly or through imports
+  ---
+  duration_ms: 175.824042
+  type: 'test'
+  ...
+# Subtest: coverage guard catches an unwired test and follows imported suites and globs
+ok 90 - coverage guard catches an unwired test and follows imported suites and globs
+  ---
+  duration_ms: 0.644812
+  type: 'test'
+  ...
+# Subtest: mini: owner-locked geometry and empty-cabin policy
+ok 91 - mini: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 1563.265154
+  type: 'test'
+  ...
+# Subtest: z4: owner-locked geometry and empty-cabin policy
+ok 92 - z4: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 625.78075
+  type: 'test'
+  ...
+# Subtest: taxi: owner-locked geometry and empty-cabin policy
+ok 93 - taxi: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 499.246076
+  type: 'test'
+  ...
+# Subtest: carrera: owner-locked geometry and empty-cabin policy
+ok 94 - carrera: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 602.042225
+  type: 'test'
+  ...
+# Subtest: gr_yaris: owner-locked geometry and empty-cabin policy
+ok 95 - gr_yaris: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 565.33647
+  type: 'test'
+  ...
+# Subtest: gtv: owner-locked geometry and empty-cabin policy
+ok 96 - gtv: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 400.806098
+  type: 'test'
+  ...
+# Subtest: golf: owner-locked geometry and empty-cabin policy
+ok 97 - golf: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 434.564229
+  type: 'test'
+  ...
+# Subtest: corolla: owner-locked geometry and empty-cabin policy
+ok 98 - corolla: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 260.814643
+  type: 'test'
+  ...
+# Subtest: superb: owner-locked geometry and empty-cabin policy
+ok 99 - superb: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 266.898142
+  type: 'test'
+  ...
+# Subtest: police_octavia: owner-locked geometry and empty-cabin policy
+ok 100 - police_octavia: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 302.322949
+  type: 'test'
+  ...
+# Subtest: mini_jcw: owner-locked geometry and empty-cabin policy
+ok 101 - mini_jcw: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 238.279261
+  type: 'test'
+  ...
+# Subtest: cle: owner-locked geometry and empty-cabin policy
+ok 102 - cle: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 363.617013
+  type: 'test'
+  ...
+# Subtest: gla: owner-locked geometry and empty-cabin policy
+ok 103 - gla: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 135.353431
+  type: 'test'
+  ...
+# Subtest: gla45: owner-locked geometry and empty-cabin policy
+ok 104 - gla45: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 79.987947
+  type: 'test'
+  ...
+# Subtest: cla: owner-locked geometry and empty-cabin policy
+ok 105 - cla: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 96.17657
+  type: 'test'
+  ...
+# Subtest: aventador_svj: owner-locked geometry and empty-cabin policy
+ok 106 - aventador_svj: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 150.688713
+  type: 'test'
+  ...
+# Subtest: huracan: owner-locked geometry and empty-cabin policy
+ok 107 - huracan: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 334.358849
+  type: 'test'
+  ...
+# Subtest: ibiza: owner-locked geometry and empty-cabin policy
+ok 108 - ibiza: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 269.216994
+  type: 'test'
+  ...
+# Subtest: panda: owner-locked geometry and empty-cabin policy
+ok 109 - panda: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 207.53623
+  type: 'test'
+  ...
+# Subtest: yaris: owner-locked geometry and empty-cabin policy
+ok 110 - yaris: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 193.303902
+  type: 'test'
+  ...
+# Subtest: e36: owner-locked geometry and empty-cabin policy
+ok 111 - e36: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 246.437125
+  type: 'test'
+  ...
+# Subtest: cle200: owner-locked geometry and empty-cabin policy
+ok 112 - cle200: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 574.238251
+  type: 'test'
+  ...
+# Subtest: cle450: owner-locked geometry and empty-cabin policy
+ok 113 - cle450: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 475.217901
+  type: 'test'
+  ...
+# Subtest: cle53: owner-locked geometry and empty-cabin policy
+ok 114 - cle53: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 412.434753
+  type: 'test'
+  ...
+# Subtest: e36_m3: owner-locked geometry and empty-cabin policy
+ok 115 - e36_m3: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 363.358059
+  type: 'test'
+  ...
+# Subtest: panda_11: owner-locked geometry and empty-cabin policy
+ok 116 - panda_11: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 340.96364
+  type: 'test'
+  ...
+# Subtest: panda_100hp: owner-locked geometry and empty-cabin policy
+ok 117 - panda_100hp: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 398.572124
+  type: 'test'
+  ...
+# Subtest: yaris_13: owner-locked geometry and empty-cabin policy
+ok 118 - yaris_13: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 375.996366
+  type: 'test'
+  ...
+# Subtest: yaris_ts: owner-locked geometry and empty-cabin policy
+ok 119 - yaris_ts: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 256.860453
+  type: 'test'
+  ...
+# Subtest: ibiza_cupra: owner-locked geometry and empty-cabin policy
+ok 120 - ibiza_cupra: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 316.875934
+  type: 'test'
+  ...
+# Subtest: golf_gti: owner-locked geometry and empty-cabin policy
+ok 121 - golf_gti: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 478.083833
+  type: 'test'
+  ...
+# Subtest: golf_gtd: owner-locked geometry and empty-cabin policy
+ok 122 - golf_gtd: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 362.426114
+  type: 'test'
+  ...
+# Subtest: golf_r: owner-locked geometry and empty-cabin policy
+ok 123 - golf_r: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 337.758686
+  type: 'test'
+  ...
+# Subtest: mini_cooper: owner-locked geometry and empty-cabin policy
+ok 124 - mini_cooper: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 376.226305
+  type: 'test'
+  ...
+# Subtest: mini_s: owner-locked geometry and empty-cabin policy
+ok 125 - mini_s: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 326.956442
+  type: 'test'
+  ...
+# Subtest: mini_cabrio_cooper: owner-locked geometry and empty-cabin policy
+ok 126 - mini_cabrio_cooper: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 154.916775
+  type: 'test'
+  ...
+# Subtest: corolla_15: owner-locked geometry and empty-cabin policy
+ok 127 - corolla_15: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 233.873869
+  type: 'test'
+  ...
+# Subtest: octavia_16tdi: owner-locked geometry and empty-cabin policy
+ok 128 - octavia_16tdi: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 146.006867
+  type: 'test'
+  ...
+# Subtest: octavia_rs: owner-locked geometry and empty-cabin policy
+ok 129 - octavia_rs: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 132.796494
+  type: 'test'
+  ...
+# Subtest: superb_15: owner-locked geometry and empty-cabin policy
+ok 130 - superb_15: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 246.118842
+  type: 'test'
+  ...
+# Subtest: superb_4x4: owner-locked geometry and empty-cabin policy
+ok 131 - superb_4x4: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 341.044331
+  type: 'test'
+  ...
+# Subtest: cla250: owner-locked geometry and empty-cabin policy
+ok 132 - cla250: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 646.075046
+  type: 'test'
+  ...
+# Subtest: cla35: owner-locked geometry and empty-cabin policy
+ok 133 - cla35: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 473.607942
+  type: 'test'
+  ...
+# Subtest: cla45s: owner-locked geometry and empty-cabin policy
+ok 134 - cla45s: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 227.686958
+  type: 'test'
+  ...
+# Subtest: gla250: owner-locked geometry and empty-cabin policy
+ok 135 - gla250: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 239.183555
+  type: 'test'
+  ...
+# Subtest: z4_20i: owner-locked geometry and empty-cabin policy
+ok 136 - z4_20i: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 211.521317
+  type: 'test'
+  ...
+# Subtest: z4_30i: owner-locked geometry and empty-cabin policy
+ok 137 - z4_30i: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 182.662608
+  type: 'test'
+  ...
+# Subtest: carrera_s: owner-locked geometry and empty-cabin policy
+ok 138 - carrera_s: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 339.730632
+  type: 'test'
+  ...
+# Subtest: carrera_gts: owner-locked geometry and empty-cabin policy
+ok 139 - carrera_gts: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 231.448689
+  type: 'test'
+  ...
+# Subtest: huracan_rwd: owner-locked geometry and empty-cabin policy
+ok 140 - huracan_rwd: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 212.940242
+  type: 'test'
+  ...
+# Subtest: gtv1750: owner-locked geometry and empty-cabin policy
+ok 141 - gtv1750: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 196.271023
+  type: 'test'
+  ...
+# Subtest: e36_318i: owner-locked geometry and empty-cabin policy
+ok 142 - e36_318i: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 183.114981
+  type: 'test'
+  ...
+# Subtest: mini_cabrio_jcw: owner-locked geometry and empty-cabin policy
+ok 143 - mini_cabrio_jcw: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 301.011995
+  type: 'test'
+  ...
+# Subtest: cle300e: owner-locked geometry and empty-cabin policy
+ok 144 - cle300e: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 166.714774
+  type: 'test'
+  ...
+# Subtest: jazz: owner-locked geometry and empty-cabin policy
+ok 145 - jazz: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 138.098006
+  type: 'test'
+  ...
+# Subtest: jazz_dynamic: owner-locked geometry and empty-cabin policy
+ok 146 - jazz_dynamic: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 70.625196
+  type: 'test'
+  ...
+# Subtest: jazz_drift: owner-locked geometry and empty-cabin policy
+ok 147 - jazz_drift: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 55.74485
+  type: 'test'
+  ...
+# Subtest: aygo: owner-locked geometry and empty-cabin policy
+ok 148 - aygo: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 34.704925
+  type: 'test'
+  ...
+# Subtest: qashqai: owner-locked geometry and empty-cabin policy
+ok 149 - qashqai: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 78.714043
+  type: 'test'
+  ...
+# Subtest: qashqai_dci: owner-locked geometry and empty-cabin policy
+ok 150 - qashqai_dci: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 49.392199
+  type: 'test'
+  ...
+# Subtest: dolphin: owner-locked geometry and empty-cabin policy
+ok 151 - dolphin: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 160.977711
+  type: 'test'
+  ...
+# Subtest: atto3: owner-locked geometry and empty-cabin policy
+ok 152 - atto3: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 153.82525
+  type: 'test'
+  ...
+# Subtest: van: owner-locked geometry and empty-cabin policy
+ok 153 - van: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 75.881913
+  type: 'test'
+  ...
+# Subtest: van_150: owner-locked geometry and empty-cabin policy
+ok 154 - van_150: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 91.068079
+  type: 'test'
+  ...
+# Subtest: truck: owner-locked geometry and empty-cabin policy
+ok 155 - truck: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 59.005107
+  type: 'test'
+  ...
+# Subtest: bus: owner-locked geometry and empty-cabin policy
+ok 156 - bus: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 79.229984
+  type: 'test'
+  ...
+# Subtest: delivery: owner-locked geometry and empty-cabin policy
+ok 157 - delivery: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 43.498676
+  type: 'test'
+  ...
+# Subtest: scooter: owner-locked geometry and empty-cabin policy
+ok 158 - scooter: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 24.714685
+  type: 'test'
+  ...
+# Subtest: moto: owner-locked geometry and empty-cabin policy
+ok 159 - moto: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 39.103684
+  type: 'test'
+  ...
+# Subtest: police_moto: owner-locked geometry and empty-cabin policy
+ok 160 - police_moto: owner-locked geometry and empty-cabin policy
+  ---
+  duration_ms: 88.892945
+  type: 'test'
+  ...
+# Subtest: traffic and police factories obey the same occupant and glass rules
+ok 161 - traffic and police factories obey the same occupant and glass rules
+  ---
+  duration_ms: 13781.469288
+  type: 'test'
+  ...
+# Subtest: no retired driver rig or hand animation can return through the application
+ok 162 - no retired driver rig or hand animation can return through the application
+  ---
+  duration_ms: 16.542464
+  type: 'test'
+  ...
+# UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().
+# Subtest: owner lock: no vegetation pipeline or detailed building renderer
+ok 163 - owner lock: no vegetation pipeline or detailed building renderer
+  ---
+  duration_ms: 90.214488
+  type: 'test'
+  ...
+# Subtest: every mapped building remains within the 40 triangle block budget
+ok 164 - every mapped building remains within the 40 triangle block budget
+  ---
+  duration_ms: 593.467663
+  type: 'test'
+  ...
+# Subtest: near and instanced pedestrians fit the owner budget with all appearance combinations
+ok 165 - near and instanced pedestrians fit the owner budget with all appearance combinations
+  ---
+  duration_ms: 1753.493634
+  type: 'test'
+  ...
+# Subtest: street models, signs, lamps, gantry primitives fit category budgets
+ok 166 - street models, signs, lamps, gantry primitives fit category budgets
+  ---
+  duration_ms: 104.558253
+  type: 'test'
+  ...
+# Subtest: Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+ok 167 - Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+  ---
+  duration_ms: 20.465446
+  type: 'test'
+  ...
+# Subtest: gantry and atlas labels fit their usable panel width even with fallback fonts
+ok 168 - gantry and atlas labels fit their usable panel width even with fallback fonts
+  ---
+  duration_ms: 27.237888
+  type: 'test'
+  ...
+# Subtest: terrain keeps area textures and boxes use a separate plaster/accent palette
+ok 169 - terrain keeps area textures and boxes use a separate plaster/accent palette
+  ---
+  duration_ms: 1.399328
+  type: 'test'
+  ...
+1..169
+# tests 169
+# suites 0
+# pass 168
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 35759.361334

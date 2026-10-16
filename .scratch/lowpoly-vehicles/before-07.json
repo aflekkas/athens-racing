@@ -1,0 +1,110 @@
+[
+  {
+    "id": "e36_m3",
+    "view": 0,
+    "triangles": 51500,
+    "drawCalls": 102,
+    "geometries": 96,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "e36_m3",
+    "view": 1,
+    "triangles": 51500,
+    "drawCalls": 102,
+    "geometries": 96,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "e36_m3",
+    "view": 2,
+    "triangles": 41072,
+    "drawCalls": 78,
+    "geometries": 118,
+    "textures": 8,
+    "heap": 29400000
+  },
+  {
+    "id": "panda_11",
+    "view": 0,
+    "triangles": 48292,
+    "drawCalls": 102,
+    "geometries": 98,
+    "textures": 10,
+    "heap": 29400000
+  },
+  {
+    "id": "panda_11",
+    "view": 1,
+    "triangles": 48292,
+    "drawCalls": 102,
+    "geometries": 98,
+    "textures": 10,
+    "heap": 29400000
+  },
+  {
+    "id": "panda_11",
+    "view": 2,
+    "triangles": 38418,
+    "drawCalls": 72,
+    "geometries": 122,
+    "textures": 11,
+    "heap": 29400000
+  },
+  {
+    "id": "panda_100hp",
+    "view": 0,
+    "triangles": 48872,
+    "drawCalls": 100,
+    "geometries": 98,
+    "textures": 13,
+    "heap": 29400000
+  },
+  {
+    "id": "panda_100hp",
+    "view": 1,
+    "triangles": 48872,
+    "drawCalls": 100,
+    "geometries": 98,
+    "textures": 13,
+    "heap": 29400000
+  },
+  {
+    "id": "panda_100hp",
+    "view": 2,
+    "triangles": 38238,
+    "drawCalls": 66,
+    "geometries": 120,
+    "textures": 14,
+    "heap": 29400000
+  },
+  {
+    "id": "yaris_13",
+    "view": 0,
+    "triangles": 48056,
+    "drawCalls": 101,
+    "geometries": 101,
+    "textures": 16,
+    "heap": 29400000
+  },
+  {
+    "id": "yaris_13",
+    "view": 1,
+    "triangles": 48056,
+    "drawCalls": 101,
+    "geometries": 101,
+    "textures": 16,
+    "heap": 29400000
+  },
+  {
+    "id": "yaris_13",
+    "view": 2,
+    "triangles": 38720,
+    "drawCalls": 79,
+    "geometries": 125,
+    "textures": 17,
+    "heap": 29400000
+  }
+]

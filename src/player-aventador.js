@@ -1,5 +1,5 @@
 // Original procedural SVJ shell. Metres, nose -Z; no Huracán mesh reuse.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 export const AVENTADOR = {L:4.943,W:2.098,H:1.136,wb:2.70,track:1.72,r:.355,rim:.254,tyreF:.255,tyreR:.355,belt:.77,front:.48,rear:.84,cowl:-1.10,header:-.44,roofBack:.48,back:1.10,seatZ:-.03,eyeY:.89,seatBase:.29,seats:2,doors:2,leather:'#202322',axleOffset:.14};
 export function buildAventador(car,d,M,low,H){
  const {surface,patch,box,line,mesh,cabinFittings,wheels,makePlateMaterial}=H,p=car.body,F=-d.L/2,R=d.L/2;
@@ -18,7 +18,6 @@ export function buildAventador(car,d,M,low,H){
  for(const z of [F,R])patch(p,M.paint,[[-at(z,1),.20,z],[at(z,1),.20,z],[at(z,1),at(z,2),z],[-at(z,1),at(z,2),z]],z<0?'front-bumper':'rear-bumper');
  car.windscreen=patch(p,M.glass,[[-.84,.78,-1.10],[.84,.78,-1.10],[.70,1.116,-.44],[-.70,1.116,-.44]],'windscreen');
  patch(p,M.paint,[[-.70,1.116,-.44],[.70,1.116,-.44],[.69,1.10,.48],[-.69,1.10,.48]],'roof');
- patch(p,M.cloth,[[-.69,1.10,-.43],[.69,1.10,-.43],[.68,1.084,.47],[-.68,1.084,.47]],'headliner');
  patch(p,M.glass,[[-.69,1.10,.48],[.69,1.10,.48],[.75,.83,1.10],[-.75,.83,1.10]],'rear-glass');
  for(const s of [-1,1]){
   polygon([[s*.84,.78,-1.10],[s*.70,1.116,-.44],[s*.69,1.10,.48],[s*.83,.81,.76]],M.glass,'front-door-glass');

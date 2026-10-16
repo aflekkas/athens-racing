@@ -137,7 +137,7 @@ export function mountCarSelect(root, index, opts = {}) {
   // Clone materials so the studio cannot change shared materials on the road.
   const materialCopies = new Map();
   const cloneMaterial = m => {
-    if (!materialCopies.has(m)) { const copy=m.clone(); if ('envMap' in copy) copy.envMap=environment.texture; materialCopies.set(m,copy); }
+    if (!materialCopies.has(m)) { const copy=m.clone(); if ('envMap' in copy && !copy.userData.vehicleGlass) copy.envMap=environment.texture; materialCopies.set(m,copy); }
     return materialCopies.get(m);
   };
   const studioMaterials = model => {
