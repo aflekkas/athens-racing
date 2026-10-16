@@ -231,6 +231,7 @@ export class Ground {
     const au = Math.abs(u), side = u >= 0 ? 1 : -1;
     const sc = route.closed ? route.wrap(s) : clamp(s, 0, route.length);
     out.network = false; out.networkStep = 0;
+    if(this.network?.islandAt(x,z)){out.y=this.network.height(x,z)+.14;out.surf='grass';out.water=0;out.hump=0;out.trap=null;return out;}
     // Race progress stays in s/u; only the physical contact surface changes off the race carriageway.
     if (au > route.edge(sc) + (route.closed && !route.streetCircuit ? 0 : ROAD.gutter) && this.network?.sample(x, z, this._net || (this._net = {}))) {
       const n = this._net;

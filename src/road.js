@@ -1,3 +1,4 @@
+import {roundaboutRange} from './roundabouts.js';
 import { signFaceOffset } from './sign-mount.js';
 import { gantryLegFrame } from './gantry-legs.js';
 import { squarePost, signFace } from './world-prop-geometries.js';
@@ -230,7 +231,7 @@ export function buildRoad(map, scene, heightC, assets) {
       medianRows.push((legacyMedian || dv > .01) && !route.localLayout?.portal(s));
       const eA = e + ROAD.gutter;
       const section = psychiko ? psychikoSection(route,s) : null;
-      const em = [e, mh, section ? section.kind==='blocks' ? -1 : section.paint : nl, dv];
+      const em = [e, mh, roundaboutRange(route,s) ? 0 : section ? section.kind==='blocks' ? -1 : section.paint : nl, dv];
       const us = [-eA, -e, -mh, 0, mh, e, eA];
       road.row(us.map((u) => ({ p: route.point(s, u, P()), s, u, em })));
       // median island (raised when the avenue is divided)

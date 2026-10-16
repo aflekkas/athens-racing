@@ -18,7 +18,7 @@ export function roadNetworkMaterial(psychiko=false){const m=new THREE.MeshStanda
  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aRoadHalfWidth; varying float nHalfWidth; varying vec2 nUV; varying vec2 nWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nnHalfWidth=aRoadHalfWidth;nUV=uv;nWorld=(modelMatrix*vec4(position,1.)).xz;');
  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 nUV; varying vec2 nWorld; varying float nHalfWidth; uniform sampler2D nPaving;'+ASPHALT_GLSL).replace('#include <color_fragment>',`#include <color_fragment>
  float paving=step(.5,vColor.r);
- vec3 asphalt=roadAsphalt(nWorld,nHalfWidth-abs(nUV.x),vColor.b);vec3 tile=texture2D(nPaving,nWorld*.31).rgb*.74;
+ vec3 asphalt=roadAsphalt(nWorld,nHalfWidth-abs(nUV.x),vColor.b);vec3 tile=texture2D(nPaving,nWorld*.31).rgb*.74;tile=mix(tile,vec3(.19,.23,.11),step(1.5,vColor.r));
  float fw=max(fwidth(nUV.x),.012);float line=1.-smoothstep(.055-fw,.055+fw,abs(nUV.x));
  ${psychiko?'line=1.-smoothstep(.05-fw,.05+fw,abs(abs(nUV.x)-.12));':''}
  float dash=${psychiko?'1.':'step(fract(nUV.y/9.),.36)'};float paint=line*dash*vColor.g*(1.-paving);
@@ -29,7 +29,8 @@ export function buildRoadNetwork(network,scene){
  for(const road of network.roads){let s=0;for(const seg of network.segments.filter(q=>q.road===road)){roadS.set(seg,s);s+=seg.L;}}
  function vertex(tile,p,seg,pavement){const u=((p[0]-seg.ax)*-seg.dz+(p[1]-seg.az)*seg.dx)/seg.L,s=roadS.get(seg)+((p[0]-seg.ax)*seg.dx+(p[1]-seg.az)*seg.dz)/seg.L;
   let paint=seg.road.sf==='asphalt'&&!seg.road.oneway&&!['residential','living_street','service'].includes(seg.road.h)?1:0;
-  if(network.route.streetCircuit)paint=psychikoStreet(seg.road.n,seg.az < -900).paint;
+  if(seg.road.oneway||seg.road.junction==='roundabout')paint=0;
+  else if(network.route.streetCircuit)paint=psychikoStreet(seg.road.n,seg.az < -900).paint;
   if(paint)for(const other of network.candidates(...p))if(other.road.id!==seg.road.id&&network.distance(other,...p)<other.hw+2){paint=0;break;}
   tile.pos.push(p[0],network.height(...p)+(pavement?.14:0),p[1]);tile.uv.push(u,s);tile.halfWidth.push(seg.hw);tile.col.push(pavement?1:0,paint,seg.road.sf==='gravel'?1:0);
  }
@@ -61,6 +62,14 @@ export function buildRoadNetwork(network,scene){
     }
    }
   }
+ }
+ // Island tops and 14 cm kerbs share each existing road chunk/material.
+ for(const island of network.islands){const ring=island.ring,poly=ring.map(p=>new THREE.Vector2(...p)),faces=THREE.ShapeUtils.triangulateShape(poly,[]);
+  const add=p=>{const key=`${Math.floor(p[0]/300)},${Math.floor(p[1]/300)}`;if(!tiles.has(key))tiles.set(key,{pos:[],uv:[],col:[],halfWidth:[]});return tiles.get(key);};
+  // Keep every triangle in one tile, even when its vertices straddle a cell.
+  const emit=(points,islandTop=false)=>{const cx=points.reduce((v,p)=>v+p[0]/3,0),cz=points.reduce((v,p)=>v+p[2]/3,0),tile=add([cx,cz]);for(const p of points){tile.pos.push(...p);tile.uv.push(0,0);tile.col.push(islandTop?2:1,0,0);tile.halfWidth.push(0);}triangles++;};
+  for(const face of faces){const ps=face.map(i=>[ring[i][0],network.height(...ring[i])+.14,ring[i][1]]);if(cross(...face.map(i=>ring[i]))>0)[ps[1],ps[2]]=[ps[2],ps[1]];emit(ps,true);}
+  for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length],ya=network.height(...a),yb=network.height(...b);emit([[a[0],ya,a[1]],[b[0],yb,b[1]],[a[0],ya+.14,a[1]]]);emit([[b[0],yb,b[1]],[b[0],yb+.14,b[1]],[a[0],ya+.14,a[1]]]);}
  }
  for(const tile of tiles.values()){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(tile.pos,3));tile.positions=g.attributes.position.array;g.setAttribute('aRoadHalfWidth',new THREE.Float32BufferAttribute(tile.halfWidth,1));g.setAttribute('uv',new THREE.Float32BufferAttribute(tile.uv,2));g.setAttribute('color',new THREE.Float32BufferAttribute(tile.col,3));g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,mat);m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);m.boundingSphere=g.boundingSphere;m.userData={lod:true,far:1800};root.add(m);}
  // Vertex-coloured road tiles already merge all streets in a cell. Use the common static batcher for accessories.

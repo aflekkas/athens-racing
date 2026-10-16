@@ -8,6 +8,7 @@ import {boundaryRing,inside,publicRoad,sideStreetExits} from './neighbourhood.mj
 import {psychikoSection} from '../../../src/maps/psychiko-streets.js';
 import {buildPsychikoScenery} from './scenery.mjs';
 import {inject} from '../../inject-speed-signs.mjs';
+import {routeRoundabouts,roundaboutLoops} from '../../roundabouts.mjs';
 import {extractRoadNetwork} from '../../build-road-network.mjs';
 const dir=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(dir,'../../..'),out=path.join(root,'data/maps/psychiko');
 fs.mkdirSync(out,{recursive:true});
@@ -77,6 +78,8 @@ data.route.width[N-1]=data.route.width[0];
   if(moved<.005)break;}}
 // Clip 25 m inside the terrain grid so both six-metre shoulders always have ground under them.
 data.psychiko.networkBounds=[minX+25,minZ+25,maxX-25,maxZ-25].map(r);
+data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>({...r,reverse:R.trafficRoundabouts.find(q=>q.id===r.id)}));
+for(const r of data.route.roundabouts)for(let i=Math.floor(r.s0/step);i<=Math.ceil(r.s1/step);i++)data.route.width[i]=Math.min(data.route.width[i],r.w);
 data.roadNetwork=extractRoadNetwork(data,selected,{excludeWays:R.sourceWayIds,radius:1600,bounds:data.psychiko.networkBounds});
 data.psychiko.networkWayIds=publicWays.map(w=>w.id);
 data.psychiko.sideStreetExits=sideStreetExits(osm,R);

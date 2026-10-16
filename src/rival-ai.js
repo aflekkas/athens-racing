@@ -1,3 +1,4 @@
+import {entryYieldDistance} from './roundabouts.js';
 // Race driving uses only ordinary Vehicle inputs. Geometry stays in route metres;
 // closed routes repeat their line/profile, while vehicle.s stays unwrapped across laps.
 const G = 9.81;
@@ -617,6 +618,8 @@ export class RivalAI {
     let targetSpeed = line.sample(this.profile, veh.s + dir * Math.max(3, v * 0.18)) * this._pace;
     const plan = planBraking(v, brakeV, budget, 0.25, this._baseSampler, v * v / (2 * Math.max(1, brakeV * budget)) + 70, 4, this._plan);
     targetSpeed = Math.min(targetSpeed, plan.target);
+    const yieldDistance=route.roundabouts?.length?entryYieldDistance(route,{s:veh.s,dir,len:veh.spec?.length||4.5},[...(racers||[]).map(r=>r.veh||r),...(Array.isArray(traffic)?traffic:traffic?.cars||[])]):null;
+    if(yieldDistance!==null)targetSpeed=Math.min(targetSpeed,Math.sqrt(2*brakeV*.7*Math.max(0,yieldDistance)));
     let plannedBrake = plan.brake;
     const freeSpeed = targetSpeed;
     const baseU = line.sample(line.u, veh.s), bounds = line.bounds(veh.s, false, false, this._b);

@@ -140,7 +140,8 @@
     "tools/world-detail.test.mjs",
     "tools/detail-budgets.test.mjs",
     "tools/road-asphalt.test.mjs",
-    "tools/airborne-network.test.mjs"
+    "tools/airborne-network.test.mjs",
+    "tools/roundabouts.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
