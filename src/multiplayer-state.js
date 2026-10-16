@@ -1,7 +1,9 @@
 // Sample at 10 Hz, send at most two samples per message, and avoid repeating parked state.
-const tolerances = { x: .01, y: .01, z: .01, s: .02, u: .01, yaw: .001, steer: .005, vLong: .05, vLat: .05, rpm: 150, nitro: .02, bodyHeave: .005, bodyPitch: .005, bodyRoll: .005 };
+const tolerances = { vy: .05, angularX: .01, angularY: .01, angularZ: .01, x: .01, y: .01, z: .01, s: .02, u: .01, yaw: .001, steer: .005, vLong: .05, vLat: .05, rpm: 150, nitro: .02, bodyHeave: .005, bodyPitch: .005, bodyRoll: .005 };
 function stationaryUnchanged(a, b) {
   if (!b || Math.abs(a.vLong) > .1 || Math.abs(a.vLat) > .1 || Math.abs(b.vLong) > .1 || Math.abs(b.vLat) > .1) return false;
+  if (a.air !== b.air || a.bodyDynamic !== b.bodyDynamic) return false;
+  if (JSON.stringify(a.bodyQ) !== JSON.stringify(b.bodyQ)) return false;
   if(a.exhaustSerial!==b.exhaustSerial||a.exhaustEnabled!==b.exhaustEnabled)return false;
   if (a.gear !== b.gear || a.reverse !== b.reverse || a.braking !== b.braking || (a.pursuit ?? 0) !== (b.pursuit ?? 0)) return false;
   if (a.paint !== b.paint || JSON.stringify(a.driver || null) !== JSON.stringify(b.driver || null)) return false;

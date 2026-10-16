@@ -1,3 +1,4 @@
+import { interpolateQuaternion, advanceQuaternion } from './rigid-pose.js';
 // Rendering only: never use delayed/predicted poses for ranking or finish validation.
 const fields = ['x', 'y', 'z', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm'];
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
@@ -5,7 +6,7 @@ const angle = x => Math.atan2(Math.sin(x), Math.cos(x));
 const speed = p => Math.hypot(p.vLong, p.vLat);
 const velocity = p => ({ x: -Math.sin(p.yaw) * p.vLong + Math.cos(p.yaw) * p.vLat, z: -Math.cos(p.yaw) * p.vLong - Math.sin(p.yaw) * p.vLat });
 const valid = p => p && [...fields, 'yaw'].every(k => Number.isFinite(p[k]));
-const samePose = (a, b) => [...fields, 'yaw', 'gear', 'reverse'].every(k => a[k] === b[k]);
+const samePose = (a, b) => [...fields, 'yaw', 'gear', 'reverse', 'vy', 'bodyDynamic', 'air'].every(k => a[k] === b[k]) && JSON.stringify(a.bodyQ) === JSON.stringify(b.bodyQ);
 
 export class RemoteTimeline {
   constructor() { this.samples = []; this.delay = 40; this.jitter = 0; this.cadence = 200; this.offset = null; this.playhead = null; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; }
@@ -51,7 +52,7 @@ export class RemoteTimeline {
     if (!this.samples.length) return null;
     const target = now - this.offset - this.delay;
     const latest = this.samples.at(-1), previous = this.samples.at(-2);
-    const moving = previous && Math.hypot(latest.state.x - previous.state.x, latest.state.z - previous.state.z) > .01 && speed(latest.state) > .1 && !stopped && !latest.stopped;
+    const moving = previous && (Math.hypot(latest.state.x - previous.state.x, latest.state.z - previous.state.z) > .01 && speed(latest.state) > .1 || Math.abs(latest.state.y - previous.state.y) > .01 && Math.abs(latest.state.vy || 0) > .1 || latest.state.bodyDynamic && Math.hypot(latest.state.angularX || 0, latest.state.angularY || 0, latest.state.angularZ || 0) > .01) && !stopped && !latest.stopped;
     // Keep time at the last bounded prediction while frozen. On packet recovery
     // playback continues from there, rather than chasing a distant pose at 1.5x
     // speed. Growing jitter delay may slow the clock by 10%; it never speeds up.
@@ -69,7 +70,16 @@ export class RemoteTimeline {
       this.mode = 'interpolate';
       const span = b.time - a.time, t = clamp((time - a.time) / span, 0, 1), p = { ...a.state };
       for (const key of fields) p[key] = a.state[key] + (b.state[key] - a.state[key]) * t;
-      for (const key of ['bodyHeave', 'bodyPitch', 'bodyRoll']) if (Number.isFinite(a.state[key]) && Number.isFinite(b.state[key])) p[key] = a.state[key] + (b.state[key] - a.state[key]) * t;
+      for (const key of ['bodyHeave', 'bodyPitch', 'bodyRoll', 'vy', 'angularX', 'angularY', 'angularZ']) if (Number.isFinite(a.state[key]) && Number.isFinite(b.state[key])) p[key] = a.state[key] + (b.state[key] - a.state[key]) * t;
+      if (a.state.bodyDynamic && b.state.bodyDynamic && a.state.bodyQ && b.state.bodyQ)
+        p.bodyQ = interpolateQuaternion(a.state.bodyQ, b.state.bodyQ, t);
+      else if (t >= .5) { p.bodyDynamic = b.state.bodyDynamic; p.bodyQ = b.state.bodyQ; p.air = b.state.air; }
+      // Vertical Hermite follows ballistic arcs without flattening the jump apex.
+      if (Number.isFinite(a.state.vy) && Number.isFinite(b.state.vy)) {
+        const seconds = span / 1000;
+        p.y = (2*t**3-3*t*t+1)*a.state.y + (t**3-2*t*t+t)*seconds*a.state.vy +
+          (-2*t**3+3*t*t)*b.state.y + (t**3-t*t)*seconds*b.state.vy;
+      }
       p.yaw = a.state.yaw + angle(b.state.yaw - a.state.yaw) * t;
       // Hermite positions retain acceleration/turning between collapsed 5 Hz batches.
       // Limit tangents to the segment's displacement so noisy speeds cannot overshoot.
@@ -93,6 +103,10 @@ export class RemoteTimeline {
     p.x += (vel.x * Math.cos(half) + vel.z * Math.sin(half)) * dt;
     p.z += (vel.z * Math.cos(half) - vel.x * Math.sin(half)) * dt;
     p.yaw += yawRate * dt;
+    if (p.bodyDynamic && p.bodyQ) {
+      p.bodyQ = advanceQuaternion(p.bodyQ, [p.angularX || 0, p.angularY || 0, p.angularZ || 0], dt);
+      if (p.air) { p.y += (p.vy || 0)*dt - 4.905*dt*dt; p.vy = (p.vy || 0) - 9.81*dt; }
+    }
     p.s += clamp((p.s - previous.state.s) / span, -150, 150) * dt;
     p.u += clamp((p.u - previous.state.u) / span, -50, 50) * dt;
     if (late >= 350) p.vLong = p.vLat = 0;
@@ -115,7 +129,7 @@ export function receiveRemoteSnapshot(peers, message, { id, members = [], receiv
 
 export function applyRemotePose(peer, vehicle, now = performance.now(), stopped = false) {
   const p = peer.timeline?.sample(now, stopped || peer.finish != null || !!peer.dnf) || peer.state;
-  for (const key of [...fields, 'yaw', 'gear', 'reverse']) if (p[key] !== undefined) vehicle[key] = p[key];
+  for (const key of [...fields, 'yaw', 'gear', 'reverse', 'vy', 'bodyDynamic', 'air', 'bodyQ']) if (p[key] !== undefined) vehicle[key] = p[key];
   return p;
 }
 

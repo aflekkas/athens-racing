@@ -14,7 +14,7 @@ export function socketAttachment(data) {
   // per-socket fallback first; always retain pose, motion epoch and course.
   for (const key of ['tyreTelemetry', 'driver', 'engineFailureReason']) if (size() > 1980 && connection.state) delete connection.state[key];
   if (size() > 1980 && connection.state) {
-    const physical = ['x', 'y', 'z', 's', 'u', 'yaw', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'damage', 'reverse', 'motionEpoch', 'sampleTime', 'sampleAge', 'recoveryUntil'];
+    const physical = ['vy', 'angularX', 'angularY', 'angularZ', 'bodyQ', 'bodyDynamic', 'air', 'x', 'y', 'z', 's', 'u', 'yaw', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'damage', 'reverse', 'motionEpoch', 'sampleTime', 'sampleAge', 'recoveryUntil'];
     connection.state = Object.fromEntries(physical.filter(k => connection.state[k] !== undefined).map(k => [k, connection.state[k]]));
   }
   return connection;
