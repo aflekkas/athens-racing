@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Riviera loads faster on your first visit. Loading shows the current task and download size, and long waits offer a way back to the menu.
+  ![Riviera loading with the current task and a return to menu button](assets/changelog/2026.10.16.1/riviera-loading.webp "See what is loading, and return to the menu if you need to retry.")
+
 - Sit in each car’s own cockpit again: its dashboard, instruments, vents and steering wheel, with a slightly higher seat for a clear view of the road.
   ![Restored 911 dashboard and five instruments from the raised driver seat](assets/changelog/2026.10.16.1/authored-interiors.webp "Each car’s own interior, with the road in view.")
 

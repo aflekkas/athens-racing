@@ -59,6 +59,7 @@
     "tools/owner-locked-graphics.test.mjs",
     "tools/local-carriageways.test.mjs",
     "tools/generated-world-cache.test.mjs",
+    "tools/baked-world-loading.test.mjs",
     "tools/bundle-browser.test.mjs",
     "tools/deploy-smoke-assets.test.mjs",
     "tools/ai-driving.test.mjs",

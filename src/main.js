@@ -96,7 +96,12 @@ const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
 
 function fail(e) { console.error(e); const el = $('err'); el.style.display = 'block'; el.textContent = 'Error: ' + (e && e.message || e); }
 window.addEventListener('error', (e) => fail(e.error || e.message));
-const lstat = (t, f) => loading.progress(t, f); // the loading screen (src/ui/loading.js)
+const lstat = (t, f) => {
+  const pending = assetMetrics.maps[loading.mapId];
+  // World preloading overlaps HUD/sky work. Keep the actual pending operation
+  // visible when a builder announces its terrain milestone before awaiting it.
+  loading.progress(t === 'BUILDING TERRAIN' && pending && !pending.loadMs ? pending.phase || t : t, f);
+};
 
 // ------------------------------------------------------------------ renderer
 const cpuMetrics = new CpuMetrics(Q.has('cpuProfile'));
@@ -280,7 +285,7 @@ async function boot() {
 async function loadFirstMap(id) {
   setAssetCodecMap(id);
   const texReady = loadTextures(); // decodes in parallel with the world building below
-  map = await loadMap(undefined, './', id);
+  map = await loadMap(undefined, './', id, { worldProgress: lstat });
   route = map.route;
   startS = route.start;
   hud?.paintPanel?.remove(); $('rticks').replaceChildren();
@@ -310,9 +315,11 @@ async function loadFirstMap(id) {
   updateCamera(0, true);
   lstat('WARMING TYRES', 0.95);
   const textureWaitStarted = performance.now();
-  await texReady; assetMetrics.textureWaitMs = performance.now() - textureWaitStarted; uploadTextures(renderer);
+  await texReady; assetMetrics.textureWaitMs = performance.now() - textureWaitStarted;
+  lstat('UPLOADING TEXTURES', .96); await frameYield(); uploadTextures(renderer);
   tlog('textures');
   updateLod();
+  lstat('PREPARING SHADERS', .98); await frameYield();
   const compileStarted = performance.now(); await compileScene();
   assetMetrics.compileSceneMs = performance.now() - compileStarted;
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
@@ -368,7 +375,7 @@ async function switchMap(id = 'riviera', context = 'QUICK RACE') {
     }
     let nextMap, nextWorld;
     try {
-      nextMap = await loadMap(undefined, './', id);
+      nextMap = await loadMap(undefined, './', id, { worldProgress: lstat });
       nextWorld = await buildMapWorld(nextMap, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
     } catch (error) { nextMap?.dispose?.(); G.state = priorState; G.paused = priorPaused; throw error; }
     if (G.run && !G.run.done) G.run.abort('map-change');

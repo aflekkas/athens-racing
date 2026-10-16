@@ -228,7 +228,7 @@ export class Terrain {
   }
 }
 
-export async function loadMap(onProgress, base = './', mapId = 'riviera', { preload = true } = {}) {
+export async function loadMap(onProgress, base = './', mapId = 'riviera', { preload = true, worldProgress } = {}) {
   const definition = getMap(mapId);
   const [mapRes, terRes] = await Promise.all([fetch(base + definition.dataUrl), fetch(base + definition.terrainUrl)]);
   if (!mapRes.ok || !terRes.ok) throw new Error('map data missing');
@@ -266,6 +266,6 @@ export async function loadMap(onProgress, base = './', mapId = 'riviera', { prel
     get disposed() { return disposed; },
     dispose() { if (disposed) return; disposed = true; route._h?.clear(); route._h = null; bundle.data = null; bundle.route = null; bundle.terrain = null; bundle.bakedWorld = null; bundle.events = []; }
   };
-  if (preload) bundle.bakedWorld = loadBakedWorldData(bundle);
+  if (preload) bundle.bakedWorld = loadBakedWorldData(bundle, worldProgress);
   return bundle;
 }
