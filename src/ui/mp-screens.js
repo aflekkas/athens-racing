@@ -88,11 +88,11 @@ const showroom = ({ cls = '', caption, plate, side }) => `<div class="mp-show ${
 export function renderMp(menu, mp, d = {}) {
   const tab = form.tab = d.tab || form.tab || 'join';
   const tabs = C.tabs({ key: 'mpTab', value: tab, options: [['join', 'JOIN', 'users-three'], ['host', 'HOST', 'plus']], cls: 'mp-tabs' });
-  const caption = `<span class="kick">MULTIPLAYER</span><h2 class="mp-show__title">${tab === 'host' ? 'HOST A GAME' : 'JOIN A GAME'}</h2>
+  const caption = `${C.sheetHead({ kick: 'MULTIPLAYER', title: tab === 'host' ? 'HOST A GAME' : 'JOIN A GAME' })}
     <p class="mp-show__sub">2–${MAX_DRIVERS} drivers · player collisions on · rejoin within 90 seconds</p>`;
   return C.screen({ cls: 'scr--mp scr--showroom', kick: 'MULTIPLAYER <span class="acc">/</span> LIVE RACING',
     hints: [['updown', 'SELECT'], ['tabs', 'JOIN / HOST'], ['confirm', 'OK'], ['back', 'BACK']],
-    body: showroom({ cls: 'mp-show--entry', caption, plate: carPlate(mp, carOf(mp, showroomCar(mp))), side: `<div class="mp-side__head">${tabs}${statusChip(mp)}</div>${tab === 'host' ? hostBody(mp) : joinBody(mp)}` }) });
+    body: showroom({ cls: 'mp-show--entry', caption, plate: carPlate(mp, carOf(mp, showroomCar(mp))), side: `<div class="mp-side__bar">${tabs}${statusChip(mp)}</div>${tab === 'host' ? hostBody(mp) : joinBody(mp)}` }) });
 }
 function joinBody(mp) {
   const ready = /^[A-Z0-9]{6}$/.test(form.code);
@@ -173,9 +173,9 @@ export function renderLobby(menu, mp) {
     acts.push(C.button({ label: 'BACK TO THE RACE', icon: 'play', variant: 'primary', act: 'back', attrs: { 'data-default': '', 'data-fid': 'resume' } }));
     if (host) acts.push(C.button({ label: 'RESTART', icon: 'arrow-counter-clockwise', act: 'mpRestart', attrs: { 'data-fid': 'restart' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } }));
   }
-  const caption = `<span class="kick">LOBBY · ${live ? 'RACE IN PROGRESS' : waiting ? 'WAITING FOR DRIVERS' : 'RESULTS'}</span><h2 class="mp-show__title">${esc(l.name)}</h2>
-    <div class="mp-show__meta">${C.chip(esc(l.code || ''), { tone: 'accent', icon: 'lock-simple', cls: 'mp-code-chip', attrs: { title: 'Lobby code' } })}${C.chip(esc(mapName(mp, l.mapId)), { icon: 'map-trifold' })}${C.chip(esc(describeMode(mode)), { icon: 'flag-checkered' })}</div>`;
-  const tools = `<div class="mp-side__head">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'gear-six', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
+  const caption = `${C.sheetHead({ kick: `LOBBY · ${live ? 'RACE IN PROGRESS' : waiting ? 'WAITING FOR DRIVERS' : 'RESULTS'}`, title: `${esc(l.name)}` })}
+    <div class="mp-show__meta">${C.chip(esc(l.code || ''), { tone: 'accent', icon: 'lock-simple', attrs: { title: 'Lobby code' } })}${C.chip(esc(mapName(mp, l.mapId)), { icon: 'map-trifold' })}${C.chip(esc(describeMode(mode)), { icon: 'flag-checkered' })}</div>`;
+  const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'gear-six', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
   const sessionPanel = C.panel('SESSION', `<div class="mp-fields">${session}</div>`, { icon: 'sliders-horizontal', cls: 'mp-session' });
   const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users-three', cls: 'mp-drivers' });
   return C.screen({ cls: 'scr--mp scr--showroom scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`,
@@ -286,9 +286,9 @@ export function renderResults(menu, mp) {
   if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'export', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
   if (complete) acts.push(C.button({ label: 'CHANGE CAR', icon: 'car-profile', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }));
   acts.push(C.button({ label: 'LEAVE LOBBY', icon: 'sign-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
-  return C.screen({ cls: 'scr--results scr--mp scr--mp-results', kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
+  return C.screen({ cls: 'scr--results scr--mp scr--mp-results', title: esc(title), kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
     hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'CLOSE']],
-    body: `<div class="res-layout"><div class="res-main"><h2 class="res-title">${esc(title)}</h2><p class="res-sub">${personal?.newBest ? C.badge('NEW PERSONAL BEST' + (personal.delta < 0 ? ' −' + Math.abs(personal.delta).toFixed(2) + ' s' : ''), 'good', 'timer') : ''}${esc(!complete ? 'Your clock has stopped. Live standings · waiting for the other drivers or the race timeout.' : host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
+    body: `<div class="res-layout"><div class="res-main"><p class="res-sub">${personal?.newBest ? C.badge('NEW PERSONAL BEST' + (personal.delta < 0 ? ' −' + Math.abs(personal.delta).toFixed(2) + ' s' : ''), 'good', 'timer') : ''}${esc(!complete ? 'Your clock has stopped. Live standings · waiting for the other drivers or the race timeout.' : host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
       ${tiles.length ? C.stats(tiles.map(([k, v]) => [k, v]), 'res-stats') : ''}<div class="res-actions">${acts.join('')}</div></div>
       <div class="res-side scroll-y">${C.panel('CLASSIFICATION', `<table class="r-table">${rows}</table>`, { icon: 'flag-checkered' })}</div></div>` });
 }

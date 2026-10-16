@@ -1,32 +1,7 @@
-/* One compact, flat language for every in-race source. The queue owns arbitration and safe placement. */
+/* In-race notices: placement and visibility only. The notice, its badge and its buttons are kit components
+   (src/ui/ui.css "in-race notice"); src/ui/notification-queue.js keeps them out of the driving view. */
 #notification-lane{position:fixed;z-index:46;display:flex;flex-direction:column;gap:6px;pointer-events:none;font:500 13px/1.3 Barlow,system-ui,sans-serif;box-sizing:border-box}
 #notification-lane[hidden],#notification-lane [hidden]{display:none!important}
-.race-notice{--lamp:#b9cbd3;position:relative;box-sizing:border-box;flex:none;min-height:40px;padding:10px 12px 10px 37px;color:#f3f6ef;text-align:left;border:0;border-left:3px solid var(--lamp);border-radius:3px;background:#13232c;box-shadow:none;display:flex;flex-direction:column;justify-content:center;animation:notice-in .18s ease-out both}
-.race-notice[data-lamp=warn]{--lamp:#f4bf4f}.race-notice[data-lamp=bad]{--lamp:#ff705f}.race-notice[data-lamp=good]{--lamp:#dcfa4c}
-.race-notice::after{content:'';position:absolute;left:10px;top:12px;width:17px;height:17px;background:var(--lamp);mask:var(--telltale) center/contain no-repeat;-webkit-mask:var(--telltale) center/contain no-repeat}
-.race-notice b,.race-notice>span{display:block}.race-notice b,.race-notice>span:only-child{font:800 italic 17px/1.15 'Barlow Condensed',Barlow,sans-serif;letter-spacing:.035em;text-transform:uppercase;color:#f3f6ef}.race-notice>span{margin-top:3px;font-size:12px;color:#c1d0d7}.notice-label{display:none}
-.notice-actions,.race-notice .tow-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
-#notification-lane :is(.race-notice,#engineHud,#tow-prompt) button{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;border:1px solid #62747d;border-radius:3px;background:transparent;color:#f3f6ef;font:700 12px 'Barlow Condensed',sans-serif;min-height:36px;padding:6px 10px;cursor:pointer;transition:background .16s,color .16s,transform .16s}
-#notification-lane :is(.race-notice,#engineHud,#tow-prompt) button:hover{background:#30454f}#notification-lane :is(.race-notice,#engineHud,#tow-prompt) button:active{transform:translateY(1px)}#notification-lane :is(.race-notice,#engineHud,#tow-prompt) button:focus{outline:2px solid #dcfa4c;outline-offset:2px}
-.race-notice .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px;padding:2px 4px;background:#3c505b;color:#f3f6ef;border:0;border-radius:2px;font:700 10px 'Barlow Condensed',sans-serif;box-shadow:none;letter-spacing:.04em}
-/* Adopted nodes keep their real handlers; no duplicate visual shell or icon plate. */
-#notification-lane #tow-prompt,#notification-lane #engineHud{position:static!important;inset:auto!important;transform:none!important;width:auto!important;max-width:none!important;padding:0!important;border:0!important;box-shadow:none!important;background:none!important;font:inherit!important;color:inherit;overflow:visible!important;display:block}
-#notification-lane #tow-prompt strong,#notification-lane #engineHud b{display:block;font:800 italic 17px/1.15 'Barlow Condensed',Barlow,sans-serif;text-transform:uppercase;letter-spacing:.035em}
-#notification-lane #tow-prompt p,#notification-lane #engineHud small{display:block;font:500 12px/1.3 Barlow,sans-serif;color:#c1d0d7;margin:3px 0 0}
-#notification-lane #engineHud>.ico,#notification-lane #engineHud>i{display:none}#notification-lane #engineHud .engine-repair{margin:0}
-#notification-lane #tow-prompt.minimised .tow-chip{display:inline-flex;font:700 12px 'Barlow Condensed',sans-serif}#notification-lane #tow-prompt.minimised>:not(.tow-chip){display:none}#notification-lane #tow-prompt:not(.minimised) .tow-chip{display:none}
-.menu-feedback{position:static;margin:8px 0;padding:9px 12px;border-left:3px solid #b9cbd3;border-radius:3px;background:#192c35;box-shadow:none;font:500 13px/1.35 Barlow,sans-serif;color:#f3f6ef}.menu-feedback[data-tone=bad]{border-color:#ff705f}.menu-feedback[data-tone=good]{border-color:#dcfa4c}
 #input-toast,#wrongWay,#police-hud,#police-big,#checkpoint-banner,#drivingHints,#drivingTip,#pops,#banner,#msg,.toasts{display:none!important}
 body.ui-open #notification-lane,body.menu #notification-lane,body:has(#multiplayer:not([hidden])) #notification-lane,body:has(#loading.open) #notification-lane,body:has(.modal-scrim) #notification-lane{display:none!important}
 body:is(.racing,.counting):not(.ui-open):not(.menu):not(:has(#multiplayer:not([hidden]))):not(:has(#loading.open)) #accounts-offline{display:none!important}
-@keyframes notice-in{from{opacity:0;transform:translateY(-4px)}}
-@media(max-width:500px),(max-height:480px){.race-notice{padding:8px 10px 8px 33px;min-height:36px}.race-notice::after{left:8px;top:10px;width:16px;height:16px}.race-notice b,.race-notice>span:only-child,#notification-lane #tow-prompt strong,#notification-lane #engineHud b{font-size:16px}.race-notice>span,#notification-lane #tow-prompt p,#notification-lane #engineHud small{font-size:11px}#notification-lane :is(.race-notice,#engineHud,#tow-prompt) button{min-height:40px}}
-@media(prefers-reduced-motion:reduce){.race-notice{animation:none}#notification-lane :is(.race-notice,#engineHud,#tow-prompt) button{transition:none}}
-
-/* Keep repair beside the two text lines, including a full-size touch target. */
-#notification-lane #engineHud{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;row-gap:2px}
-#notification-lane #engineHud>span{display:contents}
-#notification-lane #engineHud b{grid-column:1;grid-row:1}
-#notification-lane #engineHud>span>small{grid-column:1;grid-row:2;margin:0}
-#notification-lane #engineHud button.engine-repair{grid-column:2;grid-row:1 / span 2;margin:0}
-#notification-lane #engineHud span.engine-repair{grid-column:1 / span 2;grid-row:3;font-size:11px}

@@ -56,7 +56,7 @@ export function openExternal(url) {
 
 // ---------------------------------------------------------------- markup helpers
 const linkify = (s) => esc(s).replace(/https?:\/\/[^\s<]+/g, (u) => { const [, url, tail] = /^(.*?)([.,;:)]*)$/.exec(u); return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${tail}`; });
-const empty = (msg) => `<div class="panel release-empty"><p class="empty">${msg}</p></div>`;
+const empty = (msg) => C.panel('', `<p class="empty">${msg}</p>`, { cls: 'release-empty' });
 const loading = () => empty(`${C.spinner()} LOADING`);
 const head = (menu, kick) => ({ cls: 'scr--info', kick: menu.data.from === 'pause' ? 'PAUSED' : kick, hints: [['updown', 'SELECT'], ['back', 'BACK']] });
 const paragraphs = (body) => body.split(/\n{2,}/).map((p) => `<div class="mi credit-para" role="listitem">${linkify(p)}</div>`).join('');
@@ -80,7 +80,7 @@ function gallery(release, images = release.images || []) {
   return `<div class="release-gallery">${images.map(image => {
     const index = release.images.indexOf(image);
     const media = `<img src="${esc(image.src)}" alt="${esc(image.alt)}" loading="lazy" decoding="async" width="${image.width || 1280}" height="${image.height || 800}" />`;
-    return `<figure class="release-photo">${C.button({ label: media, variant: 'ghost', act: 'releaseImage', cls: 'release-photo__open', title: 'Open photo', attrs: { 'data-release': release.version, 'data-image': index, 'aria-label': image.caption } })}<figcaption>${esc(image.caption)}</figcaption></figure>`;
+    return C.card({ media, text: esc(image.caption), act: 'releaseImage', cls: 'card--photo', attrs: { 'data-release': release.version, 'data-image': index, 'aria-label': image.caption, title: 'Open photo' } });
   }).join('')}</div>`;
 }
 
@@ -99,9 +99,9 @@ export function renderWhatsNew(menu) {
   let body;
   if (r === null) body = loading();
   else if (!r?.notes?.length) body = empty('RELEASE NOTES COME WITH PUBLISHED BUILDS');
-  else body = `<div class="panel scroll-y release-list" role="list">${r.notes.map((n, i) => `<section class="mi release ${n.version === now ? 'release--now' : ''}" role="listitem" aria-label="${esc(versionLabel(n.version))}">
-      <header class="release__head"><h3 class="release__ver">${esc(versionLabel(n.version))}</h3><span class="release__date">${esc(formatDate(n.date))}</span>${n.version === now ? C.chip('THIS VERSION', { tone: 'accent' }) : i === 0 ? C.chip('LATEST') : ''}</header>
-      ${gallery(n, (n.images || []).filter(image => image.item == null))}<ul class="release__items">${n.items.map((t, j) => `<li>${esc(t)}${gallery(n, (n.images || []).filter(image => image.item === j))}</li>`).join('')}</ul></section>`).join('')}</div>`;
+  else body = C.panel('', r.notes.map((n, i) => C.card({ cls: 'release', title: esc(versionLabel(n.version)), attrs: { role: 'listitem', 'aria-label': versionLabel(n.version) },
+      text: `${esc(formatDate(n.date))}${n.version === now ? ' · THIS VERSION' : i === 0 ? ' · LATEST' : ''}`,
+      body: `${gallery(n, (n.images || []).filter(image => image.item == null))}<ul class="release__items">${n.items.map((t, j) => `<li>${esc(t)}${gallery(n, (n.images || []).filter(image => image.item === j))}</li>`).join('')}</ul>` })).join(''), { cls: 'scroll-y release-list', attrs: { role: 'list' } });
   return C.screen({ ...head(menu, 'ABOUT'), title: "WHAT'S NEW", body });
 }
 
@@ -117,14 +117,14 @@ export function renderCredits(menu) {
       const lic = e.licences?.length ? e.licences.join(' · ') : '', desc = [e.detail, lic].filter(Boolean).join(' · ');
       if (e.text) return C.listRow({ title: esc(e.title), desc: esc(desc), act: 'creditFile', attrs: { 'data-credit': e.id } });
       if (e.links?.[0]) return C.listRow({ title: esc(e.title), desc: esc(desc), act: 'openLink', attrs: { 'data-url': e.links[0] }, cls: 'credit-link' });
-      return `<div class="mi list-row credit-line"><span class="list-row__main"><b>${esc(e.title)}</b>${desc ? `<span>${esc(desc)}</span>` : ''}</span></div>`;
+      return C.listRow({ title: esc(e.title), desc: esc(desc), go: false, cls: 'list-row--wrap' });
     };
-    body = `<div class="panel scroll-y credits">
+    body = C.panel('', `
       <div class="group"><h3 class="group__title">${icon('users-three')}TEAM</h3>${c.team.map((m) => m.url
         ? C.listRow({ icon: 'user', title: esc(m.name), desc: esc(m.role), meta: '@' + esc(m.handle), act: 'openLink', attrs: { 'data-url': m.url }, go: false })
-        : `<div class="mi list-row"><span class="list-row__ico">${icon('user')}</span><span class="list-row__main"><b>${esc(m.name)}</b><span>${esc(m.role)}</span></span></div>`).join('')}
+        : C.listRow({ icon: 'user', title: esc(m.name), desc: esc(m.role), go: false })).join('')}
         ${c.ai ? `<p class="group__note">${esc(c.ai)}</p>` : ''}</div>
-      ${c.sections.map((s) => `<div class="group"><h3 class="group__title">${esc(s.title.toUpperCase())}</h3>${s.entries.map(row).join('')}</div>`).join('')}</div>`;
+      ${c.sections.map((s) => `<div class="group"><h3 class="group__title">${esc(s.title.toUpperCase())}</h3>${s.entries.map(row).join('')}</div>`).join('')}`, { cls: 'scroll-y credits' });
   }
   return C.screen({ ...head(menu, 'ABOUT'), title: 'CREDITS', hints: [['updown', 'SELECT'], ['confirm', 'OPEN'], ['back', 'BACK']], body: body + legalLinks });
 }
@@ -132,7 +132,7 @@ export function renderCredits(menu) {
 /** one credits / licence file, as readable paragraphs (each focusable, so keys and pads scroll it) */
 export function renderCreditFile(menu) {
   const entry = state.credits?.sections?.flatMap((s) => s.entries).find((e) => e.id === menu.data.id);
-  const body = entry ? `<div class="panel scroll-y credit-sheet" role="list">${paragraphs(entry.text)}</div>` : empty('NOT AVAILABLE');
+  const body = entry ? C.panel('', paragraphs(entry.text), { cls: 'scroll-y credit-sheet', attrs: { role: 'list' } }) : empty('NOT AVAILABLE');
   return C.screen({ ...head(menu, 'CREDITS'), title: esc((entry?.title || 'CREDITS').toUpperCase()), body });
 }
 
@@ -142,10 +142,9 @@ export function titleExtras(menu) {
   settle(menu, false); // already rendering the title
   const b = buildInfo(), card = racing() ? null : state.card, more = card ? card.items.length - CARD_ITEMS : 0;
   return `<div class="title-meta">${b.version === DEV_VERSION ? '' : C.button({ label: versionLabel(b.version), variant: 'ghost', size: 'sm', act: 'whatsNew', cls: 'title-meta__btn', title: "What's new" })}${C.button({ label: 'CREDITS', variant: 'ghost', size: 'sm', act: 'credits', cls: 'title-meta__btn' })}</div>${card ? `
-    <aside class="news-card" aria-label="What's new in ${esc(card.version)}"><div class="news-card__head"><span class="kick">WHAT'S NEW IN ${esc(versionLabel(card.version))}</span><span class="news-card__date">${esc(formatDate(card.date))}</span></div>
-      <ul class="news-card__list">${card.items.slice(0, CARD_ITEMS).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>${more > 0 ? `<p class="news-card__more">+ ${more} MORE IN WHAT'S NEW</p>` : ''}
+    ${C.panel(`WHAT'S NEW IN ${esc(versionLabel(card.version))}`, `<ul class="release__items">${card.items.slice(0, CARD_ITEMS).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>${more > 0 ? `<p class="group__note">+ ${more} MORE IN WHAT'S NEW</p>` : ''}
       ${card.images?.length ? state.cardPictures ? gallery(card) : C.button({ label: `VIEW ${card.images.length} PHOTO${card.images.length === 1 ? '' : 'S'}`, variant: 'ghost', size: 'sm', act: 'newsPictures' }) : ''}
-      <div class="news-card__acts">${C.button({ label: 'GOT IT', icon: 'check', variant: 'primary', size: 'sm', act: 'dismissNews' })}${C.button({ label: "WHAT'S NEW", variant: 'ghost', size: 'sm', act: 'whatsNew' })}</div></aside>` : ''}`;
+      <div class="field-actions">${C.button({ label: 'GOT IT', icon: 'check', variant: 'primary', size: 'sm', act: 'dismissNews' })}${C.button({ label: "WHAT'S NEW", variant: 'ghost', size: 'sm', act: 'whatsNew' })}</div>`, { cls: 'news-panel', right: `<span class="kick">${esc(formatDate(card.date))}</span>`, attrs: { 'aria-label': `What's new in ${card.version}` } })}` : ''}`;
 }
 
 // ---------------------------------------------------------------- hooks for src/menu.js

@@ -4,24 +4,24 @@ import * as C from "./components.js";
 import { AccountsClient } from "../accounts-client.js";
 import { driverName } from "../driver-name.js";
 const { esc } = C;
-const btn = (label, act, attrs = {}, variant = "secondary") =>
-  C.button({ label, act, attrs, variant });
-const field = (name, label, value = "", extra = {}) =>
-  C.textField({ name: "account-" + name, label, value, inputAttrs: extra });
-export function renderSignIn(a) {
-  return C.screen({
-    cls: "scr--account",
-    back: false,
+const btn = (label, act, attrs = {}, variant = "secondary", extra = {}) =>
+  C.button({ label, act, attrs, variant, ...extra });
+const field = (name, label, value = "", extra = {}, opts = {}) =>
+  C.textField({ name: "account-" + name, label, value, inputAttrs: extra, cls: "field--stack", ...opts });
+// The official multicolour Google "G" (Google Identity sign-in branding), inline so it never waits on a request.
+const GOOGLE_G = '<svg class="btn__logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+/** Sign-in: the kit Dialog over the dimmed title screen (owner-approved exception, docs/OWNER-DECISIONS.md 2026-10-16). */
+export function renderSignIn(a, menu) {
+  const soon = a.ready && !a.providers.length;
+  const actions = `${!a.ready ? C.spinner() : ""}${a.providers.includes("google") ? C.button({ label: "Continue with Google", logo: GOOGLE_G, variant: "google", block: true, act: "account-oauth", attrs: { "data-default": "" } }) : ""}${a.ready ? btn(soon ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", soon ? { "data-default": "" } : {}, soon ? "primary" : "secondary", { block: true }) : ""}`;
+  return `<div class="scr scr--signin">${C.dialog({
+    under: menu?.r_title?.() || "",
     kick: "ATHENS RACING",
-    title:
-      a.ready && !a.providers.length
-        ? "SIGN-IN IS COMING SOON"
-        : "YOUR PLACE ON THE GRID",
-    body: `<div class="account-layout"><section class="account-intro"><p class="account-lede">One driver. Every road.</p><p>Save your garage and personal bests. Find your friends and head out together.</p><p>Your progress on this device comes with you.</p></section>${C.panel(
-      "SIGN IN / CREATE ACCOUNT",
-      `<p>New here? Signing in creates your account.</p>${a.ready ? "" : C.spinner()}${a.providers.includes("google") ? btn("CONTINUE WITH GOOGLE", "account-oauth") : ""}<p class="account-error" role="status">${esc(a.error || "")}</p>${a.ready && !a.providers.length ? "<p>Sign-in is coming soon. Keep playing as usual.</p>" : ""}${a.ready ? btn(!a.providers.length ? "CONTINUE TO GAME" : "PLAY OFFLINE", "account-offline", {}, "ghost") : ""}<p class="account-small">${privacyLink} · <a class="mi legal-link" href="/terms" target="_blank" rel="noopener">Terms of service</a></p>`,
-    )}</div>`,
-  });
+    title: soon ? "SIGN-IN IS COMING SOON" : "SIGN IN TO ATHENS RACING",
+    body: `<p>${soon ? "Keep playing as usual. Your progress stays on this device." : "Save your garage and best times, and race with your friends."}</p>${a.error ? `<p class="account-error" role="status">${esc(a.error)}</p>` : ""}`,
+    actions,
+    foot: `${privacyLink}<a class="mi legal-link" href="/terms" target="_blank" rel="noopener">Terms of service</a>`,
+  })}</div>`;
 }
 export function renderProfile(a) {
   return C.screen({
@@ -29,30 +29,48 @@ export function renderProfile(a) {
     back: false,
     kick: "WELCOME TO ATHENS",
     title: "PICK YOUR IDENTITY",
-    body: C.panel(
+    body: `<div class="account-narrow">${C.panel(
       "DRIVER PROFILE",
-      `<p>Choose a unique driver name and a plate. Your local progress is already safe.</p>${field("name", "DISPLAY NAME", a.user?.displayName || driverName.get(), { maxlength: 16, autocapitalize: "characters" })}${field("plate", "PLATE", a.user?.plate || driverName.get(), { maxlength: 10, autocapitalize: "characters" })}${btn("SAVE & HIT THE ROAD", "account-profile", {}, "primary")}<p role="status" class="account-error">${esc(a.error || "")}</p>`,
-    ),
+      `<p class="group__note">Choose a unique driver name and a plate. Your local progress is already safe.</p>${field("name", "DRIVER NAME", a.user?.displayName || driverName.get(), { maxlength: 16, autocapitalize: "characters" })}${field("plate", "PLATE", a.user?.plate || driverName.get(), { maxlength: 10, autocapitalize: "characters" }, { inputCls: "plate-input" })}<div class="field-actions">${btn("SAVE & HIT THE ROAD", "account-profile", { "data-default": "" }, "primary")}</div><p role="status" class="account-error">${esc(a.error || "")}</p>`,
+    )}</div>`,
   });
 }
-const status = (a, f) => {
+const presenceChip = (a, f) => {
   const p = a.presence[f.id];
   return p?.status === "in-race"
-    ? `IN RACE · ${esc(p.map || "ATHENS").toUpperCase()}`
+    ? C.chip(`IN RACE · ${esc(p.map || "ATHENS").toUpperCase()}`, { tone: "accent" })
     : p?.status === "in-menu"
-      ? "ONLINE · IN MENU"
-      : "OFFLINE";
+      ? C.chip("ONLINE", { tone: "good" })
+      : C.chip("OFFLINE");
 };
+const online = (a, f) => !!a.presence[f.id]?.status && a.presence[f.id].status !== "offline";
 export function renderAccount(a) {
   a.invites = a.invites.filter((i) => i.expires > Date.now());
   if (!a.user) return renderSignIn(a);
-  const friends = a.friends.filter((f) => f.state === "accepted"),
+  const friends = a.friends.filter((f) => f.state === "accepted").sort((x, y) => online(a, y) - online(a, x)),
     requests = a.friends.filter((f) => f.state === "pending");
+  const sm = (label, act, attrs, variant = "secondary") => C.button({ label, act, attrs, variant, size: "sm" });
+  const friendRows = friends.length
+    ? friends.map((f) => C.listRow({ icon: "user", title: esc(f.display_name), focusable: false, go: false,
+        meta: `${presenceChip(a, f)}${online(a, f) ? sm("INVITE", "account-invite", { "data-user": f.id }) : ""}${sm("BLOCK", "account-friend-block", { "data-name": f.display_name }, "ghost")}` })).join("")
+    : '<p class="group__note">Add a friend by driver name to race together.</p>';
+  const activity = [
+    ...requests.map((f) => C.listRow({ icon: "user-plus", title: esc(f.display_name), desc: f.recipient === a.user.id ? "WANTS TO BE FRIENDS" : "REQUEST SENT", focusable: false, go: false,
+      meta: f.recipient === a.user.id ? sm("ACCEPT", "account-friend-accept", { "data-name": f.display_name }, "primary") + sm("DECLINE", "account-friend-decline", { "data-name": f.display_name }, "ghost") : sm("BLOCK", "account-friend-block", { "data-name": f.display_name }, "ghost") })),
+    ...a.invites.map((i) => C.listRow({ icon: "flag-checkered", title: esc(i.display_name), desc: `LOBBY ${esc(i.lobby)} · EXPIRES IN 2 MIN`, focusable: false, go: false,
+      meta: sm("JOIN", "account-join", { "data-id": i.id }, "primary") + sm("DECLINE", "account-decline", { "data-id": i.id }, "ghost") })),
+  ];
+  const profile = `<div class="account-id">${C.plate(a.user.plate || a.user.displayName || "")}</div>
+    ${field("name", "DRIVER NAME", a.user.displayName || "", { maxlength: 16, autocapitalize: "characters", "data-initial": a.user.displayName || "" })}
+    ${field("plate", "PLATE", a.user.plate || "", { maxlength: 10, autocapitalize: "characters", "data-initial": a.user.plate || "" }, { inputCls: "plate-input" })}
+    <div class="field-actions">${btn("SAVE", "account-profile", {}, "primary", { size: "sm", disabled: true, cls: "account-save" })}</div><p class="account-error" role="status">${esc(a.error || "")}</p>`;
+  const manage = `<h3 class="group__title">ACCOUNT</h3>${C.option({ icon: "export", title: "EXPORT MY DATA", act: "account-export" })}${C.option({ icon: "sign-out", title: "SIGN OUT", act: "account-logout" })}${C.option({ icon: "trash", title: "DELETE ACCOUNT", act: "account-delete", cls: "option--danger" })}`;
   return C.screen({
     cls: "scr--account",
     kick: "YOUR DRIVER ACCOUNT",
-    title: esc(a.user.displayName || "ACCOUNT"),
-    body: `<div class="account-layout">${C.panel("PROFILE", `${field("name", "DISPLAY NAME", a.user.displayName || "", { maxlength: 16 })}${field("plate", "PLATE", a.user.plate || "", { maxlength: 10 })}${btn("SAVE PROFILE", "account-profile")}<p class="account-error" role="status">${esc(a.error || "")}</p>${btn("EXPORT MY DATA", "account-export")}${btn("SIGN OUT", "account-logout", {}, "ghost")}${btn("DELETE ACCOUNT", "account-delete", {}, "ghost")}`)}<div>${C.panel("FRIENDS", `${field("friend", "ADD BY DISPLAY NAME")}${btn("SEND FRIEND REQUEST", "account-friend-request")}${a.presenceOffline ? "<p>Live status is reconnecting…</p>" : ""}${friends.length ? friends.map((f) => `<article class="account-friend"><div><b>${esc(f.display_name)}</b><small>${status(a, f)}</small></div><div>${a.presence[f.id]?.status && a.presence[f.id].status !== "offline" ? btn("INVITE", "account-invite", { "data-user": f.id }) : ""}${btn("BLOCK", "account-friend-block", { "data-name": f.display_name }, "ghost")}</div></article>`).join("") : "<p>Add a friend to race together.</p>"}`)}${C.panel("REQUESTS", requests.length ? requests.map((f) => `<article class="account-friend"><b>${esc(f.display_name)}</b><div>${f.recipient === a.user.id ? btn("ACCEPT", "account-friend-accept", { "data-name": f.display_name }) + btn("DECLINE", "account-friend-decline", { "data-name": f.display_name }, "ghost") : "<small>REQUEST SENT</small>"}${btn("BLOCK", "account-friend-block", { "data-name": f.display_name }, "ghost")}</div></article>`).join("") : "<p>No pending requests.</p>")}${C.panel("LOBBY INVITES", a.invites.length ? a.invites.map((i) => `<article class="account-friend"><div><b>${esc(i.display_name)}</b><small>LOBBY ${esc(i.lobby)} · EXPIRES IN 2 MIN</small></div><div>${btn("JOIN LOBBY", "account-join", { "data-id": i.id }, "primary")}${btn("DECLINE", "account-decline", { "data-id": i.id }, "ghost")}</div></article>`).join("") : "<p>No live invites.</p>")}</div></div>`,
+    title: "ACCOUNT",
+    hints: [["select", "SELECT"], ["confirm", "OK"], ["back", "BACK"]],
+    body: `<div class="account-layout">${C.panel("PROFILE", profile + manage, { icon: "user", cls: "account-profile" })}<div class="account-side">${C.panel("FRIENDS", `${a.presenceOffline ? '<p class="group__note">Live status is reconnecting…</p>' : ""}<div class="account-friends">${friendRows}</div><div class="account-add">${C.searchField({ name: "account-friend", label: "Add a friend by driver name", placeholder: "Driver name", icon: "user-plus" })}${btn("ADD", "account-friend-request", {}, "primary", { size: "sm" })}</div>`, { icon: "users-three" })}${activity.length ? C.panel("ACTIVITY", activity.join(""), { icon: "list" }) : ""}</div></div>`,
   });
 }
 export function renderPrivacy() {
@@ -117,6 +135,12 @@ export function install(menu, existing) {
     hide = menu.hide.bind(menu),
     act = menu.activate.bind(menu),
     render = menu.render.bind(menu);
+  const syncSave = () => {
+    const save = menu.root.querySelector(".account-save"); if (!save) return;
+    const dirty = [...menu.root.querySelectorAll('[data-field="account-name"], [data-field="account-plate"]')].some((i) => i.value.trim().toUpperCase() !== (i.dataset.initial || "").toUpperCase());
+    save.classList.toggle("off", !dirty);
+    save.setAttribute("aria-disabled", String(!dirty));
+  };
   menu.render = (...args) => {
     const keepDrafts =
       menu.shown === menu.screen &&
@@ -135,6 +159,7 @@ export function install(menu, existing) {
     }
     for (const chip of menu.root.querySelectorAll("[data-hu-driver] span"))
       chip.textContent = a.user?.plate || driverName.get();
+    syncSave(); // restored drafts keep Save enabled
     return result;
   };
   const gate = () =>
@@ -157,19 +182,30 @@ export function install(menu, existing) {
     );
   menu.hide = () =>
     gate() ? menu.show(a.user ? "accountName" : "signIn") : hide();
-  menu.r_signIn = () => renderSignIn(a);
+  menu.r_signIn = () => renderSignIn(a, menu);
   menu.r_accountName = () => renderProfile(a);
   menu.r_account = () => renderAccount(a);
   menu.r_accountPrivacy = renderPrivacy;
   menu.r_accountDelete = () =>
     C.screen({
       cls: "scr--account",
-      title: "DELETE YOUR ACCOUNT",
-      body: C.panel(
+      kick: "YOUR DRIVER ACCOUNT",
+      title: "DELETE ACCOUNT",
+      hints: [["confirm", "OK"], ["back", "CANCEL"]],
+      body: `<div class="account-narrow">${C.panel(
         "PERMANENT DELETION",
-        `<p>This removes your account, sessions, friends and invites. Device progress remains available offline. Type DELETE to continue.</p>${field("confirm", "CONFIRM DELETION")}${btn("PERMANENTLY DELETE", "account-delete-confirm")}<p role="status">${esc(a.error || "")}</p>`,
-      ),
+        `<p class="group__note">This removes your account, sessions, friends and invites. Device progress remains available offline. Type DELETE to confirm.</p>${field("confirm", "TYPE DELETE", "", { placeholder: "DELETE", autocapitalize: "characters" })}<div class="field-actions">${btn("PERMANENTLY DELETE", "account-delete-confirm", {}, "danger")}${btn("CANCEL", "back", {}, "ghost")}</div><p role="status" class="account-error">${esc(a.error || "")}</p>`,
+        { icon: "trash" },
+      )}</div>`,
     });
+  // One Save, enabled only once the name or plate differs from the saved profile.
+  menu.root.addEventListener("input", (e) => { if (e.target.matches?.('[data-field="account-name"], [data-field="account-plate"]')) syncSave(); });
+  // Esc / B on sign-in = play offline, once the providers are known (sign-in is never a dead end).
+  const back = menu.back.bind(menu);
+  menu.back = () => {
+    if (menu.screen === "signIn") { if (a.ready) void action({ dataset: { act: "account-offline" } }); return; }
+    return back();
+  };
   const value = (name) =>
     menu.root.querySelector(`[data-field="account-${name}"]`)?.value || "";
   menu.activate = (el) => {
@@ -276,6 +312,7 @@ export function install(menu, existing) {
         return;
       }
       if (kind === "delete-confirm") {
+        if (value("confirm").trim().toUpperCase() !== "DELETE") throw new Error("Type DELETE to confirm.");
         await a.api("/api/account/delete", { confirm: value("confirm") });
         a.disconnect();
         menu.show("signIn");

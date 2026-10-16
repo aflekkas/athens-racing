@@ -4,8 +4,8 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
-//      segmented(), stepper(), select(), tabs({ vertical }), option(), listRow(), textField(), card(), panel(), stat(), chip(),
-//      table(), keyHints(), progress(), spinner(),
+//      segmented(), stepper(), select({ compact }), tabs({ vertical }), option(), listRow(), textField(), searchField(), card(),
+//      carCard(), panel(), sheetHead(), dialog() (sign-in only), plate(), stat(), chip(), table(), keyHints(), progress(), spinner(),
 //      medal(), icon(name). Interactive builders emit a `.mi` row (the menu's focus item) carrying data-kind / data-key.
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
@@ -62,9 +62,9 @@ export function registerFormat(name, fn) { FORMATS[name] = fn; }
 const fmt = (name, v) => (FORMATS[name] || FORMATS.raw)(v);
 
 // ------------------------------------------------------------------ static builders
-export function button({ label = '', icon: ic, iconRight, variant = 'secondary', size, act, block, focusable = true, attrs, sub, cls = '', title, disabled } = {}) {
-  const c = ['btn', 'btn--' + variant, size && 'btn--' + size, block && 'btn--block', !label && 'btn--icon', focusable && 'mi', disabled && 'off', cls].filter(Boolean).join(' ');
-  return `<div class="${c}" role="button"${attrStr({ 'data-act': act, title, 'aria-label': !label ? title : null, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${icon(ic)}${label ? `<span>${label}</span>` : ''}${sub ? `<span class="btn__sub">${sub}</span>` : ''}${icon(iconRight)}</div>`;
+export function button({ label = '', icon: ic, iconRight, logo = '', variant = 'secondary', size, act, block, focusable = true, attrs, sub, cls = '', title, disabled } = {}) {
+  const c = ['btn', 'btn--' + variant, size && 'btn--' + size, block && 'btn--block', !label && !logo && 'btn--icon', focusable && 'mi', disabled && 'off', cls].filter(Boolean).join(' ');
+  return `<div class="${c}" role="button"${attrStr({ 'data-act': act, title, 'aria-label': !label ? title : null, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${logo}${icon(ic)}${label ? `<span>${label}</span>` : ''}${sub ? `<span class="btn__sub">${sub}</span>` : ''}${icon(iconRight)}</div>`;
 }
 export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled } = {}) {
   return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}</span><span class="option__go">${icon('caret-right')}</span></div>`;
@@ -72,16 +72,17 @@ export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disab
 export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
   return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
 }
-export function card({ media = '', badge = '', title = '', text = '', foot = '', act, attrs, cls = '', selected } = {}) {
-  return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div></div>`;
+export function card({ media = '', badge = '', title = '', text = '', body = '', foot = '', act, attrs, cls = '', selected } = {}) {
+  return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div></div>`;
 }
 export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
   return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
 }
 export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map((t) => Array.isArray(t) ? stat(...t) : t).join('')}</div>`;
 /** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron */
-export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true } = {}) {
-  return `<div class="mi list-row ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('caret-right', 'list-row__go') : ''}</div>`;
+export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true, focusable = true } = {}) {
+  // focusable: false = an information row whose meta holds its own buttons (friends, invites)
+  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('caret-right', 'list-row__go') : ''}</div>`;
 }
 /** a small status pill: tone '' | 'accent' | 'good' | 'warn' | 'bad' | 'gold' */
 export const chip = (text, { tone = '', icon: ic, cls = '', attrs } = {}) => `<span class="chip ${tone ? 'chip--' + tone : ''} ${cls}"${attrStr(attrs)}>${icon(ic)}<span>${text}</span></span>`;
@@ -131,20 +132,38 @@ export function statusBar({ back = true, kick = '' } = {}) {
 const clockText = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
 if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
-/** the standard menu screen: the status bar, a title row (title + right slot), a body that scrolls, a footer of key hints */
-export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', appearance = '', road = 'ATHENS RIVIERA', car = 'YOUR GARAGE' } = {}) {
-  const racing = appearance === 'racing';
-  return `<div class="scr ${cls} ${racing ? 'racing-ui' : ''}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
-    <div class="scr__body">${body}</div><footer class="scr__foot">${racing ? infoStrip(road, car) : ''}${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+/** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
+ *  key hints. Every menu screen is built with this one frame (docs/OWNER-DECISIONS.md: one shared component set). */
+export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '' } = {}) {
+  return `<div class="scr ${cls}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
+    <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
-/** Racing appearance is opt-in during the three-screen design review. */
-export const infoStrip = (road, car) => `<div class="road-strip"><div><small>YOUR NEXT ROAD</small><b>${esc(road)}</b></div><div><small>READY TO DRIVE</small><b>${esc(car)}</b></div><span>${/RIVIERA/.test(road) ? '37°49′N / 23°47′E' : 'ATTICA / GREECE'}</span></div>`;
-export const roadSign = (title, sub = 'ATHENS RIVIERA') => `<div class="racing-road-sign"><b>${esc(title || (/MEGARA/.test(sub) ? 'ΜΕΓΑΡΑ' : /PENTELI/.test(sub) ? 'ΠΕΝΤΕΛΗ' : 'ΑΘΗΝΑΪΚΗ ΡΙΒΙΕΡΑ'))}</b><span>${esc(sub)} ↗</span></div>`;
-export const routeHero = ({title, name, subtitle = 'VOULIAGMENI → LOMVARDA', preview = './assets/maps/riviera.svg', eyebrow = 'THE ROAD AHEAD', content = ''} = {}) => {
-  const label = title || name || 'ATHENS RIVIERA';
-  const greek = /MEGARA/.test(label) ? 'ΜΕΓΑΡΑ' : /PENTELI/.test(label) ? 'ΠΕΝΤΕΛΗ' : 'ΑΘΗΝΑΪΚΗ ΡΙΒΙΕΡΑ';
-  return `<div class="route-hero"><span class="route-hero__eyebrow">${esc(eyebrow)}</span>${roadSign(greek,label)}<img src="${esc(preview)}" alt="Route preview: ${esc(label)}"><div class="route-hero__copy"><h3>${esc(label)}</h3><p>${esc(subtitle)}</p>${content}</div><span class="route-hero__coordinates">ATTICA, GREECE</span></div>`;
-};
+/** the reference sheet header (the pause menu, owner-chosen 2026-10-16): a spaced-caps breadcrumb, a large light spaced
+ *  title and an optional accent status line (the amber timer). Used by pause, the sign-in dialog and every panel that
+ *  introduces a destination. */
+export function sheetHead({ kick = '', title = '', status = '', statusIcon = 'timer', cls = '', id } = {}) {
+  return `<header class="sheet-head ${cls}">${kick ? `<div class="kick">${kick}</div>` : ''}<h2 class="sheet-head__title"${attrStr({ id })}>${title}</h2>${status ? `<div class="sheet-head__status">${icon(statusIcon)}<span>${status}</span></div>` : ''}</header>`;
+}
+/** the ONE dialog (owner-approved exception to "menus are full screens": sign-in only, docs/OWNER-DECISIONS.md).
+ *  A compact panel on a scrim that dims the screen rendered under it (`under`, made inert). Focus stays inside: the
+ *  menu only walks focus items within [data-dialog] while it is open. */
+export function dialog({ under = '', kick = '', title = '', body = '', actions = '', foot = '', cls = '', label } = {}) {
+  return `<div class="dialog-host">${under ? `<div class="dialog-under" inert aria-hidden="true">${under}</div>` : ''}<div class="dialog-scrim" data-dialog><section class="dialog panel ${cls}" role="dialog" aria-modal="true" aria-labelledby="ui-dialog-title"${attrStr({ 'aria-label': label })}>
+    ${sheetHead({ kick, title, id: 'ui-dialog-title' })}${body ? `<div class="dialog__body">${body}</div>` : ''}${actions ? `<div class="dialog__actions">${actions}</div>` : ''}${foot ? `<footer class="dialog__foot">${foot}</footer>` : ''}</section></div></div>`;
+}
+/** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class / trims line, HP + weight, drive badge */
+export function carCard({ id, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
+  return card({ cls: `card--car car-card ${locked ? 'off' : ''} ${cls}`, act, selected, attrs,
+    media: `<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
+    foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock-simple') : ''}` });
+}
+/** an inline search box (a text focus row without a label): the magnifier, the input, the kit's pill shape */
+export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'magnifying-glass', inputAttrs, cls = '' } = {}) {
+  const input = `<input class="search__input"${attrStr({ 'data-field': name, value, placeholder, type: 'search', 'aria-label': label, autocomplete: 'off', spellcheck: 'false', ...inputAttrs })}>`;
+  return `<div class="mi search ${cls}" data-kind="text" data-fid="${esc(name)}">${icon(ic)}${input}</div>`;
+}
+/** a number plate: the driver's plate drawn as a plate (EU style: blue GR band, black on white) */
+export const plate = (text, cls = '') => `<span class="plate ${cls}"><i class="plate__band" aria-hidden="true">GR</i><b class="plate__text">${esc(text)}</b></span>`;
 /** the ASR mark (assets/icon.svg, also the favicon) */
 export const brandMark = (cls = '') => `<img class="brand-mark ${cls}" src="${new URL('../../assets/icon.svg', import.meta.url).href}" alt="" draggable="false"/>`;
 export const wordmark = (cls = '') => `<span class="wordmark ${cls}"><b>ATHENS</b><b>RACING</b></span>`;
@@ -182,17 +201,18 @@ export function stepper({ key, label, value, min, max, step = 1, format = 'int',
     { icon: ic, note, noteCls, kind: 'stepper', key, type: type || (options ? null : 'num'), attrs: { 'data-value': value, 'data-min': min, 'data-max': max, 'data-step': step, 'data-fmt': format, 'data-options': list, ...attrs } });
 }
 /** a custom dropdown: confirm / click opens the list; left / right cycles it closed */
-export function select({ key, label, value, options, icon: ic, note, type, attrs } = {}) {
+export function select({ key, label, value, options, icon: ic, note, type, attrs, compact = false } = {}) {
   const cur = options.find(([v]) => String(v) === String(value));
-  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false"><span class="select__val">${cur ? cur[1] : ''}</span>${icon('caret-down')}</div>`,
-    { icon: ic, note, kind: 'select', key, type, attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
+  // compact: no row, just the select pill with its label inside (toolbars: the garage filters)
+  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${cur ? cur[1] : ''}</span>${icon('caret-down')}</div>`,
+    { icon: ic, note, kind: 'select', key, type, cls: compact ? 'field--bare' : '', attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
 /** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
 export function tabs({ key, value, options, cls = '', hint = true, vertical = false } = {}) {
   if (vertical) cls += ' tabs--rail';
   const h = hint ? `<span class="tabs__hint on-key">${kbd('Q')}</span><span class="tabs__hint on-pad">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key">${kbd('E')}</span><span class="tabs__hint on-pad">${kbd('RB', true)}</span>` : '';
-  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic], index) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}<small class="tab__number">${String(index+1).padStart(2,'0')}</small>${l}</span>`).join('')}${h2}</div>`;
+  return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
 }
 
 // ------------------------------------------------------------------ values
@@ -362,7 +382,7 @@ function layer() {
 function openListbox(anchorEl, { options, value, onPick, anchor } = {}) {
   closeListbox();
   const opts = options || optionsOf(anchorEl), cur = String(value ?? anchorEl.dataset.value);
-  const box = document.createElement('div'); box.className = 'listbox' + (anchorEl?.closest?.('.racing-ui') ? ' listbox--racing' : ''); box.setAttribute('role', 'listbox');
+  const box = document.createElement('div'); box.className = 'listbox'; box.setAttribute('role', 'listbox');
   box.innerHTML = opts.map(([v, l, o], i) => `<div class="listbox__opt ${String(v) === cur ? 'sel' : ''} ${o?.disabled ? 'dis' : ''}" role="option" data-i="${i}" aria-selected="${String(v) === cur}"><span>${l}</span>${icon('check')}</div>`).join('');
   const scrim = document.createElement('div'); scrim.style.cssText = 'position:fixed;inset:0;pointer-events:auto';
   scrim.addEventListener('pointerdown', (e) => { if (!box.contains(e.target)) { e.preventDefault(); closeListbox(); } });

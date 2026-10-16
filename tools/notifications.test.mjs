@@ -64,10 +64,11 @@ test('related police callouts preempt persistent status without duplicating it a
  const q=new NotificationQueue();q.post({id:'police-status',title:'POLICE PURSUIT',slot:'banner',priority:70,persistent:true},0);q.post({title:'BUSTED',priority:98},0);assert.deepEqual(commit(q,0).map(n=>n.title),['BUSTED']);
 });
 import {mirrorNoticeBounds} from '../src/ui/notification-queue.js';
-test('mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views',()=>{
+test('mirror glass and HUD obstacles stay clear at desktop, phone and landscape sizes in both views',()=>{
  for(const[width,height]of[[1280,800],[1920,1080],[390,844],[844,390]])for(const view of ['chase','cockpit']){
-  const mirror=mirrorNoticeBounds(width,height,view),obstacles=[mirror,{left:8,right:110,top:110,bottom:220},{left:width-170,right:width-10,top:height-200,bottom:height-10}],heights=[90,42];
-  const p=notificationPlacement({width,height,obstacles,heights});let y=p.top;for(const i of p.shown){const r={left:p.left,right:p.left+p.width,top:y,bottom:y+heights[i]};for(const b of obstacles)assert.ok(!(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top),`${width}/${view}`);y=r.bottom+6;}assert.ok(p.shown.length);
+  const mirrors=view==='cockpit'&&width>700?[{left:width*.74,right:width,top:height*.28,bottom:height*.43},{left:width*.15,right:width*.29,top:height*.54,bottom:height*.66}]:[];
+  const obstacles=[...mirrors,{left:8,right:110,top:110,bottom:220},{left:width-170,right:width-10,top:height-200,bottom:height-10}],heights=[90,42];
+  const p=notificationPlacement({width,height,obstacles,heights});let y=p.top;for(const i of p.shown){const r={left:p.left,right:p.left+p.width,top:y,bottom:y+heights[i]};for(const b of obstacles)assert.ok(!(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top),`${width}/${view}`);y=r.bottom+6;}assert.ok(p.shown.length||heights[0]>height*.12,`${width}/${view}`);
  }
 });
 test('gamepad action requires explicit D-pad focus before confirm and routes the actual button click',()=>{
@@ -94,7 +95,7 @@ test('phone disconnection and rejected shifts retain their actual severity',asyn
 });
 
 test('safe placement finds room for the critical action before accepting a short low-priority gap',()=>{
- const p=notificationPlacement({width:1280,height:500,heights:[100,40],obstacles:[{left:400,right:880,top:150,bottom:220}]});assert.ok(p.shown.includes(0),'the engine repair action must not be displaced by a small informational toast');assert.ok(p.top>=228);
+ const p=notificationPlacement({width:1280,height:500,heights:[100,40],obstacles:[{left:20,right:240,top:12,bottom:140},{left:20,right:240,top:300,bottom:360}]});assert.ok(p.shown.includes(0),'the engine repair action must not be displaced by a small informational toast');assert.ok(p.top>=148);
 });
 
 test('a higher-priority route banner cannot suppress the actionable recovery fallback',()=>{

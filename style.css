@@ -248,7 +248,3 @@ body.fading #fade { opacity: 1; }
 .pop.quote.good small { color: #6dff9b; }
 
 /* Standalone legal documents are linked from account and release screens. */
-.legal-links { display:flex; flex-wrap:wrap; justify-content:center; gap:1.25rem; padding:1rem; font:600 .8rem system-ui; }
-.legal-link { color:#c1ed91; text-decoration:underline; text-underline-offset:4px; transition:color .18s,background .18s; }
-.legal-link:hover { color:#fff; }
-.legal-link:focus-visible { outline:2px solid #c1ed91; outline-offset:4px; }

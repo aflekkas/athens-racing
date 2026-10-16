@@ -1,0 +1,317 @@
+{
+ "errors": [],
+ "checks": [
+  {
+   "width": 1280,
+   "height": 800,
+   "view": "chase",
+   "lane": {
+    "left": 460,
+    "top": 101.078125,
+    "right": 820,
+    "bottom": 287.5
+   },
+   "cards": [
+    {
+     "left": 460,
+     "top": 101.078125,
+     "right": 820,
+     "bottom": 159.21875
+    },
+    {
+     "left": 460,
+     "top": 165.21875,
+     "right": 820,
+     "bottom": 223.359375
+    },
+    {
+     "left": 460,
+     "top": 229.359375,
+     "right": 820,
+     "bottom": 287.5
+    }
+   ],
+   "badges": [],
+   "posBox": null,
+   "mapBox": {
+    "left": 28,
+    "top": 598,
+    "right": 208,
+    "bottom": 778
+   },
+   "dialBox": {
+    "left": 992,
+    "top": 524,
+    "right": 1262,
+    "bottom": 794
+   },
+   "limitSign": null,
+   "routeBox": {
+    "left": 537.59375,
+    "top": 32,
+    "right": 995,
+    "bottom": 36
+   }
+  },
+  {
+   "width": 1280,
+   "height": 800,
+   "view": "cockpit",
+   "lane": {
+    "left": 460,
+    "top": 272,
+    "right": 820,
+    "bottom": 458.421875
+   },
+   "cards": [
+    {
+     "left": 460,
+     "top": 272,
+     "right": 820,
+     "bottom": 330.140625
+    },
+    {
+     "left": 460,
+     "top": 336.140625,
+     "right": 820,
+     "bottom": 394.28125
+    },
+    {
+     "left": 460,
+     "top": 400.28125,
+     "right": 820,
+     "bottom": 458.421875
+    }
+   ],
+   "badges": [],
+   "posBox": null,
+   "mapBox": {
+    "left": 28,
+    "top": 598.2000122070312,
+    "right": 208,
+    "bottom": 778.2000122070312
+   },
+   "dialBox": {
+    "left": 992,
+    "top": 524.2000122070312,
+    "right": 1262,
+    "bottom": 794.2000122070312
+   },
+   "limitSign": null,
+   "routeBox": {
+    "left": 537.59375,
+    "top": 32.099998474121094,
+    "right": 995,
+    "bottom": 36.099998474121094
+   }
+  },
+  {
+   "width": 1920,
+   "height": 1080,
+   "view": "chase",
+   "lane": {
+    "left": 780,
+    "top": 146.171875,
+    "right": 1140,
+    "bottom": 332.59375
+   },
+   "cards": [
+    {
+     "left": 780,
+     "top": 146.171875,
+     "right": 1140,
+     "bottom": 204.3125
+    },
+    {
+     "left": 780,
+     "top": 210.3125,
+     "right": 1140,
+     "bottom": 268.453125
+    },
+    {
+     "left": 780,
+     "top": 274.453125,
+     "right": 1140,
+     "bottom": 332.59375
+    }
+   ],
+   "badges": [],
+   "posBox": null,
+   "mapBox": {
+    "left": 36.390625,
+    "top": 818.0718994140625,
+    "right": 270.375,
+    "bottom": 1052.0562744140625
+   },
+   "dialBox": {
+    "left": 1545.609375,
+    "top": 721.8531494140625,
+    "right": 1896.609375,
+    "bottom": 1072.8531494140625
+   },
+   "limitSign": null,
+   "routeBox": {
+    "left": 806.390625,
+    "top": 41.85375213623047,
+    "right": 1549.5,
+    "bottom": 47.04125213623047
+   }
+  },
+  {
+   "width": 1920,
+   "height": 1080,
+   "view": "cockpit",
+   "lane": {
+    "left": 780,
+    "top": 364.390625,
+    "right": 1140,
+    "bottom": 550.8125
+   },
+   "cards": [
+    {
+     "left": 780,
+     "top": 364.390625,
+     "right": 1140,
+     "bottom": 422.53125
+    },
+    {
+     "left": 780,
+     "top": 428.53125,
+     "right": 1140,
+     "bottom": 486.671875
+    },
+    {
+     "left": 780,
+     "top": 492.671875,
+     "right": 1140,
+     "bottom": 550.8125
+    }
+   ],
+   "badges": [],
+   "posBox": null,
+   "mapBox": {
+    "left": 36.390625,
+    "top": 818.9818725585938,
+    "right": 270.375,
+    "bottom": 1052.96630859375
+   },
+   "dialBox": {
+    "left": 1545.609375,
+    "top": 722.7631225585938,
+    "right": 1896.609375,
+    "bottom": 1073.76318359375
+   },
+   "limitSign": null,
+   "routeBox": {
+    "left": 806.390625,
+    "top": 42.243751525878906,
+    "right": 1549.5,
+    "bottom": 47.431251525878906
+   }
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "view": "chase",
+   "lane": {
+    "left": 15,
+    "top": 140.5,
+    "right": 375,
+    "bottom": 307.5625
+   },
+   "cards": [
+    {
+     "left": 15,
+     "top": 140.5,
+     "right": 375,
+     "bottom": 192.1875
+    },
+    {
+     "left": 15,
+     "top": 198.1875,
+     "right": 375,
+     "bottom": 249.875
+    },
+    {
+     "left": 15,
+     "top": 255.875,
+     "right": 375,
+     "bottom": 307.5625
+    }
+   ],
+   "badges": [],
+   "posBox": null,
+   "mapBox": {
+    "left": 16,
+    "top": 697.2000122070312,
+    "right": 140,
+    "bottom": 821.2000122070312
+   },
+   "dialBox": {
+    "left": 180,
+    "top": 635.2000122070312,
+    "right": 390,
+    "bottom": 845.2000122070312
+   },
+   "limitSign": null,
+   "routeBox": {
+    "left": 20,
+    "top": 128.5,
+    "right": 374,
+    "bottom": 132.5
+   }
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "view": "cockpit",
+   "lane": {
+    "left": 15,
+    "top": 286.515625,
+    "right": 375,
+    "bottom": 453.578125
+   },
+   "cards": [
+    {
+     "left": 15,
+     "top": 286.515625,
+     "right": 375,
+     "bottom": 338.203125
+    },
+    {
+     "left": 15,
+     "top": 344.203125,
+     "right": 375,
+     "bottom": 395.890625
+    },
+    {
+     "left": 15,
+     "top": 401.890625,
+     "right": 375,
+     "bottom": 453.578125
+    }
+   ],
+   "badges": [],
+   "posBox": null,
+   "mapBox": {
+    "left": 16,
+    "top": 697.7999877929688,
+    "right": 140,
+    "bottom": 821.7999877929688
+   },
+   "dialBox": {
+    "left": 180,
+    "top": 635.7999877929688,
+    "right": 390,
+    "bottom": 845.7999877929688
+   },
+   "limitSign": null,
+   "routeBox": {
+    "left": 20,
+    "top": 128.8000030517578,
+    "right": 374,
+    "bottom": 132.8000030517578
+   }
+  }
+ ]
+}

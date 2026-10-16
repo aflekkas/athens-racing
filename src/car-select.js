@@ -32,43 +32,32 @@ import * as C from './ui/components.js';
 const { esc, icon } = C;
 function trimBrowser(c,model,trims,body,available) {
   const at=trims.indexOf(c.id),acc=c.zeroTo100 || ACCELERATION[c.id];
-  return `<style>
-  .car-trim-browser{position:absolute;z-index:4;top:14px;left:16px;right:16px;display:flex;align-items:center;gap:12px}
-  .car-trim-browser__copy{flex:1;min-width:0;text-align:center}.car-trim-browser__name{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
-  .car-trim-browser strong{font:500 18px var(--f-cond,sans-serif);letter-spacing:.08em}.car-trim-browser small{display:block;margin-top:7px;font-size:12px;color:var(--c-text-3,#a5afb8)}
-  .car-trim-pips{display:flex;gap:7px;justify-content:center;margin-top:10px}.car-trim-pips i{height:5px;width:5px;border-radius:50%;background:currentColor;opacity:.25;transition:opacity 160ms linear}.car-trim-pips i.on{opacity:1}
-  .car-trim-browser .btn{min-width:40px;min-height:40px;box-shadow:none!important;border-radius:3px}.car-trim-browser .field{padding:0;min-height:0;background:none;border:0;--s-4:.5rem;--t-sm:.72rem}.car-trim-browser .field__label{display:none}
-  .car-trim-browser .field::after,.car-trim-browser .field::before{display:none}.car-trim-browser .seg,.car-trim-browser .sel-ind{box-shadow:none!important}.car-trim-browser .seg{border:1px solid var(--hu-hair,#39424b)}
-  .car-preview-viewport{position:absolute;inset:112px 0 0;touch-action:pan-y}.car-stage:has([data-key=carBody]) .car-preview-viewport{top:134px}
-  @media(max-width:600px){.car-trim-browser{left:8px;right:8px;gap:5px}.car-trim-browser strong{font-size:15px}.car-trim-browser__name{gap:7px}.car-trim-browser small{font-size:10px}}
-  </style><div class="car-trim-browser" data-trim-current="${c.id}" aria-label="Engine and trim">
+  return `<div class="car-trim-browser" data-trim-current="${c.id}" aria-label="Engine and trim">
   ${C.button({icon:'caret-left',act:'carTrimPrev',variant:'ghost',disabled:trims.length<2,attrs:{'aria-label':'Previous trim',title:'Previous trim · A / LB'}})}
   <div class="car-trim-browser__copy"><div class="car-trim-browser__name"><strong aria-live="polite">${esc(c.trimLabel || c.short)}</strong>
-  ${body?C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body','aria-label':'Body style'}}):''}</div>
+  ${body?C.segmented({key:'carBody',label:'BODY',value:body[0],cls:'field--bare',options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body','aria-label':'Body style'}}):''}</div>
   <small>${Math.round(c.power*1.341)} HP · ${acc?.toFixed(1) || '—'} S 0–100 · ${c.drive.toUpperCase()}</small>
   <div class="car-trim-pips" role="img" aria-label="Trim ${at+1} of ${trims.length}">${trims.map((id,i)=>`<i class="${i===at?'on':''}"></i>`).join('')}</div></div>
   ${C.button({icon:'caret-right',act:'carTrimNext',variant:'ghost',disabled:trims.length<2,attrs:{'aria-label':'Next trim',title:'Next trim · D / RB'}})}</div>`;
 }
-export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules, road = 'ATHENS RIVIERA' } = {}) {
+export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
     const list = filterCars(CARS, filters).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
-    return C.screen({ appearance: 'racing', road, car: c.name, cls: 'scr--catalog', kick: garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR'), title: 'THE GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
-      body: `<div class="garage-intro"><div><span class="label">YOUR COLLECTION / ATTICA, GREECE</span><h3>FIND YOUR NEXT DRIVE.</h3><span class="garage-intro__selected">READY IN YOUR GARAGE · ${esc(c.name)}</span></div>${C.roadSign(undefined,road)}</div><div class="catalog-toolbar"><label class="catalog-search">${icon('magnifying-glass')}<input data-car-search type="search" placeholder="SEARCH CARS" aria-label="Search cars" value="${esc(filters.search || '')}" autocomplete="off" /></label>
-      ${C.select({ key: 'category', label: 'CLASS', value: filters.category || 'all', options: [['all', 'ALL CLASSES'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
-      ${C.select({ key: 'drive', label: 'DRIVE', value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
-      ${C.select({ key: 'power', label: 'POWER', value: filters.power || 'all', options: [['all', 'ALL HP'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
-      ${C.select({ key: 'sort', label: 'SORT', value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>
-      <div class="catalog-count label">${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}</div>
-      <div class="car-grid scroll-y">${list.map(({ car, index: i }, n) => {
-
+    const toolbar = `<div class="catalog-toolbar">${C.searchField({ name: 'car-search', label: 'Search cars', placeholder: 'SEARCH CARS', value: filters.search || '', inputAttrs: { 'data-car-search': '' } })}
+      ${C.select({ key: 'category', label: 'CLASS', compact: true, value: filters.category || 'all', options: [['all', 'ALL'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
+      ${C.select({ key: 'drive', label: 'DRIVE', compact: true, value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
+      ${C.select({ key: 'power', label: 'POWER', compact: true, value: filters.power || 'all', options: [['all', 'ALL'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
+      ${C.select({ key: 'sort', label: 'SORT', compact: true, value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>`;
+    const count = `${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}`;
+    return C.screen({ cls: 'scr--catalog', kick: `${garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR')} · ${count}`, title: 'GARAGE', head: toolbar, hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
+      body: `<div class="car-grid scroll-y">${list.map(({ car, index: i }) => {
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
-        const reason = locked && !def?.car ? ruleReason(car, rules) : null;
-        return C.card({ cls: 'car-card' + (locked ? ' off' : ''), act: 'carDetail', selected: i === index,
-          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) },
-          media: `<img data-car-thumb="${car.id}" alt="${esc(car.name)}" />`, badge: C.badge(car.drive.toUpperCase()), title: esc(carModel(car)?.name || car.name),
-          text: `${classLabel(carCategory(car))} · ${carModel(car).bodies ? carModel(car).bodies[0][2].length : carModel(car).trims.length} TRIM${carModel(car).trims.length === 1 ? '' : 'S'}${carModel(car).bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
-          foot: `<b>${Math.round(car.power * 1.341)} HP</b><span>${car.mass} KG</span>${locked ? C.badge(def?.car ? 'EVENT CAR ONLY' : 'HOST RULES', '', 'lock-simple') : ''}` });
+        const reason = locked && !def?.car ? ruleReason(car, rules) : null, m = carModel(car), trims = m.bodies ? m.bodies[0][2].length : m.trims.length;
+        return C.carCard({ id: car.id, name: esc(m?.name || car.name), hp: Math.round(car.power * 1.341), kg: car.mass, drive: car.drive.toUpperCase(), locked, selected: i === index,
+          lockLabel: def?.car ? 'EVENT CAR ONLY' : 'HOST RULES',
+          line: `${classLabel(carCategory(car))} · ${trims} TRIM${m.trims.length === 1 ? '' : 'S'}${m.bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
+          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) } });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
   }
   const available=id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id);
@@ -83,7 +72,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       ${C.stats(specs.map(([k, v, ic]) => [k, v, { icon: ic }]), 'car-specs')}
       ${c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{"data-scope":"exhaust"}}) : ''}
       <div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || 'Custom paint')}</div></div>
-      <div class="car-actions">${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock-simple')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', size: 'lg', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
+      <div class="car-actions">${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock-simple')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}</div>
     </section></div>` });
 }
 
