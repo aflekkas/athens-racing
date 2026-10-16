@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Ground } from '../src/ground.js';
 import { Vehicle } from '../src/physics.js';
+import { startFlight } from '../src/airborne-dynamics.js';
 const frame=(s,out={})=>Object.assign(out,{tx:0,tz:-1,rx:1,rz:0,grade:0});
 const route={length:1000,closed:false,frame,edge:()=>7,medHalf:()=>0,div:()=>0,urban:()=>1,point:(s,u)=>({x:u,y:0,z:-s}),project:(x,z)=>({s:-z,u:x}),surfaceY:()=>0,y:()=>0,bank:()=>0};
 const spec={mass:1500,wheelbase:2.6,width:1.84,length:4.4,wheelR:.33,drive:'fwd',engine:'turbo4',idle:800,gears:[3.5,2,1],final:4.1};
@@ -29,13 +30,16 @@ test('real kerb climb, glancing tyre rub and drop never create a crash',()=>{
  }
 });
 
-test('landing after a crest uses suspension/ground contact, never engine damage',()=>{
- const g=ground(),v=mk();v.vLong=70/3.6;v.air=1;v.yAir=.01;v.vy=-12;
- let calls=0;v.addDamage=()=>{calls++;};g.resolve(v,1/60);
- assert.equal(v.air,0);assert.ok(v.bumpHit>0);assert.equal(calls,0);assert.equal(v.lastDamage,null);assert.equal(v.engHealth,1);assert.equal(v.impactMechanical,0);
- // Repeated suspension inputs and flat ground bumps stay outside the crash budget.
- for(let i=0;i<100;i++){v.wheelBump=[.16,0,.16,0];v.stepSuspension(1/120,0,0,1,v.wheelBump,10);}
- assert.equal(v.impactMechanical,0);assert.equal(v.engineStalled,false);
+test('gentle landing loads suspension; a hard vertical landing damages suspension without frontal engine damage',()=>{
+ for(const speed of [3,12]) {
+  const g=ground(),v=mk();v.vLong=70/3.6;startFlight(v);v.rigid.cy=v.hcg+.01;v.rigid.age=.2;v.vy=-speed;
+  g.resolve(v,1/60);
+  assert.equal(v.air,0);assert.ok(v.bumpHit>0);assert.equal(v.engHealth,1);assert.equal(v.impactMechanical,0);
+  if(speed===3){assert.equal(v.lastDamage,null);assert.ok(v.sus.zv<0,'landing compresses suspension');}
+  else {assert.equal(v.lastDamage?.kind,'landing-impact');assert.ok(v.damage.front>0);assert.ok(v.cornerDamage.some(x=>x>0));}
+  for(let i=0;i<100;i++){v.wheelBump=[.16,0,.16,0];v.stepSuspension(1/120,0,0,1,v.wheelBump,10);}
+  assert.equal(v.impactMechanical,0);assert.equal(v.engineStalled,false);
+ }
 });
 
 test('small solid bollard hits are cosmetic; a nose-first large solid hit still matters',()=>{

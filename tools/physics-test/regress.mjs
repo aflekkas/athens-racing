@@ -370,6 +370,18 @@ for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','avent
   }
 }
 
+// Airborne integration uses the same deterministic scenarios as the browser proof.
+{
+  const { runAirborneScenario } = await import('./airborne-scenarios.mjs');
+  for (const name of ['crest','barrier','bus','sports']) {
+    const r = runAirborneScenario(Vehicle, catalogue(), name);
+    const ok = name === 'crest' ? r.airTime > .2 && r.maxAir > .3 && !r.final.bodyDynamic && Math.abs(r.final.pose.heave) < .01 :
+      name === 'barrier' ? r.maxAir > .5 && r.maxRoll > .7 && r.final.speed < 4 :
+      name === 'bus' ? r.maxRoll > Math.PI*.48 && r.final.bodyDynamic && r.final.speed < .2 : r.maxRoll < .5 && !r.final.bodyDynamic;
+    check(`airborne ${name}`, ok, `air ${f2(r.airTime)} s, height ${f2(r.maxHeight)} m, tilt ${f1(r.maxRoll*180/Math.PI)} deg`);
+  }
+}
+
 console.log(results.join('\n'));
 console.log(`\n${passes} passed, ${fails} failed`);
 process.exitCode = fails ? 1 : 0;
