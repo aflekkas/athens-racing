@@ -122,7 +122,8 @@
     "tools/world-art-direction.test.mjs",
     "tools/asset-codecs.test.mjs",
     "tools/psychiko-world.test.mjs",
-    "tools/baked-realism.test.mjs"
+    "tools/baked-realism.test.mjs",
+    "tools/gantry-clearance.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

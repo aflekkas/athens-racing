@@ -1,3 +1,4 @@
+import { soloStartPosition, raceGridSlot } from './start-placement.js';
 import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
@@ -500,8 +501,9 @@ function resetRace() {
   if (!G.ev) prepareEvent(EV.QUICK_RACE);
   if (!multiplayer.active) { resetEvent(); return; }
   const s0 = Q.has('s') ? +Q.get('s') : startS;
-  player.veh.reset(s0, route.laneU(s0, 1), 0);
-  rival.veh.reset(s0 + 9, route.laneU(s0 + 9, 0), 0);
+  const waiting = gridSlot(multiplayer.me?.gridSlot ?? 0, s0), spare = gridSlot(1, s0);
+  placeVeh(player.veh, waiting.s, waiting.u, G.ev.r.dir);
+  placeVeh(rival.veh, spare.s, spare.u, G.ev.r.dir);
   for (const v of [player.veh, rival.veh]) { v.nitro = v.spec.nitrous === true ? 0.4 : 0; v.dragMul = 1; v.wallHit = 0; v.safe = null; v.water = 0; }
   G.sinkT = 0; G.sinkFade = false; G.stuckT = 0; G.stuckHint = false; G.towing = false; resetTowOffer();
   if (fx) fx.clearMarks();
@@ -527,7 +529,7 @@ function resetEvent() {
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
   const base = Q.has('s') ? +Q.get('s') : r.s0;
   const solo = !grid.length;
-  if (solo) { const s = base - dir * 4; placeVeh(player.veh, s, route.closed ? 0 : dir * route.laneU(s, Math.min(1, route.lanes(s) - 1)), dir); }
+  if (solo) { const p = soloStartPosition(route, base, dir, def.type === 'free' || isDrivingMode(def)); placeVeh(player.veh, p.s, p.u, dir); }
   else { const g = gridSlot(grid.length, base); placeVeh(player.veh, g.s, g.u, dir); }
   player.dir = dir;
   for (const [i, c] of grid.entries()) {
@@ -917,14 +919,7 @@ function prepareEvent(e) {
 }
 /** Grid slot i: 8 m rows; single file on one-lane roads, two abreast otherwise. */
 function gridSlot(i, base = G.ev.r.s0) {
-  const r = G.ev.r, dir = r.dir;
-  const columns = route.closed || route.lanes(base) > 1 ? 2 : 1;
-  const spacing=Math.max(8,((player?.spec.length||4.4)+4.9)/2+2);
-  const rawS = base - dir * (4 + Math.floor(i / columns) * spacing);
-  const s = route.closed ? rawS : clamp(rawS, 5, route.length - 5);
-  const lane = Math.min(i % 2, route.lanes(s) - 1);
-  const u = route.closed ? (i % 2 ? 1 : -1) * Math.min(2.25, Math.max(.5, route.edge(s) - 1.2)) : dir * route.laneU(s, lane);
-  return { s, u, lane, yaw: Math.atan2(-route.lin(route.TX, s), -route.lin(route.TZ, s)) + (dir < 0 ? Math.PI : 0) };
+  return raceGridSlot(route, base, G.ev.r.dir, i, player?.spec.length || 4.4);
 }
 function placeVeh(veh, s, u, dir) { veh.reset(s, u, 0); if (dir < 0) veh.yaw += Math.PI; }
 const prog = (s) => (s - G.ev.r.s0) * G.ev.r.dir;

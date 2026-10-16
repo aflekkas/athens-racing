@@ -1,3 +1,4 @@
+import { megaraGantryPier } from '../gantry-legs.js';
 import { buildBuildings } from '../buildings.js';
 // Megara scenery, georeferenced to the OSM bundle and Esri reference in SOURCES.md.
 // Ground references: BIKEIT Megara gallery, May 2023; RallyDiaries paddock/start photos.
@@ -216,7 +217,8 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   const startS=circuit.startS??0, frame=route.frame(startS,{}),gantryY=frame.y;
   function gantryBox(u,h,s,w,d,hh,mat){const p=route.point(startS+s,u);batch.box(p.x,gantryY+h,p.z,w,hh,d,mat,route.heading(startS));}
   const support=-route.edge(startS)-1.2;
-  gantryBox(support,3.35,0,1.5,.6,6.7,white);gantryBox(support+5.3,6.3,0,12.1,.7,1.6,white);
+  const pier=megaraGantryPier(route, startS);
+  batch.box(pier.x,pier.y,pier.z,pier.width,pier.height,pier.depth,white,pier.yaw);gantryBox(support+5.3,6.3,0,12.1,.7,1.6,white);
   for(let row=0;row<8;row++)for(let col=0;col<2;col++)if((row+col)%2===0)gantryBox(support+(col-.5)*.72,.55+row*.72,-.325,.70,.02,.70,black);
   gantryBox(support+7,4.98,0,3.5,.48,.7,black);
   gantryBox(support+7,4.98,-.26,2.9,.035,.36,red);

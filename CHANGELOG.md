@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Free roam starts clear of the START gantry; race grids sit farther back so posts do not block the cockpit view.
+  ![Riviera MINI cockpit before and after moving the free-roam spawn](assets/changelog/2026.10.16.1/gantry-clearance.webp "The red START post is clear of the new free-roam starting view.")
+
 - Cockpits regain body frames, connected dashboards and branded steering wheels. Mounted wipers clear small, subtle rain drops.
   ![SVJ cockpit and rainy 911 before and after](assets/changelog/2026.10.16.1/cockpit-structure.webp "A visible cabin and steering wheel, with a clear view of the road.")
 

@@ -1,0 +1,77 @@
+TAP version 13
+# Subtest: every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+ok 1 - every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)
+  ---
+  duration_ms: 9534.573749
+  type: 'test'
+  ...
+# Subtest: ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+ok 2 - ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected
+  ---
+  duration_ms: 2.535845
+  type: 'test'
+  ...
+# Subtest: all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+ok 3 - all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV
+  ---
+  duration_ms: 2782.376619
+  type: 'test'
+  ...
+# Subtest: rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+ok 4 - rain is one shared alpha-texture overlay and blades remain on the framed windscreen
+  ---
+  duration_ms: 91.699231
+  type: 'test'
+  ...
+# Gantry clearance: 13510 real-cockpit/map/event/slot checks; legacy MINI obstruction detected.
+# Subtest: every map, event spawn and eight grid slots keep gantry legs outside the near cockpit view
+ok 5 - every map, event spawn and eight grid slots keep gantry legs outside the near cockpit view
+  ---
+  duration_ms: 5541.750035
+  type: 'test'
+  ...
+# Subtest: live spawn and gantry builders use the guarded helpers
+ok 6 - live spawn and gantry builders use the guarded helpers
+  ---
+  duration_ms: 2.266363
+  type: 'test'
+  ...
+# Subtest: one graphics look: no shadow, post, AO, bloom or reflection pass is enabled in the fixed config
+ok 7 - one graphics look: no shadow, post, AO, bloom or reflection pass is enabled in the fixed config
+  ---
+  duration_ms: 2.94053
+  type: 'test'
+  ...
+# Subtest: no graphics presets or lighting / effects levels in settings, the renderer config or the menus
+ok 8 - no graphics presets or lighting / effects levels in settings, the renderer config or the menus
+  ---
+  duration_ms: 6.231572
+  type: 'test'
+  ...
+# Subtest: the renderer never turns on shadows, the car probe, sea reflections or a post pass beyond tone mapping
+ok 9 - the renderer never turns on shadows, the car probe, sea reflections or a post pass beyond tone mapping
+  ---
+  duration_ms: 5.997116
+  type: 'test'
+  ...
+# Subtest: the chase / third-person camera renders no mirror and pays for no mirror pass
+ok 10 - the chase / third-person camera renders no mirror and pays for no mirror pass
+  ---
+  duration_ms: 2.868135
+  type: 'test'
+  ...
+# Subtest: every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+ok 11 - every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask
+  ---
+  duration_ms: 8620.339397
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12727.127454
