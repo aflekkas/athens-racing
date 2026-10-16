@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- One graphics look for everyone: the clean, fast Lighting Off and Effects Off picture. Presets are gone, and the chase camera no longer shows a rear-view mirror.
+  ![The chase camera on the Riviera with the one graphics look and no rear-view strip](assets/changelog/2026.10.15.4/one-graphics-look.webp "One clean look, and a clear view over the car.")
+
 - Cockpit views put the road first, with compact readable instruments, no hands, and per-car seat height and position controls.
 
   ![A clear Riviera cockpit view with a compact instrument band](assets/changelog/2026.10.15.3/pov-camera.webp "More road in view. Your seat position, saved for each car.")

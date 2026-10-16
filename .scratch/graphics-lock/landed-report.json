@@ -1,0 +1,60 @@
+{
+  "variant": "landed",
+  "maps": {
+    "riviera": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "perfClass": "high",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 721,
+        "textures": 54,
+        "fps": 32.44991659922651,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 421,
+        "triangles": 857340,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 348,
+        "triangles": 895795,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 423,
+        "triangles": 858300,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 541,
+        "triangles": 1436028,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    }
+  },
+  "errors": []
+}

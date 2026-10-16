@@ -22,7 +22,6 @@ export class FleetCockpit{
  update(dt,st){this.state=st;this.lampState=this.lamps.update(dt,st);this.wheelInfo.angle=-st.steerInput*2.35;if(this.steering)this.steering.rotation.z=this.wheelInfo.angle;this.draw(st.kmh,st.gearLabel);}
  mirrorFov(){return 60;}
  renderMirrors(){}
- drawRearStrip(){}
  setVisible(v){if(this.steering)this.steering.visible=false;this.group.visible=v;setVehicleCockpitView(this.model,v);}
  setDetail(){}
  disposeMirrors(){this.group.removeFromParent();this.display.removeFromParent();this.display.geometry.dispose();this.material.dispose();this.texture.dispose();this.navDisplay.removeFromParent();this.navDisplay.geometry.dispose();this.navMaterial.dispose();this.navTex.dispose();}

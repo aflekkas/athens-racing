@@ -3,9 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {Group} from 'three';
-import {loadMap} from '../src/map.js';
-import {buildTerrain} from '../src/terrain.js';
-import {RoadNetwork} from '../src/road-network-surface.js';
+import {worldFixture} from './world-test-fixture.mjs';
 import {ROAD,buildRoad} from '../src/road.js';
 import {roadSurfaceSampler} from '../src/maps/penteli-ground.js';
 import {RivalAI} from '../src/rival-ai.js';
@@ -16,10 +14,7 @@ import {planRivieraRails,railDropHazard} from '../src/riviera-guardrails.js';
 import {buildRivieraRails} from '../src/riviera-guardrail-mesh.js';
 
 test('Riviera wide drop protection, access gaps, grounded meshes and sliding contact',async t=>{
- const previousFetch=globalThis.fetch; globalThis.location={search:""}; let map;
- try{globalThis.fetch=async url=>new Response(readFileSync(resolve(import.meta.dirname,'..',String(url))));map=await loadMap(undefined,'./','riviera',{preload:false});}finally{globalThis.fetch=previousFetch;}
- const network=new RoadNetwork(map);map.roadNetwork=network;
- const terrain=buildTerrain(map.terrain,map.route,[],new Group(),{coastal:true,network,beachAreas:map.data.areas?.beach||[]});
+ const {map,network,terrain}=await worldFixture('riviera');
  const {runs,samples}=planRivieraRails(map,terrain.heightC,network,ROAD),r=map.route;
  const pavement=roadSurfaceSampler(buildRoad(map,new Group(),terrain.heightC,{network,furniture:false}).group);
  assert.ok(railDropHazard([2.08,6.08,9.2]));assert.ok(!railDropHazard([.2,.4,.8]));

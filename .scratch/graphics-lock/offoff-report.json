@@ -1,0 +1,179 @@
+{
+  "variant": "offoff",
+  "maps": {
+    "riviera": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "high",
+        "preset": "high",
+        "lighting": "off",
+        "effects": "off",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 797,
+        "textures": 69,
+        "fps": 32.633351435260835,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 520,
+        "triangles": 1373357,
+        "passes": 3,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 451,
+        "triangles": 1421785,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 788,
+        "triangles": 2463018,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 719,
+        "triangles": 2511446,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "megara": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "high",
+        "preset": "high",
+        "lighting": "off",
+        "effects": "off",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 486,
+        "textures": 60,
+        "fps": 29.100082570755006,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 342,
+        "triangles": 3357478,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 261,
+        "triangles": 3312222,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 270,
+        "triangles": 1997790,
+        "passes": 3,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 189,
+        "triangles": 1952534,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "penteli": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "high",
+        "preset": "high",
+        "lighting": "off",
+        "effects": "off",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 580,
+        "textures": 62,
+        "fps": 28.891381062882434,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 834,
+        "triangles": 5378723,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 485,
+        "triangles": 4143503,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 563,
+        "triangles": 4062302,
+        "passes": 3,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 487,
+        "triangles": 4144463,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    }
+  },
+  "errors": []
+}

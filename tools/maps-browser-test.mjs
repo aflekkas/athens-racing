@@ -95,7 +95,7 @@ async function captureProof(page, id, report, stationsOverride = null) {
           capture.G.state = 'paused';
           window.__proofCars = capture.cars.map(car => [car, car.model.root.visible]);
           for (const [car] of window.__proofCars) car.model.root.visible = false;
-          document.querySelector('#graphics-quality').style.visibility = 'hidden';
+          
         });
         const uiError = await page.evaluate(() => window.__proofUiError || null);
         if (uiError) report.validationErrors.push(uiError);
@@ -132,7 +132,7 @@ async function captureProof(page, id, report, stationsOverride = null) {
         await page.evaluate(() => {
           for (const [car, visible] of window.__proofCars) car.model.root.visible = visible;
           delete window.__proofCars;
-          document.querySelector('#graphics-quality').style.visibility = '';
+          
           window.__sim.G.state = 'menu'; window.__flow.menu.show('maps');
         });
         await page.waitForFunction(() => [...document.querySelectorAll('.map-card img')].every(img => img.complete));

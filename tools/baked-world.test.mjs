@@ -1,15 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { resolve } from 'node:path';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { packGroup } from '../src/baked-world-pack.js';
-import { generateMapBake } from './bake-world.mjs';
+import { worldFixture } from './world-test-fixture.mjs';
 import { encodeGeometryPack, decodeGeometryPack } from '../src/baked-geometry.js';
 import { restoreBakedTerrain, restoreBakedRoads } from '../src/baked-world.js';
 import { loadBakedWorldData } from '../src/baked-world-data.js';
 import { RoadNetwork } from '../src/road-network-surface.js';
-const root = resolve(import.meta.dirname, '..');
 function roundTrip(buffer) {
   const bytes = gunzipSync(gzipSync(new Uint8Array(buffer)));
   return decodeGeometryPack(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
@@ -38,8 +36,16 @@ test('geometry packs reject invalid magic, versions and out-of-bounds views', ()
   const bad = pack.slice(0); new DataView(bad).setUint32(0, 0); assert.throws(() => decodeGeometryPack(bad));
   assert.throws(() => decodeGeometryPack(pack.slice(0, 16)));
 });
-for (const id of ['riviera', 'penteli']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, async () => {
-  const bake = await generateMapBake(root, id), terrainPack = roundTrip(bake.terrain), roadsPack = roundTrip(bake.roads);
+for (const id of ['riviera', 'penteli']) test(`baked ${id} exactly equals generated terrain, roads and wheel surface`, { skip: id !== 'riviera' && process.env.ASR_TEST_FULL !== '1' ? 'nightly full-map generation; Riviera exercises the same codec in the deploy gate' : false }, async () => {
+  // Normal gate still compares every real generated attribute and index. The
+  // nightly path also exercises the expensive gzip-based shuffling heuristic.
+  const world = await worldFixture(id);
+  const bake = process.env.ASR_TEST_FULL === '1' ? world : {
+    ...world,
+    terrain: packGroup(world.terrainGroup, { map: id, grid: world.map.terrain.GX * world.map.terrain.GZ, height: 0, source: 1 }, [world.map.terrain.Hc, world.network.source], arrays => arrays.map((_, i) => i % 2 === 0)),
+    roads: packGroup(world.roadsGroup, { map: id, grid: world.map.terrain.GX * world.map.terrain.GZ, stats: { triangles: world.network.stats.triangles, tiles: world.network.stats.tiles } }, [], arrays => arrays.map((_, i) => i % 2 === 0)),
+  };
+  const terrainPack = roundTrip(bake.terrain), roadsPack = roundTrip(bake.roads);
   // The worker uses raw (unshuffled) transferable packs; build bakes choose gzip-friendly byte planes.
   const workerTerrain = decodeGeometryPack(packGroup(bake.terrainGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, height: 0, source: 1 }, [bake.map.terrain.Hc, bake.network.source]));
   const workerRoads = decodeGeometryPack(packGroup(bake.roadsGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, stats: roadsPack.metadata.stats }));

@@ -56,6 +56,10 @@ Every player-visible change must add a plain-language bullet and its screenshot 
 - **Performance**: if you add models, effects or scenery, say what it costs (draw calls and triangles from the in-game stats, or frame time) on Low and High. The game must stay smooth on laptops.
 - **Multiplayer**: anything that affects the shared world must look the same for every player. If it can't be synced, it must be hidden online.
 
+## Owner-locked decisions
+
+Some decisions are locked by the owner and listed in [`docs/OWNER-DECISIONS.md`](docs/OWNER-DECISIONS.md). Don't change, revert or "improve" any of them, even by accident in an unrelated PR, without the owner's written OK. Guard tests enforce several of them (for example `tools/owner-locked-graphics.test.mjs` locks the one graphics look and the mirror-free chase camera), and they fail with "Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing." Never edit or delete a guard test to get CI green. Ask the owner instead.
+
 ## Game design rules (please don't fight these)
 
 - Racing is about time only: no XP, levels, points, money, unlocks or text dialogue.
@@ -76,3 +80,36 @@ Every player-visible change must add a plain-language bullet and its screenshot 
 - `deploy/README.md` Cloudflare deployment notes (maintainer only)
 
 Questions: open an issue or ask in the PR.
+
+## Test commands
+
+Run `npm test` before submitting or deploying. It calls `node tools/run-tests.mjs`,
+which runs four independent groups concurrently: unit (two file workers), physics
+(two workers with the physics register), damage (one worker with the damage
+register), and world (one shared-fixture process). Output is prefixed by group,
+with elapsed times and a nonzero exit on failure; remaining groups are stopped
+on the first failure. Keep new suites in `tools/test-groups.json`, or import them
+from a listed suite. The coverage test rejects any omitted `.test.mjs` file.
+
+Run `npm run test:full` nightly and when changing terrain generation, road cuts,
+or geometry packing. It additionally runs Penteli's full-map generated/baked
+geometry equality check and Penteli/Megara's exhaustive rendered-terrain scans,
+plus the real-world gzip shuffling selection in `generateMapBake`. Those three
+full-map checks are explicitly reported as skipped by the pre-deploy gate.
+Riviera still receives the full attribute/index equality, two-metre road scan,
+25-point shoulder probes, shoreline and sightline regressions, and live rail
+contact/rival simulations in `npm test`. Mountain/circuit road, contact, slope,
+seam and LOD unit tests remain in the normal gate. No assertion tolerance or
+physics timestep changes. World fixtures are generated once per map and shared
+within the world test process; no persistent fixture can mask source changes.
+
+The separate release gates remain:
+
+```sh
+node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
+node tools/check-browser-imports.mjs
+```
+
+See `.scratch/test-speed/REPORT.md` for measured timings and exhaustive-check
+rationale. Run timing comparisons on a clean `git archive` with dependencies
+matching its lockfile; shared checkout edits are not a release input.

@@ -27,7 +27,7 @@ import { input as controls } from './input.js';
 import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
 import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
-import { Cockpit } from './cockpit.js';
+import { Cockpit, mirrorsInView } from './cockpit.js';
 import {chaseRig} from './vehicle-camera.js';
 import {isRivalCar} from './car-catalog.js';
 import { Hud, RacerMarkers, fmtTime } from './hud.js';
@@ -58,18 +58,18 @@ import { driverName } from './driver-name.js';
 import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
-import { firstQualityPreference } from './ui/graphics-onboarding.js';
+import { firstRunPerformanceCheck } from './ui/graphics-onboarding.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
 import { trackVersion } from './network-track.js';
-import { initWeather, updateWeather, updateRoadWeather, disposeWeather, applyWeatherQuality } from './weather.js';
+import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
 import { buildMapWorld } from './map-world.js';
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
-import { PRESETS, PRESET_IDS, PRESET_LABELS, detectQuality, resolveGraphics, applyQualityTier, applyRenderResolution, applySceneryQuality, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
+import { RENDER, resolveGraphics, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
@@ -99,26 +99,16 @@ const cpuMetrics = new CpuMetrics(Q.has('cpuProfile'));
 window.__cpuMetrics = cpuMetrics;
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
-let graphicsPreference = Q.get('quality') || 'auto';
-try { if (!Q.has('quality')) graphicsPreference = localStorage.getItem('paraliaki.graphics') || 'auto'; } catch {}
 const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_renderer_info');
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
-graphicsPreference = await firstQualityPreference(graphicsPreference, { gpuName });
-// One fixed preset, chosen once: an unset (or legacy 'auto') preference settles on the device heuristic's pick and is
-// stored, so Settings always shows the preset that is actually running. Dynamic resolution is controlled separately in Video settings.
-if (!PRESETS[graphicsPreference]) graphicsPreference = detectQuality('auto', gpuName, navigator.userAgent);
-setSetting('graphics', graphicsPreference);
-// GFX: what the preset + the Lighting / Effects / Resolution / Draw distance overrides resolve to (graphics.js)
+// first run only: a silent performance check picks the 'auto' resolution / draw distance (never the look)
+await firstRunPerformanceCheck({ gpuName });
+// ONE graphics look, hard-wired (graphics.js RENDER, owner-locked: docs/OWNER-DECISIONS.md). GFX only carries the
+// performance side: resolution and draw ranges.
 let GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
-// the post chain runs the effects level; the world, weather and LOD code use the preset's scenery tier
-let quality = GFX.preset, sceneryQuality = GFX.scenery;
-let lowGraphics = GFX.E.simple;
-setAnisotropy({ potato: 1, low: 2, med: 4, high: 8, ultra: 8 }[GFX.preset] ?? 4);
-window.__renderInfo = () => ({ gpu: gpuName, quality, preset: GFX.preset, lighting: GFX.lighting, effects: GFX.effects, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
-const graphicsControl = document.createElement('ui-select'); graphicsControl.id = 'graphics-quality'; graphicsControl.setAttribute('aria-label', 'Graphics preset');
-for (const value of [...PRESET_IDS].reverse()) { const option = document.createElement('option'); option.value = value; option.textContent = 'GRAPHICS: ' + PRESET_LABELS[value]; graphicsControl.append(option); }
-graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
-graphicsControl.onchange = () => applyQualityTier(graphicsControl.value);
+const R = RENDER, quality = R.exhaust, sceneryQuality = R.scenery, lowGraphics = R.simple;
+setAnisotropy(R.anisotropy);
+window.__renderInfo = () => ({ gpu: gpuName, perfClass: GFX.perfClass, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
 const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2) }));
 perfOverlay.setVisible(settings.perfOverlay === true);
@@ -130,7 +120,7 @@ addEventListener('keydown', (e) => {
 let pixelRatio = GFX.pixelRatio;
 let dynamicScale = makeDynamicScale();
 function makeDynamicScale() {
-  const floor = { potato: .83, low: .75, med: .65, high: .6, ultra: .55 }[GFX.preset];
+  const floor = { potato: .83, low: .75, med: .65, high: .6 }[GFX.perfClass];
   return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: 1200 / (settings.frameCap || 60) });
 }
 renderer.setPixelRatio(pixelRatio);
@@ -138,8 +128,7 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping; // tone mapping happens in the post pipeline (post.js)
 ENV.installAerial(ENV.AP_K); // aerial perspective replaces three's fog in every material
-renderer.shadowMap.enabled = !!GFX.L.shadow;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = false; // no sun shadow maps in the one look (RENDER.shadow)
 const scene = new THREE.Scene();
 scene.matrixAutoUpdate = false; // never moves; its children update themselves (static world: batch.js freezeStatic)
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
@@ -233,8 +222,7 @@ function guardLighting(force = false) {
 window.__lightingInfo = lightingInfo;
 window.__lightingGuard = guardLighting;
 if (Q.has('simhook')) window.__renderTest = {
-  applyQualityTier, applyRenderResolution,
-  probeFace(face) { probe.face = face; },
+  applyRenderResolution,
   breakLighting() { scene.environment?.dispose(); scene.environment = null; sun.removeFromParent(); probe.envRT.dispose(); post.baseExposure = NaN; },
 };
 
@@ -246,29 +234,18 @@ const lodList = [];
 const lodAt = new THREE.Vector3(1e9, 0, 0);
 function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
 // render distance (scenery.js): the setting applies live; traffic is drawn out to about half of it
-setDrawDistance(+Q.get('draw') || GFX.drawDistance, GFX.horizon, GFX.detail);
-// lower presets cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
+setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail);
+// weaker performance classes cap traffic and pedestrian draw ranges (graphics.js PERFORMANCE); high keeps the full range
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
-const GRAPHICS_KEYS = new Set(['graphics', 'lighting', 'effects', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
-/** re-resolve the graphics settings and apply whatever changed, live (no reload, the world is kept) */
-function applyGraphics(key) {
-  const prev = GFX; GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
+const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
+/** re-resolve resolution / draw distance and apply them live (no reload, the world is kept); the look never changes */
+function applyGraphics() {
+  GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
   dynamicScale = makeDynamicScale();
-  graphicsPreference = GFX.preset; graphicsControl.value = GFX.preset;
-  if (key === 'graphics') { const url = new URL(location.href); if (url.searchParams.has('quality')) { url.searchParams.set('quality', GFX.preset); history.replaceState(null, '', url); } }
-  quality = GFX.preset; sceneryQuality = GFX.scenery; lowGraphics = GFX.E.simple;
-  setAnisotropy({ potato: 1, low: 2, med: 4, high: 8, ultra: 8 }[GFX.preset] ?? 4);
   if (GFX.pixelRatio !== pixelRatio) { pixelRatio = GFX.pixelRatio; onResize(); post?.resetHistory(); }
-  setDrawDistance(+Q.get('draw') || GFX.drawDistance, GFX.horizon, GFX.detail); applyDrawDistance(); updateLod();
-  if (!post) return; // boot reads the current settings below
-  if (GFX.effects !== prev.effects) { post.setEffects(GFX.effects); applySceneryQuality(sky, probeSeed, water, world?.group, lowGraphics); applyWeatherQuality(GFX.E.particles); }
-  if (GFX.lighting !== prev.lighting) {
-    renderer.shadowMap.enabled = !!GFX.L.shadow; renderer.shadowMap.autoUpdate = true; renderer.shadowMap.needsUpdate = true;
-    if (GFX.L.shadow) ENV.setShadowRange(...GFX.L.shadow);
-  }
-  guardLighting(true);
+  setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); updateLod();
 }
-onSettings((s, key) => { if (GRAPHICS_KEYS.has(key)) applyGraphics(key); });
+onSettings((s, key) => { if (GRAPHICS_KEYS.has(key)) applyGraphics(); });
 
 let player = null, rival = null; // {veh, model, cockpit, spec}
 const keys = controls.keys; // retained for the simulation test hook
@@ -308,12 +285,12 @@ async function loadFirstMap(id) {
   if (!sky) {
     sky = ENV.createSky(); scene.add(sky);
     const baked = ENV.bakeSky(renderer, sky); probeSeed = baked.cube; scene.environment = baked.env;
-    ({ sun } = ENV.createLights(scene)); if (GFX.L.shadow) ENV.setShadowRange(...GFX.L.shadow);
+    ({ sun } = ENV.createLights(scene));
   }
   world = await buildMapWorld(map, { scene, sky, skyCube: probeSeed, lowGraphics, quality: sceneryQuality, progress: lstat });
   bindMapWorld(world);
   policeHud ||= new PoliceHud();
-  post ||= createPost(renderer, scene, camera, { effects: GFX.effects }); window.__post = post;
+  post ||= createPost(renderer, scene, camera); window.__post = post;
   probe ||= createProbe();
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
@@ -363,7 +340,7 @@ function bindMapWorld(next) {
   G.mapId = map.id || 'riviera';
 }
 function bindMapWeather() {
-  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: GFX.E.particles, cars: () => [player, rival], cam: () => G.cam });
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: R.particles, cars: () => [player, rival], cam: () => G.cam });
 }
 /** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
 async function switchMap(id = 'riviera', context = 'QUICK RACE') {
@@ -880,7 +857,7 @@ function initFlow() {
     resume, restart: () => openEvent(G.ev.def), quit: quitToMenu, next: (id) => openEvent(id),
     ctx: menuCtx, inputDevice: activeInputDevice, carName: () => CARS[G.carIdx].name, carSpec: () => CARS[G.carIdx], manual: () => player?.veh.manual ?? settings.transmission === 'manual', fmtTime, ui: (fwd) => audio.ui?.(fwd),
     personalBests: (def, r, car) => getPersonalBests(bestSetup(def, r, car)), shareResult,
-    bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(), graphicsControl,
+    bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(),
   });
   onSettings(onFlowSettings); onFlowSettings(settings, null);
   // A police arrest holds you at the roadside; shaking them off wins an escape.
@@ -2231,16 +2208,6 @@ function createProbe() {
   for (const resource of [rt, rt.texture, envRT, envRT.texture]) resource.addEventListener('dispose', () => { p.invalid = true; });
   return p;
 }
-function updateProbe() {
-  const p = probe;
-  if (p.face === 0) { p.cc.position.copy(player.model.root.position); p.cc.position.y += 1.8; p.cc.updateMatrixWorld(true); }
-  const prevA = renderer.shadowMap.autoUpdate, prevN = renderer.shadowMap.needsUpdate, target = renderer.getRenderTarget();
-  renderer.shadowMap.autoUpdate = renderer.shadowMap.needsUpdate = false;
-  try { renderer.setRenderTarget(p.rt, p.face); renderer.render(scene, p.cc.children[p.face]); }
-  finally { renderer.setRenderTarget(target); renderer.shadowMap.autoUpdate = prevA; renderer.shadowMap.needsUpdate = prevN; }
-  p.face = (p.face + 1) % 6;
-  if (p.face === 0) p.pmrem.fromCubemap(p.rt.texture, p.envRT);
-}
 
 function render() {
   if (!world || mapSwitch || G.state === 'menu') return;
@@ -2251,34 +2218,19 @@ function render() {
   renderer.info.autoReset = false; renderer.info.reset();
   ENV.updateWorldBlend(G.lastDt || 1 / 60);
   updateWeather(G.lastDt || 1 / 60);
-  // Auxiliary views must never consume a pending main-view shadow update (mirrors hide the player).
-  const L = GFX.L, E = GFX.E, shadowEnabled = !!L.shadow, pendingShadow = renderer.shadowMap.needsUpdate;
-  renderer.shadowMap.enabled = false;
-  if (L.probeEvery && frameN % L.probeEvery === 0) updateProbe();
+  // The one look (graphics.js RENDER): no shadow maps, no car reflection probe re-renders, no sea reflection pass.
   if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
-  if (water && E.waterEvery && frameN % E.waterEvery === 0) water.renderReflection(renderer, scene, camera);
-  // lower levels: shadow map every n-th frame (graphics.js). The shared rear view feeds the cockpit mirrors and the chase
-  // camera's rear-view strip: lower effects levels only lower its resolution / refresh / range (cockpit.js MIRROR_TIERS),
-  // only Settings > Mirrors turns it off
-  const mirrorsOn = settings.mirrors !== false, rearStrip = mirrorsOn && G.cam === 'chase' && ['race', 'onlineRace'].includes(G.state);
-  if (G.cam === 'cockpit' || rearStrip) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorsOn, quality: GFX.effects });
-  // post: camera motion blur (the racing cars are masked out), depth of field for the orbit cameras
+  // In-car mirrors only (Settings > Mirrors). Owner-locked: the chase / third-person camera never renders a mirror or
+  // a rear-view strip, and never pays for the mirror pass (docs/OWNER-DECISIONS.md).
+  const mirrorsOn = settings.mirrors !== false;
+  if (mirrorsInView(G.cam)) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorsOn });
+  // post: depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
-  post.blur = orbit ? 0.35 : 0.5;
-  for (let i = 0; i < 2; i++) {
-    const m = (i ? rival : player).model;
-    post.comp.uCarInv.value[i].copy(m.root.matrixWorld).invert();
-    post.comp.uCarHalf.value[i].set(m.dims.W / 2 + 0.25, m.dims.H / 2 + 0.25, m.dims.L / 2 + 0.3);
-  }
   post.comp.uDof.value = orbit ? 5.5 : 0;
   if (orbit) post.comp.uFocus.value = camera.position.distanceTo(_v1.set(player.veh.x, player.veh.y + 0.7, player.veh.z));
-  renderer.shadowMap.enabled = shadowEnabled;
-  renderer.shadowMap.autoUpdate = L.shadowEvery === 1;
-  renderer.shadowMap.needsUpdate = pendingShadow || !sun.shadow.map || frameN % L.shadowEvery === 0; // drawn by the main pass (the mirrors hide our car)
   post.render(G.lastDt || 1 / 60);
   if (photoCamera) { G.resultPhoto = captureResultFrame(canvas); G.resultPhotoPending = false; camera.position.copy(photoCamera.position); camera.quaternion.copy(photoCamera.quaternion); camera.fov = photoCamera.fov; camera.updateProjectionMatrix(); }
-  if (rearStrip) player.cockpit.drawRearStrip(renderer, { exposure: post.comp.uExposure.value, wb: post.u.uWB.value.toArray() });
 }
 
 function onResize() {
@@ -2360,14 +2312,13 @@ const multiplayer = new Multiplayer(CARS, {
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   async mapChanged(id) { await window.__flow.switchMap(id, multiplayer.lobby?.status === 'waiting' ? 'MULTIPLAYER LOBBY' : 'MULTIPLAYER RACE · RESUMING'); if (multiplayer.active) { setCar(Math.max(0, CARS.findIndex(c => c.id === multiplayer.me?.car))); onlineWait(); } else window.__flow.quit(); },
   panelClosed() { G.countWall = performance.now(); if (G.state === 'race') controls.requestMouseLock(); },
-  join(car) { graphicsControl.disabled = false; graphicsControl.title = ''; if (world && !mapSwitch && multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
+  join(car) { if (world && !mapSwitch && multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); } },
   carChanged(car) {
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
     if (world && !mapSwitch && multiplayer.loaded) { setCar(Math.max(0, CARS.findIndex(c => c.id === car))); onlineWait(); }
   },
   wait: onlineWait,
   leave() {
-    graphicsControl.disabled = false; graphicsControl.title = '';
     for (const c of remoteCars.values()) if (c !== rival) disposeCar(c); remoteCars.clear();
     if (!world || mapSwitch || !multiplayer.loaded) { showTitle(); return; }
     traffic.disabled = Q.has('notraffic'); setCar(G.carIdx); quitToMenu();

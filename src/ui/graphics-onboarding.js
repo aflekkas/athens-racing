@@ -1,32 +1,25 @@
-import * as graphics from '../graphics.js';
-import { ui } from './components.js';
+import { detectPerformance } from '../graphics.js';
+import { settings, setSetting } from '../settings.js';
 
-export const QUALITY_PROMPT_KEY='paraliaki.graphicsPrompt.v1';
+// First run: a SILENT performance check. There is no graphics prompt and nothing to choose: the game has one look
+// (graphics.js RENDER, owner-locked: docs/OWNER-DECISIONS.md). The check only picks the performance class, i.e. the
+// 'auto' resolution and draw distance; the player can still set both in Settings > Graphics.
+export const PERF_CHECK_KEY='paraliaki.perfCheck.v1';
+const OLD_PROMPT_KEY='paraliaki.graphicsPrompt.v1';
 const TEST_KEYS=['simhook','autodrive','car','s','event','quick','fixeddt','turbo'];
-export function skipQualityProbe({search='',webdriver=false}={}) {
+/** automation and test starts never run the GPU probe (the device heuristic still applies) */
+export function skipPerformanceProbe({search='',webdriver=false}={}) {
   const q=new URLSearchParams(search);
-  return webdriver||q.has('quality')||TEST_KEYS.some(key=>q.has(key));
+  return webdriver||TEST_KEYS.some(key=>q.has(key));
 }
-let pending=null;
-export async function firstQualityPreference(preference,{gpuName=''}={}) {
-  const q=new URLSearchParams(location.search);
-  if(q.has('quality')||TEST_KEYS.some(key=>q.has(key)))return preference;
-  try { if(localStorage.getItem('paraliaki.graphics')||localStorage.getItem(QUALITY_PROMPT_KEY))return preference; } catch {}
-  if(preference!=='auto'||typeof graphics.detectQualityTier!=='function'||typeof graphics.applyQualityTier!=='function')return preference;
+export async function firstRunPerformanceCheck({gpuName=''}={}) {
+  try { localStorage.removeItem(OLD_PROMPT_KEY); } catch {}
+  if(TEST_KEYS.some(key=>new URLSearchParams(location.search).has(key))||settings.perfClass!=='auto')return null;
+  try { if(localStorage.getItem(PERF_CHECK_KEY))return null; } catch {}
   try {
-    const result=await graphics.detectQualityTier({gpuName,probe:!skipQualityProbe({search:location.search,webdriver:navigator.webdriver})});
-    pending=result;graphics.applyQualityTier(result.tier,{reload:false});return result.tier;
-  }catch(error){console.warn('Graphics detection unavailable:',error.message);return preference;}
-}
-export function mountGraphicsOnboarding(menu) {
-  if(!pending)return;
-  const show=async()=>{
-    if(!pending||menu.screen!=='title'||document.querySelector('#loading.open')||document.querySelector('#multiplayer:not([hidden])'))return;
-    const result=pending;pending=null;observer.disconnect();
-    try {localStorage.setItem(QUALITY_PROMPT_KEY,'seen');}catch{}
-    const labels={potato:'Potato',low:'Low',med:'Medium',high:'High'};
-    const chosen=await ui.prompt({title:'Graphics preset: '+labels[result.tier],body:'Picked once for this device and kept fixed. Change it, or fine-tune lighting, effects and resolution, anytime in Settings › Graphics.',icon:'monitor',dismissible:false,actions:['potato','low','med','high'].map(id=>({id,label:labels[id],default:id===result.tier,variant:id===result.tier?'primary':'secondary'}))});
-    if(chosen)graphics.applyQualityTier(chosen,{current:result.tier});
-  };
-  const observer=new MutationObserver(show);observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden','data-ui']});setTimeout(show,0);
+    const result=await detectPerformance({gpuName,probe:!skipPerformanceProbe({search:location.search,webdriver:navigator.webdriver})});
+    setSetting('perfClass',result.perfClass);
+    try { localStorage.setItem(PERF_CHECK_KEY,'1'); } catch {}
+    return result;
+  } catch(error) { console.warn('Performance check unavailable:',error.message); return null; }
 }

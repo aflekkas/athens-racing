@@ -1,0 +1,180 @@
+{
+  "variant": "default",
+  "maps": {
+    "riviera": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "low",
+        "preset": "low",
+        "lighting": "off",
+        "effects": "low",
+        "lowGraphics": true,
+        "pixelRatio": 0.8,
+        "drawDistance": 1000,
+        "geometries": 704,
+        "textures": 68,
+        "fps": 32.464765281947244,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 681,
+        "triangles": 2225841,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 334,
+        "triangles": 1149424,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 685,
+        "triangles": 2227761,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 611,
+        "triangles": 2252105,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "megara": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "low",
+        "preset": "low",
+        "lighting": "off",
+        "effects": "low",
+        "lowGraphics": true,
+        "pixelRatio": 0.8,
+        "drawDistance": 1000,
+        "geometries": 488,
+        "textures": 60,
+        "fps": 30.965082428190172,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 266,
+        "triangles": 1254270,
+        "passes": 3,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 185,
+        "triangles": 1209014,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 346,
+        "triangles": 2635366,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 187,
+        "triangles": 1209974,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "penteli": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "quality": "low",
+        "preset": "low",
+        "lighting": "off",
+        "effects": "low",
+        "lowGraphics": true,
+        "pixelRatio": 0.8,
+        "drawDistance": 1000,
+        "geometries": 560,
+        "textures": 62,
+        "fps": 29.770910902036093,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 490,
+        "triangles": 3628939,
+        "passes": 3,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 412,
+        "triangles": 3709084,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 776,
+        "triangles": 5076580,
+        "passes": 4,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 698,
+        "triangles": 5156725,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    }
+  },
+  "errors": []
+}

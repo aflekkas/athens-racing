@@ -16,8 +16,7 @@ import { CARS } from './cars.js';
 import { GARAGE_CARS } from './car-catalog.js';
 import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
 import * as C from './ui/components.js';
-import { mountGraphicsOnboarding } from './ui/graphics-onboarding.js';
-import { resolveGraphics, PRESETS, PRESET_IDS, PRESET_LABELS, LEVEL_IDS } from './graphics.js';
+import { resolveGraphics } from './graphics.js';
 import { installSettingsAccess } from './ui/settings-access.js';
 import { renderControls, controlsClick, controlsAction, controlsChange } from './ui/controls-panel.js';
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, POLICE_LEVELS } from './race-setup.js';
@@ -52,12 +51,12 @@ export class Menu {
    * root: the #ui element. h: handlers from main.js
    *   quickRace(), openEvent(def | id), chooseCar(index, def, garage), multiplayer(), garage(), resume(), restart(), quit(), next(id)
    *   ctx() -> resolve context { route, marks, mapId }, carName() -> string, fmtTime(t), ui(forward) (click sound)
-   *   cancelBindings() (drop a half-done key capture), graphicsControl (the hidden graphics <ui-select>), inputDevice()
+   *   cancelBindings() (drop a half-done key capture), inputDevice()
    */
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all'; this.participants = 'solo';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); mountGraphicsOnboarding(this); MP.installMpScreens(this); Release.install(this); installAccounts(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); installAccounts(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -282,7 +281,6 @@ export class Menu {
     if (scope === 'setting') {
       if(key.startsWith('seat-')){setSeatPosition(this.h.carSpec?.()?.id,key.slice(5),value);return;}
       if (key === 'swearing') { setSetting('mildLanguage', !value); return; }
-      if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;if(this.root)this.refresh();return; }
       if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));if(this.root)this.refresh();return;}
       if(key==='drawDistance'){setSetting(key,value==='auto'?'auto':Number(value));return;}
       setSetting(key, value);
@@ -421,17 +419,13 @@ export class Menu {
       const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
       body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'swearing', label: 'SWEARING', value: !settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
-      // Graphics: one preset, plus Lighting / Effects / Resolution / Draw distance overrides (src/graphics.js). All fixed, all live.
-      const gfx=resolveGraphics(settings),P=PRESETS[gfx.preset],L=PRESET_LABELS,pct=r=>Math.round(r*100)+'%';
-      const presetNote={potato:'NO SHADOWS · NO POST-PROCESSING · LOW RESOLUTION · SHORT DRAW DISTANCE',low:'NO SHADOWS · LIGHT POST-PROCESSING · REDUCED RESOLUTION',med:'SOFT SHADOWS · CORE EFFECTS · FOR LAPTOPS',high:'FULL SHADOWS · ALL EFFECTS · FOR GAMING PCS',ultra:'LONGEST SHADOWS AND DRAW DISTANCE · HIGH-END GPUS'}[gfx.preset];
-      const level=(key,title,note)=>C.segmented({key,label:title,value:v(key),options:[['preset','PRESET · '+L[P[key]]],...LEVEL_IDS.map(id=>[id,id==='med'?'MED':L[id]])],note,attrs:SET});
-      const screen=Math.min(globalThis.devicePixelRatio||1,2),presetRes=Math.min(screen,P.pixelRatio)/screen;
-      body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}PRESET</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS PRESET', value: gfx.preset, options: PRESET_IDS.map(id=>[id,L[id]]), note:presetNote+' · APPLIES LIVE', attrs: {...SET, 'data-default':''} })}</div>
-        <div class="group graphics-detail"><h3 class="group__title">${icon('sun')}LIGHTING & EFFECTS</h3>${level('lighting','LIGHTING','SHADOWS AND SHINY CAR REFLECTIONS · OFF IS FASTEST')}${level('effects','EFFECTS','SMOOTH EDGES, GLOW, MOTION BLUR, SOFT CORNER SHADING, MIRROR SHARPNESS, SEA REFLECTIONS, RAIN DETAIL · OFF IS FASTEST')}</div>
-        <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · DYNAMIC RESOLUTION CAN TEMPORARILY LOWER THIS',attrs:SET})}${C.toggle({key:'dynamicResolution',label:'Dynamic resolution',value:v('dynamicResolution'),note:'TEMPORARILY LOWER RESOLUTION UNDER LOAD, THEN RESTORE IT · HUD STAYS SHARP',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
-        <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'PRESET · '+(P.drawDistance>=1000?P.drawDistance/1000+' KM':P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
-          ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}
-          ${C.toggle({ key: 'mirrors', label: 'MIRRORS', value: settings.mirrors !== false, note: 'SEE BEHIND YOU · ON AT EVERY PRESET · REAR-VIEW STRIP IN THE CHASE CAMERA', attrs: SET })}
+      // Graphics: ONE fixed look (src/graphics.js RENDER, owner-locked: docs/OWNER-DECISIONS.md). Only performance
+      // controls that never change the look live here: resolution, frame rate limit, draw distance. All live.
+      const gfx=resolveGraphics(settings),pct=r=>Math.round(r*100)+'%';
+      const screen=Math.min(globalThis.devicePixelRatio||1,2),autoRes=Math.min(screen,gfx.P.pixelRatio)/screen;
+      body = `<div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','AUTO · '+pct(autoRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · DYNAMIC RESOLUTION CAN TEMPORARILY LOWER THIS',attrs:SET})}${C.toggle({key:'dynamicResolution',label:'Dynamic resolution',value:v('dynamicResolution'),note:'TEMPORARILY LOWER RESOLUTION UNDER LOAD, THEN RESTORE IT · HUD STAYS SHARP',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
+        <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'AUTO · '+(gfx.P.drawDistance>=1000?gfx.P.drawDistance/1000+' KM':gfx.P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
+          ${C.toggle({ key: 'mirrors', label: 'MIRRORS', value: settings.mirrors !== false, note: 'IN-CAR REAR-VIEW AND DOOR MIRRORS · NEVER SHOWN IN THE CHASE CAMERA', attrs: SET })}
           ${C.toggle({ key: 'perfOverlay', label: 'PERFORMANCE OVERLAY', value: settings.perfOverlay === true, note: 'FPS · FRAME MS · DRAW CALLS · F3 TOGGLES IT TOO', attrs: SET })}<p class="graphics-live-note">Changes apply immediately, including while online.</p></div>
         <div class="group"><h3 class="group__title">${icon('speedometer')}UNITS</h3>${C.segmented({ key: 'units', label: 'SPEED UNITS', value: v('units'), options: [['kmh', 'KM/H'], ['mph', 'MPH']], attrs: SET })}</div>`;
     } else if (tab === 'driving') {
@@ -451,7 +445,7 @@ export class Menu {
     return C.screen({ appearance: tab === 'video' ? 'racing' : '', road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name, car: this.h.carSpec?.()?.name || 'YOUR GARAGE', cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
       head: C.tabs({ key: 'settingsTab', value: tab, options: tabsList }),
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['tabs', 'TAB'], ...(tab === 'controls' ? [['confirm', 'REBIND']] : []), ['back', 'BACK']],
-      body: tab === 'video' ? `<div class="video-layout"><aside class="video-hero">${C.routeHero({...(MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]),eyebrow:'TUNE YOUR VIEW',content:C.stats([['PROFILE',PRESET_LABELS[profile.preset]],['RESOLUTION',Math.round(profile.resolution*100)+'%']])})}<div class="video-hero__action"><p>YOUR ROADS. YOUR PICTURE.</p><span>Every change applies live.</span>${C.button({label:'BACK TO THE ROAD',act:'back',icon:'caret-right',variant:'primary'})}</div></aside><div class="set-panel panel scroll-y">${body}</div></div>` : `<div class="set-panel panel scroll-y">${body}</div>` });
+      body: tab === 'video' ? `<div class="video-layout"><aside class="video-hero">${C.routeHero({...(MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]),eyebrow:'TUNE YOUR VIEW',content:C.stats([['RESOLUTION',Math.round(profile.resolution*100)+'%']])})}<div class="video-hero__action"><p>YOUR ROADS. YOUR PICTURE.</p><span>Every change applies live.</span>${C.button({label:'BACK TO THE ROAD',act:'back',icon:'caret-right',variant:'primary'})}</div></aside><div class="set-panel panel scroll-y">${body}</div></div>` : `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
   leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }

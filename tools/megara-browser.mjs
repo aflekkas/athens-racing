@@ -60,8 +60,8 @@ try {
  report.impact.frames2=await advance(20);await render();await shot('06-tyres-flying');
  report.impact.frames3=await advance(90);await render();await shot('07-tyres-bouncing');
  assert.ok(report.impact.frames2.bodies>0,'physical impact must release tyres');assert.ok(report.impact.frames2.speed<20,'wall must absorb car speed');
- // Night shader and all live quality presets on the actual Megara road.
- for(const q of (sceneryOnly?['low']:['low','med','high','ultra'])){console.log('QUALITY',q);report.quality.push(await page.evaluate(q=>{window.__renderTest.applyQualityTier(q);window.__setConditions({time:'night',weather:'clear'});window.__sim.render();const road=window.__sim.scene.getObjectByName('megara-road');return {q,health:window.__lightingInfo(),materials:road.children.filter(o=>o.isMesh).map(o=>o.material.customProgramCacheKey()),render:window.__renderInfo()};},q));}
+ // Night shader on the actual Megara road (one graphics look: no presets to loop over).
+ for(const q of ['fixed']){console.log('QUALITY',q);report.quality.push(await page.evaluate(q=>{window.__setConditions({time:'night',weather:'clear'});window.__sim.render();const road=window.__sim.scene.getObjectByName('megara-road');return {q,health:window.__lightingInfo(),materials:road.children.filter(o=>o.isMesh).map(o=>o.material.customProgramCacheKey()),render:window.__renderInfo()};},q));}
  await shot('08-night-tyre-walls');
  assert.ok(report.quality.every(q=>q.health.valid && q.materials.some(m=>m.startsWith('megara-photo-surface-v2-asphalt')&&m.includes('|wx-road'))));
  await page.evaluate(()=>window.__flow.startEvent('megara-race'));

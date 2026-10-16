@@ -2,97 +2,66 @@ import * as THREE from 'three';
 import { settings, setSetting } from './settings.js';
 import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 
-// ---------------------------------------------------------------- graphics presets
-// A preset (settings.graphics) picks a LIGHTING level, an EFFECTS level, the world's scenery tier, the render
-// resolution and the draw distance. Lighting, effects, resolution and draw distance can each be overridden in
-// Settings > Graphics ('preset' = follow the preset). Dynamic resolution may temporarily lower resolution within the selected ceiling.
-// Lighting and scenery tiers stay fixed. Everything applies live (main.js).
-//
-// LIGHTING: shadow: [sun shadow box half-size m, map size] (null = no shadow maps) · shadowEvery: re-render the sun
-//   shadow map every n frames · probeEvery: car reflection probe face cadence in frames (0 = frozen sky reflection)
-export const LIGHTING = {
-  off: { shadow: null, shadowEvery: 1, probeEvery: 0 },
-  low: { shadow: [70, 1024], shadowEvery: 2, probeEvery: 6 },
-  med: { shadow: [95, 2048], shadowEvery: 2, probeEvery: 4 },
-  high: { shadow: [150, 4096], shadowEvery: 1, probeEvery: 2 },
-  ultra: { shadow: [220, 4096], shadowEvery: 1, probeEvery: 2 },
-};
-// EFFECTS: the post chain (src/post.js) and the extra views.
-//   msaa: scene samples (capped by the GPU) · fxaa: post-tone-map edge AA · ao: Alchemy AO samples at half res (0 = off) ·
-//   bloomMips: 0 = off · blurTaps: camera motion blur taps (0 = off) · dofTaps: garage / orbit depth of field ·
-//   sharpen: contrast-adaptive, luma only · heat: distant heat shimmer on clear days · grade: the final pass also does
-//   glare, vignette and sharpening (off = tone map only) · simple: cheap sky / sea / terrain shading ·
-//   mirrorEvery: cockpit mirror cadence divisor (0 = off) · mirrorFar: mirror camera far plane (m) ·
-//   waterEvery: sea reflection cadence in frames (0 = off) · particles: weather / tyre-smoke detail ('low'|'med'|'high')
-export const EFFECTS = {
-  off: { msaa: 0, fxaa: false, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 8, sharpen: 0, heat: false, grade: false, simple: true, mirrorEvery: 0, mirrorFar: 0, waterEvery: 0, particles: 'low' },
-  low: { msaa: 0, fxaa: true, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 12, sharpen: 0, heat: false, grade: true, simple: true, mirrorEvery: 0, mirrorFar: 0, waterEvery: 0, particles: 'low' },
-  med: { msaa: 2, fxaa: true, ao: 6, bloomMips: 4, blurTaps: 6, dofTaps: 16, sharpen: 0.12, heat: false, grade: true, simple: false, mirrorEvery: 2, mirrorFar: 240, waterEvery: 6, particles: 'med' },
-  high: { msaa: 4, fxaa: true, ao: 10, bloomMips: 5, blurTaps: 8, dofTaps: 24, sharpen: 0.18, heat: true, grade: true, simple: false, mirrorEvery: 1, mirrorFar: 600, waterEvery: 3, particles: 'high' },
-  ultra: { msaa: 8, fxaa: true, ao: 16, bloomMips: 6, blurTaps: 12, dofTaps: 40, sharpen: 0.18, heat: true, grade: true, simple: false, mirrorEvery: 1, mirrorFar: 600, waterEvery: 3, particles: 'high' },
-};
-// PRESETS: scenery: the tier the world builders, weather and LOD code use ('low' | 'med' | 'high') · horizon: the
-//   far-impostor tier (src/scenery.js SCENERY_TIERS) · pixelRatio: render pixel ratio cap (× device pixels) ·
-//   drawDistance: m (src/scenery.js) · trafficDraw: traffic drawn out to (m, null = from the draw distance) ·
-//   crowd: pedestrians drawn out to (m) · detail: small-prop range factor (src/scenery.js)
-export const PRESETS = {
-  potato: { lighting: 'off', effects: 'off', scenery: 'low', horizon: 'potato', pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5 },
-  low: { lighting: 'off', effects: 'low', scenery: 'low', horizon: 'low', pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7 },
-  med: { lighting: 'med', effects: 'med', scenery: 'med', horizon: 'med', pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85 },
-  high: { lighting: 'high', effects: 'high', scenery: 'high', horizon: 'high', pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1 },
-  ultra: { lighting: 'ultra', effects: 'ultra', scenery: 'high', horizon: 'ultra', pixelRatio: 2, drawDistance: 4000, trafficDraw: null, crowd: 175, detail: 1 },
-};
-export const PRESET_IDS = ['potato', 'low', 'med', 'high', 'ultra'];
-export const LEVEL_IDS = ['off', 'low', 'med', 'high', 'ultra'];
-export const PRESET_LABELS = { potato: 'POTATO', low: 'LOW', med: 'MEDIUM', high: 'HIGH', ultra: 'ULTRA', off: 'OFF' };
-/** Legacy per-tier view (post.js / tests): a preset's effects + lighting + preset fields in one object. */
-export const GRAPHICS_TIERS = Object.fromEntries(PRESET_IDS.map(id => [id, { ...EFFECTS[PRESETS[id].effects], ...LIGHTING[PRESETS[id].lighting], ...PRESETS[id] }]));
-export const GRAPHICS_CHOICES = [...PRESET_IDS].reverse();
+// ---------------------------------------------------------------- the one graphics look (OWNER-LOCKED)
+// There is exactly ONE look: what the old Lighting = OFF + Effects = OFF levels produced. No presets, no lighting /
+// effects levels, no adaptive switching. Owner-locked decision (docs/OWNER-DECISIONS.md): ask the owner before
+// changing anything in RENDER; tools/owner-locked-graphics.test.mjs fails if a shadow / post / AO / bloom /
+// reflection pass is switched on here or a preset / level selector comes back.
+//   shadow: null = no sun shadow maps · probeEvery: 0 = frozen sky reflection on the cars (no probe re-renders) ·
+//   msaa / fxaa / ao / bloomMips / blurTaps / sharpen: 0 = off · dofTaps: depth of field taps for the garage / orbit
+//   cameras only · heat: no heat shimmer · grade: false = tone map + time-of-day grade only (no sun glare, lens ghosts
+//   or rain on the lens) · simple: cheap sky / sea / terrain shading · waterEvery: 0 = no sea reflection pass ·
+//   particles: weather / tyre-smoke detail · mirror: cockpit mirror view (every n-th frame, far plane m, width px) ·
+//   scenery / horizon: the world tier and far-impostor tier · anisotropy: texture filtering · exhaust: flame tier
+export const RENDER = Object.freeze({
+  shadow: null, shadowEvery: 1, probeEvery: 0,
+  msaa: 0, fxaa: false, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 8, sharpen: 0, heat: false, grade: false, simple: true,
+  waterEvery: 0, particles: 'low', mirror: Object.freeze({ every: 3, far: 150, width: 384 }),
+  scenery: 'high', horizon: 'high', anisotropy: 8, exhaust: 'high',
+});
+// PERFORMANCE classes change only resolution and draw ranges, never the look. settings.perfClass ('auto' = from the
+// device; the first-run check in src/ui/graphics-onboarding.js may lower it silently) picks the 'auto' resolution and
+// draw distance. pixelRatio: render pixel ratio cap (x device pixels) · drawDistance m (src/scenery.js) ·
+// trafficDraw / crowd: traffic and pedestrian draw ranges (m, null = from the draw distance) · detail: small-prop
+// range factor (src/scenery.js)
+export const PERFORMANCE = Object.freeze({
+  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5 },
+  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7 },
+  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85 },
+  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1 },
+});
+export const PERF_CLASSES = Object.keys(PERFORMANCE);
 /**
- * What the current settings resolve to. `preset` is always a concrete preset id (a stored 'auto' from an older
- * build resolves through the device heuristic). renderScale 'auto' = the preset's resolution, otherwise a fixed
- * 0.5..1 fraction of the screen's pixels (device pixel ratio, capped at 2).
+ * What the current settings resolve to: the fixed RENDER look plus the performance class's resolution and draw
+ * ranges. renderScale 'auto' = the class's resolution, otherwise a fixed 0.5..1 fraction of the screen's pixels
+ * (device pixel ratio, capped at 2).
  */
 export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, gpuName = '', userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '' } = {}) {
-  const preset = PRESETS[s.graphics] ? s.graphics : detectQuality('auto', gpuName, userAgent), P = PRESETS[preset];
-  const lighting = LIGHTING[s.lighting] ? s.lighting : P.lighting, effects = EFFECTS[s.effects] ? s.effects : P.effects;
+  const perfClass = PERFORMANCE[s.perfClass] ? s.perfClass : detectPerfClass(gpuName, userAgent), P = PERFORMANCE[perfClass];
   const screen = Math.min(deviceRatio || 1, 2), scale = s.renderScale === 'auto' || s.renderScale == null ? null : +s.renderScale;
   const pixelRatio = +(scale ? screen * scale : Math.min(screen, P.pixelRatio)).toFixed(3);
   const draw = +s.drawDistance > 0 ? +s.drawDistance : P.drawDistance;
-  return { preset, P, lighting, L: LIGHTING[lighting], effects, E: EFFECTS[effects], scenery: P.scenery, horizon: P.horizon,
-    pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail };
+  return { R: RENDER, perfClass, P, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail };
 }
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
-// integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high; ultra is opt-in only.
+// integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high.
 const MID_GPU = /Intel\(R\) (HD|UHD)|Intel.*(HD|UHD) Graphics|Mali|Adreno|PowerVR|Apple GPU|Radeon\(TM\) Graphics|Radeon Vega [0-9]|Iris(?! Xe)/i;
 // old / very weak integrated parts: potato
 const WEAK_GPU = /Intel\(R\) HD Graphics( [2-5][0-9]{2,3})?$|Intel.*HD Graphics (2000|2500|3000|4000|4400|4600|5000|5500|6000|500|505|510|405|400)\b|Mali-(G31|G51|G52|T[0-9]+)\b|Adreno \(TM\) [2-5][0-9]{2}\b|PowerVR/i;
-/** the preset for a stored preference (a preset id, or 'auto' = pick from the GPU) and what the browser reports */
-export function detectQuality(preference = 'auto', gpuName = '', userAgent = '') {
-  if (PRESETS[preference]) return preference;
+/** the performance class for what the browser reports (GPU name, user agent) */
+export function detectPerfClass(gpuName = '', userAgent = '') {
   if (SOFTWARE_GPU.test(gpuName)) return 'low';
   if (WEAK_GPU.test(gpuName)) return 'potato';
   if (/Android|iPhone|iPad|Mobile/i.test(userAgent) || MID_GPU.test(gpuName)) return 'med';
   return 'high';
 }
-
-// ---------------------------------------------------------------- first-run preset pick (used by the UI onboarding prompt)
-export const QUALITY_STORAGE_KEY = 'paraliaki.graphics';
-/** the stored preference ('auto' = never chosen | preset); a ?quality= URL parameter wins */
-export function storedQualityPreference() {
-  const q = new URLSearchParams(location.search).get('quality');
-  if (q && (q === 'auto' || PRESETS[q])) return q;
-  try { const v = localStorage.getItem(QUALITY_STORAGE_KEY); if (v === 'auto' || PRESETS[v]) return v; } catch {}
-  return 'auto';
-}
-const TIER_ORDER = PRESET_IDS;
-const minTier = (a, b) => TIER_ORDER[Math.min(TIER_ORDER.indexOf(a), TIER_ORDER.indexOf(b))];
+const minClass = (a, b) => PERF_CLASSES[Math.min(PERF_CLASSES.indexOf(a), PERF_CLASSES.indexOf(b))];
 function gpuNameOf(gl) {
   const ext = gl.getExtension('WEBGL_debug_renderer_info');
   return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER) || '');
 }
 // A short synchronous GPU throughput probe in its own throwaway context: a fixed fragment workload at 960x540,
-// timed through a 1-pixel readback (forces completion). It only ever LOWERS the heuristic tier, so an
+// timed through a 1-pixel readback (forces completion). It only ever LOWERS the heuristic class, so an
 // uncalibrated reading can't push a weak laptop onto high. ms per pass: discrete ~0.3-1, Iris Xe ~2-4, UHD 620 ~6-12.
 function gpuProbe(budgetMs = 1500) {
   const canvas = document.createElement('canvas'); canvas.width = 960; canvas.height = 540;
@@ -122,36 +91,28 @@ function gpuProbe(budgetMs = 1500) {
   return { gpu, msPerPass };
 }
 /**
- * Recommend a tier for this device: GPU name + CPU cores + device memory, then (optional) a ≤1.5 s GPU probe that
- * can only lower it. Never recommends 'ultra'. Resolves { tier, reasons[], gpu, cores, memory, msPerPass }.
- * Preset ids are 'potato' | 'low' | 'med' | 'high' (label 'med' as "Medium").
+ * The first-run performance check: GPU name + CPU cores + device memory, then (optional) a <=1.5 s GPU probe that
+ * can only lower it. Resolves { perfClass, reasons[], gpu, cores, memory, msPerPass }. Performance only: it picks
+ * the 'auto' resolution and draw distance, never the look.
  */
-export async function detectQualityTier({ probe = true, gpuName = '', userAgent = navigator.userAgent } = {}) {
+export async function detectPerformance({ probe = true, gpuName = '', userAgent = navigator.userAgent } = {}) {
   const cores = navigator.hardwareConcurrency || 4, memory = navigator.deviceMemory || 8, reasons = [];
   let probed = null;
   if (probe) { await new Promise(r => setTimeout(r, 0)); try { probed = gpuProbe(); } catch { probed = null; } }
   const gpu = gpuName || probed?.gpu || '';
-  let tier = detectQuality('auto', gpu, userAgent);
-  reasons.push(`gpu:${gpu || 'unknown'}→${tier}`);
-  if (cores <= 2 || memory <= 2) { tier = minTier(tier, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB→potato`); }
-  else if (cores <= 4 || memory <= 4) { tier = minTier(tier, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB→≤med`); }
+  let perfClass = detectPerfClass(gpu, userAgent);
+  reasons.push(`gpu:${gpu || 'unknown'}→${perfClass}`);
+  if (cores <= 2 || memory <= 2) { perfClass = minClass(perfClass, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB→potato`); }
+  else if (cores <= 4 || memory <= 4) { perfClass = minClass(perfClass, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB→≤med`); }
   const ms = probed?.msPerPass;
   if (ms != null) {
     const cap = ms > 30 ? 'potato' : ms > 14 ? 'low' : ms > 4.5 ? 'med' : 'high';
     if (cap !== 'high') reasons.push(`probe ${ms.toFixed(1)} ms→≤${cap}`);
-    tier = minTier(tier, cap);
+    perfClass = minClass(perfClass, cap);
   }
-  if (tier === 'ultra') tier = 'high';
-  return { tier, reasons, gpu, cores, memory, msPerPass: ms ?? null };
+  return { perfClass, reasons, gpu, cores, memory, msPerPass: ms ?? null };
 }
-/** Persist and apply a preset live. The legacy reload option is accepted without navigation. */
-export function applyQualityTier(tier, _options = {}) {
-  if (tier !== 'auto' && !PRESETS[tier]) throw new Error(`Unknown graphics preset: ${tier}`);
-  const changed = settings.graphics !== tier;
-  setSetting('graphics', tier);
-  return changed;
-}
-/** Resolution is independent of the preset's effects: 'auto' (the preset's) or a fixed 0.5..1 of the screen's pixels. */
+/** Resolution: 'auto' (the performance class's) or a fixed 0.5..1 of the screen's pixels. */
 export function applyRenderResolution(scale, { pixelRatioCap } = {}) {
   const previous = [settings.renderScale, settings.pixelRatioCap];
   setSetting('renderScale', scale);
@@ -159,8 +120,8 @@ export function applyRenderResolution(scale, { pixelRatioCap } = {}) {
   return previous[0] !== settings.renderScale || previous[1] !== settings.pixelRatioCap;
 }
 /** the pixel ratio the renderer runs at (see resolveGraphics) */
-export function resolutionRatio(deviceRatio = 1, scale = settings.renderScale, preset = settings.graphics) {
-  return resolveGraphics({ graphics: preset, renderScale: scale }, { deviceRatio }).pixelRatio;
+export function resolutionRatio(deviceRatio = 1, scale = settings.renderScale, perfClass = settings.perfClass) {
+  return resolveGraphics({ perfClass, renderScale: scale }, { deviceRatio }).pixelRatio;
 }
 
 /** Fewer shadow casters: small parts (world bounding radius under minRadius m: trim, bolts, lamps, badges) and
@@ -179,8 +140,8 @@ export function trimShadowCasters(root, minRadius = 0.14) {
   return n;
 }
 
-// Keep the course and car geometry intact while reducing expensive per-pixel
-// atmosphere/water work on software rendering and low-end graphics devices.
+// The fixed look's sky / sea / terrain shading (RENDER.simple): cheap per-pixel atmosphere and water, course and
+// car geometry intact. map-world.js applies it to every map.
 export function simplifyScenery(sky, skyCube, water, terrain) {
   if (!sky.userData.lowScenery) {
   const oldSky = sky.material;
@@ -210,14 +171,6 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
   // Keep the existing material and quantized-position decoder intact.
   terrain.group.traverse(o => { if (o.isMesh) { o.userData.fullMaterial = o.material; o.userData.lowMaterial = o.material; } });
   }
-}
-
-/** Reuse the existing world; material variants are kept for later switches. */
-export function applySceneryQuality(sky, skyCube, water, worldGroup, low) {
-  if (low) simplifyScenery(sky, skyCube, water, null);
-  else if (sky.userData.fullMaterial) { sky.material = sky.userData.fullMaterial; sky.userData.lowScenery = false; }
-  if (water?.mesh.userData.fullMaterial) water.mesh.material = low ? water.mesh.userData.lowMaterial : water.mesh.userData.fullMaterial;
-  worldGroup?.traverse(o => { if (o.userData.lowMaterial && o.userData.fullMaterial) o.material = low ? o.userData.lowMaterial : o.userData.fullMaterial; });
 }
 
 /** Release inactive quality variants when their owning map is disposed. */

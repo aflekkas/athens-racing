@@ -1,0 +1,168 @@
+{
+  "variant": "after",
+  "maps": {
+    "riviera": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "perfClass": "high",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 799,
+        "textures": 68,
+        "fps": 31.387023881712775,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 521,
+        "triangles": 1378133,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 719,
+        "triangles": 2519082,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 523,
+        "triangles": 1379093,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 455,
+        "triangles": 1427523,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "megara": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "perfClass": "high",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 486,
+        "textures": 59,
+        "fps": 30.45822484064336,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 267,
+        "triangles": 1996828,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 187,
+        "triangles": 1951574,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 269,
+        "triangles": 1997788,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 189,
+        "triangles": 1952534,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    },
+    "penteli": {
+      "renderInfo": {
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "perfClass": "high",
+        "lowGraphics": true,
+        "pixelRatio": 1,
+        "drawDistance": 2000,
+        "geometries": 581,
+        "textures": 61,
+        "fps": 25.47556452716034,
+        "renderScale": "auto"
+      },
+      "day-chase": {
+        "calls": 560,
+        "triangles": 4061340,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "day-cockpit": {
+        "calls": 758,
+        "triangles": 5460884,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-chase": {
+        "calls": 562,
+        "triangles": 4062300,
+        "passes": 2,
+        "targets": [
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      },
+      "night-cockpit": {
+        "calls": 762,
+        "triangles": 5462804,
+        "passes": 3,
+        "targets": [
+          "mirror-rear-view",
+          "rt",
+          "screen"
+        ],
+        "shadowMap": false
+      }
+    }
+  },
+  "errors": []
+}

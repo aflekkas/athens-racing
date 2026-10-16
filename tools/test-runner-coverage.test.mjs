@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
 import {resolve,dirname,relative} from 'node:path';
+import {testGroups} from './run-tests.mjs';
 const root=resolve(import.meta.dirname,'..');
 function uncovered(script,files,read) {
   const visited=new Set();
@@ -22,7 +23,11 @@ function uncovered(script,files,read) {
 }
 test('npm test reaches every tools/server/worker test directly or through imports',()=>{
  const files=['tools','server','worker'].flatMap(dir=>readdirSync(resolve(root,dir),{recursive:true}).filter(f=>f.endsWith('.test.mjs')).map(f=>dir+'/'+f));
- const script=JSON.parse(readFileSync(resolve(root,'package.json'))).scripts.test;
+ const command=JSON.parse(readFileSync(resolve(root,'package.json'))).scripts.test;
+ assert.equal(command,'node tools/run-tests.mjs');
+ const direct=Object.values(testGroups).flat();
+ assert.equal(new Set(direct).size,direct.length,'test files belong to only one group');
+ const script=direct.join(' ');
  assert.deepEqual(uncovered(script,files,f=>readFileSync(resolve(root,f),'utf8')),[]);
 });
 test('coverage guard catches an unwired test and follows imported suites and globs',()=>{

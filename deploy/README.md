@@ -185,6 +185,17 @@ Wrangler's `staging` and `production` environments explicitly set `ASR_BUILD_ENV
 
 ## Automatic releases (VPS release train)
 
+The pre-deploy suite command remains **`npm test`**. It invokes the bounded,
+fail-fast `tools/run-tests.mjs` runner and prints per-group wall times. Keep the
+train calling the npm command so repository scripts remain the source of truth;
+do not duplicate loader flags or file lists in the train. Schedule
+`npm run test:full` separately for nightly Penteli bake equality, Penteli/Megara rendered-terrain
+scans and real-map compression heuristic checks. Keep the physics regression and browser-import
+gates above as separate required gates. Both suite commands must run against
+the exact committed archive being released. Test scheduling and fixture details
+are in `CONTRIBUTING.md` and `.scratch/test-speed/REPORT.md`.
+
+
 `deploy/release-train.sh` runs every 10 minutes from the systemd user timer `athens-release.timer` (installed as `~/.local/bin/athens-release-train`). When local `prod` has a new commit, it:
 1. Runs every CI gate on a clean `git archive`.
 2. Pushes the commit to `origin/prod` and sync-merges `origin/staging`.

@@ -1,13 +1,8 @@
 import test from 'node:test';
 import { terrainWorldPositions } from '../src/terrain-layout.js';
 import assert from 'node:assert/strict';
-import { resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
-import { Group, PerspectiveCamera, Raycaster, Vector2, DoubleSide } from 'three';
-import { loadMap } from '../src/map.js';
-import { buildTerrain } from '../src/terrain.js';
-import { RoadNetwork } from '../src/road-network-surface.js';
-import { buildRoadNetwork } from '../src/road-network.js';
+import { PerspectiveCamera, Raycaster, Vector2, DoubleSide } from 'three';
+import { worldFixture } from './world-test-fixture.mjs';
 import { getPlayableMaps } from '../src/enabled-maps.js';
 import { MAPS } from '../src/map-catalog.js';
 
@@ -28,15 +23,8 @@ function meshHeightSampler(group) {
   const sample=(x,z)=>{let h=-Infinity;for(const {p,a,b,c,det,source} of bins.get(Math.floor(x/size)+','+Math.floor(z/size))||[]){const u=((p[b+2]-p[c+2])*(x-p[c])+(p[c]-p[b])*(z-p[c+2]))/det,v=((p[c+2]-p[a+2])*(x-p[c])+(p[a]-p[c])*(z-p[c+2]))/det;
     if(u>=-1e-6&&v>=-1e-6&&u+v<=1.000001){const y=u*p[a+1]+v*p[b+1]+(1-u-v)*p[c+1];if(y>h){h=y;sample.source=source;}}}return h;};return sample;
 }
-for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||process.env.TERRAIN_MAPS.split(',').includes(d.id)))test(`${def.id}: rendered terrain clears every road and both six-metre shoulders remain drivable`,async t=>{
-  const previousFetch=globalThis.fetch,previousLocation=globalThis.location;
-  let bake;
-  try {
-    globalThis.fetch=async url=>new Response(readFileSync(resolve(import.meta.dirname,'..',String(url))));globalThis.location={search:''};
-    const map=await loadMap(undefined,'./',def.id,{preload:false}),network=new RoadNetwork(map),scene=new Group();map.roadNetwork=network;
-    const terrain=buildTerrain(map.terrain,map.route,[],scene,{coastal:def.id==='riviera',farmland:def.id==='megara',network,beachAreas:map.data.areas?.beach||[]});
-    const roadsGroup=buildRoadNetwork(network,scene);bake={map,network,terrain,terrainGroup:terrain.group,roadsGroup};
-  }finally{globalThis.fetch=previousFetch;if(previousLocation===undefined)delete globalThis.location;else globalThis.location=previousLocation;}
+for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||process.env.TERRAIN_MAPS.split(',').includes(d.id)))test(`${def.id}: rendered terrain clears every road and both six-metre shoulders remain drivable`,{skip:def.id!=='riviera'&&process.env.ASR_TEST_FULL!=='1'?'nightly full-map rendered terrain scan':false},async t=>{
+  const bake=await worldFixture(def.id);
   const r=bake.map.route,n=bake.network,h=meshHeightSampler(bake.terrainGroup);
   // These sightlines formerly passed through disconnected coarse/fine edges
   // and exposed the underside of terrain farther up the mountain.

@@ -8,7 +8,6 @@
 #mp-board{position:fixed;top:145px;right:22px;z-index:25;min-width:175px;padding:12px 16px;border-radius:4px;border-left:3px solid var(--c-cyan,#29d8ff);background:rgba(8,10,14,.82);color:#fff;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;pointer-events:none}
 #mp-board b{display:block;color:var(--c-cyan,#29d8ff);margin-bottom:6px;letter-spacing:.16em;font-size:12px}#mp-board div{padding:3px 0}
 
-#graphics-quality{position:fixed;right:190px;top:90px;z-index:30}
 @media(max-width:700px), (max-height:550px) and (max-width:1000px){
   #posBox{left:12px;top:12px;transform:scale(.68);transform-origin:top left}
   #styleBox{display:none}#dialBox{width:170px;height:170px;right:8px;bottom:20px}
@@ -16,7 +15,6 @@
   #routeBox{top:88px;width:90vw}#rZone{font-size:16px}#rRoad{font-size:10px}#rToGo{font-size:11px}
   #routeBox .rt{gap:7px}#rticks .l{font-size:8px;letter-spacing:0}#sigBox{top:135px;transform:scale(.7);transform-origin:top right}
   #mp-toggle{top:12px;right:12px;font-size:14px;padding:8px 11px}
-  #graphics-quality{top:46px;right:12px;font-size:12px;padding:7px}
   #mp-board{top:130px;right:12px;min-width:125px;font-size:11px;padding:9px 12px}
   #credit{font-size:8px}#msg{font-size:14px;max-width:80vw}#count{font-size:100px}
 

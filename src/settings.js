@@ -1,5 +1,4 @@
-// SETTINGS: player preferences, persisted to localStorage['paraliaki.settings'] (graphics keeps its own
-// 'paraliaki.graphics' key, which main.js reads before the renderer is created).
+// SETTINGS: player preferences, persisted to localStorage['paraliaki.settings'].
 //   import { settings, setSetting, onSettings } from './settings.js';
 //   settings.units            'kmh' | 'mph'
 //   settings.master/music/sfx 0..1 volumes (audio.setVolumes)
@@ -7,27 +6,29 @@
 //   settings.abs              ABS as fitted; independent of the live TC/ESC toggle
 //   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
 //   settings.transmission     'auto' | 'manual' (the input system maps the shift keys; Vehicle.setManual)
-//   settings.graphics         preset 'potato' | 'low' | 'med' | 'high' | 'ultra' ('auto' = not chosen yet; graphics.js)
-//   settings.lighting         'preset' | 'off' | 'low' | 'med' | 'high' | 'ultra' (shadows, reflection probe)
-//   settings.effects          'preset' | 'off' | 'low' | 'med' | 'high' | 'ultra' (post-processing, mirrors, sea reflections, particles)
-//   settings.renderScale      'auto' (the preset's resolution) | 0.5..1 of the screen's pixels (upper bound when dynamic resolution is enabled)
+//   (there is ONE graphics look, src/graphics.js RENDER: no presets, no lighting / effects levels. Owner-locked
+//   decision, docs/OWNER-DECISIONS.md. Old 'graphics' / 'lighting' / 'effects' / 'motionBlur' values are dropped on load.)
+//   settings.perfClass        'auto' | 'potato' | 'low' | 'med' | 'high': performance only (the 'auto' resolution and
+//                             draw ranges, graphics.js PERFORMANCE); set silently by the first-run check, never the look
+//   settings.renderScale      'auto' (the performance class's resolution) | 0.5..1 of the screen's pixels (upper bound when dynamic resolution is enabled)
 //   settings.pixelRatioCap    legacy, unused
 //   settings.frameCap         frame rate limit: 30 | 60 | 120 | 0 (unlimited); high-refresh screens otherwise draw every vsync
-//   settings.drawDistance     'auto' (the preset's) | 300 | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
-//   settings.motionBlur       camera motion blur on / off (src/post.js)
-//   settings.mirrors          working rear-view / door mirrors and the chase rear-view strip on / off (src/cockpit.js)
+//   settings.drawDistance     'auto' (the performance class's) | 300 | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
+//   settings.mirrors          working in-car rear-view / door mirrors on / off (src/cockpit.js); never in the chase camera
 //   settings.ghostEnabled     race against your best ghost (src/ghost-lap.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
 export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
 const KEY = 'paraliaki.settings';
-const GRAPHICS_VALUES = ['auto', 'potato', 'low', 'med', 'high', 'ultra'];
-const GRAPHICS_LEVELS = ['preset', 'off', 'low', 'med', 'high', 'ultra'];
+const PERF_CLASSES = ['auto', 'potato', 'low', 'med', 'high'];
+// removed graphics choices (owner-locked single look): ignored and dropped from saves
+const LEGACY_GRAPHICS_KEYS = ['graphics', 'lighting', 'effects', 'motionBlur'];
+const LEGACY_GRAPHICS_STORAGE = 'paraliaki.graphics';
 export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, graphics: 'auto', lighting: 'preset', effects: 'preset', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', motionBlur: true, mirrors: true, ghostEnabled: true,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', mirrors: true, ghostEnabled: true,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -80,14 +81,21 @@ function load() {
       }
       try { storage?.setItem(HUD_MOTION_DEFAULT_VERSION, '1'); } catch {}
     }
+    // One graphics look (owner-locked): the old preset only survives as a performance class (its resolution and draw
+    // ranges, never its look); stored presets / lighting / effects / motion blur values are dropped from the save.
+    const legacy = storage?.getItem(LEGACY_GRAPHICS_STORAGE), legacyClass = legacy === 'ultra' ? 'high' : legacy;
+    if (legacyClass && saved.perfClass == null && PERF_CLASSES.includes(legacyClass) && legacyClass !== 'auto') saved.perfClass = out.perfClass = legacyClass;
+    if (legacy != null || LEGACY_GRAPHICS_KEYS.some(k => k in saved)) {
+      for (const k of LEGACY_GRAPHICS_KEYS) delete saved[k];
+      try { storage?.setItem(KEY, JSON.stringify(saved)); storage?.removeItem(LEGACY_GRAPHICS_STORAGE); } catch {}
+    }
   } catch {}
-  try { const g = ls()?.getItem('paraliaki.graphics'); if (g) out.graphics = g; } catch {}
+  for (const k of LEGACY_GRAPHICS_KEYS) delete out[k];
   for (const k of AUDIO_VOLUMES) out[k] = Math.max(0, Math.min(1, +out[k] || 0));
   if (!['kmh', 'mph'].includes(out.units)) out.units = 'kmh';
   if (!['auto', 'manual'].includes(out.transmission)) out.transmission = 'auto';
   if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
-  if (!GRAPHICS_VALUES.includes(out.graphics)) out.graphics = 'auto';
-  for (const k of ['lighting', 'effects']) if (!GRAPHICS_LEVELS.includes(out[k])) out[k] = 'preset';
+  if (!PERF_CLASSES.includes(out.perfClass)) out.perfClass = 'auto';
   out.renderScale = resolutionValue(out.renderScale);
   out.frameCap = FRAME_CAPS.includes(+out.frameCap) ? +out.frameCap : DEFAULTS.frameCap;
   out.pixelRatioCap = pixelRatioCapValue(out.pixelRatioCap);
@@ -98,7 +106,6 @@ function load() {
   out.mildLanguage = out.mildLanguage === true;
   out.showTyreGrip = out.showTyreGrip === true;
   out.dynamicResolution = out.dynamicResolution !== false;
-  out.motionBlur = out.motionBlur !== false;
   out.mirrors = out.mirrors !== false;
   if (!HUD_MOTION_VALUES.includes(out.hudMotion)) out.hudMotion = reducedMotion() ? 'off' : DEFAULTS.hudMotion;
   if (![300, 500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
@@ -110,8 +117,7 @@ export const settings = load();
 const subs = new Set();
 export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
-  if (key === 'graphics' && !GRAPHICS_VALUES.includes(value)) return;
-  if ((key === 'lighting' || key === 'effects') && !GRAPHICS_LEVELS.includes(value)) return;
+  if (key === 'perfClass' && !PERF_CLASSES.includes(value)) return;
   if (key === 'renderScale') value = resolutionValue(value);
   if (key === 'frameCap') { value = +value; if (!FRAME_CAPS.includes(value)) return; }
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
@@ -123,9 +129,7 @@ export function setSetting(key, value) {
   if (key === 'hudMotion' && !HUD_MOTION_VALUES.includes(value)) return;
   settings[key] = value;
   try {
-    const { graphics, ...rest } = settings;
-    ls()?.setItem(KEY, JSON.stringify(rest));
-    if (key === 'graphics') ls()?.setItem('paraliaki.graphics', value);
+    ls()?.setItem(KEY, JSON.stringify(settings));
   } catch {}
   for (const fn of [...subs]) { try { fn(settings, key); } catch (e) { console.error('[settings]', e); } }
 }
