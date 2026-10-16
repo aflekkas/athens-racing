@@ -37,7 +37,7 @@ try{
  report.race=await page.evaluate(()=>({map:__flow.mapId,event:__flow.event().def.id,rivals:__flow.grid.length,laps:__flow.event().r.laps,roadworks:__sim.scene.getObjectByName('race-roadworks').visible,trafficDisabled:__sim.traffic.disabled}));
  assert.equal(report.race.map,'psychiko');assert.equal(report.race.rivals,2);assert.equal(report.race.laps,2);assert.equal(report.race.roadworks,true);
  for(const time of ['afternoon','night'])for(const pose of ['start','mid'])for(const cam of ['chase','cockpit']){
-  await page.evaluate(({time,pose,cam})=>{__setConditions({time,weather:'clear'});if(__game.cam!==cam)__flow.action('camera');__game.run=null;__game.state='menu';__sim.cameraBlend.active=false;Object.assign(__sim.look,{yaw:0,pitch:0,targetYaw:0,targetPitch:0,back:0,yawV:0,pitchV:0});__sim.player.veh.reset(pose==='start'?10:2900,0,0);__sim.cameraBlend.active=false;__sim.step(60);__sim.render();},{time,pose,cam});
+  await page.evaluate(({time,pose,cam})=>{__setConditions({time,weather:'clear'});__game.state='race';if(__game.cam!==cam)__flow.action('camera');__game.run=null;__game.state='loading';__sim.cameraBlend.active=false;Object.assign(__sim.look,{yaw:0,pitch:0,targetYaw:0,targetPitch:0,back:0,yawV:0,pitchV:0});__sim.player.veh.reset(pose==='start'?10:2900,0,0);__sim.cameraBlend.active=false;__sim.step(60);__sim.render();},{time,pose,cam});
   await shot(`${time}-${pose}-${cam}`);
   if(time==='afternoon'&&pose==='mid'&&cam==='chase'){const data=await page.evaluate(()=>{__sim.render();return __sim.canvas.toDataURL('image/webp',.85).split(',')[1];});await mkdir(resolve(root,'assets/changelog/2026.10.16.1'),{recursive:true});await writeFile(resolve(root,'assets/changelog/2026.10.16.1/psychiko.webp'),Buffer.from(data,'base64'));}
  }

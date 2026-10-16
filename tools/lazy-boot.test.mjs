@@ -13,7 +13,7 @@ test('catalogue-only setup resolves all tracks without reading map bundles', () 
     const event = resolve(applySetup(def, {}, { closed: ctx.route.closed }), ctx);
     assert.equal(def.mapId, map.id); assert.ok(event.len > 1000);
     assert.equal(!!event.closed, map.type === 'circuit');
-    if (map.type === 'circuit') assert.equal(event.laps, 3);
+    if (map.type === 'circuit') assert.equal(event.laps, map.raceLaps ?? 3);
   }
 });
 test('direct event URLs select their owning map before any bundle loads', () => {

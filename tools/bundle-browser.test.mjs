@@ -5,6 +5,7 @@ import { mkdtemp, mkdir, writeFile, readFile, readdir, rm } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { MAPS } from '../src/map-catalog.js';
 import { bundleBrowser } from './bundle-browser.mjs';
 test('production chunks preserve source-relative resources and lazy imports while dev sources survive', async () => {
   const root = await mkdtemp(resolve(tmpdir(), 'asr-bundle-')), out = resolve(root, '.deploy/assets'), previous = globalThis.location;
@@ -40,14 +41,14 @@ test('every map bake points to the published world worker, including Megara', as
     await writeFile(resolve(root, 'src/world-tile-worker.js'), 'export const tileMarker = 43;');
     await writeFile(resolve(root, 'src/world-worker.js'), 'onmessage = () => postMessage({ok:true});');
     await writeFile(resolve(out, 'index.html'), '<script type="module" src="./src/main.js"></script>');
-    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+    for (const path of MAPS.map(map => map.dataUrl)) {
       await mkdir(resolve(out, path, '..'), {recursive:true});
       await writeFile(resolve(out, path), JSON.stringify({bakedWorld:{version:1,terrain:'terrain',roads:'roads'}}));
     }
     await bundleBrowser(root, out);
     assert.equal((await import(pathToFileURL(resolve(out, 'src/ragdoll-worker.js')))).workerMarker, 42, 'native worker URL resolves to its published bundle');
     assert.match(await readFile(resolve(out, 'src/world-tile-worker.js'), 'utf8'), /world-tile-worker-[A-Z0-9]+\.js/);
-    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+    for (const path of MAPS.map(map => map.dataUrl)) {
       const data = JSON.parse(await readFile(resolve(out, path), 'utf8'));
       assert.match(data.bakedWorld.worker, /^\.\/src\/world-worker-.+\.js$/);
       await readFile(resolve(out, data.bakedWorld.worker));
@@ -65,15 +66,15 @@ test('real production graph keeps worlds, simulation and screens lazy and maps p
     await symlink(resolve(import.meta.dirname, '../node_modules'), resolve(root, 'node_modules'));
     await mkdir(resolve(out, 'src'), { recursive: true });
     await writeFile(resolve(out, 'index.html'), '<script type="importmap">{"imports":{"three":"https://cdn.example/three.js"}}</script><script type="module" src="./src/main.js"></script>');
-    for (const path of ['data/map.json', 'data/maps/megara/map.json', 'data/maps/penteli/map.json']) {
+    for (const path of MAPS.map(map => map.dataUrl)) {
       await mkdir(resolve(out, path, '..'), { recursive: true }); await writeFile(resolve(out, path), '{}');
     }
     await mkdir(resolve(out, 'src/ui'), { recursive: true });
     const meta = await bundleBrowser(root, out);
     const initial = new Set(meta.initial.map(path => resolve(out, '.' + path)));
     const eager = Object.entries(meta.outputs).filter(([path]) => initial.has(resolve(root, path))).flatMap(([, output]) => Object.keys(output.inputs));
-    for (const file of ['src/main.js', 'src/map-world.js', 'src/car-select.js', 'src/cars.js', 'src/ui/mp-screens.js', 'src/ui/account-screen.js', 'src/maps/riviera.js', 'src/maps/megara.js', 'src/maps/penteli.js']) assert.ok(!eager.includes(file), `${file} must not be in the initial menu`);
-    for (const file of ['src/maps/riviera.js', 'src/maps/megara.js', 'src/maps/penteli.js', 'src/ui/account-screen.js', 'src/ui/mp-screens.js']) assert.ok(Object.values(meta.outputs).some(output => output.entryPoint === file), `${file} needs a lazy entry`);
+    for (const file of ['src/main.js', 'src/map-world.js', 'src/car-select.js', 'src/cars.js', 'src/ui/mp-screens.js', 'src/ui/account-screen.js', 'src/maps/riviera.js', 'src/maps/megara.js', 'src/maps/penteli.js', 'src/maps/psychiko.js']) assert.ok(!eager.includes(file), `${file} must not be in the initial menu`);
+    for (const file of ['src/maps/riviera.js', 'src/maps/megara.js', 'src/maps/penteli.js', 'src/maps/psychiko.js', 'src/ui/account-screen.js', 'src/ui/mp-screens.js']) assert.ok(Object.values(meta.outputs).some(output => output.entryPoint === file), `${file} needs a lazy entry`);
     assert.ok(Object.keys(meta.inputs).some(path => path.includes('node_modules/three/')), 'three.js and used addons are bundled');
     for (const [path] of Object.entries(meta.outputs)) {
       const text = await readFile(resolve(root, path), 'utf8');
