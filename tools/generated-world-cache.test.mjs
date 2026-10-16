@@ -21,7 +21,14 @@ test('a known committed version uses IndexedDB and never starts a worker', () =>
   globalThis.location = { search: '' }; globalThis.localStorage = { getItem: () => version };
   globalThis.Worker = class { constructor() { assert.fail('warm cache must skip generation'); } };
   globalThis.indexedDB = { open() { const request = {}; queueMicrotask(() => { request.result = { close() { closed++; }, transaction() { return { objectStore() { return { get() { const req = {}; queueMicrotask(() => { req.result = { version, buffers }; req.onsuccess(); }); return req; } }; } }; } }; request.onsuccess(); }); return request; } };
-  assert.equal(await generatedWorld(map), buffers); assert.equal(closed, 1);
+  assert.equal(await generatedWorld(map, { cachedOnly: true }), buffers); assert.equal(closed, 1);
+}));
+
+test('a cold cache-only lookup never starts the expensive generator', () => globals(async () => {
+  globalThis.location = { search: '' }; globalThis.localStorage = { getItem: () => null };
+  globalThis.Worker = class { constructor() { assert.fail('a production cold miss must download its prebuilt buffers'); } };
+  globalThis.indexedDB = { open() { assert.fail('a missing marker cannot have a valid cache'); } };
+  assert.equal(await generatedWorld(map, { cachedOnly: true }), null);
 }));
 
 test('a changed generator bundle cannot reuse a previously committed terrain cache', () => globals(async () => {

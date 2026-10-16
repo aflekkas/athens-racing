@@ -1,0 +1,1091 @@
+{
+  "coldBefore": {
+    "now": 98129.59999990463,
+    "phase": "WARMING TYRES",
+    "loading": true,
+    "metrics": {
+      "riviera": {
+        "started": 1328.1999999284744,
+        "downloadBytes": 0,
+        "decodeWallMs": 31.199999928474426,
+        "inflateFetchWallMs": 0,
+        "bufferDecodeWallMs": 0,
+        "peakHeapBytes": 10000000,
+        "codec": "raw-generated",
+        "source": "generated-worker",
+        "workerTimings": {
+          "map": 238.89999997615814,
+          "terrain": 16630.899999976158,
+          "roads": 48384.700000047684,
+          "total": 65559.69999992847
+        },
+        "loadMs": 66240.10000002384,
+        "geometryBytes": 151809686
+      }
+    },
+    "obs": {
+      "phases": [
+        {
+          "at": 11076.299999952316,
+          "text": "BUILDING TERRAIN 25%"
+        },
+        {
+          "at": 68102,
+          "text": "PAVING POSEIDONOS AVENUE 40%"
+        },
+        {
+          "at": 69641.89999997616,
+          "text": "RAISING VOULIAGMENI 55%"
+        },
+        {
+          "at": 69783.29999995232,
+          "text": "BUILDING COAST AMENITIES 70%"
+        },
+        {
+          "at": 71879.39999997616,
+          "text": "FUELLING THE CARS 85%"
+        },
+        {
+          "at": 75615.09999990463,
+          "text": "WARMING TYRES 95%"
+        },
+        {
+          "at": 77272.29999995232,
+          "text": "WARMING TYRES 100%"
+        }
+      ],
+      "long": [
+        {
+          "at": 540.5999999046326,
+          "ms": 141
+        },
+        {
+          "at": 708.3999999761581,
+          "ms": 153
+        },
+        {
+          "at": 1078.7999999523163,
+          "ms": 50
+        },
+        {
+          "at": 1139.0999999046326,
+          "ms": 280
+        },
+        {
+          "at": 1440.1999999284744,
+          "ms": 148
+        },
+        {
+          "at": 1614.2999999523163,
+          "ms": 69
+        },
+        {
+          "at": 1716.5999999046326,
+          "ms": 72
+        },
+        {
+          "at": 1899.0999999046326,
+          "ms": 66
+        },
+        {
+          "at": 67530.39999997616,
+          "ms": 571
+        },
+        {
+          "at": 68108.09999990463,
+          "ms": 244
+        },
+        {
+          "at": 68358.69999992847,
+          "ms": 489
+        },
+        {
+          "at": 68850.29999995232,
+          "ms": 791
+        },
+        {
+          "at": 69660.19999992847,
+          "ms": 123
+        },
+        {
+          "at": 69790,
+          "ms": 2089
+        },
+        {
+          "at": 71888.79999995232,
+          "ms": 5302
+        },
+        {
+          "at": 77285,
+          "ms": 20817
+        }
+      ]
+    },
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "resources": [
+      {
+        "name": "https://staging.athensracing.com/data/map.json",
+        "ms": 398.10000002384186,
+        "bytes": 0,
+        "decoded": 904260
+      },
+      {
+        "name": "https://staging.athensracing.com/data/terrain.bin",
+        "ms": 398.60000002384186,
+        "bytes": 0,
+        "decoded": 1339745
+      },
+      {
+        "name": "https://staging.athensracing.com/src/map-world-5DMVRZYG.js",
+        "ms": 84,
+        "bytes": 0,
+        "decoded": 40320
+      },
+      {
+        "name": "https://staging.athensracing.com/src/world-worker-LPGNJY6W.js",
+        "ms": -211.79999995231628,
+        "bytes": 0,
+        "decoded": 0
+      }
+    ]
+  },
+  "warmBefore": {
+    "metrics": {
+      "riviera": {
+        "started": 6938.299999952316,
+        "downloadBytes": 0,
+        "decodeWallMs": 12.800000071525574,
+        "inflateFetchWallMs": 0,
+        "bufferDecodeWallMs": 0,
+        "peakHeapBytes": 10000000,
+        "codec": "raw-generated",
+        "source": "generated-worker",
+        "workerTimings": {
+          "map": 238.89999997615814,
+          "terrain": 16630.899999976158,
+          "roads": 48384.700000047684,
+          "total": 65559.69999992847
+        },
+        "loadMs": 1095,
+        "geometryBytes": 151809686,
+        "firstRaceFrameMs": 37393.300000071526,
+        "gpu": {
+          "geometryBytes": 182235702,
+          "textureBytes": 72922465,
+          "gpuBytes": 255158167,
+          "note": "Scene buffer capacity; visibility-dependent residency may be lower. Excludes render targets, driver overhead and shader-uniform-only textures"
+        }
+      }
+    },
+    "compile": 369.5,
+    "marks": [
+      {
+        "name": "menu-ready",
+        "at": 15946.5
+      }
+    ]
+  },
+  "downloadBefore": {
+    "evidence": {
+      "start": 26449.600000023842,
+      "phases": [
+        {
+          "at": 26457.399999976158,
+          "text": "LOADING MAP DATA 0%"
+        },
+        {
+          "at": 26816.299999952316,
+          "text": "BUILDING TERRAIN 25%"
+        },
+        {
+          "at": 30077,
+          "text": "PAVING POSEIDONOS AVENUE 40%"
+        },
+        {
+          "at": 31111.699999928474,
+          "text": "RAISING VOULIAGMENI 55%"
+        },
+        {
+          "at": 31238.100000023842,
+          "text": "BUILDING COAST AMENITIES 70%"
+        },
+        {
+          "at": 33074.299999952316,
+          "text": "FUELLING THE CARS 85%"
+        },
+        {
+          "at": 36351.60000002384,
+          "text": "WARMING TYRES 95%"
+        },
+        {
+          "at": 37106,
+          "text": "WARMING TYRES 100%"
+        }
+      ],
+      "long": [
+        {
+          "at": 26584,
+          "ms": 232
+        },
+        {
+          "at": 26830.799999952316,
+          "ms": 117
+        },
+        {
+          "at": 26964,
+          "ms": 96
+        },
+        {
+          "at": 28649,
+          "ms": 139
+        },
+        {
+          "at": 28886.799999952316,
+          "ms": 132
+        },
+        {
+          "at": 29360.100000023842,
+          "ms": 196
+        },
+        {
+          "at": 29557,
+          "ms": 520
+        },
+        {
+          "at": 30077.199999928474,
+          "ms": 349
+        },
+        {
+          "at": 30436.600000023842,
+          "ms": 675
+        },
+        {
+          "at": 31127,
+          "ms": 111
+        },
+        {
+          "at": 31242.799999952316,
+          "ms": 1831
+        },
+        {
+          "at": 33085.199999928474,
+          "ms": 3954
+        }
+      ],
+      "done": 37106.299999952316
+    },
+    "metrics": {
+      "riviera": {
+        "started": 26778.399999976158,
+        "downloadBytes": 35902203,
+        "decodeWallMs": 2244.100000023842,
+        "inflateFetchWallMs": 2011.0999999046326,
+        "bufferDecodeWallMs": 232.90000009536743,
+        "peakHeapBytes": 10000000,
+        "codec": "legacy",
+        "loadMs": 2885.899999976158,
+        "geometryBytes": 151809686
+      }
+    },
+    "compileMs": 330.6999999284744,
+    "resources": [
+      {
+        "name": "https://staging.athensracing.com/data/map.json",
+        "ms": 99,
+        "bytes": 0,
+        "decoded": 904260
+      },
+      {
+        "name": "https://staging.athensracing.com/data/terrain.bin",
+        "ms": 68,
+        "bytes": 0,
+        "decoded": 1339745
+      },
+      {
+        "name": "https://staging.athensracing.com/data/baked/riviera-terrain-7139375f643bbfc4.bin.gz",
+        "ms": 1809.3000000715256,
+        "bytes": 0,
+        "decoded": 16130864
+      },
+      {
+        "name": "https://staging.athensracing.com/data/baked/riviera-roads-8efaa41592b1c597.bin.gz",
+        "ms": 2572.2999999523163,
+        "bytes": 0,
+        "decoded": 19771339
+      }
+    ]
+  },
+  "megaraBefore": {
+    "evidence": {
+      "start": 158454,
+      "phases": [
+        {
+          "at": 158464.39999997616,
+          "text": "LOADING MAP DATA 0%"
+        },
+        {
+          "at": 158793.69999992847,
+          "text": "BUILDING TERRAIN 25%"
+        },
+        {
+          "at": 159285.39999997616,
+          "text": "BUILDING MEGARA CIRCUIT 40%"
+        },
+        {
+          "at": 160088.79999995232,
+          "text": "FUELLING THE CARS 85%"
+        },
+        {
+          "at": 160922.29999995232,
+          "text": "FUELLING THE CARS 100%"
+        }
+      ],
+      "long": [
+        {
+          "at": 158682.39999997616,
+          "ms": 100
+        },
+        {
+          "at": 159157.89999997616,
+          "ms": 127
+        },
+        {
+          "at": 159541.69999992847,
+          "ms": 547
+        },
+        {
+          "at": 160093.69999992847,
+          "ms": 804
+        }
+      ],
+      "done": 160922.39999997616
+    },
+    "metrics": {
+      "riviera": {
+        "started": 26778.399999976158,
+        "downloadBytes": 35902203,
+        "decodeWallMs": 2244.100000023842,
+        "inflateFetchWallMs": 2011.0999999046326,
+        "bufferDecodeWallMs": 232.90000009536743,
+        "peakHeapBytes": 10000000,
+        "codec": "legacy",
+        "loadMs": 2885.899999976158,
+        "geometryBytes": 151809686
+      },
+      "megara": {
+        "started": 158781.89999997616,
+        "downloadBytes": 1386528,
+        "decodeWallMs": 171.19999992847443,
+        "inflateFetchWallMs": 152.39999997615814,
+        "bufferDecodeWallMs": 18.799999952316284,
+        "peakHeapBytes": 10000000,
+        "codec": "legacy",
+        "loadMs": 388.2999999523163,
+        "geometryBytes": 5226054
+      }
+    },
+    "runtime": {
+      "mapId": "megara",
+      "switching": false,
+      "worlds": [
+        "map-world:megara"
+      ],
+      "lastDisposal": {
+        "mapId": "riviera",
+        "detached": true,
+        "children": 0,
+        "bundleDisposed": true,
+        "resources": {
+          "geometries": 914,
+          "materials": 1526,
+          "textures": 57
+        }
+      },
+      "memory": {
+        "geometries": 23,
+        "textures": 29
+      },
+      "weatherWidgets": 0
+    }
+  },
+  "coldAfter": {
+    "evidence": {
+      "start": 7838.5,
+      "phases": [
+        {
+          "at": 7850.300000071526,
+          "text": "LOADING MAP DATA 0%"
+        },
+        {
+          "at": 8245.700000047684,
+          "text": "BUILDING TERRAIN 25%"
+        },
+        {
+          "at": 8430.200000047684,
+          "text": "DOWNLOADING TERRAIN + ROADS · 2.0 MB 25%"
+        },
+        {
+          "at": 8632.5,
+          "text": "DOWNLOADING TERRAIN + ROADS · 8.0 MB 25%"
+        },
+        {
+          "at": 8835.200000047684,
+          "text": "DOWNLOADING TERRAIN + ROADS · 14.0 MB 25%"
+        },
+        {
+          "at": 9007,
+          "text": "DOWNLOADING TERRAIN + ROADS · 18.9 MB 25%"
+        },
+        {
+          "at": 9180.200000047684,
+          "text": "DOWNLOADING TERRAIN + ROADS · 26.0 MB 25%"
+        },
+        {
+          "at": 9589.899999976158,
+          "text": "DOWNLOADING TERRAIN + ROADS · 32.9 MB 25%"
+        },
+        {
+          "at": 10014.600000023842,
+          "text": "TERRAIN + ROADS READY 33%"
+        },
+        {
+          "at": 10074.899999976158,
+          "text": "BUILDING TERRAIN 25%"
+        },
+        {
+          "at": 10604,
+          "text": "PAVING POSEIDONOS AVENUE 40%"
+        },
+        {
+          "at": 11963.600000023842,
+          "text": "RAISING VOULIAGMENI 55%"
+        },
+        {
+          "at": 12121.700000047684,
+          "text": "BUILDING COAST AMENITIES 70%"
+        },
+        {
+          "at": 14699.300000071526,
+          "text": "FUELLING THE CARS 85%"
+        },
+        {
+          "at": 19385.300000071526,
+          "text": "WARMING TYRES 95%"
+        },
+        {
+          "at": 19385.600000023842,
+          "text": "UPLOADING TEXTURES 96%"
+        },
+        {
+          "at": 20051.5,
+          "text": "PREPARING SHADERS 98%"
+        },
+        {
+          "at": 20636.399999976158,
+          "text": "PREPARING SHADERS 100%"
+        }
+      ],
+      "long": [
+        {
+          "at": 7976.5,
+          "ms": 269
+        },
+        {
+          "at": 8262.600000023842,
+          "ms": 147
+        },
+        {
+          "at": 8413.600000023842,
+          "ms": 74
+        },
+        {
+          "at": 8488.600000023842,
+          "ms": 62
+        },
+        {
+          "at": 8556.800000071526,
+          "ms": 66
+        },
+        {
+          "at": 8671.100000023842,
+          "ms": 91
+        },
+        {
+          "at": 8762.800000071526,
+          "ms": 56
+        },
+        {
+          "at": 8822.100000023842,
+          "ms": 83
+        },
+        {
+          "at": 8905.899999976158,
+          "ms": 82
+        },
+        {
+          "at": 8993.5,
+          "ms": 51
+        },
+        {
+          "at": 9165.100000023842,
+          "ms": 79
+        },
+        {
+          "at": 9346,
+          "ms": 235
+        },
+        {
+          "at": 9617.700000047684,
+          "ms": 153
+        },
+        {
+          "at": 9783.700000047684,
+          "ms": 105
+        },
+        {
+          "at": 9889.800000071526,
+          "ms": 124
+        },
+        {
+          "at": 10014.800000071526,
+          "ms": 60
+        },
+        {
+          "at": 10098,
+          "ms": 506
+        },
+        {
+          "at": 10609.600000023842,
+          "ms": 374
+        },
+        {
+          "at": 11037.200000047684,
+          "ms": 926
+        },
+        {
+          "at": 11979.600000023842,
+          "ms": 142
+        },
+        {
+          "at": 12128.300000071526,
+          "ms": 2571
+        },
+        {
+          "at": 14711.600000023842,
+          "ms": 4674
+        },
+        {
+          "at": 19385.600000023842,
+          "ms": 76
+        },
+        {
+          "at": 19500,
+          "ms": 551
+        },
+        {
+          "at": 20076.600000023842,
+          "ms": 520
+        }
+      ],
+      "done": 20636.5
+    },
+    "metrics": {
+      "riviera": {
+        "started": 8203.399999976158,
+        "downloadBytes": 35902203,
+        "decodeWallMs": 3375.899999976158,
+        "inflateFetchWallMs": 3150.600000143051,
+        "bufferDecodeWallMs": 225.19999992847443,
+        "peakHeapBytes": 17100000,
+        "codec": "legacy",
+        "source": "download",
+        "loadMs": 1810.9000000953674,
+        "geometryBytes": 151809686
+      }
+    },
+    "compileMs": 532,
+    "worlds": {
+      "mapId": "riviera",
+      "switching": false,
+      "worlds": [
+        "map-world:riviera"
+      ],
+      "lastDisposal": null,
+      "memory": {
+        "geometries": 23,
+        "textures": 29
+      },
+      "weatherWidgets": 0
+    }
+  },
+  "releaseColdAfter": {
+    "evidence": {
+      "start": 11237.5,
+      "phases": [
+        {
+          "at": 11243.100000023842,
+          "text": "LOADING MAP DATA 0%"
+        },
+        {
+          "at": 11716.400000095367,
+          "text": "DOWNLOADING TERRAIN + ROADS 25%"
+        },
+        {
+          "at": 12313.100000023842,
+          "text": "DOWNLOADING TERRAIN + ROADS · 0.1 MB 25%"
+        },
+        {
+          "at": 12460.800000071526,
+          "text": "DOWNLOADING TERRAIN + ROADS · 6.1 MB 25%"
+        },
+        {
+          "at": 12611.400000095367,
+          "text": "DOWNLOADING TERRAIN + ROADS · 10.6 MB 25%"
+        },
+        {
+          "at": 12762.300000071526,
+          "text": "DOWNLOADING TERRAIN + ROADS · 15.4 MB 25%"
+        },
+        {
+          "at": 12914.100000023842,
+          "text": "DOWNLOADING TERRAIN + ROADS · 18.3 MB 25%"
+        },
+        {
+          "at": 13069,
+          "text": "DOWNLOADING TERRAIN + ROADS · 23.3 MB 25%"
+        },
+        {
+          "at": 13226.700000047684,
+          "text": "DOWNLOADING TERRAIN + ROADS · 28.3 MB 25%"
+        },
+        {
+          "at": 13555.5,
+          "text": "DOWNLOADING TERRAIN + ROADS · 33.0 MB 25%"
+        },
+        {
+          "at": 13936.800000071526,
+          "text": "TERRAIN + ROADS READY 33%"
+        },
+        {
+          "at": 14354.300000071526,
+          "text": "PAVING POSEIDONOS AVENUE 40%"
+        },
+        {
+          "at": 15532,
+          "text": "RAISING VOULIAGMENI 55%"
+        },
+        {
+          "at": 15667.300000071526,
+          "text": "BUILDING COAST AMENITIES 70%"
+        },
+        {
+          "at": 17782.5,
+          "text": "FUELLING THE CARS 85%"
+        },
+        {
+          "at": 21625,
+          "text": "WARMING TYRES 95%"
+        },
+        {
+          "at": 21625.200000047684,
+          "text": "UPLOADING TEXTURES 96%"
+        },
+        {
+          "at": 22142.400000095367,
+          "text": "PREPARING SHADERS 98%"
+        },
+        {
+          "at": 22530.5,
+          "text": "PREPARING SHADERS 100%"
+        }
+      ],
+      "long": [
+        {
+          "at": 11458.900000095367,
+          "ms": 257
+        },
+        {
+          "at": 11729.5,
+          "ms": 141
+        },
+        {
+          "at": 12104.100000023842,
+          "ms": 126
+        },
+        {
+          "at": 13364,
+          "ms": 190
+        },
+        {
+          "at": 13588.900000095367,
+          "ms": 108
+        },
+        {
+          "at": 13699,
+          "ms": 116
+        },
+        {
+          "at": 13816.200000047684,
+          "ms": 538
+        },
+        {
+          "at": 14358.400000095367,
+          "ms": 394
+        },
+        {
+          "at": 14776.400000095367,
+          "ms": 755
+        },
+        {
+          "at": 15545.100000023842,
+          "ms": 122
+        },
+        {
+          "at": 15671.600000023842,
+          "ms": 2111
+        },
+        {
+          "at": 17792.700000047684,
+          "ms": 3832
+        },
+        {
+          "at": 21685.700000047684,
+          "ms": 456
+        },
+        {
+          "at": 22155.100000023842,
+          "ms": 359
+        }
+      ],
+      "done": 22530.5
+    },
+    "metrics": {
+      "riviera": {
+        "started": 11669.600000023842,
+        "downloadBytes": 35902203,
+        "decodeWallMs": 2941,
+        "inflateFetchWallMs": 2721.399999976158,
+        "bufferDecodeWallMs": 219.5,
+        "peakHeapBytes": 17100000,
+        "codec": "legacy",
+        "phase": "TERRAIN + ROADS READY",
+        "source": "download",
+        "loadMs": 2267.100000023842,
+        "geometryBytes": 151809686
+      }
+    },
+    "compileMs": 370.10000002384186,
+    "resources": [
+      {
+        "name": "http://localhost:8634/data/map.json",
+        "ms": 183.70000004768372,
+        "bytes": 0,
+        "decoded": 904260
+      },
+      {
+        "name": "http://localhost:8634/data/terrain.bin",
+        "ms": 184.89999997615814,
+        "bytes": 0,
+        "decoded": 1339745
+      },
+      {
+        "name": "http://localhost:8634/data/baked/riviera-terrain-7139375f643bbfc4.bin.gz",
+        "ms": 1915.4000000953674,
+        "bytes": 0,
+        "decoded": 16130864
+      },
+      {
+        "name": "http://localhost:8634/data/baked/riviera-roads-8efaa41592b1c597.bin.gz",
+        "ms": 1661.1000000238419,
+        "bytes": 0,
+        "decoded": 19771339
+      }
+    ],
+    "cacheNames": []
+  },
+  "releaseWarmAfter": {
+    "evidence": {
+      "start": 20481.100000023842,
+      "phases": [
+        {
+          "at": 20540.700000047684,
+          "text": "LOADING MAP DATA 0%"
+        },
+        {
+          "at": 21525.899999976158,
+          "text": "DOWNLOADING TERRAIN + ROADS 25%"
+        },
+        {
+          "at": 21914,
+          "text": "DOWNLOADING TERRAIN + ROADS · 0.1 MB 25%"
+        },
+        {
+          "at": 22104.899999976158,
+          "text": "DOWNLOADING TERRAIN + ROADS · 0.8 MB 25%"
+        },
+        {
+          "at": 22253,
+          "text": "DOWNLOADING TERRAIN + ROADS · 2.4 MB 25%"
+        },
+        {
+          "at": 22624.5,
+          "text": "DOWNLOADING TERRAIN + ROADS · 4.4 MB 25%"
+        },
+        {
+          "at": 22775.100000023842,
+          "text": "DOWNLOADING TERRAIN + ROADS · 9.9 MB 25%"
+        },
+        {
+          "at": 22950.799999952316,
+          "text": "DOWNLOADING TERRAIN + ROADS · 13.1 MB 25%"
+        },
+        {
+          "at": 23113.399999976158,
+          "text": "DOWNLOADING TERRAIN + ROADS · 17.4 MB 25%"
+        },
+        {
+          "at": 23264.5,
+          "text": "DOWNLOADING TERRAIN + ROADS · 21.3 MB 25%"
+        },
+        {
+          "at": 23515.899999976158,
+          "text": "DOWNLOADING TERRAIN + ROADS · 23.4 MB 25%"
+        },
+        {
+          "at": 23674.100000023842,
+          "text": "DOWNLOADING TERRAIN + ROADS · 27.4 MB 25%"
+        },
+        {
+          "at": 23925.100000023842,
+          "text": "DOWNLOADING TERRAIN + ROADS · 29.6 MB 25%"
+        },
+        {
+          "at": 24078.799999952316,
+          "text": "DOWNLOADING TERRAIN + ROADS · 33.6 MB 25%"
+        },
+        {
+          "at": 24572.100000023842,
+          "text": "TERRAIN + ROADS READY 33%"
+        },
+        {
+          "at": 25168.899999976158,
+          "text": "PAVING POSEIDONOS AVENUE 40%"
+        },
+        {
+          "at": 26682.200000047684,
+          "text": "RAISING VOULIAGMENI 55%"
+        },
+        {
+          "at": 26977.5,
+          "text": "BUILDING COAST AMENITIES 70%"
+        },
+        {
+          "at": 29386.399999976158,
+          "text": "FUELLING THE CARS 85%"
+        },
+        {
+          "at": 34200,
+          "text": "WARMING TYRES 95%"
+        },
+        {
+          "at": 34200.10000002384,
+          "text": "UPLOADING TEXTURES 96%"
+        },
+        {
+          "at": 34879.10000002384,
+          "text": "PREPARING SHADERS 98%"
+        },
+        {
+          "at": 35524.89999997616,
+          "text": "PREPARING SHADERS 100%"
+        }
+      ],
+      "long": [
+        {
+          "at": 20480.399999976158,
+          "ms": 60
+        },
+        {
+          "at": 20853.799999952316,
+          "ms": 60
+        },
+        {
+          "at": 20981.100000023842,
+          "ms": 544
+        },
+        {
+          "at": 21553.399999976158,
+          "ms": 329
+        },
+        {
+          "at": 22119.799999952316,
+          "ms": 94
+        },
+        {
+          "at": 22273.399999976158,
+          "ms": 99
+        },
+        {
+          "at": 22390.799999952316,
+          "ms": 221
+        },
+        {
+          "at": 22725.700000047684,
+          "ms": 52
+        },
+        {
+          "at": 22782,
+          "ms": 79
+        },
+        {
+          "at": 22940.600000023842,
+          "ms": 56
+        },
+        {
+          "at": 23032,
+          "ms": 57
+        },
+        {
+          "at": 23103.600000023842,
+          "ms": 68
+        },
+        {
+          "at": 23270,
+          "ms": 73
+        },
+        {
+          "at": 23361.200000047684,
+          "ms": 141
+        },
+        {
+          "at": 23572.899999976158,
+          "ms": 80
+        },
+        {
+          "at": 23654.299999952316,
+          "ms": 80
+        },
+        {
+          "at": 23772.5,
+          "ms": 150
+        },
+        {
+          "at": 24112.100000023842,
+          "ms": 345
+        },
+        {
+          "at": 24459.5,
+          "ms": 709
+        },
+        {
+          "at": 25175.299999952316,
+          "ms": 367
+        },
+        {
+          "at": 25603.100000023842,
+          "ms": 1079
+        },
+        {
+          "at": 26718.700000047684,
+          "ms": 258
+        },
+        {
+          "at": 27020.600000023842,
+          "ms": 2365
+        },
+        {
+          "at": 29405.200000047684,
+          "ms": 4794
+        },
+        {
+          "at": 34274,
+          "ms": 605
+        },
+        {
+          "at": 34916.299999952316,
+          "ms": 579
+        }
+      ],
+      "done": 35524.89999997616
+    },
+    "metrics": {
+      "riviera": {
+        "started": 21457.899999976158,
+        "downloadBytes": 35902203,
+        "decodeWallMs": 5392.100000023842,
+        "inflateFetchWallMs": 5133.900000095367,
+        "bufferDecodeWallMs": 258.1999999284744,
+        "peakHeapBytes": 17100000,
+        "codec": "legacy",
+        "phase": "TERRAIN + ROADS READY",
+        "source": "download",
+        "loadMs": 3113.7000000476837,
+        "geometryBytes": 151809686
+      }
+    },
+    "compileMs": 604.2000000476837,
+    "resources": [
+      {
+        "name": "http://localhost:8634/data/map.json",
+        "ms": 313.3000000715256,
+        "bytes": 0,
+        "decoded": 904260
+      },
+      {
+        "name": "http://localhost:8634/data/terrain.bin",
+        "ms": 415.2999999523163,
+        "bytes": 0,
+        "decoded": 1339745
+      },
+      {
+        "name": "http://localhost:8634/data/baked/riviera-terrain-7139375f643bbfc4.bin.gz",
+        "ms": 1735.5,
+        "bytes": 0,
+        "decoded": 16130864
+      },
+      {
+        "name": "http://localhost:8634/data/baked/riviera-roads-8efaa41592b1c597.bin.gz",
+        "ms": 2637.2999999523163,
+        "bytes": 0,
+        "decoded": 19771339
+      }
+    ],
+    "cacheEntries": 95,
+    "worlds": {
+      "mapId": "riviera",
+      "switching": false,
+      "worlds": [
+        "map-world:riviera"
+      ],
+      "lastDisposal": null,
+      "memory": {
+        "geometries": 23,
+        "textures": 29
+      },
+      "weatherWidgets": 0
+    }
+  },
+  "validation": {
+    "archiveCodeCommit": "2c42ff803dc27fbb75c60abfe42606845fb980a3",
+    "npmTest": { "exit": 0, "seconds": 338.9, "passed": 1366, "skipped": 6, "failed": 0 },
+    "focusedTests": { "passed": 12, "failed": 0 },
+    "separatePhysicsRegression": { "passed": 1146, "failed": 0 },
+    "syntax": "pass, 324 modules",
+    "browserImports": "pass, 259 modules",
+    "events": "pass",
+    "ghostLap": "pass, 10 tests",
+    "amendment": "Final amendment changes evidence documentation only; implementation equals the validated archive."
+  },
+  "notes": {
+    "liveRelease": {
+      "sha": "8af1aef",
+      "build": "2bb3d70651d3",
+      "version": "2026.10.15.3"
+    },
+    "localReleaseBuild": "608913352c9a",
+    "rendering": "Live cold/warm original direct runs were ungated SwiftShader. Later map-setup observations pause only the recurring named game frame callback; world builders, texture upload and shader preparation are real.",
+    "warmAfter": "Both exact Riviera gzip content keys were verified present in asr-content-v1. Warm run overlapped archive npm test; slower CPU/wall time is not a network regression.",
+    "recovery": "Held both world responses; after 8 seconds honest download task, elapsed time and Return to menu appeared; native click navigated to a fresh menu.",
+    "coldAfter": "First patched run before final monotonic-phase UI refinement; releaseColdAfter and releaseWarmAfter use final source."
+  }
+}

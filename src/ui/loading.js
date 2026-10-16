@@ -7,7 +7,7 @@
 import { input } from '../input.js';
 import { bindingLabel, gearboxMessage } from '../input-labels.js';
 import { MAPS } from '../map-catalog.js';
-import { setProgress, esc } from './components.js';
+import { button, setProgress, esc } from './components.js';
 
 const TIPS = [
   'Running a red light adds a time penalty. The SEAT’s nitrous bottle refills while waiting at a red.',
@@ -32,9 +32,21 @@ class LoadingScreen {
     clearTimeout(this.hideTimer);
     this.setMap(mapId);
     const purpose = $('ldContext'); if (purpose) purpose.textContent = 'LOADING TRACK FOR ' + context;
-    this.progress('LOADING MAP DATA', 0);
+    this.p = 0; this.progress('LOADING MAP DATA', 0);
     el.inert = false; el.style.pointerEvents = ''; el.removeAttribute('aria-hidden');
     el.classList.add('open'); el.setAttribute('aria-busy', 'true');
+    this.started = performance.now();
+    const recovery = $('ldRecovery'); if (recovery) recovery.hidden = true;
+    const back = $('ldReturn');
+    if (back) { back.innerHTML = button({ label: 'RETURN TO MENU', attrs: { tabindex: '0' } }); const control = back.querySelector('[role="button"]'); control.onclick = () => {
+      // Replacing the document also stops outstanding workers/fetches safely.
+      const url = new URL(location.href); url.searchParams.set('menu', '1'); url.searchParams.delete('lobby');
+      location.assign(url.href);
+    }; control.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); control.onclick(); } }; }
+    clearInterval(this.waitTimer); this.waitTimer = setInterval(() => {
+      const seconds = Math.floor((performance.now() - this.started) / 1000);
+      if (recovery && seconds >= 8) { recovery.hidden = false; const wait = $('ldWait'); if (wait) wait.textContent = `Still loading · ${seconds}s. You can return to the menu and try again.`; }
+    }, 1000);
     this.nextTip(); clearInterval(this.tipTimer); this.tipTimer = setInterval(() => this.nextTip(), 5200);
   }
   setMap(mapId) {
@@ -68,7 +80,9 @@ class LoadingScreen {
   progress(text, f) {
     if (text != null) { const s = $('lstat'); if (s) s.textContent = text; }
     if (f !== undefined && Number.isFinite(+f)) {
-      this.p = Math.max(0, Math.min(1, +f));
+      // Preloading overlaps HUD/sky work. A later builder can report an earlier
+      // milestone, but a single session's completed progress never goes back.
+      this.p = Math.max(this.p, Math.max(0, Math.min(1, +f)));
       setProgress($('lbar'), this.p);
       const pc = $('lpct'); if (pc) pc.textContent = Math.round(this.p * 100) + '%';
       this.applyRoute();
@@ -83,6 +97,7 @@ class LoadingScreen {
     const el = this.el; if (!el) return;
     this.progress(null, 1);
     clearInterval(this.tipTimer);
+    clearInterval(this.waitTimer);
     // Loading is complete: menus must be clickable even while the fade finishes.
     el.style.pointerEvents = 'none'; el.inert = true; el.setAttribute('aria-hidden', 'true');
     this.hideTimer = setTimeout(() => { el.classList.remove('open'); el.removeAttribute('aria-busy'); }, 180);

@@ -28,7 +28,7 @@ async function save(id, version, buffers) {
     return true;
   } catch { return false; /* Private browsing / storage pressure: generate again next visit. */ } finally { db?.close(); }
 }
-export async function generatedWorld(map) {
+export async function generatedWorld(map, { cachedOnly = false } = {}) {
   const def = map.data.bakedWorld;
   if (!def.worker || typeof Worker === 'undefined') return null;
   const version = `${def.terrain}|${def.roads}|${def.worker}`;
@@ -39,6 +39,9 @@ export async function generatedWorld(map) {
   // The small marker is written only after the IndexedDB transaction commits.
   const cached = known ? await read(map.id, version) : null;
   if (cached) { if (new URLSearchParams(location.search).has('debug')) console.log('world-cache', map.id, 'hit'); return cached; }
+  // Production already ships these exact buffers. A cache miss must not spend
+  // a minute regenerating them before trying the CDN.
+  if (cachedOnly) return null;
   const buffers = await new Promise((resolve, reject) => {
     const worker = new Worker(def.worker, { type: 'module', name: `world:${map.id}` });
     const timer = setTimeout(() => { worker.terminate(); reject(new Error('World generation timed out')); }, 120000);
