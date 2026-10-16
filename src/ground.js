@@ -327,8 +327,10 @@ export class Ground {
    * The crash dents the body there: addDamage with the contact's closing speed, zone, local point and normal.
    */
   _hit(v, nx, nz, pen, k, collider = null) {
-    const base = this.at?.(v.x,v.z,v.s,v.u,{})?.y ?? v.y;
-    if (v.bodyDynamic && v.y > base + (collider?.height ?? (collider?.kind === 'bollard' ? 1 : 3))) return;
+    if (v.bodyDynamic) {
+      const base = this.at?.(v.x,v.z,v.s,v.u,{})?.y ?? v.y;
+      if (v.y > base + (collider?.height ?? (collider?.kind === 'bollard' ? 1 : 3))) return;
+    }
     const restitution = clamp(collider?.restitution ?? 0.15, 0, 1);
     // Soft barriers absorb crush energy; apply the square root to EBS, not a second delta-v.
     const damageScale = clamp(collider?.damageScale ?? 1, 0, 1);

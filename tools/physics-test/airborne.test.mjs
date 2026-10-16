@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Vehicle } from '../../src/physics.js';
 import { startFlight, bodyQuaternion, angularVelocity } from '../../src/airborne-dynamics.js';
+import { resolvePlayerContacts } from '../../src/multiplayer-contact.js';
 import { catalogue } from './powertrain.mjs';
 import { flatAirborneRoute, runAirborneScenario } from './airborne-scenarios.mjs';
 const specs=catalogue(),make=id=>{const v=new Vehicle(specs.find(c=>c.id===id),flatAirborneRoute);v.roadZ=()=>0;return v;};
@@ -50,4 +51,12 @@ test('fast roof-first fall cannot tunnel through flat terrain',()=>{
   let minimum=Infinity;
   for(let i=0;i<300;i++){v.update(1/60,input);minimum=Math.min(minimum,v.y);}
   assert.ok(minimum>=0&&Number.isFinite(v.y));assert.ok(v.speed<.2);
+});
+
+test('a hard player contact can launch the local body without changing the remote state',()=>{
+  const local=make('carrera'),remote=make('carrera');local.reset(0,0,150/3.6);remote.reset(3.5,0,0);
+  const before=JSON.stringify({x:remote.x,y:remote.y,z:remote.z,vLong:remote.vLong,vLat:remote.vLat,w:remote.w});
+  const hits=resolvePlayerContacts(local,[{id:'peer',vehicle:remote}],1/60,1000);
+  assert.equal(hits.length,1);assert.ok(local.bodyDynamic&&local.vy>1);
+  assert.equal(JSON.stringify({x:remote.x,y:remote.y,z:remote.z,vLong:remote.vLong,vLat:remote.vLat,w:remote.w}),before);
 });

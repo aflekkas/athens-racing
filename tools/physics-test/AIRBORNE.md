@@ -39,6 +39,8 @@ Rendering slerps the quaternion, uses endpoint vertical velocities for a Hermite
 - `airborne-network.test.mjs`: vertical/quaternion interpolation, vertical-only sender motion, validation/hibernation, actual authority acceptance/teleport rejection, stopped rollover tow and no online airborne snap.
 - The deterministic `regress.mjs` includes the four scenario cases, without weakening its existing handling/catalogue gates.
 
+- `server/mp-playtest.test.mjs`: the former 8 m/s proxy cap is replaced with mass-sharing crash impulses (45 m/s numerical ceiling). The equal-mass rear-end test now expects a 10 m/s change rather than 8; a production Vehicle test verifies local launch and unchanged remote authority.
+
 ## Evidence and reproduction
 
 `.scratch/airborne/` contains before/after JSON traces and summary logs, three GIFs, three contact sheets and 26 full-size browser frames. Baseline logs run the same controlled surfaces against 492f14e; the legacy kerb response is a damped spring kick because there was no free-body impact method. Barrier evidence calls the real `Ground._hit`. Browser evidence uses production vehicle models, Ground and Vehicle, with controlled asphalt geometry; the bus kerb contact is prescribed to isolate the CoM comparison. It is not an uncontrolled playthrough of a named map.

@@ -102,15 +102,18 @@ export function stepFlight(v,dt,y,grade=0,bank=0,slope=0) {
   for(let i=0;i<4;i++)points.push([v.cy[i],-v.hcg,-v.cx[i]]);
   const top=(v.spec.height||1.45)-v.hcg;
   for(const xx of [-v.halfW*.92,v.halfW*.92])for(const zz of [-v.halfL*.88,v.halfL*.88])for(const yy of [Math.min(.2,v.hcg*.3)-v.hcg,top])points.push([xx,yy,zz]);
+  // Contact positions and their terrain samples stay fixed during the impulse
+  // iterations. Reuse them rather than projecting onto the road 8x per point.
+  const samples=points.map(p=>{const r=rotate(B.q,p);return {p,r,floor:heightAt(v,v.x+r[0],v.z+r[2])};});
   let lowest=Infinity;
-  for(const p of points){const r=rotate(B.q,p),floor=heightAt(v,v.x+r[0],v.z+r[2]);lowest=Math.min(lowest,B.cy+r[1]-floor);}
+  for(const {r,floor} of samples)lowest=Math.min(lowest,B.cy+r[1]-floor);
   const hitSpeed=Math.max(0,slope-v.vy);
   if(lowest<=.015&&upright&&hitSpeed>=0&&v.vy<=slope+.1&&Math.hypot(omega[0],omega[2])<2.2&&B.age>.02){finishFlight(v,y,grade,bank,slope,hitSpeed);return;}
   // Sequential impulses on the oriented hull, with positional projection only
   // for penetration. Eight passes resolve roof/side support without a road snap.
   let impact=0,deepest=0;
-  for(let pass=0;pass<8;pass++)for(const p of points){
-    const r=rotate(B.q,p),floor=heightAt(v,v.x+r[0],v.z+r[2]),gap=B.cy+r[1]-floor;
+  for(let pass=0;pass<8;pass++)for(const {r,floor} of samples){
+    const gap=B.cy+r[1]-floor;
     if(gap>.008)continue;
     B.contact=true;deepest=Math.max(deepest,-gap);
     const velNow=worldVelocity(v),o=angularVelocity(v),cp=cross(o,r).map((x,i)=>x+velNow[i]);

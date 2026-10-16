@@ -30,7 +30,7 @@ function setup(scenario){
  return render();
 }
 function render(){
- const v=vehicle;v.place(car.root);car.bodyDynamic=!!v.bodyDynamic;car.update(1/60,v.vLong,v.steer,false,v.pose,v.corners,v.w);
+ const v=vehicle;v.place(car.root);car.update(1/60,v.vLong,v.steer,false,v.bodyDynamic?{heave:0,pitch:0,roll:0}:v.pose,v.corners,v.bodyDynamic?0:v.w);
  const wide=name==='bus'?1.65:1;camera.position.set(v.x+9*wide,v.y+5.2*wide,v.z+9*wide);camera.lookAt(v.x,v.y+(name==='bus'?1.3:.7),v.z);sun.position.set(v.x-8,v.y+15,v.z+5);sun.target.position.set(v.x,0,v.z);scene.updateMatrixWorld(true);renderer.render(scene,camera);
  const q=v.rigid?.q,up=q?1-2*(q[0]**2+q[2]**2):Math.cos(v.pose.roll)*Math.cos(v.pose.pitch),tilt=Math.acos(Math.max(-1,Math.min(1,up)))*180/Math.PI;
  document.getElementById('metrics').textContent=`t ${(index/60).toFixed(2)} s · ${v.speed.toFixed(1)} m/s · height ${(v.y-v.route.surfaceY(v.s,v.u)).toFixed(2)} m · vy ${v.vy.toFixed(2)} m/s · tilt ${tilt.toFixed(1)}° · ${v.air?'AIRBORNE':v.bodyDynamic?'HULL CONTACT':'TYRE CONTACT'}`;

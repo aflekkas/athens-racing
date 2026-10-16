@@ -485,9 +485,8 @@ export function buildDetailedCar(car,kind,opts={}) {
   }
   return car;
 }
-export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawRate=0,bodyDynamic=car.bodyDynamic===true) {
+export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawRate=0) {
   const d=MODEL[car.modelKind];
-  if(bodyDynamic)pose={heave:0,pitch:0,roll:0};
   if(pose){car.body.position.y=pose.heave+(car.spec.visual?.ride||0);car.body.rotation.set(pose.pitch,0,pose.roll,'YXZ');}
   for(const w of car.wheels){
     // Physics steer is positive right; Three.js yaw is positive left.
@@ -499,7 +498,7 @@ export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawR
     // Physics owns unsprung wheel-centre travel. Keep the rest position stable
     // across frames; body-mounted wheels must not count body heave twice.
     w.restY ??= w.pivot.position.y;
-    const travel=bodyDynamic?-.04:Number.isFinite(corner?.zu)?corner.zu:0;
+    const travel=Number.isFinite(corner?.zu)?corner.zu:0;
     let height=w.restY+travel;
     if(w.pivot.parent===car.body){
       // Remove the body's heave AND pitch/roll height at this corner.

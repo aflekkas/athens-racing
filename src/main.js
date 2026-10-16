@@ -1440,11 +1440,10 @@ function syncCar(c, dt) {
     const shadowsOff = distance > (c.shadowsOff ? 36 : 42);
     if (shadowsOff !== c.shadowsOff) { c.shadowsOff = shadowsOff; for (const o of c.casters) o.castShadow = !shadowsOff; }
   }
-  c.model.bodyDynamic = !!v.bodyDynamic;
   c.model.steamAmount = multiplayer.active ? 0 : v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
   if(!multiplayer.active)c.remoteExhaust=null;
   if(c.model.exhaustFlames)c.model.exhaustFlames.update(dt,c.remoteExhaust||v.powertrainSignals,c.remoteExhaust?c.remoteExhaust.exhaustEnabled:exhaustPopsEnabled(c.spec),quality);
-  if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.pose, v.corners || v.wheel, v.w);
+  if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.bodyDynamic ? (v._rigidVisualPose ||= { heave: 0, pitch: 0, roll: 0 }) : v.pose, v.corners || v.wheel, v.bodyDynamic ? 0 : v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
   if (c !== player) {
     const distance = camera.position.distanceTo(c.model.root.position);
