@@ -24,3 +24,7 @@ test('cell edges are continuous and outside-map recovery sentinel remains unchan
 
 // Compact GPU layouts and the LOD/contact contract run in the normal gates.
 import './terrain-layout.test.mjs';
+
+import './terrain-slope.test.mjs';
+
+import './terrain-seams.test.mjs';

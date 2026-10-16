@@ -1,0 +1,183 @@
+{
+  "id": "riviera",
+  "mapDecodeCpuMs": 531.215,
+  "networkCpuMs": 133.545,
+  "buildCpuMs": 18109.208,
+  "stages": [
+    {
+      "stage": "modules",
+      "rss": 76238848,
+      "heapTotal": 21094400,
+      "heapUsed": 11432968,
+      "external": 2058706,
+      "arrayBuffers": 307311
+    },
+    {
+      "stage": "map",
+      "rss": 101998592,
+      "heapTotal": 32890880,
+      "heapUsed": 15176200,
+      "external": 7182367,
+      "arrayBuffers": 3815147
+    },
+    {
+      "stage": "network",
+      "rss": 102207488,
+      "heapTotal": 52289536,
+      "heapUsed": 17614440,
+      "external": 7182367,
+      "arrayBuffers": 3815147
+    },
+    {
+      "stage": "terrain",
+      "rss": 405762048,
+      "heapTotal": 81608704,
+      "heapUsed": 46021456,
+      "external": 73730709,
+      "arrayBuffers": 70363489
+    }
+  ],
+  "contactMemory": {
+    "refinedCells": 46497,
+    "refinedBytes": 6695568,
+    "coarseCells": 13328,
+    "coarseBytes": 1324792
+  },
+  "bytes": 32468336,
+  "triangles": 2104521,
+  "chunks": 95,
+  "poses": [
+    {
+      "name": "start",
+      "eye": [
+        959.3300170898438,
+        17.34000015258789,
+        2350.81005859375
+      ],
+      "target": [
+        939.3300170898438,
+        10.34000015258789,
+        2330.81005859375
+      ],
+      "calls": 15,
+      "triangles": 182930
+    },
+    {
+      "name": "mid",
+      "eye": [
+        3137.949951171875,
+        14.880000114440918,
+        1527.3299560546875
+      ],
+      "target": [
+        3107.949951171875,
+        4.880000114440918,
+        1497.3299560546875
+      ],
+      "calls": 15,
+      "triangles": 239938
+    },
+    {
+      "name": "overview",
+      "eye": [
+        4607.949951171875,
+        2204.880000114441,
+        2997.3299560546875
+      ],
+      "target": [
+        3107.949951171875,
+        4.880000114440918,
+        1497.3299560546875
+      ],
+      "calls": 70,
+      "triangles": 691772
+    }
+  ],
+  "cpuLodIndexBytes": 22814820,
+  "patchCount": 8572,
+  "lodHistogram": [
+    {
+      "pose": "start",
+      "counts": [
+        5567,
+        896,
+        731,
+        1378
+      ]
+    },
+    {
+      "pose": "mid",
+      "counts": [
+        5680,
+        905,
+        774,
+        1213
+      ]
+    },
+    {
+      "pose": "overview",
+      "counts": [
+        5403,
+        1004,
+        663,
+        1502
+      ]
+    }
+  ],
+  "stationarySelectionCpuUs": 4.372,
+  "cachedDecodeBuildCpuMs": 1019.686,
+  "rawPackBytes": 48357466,
+  "gzipPackBytes": 25696386,
+  "restored": {
+    "bytes": 32468336,
+    "triangles": 2104521,
+    "chunks": 95,
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          959.3300170898438,
+          17.34000015258789,
+          2350.81005859375
+        ],
+        "target": [
+          939.3300170898438,
+          10.34000015258789,
+          2330.81005859375
+        ],
+        "calls": 15,
+        "triangles": 182930
+      },
+      {
+        "name": "mid",
+        "eye": [
+          3137.949951171875,
+          14.880000114440918,
+          1527.3299560546875
+        ],
+        "target": [
+          3107.949951171875,
+          4.880000114440918,
+          1497.3299560546875
+        ],
+        "calls": 15,
+        "triangles": 239938
+      },
+      {
+        "name": "overview",
+        "eye": [
+          4607.949951171875,
+          2204.880000114441,
+          2997.3299560546875
+        ],
+        "target": [
+          3107.949951171875,
+          4.880000114440918,
+          1497.3299560546875
+        ],
+        "calls": 70,
+        "triangles": 691772
+      }
+    ]
+  }
+}

@@ -1,112 +1,89 @@
-# Terrain LOD and retained heap — revision 2
+# Terrain performance and watertight boundaries — revision 3
 
-Before: `935cc47c6b0521a9b9927adc8e784452cbece9b8`. Tested implementation: `9c302ae88f98ea922d0319dbf0801e66d98c5813`. The previous compact-layout report remains in [RESULTS-v1.md](RESULTS-v1.md).
+Before: `8940394cbbf49e766f1467d4f9cd431df155b52a`. Tested source: `7992658c5b1727e199984d3e176f69bb3104966d` (parent includes the documentation-only `239defc`). [Revision 2](RESULTS-v2.md) and [initial layout](RESULTS-v1.md) retain the earlier measurements.
 
-## What changed
+## Outcome and implementation
 
-The previous LOD excluded road-refinement meshes, which contain most terrain triangles, and permanently pinned whole chunks after any contact query. The new selector operates on 16×16-lattice-cell patches inside submission chunks, including the dense road geometry. Each patch has stitched full / approximately half / quarter / eighth index ranges. Every patch perimeter vertex survives at every level; incomplete cells and holes retain their original triangles.
+The selector uses a fixed 32-patch far queue, one far chunk index splice per update, precomputed chunk spheres, squared-distance screen-space error, and chunk frustum rejection before the error test. A sparse 100 m spatial index immediately refines nearby patches; nearby changes take priority over far work. Stationary camera/configuration checks return without scanning patches. Mirror/probe passes reuse the primary camera selection. The existing quality budgets and 20% hysteresis remain. Frame-time buffers, index views and dirty-chunk storage are preallocated. Initial selection and teleports over 250 m intentionally perform a visible-chunk sweep; the driving measurements exclude startup/teleports.
 
-Full detail is preserved within 100 m of the camera, with a 120 m coarsening threshold. Contact/prop queries protect only intersecting patches before sampling the original final heights, rather than pinning an entire 600 m tile. Static support pins remain for the tile lifetime. Screen-space error still includes geometric diagonal crossings and normal/colour interpolation error, with the existing Potato–Ultra budgets and 20% hysteresis. This is conservative support protection, not a claim that all visited patches will later unpin.
+Build time is reduced with dense Float64 slope-solver storage, precomputed neighbours and a typed binary heap that preserves the original arithmetic/order. LOD construction uses direct regular-grid fans and a conservative affine-residual error bound instead of quadratic triangle-edge intersections. The bound includes height, normal, colour and urban-factor interpolation. No material code changes, codec dependency, asynchronous API change, or new attribute type is required.
 
-Patch AABBs are culled against the current camera frustum. Larger submission tiles (1,200 m fine/refined, 3,000 m coarse, subdivided at 65,535 vertices) therefore reduce draw calls without drawing every off-screen patch inside their bounds. Three.js chunk frustum culling remains enabled. Selection reuses vectors, frustum planes, level views, update-range objects and the active Uint16 index buffer. It uploads indices only when selection or patch visibility changes; it creates no per-frame geometry, arrays or attribute objects.
+Terrain gaps came from inconsistent boundary heights between the coarse, fine and road-refined grids. The finer grid now supplies shared boundary vertices and heights; coarse boundary triangles are split with upward-facing, coverage-preserving triangulation. Refined road vertices remain unchanged. Transition triangles share fine submission chunks. The contact sampler reads the exact compact final triangles, including transitions, with sparse typed-array bins; it keeps no extra Float32 position surface.
 
-Immutable Uint16 LOD source ranges stay on the CPU. The GPU receives only a reusable active index buffer. The default pack stores the source ranges once as the mesh index, and reconstruction allocates the active buffer. `userData.terrainLodPatches` contains version 2 patch bounds/ranges; existing `terrainDecode`, normalized flags and full-range `terrainLod[0]` remain. No new attribute type or optional codec dependency is introduced.
+Trade-off: this revision removes per-frame patch frustum compaction and culls at chunk granularity. It draws more triangles than revision 2, while retaining the original requested ≥40–60% reduction at the large-map mid/overview poses. Seam repairs add geometry/contact storage. Riviera uses smaller refined chunks to limit off-screen work; Penteli groups its fine mesh into larger chunks to avoid an extra start-line draw call. These costs are explicit below.
 
-The heap leak was the public `heightC` arrow closing over the builder's shared lexical context. That kept the temporary height/vertex Maps and position/normal/colour/urban JavaScript arrays alive after upload. A module-scope sampler factory now retains only terrain and its final height field. Quantized geometry and exact final contact heights are preserved.
+## CPU and map build
 
-## Fixed-pose renderer submissions
+Fresh Node processes on this shared VPS, GC before retained-memory snapshots. Build CPU includes source-map decode, road-network setup and terrain generation. Browser/GPU wall times are not performance evidence under SwiftShader.
 
-Same 960×600, 60° FOV, 16 km far plane and High preset as revision 1. These are **terrain-only** scenes with the same diagnostic Lambert material, without roads, water, props or vegetation obscuring the comparison. Source camera coordinates are in JSON. The before images are the matching quantized-baseline images committed in the before SHA. The original pre-quantization call counts are included to check that revision 2 also reverses the earlier draw-call increase.
+| Map | Decode + network + build CPU before → after | Original pre-LOD baseline | Stationary selector before → after (µs) | Driving mean / p99 / max CPU (µs) |
+|---|---:|---:|---:|---:|
+| megara | 3.95 → 2.02 s | — | 68.6 → 0.20 | 4.44 / 28.80 / 220.29 |
+| riviera | 51.77 → 18.77 s | 23.8 s | 914.2 → 1.19 | 9.30 / 44.63 / 209.19 |
+| penteli | 63.23 → 22.86 s | 25.8 s | 3172.7 → 0.71 | 9.23 / 57.58 / 123.28 |
 
-| Map / pose | Triangles before → after | Reduction | Calls original → before → after | Evidence |
+Driving follows 1,500 route poses at 250 km/h / 60 Hz. A native `CLOCK_THREAD_CPUTIME_ID` clock measures the selector on the JS thread, avoiding scheduler delays and background-thread CPU. Warm-up precedes 1,399 measured moving frames; JSON retains every sample. Penteli meets the ≤150 µs worst-case target. Megara/Riviera have isolated higher CPU samples, shown rather than discarded. The simpler all-process stationary measurement in map JSON includes runtime/background noise; this table uses the warmed selector trace for after values.
+
+## Fixed camera submissions
+
+Terrain only, High, 960×600, 60° FOV, 16 km far plane. Camera coordinates are in each JSON. Generated and default raw-baked reconstruction produce identical submissions. Diagnostic Lambert shading makes geometry comparable; full-scene wedge captures below use the unchanged production terrain material.
+
+| Map / pose | Triangles original → before → after | Reduction vs original | Calls original → before → after | Matched evidence |
 |---|---:|---:|---:|---|
-| riviera / start | 281,604 → 80,224 | 71.5% | 17 → 18 → 11 | [before](lod2-before-riviera-start.png) / [after](lod2-after-riviera-start.png) / [LOD overlay](lod2-after-riviera-start-debug.png) |
-| riviera / mid | 445,348 → 81,331 | 81.7% | 20 → 22 → 17 | [before](lod2-before-riviera-mid.png) / [after](lod2-after-riviera-mid.png) / [LOD overlay](lod2-after-riviera-mid-debug.png) |
-| riviera / overview | 1,626,055 → 577,926 | 64.5% | 82 → 86 → 44 | [before](lod2-before-riviera-overview.png) / [after](lod2-after-riviera-overview.png) / [LOD overlay](lod2-after-riviera-overview-debug.png) |
-| penteli / start | 745,770 → 125,184 | 83.2% | 13 → 18 → 13 | [before](lod2-before-penteli-start.png) / [after](lod2-after-penteli-start.png) / [LOD overlay](lod2-after-penteli-start-debug.png) |
-| penteli / mid | 2,516,065 → 465,345 | 81.5% | 66 → 75 → 41 | [before](lod2-before-penteli-mid.png) / [after](lod2-after-penteli-mid.png) / [LOD overlay](lod2-after-penteli-mid-debug.png) |
-| penteli / overview | 3,043,666 → 613,240 | 79.9% | 100 → 111 → 53 | [before](lod2-before-penteli-overview.png) / [after](lod2-after-penteli-overview.png) / [LOD overlay](lod2-after-penteli-overview-debug.png) |
-| megara / start | 120,736 → 22,796 | 81.1% | 15 → 15 → 12 | [before](lod2-before-megara-start.png) / [after](lod2-after-megara-start.png) / [LOD overlay](lod2-after-megara-start-debug.png) |
-| megara / mid | 94,217 → 12,759 | 86.5% | 12 → 12 → 9 | [before](lod2-before-megara-mid.png) / [after](lod2-after-megara-mid.png) / [LOD overlay](lod2-after-megara-mid-debug.png) |
-| megara / overview | 129,419 → 46,440 | 64.1% | 25 → 25 → 12 | [before](lod2-before-megara-overview.png) / [after](lod2-after-megara-overview.png) / [LOD overlay](lod2-after-megara-overview-debug.png) |
+| megara / start | 120,736 → 22,796 → 105,253 | 12.8% | 15 → 12 → 12 | [before](final-before-megara-start.png) / [after](final-after-megara-start.png) / [LOD](final-after-megara-start-debug.png) |
+| megara / mid | 94,217 → 12,759 → 82,788 | 12.1% | 12 → 9 → 9 | [before](final-before-megara-mid.png) / [after](final-after-megara-mid.png) / [LOD](final-after-megara-mid-debug.png) |
+| megara / overview | 129,419 → 46,440 → 49,909 | 61.4% | 25 → 12 → 12 | [before](final-before-megara-overview.png) / [after](final-after-megara-overview.png) / [LOD](final-after-megara-overview-debug.png) |
+| riviera / start | 281,604 → 80,224 → 182,930 | 35.0% | 17 → 11 → 15 | [before](final-before-riviera-start.png) / [after](final-after-riviera-start.png) / [LOD](final-after-riviera-start-debug.png) |
+| riviera / mid | 445,348 → 81,331 → 239,938 | 46.1% | 20 → 17 → 15 | [before](final-before-riviera-mid.png) / [after](final-after-riviera-mid.png) / [LOD](final-after-riviera-mid-debug.png) |
+| riviera / overview | 1,626,055 → 577,926 → 691,772 | 57.5% | 82 → 44 → 70 | [before](final-before-riviera-overview.png) / [after](final-after-riviera-overview.png) / [LOD](final-after-riviera-overview-debug.png) |
+| penteli / start | 745,770 → 125,184 → 450,793 | 39.6% | 13 → 13 → 13 | [before](final-before-penteli-start.png) / [after](final-after-penteli-start.png) / [LOD](final-after-penteli-start-debug.png) |
+| penteli / mid | 2,516,065 → 465,345 → 783,195 | 68.9% | 66 → 41 → 37 | [before](final-before-penteli-mid.png) / [after](final-after-penteli-mid.png) / [LOD](final-after-penteli-mid-debug.png) |
+| penteli / overview | 3,043,666 → 613,240 → 675,219 | 77.8% | 100 → 53 → 46 | [before](final-before-penteli-overview.png) / [after](final-after-penteli-overview.png) / [LOD](final-after-penteli-overview-debug.png) |
 
-Overlay: green = full; yellow = half; orange = quarter; purple = eighth. It shows the dense road corridors actually coarsening at distance. Whole-patch culling also removes off-screen submissions; triangle reductions include both LOD and this finer culling. Generated and default baked-restored groups produce identical fixed-pose counts.
+LOD overlay: green full, yellow half, orange quarter, purple eighth. Static captures document geometry and level selection; they are not a claim about GPU frame rate.
 
-Motion captures follow 67 m of the start route in 90 steps. Inspect the videos and accompanying first/middle/last frames: [Riviera](lod2-after-riviera-motion.webm), [Penteli](lod2-after-penteli-motion.webm), [Megara](lod2-after-megara-motion.webm). Software rendering controls wall-clock playback speed; these are visual-transition evidence, not frame-rate benchmarks. Existing cut-outs visible in the baseline remain visible. The source terrain palette and material were not changed by this revision. These captures exercise the common decoding material; removal of Penteli's separate legacy hillside shader override is owned by the parallel world-simplification task, outside this revision.
+## Retained memory and geometry
 
-## GPU buffers and CPU storage
+Decimal MB. GPU geometry here is the byte size of uploaded attributes plus active index buffers, not driver allocation. JS heap and ArrayBuffers are separate Node memory counters after forced GC.
 
-Decimal MB. GPU bytes count production vertex attributes plus the maximum active index capacity, not only the indices selected in one frame. CPU-only index ranges are reported separately, rather than hidden in the heap figure. Typed-array backing stores are external to V8 heapUsed; CPU and GPU geometry storage are distinct copies and must not be confused.
+| Map | Geometry MB before → after | JS heap MB before → after | ArrayBuffers MB before → after | Heap + buffers MB before → after |
+|---|---:|---:|---:|---:|
+| megara | 1.93 → 2.09 | 18.91 → 19.41 | 6.15 → 6.52 | 25.06 → 25.92 |
+| riviera | 30.79 → 32.47 | 40.15 → 46.02 | 67.63 → 70.36 | 107.77 → 116.38 |
+| penteli | 44.98 → 47.35 | 41.78 → 49.77 | 96.89 → 100.95 | 138.66 → 150.72 |
 
-| Map | GPU geometry MB before → after | CPU-only LOD indices MB after | All CPU ArrayBuffers MB before → after | JS heap + ArrayBuffers MB before → after | Chunks before → after |
+The revision-2 retention fix remains: builder Maps/temporary JS arrays are released. Original retained heap+buffers were approximately Riviera 289 MB / Penteli 386 MB. The increase from revision 2 is the sparse selector index and real transition/contact data, not retained full-precision mesh copies.
+
+| Map / revision | Render attribute/index buffers MB | Immutable LOD source indices MB | Refined contact heights MB | Coarse/fine triangle-bin metadata MB | Other ArrayBuffers MB |
 |---|---:|---:|---:|---:|---:|
-| riviera | 30.990 → 30.789 | 22.757 | 49.09 → 67.63 | 288.92 → 107.63 | 120 → 59 |
-| penteli | 45.435 → 44.980 | 33.859 | 68.50 → 96.89 | 385.86 → 138.53 | 116 → 54 |
-| megara | 2.024 → 1.932 | 1.394 | 6.02 → 6.15 | 36.04 → 24.98 | 26 → 12 |
+| megara / before | 1.93 | 1.39 | 0.41 | 0.12 | 2.29 |
+| megara / after | 2.09 | 1.40 | 0.41 | 0.45 | 2.17 |
+| riviera / before | 30.79 | 22.76 | 6.70 | 0.18 | 7.21 |
+| riviera / after | 32.47 | 22.81 | 6.70 | 1.32 | 7.06 |
+| penteli / before | 44.98 | 33.86 | 9.10 | 0.52 | 8.44 |
+| penteli / after | 47.35 | 33.97 | 9.10 | 2.56 | 7.98 |
 
-The CPU index working set increases to avoid uploading inactive LOD ranges to the GPU. Releasing builder data more than offsets that increase. No original Float32 position/normal/colour arrays survive solely for collision. The existing sparse Float32 contact grids retain exact final rendered heights; their backing bytes are:
+Other buffers include the source DEM, road-network input and runtime/module data. Contact heights preserve the exact final Float32 height values; normals/positions/colours retain their existing compact layouts.
 
-| Map | Refined contact MB | Coarse contact MB |
-|---|---:|---:|
-| riviera | 6.696 | 0.181 |
-| penteli | 9.095 | 0.516 |
-| megara | 0.411 | 0.125 |
+## Wedge evidence and regression coverage
 
-## Retained JS heap breakdown
+- Riviera quarter route: [before](final-wedge-before-riviera.png) / [after](final-wedge-after-riviera.png).
+- Penteli mid route: [before](final-wedge-before-penteli.png) / [after](final-wedge-after-penteli.png).
+- Boundary audit found gaps up to 25.58 m. Before rays passed through a gap and hit the underside of farther terrain; after front-face and double-sided nearest intersections agree. This was not a material decoder problem or all LODs being rendered together.
+- Synthetic coverage tests verify preserved area, upward winding, continuous shared heights, unchanged finer vertices and exact ray/contact agreement. Cell-derived boundary extraction is checked against exposed triangle edges. Real-map road tests include the known failing screenshot sightlines.
+- Dense slope-solver output is checked exactly against the old implementation on 50 sparse randomized grids. Selector tests cover bounded work, stationary skips, auxiliary cameras, index contents and hysteresis.
 
-Each map runs in a fresh Node process, with forced GC at each stage. The same harness/imports run on both SHAs. These large savings apply to retained source construction (main-thread fallback, or a live generator worker). A downloaded bake never owned the builder scratch, and generated-world workers already terminate after transfer; this is not a claim of the same heap saving in an already-restored main thread. This avoids the previous multi-map harness retaining prior iteration data. Values below are managed heap only; stage columns after modules are incremental contributions. The terrain increment includes contacts, mesh objects and LOD metadata, not ArrayBuffer backing storage.
+## Clean archive gates
 
-| Map | Modules MB B → A | Map increment MB B → A | Road network increment MB B → A | Terrain increment MB B → A | Total heap MB B → A |
-|---|---:|---:|---:|---:|---:|
-| riviera | 11.39 → 11.40 | 3.75 → 3.73 | 2.43 → 2.42 | 222.26 → 22.44 | 239.83 → 40.00 |
-| penteli | 11.39 → 11.40 | 2.88 → 2.88 | 0.99 → 0.99 | 302.10 → 26.38 | 317.36 → 41.64 |
-| megara | 11.39 → 11.40 | 2.52 → 2.52 | 0.16 → 0.16 | 15.95 → 4.74 | 30.02 → 18.83 |
+- npm: 0
+- physics: 0
+- events: 0
+- syntax: 0
+- imports: 0
+- wrangler: 0
+- Baked riviera equality test: 232.60 s (lead-reported before: 881 s; aspirational target <120 s).
+- Baked penteli equality test: 153.61 s.
 
-Independent Riviera heap-snapshot diagnostics corroborate the ownership fix (shallow retained bytes, not process heapUsed; harness/module overhead is included in “other”):
+Gate logs and exit markers are in `final-gates/`. The full npm run includes beach, tow, props, road/terrain, physics and rival coverage; the separate physics/events gates are also required. No push or deploy was performed (Wrangler was dry-run only).
 
-| Snapshot category | Before MB | After MB |
-|---|---:|---:|
-| other managed objects/code/strings | 20.62 | 19.25 |
-| Map/Set and other internal tables | 95.58 | 4.89 |
-| JS array element storage | 88.42 | 3.38 |
-| boxed numbers | 23.29 | 1.63 |
-| typed-array and buffer wrappers | 10.78 | 12.33 |
-| native backing stores | 48.83 | 67.65 |
-
-The before snapshot identifies builder context bindings `heights` (58.72 MB Map table), `vertices` (29.36 MB Map table), and `pos` / `col` / `nor` / `urb` (86.02 MB combined array backing storage), excluding their boxed values. **None of those large builder context bindings remains in the after snapshot.** See [lod2-heap-summary.json](lod2-heap-summary.json). Native backing stores are deliberately shown separately from managed heap.
-
-## CPU costs and limitations
-
-Process CPU ms, single observations on a busy shared VPS. GPU times from SwiftShader are not used. Source construction adds patch preprocessing; the baked path avoids that generation work. The selector benchmark visits every chunk repeatedly at a fixed pose and excludes WebGL uploads. Changing poses can add index copies/uploads, so the stationary number is not a whole-frame cost.
-
-| Map | Source map + network + terrain CPU ms B → A | Cached decode + restore CPU ms B → A | Stationary selector CPU µs B → A |
-|---|---:|---:|---:|
-| riviera | 23794.6 → 52498.6 | 872.3 → 1468.5 | 64.9 → 939.3 |
-| penteli | 25787.3 → 64724.3 | 1877.6 → 1440.0 | 91.5 → 2293.6 |
-| megara | 2779.8 → 3775.8 | 257.3 → 218.7 | 79.5 → 265.1 |
-
-The cached fixture uses gzip of the unshuffled default ASR1 pack, then gunzip, synchronous decode and terrain restoration. It is not a production transfer-size or whole-game boot claim. The reliable improvements are submitted triangles/draw calls and retained memory, with increased source-build/selection work explicitly reported. Static prop/contact pins can reduce LOD savings in populated gameplay; the fixed-pose comparisons deliberately retain the prior terrain-only fixture. No FPS improvement is claimed.
-
-## Validation
-
-Six gates run from a clean archive of the tested SHA, with npm detached and exit markers. Logs are in `lod2-gates/`.
-
-- npm-test: PASS.
-- physics: PASS.
-- events: PASS.
-- syntax: PASS.
-- imports: PASS.
-- worker-dry-run: PASS.
-
-The suite covers road/terrain conformance, beach-above-water, tow placement, prop/render-surface grounding, physics regression and rival races. The supplementary [active-contact check](lod2-contact-check.json) samples 32 distant Megara patches after LOD selection; every exact sampled triangle is present in the active draw buffer, with maximum height difference 1.8e-15 m. New tests exercise patch-local contact protection, substantial distant coarsening, retained seam vertices, immutable source indices through the default pack, reused runtime buffers, stable-camera hysteresis and off-screen patch removal. No push or deployment was performed.
-
-## Reproduction and codec contract
-
-From clean archives of each SHA, with dependencies linked:
-
-- Run `node --expose-gc .scratch/perf-2026-10-15/terrain/lod2-measure.mjs <map> <output.json>` separately for Riviera, Penteli and Megara. Copy the measurement harness from this revision into the baseline archive; it handles layouts without patches.
-- Run captures through `bash tools/browser-slot.sh node .scratch/perf-2026-10-15/terrain/lod2-capture.mjs lod2-after`; camera inputs are read from `lod2-after.json`.
-- Optional `TERRAIN_HEAP_SNAPSHOT=<path>` writes a V8 snapshot after the build. `lod2-heap-summary.py` documents the diagnostic grouping and context-binding checks.
-- Preserve mesh `userData.terrainLodPatches` opaquely alongside `terrainDecode` / `terrainLod`, bounds, drawRange and normalized flags. The serialized index contains immutable source ranges; the loader constructs the active draw index. All vertex array types are unchanged from the compact-layout commit.
-
-Each submission chunk owns its buffers, bounds and patch metadata. Contact protection releases with that chunk. Generation and contact installation still build the complete map; this is a tile-friendly representation, not a streaming scheduler.
+The landing integration preserves upstream tile GPU sharing, notices and vehicle changes through `6c89a4a`. A broader audit also found small pre-existing interior coverage voids (314 Penteli cells); their separate correction and whole-map coverage guard are in progress. The large sightline wedges above are fixed in this source.

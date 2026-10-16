@@ -1,37 +1,40 @@
-// The distant mesh has 40 m triangles, not the 10 m DEM used to build it.
-// Keep only its emitted cells (including lowered seam vertices), so prop/contact
-// queries cannot silently sample a different surface or fill an omitted cell.
+// Sample the final indexed triangles outside the refined road grid. Transition
+// faces need their actual vertices: a four-corner DEM cell cannot represent a
+// stitched boundary. Keep references to the compact render buffers, not another
+// Float32 position surface.
 export function coarseTerrainSampler(terrain, group) {
-  const cells = new Map(), step = terrain.T * 4, width = Math.ceil((terrain.GX - 1) / 4);
-  group.traverse(mesh => {
-    if (!mesh.userData.coarseTerrain) return;
-    const p = mesh.geometry.attributes.position, index = mesh.geometry.index;
-    for (let t = 0; t < (mesh.userData.terrainLod?.[0].count ?? index.count); t += 3) {
-      const ids = [index.getX(t), index.getX(t + 1), index.getX(t + 2)];
-      const i = Math.round((Math.min(...ids.map(k => p.getX(k))) - terrain.minX) / step);
-      const j = Math.round((Math.min(...ids.map(k => p.getZ(k))) - terrain.minZ) / step);
-      const key = j * width + i;
-      let cell = cells.get(key); if (!cell) cells.set(key, cell = { h: new Float32Array(4).fill(NaN), diagonal: false });
-      const h = cell.h; let corners = 0;
-      for (const k of ids) {
-        const x = Math.round((p.getX(k) - terrain.minX) / step) - i;
-        const z = Math.round((p.getZ(k) - terrain.minZ) / step) - j;
-        h[z * 2 + x] = p.getY(k); corners |= 1 << (z * 2 + x);
-      }
-      // Seam lowering can change which height diagonal is shorter. Preserve
-      // the emitted indices rather than guessing a new triangulation.
-      cell.diagonal = !!((corners & 1) && (corners & 8));
+  const positions=[],indices=[],meshIds=[],offsets=[],lists=new Map(),step=terrain.T*4;
+  const width=Math.ceil((terrain.GX-1)/4),depth=Math.ceil((terrain.GZ-1)/4);
+  group.traverse(mesh=>{
+    if(!mesh.isMesh||mesh.userData.terrainRefinement)return;
+    const p=mesh.geometry.attributes.position,index=mesh.geometry.userData.terrainLodSource||mesh.geometry.index.array;
+    const meshId=positions.length;positions.push(p);indices.push(index);
+    const count=mesh.userData.terrainLod?.[0].count??index.length;
+    for(let k=0;k<count;k+=3){
+      const a=index[k],b=index[k+1],c=index[k+2],ax=p.getX(a),az=p.getZ(a),bx=p.getX(b),bz=p.getZ(b),cx=p.getX(c),cz=p.getZ(c);
+      const id=meshIds.length;meshIds.push(meshId);offsets.push(k);
+      const x0=Math.max(0,Math.floor((Math.min(ax,bx,cx)-terrain.minX)/step)),x1=Math.min(width-1,Math.floor((Math.max(ax,bx,cx)-terrain.minX)/step));
+      const z0=Math.max(0,Math.floor((Math.min(az,bz,cz)-terrain.minZ)/step)),z1=Math.min(depth-1,Math.floor((Math.max(az,bz,cz)-terrain.minZ)/step));
+      for(let z=z0;z<=z1;z++)for(let x=x0;x<=x1;x++){const key=z*width+x;let list=lists.get(key);if(!list)lists.set(key,list=[]);list.push(id);}
     }
   });
-  const sample = (x, z) => {
-    const i = Math.floor((x - terrain.minX) / step), j = Math.floor((z - terrain.minZ) / step);
-    if (i < 0 || j < 0 || i >= width || j >= Math.ceil((terrain.GZ - 1) / 4)) return null;
-    const cell = cells.get(j * width + i); if (!cell) return null;
-    const [h00,h10,h01,h11] = cell.h, a=(x-terrain.minX-i*step)/step, b=(z-terrain.minZ-j*step)/step;
-    const y = cell.diagonal
-      ? (a>b ? h00+(h10-h00)*a+(h11-h10)*b : h00+(h11-h01)*a+(h01-h00)*b)
-      : (a+b<1 ? h00+(h10-h00)*a+(h01-h00)*b : h11+(h01-h11)*(1-a)+(h10-h11)*(1-b));
-    return Number.isFinite(y) ? y : null;
+  const bins=new Map();let bytes=meshIds.length*8;
+  for(const [key,list]of lists){const ids=new Uint32Array(list);bins.set(key,ids);bytes+=ids.byteLength;}
+  const sample=triangleSampler(terrain.minX,terrain.minZ,step,width,depth,positions,indices,new Uint32Array(meshIds),new Uint32Array(offsets),bins);
+  sample.cells=bins.size;sample.bytes=bytes;return sample;
+}
+// Separate factory prevents retention of build-time JS arrays and bin lists.
+function triangleSampler(minX,minZ,step,width,depth,positions,indices,meshIds,offsets,bins){
+  return (x,z)=>{
+    const i=Math.floor((x-minX)/step),j=Math.floor((z-minZ)/step);if(i<0||j<0||i>=width||j>=depth)return null;
+    const list=bins.get(j*width+i);if(!list)return null;let height=-Infinity;
+    for(let n=0;n<list.length;n++){
+      const id=list[n],mesh=meshIds[id],p=positions[mesh],ix=indices[mesh],k=offsets[id],a=ix[k],b=ix[k+1],c=ix[k+2];
+      const ax=p.getX(a),az=p.getZ(a),bx=p.getX(b),bz=p.getZ(b),cx=p.getX(c),cz=p.getZ(c),det=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);
+      if(Math.abs(det)<1e-12)continue;
+      const u=((bz-cz)*(x-cx)+(cx-bx)*(z-cz))/det,v=((cz-az)*(x-cx)+(ax-cx)*(z-cz))/det;
+      if(u>=-1e-8&&v>=-1e-8&&u+v<=1+1e-8)height=Math.max(height,u*p.getY(a)+v*p.getY(b)+(1-u-v)*p.getY(c));
+    }
+    return height===-Infinity?null:height;
   };
-  sample.cells=cells.size;sample.bytes=cells.size*16;return sample;
 }

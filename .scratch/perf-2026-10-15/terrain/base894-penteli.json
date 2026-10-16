@@ -1,0 +1,183 @@
+{
+  "id": "penteli",
+  "mapDecodeCpuMs": 364.311,
+  "networkCpuMs": 29.715,
+  "buildCpuMs": 62832.649,
+  "stages": [
+    {
+      "stage": "modules",
+      "rss": 75698176,
+      "heapTotal": 21356544,
+      "heapUsed": 11525528,
+      "external": 2058706,
+      "arrayBuffers": 307311
+    },
+    {
+      "stage": "map",
+      "rss": 101998592,
+      "heapTotal": 32628736,
+      "heapUsed": 14401104,
+      "external": 7861340,
+      "arrayBuffers": 4494120
+    },
+    {
+      "stage": "network",
+      "rss": 101998592,
+      "heapTotal": 33677312,
+      "heapUsed": 15391304,
+      "external": 7861340,
+      "arrayBuffers": 4494120
+    },
+    {
+      "stage": "terrain",
+      "rss": 368603136,
+      "heapTotal": 78921728,
+      "heapUsed": 41775608,
+      "external": 100249114,
+      "arrayBuffers": 96886240
+    }
+  ],
+  "contactMemory": {
+    "refinedCells": 28071,
+    "refinedBytes": 9095004,
+    "coarseCells": 32268,
+    "coarseBytes": 516288
+  },
+  "bytes": 44980154,
+  "triangles": 3053918,
+  "chunks": 54,
+  "poses": [
+    {
+      "name": "start",
+      "eye": [
+        -713.8499755859375,
+        478.7200012207031,
+        -1733.4200439453125
+      ],
+      "target": [
+        -733.8499755859375,
+        471.7200012207031,
+        -1753.4200439453125
+      ],
+      "calls": 13,
+      "triangles": 125184
+    },
+    {
+      "name": "mid",
+      "eye": [
+        2622.080078125,
+        478.8299865722656,
+        781.4099731445312
+      ],
+      "target": [
+        2592.080078125,
+        468.8299865722656,
+        751.4099731445312
+      ],
+      "calls": 41,
+      "triangles": 465345
+    },
+    {
+      "name": "overview",
+      "eye": [
+        4092.080078125,
+        2668.8299865722656,
+        2251.4099731445312
+      ],
+      "target": [
+        2592.080078125,
+        468.8299865722656,
+        751.4099731445312
+      ],
+      "calls": 53,
+      "triangles": 613240
+    }
+  ],
+  "cpuLodIndexBytes": 33859026,
+  "patchCount": 7440,
+  "lodHistogram": [
+    {
+      "pose": "start",
+      "counts": [
+        655,
+        594,
+        2048,
+        4143
+      ]
+    },
+    {
+      "pose": "mid",
+      "counts": [
+        523,
+        612,
+        2201,
+        4104
+      ]
+    },
+    {
+      "pose": "overview",
+      "counts": [
+        482,
+        599,
+        2115,
+        4244
+      ]
+    }
+  ],
+  "stationarySelectionCpuUs": 3172.7434,
+  "cachedDecodeBuildCpuMs": 1533.964,
+  "rawPackBytes": 66915934,
+  "gzipPackBytes": 36463650,
+  "restored": {
+    "bytes": 44980154,
+    "triangles": 3053918,
+    "chunks": 54,
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          -713.8499755859375,
+          478.7200012207031,
+          -1733.4200439453125
+        ],
+        "target": [
+          -733.8499755859375,
+          471.7200012207031,
+          -1753.4200439453125
+        ],
+        "calls": 13,
+        "triangles": 125184
+      },
+      {
+        "name": "mid",
+        "eye": [
+          2622.080078125,
+          478.8299865722656,
+          781.4099731445312
+        ],
+        "target": [
+          2592.080078125,
+          468.8299865722656,
+          751.4099731445312
+        ],
+        "calls": 41,
+        "triangles": 465345
+      },
+      {
+        "name": "overview",
+        "eye": [
+          4092.080078125,
+          2668.8299865722656,
+          2251.4099731445312
+        ],
+        "target": [
+          2592.080078125,
+          468.8299865722656,
+          751.4099731445312
+        ],
+        "calls": 53,
+        "triangles": 613240
+      }
+    ]
+  }
+}

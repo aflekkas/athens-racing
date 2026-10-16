@@ -64,10 +64,58 @@ test('patch LOD coarsens refined terrain in one draw and contact pins only the s
   assert.equal(mesh.terrainLodState.patches.filter(p=>p.pinned).length,1);
   assert.deepEqual(big.userData.terrainLodSource,sourceIndices);
   const packed=decodeGeometryPack(packGroup(group,{}));assert.deepEqual(packed.arrays[packed.metadata.meshes[0].index],sourceIndices);
-  const state=mesh.terrainLodState,range=state.updateRange,index=big.index.array;
+  const state=mesh.terrainLodState,offsets=state.offsets,index=big.index.array;
   camera.position.set(130,100,-430);camera.updateMatrixWorld();mesh.onBeforeRender(renderer,null,camera);
-  assert.equal(big.index.array,index);assert.equal(state.updateRange,range);
+  assert.equal(big.index.array,index);assert.equal(state.offsets,offsets);
   const version=big.index.version;mesh.onBeforeRender(renderer,null,camera);assert.equal(big.index.version,version);
   camera.position.set(1000,1000,1000);camera.lookAt(2000,2000,2000);camera.updateMatrixWorld();mesh.onBeforeRender(renderer,null,camera);
-  assert.equal(big.drawRange.count,0,'off-screen patches submit no triangles');
+  const frustum=new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
+  assert.equal(frustum.intersectsObject(mesh),false,'Three culls the entire off-screen submission chunk');
+  assert.equal(mesh.frustumCulled,true);
+});
+
+test('incremental selector bounds driving work and does no stationary patch work',()=>{
+  const group=new THREE.Group();
+  for(let i=0;i<160;i++){
+    const g=compactTerrainGeometry(fixture(),1.25);buildTerrainPatchLods(g);
+    const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial());Object.assign(m.userData,{terrainDecode:g.userData.terrainDecode,terrainLod:g.userData.terrainLod,terrainLodPatches:g.userData.terrainLodPatches});group.add(m);
+  }
+  installTerrainLods({refinedHeight:()=>100},group);
+  const camera=new THREE.PerspectiveCamera(60,1.6,.2,16000);camera.position.set(1000,1000,1000);camera.lookAt(150,100,-420);camera.updateMatrixWorld();
+  const renderer={info:{render:{frame:0}},getDrawingBufferSize:v=>v.set(960,600)};
+  const run=()=>{renderer.info.render.frame++;for(const m of group.children)m.onBeforeRender(renderer,null,camera);};
+  const work=()=>group.children.reduce((n,m)=>n+m.terrainLodState.selectionTests,0);
+  run();let before=work();
+  for(let i=0;i<120;i++){camera.position.x+=250/3.6/60;camera.updateMatrixWorld();run();const after=work();assert.ok(after-before<=64);before=after;}
+  // Mirrors/probes must not reset or consume the primary camera's queue.
+  renderer.terrainLodCamera=camera;const auxiliary=camera.clone();auxiliary.position.x+=5000;auxiliary.updateMatrixWorld();
+  const beforeAux=group.children.reduce((n,m)=>n+m.terrainLodState.selectionTests,0);
+  for(const m of group.children)m.onBeforeRender(renderer,null,auxiliary);
+  assert.equal(group.children.reduce((n,m)=>n+m.terrainLodState.selectionTests,0),beforeAux);
+  const arrays=group.children.map(m=>m.geometry.index.array),versions=group.children.map(m=>m.geometry.index.version);
+  for(let i=0;i<60;i++)run();assert.equal(work(),before);
+  for(let i=0;i<group.children.length;i++){assert.equal(group.children[i].geometry.index.array,arrays[i]);assert.equal(group.children[i].geometry.index.version,versions[i]);}  // Speed-dependent FOV and dynamic render scale must also use bounded work.
+  for(let i=0;i<30;i++){camera.fov=60+Math.sin(i*.1)*3;camera.updateProjectionMatrix();const before=work();run();assert.ok(work()-before<=64);}
+  for(let i=0;i<200;i++)run();const settled=work();for(let i=0;i<60;i++)run();assert.equal(work(),settled);
+});
+
+test('incremental index splices match selected triangles after refinement and coarsening',()=>{
+  const source=fixture(),g=new THREE.BufferGeometry(),arrays={},indices=[];
+  for(const [name,a]of Object.entries(source.attributes))arrays[name]=new Float32Array(a.array.length*160);
+  for(let tile=0;tile<160;tile++){
+    for(const [name,a]of Object.entries(source.attributes))for(let i=0;i<a.array.length;i++)arrays[name][tile*a.array.length+i]=a.array[i]+(name==='position'&&i%3===0?tile*20:0);
+    for(const i of source.index.array)indices.push(i+tile*source.attributes.position.count);
+  }
+  for(const [name,a]of Object.entries(source.attributes))g.setAttribute(name,new THREE.BufferAttribute(arrays[name],a.itemSize));g.setIndex(indices);
+  compactTerrainGeometry(g,1.25);buildTerrainPatchLods(g);
+  const mesh=new THREE.Mesh(g,new THREE.MeshLambertMaterial());Object.assign(mesh.userData,{terrainDecode:g.userData.terrainDecode,terrainLod:g.userData.terrainLod,terrainLodPatches:g.userData.terrainLodPatches});
+  const group=new THREE.Group();group.add(mesh);const terrain={refinedHeight:()=>100};installTerrainLods(terrain,group);
+  const camera=new THREE.PerspectiveCamera(60,1.6,.2,16000),renderer={info:{render:{frame:0}},getDrawingBufferSize:v=>v.set(960,600)};
+  const check=()=>{const expected=[];for(const p of mesh.terrainLodState.patches)if(p.visible)for(const i of p.levels[p.current].indices)expected.push(i);assert.deepEqual(Array.from(g.index.array.subarray(0,g.drawRange.count)),expected);};
+  for(let frame=0;frame<100;frame++){
+    camera.position.set(1000+frame*15,160,-400);camera.lookAt(1600,100,-420);camera.updateMatrixWorld();renderer.info.render.frame++;mesh.onBeforeRender(renderer,null,camera);
+    if(frame===25)terrain.refinedHeight(125,-430);
+    if(frame%10===0)check();
+  }
+  check();
 });

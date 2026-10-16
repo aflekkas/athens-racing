@@ -1,0 +1,183 @@
+{
+  "id": "megara",
+  "mapDecodeCpuMs": 266.873,
+  "networkCpuMs": 13.697,
+  "buildCpuMs": 3667.171,
+  "stages": [
+    {
+      "stage": "modules",
+      "rss": 77561856,
+      "heapTotal": 21094400,
+      "heapUsed": 11528688,
+      "external": 2058706,
+      "arrayBuffers": 307311
+    },
+    {
+      "stage": "map",
+      "rss": 96436224,
+      "heapTotal": 32104448,
+      "heapUsed": 14049456,
+      "external": 4738337,
+      "arrayBuffers": 1371117
+    },
+    {
+      "stage": "network",
+      "rss": 96698368,
+      "heapTotal": 32628736,
+      "heapUsed": 14220280,
+      "external": 4738337,
+      "arrayBuffers": 1371117
+    },
+    {
+      "stage": "terrain",
+      "rss": 138018816,
+      "heapTotal": 54075392,
+      "heapUsed": 18912784,
+      "external": 9518822,
+      "arrayBuffers": 6151602
+    }
+  ],
+  "contactMemory": {
+    "refinedCells": 4114,
+    "refinedBytes": 411400,
+    "coarseCells": 7801,
+    "coarseBytes": 124816
+  },
+  "bytes": 1932213,
+  "triangles": 129876,
+  "chunks": 12,
+  "poses": [
+    {
+      "name": "start",
+      "eye": [
+        -24.436195251026312,
+        16.25495808512799,
+        5.347480909520872
+      ],
+      "target": [
+        -44.43619525102631,
+        9.254958085127988,
+        -14.652519090479128
+      ],
+      "calls": 12,
+      "triangles": 22796
+    },
+    {
+      "name": "mid",
+      "eye": [
+        -11.543998718261491,
+        19.55500030517578,
+        -107.60499572753903
+      ],
+      "target": [
+        -41.54399871826149,
+        9.555000305175781,
+        -137.60499572753903
+      ],
+      "calls": 9,
+      "triangles": 12759
+    },
+    {
+      "name": "overview",
+      "eye": [
+        1458.4560012817385,
+        2209.555000305176,
+        1362.395004272461
+      ],
+      "target": [
+        -41.54399871826149,
+        9.555000305175781,
+        -137.60499572753903
+      ],
+      "calls": 12,
+      "triangles": 46440
+    }
+  ],
+  "cpuLodIndexBytes": 1394304,
+  "patchCount": 347,
+  "lodHistogram": [
+    {
+      "pose": "start",
+      "counts": [
+        90,
+        102,
+        54,
+        101
+      ]
+    },
+    {
+      "pose": "mid",
+      "counts": [
+        95,
+        100,
+        51,
+        101
+      ]
+    },
+    {
+      "pose": "overview",
+      "counts": [
+        70,
+        91,
+        48,
+        138
+      ]
+    }
+  ],
+  "stationarySelectionCpuUs": 68.5519,
+  "cachedDecodeBuildCpuMs": 175.875,
+  "rawPackBytes": 3679728,
+  "gzipPackBytes": 1598116,
+  "restored": {
+    "bytes": 1932213,
+    "triangles": 129876,
+    "chunks": 12,
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          -24.436195251026312,
+          16.25495808512799,
+          5.347480909520872
+        ],
+        "target": [
+          -44.43619525102631,
+          9.254958085127988,
+          -14.652519090479128
+        ],
+        "calls": 12,
+        "triangles": 22796
+      },
+      {
+        "name": "mid",
+        "eye": [
+          -11.543998718261491,
+          19.55500030517578,
+          -107.60499572753903
+        ],
+        "target": [
+          -41.54399871826149,
+          9.555000305175781,
+          -137.60499572753903
+        ],
+        "calls": 9,
+        "triangles": 12759
+      },
+      {
+        "name": "overview",
+        "eye": [
+          1458.4560012817385,
+          2209.555000305176,
+          1362.395004272461
+        ],
+        "target": [
+          -41.54399871826149,
+          9.555000305175781,
+          -137.60499572753903
+        ],
+        "calls": 12,
+        "triangles": 46440
+      }
+    ]
+  }
+}

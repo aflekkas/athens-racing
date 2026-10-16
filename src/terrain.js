@@ -1,5 +1,6 @@
 // Terrain meshes from the DEM/land-cover grid: a 10 m mesh along the route corridor and a 40 m mesh beyond.
 import * as THREE from 'three';
+import { stitchTerrainBoundaries, mergeTerrainTransitions, refinedTerrainBoundary } from './terrain-seams.js';
 import { buildTerrainPatchLods, installTerrainLods } from './terrain-lod.js';
 import { compactTerrainGeometry, restoreTerrainLayout } from './terrain-layout.js';
 import { REFLECT_LAYER } from './env.js';
@@ -272,25 +273,23 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     return g;
   };
   const inFine = (i, j, i2, j2) => mask[j * GX + i] && mask[j * GX + i2] && mask[j2 * GX + i] && mask[j2 * GX + i2];
-  const fineGeo = build(1, (i,j,i2,j2) => inFine(i,j,i2,j2) && !refined.has(j * GX + i));
+  let fineGeo = build(1, (i,j,i2,j2) => inFine(i,j,i2,j2) && !refined.has(j * GX + i));
   // coarse outside: drop vertices that are deep inside the fine area so they hide under it
   const C4 = 4;
   const coarseGeo = build(C4, (i, j, i2, j2) => !(inFine(i, j, i, j) && inFine(i2, j2, i2, j2) && inFine(i, j2, i, j2) && inFine(i2, j, i2, j)),
     (i, j) => { let all = true; for (let dj = -C4; dj <= C4 && all; dj += C4) for (let di = -C4; di <= C4 && all; di += C4) { const a = Math.min(GX - 1, Math.max(0, i + di)), b = Math.min(GZ - 1, Math.max(0, j + dj)); if (!mask[b * GX + a]) all = false; } return all ? 3 : 0; });
   // split the fine mesh into tiles for culling
   const group = new THREE.Group();
-  const tiles = splitGeometry(fineGeo, 1200, T);
-  for (const g of tiles) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
   // The coarse mesh underlies the fine area too: push it back in depth so the fine tiles always win, even where the
   // depth buffer can't resolve the few metres between them (kilometres away, cockpit near plane).
   const coarseMat = mat.clone(); coarseMat.onBeforeCompile = mat.onBeforeCompile; coarseMat.customProgramCacheKey = mat.customProgramCacheKey;
   Object.assign(coarseMat, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 });
-  for (const g of splitGeometry(coarseGeo, 3000, T * 4)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+
   // Use the uncut DEM for feathering; earlier cuts are only an underlay.
   // This raises downhill fills as well as lowering uphill cuts.
   const heights = new Map(), fixed = new Set(), n = farmland ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
   const height = (ix, iz) => {
-    const key = iz * stride + ix; if (heights.has(key)) return heights.get(key);
+    const key = iz * stride + ix, cached = heights.get(key); if (cached !== undefined) return cached;
     const x = minX + ix * T / n, z = minZ + iz * T / n;
     const y = conform.height(x, z, sampleTerrainHeight(terrain, H, x, z));
     heights.set(key, y); if(conform.fixed)fixed.add(key); return y;
@@ -301,7 +300,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   limitTerrainSlopes(heights,fixed,stride,T/n);
   const pos = [], col = [], nor = [], urb = [], indices = [], vertices = new Map(), c = new THREE.Color(), normal = new THREE.Vector3();
   const vertex = (ix, iz) => {
-    const key = iz * stride + ix; if (vertices.has(key)) return vertices.get(key);
+    const key = iz * stride + ix, cached = vertices.get(key); if (cached !== undefined) return cached;
     const y = height(ix, iz), i = clamp(Math.round(ix / n), 0, GX - 1), j = clamp(Math.round(iz / n), 0, GZ - 1);
     normal.set((height(Math.max(0,ix-1),iz)-height(Math.min((GX-1)*n,ix+1),iz))/(2*T/n),1,
       (height(ix,Math.max(0,iz-1))-height(ix,Math.min((GZ-1)*n,iz+1)))/(2*T/n)).normalize();
@@ -320,7 +319,12 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   const refinedGeo = new THREE.BufferGeometry();
   refinedGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); refinedGeo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
   refinedGeo.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); refinedGeo.setAttribute('aU',new THREE.Float32BufferAttribute(urb,1));refinedGeo.setIndex(indices);
-  for (const g of splitGeometry(refinedGeo,1200, T / n)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
+  const stitched = stitchTerrainBoundaries([{geometry:fineGeo,step:T},{geometry:coarseGeo,step:T*4},{geometry:refinedGeo,step:T/n,boundary:refinedTerrainBoundary(refined,vertices,GX,stride,n)}]);
+  fineGeo = mergeTerrainTransitions(fineGeo,stitched.transitions);
+  const tiles = splitGeometry(fineGeo, farmland ? 1200 : 2400, T / n);
+  for (const g of tiles) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  for (const g of splitGeometry(coarseGeo, 3000, T * 4)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  for (const g of splitGeometry(refinedGeo,coastal ? 400 : 1200, T / n)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
   fineGeo.dispose();coarseGeo.dispose();refinedGeo.dispose();
   for (const mesh of group.children) {
     mesh.userData.terrainDecode = mesh.geometry.userData.terrainDecode;

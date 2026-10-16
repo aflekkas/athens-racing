@@ -30,14 +30,14 @@ export function buildTerrainLods(g, cachedValues = null) {
       const x = Math.min(q[a*3], q[b*3], q[c*3]), z = Math.min(q[a*3+2], q[b*3+2], q[c*3+2]);
       const bx = Math.floor(x / size) * size, bz = Math.floor(z / size) * size, key = bz * 65536 + bx;
       let block = blocks.get(key);
-      if (!block) blocks.set(key, block = { bx, bz, triangles: [], vertices: new Map(), min: Infinity, max: -Infinity });
+      if (!block) blocks.set(key, block = { bx, bz, triangles: [], vertices: new Int32Array((size+1)**2).fill(-1), vertexCount: 0 });
       block.triangles.push(a,b,c);
-      for (const v of [a,b,c]) { block.vertices.set((q[v*3+2]-bz)*(size+1)+q[v*3]-bx,v); block.min=Math.min(block.min,p.getY(v)); block.max=Math.max(block.max,p.getY(v)); }
+      for (let j=0;j<3;j++) { const v=base[k+j],local=(q[v*3+2]-bz)*(size+1)+q[v*3]-bx;if(block.vertices[local]===-1)block.vertexCount++;block.vertices[local]=v; }
     }
     const indices = []; let error = 0;
     for (const b of blocks.values()) {
-      if (b.triangles.length !== size*size*6 || b.vertices.size !== (size+1)**2) { for(const v of b.triangles)indices.push(v); continue; }
-      const at = (x,z) => b.vertices.get(z*(size+1)+x), center = at(size/2,size/2);
+      if (b.triangles.length !== size*size*6 || b.vertexCount !== (size+1)**2) { for(const v of b.triangles)indices.push(v); continue; }
+      const at = (x,z) => b.vertices[z*(size+1)+x], center = at(size/2,size/2);
       error = Math.max(error, patchError(b, size, g, values));
       for(let i=0;i<size;i++) {
         indices.push(center,at(i+1,0),at(i,0), center,at(size,i+1),at(size,i),
@@ -55,34 +55,24 @@ export function buildTerrainLods(g, cachedValues = null) {
   g.userData.terrainLod = levels;
 }
 
-// Exact vertical error on the overlay of the two piecewise-linear surfaces.
-// Its extrema lie at old vertices or intersections of an old edge and a fan
-// spoke. Measuring only vertices misses a diagonal crossing over a saddle.
-function patchError(block, size, g, values) {
-  const p=g.attributes.position,q=p.array;
-  const half=size/2,at=(x,z)=>block.vertices.get(z*(size+1)+x),center=at(half,half),spokes=[];
-  // Color/normal deviations matter even on flat ground. Convert their
-  // interpolation error to a conservative footprint-scaled visual error,
-  // otherwise low-relief farmland develops large triangular color patches.
-  const extent=size*p.decode.scale[0],weight=[1,extent,extent,extent,extent*2,extent*2,extent*2,extent*2];
-  const read=(v,c)=>values[v*8+c];
-  for(let i=0;i<size;i++)for(const [x,z]of [[i,0],[size,i],[size-i,size],[0,size-i]])spokes.push([x-half,z-half,at(x,z)]);
+// Both surfaces interpolate the same lattice samples. Subtract an affine
+// trend, then bound their difference by the residual range. Every barycentric
+// interpolation remains inside that range, including diagonal crossings. This
+// conservative bound needs one vertex pass, not a quadratic edge/spoke overlay.
+function patchError(block,size,g,values) {
+  const width=size+1,at=(x,z)=>block.vertices[z*width+x]*8;
+  const a=at(0,0),b=at(size,0),c=at(0,size),d=at(size,size);
+  const q=g.attributes.position.array,extent=size*g.attributes.position.decode.scale[0];
   let error=0;
-  for(const v of block.vertices.values()){
-    const dx=q[v*3]-block.bx-half,dz=q[v*3+2]-block.bz-half,m=Math.max(Math.abs(dx),Math.abs(dz));if(m===0)continue;
-    const f=half/m,bx=half+dx*f,bz=half+dz*f;let a,b,t;
-    if(Math.abs(dx)>=Math.abs(dz)){const ix=dx>0?size:0,iz=Math.min(size-1,Math.max(0,Math.floor(bz)));a=at(ix,iz);b=at(ix,iz+1);t=bz-iz;}
-    else {const iz=dz>0?size:0,ix=Math.min(size-1,Math.max(0,Math.floor(bx)));a=at(ix,iz);b=at(ix+1,iz);t=bx-ix;}
-    for(let c=0;c<8;c++){const cv=read(center,c),av=read(a,c);error=Math.max(error,Math.abs(read(v,c)-cv-(av+(read(b,c)-av)*t-cv)/f)*weight[c]);}
-  }
-  const tri=block.triangles;
-  for(let k=0;k<tri.length;k+=3)for(let edge=0;edge<3;edge++){
-    const a=tri[k+edge],b=tri[k+(edge+1)%3],ax=q[a*3]-block.bx-half,az=q[a*3+2]-block.bz-half,dx=q[b*3]-q[a*3],dz=q[b*3+2]-q[a*3+2];
-    for(const [sx,sz,v]of spokes){
-      const det=dx*sz-dz*sx;if(Math.abs(det)<1e-12)continue;
-      const t=(-ax*sz+az*sx)/det,u=(dx*az-dz*ax)/det;
-      if(t>=0&&t<=1&&u>=0&&u<=1)for(let c=0;c<8;c++){const av=read(a,c),cv=read(center,c);error=Math.max(error,Math.abs(av+(read(b,c)-av)*t-cv-(read(v,c)-cv)*u)*weight[c]);}
+  for(let channel=0;channel<8;channel++){
+    const sx=(values[b+channel]+values[d+channel]-values[a+channel]-values[c+channel])/(size*2);
+    const sz=(values[c+channel]+values[d+channel]-values[a+channel]-values[b+channel])/(size*2);
+    let min=Infinity,max=-Infinity;
+    for(const v of block.vertices){
+      const residual=values[v*8+channel]-sx*(q[v*3]-block.bx)-sz*(q[v*3+2]-block.bz);
+      min=Math.min(min,residual);max=Math.max(max,residual);
     }
+    error=Math.max(error,(max-min)*(channel===0?1:channel<4?extent:extent*2));
   }
   return error+1e-5;
 }
@@ -100,15 +90,17 @@ export function selectTerrainLod(levels, current, distance, focalPixels, preset 
 }
 export function installTerrainLods(terrain, group) {
   const chunks = [];
+  const selection = createSelection(group);
   group.traverse(mesh => {
     if (!mesh.isMesh) return;
     const g=mesh.geometry, levels=mesh.userData.terrainLod;
-    if(mesh.userData.terrainLodPatches){chunks.push(installPatchChunk(mesh,group));return;}
+    if(mesh.userData.terrainLodPatches){chunks.push(installPatchChunk(mesh,group,selection));return;}
     if (!levels) return;
     g.setDrawRange(levels[0].start,levels[0].count);
     if (!g.boundingBox) g.computeBoundingBox();
     const state={mesh,levels,current:0,pinned:false,box:g.boundingBox};chunks.push(state);
     mesh.onBeforeRender = function(renderer,scene,camera) {
+      if(renderer.terrainLodCamera && camera!==renderer.terrainLodCamera)return;
       const e=camera.matrixWorld.elements,b=state.box;
       const dx=Math.max(b.min.x-e[12],0,e[12]-b.max.x),dy=Math.max(b.min.y-e[13],0,e[13]-b.max.y),dz=Math.max(b.min.z-e[14],0,e[14]-b.max.z);
       renderer.getDrawingBufferSize(viewport);
@@ -135,6 +127,34 @@ export function installTerrainLods(terrain, group) {
   return chunks;
 }
 
+// Complete 16-cell patches already have regular topology. Build their three
+// fans directly from one lattice lookup, rather than sorting the same triangles
+// into Maps three more times. Partial coastline/road-hole patches use the
+// general builder below and retain every incomplete subpatch.
+function regularPatchLods(g,ids,values) {
+  if(ids.length!==16*16*6)return null;
+  const q=g.attributes.position.array,grid=new Int32Array(17*17).fill(-1);
+  let bx=Infinity,bz=Infinity,count=0;
+  for(const id of ids){bx=Math.min(bx,q[id*3]);bz=Math.min(bz,q[id*3+2]);}
+  for(const id of ids){const x=q[id*3]-bx,z=q[id*3+2]-bz;if(x>16||z>16)return null;const k=z*17+x;if(grid[k]===-1)count++;grid[k]=id;}
+  if(count!==289)return null;
+  for(let k=0;k<ids.length;k+=3){const a=ids[k]*3,b=ids[k+1]*3,c=ids[k+2]*3;if(Math.max(q[a],q[b],q[c])-Math.min(q[a],q[b],q[c])>1||Math.max(q[a+2],q[b+2],q[c+2])-Math.min(q[a+2],q[b+2],q[c+2])>1)return null;}
+  const arrays=[new Uint16Array(ids)],levels=[{start:0,count:ids.length,error:0}];let total=ids.length;
+  for(const size of [4,8,16]){
+    const indices=new Uint16Array(12*size*(16/size)**2),vertices=new Int32Array((size+1)**2);
+    const block={bx:0,bz:0,vertices};let offset=0,error=0;
+    for(let z=0;z<16;z+=size)for(let x=0;x<16;x+=size){
+      for(let iz=0;iz<=size;iz++)for(let ix=0;ix<=size;ix++)vertices[iz*(size+1)+ix]=grid[(z+iz)*17+x+ix];
+      block.bx=bx+x;block.bz=bz+z;error=Math.max(error,patchError(block,size,g,values));
+      const at=(ix,iz)=>vertices[iz*(size+1)+ix],center=at(size/2,size/2);
+      for(let i=0;i<size;i++)for(const v of [center,at(i+1,0),at(i,0),center,at(size,i+1),at(size,i),center,at(size-i-1,size),at(size-i,size),center,at(0,size-i-1),at(0,size-i)])indices[offset++]=v;
+    }
+    arrays.push(indices);levels.push({start:total,count:indices.length,error});total+=indices.length;
+  }
+  const index=new Uint16Array(total);let start=0;for(const a of arrays){index.set(a,start);start+=a.length;}
+  return {index,levels};
+}
+
 // Selection units are small lattice patches, independent of submission chunks.
 // Keep immutable source ranges on the CPU and one reusable active GPU index
 // buffer. A change copies preallocated views; no per-patch draw calls or frame
@@ -149,12 +169,15 @@ export function buildTerrainPatchLods(g) {
   }
   const values=terrainValues(g),patches=[],sources=[];let full=0,total=0;
   for(const ids of blocks.values()){
-    const part=new THREE.BufferGeometry();part.attributes=g.attributes;part.setIndex(new THREE.BufferAttribute(new Uint16Array(ids),1));
-    buildTerrainLods(part,values);
-    const levels=part.userData.terrainLod || [{start:0,count:ids.length,error:0}];
+    let built=regularPatchLods(g,ids,values);
+    if(!built){
+      const part=new THREE.BufferGeometry();part.attributes=g.attributes;part.setIndex(new THREE.BufferAttribute(new Uint16Array(ids),1));
+      buildTerrainLods(part,values);built={index:part.index.array,levels:part.userData.terrainLod || [{start:0,count:ids.length,error:0}]};
+    }
+    const levels=built.levels;
     let x0=Infinity,z0=Infinity,y0=Infinity,x1=-Infinity,z1=-Infinity,y1=-Infinity;
     for(const id of ids){const x=p.getX(id),y=p.getY(id),z=p.getZ(id);x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);z0=Math.min(z0,z);z1=Math.max(z1,z);}
-    patches.push({bounds:[x0,y0,z0,x1,y1,z1],levels});sources.push(part.index.array);full+=ids.length;total+=part.index.count;
+    patches.push({bounds:[x0,y0,z0,x1,y1,z1],levels});sources.push(built.index);full+=ids.length;total+=built.index.length;
   }
   // All full ranges first: contact reconstruction and old consumers see only
   // the original surface in [0,full). Reduced ranges follow it.
@@ -171,42 +194,128 @@ export function buildTerrainPatchLods(g) {
 }
 
 function writeActive(state) {
-  const g=state.mesh.geometry, index=g.index.array;let end=state.activeStart;
-  for(const p of state.patches){if(!p.visible)continue;const l=p.levels[p.current];index.set(l.indices,end);end+=l.count;}
-  g.setDrawRange(state.activeStart,end-state.activeStart);
-  state.updateRange.count=end-state.activeStart;g.index.updateRanges.length=0;g.index.updateRanges.push(state.updateRange);g.index.needsUpdate=true;
+  const g=state.mesh.geometry,index=g.index.array;let end=0;
+  for(let i=0;i<state.patches.length;i++){
+    state.offsets[i]=end;const p=state.patches[i],l=p.levels[p.current];index.set(l.indices,end);end+=l.count;
+  }
+  state.offsets[state.patches.length]=end;g.setDrawRange(0,end);g.index.needsUpdate=true;
 }
+function writeActiveSlice(state,start,end) {
+  const g=state.mesh.geometry,index=g.index.array,offsets=state.offsets;
+  const oldEnd=offsets[end],total=offsets[state.patches.length];let nextEnd=offsets[start];
+  for(let i=start;i<end;i++)nextEnd+=state.patches[i].levels[state.patches[i].current].count;
+  const delta=nextEnd-oldEnd;
+  // Move the unchanged tail once, then replace only this contiguous queue slice.
+  // No complete chunk repack and no scratch allocation on the render thread.
+  if(delta)index.copyWithin(nextEnd,oldEnd,total);
+  let at=offsets[start];
+  for(let i=start;i<end;i++){offsets[i]=at;const p=state.patches[i],l=p.levels[p.current];index.set(l.indices,at);at+=l.count;}
+  for(let i=end;i<offsets.length;i++)offsets[i]+=delta;
+  g.setDrawRange(0,total+delta);g.index.needsUpdate=true;
+}
+
 function pinPatch(state,x,z) {
   let changed=false;
   for(const p of state.patches){const b=p.bounds;if(x>=b[0]&&x<=b[3]&&z>=b[2]&&z<=b[5]){p.pinned=true;if(p.current){p.current=0;changed=true;}}}
   if(changed)writeActive(state);
 }
-function installPatchChunk(mesh,group) {
+function installPatchChunk(mesh,group,selection) {
   const data=mesh.userData.terrainLodPatches;
   const g=mesh.geometry,full=mesh.userData.terrainLod[0].count;
   if(!g.userData.terrainLodSource){g.userData.terrainLodSource=g.index.array;g.setIndex(new THREE.BufferAttribute(g.index.array.slice(0,full),1));}
   g.index.setUsage(THREE.DynamicDrawUsage);
   const source=g.userData.terrainLodSource;
-  const state={mesh,box:g.boundingBox,updateRange:{start:0,count:0},activeStart:0,patches:data.patches.map(p=>({...p,levels:p.levels.map(l=>({...l,indices:new Uint16Array(source.buffer,source.byteOffset+l.start*2,l.count)})),current:0,pinned:false,visible:true}))};
+  const state={mesh,box:g.boundingBox,patches:data.patches.map(p=>({...p,levels:p.levels.map(l=>({...l,indices:new Uint16Array(source.buffer,source.byteOffset+l.start*2,l.count)})),current:0,pinned:false,visible:true}))};
+  state.offsets=new Uint32Array(state.patches.length+1);
   mesh.terrainLodState=state;
   writeActive(state);
-  mesh.onBeforeRender=function(renderer,scene,camera){
-    const e=camera.matrixWorld.elements;renderer.getDrawingBufferSize(viewport);
-    const focal=viewport.y*Math.abs(camera.projectionMatrix.elements[5])*.5;
-    const preset=group.userData.terrainPreset || (TERRAIN_LOD_PIXELS[settings.graphics]?settings.graphics:startupPreset) || 'high';
-    patchFrustum.setFromProjectionMatrix(clipMatrix.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
-    let changed=false;
-    for(const p of state.patches){const b=p.bounds;
-      let visible=true;
-      for(const plane of patchFrustum.planes){const n=plane.normal;if(n.x*(n.x>=0?b[3]:b[0])+n.y*(n.y>=0?b[4]:b[1])+n.z*(n.z>=0?b[5]:b[2])+plane.constant<0){visible=false;break;}}
-      if(visible!==p.visible){p.visible=visible;changed=true;}
-      if(!visible)continue;
-      const dx=Math.max(b[0]-e[12],0,e[12]-b[3]),dy=Math.max(b[1]-e[13],0,e[13]-b[4]),dz=Math.max(b[2]-e[14],0,e[14]-b[5]);
-      const distance=Math.hypot(dx,dy,dz);
-      const next=selectTerrainLod(p.levels,p.current,distance,focal,preset,p.pinned,100);
-      if(next!==p.current){p.current=next;changed=true;}
-    }
-    if(changed)writeActive(state);
-  };
+  state.sphere=g.boundingSphere;state.selectionTests=0;
+  for(const p of state.patches){const b=p.bounds;p.cx=(b[0]+b[3])*.5;p.cy=(b[1]+b[4])*.5;p.cz=(b[2]+b[5])*.5;p.radius=Math.hypot(b[3]-b[0],b[4]-b[1],b[5]-b[2])*.5;}
+  selection.add(state);
+  mesh.onBeforeRender=function(renderer,scene,camera){selection.update(renderer,camera);};
   return state;
+}
+
+// A bounded, tile-local work queue. Index views and spheres are allocated at
+// installation; the render path only visits a fixed slice and reuses buffers.
+// Frustum rejection is per submission chunk; Three also culls each mesh before
+// drawing it. Keeping all patches in visible chunks avoids stale culling holes
+// when the camera turns between incremental updates.
+function createSelection(group) {
+  const chunks=[],nearBins=new Map(),dirty=[],matrix=new Float64Array(16),projection=new Float64Array(16);
+  let lastCamera=null,cursor=0,patchCursor=0,lastFocal=0,lastPreset='',lastRenderer=null,lastFrame=-1,pendingFrames=0,slices=0;
+  function evaluate(state,start,end,x,y,z,focal,budget){
+    let first=end,last=start;state.selectionTests+=end-start;
+    for(let j=start;j<end;j++){
+      const p=state.patches[j],dx=x-p.cx,dy=y-p.cy,dz=z-p.cz,d2=dx*dx+dy*dy+dz*dz;
+      let next=0;
+      // Nearby patches refine synchronously through the spatial index below;
+      // far error selection can therefore use the original 100 m corridor.
+      const b=p.bounds,nx=Math.max(b[0]-x,0,x-b[3]),ny=Math.max(b[1]-y,0,y-b[4]),nz=Math.max(b[2]-z,0,z-b[5]);
+      const near=p.current===0?120:100;
+      if(!p.pinned&&nx*nx+ny*ny+nz*nz>=near*near)for(let i=1;i<p.levels.length;i++){
+        const threshold=budget*(i>p.current?.8:1.2),limit=p.radius+p.levels[i].error*focal/threshold;
+        if(d2>=limit*limit)next=i;
+      }
+      if(next!==p.current){p.current=next;first=Math.min(first,j);last=j+1;}
+    }
+    if(first<last)writeActiveSlice(state,first,last);
+  }
+  function refineNear(x,y,z){
+    const list=nearBins.get(Math.floor(x/100))?.get(Math.floor(z/100));if(!list)return;
+    let dirtyCount=0;
+    for(let j=0;j<list.length;j++){
+      const p=list[j];if(p.current===0)continue;const b=p.bounds,dx=Math.max(b[0]-x,0,x-b[3]),dy=Math.max(b[1]-y,0,y-b[4]),dz=Math.max(b[2]-z,0,z-b[5]);
+      if(dx*dx+dy*dy+dz*dz>=10000)continue;
+      p.current=0;const state=p.owner;if(state.nearEnd===0)dirty[dirtyCount++]=state;state.nearStart=Math.min(state.nearStart,p.ordinal);state.nearEnd=Math.max(state.nearEnd,p.ordinal+1);
+    }
+    for(let j=0;j<dirtyCount;j++){const state=dirty[j];dirty[j]=null;writeActiveSlice(state,state.nearStart,state.nearEnd);state.nearStart=state.patches.length;state.nearEnd=0;}
+    return dirtyCount;
+  }
+  return {chunks,add(state){
+    chunks.push(state);dirty.push(null);slices+=Math.ceil(state.patches.length/32);state.nearStart=state.patches.length;state.nearEnd=0;
+    for(let i=0;i<state.patches.length;i++){const p=state.patches[i],b=p.bounds;p.owner=state;p.ordinal=i;
+      for(let x=Math.floor((b[0]-100)/100);x<=Math.floor((b[3]+100)/100);x++){
+        let column=nearBins.get(x);if(!column)nearBins.set(x,column=new Map());
+        for(let z=Math.floor((b[2]-100)/100);z<=Math.floor((b[5]+100)/100);z++){let list=column.get(z);if(!list)column.set(z,list=[]);list.push(p);}
+      }
+    }
+  },update(renderer,camera){
+    if(renderer.terrainLodCamera && camera!==renderer.terrainLodCamera)return;
+    const frame=renderer.info?.render.frame;
+    if(frame!==undefined&&renderer===lastRenderer&&frame===lastFrame&&camera===lastCamera)return;
+    lastRenderer=renderer;lastFrame=frame;
+    const e=camera.matrixWorld.elements,pr=camera.projectionMatrix.elements;
+    renderer.getDrawingBufferSize(viewport);
+    const focal=viewport.y*Math.abs(pr[5])*.5,preset=group.userData.terrainPreset || (TERRAIN_LOD_PIXELS[settings.graphics]?settings.graphics:startupPreset) || 'high';
+    let moved=lastCamera!==camera,reset=moved,configuration=focal!==lastFocal||preset!==lastPreset;
+    for(let i=0;i<16;i++){if(e[i]!==matrix[i])moved=true;if(pr[i]!==projection[i])configuration=true;}
+    // Dynamic resolution and speed-dependent FOV must not force a full sweep.
+    if(configuration)pendingFrames=slices;
+    // An unchanged camera needs no work once its initial selection is ready.
+    if(!moved&&!reset&&!pendingFrames)return;
+    // Only one slice for each camera transform. The renderer calls this once
+    // per mesh, so subsequent calls with this same transform are constant work.
+    const dx=e[12]-matrix[12],dy=e[13]-matrix[13],dz=e[14]-matrix[14];
+    if(dx*dx+dy*dy+dz*dz>250*250)reset=true;
+    matrix.set(e);projection.set(pr);lastCamera=camera;lastFocal=focal;lastPreset=preset;
+    patchFrustum.setFromProjectionMatrix(clipMatrix.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
+    const budget=TERRAIN_LOD_PIXELS[preset]??3;
+    const nearbyChanges=refineNear(e[12],e[13],e[14]);
+    if(reset){
+      for(const state of chunks)if(patchFrustum.intersectsSphere(state.sphere))evaluate(state,0,state.patches.length,e[12],e[13],e[14],focal,budget);
+      cursor=0;patchCursor=0;pendingFrames=0;return;
+    }
+    if(nearbyChanges){pendingFrames=Math.max(pendingFrames,1);return;}
+    if(pendingFrames)pendingFrames--;
+    let remaining=32,visited=0;
+    while(remaining>0&&visited<chunks.length){
+      const state=chunks[cursor];
+      if(!patchFrustum.intersectsSphere(state.sphere)){cursor=(cursor+1)%chunks.length;patchCursor=0;visited++;continue;}
+      const end=Math.min(state.patches.length,patchCursor+remaining);
+      evaluate(state,patchCursor,end,e[12],e[13],e[14],focal,budget);remaining-=end-patchCursor;patchCursor=end;
+      if(patchCursor===state.patches.length){cursor=(cursor+1)%chunks.length;patchCursor=0;visited++;}
+      break; // At most one far chunk splice, plus immediate nearby refinement.
+    }
+  }};
 }

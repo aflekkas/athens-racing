@@ -145,6 +145,7 @@ scene.matrixAutoUpdate = false; // never moves; its children update themselves (
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
+renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
 const audio = new Audio();
 const voices = new VoiceReactions(audio, { settings });
 const playerVoices = new VoiceReactions(audio, { settings });

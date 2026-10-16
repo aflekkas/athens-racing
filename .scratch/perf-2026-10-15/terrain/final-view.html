@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js"}}</script><style>body{margin:0}</style><script type="module">
+import * as T from 'three';import {terrainChunkMaterial} from '/src/terrain-layout.js';import {loadMap} from '/src/map.js';import {buildTerrain} from '/src/terrain.js';import {RoadNetwork} from '/src/road-network-surface.js';
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(960,600);document.body.appendChild(renderer.domElement);const camera=new T.PerspectiveCamera(60,1.6,.2,16000);window.run=async id=>{const scene=new T.Scene();scene.background=new T.Color('#abc8d7');scene.add(new T.HemisphereLight(0xffffff,0x807868,2));const sun=new T.DirectionalLight(0xffffff,2);sun.position.set(300,800,100);scene.add(sun);const t=performance.now(),map=await loadMap(undefined,'/',id,{preload:false}),decode=performance.now(),network=new RoadNetwork(map),ter=buildTerrain(map.terrain,map.route,[],scene,{coastal:id==='riviera',farmland:id==='megara',network,beachAreas:map.data.areas?.beach||[]});ter.group.traverse(m=>{if(m.isMesh)m.material=terrainChunkMaterial(new T.MeshLambertMaterial({vertexColors:true}),m.userData.terrainDecode);});const build=performance.now();const colors=new Map(),debugColors=new Map(),materials=new Map(),debugMaterials=new Map();
+ter.group.traverse(m=>{if(!m.isMesh)return;colors.set(m,m.geometry.attributes.color);debugColors.set(m,new T.BufferAttribute(new Uint8Array(m.geometry.attributes.color.array.length),3,true));materials.set(m,m.material);debugMaterials.set(m,terrainChunkMaterial(new T.MeshBasicMaterial({vertexColors:true}),m.userData.terrainDecode));});
+window.pose=p=>{camera.position.fromArray(p.eye);camera.lookAt(...p.target);ter.group.traverse(m=>{if(m.isMesh){m.material=materials.get(m);m.geometry.setAttribute('color',colors.get(m));}});
+renderer.render(scene,camera);
+const levels=[0,0,0,0];ter.group.traverse(m=>{for(const patch of m.terrainLodState?.patches||[])levels[patch.current]++;});
+if(p.debug){const palette=[[45,210,105],[240,220,45],[240,125,40],[165,70,230]];
+ter.group.traverse(m=>{if(!m.isMesh)return;const a=debugColors.get(m);a.array.fill(80);for(const patch of m.terrainLodState?.patches||[]){const color=palette[patch.current];for(const id of patch.levels[0].indices){const k=id*3;a.array[k]=color[0];a.array[k+1]=color[1];a.array[k+2]=color[2];}}a.needsUpdate=true;m.geometry.setAttribute('color',a);m.material=debugMaterials.get(m);});renderer.render(scene,camera);}
+return {...renderer.info.render,levels,heap:performance.memory?.usedJSHeapSize};};window.motion=async()=>{
+const stream=renderer.domElement.captureStream(0),track=stream.getVideoTracks()[0],chunks=[],frames=[],shots=[];
+const recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:2500000});recorder.ondataavailable=e=>chunks.push(e.data);
+const stopped=new Promise(resolve=>recorder.onstop=resolve);recorder.start();
+for(let i=0;i<90;i++){const q=map.route.point(30+i*.75,0);const p={eye:[q.x+20,q.y+7,q.z+20],target:[q.x,q.y,q.z]};frames.push(window.pose(p));track.requestFrame();if(i===0||i===44||i===89)shots.push(renderer.domElement.toDataURL('image/png'));await new Promise(requestAnimationFrame);}
+recorder.stop();await stopped;track.stop();return {frames,shots,video:Array.from(new Uint8Array(await new Blob(chunks,{type:'video/webm'}).arrayBuffer()))};
+};return {mapDecodeMs:decode-t,buildMs:build-decode};};
+</script>
