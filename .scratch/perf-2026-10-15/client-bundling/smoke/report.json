@@ -1,0 +1,25 @@
+{
+  "compatibleBuild": {
+    "type": "lobby",
+    "mapId": "riviera",
+    "acceptedDifferentBuild": true
+  },
+  "mismatch": {
+    "type": "reload",
+    "reason": "update"
+  },
+  "rows": [
+    {
+      "map": "riviera",
+      "exit": 0
+    },
+    {
+      "map": "megara",
+      "exit": 0
+    },
+    {
+      "map": "penteli",
+      "exit": 0
+    }
+  ]
+}

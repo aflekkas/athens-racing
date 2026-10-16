@@ -1,7 +1,9 @@
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
-import { openPhoneWheel, renderPhoneWheel, unpairPhoneWheel } from './ui/phone-wheel-game.js';
+import { importWithUpdate } from './client-release.js';
+let phoneWheelUI;
+const loadPhoneWheelUI = () => importWithUpdate(() => import('./ui/phone-wheel-game.js')).then(module => phoneWheelUI = module);
 import {setExhaustPops} from './exhaust-pops.js';
-import { install as installAccounts } from './ui/account-screen.js';
+import { install as installAccounts } from './ui/account-loader.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
 // Navigation: mouse / touch, or the named input actions main.js routes here (up / down / left / right / confirm / back,
@@ -14,7 +16,8 @@ import * as S from './settings.js';
 import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
 import { CARS } from './cars.js';
 import { GARAGE_CARS } from './car-catalog.js';
-import { renderCarSelect, mountCarSelect, mountCarGrid } from './car-select.js';
+let garage;
+const loadGarage = () => garage ? Promise.resolve(garage) : importWithUpdate(() => import('./car-select.js')).then(module => garage = module);
 import * as C from './ui/components.js';
 import { resolveGraphics } from './graphics.js';
 import { installSettingsAccess } from './ui/settings-access.js';
@@ -22,7 +25,7 @@ import { renderControls, controlsClick, controlsAction, controlsChange } from '.
 import { setupFields, loadSetup, saveSetup, applySetup, resolveSetup, isCustom, TIMES, WEATHERS, POLICE_LEVELS } from './race-setup.js';
 import { MAPS } from './map-catalog.js';
 import { lobbyConfigToRaceSetup } from './mp-setup.js';
-import * as MP from './ui/mp-screens.js';
+import * as MP from './ui/mp-loader.js';
 import { personalBestLabel } from './personal-bests.js';
 import './ui/hosts.js';
 import { driverName } from './driver-name.js';
@@ -68,6 +71,11 @@ export class Menu {
 
   // ---------------------------------------------------------------- show / hide
   show(screen, data = {}, push = false) {
+    if (screen === 'car' && !garage) {
+      const from = this.screen;
+      void loadGarage().then(() => { if (this.screen === from) this.show(screen, data, push); }).catch(error => C.ui.toast(error.message, { tone: 'bad' }));
+      return;
+    }
     if (screen === 'events') screen = 'mode'; // Legacy results return to the two-mode picker.
     this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });
@@ -108,7 +116,7 @@ export class Menu {
     this.root.className = 's-' + this.screen + ' is-settling' + (entering ? ' is-entering' : '');
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
-    else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
+    else if (this.screen === 'car') this.carView = this.data.detail ? garage.mountCarSelect(this.root, this.data.index || 0) : garage.mountCarGrid(this.root);
     if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
@@ -124,7 +132,7 @@ export class Menu {
   patch() {
     C.closeListbox();
     const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
-    if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
+    if (this.screen === 'car') { this.carView?.dispose(); this.carView = garage.mountCarGrid(this.root); } // observe new thumbnails
     MP.afterRender(this);
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
@@ -228,8 +236,8 @@ export class Menu {
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
-      case 'phoneWheel': openPhoneWheel(this); break;
-      case 'phoneWheelUnpair': unpairPhoneWheel(); this.back(); break;
+      case 'phoneWheel': void loadPhoneWheelUI().then(module => module.openPhoneWheel(this)); break;
+      case 'phoneWheelUnpair': phoneWheelUI?.unpairPhoneWheel(); this.back(); break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
@@ -343,7 +351,7 @@ export class Menu {
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
 
   // ---------------------------------------------------------------- car
-  r_car(d) { return renderCarSelect({...d, road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name}); }
+  r_car(d) { return garage.renderCarSelect({...d, road: (MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]).name}); }
   confirmCar() {
     const c = CARS[this.data.index || 0];
     if (this.data.allowedCars && !this.data.allowedCars.includes(c.id)) return;
@@ -451,7 +459,7 @@ export class Menu {
   leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
-  r_phoneWheel() { return renderPhoneWheel(); }
+  r_phoneWheel() { return phoneWheelUI?.renderPhoneWheel() || C.spinner(); }
   r_pause(d) {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');

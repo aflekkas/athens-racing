@@ -66,8 +66,8 @@ export function renderPrivacy() {
     ),
   });
 }
-export function install(menu) {
-  const a = (menu.accounts = new AccountsClient({
+export function install(menu, existing) {
+  const callbacks = {
     onChange: () => {
       if (a.user?.displayName)
         try {
@@ -93,7 +93,9 @@ export function install(menu) {
         ms: 7000,
       });
     },
-  }));
+  };
+  const a = menu.accounts = existing || new AccountsClient(callbacks);
+  if (existing) Object.assign(a, callbacks);
   const bypass = () =>
     new URLSearchParams(location.search).get("guest") === "1";
   let wasOffline = false;
@@ -291,7 +293,7 @@ export function install(menu) {
     a.offline = true;
     a.ready = true;
     banner();
-  } else void a.init();
+  } else if (!existing) void a.init();
   window.addEventListener("offline", () => {
     a.offline = true;
     banner();

@@ -1,0 +1,28 @@
+{"proof":"health","base":"http://127.0.0.1:42941","entry":"/src/boot-BXDETCH4.js","build":"bbec90c2877e","health":{"ok":true,"clients":0,"lobbies":1,"track":{"start":241,"finish":10548,"version":"4718fbec"}}}
+{"proof":"matching Quick Race + Free Roam catalogues","mapId":"megara","events":[{"id":"megara-race","type":"sprint"},{"id":"free:megara","type":"free"}]}
+{
+  "proof": "create → join → ready → start → snapshot → checkpoints → finish",
+  "base": "http://127.0.0.1:42941",
+  "protocol": 7,
+  "legacy": false,
+  "mapId": "megara",
+  "eventId": "megara-race",
+  "checkpoints": 86,
+  "raceId": "6e6a3b27-ea2a-4c8d-8ab0-f2a904b6908d",
+  "startAt": 1792114547059,
+  "reconnects": 0,
+  "results": [
+    {
+      "id": "ccea270e-fc0d-4ccc-a895-bf5adef17ba8",
+      "finish": 50.29078555107117,
+      "dnf": false
+    },
+    {
+      "id": "5211684a-3b2d-482b-9fbc-6722a3e712d9",
+      "finish": 50.29958415031433,
+      "dnf": false
+    }
+  ]
+}
+PASS: assets, private paths, playable map catalogue and /ws create-lobby round trip at http://127.0.0.1:42941
+{"proof":"reconnect summary","reconnects":0}

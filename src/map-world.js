@@ -1,3 +1,4 @@
+import { importWithUpdate } from './client-release.js';
 // Runtime ownership of one map. The renderer, sky, lights and player cars belong to main.js;
 // every object added here is detached and disposed when the map is replaced.
 import * as THREE from 'three';
@@ -8,23 +9,20 @@ import { loadBakedWorld, restoreBakedTerrain, restoreBakedRoads } from './baked-
 import { buildRoad } from './road.js';
 import { RoadNetwork } from './road-network-surface.js';
 import { buildRoadNetwork, buildNetworkParking } from './road-network.js';
-import { buildBuildings, LabelAtlas } from './buildings.js';
-import { buildNature } from './nature.js';
-import { buildRoadside } from './roadside.js';
+import { LabelAtlas } from './buildings.js';
 import { buildSpeedSigns } from './speed-signs.js';
 import { buildWorldContext } from './world-context.js';
-import { buildRivieraLandmarks } from './riviera-landmarks.js';
 import { buildStreetLife } from './street-life.js';
 import { Traffic } from './traffic.js';
 import { Signals, findJunctions } from './signals.js';
 import { People } from './people.js';
 import { Fx } from './fx.js';
 import { EventMarkers } from './event-markers.js';
-import { batchStatic, freezeStatic } from './batch.js';
+import { freezeStatic } from './batch.js';
 import { simplifyScenery } from './graphics.js';
 import { TX } from './tex.js';
 import { frameYield } from './util.js';
-import { addBuildingImpostors, prepareSceneryLod } from './scenery.js';
+import { prepareSceneryLod } from './scenery.js';
 
 function resources(root) {
   const geometries = new Set(), materials = new Set(), textures = new Set();
@@ -85,20 +83,10 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     if (network) still(() => baked ? restoreBakedRoads(baked.roads, network, group) : buildRoadNetwork(network, group), 'road-network');
     let road, natureGroup, signals;
     if (coastal) {
-      road = still(() => buildRoad(map, group, ter.heightC, assets), 'road'); assets.asphalt = road.asphalt;
-      signals = new Signals(map, group, road.group, assets.junctions);
-      progress('RAISING VOULIAGMENI', .55); await frameYield();
-      const bld = still(() => buildBuildings(map, group, ter.heightC, labels, infill), 'buildings');
-      progress('BUILDING COAST AMENITIES', .7); await frameYield();
-      const nat = still(() => buildNature(map, group, ter.heightC, bld, assets), 'nature'); natureGroup = nat.group;
-      // Keep the original Riviera builders and their order, including the people before static batching.
-      const people = new People(map, group, assets, natureGroup);
-      custom = { people, ...still(() => buildRoadside(map, group, ter.heightC, assets), 'roadside') };
-      for (const g of [road.group, bld.group, nat.group]) batchStatic(g);
-
-      staticRoots.push(ENV.createFarScenery(map.data.proj)); group.add(staticRoots.at(-1));
+      const { buildRiviera } = await importWithUpdate(() => import('./maps/riviera.js'));
+      ({ road, signals, natureGroup, custom } = await buildRiviera({ map, group, ter, assets, still, progress, quality, staticRoots, infill }));
     } else {
-      const module = await import(`./maps/${map.id}.js`);
+      const module = map.id === 'megara' ? await importWithUpdate(() => import('./maps/megara.js')) : map.id === 'penteli' ? await importWithUpdate(() => import('./maps/penteli.js')) : (() => { throw new Error('Unknown world: ' + map.id); })();
       const n = group.children.length;
       custom = await module.buildScenery(group, map, { heightC: ter.heightC, assets });
       staticRoots.push(...group.children.slice(n));
@@ -111,7 +99,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
       if (road.asphalt) assets.asphalt = road.asphalt;
       natureGroup = new THREE.Group(); group.add(natureGroup);
     }
-    const landmarks = coastal ? still(() => buildRivieraLandmarks(map, group), 'landmarks') : null;
+    const landmarks = coastal ? custom.landmarks() : null;
     still(() => buildWorldContext(map, group, ter.heightC, infill, quality), 'world-context');
     // Real speed-limit signs from the map data (all maps; a no-op without sign data).
     const speedSigns = still(() => buildSpeedSigns(map, group, ter.heightC), 'speed-signs');

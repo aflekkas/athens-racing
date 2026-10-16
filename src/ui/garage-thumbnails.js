@@ -1,3 +1,4 @@
+import { importWithUpdate } from '../client-release.js';
 // Loaded only after the garage opens. One renderer, a bounded memory cache and a lazy disk cache.
 const memory = new Map(), LIMIT = 80;
 export const thumbnailKey = (id, paint, build = 'dev') => `${build}/${id}/${paint.toLowerCase().replace('#','')}`;
@@ -8,7 +9,7 @@ async function writeBlob(key, blob) {
   memory.set(key,blob);if(memory.size>LIMIT)memory.delete(memory.keys().next().value);
   try { const cache=await disk();if(!cache)return;await cache.put(cacheUrl(key),new Response(blob,{headers:{'Content-Type':'image/webp'}}));const keys=await cache.keys();for(const key of keys.slice(0,Math.max(0,keys.length-LIMIT)))await cache.delete(key); } catch { /* a private browser can still use memory */ }
 }
-const studioFactory = async () => (await import('../title-hero-studio.js')).createHeroStudio();
+const studioFactory = async () => (await importWithUpdate(() => import('../title-hero-studio.js'))).createHeroStudio();
 const snapshot = canvas => new Promise(resolve => canvas.toBlob(resolve,'image/webp',.86));
 export function mountGarageThumbnails(root, cars, paintFor, { Observer = IntersectionObserver, createStudio = studioFactory, read = readBlob, write = writeBlob, capture = snapshot, build = document.querySelector('meta[name="asr-build"]')?.content || 'dev' } = {}) {
   let stopped=false, studio, running=null, rendered=0, cacheHits=0, peakGeometries=0, peakTextures=0;const queue=[],urls=new Set();

@@ -1,3 +1,4 @@
+import { importWithUpdate } from './client-release.js';
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
 import {exhaustPopsEnabled} from './exhaust-pops.js';
@@ -89,7 +90,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
 // Import and allocate only after the catalogue is mounted; one renderer for visible cars.
 export function mountCarGrid(root) {
   let stopped = false, view;
-  void import('./ui/garage-thumbnails.js').then(({mountGarageThumbnails}) => {
+  void importWithUpdate(() => import('./ui/garage-thumbnails.js')).then(({mountGarageThumbnails}) => {
     if (!stopped && root.isConnected) view = mountGarageThumbnails(root, CARS, savedPaint);
   });
   return { get thumbnailInfo() { return view?.info; }, dispose() { stopped = true; view?.dispose(); } };
