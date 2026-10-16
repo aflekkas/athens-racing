@@ -28,7 +28,7 @@ export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, showTyreGrip: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', mirrors: true, ghostEnabled: true,
+export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', mirrors: true, ghostEnabled: true,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -53,6 +53,14 @@ function load() {
   const out = { ...DEFAULTS, hudMotion: reducedMotion() ? 'off' : DEFAULTS.hudMotion };
   try {
     const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
+    // Owner-locked removal (docs/OWNER-DECISIONS.md): drop the obsolete tyre-grip HUD preference, persisted copies too.
+    if (Object.hasOwn(saved, 'showTyreGrip')) {
+      delete saved.showTyreGrip;
+      try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
+    }
+    const retired = Object.keys(saved).filter(key => /^phone.?wheel/i.test(key));
+    for (const key of retired) delete saved[key];
+    if (retired.length) { try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {} }
     Object.assign(out, saved);
     // Preserve the old all-aids-off choice when separating ABS from TC/ESC.
     if (saved.abs === undefined) out.abs = saved.aids !== false;
@@ -104,7 +112,6 @@ function load() {
   out.ghostEnabled = out.ghostEnabled !== false;
   delete out.police; // police are a race / lobby setting only, never a per-browser preference
   out.mildLanguage = out.mildLanguage === true;
-  out.showTyreGrip = out.showTyreGrip === true;
   out.dynamicResolution = out.dynamicResolution !== false;
   out.mirrors = out.mirrors !== false;
   if (!HUD_MOTION_VALUES.includes(out.hudMotion)) out.hudMotion = reducedMotion() ? 'off' : DEFAULTS.hudMotion;
@@ -121,7 +128,7 @@ export function setSetting(key, value) {
   if (key === 'renderScale') value = resolutionValue(value);
   if (key === 'frameCap') { value = +value; if (!FRAME_CAPS.includes(value)) return; }
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
-  if (key === 'dynamicResolution' || key === 'mildLanguage' || key === 'showTyreGrip' || key === 'aids' || key === 'abs') value = value === true;
+  if (key === 'dynamicResolution' || key === 'mildLanguage' || key === 'aids' || key === 'abs') value = value === true;
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);
   if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));
   if (!(key in DEFAULTS) || settings[key] === value) return;

@@ -1,0 +1,95 @@
+TAP version 13
+# Subtest: unselected maps and the fresh menu never enable the texture transcoder
+ok 1 - unselected maps and the fresh menu never enable the texture transcoder
+  ---
+  duration_ms: 6.560343
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Float32Array, odd lengths, offsets and normalized layouts
+ok 2 - lossless generic meshopt: Float32Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 38.08008
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Float64Array, odd lengths, offsets and normalized layouts
+ok 3 - lossless generic meshopt: Float64Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 28.975036
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint8Array, odd lengths, offsets and normalized layouts
+ok 4 - lossless generic meshopt: Uint8Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 2.133364
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint8ClampedArray, odd lengths, offsets and normalized layouts
+ok 5 - lossless generic meshopt: Uint8ClampedArray, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 5.218302
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Int8Array, odd lengths, offsets and normalized layouts
+ok 6 - lossless generic meshopt: Int8Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 2.974212
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint16Array, odd lengths, offsets and normalized layouts
+ok 7 - lossless generic meshopt: Uint16Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 5.328929
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Int16Array, odd lengths, offsets and normalized layouts
+ok 8 - lossless generic meshopt: Int16Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 3.835507
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Uint32Array, odd lengths, offsets and normalized layouts
+ok 9 - lossless generic meshopt: Uint32Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 20.063622
+  type: 'test'
+  ...
+# Subtest: lossless generic meshopt: Int32Array, odd lengths, offsets and normalized layouts
+ok 10 - lossless generic meshopt: Int32Array, odd lengths, offsets and normalized layouts
+  ---
+  duration_ms: 11.060739
+  type: 'test'
+  ...
+# Subtest: meshopt validates corrupt compressed data
+ok 11 - meshopt validates corrupt compressed data
+  ---
+  duration_ms: 276.205786
+  type: 'test'
+  ...
+# Real prod terrain types: Float32Array,Uint16Array,Uint8Array,Int8Array bounds/drawRange/LOD metadata preserved
+# Subtest: ASR2 preserves real map terrain buffers, attribute types, normalized flags and chunk metadata
+ok 12 - ASR2 preserves real map terrain buffers, attribute types, normalized flags and chunk metadata
+  ---
+  duration_ms: 4560.225773
+  type: 'test'
+  ...
+# Subtest: cached KTX2 candidates have complete mip chains, content-addressed names and stay below the asset limit
+ok 13 - cached KTX2 candidates have complete mip chains, content-addressed names and stay below the asset limit
+  ---
+  duration_ms: 49.258228
+  type: 'test'
+  ...
+# Subtest: streamed loader decodes normalized signed attributes and rejects corrupt packs without partial state
+ok 14 - streamed loader decodes normalized signed attributes and rejects corrupt packs without partial state
+  ---
+  duration_ms: 34.031518
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5326.03103

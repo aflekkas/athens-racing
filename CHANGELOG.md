@@ -8,6 +8,12 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Race two laps of Psychiko or explore its streets in free roam, with race-only roadworks. Map by Vassilis Perrotis (Vas-Per).
+  ![Vas-Per’s Psychiko streets with simple footprint buildings](assets/changelog/2026.10.16.1/psychiko.webp "Psychiko by Vas-Per.")
+- Psychiko uses our simple building and terrain style. Vas-Per’s full garden version is saved under the psychiko-garden-original tag.
+
+- Removed the phone-as-steering-wheel controller.
+
 - One graphics look for everyone: the clean, fast Lighting Off and Effects Off picture. Presets are gone, and the chase camera no longer shows a rear-view mirror.
   ![The chase camera on the Riviera with the one graphics look and no rear-view strip](assets/changelog/2026.10.15.4/one-graphics-look.webp "One clean look, and a clear view over the car.")
 

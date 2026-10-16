@@ -82,6 +82,13 @@ test('streamed loader decodes normalized signed attributes and rejects corrupt p
     globalThis.fetch = async () => new Response(bytes);
     const data = await loadBakedWorldData(map);
     assert.deepEqual(data.terrain.arrays, arrays); assert.deepEqual(data.terrain.metadata.meshes, metadata.meshes);
+    // A large map may split a single gzip stream across CDN assets, including the header.
+    map.data.bakedWorld.meshopt.roads = ['/roads-a', '/roads-b'];
+    const pieces = new Map([['/terrain.meshopt.gz', bytes], ['/roads-a', bytes.subarray(0, 5)], ['/roads-b', bytes.subarray(5)]]);
+    globalThis.fetch = async path => new Response(pieces.get(path) || 'missing', { status: pieces.has(path) ? 200 : 404 });
+    assert.deepEqual((await loadBakedWorldData(map)).roads.arrays, arrays);
+    pieces.delete('/roads-b');
+    assert.equal(await loadBakedWorldData(map), null); assert.equal(map.terrain.Hc, undefined);
     globalThis.fetch = async () => new Response(gzipSync(Buffer.from('corrupt')));
     assert.equal(await loadBakedWorldData(map), null); assert.equal(map.terrain.Hc, undefined);
   } finally { globalThis.fetch = originalFetch; globalThis.location = originalLocation; console.warn = warn; }

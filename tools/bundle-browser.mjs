@@ -2,7 +2,7 @@
 import { build } from 'esbuild';
 import { preserveCodecWorkerSource } from './serialized-codec-workers.mjs';
 import { MAPS } from '../src/map-catalog.js';
-import { readFile, writeFile, readdir, unlink, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, readdir, unlink, mkdir, realpath } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 const slash = path => path.split(sep).join('/');
 export function initialChunks(meta, root, out, entry) {
@@ -16,15 +16,15 @@ export function initialChunks(meta, root, out, entry) {
   return [...seen].map(path => '/' + slash(relative(out, resolve(root, path))));
 }
 export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_MODE || 'bundled' } = {}) {
+  root = await realpath(root); out = await realpath(out);
   if (!['bundled', 'cdn'].includes(three)) throw new Error('ASR_THREE_MODE must be bundled or cdn');
   const exists = path => readFile(resolve(root, path)).then(() => true, () => false);
   const entry = await exists('src/boot.js') ? 'src/boot.js' : 'src/main.js';
   const auxiliaries = [];
   for (const path of ['src/world-tile-worker.js', 'src/ragdoll-worker.js']) if (await exists(path)) auxiliaries.push(path);
   const hasWorker = await exists('src/world-worker.js');
-  const hasWheel = await exists('src/ui/phone-wheel-controller.js');
   const options = {
-    absWorkingDir: root, entryPoints: [entry, ...(three === 'bundled' ? auxiliaries : []), ...(hasWheel ? ['src/ui/phone-wheel-controller.js'] : []), ...(hasWorker && three === 'bundled' ? ['src/world-worker.js'] : [])], outdir: resolve(out, 'src'),
+    absWorkingDir: root, entryPoints: [entry, ...(three === 'bundled' ? auxiliaries : []), ...(hasWorker && three === 'bundled' ? ['src/world-worker.js'] : [])], outdir: resolve(out, 'src'),
     entryNames: '[name]-[hash]', chunkNames: '[name]-[hash]', bundle: true, splitting: true,
     format: 'esm', platform: 'browser', target: 'es2022', minify: true, keepNames: true,
     sourcemap: 'external', sourcesContent: true, write: false,
@@ -90,14 +90,6 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
   if (!html.includes('src="./src/main.js"')) throw new Error('Browser module entry missing from index');
   const bundledHtml = html.replace('src="./src/main.js"', `src="${path}"`);
   await writeFile(index, three === 'cdn' ? bundledHtml : bundledHtml.replace(/<script type="importmap">[\s\S]*?<\/script>/, ''));
-  if (hasWheel) {
-    const wheel = Object.entries(result.metafile.outputs).find(([, output]) => output.entryPoint === 'src/ui/phone-wheel-controller.js')?.[0];
-    if (!wheel) throw new Error('Phone wheel bundle entry missing');
-    const wheelHtml = resolve(out, 'src/ui/phone-wheel.html');
-    const html = await readFile(wheelHtml, 'utf8');
-    if (!html.includes('/src/ui/phone-wheel-controller.js')) throw new Error('Phone wheel source entry missing');
-    await writeFile(wheelHtml, html.replace('/src/ui/phone-wheel-controller.js', '/' + slash(relative(out, resolve(root, wheel)))));
-  }
   const worker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/world-worker.js')?.[0];
   if (worker) for (const path of MAPS.map(map => resolve(out, map.dataUrl))) {
     const data = JSON.parse(await readFile(path, 'utf8'));

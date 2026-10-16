@@ -1,0 +1,20 @@
+{
+  "budgets": {
+    "stairFlight": 256,
+    "building": 40,
+    "streetProp": 150,
+    "sign": 60,
+    "pedestrian": 400,
+    "lamp": 96,
+    "gantry": 150,
+    "barrierPost": 12
+  },
+  "triangles": {
+    "mappedBuildingMaximum": 36,
+    "lamp": 36,
+    "municipalBin": 72,
+    "roadworksBarrier": 36,
+    "roadworksCone": 32,
+    "roadworksSignIncludingRailPostAndLabel": 38
+  }
+}

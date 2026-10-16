@@ -1,0 +1,99 @@
+[
+  {
+    "name": "psychiko-race",
+    "perfect": true,
+    "referenceStartSlot": 0,
+    "drivers": [
+      "stavros"
+    ],
+    "length": 11921.866575318598,
+    "times": [
+      724.3666666666667
+    ],
+    "lapTimes": [
+      [
+        363.1166666666667,
+        361.25
+      ]
+    ],
+    "offroadFrames": 0,
+    "wallFrames": 0,
+    "pairContacts": 0,
+    "teleports": 0,
+    "maxStall": 0
+  },
+  {
+    "name": "psychiko-race",
+    "perfect": false,
+    "drivers": [
+      "stavros",
+      "kostas"
+    ],
+    "length": 11921.866575318598,
+    "times": [
+      742.8333333333334,
+      739.1833333333333
+    ],
+    "lapTimes": [
+      [
+        374.15,
+        368.6833333333334
+      ],
+      [
+        370.56666666666666,
+        368.6166666666666
+      ]
+    ],
+    "offroadFrames": 0,
+    "wallFrames": 0,
+    "pairContacts": 0,
+    "teleports": 0,
+    "maxStall": 0
+  },
+  {
+    "name": "psychiko-race",
+    "perfect": true,
+    "referenceStartSlot": 1,
+    "drivers": [
+      "kostas"
+    ],
+    "length": 11921.866575318598,
+    "times": [
+      724.35
+    ],
+    "lapTimes": [
+      [
+        363.1,
+        361.25
+      ]
+    ],
+    "offroadFrames": 0,
+    "wallFrames": 0,
+    "pairContacts": 0,
+    "teleports": 0,
+    "maxStall": 0
+  },
+  {
+    "name": "psychiko-race",
+    "perfect": true,
+    "referenceStartSlot": 2,
+    "drivers": [
+      "stavros"
+    ],
+    "length": 11921.866575318598,
+    "times": [
+      724.8166666666666
+    ],
+    "lapTimes": [
+      [
+        363.56666666666666,
+        361.24999999999994
+      ]
+    ],
+    "offroadFrames": 0,
+    "wallFrames": 0,
+    "pairContacts": 0,
+    "teleports": 0,
+    "maxStall": 0
+  }
+]

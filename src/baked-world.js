@@ -42,7 +42,7 @@ export function restoreBakedTerrain(pack, terrain, network, scene, options) {
   return { group, material: mat, heightC: (x, z) => sampleH(terrain, terrain.Hc, x, z) };
 }
 export function restoreBakedRoads(pack, network, scene) {
-  const group = restoreGroup(pack, [roadNetworkMaterial()]); scene.add(group);
+  const group = restoreGroup(pack, [roadNetworkMaterial(network.route.streetCircuit)]); scene.add(group);
   network.installSurface(group.children.map(m => ({ positions: m.geometry.attributes.position.array, col: m.geometry.attributes.color.array })));
   Object.assign(network.stats, pack.metadata.stats);
   return group;

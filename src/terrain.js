@@ -17,7 +17,7 @@ const CLASS_COL = [C('#b9a985'), C('#dcc8a0'), C('#b7ab95'), C('#8a7d57'), C('#9
 const ROCK = C('#a9a194'), ROCK2 = C('#c4b9a6'), VERGE = C('#9d8f73'), DRYGRASS = C('#b8a46c'), MAQUIS = C('#5e6336');
 const LIME = C('#c2bdb2'), LIME2 = C('#8a857b'), GARDEN = C('#7d8350');
 
-export function terrainMaterial({ farmland = false } = {}) {
+export function terrainMaterial({ farmland = false, gardens = false } = {}) {
   // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
   // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
@@ -85,9 +85,9 @@ export function terrainMaterial({ farmland = false } = {}) {
  * Build terrain meshes. `corridorPts` is an array of [x,z,r] stamps marking the detailed area.
  * clampFn(x, z) -> max height allowed (keeps the ground under the road and pavements) or Infinity.
  */
-export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, network = null, beachAreas = [] } = {}) {
+export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, gardens = false, network = null, beachAreas = [] } = {}) {
   const { GX, GZ, T, minX, minZ, H, C: CL } = terrain;
-  const mat = terrainMaterial({ farmland });
+  const mat = terrainMaterial({ farmland, gardens });
   // ---------------------------------------------------------------- corridor mask (10 m vertices)
   const mask = new Uint8Array(GX * GZ);
   const stamp = (x, z, r) => {
@@ -219,7 +219,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
 
   // The source DEM is 10 m: road-edge constraints cannot survive interpolation
   // of those large triangles. Refine only the road/shoulder corridor; the
-  // tighter Penteli hairpins use 1.25 m, Riviera 2 m, and Megara 2.5 m.
+  // tighter Penteli hairpins use 1.25 m, Riviera 2 m, Megara and the Psychiko street grid 2.5 m.
   const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : .075 }), refined = new Set();
   for (const seg of conform.segments) {
     const R = seg.width + 32 + T;
@@ -252,7 +252,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
       const i0 = Math.max(0, i - step), i1 = Math.min(GX - 1, i + step), j0 = Math.max(0, j - step), j1 = Math.min(GZ - 1, j + step);
       n.set((hAt(i0, j) - hAt(i1, j)) / ((i1 - i0) * T), 1, (hAt(i, j0) - hAt(i, j1)) / ((j1 - j0) * T)).normalize();
       colorAt(i, j, h, n, c);
-      pos.push(minX + i * T, h, minZ + j * T); col.push(c.r, c.g, c.b); urb.push(CL[j * GX + i] === 4 && h > 0.8 ? 1 : 0);
+      pos.push(minX + i * T, h, minZ + j * T); col.push(c.r, c.g, c.b); urb.push((CL[j * GX + i] === 4) && h > 0.8 ? 1 : 0);
       vid[k] = pos.length / 3 - 1; return vid[k];
     };
     for (let b = 0; b + 1 < nz; b++) for (let a = 0; a + 1 < nx; a++) {
@@ -287,7 +287,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
 
   // Use the uncut DEM for feathering; earlier cuts are only an underlay.
   // This raises downhill fills as well as lowering uphill cuts.
-  const heights = new Map(), fixed = new Set(), n = farmland ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
+  const heights = new Map(), fixed = new Set(), n = farmland || gardens ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
   const height = (ix, iz) => {
     const key = iz * stride + ix, cached = heights.get(key); if (cached !== undefined) return cached;
     const x = minX + ix * T / n, z = minZ + iz * T / n;

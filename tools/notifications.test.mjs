@@ -57,7 +57,7 @@ test('one route-direction warning wins across checkpoint, objective and wrong-wa
  assert.deepEqual(commit(q,0).map(n=>n.id),['checkpoint']);q.dismiss('checkpoint');assert.deepEqual(commit(q,1).map(n=>n.id),['wrong-way']);
 });
 test('same copy from different producers merges visually without hiding unrelated notices',()=>{
- const q=new NotificationQueue();q.post({id:'input',title:'PHONE WHEEL CONNECTED',priority:40},0);q.post({id:'link',title:'PHONE WHEEL CONNECTED',priority:30},0);q.post({id:'music',title:'NOW PLAYING',priority:20},0);
+ const q=new NotificationQueue();q.post({id:'input',title:'GAMEPAD CONNECTED',priority:40},0);q.post({id:'link',title:'GAMEPAD CONNECTED',priority:30},0);q.post({id:'music',title:'NOW PLAYING',priority:20},0);
  assert.deepEqual(commit(q,0).map(n=>n.id),['input','music']);
 });
 test('related police callouts preempt persistent status without duplicating it as a toast',()=>{
@@ -90,7 +90,7 @@ test('a higher-priority duplicate upgrades the visible action without extending 
 });
 
 test('phone disconnection and rejected shifts retain their actual severity',async()=>{
- const {noticeStyle}=await import('../src/ui/notice-style.js');assert.equal(noticeStyle({title:'PHONE WHEEL DISCONNECTED',tone:'warn'}).tone,'warn');assert.equal(noticeStyle({title:'PHONE WHEEL CONNECTED',tone:'good'}).tone,'good');assert.equal(noticeStyle({title:'SHIFT REJECTED',tone:'bad'}).tone,'bad');
+ const {noticeStyle}=await import('../src/ui/notice-style.js');assert.equal(noticeStyle({title:'GAMEPAD DISCONNECTED',tone:'warn'}).tone,'warn');assert.equal(noticeStyle({title:'GAMEPAD CONNECTED',tone:'good'}).tone,'good');assert.equal(noticeStyle({title:'SHIFT REJECTED',tone:'bad'}).tone,'bad');
 });
 
 test('safe placement finds room for the critical action before accepting a short low-priority gap',()=>{

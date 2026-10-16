@@ -4,7 +4,7 @@ import { mapTagline } from '../src/menu-copy.js';
 import { MAPS } from '../src/map-catalog.js';
 
 test('title names all enabled catalogue tracks, including the playable circuit', () => {
-  assert.equal(mapTagline(MAPS), 'Drive Attica: Athens Riviera, Megara Circuit, and Penteli Hill Climb.');
+  assert.equal(mapTagline(MAPS), 'Drive Attica: Athens Riviera, Megara Circuit, Penteli Hill Climb, and Psychiko Garden Circuit.');
 });
 test('title follows catalogue names and order while excluding unavailable tracks', () => {
   assert.equal(mapTagline([{ id: 'penteli', name: 'NEW HILL' }, { id: 'unavailable', name: 'SECRET TRACK' }, { id: 'megara', name: 'NEW CIRCUIT' }]), 'Drive Attica: New Hill and New Circuit.');

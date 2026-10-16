@@ -1,0 +1,43 @@
+{
+  "errors": [],
+  "shots": [
+    "afternoon-start-chase",
+    "afternoon-start-cockpit",
+    "afternoon-mid-chase",
+    "afternoon-mid-cockpit",
+    "night-start-chase",
+    "night-start-cockpit",
+    "night-mid-chase",
+    "night-mid-cockpit",
+    "afternoon-overview",
+    "night-overview"
+  ],
+  "captureMethod": "Native game-canvas PNG at fixed camera poses",
+  "terrainSource": "current deterministic baked buffers",
+  "catalogue": 4,
+  "race": {
+    "map": "psychiko",
+    "event": "psychiko-race",
+    "rivals": 2,
+    "laps": 2,
+    "roadworks": true,
+    "trafficDisabled": true
+  },
+  "overview": {
+    "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "perfClass": "low",
+    "lowGraphics": true,
+    "pixelRatio": 0.8,
+    "drawDistance": 1000,
+    "geometries": 615,
+    "textures": 48,
+    "fps": 54.18195201828881,
+    "renderScale": "auto"
+  },
+  "free": {
+    "roadworks": false,
+    "trafficDisabled": false,
+    "traffic": 11,
+    "police": true
+  }
+}

@@ -34,7 +34,7 @@
     "server/cloudflare-core.test.mjs",
     "server/privacy.test.mjs",
     "server/socket-attachment.test.mjs",
-    "server/phone-wheel.test.mjs",
+    "tools/owner-locked-no-phone-wheel.test.mjs",
     "server/car-capabilities.test.mjs",
     "worker/local-driver.test.mjs",
     "tools/driver-name.test.mjs",
@@ -119,7 +119,8 @@
     "tools/checkpoint-routes.test.mjs",
     "worker/arena-diagnostics.test.mjs",
     "tools/world-art-direction.test.mjs",
-    "tools/asset-codecs.test.mjs"
+    "tools/asset-codecs.test.mjs",
+    "tools/psychiko-world.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

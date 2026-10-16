@@ -28,7 +28,7 @@ export function noticeStyle(item = {}) {
   if (has(all, /TOWED|RESET|TOW\b/)) return pick('telltale', 'tow', 'warn');
   if (has(all, /ENGINE|OVERHEAT|STALL/)) return pick('telltale', 'engine', tone === 'bad' ? 'bad' : 'warn');
   if (has(all, /GEARBOX|MANUAL|AUTOMATIC|\bAUTO\b|SHIFT/)) return pick('telltale', 'gearbox', tone === 'bad' || tone === 'warn' ? tone : 'good');
-  if (has(all, /CONTROLLER|GAMEPAD|PAD CONNECTED|PHONE WHEEL/)) return pick('card', 'gamepad', tone);
+  if (has(all, /CONTROLLER|GAMEPAD|PAD CONNECTED/)) return pick('card', 'gamepad', tone);
   if (has(all, /MUSIC|♪|NOW PLAYING|RADIO/)) return pick('card', 'music', 'info');
   if (has(all, /\bCAM\b|CAMERA|COCKPIT|CHASE/)) return pick('hud', 'view', 'info');
   if (has(all, /WRONG WAY|TURN BACK|TURN AROUND/)) return pick('hud', 'u-turn', 'bad');

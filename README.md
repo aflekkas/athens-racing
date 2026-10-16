@@ -1,6 +1,8 @@
 # ATHENS RACING
 
-A 3D browser racing game on real Greek roads: the Athens Riviera coast road, the Megara circuit and the Penteli hill climb. The Riviera runs along the coast road (Athinon-Souniou, EO91): from Vouliagmeni past Astir Beach and Lake Vouliagmeni, round the Limanakia coves, through Varkiza and along the bends to the Lomvarda cove. Leave the road if you like: pavements, dirt lay-bys and their humps are all drivable, and if you end up in the sea you're put back on the road. Race a rival through Athens traffic in the Mini Cooper S Cabrio, BMW Z4 M40i or Škoda Octavia taxi.
+A 3D browser racing game on real Greek roads: the Athens Riviera coast road, the Megara circuit, the Penteli hill climb and the Psychiko garden circuit. The Riviera runs along the coast road (Athinon-Souniou, EO91): from Vouliagmeni past Astir Beach and Lake Vouliagmeni, round the Limanakia coves, through Varkiza and along the bends to the Lomvarda cove. Leave the road if you like: pavements, dirt lay-bys and their humps are all drivable, and if you end up in the sea you're put back on the road. Race a rival through Athens traffic in the Mini Cooper S Cabrio, BMW Z4 M40i or Škoda Octavia taxi.
+
+Psychiko follows the supplied red neighbourhood loop: 5.961 km per lap, with two laps and three rivals in `psychiko-race`. Choose Psychiko in Free Roam (`free:psychiko`) to explore the public municipal surface-street network, the Filothei extension in the drawing, and the preserved original 4.286 km garden-loop streets. Race-only roadworks close all 92 side-street exits with solid barriers, cones and Greek road-closed signs; free roam removes them and enables civilian traffic and street life. `psychiko-tt` remains disabled. Geography, source limits and offline rebuild commands are in [the Psychiko sources](tools/maps/psychiko/SOURCES.md).
 
 Built with Three.js and a Node.js WebSocket lobby server. No build step.
 
@@ -57,13 +59,3 @@ The scripts in `tools/` rebuild the map data, terrain and textures.
 Graphics defaults to automatic selection. Software rendering uses low graphics; choose **GRAPHICS: HIGH** or **GRAPHICS: LOW** to override. Low graphics keeps the driving, course, car geometry, and color grading, uses simpler sky/water/terrain shading and a shorter prop draw distance while disabling live reflections, shadows, multisample antialiasing, ambient occlusion, and bloom.
 
 Personal-best ghosts retain player-only lap samples for solo sprint and time-trial runs. Race replay playback and the photo editor have been removed; finish photos and result share cards remain. Existing saved ghosts stay compatible.
-
-## Use your phone as a steering wheel
-
-On the game screen, open **Settings → Controls → Use phone as wheel**, or choose it from Pause. Scan the QR code with your phone camera, or open `/wheel` on the same site and enter the eight-character code. Codes expire after five minutes; only one phone can join. No install or account is needed.
-
-Hold the phone in landscape with the screen facing you. Tap **Tap to start** and allow motion access on iPhone, then tap **Calibrate centre** while holding the phone straight. Set full lock from 60° to 120°. Slide upward in the right pedal for throttle and the left pedal for brake. The centre buttons control the handbrake, gears, look back, camera and pause. Return to the game screen to drive; the most recently changed controls take over from keyboard or gamepad.
-
-Both screens show P2P or WebSocket and round-trip latency. WebRTC uses public STUN only; when a direct connection is unavailable, the WebSocket relay works automatically. Missing input centres steering and releases all pedals after 200 ms. Tap **Unpair** on either screen to disconnect; a lost connection needs a fresh code. Keep both screens open. The phone requests fullscreen, landscape and a screen wake lock where supported. Android can vibrate for driving feedback; iPhone flashes instead.
-
-Production, staging and localhost use their own pairing rooms. Motion sensors need HTTPS on a real phone: for local phone testing use a trusted HTTPS tunnel or local TLS server, not an unsecured LAN IP.

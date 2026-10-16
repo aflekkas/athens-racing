@@ -1,18 +1,5 @@
 // UI models only. Physics owns tyre limits, damage and recovery outcomes.
 const clamp = v => Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0));
-export function gripFeedback(telemetry) {
-  if (!telemetry?.front || !telemetry?.rear) return { available: false, message: 'Grip telemetry unavailable' };
-  const axle = a => ({ percent: Math.round(clamp(a.utilization) * 100),
-    state: !a.contact ? 'NO CONTACT' : a.sliding ? 'SLIDING' : a.saturated ? 'AT LIMIT' : 'GRIP', contact: !!a.contact });
-  const front = axle(telemetry.front), rear = axle(telemetry.rear);
-  const message = telemetry.understeer ? 'Front grip exceeded · ease steering and throttle'
-    : front.state === 'SLIDING' ? 'Front tyres sliding · ease steering'
-    : rear.state === 'SLIDING' ? 'Rear tyres sliding · ease throttle'
-    : !front.contact || !rear.contact ? 'Tyres off the ground'
-    : front.state === 'AT LIMIT' ? 'Front tyres at limit · more steering will not help' : 'Tyre force used · 100% = grip limit';
-  return { available: true, front, rear, message, warning: !!telemetry.understeer || front.state !== 'GRIP' || rear.state !== 'GRIP' };
-}
-
 // ENGINE HOT only once the coolant reaches the temperature where physics starts wearing the engine (engine-abuse.js),
 // not on the ordinary warm-up after a knock or a long pull, which players read as a random warning.
 export const ENGINE_HOT_C = 125;

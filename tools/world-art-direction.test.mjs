@@ -21,10 +21,10 @@ const locked='Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner 
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('owner lock: no vegetation pipeline or detailed building renderer',()=>{
  assert.deepEqual(WORLD_STYLE,{vegetation:false,beachFurniture:false,buildings:'blocks',terrain:'area-colour-texture',style:'blocky-real-things'},locked);
- for(const p of ['data/map.json','data/maps/megara/map.json','data/maps/penteli/map.json'])assert.equal(JSON.parse(read(p)).trees,undefined,locked);
- for(const p of ['src/nature.js','src/maps/penteli.js','src/maps/megara.js','src/world-context.js','src/buildings.js','src/hillside-cover.js'])assert.doesNotMatch(read(p),/pineTemplate|needleCards|cardCluster|foliageMaterial|addPalm|addPine|trees\.push|plantInstances|new DetailBatch|addFrontage|balcK|makePharmacyCross/,locked);
+ for(const p of ['data/map.json','data/maps/megara/map.json','data/maps/penteli/map.json','data/maps/psychiko/map.json'])assert.equal(JSON.parse(read(p)).trees,undefined,locked);
+ for(const p of ['src/nature.js','src/maps/penteli.js','src/maps/megara.js','src/maps/psychiko.js','src/world-context.js','src/buildings.js','src/hillside-cover.js'])assert.doesNotMatch(read(p),/pineTemplate|needleCards|cardCluster|foliageMaterial|addPalm|addPine|trees\.push|plantInstances|new DetailBatch|addFrontage|balcK|makePharmacyCross/,locked);
  for(const p of ['src/nature.js','src/people.js','src/world-context.js'])assert.doesNotMatch(read(p),/umbrellaGeo|parasolGeo|sunbeds|beachBedPose/,locked);
- for(const p of ['tools/build_map.mjs','tools/maps/penteli/build.mjs','tools/maps/megara/build.mjs'])assert.doesNotMatch(read(p),/trees\s*[:,]|trees\.push/,locked);
+ for(const p of ['tools/build_map.mjs','tools/maps/penteli/build.mjs','tools/maps/megara/build.mjs','tools/maps/psychiko/build.mjs'])assert.doesNotMatch(read(p),/trees\s*[:,]|trees\.push/,locked);
  assert.equal(existsSync(new URL('../tools/make_foliage.py',import.meta.url)),false,locked);
  assert.doesNotMatch(read('tools/fetch_tex.py'),/LEAVES|palm_tree_bark|pine_bark/,locked);
  assert.doesNotMatch(read('src/tex.js'),/foliage_atlas|palm_frond|pine_bark|palm_tree_bark|leaves_broad|leaves_narrow/,locked);
@@ -33,7 +33,7 @@ test('owner lock: no vegetation pipeline or detailed building renderer',()=>{
  for(const m of [facadeMaterial()]){assert.equal(m.map,null,locked);assert.equal(m.normalMap,null,locked);m.dispose();}
 });
 test('every mapped building remains within the 40 triangle block budget',()=>{
- for(const p of ['data/map.json','data/maps/megara/map.json','data/maps/penteli/map.json'])for(const b of JSON.parse(read(p)).buildings){if(!b.p||b.p.length<6)continue;const g=buildingBlockGeometry(b.p.flat(),b.h||6);assert.ok(triangleCount(g)<=budgets.building,locked);g.dispose();}
+ for(const p of ['data/map.json','data/maps/megara/map.json','data/maps/penteli/map.json','data/maps/psychiko/map.json'])for(const b of JSON.parse(read(p)).buildings){if(!b.p||b.p.length<6)continue;const g=buildingBlockGeometry(b.p.flat(),b.h||6);assert.ok(triangleCount(g)<=budgets.building,locked);g.dispose();}
 });
 test('near and instanced pedestrians fit the owner budget with all appearance combinations',()=>{
  for(const role of ['street','beach','cafe','jogger','cyclist','child','elder'])for(let seed=0;seed<30;seed++){

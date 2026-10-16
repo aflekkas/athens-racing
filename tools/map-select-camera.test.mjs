@@ -26,7 +26,7 @@ for(const [name,view] of Object.entries({desktop:{width:1210,height:780},laptop:
 }
 
 test('every playable map has an on-map geographic route and selector pin', () => {
-  assert.equal(getPlayableMaps(MAPS).length, 3);
+  assert.deepEqual(getPlayableMaps(MAPS).map(map => map.id), ['riviera', 'megara', 'penteli', 'psychiko']);
   for (const {id} of getPlayableMaps(MAPS)) {
     const route = TRACK_ROUTES[id]; assert.ok(route, id + ': selector overlay missing');
     assert.ok(route.path.startsWith('M'));

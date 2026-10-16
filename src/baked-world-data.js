@@ -13,10 +13,11 @@ export async function loadBakedWorldData(map) {
     try { if (!new URLSearchParams(typeof location === 'undefined' ? '' : location.search).has('bakedownload')) generated = await generatedWorld(map); } catch (e) { console.warn('World worker unavailable; using build buffers:', e.message); }
     const generatedDecodeStarted = performance.now();
     const packs = generated ? [decodeGeometryPack(generated.terrain), decodeGeometryPack(generated.roads)] : await Promise.all((metric.codec === 'meshopt' ? [def.meshopt.terrain, def.meshopt.roads] : [def.terrain, def.roads]).map(async url => {
-      const r = await fetch(url); if (!r.ok) throw new Error(`Baked world HTTP ${r.status}`);
+      const download = async path => { const r = await fetch(path); if (!r.ok) throw new Error(`Baked world HTTP ${r.status}`); return r; };
+      const body = Array.isArray(url) ? new Blob(await Promise.all(url.map(async part => (await download(part)).arrayBuffer()))).stream() : (await download(url)).body;
       if (def.compression !== 'gzip' || typeof DecompressionStream === 'undefined') throw new Error('Baked compression unsupported');
       const t = performance.now();
-      const counted = r.body.pipeThrough(new TransformStream({ transform(chunk, controller) { metric.downloadBytes += chunk.byteLength; controller.enqueue(chunk); } }));
+      const counted = body.pipeThrough(new TransformStream({ transform(chunk, controller) { metric.downloadBytes += chunk.byteLength; controller.enqueue(chunk); } }));
       const buffer = await new Response(counted.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
       metric.inflateFetchWallMs += performance.now() - t;
       const decodeStarted = performance.now();

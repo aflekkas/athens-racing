@@ -10,7 +10,7 @@ export function initialMapId(query) {
 export function quickMapEvent(id) {
   const map = getMap(id), closed = map.type === 'circuit';
   return { ...QUICK_RACE, mapId: id, id: map.eventIds?.find(id => id.endsWith('-race')) || 'quick',
-    traffic: id === 'riviera' ? 1 : 0, ...(closed ? { laps: 3 } : {}) };
+    traffic: id === 'riviera' ? 1 : 0, ...(closed ? { laps: map.raceLaps ?? 3 } : {}) };
 }
 export function menuMapContext(id) {
   const map = getMap(id), closed = map.type === 'circuit';

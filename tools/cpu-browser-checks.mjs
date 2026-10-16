@@ -1,5 +1,5 @@
 // Browser-slot-only integration checks: native module Worker, exact transfer state, default Video UI, DOM scale,
-// and local phone-wheel transport primitives. No cross-origin isolation headers or authenticated sessions.
+// without cross-origin isolation headers or authenticated sessions.
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
@@ -18,10 +18,9 @@ try{
   const ground=(x,z,b)=>{b.groundS=(b.groundS||0)+.01;return x*.02+Math.sin(z)*.01;};
   const init={x:0,y:1,z:0,s:0,vx:14,vz:2,seed:1},a=new Ragdoll().launch(init),b=new Ragdoll().launch(init),client=new RagdollClient(ground,()=>new Worker('/src/ragdoll-worker.js',{type:'module'}));
   try{for(let i=0;i<60;i++){a.update(1/60,ground);client.advance(b,1/60);await new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(Error('Worker timeout')),5000),receive=client.receive;client.receive=function(m){receive.call(this,m);if(!client.jobs.size){client.receive=receive;clearTimeout(t);resolve();}};});if(JSON.stringify(snapshotBody(a))!==JSON.stringify(snapshotBody(b)))throw Error('Worker differs at '+i);}}finally{client.clear();}
-  const rtc=await new Promise(async(resolve,reject)=>{const a=new RTCPeerConnection({iceServers:[]}),b=new RTCPeerConnection({iceServers:[]}),d=a.createDataChannel('phone-wheel-check'),timer=setTimeout(()=>{a.close();b.close();reject(Error('RTC timeout'));},10000);a.onicecandidate=e=>{if(e.candidate)b.addIceCandidate(e.candidate).catch(()=>{});};b.onicecandidate=e=>{if(e.candidate)a.addIceCandidate(e.candidate).catch(()=>{});};b.ondatachannel=e=>{e.channel.onmessage=m=>{clearTimeout(timer);const ok=m.data==='wheel';a.close();b.close();resolve(ok);};};d.onopen=()=>d.send('wheel');try{await a.setLocalDescription(await a.createOffer());await b.setRemoteDescription(a.localDescription);await b.setLocalDescription(await b.createAnswer());await a.setRemoteDescription(b.localDescription);}catch(e){clearTimeout(timer);a.close();b.close();reject(e);}});
   const popup=window.open('about:blank','cpu-popup-check'),opener=!!popup&&popup.opener===window;popup?.close();
   const {settings}=await import('/src/settings.js');
-  return {worker:{frames:60,exact:true,disabled:client.disabled},rtc,opener,crossOriginIsolated:globalThis.crossOriginIsolated,dynamicResolutionDefault:settings.dynamicResolution};
+  return {worker:{frames:60,exact:true,disabled:client.disabled},opener,crossOriginIsolated:globalThis.crossOriginIsolated,dynamicResolutionDefault:settings.dynamicResolution};
  });
  result.overlay=overlayText;result.errors=errors;
  await fs.writeFile(resolve(out,'browser-integration.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
