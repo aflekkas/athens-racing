@@ -1,0 +1,361 @@
+TAP version 13
+# Gantry clearance: 13510 real-cockpit/map/event/slot checks; legacy MINI obstruction detected.
+# Subtest: every map, event spawn and eight grid slots keep gantry legs outside the near cockpit view
+ok 1 - every map, event spawn and eight grid slots keep gantry legs outside the near cockpit view
+  ---
+  duration_ms: 8103.844415
+  type: 'test'
+  ...
+# Subtest: live spawn and gantry builders use the guarded helpers
+ok 2 - live spawn and gantry builders use the guarded helpers
+  ---
+  duration_ms: 3.412749
+  type: 'test'
+  ...
+# Subtest: one graphics look: no shadow, post, AO, bloom or reflection pass is enabled in the fixed config
+ok 3 - one graphics look: no shadow, post, AO, bloom or reflection pass is enabled in the fixed config
+  ---
+  duration_ms: 4.303077
+  type: 'test'
+  ...
+# Subtest: no graphics presets or lighting / effects levels in settings, the renderer config or the menus
+ok 4 - no graphics presets or lighting / effects levels in settings, the renderer config or the menus
+  ---
+  duration_ms: 6.467219
+  type: 'test'
+  ...
+# Subtest: the renderer never turns on shadows, the car probe, sea reflections or a post pass beyond tone mapping
+ok 5 - the renderer never turns on shadows, the car probe, sea reflections or a post pass beyond tone mapping
+  ---
+  duration_ms: 5.684732
+  type: 'test'
+  ...
+# Subtest: the chase / third-person camera renders no mirror and pays for no mirror pass
+ok 6 - the chase / third-person camera renders no mirror and pays for no mirror pass
+  ---
+  duration_ms: 2.466636
+  type: 'test'
+  ...
+# Subtest: Psychiko is offered with the same geometry version in solo, selector and multiplayer
+ok 7 - Psychiko is offered with the same geometry version in solo, selector and multiplayer
+  ---
+  duration_ms: 23.159812
+  type: 'test'
+  ...
+# Subtest: carved street bed clears both full carriageways and pavements at the lap seam
+ok 8 - carved street bed clears both full carriageways and pavements at the lap seam
+  ---
+  duration_ms: 3828.007477
+  type: 'test'
+  ...
+# Subtest: both authored events pass every gate and finish with correct lap counts
+ok 9 - both authored events pass every gate and finish with correct lap counts
+  ---
+  duration_ms: 29.933673
+  type: 'test'
+  ...
+# Subtest: route projections preserve unwrapped progress and elevation across laps
+ok 10 - route projections preserve unwrapped progress and elevation across laps
+  ---
+  duration_ms: 4.894289
+  type: 'test'
+  ...
+# Subtest: all public junction exits have exactly one solid race closure, with no raced edge blocked
+ok 11 - all public junction exits have exactly one solid race closure, with no raced edge blocked
+  ---
+  duration_ms: 462.819822
+  type: 'test'
+  ...
+# Subtest: race → free roam → race toggles every visual/collider and invalidates cached collision cells
+ok 12 - race → free roam → race toggles every visual/collider and invalidates cached collision cells
+  ---
+  duration_ms: 81.467129
+  type: 'test'
+  ...
+# Subtest: every preserved garden-course centreline sample remains on drivable asphalt
+ok 13 - every preserved garden-course centreline sample remains on drivable asphalt
+  ---
+  duration_ms: 33.856821
+  type: 'test'
+  ...
+# Subtest: whole municipal street network and the interior of the drawing are included
+ok 14 - whole municipal street network and the interior of the drawing are included
+  ---
+  duration_ms: 600.028157
+  type: 'test'
+  ...
+# Subtest: real vehicle physics cannot cross any roadworks box at 90 km/h; the same paths are open in free roam
+ok 15 - real vehicle physics cannot cross any roadworks box at 90 km/h; the same paths are open in free roam
+  ---
+  duration_ms: 3822.341569
+  type: 'test'
+  ...
+# Subtest: Psychiko uses the shared two-rival grid and road-aware auto-tow corridor
+ok 16 - Psychiko uses the shared two-rival grid and road-aware auto-tow corridor
+  ---
+  duration_ms: 49.820915
+  type: 'test'
+  ...
+# Subtest: Psychiko permits the shared police runtime in free roam and with online police enabled
+ok 17 - Psychiko permits the shared police runtime in free roam and with online police enabled
+  ---
+  duration_ms: 6.390437
+  type: 'test'
+  ...
+# Subtest: catalogue-only Psychiko launch preserves the authored two laps before the bundle loads
+ok 18 - catalogue-only Psychiko launch preserves the authored two laps before the bundle loads
+  ---
+  duration_ms: 1.822667
+  type: 'test'
+  ...
+# Subtest: Psychiko uses shared footprint boxes and budgeted square street props
+ok 19 - Psychiko uses shared footprint boxes and budgeted square street props
+  ---
+  duration_ms: 259.597791
+  type: 'test'
+  ...
+# Subtest: close OSM fronts retain their source centroids and road-edge distances after box conversion
+ok 20 - close OSM fronts retain their source centroids and road-edge distances after box conversion
+  ---
+  duration_ms: 672.114307
+  type: 'test'
+  ...
+# Subtest: owner lock: road closures only in races, never in free roam
+ok 21 - owner lock: road closures only in races, never in free roam
+  ---
+  duration_ms: 31.554322
+  type: 'test'
+  ...
+# Actual sign/support face checks: 442
+# Subtest: all map sign instances and both event directions mount faces beyond actual support surfaces
+ok 22 - all map sign instances and both event directions mount faces beyond actual support surfaces
+  ---
+  duration_ms: 2440.816937
+  type: 'test'
+  ...
+# Subtest: bus-stop and parking faces sit ahead of the full pole and panel thickness
+ok 23 - bus-stop and parking faces sit ahead of the full pole and panel thickness
+  ---
+  duration_ms: 17.028047
+  type: 'test'
+  ...
+# Subtest: two-sided lettering has outward normals and winding without mirrored transforms
+ok 24 - two-sided lettering has outward normals and winding without mirrored transforms
+  ---
+  duration_ms: 0.51007
+  type: 'test'
+  ...
+# UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().
+# Subtest: owner lock: no vegetation pipeline or detailed building renderer
+ok 25 - owner lock: no vegetation pipeline or detailed building renderer
+  ---
+  duration_ms: 57.876344
+  type: 'test'
+  ...
+# Subtest: every mapped building remains within the 40 triangle block budget
+ok 26 - every mapped building remains within the 40 triangle block budget
+  ---
+  duration_ms: 483.540448
+  type: 'test'
+  ...
+# Subtest: near and instanced pedestrians fit the owner budget with all appearance combinations
+ok 27 - near and instanced pedestrians fit the owner budget with all appearance combinations
+  ---
+  duration_ms: 405.160321
+  type: 'test'
+  ...
+# Subtest: street models, signs, lamps, gantry primitives fit category budgets
+ok 28 - street models, signs, lamps, gantry primitives fit category budgets
+  ---
+  duration_ms: 15.21592
+  type: 'test'
+  ...
+# Subtest: Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+ok 29 - Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+  ---
+  duration_ms: 4.080653
+  type: 'test'
+  ...
+# Subtest: gantry and atlas labels fit their usable panel width even with fallback fonts
+ok 30 - gantry and atlas labels fit their usable panel width even with fallback fonts
+  ---
+  duration_ms: 5.019312
+  type: 'test'
+  ...
+# Subtest: terrain keeps area textures and boxes use a separate plaster/accent palette
+ok 31 - terrain keeps area textures and boxes use a separate plaster/accent palette
+  ---
+  duration_ms: 0.814427
+  type: 'test'
+  ...
+# Subtest: AWT spool uses shared codec deterministically and rejects wrapped integers
+ok 32 - AWT spool uses shared codec deterministically and rejects wrapped integers
+  ---
+  duration_ms: 23.222358
+  type: 'test'
+  ...
+# Subtest: Shared tables alias losslessly and every decoded view releases the raw container
+ok 33 - Shared tables alias losslessly and every decoded view releases the raw container
+  ---
+  duration_ms: 8.600735
+  type: 'test'
+  ...
+# Subtest: Spool validates every tile and neighbour seam before publishing entries
+ok 34 - Spool validates every tile and neighbour seam before publishing entries
+  ---
+  duration_ms: 52.895184
+  type: 'test'
+  ...
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 35 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 6.564181
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 36 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 1.151135
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 37 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.250927
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 38 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 1.374582
+  type: 'test'
+  ...
+# Subtest: manifest building-owner lists reject missing, duplicate and self references but permit cycles
+ok 39 - manifest building-owner lists reject missing, duplicate and self references but permit cycles
+  ---
+  duration_ms: 1.452918
+  type: 'test'
+  ...
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 40 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 5.4962
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 41 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 1.18632
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 42 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.346324
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 43 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 2.813241
+  type: 'test'
+  ...
+# Subtest: manifest building-owner lists reject missing, duplicate and self references but permit cycles
+ok 44 - manifest building-owner lists reject missing, duplicate and self references but permit cycles
+  ---
+  duration_ms: 1.65285
+  type: 'test'
+  ...
+# Subtest: menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+ok 45 - menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+  ---
+  duration_ms: 27.771233
+  type: 'test'
+  ...
+# Subtest: stale transferred results cannot activate after movement or disposal
+ok 46 - stale transferred results cannot activate after movement or disposal
+  ---
+  duration_ms: 5.907948
+  type: 'test'
+  ...
+# Subtest: spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+ok 47 - spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+  ---
+  duration_ms: 4.065515
+  type: 'test'
+  ...
+# Subtest: activation is incremental and target is moved only after complete activation
+ok 48 - activation is incremental and target is moved only after complete activation
+  ---
+  duration_ms: 3.53149
+  type: 'test'
+  ...
+# Subtest: failed loads retry twice; reservations are released and explicit retry recovers
+ok 49 - failed loads retry twice; reservations are released and explicit retry recovers
+  ---
+  duration_ms: 3.667524
+  type: 'test'
+  ...
+# Subtest: floating origin stays on the grid over 30 km without changing logical cell IDs
+ok 50 - floating origin stays on the grid over 30 km without changing logical cell IDs
+  ---
+  duration_ms: 2.894343
+  type: 'test'
+  ...
+# Subtest: shared resources dispose once after the last owner releases
+ok 51 - shared resources dispose once after the last owner releases
+  ---
+  duration_ms: 0.532882
+  type: 'test'
+  ...
+# Subtest: layered contacts choose bridge, tunnel or ground by height and explicit layer
+ok 52 - layered contacts choose bridge, tunnel or ground by height and explicit layer
+  ---
+  duration_ms: 1.863312
+  type: 'test'
+  ...
+# Subtest: worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+ok 53 - worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+  ---
+  duration_ms: 84.094284
+  type: 'test'
+  ...
+# Subtest: twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+ok 54 - twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+  ---
+  duration_ms: 254.875061
+  type: 'test'
+  ...
+# Subtest: tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+ok 55 - tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+  ---
+  duration_ms: 13.514481
+  type: 'test'
+  ...
+# Subtest: crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+ok 56 - crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+  ---
+  duration_ms: 2.193988
+  type: 'test'
+  ...
+# Subtest: an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+ok 57 - an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+  ---
+  duration_ms: 3.532963
+  type: 'test'
+  ...
+# Subtest: a city-scale owner chain stays one hop for loading, readiness, pins and teleport
+ok 58 - a city-scale owner chain stays one hop for loading, readiness, pins and teleport
+  ---
+  duration_ms: 4.176963
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10719.402117

@@ -1,3 +1,4 @@
+import { signFaceOffset } from './sign-mount.js';
 import { WORLD_TRIANGLE_BUDGETS, triangleCount } from './world-art-direction.js';
 // Street-level Athens Riviera furniture. All dimensions are metres.
 // Reference shapes (viewed as reference only; no third-party images are shipped):
@@ -78,7 +79,7 @@ function shelter(mats){const m=new Model('shelter',mats,{hw:2.28,hl:1.03});
  m.box('glass',0,1.3,-.73,4,1.9,.03,'#b4d4d9').solid(0,-.74,2.04,.035);
  m.box('metal',0,.49,-.35,2.8,.10,.45,STEEL).solid(0,-.37,1.43,.27);
  m.box('metal',0,.76,-.60,2.8,.45,.06,STEEL);m.label(0,0,2.48,1.01,3.35,.19);return m.finish();}
-function stopPole(mats,parking=false){const m=new Model(parking?'parking':'stop',mats,{hw:.35,hl:.2});m.box('metal',0,1.4,0,.07,2.8,.07,STEEL);m.box('paint',0,2.57,0,.62,.73,.045,WHITE);m.label(parking?2:0,0,2.57,.026,.56,.59);m.solid(0,0,.14,.14);return m.finish();}
+function stopPole(mats,parking=false){const m=new Model(parking?'parking':'stop',mats,{hw:.35,hl:.2});m.box('metal',0,1.4,0,.07,2.8,.07,STEEL);m.box('paint',0,2.57,signFaceOffset(.07,.045)-.0225,.62,.73,.045,WHITE);m.label(parking?2:0,0,2.57,signFaceOffset(.07,.045)+.003,.56,.59);m.solid(0,0,.14,.14);return m.finish();}
 function bin(mats){const m=new Model('bin',mats,{hw:.36,hl:.36});m.box('paint',0,.44,0,.6,.82,.6,'#486e67');m.box('metal',0,.87,0,.65,.06,.65,IRON);m.solid(0,0,.35,.32);return m.finish();}
 function canteen(mats){const m=new Model('canteen',mats,{hw:2.85,hl:1.75});m.box('paint',0,1.3,0,4.55,2.6,2.06,WHITE);m.box('glass',0,1.8,1.04,3.5,.7,.03,'#344b50');m.label(3,0,2.4,1.06,2.6,.18);m.solid(0,0,2.3,1.1);return m.finish();}
 function shack(mats){const m=new Model('shack',mats,{hw:2.85,hl:2.22});m.box('paint',0,1.4,0,5.4,2.8,4.2,'#c6bda8');m.solid(0,0,2.7,2.1);return m.finish();}

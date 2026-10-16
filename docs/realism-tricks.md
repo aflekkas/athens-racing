@@ -21,3 +21,23 @@ Verification: `node --test tools/baked-realism.test.mjs`; `node tools/realism-be
 Road materials sample the blue channel in world XZ, darkening wet asphalt and isolated puddle patches. This adds no decal meshes/draw calls and no animated ripple normals, reduced roughness or reflection passes. The texture is shared across maps and materials; Athens tiles should use the same world-space UV scale (`worldXZ * 0.035`) so tile boundaries match. This is a visual mask only: `wet-grip.js` continues to control accumulation, drying and tyre grip. Existing road-light hooks and the cockpit agent's single windscreen overlay are preserved.
 
 The atlas is a module-lifetime shared resource, not owned by individual weather scenes. Weather geometries/materials are disposed on map changes; do not dispose the shared atlas from a map's teardown. Guard: `tools/rain-overlays.test.mjs`. CPU benchmark: `tools/rain-benchmark.mjs` (baseline helper source extracted from the recorded parent SHA). No GPU timing claims on SwiftShader.
+
+## Sign mounting
+
+`signFaceOffset(postDepth, thickness = .02)` places a panel's front beyond the
+whole post, its panel thickness, and a 5 mm mounting gap. The face normal is
+local +Z. Offset along the rotated normal for world-space instances. Keep
+collider centres at the original post. One-way direction boards face their
+own carriageway; reverse approaches use their separately authored records.
+`twoSidedSignGeometry(width, height, postDepth)` joins two outward-facing,
+readable panels into one draw call for event banners. Do not use DoubleSide
+text or a negative scale to create the reverse face. Reset all Euler axes
+when turning a cloned face (a cloned quaternion can use a different Euler
+representation). Megara's cantilever and lettering use the road frame;
+vehicle heading is not a sign-panel rotation.
+
+The actual-geometry guard is `tools/sign-mount.test.mjs`, covering mapped
+sign instances on Riviera, Penteli, Megara and Psychiko, fixed and event
+arches, roadside parking/stop models and Psychiko roadworks. Existing
+13,510 cockpit spawn/grid raycasts remain green after the Megara correction.
+Focused before/after views and resource counts: `.scratch/detail-pass/signs/`.

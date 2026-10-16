@@ -1,3 +1,4 @@
+import { twoSidedSignGeometry } from './sign-mount.js';
 import { gantryLegFrame } from './gantry-legs.js';
 import { signFace } from './world-prop-geometries.js';
 // Event markers in the world: start / finish arches for events that don't use the fixed gantries of the full
@@ -42,7 +43,7 @@ export class EventMarkers {
     const poleM = new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 });
     const g = gantryLegFrame(route, s, poleM, 'event', dir);
     const tex = bannerTex(text, text === 'START' ? '#d8261d' : '#0c0f14', '#ffffff');
-    const ban = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, half * 0.38), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
+    const ban = new THREE.Mesh(twoSidedSignGeometry(half * 2, half * .38, .45), new THREE.MeshBasicMaterial({ map: tex, side: THREE.FrontSide }));
     ban.position.y = 6.4; g.add(ban);
     this.group.add(g);
   }
@@ -57,7 +58,7 @@ export class EventMarkers {
     box.position.y = 3.3; g.add(box);
     const lens = new THREE.Mesh(new THREE.CircleGeometry(0.14, 16), new THREE.MeshBasicMaterial({ color: '#1a2633' })); lens.position.set(0, 3.32, -0.36); lens.rotation.y = Math.PI; g.add(lens);
     const tex = bannerTex('CAMERA ' + n, '#0b4ea2', '#ffffff');
-    const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.3), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })); sign.position.y = 2.6; g.add(sign);
+    const sign = new THREE.Mesh(twoSidedSignGeometry(1.6, .3, .18), new THREE.MeshBasicMaterial({ map: tex, side: THREE.FrontSide })); sign.position.y = 2.6; g.add(sign);
     // a painted line across the racing carriageway
     const w = route.edge(s), line = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.5), new THREE.MeshBasicMaterial({ color: '#f2c200', transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
     const lp = route.point(s, dir * w / 2); line.position.set(lp.x, lp.y + 0.03, lp.z);

@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Sign poles sit behind their panels, so speed limits and directions stay readable. Start banners face the road correctly.
+  ![Speed and direction signs with their posts behind the lettering](assets/changelog/2026.10.16.1/sign-mounts.webp "Clear signs on every road.")
+
 - Psychiko’s close-set building fronts are back in their real positions. Roadworks guide races and leave every street open in free roam.
   ![Restored close-frontage homes along Sismanoglou in Psychiko](assets/changelog/2026.10.16.1/psychiko-frontages.webp "Real fronts, with room for their gardens.")
 

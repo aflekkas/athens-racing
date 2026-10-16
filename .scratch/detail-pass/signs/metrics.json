@@ -1,0 +1,245 @@
+{
+  "baseline": "85a37e6a1b2d4c1947feb0f500ea97c623e5da6f",
+  "shots": [
+    {
+      "fixture": "speed-riviera",
+      "phase": "before",
+      "pose": {
+        "position": [
+          1324.4178755685293,
+          5.497946929931641,
+          3535.622915075406
+        ],
+        "target": [
+          1323.1246337890625,
+          5.797946929931641,
+          3530.743896484375
+        ]
+      },
+      "textureBytes": 1398101.3333333333,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 136
+    },
+    {
+      "fixture": "direction-penteli",
+      "phase": "before",
+      "pose": {
+        "position": [
+          -638.3208716895477,
+          473.45579833984374,
+          -1711.4169160399244
+        ],
+        "target": [
+          -642.9600219726562,
+          473.75579833984375,
+          -1713.7177734375
+        ]
+      },
+      "textureBytes": 4893354.666666666,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 122
+    },
+    {
+      "fixture": "gantry-psychiko",
+      "phase": "before",
+      "pose": {
+        "position": [
+          -352.946152067739,
+          220.79000244140624,
+          -785.9139920172818
+        ],
+        "target": [
+          -359.8999938964844,
+          221.09000244140626,
+          -807.9000244140625
+        ]
+      },
+      "textureBytes": 11184810.666666666,
+      "frameUpdateMs": 0,
+      "calls": 10,
+      "triangles": 1252
+    },
+    {
+      "fixture": "fixed-megara",
+      "phase": "before",
+      "pose": {
+        "position": [
+          -96.46369202595953,
+          15.539000091552733,
+          -3.689653718190975
+        ],
+        "target": [
+          -74.1980737128945,
+          15.839000091552734,
+          -8.618750370892805
+        ]
+      },
+      "textureBytes": 262144,
+      "frameUpdateMs": 0,
+      "calls": 32,
+      "triangles": 210486
+    },
+    {
+      "fixture": "event-megara",
+      "phase": "before",
+      "pose": {
+        "position": [
+          -95.89862154792833,
+          21.979000091552734,
+          -2.8409033282246776
+        ],
+        "target": [
+          -73.63300323486328,
+          22.279000091552735,
+          -7.769999980926514
+        ]
+      },
+      "textureBytes": 262144,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 26
+    },
+    {
+      "fixture": "parking",
+      "phase": "before",
+      "pose": {
+        "position": [
+          0.2,
+          2.2,
+          5
+        ],
+        "target": [
+          0,
+          2.5,
+          0
+        ]
+      },
+      "textureBytes": 5592405.333333333,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 26
+    },
+    {
+      "fixture": "speed-riviera",
+      "phase": "after",
+      "pose": {
+        "position": [
+          1324.4178755685293,
+          5.497946929931641,
+          3535.622915075406
+        ],
+        "target": [
+          1323.1246337890625,
+          5.797946929931641,
+          3530.743896484375
+        ]
+      },
+      "textureBytes": 1398101.3333333333,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 136
+    },
+    {
+      "fixture": "direction-penteli",
+      "phase": "after",
+      "pose": {
+        "position": [
+          -638.3208716895477,
+          473.45579833984374,
+          -1711.4169160399244
+        ],
+        "target": [
+          -642.9600219726562,
+          473.75579833984375,
+          -1713.7177734375
+        ]
+      },
+      "textureBytes": 4893354.666666666,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 122
+    },
+    {
+      "fixture": "gantry-psychiko",
+      "phase": "after",
+      "pose": {
+        "position": [
+          -352.946152067739,
+          220.79000244140624,
+          -785.9139920172818
+        ],
+        "target": [
+          -359.8999938964844,
+          221.09000244140626,
+          -807.9000244140625
+        ]
+      },
+      "textureBytes": 11184810.666666666,
+      "frameUpdateMs": 0,
+      "calls": 10,
+      "triangles": 1252
+    },
+    {
+      "fixture": "fixed-megara",
+      "phase": "after",
+      "pose": {
+        "position": [
+          -96.46369202595953,
+          15.539000091552733,
+          -3.689653718190975
+        ],
+        "target": [
+          -74.1980737128945,
+          15.839000091552734,
+          -8.618750370892805
+        ]
+      },
+      "textureBytes": 262144,
+      "frameUpdateMs": 0,
+      "calls": 32,
+      "triangles": 210486
+    },
+    {
+      "fixture": "event-megara",
+      "phase": "after",
+      "pose": {
+        "position": [
+          -95.89862154792833,
+          21.979000091552734,
+          -2.8409033282246776
+        ],
+        "target": [
+          -73.63300323486328,
+          22.279000091552735,
+          -7.769999980926514
+        ]
+      },
+      "textureBytes": 262144,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 28
+    },
+    {
+      "fixture": "parking",
+      "phase": "after",
+      "pose": {
+        "position": [
+          0.2,
+          2.2,
+          5
+        ],
+        "target": [
+          0,
+          2.5,
+          0
+        ]
+      },
+      "textureBytes": 5592405.333333333,
+      "frameUpdateMs": 0,
+      "calls": 3,
+      "triangles": 26
+    }
+  ]
+}
