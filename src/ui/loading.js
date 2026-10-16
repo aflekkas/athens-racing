@@ -195,7 +195,10 @@ class LoadingScreen {
     wireButton(actions, { label: 'RETURN TO MENU', variant: 'ghost', icon: 'arrow-left' }, () => this.cancel());
     box.hidden = false;
     const recovery = $('ldRecovery'); if (recovery) recovery.hidden = true;
-    primary.focus?.({ preventScroll: true }); // keyboard and gamepad players land on the next step
+    // Keyboard and gamepad players land on the next step. A first open is still fading in (visibility: hidden
+    // can refuse focus), so try again once it is visible, never pulling focus off another loading control.
+    const land = () => { if (this.failure === f && !el?.contains?.(document.activeElement)) primary.focus?.({ preventScroll: true }); };
+    land(); setTimeout(land, 80); setTimeout(land, 500);
   }
   /** What the player should know when the screen has gone quiet. Empty while things visibly move. */
   noteFor(now = performance.now()) {
