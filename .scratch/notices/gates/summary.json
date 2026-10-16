@@ -1,0 +1,18 @@
+{
+  "snapshot": "34cf35deb231cfbbd1ee0823ddf6863f9e9e71e9",
+  "parent": "8940394cbbf49e766f1467d4f9cd431df155b52a",
+  "composedOn": "28039e22651b5b357e97cff998fb4d2d81c0a7f0",
+  "exits": {
+    "npm-test": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "wrangler": 0
+  },
+  "focusedTests": 39,
+  "placementChecks": 8,
+  "types": 45,
+  "noticeRuntimeUnchangedAfterGates": true,
+  "composedFocusedPassed": 61
+}

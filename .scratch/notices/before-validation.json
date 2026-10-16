@@ -1,0 +1,174 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "width": 1280,
+      "height": 800,
+      "view": "chase",
+      "variant": "before",
+      "visible": [
+        "engine-condition",
+        "tow"
+      ],
+      "rect": {
+        "left": 460,
+        "right": 820,
+        "top": 90,
+        "bottom": 252.359375
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror"
+      ],
+      "outside": false
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "view": "cockpit",
+      "variant": "before",
+      "visible": [
+        "engine-condition",
+        "tow"
+      ],
+      "rect": {
+        "left": 460,
+        "right": 820,
+        "top": 90,
+        "bottom": 252.359375
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror",
+        "mirror"
+      ],
+      "outside": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "view": "chase",
+      "variant": "before",
+      "visible": [
+        "engine-condition",
+        "tow"
+      ],
+      "rect": {
+        "left": 780,
+        "right": 1140,
+        "top": 90,
+        "bottom": 253.21875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror"
+      ],
+      "outside": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "view": "cockpit",
+      "variant": "before",
+      "visible": [
+        "engine-condition",
+        "tow"
+      ],
+      "rect": {
+        "left": 780,
+        "right": 1140,
+        "top": 90,
+        "bottom": 253.21875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror",
+        "mirror"
+      ],
+      "outside": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "chase",
+      "variant": "before",
+      "visible": [
+        "engine-condition",
+        "tow"
+      ],
+      "rect": {
+        "left": 15,
+        "right": 375,
+        "top": 214,
+        "bottom": 375.78125
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [],
+      "outside": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "cockpit",
+      "variant": "before",
+      "visible": [
+        "engine-condition",
+        "tow"
+      ],
+      "rect": {
+        "left": 15,
+        "right": 375,
+        "top": 214.6875,
+        "bottom": 376.46875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror"
+      ],
+      "outside": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "view": "chase",
+      "variant": "before",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 267,
+        "right": 577,
+        "top": 44.59375,
+        "bottom": 150.96875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror"
+      ],
+      "outside": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "view": "cockpit",
+      "variant": "before",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 267,
+        "right": 577,
+        "top": 44.796875,
+        "bottom": 151.171875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engine · No engine power · 90°CR / T · Tow and repair · 0R: TOW",
+      "overlaps": [
+        "mirror"
+      ],
+      "outside": false
+    }
+  ],
+  "actions": null,
+  "baseline": "f1dd16cf1610dc75841e6db65235dbb2f5b9fef8",
+  "scene": "Current renderer and HUD; legacy notification modules from the baseline"
+}

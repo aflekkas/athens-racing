@@ -1,3 +1,4 @@
+import { notifications } from './notifications.js';
 import * as C from './components.js';
 import qrcode from '../vendor/qrcode.js';
 import { input } from '../input.js';
@@ -9,11 +10,13 @@ function style() {
 }
 function update(status) {
   if (!session) return;
+  const wasPaired=session.status?.paired;
   session.status = status;
+  if(status.paired!==wasPaired)notifications.post({id:'phone-wheel-link',title:status.paired?'PHONE WHEEL CONNECTED':'PHONE WHEEL DISCONNECTED',text:status.paired?'Steering and pedals ready':'Use keyboard or gamepad',tone:status.paired?'good':'warn',priority:status.paired?35:75,ms:4000});
   const text = `${status.state} · ${status.transport} · ${status.latency === null ? '—' : status.latency.toFixed(1)} ms`;
   for (const output of document.querySelectorAll('[data-wheel-status]')) output.textContent = text;
   session.hud.textContent = `PHONE WHEEL · ${text}`;
-  session.hud.hidden = !status.paired;
+  session.hud.hidden = true; // Connection transitions use the shared lane; live latency stays in the pairing screen.
   if (!status.paired) input.phoneWheel.reset();
 }
 export async function openPhoneWheel(menu) {

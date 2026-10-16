@@ -1,0 +1,376 @@
+TAP version 13
+# Subtest: live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+ok 1 - live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+  ---
+  duration_ms: 2.614162
+  type: 'test'
+  ...
+# Subtest: production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+ok 2 - production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+  ---
+  duration_ms: 16.538697
+  type: 'test'
+  ...
+# Subtest: production aid settings preserve a live manual gear and a temporary paddle override
+ok 3 - production aid settings preserve a live manual gear and a temporary paddle override
+  ---
+  duration_ms: 19.983066
+  type: 'test'
+  ...
+# Subtest: live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+ok 4 - live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+  ---
+  duration_ms: 0.278228
+  type: 'test'
+  ...
+# Subtest: grip mapping preserves front breakaway when force utilization falls
+ok 5 - grip mapping preserves front breakaway when force utilization falls
+  ---
+  duration_ms: 8.159659
+  type: 'test'
+  ...
+# Subtest: damage explains actual power loss, cause and remapped recovery action
+ok 6 - damage explains actual power loss, cause and remapped recovery action
+  ---
+  duration_ms: 5.03263
+  type: 'test'
+  ...
+# Subtest: known curvature and braking distance retain physical units
+ok 7 - known curvature and braking distance retain physical units
+  ---
+  duration_ms: 0.627029
+  type: 'test'
+  ...
+# Subtest: straight is green; hairpin advice changes with speed, weather and car grip
+ok 8 - straight is green; hairpin advice changes with speed, weather and car grip
+  ---
+  duration_ms: 31.799921
+  type: 'test'
+  ...
+# Subtest: line stays inside actual width and retains grade, reverse lane/direction
+ok 9 - line stays inside actual width and retains grade, reverse lane/direction
+  ---
+  duration_ms: 5.966831
+  type: 'test'
+  ...
+# Subtest: downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+ok 10 - downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+  ---
+  duration_ms: 1.633535
+  type: 'test'
+  ...
+# Subtest: closed circuit wraps and clamps surveyed racing line without terrain chords
+ok 11 - closed circuit wraps and clamps surveyed racing line without terrain chords
+  ---
+  duration_ms: 6.691632
+  type: 'test'
+  ...
+# Subtest: free roam follows actual heading and backing direction; explicit reverse race stays fixed
+ok 12 - free roam follows actual heading and backing direction; explicit reverse race stays fixed
+  ---
+  duration_ms: 13.511504
+  type: 'test'
+  ...
+# Subtest: ENGINE HOT waits for a temperature that actually wears the engine
+ok 13 - ENGINE HOT waits for a temperature that actually wears the engine
+  ---
+  duration_ms: 0.688523
+  type: 'test'
+  ...
+# Subtest: vehicle and road warnings become cluster tell-tales with ISO lamp colours
+ok 14 - vehicle and road warnings become cluster tell-tales with ISO lamp colours
+  ---
+  duration_ms: 14.735575
+  type: 'test'
+  ...
+# Subtest: navigation and objectives are head-up cues; tips and media are infotainment cards
+ok 15 - navigation and objectives are head-up cues; tips and media are infotainment cards
+  ---
+  duration_ms: 10.106447
+  type: 'test'
+  ...
+# Subtest: every tell-tale renders as an SVG and as a CSS mask
+ok 16 - every tell-tale renders as an SVG and as a CSS mask
+  ---
+  duration_ms: 3.824828
+  type: 'test'
+  ...
+# Subtest: simultaneous sources share one prioritized banner and two prioritized toasts
+ok 17 - simultaneous sources share one prioritized banner and two prioritized toasts
+  ---
+  duration_ms: 11.183815
+  type: 'test'
+  ...
+# Subtest: duplicate bursts never multiply notices or restart their display lifetime
+ok 18 - duplicate bursts never multiply notices or restart their display lifetime
+  ---
+  duration_ms: 13.714091
+  type: 'test'
+  ...
+# Subtest: menus suppress all slots, pause remaining display time and drop stale queued warnings
+ok 19 - menus suppress all slots, pause remaining display time and drop stale queued warnings
+  ---
+  duration_ms: 6.530952
+  type: 'test'
+  ...
+# Subtest: persistent safety warnings survive preemption but disappear when their cause clears
+ok 20 - persistent safety warnings survive preemption but disappear when their cause clears
+  ---
+  duration_ms: 0.442756
+  type: 'test'
+  ...
+# Subtest: bounded queue drops the lowest priority burst and reports shown notices only once
+ok 21 - bounded queue drops the lowest priority burst and reports shown notices only once
+  ---
+  duration_ms: 0.596271
+  type: 'test'
+  ...
+# Subtest: visibility policy rejects pause/settings/lobby/loading/modal contexts
+ok 22 - visibility policy rejects pause/settings/lobby/loading/modal contexts
+  ---
+  duration_ms: 0.408972
+  type: 'test'
+  ...
+# Subtest: objective off-course warning uses the shared slot and clears without a separate banner
+ok 23 - objective off-course warning uses the shared slot and clears without a separate banner
+  ---
+  duration_ms: 12.783586
+  type: 'test'
+  ...
+# Subtest: five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+ok 24 - five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+  ---
+  duration_ms: 1.068983
+  type: 'test'
+  ...
+# Subtest: a renewed actionable warning replaces its old DOM node after dismissal
+ok 25 - a renewed actionable warning replaces its old DOM node after dismissal
+  ---
+  duration_ms: 11.529429
+  type: 'test'
+  ...
+# Subtest: engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+ok 26 - engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+  ---
+  duration_ms: 0.719571
+  type: 'test'
+  ...
+# Subtest: one route-direction warning wins across checkpoint, objective and wrong-way producers
+ok 27 - one route-direction warning wins across checkpoint, objective and wrong-way producers
+  ---
+  duration_ms: 0.427217
+  type: 'test'
+  ...
+# Subtest: same copy from different producers merges visually without hiding unrelated notices
+ok 28 - same copy from different producers merges visually without hiding unrelated notices
+  ---
+  duration_ms: 7.422705
+  type: 'test'
+  ...
+# Subtest: related police callouts preempt persistent status without duplicating it as a toast
+ok 29 - related police callouts preempt persistent status without duplicating it as a toast
+  ---
+  duration_ms: 0.243665
+  type: 'test'
+  ...
+# Subtest: mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+ok 30 - mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+  ---
+  duration_ms: 0.615196
+  type: 'test'
+  ...
+# Subtest: gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+ok 31 - gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+  ---
+  duration_ms: 0.300119
+  type: 'test'
+  ...
+# Subtest: merged cross-producer duplicates never return later or restart the original lifetime
+ok 32 - merged cross-producer duplicates never return later or restart the original lifetime
+  ---
+  duration_ms: 0.195625
+  type: 'test'
+  ...
+# Subtest: dismissing an alias clears its merged event, including its original visible card
+ok 33 - dismissing an alias clears its merged event, including its original visible card
+  ---
+  duration_ms: 0.201956
+  type: 'test'
+  ...
+# Subtest: manager dismissal resolves a merged producer alias
+ok 34 - manager dismissal resolves a merged producer alias
+  ---
+  duration_ms: 0.179775
+  type: 'test'
+  ...
+# Subtest: a higher-priority duplicate upgrades the visible action without extending its lifetime
+ok 35 - a higher-priority duplicate upgrades the visible action without extending its lifetime
+  ---
+  duration_ms: 0.227405
+  type: 'test'
+  ...
+# Subtest: phone disconnection and rejected shifts retain their actual severity
+ok 36 - phone disconnection and rejected shifts retain their actual severity
+  ---
+  duration_ms: 4.606726
+  type: 'test'
+  ...
+# Subtest: safe placement finds room for the critical action before accepting a short low-priority gap
+ok 37 - safe placement finds room for the critical action before accepting a short low-priority gap
+  ---
+  duration_ms: 0.237573
+  type: 'test'
+  ...
+# Subtest: a higher-priority route banner cannot suppress the actionable recovery fallback
+ok 38 - a higher-priority route banner cannot suppress the actionable recovery fallback
+  ---
+  duration_ms: 0.344212
+  type: 'test'
+  ...
+# Subtest: actual mirror projection reserves its glass and frame at different aspect ratios
+ok 39 - actual mirror projection reserves its glass and frame at different aspect ratios
+  ---
+  duration_ms: 174.30938
+  type: 'test'
+  ...
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 40 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 3.878158
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 41 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 1.096384
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 42 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.198489
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 43 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 1.006957
+  type: 'test'
+  ...
+# Subtest: shared plain/quantized attributes and indices allocate one GPU buffer per worker-accounted identity
+ok 44 - shared plain/quantized attributes and indices allocate one GPU buffer per worker-accounted identity
+  ---
+  duration_ms: 142.938368
+  type: 'test'
+  ...
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 45 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 29.682264
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 46 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 1.150194
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 47 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 3.625558
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 48 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 4.650147
+  type: 'test'
+  ...
+# Subtest: menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+ok 49 - menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+  ---
+  duration_ms: 41.56407
+  type: 'test'
+  ...
+# Subtest: stale transferred results cannot activate after movement or disposal
+ok 50 - stale transferred results cannot activate after movement or disposal
+  ---
+  duration_ms: 6.769147
+  type: 'test'
+  ...
+# Subtest: spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+ok 51 - spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+  ---
+  duration_ms: 7.532069
+  type: 'test'
+  ...
+# Subtest: activation is incremental and target is moved only after complete activation
+ok 52 - activation is incremental and target is moved only after complete activation
+  ---
+  duration_ms: 6.718192
+  type: 'test'
+  ...
+# Subtest: failed loads retry twice; reservations are released and explicit retry recovers
+ok 53 - failed loads retry twice; reservations are released and explicit retry recovers
+  ---
+  duration_ms: 2.013592
+  type: 'test'
+  ...
+# Subtest: floating origin stays on the grid over 30 km without changing logical cell IDs
+ok 54 - floating origin stays on the grid over 30 km without changing logical cell IDs
+  ---
+  duration_ms: 6.098817
+  type: 'test'
+  ...
+# Subtest: shared resources dispose once after the last owner releases
+ok 55 - shared resources dispose once after the last owner releases
+  ---
+  duration_ms: 0.539185
+  type: 'test'
+  ...
+# Subtest: layered contacts choose bridge, tunnel or ground by height and explicit layer
+ok 56 - layered contacts choose bridge, tunnel or ground by height and explicit layer
+  ---
+  duration_ms: 1.058382
+  type: 'test'
+  ...
+# Subtest: worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+ok 57 - worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+  ---
+  duration_ms: 173.131373
+  type: 'test'
+  ...
+# Subtest: twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+ok 58 - twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+  ---
+  duration_ms: 371.386495
+  type: 'test'
+  ...
+# Subtest: tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+ok 59 - tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+  ---
+  duration_ms: 24.632551
+  type: 'test'
+  ...
+# Subtest: crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+ok 60 - crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+  ---
+  duration_ms: 15.161098
+  type: 'test'
+  ...
+# Subtest: an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+ok 61 - an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+  ---
+  duration_ms: 9.059496
+  type: 'test'
+  ...
+1..61
+# tests 61
+# suites 0
+# pass 61
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1005.736877

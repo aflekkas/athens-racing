@@ -4,7 +4,6 @@ import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
 import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
-// TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
 import {exhaustPopsEnabled} from './exhaust-pops.js';
@@ -75,7 +74,7 @@ import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
 import { loading } from './ui/loading.js';
-import { ui, icon } from './ui/components.js';
+import { kbd, ui, icon } from './ui/components.js';
 import { drivingHints } from './ui/driving-hints.js';
 import { updateEngineHud } from './engine-hud.js';
 import { gearboxMessage, bindingLabel } from './input-labels.js';
@@ -353,6 +352,7 @@ function bindMapWorld(next) {
   { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
   police = new Police(traffic, route); window.__police = police;
   policeVoice.reset(); humanVoices.reset(); police.onVoice = (state, transitions) => policeVoice.observe(state, transitions);
+  notifications.mirrorView = () => ({camera, mirrors: G.cam==='cockpit'||cameraBlend.active ? player?.cockpit?.mirrors||[] : []});
   window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, camera, cameraBlend, towOffer, get player() { return player; } };
   if (Q.has('simhook')) {
     Object.assign(window.__sim, { scene, renderer, canvas, keys, render: () => render(), step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
@@ -540,6 +540,7 @@ function resetRace() {
 function resetEvent() {
   world?.tyreWalls?.reset();
   notifications.clear();
+  if (menu?.accounts?.offline) notifications.post({id:'playing-offline',title:'PLAYING OFFLINE',text:'Progress stays on this device',ms:5000,priority:10});
   const { def, r } = G.ev, dir = r.dir;
   buildGrid();
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
@@ -596,7 +597,8 @@ function offerTow() {
   if (towOffer.element || towOffer.cooldown > 0) return;
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>Repair the car and return to your last road position. ' + (inFreeRoam() ? 'Free recovery.' : 'Costs 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">TOW + REPAIR · ' + bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'camera' : 'tow', activeInputDevice()) + '</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
+  const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? ' → ' + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + (inFreeRoam() ? 'Return to the road and repair your car.' : 'Return to the road and repair your car · Adds 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
   if (!inFreeRoam() && !multiplayer.active) {
@@ -604,7 +606,7 @@ function offerTow() {
     retire.onclick = () => { closeTowOffer(); if (multiplayer.active) multiplayer.retire(); else finishRace('retired'); };
     el.querySelector('.tow-actions').append(retire);
   }
-  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.textContent = 'R: tow'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
+  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.innerHTML = recoveryKey + ' Tow and repair'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
   towOffer.element = el; towOffer.elapsed = 0; notifications.adopt('tow',el,{priority:60,persistent:true});
 }
 // Water still produces its splash, but recovery waits for the driver to accept the offer.
@@ -656,8 +658,8 @@ function corridorCheck(pv, dt) {
   if (result.tow) { clearCorridorWarning(); tow(pv, { automatic: true }); return true; }
   if (result.warning) {
     document.body.classList.add('offtrack-warning');
-    const countdown = towOffer.corridorT > 0 ? ` · ${Math.ceil(result.remaining)} s` : '';
-    notifications.toast('Return to the road' + countdown, { id: 'offtrack', kind: 'hud', tone: 'bad', priority: 70, persistent: true });
+    const countdown = towOffer.corridorT > 0 ? `Automatic recovery in ${Math.ceil(result.remaining)} s` : 'Follow the road';
+    notifications.post({title:'RETURN TO THE ROAD',text:countdown, id: 'offtrack', kind: 'hud', tone: 'bad', priority: 70, persistent: true });
   } else clearCorridorWarning();
   return false;
 }
@@ -798,6 +800,7 @@ function readInput(dt) {
   { const hint = ui.hintDevice(G.inputDevice); if (document.body.dataset.input !== hint) document.body.dataset.input = hint; } // device-aware key hints (ui.css)
   if (syncSteeringAssist() && menu?.screen === 'settings' && settings.steeringAssist === null) menu.refreshValues();
   for (const name of controls.actions) {
+    if (!inMenu && name === 'back' && notifications.action(name, {gamepad: activeInputDevice() === 'gamepad'})) continue;
     // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
     if ((inMenu && name === 'restart' && input.confirm) || (inMenu && name === 'pause' && input.back) || (!inMenu && name === 'back')) continue;
     if (!inMenu) drivingHints.action(name);
@@ -1132,6 +1135,7 @@ function flowAction(name) {
   }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
+  if (notifications.action(name, {gamepad: activeInputDevice() === 'gamepad'})) return true;
   switch (name) {
     case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
@@ -1778,6 +1782,7 @@ const _blendQ = new THREE.Quaternion(); // finishCamera / cockpit-camera scratch
 function applyCamMode() {
   if (!player) return;
   if (camState.mode !== G.cam) { beginCameraBlend(); camState.mode = G.cam; }
+  document.body.dataset.cameraView = G.cam;
   const cock = G.cam === 'cockpit';
   player.cockpit.setVisible(true); // The open cabins keep their dashboard in chase/garage views.
   player.driver.head.visible = !cock && !cameraBlend.active;
@@ -1900,7 +1905,7 @@ function frame(now) {
   if (input.handbrake) drivingHints.action('handbrake');
   if (player) {
     const watching = multiplayer.spectating(), selectedDriverVehicle = watching ? remoteCars.get(watching.id)?.veh ?? null : player.veh;
-    updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden, spectating: !!watching, towLabel: bindingLabel(controls.bindings, 'tow', activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
+    updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden, spectating: !!watching, towLabel: bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()), gamepad: activeInputDevice() === 'gamepad', confirmLabel: bindingLabel(controls.bindings,'confirm',activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
   }
   cpuMetrics.frame(cpuFrameStart);

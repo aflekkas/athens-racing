@@ -1,0 +1,24 @@
+{
+  "candidate": "34cf35deb231cfbbd1ee0823ddf6863f9e9e71e9",
+  "parent": "8940394cbbf49e766f1467d4f9cd431df155b52a",
+  "sha256": {
+    "src/engine-hud.js": "7d5dfe0fe19dec5d2c8b560a6cfaba483f572daf60365ff1a4496e38a9d62ee2",
+    "src/driving-feedback-model.js": "d90655990e93e32a06b01e060a035ce9e20800dc83022ab5cc20424940e4734f",
+    "src/main.js": "ae477a2c0557770e2ed2f9f082b3856b5495ad5dd3d5f7bfba011577a94b62f6",
+    "src/ui/notifications.css": "92b9813275ac228ca61e2c71f8150b1f826dbf7242d904307e79af28abafd824",
+    "src/ui/phone-wheel-game.js": "d0ec5bf059f2dad61abc98156cf5264c18562fbd622e305b4b9adc891cdfce07",
+    "src/ui/notification-queue.js": "1c9ffd1ab24577dfa93cb8ab734c75159bda0514d934d7fece17f74cf9fd11a0",
+    "src/ui/notifications.js": "577e40b23f1b1e08a78ba55d08929bbd2be29483eca14eb2dd8fa739777018a4",
+    "src/ui/notice-style.js": "532c6721fdfb8a6bc9bf0c0a6ef4a90868e96aa8b0450e9f7dec4cfa7853e24e",
+    "src/ui/account-screen.js": "acceb46a7240448ab1943701367ea61f7661b9f676a09f7538612f6f3eb87247",
+    "tools/driving-feedback.test.mjs": "7ae0897e5c9b1537970347c8177490215ae111838cf9dff2e5fd0b1e2385c544",
+    "tools/notifications.test.mjs": "67932d77efb4862d14cd5927995d03559546c97594c964e402473c5ebd771788",
+    "CHANGELOG.md": "41b41a0bd4ade1afa9d090ab0279a4eb5ff09b865aecf14f6ee7d641f170966d",
+    "tools/notices-capture.mjs": "fbdde763a91fc66b666f381aeb13fe195f917a9902734c65248792afb5323210",
+    "assets/changelog/2026.10.15.3/compact-race-notices.webp": "71f7779a63afddba205783f58017c02ff18f5e7e9987d626569644fb1e5d34cb",
+    "tools/notices-capture-helper.cjs": "6e91169c4aebde033c077fdeb7d1d960ee3226e5e95c0a89cf7f9195718fdd9f",
+    "tools/driving-aids.test.mjs": "7f44b922eda7e88a466ac3f41625a399e263abe8ba5c107b278551ce5a583fb6"
+  },
+  "runtimeMatchesGatedArchive": true,
+  "note": "Capture helper and evidence updated after snapshot; runtime files match exactly."
+}

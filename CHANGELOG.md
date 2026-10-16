@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Race notices are smaller and clearer. Related warnings combine, tow actions work with touch and controllers, and alerts stay clear of the driving instruments.
+  ![One compact engine warning with a working tow and repair action](assets/changelog/2026.10.15.3/compact-race-notices.webp "One warning. One recovery action.")
+
 - Hills regain subtle earth, scrub and rock colours, while bright plaster and muted accent colours make building blocks stand out.
   ![Varied earth colours and contrasting Riviera building blocks](assets/changelog/2026.10.15.4/world-colour.webp "Subtle landscape texture, distinct building colours.")
 

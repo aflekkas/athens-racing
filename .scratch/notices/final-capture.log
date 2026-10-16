@@ -1,0 +1,116 @@
+[browser-slot] slot 3 acquired (ticket 1103, waited 274s)
+BOOT after
+PROGRESS {"loaded":"menu-backdrop ui-open","world":false,"loading":"\n  \n  \n  \n    ATHENSRACING\n    \n      CLOSED CIRCUIT  2.0 KM / LAP\n      LOADING TRACK FOR FREE ROAM\n      MEGARA CIRCUI"}
+PROGRESS {"loaded":"menu-backdrop ui-open","world":false,"loading":"\n  \n  \n  \n    ATHENSRACING\n    \n      CLOSED CIRCUIT  2.0 KM / LAP\n      LOADING TRACK FOR FREE ROAM\n      MEGARA CIRCUI"}
+PROGRESS {"loaded":"racing started loaded","world":true,"loading":"\n  \n  \n  \n    ATHENSRACING\n    \n      CLOSED CIRCUIT  2.0 KM / LAP\n      LOADING TRACK FOR FREE ROAM\n      MEGARA CIRCUI"}
+PROGRESS {"loaded":"racing started loaded","world":true,"loading":"\n  \n  \n  \n    ATHENSRACING\n    \n      CLOSED CIRCUIT  2.0 KM / LAP\n      LOADING TRACK FOR FREE ROAM\n      MEGARA CIRCUI"}
+WORLD READY
+VIEW 1280 chase
+VIEW 1280 cockpit
+VIEW 1920 chase
+VIEW 1920 cockpit
+VIEW 390 chase
+VIEW 390 cockpit
+VIEW 844 chase
+VIEW 844 cockpit
+TYPE before engine-disabled
+TYPE before engine-hot
+TYPE before limp-mode
+TYPE before body-damage
+TYPE before tow
+TYPE before tow-minimised
+TYPE before offtrack
+TYPE before police-pursuit
+TYPE before police-cooldown
+TYPE before police-busted
+TYPE before checkpoint
+TYPE before objective
+TYPE before objective-complete
+TYPE before wrong-way
+TYPE before phone-connected
+TYPE before phone-disconnected
+TYPE before invite
+TYPE before opa
+TYPE before offline
+TYPE before traction-control
+TYPE before gearbox
+TYPE before music
+TYPE before tip
+TYPE before speed-camera
+TYPE before signal
+TYPE before pedestrian
+TYPE before recovered
+TYPE before camera
+TYPE before controller
+TYPE before abs
+TYPE before unsafe-shift
+TYPE before shift-rejected
+TYPE before split
+TYPE before rival
+TYPE before finish
+TYPE before district
+TYPE before bump
+TYPE before takedown
+TYPE before nitro
+TYPE before retired
+TYPE before police-warning
+TYPE before police-observing
+TYPE before police-evaded
+TYPE before pickup
+TYPE before session
+TYPE after engine-disabled
+TYPE after engine-hot
+TYPE after limp-mode
+TYPE after body-damage
+TYPE after tow
+TYPE after tow-minimised
+TYPE after offtrack
+TYPE after police-pursuit
+TYPE after police-cooldown
+TYPE after police-busted
+TYPE after checkpoint
+TYPE after objective
+TYPE after objective-complete
+TYPE after wrong-way
+TYPE after phone-connected
+TYPE after phone-disconnected
+TYPE after invite
+TYPE after opa
+TYPE after offline
+TYPE after traction-control
+TYPE after gearbox
+TYPE after music
+TYPE after tip
+TYPE after speed-camera
+TYPE after signal
+TYPE after pedestrian
+TYPE after recovered
+TYPE after camera
+TYPE after controller
+TYPE after abs
+TYPE after unsafe-shift
+TYPE after shift-rejected
+TYPE after split
+TYPE after rival
+TYPE after finish
+TYPE after district
+TYPE after bump
+TYPE after takedown
+TYPE after nitro
+TYPE after retired
+TYPE after police-warning
+TYPE after police-observing
+TYPE after police-evaded
+TYPE after pickup
+TYPE after session
+COMPLETE after
+BASELINE: repaint legacy notices on the current scene and HUD
+RESHOOT before 1280 chase
+RESHOOT before 1280 cockpit
+RESHOOT before 1920 chase
+RESHOOT before 1920 cockpit
+RESHOOT before 390 chase
+RESHOOT before 390 cockpit
+RESHOOT before 844 chase
+RESHOOT before 844 cockpit
+BASELINE COMPLETE

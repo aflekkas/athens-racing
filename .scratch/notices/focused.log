@@ -1,0 +1,244 @@
+TAP version 13
+# Subtest: live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+ok 1 - live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+  ---
+  duration_ms: 22.901869
+  type: 'test'
+  ...
+# Subtest: production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+ok 2 - production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+  ---
+  duration_ms: 19.656329
+  type: 'test'
+  ...
+# Subtest: production aid settings preserve a live manual gear and a temporary paddle override
+ok 3 - production aid settings preserve a live manual gear and a temporary paddle override
+  ---
+  duration_ms: 18.61084
+  type: 'test'
+  ...
+# Subtest: live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+ok 4 - live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+  ---
+  duration_ms: 0.553731
+  type: 'test'
+  ...
+# Subtest: grip mapping preserves front breakaway when force utilization falls
+ok 5 - grip mapping preserves front breakaway when force utilization falls
+  ---
+  duration_ms: 15.812704
+  type: 'test'
+  ...
+# Subtest: damage explains actual power loss, cause and remapped recovery action
+ok 6 - damage explains actual power loss, cause and remapped recovery action
+  ---
+  duration_ms: 22.100764
+  type: 'test'
+  ...
+# Subtest: known curvature and braking distance retain physical units
+ok 7 - known curvature and braking distance retain physical units
+  ---
+  duration_ms: 0.601843
+  type: 'test'
+  ...
+# Subtest: straight is green; hairpin advice changes with speed, weather and car grip
+ok 8 - straight is green; hairpin advice changes with speed, weather and car grip
+  ---
+  duration_ms: 50.807292
+  type: 'test'
+  ...
+# Subtest: line stays inside actual width and retains grade, reverse lane/direction
+ok 9 - line stays inside actual width and retains grade, reverse lane/direction
+  ---
+  duration_ms: 17.703829
+  type: 'test'
+  ...
+# Subtest: downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+ok 10 - downhill and reaction margin move braking earlier; buffers reused and lifecycle unavailable is explicit
+  ---
+  duration_ms: 36.352321
+  type: 'test'
+  ...
+# Subtest: closed circuit wraps and clamps surveyed racing line without terrain chords
+ok 11 - closed circuit wraps and clamps surveyed racing line without terrain chords
+  ---
+  duration_ms: 1.397235
+  type: 'test'
+  ...
+# Subtest: free roam follows actual heading and backing direction; explicit reverse race stays fixed
+ok 12 - free roam follows actual heading and backing direction; explicit reverse race stays fixed
+  ---
+  duration_ms: 13.787148
+  type: 'test'
+  ...
+# Subtest: ENGINE HOT waits for a temperature that actually wears the engine
+ok 13 - ENGINE HOT waits for a temperature that actually wears the engine
+  ---
+  duration_ms: 1.059345
+  type: 'test'
+  ...
+# Subtest: vehicle and road warnings become cluster tell-tales with ISO lamp colours
+ok 14 - vehicle and road warnings become cluster tell-tales with ISO lamp colours
+  ---
+  duration_ms: 20.665971
+  type: 'test'
+  ...
+# Subtest: navigation and objectives are head-up cues; tips and media are infotainment cards
+ok 15 - navigation and objectives are head-up cues; tips and media are infotainment cards
+  ---
+  duration_ms: 3.818498
+  type: 'test'
+  ...
+# Subtest: every tell-tale renders as an SVG and as a CSS mask
+ok 16 - every tell-tale renders as an SVG and as a CSS mask
+  ---
+  duration_ms: 1.702764
+  type: 'test'
+  ...
+# Subtest: simultaneous sources share one prioritized banner and two prioritized toasts
+ok 17 - simultaneous sources share one prioritized banner and two prioritized toasts
+  ---
+  duration_ms: 40.909986
+  type: 'test'
+  ...
+# Subtest: duplicate bursts never multiply notices or restart their display lifetime
+ok 18 - duplicate bursts never multiply notices or restart their display lifetime
+  ---
+  duration_ms: 28.585062
+  type: 'test'
+  ...
+# Subtest: menus suppress all slots, pause remaining display time and drop stale queued warnings
+ok 19 - menus suppress all slots, pause remaining display time and drop stale queued warnings
+  ---
+  duration_ms: 0.646785
+  type: 'test'
+  ...
+# Subtest: persistent safety warnings survive preemption but disappear when their cause clears
+ok 20 - persistent safety warnings survive preemption but disappear when their cause clears
+  ---
+  duration_ms: 0.672713
+  type: 'test'
+  ...
+# Subtest: bounded queue drops the lowest priority burst and reports shown notices only once
+ok 21 - bounded queue drops the lowest priority burst and reports shown notices only once
+  ---
+  duration_ms: 16.859807
+  type: 'test'
+  ...
+# Subtest: visibility policy rejects pause/settings/lobby/loading/modal contexts
+ok 22 - visibility policy rejects pause/settings/lobby/loading/modal contexts
+  ---
+  duration_ms: 0.823976
+  type: 'test'
+  ...
+# Subtest: objective off-course warning uses the shared slot and clears without a separate banner
+ok 23 - objective off-course warning uses the shared slot and clears without a separate banner
+  ---
+  duration_ms: 16.71225
+  type: 'test'
+  ...
+# Subtest: five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+ok 24 - five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+  ---
+  duration_ms: 14.946901
+  type: 'test'
+  ...
+# Subtest: a renewed actionable warning replaces its old DOM node after dismissal
+ok 25 - a renewed actionable warning replaces its old DOM node after dismissal
+  ---
+  duration_ms: 14.031103
+  type: 'test'
+  ...
+# Subtest: engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+ok 26 - engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+  ---
+  duration_ms: 1.36795
+  type: 'test'
+  ...
+# Subtest: one route-direction warning wins across checkpoint, objective and wrong-way producers
+ok 27 - one route-direction warning wins across checkpoint, objective and wrong-way producers
+  ---
+  duration_ms: 0.737705
+  type: 'test'
+  ...
+# Subtest: same copy from different producers merges visually without hiding unrelated notices
+ok 28 - same copy from different producers merges visually without hiding unrelated notices
+  ---
+  duration_ms: 15.153096
+  type: 'test'
+  ...
+# Subtest: related police callouts preempt persistent status without duplicating it as a toast
+ok 29 - related police callouts preempt persistent status without duplicating it as a toast
+  ---
+  duration_ms: 0.442304
+  type: 'test'
+  ...
+# Subtest: mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+ok 30 - mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+  ---
+  duration_ms: 0.932319
+  type: 'test'
+  ...
+# Subtest: gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+ok 31 - gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+  ---
+  duration_ms: 25.989093
+  type: 'test'
+  ...
+# Subtest: merged cross-producer duplicates never return later or restart the original lifetime
+ok 32 - merged cross-producer duplicates never return later or restart the original lifetime
+  ---
+  duration_ms: 0.549144
+  type: 'test'
+  ...
+# Subtest: dismissing an alias clears its merged event, including its original visible card
+ok 33 - dismissing an alias clears its merged event, including its original visible card
+  ---
+  duration_ms: 0.291303
+  type: 'test'
+  ...
+# Subtest: manager dismissal resolves a merged producer alias
+ok 34 - manager dismissal resolves a merged producer alias
+  ---
+  duration_ms: 0.255346
+  type: 'test'
+  ...
+# Subtest: a higher-priority duplicate upgrades the visible action without extending its lifetime
+ok 35 - a higher-priority duplicate upgrades the visible action without extending its lifetime
+  ---
+  duration_ms: 0.378175
+  type: 'test'
+  ...
+# Subtest: phone disconnection and rejected shifts retain their actual severity
+ok 36 - phone disconnection and rejected shifts retain their actual severity
+  ---
+  duration_ms: 10.990225
+  type: 'test'
+  ...
+# Subtest: safe placement finds room for the critical action before accepting a short low-priority gap
+ok 37 - safe placement finds room for the critical action before accepting a short low-priority gap
+  ---
+  duration_ms: 0.324746
+  type: 'test'
+  ...
+# Subtest: a higher-priority route banner cannot suppress the actionable recovery fallback
+ok 38 - a higher-priority route banner cannot suppress the actionable recovery fallback
+  ---
+  duration_ms: 0.531771
+  type: 'test'
+  ...
+# Subtest: actual mirror projection reserves its glass and frame at different aspect ratios
+ok 39 - actual mirror projection reserves its glass and frame at different aspect ratios
+  ---
+  duration_ms: 295.826602
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1337.985154

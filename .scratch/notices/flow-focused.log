@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+ok 1 - live TC/ESC toggle restores fitted aids, keeps ABS and mechanical state, and uses the manager
+  ---
+  duration_ms: 14.170892
+  type: 'test'
+  ...
+# Subtest: production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+ok 2 - production flow toggles live in solo/online racing, settings subscriber runs, and menus consume it
+  ---
+  duration_ms: 9.77738
+  type: 'test'
+  ...
+# Subtest: production aid settings preserve a live manual gear and a temporary paddle override
+ok 3 - production aid settings preserve a live manual gear and a temporary paddle override
+  ---
+  duration_ms: 12.112003
+  type: 'test'
+  ...
+# Subtest: live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+ok 4 - live TC ON resumes the power-slide aids and preserves an ongoing handbrake spin
+  ---
+  duration_ms: 0.298276
+  type: 'test'
+  ...
+# Subtest: simultaneous sources share one prioritized banner and two prioritized toasts
+ok 5 - simultaneous sources share one prioritized banner and two prioritized toasts
+  ---
+  duration_ms: 8.392939
+  type: 'test'
+  ...
+# Subtest: duplicate bursts never multiply notices or restart their display lifetime
+ok 6 - duplicate bursts never multiply notices or restart their display lifetime
+  ---
+  duration_ms: 6.821719
+  type: 'test'
+  ...
+# Subtest: menus suppress all slots, pause remaining display time and drop stale queued warnings
+ok 7 - menus suppress all slots, pause remaining display time and drop stale queued warnings
+  ---
+  duration_ms: 0.513887
+  type: 'test'
+  ...
+# Subtest: persistent safety warnings survive preemption but disappear when their cause clears
+ok 8 - persistent safety warnings survive preemption but disappear when their cause clears
+  ---
+  duration_ms: 0.272137
+  type: 'test'
+  ...
+# Subtest: bounded queue drops the lowest priority burst and reports shown notices only once
+ok 9 - bounded queue drops the lowest priority burst and reports shown notices only once
+  ---
+  duration_ms: 0.843182
+  type: 'test'
+  ...
+# Subtest: visibility policy rejects pause/settings/lobby/loading/modal contexts
+ok 10 - visibility policy rejects pause/settings/lobby/loading/modal contexts
+  ---
+  duration_ms: 6.864338
+  type: 'test'
+  ...
+# Subtest: objective off-course warning uses the shared slot and clears without a separate banner
+ok 11 - objective off-course warning uses the shared slot and clears without a separate banner
+  ---
+  duration_ms: 1.986904
+  type: 'test'
+  ...
+# Subtest: five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+ok 12 - five viewport placements never overlap timer/minimap/dial/touch/route obstacles
+  ---
+  duration_ms: 0.761289
+  type: 'test'
+  ...
+# Subtest: a renewed actionable warning replaces its old DOM node after dismissal
+ok 13 - a renewed actionable warning replaces its old DOM node after dismissal
+  ---
+  duration_ms: 6.413909
+  type: 'test'
+  ...
+# Subtest: engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+ok 14 - engine condition owns the recovery event, including a minimized tow offer; tow returns when damage clears
+  ---
+  duration_ms: 0.675208
+  type: 'test'
+  ...
+# Subtest: one route-direction warning wins across checkpoint, objective and wrong-way producers
+ok 15 - one route-direction warning wins across checkpoint, objective and wrong-way producers
+  ---
+  duration_ms: 0.469115
+  type: 'test'
+  ...
+# Subtest: same copy from different producers merges visually without hiding unrelated notices
+ok 16 - same copy from different producers merges visually without hiding unrelated notices
+  ---
+  duration_ms: 0.30518
+  type: 'test'
+  ...
+# Subtest: related police callouts preempt persistent status without duplicating it as a toast
+ok 17 - related police callouts preempt persistent status without duplicating it as a toast
+  ---
+  duration_ms: 0.221874
+  type: 'test'
+  ...
+# Subtest: mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+ok 18 - mirror reservations and HUD obstacles stay clear at desktop, phone and landscape sizes in both views
+  ---
+  duration_ms: 0.63776
+  type: 'test'
+  ...
+# Subtest: gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+ok 19 - gamepad action requires explicit D-pad focus before confirm and routes the actual button click
+  ---
+  duration_ms: 15.486936
+  type: 'test'
+  ...
+# Subtest: merged cross-producer duplicates never return later or restart the original lifetime
+ok 20 - merged cross-producer duplicates never return later or restart the original lifetime
+  ---
+  duration_ms: 0.335926
+  type: 'test'
+  ...
+# Subtest: dismissing an alias clears its merged event, including its original visible card
+ok 21 - dismissing an alias clears its merged event, including its original visible card
+  ---
+  duration_ms: 0.176589
+  type: 'test'
+  ...
+# Subtest: manager dismissal resolves a merged producer alias
+ok 22 - manager dismissal resolves a merged producer alias
+  ---
+  duration_ms: 0.17695
+  type: 'test'
+  ...
+# Subtest: a higher-priority duplicate upgrades the visible action without extending its lifetime
+ok 23 - a higher-priority duplicate upgrades the visible action without extending its lifetime
+  ---
+  duration_ms: 0.26249
+  type: 'test'
+  ...
+# Subtest: phone disconnection and rejected shifts retain their actual severity
+ok 24 - phone disconnection and rejected shifts retain their actual severity
+  ---
+  duration_ms: 1.066749
+  type: 'test'
+  ...
+# Subtest: safe placement finds room for the critical action before accepting a short low-priority gap
+ok 25 - safe placement finds room for the critical action before accepting a short low-priority gap
+  ---
+  duration_ms: 0.197619
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 405.673407

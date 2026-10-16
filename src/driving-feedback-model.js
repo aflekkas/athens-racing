@@ -38,7 +38,7 @@ export function damageFeedback(vehicle, { spectating = false, towLabel = 'TOW', 
   const effect = stopped ? 'No engine power' : health < .99 ? `${Math.round(health * 100)}% engine power available`
     : bent ? 'Wheel damage affects steering' : body ? 'Cosmetic damage · full engine power' : hot ? 'Engine is hot · full power available' : 'Full engine power available';
   const repairAction = spectating ? 'Watching this driver · recovery is their choice'
-    : repairAvailable ? `${towLabel} · Tow and repair · ${towCost}` : 'Recovery unavailable right now';
+    : repairAvailable ? 'Tow and repair' : 'Recovery unavailable right now';
   return { visible: true, title: stopped ? 'ENGINE DISABLED' : hot ? 'ENGINE HOT' : health <= .7 ? 'LIMP MODE' : body && !bent && health >= .99 ? 'BODY DAMAGE' : 'CAR IMPAIRED', cause, effect, repairAction,
     health, tone: stopped || health < .3 ? 'bad' : 'warn' };
 }

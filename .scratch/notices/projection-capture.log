@@ -1,0 +1,13 @@
+[browser-slot] queued with ticket 1117
+[browser-slot] slot 4 acquired (ticket 1117, waited 17s)
+BASELINE: repaint legacy notices on the current scene and HUD
+RESHOOT after 1280 chase
+RESHOOT after 1280 cockpit
+RESHOOT after 1920 chase
+RESHOOT after 1920 cockpit
+RESHOOT after 390 chase
+RESHOOT after 390 cockpit
+RESHOOT after 844 chase
+RESHOOT after 844 cockpit
+BASELINE COMPLETE
+COMPLETE placements

@@ -27,7 +27,7 @@ test('damage explains actual power loss, cause and remapped recovery action', ()
   const impaired = { engineDamage: .65, engHealth: .35, coolantTemp: 100 };
   const m = damageFeedback(impaired, { towLabel: 'RB', repairAvailable: true, towCost: 'free in roam' });
   assert.match(m.cause, /wear/); assert.equal(m.effect, '35% engine power available');
-  assert.equal(m.repairAction, 'RB · Tow and repair · free in roam');
+  assert.equal(m.repairAction, 'Tow and repair');
   assert.match(damageFeedback({ ...impaired, engineFailureReason: 'mechanical_overrev' }).cause, /Unsafe downshift/);
   assert.equal(damageFeedback({ ...impaired, engineStalled: true }).effect, 'No engine power');
   assert.match(damageFeedback(impaired, { spectating: true, repairAvailable: true }).repairAction, /their choice/);
