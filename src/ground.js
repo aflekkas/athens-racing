@@ -652,7 +652,7 @@ export function buildSandTraps(ground, scene) {
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setIndex(idx); g.computeVertexNormals();
-  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: TX.sand_diff || null, normalMap: TX.sand_nor || null, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
   m.receiveShadow = true; scene.add(m);
   const rg = new THREE.BufferGeometry();
   rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
@@ -696,7 +696,7 @@ export function buildHumps(map, scene, heightC) {
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setIndex(idx); g.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ map: TX.ground_diff || null, normalMap: TX.ground_nor || null, vertexColors: true, roughness: 0.97 });
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.97 });
   const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = true;
   scene.add(m);
   return m;

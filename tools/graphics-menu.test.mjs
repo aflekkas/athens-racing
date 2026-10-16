@@ -18,7 +18,7 @@ test('Graphics menu writes preset, lighting, effects and a fixed resolution inde
   g=resolveGraphics(settings,{deviceRatio:2});assert.equal(g.pixelRatio,PRESETS.high.pixelRatio);assert.equal(g.lighting,'high');assert.ok(changes.includes('renderScale'));
  }finally{unsubscribe();for(const[key,value]of Object.entries(before))change(menu,key,value);}
 });
-test('Graphics tab lists five presets, lighting and effects levels, and no adaptive or automatic modes',()=>{
+test('Graphics tab lists five presets, lighting and effects levels, and an explicit dynamic resolution switch',()=>{
  const menu=Object.assign(Object.create(Menu.prototype),{h:{graphicsControl:{disabled:true}}});
  const html=menu.r_settings({tab:'video',from:'pause'});
  for(const key of ['graphics','lighting','effects','renderScale','drawDistance','frameCap'])assert.match(html,new RegExp('data-key="'+key+'"'));
@@ -31,4 +31,12 @@ test('Potato is genuinely minimal and presets never resolve to automatic behavio
  assert.equal(p.L.shadow,null);assert.equal(p.L.probeEvery,0);assert.equal(p.E.ao,0);assert.equal(p.E.bloomMips,0);assert.equal(p.E.msaa,0);assert.equal(p.E.mirrorEvery,0);assert.equal(p.E.waterEvery,0);
  assert.ok(p.pixelRatio<=.6);assert.ok(p.drawDistance<=500);
  const legacy=resolveGraphics({graphics:'auto',renderScale:'auto'},{deviceRatio:1,gpuName:'SwiftShader'});assert.equal(legacy.preset,'low');
+});
+
+test('Dynamic resolution is on by default, persisted and controllable independently of the ceiling',()=>{
+ const menu=Object.assign(Object.create(Menu.prototype),{h:{}});
+ assert.match(menu.r_settings({tab:'video'}),/data-key="dynamicResolution"/);
+ const before=settings.dynamicResolution;
+ try{change(menu,'dynamicResolution',false);assert.equal(settings.dynamicResolution,false);change(menu,'dynamicResolution',true);assert.equal(settings.dynamicResolution,true);}
+ finally{change(menu,'dynamicResolution',before);}
 });

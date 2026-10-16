@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 1 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 11.504483
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 2 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 4.136551
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 3 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.267148
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 4 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 14.094791
+  type: 'test'
+  ...
+# Subtest: shared plain/quantized attributes and indices allocate one GPU buffer per worker-accounted identity
+ok 5 - shared plain/quantized attributes and indices allocate one GPU buffer per worker-accounted identity
+  ---
+  duration_ms: 318.783698
+  type: 'test'
+  ...
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 6 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 5.350443
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 7 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 0.865112
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 8 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.322181
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 9 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 5.971701
+  type: 'test'
+  ...
+# Subtest: menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+ok 10 - menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+  ---
+  duration_ms: 37.762715
+  type: 'test'
+  ...
+# Subtest: stale transferred results cannot activate after movement or disposal
+ok 11 - stale transferred results cannot activate after movement or disposal
+  ---
+  duration_ms: 9.944886
+  type: 'test'
+  ...
+# Subtest: spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+ok 12 - spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+  ---
+  duration_ms: 6.879312
+  type: 'test'
+  ...
+# Subtest: activation is incremental and target is moved only after complete activation
+ok 13 - activation is incremental and target is moved only after complete activation
+  ---
+  duration_ms: 6.617716
+  type: 'test'
+  ...
+# Subtest: failed loads retry twice; reservations are released and explicit retry recovers
+ok 14 - failed loads retry twice; reservations are released and explicit retry recovers
+  ---
+  duration_ms: 5.679325
+  type: 'test'
+  ...
+# Subtest: floating origin stays on the grid over 30 km without changing logical cell IDs
+ok 15 - floating origin stays on the grid over 30 km without changing logical cell IDs
+  ---
+  duration_ms: 3.393435
+  type: 'test'
+  ...
+# Subtest: shared resources dispose once after the last owner releases
+ok 16 - shared resources dispose once after the last owner releases
+  ---
+  duration_ms: 0.787267
+  type: 'test'
+  ...
+# Subtest: layered contacts choose bridge, tunnel or ground by height and explicit layer
+ok 17 - layered contacts choose bridge, tunnel or ground by height and explicit layer
+  ---
+  duration_ms: 5.486587
+  type: 'test'
+  ...
+# Subtest: worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+ok 18 - worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+  ---
+  duration_ms: 162.103784
+  type: 'test'
+  ...
+# Subtest: twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+ok 19 - twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+  ---
+  duration_ms: 319.994244
+  type: 'test'
+  ...
+# Subtest: tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+ok 20 - tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+  ---
+  duration_ms: 12.922967
+  type: 'test'
+  ...
+# Subtest: crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+ok 21 - crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+  ---
+  duration_ms: 1.991582
+  type: 'test'
+  ...
+# Subtest: an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+ok 22 - an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+  ---
+  duration_ms: 5.811131
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 918.038642

@@ -8,7 +8,7 @@ import { loadBakedWorld, restoreBakedTerrain, restoreBakedRoads } from './baked-
 import { buildRoad } from './road.js';
 import { RoadNetwork } from './road-network-surface.js';
 import { buildRoadNetwork, buildNetworkParking } from './road-network.js';
-import { buildBuildings, infillBuildings, LabelAtlas } from './buildings.js';
+import { buildBuildings, LabelAtlas } from './buildings.js';
 import { buildNature } from './nature.js';
 import { buildRoadside } from './roadside.js';
 import { buildSpeedSigns } from './speed-signs.js';
@@ -71,7 +71,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
   const staticRoots = [], still = (build, label) => { const n = group.children.length, out = build(); for (const o of group.children.slice(n)) { o.name ||= label; staticRoots.push(o); } return out; };
   try {
     progress('BUILDING TERRAIN', .25); await frameYield();
-    const infill = coastal ? infillBuildings(map, (x, z) => map.terrain.height(x, z)) : [];
+    const infill = []; // Owner: represent mapped building footprints only.
     const baked = await loadBakedWorld(map, network);
     const terrainOptions = { coastal, farmland: map.id === 'megara', network, beachAreas: map.data.areas?.beach || [] };
     const ter = still(() => baked ? restoreBakedTerrain(baked.terrain, map.terrain, network, group, terrainOptions) : buildTerrain(map.terrain, route, [], group, terrainOptions), 'terrain');
@@ -89,13 +89,13 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
       signals = new Signals(map, group, road.group, assets.junctions);
       progress('RAISING VOULIAGMENI', .55); await frameYield();
       const bld = still(() => buildBuildings(map, group, ter.heightC, labels, infill), 'buildings');
-      progress('PLANTING PALMS AND PINES', .7); await frameYield();
+      progress('BUILDING COAST AMENITIES', .7); await frameYield();
       const nat = still(() => buildNature(map, group, ter.heightC, bld, assets), 'nature'); natureGroup = nat.group;
       // Keep the original Riviera builders and their order, including the people before static batching.
       const people = new People(map, group, assets, natureGroup);
       custom = { people, ...still(() => buildRoadside(map, group, ter.heightC, assets), 'roadside') };
       for (const g of [road.group, bld.group, nat.group]) batchStatic(g);
-      addBuildingImpostors(bld.group, quality);
+
       staticRoots.push(ENV.createFarScenery(map.data.proj)); group.add(staticRoots.at(-1));
     } else {
       const module = await import(`./maps/${map.id}.js`);
@@ -138,6 +138,7 @@ export async function buildMapWorld(map, { scene, sky, skyCube, lowGraphics = fa
     return { map, group, water, assets, signals, people, traffic, ground, splash, fx, markers, lod, tyreWalls: custom?.tyreWalls,
       dispose() {
         if (disposed) return; disposed = true;
+        people.bodies.dispose?.();
         // Damage fragments are parented directly to scene, outside this map root.
         for (const car of traffic.cars) car.m?.disposeDamage?.();
         const counts = disposeMapGroup(group, scene);

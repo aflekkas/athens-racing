@@ -1,0 +1,551 @@
+[
+  {
+    "id": "riviera",
+    "mapDecodeCpuMs": 550.704,
+    "networkCpuMs": 118.542,
+    "buildCpuMs": 51829.36,
+    "stages": [
+      {
+        "stage": "modules",
+        "rss": 78454784,
+        "heapTotal": 20832256,
+        "heapUsed": 11398872,
+        "external": 2058706,
+        "arrayBuffers": 307311
+      },
+      {
+        "stage": "map",
+        "rss": 105861120,
+        "heapTotal": 32890880,
+        "heapUsed": 15132368,
+        "external": 7182367,
+        "arrayBuffers": 3815147
+      },
+      {
+        "stage": "network",
+        "rss": 107433984,
+        "heapTotal": 52027392,
+        "heapUsed": 17555432,
+        "external": 7182367,
+        "arrayBuffers": 3815147
+      },
+      {
+        "stage": "terrain",
+        "rss": 296382464,
+        "heapTotal": 75579392,
+        "heapUsed": 39998584,
+        "external": 70992237,
+        "arrayBuffers": 67629363
+      }
+    ],
+    "contactMemory": {
+      "refinedCells": 46497,
+      "refinedBytes": 6695568,
+      "coarseCells": 11296,
+      "coarseBytes": 180736
+    },
+    "bytes": 30788944,
+    "triangles": 2078540,
+    "chunks": 59,
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          959.3300170898438,
+          17.34000015258789,
+          2350.81005859375
+        ],
+        "target": [
+          939.3300170898438,
+          10.34000015258789,
+          2330.81005859375
+        ],
+        "calls": 11,
+        "triangles": 80224
+      },
+      {
+        "name": "mid",
+        "eye": [
+          3137.949951171875,
+          14.880000114440918,
+          1527.3299560546875
+        ],
+        "target": [
+          3107.949951171875,
+          4.880000114440918,
+          1497.3299560546875
+        ],
+        "calls": 17,
+        "triangles": 81331
+      },
+      {
+        "name": "overview",
+        "eye": [
+          4607.949951171875,
+          2204.880000114441,
+          2997.3299560546875
+        ],
+        "target": [
+          3107.949951171875,
+          4.880000114440918,
+          1497.3299560546875
+        ],
+        "calls": 44,
+        "triangles": 577926
+      }
+    ],
+    "cpuLodIndexBytes": 22757412,
+    "patchCount": 5984,
+    "lodHistogram": [
+      {
+        "pose": "start",
+        "counts": [
+          2682,
+          1490,
+          556,
+          1256
+        ]
+      },
+      {
+        "pose": "mid",
+        "counts": [
+          2738,
+          1446,
+          561,
+          1239
+        ]
+      },
+      {
+        "pose": "overview",
+        "counts": [
+          2584,
+          1569,
+          562,
+          1269
+        ]
+      }
+    ],
+    "stationarySelectionCpuUs": 939.3,
+    "cachedDecodeBuildCpuMs": 1468.5,
+    "rawPackBytes": 46309948,
+    "gzipPackBytes": 25030193,
+    "restored": {
+      "bytes": 30788944,
+      "triangles": 2078540,
+      "chunks": 59,
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            959.3300170898438,
+            17.34000015258789,
+            2350.81005859375
+          ],
+          "target": [
+            939.3300170898438,
+            10.34000015258789,
+            2330.81005859375
+          ],
+          "calls": 11,
+          "triangles": 80224
+        },
+        {
+          "name": "mid",
+          "eye": [
+            3137.949951171875,
+            14.880000114440918,
+            1527.3299560546875
+          ],
+          "target": [
+            3107.949951171875,
+            4.880000114440918,
+            1497.3299560546875
+          ],
+          "calls": 17,
+          "triangles": 81331
+        },
+        {
+          "name": "overview",
+          "eye": [
+            4607.949951171875,
+            2204.880000114441,
+            2997.3299560546875
+          ],
+          "target": [
+            3107.949951171875,
+            4.880000114440918,
+            1497.3299560546875
+          ],
+          "calls": 44,
+          "triangles": 577926
+        }
+      ]
+    }
+  },
+  {
+    "id": "penteli",
+    "mapDecodeCpuMs": 354.437,
+    "networkCpuMs": 31.49,
+    "buildCpuMs": 64338.341,
+    "stages": [
+      {
+        "stage": "modules",
+        "rss": 77705216,
+        "heapTotal": 20832256,
+        "heapUsed": 11398904,
+        "external": 2058706,
+        "arrayBuffers": 307311
+      },
+      {
+        "stage": "map",
+        "rss": 103772160,
+        "heapTotal": 32104448,
+        "heapUsed": 14274544,
+        "external": 7861340,
+        "arrayBuffers": 4494120
+      },
+      {
+        "stage": "network",
+        "rss": 103903232,
+        "heapTotal": 33153024,
+        "heapUsed": 15264744,
+        "external": 7861340,
+        "arrayBuffers": 4494120
+      },
+      {
+        "stage": "terrain",
+        "rss": 355291136,
+        "heapTotal": 77348864,
+        "heapUsed": 41644224,
+        "external": 100249114,
+        "arrayBuffers": 96886240
+      }
+    ],
+    "contactMemory": {
+      "refinedCells": 28071,
+      "refinedBytes": 9095004,
+      "coarseCells": 32268,
+      "coarseBytes": 516288
+    },
+    "bytes": 44980154,
+    "triangles": 3053918,
+    "chunks": 54,
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          -713.8499755859375,
+          478.7200012207031,
+          -1733.4200439453125
+        ],
+        "target": [
+          -733.8499755859375,
+          471.7200012207031,
+          -1753.4200439453125
+        ],
+        "calls": 13,
+        "triangles": 125184
+      },
+      {
+        "name": "mid",
+        "eye": [
+          2622.080078125,
+          478.8299865722656,
+          781.4099731445312
+        ],
+        "target": [
+          2592.080078125,
+          468.8299865722656,
+          751.4099731445312
+        ],
+        "calls": 41,
+        "triangles": 465345
+      },
+      {
+        "name": "overview",
+        "eye": [
+          4092.080078125,
+          2668.8299865722656,
+          2251.4099731445312
+        ],
+        "target": [
+          2592.080078125,
+          468.8299865722656,
+          751.4099731445312
+        ],
+        "calls": 53,
+        "triangles": 613240
+      }
+    ],
+    "cpuLodIndexBytes": 33859026,
+    "patchCount": 7440,
+    "lodHistogram": [
+      {
+        "pose": "start",
+        "counts": [
+          655,
+          594,
+          2048,
+          4143
+        ]
+      },
+      {
+        "pose": "mid",
+        "counts": [
+          523,
+          612,
+          2201,
+          4104
+        ]
+      },
+      {
+        "pose": "overview",
+        "counts": [
+          482,
+          599,
+          2115,
+          4244
+        ]
+      }
+    ],
+    "stationarySelectionCpuUs": 2293.62,
+    "cachedDecodeBuildCpuMs": 1440.004,
+    "rawPackBytes": 66915934,
+    "gzipPackBytes": 36463650,
+    "restored": {
+      "bytes": 44980154,
+      "triangles": 3053918,
+      "chunks": 54,
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            -713.8499755859375,
+            478.7200012207031,
+            -1733.4200439453125
+          ],
+          "target": [
+            -733.8499755859375,
+            471.7200012207031,
+            -1753.4200439453125
+          ],
+          "calls": 13,
+          "triangles": 125184
+        },
+        {
+          "name": "mid",
+          "eye": [
+            2622.080078125,
+            478.8299865722656,
+            781.4099731445312
+          ],
+          "target": [
+            2592.080078125,
+            468.8299865722656,
+            751.4099731445312
+          ],
+          "calls": 41,
+          "triangles": 465345
+        },
+        {
+          "name": "overview",
+          "eye": [
+            4092.080078125,
+            2668.8299865722656,
+            2251.4099731445312
+          ],
+          "target": [
+            2592.080078125,
+            468.8299865722656,
+            751.4099731445312
+          ],
+          "calls": 53,
+          "triangles": 613240
+        }
+      ]
+    }
+  },
+  {
+    "id": "megara",
+    "mapDecodeCpuMs": 344.288,
+    "networkCpuMs": 14.782,
+    "buildCpuMs": 3416.763,
+    "stages": [
+      {
+        "stage": "modules",
+        "rss": 77447168,
+        "heapTotal": 21356544,
+        "heapUsed": 11398872,
+        "external": 2058706,
+        "arrayBuffers": 307311
+      },
+      {
+        "stage": "map",
+        "rss": 96190464,
+        "heapTotal": 32104448,
+        "heapUsed": 13919360,
+        "external": 4738337,
+        "arrayBuffers": 1371117
+      },
+      {
+        "stage": "network",
+        "rss": 96452608,
+        "heapTotal": 32628736,
+        "heapUsed": 14082072,
+        "external": 4738337,
+        "arrayBuffers": 1371117
+      },
+      {
+        "stage": "terrain",
+        "rss": 141533184,
+        "heapTotal": 54337536,
+        "heapUsed": 18826840,
+        "external": 9518822,
+        "arrayBuffers": 6151602
+      }
+    ],
+    "contactMemory": {
+      "refinedCells": 4114,
+      "refinedBytes": 411400,
+      "coarseCells": 7801,
+      "coarseBytes": 124816
+    },
+    "bytes": 1932213,
+    "triangles": 129876,
+    "chunks": 12,
+    "poses": [
+      {
+        "name": "start",
+        "eye": [
+          -24.436195251026312,
+          16.25495808512799,
+          5.347480909520872
+        ],
+        "target": [
+          -44.43619525102631,
+          9.254958085127988,
+          -14.652519090479128
+        ],
+        "calls": 12,
+        "triangles": 22796
+      },
+      {
+        "name": "mid",
+        "eye": [
+          -11.543998718261491,
+          19.55500030517578,
+          -107.60499572753903
+        ],
+        "target": [
+          -41.54399871826149,
+          9.555000305175781,
+          -137.60499572753903
+        ],
+        "calls": 9,
+        "triangles": 12759
+      },
+      {
+        "name": "overview",
+        "eye": [
+          1458.4560012817385,
+          2209.555000305176,
+          1362.395004272461
+        ],
+        "target": [
+          -41.54399871826149,
+          9.555000305175781,
+          -137.60499572753903
+        ],
+        "calls": 12,
+        "triangles": 46440
+      }
+    ],
+    "cpuLodIndexBytes": 1394304,
+    "patchCount": 347,
+    "lodHistogram": [
+      {
+        "pose": "start",
+        "counts": [
+          90,
+          102,
+          54,
+          101
+        ]
+      },
+      {
+        "pose": "mid",
+        "counts": [
+          95,
+          100,
+          51,
+          101
+        ]
+      },
+      {
+        "pose": "overview",
+        "counts": [
+          70,
+          91,
+          48,
+          138
+        ]
+      }
+    ],
+    "stationarySelectionCpuUs": 265.13,
+    "cachedDecodeBuildCpuMs": 218.725,
+    "rawPackBytes": 3679728,
+    "gzipPackBytes": 1598116,
+    "restored": {
+      "bytes": 1932213,
+      "triangles": 129876,
+      "chunks": 12,
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            -24.436195251026312,
+            16.25495808512799,
+            5.347480909520872
+          ],
+          "target": [
+            -44.43619525102631,
+            9.254958085127988,
+            -14.652519090479128
+          ],
+          "calls": 12,
+          "triangles": 22796
+        },
+        {
+          "name": "mid",
+          "eye": [
+            -11.543998718261491,
+            19.55500030517578,
+            -107.60499572753903
+          ],
+          "target": [
+            -41.54399871826149,
+            9.555000305175781,
+            -137.60499572753903
+          ],
+          "calls": 9,
+          "triangles": 12759
+        },
+        {
+          "name": "overview",
+          "eye": [
+            1458.4560012817385,
+            2209.555000305176,
+            1362.395004272461
+          ],
+          "target": [
+            -41.54399871826149,
+            9.555000305175781,
+            -137.60499572753903
+          ],
+          "calls": 12,
+          "triangles": 46440
+        }
+      ]
+    }
+  }
+]

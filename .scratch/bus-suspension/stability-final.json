@@ -1,0 +1,6988 @@
+[
+  {
+    "id": "mini",
+    "type": "drop",
+    "ratios": [
+      0.000009967254469910704,
+      0.000026929064232339543,
+      3.836132238240541e-8
+    ],
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "step-steer",
+    "roll": 1.1205570222094388,
+    "pitch": 0.006739366738561109,
+    "travel": 0.014207495763241951,
+    "minLoad": 0.7399683433022707,
+    "lastLoad": 0.9999998251882456,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "lane-change",
+    "roll": 0.7662742496646843,
+    "pitch": 0.001442600074069433,
+    "travel": 0.008560743467057215,
+    "minLoad": 0.8414066446834312,
+    "lastLoad": 0.9999982527518607,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "kerb",
+    "roll": 2.2618781323607045,
+    "pitch": 1.5681485636396513,
+    "travel": 0.05107651803298496,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999906619,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7585181049466293,
+    "travel": 0.014052695565714781,
+    "minLoad": 0.6631067601441516,
+    "lastLoad": 0.9999999773880118,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "driven-step-steer",
+    "roll": 0.7989828929106134,
+    "pitch": 0.04669274195733659,
+    "minLoad": 0.8272664699705454,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "driven-lane-change",
+    "roll": 0.778983955041309,
+    "pitch": 0.04669274195733659,
+    "minLoad": 0.8384032435055825,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.3651896494261881,
+    "minLoad": 0.39810537499298687,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "cruise300s",
+    "early": 0.43571142720700196,
+    "lateEnergy": 0.4357114272070285,
+    "maxPose": 0.0027595128274815546,
+    "ok": true
+  },
+  {
+    "id": "mini",
+    "type": "driven-cruise300s",
+    "firstEnergy": 7.314012697510776e-19,
+    "lastEnergy": 1.93023052911173e-32,
+    "peak": 0.0005242738247852299,
+    "speed": 72.85318000586715,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "drop",
+    "ratios": [
+      0.000007137134848252252,
+      0.000044530789966516005,
+      0.0000030039811879278484
+    ],
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "step-steer",
+    "roll": 0.8408199409529031,
+    "pitch": 0.0031895324741644028,
+    "travel": 0.01022327109550834,
+    "minLoad": 0.7652886749448494,
+    "lastLoad": 0.9999993833437026,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "lane-change",
+    "roll": 0.5374192490253883,
+    "pitch": 0.0008970983511928047,
+    "travel": 0.005829607927871698,
+    "minLoad": 0.8597863268960417,
+    "lastLoad": 0.999999110772779,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "kerb",
+    "roll": 1.9975060953014496,
+    "pitch": 1.6210391564038813,
+    "travel": 0.05172032667636065,
+    "minLoad": 0,
+    "lastLoad": 0.9999999994725408,
+    "peakAy": 0,
+    "maxLost": 0.05416666666666666,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8153686119647604,
+    "travel": 0.01764081505748803,
+    "minLoad": 0.7445398910974206,
+    "lastLoad": 0.9999998052048416,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "driven-step-steer",
+    "roll": 0.5496890973515622,
+    "pitch": 0.06740897889517904,
+    "minLoad": 0.8404542883887994,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "driven-lane-change",
+    "roll": 0.5431329160683127,
+    "pitch": 0.06755992367766894,
+    "minLoad": 0.8516919352030772,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "driven-brake",
+    "roll": 2.527458397348974e-16,
+    "pitch": 1.6425803015186398,
+    "minLoad": 0.49681671072884104,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "cruise300s",
+    "early": 0.5861529558460302,
+    "lateEnergy": 0.5861529558460731,
+    "maxPose": 0.0028016852420300184,
+    "ok": true
+  },
+  {
+    "id": "z4",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.069677487603087e-20,
+    "lastEnergy": 1.0502218776747826e-32,
+    "peak": 0.0007912307622686075,
+    "speed": 73.34047057096383,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "drop",
+    "ratios": [
+      0.00029454078492084597,
+      0.0023322567884697513,
+      0.00000418811641204582
+    ],
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "step-steer",
+    "roll": 1.6961632550860968,
+    "pitch": 0.009054414859709647,
+    "travel": 0.023166215155071255,
+    "minLoad": 0.7477265751590737,
+    "lastLoad": 0.9999879688183492,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "lane-change",
+    "roll": 1.1895433197464902,
+    "pitch": 0.0029968784570647542,
+    "travel": 0.014457499857035339,
+    "minLoad": 0.8316689597205161,
+    "lastLoad": 0.999991175402246,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "kerb",
+    "roll": 2.009935419925991,
+    "pitch": 1.5868089570045103,
+    "travel": 0.0616468437058679,
+    "minLoad": 0,
+    "lastLoad": 0.9999997040132114,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.0106520138872725,
+    "travel": 0.020836122715902138,
+    "minLoad": 0.6770168054776178,
+    "lastLoad": 0.99998385036551,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "driven-step-steer",
+    "roll": 1.2320810311219526,
+    "pitch": 0.03467648419728072,
+    "minLoad": 0.8292040867081125,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "driven-lane-change",
+    "roll": 1.1970247707709352,
+    "pitch": 0.03467648419728072,
+    "minLoad": 0.8274966864595897,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.7240543736059302,
+    "minLoad": 0.440193013168497,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "cruise300s",
+    "early": 0.5300763991232182,
+    "lateEnergy": 0.5300763991232667,
+    "maxPose": 0.003142565109165697,
+    "ok": true
+  },
+  {
+    "id": "taxi",
+    "type": "driven-cruise300s",
+    "firstEnergy": 6.191051421689997e-18,
+    "lastEnergy": 5.101906356053158e-32,
+    "peak": 0.0003260021765175755,
+    "speed": 72.5164993838244,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "drop",
+    "ratios": [
+      0.000026092710588085992,
+      0.00039089152039156196,
+      0.0000011032322754552666
+    ],
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "step-steer",
+    "roll": 0.8475662519380486,
+    "pitch": 0.0036367221665471556,
+    "travel": 0.010237591528765088,
+    "minLoad": 0.7460859774367871,
+    "lastLoad": 0.9999981590608846,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "lane-change",
+    "roll": 0.5645963171813252,
+    "pitch": 0.0009230843876709416,
+    "travel": 0.0060170626564737045,
+    "minLoad": 0.8384242574296938,
+    "lastLoad": 0.9999988136254676,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "kerb",
+    "roll": 1.9979089533664107,
+    "pitch": 1.6870616804459675,
+    "travel": 0.05599167752413414,
+    "minLoad": 0,
+    "lastLoad": 0.9999999817169143,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7200258153161336,
+    "travel": 0.017666330311925396,
+    "minLoad": 0.7824654943761394,
+    "lastLoad": 0.9999985522188545,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "driven-step-steer",
+    "roll": 0.6201492724673373,
+    "pitch": 0.07530873503664412,
+    "minLoad": 0.8048605498280457,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "driven-lane-change",
+    "roll": 0.6042832327200309,
+    "pitch": 0.07530873503664412,
+    "minLoad": 0.8172857138116059,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.3649850418308302,
+    "minLoad": 0.5934385315971052,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "cruise300s",
+    "early": 0.45159610043872994,
+    "lateEnergy": 0.45159610043878773,
+    "maxPose": 0.002645657429865946,
+    "ok": true
+  },
+  {
+    "id": "carrera",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.0639166735072724e-32,
+    "lastEnergy": 1.8543974199494123e-32,
+    "peak": 0.001026807744675927,
+    "speed": 73.98096820935328,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "drop",
+    "ratios": [
+      0.000002602011857578897,
+      0.000008429374280439197,
+      5.075894676056408e-9
+    ],
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "step-steer",
+    "roll": 0.8828666079579612,
+    "pitch": 0.0055899899372723475,
+    "travel": 0.011553895174303861,
+    "minLoad": 0.7550002713445381,
+    "lastLoad": 0.9999998487472069,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "lane-change",
+    "roll": 0.6206142653854543,
+    "pitch": 0.00113111450336996,
+    "travel": 0.0071719627570955525,
+    "minLoad": 0.8549381175085724,
+    "lastLoad": 0.9999998045892482,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "kerb",
+    "roll": 2.136216414384104,
+    "pitch": 1.507108487369952,
+    "travel": 0.04792621089999561,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999969272,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.5870477131874303,
+    "travel": 0.011016272722978681,
+    "minLoad": 0.6798250402939918,
+    "lastLoad": 0.9999999993242488,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "driven-step-steer",
+    "roll": 0.6539506049750035,
+    "pitch": 0.06413927187682124,
+    "minLoad": 0.8297218726615393,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "driven-lane-change",
+    "roll": 0.642749933828159,
+    "pitch": 0.06413927187682124,
+    "minLoad": 0.8318705620555243,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "driven-brake",
+    "roll": 5.0996061855166825e-15,
+    "pitch": 1.1155609340724058,
+    "minLoad": 0.401556821703423,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "cruise300s",
+    "early": 0.37160458417426906,
+    "lateEnergy": 0.3716045841743243,
+    "maxPose": 0.00257433547334958,
+    "ok": true
+  },
+  {
+    "id": "gr_yaris",
+    "type": "driven-cruise300s",
+    "firstEnergy": 5.276627865751734e-27,
+    "lastEnergy": 1.0931863155313268e-32,
+    "peak": 0.0006053929573990532,
+    "speed": 73.32721955415778,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "drop",
+    "ratios": [
+      0.000025037996110306508,
+      0.000534624665531847,
+      0.0000034970178390432243
+    ],
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "step-steer",
+    "roll": 1.669640532452982,
+    "pitch": 0.006615175619180455,
+    "travel": 0.019470306406720442,
+    "minLoad": 0.7262583866728919,
+    "lastLoad": 0.9999945261012327,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "lane-change",
+    "roll": 1.12731067414974,
+    "pitch": 0.002080685184635859,
+    "travel": 0.011645404623988716,
+    "minLoad": 0.8158995167208757,
+    "lastLoad": 0.9999941500192477,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "kerb",
+    "roll": 2.480484616502065,
+    "pitch": 1.7525531038113114,
+    "travel": 0.06113127194854835,
+    "minLoad": 0,
+    "lastLoad": 0.9999999221461349,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.0111571863693691,
+    "travel": 0.020833525916105457,
+    "minLoad": 0.706879391637165,
+    "lastLoad": 0.9999937176009028,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "driven-step-steer",
+    "roll": 1.1507911615295212,
+    "pitch": 0.07518656895483242,
+    "minLoad": 0.8118950073127298,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "driven-lane-change",
+    "roll": 1.1272242779637742,
+    "pitch": 0.07518656895483242,
+    "minLoad": 0.8166074867993725,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "driven-brake",
+    "roll": 2.2395707474134437e-16,
+    "pitch": 1.6635950378434128,
+    "minLoad": 0.5167227330123872,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "cruise300s",
+    "early": 0.39576364618777077,
+    "lateEnergy": 0.39576364618769316,
+    "maxPose": 0.0029928345432435623,
+    "ok": true
+  },
+  {
+    "id": "gtv",
+    "type": "driven-cruise300s",
+    "firstEnergy": 4.529556148692561e-19,
+    "lastEnergy": 1.509080807041118e-32,
+    "peak": 0.0007999596759666556,
+    "speed": 72.96959629758182,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "drop",
+    "ratios": [
+      0.000011235528499410683,
+      0.00005846883218139067,
+      1.3504440593892023e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "step-steer",
+    "roll": 1.220232919964629,
+    "pitch": 0.006382497142068853,
+    "travel": 0.01671476467509325,
+    "minLoad": 0.7576508702226299,
+    "lastLoad": 0.9999977791701116,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "lane-change",
+    "roll": 0.8424523816883781,
+    "pitch": 0.00168046790574713,
+    "travel": 0.010163901331395315,
+    "minLoad": 0.8470851583445497,
+    "lastLoad": 0.9999988567415828,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "kerb",
+    "roll": 2.1079740167038974,
+    "pitch": 1.5001938713539014,
+    "travel": 0.055696587392374,
+    "minLoad": 0,
+    "lastLoad": 0.9999999994029023,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8420336517413212,
+    "travel": 0.017218820943746296,
+    "minLoad": 0.6877644287244916,
+    "lastLoad": 0.9999997988757109,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "driven-step-steer",
+    "roll": 0.8636886052010796,
+    "pitch": 0.041669822992505434,
+    "minLoad": 0.8352984381283074,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "driven-lane-change",
+    "roll": 0.8482507177171889,
+    "pitch": 0.041669822992505434,
+    "minLoad": 0.8415044368399036,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.4622488239090223,
+    "minLoad": 0.4616419462252484,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "cruise300s",
+    "early": 0.44825516585326874,
+    "lateEnergy": 0.4482551658532498,
+    "maxPose": 0.0029115550731317955,
+    "ok": true
+  },
+  {
+    "id": "golf",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.636994986138596e-18,
+    "lastEnergy": 2.2091220995655483e-32,
+    "peak": 0.000622675094221014,
+    "speed": 72.7677180234318,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "drop",
+    "ratios": [
+      0.00007591268644238475,
+      0.0005883221452444853,
+      0.0000020865327549571327
+    ],
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "step-steer",
+    "roll": 1.2927730248849754,
+    "pitch": 0.005660766973056281,
+    "travel": 0.01757638917809057,
+    "minLoad": 0.7539641436848635,
+    "lastLoad": 0.9999971251013626,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "lane-change",
+    "roll": 0.8818826146842615,
+    "pitch": 0.0016329376866075537,
+    "travel": 0.01056592107357687,
+    "minLoad": 0.8401928300970518,
+    "lastLoad": 0.9999975741957344,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "kerb",
+    "roll": 2.1754426200066863,
+    "pitch": 1.5001190709671963,
+    "travel": 0.060017704639142404,
+    "minLoad": 0,
+    "lastLoad": 0.9999999816164314,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8666156598159196,
+    "travel": 0.018507852796852905,
+    "minLoad": 0.7008331350384881,
+    "lastLoad": 0.9999960487202793,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "driven-step-steer",
+    "roll": 0.9056836105544352,
+    "pitch": 0.040217498307637004,
+    "minLoad": 0.8287143717086645,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "driven-lane-change",
+    "roll": 0.8832221122591538,
+    "pitch": 0.040217498307637004,
+    "minLoad": 0.8359622811337726,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.484411182315026,
+    "minLoad": 0.4864238526460143,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "cruise300s",
+    "early": 0.47449108650606125,
+    "lateEnergy": 0.4744910865059968,
+    "maxPose": 0.0029680702738439715,
+    "ok": true
+  },
+  {
+    "id": "corolla",
+    "type": "driven-cruise300s",
+    "firstEnergy": 9.649185529264211e-16,
+    "lastEnergy": 1.8054876640713998e-32,
+    "peak": 0.0005707726607494766,
+    "speed": 72.56587881555183,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "drop",
+    "ratios": [
+      0.00007089043714385143,
+      0.0004913457619163668,
+      0.0000029653920675103697
+    ],
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "step-steer",
+    "roll": 1.2970505888864028,
+    "pitch": 0.006246737201757478,
+    "travel": 0.017915507749063447,
+    "minLoad": 0.7519706383296106,
+    "lastLoad": 0.9999973687316752,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "lane-change",
+    "roll": 0.882158218144292,
+    "pitch": 0.001589364597247835,
+    "travel": 0.010749680228877291,
+    "minLoad": 0.8417710143647812,
+    "lastLoad": 0.9999978018557334,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "kerb",
+    "roll": 2.124760455825556,
+    "pitch": 1.4062536387806917,
+    "travel": 0.06552659395268765,
+    "minLoad": 0,
+    "lastLoad": 0.9999999863814727,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8293948866435297,
+    "travel": 0.017966185113462374,
+    "minLoad": 0.6973094607717352,
+    "lastLoad": 0.9999965946130794,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "driven-step-steer",
+    "roll": 0.9088734026711297,
+    "pitch": 0.04958109498608288,
+    "minLoad": 0.8290805723653067,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "driven-lane-change",
+    "roll": 0.8856323637679353,
+    "pitch": 0.04958109498608288,
+    "minLoad": 0.8368426443901961,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.480244476134727,
+    "minLoad": 0.4599565673949938,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "cruise300s",
+    "early": 0.5827458202541544,
+    "lateEnergy": 0.5827458202540712,
+    "maxPose": 0.0029839290795989322,
+    "ok": true
+  },
+  {
+    "id": "superb",
+    "type": "driven-cruise300s",
+    "firstEnergy": 4.565762223992324e-19,
+    "lastEnergy": 4.6687575330803925e-32,
+    "peak": 0.0004663845905107247,
+    "speed": 72.94382987016849,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "drop",
+    "ratios": [
+      0.000015827006727621464,
+      0.00012188590592137824,
+      0.000001979709553921414
+    ],
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "step-steer",
+    "roll": 1.1984810618997714,
+    "pitch": 0.0061045534954837334,
+    "travel": 0.015834500533230104,
+    "minLoad": 0.7325735094395988,
+    "lastLoad": 0.9999980688844613,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "lane-change",
+    "roll": 0.80537000298592,
+    "pitch": 0.0014700004464931924,
+    "travel": 0.00935448840331441,
+    "minLoad": 0.8377264163724043,
+    "lastLoad": 0.9999984568133644,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "kerb",
+    "roll": 2.1856012836043046,
+    "pitch": 1.5074556302239235,
+    "travel": 0.05776184131834322,
+    "minLoad": 0,
+    "lastLoad": 0.9999999891384058,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8419164878363692,
+    "travel": 0.017119366034114084,
+    "minLoad": 0.6739192600430578,
+    "lastLoad": 0.9999986185941018,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "driven-step-steer",
+    "roll": 0.8293065695435133,
+    "pitch": 0.03532845606573492,
+    "minLoad": 0.8246246179371713,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "driven-lane-change",
+    "roll": 0.8083771664392185,
+    "pitch": 0.03532845606573492,
+    "minLoad": 0.8328063188582524,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.476311360980827,
+    "minLoad": 0.4277803821214384,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "cruise300s",
+    "early": 0.5293441686311,
+    "lateEnergy": 0.5293441686310671,
+    "maxPose": 0.0028756675820682327,
+    "ok": true
+  },
+  {
+    "id": "police_octavia",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.441960704452597e-16,
+    "lastEnergy": 1.1337782181040085e-32,
+    "peak": 0.0005328096852143828,
+    "speed": 72.68475539351782,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "drop",
+    "ratios": [
+      0.000005570488810157266,
+      0.00001816676057918027,
+      7.203737416797107e-9
+    ],
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "step-steer",
+    "roll": 0.9402924723226084,
+    "pitch": 0.006476323640077048,
+    "travel": 0.011927388940025409,
+    "minLoad": 0.7482775172781418,
+    "lastLoad": 0.999999876663821,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "lane-change",
+    "roll": 0.6502281641979863,
+    "pitch": 0.001315283348784012,
+    "travel": 0.00726217299150007,
+    "minLoad": 0.8485253937284908,
+    "lastLoad": 0.9999994602906254,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "kerb",
+    "roll": 2.292146997571654,
+    "pitch": 1.5310594605627836,
+    "travel": 0.04867227789401625,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999946203,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.6293386928104423,
+    "travel": 0.011762163590289,
+    "minLoad": 0.6689114760309994,
+    "lastLoad": 0.9999999941001249,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "driven-step-steer",
+    "roll": 0.6773636163155954,
+    "pitch": 0.048121355134528684,
+    "minLoad": 0.8283087847457066,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "driven-lane-change",
+    "roll": 0.6625505348853488,
+    "pitch": 0.048121355134528684,
+    "minLoad": 0.8443297984563265,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.186424452278346,
+    "minLoad": 0.38862069057325754,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "cruise300s",
+    "early": 0.35819998656653446,
+    "lateEnergy": 0.35819998656657626,
+    "maxPose": 0.0026124482209610137,
+    "ok": true
+  },
+  {
+    "id": "mini_jcw",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.3169358091036808e-21,
+    "lastEnergy": 1.5772075804460485e-32,
+    "peak": 0.000537200749199812,
+    "speed": 73.0529481053545,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "drop",
+    "ratios": [
+      0.000008351739031018873,
+      0.00006158415510559354,
+      0.0000019496691155964916
+    ],
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "step-steer",
+    "roll": 1.1038919750024931,
+    "pitch": 0.0039010452730384292,
+    "travel": 0.01420948709643672,
+    "minLoad": 0.7539202341156275,
+    "lastLoad": 0.9999985354516661,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "lane-change",
+    "roll": 0.7288546213239864,
+    "pitch": 0.0010981869921643489,
+    "travel": 0.008341218302454184,
+    "minLoad": 0.8490165021535876,
+    "lastLoad": 0.9999981377887607,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "kerb",
+    "roll": 2.0410880207513733,
+    "pitch": 1.3991167019895572,
+    "travel": 0.05935987122952443,
+    "minLoad": 0,
+    "lastLoad": 0.999999997424046,
+    "peakAy": 0,
+    "maxLost": 0.05416666666666666,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7352788011134552,
+    "travel": 0.01732165336871828,
+    "minLoad": 0.7426962578091774,
+    "lastLoad": 0.9999996643410476,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "driven-step-steer",
+    "roll": 0.7598296764108624,
+    "pitch": 0.03389014804690837,
+    "minLoad": 0.8324181923604229,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "driven-lane-change",
+    "roll": 0.7477363545762309,
+    "pitch": 0.03514386454450044,
+    "minLoad": 0.8425098127297946,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "driven-brake",
+    "roll": 4.580479371249105e-16,
+    "pitch": 1.4190123905467649,
+    "minLoad": 0.5104962048192495,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "cruise300s",
+    "early": 0.7104114724557263,
+    "lateEnergy": 0.7104114724556807,
+    "maxPose": 0.0029065523884815045,
+    "ok": true
+  },
+  {
+    "id": "cle",
+    "type": "driven-cruise300s",
+    "firstEnergy": 9.722113134428747e-18,
+    "lastEnergy": 2.909480117483132e-32,
+    "peak": 0.00040727276866708384,
+    "speed": 73.0488251916292,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "drop",
+    "ratios": [
+      0.000026600233562816443,
+      0.000128261578838348,
+      4.1773024726254683e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "step-steer",
+    "roll": 1.3010830470601655,
+    "pitch": 0.007740712285280356,
+    "travel": 0.018117740026096025,
+    "minLoad": 0.7244993999835857,
+    "lastLoad": 0.9999975610565839,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "lane-change",
+    "roll": 0.8809971724235895,
+    "pitch": 0.0018790121938473412,
+    "travel": 0.010798572698638913,
+    "minLoad": 0.8319498177595968,
+    "lastLoad": 0.9999991731232836,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "kerb",
+    "roll": 2.1222380942256254,
+    "pitch": 1.4426454438147287,
+    "travel": 0.05983525009028288,
+    "minLoad": 0,
+    "lastLoad": 0.9999999987320514,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9604946528927263,
+    "travel": 0.020101750205849287,
+    "minLoad": 0.649087323838557,
+    "lastLoad": 0.9999994818499992,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "driven-step-steer",
+    "roll": 0.9068772721734709,
+    "pitch": 0.02792326139954259,
+    "minLoad": 0.8199328162536413,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "driven-lane-change",
+    "roll": 0.8888433231581235,
+    "pitch": 0.02792326139954259,
+    "minLoad": 0.8274076018047536,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.653356433649315,
+    "minLoad": 0.38642261770856967,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "cruise300s",
+    "early": 0.5516446296007282,
+    "lateEnergy": 0.551644629600677,
+    "maxPose": 0.002948824215774614,
+    "ok": true
+  },
+  {
+    "id": "gla",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.350483167077181e-15,
+    "lastEnergy": 5.344169169634191e-32,
+    "peak": 0.00022564477484011397,
+    "speed": 72.18411516701487,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "drop",
+    "ratios": [
+      0.00002114472733079849,
+      0.00009469513811514794,
+      0.000006443565397555157
+    ],
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "step-steer",
+    "roll": 0.9576834140259722,
+    "pitch": 0.007320991010648178,
+    "travel": 0.011745833991891719,
+    "minLoad": 0.7132421247993418,
+    "lastLoad": 0.9999992468067059,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "lane-change",
+    "roll": 0.6132679616768187,
+    "pitch": 0.0016348737792943955,
+    "travel": 0.00674739017823752,
+    "minLoad": 0.8434768264368049,
+    "lastLoad": 0.9999985211217508,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "kerb",
+    "roll": 2.2547877836245034,
+    "pitch": 1.5328272358521355,
+    "travel": 0.04997644467598042,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998518783,
+    "peakAy": 0,
+    "maxLost": 0.05416666666666666,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.6611601103044452,
+    "travel": 0.01252045711961058,
+    "minLoad": 0.6549061466963709,
+    "lastLoad": 0.9999999207499845,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "driven-step-steer",
+    "roll": 0.6553733434288952,
+    "pitch": 0.025882451806394268,
+    "minLoad": 0.8089810517597041,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "driven-lane-change",
+    "roll": 0.6155617181420894,
+    "pitch": 0.025882451806394268,
+    "minLoad": 0.8388677194492271,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "driven-brake",
+    "roll": 4.568603287805772e-15,
+    "pitch": 1.241659548431233,
+    "minLoad": 0.3656367452038706,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "cruise300s",
+    "early": 0.5691169605905373,
+    "lateEnergy": 0.5691169605906315,
+    "maxPose": 0.00263035923626045,
+    "ok": true
+  },
+  {
+    "id": "gla45",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.325706162357045e-18,
+    "lastEnergy": 2.307741112461567e-32,
+    "peak": 0.0003668236434297016,
+    "speed": 72.21282249382143,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "drop",
+    "ratios": [
+      0.00005136716717756508,
+      0.00034219340934685564,
+      3.7816925189888453e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "step-steer",
+    "roll": 1.1525397469501437,
+    "pitch": 0.005364830311264901,
+    "travel": 0.01642553392797656,
+    "minLoad": 0.7648869724430554,
+    "lastLoad": 0.9999986952889887,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "lane-change",
+    "roll": 0.8031672486081685,
+    "pitch": 0.001422709451127336,
+    "travel": 0.0100613999865624,
+    "minLoad": 0.8479238212037862,
+    "lastLoad": 0.9999988321637158,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "kerb",
+    "roll": 2.0403570847799903,
+    "pitch": 1.4509070655757845,
+    "travel": 0.06049937572377002,
+    "minLoad": 0,
+    "lastLoad": 0.999999995424503,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8388490962714534,
+    "travel": 0.01806186314962206,
+    "minLoad": 0.7054713184176267,
+    "lastLoad": 0.9999981822447458,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "driven-step-steer",
+    "roll": 0.8342975360401608,
+    "pitch": 0.03773306912933505,
+    "minLoad": 0.834497891456774,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "driven-lane-change",
+    "roll": 0.8170595349988428,
+    "pitch": 0.03773306912933505,
+    "minLoad": 0.8408591182458971,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.5351738546279319,
+    "minLoad": 0.45532200433628756,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "cruise300s",
+    "early": 0.46629810133500615,
+    "lateEnergy": 0.4662981013349599,
+    "maxPose": 0.0029193888452606273,
+    "ok": true
+  },
+  {
+    "id": "cla",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.8793342561327472e-18,
+    "lastEnergy": 1.618775601025073e-32,
+    "peak": 0.0003988456599283645,
+    "speed": 72.84978896961198,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "drop",
+    "ratios": [
+      0.000024360612218749587,
+      0.00013738511495338477,
+      0.0000012708258158057555
+    ],
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "step-steer",
+    "roll": 0.6689000618862001,
+    "pitch": 0.002242145365857827,
+    "travel": 0.008864779051582885,
+    "minLoad": 0.8058032048145941,
+    "lastLoad": 0.9999986780699555,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "lane-change",
+    "roll": 0.4519411710520321,
+    "pitch": 0.0006803999987681016,
+    "travel": 0.005289507360336877,
+    "minLoad": 0.8776871741780443,
+    "lastLoad": 0.9999983730033157,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "kerb",
+    "roll": 1.6561112014158852,
+    "pitch": 1.5564537380930743,
+    "travel": 0.053154932774752056,
+    "minLoad": 0,
+    "lastLoad": 0.9999999941340393,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.5586748359519526,
+    "travel": 0.01406900563145403,
+    "minLoad": 0.8137852143641963,
+    "lastLoad": 0.9999992566135848,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "driven-step-steer",
+    "roll": 0.5184297175542543,
+    "pitch": 0.06870354095647589,
+    "minLoad": 0.8533868924353636,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "driven-lane-change",
+    "roll": 0.48930237473039584,
+    "pitch": 0.06870354095647589,
+    "minLoad": 0.8651016830887124,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "driven-brake",
+    "roll": 2.1320234221737974e-15,
+    "pitch": 1.2020797464842294,
+    "minLoad": 0.6135793125808269,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "cruise300s",
+    "early": 0.6237511119329312,
+    "lateEnergy": 0.623751111932891,
+    "maxPose": 0.0027237452587645997,
+    "ok": true
+  },
+  {
+    "id": "aventador_svj",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.366246315467665e-32,
+    "lastEnergy": 1.3606599061157694e-32,
+    "peak": 0.0009412213971209049,
+    "speed": 74.05830775926741,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "drop",
+    "ratios": [
+      0.000004169878810266464,
+      0.00003537785013027123,
+      2.1910203660117043e-8
+    ],
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "step-steer",
+    "roll": 0.6772689749882699,
+    "pitch": 0.0024333371728099116,
+    "travel": 0.008900735868500301,
+    "minLoad": 0.8008773865087366,
+    "lastLoad": 0.9999998249016192,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "lane-change",
+    "roll": 0.47038787756447215,
+    "pitch": 0.0007467398791145294,
+    "travel": 0.005442869546252551,
+    "minLoad": 0.874229422722172,
+    "lastLoad": 0.9999995583612182,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "kerb",
+    "roll": 1.6678532077269006,
+    "pitch": 1.5420580334767737,
+    "travel": 0.053446364643738115,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999189502,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.5681665271183503,
+    "travel": 0.014162208886656593,
+    "minLoad": 0.8088261137963637,
+    "lastLoad": 0.9999999741881882,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "driven-step-steer",
+    "roll": 0.48854504318321645,
+    "pitch": 0.09133663699233367,
+    "minLoad": 0.8610609545297021,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "driven-lane-change",
+    "roll": 0.4828406484742721,
+    "pitch": 0.09133663699233367,
+    "minLoad": 0.8675008119530235,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "driven-brake",
+    "roll": 1.1089429731196543e-15,
+    "pitch": 1.1861288903430427,
+    "minLoad": 0.6242573667215157,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "cruise300s",
+    "early": 0.48761656831304556,
+    "lateEnergy": 0.48761656831306044,
+    "maxPose": 0.0026674777110796844,
+    "ok": true
+  },
+  {
+    "id": "huracan",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.077895738237332e-32,
+    "lastEnergy": 2.995259693481472e-32,
+    "peak": 0.0011661675664356229,
+    "speed": 73.93570771937831,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "drop",
+    "ratios": [
+      0.00009165225831599599,
+      0.00035085373024812687,
+      0.000003579786817355717
+    ],
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "step-steer",
+    "roll": 1.4013610400337946,
+    "pitch": 0.007031354937936417,
+    "travel": 0.01747287974058847,
+    "minLoad": 0.7355134348088502,
+    "lastLoad": 0.9999950522215743,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "lane-change",
+    "roll": 0.921718312397839,
+    "pitch": 0.0021216651932856874,
+    "travel": 0.010124505963117267,
+    "minLoad": 0.8347921627243848,
+    "lastLoad": 0.9999987477513833,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "kerb",
+    "roll": 2.343397490812706,
+    "pitch": 1.6177848619359583,
+    "travel": 0.05898592796299437,
+    "minLoad": 0,
+    "lastLoad": 0.9999999989783057,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.0813940498693242,
+    "travel": 0.020767940792878154,
+    "minLoad": 0.6700102931348453,
+    "lastLoad": 0.9999992684909347,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "driven-step-steer",
+    "roll": 0.9233197960980583,
+    "pitch": 0.052569756707918344,
+    "minLoad": 0.8279049441305746,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "driven-lane-change",
+    "roll": 0.8912550416557233,
+    "pitch": 0.052569756707918344,
+    "minLoad": 0.8434612971555259,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "driven-brake",
+    "roll": 8.84732308630406e-15,
+    "pitch": 1.6520036910873142,
+    "minLoad": 0.49398794810784774,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "cruise300s",
+    "early": 0.36935786639688506,
+    "lateEnergy": 0.3693578663969013,
+    "maxPose": 0.003046525847769809,
+    "ok": true
+  },
+  {
+    "id": "ibiza",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.1908959701258415e-16,
+    "lastEnergy": 1.2782043945181634e-32,
+    "peak": 0.0008606271170249845,
+    "speed": 72.46695490449599,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "drop",
+    "ratios": [
+      0.00007675669721059306,
+      0.00026417850685787225,
+      0.000006775507209845364
+    ],
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "step-steer",
+    "roll": 1.4661388295962328,
+    "pitch": 0.0072863014152901775,
+    "travel": 0.01721861113639653,
+    "minLoad": 0.6966061317828274,
+    "lastLoad": 0.9999948677442243,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "lane-change",
+    "roll": 0.923831032680158,
+    "pitch": 0.001948558553321202,
+    "travel": 0.009541534274189871,
+    "minLoad": 0.8169890119427969,
+    "lastLoad": 0.9999986795755481,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "kerb",
+    "roll": 2.548752969177623,
+    "pitch": 1.6678436815648685,
+    "travel": 0.05962033538251094,
+    "minLoad": 0,
+    "lastLoad": 0.9999999997864757,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.3069369349292685,
+    "travel": 0.023841766673675616,
+    "minLoad": 0.6286409182274671,
+    "lastLoad": 0.9999996721104939,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "driven-step-steer",
+    "roll": 0.9545153547262604,
+    "pitch": 0.06694293693427605,
+    "minLoad": 0.7920999112118805,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "driven-lane-change",
+    "roll": 0.8944788693037728,
+    "pitch": 0.06321237043342826,
+    "minLoad": 0.8193328410084187,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "driven-brake",
+    "roll": 1.4552041263155346e-14,
+    "pitch": 2.014801138879205,
+    "minLoad": 0.4235795706437709,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "cruise300s",
+    "early": 0.33975218687942477,
+    "lateEnergy": 0.33975218687948294,
+    "maxPose": 0.003018481976577608,
+    "ok": true
+  },
+  {
+    "id": "panda",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.018093819437957e-17,
+    "lastEnergy": 1.2983520608157003e-32,
+    "peak": 0.001127552690779552,
+    "speed": 72.4067805598773,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "drop",
+    "ratios": [
+      0.00007807825277943635,
+      0.00024139766956471869,
+      0.0000034377714990771194
+    ],
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "step-steer",
+    "roll": 1.402807246303514,
+    "pitch": 0.007329774305348311,
+    "travel": 0.017829875762842878,
+    "minLoad": 0.728316606989208,
+    "lastLoad": 0.9999957468642389,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "lane-change",
+    "roll": 0.9218573141430231,
+    "pitch": 0.0021906297881995737,
+    "travel": 0.010303673219941016,
+    "minLoad": 0.829203643847126,
+    "lastLoad": 0.9999990020104155,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "kerb",
+    "roll": 2.3159327162130734,
+    "pitch": 1.6218466244190757,
+    "travel": 0.06077478008125496,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998768618,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.1857773461485444,
+    "travel": 0.022367233814951995,
+    "minLoad": 0.6467736726849189,
+    "lastLoad": 0.9999997449702797,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "driven-step-steer",
+    "roll": 0.915205286810969,
+    "pitch": 0.04476822088680058,
+    "minLoad": 0.8313595259817534,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "driven-lane-change",
+    "roll": 0.8944721516422007,
+    "pitch": 0.04476822088680058,
+    "minLoad": 0.8369150433801117,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "driven-brake",
+    "roll": 5.710706104484215e-15,
+    "pitch": 1.8466438030590586,
+    "minLoad": 0.447017292142817,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "cruise300s",
+    "early": 0.329063147117889,
+    "lateEnergy": 0.32906314711788,
+    "maxPose": 0.003024670958955259,
+    "ok": true
+  },
+  {
+    "id": "yaris",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.8902954600451114e-16,
+    "lastEnergy": 1.6203288829525714e-32,
+    "peak": 0.0009541252259346534,
+    "speed": 72.16378038674348,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "drop",
+    "ratios": [
+      0.00007668530027705034,
+      0.0004458853345146919,
+      0.00001220158402983726
+    ],
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "step-steer",
+    "roll": 1.4155725276615692,
+    "pitch": 0.004402848283586017,
+    "travel": 0.01725195131339101,
+    "minLoad": 0.7247115685737109,
+    "lastLoad": 0.9999962007625861,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "lane-change",
+    "roll": 0.9232471717942446,
+    "pitch": 0.0013660567250892656,
+    "travel": 0.009963747407892026,
+    "minLoad": 0.8200783944901909,
+    "lastLoad": 0.9999977912590088,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "kerb",
+    "roll": 2.3751503060767027,
+    "pitch": 1.4723484352889273,
+    "travel": 0.05948555948120702,
+    "minLoad": 0,
+    "lastLoad": 0.9999999956730593,
+    "peakAy": 0,
+    "maxLost": 0.05833333333333333,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8533608297241425,
+    "travel": 0.02107992551714732,
+    "minLoad": 0.7573217831740001,
+    "lastLoad": 0.9999987182051815,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "driven-step-steer",
+    "roll": 0.9612027923608164,
+    "pitch": 0.06353803091985921,
+    "minLoad": 0.8097930571815729,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "driven-lane-change",
+    "roll": 0.9398483105537488,
+    "pitch": 0.06353803091985921,
+    "minLoad": 0.8157110419966193,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "driven-brake",
+    "roll": 3.0268402611398902e-16,
+    "pitch": 1.5060954698171694,
+    "minLoad": 0.5696077157100586,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "cruise300s",
+    "early": 0.570627955975125,
+    "lateEnergy": 0.57062795597504,
+    "maxPose": 0.0030123941277656143,
+    "ok": true
+  },
+  {
+    "id": "e36",
+    "type": "driven-cruise300s",
+    "firstEnergy": 5.151097662730479e-19,
+    "lastEnergy": 1.3155373451840783e-32,
+    "peak": 0.0006148119758609424,
+    "speed": 73.19391211235657,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "drop",
+    "ratios": [
+      0.000009181153996703545,
+      0.00006483761617436162,
+      0.0000011187254215503666
+    ],
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "step-steer",
+    "roll": 1.0918417361504626,
+    "pitch": 0.003993958720891879,
+    "travel": 0.014268921819179612,
+    "minLoad": 0.7564379419775912,
+    "lastLoad": 0.9999988466960128,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "lane-change",
+    "roll": 0.7283400174000377,
+    "pitch": 0.0011211878883074055,
+    "travel": 0.008443122002638314,
+    "minLoad": 0.8493011270740455,
+    "lastLoad": 0.9999986443892547,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "kerb",
+    "roll": 2.0157782370847173,
+    "pitch": 1.3844719095224676,
+    "travel": 0.0597614017611065,
+    "minLoad": 0,
+    "lastLoad": 0.9999999979706211,
+    "peakAy": 0,
+    "maxLost": 0.05833333333333333,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7262859141927795,
+    "travel": 0.017258216124465077,
+    "minLoad": 0.7443463363199331,
+    "lastLoad": 0.9999996769759386,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "driven-step-steer",
+    "roll": 0.7575579924484069,
+    "pitch": 0.02956190037293133,
+    "minLoad": 0.8348240781656467,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "driven-lane-change",
+    "roll": 0.7441210398276945,
+    "pitch": 0.03105428126844768,
+    "minLoad": 0.8462528628394506,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "driven-brake",
+    "roll": 1.5987482426359993e-15,
+    "pitch": 1.3899472245558473,
+    "minLoad": 0.5201652844468394,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "cruise300s",
+    "early": 0.6560533544711971,
+    "lateEnergy": 0.656053354471151,
+    "maxPose": 0.0028873104712420126,
+    "ok": true
+  },
+  {
+    "id": "cle200",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.280940572834059e-17,
+    "lastEnergy": 2.6885787459302404e-32,
+    "peak": 0.0003501622811611968,
+    "speed": 72.89333803055447,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "drop",
+    "ratios": [
+      0.000007597888998410709,
+      0.00007369850461098655,
+      0.0000029532751010171003
+    ],
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "step-steer",
+    "roll": 1.113359866307892,
+    "pitch": 0.0038272970006130507,
+    "travel": 0.014160740246283663,
+    "minLoad": 0.7515892582816325,
+    "lastLoad": 0.9999982510456827,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "lane-change",
+    "roll": 0.729254495154369,
+    "pitch": 0.0010803719680134076,
+    "travel": 0.008261514277610751,
+    "minLoad": 0.8484642631988418,
+    "lastLoad": 0.9999976599891701,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "kerb",
+    "roll": 2.061036709933873,
+    "pitch": 1.4109033130672841,
+    "travel": 0.05882194494012316,
+    "minLoad": 0,
+    "lastLoad": 0.9999999968943915,
+    "peakAy": 0,
+    "maxLost": 0.05416666666666666,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7423174079659358,
+    "travel": 0.017370198359843568,
+    "minLoad": 0.7409155290707623,
+    "lastLoad": 0.9999996560743386,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "driven-step-steer",
+    "roll": 0.7584698493077062,
+    "pitch": 0.04528857543824036,
+    "minLoad": 0.8296026798837745,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "driven-lane-change",
+    "roll": 0.7423509901751728,
+    "pitch": 0.04576000703505555,
+    "minLoad": 0.8415882180711409,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "driven-brake",
+    "roll": 4.49630952642445e-16,
+    "pitch": 1.4232989234561078,
+    "minLoad": 0.5089658826785365,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "cruise300s",
+    "early": 0.7524952541275234,
+    "lateEnergy": 0.7524952541274788,
+    "maxPose": 0.0029209221359081626,
+    "ok": true
+  },
+  {
+    "id": "cle450",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.1916954071960875e-19,
+    "lastEnergy": 2.8329673204047974e-32,
+    "peak": 0.0005420633842023308,
+    "speed": 73.34005057030538,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "drop",
+    "ratios": [
+      0.00002631978272763533,
+      0.00020112285158005845,
+      0.0000017569804048037688
+    ],
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "step-steer",
+    "roll": 0.9134440590362503,
+    "pitch": 0.003286881672873405,
+    "travel": 0.011296809904742397,
+    "minLoad": 0.755197021271955,
+    "lastLoad": 0.9999978193190407,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "lane-change",
+    "roll": 0.6004472290826691,
+    "pitch": 0.0007601924723579443,
+    "travel": 0.006714482297785417,
+    "minLoad": 0.8541706815763166,
+    "lastLoad": 0.9999982081900032,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "kerb",
+    "roll": 2.0229854297640437,
+    "pitch": 1.4931793061167187,
+    "travel": 0.05116921743448595,
+    "minLoad": 0,
+    "lastLoad": 0.9999999984513065,
+    "peakAy": 0,
+    "maxLost": 0.049999999999999996,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.5722826279528473,
+    "travel": 0.012238321471114172,
+    "minLoad": 0.7280918300770302,
+    "lastLoad": 0.9999988972127802,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "driven-step-steer",
+    "roll": 0.6262810319581114,
+    "pitch": 0.04193941070768588,
+    "minLoad": 0.8280520639185862,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "driven-lane-change",
+    "roll": 0.6106669523514446,
+    "pitch": 0.04193941070768588,
+    "minLoad": 0.8466520388763559,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "driven-brake",
+    "roll": 6.582939564436184e-16,
+    "pitch": 1.0943772965602823,
+    "minLoad": 0.4901182966319067,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "cruise300s",
+    "early": 0.6711876145492024,
+    "lateEnergy": 0.6711876145492243,
+    "maxPose": 0.0026612823101549413,
+    "ok": true
+  },
+  {
+    "id": "cle53",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.2221092938911428e-22,
+    "lastEnergy": 3.290738962250782e-32,
+    "peak": 0.0004963035754907216,
+    "speed": 73.5094029104166,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "drop",
+    "ratios": [
+      0.00002468664975206162,
+      0.00010334290771654787,
+      0.000003138628339687679
+    ],
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "step-steer",
+    "roll": 1.163992473891034,
+    "pitch": 0.003133759501692312,
+    "travel": 0.01317963265293291,
+    "minLoad": 0.715759187934834,
+    "lastLoad": 0.9999982499589278,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "lane-change",
+    "roll": 0.749586519383543,
+    "pitch": 0.0007403053490887227,
+    "travel": 0.0075947783922862,
+    "minLoad": 0.8210238839277121,
+    "lastLoad": 0.9999963168768857,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "kerb",
+    "roll": 2.4371660371488377,
+    "pitch": 1.5366621526630198,
+    "travel": 0.05225924881376086,
+    "minLoad": 0,
+    "lastLoad": 0.9999999981677786,
+    "peakAy": 0,
+    "maxLost": 0.05833333333333333,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.6284823985955508,
+    "travel": 0.014413401559332292,
+    "minLoad": 0.7469495779871905,
+    "lastLoad": 0.9999996643486802,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "driven-step-steer",
+    "roll": 0.7633521496328559,
+    "pitch": 0.0700043870542717,
+    "minLoad": 0.8056335203796963,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "driven-lane-change",
+    "roll": 0.75257452847842,
+    "pitch": 0.0700043870542717,
+    "minLoad": 0.8141525507192765,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "driven-brake",
+    "roll": 4.562153660575811e-16,
+    "pitch": 1.220007335844387,
+    "minLoad": 0.5152540736785008,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "cruise300s",
+    "early": 0.5470685567260042,
+    "lateEnergy": 0.547068556726032,
+    "maxPose": 0.002736766536187425,
+    "ok": true
+  },
+  {
+    "id": "e36_m3",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.8089189662004548e-22,
+    "lastEnergy": 1.4260269160008455e-32,
+    "peak": 0.0010490385566621567,
+    "speed": 73.58646018194585,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "drop",
+    "ratios": [
+      0.00007573426042903594,
+      0.00025909558606047363,
+      0.000005528914844935388
+    ],
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "step-steer",
+    "roll": 1.4607496117542687,
+    "pitch": 0.007129820306331518,
+    "travel": 0.01724620806686024,
+    "minLoad": 0.699073726248309,
+    "lastLoad": 0.9999952901812142,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "lane-change",
+    "roll": 0.9236376969990432,
+    "pitch": 0.0019592855997444896,
+    "travel": 0.009584731762840294,
+    "minLoad": 0.8177678912813463,
+    "lastLoad": 0.9999988403908833,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "kerb",
+    "roll": 2.536711845558416,
+    "pitch": 1.6627274033717072,
+    "travel": 0.06014462834886953,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998159048,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.3020615741661268,
+    "travel": 0.023813155373041104,
+    "minLoad": 0.6304217866931836,
+    "lastLoad": 0.9999996910772792,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "driven-step-steer",
+    "roll": 0.92080959684803,
+    "pitch": 0.06048444839336349,
+    "minLoad": 0.813232633599415,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "driven-lane-change",
+    "roll": 0.8985609552028795,
+    "pitch": 0.05996617472916385,
+    "minLoad": 0.823771433724945,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "driven-brake",
+    "roll": 1.7486670965030906e-14,
+    "pitch": 2.005258244525932,
+    "minLoad": 0.4266787120656016,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "cruise300s",
+    "early": 0.3286511793757098,
+    "lateEnergy": 0.3286511793757679,
+    "maxPose": 0.003012526823917832,
+    "ok": true
+  },
+  {
+    "id": "panda_11",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.8133880983211954e-14,
+    "lastEnergy": 1.9015747889125057e-32,
+    "peak": 0.0011382580791734825,
+    "speed": 71.8906719504804,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "drop",
+    "ratios": [
+      0.00008269634896657518,
+      0.000293713258092384,
+      0.0000204080800636163
+    ],
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "step-steer",
+    "roll": 1.4980025550550853,
+    "pitch": 0.008169733796426548,
+    "travel": 0.01705404566055572,
+    "minLoad": 0.6835683069098702,
+    "lastLoad": 0.9999912918298967,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "lane-change",
+    "roll": 0.9250317431112909,
+    "pitch": 0.001898667788341749,
+    "travel": 0.009292791057316011,
+    "minLoad": 0.8130721781159927,
+    "lastLoad": 0.9999954211179874,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "kerb",
+    "roll": 2.61786049286871,
+    "pitch": 1.6985843619404173,
+    "travel": 0.05669760791693451,
+    "minLoad": 0,
+    "lastLoad": 0.9999999992160947,
+    "peakAy": 0,
+    "maxLost": 0.05833333333333333,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.335138662442443,
+    "travel": 0.02400306168759914,
+    "minLoad": 0.6192926718300945,
+    "lastLoad": 0.9999995498713679,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "driven-step-steer",
+    "roll": 0.9424405903720566,
+    "pitch": 0.05063200396576995,
+    "minLoad": 0.809750541398798,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "driven-lane-change",
+    "roll": 0.9091004769738232,
+    "pitch": 0.05063200396576995,
+    "minLoad": 0.8188900221139394,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "driven-brake",
+    "roll": 1.242484371672649e-13,
+    "pitch": 2.2245841899560257,
+    "minLoad": 0.35993135056512765,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "cruise300s",
+    "early": 0.4067193679508327,
+    "lateEnergy": 0.4067193679508949,
+    "maxPose": 0.0030534576644538933,
+    "ok": true
+  },
+  {
+    "id": "panda_100hp",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.5354720267959461e-12,
+    "lastEnergy": 1.0554328292077002e-32,
+    "peak": 0.0010950138014154663,
+    "speed": 71.60760580976824,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "drop",
+    "ratios": [
+      0.00008071310899450485,
+      0.000252893954019166,
+      0.00000510370190226738
+    ],
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "step-steer",
+    "roll": 1.414053520039338,
+    "pitch": 0.007252935178586631,
+    "travel": 0.01777701897919522,
+    "minLoad": 0.7229431868307318,
+    "lastLoad": 0.9999950274268586,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "lane-change",
+    "roll": 0.9223597378182634,
+    "pitch": 0.002181512891689918,
+    "travel": 0.010205782375889993,
+    "minLoad": 0.8274263187389727,
+    "lastLoad": 0.9999988884396696,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "kerb",
+    "roll": 2.342544999514764,
+    "pitch": 1.6350711696869502,
+    "travel": 0.05937944228523642,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998386875,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.1968144220148778,
+    "travel": 0.022399869201869104,
+    "minLoad": 0.6426209099401128,
+    "lastLoad": 0.9999997041119535,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "driven-step-steer",
+    "roll": 0.9128009916641046,
+    "pitch": 0.034482267567534766,
+    "minLoad": 0.8323555445501211,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "driven-lane-change",
+    "roll": 0.8936744279776729,
+    "pitch": 0.034482267567534766,
+    "minLoad": 0.8360911970541006,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "driven-brake",
+    "roll": 1.062064984610061e-13,
+    "pitch": 1.9019498559765147,
+    "minLoad": 0.4272272534222194,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "cruise300s",
+    "early": 0.3572837344449442,
+    "lateEnergy": 0.35728373444493505,
+    "maxPose": 0.003040088332352301,
+    "ok": true
+  },
+  {
+    "id": "yaris_13",
+    "type": "driven-cruise300s",
+    "firstEnergy": 6.678872558561215e-14,
+    "lastEnergy": 1.5550357087023558e-32,
+    "peak": 0.0009392194818303809,
+    "speed": 71.39278191396171,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "drop",
+    "ratios": [
+      0.00008330930498282769,
+      0.0002646820219688487,
+      0.000007572541006077568
+    ],
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "step-steer",
+    "roll": 1.4257794741072467,
+    "pitch": 0.007584919701269226,
+    "travel": 0.01772475574486432,
+    "minLoad": 0.7178647435323524,
+    "lastLoad": 0.9999942171781777,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "lane-change",
+    "roll": 0.9228696095066607,
+    "pitch": 0.0021732056265027374,
+    "travel": 0.010107766791126257,
+    "minLoad": 0.8258187254331342,
+    "lastLoad": 0.9999987040164257,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "kerb",
+    "roll": 2.3681993279811726,
+    "pitch": 1.6475728370540843,
+    "travel": 0.05819558983315618,
+    "minLoad": 0,
+    "lastLoad": 0.9999999997858446,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.2078994077976342,
+    "travel": 0.02243357576486371,
+    "minLoad": 0.6387404550831873,
+    "lastLoad": 0.9999996600120009,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "driven-step-steer",
+    "roll": 0.928886635532143,
+    "pitch": 0.044266653159103976,
+    "minLoad": 0.828295895319485,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "driven-lane-change",
+    "roll": 0.9050247961609277,
+    "pitch": 0.046686675143853315,
+    "minLoad": 0.8336999082726124,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "driven-brake",
+    "roll": 2.1762529530727987e-14,
+    "pitch": 2.019587305006306,
+    "minLoad": 0.3913901806825196,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "cruise300s",
+    "early": 0.3866172726074848,
+    "lateEnergy": 0.38661727260747614,
+    "maxPose": 0.0030557086805540873,
+    "ok": true
+  },
+  {
+    "id": "yaris_ts",
+    "type": "driven-cruise300s",
+    "firstEnergy": 9.426107882371917e-19,
+    "lastEnergy": 1.2312037418743256e-32,
+    "peak": 0.0009213771399641111,
+    "speed": 72.77106429863245,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "drop",
+    "ratios": [
+      0.00010628387087430937,
+      0.00043124078150781365,
+      0.000016449862897878505
+    ],
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "step-steer",
+    "roll": 1.4435454646101376,
+    "pitch": 0.008017780579837146,
+    "travel": 0.017292352417100882,
+    "minLoad": 0.7198759107596374,
+    "lastLoad": 0.999991377504105,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "lane-change",
+    "roll": 0.9236078292532421,
+    "pitch": 0.0021028904817839964,
+    "travel": 0.009783538850104828,
+    "minLoad": 0.8302546438136472,
+    "lastLoad": 0.9999971631867935,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "kerb",
+    "roll": 2.4345695745724703,
+    "pitch": 1.6655821323072029,
+    "travel": 0.05492910888750584,
+    "minLoad": 0,
+    "lastLoad": 0.9999999969063108,
+    "peakAy": 0,
+    "maxLost": 0.05833333333333333,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.1183427796443883,
+    "travel": 0.02089614027413731,
+    "minLoad": 0.6588599047314755,
+    "lastLoad": 0.9999988136379773,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "driven-step-steer",
+    "roll": 0.9734370784814924,
+    "pitch": 0.05264783524520535,
+    "minLoad": 0.8290632909492648,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "driven-lane-change",
+    "roll": 0.9287378727139811,
+    "pitch": 0.05264783524520535,
+    "minLoad": 0.8331443071288469,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.9600250268682922,
+    "minLoad": 0.39261139878982765,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "cruise300s",
+    "early": 0.48309427419225687,
+    "lateEnergy": 0.483094274192279,
+    "maxPose": 0.0031060466945606784,
+    "ok": true
+  },
+  {
+    "id": "ibiza_cupra",
+    "type": "driven-cruise300s",
+    "firstEnergy": 4.49939197423852e-19,
+    "lastEnergy": 2.521544073024096e-32,
+    "peak": 0.000813455889836236,
+    "speed": 72.7671126206304,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "drop",
+    "ratios": [
+      0.000011400022129819103,
+      0.00005928306597555732,
+      1.3389778006961226e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "step-steer",
+    "roll": 1.2209283748465831,
+    "pitch": 0.006381898976609432,
+    "travel": 0.016712476731288544,
+    "minLoad": 0.757456328634763,
+    "lastLoad": 0.9999977607575725,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "lane-change",
+    "roll": 0.8424808936503825,
+    "pitch": 0.0016797078288306123,
+    "travel": 0.010157530579655006,
+    "minLoad": 0.8470816323874397,
+    "lastLoad": 0.999998845991558,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "kerb",
+    "roll": 2.109561677296587,
+    "pitch": 1.501165875338797,
+    "travel": 0.055628396869163085,
+    "minLoad": 0,
+    "lastLoad": 0.9999999993991099,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8427061233292866,
+    "travel": 0.01722326513794904,
+    "minLoad": 0.6876773181318739,
+    "lastLoad": 0.9999997983275967,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "driven-step-steer",
+    "roll": 0.8726615779009718,
+    "pitch": 0.060110544090084116,
+    "minLoad": 0.8341561159107322,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "driven-lane-change",
+    "roll": 0.8495550212958762,
+    "pitch": 0.060110544090084116,
+    "minLoad": 0.8408844228413294,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "driven-brake",
+    "roll": 1.2405634978916086e-15,
+    "pitch": 1.5771306233511364,
+    "minLoad": 0.40827899193465206,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "cruise300s",
+    "early": 0.45114674843995106,
+    "lateEnergy": 0.4511467484399322,
+    "maxPose": 0.0029128191601645024,
+    "ok": true
+  },
+  {
+    "id": "golf_gti",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.0624753527902357e-26,
+    "lastEnergy": 5.192850330251993e-33,
+    "peak": 0.0006884595292574893,
+    "speed": 73.44258676828376,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "drop",
+    "ratios": [
+      0.000012149834186347025,
+      0.00006293511473066413,
+      1.5575982881992606e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "step-steer",
+    "roll": 1.2239561533190675,
+    "pitch": 0.0063780967515272595,
+    "travel": 0.01670254853498401,
+    "minLoad": 0.7566171220785031,
+    "lastLoad": 0.9999976782000527,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "lane-change",
+    "roll": 0.8426037812806094,
+    "pitch": 0.001676465577849501,
+    "travel": 0.010129914646892975,
+    "minLoad": 0.8470661642908243,
+    "lastLoad": 0.9999987987367756,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "kerb",
+    "roll": 2.1157088914948057,
+    "pitch": 1.504966115334127,
+    "travel": 0.055464709185643606,
+    "minLoad": 0,
+    "lastLoad": 0.9999999993848298,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8456233161297538,
+    "travel": 0.017242439477501807,
+    "minLoad": 0.6872982353932313,
+    "lastLoad": 0.9999997953171273,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "driven-step-steer",
+    "roll": 0.8797397619181944,
+    "pitch": 0.03565247516741084,
+    "minLoad": 0.8351942251446979,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "driven-lane-change",
+    "roll": 0.8552641070600288,
+    "pitch": 0.03565247516741084,
+    "minLoad": 0.8401702350669299,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.544258900263617,
+    "minLoad": 0.4299418479888804,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "cruise300s",
+    "early": 0.4637854795244638,
+    "lateEnergy": 0.46378547952444554,
+    "maxPose": 0.0029183132632795276,
+    "ok": true
+  },
+  {
+    "id": "golf_gtd",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.1201291347629344e-18,
+    "lastEnergy": 2.395878549663622e-32,
+    "peak": 0.0006268084526674092,
+    "speed": 72.48512866121759,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "drop",
+    "ratios": [
+      0.000015493689329971134,
+      0.00007921622721972858,
+      4.105081398713668e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "step-steer",
+    "roll": 1.2360886040852028,
+    "pitch": 0.006347063047989859,
+    "travel": 0.016664479774603835,
+    "minLoad": 0.7534932203222082,
+    "lastLoad": 0.9999972285936368,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "lane-change",
+    "roll": 0.8430616755679434,
+    "pitch": 0.0016655346903362645,
+    "travel": 0.010024623736184126,
+    "minLoad": 0.847004324162465,
+    "lastLoad": 0.9999986015423077,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "kerb",
+    "roll": 2.1400057494775053,
+    "pitch": 1.5198801271309283,
+    "travel": 0.055357629225584376,
+    "minLoad": 0,
+    "lastLoad": 0.9999999993345189,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.856777861241204,
+    "travel": 0.017314564898567038,
+    "minLoad": 0.6858324339769126,
+    "lastLoad": 0.9999997575578488,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "driven-step-steer",
+    "roll": 0.9051571699148168,
+    "pitch": 0.07076230503846026,
+    "minLoad": 0.8281015449296941,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "driven-lane-change",
+    "roll": 0.8613969164415486,
+    "pitch": 0.07076230503846026,
+    "minLoad": 0.8384515182565391,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.6501601415069542,
+    "minLoad": 0.3868135695205855,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "cruise300s",
+    "early": 0.5135738451987732,
+    "lateEnergy": 0.5135738451987568,
+    "maxPose": 0.0029395082665029473,
+    "ok": true
+  },
+  {
+    "id": "golf_r",
+    "type": "driven-cruise300s",
+    "firstEnergy": 6.585023609188078e-21,
+    "lastEnergy": 1.835455557263509e-32,
+    "peak": 0.0006626909501992667,
+    "speed": 73.17237270286714,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "drop",
+    "ratios": [
+      0.0000034066293150053772,
+      0.000010623656207844835,
+      8.845673447676346e-10
+    ],
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "step-steer",
+    "roll": 0.9235419263799428,
+    "pitch": 0.00591611296897572,
+    "travel": 0.011950303496983953,
+    "minLoad": 0.7542674262284423,
+    "lastLoad": 0.9999999267974096,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "lane-change",
+    "roll": 0.6495989467076178,
+    "pitch": 0.0011784521486720232,
+    "travel": 0.007384788667123103,
+    "minLoad": 0.8490612826804059,
+    "lastLoad": 0.9999995448777681,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "kerb",
+    "roll": 2.2452498963489114,
+    "pitch": 1.5024211089885509,
+    "travel": 0.04980019432754279,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999985332,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.6149881166816985,
+    "travel": 0.011718585145170508,
+    "minLoad": 0.6730903114062211,
+    "lastLoad": 0.9999999956631901,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "driven-step-steer",
+    "roll": 0.668137919449212,
+    "pitch": 0.027619248120383445,
+    "minLoad": 0.8390781788283299,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "driven-lane-change",
+    "roll": 0.6574719784974983,
+    "pitch": 0.027619248120383445,
+    "minLoad": 0.8471567818095933,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.0824795279515957,
+    "minLoad": 0.4242872627519569,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "cruise300s",
+    "early": 0.3117570165213886,
+    "lateEnergy": 0.3117570165214285,
+    "maxPose": 0.002593298964820676,
+    "ok": true
+  },
+  {
+    "id": "mini_cooper",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.8180794268608743e-19,
+    "lastEnergy": 1.5839422372634488e-32,
+    "peak": 0.0004894276956082766,
+    "speed": 72.50119329574188,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "drop",
+    "ratios": [
+      0.000004665601802077778,
+      0.000014998014056317146,
+      2.2927108046145965e-9
+    ],
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "step-steer",
+    "roll": 0.9340146082083047,
+    "pitch": 0.006275623467664514,
+    "travel": 0.011935563679422438,
+    "minLoad": 0.7501836729483965,
+    "lastLoad": 0.9999998976564615,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "lane-change",
+    "roll": 0.6499959710036664,
+    "pitch": 0.0012652723959865528,
+    "travel": 0.0073069952894842995,
+    "minLoad": 0.8485377794301177,
+    "lastLoad": 0.9999994906587408,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "kerb",
+    "roll": 2.27509866602477,
+    "pitch": 1.5206768534488537,
+    "travel": 0.04904370210486612,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999966598,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.6240679686772188,
+    "travel": 0.011745324516409006,
+    "minLoad": 0.6701205573032408,
+    "lastLoad": 0.9999999946314767,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "driven-step-steer",
+    "roll": 0.6695763261661755,
+    "pitch": 0.03737066700107611,
+    "minLoad": 0.8325965570201579,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "driven-lane-change",
+    "roll": 0.6609239727995162,
+    "pitch": 0.03737066700107611,
+    "minLoad": 0.8453035181532282,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.150965728864159,
+    "minLoad": 0.40321189129814866,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "cruise300s",
+    "early": 0.34056075261551216,
+    "lateEnergy": 0.3405607526155525,
+    "maxPose": 0.0026052609486118114,
+    "ok": true
+  },
+  {
+    "id": "mini_s",
+    "type": "driven-cruise300s",
+    "firstEnergy": 7.456591831081099e-26,
+    "lastEnergy": 1.7227223491356197e-32,
+    "peak": 0.00039201184557365466,
+    "speed": 73.21353756186427,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "drop",
+    "ratios": [
+      0.000006575716961869863,
+      0.000017216131951248846,
+      1.9690289555105427e-8
+    ],
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "step-steer",
+    "roll": 1.1045939866945709,
+    "pitch": 0.00659309929136365,
+    "travel": 0.014243063074072661,
+    "minLoad": 0.7445216891830517,
+    "lastLoad": 0.9999998771126112,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "lane-change",
+    "roll": 0.7656106314736328,
+    "pitch": 0.001362546953960531,
+    "travel": 0.008683818145309233,
+    "minLoad": 0.8414543336206686,
+    "lastLoad": 0.9999986302907166,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "kerb",
+    "roll": 2.2249997754723347,
+    "pitch": 1.5448476780802596,
+    "travel": 0.05195423628666983,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999953108,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7445048913300527,
+    "travel": 0.014003894585280733,
+    "minLoad": 0.6657724691816389,
+    "lastLoad": 0.9999999885673191,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "driven-step-steer",
+    "roll": 0.7658489024806199,
+    "pitch": 0.029512338793686702,
+    "minLoad": 0.8373473971122328,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "driven-lane-change",
+    "roll": 0.7563780154756162,
+    "pitch": 0.029512338793686702,
+    "minLoad": 0.8451724058355627,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "driven-brake",
+    "roll": 4.7839783040367555e-15,
+    "pitch": 1.3072248536788136,
+    "minLoad": 0.42116746820927237,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "cruise300s",
+    "early": 0.38474211173222267,
+    "lateEnergy": 0.3847421117322473,
+    "maxPose": 0.0027378667209843667,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.612248327748927e-16,
+    "lastEnergy": 1.0160406632035165e-32,
+    "peak": 0.0005455414795738543,
+    "speed": 72.45803792721036,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "drop",
+    "ratios": [
+      0.00007281871191060738,
+      0.0005517141309560285,
+      0.0000016154851022128592
+    ],
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "step-steer",
+    "roll": 1.2845202182875757,
+    "pitch": 0.005710559639195173,
+    "travel": 0.01760436493971128,
+    "minLoad": 0.7557762120236531,
+    "lastLoad": 0.999997437369086,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "lane-change",
+    "roll": 0.8815589525908382,
+    "pitch": 0.0016531655062675822,
+    "travel": 0.010639560722064161,
+    "minLoad": 0.8402337157742752,
+    "lastLoad": 0.9999977228286412,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "kerb",
+    "roll": 2.159977211327757,
+    "pitch": 1.4907539625387596,
+    "travel": 0.059912100814449136,
+    "minLoad": 0,
+    "lastLoad": 0.9999999850442046,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8589292560305917,
+    "travel": 0.01845548246517649,
+    "minLoad": 0.7015957299495601,
+    "lastLoad": 0.9999964943483486,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "driven-step-steer",
+    "roll": 0.9066782868291299,
+    "pitch": 0.025909281452888677,
+    "minLoad": 0.830599266321586,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "driven-lane-change",
+    "roll": 0.8838317487349419,
+    "pitch": 0.025909281452888677,
+    "minLoad": 0.8373398526345769,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.471988974141855,
+    "minLoad": 0.4876819145843684,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "cruise300s",
+    "early": 0.43955354041828804,
+    "lateEnergy": 0.43955354041822264,
+    "maxPose": 0.00295292506280551,
+    "ok": true
+  },
+  {
+    "id": "corolla_15",
+    "type": "driven-cruise300s",
+    "firstEnergy": 6.115278844132847e-14,
+    "lastEnergy": 3.3530680621229314e-33,
+    "peak": 0.0005805338179363927,
+    "speed": 71.85361040256889,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "drop",
+    "ratios": [
+      0.00024056125918050651,
+      0.001823966261654451,
+      0.000002040813658306794
+    ],
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "step-steer",
+    "roll": 1.6537296690940166,
+    "pitch": 0.008614841975030397,
+    "travel": 0.023009630748564207,
+    "minLoad": 0.7527129780714361,
+    "lastLoad": 0.9999903017979359,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "lane-change",
+    "roll": 1.1713281230405161,
+    "pitch": 0.0029146278392314373,
+    "travel": 0.01449358061727913,
+    "minLoad": 0.8318506433995504,
+    "lastLoad": 0.9999925265386779,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "kerb",
+    "roll": 1.9852367221326779,
+    "pitch": 1.557781804956443,
+    "travel": 0.061237647104229215,
+    "minLoad": 0,
+    "lastLoad": 0.9999998092249557,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9834722844587315,
+    "travel": 0.020722207157622127,
+    "minLoad": 0.6792454038680926,
+    "lastLoad": 0.9999886327815202,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "driven-step-steer",
+    "roll": 1.210886198763207,
+    "pitch": 0.04288918593783156,
+    "minLoad": 0.8163940963021141,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "driven-lane-change",
+    "roll": 1.1811423121210827,
+    "pitch": 0.0381521621330714,
+    "minLoad": 0.8303490241892373,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.6876005650503543,
+    "minLoad": 0.4454529557612903,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "cruise300s",
+    "early": 0.4267680418012061,
+    "lateEnergy": 0.426768041801251,
+    "maxPose": 0.003088569350892709,
+    "ok": true
+  },
+  {
+    "id": "octavia_16tdi",
+    "type": "driven-cruise300s",
+    "firstEnergy": 9.058394648145205e-17,
+    "lastEnergy": 1.3525026357735692e-32,
+    "peak": 0.0006439479245840757,
+    "speed": 72.23195244304081,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "drop",
+    "ratios": [
+      0.00026711639612604697,
+      0.0020728656529795234,
+      0.000002919130225993128
+    ],
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "step-steer",
+    "roll": 1.6773523611355914,
+    "pitch": 0.00886157254637344,
+    "travel": 0.023116230351055613,
+    "minLoad": 0.7502057137081741,
+    "lastLoad": 0.9999891586224384,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "lane-change",
+    "roll": 1.1824229551955812,
+    "pitch": 0.002960258512006714,
+    "travel": 0.014496718235581414,
+    "minLoad": 0.831751163974761,
+    "lastLoad": 0.9999917611266435,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "kerb",
+    "roll": 1.996622976744562,
+    "pitch": 1.5726891361375037,
+    "travel": 0.061419082458325634,
+    "minLoad": 0,
+    "lastLoad": 0.9999997605376518,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9976186772246186,
+    "travel": 0.02078085838134545,
+    "minLoad": 0.6780938149497271,
+    "lastLoad": 0.9999863413800454,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "driven-step-steer",
+    "roll": 1.2572785966670805,
+    "pitch": 0.06727732867801738,
+    "minLoad": 0.8315670316064805,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "driven-lane-change",
+    "roll": 1.2028303003001464,
+    "pitch": 0.06727732867801738,
+    "minLoad": 0.8322091206446436,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.8589021180141228,
+    "minLoad": 0.39227963064331856,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "cruise300s",
+    "early": 0.47919827464518605,
+    "lateEnergy": 0.4791982746452303,
+    "maxPose": 0.0031165848866271393,
+    "ok": true
+  },
+  {
+    "id": "octavia_rs",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.6855346618729283e-25,
+    "lastEnergy": 4.870225132564996e-33,
+    "peak": 0.00077532543589696,
+    "speed": 73.4543009278466,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "drop",
+    "ratios": [
+      0.00006523031470473631,
+      0.0004353965955594725,
+      0.0000016777114427419708
+    ],
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "step-steer",
+    "roll": 1.2817976056284657,
+    "pitch": 0.005793928383116641,
+    "travel": 0.01795716336172146,
+    "minLoad": 0.755051910738305,
+    "lastLoad": 0.9999979284256296,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "lane-change",
+    "roll": 0.8815455806010994,
+    "pitch": 0.0016149002401095738,
+    "travel": 0.010881115706003027,
+    "minLoad": 0.8418461585149334,
+    "lastLoad": 0.9999981234120296,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "kerb",
+    "roll": 2.095686081305468,
+    "pitch": 1.389819185020318,
+    "travel": 0.06552499047355867,
+    "minLoad": 0,
+    "lastLoad": 0.9999999908823383,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8165008674551585,
+    "travel": 0.017873691872469916,
+    "minLoad": 0.6987502048711957,
+    "lastLoad": 0.9999972894703442,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "driven-step-steer",
+    "roll": 0.909239906206728,
+    "pitch": 0.03282929015745104,
+    "minLoad": 0.8301251754077155,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "driven-lane-change",
+    "roll": 0.8855994554811653,
+    "pitch": 0.03282929015745104,
+    "minLoad": 0.8372866327743971,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.4712498615850584,
+    "minLoad": 0.459447396819363,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "cruise300s",
+    "early": 0.5147578992410766,
+    "lateEnergy": 0.5147578992409922,
+    "maxPose": 0.0029558010758046127,
+    "ok": true
+  },
+  {
+    "id": "superb_15",
+    "type": "driven-cruise300s",
+    "firstEnergy": 9.345063425821384e-21,
+    "lastEnergy": 2.855541110031976e-33,
+    "peak": 0.00032102313683283817,
+    "speed": 73.02908710300072,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "drop",
+    "ratios": [
+      0.00007257648348849396,
+      0.0005084196566283816,
+      0.0000034013414304233074
+    ],
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "step-steer",
+    "roll": 1.301474057394734,
+    "pitch": 0.0063737036686654855,
+    "travel": 0.01790362199447531,
+    "minLoad": 0.7511458163816408,
+    "lastLoad": 0.9999971711042149,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "lane-change",
+    "roll": 0.8823326604954532,
+    "pitch": 0.0016275804161417589,
+    "travel": 0.01071281429576101,
+    "minLoad": 0.841748723914495,
+    "lastLoad": 0.9999977043946277,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "kerb",
+    "roll": 2.133142830529847,
+    "pitch": 1.4109586343401392,
+    "travel": 0.06547882924058829,
+    "minLoad": 0,
+    "lastLoad": 0.9999999847558991,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8330217595654441,
+    "travel": 0.017992063743830312,
+    "minLoad": 0.696898109853017,
+    "lastLoad": 0.9999963708202163,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "driven-step-steer",
+    "roll": 0.9106524830835184,
+    "pitch": 0.0643252179303001,
+    "minLoad": 0.8293991279773528,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "driven-lane-change",
+    "roll": 0.891646703104963,
+    "pitch": 0.0643252179303001,
+    "minLoad": 0.8364396614979017,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.5747674943040935,
+    "minLoad": 0.4263404985513779,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "cruise300s",
+    "early": 0.6026455630647584,
+    "lateEnergy": 0.6026455630646755,
+    "maxPose": 0.0029919331055176905,
+    "ok": true
+  },
+  {
+    "id": "superb_4x4",
+    "type": "driven-cruise300s",
+    "firstEnergy": 8.68760986576505e-22,
+    "lastEnergy": 6.083242320718108e-32,
+    "peak": 0.0004518558001513565,
+    "speed": 73.28663681819988,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "drop",
+    "ratios": [
+      0.000054689812327547904,
+      0.0003754860523568054,
+      4.330554413094028e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "step-steer",
+    "roll": 1.1632515644601247,
+    "pitch": 0.005694063586426557,
+    "travel": 0.016393269161257884,
+    "minLoad": 0.762465193829036,
+    "lastLoad": 0.9999984989029039,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "lane-change",
+    "roll": 0.8035933813575143,
+    "pitch": 0.001424881982942974,
+    "travel": 0.009966555848416252,
+    "minLoad": 0.8478746568599442,
+    "lastLoad": 0.9999987088119837,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "kerb",
+    "roll": 2.062663107422499,
+    "pitch": 1.4638338624354494,
+    "travel": 0.06057952342121232,
+    "minLoad": 0,
+    "lastLoad": 0.9999999937371044,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8489849740549473,
+    "travel": 0.01813236026436211,
+    "minLoad": 0.7043613267046959,
+    "lastLoad": 0.9999978213373114,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "driven-step-steer",
+    "roll": 0.833506715792048,
+    "pitch": 0.056971470964318656,
+    "minLoad": 0.8329118776022371,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "driven-lane-change",
+    "roll": 0.8193069620512501,
+    "pitch": 0.056971470964318656,
+    "minLoad": 0.8394962416456065,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.5905397580740548,
+    "minLoad": 0.43927239152849207,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "cruise300s",
+    "early": 0.5127878053370316,
+    "lateEnergy": 0.512787805336986,
+    "maxPose": 0.002939432659823862,
+    "ok": true
+  },
+  {
+    "id": "cla250",
+    "type": "driven-cruise300s",
+    "firstEnergy": 5.177931454025487e-21,
+    "lastEnergy": 1.464419664709014e-32,
+    "peak": 0.000663649143204741,
+    "speed": 73.25185493731506,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "drop",
+    "ratios": [
+      0.00005706255397435986,
+      0.00040006701778437086,
+      4.3057728480865455e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "step-steer",
+    "roll": 1.1707565951505203,
+    "pitch": 0.005919904252850926,
+    "travel": 0.016371043067085016,
+    "minLoad": 0.76089087624072,
+    "lastLoad": 0.9999983425219355,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "lane-change",
+    "roll": 0.80389029143514,
+    "pitch": 0.0014920992779557936,
+    "travel": 0.009901549198014266,
+    "minLoad": 0.8478391254523404,
+    "lastLoad": 0.9999986002382911,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "kerb",
+    "roll": 2.078511337119428,
+    "pitch": 1.4728644696342181,
+    "travel": 0.06053980374903616,
+    "minLoad": 0,
+    "lastLoad": 0.9999999922282734,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8559539927213103,
+    "travel": 0.01818148506516818,
+    "minLoad": 0.7035843039552799,
+    "lastLoad": 0.999997537385269,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "driven-step-steer",
+    "roll": 0.8393647350269058,
+    "pitch": 0.06475331857952252,
+    "minLoad": 0.8308219566111149,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "driven-lane-change",
+    "roll": 0.8233316487561779,
+    "pitch": 0.06475331857952252,
+    "minLoad": 0.8383768887079489,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.6656482471412353,
+    "minLoad": 0.4156126927519766,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "cruise300s",
+    "early": 0.54594843945044,
+    "lateEnergy": 0.5459484394503946,
+    "maxPose": 0.0029533788492800933,
+    "ok": true
+  },
+  {
+    "id": "cla35",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.2502673293461938e-21,
+    "lastEnergy": 4.6994014057608815e-32,
+    "peak": 0.0007733121161901703,
+    "speed": 73.40052683352751,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "drop",
+    "ratios": [
+      0.00006109682818660266,
+      0.0004433347482761806,
+      6.221029810486122e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "step-steer",
+    "roll": 1.1835128077085666,
+    "pitch": 0.006282564962965611,
+    "travel": 0.016334717429560237,
+    "minLoad": 0.7583642609314459,
+    "lastLoad": 0.999998026979339,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "lane-change",
+    "roll": 0.8043561689024458,
+    "pitch": 0.0016018024721874476,
+    "travel": 0.009796459854637913,
+    "minLoad": 0.8477780902213001,
+    "lastLoad": 0.9999983556413476,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "kerb",
+    "roll": 2.1050403534546795,
+    "pitch": 1.487751617946696,
+    "travel": 0.06064394039097609,
+    "minLoad": 0,
+    "lastLoad": 0.999999988970935,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8672691839911874,
+    "travel": 0.018259285716324472,
+    "minLoad": 0.7023016487408035,
+    "lastLoad": 0.999997003334319,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "driven-step-steer",
+    "roll": 0.8302229693229642,
+    "pitch": 0.048981428384661393,
+    "minLoad": 0.833033150365018,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "driven-lane-change",
+    "roll": 0.8118113812836183,
+    "pitch": 0.048981428384661393,
+    "minLoad": 0.8435848888247799,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "driven-brake",
+    "roll": 8.027008660914437e-16,
+    "pitch": 1.7254107288460487,
+    "minLoad": 0.40078509236789883,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "cruise300s",
+    "early": 0.6019756753065408,
+    "lateEnergy": 0.6019756753064951,
+    "maxPose": 0.0029763251392560365,
+    "ok": true
+  },
+  {
+    "id": "cla45s",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.871086815227661e-20,
+    "lastEnergy": 3.122257269064373e-32,
+    "peak": 0.0005102860168066237,
+    "speed": 72.73565689278826,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "drop",
+    "ratios": [
+      0.00002632661080396311,
+      0.0001295763817091646,
+      5.868008815790997e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "step-steer",
+    "roll": 1.3081462431048723,
+    "pitch": 0.007964602473187843,
+    "travel": 0.018099201956772788,
+    "minLoad": 0.7227434732064623,
+    "lastLoad": 0.999997310265455,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "lane-change",
+    "roll": 0.8812382838847952,
+    "pitch": 0.0019434906000303915,
+    "travel": 0.010741459595885284,
+    "minLoad": 0.8319143269277484,
+    "lastLoad": 0.9999991258679969,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "kerb",
+    "roll": 2.1354825372948123,
+    "pitch": 1.4496562123902594,
+    "travel": 0.05978320402138754,
+    "minLoad": 0,
+    "lastLoad": 0.9999999984960809,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9664398794882779,
+    "travel": 0.02012100712215052,
+    "minLoad": 0.6482889528047977,
+    "lastLoad": 0.9999994474159293,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "driven-step-steer",
+    "roll": 0.9034502503799073,
+    "pitch": 0.053741248537915884,
+    "minLoad": 0.8159374720043007,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "driven-lane-change",
+    "roll": 0.8865450878000221,
+    "pitch": 0.053741248537915884,
+    "minLoad": 0.8257178080025295,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.682273633060445,
+    "minLoad": 0.3830361805241039,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "cruise300s",
+    "early": 0.5785686781931278,
+    "lateEnergy": 0.5785686781930754,
+    "maxPose": 0.0029596818771902384,
+    "ok": true
+  },
+  {
+    "id": "gla250",
+    "type": "driven-cruise300s",
+    "firstEnergy": 7.987582511454414e-20,
+    "lastEnergy": 4.3722379521690715e-32,
+    "peak": 0.0005810800114486165,
+    "speed": 72.96019580441836,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "drop",
+    "ratios": [
+      0.0000052794542109494474,
+      0.000025623837863896318,
+      7.279872882716033e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "step-steer",
+    "roll": 0.8154117068613449,
+    "pitch": 0.0033245341396299943,
+    "travel": 0.010389774633287885,
+    "minLoad": 0.7712246000271807,
+    "lastLoad": 0.9999997410645489,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "lane-change",
+    "roll": 0.5366421337911613,
+    "pitch": 0.000952404561036543,
+    "travel": 0.00605031566720837,
+    "minLoad": 0.8598462486657807,
+    "lastLoad": 0.9999994120151466,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "kerb",
+    "roll": 1.9331720887100048,
+    "pitch": 1.575426367888627,
+    "travel": 0.05327919064091992,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998146194,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7907714450971778,
+    "travel": 0.017486198823716242,
+    "minLoad": 0.7479361822260827,
+    "lastLoad": 0.9999998991581078,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "driven-step-steer",
+    "roll": 0.5648230936336408,
+    "pitch": 0.04551274863775193,
+    "minLoad": 0.8469502370170822,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "driven-lane-change",
+    "roll": 0.5568713958272695,
+    "pitch": 0.046184010456281836,
+    "minLoad": 0.8469535381847587,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.5134984600392762,
+    "minLoad": 0.5291156759482635,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "cruise300s",
+    "early": 0.4826287593644706,
+    "lateEnergy": 0.4826287593645111,
+    "maxPose": 0.0027641653732754204,
+    "ok": true
+  },
+  {
+    "id": "z4_20i",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.2527503524926665e-18,
+    "lastEnergy": 1.2137076142649518e-32,
+    "peak": 0.0005244862163313698,
+    "speed": 72.74639976227589,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "drop",
+    "ratios": [
+      0.0000053436339063249,
+      0.000026310822915787136,
+      7.77627123303568e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "step-steer",
+    "roll": 0.8166197783432713,
+    "pitch": 0.0033182633524749933,
+    "travel": 0.010381878095438151,
+    "minLoad": 0.7709302350428755,
+    "lastLoad": 0.9999997358036417,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "lane-change",
+    "roll": 0.5366794495685304,
+    "pitch": 0.0009496806253763659,
+    "travel": 0.006039561834709515,
+    "minLoad": 0.8598433452591022,
+    "lastLoad": 0.9999994046818713,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "kerb",
+    "roll": 1.9362514248118847,
+    "pitch": 1.5775680662271179,
+    "travel": 0.05319813143955257,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998167507,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7919595024387234,
+    "travel": 0.017493925676755874,
+    "minLoad": 0.7477686617269121,
+    "lastLoad": 0.9999998959154879,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "driven-step-steer",
+    "roll": 0.567877198724049,
+    "pitch": 0.05922026093813491,
+    "minLoad": 0.84343089398651,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "driven-lane-change",
+    "roll": 0.5585313984632657,
+    "pitch": 0.05945429558090665,
+    "minLoad": 0.8455347396263933,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.535487862455494,
+    "minLoad": 0.523594684960361,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "cruise300s",
+    "early": 0.4874242953310169,
+    "lateEnergy": 0.487424295331058,
+    "maxPose": 0.0027659428147146863,
+    "ok": true
+  },
+  {
+    "id": "z4_30i",
+    "type": "driven-cruise300s",
+    "firstEnergy": 5.349962014700928e-20,
+    "lastEnergy": 1.7571794226700046e-32,
+    "peak": 0.0006813313635402472,
+    "speed": 73.10645749196235,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "drop",
+    "ratios": [
+      0.000026977836580710694,
+      0.0004038830912604942,
+      0.0000012255226024714947
+    ],
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "step-steer",
+    "roll": 0.8508445319957463,
+    "pitch": 0.003676287810977956,
+    "travel": 0.010250122298685063,
+    "minLoad": 0.7456469661157595,
+    "lastLoad": 0.9999980896283187,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "lane-change",
+    "roll": 0.5660173103454613,
+    "pitch": 0.0009263105508987431,
+    "travel": 0.006018621248618834,
+    "minLoad": 0.8384168387364648,
+    "lastLoad": 0.999998769896243,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "kerb",
+    "roll": 1.9948560210793311,
+    "pitch": 1.6911362520834265,
+    "travel": 0.05592437349626404,
+    "minLoad": 0,
+    "lastLoad": 0.999999980388335,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7219575686621734,
+    "travel": 0.017677225349794053,
+    "minLoad": 0.7822114496902501,
+    "lastLoad": 0.9999985036488066,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "driven-step-steer",
+    "roll": 0.6044674434640982,
+    "pitch": 0.06282960108208559,
+    "minLoad": 0.8117913160166933,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "driven-lane-change",
+    "roll": 0.5961799025784923,
+    "pitch": 0.06282960108208559,
+    "minLoad": 0.8220762026840048,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "driven-brake",
+    "roll": 3.3440267376297196e-16,
+    "pitch": 1.3987613131437047,
+    "minLoad": 0.5836809721650018,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "cruise300s",
+    "early": 0.45846045716652434,
+    "lateEnergy": 0.45846045716658346,
+    "maxPose": 0.0026487165959250855,
+    "ok": true
+  },
+  {
+    "id": "carrera_s",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.563066891729402e-32,
+    "lastEnergy": 1.3792546671088436e-32,
+    "peak": 0.0008837637519158957,
+    "speed": 73.78728944779179,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "drop",
+    "ratios": [
+      0.00002900156211514123,
+      0.0004328773910596083,
+      0.0000033721764565135953
+    ],
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "step-steer",
+    "roll": 0.8645044162187224,
+    "pitch": 0.003719277616844425,
+    "travel": 0.010359639427036011,
+    "minLoad": 0.7453656384352549,
+    "lastLoad": 0.9999975185681004,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "lane-change",
+    "roll": 0.5696345318158149,
+    "pitch": 0.0009335672754504116,
+    "travel": 0.006029292113513656,
+    "minLoad": 0.8382095570968091,
+    "lastLoad": 0.9999982645580641,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "kerb",
+    "roll": 1.9662390788839605,
+    "pitch": 1.7012750435812967,
+    "travel": 0.05591345277016936,
+    "minLoad": 0,
+    "lastLoad": 0.9999999771423261,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7258285786457361,
+    "travel": 0.017698759257921935,
+    "minLoad": 0.7817092075284482,
+    "lastLoad": 0.9999984006341944,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "driven-step-steer",
+    "roll": 0.6128985786928203,
+    "pitch": 0.060811780096659274,
+    "minLoad": 0.8119966644163314,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "driven-lane-change",
+    "roll": 0.5988672823372797,
+    "pitch": 0.060811780096659274,
+    "minLoad": 0.8222518729614395,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "driven-brake",
+    "roll": 3.1082195049950424e-16,
+    "pitch": 1.4326629001758846,
+    "minLoad": 0.5755724391823931,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "cruise300s",
+    "early": 0.5040000634633837,
+    "lateEnergy": 0.5040000634634206,
+    "maxPose": 0.0026702434252496845,
+    "ok": true
+  },
+  {
+    "id": "carrera_gts",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.456856851596142e-32,
+    "lastEnergy": 2.9041066682816724e-32,
+    "peak": 0.0008531149533043818,
+    "speed": 73.76627554150431,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "drop",
+    "ratios": [
+      0.0000038007015822241977,
+      0.00003187198364229999,
+      1.099714700115572e-8
+    ],
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "step-steer",
+    "roll": 0.6721304343293064,
+    "pitch": 0.0024237399081792886,
+    "travel": 0.008883520021110106,
+    "minLoad": 0.8015813082532656,
+    "lastLoad": 0.9999998482365016,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "lane-change",
+    "roll": 0.4681646225160756,
+    "pitch": 0.0007485075251619111,
+    "travel": 0.005443036994125278,
+    "minLoad": 0.874243341572568,
+    "lastLoad": 0.9999995941989783,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "kerb",
+    "roll": 1.6615677796094246,
+    "pitch": 1.5342299148308463,
+    "travel": 0.05362721848152744,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999378469,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.5649761203204772,
+    "travel": 0.014141848396961575,
+    "minLoad": 0.809295517598927,
+    "lastLoad": 0.9999999788359872,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "driven-step-steer",
+    "roll": 0.484354472328685,
+    "pitch": 0.07288660663379713,
+    "minLoad": 0.8620916316542301,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "driven-lane-change",
+    "roll": 0.47823171006602794,
+    "pitch": 0.07288660663379713,
+    "minLoad": 0.8680252470850064,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "driven-brake",
+    "roll": 1.1603921170696996e-15,
+    "pitch": 1.1536237249976675,
+    "minLoad": 0.6287372430130936,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "cruise300s",
+    "early": 0.4731582316482907,
+    "lateEnergy": 0.47315823164830606,
+    "maxPose": 0.002661173543837649,
+    "ok": true
+  },
+  {
+    "id": "huracan_rwd",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.7986327582589683e-32,
+    "lastEnergy": 2.553647443756375e-32,
+    "peak": 0.0009100223049994039,
+    "speed": 73.65616412572273,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "drop",
+    "ratios": [
+      0.000025060595086463864,
+      0.0005338437048326976,
+      0.0000034777536807293183
+    ],
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "step-steer",
+    "roll": 1.6690649046090908,
+    "pitch": 0.006615439702988155,
+    "travel": 0.019468354601383075,
+    "minLoad": 0.7263605158818798,
+    "lastLoad": 0.9999945412769031,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "lane-change",
+    "roll": 1.1270564310118352,
+    "pitch": 0.002081151141266283,
+    "travel": 0.011645375107745808,
+    "minLoad": 0.8159382994152258,
+    "lastLoad": 0.9999941699651889,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "kerb",
+    "roll": 2.4800400708038794,
+    "pitch": 1.7521613275233612,
+    "travel": 0.06116339554301631,
+    "minLoad": 0,
+    "lastLoad": 0.9999999225841493,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.0108462392780415,
+    "travel": 0.020831671741190765,
+    "minLoad": 0.7069635695980755,
+    "lastLoad": 0.9999937388027796,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "driven-step-steer",
+    "roll": 1.1310078822257852,
+    "pitch": 0.06098528777774803,
+    "minLoad": 0.8056457765021261,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "driven-lane-change",
+    "roll": 1.106307783180181,
+    "pitch": 0.06475687776995465,
+    "minLoad": 0.8114677571071959,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.6568618023146473,
+    "minLoad": 0.5187663153996939,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "cruise300s",
+    "early": 0.3947563803821952,
+    "lateEnergy": 0.3947563803821176,
+    "maxPose": 0.002992374170690335,
+    "ok": true
+  },
+  {
+    "id": "gtv1750",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.1232995836097814e-17,
+    "lastEnergy": 2.9647759711210235e-32,
+    "peak": 0.001077065943371114,
+    "speed": 72.60474044380273,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "drop",
+    "ratios": [
+      0.00007292894371939575,
+      0.00039801558511335197,
+      0.00000903521230984901
+    ],
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "step-steer",
+    "roll": 1.3973710710518559,
+    "pitch": 0.0045916276519969166,
+    "travel": 0.017353369756516385,
+    "minLoad": 0.728658315195993,
+    "lastLoad": 0.9999971887395545,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "lane-change",
+    "roll": 0.9226812097799181,
+    "pitch": 0.0014350830983107775,
+    "travel": 0.010124419123382867,
+    "minLoad": 0.8201911146913732,
+    "lastLoad": 0.9999983096955887,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "kerb",
+    "roll": 2.3425888783541047,
+    "pitch": 1.4550506890486827,
+    "travel": 0.060379182073951085,
+    "minLoad": 0,
+    "lastLoad": 0.9999999972816792,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.8391480499134488,
+    "travel": 0.020981293368960537,
+    "minLoad": 0.7589331539109184,
+    "lastLoad": 0.9999989715370392,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "driven-step-steer",
+    "roll": 0.9579405131140609,
+    "pitch": 0.04139844315179409,
+    "minLoad": 0.8079115479611727,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "driven-lane-change",
+    "roll": 0.9367814262271472,
+    "pitch": 0.04139844315179409,
+    "minLoad": 0.8163247878500175,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.454054348751446,
+    "minLoad": 0.5808554152351265,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "cruise300s",
+    "early": 0.48865849787212295,
+    "lateEnergy": 0.48865849787203897,
+    "maxPose": 0.002983454751594339,
+    "ok": true
+  },
+  {
+    "id": "e36_318i",
+    "type": "driven-cruise300s",
+    "firstEnergy": 6.860543419895342e-17,
+    "lastEnergy": 2.3875021700075365e-32,
+    "peak": 0.0005799922271444919,
+    "speed": 72.59937790509493,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "drop",
+    "ratios": [
+      0.00000838001718589992,
+      0.000028088487617550124,
+      4.719159035478693e-8
+    ],
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "step-steer",
+    "roll": 0.9555857263444592,
+    "pitch": 0.006944176138215812,
+    "travel": 0.011907755906701125,
+    "minLoad": 0.743899311715935,
+    "lastLoad": 0.9999998162425108,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "lane-change",
+    "roll": 0.6507678282984951,
+    "pitch": 0.0014340803208658858,
+    "travel": 0.007157537191861563,
+    "minLoad": 0.8484972377581131,
+    "lastLoad": 0.9999993898391124,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "kerb",
+    "roll": 2.3326689949793855,
+    "pitch": 1.5562591095643574,
+    "travel": 0.047721778237336934,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999838605,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.6417326502540548,
+    "travel": 0.01180554350254943,
+    "minLoad": 0.6661265611141829,
+    "lastLoad": 0.9999999932432841,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "driven-step-steer",
+    "roll": 0.6841044418909641,
+    "pitch": 0.044723088560467805,
+    "minLoad": 0.8262821506438136,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "driven-lane-change",
+    "roll": 0.6631354220362775,
+    "pitch": 0.044723088560467805,
+    "minLoad": 0.8444546730686525,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.1957365380692082,
+    "minLoad": 0.3920796156557655,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "cruise300s",
+    "early": 0.40102289038342037,
+    "lateEnergy": 0.40102289038346334,
+    "maxPose": 0.0026293874973505275,
+    "ok": true
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.554827875027351e-20,
+    "lastEnergy": 1.6027189790013174e-32,
+    "peak": 0.0005185063523023521,
+    "speed": 72.99753042968734,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "drop",
+    "ratios": [
+      0.000005308660301317204,
+      0.00013836128400656798,
+      0.000012604674732769299
+    ],
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "step-steer",
+    "roll": 1.147812540700071,
+    "pitch": 0.004124871643353633,
+    "travel": 0.013978707017445819,
+    "minLoad": 0.743956284629168,
+    "lastLoad": 0.9999967006032758,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "lane-change",
+    "roll": 0.7307736227565002,
+    "pitch": 0.0010640184565811413,
+    "travel": 0.007978998416024851,
+    "minLoad": 0.8467251810978493,
+    "lastLoad": 0.9999946575158977,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "kerb",
+    "roll": 2.1296755703691868,
+    "pitch": 1.4528873018311652,
+    "travel": 0.05699912781983331,
+    "minLoad": 0,
+    "lastLoad": 0.9999999936449949,
+    "peakAy": 0,
+    "maxLost": 0.049999999999999996,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7675232866134458,
+    "travel": 0.01753829485554039,
+    "minLoad": 0.7351209493162773,
+    "lastLoad": 0.9999994726009365,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "driven-step-steer",
+    "roll": 0.7563197356667521,
+    "pitch": 0.07000521839553785,
+    "minLoad": 0.8192398105116537,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "driven-lane-change",
+    "roll": 0.7392614037504855,
+    "pitch": 0.07101621286668529,
+    "minLoad": 0.8380865685010057,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "driven-brake",
+    "roll": 2.462497753887645e-16,
+    "pitch": 1.4632013328529248,
+    "minLoad": 0.5049983523026075,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "cruise300s",
+    "early": 0.9150294375770657,
+    "lateEnergy": 0.9150294375770166,
+    "maxPose": 0.0029738020398297703,
+    "ok": true
+  },
+  {
+    "id": "cle300e",
+    "type": "driven-cruise300s",
+    "firstEnergy": 8.118516798555779e-25,
+    "lastEnergy": 8.609048375473838e-33,
+    "peak": 0.000813360916168686,
+    "speed": 74.00831648093221,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "drop",
+    "ratios": [
+      0.000007451807950746649,
+      0.00004238553555644143,
+      1.1500618351069683e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "step-steer",
+    "roll": 1.2249221172228963,
+    "pitch": 0.006321250500533842,
+    "travel": 0.01622855467456944,
+    "minLoad": 0.7399636944867671,
+    "lastLoad": 0.999998677830315,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "lane-change",
+    "roll": 0.8421093871636471,
+    "pitch": 0.001652544281706114,
+    "travel": 0.009769826305008396,
+    "minLoad": 0.8348627082915954,
+    "lastLoad": 0.999999391839278,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "kerb",
+    "roll": 2.217233536677228,
+    "pitch": 1.511782511854391,
+    "travel": 0.05623954993144784,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998913086,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9024530222041932,
+    "travel": 0.018154268903462993,
+    "minLoad": 0.6665993587259076,
+    "lastLoad": 0.9999998901535524,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "driven-step-steer",
+    "roll": 0.8680283423585917,
+    "pitch": 0.04192603751082065,
+    "minLoad": 0.8176887933413393,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "driven-lane-change",
+    "roll": 0.8488628016138338,
+    "pitch": 0.041143927112111726,
+    "minLoad": 0.8190865597135275,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.5227712463037095,
+    "minLoad": 0.4349990294992125,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "cruise300s",
+    "early": 0.35898614928500305,
+    "lateEnergy": 0.35898614928504424,
+    "maxPose": 0.0028566677057440546,
+    "ok": true
+  },
+  {
+    "id": "jazz",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.1344913713732217e-16,
+    "lastEnergy": 2.474978181330381e-32,
+    "peak": 0.0006669968818308713,
+    "speed": 72.52915726975172,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "drop",
+    "ratios": [
+      0.000007599353564308579,
+      0.00004614822758235949,
+      1.5264631246362989e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "step-steer",
+    "roll": 1.22930534260449,
+    "pitch": 0.006282860431310893,
+    "travel": 0.016213332993215545,
+    "minLoad": 0.7377054243405395,
+    "lastLoad": 0.9999985749912792,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "lane-change",
+    "roll": 0.842300689339443,
+    "pitch": 0.001645431073004395,
+    "travel": 0.009730124095437337,
+    "minLoad": 0.8341916690261185,
+    "lastLoad": 0.9999993627577008,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "kerb",
+    "roll": 2.2278958471056565,
+    "pitch": 1.5217119079210273,
+    "travel": 0.05569698564551439,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998038879,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9084487008925006,
+    "travel": 0.018211478469054833,
+    "minLoad": 0.664946519806859,
+    "lastLoad": 0.9999998607200685,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "driven-step-steer",
+    "roll": 0.8677604904931336,
+    "pitch": 0.06251160784715495,
+    "minLoad": 0.8140609417216521,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "driven-lane-change",
+    "roll": 0.8521572709065732,
+    "pitch": 0.06251160784715495,
+    "minLoad": 0.8330792872384958,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.556584641507745,
+    "minLoad": 0.42120567935172243,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "cruise300s",
+    "early": 0.3733403865004699,
+    "lateEnergy": 0.37334038650051243,
+    "maxPose": 0.0028638093335004067,
+    "ok": true
+  },
+  {
+    "id": "jazz_dynamic",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.2728484278269576e-16,
+    "lastEnergy": 5.879855796642957e-33,
+    "peak": 0.0007377912210129083,
+    "speed": 72.66480908085892,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "drop",
+    "ratios": [
+      2.762787862875337e-7,
+      0.000001135682940542697,
+      8.738144334972273e-11
+    ],
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "step-steer",
+    "roll": 0.7785469910754025,
+    "pitch": 0.0037115751251831927,
+    "travel": 0.009979537225165596,
+    "minLoad": 0.7790386197766752,
+    "lastLoad": 0.9999999916523089,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "lane-change",
+    "roll": 0.5645357310977124,
+    "pitch": 0.0008981358118202228,
+    "travel": 0.006375869674540234,
+    "minLoad": 0.8619168543660156,
+    "lastLoad": 0.9999999244807896,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "kerb",
+    "roll": 1.8840021155318871,
+    "pitch": 1.4577563110901424,
+    "travel": 0.0512624305657336,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999999818,
+    "peakAy": 0,
+    "maxLost": 0.06666666666666667,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.5272926809855865,
+    "travel": 0.011479960860173168,
+    "minLoad": 0.7463000191735961,
+    "lastLoad": 0.9999999997356519,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "driven-step-steer",
+    "roll": 0.5539984775157819,
+    "pitch": 0.0313877585764645,
+    "minLoad": 0.8505916125995748,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "driven-lane-change",
+    "roll": 0.5446682587688522,
+    "pitch": 0.0313877585764645,
+    "minLoad": 0.8639599623550048,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "driven-brake",
+    "roll": 1.8323007449539374e-16,
+    "pitch": 0.9578423686978705,
+    "minLoad": 0.5606740099510015,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "cruise300s",
+    "early": 0.2981842471651468,
+    "lateEnergy": 0.298184247165185,
+    "maxPose": 0.0025153401154936377,
+    "ok": true
+  },
+  {
+    "id": "jazz_drift",
+    "type": "driven-cruise300s",
+    "firstEnergy": 5.57473318336633e-20,
+    "lastEnergy": 1.6343864229761483e-32,
+    "peak": 0.0004452281511074954,
+    "speed": 72.5085959465291,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "drop",
+    "ratios": [
+      0.000003420541654252067,
+      0.000005664686366118687,
+      1.0950657518613273e-8
+    ],
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "step-steer",
+    "roll": 1.0979398616954748,
+    "pitch": 0.005610157251862652,
+    "travel": 0.01434545172598071,
+    "minLoad": 0.7442205563442911,
+    "lastLoad": 0.9999998882496385,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "lane-change",
+    "roll": 0.7637970416866703,
+    "pitch": 0.0013420091594478457,
+    "travel": 0.008670139254075677,
+    "minLoad": 0.8363620873470261,
+    "lastLoad": 0.9999999614825223,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "kerb",
+    "roll": 2.256590293847926,
+    "pitch": 1.4447560722934543,
+    "travel": 0.05803800596189903,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999995581,
+    "peakAy": 0,
+    "maxLost": 0.07083333333333333,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9600776670744323,
+    "travel": 0.018314207676171843,
+    "minLoad": 0.6642465389316234,
+    "lastLoad": 0.9999999988242653,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "driven-step-steer",
+    "roll": 0.7895723640891468,
+    "pitch": 0.019324510536164,
+    "minLoad": 0.8256772381352948,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "driven-lane-change",
+    "roll": 0.7690702071053491,
+    "pitch": 0.019324510536164,
+    "minLoad": 0.8332096015870057,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.652375128055966,
+    "minLoad": 0.41628888725028,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "cruise300s",
+    "early": 0.25347348959144045,
+    "lateEnergy": 0.25347348959149973,
+    "maxPose": 0.0027523993579236165,
+    "ok": true
+  },
+  {
+    "id": "aygo",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.79147095133501e-13,
+    "lastEnergy": 2.0188543702285974e-32,
+    "peak": 0.0007487258474677466,
+    "speed": 71.26938785582938,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "drop",
+    "ratios": [
+      0.000006209699177901098,
+      0.00003261320321662475,
+      5.6117963615868e-7
+    ],
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "step-steer",
+    "roll": 1.1602171247327446,
+    "pitch": 0.006909324479585524,
+    "travel": 0.015478903500043155,
+    "minLoad": 0.7013357936968853,
+    "lastLoad": 0.9999995790950816,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "lane-change",
+    "roll": 0.76651363505883,
+    "pitch": 0.001598551682050003,
+    "travel": 0.008953993060490504,
+    "minLoad": 0.82301112086326,
+    "lastLoad": 0.9999998125352759,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "kerb",
+    "roll": 2.197955292024233,
+    "pitch": 1.445469186684444,
+    "travel": 0.05495227423288081,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998911783,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.9628873315142579,
+    "travel": 0.019721098236807535,
+    "minLoad": 0.6372242166871868,
+    "lastLoad": 0.9999998887787687,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "driven-step-steer",
+    "roll": 0.7941812325797047,
+    "pitch": 0.033004102829609486,
+    "minLoad": 0.8075557553507627,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "driven-lane-change",
+    "roll": 0.7739014247572967,
+    "pitch": 0.033004102829609486,
+    "minLoad": 0.8168497179813932,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.637796455544139,
+    "minLoad": 0.3743861896567507,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "cruise300s",
+    "early": 0.4634052849327989,
+    "lateEnergy": 0.4634052849328693,
+    "maxPose": 0.002818739292531487,
+    "ok": true
+  },
+  {
+    "id": "qashqai",
+    "type": "driven-cruise300s",
+    "firstEnergy": 8.703505256404996e-17,
+    "lastEnergy": 1.810580324269805e-32,
+    "peak": 0.0007039755890352541,
+    "speed": 72.27558313963776,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "drop",
+    "ratios": [
+      0.000005950692904904237,
+      0.00003169969399969042,
+      0.0000010354623689757393
+    ],
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "step-steer",
+    "roll": 1.1709988746558344,
+    "pitch": 0.007207845549315147,
+    "travel": 0.015442531691646475,
+    "minLoad": 0.69846876080876,
+    "lastLoad": 0.9999994964915034,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "lane-change",
+    "roll": 0.7668902423781983,
+    "pitch": 0.0016815967704713031,
+    "travel": 0.00886978780193572,
+    "minLoad": 0.8229809996553727,
+    "lastLoad": 0.999999735061521,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "kerb",
+    "roll": 2.2200919014568985,
+    "pitch": 1.4562506249084954,
+    "travel": 0.05502489973492612,
+    "minLoad": 0,
+    "lastLoad": 0.9999999998613914,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.971497436268754,
+    "travel": 0.01978072668036994,
+    "minLoad": 0.6359633344366471,
+    "lastLoad": 0.9999998824256272,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "driven-step-steer",
+    "roll": 0.7963651581357063,
+    "pitch": 0.03334539520568027,
+    "minLoad": 0.8054616145034745,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "driven-lane-change",
+    "roll": 0.7749716133690812,
+    "pitch": 0.03334539520568027,
+    "minLoad": 0.817589161732641,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.6183483455178174,
+    "minLoad": 0.38804791767670543,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "cruise300s",
+    "early": 0.49631382866306023,
+    "lateEnergy": 0.49631382866313256,
+    "maxPose": 0.002831632861590381,
+    "ok": true
+  },
+  {
+    "id": "qashqai_dci",
+    "type": "driven-cruise300s",
+    "firstEnergy": 8.363616884270584e-14,
+    "lastEnergy": 2.543541345715253e-33,
+    "peak": 0.0007194480795645769,
+    "speed": 71.87790794926428,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "drop",
+    "ratios": [
+      0.0000016235242339116615,
+      0.000004667090120688499,
+      0.00000354779277385372
+    ],
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "step-steer",
+    "roll": 1.1761173224195405,
+    "pitch": 0.006411222655126679,
+    "travel": 0.014363775320689696,
+    "minLoad": 0.747165201474157,
+    "lastLoad": 0.9999993798676781,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "lane-change",
+    "roll": 0.7681382096784427,
+    "pitch": 0.0015724665238782405,
+    "travel": 0.00828058281995669,
+    "minLoad": 0.844928300193552,
+    "lastLoad": 0.9999992338563718,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "kerb",
+    "roll": 2.357958992347411,
+    "pitch": 1.433860156902269,
+    "travel": 0.054167176460537134,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999759188,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7560926772531638,
+    "travel": 0.015974707334851835,
+    "minLoad": 0.7198381317227213,
+    "lastLoad": 0.9999999881134625,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "driven-step-steer",
+    "roll": 0.7952790529611181,
+    "pitch": 0.10723757861207822,
+    "minLoad": 0.8260748493975205,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "driven-lane-change",
+    "roll": 0.7778712976186315,
+    "pitch": 0.10723757861207822,
+    "minLoad": 0.83562679359098,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.3546803320859342,
+    "minLoad": 0.5017981811520773,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "cruise300s",
+    "early": 0.6836860642612586,
+    "lateEnergy": 0.6836860642612421,
+    "maxPose": 0.002902848478746305,
+    "ok": true
+  },
+  {
+    "id": "dolphin",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.764571729781795e-32,
+    "lastEnergy": 3.8885942500618914e-32,
+    "peak": 0.001379442348486771,
+    "speed": 74.37536989408153,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "drop",
+    "ratios": [
+      0.000004055854953693493,
+      0.00002174282210576972,
+      0.000023909572775550907
+    ],
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "step-steer",
+    "roll": 1.2125260823883177,
+    "pitch": 0.006414624261556328,
+    "travel": 0.014591378956879387,
+    "minLoad": 0.7461935338593165,
+    "lastLoad": 0.9999956304651023,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "lane-change",
+    "roll": 0.770513116808875,
+    "pitch": 0.0016509970821464283,
+    "travel": 0.008205977793995168,
+    "minLoad": 0.8443817540512505,
+    "lastLoad": 0.9999936156363948,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "kerb",
+    "roll": 2.415111493330017,
+    "pitch": 1.4477925974492638,
+    "travel": 0.055638809590939614,
+    "minLoad": 0,
+    "lastLoad": 0.9999999993663404,
+    "peakAy": 0,
+    "maxLost": 0.06249999999999999,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 0.7627092042734159,
+    "travel": 0.01606512953076946,
+    "minLoad": 0.7214639653474609,
+    "lastLoad": 0.9999999626237217,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "driven-step-steer",
+    "roll": 0.8062784979551614,
+    "pitch": 0.10165503181947433,
+    "minLoad": 0.8271505172421236,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "driven-lane-change",
+    "roll": 0.7804594427325878,
+    "pitch": 0.10165503181947433,
+    "minLoad": 0.8351869377258829,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.3697248721910749,
+    "minLoad": 0.5033965578943447,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "cruise300s",
+    "early": 0.8647456895745668,
+    "lateEnergy": 0.8647456895745028,
+    "maxPose": 0.002976966698959393,
+    "ok": true
+  },
+  {
+    "id": "atto3",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.6641127582911345e-32,
+    "lastEnergy": 3.5583994714753744e-32,
+    "peak": 0.0013046538822604494,
+    "speed": 74.3510949442587,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "drop",
+    "ratios": [
+      0.0004064622188966746,
+      0.0007137947446346394,
+      0.000056771369788869104
+    ],
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "step-steer",
+    "roll": 1.672974104464444,
+    "pitch": 0.006542371490255885,
+    "travel": 0.025682521268793966,
+    "minLoad": 0.6408410654122295,
+    "lastLoad": 0.9999873873864703,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "lane-change",
+    "roll": 1.044209114618603,
+    "pitch": 0.002024098183090682,
+    "travel": 0.01425289176049164,
+    "minLoad": 0.7779990918910482,
+    "lastLoad": 0.9999808425643519,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "kerb",
+    "roll": 1.9911483081085446,
+    "pitch": 1.0635942601629023,
+    "travel": 0.08101783061979975,
+    "minLoad": 0,
+    "lastLoad": 0.9999999593997636,
+    "peakAy": 0,
+    "maxLost": 0.05416666666666666,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.1507223013770917,
+    "travel": 0.033259855924293494,
+    "minLoad": 0.6419436060312587,
+    "lastLoad": 0.9999989341335024,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "coarse-step",
+    "peak": 0.04870666509758653,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "bump-stop",
+    "bump": 0.12529173993396356,
+    "droop": -0.05321181373482817,
+    "maxDroop": -0.1232067895186662,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "driven-step-steer",
+    "roll": 1.1828490949186423,
+    "pitch": 0.05331502794402835,
+    "minLoad": 0.7444978662764856,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "driven-lane-change",
+    "roll": 1.0775791005858348,
+    "pitch": 0.05739017354690186,
+    "minLoad": 0.7738342723704761,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.857367326515874,
+    "minLoad": 0.4190218003703529,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "cruise300s",
+    "early": 1.0017097443549907,
+    "lateEnergy": 1.001709744354852,
+    "maxPose": 0.0031455920120352396,
+    "ok": true
+  },
+  {
+    "id": "van",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.410175511957508e-13,
+    "lastEnergy": 6.34266336125343e-32,
+    "peak": 0.0009853934859829533,
+    "speed": 70.68725228547456,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "drop",
+    "ratios": [
+      0.0004064622188966746,
+      0.0007137947446346394,
+      0.000056771369788869104
+    ],
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "step-steer",
+    "roll": 1.672974104464444,
+    "pitch": 0.006542371490255885,
+    "travel": 0.025682521268793966,
+    "minLoad": 0.6408410654122295,
+    "lastLoad": 0.9999873873864703,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "lane-change",
+    "roll": 1.044209114618603,
+    "pitch": 0.002024098183090682,
+    "travel": 0.01425289176049164,
+    "minLoad": 0.7779990918910482,
+    "lastLoad": 0.9999808425643519,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "kerb",
+    "roll": 1.9911483081085446,
+    "pitch": 1.0635942601629023,
+    "travel": 0.08101783061979975,
+    "minLoad": 0,
+    "lastLoad": 0.9999999593997636,
+    "peakAy": 0,
+    "maxLost": 0.05416666666666666,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.1507223013770917,
+    "travel": 0.033259855924293494,
+    "minLoad": 0.6419436060312587,
+    "lastLoad": 0.9999989341335024,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "coarse-step",
+    "peak": 0.04870666509758653,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "bump-stop",
+    "bump": 0.12529173993396356,
+    "droop": -0.05321181373482817,
+    "maxDroop": -0.1232067895186662,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "driven-step-steer",
+    "roll": 1.1824033020820488,
+    "pitch": 0.053952193703605,
+    "minLoad": 0.7433339508870136,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "driven-lane-change",
+    "roll": 1.0783466331128708,
+    "pitch": 0.05834500981779722,
+    "minLoad": 0.7708385120575026,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.8583877484587934,
+    "minLoad": 0.41873933197636665,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "cruise300s",
+    "early": 1.0017097443549907,
+    "lateEnergy": 1.001709744354852,
+    "maxPose": 0.0031455920120352396,
+    "ok": true
+  },
+  {
+    "id": "van_150",
+    "type": "driven-cruise300s",
+    "firstEnergy": 9.080043673033009e-16,
+    "lastEnergy": 6.365136216083379e-32,
+    "peak": 0.000991967572742128,
+    "speed": 71.08648158127043,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "drop",
+    "ratios": [
+      0.0005109542274095843,
+      0.0037636074014993108,
+      0.0009616672121128353
+    ],
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "step-steer",
+    "roll": 1.924818665689423,
+    "pitch": 0.006298565905289812,
+    "travel": 0.029130753084963684,
+    "minLoad": 0.5253532350960585,
+    "lastLoad": 0.9998595608900502,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "lane-change",
+    "roll": 1.1252994772222102,
+    "pitch": 0.0022957343276299607,
+    "travel": 0.015383122802999449,
+    "minLoad": 0.7163141692248741,
+    "lastLoad": 0.9998264817233644,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "kerb",
+    "roll": 1.9866467105721048,
+    "pitch": 0.986460097307656,
+    "travel": 0.07674584324036457,
+    "minLoad": 0,
+    "lastLoad": 0.9999981898017526,
+    "peakAy": 0,
+    "maxLost": 0.041666666666666664,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.573213496366328,
+    "travel": 0.06111460503493863,
+    "minLoad": 0.6683123154273913,
+    "lastLoad": 0.9999495959875708,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "coarse-step",
+    "peak": 0.05545750722234215,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "bump-stop",
+    "bump": 0.1418416631217181,
+    "droop": -0.05271322670930662,
+    "maxDroop": -0.13401122583472258,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "driven-step-steer",
+    "roll": 1.2650996674842825,
+    "pitch": 0.07286589498083368,
+    "minLoad": 0.6896497108680193,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "driven-lane-change",
+    "roll": 1.1774745401118136,
+    "pitch": 0.07296962536322407,
+    "minLoad": 0.7086041739662836,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 2.234976260742654,
+    "minLoad": 0.5264706944716416,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "cruise300s",
+    "early": 2.9011497905828265,
+    "lateEnergy": 2.9011497905828136,
+    "maxPose": 0.0033704230553799038,
+    "ok": true
+  },
+  {
+    "id": "truck",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.1274682637895832e-9,
+    "lastEnergy": 1.7914313563255563e-31,
+    "peak": 0.0013758710491586633,
+    "speed": 68.12287964398288,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "drop",
+    "ratios": [
+      0.005690586940549566,
+      0.07164756213939755,
+      0.004214446855787636
+    ],
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "step-steer",
+    "roll": 2.2083290718823,
+    "pitch": 0.004987011848747628,
+    "travel": 0.032811444268534024,
+    "minLoad": 0.39409885092468155,
+    "lastLoad": 0.9989028549901868,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "lane-change",
+    "roll": 1.257298123623918,
+    "pitch": 0.0023052524080116755,
+    "travel": 0.017086646168494077,
+    "minLoad": 0.6542517940752257,
+    "lastLoad": 0.9992943558639218,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "kerb",
+    "roll": 1.5817641183947222,
+    "pitch": 0.5455074715650013,
+    "travel": 0.059580050041761694,
+    "minLoad": 0,
+    "lastLoad": 0.9995225486207917,
+    "peakAy": 0,
+    "maxLost": 0.029166666666666664,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.0820208037641188,
+    "travel": 0.0700403554217987,
+    "minLoad": 0.7769214337507075,
+    "lastLoad": 0.9977115085073754,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "coarse-step",
+    "peak": 0.06483114785246324,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "bump-stop",
+    "bump": 0.16410798616489286,
+    "droop": -0.08320526870434722,
+    "maxDroop": -0.16305500968750275,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "driven-step-steer",
+    "roll": 1.5483460420548298,
+    "pitch": 0.01712189852482886,
+    "minLoad": 0.5826234001342476,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "driven-lane-change",
+    "roll": 1.3050075288508598,
+    "pitch": 0.01712189852482886,
+    "minLoad": 0.6443417601795495,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "driven-brake",
+    "roll": 0,
+    "pitch": 1.3444747646746,
+    "minLoad": 0.7187519790326745,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "cruise300s",
+    "early": 10.446912257737502,
+    "lateEnergy": 10.44691216166484,
+    "maxPose": 0.003155769707466675,
+    "ok": true
+  },
+  {
+    "id": "bus",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.2381386983024817e-9,
+    "lastEnergy": 4.937673807341847e-31,
+    "peak": 0.0004283575691711211,
+    "speed": 70.0898397321076,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "drop",
+    "ratios": [
+      0.00010027793650699358,
+      0.000048576911594831316,
+      0.001586670991515434
+    ],
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "step-steer",
+    "roll": 1.6194389434622962,
+    "pitch": 0.0059426436002170836,
+    "travel": 0.005068472661547166,
+    "minLoad": 0.07365168533498614,
+    "lastLoad": 0.9989342053513737,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "lane-change",
+    "roll": 0.7633564306722355,
+    "pitch": 0.000612120940211562,
+    "travel": 0.0021415620283988645,
+    "minLoad": 0.5532747089242057,
+    "lastLoad": 0.9998068299506158,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "kerb",
+    "roll": 0,
+    "pitch": 4.7419637316047645,
+    "travel": 0.055086340370240475,
+    "minLoad": 0,
+    "lastLoad": 1,
+    "peakAy": 0,
+    "maxLost": 0.09583333333333333,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 2.345910179936529,
+    "travel": 0.031520637469517276,
+    "minLoad": 0.41739700250375966,
+    "lastLoad": 0.999999999999667,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "driven-step-steer",
+    "roll": 0.9288525925737001,
+    "pitch": 0.07479446018420946,
+    "minLoad": 0.4629070907536412,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "driven-lane-change",
+    "roll": 0.7949721645876319,
+    "pitch": 0.07484328082545615,
+    "minLoad": 0.526523314023426,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "driven-brake",
+    "roll": 1.1491931869351287e-15,
+    "pitch": 3.30090150925591,
+    "minLoad": 0.21570130864975734,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "cruise300s",
+    "early": 0.0404284031049803,
+    "lateEnergy": 0.040428403105001884,
+    "maxPose": 0.0043470447393146846,
+    "ok": true
+  },
+  {
+    "id": "delivery",
+    "type": "driven-cruise300s",
+    "firstEnergy": 3.3469403357775438e-15,
+    "lastEnergy": 3.617385867249697e-33,
+    "peak": 0.0012453744380539874,
+    "speed": 71.03171014459454,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "drop",
+    "ratios": [
+      0.0003208159807542775,
+      0.000129564297120489,
+      0.006464104227225777
+    ],
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "step-steer",
+    "roll": 1.6464147778215086,
+    "pitch": 0.004678211193715178,
+    "travel": 0.004875293507381642,
+    "minLoad": 0.07787163380930588,
+    "lastLoad": 0.9962189308449128,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "lane-change",
+    "roll": 0.7655505575104854,
+    "pitch": 0.0004897357835888068,
+    "travel": 0.002039624720512015,
+    "minLoad": 0.5566007609083798,
+    "lastLoad": 0.9993670981674092,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "kerb",
+    "roll": 0,
+    "pitch": 4.0966979623399284,
+    "travel": 0.05476281881860158,
+    "minLoad": 0,
+    "lastLoad": 1,
+    "peakAy": 0,
+    "maxLost": 0.09583333333333333,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.7325892524560658,
+    "travel": 0.02671566760200949,
+    "minLoad": 0.4797004227182206,
+    "lastLoad": 0.9999999999997573,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "driven-step-steer",
+    "roll": 0.9741585549055861,
+    "pitch": 0.10259366059525461,
+    "minLoad": 0.44621267519324537,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "driven-lane-change",
+    "roll": 0.7970051101446067,
+    "pitch": 0.10259366059525461,
+    "minLoad": 0.5285686552091531,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "driven-brake",
+    "roll": 5.568056898911656e-16,
+    "pitch": 2.6803465825352797,
+    "minLoad": 0.2555819071454049,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "cruise300s",
+    "early": 0.05086235460658206,
+    "lateEnergy": 0.05086235460651478,
+    "maxPose": 0.004533213918951041,
+    "ok": true
+  },
+  {
+    "id": "scooter",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.9429360106529703e-16,
+    "lastEnergy": 3.214367777717283e-33,
+    "peak": 0.0009615689394617233,
+    "speed": 71.74219982431306,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "drop",
+    "ratios": [
+      0.0002143733209784494,
+      0.00009060983363352702,
+      0.0037693653966746426
+    ],
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "step-steer",
+    "roll": 1.6230651524093758,
+    "pitch": 0.005044401269208194,
+    "travel": 0.005257720456403645,
+    "minLoad": 0.10602810465372565,
+    "lastLoad": 0.9977289799246867,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "lane-change",
+    "roll": 0.7687590788656556,
+    "pitch": 0.0005787588607911881,
+    "travel": 0.002286278240139401,
+    "minLoad": 0.5614539977396508,
+    "lastLoad": 0.9996352455465961,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "kerb",
+    "roll": 0,
+    "pitch": 4.241901950146233,
+    "travel": 0.056114386326771945,
+    "minLoad": 0,
+    "lastLoad": 0.9999999999999998,
+    "peakAy": 0,
+    "maxLost": 0.09583333333333333,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.831040093271589,
+    "travel": 0.027698296103178782,
+    "minLoad": 0.48383434025119765,
+    "lastLoad": 0.999999999999671,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "driven-step-steer",
+    "roll": 0.9513131923570411,
+    "pitch": 0.23188040949052188,
+    "minLoad": 0.43179347205625906,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "driven-lane-change",
+    "roll": 0.8049656424860723,
+    "pitch": 0.23188040949052188,
+    "minLoad": 0.5207197707277372,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "driven-brake",
+    "roll": 9.009609334340628e-16,
+    "pitch": 2.911058889900204,
+    "minLoad": 0.18328930624573161,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "cruise300s",
+    "early": 0.0591700385267548,
+    "lateEnergy": 0.05917003852676933,
+    "maxPose": 0.004589630484494722,
+    "ok": true
+  },
+  {
+    "id": "moto",
+    "type": "driven-cruise300s",
+    "firstEnergy": 1.5371495132637217e-33,
+    "lastEnergy": 1.9977244829445707e-33,
+    "peak": 0.0029589441035604395,
+    "speed": 73.55691609953718,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "drop",
+    "ratios": [
+      0.000008657239208401141,
+      0.000003992566383673987,
+      0.00006682604951469948
+    ],
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "step-steer",
+    "roll": 1.4872212834680996,
+    "pitch": 0.0061970468882877605,
+    "travel": 0.0073790225589544295,
+    "minLoad": 0.30113324436365013,
+    "lastLoad": 0.9999648346338443,
+    "peakAy": 2.943,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "lane-change",
+    "roll": 0.7630920488451975,
+    "pitch": 0.000943224535337288,
+    "travel": 0.0033983635439177305,
+    "minLoad": 0.6371831456185996,
+    "lastLoad": 0.9999822652868624,
+    "peakAy": 2.4525,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "kerb",
+    "roll": 0,
+    "pitch": 4.324804139721637,
+    "travel": 0.056562372145847944,
+    "minLoad": 0,
+    "lastLoad": 1,
+    "peakAy": 0,
+    "maxLost": 0.09583333333333333,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "brake",
+    "roll": 0,
+    "pitch": 1.9034052849189844,
+    "travel": 0.028343493785629458,
+    "minLoad": 0.48075119469691396,
+    "lastLoad": 0.9999999999996632,
+    "peakAy": 0,
+    "maxLost": 0,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "driven-step-steer",
+    "roll": 0.8517616545175773,
+    "pitch": 0.2636676761248816,
+    "minLoad": 0.5617882482688109,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "driven-lane-change",
+    "roll": 0.7654607976697883,
+    "pitch": 0.2636676761248816,
+    "minLoad": 0.6162483678804547,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "driven-brake",
+    "roll": 8.993782122216672e-16,
+    "pitch": 3.020017233475436,
+    "minLoad": 0.17086359643348353,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "cruise300s",
+    "early": 0.07588706556114967,
+    "lateEnergy": 0.07588706556116905,
+    "maxPose": 0.0037823645133573873,
+    "ok": true
+  },
+  {
+    "id": "police_moto",
+    "type": "driven-cruise300s",
+    "firstEnergy": 2.5654651299142333e-33,
+    "lastEnergy": 1.8970497778206876e-33,
+    "peak": 0.00350279798810026,
+    "speed": 73.99582111549458,
+    "ok": true
+  }
+]

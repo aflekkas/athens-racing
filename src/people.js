@@ -3,6 +3,7 @@
 // Reactions use body language only: protective flinches, sideways evasive steps,
 // a braced landing, a raised fist, and a wave when a driver yields.
 import * as THREE from 'three';
+import {assertWorldBudget} from './world-art-direction.js';
 import { ImpactBodies } from './impact-ragdoll-view.js';
 import { pedestrianThump } from './impact-ragdoll.js';
 import { ROAD } from './road.js';
@@ -21,25 +22,20 @@ const ANCHOR_SHARE = { cafe: .18, stop: .22, beach: .12, wander: .1, lie: .12, s
 const FAR_TICK = 80 * 80, FAR_EVERY = 4; // beyond 80 m from the camera, update every 4th frame
 const TAU = Math.PI * 2;
 // ------------------------------------------------------------------ café furniture
-function chairGeo() {
+export function chairGeo() {
   const parts = [];
   const add = (w, h, d, x, y, z) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); parts.push(g.toNonIndexed()); };
   add(0.44, 0.035, 0.42, 0, 0.455, 0); add(0.44, 0.42, 0.03, 0, 0.68, -0.2);
   for (const x of [-0.19, 0.19]) for (const z of [-0.18, 0.18]) add(0.03, 0.455, 0.03, x, 0.228, z);
-  return mergeList(parts);
+  return assertWorldBudget('streetProp',mergeList(parts));
 }
-function tableGeo() {
-  const top = new THREE.CylinderGeometry(0.36, 0.36, 0.03, 20); top.translate(0, 0.735, 0);
-  const stem = new THREE.CylinderGeometry(0.03, 0.03, 0.72, 8); stem.translate(0, 0.36, 0);
-  const base = new THREE.CylinderGeometry(0.2, 0.22, 0.03, 14); base.translate(0, 0.015, 0);
-  const cup1 = new THREE.CylinderGeometry(0.04, 0.03, 0.14, 8); cup1.translate(0.14, 0.82, 0.05);
-  const cup2 = new THREE.CylinderGeometry(0.04, 0.03, 0.14, 8); cup2.translate(-0.12, 0.82, -0.08);
-  return mergeList([top, stem, base, cup1, cup2].map((g) => g.toNonIndexed()));
-}
-function parasolGeo() {
-  const pole = new THREE.CylinderGeometry(0.025, 0.025, 2.35, 6); pole.translate(0, 1.175, 0);
-  const top = new THREE.ConeGeometry(1.45, 0.42, 4, 1, true); top.rotateY(Math.PI / 4); top.translate(0, 2.35, 0);
-  return mergeList([pole.toNonIndexed(), top.toNonIndexed()]);
+export function tableGeo() {
+  const top = new THREE.BoxGeometry((0.36)*2, 0.03, (0.36)*2); top.translate(0, 0.735, 0);
+  const stem = new THREE.BoxGeometry((0.03)*2, 0.72, (0.03)*2); stem.translate(0, 0.36, 0);
+  const base = new THREE.BoxGeometry((0.2)*2, 0.03, (0.22)*2); base.translate(0, 0.015, 0);
+  const cup1 = new THREE.BoxGeometry((0.04)*2, 0.14, (0.03)*2); cup1.translate(0.14, 0.82, 0.05);
+  const cup2 = new THREE.BoxGeometry((0.04)*2, 0.14, (0.03)*2); cup2.translate(-0.12, 0.82, -0.08);
+  return assertWorldBudget('streetProp',mergeList([top, stem, base, cup1, cup2].map((g) => g.toNonIndexed())));
 }
 function mergeList(list) {
   const pos = [], nor = [];
@@ -93,7 +89,6 @@ export class People {
     const clear = (s) => !J.some((j) => Math.abs(j.s - s) < 32) && !X.some((c) => Math.abs(c - s) < 13) && !B.some((b) => Math.abs(b - s) < 16);
     const chairs = new CellInstances(chairGeo(), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6 }), { colors: true, far: 420, shadow: true });
     const tables = new CellInstances(tableGeo(), new THREE.MeshStandardMaterial({ color: '#e9e5dc', roughness: 0.5 }), { far: 420, shadow: true });
-    const parasols = new CellInstances(parasolGeo(), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8, side: THREE.DoubleSide }), { colors: true, far: 700, shadow: true });
     const CH = ['#2b2b2b', '#c9a27a', '#f2f2f2', '#1f4d7a', '#8a5a3c'], PA = ['#f4f1e8', '#e8452c', '#1f6fb4', '#f2c230', '#2fae8f', '#f4f1e8'];
     const taken = [];
     const pt = new THREE.Vector3(), f = {};
@@ -113,7 +108,6 @@ export class People {
         const y = r.surfaceY(ts, side * eA) + ROAD.curbH(r, ts) + 0.015;
         const yawS = Math.atan2(f.tx, f.tz);
         tables.addTRS(pt.x, y, pt.z, yawS, 1);
-        parasols.addTRS(pt.x, y, pt.z, yawS + rng.range(-0.2, 0.2), 1, 1, 1, paC);
         const seats = [[-0.66, 0, 0], [0.66, 0, Math.PI]];
         if (sw > 4.3) seats.push([0, -0.66, Math.PI / 2], [0, 0.66, -Math.PI / 2]);
         for (const [ds, du, ry] of seats) {
@@ -124,7 +118,7 @@ export class People {
         }
       }
     }
-    chairs.build(group); tables.build(group); parasols.build(group);
+    chairs.build(group); tables.build(group);
   }
 
   collectBeach() {
@@ -142,11 +136,7 @@ export class People {
         if (best) this.anchors.push({ kind: 'swim', s: q.s, x: best.x, y: 0, z: best.z, yaw: best.yaw, ped: null });
       } else this.anchors.push({ kind: roll < 0.6 ? 'beach' : 'wander', s: q.s, x, y: h, z, yaw: rng.range(0, TAU), ped: null });
     }
-    for (const [x, h, z, yaw] of this.assets.sunbeds || []) {
-      if (rng.next() > 0.4) continue;
-      const q = r.project(x, z, null); if (Math.abs(q.u) > 260 || q.s < r.start - 150 || q.s > r.finish + 100) continue;
-      this.anchors.push({ kind: 'lie', s: q.s, x, y: h, z, yaw, ped: null });
-    }
+
   }
 
   collectBusStops() {
@@ -279,7 +269,7 @@ export class People {
       A.kind = a.kind; A.x = v.x; A.z = v.z; A.s = v.s; A.u = v.u; A.fx = -Math.sin(v.yaw); A.fz = -Math.cos(v.yaw); A.rx = Math.cos(v.yaw); A.rz = -Math.sin(v.yaw);
       A.v = Math.abs(v.vLong); A.halfL = v.halfL; A.halfW = v.halfW; A.veh = v;
     });
-    for (const b of this.bodies.bodies) if (b.kind !== 'rider') b.update(dt, this._impactGround);
+    for (const b of this.bodies.bodies) if (b.kind !== 'rider') this.bodies.advanceBody(b, dt);
     this.bodies.render();
     this.onRoad.length = 0;
     const f = this._f, cx = camPos.x, cz = camPos.z, frame = this.frame;

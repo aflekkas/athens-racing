@@ -1,6 +1,6 @@
 // Surface-seated mirrors. Work in body-local metres and sample actual triangles,
 // including the coarse LOD shell: nominal catalogue width is not a mounting point.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 const V=()=>new THREE.Vector3();
 export function nearestSurface(point,meshes,space){
   if(!space?.updateWorldMatrix)return null;

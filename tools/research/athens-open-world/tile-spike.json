@@ -1,0 +1,529 @@
+{
+  "tileMetres": 512,
+  "method": "whole triangles assigned by centroid; interleaved float32 position/normal/uv/color; gzip level 9",
+  "maps": [
+    {
+      "id": "riviera",
+      "roadKm": 64.13627,
+      "buildings": 627,
+      "mapJsonBytes": 661994,
+      "mapJsonGzipBytes": 210900,
+      "terrainBytes": 1339745,
+      "terrainGzipBytes": 377682,
+      "terrainGrid": [
+        841,
+        531
+      ],
+      "tiles": 47,
+      "triangles": 668662,
+      "rawBytes": 88263384,
+      "gzipBytes": 19434968,
+      "maxGzipBytes": 2225904,
+      "elapsedMs": 54748,
+      "sizes": [
+        {
+          "cell": "0,4",
+          "rawBytes": 1150644,
+          "gzipBytes": 257868
+        },
+        {
+          "cell": "1,4",
+          "rawBytes": 6238320,
+          "gzipBytes": 1362907
+        },
+        {
+          "cell": "1,3",
+          "rawBytes": 2448732,
+          "gzipBytes": 527468
+        },
+        {
+          "cell": "0,3",
+          "rawBytes": 1452,
+          "gzipBytes": 501
+        },
+        {
+          "cell": "3,7",
+          "rawBytes": 923340,
+          "gzipBytes": 210092
+        },
+        {
+          "cell": "2,7",
+          "rawBytes": 610236,
+          "gzipBytes": 139076
+        },
+        {
+          "cell": "2,6",
+          "rawBytes": 436260,
+          "gzipBytes": 99860
+        },
+        {
+          "cell": "4,6",
+          "rawBytes": 782100,
+          "gzipBytes": 177782
+        },
+        {
+          "cell": "5,6",
+          "rawBytes": 180048,
+          "gzipBytes": 43919
+        },
+        {
+          "cell": "4,7",
+          "rawBytes": 274164,
+          "gzipBytes": 64260
+        },
+        {
+          "cell": "2,5",
+          "rawBytes": 6850932,
+          "gzipBytes": 1538069
+        },
+        {
+          "cell": "3,5",
+          "rawBytes": 170940,
+          "gzipBytes": 36814
+        },
+        {
+          "cell": "3,4",
+          "rawBytes": 91608,
+          "gzipBytes": 21017
+        },
+        {
+          "cell": "2,4",
+          "rawBytes": 7525452,
+          "gzipBytes": 1672533
+        },
+        {
+          "cell": "2,3",
+          "rawBytes": 616572,
+          "gzipBytes": 136686
+        },
+        {
+          "cell": "4,3",
+          "rawBytes": 3650064,
+          "gzipBytes": 810295
+        },
+        {
+          "cell": "5,3",
+          "rawBytes": 6548520,
+          "gzipBytes": 1470901
+        },
+        {
+          "cell": "5,2",
+          "rawBytes": 9287784,
+          "gzipBytes": 2018139
+        },
+        {
+          "cell": "4,2",
+          "rawBytes": 1039896,
+          "gzipBytes": 228429
+        },
+        {
+          "cell": "4,4",
+          "rawBytes": 3947460,
+          "gzipBytes": 872149
+        },
+        {
+          "cell": "5,4",
+          "rawBytes": 2473020,
+          "gzipBytes": 549803
+        },
+        {
+          "cell": "4,5",
+          "rawBytes": 310596,
+          "gzipBytes": 69159
+        },
+        {
+          "cell": "5,5",
+          "rawBytes": 497904,
+          "gzipBytes": 109653
+        },
+        {
+          "cell": "5,1",
+          "rawBytes": 320892,
+          "gzipBytes": 50849
+        },
+        {
+          "cell": "6,2",
+          "rawBytes": 10256928,
+          "gzipBytes": 2225904
+        },
+        {
+          "cell": "6,1",
+          "rawBytes": 2247036,
+          "gzipBytes": 441572
+        },
+        {
+          "cell": "9,3",
+          "rawBytes": 1726560,
+          "gzipBytes": 392308
+        },
+        {
+          "cell": "9,4",
+          "rawBytes": 719928,
+          "gzipBytes": 165279
+        },
+        {
+          "cell": "8,4",
+          "rawBytes": 491832,
+          "gzipBytes": 113609
+        },
+        {
+          "cell": "10,3",
+          "rawBytes": 1201596,
+          "gzipBytes": 266086
+        },
+        {
+          "cell": "10,4",
+          "rawBytes": 938784,
+          "gzipBytes": 213157
+        },
+        {
+          "cell": "9,2",
+          "rawBytes": 48840,
+          "gzipBytes": 10889
+        },
+        {
+          "cell": "10,5",
+          "rawBytes": 371052,
+          "gzipBytes": 83376
+        },
+        {
+          "cell": "11,3",
+          "rawBytes": 1494636,
+          "gzipBytes": 351372
+        },
+        {
+          "cell": "12,3",
+          "rawBytes": 2353560,
+          "gzipBytes": 507480
+        },
+        {
+          "cell": "11,2",
+          "rawBytes": 216876,
+          "gzipBytes": 50701
+        },
+        {
+          "cell": "12,2",
+          "rawBytes": 1905420,
+          "gzipBytes": 388067
+        },
+        {
+          "cell": "12,4",
+          "rawBytes": 1837176,
+          "gzipBytes": 422319
+        },
+        {
+          "cell": "13,3",
+          "rawBytes": 896412,
+          "gzipBytes": 192510
+        },
+        {
+          "cell": "13,4",
+          "rawBytes": 484176,
+          "gzipBytes": 109358
+        },
+        {
+          "cell": "13,2",
+          "rawBytes": 37224,
+          "gzipBytes": 5377
+        },
+        {
+          "cell": "6,3",
+          "rawBytes": 446820,
+          "gzipBytes": 97764
+        },
+        {
+          "cell": "7,2",
+          "rawBytes": 3273996,
+          "gzipBytes": 738001
+        },
+        {
+          "cell": "7,3",
+          "rawBytes": 60984,
+          "gzipBytes": 15750
+        },
+        {
+          "cell": "8,2",
+          "rawBytes": 40788,
+          "gzipBytes": 9647
+        },
+        {
+          "cell": "7,1",
+          "rawBytes": 771804,
+          "gzipBytes": 151153
+        },
+        {
+          "cell": "8,1",
+          "rawBytes": 64020,
+          "gzipBytes": 15060
+        }
+      ]
+    },
+    {
+      "id": "megara",
+      "roadKm": 3.4436999999999998,
+      "buildings": 11,
+      "mapJsonBytes": 95010,
+      "mapJsonGzipBytes": 29300,
+      "terrainBytes": 390995,
+      "terrainGzipBytes": 66035,
+      "terrainGrid": [
+        361,
+        361
+      ],
+      "tiles": 5,
+      "triangles": 10184,
+      "rawBytes": 1344288,
+      "gzipBytes": 304044,
+      "maxGzipBytes": 178742,
+      "elapsedMs": 2800,
+      "sizes": [
+        {
+          "cell": "-1,0",
+          "rawBytes": 796356,
+          "gzipBytes": 178742
+        },
+        {
+          "cell": "-2,0",
+          "rawBytes": 143352,
+          "gzipBytes": 34128
+        },
+        {
+          "cell": "0,0",
+          "rawBytes": 241560,
+          "gzipBytes": 53887
+        },
+        {
+          "cell": "0,-1",
+          "rawBytes": 86856,
+          "gzipBytes": 20136
+        },
+        {
+          "cell": "-1,-1",
+          "rawBytes": 76164,
+          "gzipBytes": 17151
+        }
+      ]
+    },
+    {
+      "id": "penteli",
+      "roadKm": 21.320490000000003,
+      "buildings": 13,
+      "mapJsonBytes": 358196,
+      "mapJsonGzipBytes": 119533,
+      "terrainBytes": 1671758,
+      "terrainGzipBytes": 886038,
+      "terrainGrid": [
+        742,
+        751
+      ],
+      "tiles": 40,
+      "triangles": 208247,
+      "rawBytes": 27488604,
+      "gzipBytes": 6178256,
+      "maxGzipBytes": 1350435,
+      "elapsedMs": 17412,
+      "sizes": [
+        {
+          "cell": "1,-1",
+          "rawBytes": 943536,
+          "gzipBytes": 223162
+        },
+        {
+          "cell": "1,-2",
+          "rawBytes": 159984,
+          "gzipBytes": 38353
+        },
+        {
+          "cell": "2,-2",
+          "rawBytes": 390456,
+          "gzipBytes": 90812
+        },
+        {
+          "cell": "2,-1",
+          "rawBytes": 8580,
+          "gzipBytes": 2461
+        },
+        {
+          "cell": "-1,-3",
+          "rawBytes": 973632,
+          "gzipBytes": 220826
+        },
+        {
+          "cell": "-2,-3",
+          "rawBytes": 6103944,
+          "gzipBytes": 1350435
+        },
+        {
+          "cell": "-1,-2",
+          "rawBytes": 1700556,
+          "gzipBytes": 386859
+        },
+        {
+          "cell": "-2,-2",
+          "rawBytes": 339372,
+          "gzipBytes": 77545
+        },
+        {
+          "cell": "-2,-4",
+          "rawBytes": 3357420,
+          "gzipBytes": 744415
+        },
+        {
+          "cell": "-1,-4",
+          "rawBytes": 1279608,
+          "gzipBytes": 291754
+        },
+        {
+          "cell": "-3,-4",
+          "rawBytes": 2381148,
+          "gzipBytes": 527361
+        },
+        {
+          "cell": "-3,-3",
+          "rawBytes": 896940,
+          "gzipBytes": 198999
+        },
+        {
+          "cell": "-2,-5",
+          "rawBytes": 2466156,
+          "gzipBytes": 547513
+        },
+        {
+          "cell": "-3,-5",
+          "rawBytes": 128040,
+          "gzipBytes": 29341
+        },
+        {
+          "cell": "-1,-5",
+          "rawBytes": 530904,
+          "gzipBytes": 118028
+        },
+        {
+          "cell": "0,-4",
+          "rawBytes": 271524,
+          "gzipBytes": 62353
+        },
+        {
+          "cell": "0,-3",
+          "rawBytes": 676896,
+          "gzipBytes": 159395
+        },
+        {
+          "cell": "1,-3",
+          "rawBytes": 128700,
+          "gzipBytes": 30713
+        },
+        {
+          "cell": "0,-2",
+          "rawBytes": 305580,
+          "gzipBytes": 72898
+        },
+        {
+          "cell": "-1,-1",
+          "rawBytes": 85932,
+          "gzipBytes": 19567
+        },
+        {
+          "cell": "-2,-1",
+          "rawBytes": 1188,
+          "gzipBytes": 492
+        },
+        {
+          "cell": "2,1",
+          "rawBytes": 53328,
+          "gzipBytes": 12993
+        },
+        {
+          "cell": "3,1",
+          "rawBytes": 945912,
+          "gzipBytes": 209054
+        },
+        {
+          "cell": "3,2",
+          "rawBytes": 148632,
+          "gzipBytes": 34450
+        },
+        {
+          "cell": "5,0",
+          "rawBytes": 146388,
+          "gzipBytes": 36032
+        },
+        {
+          "cell": "4,2",
+          "rawBytes": 7128,
+          "gzipBytes": 2113
+        },
+        {
+          "cell": "5,1",
+          "rawBytes": 2039796,
+          "gzipBytes": 446471
+        },
+        {
+          "cell": "4,1",
+          "rawBytes": 25344,
+          "gzipBytes": 7292
+        },
+        {
+          "cell": "3,0",
+          "rawBytes": 21912,
+          "gzipBytes": 6216
+        },
+        {
+          "cell": "2,0",
+          "rawBytes": 23232,
+          "gzipBytes": 6693
+        },
+        {
+          "cell": "6,0",
+          "rawBytes": 237072,
+          "gzipBytes": 57444
+        },
+        {
+          "cell": "6,1",
+          "rawBytes": 92400,
+          "gzipBytes": 22676
+        },
+        {
+          "cell": "-1,4",
+          "rawBytes": 102432,
+          "gzipBytes": 24004
+        },
+        {
+          "cell": "-1,3",
+          "rawBytes": 285780,
+          "gzipBytes": 63114
+        },
+        {
+          "cell": "0,3",
+          "rawBytes": 2508,
+          "gzipBytes": 442
+        },
+        {
+          "cell": "0,2",
+          "rawBytes": 29568,
+          "gzipBytes": 7906
+        },
+        {
+          "cell": "1,3",
+          "rawBytes": 4620,
+          "gzipBytes": 1365
+        },
+        {
+          "cell": "2,3",
+          "rawBytes": 2904,
+          "gzipBytes": 917
+        },
+        {
+          "cell": "2,2",
+          "rawBytes": 20856,
+          "gzipBytes": 5860
+        },
+        {
+          "cell": "1,0",
+          "rawBytes": 168696,
+          "gzipBytes": 39932
+        }
+      ]
+    }
+  ]
+}

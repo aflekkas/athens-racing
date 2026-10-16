@@ -1,0 +1,89 @@
+{
+  id: 'penteli',
+  mapDecodeCpuMs: 354.437,
+  networkCpuMs: 31.49,
+  buildCpuMs: 64338.341,
+  stages: [
+    {
+      stage: 'modules',
+      rss: 77705216,
+      heapTotal: 20832256,
+      heapUsed: 11398904,
+      external: 2058706,
+      arrayBuffers: 307311
+    },
+    {
+      stage: 'map',
+      rss: 103772160,
+      heapTotal: 32104448,
+      heapUsed: 14274544,
+      external: 7861340,
+      arrayBuffers: 4494120
+    },
+    {
+      stage: 'network',
+      rss: 103903232,
+      heapTotal: 33153024,
+      heapUsed: 15264744,
+      external: 7861340,
+      arrayBuffers: 4494120
+    },
+    {
+      stage: 'terrain',
+      rss: 355291136,
+      heapTotal: 77348864,
+      heapUsed: 41644224,
+      external: 100249114,
+      arrayBuffers: 96886240
+    }
+  ],
+  contactMemory: {
+    refinedCells: 28071,
+    refinedBytes: 9095004,
+    coarseCells: 32268,
+    coarseBytes: 516288
+  },
+  bytes: 44980154,
+  triangles: 3053918,
+  chunks: 54,
+  poses: [
+    {
+      name: 'start',
+      eye: [Array],
+      target: [Array],
+      calls: 13,
+      triangles: 125184
+    },
+    {
+      name: 'mid',
+      eye: [Array],
+      target: [Array],
+      calls: 41,
+      triangles: 465345
+    },
+    {
+      name: 'overview',
+      eye: [Array],
+      target: [Array],
+      calls: 53,
+      triangles: 613240
+    }
+  ],
+  cpuLodIndexBytes: 33859026,
+  patchCount: 7440,
+  lodHistogram: [
+    { pose: 'start', counts: [Array] },
+    { pose: 'mid', counts: [Array] },
+    { pose: 'overview', counts: [Array] }
+  ],
+  stationarySelectionCpuUs: 2293.62,
+  cachedDecodeBuildCpuMs: 1440.004,
+  rawPackBytes: 66915934,
+  gzipPackBytes: 36463650,
+  restored: {
+    bytes: 44980154,
+    triangles: 3053918,
+    chunks: 54,
+    poses: [ [Object], [Object], [Object] ]
+  }
+}

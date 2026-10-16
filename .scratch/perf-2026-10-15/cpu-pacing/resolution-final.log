@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: real transferable worker matches every Float64 and scalar over changing dt, terrain, car contacts and sleep
+ok 1 - real transferable worker matches every Float64 and scalar over changing dt, terrain, car contacts and sleep
+  ---
+  duration_ms: 2954.462182
+  type: 'test'
+  ...
+# Subtest: queue overflow and worker error replay every unacknowledged step exactly
+ok 2 - queue overflow and worker error replay every unacknowledged step exactly
+  ---
+  duration_ms: 7.771664
+  type: 'test'
+  ...
+# Subtest: reset rejects stale worker replies and interpolation never changes authoritative state
+ok 3 - reset rejects stale worker replies and interpolation never changes authoritative state
+  ---
+  duration_ms: 269.978923
+  type: 'test'
+  ...
+# Subtest: unavailable workers keep synchronous behavior and replicated riders never leave main thread
+ok 4 - unavailable workers keep synchronous behavior and replicated riders never leave main thread
+  ---
+  duration_ms: 1.177995
+  type: 'test'
+  ...
+# Subtest: perfOverlay defaults off and persists
+ok 5 - perfOverlay defaults off and persists
+  ---
+  duration_ms: 12.124437
+  type: 'test'
+  ...
+# Subtest: PerfOverlay shows fps/ms/draws at 2 Hz and hides
+ok 6 - PerfOverlay shows fps/ms/draws at 2 Hz and hides
+  ---
+  duration_ms: 9.898688
+  type: 'test'
+  ...
+# Subtest: tex.setAnisotropy clamps to 1..8
+ok 7 - tex.setAnisotropy clamps to 1..8
+  ---
+  duration_ms: 175.31353
+  type: 'test'
+  ...
+# Subtest: Graphics settings video tab offers the overlay toggle
+ok 8 - Graphics settings video tab offers the overlay toggle
+  ---
+  duration_ms: 681.017425
+  type: 'test'
+  ...
+# Subtest: a GPU-bound 30 fps laptop settles near the 50 fps budget and stays there
+ok 9 - a GPU-bound 30 fps laptop settles near the 50 fps budget and stays there
+  ---
+  duration_ms: 12.692504
+  type: 'test'
+  ...
+# Subtest: a CPU-bound frame keeps its resolution after one failed trial
+ok 10 - a CPU-bound frame keeps its resolution after one failed trial
+  ---
+  duration_ms: 2.836707
+  type: 'test'
+  ...
+# Subtest: a 60 fps machine never drops, and a recovered one climbs back
+ok 11 - a 60 fps machine never drops, and a recovered one climbs back
+  ---
+  duration_ms: 11.438127
+  type: 'test'
+  ...
+# Subtest: hitches and hidden-tab gaps are not samples
+ok 12 - hitches and hidden-tab gaps are not samples
+  ---
+  duration_ms: 0.401007
+  type: 'test'
+  ...
+# Subtest: fractional device ratios and every preset ceiling remain bounded through overload and recovery
+ok 13 - fractional device ratios and every preset ceiling remain bounded through overload and recovery
+  ---
+  duration_ms: 19.296164
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4415.696744

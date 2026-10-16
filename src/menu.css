@@ -577,69 +577,51 @@ body:has(#loading.open) :is(#hud,#driving-feedback,#mp-board,#racer-markers,#dri
 label.group__note { display: block; }
 .set-panel .group > .option { margin: var(--s-2) var(--s-4) 0; width: min(100% - 2rem, 26rem); }
 
-/* Racing front end: compact controls and Attica road furniture.
-   The selected-car studio starts only after the menu paints; no map world is created. */
-#ui.s-title { background: #0b141a; }
+/* Account/build controls survive the owner-chosen title restoration. */
 #ui.s-multiplayer, #ui.s-account { background: #0b141a; }
 .hu-driver { border: 0; cursor: pointer; transition: background .18s, box-shadow .18s, transform .18s; }
 .hu-driver:hover, .hu-driver.focus, .hu-driver:focus-visible { background: #254653; color: #fff; box-shadow: 0 0 0 2px #98d9eb; outline: none; }
 .hu-driver:active { transform: scale(.96); background: #356475; }
 .build-badge { color: #f5d290; border-left: 2px solid #efb450; padding-left: .7rem; font: 700 .7rem var(--f-cond); letter-spacing: .1em; white-space: nowrap; }
-.scr--title { overflow: hidden; gap: 1rem; }
-.home.home--racing { grid-template-columns: minmax(260px, .78fr) minmax(0, 1.65fr); gap: clamp(28px,4vw,80px); align-items: stretch; position: relative; }
-.home__left { display: flex; flex-direction: column; justify-content: center; min-width: 0; z-index: 1; }
-.home--racing .title__mark { font-size: clamp(3.1rem,5.4vw,6.1rem); gap: .2em; }
-.home__eyebrow { font: 600 .73rem var(--f-cond); letter-spacing: .23em; color: #9ab4bd; margin: 1.3rem 0 2.3rem; }
-.home__list { display: flex; flex-direction: column; gap: 5px; }
-.home__list .option { border: 0; border-radius: 2px; background: transparent; padding: 14px 18px; gap: 15px; min-height: 75px; box-shadow: none; transition: background .18s, transform .18s, color .18s; }
-.home__list .option__ico { width: 30px; height: 30px; padding: 0; border: 0; background: none; box-shadow: none; color: #93aab3; }
-.home__list .option__title { font: 700 clamp(1.3rem,1.8vw,2rem) var(--f-cond); letter-spacing: .06em; }
-.home__list .option__desc { font-size: .82rem; color: #9cb0b8; margin-top: 3px; }
-.home__list .option__go { opacity: .5; }
-.home__list .option:hover { background: #172b34; transform: translateX(4px); }
-.home__list .option.focus { background: #d9f653; color: #152019; box-shadow: none; transform: translateX(6px); }
-.home__list .option.focus .option__desc, .home__list .option.focus .option__ico { color: #334529; }
-.home__list .option:first-child { min-height: 100px; margin-bottom: 9px; border-left: 3px solid #d9f653; }
-.home__list .option:first-child .option__title { font-size: clamp(2rem,3vw,3.5rem); font-style: italic; font-weight: 900; }
-.home__hero { position: relative; min-width: 0; overflow: hidden; isolation: isolate; background: radial-gradient(ellipse at 85% 48%, #6f969e 0, #385963 35%, #1e343e 68%); }
-.home__hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(168deg, transparent 44%, #547985 44.2%, #203c49 49%, #12232e 50%, #12232e 51%, #2b3d45 51.2%, #1b2a32 85%); }
-.home__hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 80px #0b141a55; background: linear-gradient(0deg,#0b141a99,transparent 35%); }
-.road-sign { position: absolute; left: 6%; top: 8%; padding: 13px 65px 13px 20px; border: 2px solid #c9e0d5; outline: 5px solid #1b5a4e; border-radius: 3px; background: #1b5a4e; transform: rotate(-3deg); box-shadow: 6px 12px 20px #07171c44; z-index: 1; }
-.road-sign span, .road-sign b { display: block; font: 600 clamp(.85rem,1.1vw,1.3rem) var(--f-sans); letter-spacing: .07em; color: #f6f5db; }
-.road-sign span { margin-bottom: 7px; }.road-sign i { position:absolute;right:17px;top:12px;font:normal 40px var(--f-sans);color:#f6f5db; }
-.home__edition { position:absolute;top:27%;left:6%;right:6%;font:600 .66rem var(--f-cond);letter-spacing:.2em;color:#bdd0cf; }.home__edition span { float:right; }
-.home__road { position: absolute; width: 140%; height: 3px; background: #e5e3cf55; top: 74%; left: -20%; transform: rotate(-17deg); box-shadow: 0 9px #e5e3cf33; }
-.home__car { position: absolute; width: 66%; max-width: none; height: auto; left: 17%; top: 41%; filter: drop-shadow(0 24px 12px #050f17aa); z-index: 1; }
-.home__feature { position: absolute; left:6%; bottom:21%; z-index:2; display:flex;flex-direction:column;gap:5px; }
-.home__feature span, .home__session span { font:600 .63rem var(--f-cond);letter-spacing:.2em;color:#b4c6c8; }
-.home__feature b { font:900 italic clamp(1.7rem,2.7vw,3.5rem) var(--f-cond);letter-spacing:.02em;color:#fff; }
-.home__feature small { font:600 .63rem var(--f-cond);letter-spacing:.14em;color:#9cb3ba; }
-.home__session { position:absolute;bottom:0;left:0;right:0;padding:22px 6%;z-index:2;background:#0d1c24e8;border-top:1px solid #74919955;display:flex;justify-content:space-between;gap:20px; }
-.home__session > div { display:flex;flex-direction:column;gap:7px;min-width:0; }.home__session b { font:600 clamp(.9rem,1.2vw,1.4rem) var(--f-sans);color:#f1f4e9; }.home__session small { font-size:.68rem;color:#a8bdc2; }.home__session-car { text-align:right; }
-.scr--title .title-meta { position:static;grid-row:3;justify-self:start;align-self:center;z-index:2;max-width:35%; }
-.scr--title > .scr__foot { grid-row:3;grid-column:1;min-height:36px;justify-content:flex-end; }.scr--title > .scr__foot .hints { justify-content:flex-end; }
-@media(min-width:1600px){.home__list .option{padding:19px 23px;min-height:95px}.home__list .option:first-child{min-height:125px}.home__eyebrow{margin-bottom:3rem}.home__feature{bottom:19%}.home__session{padding-top:30px;padding-bottom:30px}}
-@media(max-width:760px){
- .scr--title { padding:18px 20px 12px;gap:10px;overflow-y:auto;grid-template-rows:auto minmax(580px,1fr) auto auto; }
- .scr--title .hu-crumb { font-size:.6rem;letter-spacing:.1em; }.scr--title .hu-clock{display:none}.scr--title .hu-status__r{gap:10px}.build-badge{font-size:.6rem;padding-left:.4rem}.hu-driver{font-size:.65rem;padding-right:8px}
- .home.home--racing { grid-template-columns:1fr;grid-template-rows:260px auto;gap:22px; }.home__left{display:contents}.home--racing .title__mark{position:absolute;top:4px;left:15px;z-index:3;font-size:2.7rem;gap:.15em}.home__eyebrow{display:none}
- .home__hero{grid-row:1;}.road-sign{top:36%;left:6%;padding:7px 38px 7px 10px;outline-width:3px}.road-sign span,.road-sign b{font-size:.58rem;letter-spacing:.04em}.road-sign span{margin-bottom:3px}.road-sign i{font-size:25px;right:8px;top:7px}.home__edition{display:none}
- .home__car{width:55%;left:41%;top:42%;}.home__feature{bottom:28%;left:6%}.home__feature span{font-size:.48rem}.home__feature b{font-size:1.4rem}.home__feature small{display:none}
- .home__session{padding:12px 6%;gap:10px}.home__session b{font-size:.78rem}.home__session span{font-size:.48rem}.home__session small{font-size:.56rem}.home__session>div:first-child small{max-width:155px}.home__session-car{max-width:38%}
- .home__list{grid-row:2;gap:2px}.home__list .option{min-height:68px;padding:10px 14px}.home__list .option:first-child{min-height:82px;margin-bottom:3px}.home__list .option__title{font-size:1.35rem}.home__list .option:first-child .option__title{font-size:2rem}.home__list .option__desc{font-size:.75rem}
- .scr--title .title-meta{max-width:none;grid-row:3}.scr--title>.scr__foot{grid-row:4;justify-content:center}.scr--title>.scr__foot .hints{justify-content:center;gap:10px}.scr--title .hint{font-size:.52rem}.scr--title .title-meta .btn{font-size:.6rem;padding:0 8px}
-}
-@media(prefers-reduced-motion:reduce){.home__list .option,.hu-driver{transition:none}}
-/* Assign the overlapping footer cells explicitly; auto-placement would create a second implicit column. */
-.scr--title { grid-template-columns: minmax(0,1fr); }
-.scr--title > .hu-status { grid-row:1;grid-column:1; }
-.scr--title > .home { grid-row:2;grid-column:1; }
-.scr--title > .title-meta { grid-column:1; }
-.home__list .option.focus .option__ico { background:none;box-shadow:none; }
-/* On-demand studio: reserve the frame before loading, so the menu never waits or moves. */
-.home__car { width:106%;height:64%;left:-3%;top:22%;filter:none; }
-.home__car canvas { width:100%;height:100%;display:block;opacity:0;transition:opacity .22s; }
-.home__car[data-ready=true] canvas {opacity:1;}
-.home__feature b {font-size:clamp(1.3rem,2.1vw,2.5rem);max-width:90%;}
-.home__session-car b {font-size:clamp(.65rem,.9vw,1rem);max-width:26ch;}
-@media(max-width:760px){.home__car{width:100%;height:60%;left:10%;top:23%;}.home__feature b{font-size:.95rem;max-width:230px}.home__feature span{font-size:.48rem}.home__session-car b{font-size:.58rem}}
+
+/* OWNER LOCK: aceb5bd title layout; keep brand left and PLAY + four supporting cards. */
+.home__tiles { grid-template-columns: 1.3fr 1fr 1fr; grid-template-rows: repeat(2, minmax(9rem, 1fr)); height: min(100%, 34rem); align-self: center; }
+.home__tiles .option { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); min-height: 0; padding: var(--s-5); border-radius: var(--r-4);
+  background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair); box-shadow: var(--hu-shadow), var(--hu-edge); overflow: hidden; }
+.home__tiles .option > span:nth-child(2) { margin-top: auto; }
+.home__tiles .option__ico { width: 3rem; height: 3rem; margin-bottom: var(--s-3); }
+.home__tiles .option__ico .ico { width: 1.45rem; height: 1.45rem; }
+.home__tiles .option__title { font-size: var(--t-lg); letter-spacing: .08em; }
+.home__tiles .option__desc { font-size: var(--t-xs); line-height: 1.4; }
+.home__tiles .option__go { display: none; }
+.home__tiles .option:hover { background: var(--hu-sheen), var(--hu-glass-hi); }
+.home__tiles .option.focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.4rem 3rem rgba(0,0,0,.5), var(--hu-edge); background: linear-gradient(180deg, rgba(111,208,255,.15), rgba(111,208,255,.02) 60%), var(--hu-glass-hi); transform: translateY(-2px); }
+.home__tiles .option { transition: transform .22s var(--ease), border-color .22s, box-shadow .22s, background .22s; }
+/* the PLAY tile: tall, with a glowing route line like the navigation screen */
+.home__tiles .option:first-child { grid-row: 1 / 3; padding: var(--s-6); }
+.home__tiles .option:first-child::before { content: ""; position: absolute; inset: 8% -12% 30% 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Cpath d='M10 175C55 160 66 112 108 102s62 18 84-22 54-46 98-52' fill='none' stroke='%236fd0ff' stroke-opacity='.22' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M10 175C55 160 66 112 108 102s62 18 84-22 54-46 98-52' fill='none' stroke='%236fd0ff' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='175' r='6' fill='%23fff'/%3E%3Ccircle cx='290' cy='28' r='6' fill='none' stroke='%23fff' stroke-width='2.6'/%3E%3C/svg%3E") center / contain no-repeat; opacity: .55; pointer-events: none; transition: opacity .22s; }
+.home__tiles .option:first-child.focus::before { opacity: 1; filter: drop-shadow(0 0 6px rgba(111,208,255,.6)); }
+.home__tiles .option:first-child .option__title { font-weight: 400; font-size: var(--t-3xl); letter-spacing: .1em; }
+.home__tiles .option:first-child .option__desc { font-size: var(--t-sm); }
+.home__tiles .option:first-child::after { content: "START  ›"; display: inline-flex; align-items: center; height: 2.6rem; margin-top: var(--s-4); padding: 0 var(--s-5); border-radius: var(--r-pill); white-space: pre;
+  background: var(--hu-lit); color: var(--hu-lit-fg); font: 700 var(--t-sm) var(--f-cond); letter-spacing: .18em; box-shadow: 0 .4rem 1.6rem rgba(111,208,255,.22); }
+.home__tiles .option.focus .option__ico { background: linear-gradient(180deg, #9ae0ff, var(--hu-ice-d)); color: var(--hu-lit-fg); }
+
+
+/* Shared components keep the later flat treatment. Title layout and route motif stay owner-chosen. */
+.scr--title{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;overflow:visible;gap:var(--s-3)}
+.scr--title>.hu-status{grid-row:1;grid-column:1}.scr--title>.home{grid-row:2;grid-column:1}.scr--title>.scr__foot{grid-row:3;grid-column:1;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.scr--title .title-meta{position:static;display:flex;flex-wrap:wrap;max-width:none;gap:4px}.scr--title .scr__foot .hints{margin-left:auto;gap:12px}
+.scr--title .home{min-width:0;grid-template-columns:minmax(15rem,.8fr) minmax(0,1.5fr);gap:var(--s-6)}
+.scr--title .home__tiles{height:min(100%,34rem);grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr));min-height:0}
+.scr--title .home__tiles .option{position:relative;background:var(--ui-surface);box-shadow:none;border:1px solid var(--ui-line);backdrop-filter:none;-webkit-backdrop-filter:none;transform:none;min-width:0}
+.scr--title .home__tiles .option:hover,.scr--title .home__tiles .option.focus{background:var(--ui-surface-hi);box-shadow:none;transform:none}.scr--title .home__tiles .option.focus{border-color:var(--hu-ice);outline:1px solid var(--hu-ice);outline-offset:-1px}
+.scr--title .home__tiles .option:first-child::before{filter:none}.scr--title .home__tiles .option:first-child::after{box-shadow:none;background:var(--hu-lit)}.scr--title .home__tiles .option.focus .option__ico{background:var(--hu-lit);box-shadow:none}
+.scr--title .home__tiles .option__title{white-space:normal;overflow-wrap:normal}.scr--title .title__mark{font-size:min(5rem,5.6vw,13vh)}
+@media(max-width:900px) and (min-height:501px){.scr--title .home{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:20px;align-content:center}.scr--title .home__brand .title__mark{font-size:min(3.6rem,10vw,9vh)}.scr--title .title__tag{display:none}.scr--title .home__tiles{height:min(100%,34rem);width:100%}}
+@media(max-width:560px) and (min-height:501px){.scr--title .home__tiles{grid-template-columns:1fr 1fr;grid-template-rows:1.4fr 1fr 1fr;gap:8px}.scr--title .home__tiles .option{padding:14px;min-height:0}.scr--title .home__tiles .option:first-child{grid-column:1/-1;grid-row:auto;padding:18px;min-height:0}.scr--title .home__tiles .option__ico{width:2.4rem;height:2.4rem;margin-bottom:6px}.scr--title .home__tiles .option__desc{display:none}.scr--title .home__tiles .option:first-child .option__desc{display:block}.scr--title .home__tiles .option:first-child::after{display:none}.scr--title .scr__foot{gap:6px}.scr--title .scr__foot .hints{margin:auto;gap:8px}.scr--title .title-meta{justify-content:center;width:100%}.scr--title .hint{font-size:9px}.scr--title .kbd{font-size:9px}.scr--title .hu-crumb{font-size:8px}}
+@media(max-height:500px){.scr--title{padding:8px 18px;gap:8px}.scr--title .home{grid-template-columns:minmax(160px,.65fr) minmax(0,1.7fr);gap:16px}.scr--title .title__mark{font-size:min(3.4rem,7vw,13vh)}.scr--title .title__tag{display:none}.scr--title .home__tiles{height:100%;gap:8px;grid-template-columns:1.15fr 1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr))}.scr--title .home__tiles .option{padding:10px;min-height:0}.scr--title .home__tiles .option:first-child{grid-column:auto;grid-row:1/3;padding:14px;min-height:0}.scr--title .home__tiles .option__ico{width:24px;height:24px;margin-bottom:4px}.scr--title .home__tiles .option__desc{display:none}.scr--title .home__tiles .option__title{font-size:15px}.scr--title .home__tiles .option:first-child .option__title{font-size:27px}.scr--title .home__tiles .option:first-child::after{height:26px;margin-top:10px;padding:0 12px;font-size:10px}.scr--title .scr__foot{flex-wrap:nowrap;gap:6px}.scr--title .title-meta .btn,.scr--title .hint{font-size:9px}.scr--title .scr__foot .hints{gap:8px}.scr--title .hu-status{min-height:28px}.scr--title .hu-clock{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.hu-driver{transition:none}}
+.scr--title .home__tiles .option:first-child::before{right:0}
+/* Offline status is a separate account surface; leave its footer-height strip clear on the title only. */
+body:has(#accounts-offline) .scr--title{bottom:calc(16px + .7rem)}

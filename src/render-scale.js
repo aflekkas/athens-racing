@@ -31,7 +31,7 @@ export class RenderScale {
     } else if (wall < this.budgetMs * 0.9 && this.ratio < Math.min(this.max, this.cap)) {
       if (++this.calm >= 3) { next = Math.min(this.max, this.cap, this.ratio * 1.08); this.calm = 0; this.cool = 2.5; }
     } else this.calm = 0;
-    next = Math.round(next * 100) / 100;
+    next = Math.max(this.min, Math.min(this.max, Math.round(next * 100) / 100));
     if (next === this.ratio) return null;
     this.ratio = next; return next;
   }

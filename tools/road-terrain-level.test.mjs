@@ -1,8 +1,9 @@
 import test from 'node:test';
+import { terrainWorldPositions } from '../src/terrain-layout.js';
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { Group } from 'three';
+import { Group, PerspectiveCamera, Raycaster, Vector2, DoubleSide } from 'three';
 import { loadMap } from '../src/map.js';
 import { buildTerrain } from '../src/terrain.js';
 import { RoadNetwork } from '../src/road-network-surface.js';
@@ -16,8 +17,8 @@ function meshHeightSampler(group) {
   const bins=new Map(),size=8;
   group.traverse(mesh=>{
     if(!mesh.geometry?.index)return;
-    const p=mesh.geometry.attributes.position.array,ix=mesh.geometry.index.array;
-    for(let k=0;k<ix.length;k+=3){const a=ix[k]*3,b=ix[k+1]*3,c=ix[k+2]*3,det=(p[b+2]-p[c+2])*(p[a]-p[c])+(p[c]-p[b])*(p[a+2]-p[c+2]);if(Math.abs(det)<1e-9)continue;
+    const p=terrainWorldPositions(mesh),ix=mesh.geometry.index.array;
+    for(let k=0;k<(mesh.userData.terrainLod?.[0].count ?? ix.length);k+=3){const a=ix[k]*3,b=ix[k+1]*3,c=ix[k+2]*3,det=(p[b+2]-p[c+2])*(p[a]-p[c])+(p[c]-p[b])*(p[a+2]-p[c+2]);if(Math.abs(det)<1e-9)continue;
       const tri={p,a,b,c,det,source:mesh.userData};
       for(let x=Math.floor(Math.min(p[a],p[b],p[c])/size);x<=Math.floor(Math.max(p[a],p[b],p[c])/size);x++)for(let z=Math.floor(Math.min(p[a+2],p[b+2],p[c+2])/size);z<=Math.floor(Math.max(p[a+2],p[b+2],p[c+2])/size);z++){
         const key=x+','+z;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(tri);
@@ -37,6 +38,19 @@ for(const def of getPlayableMaps(MAPS).filter(d=>!process.env.TERRAIN_MAPS||proc
     const roadsGroup=buildRoadNetwork(network,scene);bake={map,network,terrain,terrainGroup:terrain.group,roadsGroup};
   }finally{globalThis.fetch=previousFetch;if(previousLocation===undefined)delete globalThis.location;else globalThis.location=previousLocation;}
   const r=bake.map.route,n=bake.network,h=meshHeightSampler(bake.terrainGroup);
+  // These sightlines formerly passed through disconnected coarse/fine edges
+  // and exposed the underside of terrain farther up the mountain.
+  if(def.id==='riviera'||def.id==='penteli'){
+    const q=bake.map.route.point(bake.map.route.length*(def.id==='riviera'?.25:.5),0),camera=new PerspectiveCamera(60,1.6,.2,16000),ray=new Raycaster();
+    camera.position.set(q.x+20,q.y+7,q.z+20);camera.lookAt(q.x,q.y,q.z);camera.updateMatrixWorld();bake.terrainGroup.updateMatrixWorld(true);
+    const pixels=def.id==='riviera'?[[700,110],[800,118],[600,115],[500,125]]:[[30,155],[80,168]];
+    for(const [x,y]of pixels){ray.setFromCamera(new Vector2(x/480-1,1-y/300),camera);const front=ray.intersectObject(bake.terrainGroup,true);assert.ok(front.length,`${def.id}: terrain coverage missing at screenshot pixel ${x},${y}`);
+      const sides=new Map();bake.terrainGroup.traverse(m=>{if(m.isMesh){sides.set(m.material,m.material.side);m.material.side=DoubleSide;}});
+      const both=ray.intersectObject(bake.terrainGroup,true);for(const [material,side]of sides)material.side=side;
+      assert.ok(Math.abs(front[0].distance-both[0].distance)<.001,`${def.id}: open terrain boundary exposes a backface at ${x},${y}`);
+    }
+  }
+
   if (def.id==='riviera') {
     // The narrow shoreline beside the organised beach used to become a submerged 40 m triangle
     // after the corridor budget reduction, leaving parasols over dark water.

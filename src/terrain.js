@@ -1,5 +1,8 @@
 // Terrain meshes from the DEM/land-cover grid: a 10 m mesh along the route corridor and a 40 m mesh beyond.
 import * as THREE from 'three';
+import { stitchTerrainBoundaries, mergeTerrainTransitions, refinedTerrainBoundary } from './terrain-seams.js';
+import { buildTerrainPatchLods, installTerrainLods } from './terrain-lod.js';
+import { compactTerrainGeometry, restoreTerrainLayout } from './terrain-layout.js';
 import { REFLECT_LAYER } from './env.js';
 import { vnoise, fbm, smoothstep, clamp } from './util.js';
 import { TX, GLSL_HELPERS } from './tex.js';
@@ -18,7 +21,7 @@ export function terrainMaterial({ farmland = false } = {}) {
   // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
   // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
-  mat.customProgramCacheKey = () => farmland ? 'terrain6-farmland' : 'terrain6';
+  mat.customProgramCacheKey = () => farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, {
       tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
@@ -62,32 +65,10 @@ export function terrainMaterial({ farmland = false } = {}) {
         r = mix(vec3(dot(r, vec3(0.333))), r, 0.45) * vec3(1.15, 1.1, 1.02);
         vec3 tint = vc / max(lum, 0.02);
         vec3 col = g * mix(vec3(1.0), tint, 0.55) * 1.05 * wGround + sg * mix(vec3(1.0), tint, 0.35) * 0.95 * wGrass + b * 1.15 * wSand + r * mix(vec3(1.0), tint, 0.25) * wRock;
-        // town: irregular plots between the blocks - paved yards, dusty ground, a few gardens and car parks
-        float wU = smoothstep(0.3, 0.9, vU) * (1.0 - wRock) * (1.0 - wSand);
-        if (wU > 0.0) {
-          vec2 wp = p + vec2(vn2(p * 0.05), vn2(p * 0.05 + 7.0)) * 9.0;
-          vec2 cell = floor(wp / vec2(23.0, 15.0));
-          float ph = h12(cell);
-          vec3 conc = texture2D(tCD, p / 3.0).rgb * 1.55;
-          vec3 asph = texture2D(tAD, p / 4.0).rgb * 1.25;
-          vec3 garden = mix(sg * vec3(0.7, 0.95, 0.55), g, 0.35);
-          vec3 uc = ph < 0.4 ? mix(conc, g, 0.3) : ph < 0.55 ? asph : ph < 0.85 ? g * vec3(1.0, 0.97, 0.92) : garden;
-          uc = mix(uc, g, smoothstep(0.55, 0.8, vn2(p * 0.12)) * 0.5); // dust drifts across everything
-          col = mix(col, uc, wU);
-        }
-        // wild Attic hillside: grey limestone showing through thin soil, dense dark phrygana / maquis clumps
-        float wWild = ${farmland ? '0.0' : '(1.0 - smoothstep(0.1, 0.5, vU) * (1.0 - smoothstep(0.1, 0.25, steep))) * (1.0 - wSand * (1.0 - smoothstep(0.15, 0.3, steep))) * smoothstep(2.5, 9.0, vWP.y)'};
-        if (wWild > 0.0) {
-          float outc = smoothstep(0.38, 0.62, fbm2(p * 0.045) + steep * 0.45);
-          vec3 lime = texNoTile(tRD, p / 5.0).rgb; lime = mix(vec3(dot(lime, vec3(0.333))), lime, 0.3) * vec3(1.25, 1.22, 1.15);
-          vec3 soil = mix(g, sg, 0.5) * vec3(0.78, 0.74, 0.66);
-          vec3 wild = mix(soil, lime, outc);
-          float shrub = smoothstep(0.44, 0.56, vn2(p * 0.55) * 0.6 + vn2(p * 2.1) * 0.4) * (1.0 - outc * 0.6);
-          wild = mix(wild, vec3(0.055, 0.068, 0.034) * (0.7 + 0.6 * vn2(p * 3.0)), shrub * 0.9);
-          col = mix(col, wild, wWild);
-        }
+        // Broad area colours and restrained texture detail; no painted shrub clumps or plot decals.
+        col = mix(vc, col, 0.45);
         ${farmland ? 'col = mix(vc * (.74 + .48 * dot(sg, vec3(.333))), col, smoothstep(.22,.55,steep));' : ''}
-        col *= 0.82 + 0.36 * macro;
+        col *= 0.95 + 0.10 * macro;
         // wet sand / rock darkening at the waterline
         col *= mix(0.55, 1.0, smoothstep(0.05, 0.6, vWP.y));
         diffuseColor.rgb = col;
@@ -95,7 +76,7 @@ export function terrainMaterial({ farmland = false } = {}) {
         tRough = mix(0.97, 0.88, wRock) * mix(0.6, 1.0, smoothstep(0.0, 0.5, vWP.y));
       }`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = tRough;')
-      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, wRock > 0.5 ? rUV : tUV, tN, 1.1);');
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, wRock > 0.5 ? rUV : tUV, tN, 0.35);');
   };
   return mat;
 }
@@ -292,25 +273,23 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
     return g;
   };
   const inFine = (i, j, i2, j2) => mask[j * GX + i] && mask[j * GX + i2] && mask[j2 * GX + i] && mask[j2 * GX + i2];
-  const fineGeo = build(1, (i,j,i2,j2) => inFine(i,j,i2,j2) && !refined.has(j * GX + i));
+  let fineGeo = build(1, (i,j,i2,j2) => inFine(i,j,i2,j2) && !refined.has(j * GX + i));
   // coarse outside: drop vertices that are deep inside the fine area so they hide under it
   const C4 = 4;
   const coarseGeo = build(C4, (i, j, i2, j2) => !(inFine(i, j, i, j) && inFine(i2, j2, i2, j2) && inFine(i, j2, i, j2) && inFine(i2, j, i2, j)),
     (i, j) => { let all = true; for (let dj = -C4; dj <= C4 && all; dj += C4) for (let di = -C4; di <= C4 && all; di += C4) { const a = Math.min(GX - 1, Math.max(0, i + di)), b = Math.min(GZ - 1, Math.max(0, j + dj)); if (!mask[b * GX + a]) all = false; } return all ? 3 : 0; });
   // split the fine mesh into tiles for culling
   const group = new THREE.Group();
-  const tiles = splitGeometry(fineGeo, 600);
-  for (const g of tiles) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
   // The coarse mesh underlies the fine area too: push it back in depth so the fine tiles always win, even where the
   // depth buffer can't resolve the few metres between them (kilometres away, cockpit near plane).
   const coarseMat = mat.clone(); coarseMat.onBeforeCompile = mat.onBeforeCompile; coarseMat.customProgramCacheKey = mat.customProgramCacheKey;
   Object.assign(coarseMat, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 });
-  for (const g of splitGeometry(coarseGeo, 1500)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+
   // Use the uncut DEM for feathering; earlier cuts are only an underlay.
   // This raises downhill fills as well as lowering uphill cuts.
   const heights = new Map(), fixed = new Set(), n = farmland ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
   const height = (ix, iz) => {
-    const key = iz * stride + ix; if (heights.has(key)) return heights.get(key);
+    const key = iz * stride + ix, cached = heights.get(key); if (cached !== undefined) return cached;
     const x = minX + ix * T / n, z = minZ + iz * T / n;
     const y = conform.height(x, z, sampleTerrainHeight(terrain, H, x, z));
     heights.set(key, y); if(conform.fixed)fixed.add(key); return y;
@@ -321,7 +300,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   limitTerrainSlopes(heights,fixed,stride,T/n);
   const pos = [], col = [], nor = [], urb = [], indices = [], vertices = new Map(), c = new THREE.Color(), normal = new THREE.Vector3();
   const vertex = (ix, iz) => {
-    const key = iz * stride + ix; if (vertices.has(key)) return vertices.get(key);
+    const key = iz * stride + ix, cached = vertices.get(key); if (cached !== undefined) return cached;
     const y = height(ix, iz), i = clamp(Math.round(ix / n), 0, GX - 1), j = clamp(Math.round(iz / n), 0, GZ - 1);
     normal.set((height(Math.max(0,ix-1),iz)-height(Math.min((GX-1)*n,ix+1),iz))/(2*T/n),1,
       (height(ix,Math.max(0,iz-1))-height(ix,Math.min((GZ-1)*n,iz+1)))/(2*T/n)).normalize();
@@ -340,22 +319,35 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   const refinedGeo = new THREE.BufferGeometry();
   refinedGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); refinedGeo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
   refinedGeo.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); refinedGeo.setAttribute('aU',new THREE.Float32BufferAttribute(urb,1));refinedGeo.setIndex(indices);
-  for (const g of splitGeometry(refinedGeo,600)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
+  const stitched = stitchTerrainBoundaries([{geometry:fineGeo,step:T},{geometry:coarseGeo,step:T*4},{geometry:refinedGeo,step:T/n,boundary:refinedTerrainBoundary(refined,vertices,GX,stride,n)}]);
+  fineGeo = mergeTerrainTransitions(fineGeo,stitched.transitions);
+  const tiles = splitGeometry(fineGeo, farmland ? 1200 : 2400, T / n);
+  for (const g of tiles) { const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  for (const g of splitGeometry(coarseGeo, 3000, T * 4)) { const m = new THREE.Mesh(g, coarseMat); m.receiveShadow = true; m.userData.coarseTerrain = true; m.layers.enable(REFLECT_LAYER); group.add(m); }
+  for (const g of splitGeometry(refinedGeo,coastal ? 400 : 1200, T / n)) { const m=new THREE.Mesh(g,mat); m.userData.terrainRefinement=n; m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);group.add(m); }
   fineGeo.dispose();coarseGeo.dispose();refinedGeo.dispose();
+  for (const mesh of group.children) {
+    mesh.userData.terrainDecode = mesh.geometry.userData.terrainDecode;
+    buildTerrainPatchLods(mesh.geometry);
+    mesh.userData.terrainLod = mesh.geometry.userData.terrainLod;
+    mesh.userData.terrainLodPatches = mesh.geometry.userData.terrainLodPatches;
+    restoreTerrainLayout(mesh);
+  }
   installTerrainRefinement(terrain,group);
+  installTerrainLods(terrain,group);
   scene.add(group);
-  return { group, material: mat, heightC: (x, z) => sampleH(terrain, Hc, x, z) };
+  return { group, material: mat, heightC: terrainHeightSampler(terrain, Hc) };
 }
 
 export const sampleH = (terrain, heights, x, z) => terrain.refinedHeight?.(x,z) ?? sampleTerrainHeight(terrain, heights, x, z);
 
-function splitGeometry(geo, tile) {
+function splitGeometry(geo, tile, step) {
   const pos = geo.attributes.position, col = geo.attributes.color, nor = geo.attributes.normal, ua = geo.attributes.aU, idx = geo.index.array;
-  const buckets = new Map();
+  const buckets = new Map(), parts = [];
   for (let t = 0; t < idx.length; t += 3) {
     const a = idx[t];
-    const k = Math.floor(pos.getX(a) / tile) * 1000 + Math.floor(pos.getZ(a) / tile);
-    let b = buckets.get(k); if (!b) { b = { map: new Map(), p: [], c: [], n: [], u: [], i: [] }; buckets.set(k, b); }
+    const k = `${Math.floor(pos.getX(a) / tile)},${Math.floor(pos.getZ(a) / tile)}`;
+    let b = buckets.get(k); if (!b || b.map.size > 65532) { b = { map: new Map(), p: [], c: [], n: [], u: [], i: [] }; buckets.set(k, b); parts.push(b); }
     for (let q = 0; q < 3; q++) {
       const v = idx[t + q]; let nv = b.map.get(v);
       if (nv === undefined) { nv = b.p.length / 3; b.map.set(v, nv); b.p.push(pos.getX(v), pos.getY(v), pos.getZ(v)); b.c.push(col.getX(v), col.getY(v), col.getZ(v)); b.n.push(nor.getX(v), nor.getY(v), nor.getZ(v)); b.u.push(ua ? ua.getX(v) : 0); }
@@ -363,14 +355,18 @@ function splitGeometry(geo, tile) {
     }
   }
   const out = [];
-  for (const b of buckets.values()) {
+  for (const b of parts) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(b.p, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(b.c, 3));
     g.setAttribute('normal', new THREE.Float32BufferAttribute(b.n, 3));
     g.setAttribute('aU', new THREE.Float32BufferAttribute(b.u, 1));
     g.setIndex(b.i); g.computeBoundingSphere();
-    out.push(g);
+    out.push(compactTerrainGeometry(g, step));
   }
   return out;
 }
+
+// Keep the public sampler outside the builder closure: otherwise V8 retains
+// the shared build context (height/vertex Maps and temporary JS arrays).
+function terrainHeightSampler(terrain, heights) { return (x,z) => sampleH(terrain,heights,x,z); }

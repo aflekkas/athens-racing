@@ -1,3 +1,4 @@
+import {installFleetLOD} from './vehicle-distance.js';
 // Shared geometry and distance detail for the Athens fleet. Builders author metres, nose -Z.
 import * as THREE from 'three';
 import { seatMirrors } from './vehicle-mirrors.js';
@@ -17,7 +18,7 @@ function buildCatalogueModel(type,color,rng,opts) {
   // cars use the playable body's traffic detail, without player-only furniture.
   if(entry.fleet)return buildPassengerModel({...type,id:entry.fleet},color,rng,opts);
   const car={spec:{...entry,id:undefined,color,playerDetail:true},root:new THREE.Group(),body:new THREE.Group(),wheels:[]};
-  car.root.add(car.body);buildDetailedCar(car,entry.body,{low:true,plate:'TEMPLATE'});
+  car.root.add(car.body);buildDetailedCar(car,entry.body,{low:true,plate:'TEMPLATE',damage:false});
   // Reuse the playable car's authored medium/far LODs, then flatten the
   // selected level for the fleet cache. No full player cabin in traffic.
   const selectLevel=lod=>{
@@ -109,7 +110,14 @@ function template(type,low,parked){
   const key=type.id+':'+Number(!!type.taxi)+':'+Number(low)+':'+Number(parked);
   if(templates.has(key))return templates.get(key);
   const car=builder(type)(type,'#ffffff',new RNG(139),{low,parked});
-  seatMirrors(car,car.body,{bike:!!type.scooter});
+  if(low&&!car.visualLOD&&(!type.catalogueCar||type.catalogueCar.nativeFleet||type.catalogueCar.fleet)){
+    car.spec={...car.spec,nativeFleet:type.id,twoWheeler:!!type.scooter||!!type.moto||['delivery','scooter','moto','police_moto'].includes(type.id)};
+    installFleetLOD(car);
+    for(const lod of [car.visualLOD,...car.wheels.flatMap(w=>w.spin.children.filter(o=>o.isLOD))]){
+      const chosen=lod.levels.at(-1).object,parent=lod.parent;chosen.removeFromParent();lod.removeFromParent();chosen.visible=true;parent.add(chosen);
+    }
+  }
+  if(!low)seatMirrors(car,car.body,{bike:!!type.scooter});
   flattenMirrorScopes(car);
   // The far level (beyond ~55 m, and parked rows) is a handful of batches: its mirrors and wheels bake into the body
   // (a wheel's spin or a mirror's fold is sub-pixel there), so a distant car is ~5 draws instead of ~15.

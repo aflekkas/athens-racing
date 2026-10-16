@@ -41,14 +41,5 @@ async function benchmark(baselineModule=null){const baseline=!!baselineModule,ap
 const fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);gl.flush();
 while(gl.clientWaitSync(fence,0,0)===gl.TIMEOUT_EXPIRED)await new Promise(r=>setTimeout(r,1));gl.deleteSync(fence);
 if(f>31){samples.push(performance.now()-t);cpu.push(tc-t);}tris=renderer.info.render.triangles;calls=renderer.info.render.calls;if(f%8===0)await new Promise(r=>setTimeout(r,0));}samples.sort((a,b)=>a-b);cpu.sort((a,b)=>a-b);sc.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.skeleton?.dispose();}});render();return {baseline,actors:150,medianMs:samples[24],p95Ms:samples[45],poseMedianMs:cpu[24],triangles:tris,calls,renderer:gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_RENDERER_WEBGL||gl.RENDERER)};}
-async function driver(mode='normal') {
-  crowd.begin();crowd.end(); if(window.driverObject){scene.remove(window.driverObject.root);}
-  const {Driver}=await import('../src/driver.js');const d=new Driver(mode==='bald'?{hair:false}:mode==='helmet'?{helmet:true}:{});window.driverObject=d;scene.add(d.root);
-  if(mode==='roof'){d.hairY=.015;d.hairBase.scale.multiplyScalar(.55);d.curlMesh.scale.setScalar(.3);}
-  const wheel={pos:new THREE.Vector3(0,-.135,-.53),angle:.12,euler:new THREE.Euler(-.36,0,0),r:.18};d.update(1/60,1,12,{x:.2,y:0,z:.1},wheel,.1);
-  const rim=new THREE.Mesh(new THREE.TorusGeometry(.18,.016,8,48),new THREE.MeshStandardMaterial({color:'#262626'}));rim.position.copy(wheel.pos);rim.rotation.copy(wheel.euler);d.root.add(rim);
-  floor.position.y=-.65;cameras[0].position.set(0,-.05,-1.7);cameras[0].lookAt(0,-.07,-.1);cameras[1].position.set(1.7,-.05,0);cameras[1].lookAt(0,-.07,-.1);cameras[2].position.set(.3,.19,-.64);cameras[2].lookAt(0,.15,0);
-  document.querySelector('#title').textContent='Driver · '+mode;document.querySelector('#detail').textContent='Wheel grip · seated proportions · face and hair';render();return {curls:d.curls.length,head:d.head.position.toArray(),hairY:d.hairBase?.position.y};
-}
-window.peopleLab={setup,variants,benchmark,driver,renderer,scene,crowd,current:()=>current};setup(0);window.peopleReady=true;
+window.peopleLab={setup,variants,benchmark,renderer,scene,crowd,current:()=>current};setup(0);window.peopleReady=true;
 </script></body></html>

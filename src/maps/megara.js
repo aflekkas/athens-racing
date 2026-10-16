@@ -1,3 +1,4 @@
+import { buildBuildings } from '../buildings.js';
 // Megara scenery, georeferenced to the OSM bundle and Esri reference in SOURCES.md.
 // Ground references: BIKEIT Megara gallery, May 2023; RallyDiaries paddock/start photos.
 // No coastal avenue median, traffic markings, palms or invented spectator grandstands.
@@ -10,7 +11,8 @@ const flat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roug
 function groundMaterial(color, scale = 1, kind='ground') {
   const material = flat(color,{side:THREE.DoubleSide});
   const isAsphalt=kind==='asphalt'||kind==='worn-asphalt';
-  const key=isAsphalt?'asphalt':kind==='grass'?'grass':'ground';
+  if(!isAsphalt)return material;
+  const key='asphalt';
   material.onBeforeCompile = shader => {
     shader.uniforms.tSurface={value:TX[key+'_diff']||TX.ground_diff};
     shader.uniforms.tSurfaceN={value:TX[key+'_nor']||TX.ground_nor};
@@ -24,8 +26,7 @@ function groundMaterial(color, scale = 1, kind='ground') {
       vec2 repairCell=floor(vGround.xz/vec2(8.,19.)); vec2 repairUV=fract(vGround.xz/vec2(8.,19.));
       float repair=step(.84,h12(repairCell))*step(.12,repairUV.x)*step(repairUV.x,.88)*step(.18,repairUV.y)*step(repairUV.y,.83);
       diffuseColor.rgb=${kind==='worn-asphalt'?'vec3(.245,.245,.232)':'vec3(.135,.132,.126)'}*(0.65+scannedLum*3.8)*(.83+.32*macro)*(1.-.2*repair);`
-      :kind==='grass'?`float tufts=fbm2(vGround.xz*1.7); diffuseColor.rgb*= (.50+scannedLum*1.1)*(.85+.32*macro); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.27,.245,.115),smoothstep(.48,.70,tufts)*.30);`
-      :`diffuseColor.rgb*= (.65+scannedLum*.95)*(.85+.30*macro);`}
+      :''}
     `).replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>\nvec3 scannedNormal=texture2D(tSurfaceN,vGround.xz/2.6).xyz*2.-1.;normal=perturb(-vViewPosition,normal,vGround.xz/2.6,scannedNormal,${isAsphalt?'.5':'.8'});`);
   };
   material.customProgramCacheKey = () => 'megara-photo-surface-v2-' + kind + scale;
@@ -121,41 +122,6 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
       strip(route,s,end,middle,outer,.045+height*.35,mat,roadGroup,.8);
     }
   }
-  // Green spring verges and yellow-green dry crop parcels are visible in both the
-  // satellite and onboard sources. Parcel boundaries are traced, not random tiling.
-  const grass=groundMaterial(0x778350,.72,'grass'),dryGrass=groundMaterial(0xa9a36a,.62,'grass'),crop=groundMaterial(0x69794c,.66,'grass');
-  const fields=[
-    [crop,[[171,403],[339,348],[351,458],[341,535],[215,540]]],
-    [dryGrass,[[351,351],[439,308],[492,336],[519,433],[488,542],[354,529]]],
-    [grass,[[508,408],[574,365],[652,373],[698,478],[691,555],[512,544]]],
-    [crop,[[569,198],[644,176],[720,317],[666,379],[607,348]]],
-    [dryGrass,[[708,190],[771,171],[849,340],[788,382],[740,326]]],
-    [grass,[[725,389],[855,355],[909,381],[915,439],[856,553],[720,558]]],
-    [crop,[[925,360],[1039,351],[1062,402],[1038,451],[922,454]]],
-    [dryGrass,[[975,190],[1048,214],[1085,327],[956,346],[898,194]]],
-    [grass,[[1070,418],[1187,403],[1201,454],[1191,514],[1095,535]]],
-    [crop,[[1217,352],[1389,318],[1372,459],[1241,489]]],
-    [dryGrass,[[132,1124],[274,1080],[291,1286],[216,1294]]],
-    [grass,[[315,1093],[461,1083],[455,1268],[324,1284]]],
-    [crop,[[526,1085],[616,1074],[627,1256],[523,1271]]],
-    [dryGrass,[[645,1086],[744,1061],[782,1260],[651,1263]]],
-    [grass,[[785,1119],[929,1109],[946,1237],[805,1260]]],
-    [grass,[[248,608],[373,614],[565,634],[643,646],[623,669],[452,708],[257,754]]],
-    [dryGrass,[[389,762],[558,725],[656,704],[759,690],[799,704],[807,724],[743,741],[504,783],[409,839]]],
-    [grass,[[514,877],[553,858],[644,844],[660,852],[562,881],[521,945],[497,967],[456,967],[456,938]]],
-    [grass,[[757,874],[873,854],[890,870],[875,881],[752,901],[700,938],[687,932],[702,905]]],
-    [dryGrass,[[772,796],[853,778],[884,749],[898,705],[905,650],[964,651],[991,711],[984,768]]]
-  ];
-  // Fine triangles follow the same sampled terrain so plots don't float over DEM relief.
-  function fieldPatch(pixels,mat){
-    const points=pp(pixels),faces=THREE.ShapeUtils.triangulateShape(points.map(p=>new THREE.Vector2(...p)),[]),pos=[];
-    function tri(a,b,c,depth){const ab=Math.hypot(a[0]-b[0],a[1]-b[1]),bc=Math.hypot(c[0]-b[0],c[1]-b[1]),ca=Math.hypot(a[0]-c[0],a[1]-c[1]);if(depth<5&&Math.max(ab,bc,ca)>12){const m=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2],d=m(a,b),e=m(b,c),f=m(c,a);tri(a,d,f,depth+1);tri(d,b,e,depth+1);tri(f,e,c,depth+1);tri(d,e,f,depth+1);}else for(const p of [a,c,b])pos.push(p[0],yAt(...p)+.031,p[1]);}
-    for(const f of faces)tri(points[f[0]],points[f[1]],points[f[2]],0);
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.receiveShadow=true;group.add(m);
-  }
-  for(const [mat,pixels]of fields)fieldPatch(pixels,mat);
-  // Grass is continuous beside the track; pale gravel only fills satellite-traced islands.
-  for(const side of [-1,1])strip(route,0,route.length,s=>side*(route.edge(s)+.98),s=>side*(route.edge(s)+3.3),.018,grass,roadGroup);
   // Worn rubber follows the same racing line as AI, becoming heavier at braking zones.
   const rubber=flat(0x262824,{transparent:true,opacity:.075,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1});
   rubber.onBeforeCompile=shader=>{
@@ -242,30 +208,9 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   fencePath(pp([[142,894],[166,1037],[209,1049],[393,1039],[557,1023],[901,1036]]));
   const timingFence=[];for(let ds=-38;ds<=82;ds+=4){const p=route.point((circuit.startS??0)+ds,-route.edge(ds)-12);timingFence.push([p.x,p.z]);}fencePath(timingFence);
   const fenceGeometry=new THREE.BufferGeometry();fenceGeometry.setAttribute('position',new THREE.Float32BufferAttribute(fencePositions,3));fenceGeometry.setAttribute('uv',new THREE.Float32BufferAttribute(fenceUV,2));fenceGeometry.setIndex(fenceIndices);fenceGeometry.computeVertexNormals();group.add(new THREE.Mesh(fenceGeometry,fenceMaterial));
-  // Extrude the actual OSM building outlines. Footprints remain true to the data.
-  for(const b of data.buildings||[]){
-    if(!b.p||b.p.length<6||b.id===135265201)continue;
-    const points=Array.isArray(b.p[0])?b.p:Array.from({length:b.p.length/2},(_,i)=>[b.p[2*i],b.p[2*i+1]]);
-    const cx=points.reduce((v,p)=>v+p[0],0)/points.length,cz=points.reduce((v,p)=>v+p[1],0)/points.length;
-    const y=yAt(cx,cz),h=b.h||b.height||(b.levels||1)*3.5;
-    polygon(points,y+h,roof,group);
-    for(let i=0;i<points.length;i++){const a=points[i],c=points[(i+1)%points.length];batch.beam([a[0],y+h/2,a[1]],[c[0],y+h/2,c[1]],.28,h,white);}
-  }
-  // Two-storey white clubhouse: satellite footprint with glazed north-facing balcony.
-  const club=pixel(611,932),clubY=yAt(...club),clubYaw=-.20;
-  function localBox(cx,cz,cy,w,h,d,mat){const x=club[0]+cx*Math.cos(clubYaw)+cz*Math.sin(clubYaw),z=club[1]-cx*Math.sin(clubYaw)+cz*Math.cos(clubYaw);batch.box(x,clubY+cy,z,w,h,d,mat,clubYaw);}
-  // This modern façade postdates some OSM imagery; photo dimensions are approximations.
-  localBox(0,0,3.8,28,7.6,17,white);
-  // Northwest/west glazing is visible from the final sector onboard.
-  localBox(-14.12,0,2, .22,3.4,16,glass);localBox(-14.12,0,5.7,.22,2.7,16,glass);
-  localBox(-15.4,0,3.7,3.2,.22,17,roof);localBox(-15.4,0,7.7,3.2,.22,17,roof);
-  for(let z=-7;z<=7;z+=3.5)localBox(-16.5,z,3.8,.13,7.6,.13,steel);
-  for(const yy of [4.1,4.6,4.9])localBox(-16.5,0,yy,.06,.06,16,steel);localBox(0,-8.6,2,26,3.4,.2,glass);localBox(0,-8.6,5.7,26,2.7,.2,glass);
-  localBox(0,-10.1,3.7,29,.22,4,roof);localBox(0,-10.1,7.7,29,.22,4,roof);
-  for(let x=-13;x<=13;x+=4.3){localBox(x,-10.8,3.8,.14,7.6,.14,steel);localBox(x,-8.8,5.8,.12,2.7,.14,steel);}
-  for(const yy of [4.1,4.6,4.9])localBox(0,-11.8,yy,28,.06,.06,steel);
+  buildBuildings(map, group, yAt);
   // Teal stretched-fabric pit canopies; individual open bays, no invented garage walls.
-  function shelter(px,pz,w,d,yaw=0){const [x,z]=pixel(px,pz),y=yAt(x,z);batch.box(x,y+3.2,z,w,.12,d,canopy,yaw);for(const xx of [-w/2,w/2])for(let zz=-d/2;zz<=d/2+.1;zz+=Math.min(7,d)){batch.box(x+xx*Math.cos(yaw)+zz*Math.sin(yaw),y+1.6,z-xx*Math.sin(yaw)+zz*Math.cos(yaw),.10,3.2,.10,steel);}}
+  function shelter(px,pz,w,d,yaw=0){const [x,z]=pixel(px,pz),y=yAt(x,z);batch.box(x,y+3.2,z,w,.12,d,canopy,yaw);for(const xx of [-w/2,w/2])for(let zz=-d/2;zz<=d/2+.1;zz+=Math.max(14,d/4)){batch.box(x+xx*Math.cos(yaw)+zz*Math.sin(yaw),y+1.6,z-xx*Math.sin(yaw)+zz*Math.cos(yaw),.10,3.2,.10,steel);}}
   shelter(345,966,8,57,-.16);shelter(154,943,16,46,-.2);shelter(710,727,53,8,-.13);
   // START gantry at the timing line. Photographed asymmetrical cantilever and checkerboard pier.
   const startS=circuit.startS??0, frame=route.frame(startS,{}),gantryY=frame.y;
@@ -274,7 +219,7 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   gantryBox(support,3.35,0,1.5,.6,6.7,white);gantryBox(support+5.3,6.3,0,12.1,.7,1.6,white);
   for(let row=0;row<8;row++)for(let col=0;col<2;col++)if((row+col)%2===0)gantryBox(support+(col-.5)*.72,.55+row*.72,-.325,.70,.02,.70,black);
   gantryBox(support+7,4.98,0,3.5,.48,.7,black);
-  for(let i=0;i<6;i++)gantryBox(support+5.6+i*.56,4.98,-.26,.25,.035,.36,red);
+  gantryBox(support+7,4.98,-.26,2.9,.035,.36,red);
   if(assets.makeLabel){const label=assets.makeLabel('START',5.8,1.05,'#eeeee5','#111111');const p=route.point(startS-.37,support+6);label.position.set(p.x,gantryY+6.36,p.z);label.rotation.y=route.heading(startS);group.add(label);const rear=label.clone();const q=route.point(startS+.37,support+6);rear.position.set(q.x,gantryY+6.36,q.z);rear.rotation.y+=Math.PI;group.add(rear);}
   // Timing booth alongside the gantry and a narrow painted start stripe.
   const booth=route.point(startS+3,support-3);batch.box(booth.x,booth.y+1.45,booth.z,2,2.9,2.1,white,route.heading(startS));
@@ -287,14 +232,6 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
     strip(route,s,s+2,u-.99,u-.88,.073,white,roadGroup);
     strip(route,s,s+2,u+.88,u+.99,.073,white,roadGroup);
   }
-  // Olive orchards follow the agricultural parcels north and south of the circuit.
-  const trees=[],trunks=[],leaf=flat(0x647452);let seed=70043234;
-  const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-  for(const [x0,z0,x1,z1] of [[310,1095,470,1280],[526,1097,618,1285],[791,1112,936,1260],[920,365,1045,452],[1220,330,1390,555],[1020,55,1215,295],[1355,523,1530,845]]){
-    for(let z=z0;z<z1;z+=24)for(let x=x0;x<x1;x+=24){const p=pixel(x+(rand()-.5)*5,z+(rand()-.5)*5);const r=2.2+rand()*1.1;if(map.roadNetwork?.sample(...p))continue;trees.push([p[0],yAt(...p)+3,p[1],r]);trunks.push([p[0],yAt(...p)+1.2,p[1]]);}
-  }
-  for(const t of trunks)batch.box(t[0],t[1],t[2],.3,2.4,.3,timber);
-  if(trees.length){const g=new THREE.IcosahedronGeometry(1,1),m=new THREE.InstancedMesh(g,leaf,trees.length),d=new THREE.Object3D();trees.forEach((p,i)=>{d.position.set(p[0],p[1],p[2]);d.scale.set(p[3],p[3]*.7,p[3]);d.rotation.y=i*2.4;d.updateMatrix();m.setMatrixAt(i,d.matrix);m.setColorAt(i,new THREE.Color().setHSL(.20+rand()*.035,.12+rand()*.1,.29+rand()*.08));});m.receiveShadow=true;m.castShadow=true;m.computeBoundingSphere();group.add(m);}
   // Georeferenced rural access paths, outside the raceway perimeter.
   worldPath(pp([[9,1152],[100,1084],[277,1055],[576,1042],[833,1032],[927,1110],[1018,1201]]),4.5,dirt);
   worldPath(pp([[1062,1491],[1125,1250],[1139,1043],[1223,811],[1274,593],[1344,427],[1480,274]]),4,dirt);
@@ -302,7 +239,7 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   const kart=circuit.kartRoute||circuit.karting||[];
   if(kart.length>2)worldPath(kart,6.2,asphalt,.055);
   // Long pit/storage sheds: corrugated silver roofs, open dark bays, fascia and ribs.
-  function shed(px,pz,w,d,yaw){const [x,z]=pixel(px,pz),y=yAt(x,z);batch.box(x,y+2.15,z,w,4.3,d,white,yaw);batch.box(x,y+4.37,z,w+.5,.2,d+.7,roof,yaw);for(let q=-d/2+2.5;q<d/2;q+=5){const wx=x-w/2*Math.cos(yaw)+q*Math.sin(yaw),wz=z+w/2*Math.sin(yaw)+q*Math.cos(yaw);batch.box(wx,y+1.8,wz,.10,3.4,4.15,glass,yaw);batch.box(wx-.12*Math.cos(yaw),y+3.65,wz+.12*Math.sin(yaw),.2,.16,4.5,steel,yaw);}for(let q=-d/2;q<d/2;q+=1.6){batch.box(x+q*Math.sin(yaw),y+4.51,z+q*Math.cos(yaw),w,.045,.05,steel,yaw);}}
+  function shed(px,pz,w,d,yaw){const [x,z]=pixel(px,pz),y=yAt(x,z);batch.box(x,y+2.15,z,w,4.3,d,white,yaw);}
   shed(150,943,18,49,-.20);shed(210,1013,26,15,-.12);shed(191,880,15,15,-.15);
   // Small parked support cars/vans in the apron, visible in the reference track days.
   const paint=[flat(0xc4c9cb,{roughness:.4}),flat(0x9c302a,{roughness:.45}),flat(0x36434d,{roughness:.4})];
@@ -346,13 +283,6 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   distantBodies.frustumCulled=false;distantGlass.frustumCulled=false;group.add(distantBodies,distantGlass);
   // The isolated southeast agricultural warehouse is visible in the satellite.
   shed(1460,1367,47,42,.17);
-  // Tall narrow cypresses/scrub mark the orchard boundaries; low bushes fill gaps.
-  const cypressMat=flat(0x405439),bushMat=flat(0x6e7548),cypressPoints=[],bushPoints=[];
-  for(const line of [[[130,460],[170,572]],[[279,1106],[304,1280]],[[947,1107],[976,1250]],[[931,402],[1170,362]],[[1108,576],[1233,581]],[[143,1054],[111,911]],[[409,294],[536,284]]]){
-    const[a,b]=pp(line),L=Math.hypot(a[0]-b[0],a[1]-b[1]);for(let t=0;t<L;t+=8){const f=t/L,x=a[0]+(b[0]-a[0])*f,z=a[1]+(b[1]-a[1])*f;(Math.floor(t/8)%4===0?cypressPoints:bushPoints).push([x,yAt(x,z),z]);}
-  }
-  function plantInstances(points,geometry,material,cypress){if(!points.length)return;const m=new THREE.InstancedMesh(geometry,material,points.length),d=new THREE.Object3D();points.forEach((p,i)=>{const h=cypress?5.7+(i%4)*.55:1.2+(i%3)*.35;d.position.set(p[0],p[1]+h/2,p[2]);d.scale.set(cypress?1.05:2.2,h/2,cypress?1.05:1.7);d.rotation.y=i*1.61;d.updateMatrix();m.setMatrixAt(i,d.matrix);});m.receiveShadow=true;m.castShadow=true;m.computeBoundingSphere();group.add(m);}
-  plantInstances(cypressPoints,new THREE.IcosahedronGeometry(1,1),cypressMat,true);plantInstances(bushPoints,new THREE.IcosahedronGeometry(1,1),bushMat,false);
   batch.flush();
   mergeSurfaces(roadGroup);mergeSurfaces(group);
   group.userData.reference='tools/maps/megara/SOURCES.md';

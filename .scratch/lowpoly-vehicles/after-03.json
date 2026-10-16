@@ -1,0 +1,110 @@
+[
+  {
+    "id": "superb",
+    "view": 0,
+    "triangles": 3004,
+    "drawCalls": 88,
+    "geometries": 82,
+    "textures": 4,
+    "heap": 14300000
+  },
+  {
+    "id": "superb",
+    "view": 1,
+    "triangles": 3004,
+    "drawCalls": 88,
+    "geometries": 82,
+    "textures": 4,
+    "heap": 14300000
+  },
+  {
+    "id": "superb",
+    "view": 2,
+    "triangles": 414,
+    "drawCalls": 17,
+    "geometries": 93,
+    "textures": 7,
+    "heap": 14300000
+  },
+  {
+    "id": "police_octavia",
+    "view": 0,
+    "triangles": 3246,
+    "drawCalls": 102,
+    "geometries": 93,
+    "textures": 13,
+    "heap": 14300000
+  },
+  {
+    "id": "police_octavia",
+    "view": 1,
+    "triangles": 3246,
+    "drawCalls": 102,
+    "geometries": 93,
+    "textures": 13,
+    "heap": 14300000
+  },
+  {
+    "id": "police_octavia",
+    "view": 2,
+    "triangles": 398,
+    "drawCalls": 16,
+    "geometries": 104,
+    "textures": 15,
+    "heap": 14300000
+  },
+  {
+    "id": "mini_jcw",
+    "view": 0,
+    "triangles": 2534,
+    "drawCalls": 82,
+    "geometries": 80,
+    "textures": 17,
+    "heap": 14300000
+  },
+  {
+    "id": "mini_jcw",
+    "view": 1,
+    "triangles": 2534,
+    "drawCalls": 82,
+    "geometries": 80,
+    "textures": 17,
+    "heap": 14300000
+  },
+  {
+    "id": "mini_jcw",
+    "view": 2,
+    "triangles": 350,
+    "drawCalls": 14,
+    "geometries": 91,
+    "textures": 19,
+    "heap": 14300000
+  },
+  {
+    "id": "cle",
+    "view": 0,
+    "triangles": 3561,
+    "drawCalls": 78,
+    "geometries": 78,
+    "textures": 21,
+    "heap": 14300000
+  },
+  {
+    "id": "cle",
+    "view": 1,
+    "triangles": 3561,
+    "drawCalls": 78,
+    "geometries": 78,
+    "textures": 21,
+    "heap": 14300000
+  },
+  {
+    "id": "cle",
+    "view": 2,
+    "triangles": 334,
+    "drawCalls": 14,
+    "geometries": 89,
+    "textures": 23,
+    "heap": 14300000
+  }
+]

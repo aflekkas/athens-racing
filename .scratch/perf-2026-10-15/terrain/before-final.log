@@ -1,0 +1,117 @@
+{
+  id: 'riviera',
+  mapDecodeMs: 1331.934214,
+  buildMs: 70023.327159,
+  mapDecodeCpuMs: 532.135,
+  buildCpuMs: 27477.57,
+  heap: 237715056,
+  bytes: 58091606,
+  triangles: 2078540,
+  chunks: 116,
+  poses: [
+    {
+      name: 'start',
+      eye: [Array],
+      target: [Array],
+      calls: 17,
+      triangles: 281604
+    },
+    {
+      name: 'mid',
+      eye: [Array],
+      target: [Array],
+      calls: 20,
+      triangles: 445348
+    },
+    {
+      name: 'overview',
+      eye: [Array],
+      target: [Array],
+      calls: 82,
+      triangles: 1627271
+    }
+  ],
+  bakedDecodeBuildMs: 3242.229065000007,
+  bakedDecodeBuildCpuMs: 1052.812,
+  rawPackBytes: 61750404,
+  gzipPackBytes: 19283615,
+  cullAndLodCpuUsPerFrame: 130.50444444444443
+}
+{
+  id: 'penteli',
+  mapDecodeMs: 590.4526509999996,
+  buildMs: 50784.98565599999,
+  mapDecodeCpuMs: 329.712,
+  buildCpuMs: 25120.185,
+  heap: 331579672,
+  bytes: 90291758,
+  triangles: 3053918,
+  chunks: 105,
+  poses: [
+    {
+      name: 'start',
+      eye: [Array],
+      target: [Array],
+      calls: 13,
+      triangles: 745770
+    },
+    {
+      name: 'mid',
+      eye: [Array],
+      target: [Array],
+      calls: 66,
+      triangles: 2576973
+    },
+    {
+      name: 'overview',
+      eye: [Array],
+      target: [Array],
+      calls: 100,
+      triangles: 3049874
+    }
+  ],
+  bakedDecodeBuildMs: 2195.4250969999994,
+  bakedDecodeBuildCpuMs: 1243.834,
+  rawPackBytes: 94828004,
+  gzipPackBytes: 29564772,
+  cullAndLodCpuUsPerFrame: 102.15444444444445
+}
+{
+  id: 'megara',
+  mapDecodeMs: 582.3944539999939,
+  buildMs: 2299.237838000001,
+  mapDecodeCpuMs: 267.077,
+  buildCpuMs: 1283.371,
+  heap: 45588272,
+  bytes: 3515256,
+  triangles: 129876,
+  chunks: 26,
+  poses: [
+    {
+      name: 'start',
+      eye: [Array],
+      target: [Array],
+      calls: 15,
+      triangles: 120736
+    },
+    {
+      name: 'mid',
+      eye: [Array],
+      target: [Array],
+      calls: 12,
+      triangles: 94217
+    },
+    {
+      name: 'overview',
+      eye: [Array],
+      target: [Array],
+      calls: 25,
+      triangles: 129771
+    }
+  ],
+  bakedDecodeBuildMs: 90.95139199998812,
+  bakedDecodeBuildCpuMs: 91.121,
+  rawPackBytes: 4577276,
+  gzipPackBytes: 1449365,
+  cullAndLodCpuUsPerFrame: 59.8
+}

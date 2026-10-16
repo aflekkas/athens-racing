@@ -1,0 +1,74 @@
+{
+  "sourceCommit": "b7bd65445931c58a9eea5131704fd9b584a776fa",
+  "environment": {
+    "python": "3.12.3",
+    "node": "v22.23.3",
+    "osmium": "4.3.1",
+    "shapely": "2.2.0",
+    "three": "0.170.0"
+  },
+  "productChanges": false,
+  "gates": {
+    "npm": {
+      "command": "npm test",
+      "exit": 0,
+      "completeLogSha256": "cbed1b02a44723e14e7f30bd615eeb6caad1cda5ebc788c97b43cc74efc14211",
+      "tapSummaryTests": 975,
+      "tapSummaryFailures": 0
+    },
+    "physics": {
+      "command": "node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs",
+      "exit": 0,
+      "completeLogSha256": "a49f7b23122586930f678a79a1337c95f0fafe8d8d68b2566a0c12fbc92ea9f2"
+    },
+    "events": {
+      "command": "node tools/events-test.mjs",
+      "exit": 0,
+      "completeLogSha256": "235766b5014693444f2c3f8b2a669f385a65db1c2c72231f9e5cb3244c17bb9c"
+    },
+    "syntax": {
+      "command": "node tools/check-syntax.mjs",
+      "exit": 0,
+      "completeLogSha256": "6402073ced57b4790e7dfd16950e74cc0470f570b619919d5aaa207a4c753e19"
+    },
+    "imports": {
+      "command": "node tools/check-browser-imports.mjs",
+      "exit": 0,
+      "completeLogSha256": "9ac5034e0f874fd701436bdff41aef0f3c736b6e24ccbffdce0ddd235cd51845"
+    },
+    "dryrun": {
+      "command": "npx wrangler deploy --env staging --dry-run",
+      "exit": 0,
+      "completeLogSha256": "50600e56542715fa6feb7e15ae248a8342b695b1f90343ba5d2f17c07e4ec543"
+    }
+  },
+  "researchChecks": {
+    "tileByteAccounting": "passed for all 92 road cells",
+    "nodeCheck": "tools/athens-tile-spike.mjs passed",
+    "pythonCompile": "tools/measure-athens-osm.py passed",
+    "censusConsistency": {
+      "a_south": {
+        "recordCountsMatch": true,
+        "rawByteCountMatches": true,
+        "gzipByteCountMatches": true,
+        "extractSha256Matches": true,
+        "roadClassTotalsMatchWithinRounding": true
+      },
+      "b_basin": {
+        "recordCountsMatch": true,
+        "rawByteCountMatches": true,
+        "gzipByteCountMatches": true,
+        "extractSha256Matches": true,
+        "roadClassTotalsMatchWithinRounding": true
+      },
+      "c_attica": {
+        "recordCountsMatch": true,
+        "rawByteCountMatches": true,
+        "gzipByteCountMatches": true,
+        "extractSha256Matches": true,
+        "roadClassTotalsMatchWithinRounding": true
+      }
+    },
+    "excludedCountryBuildingRelations": 13
+  }
+}

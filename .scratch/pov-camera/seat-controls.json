@@ -1,0 +1,19 @@
+{
+  "id": "police_moto",
+  "saved": {
+    "height": 0.08,
+    "position": -0.08
+  },
+  "stored": {
+    "height": 0.08,
+    "position": -0.08
+  },
+  "values": [
+    "0.08",
+    "-0.08"
+  ],
+  "reset": {
+    "height": 0,
+    "position": 0
+  }
+}

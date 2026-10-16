@@ -5,8 +5,8 @@ import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 // ---------------------------------------------------------------- graphics presets
 // A preset (settings.graphics) picks a LIGHTING level, an EFFECTS level, the world's scenery tier, the render
 // resolution and the draw distance. Lighting, effects, resolution and draw distance can each be overridden in
-// Settings > Graphics ('preset' = follow the preset). Nothing changes behind the player's back at runtime: there is
-// no adaptive resolution and no silent tier switching. Everything applies live (main.js).
+// Settings > Graphics ('preset' = follow the preset). Dynamic resolution may temporarily lower resolution within the selected ceiling.
+// Lighting and scenery tiers stay fixed. Everything applies live (main.js).
 //
 // LIGHTING: shadow: [sun shadow box half-size m, map size] (null = no shadow maps) · shadowEvery: re-render the sun
 //   shadow map every n frames · probeEvery: car reflection probe face cadence in frames (0 = frozen sky reflection)
@@ -197,31 +197,18 @@ export function simplifyScenery(sky, skyCube, water, terrain) {
   if (!water.mesh.userData.fullMaterial) water.mesh.userData.fullMaterial = water.mesh.material;
   const oldWater = water.mesh.userData.fullMaterial;
   if (water.mesh.userData.lowMaterial) { water.mesh.material = water.mesh.userData.lowMaterial; } else {
-  const sea = new THREE.ShaderMaterial({
-    uniforms: { ...AP_UNIFORMS, skyCube: { value: skyCube }, time: oldWater.uniforms.uTime, uBody: CU.uSeaBody }, // body colour follows the time of day (env.js)
-    vertexShader: 'varying vec3 world; void main(){world=(modelMatrix*vec4(position,1.0)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(world,1.0);}',
-    fragmentShader: `const float AP_K = ${AP_K.toFixed(3)};
-      ${AERIAL_GLSL}
-      uniform samplerCube skyCube; uniform float time; uniform vec3 uBody; varying vec3 world;
-      void main(){vec3 off=world-cameraPosition;vec3 v=normalize(-off);
-      // Average unresolved slopes before reflection; otherwise the LOW sea aliases into horizon bands.
-      vec2 rippleFilter=vec2(1.)-smoothstep(vec2(.6),vec2(3.14),fwidth(world.xz)*vec2(.08,.07));
-      rippleFilter*=1.-smoothstep(350.,2200.,length(off.xz));
-      vec3 n=normalize(vec3(.018*sin(world.x*.08+time)*rippleFilter.x,1.,.016*cos(world.z*.07+time*.7)*rippleFilter.y));
-      float f=.02+.98*pow(1.-max(dot(n,v),0.),5.);vec3 reflected=textureCube(skyCube,reflect(-v,n)).rgb;
-      vec3 col=aerial(mix(uBody,reflected,f),off,cameraPosition.y);
-      col=mix(col,apHorizon(normalize(off)),smoothstep(8000.,26000.,length(off.xz)));
-      gl_FragColor=vec4(col,1.);}`,
-  });
+  // Share the reflection-independent calm-blue branch with the full water material.
+  const sea = oldWater.clone();
+  sea.uniforms = { ...oldWater.uniforms, uReflOn: { value: 0 } };
   water.mesh.material = sea; water.mesh.userData.lowMaterial = sea;
   }
   }
   if (terrain && !terrain.userData?.lowMaterials) {
   terrain.userData ||= {};
   terrain.userData.lowMaterials = true;
-  const ground = new THREE.MeshLambertMaterial({ vertexColors: true });
-  const coarse = ground.clone(); Object.assign(coarse, { polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 8 }); // see terrain.js
-  terrain.group.traverse(o => { if (o.isMesh) { o.userData.fullMaterial = o.material; o.userData.lowMaterial = o.userData.coarseTerrain ? coarse : ground; o.material = o.userData.lowMaterial; } });
+  // Area colour/texture is part of the owner-locked look, including Effects Off.
+  // Keep the existing material and quantized-position decoder intact.
+  terrain.group.traverse(o => { if (o.isMesh) { o.userData.fullMaterial = o.material; o.userData.lowMaterial = o.material; } });
   }
 }
 

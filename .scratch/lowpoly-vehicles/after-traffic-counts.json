@@ -1,0 +1,1394 @@
+[
+  {
+    "id": "police",
+    "low": false,
+    "triangles": 3046,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "police",
+    "low": true,
+    "triangles": 158,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "police_moto",
+    "low": false,
+    "triangles": 1468,
+    "wheels": [
+      100,
+      100
+    ]
+  },
+  {
+    "id": "police_moto",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": "van",
+    "low": false,
+    "triangles": 3068,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "van",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "truck",
+    "low": false,
+    "triangles": 2014,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "truck",
+    "low": true,
+    "triangles": 148,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "bus",
+    "low": false,
+    "triangles": 3402,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "bus",
+    "low": true,
+    "triangles": 160,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "delivery",
+    "low": false,
+    "triangles": 1242,
+    "wheels": [
+      100,
+      100
+    ]
+  },
+  {
+    "id": "delivery",
+    "low": true,
+    "triangles": 256,
+    "wheels": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": "scooter",
+    "low": false,
+    "triangles": 1170,
+    "wheels": [
+      100,
+      100
+    ]
+  },
+  {
+    "id": "scooter",
+    "low": true,
+    "triangles": 256,
+    "wheels": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": "moto",
+    "low": false,
+    "triangles": 1228,
+    "wheels": [
+      100,
+      100
+    ]
+  },
+  {
+    "id": "moto",
+    "low": true,
+    "triangles": 228,
+    "wheels": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": "mini",
+    "low": false,
+    "triangles": 708,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "mini",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "z4",
+    "low": false,
+    "triangles": 708,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "z4",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "taxi",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "taxi",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "carrera",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "carrera",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "gr_yaris",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "gr_yaris",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "gtv",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "gtv",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "golf",
+    "low": false,
+    "triangles": 2572,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "golf",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "corolla",
+    "low": false,
+    "triangles": 2574,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "corolla",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "superb",
+    "low": false,
+    "triangles": 2864,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "superb",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "mini_jcw",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "mini_jcw",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cle",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cle",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "gla",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "gla",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "gla45",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "gla45",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cla",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cla",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "aventador_svj",
+    "low": false,
+    "triangles": 738,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "aventador_svj",
+    "low": true,
+    "triangles": 282,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "huracan",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "huracan",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "ibiza",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "ibiza",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "panda",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "panda",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "yaris",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "yaris",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "e36",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "e36",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cle200",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cle200",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cle450",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cle450",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cle53",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cle53",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "e36_m3",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "e36_m3",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "panda_11",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "panda_11",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "panda_100hp",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "panda_100hp",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "yaris_13",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "yaris_13",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "yaris_ts",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "yaris_ts",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "ibiza_cupra",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "ibiza_cupra",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "golf_gti",
+    "low": false,
+    "triangles": 2572,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "golf_gti",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "golf_gtd",
+    "low": false,
+    "triangles": 2572,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "golf_gtd",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "golf_r",
+    "low": false,
+    "triangles": 2572,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "golf_r",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "mini_cooper",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "mini_cooper",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "mini_s",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "mini_s",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "low": false,
+    "triangles": 708,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "corolla_15",
+    "low": false,
+    "triangles": 2574,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "corolla_15",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "octavia_16tdi",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "octavia_16tdi",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "octavia_rs",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "octavia_rs",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "superb_15",
+    "low": false,
+    "triangles": 2864,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "superb_15",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "superb_4x4",
+    "low": false,
+    "triangles": 2864,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ]
+  },
+  {
+    "id": "superb_4x4",
+    "low": true,
+    "triangles": 134,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cla250",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cla250",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cla35",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cla35",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cla45s",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cla45s",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "gla250",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "gla250",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "z4_20i",
+    "low": false,
+    "triangles": 708,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "z4_20i",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "z4_30i",
+    "low": false,
+    "triangles": 708,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "z4_30i",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "carrera_s",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "carrera_s",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "carrera_gts",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "carrera_gts",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "huracan_rwd",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "huracan_rwd",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "gtv1750",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "gtv1750",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "e36_318i",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "e36_318i",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "low": false,
+    "triangles": 708,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "low": true,
+    "triangles": 252,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "cle300e",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "cle300e",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "jazz",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "jazz",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "jazz_dynamic",
+    "low": false,
+    "triangles": 726,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "jazz_dynamic",
+    "low": true,
+    "triangles": 270,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "jazz_drift",
+    "low": false,
+    "triangles": 738,
+    "wheels": [
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "jazz_drift",
+    "low": true,
+    "triangles": 282,
+    "wheels": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+import {installFleetLOD} from './vehicle-distance.js';
 // Adapt the original traffic bodies into close-up, drivable vehicles. No fleet geometry copies.
 import * as THREE from 'three';
 import {buildPassengerModel,PASSENGER_MODELS} from './traffic-passenger-models.js';
@@ -20,6 +21,7 @@ export function buildPlayerFleet(car){
  car.root.userData.playerDetail=true;
  for(const wheel of car.wheels){wheel.restY=wheel.pivot.position.y;wheel.angle=0;}
  if(id==='police_moto')car.police=true;
+ installFleetLOD(car);
  if(!car.disposeDamage)damageSystem(car);
  return car;
 }

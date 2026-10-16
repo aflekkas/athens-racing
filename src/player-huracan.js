@@ -1,6 +1,6 @@
 // Huracan EVO: continuous cab-forward canopy and folded wedge surfaces.
 // References and measured projection: tools/huracan-model-notes.md. Nose is -Z, metres.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 const mix=(a,b,t)=>a+(b-a)*t;
 // The shared patch helper is a four-corner bilinear patch. These outlines have 5+ corners.
 function polygon(p,m,points,name){

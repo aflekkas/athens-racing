@@ -58,6 +58,7 @@ function lampImage(name, colour) {
 // Place symbols in the quiet inner shoulders of the faces, below the rim's
 // projected upper edge, rather than in a strip across ticks and numerals.
 export function cockpitLampLayout(style) {
+  if(style==='pov')return Array.from({length:13},(_,i)=>[52+i*76,155]);
   const arc=(x,y,r,angles)=>angles.map(a=>[x+Math.cos(a*Math.PI/180)*r,y+Math.sin(a*Math.PI/180)*r]);
   if(style==='gtv')return [...arc(273,195,80,[190,220,250,290,320]),...arc(749,195,80,[190,220,250,290,320]),[749,220],[237,222],[310,222]];
   if(['taxi','superb','police_octavia','octavia','panda','jazz','ibiza','golf','e36','corolla','cla','cle','gla','gla45'].includes(style))return [...arc(228,192,86,[190,218,246,274,302]),...arc(799,192,86,[190,218,246,274,302]),[840,224],[460,110],[564,110]];
@@ -69,7 +70,7 @@ export function cockpitLampLayout(style) {
   return [...arc(242,205,84,[180,210,240,270,300]),...arc(785,205,84,[180,210,240,270,300]),[785,290],[466,189],[558,189]];
 }
 export function drawCockpitLamps(g, lamps, style) {
-  const positions=cockpitLampLayout(style),size=25;
+  const positions=cockpitLampLayout(style),size=style==='pov'?44:25;
   for (let i=0;i<lamps.length;i++) {
     const [name,colour]=lamps[i];
     if(!colour)continue; // An extinguished bulb is invisible, not a blue icon.

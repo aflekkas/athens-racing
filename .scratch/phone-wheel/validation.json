@@ -1,0 +1,68 @@
+{
+  "implementation": "fe12576f3f17ae06ba589f8a2a951113b932a229",
+  "tested_candidate": "399d836f69fdbd7f8dcab6bdc2853a0a2f26f9c2",
+  "tested_base": "b7bd65445931c58a9eea5131704fd9b584a776fa",
+  "full_gate_candidate": "99c54836211cbd3816f61eb0bd1e5b8b38650087",
+  "tested_tree": "5bdd28a04e1f09681394f12b7050cefe4c5739bf",
+  "implementation_tree": "cce0510b7c22b2c877b6439e020cdabab81f6305",
+  "created": "2026-10-15T21:12:14.738909+00:00",
+  "gates": {
+    "npm-test": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "staging-dry-run": 0
+  },
+  "focused": 0,
+  "worker_smoke": 0,
+  "browser": 0,
+  "integration_checks": 0,
+  "latency_rtt_ms": {
+    "P2P": {
+      "samples": 20,
+      "min": 0.6999999284744263,
+      "p50": 2.100000023841858,
+      "p95": 9.199999928474426,
+      "max": 9.199999928474426
+    },
+    "WebSocket": {
+      "samples": 12,
+      "min": 1.3000000715255737,
+      "p50": 4.299999952316284,
+      "p95": 17.600000023841858,
+      "max": 17.600000023841858
+    }
+  },
+  "source_sha256": {
+    "CHANGELOG.md": "56bcb9d1d1cb1d73395839885520c290b1c3c59378f395a216bd1f6739b6af4b",
+    "README.md": "5b3f99a885679443c97e13842b62c32e3e5da826f3a5d4441eed51494bc482a9",
+    "server/index.mjs": "b692e4d647afddc0cc5ad1653ef677762c7f2207f7868e86d6b99e36d4e79877",
+    "worker/index.mjs": "180edef1c3a0c6b5180623e0a7f6f689235854e2e616fa65fdd763364457d4d6",
+    "wrangler.jsonc": "6c099fbda082bd0f17f3581b8f497d3a1c1a86d419ba0cf8f218c531642b321c",
+    "src/input.js": "0960bd6963e415690d258565a60bdae54867bb2fc92a4cfb2984d970d2554ceb",
+    "src/main.js": "3f019e984781132b36a4701d0899bef2fc2d8f72f1c940a5b8956ff577512b16",
+    "src/menu.js": "ebb5be5dd5f5c3e01cca23c83576d0357ce525016bc4ef1b9e61d15c3e725d7b",
+    "src/ui/controls-panel.js": "b86abd2afa2954760aecf396d2cdd056145821949fe541ade900478e43377303",
+    "tools/bundle-browser.mjs": "53c2504f3e1b0fa7ef3ca387d755bc2fdfd27dd178d3c6593bb972a6e9a99b52",
+    "tools/bundle-browser.test.mjs": "181dd016f46d874404f20df84aa1cb76a14bbb32832621f75dcc0de5e6897e8e",
+    "tools/check-browser-imports.mjs": "24f910f86f9a87b54240568c67610ed205fbb8cf5b7785f5ce5ef1dcf586d3d4",
+    "server/phone-wheel.mjs": "214c63e29f1061c5ff29f6f91c4b193827cf59652d38c5f426e4729db07f86a8",
+    "server/phone-wheel.test.mjs": "74c46ba1a6949e3fe797beaaa90a71adb409548a5e26a5656cfd855d867fd1be",
+    "worker/phone-wheel.mjs": "3bf7c499d6aa1b73c565c3d14682aa2d09608c4af511c8d10a4030b86cb4bad5",
+    "src/phone-wheel-link.js": "f35cd64b11a9acdb6e6b7615d8451355d51cf3eb8035ca79fe1d3bca28324e1a",
+    "src/phone-wheel-motion.js": "386322be1120b1cf920f42a2d294fb9b34e950880c57bf00016ae418ece7d8eb",
+    "src/phone-wheel-packet.js": "2b37d6d06fecba81116a5a97bfd7ad42b2b30eee26a0a37a4d13f831aceb5d94",
+    "src/ui/phone-wheel-game.js": "d3a9093f9227ae58317d8a3fcc76020f26226dcfcf688228b0a521fe1bdf92bb",
+    "src/ui/phone-wheel-controller.js": "f4b46d1627606bcfacf46951d10e8c6e728cb90cec21437d6b158bd0d808f427",
+    "src/ui/phone-wheel.css": "f899ec5a4ff6e874de98d56b849ad2c2bbc7f3fb59e26c0e60fa1c3647c8e916",
+    "src/ui/phone-wheel.html": "ffd308974f3c69d9d6d88e2377b66b1ee64e9ad225e9c13b1c19ca90004f1eaa",
+    "src/vendor/qrcode.js": "70e0076b10f44b1c8206466eb71bd3a40173d7b55b510a312839a8984f9d38df",
+    "src/vendor/CREDITS.txt": "a205bb93bfa80d8ddf62fb472bff86709349384ef988e1ddcabd489dabca1d5d",
+    "tools/phone-wheel-browser.mjs": "9509f5e451e0a42c3349e25a14fe4201bacbad8a166d08b49fed767cc627a875",
+    "tools/phone-wheel-worker-smoke.mjs": "e36465f563f5d8965355902d24e2aaf9643edb8a5908909761612e46270d865c",
+    "assets/changelog/2026.10.15.4/phone-wheel.webp": "40c29f3b73dfb03defae21b8ad4cf5a99c75497e71be816ee86cb1e0931933cf"
+  },
+  "no_push": true,
+  "no_deploy": true
+}

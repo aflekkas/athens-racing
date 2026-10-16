@@ -58,6 +58,8 @@ async function inventory(dir) {
   }
 }
 await inventory(out);
+if (count > 20000) throw new Error(`Cloudflare free-tier asset count exceeds 20000: ${count}`);
+if (largest.size > 25 * 1024 * 1024) throw new Error(`Cloudflare asset exceeds 25 MiB after packaging: ${largest.path}`);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
 const { cars, nitrousCars, specs: carSpecs } = readCarCapabilities(catalogue);
 await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs }));

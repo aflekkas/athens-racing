@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets
+ok 1 - chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets
+  ---
+  duration_ms: 8.511722
+  type: 'test'
+  ...
+# Subtest: target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state
+ok 2 - target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state
+  ---
+  duration_ms: 5.468109
+  type: 'test'
+  ...
+# Subtest: finish order uses recorded times; running gaps never divide by speed
+ok 3 - finish order uses recorded times; running gaps never divide by speed
+  ---
+  duration_ms: 1.370094
+  type: 'test'
+  ...
+# Subtest: recovery has no forward gift and cannot cross the next checkpoint in either direction
+ok 4 - recovery has no forward gift and cannot cross the next checkpoint in either direction
+  ---
+  duration_ms: 5.927307
+  type: 'test'
+  ...
+# Subtest: a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock
+ok 5 - a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock
+  ---
+  duration_ms: 74.776589
+  type: 'test'
+  ...
+# Subtest: spectator relay is a small immutable axle summary and absence clears old engine telemetry
+ok 6 - spectator relay is a small immutable axle summary and absence clears old engine telemetry
+  ---
+  duration_ms: 0.640953
+  type: 'test'
+  ...
+# Subtest: stationary engine changes relay on the existing capped state cadence
+ok 7 - stationary engine changes relay on the existing capped state cadence
+  ---
+  duration_ms: 1.267391
+  type: 'test'
+  ...
+# Subtest: actual main HUD override takes chosen vehicle instruments and target finish time
+ok 8 - actual main HUD override takes chosen vehicle instruments and target finish time
+  ---
+  duration_ms: 4.437589
+  type: 'test'
+  ...
+# Subtest: objective HUD skips identical writes and restores content after another screen replaces its DOM
+ok 9 - objective HUD skips identical writes and restores content after another screen replaces its DOM
+  ---
+  duration_ms: 7.880656
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 605.126257

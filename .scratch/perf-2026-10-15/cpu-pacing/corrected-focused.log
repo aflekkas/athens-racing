@@ -1,0 +1,72 @@
+TAP version 13
+# Bundled browser: 3 inputs, 3 ESM chunks, 556 bytes
+# Subtest: production chunks preserve source-relative resources and lazy imports while dev sources survive
+ok 1 - production chunks preserve source-relative resources and lazy imports while dev sources survive
+  ---
+  duration_ms: 211.346928
+  type: 'test'
+  ...
+# Bundled browser: 3 inputs, 4 ESM chunks, 306 bytes
+# Subtest: every map bake points to the published world worker, including Megara
+ok 2 - every map bake points to the published world worker, including Megara
+  ---
+  duration_ms: 266.785374
+  type: 'test'
+  ...
+# Subtest: chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets
+ok 3 - chosen identity survives joins, reordering, time and finish; disconnect falls back and race resets
+  ---
+  duration_ms: 12.086176
+  type: 'test'
+  ...
+# Subtest: target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state
+ok 4 - target HUD uses its speed, gear, rpm, finish clock and directed distance instead of retired local state
+  ---
+  duration_ms: 1.290545
+  type: 'test'
+  ...
+# Subtest: finish order uses recorded times; running gaps never divide by speed
+ok 5 - finish order uses recorded times; running gaps never divide by speed
+  ---
+  duration_ms: 1.042803
+  type: 'test'
+  ...
+# Subtest: recovery has no forward gift and cannot cross the next checkpoint in either direction
+ok 6 - recovery has no forward gift and cannot cross the next checkpoint in either direction
+  ---
+  duration_ms: 10.978501
+  type: 'test'
+  ...
+# Subtest: a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock
+ok 7 - a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock
+  ---
+  duration_ms: 157.097068
+  type: 'test'
+  ...
+# Subtest: spectator relay is a small immutable axle summary and absence clears old engine telemetry
+ok 8 - spectator relay is a small immutable axle summary and absence clears old engine telemetry
+  ---
+  duration_ms: 0.673916
+  type: 'test'
+  ...
+# Subtest: stationary engine changes relay on the existing capped state cadence
+ok 9 - stationary engine changes relay on the existing capped state cadence
+  ---
+  duration_ms: 1.282029
+  type: 'test'
+  ...
+# Subtest: actual main HUD override takes chosen vehicle instruments and target finish time
+ok 10 - actual main HUD override takes chosen vehicle instruments and target finish time
+  ---
+  duration_ms: 12.416812
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1088.276227

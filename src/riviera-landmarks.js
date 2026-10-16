@@ -1,13 +1,12 @@
 // Loumbarda rock tunnels: geometry and contact corridors share the mapped axes.
 // Dimensions beyond the OSM centre lines are estimates; see tools/riviera-landmarks.md.
 import * as THREE from 'three';
-import { TX } from './tex.js';
 import { REFLECT_LAYER } from './env.js';
 
 export function buildRivieraLandmarks(map, scene) {
   const group = new THREE.Group(); group.name = 'loumbarda-rock-tunnels';
   const obstacles = [], meshes = [], corridors = map.route.localCorridors || [];
-  const material = new THREE.MeshStandardMaterial({color:0xd4d6d2, map:TX.rock_diff || null, roughness:1, vertexColors:true, flatShading:true, side:THREE.DoubleSide});
+  const material = new THREE.MeshStandardMaterial({color:0xb7ab95, roughness:1, vertexColors:true, flatShading:true, side:THREE.DoubleSide});
   for (const c of corridors) {
     const w=c.width/2+.65, [s0,s1]=c.portalS, n=Math.max(2,Math.ceil((s1-s0)/1.5));
     // Irregular high shoulders and flattened crown are exposed limestone, not a concrete arch.
@@ -22,7 +21,7 @@ export function buildRivieraLandmarks(map, scene) {
     function tri(a,b,d,shade){
       const ab=new THREE.Vector3().fromArray(b).sub(new THREE.Vector3().fromArray(a)),ad=new THREE.Vector3().fromArray(d).sub(new THREE.Vector3().fromArray(a)),normal=ab.cross(ad);
       const axis=Math.abs(normal.y)>Math.max(Math.abs(normal.x),Math.abs(normal.z))?'top':Math.abs(normal.x)>Math.abs(normal.z)?'side':'front';
-      for(const v of [a,b,d]){pos.push(...v);uv.push((axis==='side'?v[2]:v[0])*.17,(axis==='top'?v[2]:v[1])*.17);const grain=.92+.08*Math.sin(v[0]*1.7+v[2]*.6);colors.push(shade*grain,shade*grain,shade*grain);}}
+      for(const v of [a,b,d]){pos.push(...v);uv.push((axis==='side'?v[2]:v[0])*.17,(axis==='top'?v[2]:v[1])*.17);colors.push(shade,shade,shade);}}
     function quad(a,b,d,e,shade){tri(a,b,d,shade);tri(a,d,e,shade);}
     for(let i=0;i<n;i++){
       const a=s0+(s1-s0)*i/n,b=s0+(s1-s0)*(i+1)/n;

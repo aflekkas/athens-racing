@@ -3,7 +3,7 @@
 //   node tools/build_map.mjs
 // Outputs:
 //   data/map.json     route centreline (projected metres), lanes, elevation, coastline, buildings,
-//                     land-use areas, trees, shops, road furniture, side streets, place markers
+//                     land-use areas, shops, road furniture, side streets, place markers
 //   data/terrain.bin  10 m height grid (Int16, decimetres) + land-cover class grid (Uint8)
 // Map data (c) OpenStreetMap contributors (ODbL). Elevation: EU-DEM v1.1 via OpenTopoData.
 import fs from 'node:fs';
@@ -416,7 +416,7 @@ console.log('buildings kept', buildings.length);
 // ------------------------------------------------------------------ 5. features
 const fEls = load('features');
 const areas = { beach: [], lake: [], pool: [], scrub: [], rock: [], cliff: [], wood: [], park: [], marina: [], pier: [], breakwater: [], parking: [], golf: [], pitch: [], residential: [], fuel: [] };
-const trees = [], pois = [], furniture = [], places = [];
+const pois = [], furniture = [], places = [];
 const wayToPts = (e) => e.geometry ? e.geometry.map((g) => P(g.lat, g.lon)) : null;
 function near(pts, lim) { for (let i = 0; i < pts.length; i += Math.max(1, Math.floor(pts.length / 12))) { const q = project(pts[i][0], pts[i][1], lim + 100); if (q && q.d < lim) return true; } return false; }
 const flat = (pts) => pts.flatMap((p) => [r1(p[0]), r1(p[1])]);
@@ -456,7 +456,7 @@ for (const e of fEls) {
   } else if (e.type === 'node') {
     const p = P(e.lat, e.lon);
     const q = project(p[0], p[1], 900); if (!q) continue;
-    if (t.natural === 'tree') { if (q.d < 700) trees.push([r1(p[0]), r1(p[1]), /palm|Phoenix|φοίνικ/i.test((t.species || '') + (t.name || '') + (t.genus || '') + (t.taxon || '')) ? 1 : 0]); continue; }
+    if (t.natural === 'tree') { continue; }
     if (t.highway && ['traffic_signals', 'crossing', 'bus_stop', 'street_lamp'].includes(t.highway)) {
       if (q.d < 40 && q.s > 0 && q.s < routeLen) furniture.push({ t: t.highway, s: Math.round(q.s), u: r1(q.u), n: t.highway === 'bus_stop' ? latinName(t) : undefined });
       continue;
@@ -476,7 +476,7 @@ for (const e of fEls) if (e.type === 'relation' && e.members) {
   if (!cls) continue;
   for (const m of e.members) if (m.role === 'outer' && m.geometry) { let pts = m.geometry.map((g) => P(g.lat, g.lon)); if (!near(pts, 1200)) continue; pts = dp(pts, 1.5); areas[cls].push({ p: flat(pts), c: 1 }); }
 }
-console.log('areas', Object.fromEntries(Object.entries(areas).map(([k, v]) => [k, v.length])), 'trees', trees.length, 'pois', pois.length, 'furniture', furniture.length);
+console.log('areas', Object.fromEntries(Object.entries(areas).map(([k, v]) => [k, v.length])), 'pois', pois.length, 'furniture', furniture.length);
 
 // ------------------------------------------------------------------ 6. side streets
 const sideRoads = [];
@@ -682,7 +682,7 @@ const out = {
     step: STEP, x: RX.map(r2), z: RZ.map(r2), y: RY.map(r2), lanes: lanesOut, div: divOut,
     start: S_START, finish: S_FINISH, length: routeLen, names: roadNames, from: FROM, to: TO, speeds,
   },
-  marks, zones, parkSpots, humps, barriers, coast, buildings, areas, trees, pois, furniture, places, sideRoads,
+  marks, zones, parkSpots, humps, barriers, coast, buildings, areas, pois, furniture, places, sideRoads,
 };
 out.roadNetwork = extractRoadNetwork(out, roads, { excludeWays: [...routeWays] });
 fs.writeFileSync(path.join(ROOT, 'data', 'map.json'), JSON.stringify(out));

@@ -1,6 +1,6 @@
-import { mountTitleHero } from './ui/title-hero.js';
+import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
+import { openPhoneWheel, renderPhoneWheel, unpairPhoneWheel } from './ui/phone-wheel-game.js';
 import {setExhaustPops} from './exhaust-pops.js';
-import { savedPaint } from './vehicle-paint.js';
 import { install as installAccounts } from './ui/account-screen.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
@@ -39,6 +39,7 @@ const count = (n) => NUM[n] || String(n);
 /** the Quick Race card line, from the real default and cap */
 const quickBlurb = () => SP_RIVALS >= MAX_RIVALS ? `Pick a map and go against ${count(SP_RIVALS)} locals, or fewer if you like.` : `Pick a map and go. ${count(SP_RIVALS)[0].toUpperCase() + count(SP_RIVALS).slice(1)} locals by default, up to ${count(MAX_RIVALS)}.`;
 const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`;
+C.registerFormat('seatCm',v=>(v>0?'+':'')+Math.round(v*100)+' cm');
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
 C.registerFormat('laps', (v) => `${v} ${+v === 1 ? 'LAP' : 'LAPS'}`);
 C.registerFormat('deg', (v) => Math.round(v) + '°');
@@ -93,7 +94,6 @@ export class Menu {
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
   render({ morph = false } = {}) {
     const entering = this.screen !== this.shown;
-    this.titleHero?.dispose(); this.titleHero = null;
     if (morph && !entering && this.root.firstElementChild && this.screen !== 'maps' && !(this.screen === 'car' && this.data.detail)) return this.patch();
     const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
     const stage = keepCar ? this.root.querySelector('#carStage') : null;
@@ -111,7 +111,6 @@ export class Menu {
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? mountCarSelect(this.root, this.data.index || 0) : mountCarGrid(this.root);
     if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
-    if (this.screen === 'title') { const car=this.h.carSpec?.() || CARS[0]; this.titleHero=mountTitleHero(this.root,car,savedPaint(car)); }
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -124,12 +123,10 @@ export class Menu {
   /** the morph path of render(): only nodes whose markup changed are touched, so focus, scroll and the garage
    *  thumbnails survive and nothing flashes */
   patch() {
-    this.titleHero?.dispose(); this.titleHero=null;
     C.closeListbox();
     const fn = this['r_' + this.screen]; C.morph(this.root, fn ? fn.call(this, this.data) : '');
     if (this.screen === 'car') { this.carView?.dispose(); this.carView = mountCarGrid(this.root); } // observe new thumbnails
     MP.afterRender(this);
-    if(this.screen==='title'){const car=this.h.carSpec?.()||CARS[0];this.titleHero=mountTitleHero(this.root,car,savedPaint(car));}
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
     this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item
@@ -231,6 +228,9 @@ export class Menu {
     if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
+      case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
+      case 'phoneWheel': openPhoneWheel(this); break;
+      case 'phoneWheelUnpair': unpairPhoneWheel(); this.back(); break;
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': case 'mapReset': this.mapView?.action(a); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'warning', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
@@ -280,6 +280,7 @@ export class Menu {
     }
     if (scope === 'roam') { window.__flow.setRoamConditions({ [key]: value }); return; }
     if (scope === 'setting') {
+      if(key.startsWith('seat-')){setSeatPosition(this.h.carSpec?.()?.id,key.slice(5),value);return;}
       if (key === 'swearing') { setSetting('mildLanguage', !value); return; }
       if (key === 'graphics') { setSetting(key,value);const g=this.h.graphicsControl;if(g)g.value=value;if(this.root)this.refresh();return; }
       if(key==='renderScale'||key==='pixelRatioCap'){setSetting(key,key==='renderScale'&&value==='auto'?'auto':Number(value));if(this.root)this.refresh();return;}
@@ -300,7 +301,7 @@ export class Menu {
       saveSetup(id, s); this.refresh(); return;
     }
   }
-  valueFor(key) { if (key === 'swearing') return !settings.mildLanguage; return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
+  valueFor(key) { if(key.startsWith('seat-'))return seatPosition(this.h.carSpec?.()?.id)[key.slice(5)]; if (key === 'swearing') return !settings.mildLanguage; return key === 'steeringAssist' ? steeringAssistChoice(settings.steeringAssist, this.h.inputDevice?.() || 'keyboard') : settings[key]; }
   /** settings changed elsewhere (e.g. the steering assist following the active device) */
   refreshValues() { for (const el of this.root.querySelectorAll('[data-scope=setting][data-key]')) C.setValue(el, String(this.valueFor(el.dataset.key)), false); }
 
@@ -313,21 +314,15 @@ export class Menu {
     return C.screen({ title: 'MULTIPLAYER', kick: 'DRIVE TOGETHER', body: C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a code or browse open lobbies', act: 'mpJoin', attrs: { 'data-default': '' } }) + C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Choose a road and invite your friends', act: 'mpHost' }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });
   }
   r_title() {
-    const car = this.h.carSpec?.() || CARS[0];
-    const map = MAPS.find(m => m.id === this.h.ctx?.()?.mapId) || MAPS[0];
-    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'ΑΘΗΝΑ <span class="acc">/</span> ATHENS, GREECE' })}<div class="home home--racing">
-      <div class="home__left"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="home__eyebrow">REAL ROADS. NOTHING BUT TIME.</p>
-      <nav class="title__menu home__list" aria-label="Main menu">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race / Free Roam', act: 'play', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'users-three', title: 'MULTIPLAYER', desc: 'Find a lobby or bring your crew', act: 'multiplayer' })}
-        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: esc(car.name), act: 'garage' })}
-        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Make it yours', act: 'settings' })}</nav></div>
-      <section class="home__hero" aria-label="Selected car: ${esc(car.name)}"><div class="road-sign"><span>ΠΑΡΑΛΙΑΚΗ</span><b>ATHENS RIVIERA</b><i>↗</i></div>
-        <div class="home__edition">37° 49′ N &nbsp; 23° 47′ E <span>ATTICA / 01</span></div>
-        <div class="home__road" aria-hidden="true"></div><div class="home__car" data-title-hero data-ui-keep role="img" aria-label="${esc(car.name)} in ${esc(savedPaint(car))}"></div>
-        <div class="home__feature"><span>YOUR CAR / ${esc(savedPaint(car))}</span><b>${esc(car.name)}</b><small>${Math.round(car.power * 1.341)} HP / ${esc(car.drive.toUpperCase())} / ${car.gears.length}-SPEED</small></div>
-        <div class="home__session"><div><span>YOUR NEXT ROAD</span><b>${esc(map.name)}</b><small>Riviera coast · Megara circuit · Penteli climb</small></div><div class="home__session-car"><span>READY TO DRIVE</span><b>${esc(car.name)}</b><small>${Math.round(car.power * 1.341)} HP · ${esc(car.drive.toUpperCase())}</small></div></div>
-      </section></div>${Release.titleExtras(this)}<footer class="scr__foot">${C.keyHints([['select', 'SELECT'], ['confirm', 'START'], ['garage', 'GARAGE']])}</footer></div>`;
+    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
+      <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
+      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
+      <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', attrs: { 'data-default': '' } })}
+        ${C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a lobby code or browse open lobbies', act: 'mpJoin' })}
+        ${C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Create a multiplayer lobby and invite drivers', act: 'mpHost' })}
+        ${C.option({ icon: 'car-profile', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage' })}
+        ${C.option({ icon: 'gear-six', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings' })}</div>
+      </div><footer class="scr__foot">${Release.titleExtras(this)}${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
   r_mode() {
@@ -433,7 +428,7 @@ export class Menu {
       const screen=Math.min(globalThis.devicePixelRatio||1,2),presetRes=Math.min(screen,P.pixelRatio)/screen;
       body = `<div class="group graphics-quality"><h3 class="group__title">${icon('monitor')}PRESET</h3>${C.segmented({ key: 'graphics', label: 'GRAPHICS PRESET', value: gfx.preset, options: PRESET_IDS.map(id=>[id,L[id]]), note:presetNote+' · APPLIES LIVE', attrs: {...SET, 'data-default':''} })}</div>
         <div class="group graphics-detail"><h3 class="group__title">${icon('sun')}LIGHTING & EFFECTS</h3>${level('lighting','LIGHTING','SHADOWS AND SHINY CAR REFLECTIONS · OFF IS FASTEST')}${level('effects','EFFECTS','SMOOTH EDGES, GLOW, MOTION BLUR, SOFT CORNER SHADING, MIRROR SHARPNESS, SEA REFLECTIONS, RAIN DETAIL · OFF IS FASTEST')}</div>
-        <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · NEVER CHANGES BY ITSELF',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
+        <div class="group graphics-resolution"><h3 class="group__title">${icon('cube')}RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','PRESET · '+pct(presetRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'HOW SHARP THE PICTURE IS · LOWER IS BLURRIER BUT FASTER · NOW '+pct(gfx.resolution)+' OF YOUR SCREEN · DYNAMIC RESOLUTION CAN TEMPORARILY LOWER THIS',attrs:SET})}${C.toggle({key:'dynamicResolution',label:'Dynamic resolution',value:v('dynamicResolution'),note:'TEMPORARILY LOWER RESOLUTION UNDER LOAD, THEN RESTORE IT · HUD STAYS SHARP',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'LOWER KEEPS LAPTOPS COOLER, QUIETER AND ON BATTERY LONGER',attrs:SET})}</div>
         <div class="group"><h3 class="group__title">${icon('mountains')}RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'PRESET · '+(P.drawDistance>=1000?P.drawDistance/1000+' KM':P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'HOW FAR AWAY TREES, PROPS, CARS AND PEOPLE ARE DRAWN IN DETAIL · BEYOND IT THEY BECOME SIMPLE SHAPES · LOWER IS FASTER', attrs: SET })}
           ${C.toggle({ key: 'motionBlur', label: 'MOTION BLUR', value: settings.motionBlur !== false, attrs: SET })}
           ${C.toggle({ key: 'mirrors', label: 'MIRRORS', value: settings.mirrors !== false, note: 'SEE BEHIND YOU · ON AT EVERY PRESET · REAR-VIEW STRIP IN THE CHASE CAMERA', attrs: SET })}
@@ -446,7 +441,7 @@ export class Menu {
     } else if (tab === 'camera') {
       const sl = (k, label, min, max, step, format) => has(k) ? C.slider({ key: k, label, value: settings[k], min, max, step, format, attrs: SET }) : '';
       const tg = (k, label) => has(k) ? C.toggle({ key: k, label, value: settings[k], attrs: SET }) : '';
-      body = `<div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
+      body = `<div class="group"><h3 class="group__title">SEAT · ${esc(this.h.carSpec?.()?.name||'CURRENT CAR')}</h3>${[['height','SEAT HEIGHT'],['position','SEAT POSITION']].map(([key,label])=>C.slider({key:'seat-'+key,label,value:seatPosition(this.h.carSpec?.()?.id)[key],min:-.08,max:.08,step:.01,format:'seatCm',note:key==='height'?'LOWER / HIGHER · SAVED FOR THIS CAR':'BACK / FORWARD · SAVED FOR THIS CAR',attrs:SET})).join('')}${C.button({label:'RESET SEAT',act:'seatReset',variant:'ghost',icon:'arrow-counter-clockwise'})}</div><div class="group"><h3 class="group__title">${icon('camera')}VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
         <div class="group"><h3 class="group__title">${icon('mouse')}FREE LOOK</h3>${sl('mouseSensitivity', 'LOOK SENSITIVITY', 0.25, 3, 0.05, 'x')}${tg('invertLookY', 'INVERT LOOK Y')}
           <p class="group__note">Click the racing view to look around. Hold and drag if the pointer cannot be locked. The right stick also looks.</p></div>
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;
@@ -459,14 +454,15 @@ export class Menu {
       body: tab === 'video' ? `<div class="video-layout"><aside class="video-hero">${C.routeHero({...(MAPS.find(m=>m.id===this.h.ctx?.()?.mapId)||MAPS[0]),eyebrow:'TUNE YOUR VIEW',content:C.stats([['PROFILE',PRESET_LABELS[profile.preset]],['RESOLUTION',Math.round(profile.resolution*100)+'%']])})}<div class="video-hero__action"><p>YOUR ROADS. YOUR PICTURE.</p><span>Every change applies live.</span>${C.button({label:'BACK TO THE ROAD',act:'back',icon:'caret-right',variant:'primary'})}</div></aside><div class="set-panel panel scroll-y">${body}</div></div>` : `<div class="set-panel panel scroll-y">${body}</div>` });
   }
   /** leaving the settings screen: drop any half-done key capture */
-  leaving() { this.titleHero?.dispose(); this.titleHero=null; this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
+  leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }
 
   // ---------------------------------------------------------------- pause
+  r_phoneWheel() { return renderPhoneWheel(); }
   r_pause(d) {
     const r = d.r, def = d.def;
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     return `<div class="scr scr--pause"><div class="pause-card panel panel--notch"><div class="kick">${kick}</div><h2 class="title-xl">PAUSED</h2>${d.sub ? `<div class="pause__sub">${icon('timer')}${esc(d.sub)}</div>` : ''}
-      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
+      <div class="pause__list">${C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } })}${d.inFreeRoam ? C.option({ icon: 'car-profile', title: 'CHANGE CAR', act: 'roamCar' }) + C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }) + C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }) + C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' }) : ''}${d.online || d.inFreeRoam ? '' : C.option({ icon: 'arrow-counter-clockwise', title: 'RESTART', act: 'restart' })}${window.__flow?.resetCar?C.option({icon:'truck',title:'RESET TO ROAD',act:'reset'}):''}${d.online?C.option({icon:'users-three',title:'LOBBY & HOST CONTROLS',act:'onlineLobby'}):''}${d.online&&window.__multiplayer?.lobby?.status==='race'&&!window.__multiplayer?.retired&&window.__multiplayer?.me?.finish==null?C.option({icon:'flag-checkered',title:'RETIRE · DNF',act:'retire'}):''}${C.option({ icon: 'device-mobile', title: 'USE PHONE AS WHEEL', act: 'phoneWheel' })}${C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' })}${C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })}</div><div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div></div>
       <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
   }
 

@@ -1,0 +1,71 @@
+
+ ⛅️ wrangler 4.151.0
+────────────────────
+[custom build] Running: ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs
+[custom build] Browser import graph checked: 226 modules.
+[custom build] 
+[custom build] Baked riviera terrain: 15198072 bytes
+[custom build] 
+[custom build] Baked riviera roads: 19689626 bytes
+[custom build] 
+[custom build] Baked riviera in 238422 ms
+[custom build] 
+[custom build] Baked megara terrain: 1044361 bytes
+[custom build] 
+[custom build] Baked megara roads: 301999 bytes
+[custom build] 
+[custom build] Baked megara in 12040 ms
+[custom build] 
+[custom build] Baked penteli terrain: 16916862 bytes
+[custom build] 
+[custom build] Baked penteli roads: 5416687 bytes
+[custom build] 
+[custom build] Baked penteli in 209889 ms
+[custom build] 
+[custom build] Bundled browser: 232 inputs, 35 ESM chunks, 2287486 bytes
+[custom build] 
+[custom build] {
+[custom build]   "assets": 1359,
+[custom build]   "bytes": 190099635,
+[custom build]   "largest": {
+[custom build]     "path": "_c/b7fd1a84944b2cd0.gz",
+[custom build]     "size": 19689626
+[custom build]   },
+[custom build]   "release": {
+[custom build]     "version": "2026.10.15.3",
+[custom build]     "sha": null,
+[custom build]     "build": "c5b7be01354e",
+[custom build]     "files": 655,
+[custom build]     "copies": 655,
+[custom build]     "swBytes": 48072
+[custom build]   },
+[custom build]   "maps": [
+[custom build]     {
+[custom build]       "id": "riviera",
+[custom build]       "version": "4718fbec",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1391 files from the assets directory /tmp/cpu-pacing-last-gates/.deploy/assets
+Total Upload: 631.12 KiB / gzip: 168.64 KiB
+Your Worker has access to the following bindings:
+Binding                                            Resource            
+env.GAME (GameArena)                               Durable Object      
+env.PRESENCE (FriendsPresence)                     Durable Object      
+env.WHEEL (PhoneWheelRoom)                         Durable Object      
+env.ACCOUNTS (athens-racing-accounts-staging)      D1 Database         
+env.ASSETS                                         Assets              
+
+--dry-run: exiting now.

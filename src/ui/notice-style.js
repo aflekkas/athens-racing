@@ -1,15 +1,11 @@
-// How a race notice looks: the car-native presentation for src/ui/notifications.js. Pure (no DOM), unit-tested.
-// Priority, dedup and placement stay in notification-queue.js; this only maps a notice to one of three looks:
-//   telltale: an instrument-cluster warning tile with an ISO tell-tale lamp (TC/ESC, engine, tow, wrong way, cameras, police)
-//   hud:      a head-up display cue for navigation / objectives (turn back, checkpoints, route and district banners)
-//   card:     an infotainment card for longer info and anything with buttons (tips, media)
-// Callers may pass { kind, telltale, tone } explicitly; otherwise the id and title decide.
+// Shared compact notices use these semantic icons and severity colours.
+// Priority, deduplication and placement belong to notification-queue.js.
 import { telltale } from './telltales.js';
 
 const has = (text, re) => re.test(text);
 export function noticeStyle(item = {}) {
   const id = String(item.id || ''), title = String(item.title || ''), text = String(item.text || ''), all = `${title} ${text}`.toUpperCase();
-  const tone = item.tone === 'bad' || item.tone === 'good' ? item.tone : 'info';
+  const tone = ['bad','good','warn'].includes(item.tone) ? item.tone : 'info';
   const pick = (kind, icon, lamp = tone) => ({ kind: item.kind || kind, telltale: item.telltale || icon, tone: lamp, label: item.label || LABELS[icon] || '' });
   // explicit adapters by id
   if (id === 'wrong-way') return pick('telltale', 'no-entry', 'bad');
@@ -31,8 +27,8 @@ export function noticeStyle(item = {}) {
   if (has(all, /CRASH|WRECK|BUMP|PAINT|DAMAGE/)) return pick('telltale', 'damage', tone === 'good' ? 'warn' : tone === 'bad' ? 'bad' : 'warn');
   if (has(all, /TOWED|RESET|TOW\b/)) return pick('telltale', 'tow', 'warn');
   if (has(all, /ENGINE|OVERHEAT|STALL/)) return pick('telltale', 'engine', tone === 'bad' ? 'bad' : 'warn');
-  if (has(all, /GEARBOX|MANUAL|AUTOMATIC|\bAUTO\b|SHIFT/)) return pick('telltale', 'gearbox', 'good');
-  if (has(all, /CONTROLLER|GAMEPAD|PAD CONNECTED/)) return pick('card', 'gamepad', 'info');
+  if (has(all, /GEARBOX|MANUAL|AUTOMATIC|\bAUTO\b|SHIFT/)) return pick('telltale', 'gearbox', tone === 'bad' || tone === 'warn' ? tone : 'good');
+  if (has(all, /CONTROLLER|GAMEPAD|PAD CONNECTED|PHONE WHEEL/)) return pick('card', 'gamepad', tone);
   if (has(all, /MUSIC|♪|NOW PLAYING|RADIO/)) return pick('card', 'music', 'info');
   if (has(all, /\bCAM\b|CAMERA|COCKPIT|CHASE/)) return pick('hud', 'view', 'info');
   if (has(all, /WRONG WAY|TURN BACK|TURN AROUND/)) return pick('hud', 'u-turn', 'bad');

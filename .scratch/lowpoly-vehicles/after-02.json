@@ -1,0 +1,110 @@
+[
+  {
+    "id": "gr_yaris",
+    "view": 0,
+    "triangles": 3463,
+    "drawCalls": 90,
+    "geometries": 81,
+    "textures": 5,
+    "heap": 14300000
+  },
+  {
+    "id": "gr_yaris",
+    "view": 1,
+    "triangles": 3463,
+    "drawCalls": 90,
+    "geometries": 81,
+    "textures": 5,
+    "heap": 14300000
+  },
+  {
+    "id": "gr_yaris",
+    "view": 2,
+    "triangles": 334,
+    "drawCalls": 14,
+    "geometries": 92,
+    "textures": 8,
+    "heap": 14300000
+  },
+  {
+    "id": "gtv",
+    "view": 0,
+    "triangles": 3995,
+    "drawCalls": 104,
+    "geometries": 94,
+    "textures": 11,
+    "heap": 14300000
+  },
+  {
+    "id": "gtv",
+    "view": 1,
+    "triangles": 3995,
+    "drawCalls": 104,
+    "geometries": 94,
+    "textures": 11,
+    "heap": 14300000
+  },
+  {
+    "id": "gtv",
+    "view": 2,
+    "triangles": 494,
+    "drawCalls": 18,
+    "geometries": 106,
+    "textures": 14,
+    "heap": 14300000
+  },
+  {
+    "id": "golf",
+    "view": 0,
+    "triangles": 2712,
+    "drawCalls": 88,
+    "geometries": 86,
+    "textures": 16,
+    "heap": 14300000
+  },
+  {
+    "id": "golf",
+    "view": 1,
+    "triangles": 2712,
+    "drawCalls": 88,
+    "geometries": 86,
+    "textures": 16,
+    "heap": 14300000
+  },
+  {
+    "id": "golf",
+    "view": 2,
+    "triangles": 334,
+    "drawCalls": 14,
+    "geometries": 97,
+    "textures": 18,
+    "heap": 14300000
+  },
+  {
+    "id": "corolla",
+    "view": 0,
+    "triangles": 2714,
+    "drawCalls": 88,
+    "geometries": 88,
+    "textures": 20,
+    "heap": 14300000
+  },
+  {
+    "id": "corolla",
+    "view": 1,
+    "triangles": 2714,
+    "drawCalls": 88,
+    "geometries": 88,
+    "textures": 20,
+    "heap": 14300000
+  },
+  {
+    "id": "corolla",
+    "view": 2,
+    "triangles": 350,
+    "drawCalls": 15,
+    "geometries": 99,
+    "textures": 22,
+    "heap": 14300000
+  }
+]

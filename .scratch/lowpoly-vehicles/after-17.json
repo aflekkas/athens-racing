@@ -1,0 +1,110 @@
+[
+  {
+    "id": "truck",
+    "view": 0,
+    "triangles": 2016,
+    "drawCalls": 160,
+    "geometries": 160,
+    "textures": 4,
+    "heap": 14300000
+  },
+  {
+    "id": "truck",
+    "view": 1,
+    "triangles": 2016,
+    "drawCalls": 160,
+    "geometries": 160,
+    "textures": 4,
+    "heap": 14300000
+  },
+  {
+    "id": "truck",
+    "view": 2,
+    "triangles": 112,
+    "drawCalls": 8,
+    "geometries": 163,
+    "textures": 6,
+    "heap": 14300000
+  },
+  {
+    "id": "bus",
+    "view": 0,
+    "triangles": 3404,
+    "drawCalls": 254,
+    "geometries": 254,
+    "textures": 10,
+    "heap": 14300000
+  },
+  {
+    "id": "bus",
+    "view": 1,
+    "triangles": 3404,
+    "drawCalls": 254,
+    "geometries": 254,
+    "textures": 10,
+    "heap": 14300000
+  },
+  {
+    "id": "bus",
+    "view": 2,
+    "triangles": 112,
+    "drawCalls": 8,
+    "geometries": 257,
+    "textures": 12,
+    "heap": 14300000
+  },
+  {
+    "id": "delivery",
+    "view": 0,
+    "triangles": 1244,
+    "drawCalls": 86,
+    "geometries": 86,
+    "textures": 13,
+    "heap": 14300000
+  },
+  {
+    "id": "delivery",
+    "view": 1,
+    "triangles": 1244,
+    "drawCalls": 86,
+    "geometries": 86,
+    "textures": 13,
+    "heap": 14300000
+  },
+  {
+    "id": "delivery",
+    "view": 2,
+    "triangles": 180,
+    "drawCalls": 10,
+    "geometries": 88,
+    "textures": 15,
+    "heap": 14300000
+  },
+  {
+    "id": "scooter",
+    "view": 0,
+    "triangles": 1172,
+    "drawCalls": 80,
+    "geometries": 80,
+    "textures": 16,
+    "heap": 14300000
+  },
+  {
+    "id": "scooter",
+    "view": 1,
+    "triangles": 1172,
+    "drawCalls": 80,
+    "geometries": 80,
+    "textures": 16,
+    "heap": 14300000
+  },
+  {
+    "id": "scooter",
+    "view": 2,
+    "triangles": 180,
+    "drawCalls": 10,
+    "geometries": 82,
+    "textures": 18,
+    "heap": 14300000
+  }
+]

@@ -1,8 +1,10 @@
+import { seatPosition } from './seat-position.js';
+import { CpuMetrics } from './cpu-metrics.js';
+import { RenderScale } from './render-scale.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
 import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './audio-listener.js';
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
-// TODO(UI): restyle .tow-prompt/.tow-actions with the shared prompt components; keep this offer non-modal.
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
 import {exhaustPopsEnabled} from './exhaust-pops.js';
@@ -13,13 +15,12 @@ import { waitForBootSession } from './boot-session.js';
 import * as ENV from './env.js';
 import { configureWorldLife, tickWorldLife, receiveWorldLife } from './world-life-runtime.js';
 import { ROAD } from './road.js';
-import { CARS, CarModel, Driver, setCarEnv, setPaint, catalogueTrafficTypes } from './cars.js';
+import { CARS, CarModel, setCarEnv, setPaint, catalogueTrafficTypes } from './cars.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
 import { ENGINE_HOT_C } from './driving-feedback-model.js';
 import { inGarage } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
-import { bindDriverToCar } from './driver-seating.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
@@ -73,7 +74,7 @@ import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
 import { loading } from './ui/loading.js';
-import { ui, icon } from './ui/components.js';
+import { kbd, ui, icon } from './ui/components.js';
 import { drivingHints } from './ui/driving-hints.js';
 import { updateEngineHud } from './engine-hud.js';
 import { gearboxMessage, bindingLabel } from './input-labels.js';
@@ -94,6 +95,8 @@ window.addEventListener('error', (e) => fail(e.error || e.message));
 const lstat = (t, f) => loading.progress(t, f); // the loading screen (src/ui/loading.js)
 
 // ------------------------------------------------------------------ renderer
+const cpuMetrics = new CpuMetrics(Q.has('cpuProfile'));
+window.__cpuMetrics = cpuMetrics;
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
 let graphicsPreference = Q.get('quality') || 'auto';
@@ -102,7 +105,7 @@ const gl = renderer.getContext(), gpuInfo = gl.getExtension('WEBGL_debug_rendere
 const gpuName = gpuInfo ? gl.getParameter(gpuInfo.UNMASKED_RENDERER_WEBGL) : '';
 graphicsPreference = await firstQualityPreference(graphicsPreference, { gpuName });
 // One fixed preset, chosen once: an unset (or legacy 'auto') preference settles on the device heuristic's pick and is
-// stored, so Settings always shows the preset that is actually running. Nothing adapts behind the player's back.
+// stored, so Settings always shows the preset that is actually running. Dynamic resolution is controlled separately in Video settings.
 if (!PRESETS[graphicsPreference]) graphicsPreference = detectQuality('auto', gpuName, navigator.userAgent);
 setSetting('graphics', graphicsPreference);
 // GFX: what the preset + the Lighting / Effects / Resolution / Draw distance overrides resolve to (graphics.js)
@@ -117,7 +120,7 @@ for (const value of [...PRESET_IDS].reverse()) { const option = document.createE
 graphicsControl.value = graphicsPreference; document.body.append(graphicsControl);
 graphicsControl.onchange = () => applyQualityTier(graphicsControl.value);
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
-const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles }));
+const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2) }));
 perfOverlay.setVisible(settings.perfOverlay === true);
 onSettings((st, key) => { if (key === 'perfOverlay' || !key) perfOverlay.setVisible(st.perfOverlay === true); });
 addEventListener('keydown', (e) => {
@@ -125,6 +128,11 @@ addEventListener('keydown', (e) => {
   e.preventDefault(); setSetting('perfOverlay', !(settings.perfOverlay === true));
 });
 let pixelRatio = GFX.pixelRatio;
+let dynamicScale = makeDynamicScale();
+function makeDynamicScale() {
+  const floor = { potato: .83, low: .75, med: .65, high: .6, ultra: .55 }[GFX.preset];
+  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: 1200 / (settings.frameCap || 60) });
+}
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -137,6 +145,7 @@ scene.matrixAutoUpdate = false; // never moves; its children update themselves (
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
+renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
 const audio = new Audio();
 const voices = new VoiceReactions(audio, { settings });
 const playerVoices = new VoiceReactions(audio, { settings });
@@ -164,7 +173,7 @@ function updateRoadRage(dt) {
   if(anger) playerBark('rage');
 }
 function playerBark(cue) {
-  const appearance = player.driver?.appearance || normalizeDriverAppearance();
+  const appearance = normalizeDriverAppearance();
   return playerVoices.trigger('driver', player, () => carVoicePosition(player), { cue, gender: appearance.gender || 'male', older: appearance.old });
 }
 function playerImpactVoice(event) {
@@ -240,10 +249,11 @@ function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.posi
 setDrawDistance(+Q.get('draw') || GFX.drawDistance, GFX.horizon, GFX.detail);
 // lower presets cap traffic and pedestrian draw ranges (graphics.js trafficDraw / crowd); high keeps the full range
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
-const GRAPHICS_KEYS = new Set(['graphics', 'lighting', 'effects', 'renderScale', 'drawDistance']);
+const GRAPHICS_KEYS = new Set(['graphics', 'lighting', 'effects', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
 /** re-resolve the graphics settings and apply whatever changed, live (no reload, the world is kept) */
 function applyGraphics(key) {
   const prev = GFX; GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
+  dynamicScale = makeDynamicScale();
   graphicsPreference = GFX.preset; graphicsControl.value = GFX.preset;
   if (key === 'graphics') { const url = new URL(location.href); if (url.searchParams.has('quality')) { url.searchParams.set('quality', GFX.preset); history.replaceState(null, '', url); } }
   quality = GFX.preset; sceneryQuality = GFX.scenery; lowGraphics = GFX.E.simple;
@@ -260,7 +270,7 @@ function applyGraphics(key) {
 }
 onSettings((s, key) => { if (GRAPHICS_KEYS.has(key)) applyGraphics(key); });
 
-let player = null, rival = null; // {veh, model, driver, cockpit, spec}
+let player = null, rival = null; // {veh, model, cockpit, spec}
 const keys = controls.keys; // retained for the simulation test hook
 const input = controls.state;
 
@@ -343,6 +353,7 @@ function bindMapWorld(next) {
   { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
   police = new Police(traffic, route); window.__police = police;
   policeVoice.reset(); humanVoices.reset(); police.onVoice = (state, transitions) => policeVoice.observe(state, transitions);
+  notifications.mirrorView = () => ({camera, mirrors: G.cam==='cockpit'||cameraBlend.active ? player?.cockpit?.mirrors||[] : []});
   window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, camera, cameraBlend, towOffer, get player() { return player; } };
   if (Q.has('simhook')) {
     Object.assign(window.__sim, { scene, renderer, canvas, keys, render: () => render(), step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
@@ -422,12 +433,8 @@ function makeCar(spec, isPlayer, plate) {
   const model = new CarModel(spec, { plate });
   scene.add(model.root);
   if(model.exhaustFlames)scene.add(model.exhaustFlames.mirrorRoot);
-  const driver = new Driver(isPlayer ? normalizeDriverAppearance() : { helmet: true, shirt: '#16181c', skin: '#b67c56' });
-  bindDriverToCar(driver,model);
-  if (!isPlayer) for (const a of driver.arms) a.up.visible = a.fo.visible = a.hand.visible = false;
-  // graphics.js: fewer, cheaper shadow draws; a rival's driver is hidden in its body's shadow anyway
-  trimShadowCasters(model.root); if (driver.root) { if (isPlayer || spec.convertible) trimShadowCasters(driver.root); else driver.root.traverse(o => { o.castShadow = false; }); }
-  return { model, driver };
+  trimShadowCasters(model.root);
+  return { model };
 }
 // A rival beyond ~60 m draws the catalogue car's own far level from the traffic fleet (a few merged draws, no shadow)
 // instead of the full model (~65 draws and ~40 shadow casters); built with the grid, so the switch costs nothing mid-race.
@@ -449,7 +456,6 @@ function disposeCar(c) {
     c.far = null;
   }
   c.cockpit?.disposeMirrors();
-  c.driver?.dispose?.();
   c.model.disposeDamage?.();
   scene.remove(c.model.root);
   const liveMaterials = new Set(), liveTextures = new Set();
@@ -530,6 +536,7 @@ function resetRace() {
 function resetEvent() {
   world?.tyreWalls?.reset();
   notifications.clear();
+  if (menu?.accounts?.offline) notifications.post({id:'playing-offline',title:'PLAYING OFFLINE',text:'Progress stays on this device',ms:5000,priority:10});
   const { def, r } = G.ev, dir = r.dir;
   buildGrid();
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
@@ -586,7 +593,8 @@ function offerTow() {
   if (towOffer.element || towOffer.cooldown > 0) return;
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>Repair the car and return to your last road position. ' + (inFreeRoam() ? 'Free recovery.' : 'Costs 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">TOW + REPAIR · ' + bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'camera' : 'tow', activeInputDevice()) + '</button><button type="button" data-tow="dismiss">KEEP DRIVING</button></div>';
+  const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? ' → ' + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + (inFreeRoam() ? 'Return to the road and repair your car.' : 'Return to the road and repair your car · Adds 5 seconds.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
   if (!inFreeRoam() && !multiplayer.active) {
@@ -594,7 +602,7 @@ function offerTow() {
     retire.onclick = () => { closeTowOffer(); if (multiplayer.active) multiplayer.retire(); else finishRace('retired'); };
     el.querySelector('.tow-actions').append(retire);
   }
-  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.textContent = 'R: tow'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
+  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.innerHTML = recoveryKey + ' Tow and repair'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
   towOffer.element = el; towOffer.elapsed = 0; notifications.adopt('tow',el,{priority:60,persistent:true});
 }
 // Water still produces its splash, but recovery waits for the driver to accept the offer.
@@ -646,8 +654,8 @@ function corridorCheck(pv, dt) {
   if (result.tow) { clearCorridorWarning(); tow(pv, { automatic: true }); return true; }
   if (result.warning) {
     document.body.classList.add('offtrack-warning');
-    const countdown = towOffer.corridorT > 0 ? ` · ${Math.ceil(result.remaining)} s` : '';
-    notifications.toast('Return to the road' + countdown, { id: 'offtrack', kind: 'hud', tone: 'bad', priority: 70, persistent: true });
+    const countdown = towOffer.corridorT > 0 ? `Automatic recovery in ${Math.ceil(result.remaining)} s` : 'Follow the road';
+    notifications.post({title:'RETURN TO THE ROAD',text:countdown, id: 'offtrack', kind: 'hud', tone: 'bad', priority: 70, persistent: true });
   } else clearCorridorWarning();
   return false;
 }
@@ -788,6 +796,7 @@ function readInput(dt) {
   { const hint = ui.hintDevice(G.inputDevice); if (document.body.dataset.input !== hint) document.body.dataset.input = hint; } // device-aware key hints (ui.css)
   if (syncSteeringAssist() && menu?.screen === 'settings' && settings.steeringAssist === null) menu.refreshValues();
   for (const name of controls.actions) {
+    if (!inMenu && name === 'back' && notifications.action(name, {gamepad: activeInputDevice() === 'gamepad'})) continue;
     // Shared defaults (Escape, Enter, A/B) have different meanings in a menu and while driving.
     if ((inMenu && name === 'restart' && input.confirm) || (inMenu && name === 'pause' && input.back) || (!inMenu && name === 'back')) continue;
     if (!inMenu) drivingHints.action(name);
@@ -804,7 +813,7 @@ function readInput(dt) {
 // The flow: loading -> 'menu' (title / events / settings, src/menu.js) -> countdown -> race -> finished -> results.
 // 'paused' (Esc / tab hidden) freezes the simulation; 'garage' is the car picker reached from the title menu.
 // Online races are handed to multiplayer.js (its own lobby / onlineCountdown / onlineFinished states).
-let grid = []; // the offline AI field: [{ spec, veh, model, driver, ai, drv, name, dir, pen, reds, finish, tR, actor }]; grid[0] === rival
+let grid = []; // the offline AI field: [{ spec, veh, model, ai, drv, name, dir, pen, reds, finish, tR, actor }]; grid[0] === rival
 let markers = null, menu = null;
 function bestSetup(def = G.ev?.def, r = G.ev?.r, car = player?.spec.id) {
   return personalBestSetup({ mapId: map?.id, def, route: r, car: car || CARS[G.carIdx]?.id, conditions: window.__conditions?.(),
@@ -838,7 +847,7 @@ let selectedMapId = initialMapId(Q);
 const evCtx = () => ({ map, mapId: map.id, route, marks: map.data.marks, events: map.events });
 const menuCtx = () => map?.id === selectedMapId ? evCtx() : menuMapContext(selectedMapId);
 function selectMenuMap(id) { getMap(id); selectedMapId = id; }
-const activeInputDevice = () => G.inputDevice || (controls.pad ? 'gamepad' : 'keyboard');
+const activeInputDevice = () => controls.drivingSource === 'phone' ? 'wheel' : controls.drivingSource;
 function syncSteeringAssist() {
   if (!player) return false;
   const before = player.veh.steerAssist;
@@ -1122,6 +1131,7 @@ function flowAction(name) {
   }
   if (menu.open) return menu.action(name);
   if (MENU_STATES.includes(G.state)) return true;
+  if (notifications.action(name, {gamepad: activeInputDevice() === 'gamepad'})) return true;
   switch (name) {
     case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
@@ -1419,7 +1429,6 @@ function handlePeople() {
     if (!multiplayer.active && e.who === 'player') humanVoices.offer(e);
     if (e.kind === 'hit' && e.who === 'player') {
       G.shake = Math.max(G.shake, .28 + Math.min(.45, e.sev / 45));
-      player.driver.impulse(.35 + Math.min(.5, e.sev / 40), 0, .3);
       controls.rumble(.35, .5, 180);
     }
     if (e.kind === 'dive' && e.who === 'player') { G.scared++; hud.pop('info bad', 'WATCH THE PAVEMENT!'); }
@@ -1454,12 +1463,7 @@ function syncCar(c, dt) {
   if (c !== player) {
     const distance = camera.position.distanceTo(c.model.root.position);
     (c.model.detail ??= new DistanceDetail(c.model.root)).update(distance); // batch.js
-    // rivals' and remote drivers' figures are behind tinted glass: not drawn beyond 60 m (20+ draws each)
-    const d = c.driver, far = distance > (d?.lodFar ? 55 : 60);
-    if (d?.root && far !== !!d.lodFar) {
-      d.lodFar = far;
-      for (const who of [d, d.passenger]) if (who?.root) { if (far) { who.lodWasVisible = who.root.visible; who.root.visible = false; } else who.root.visible = who.lodWasVisible ?? true; }
-    }
+
   }
   const impact = v.lastDamage && v.lastDamage.serial !== c.damageSerial ? v.lastDamage : null;
   if (multiplayer.active) c.model.setDamageSnapshot?.(v.damage);
@@ -1503,7 +1507,7 @@ function racerPair(a, b, mine) {
       v.addDamage?.(zone, sev * .6, { kind: 'crash', sev, car: { mass: other.m }, localPoint, localNormal });
     }
   }
-  if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash('light', Math.min(1, sev / 8)); G.shake = Math.max(G.shake, 0.35); player.driver.impulse(0.4); }
+  if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash('light', Math.min(1, sev / 8)); G.shake = Math.max(G.shake, 0.35); }
 }
 
 /** pursuit transitions (src/police.js): call-outs, sounds. In a pursuit event BUSTED ends the run (events flow) */
@@ -1551,7 +1555,6 @@ function handleEvents(events) {
       const big = e.kind === 'crash';
       G.crashes += big ? 1 : 0;
       G.shake = Math.max(G.shake, big ? 1 : 0.5); G.flash = big ? 0.8 : 0.3;
-      player.driver.impulse(big ? 1.1 : 0.55, -e.side * 0.5, 0.5);
       audio.crash(e.heavy ? 'heavy' : 'light', Math.min(1, Math.pow((player.veh.lastDamage?.ebs || e.sev) / 16, 2)), { glass: (player.veh.lastDamage?.ebs || 0) > 7, metal: true });
       controls.rumble(big ? 1 : 0.5, big ? 0.8 : 0.4, big ? 450 : 200);
       if (big) {
@@ -1733,7 +1736,7 @@ function beginCameraBlend(duration = 0.45) {
   cameraBlend.trackRoot = player.model.root; cameraBlend.trackPos.copy(player.model.root.position);
   camState.retarget = true; post?.resetHistory?.();
 }
-const previousCameraQuat = new THREE.Quaternion(), cameraHeadPoint = new THREE.Vector3();
+const previousCameraQuat = new THREE.Quaternion();
 function finishCamera(dt, trackedRoot = player.model.root) {
   if (cameraBlend.active) {
     // Keep a moving car framed while easing between views. A reset/swap rebases the anchor without moving it.
@@ -1758,8 +1761,6 @@ function finishCamera(dt, trackedRoot = player.model.root) {
     camera.quaternion.slerpQuaternions(previousCameraQuat, _blendQ, alpha);
   }
   if(player.spec.twoWheeler){const helmet=player.model.body.getObjectByName('helmet');if(helmet)helmet.visible=G.cam!=='cockpit';}
-  player.driver.head.getWorldPosition(cameraHeadPoint);
-  player.driver.head.visible = G.cam !== 'cockpit' && camera.position.distanceTo(cameraHeadPoint) > .55;
   camera.updateProjectionMatrix(); G.cameraReady = true;
 }
 const _qForward = new THREE.Vector3();
@@ -1768,9 +1769,9 @@ const _blendQ = new THREE.Quaternion(); // finishCamera / cockpit-camera scratch
 function applyCamMode() {
   if (!player) return;
   if (camState.mode !== G.cam) { beginCameraBlend(); camState.mode = G.cam; }
+  document.body.dataset.cameraView = G.cam;
   const cock = G.cam === 'cockpit';
-  player.cockpit.setVisible(true); // The open cabins keep their dashboard in chase/garage views.
-  player.driver.head.visible = !cock && !cameraBlend.active;
+  player.cockpit.setVisible(cock);
   camera.near = cock ? 0.05 : 0.25; camera.updateProjectionMatrix(); // as far out as the cabin allows: depth precision at range
 }
 function noise1(t) { return Math.sin(t * 1.7) * 0.5 + Math.sin(t * 3.1 + 1.3) * 0.3 + Math.sin(t * 7.3 + 0.7) * 0.2; }
@@ -1792,7 +1793,7 @@ function updateCamera(dt, snap = false) {
     target.y = Math.max(target.y, route.surfaceY(v.s, v.u) + 0.6); springPosition(target, dt, snap || changed);
     camera.position.copy(camState.pos);
     camera.lookAt(visible.x, visible.y + 0.9, visible.z); camera.fov = settings.chaseFov; camera.updateProjectionMatrix();
-    // Keep your driver's head and cockpit mirror out of the spectator view.
+    // Keep your cockpit mirror out of the spectator view.
     finishCamera(dt, targetCar.model.root); return;
   }
   G.spectateId = null;
@@ -1805,13 +1806,13 @@ function updateCamera(dt, snap = false) {
   const t = G.paused?.t ?? G.t;
   updateLook(dt);
   if (G.cam === 'cockpit') {
-    const eye = player.cockpit.eye;
-    _v1.set(eye.x - veh.ay * 0.0025, eye.y + 0.02 + noise1(t * 23) * 0.004 * rough, eye.z + clamp(veh.ax, -12, 12) * 0.0035);
+    const eye = player.cockpit.eye, seat = seatPosition(player.spec.id);
+    _v1.set(eye.x - veh.ay * 0.0025, eye.y + seat.height + noise1(t * 23) * 0.004 * rough, eye.z - seat.position + clamp(veh.ax, -12, 12) * 0.0035);
     body.localToWorld(_v1);
     camera.position.copy(_v1);
     body.getWorldQuaternion(_q);
     const lookYaw = -player.veh.steer * 0.12 - veh.w * 0.04 + clamp(look.yaw, -2.2, 2.2) + look.back;
-    _e.set(-0.045 - clamp(veh.ax, -12, 12) * 0.0012 - look.pitch * 0.8 + noise1(t * 31 + 5) * 0.004 * rough, lookYaw, noise1(t * 19 + 9) * 0.004 * rough + G.shake * Math.sin(t * 40) * 0.02, 'YXZ');
+    _e.set((player.cockpit.eyePitch ?? -0.045) - clamp(veh.ax, -12, 12) * 0.0012 - look.pitch * 0.8 + noise1(t * 31 + 5) * 0.004 * rough, lookYaw, noise1(t * 19 + 9) * 0.004 * rough + G.shake * Math.sin(t * 40) * 0.02, 'YXZ');
     camera.quaternion.copy(_q).multiply(_blendQ.setFromEuler(_e));
     // Mirror-fit is a model-inspection view; racing keeps the player's chosen vertical FOV.
     const baseFov = Q.has('mirrorfit') ? Math.max(settings.cockpitFov, player.cockpit.mirrorFov(camera.aspect)) : settings.cockpitFov;
@@ -1862,6 +1863,7 @@ let last = 0, frameN = 0;
 const events = [];
 const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
 const sunScreen = new THREE.Vector3();
+const bootFrameLog = text => { if (frameN === 1) tlog(text); };
 function frame(now) {
   requestAnimationFrame(frame);
   // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
@@ -1870,11 +1872,16 @@ function frame(now) {
   // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery).
   const cap = settings.frameCap;
   if (cap > 0 && !Q.has('fixeddt') && now >= last && now - last < 800 / cap) return;
+  const cpuFrameStart = cpuMetrics.start();
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;
   if (Q.has('fixeddt')) dt = 1 / 60;
   G.lastDt = dt;
-  perfOverlay.frame(dt);
+  if (settings.dynamicResolution && !document.hidden && !Q.has('fixeddt') && (G.state === 'race' || G.state === 'onlineRace')) {
+    const ratio = dynamicScale.sample(wallDt * 1000);
+    if (ratio !== null && ratio !== pixelRatio) { pixelRatio = ratio; onResize(); post?.resetHistory(); }
+  }
+  perfOverlay.frame(wallDt);
   G.fps = G.fps ? G.fps * 0.95 + 0.05 / Math.max(1e-3, (now - (G.lastNow || now - 16)) / 1000) : 60; G.lastNow = now;
   const reps = +(Q.get('turbo') || 1);
   const slices = Math.max(1, Math.ceil(dt / (1 / 60)));
@@ -1884,9 +1891,10 @@ function frame(now) {
   if (input.handbrake) drivingHints.action('handbrake');
   if (player) {
     const watching = multiplayer.spectating(), selectedDriverVehicle = watching ? remoteCars.get(watching.id)?.veh ?? null : player.veh;
-    updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden, spectating: !!watching, towLabel: bindingLabel(controls.bindings, 'tow', activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
+    updateEngineHud(selectedDriverVehicle, { visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden, spectating: !!watching, towLabel: bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()), gamepad: activeInputDevice() === 'gamepad', confirmLabel: bindingLabel(controls.bindings,'confirm',activeInputDevice()), repairAvailable: G.state === 'race' && !G.towing && !multiplayer.retired && !watching, towCost: inFreeRoam() ? 0 : 5, onRepair: () => tow(player.veh) });
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
   }
+  cpuMetrics.frame(cpuFrameStart);
 }
 
 function step(dt, draw = true) {
@@ -1894,7 +1902,6 @@ function step(dt, draw = true) {
   if (!(dt > 0) || mapSwitch) return;
   if (!world || !player || G.state === 'menu') { readInput(dt); return; }
   G.t += dt; frameN++;
-  const bootFrameLog = text => { if (frameN === 1) tlog(text); };
   bootFrameLog('first-frame');
   readInput(dt);
   if (multiplayer.active && inMenu() && G.pFinish == null) { player.veh.vLong = player.veh.vLat = player.veh.w = 0; player.veh.syncWheels(); }
@@ -1908,7 +1915,9 @@ function step(dt, draw = true) {
   onlineWorldVisibility(multiplayer.active, { people, fx, splash }); setOnlineWeather(multiplayer.active);
   sharedWorld.update(dt);
   if (multiplayer.active && multiplayer.lobby.startAt) signals.t = (multiplayer.now() - multiplayer.lobby.startAt) / 1000 - dt;
+  const cpuSignals = cpuMetrics.start();
   if (simulate || multiplayer.active) signals.update(dt, pv.s, camera.position);
+  cpuMetrics.end('signals', cpuSignals);
   world?.tyreWalls?.update(simulate ? dt : 0, multiplayer.active);
   if (simulate) {
     // ---- state machine
@@ -1952,7 +1961,9 @@ function step(dt, draw = true) {
       if (holdingRecovery) { pin = { throttle: 0, brake: 1, steer: 0, handbrake: true, nitro: false }; towOffer.hold = Math.max(0, towOffer.hold - dt); }
       pv.dragMul = 1 - 0.32 * (G.draft || 0);
       const snapP = Q.has('nantrap') ? JSON.stringify({ x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw, vL: pv.vLong, vLat: pv.vLat, w: pv.w, pin, ai: player.ai }) : '';
+      const cpuPhysics = cpuMetrics.start();
       pv.update(dt, pin);
+      cpuMetrics.end('playerPhysics', cpuPhysics);
       if (inFreeRoam() && route.closed) pv.s = route.wrap(pv.s); // untimed traffic stays in the same lap coordinates
       // A recovery hold is a time cost even on a slope or with a held throttle; suspension still settles.
       if (recoveryPose) restoreVehicleState(pv, { ...recoveryPose, vLong: 0, vLat: 0, w: 0, lastV: 0 });
@@ -1963,7 +1974,9 @@ function step(dt, draw = true) {
       if (pv.nitroOn && !G.nitroWas) audio.nitroStart();
       G.nitroWas = pv.nitroOn;
       if (!multiplayer.active) {
+      const cpuRivals = cpuMetrics.start();
       updateGrid(dt); // the AI field: racing lines, traffic, red lights (offline)
+      cpuMetrics.end('rivals', cpuRivals);
       }
       // ---- stop lines: camera or police witness, with optional game-time laws
       const D = G.dir || 1, pf = pv.s + D * pv.halfL, rf = rv.s + rv.halfL;
@@ -1974,7 +1987,9 @@ function step(dt, draw = true) {
       _actors.length = multiplayer.active ? 1 : 1 + grid.length;
       if (!multiplayer.active) for (let i = 0; i < grid.length; i++) _actors[i + 1] = grid[i].actor;
       const actors = _actors;
+      const cpuTraffic = cpuMetrics.start();
       if (!multiplayer.active) traffic.update(dt, pv.s, actors);
+      cpuMetrics.end('traffic', cpuTraffic);
       events.length = 0;
       if ((!multiplayer.active || multiplayer.lobby.traffic || police?.enabled) && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
       // out of sight a rival is not held up by traffic (they know these roads); in sight they race for real (updateGrid)
@@ -1992,18 +2007,20 @@ function step(dt, draw = true) {
       }
       // Online the units are shared (src/mp-shared-world.js); this client judges only its own driver.
       if (police && multiplayer.active && police.enabled && !sharedWorld.authority) traffic.setRacers(actors);
+      const cpuPolice = cpuMetrics.start();
       if (police) for (const e of police.update(dt, { events, racing: G.state === 'race', dir: G.dir || 1, eventId: G.run?.id })) onPolice(e);
+      cpuMetrics.end('police', cpuPolice);
       if (Q.has('nantrap') && !G.nanC && !isFinite(pv.x + pv.vLong + rv.x + rv.vLong)) { G.nanC = 1; console.warn('NaN after collisions', pv.s, rv.s); }
       if (G.state === 'race') handleEvents(events);
       for (const h of traffic.honks) handleHonk(h);
       traffic.honks.length = 0;
       handleTrafficSounds();
       if (pv.bumpHit > 0.1) G.shake = Math.max(G.shake, pv.bumpHit * 0.22);
-      if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.6, pv.wallHit / 12)); if (pv.wallHit > 7) player.driver.impulse(0.4); }
+      if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.6, pv.wallHit / 12)); }
       if (pv.wallHit > 3) { fx.sparks(pv, pv.wallHit / 12); controls.rumble(Math.min(1, pv.wallHit / 10), 0.6, 220); }
       if (!multiplayer.active) for (const c of grid) if (c.veh.wallHit > 3) fx.sparks(c.veh, c.veh.wallHit / 12);
       // kerb strikes: a thump (scrape when the tyre rubs along the face), a jolt through the camera
-      if (pv.curbHit > 0.12 && G.t - (G.curbT || 0) > 0.08) { G.curbT = G.t; audio.curb(Math.min(1, pv.curbHit * (pv.curbScrape ? 0.7 : 1.2))); if (pv.curbScrape) audio.scrape(0.25); G.shake = Math.max(G.shake, pv.curbHit * 0.3); if (pv.curbHit > 0.5) player.driver.impulse(0.25); controls.rumble(pv.curbScrape ? 0.15 : 0.5 * pv.curbHit, pv.curbScrape ? 0.5 : 0.8 * pv.curbHit, pv.curbScrape ? 140 : 110); }
+      if (pv.curbHit > 0.12 && G.t - (G.curbT || 0) > 0.08) { G.curbT = G.t; audio.curb(Math.min(1, pv.curbHit * (pv.curbScrape ? 0.7 : 1.2))); if (pv.curbScrape) audio.scrape(0.25); G.shake = Math.max(G.shake, pv.curbHit * 0.3); controls.rumble(pv.curbScrape ? 0.15 : 0.5 * pv.curbHit, pv.curbScrape ? 0.5 : 0.8 * pv.curbHit, pv.curbScrape ? 140 : 110); }
       pv.wallHit = 0; rv.wallHit = 0; for (const c of grid) c.veh.wallHit = 0;
       // ---- slipstream
       const dd = (rv.s - pv.s) * (G.dir || 1), du = Math.abs(rv.u - pv.u);
@@ -2033,7 +2050,7 @@ function step(dt, draw = true) {
     }
   }
   // ---- people (they live on during the countdown too)
-  if (simulate && !multiplayer.active) { people.update(dt, peopleS(pv.s), ACTORS, camera.position); police?.pedEvents(people.events); handlePeople(); }
+  if (simulate && !multiplayer.active) { const cpuPeople = cpuMetrics.start(); people.update(dt, peopleS(pv.s), ACTORS, camera.position); police?.pedEvents(people.events); handlePeople(); cpuMetrics.end('people', cpuPeople); }
   // ---- next traffic light: HUD, green-man ticker, nitro top-up while waiting at red
   {
     const nj = signals.next(pv.s + pv.halfL, 1);
@@ -2059,12 +2076,11 @@ function step(dt, draw = true) {
   }
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
-  const acc = { x: pv.ay, y: 0, z: -pv.ax };
-  // the full cabin only where a camera can see it: cockpit, open tops, close orbit views and camera blends
-  player.cockpit.setDetail(!(G.cam === 'chase' || G.cam === 'spectate') || !!player.spec.convertible || cameraBlend.active);
+  // The thin cabin exists only in the player cockpit view.
+  player.cockpit.setDetail(G.cam === 'cockpit');
+  player.cockpit.setVisible(G.cam === 'cockpit');
+  controls.observePhoneWheel(pv);
   player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: input.handbrake && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
-  player.driver.update(dt, G.t, pv.vLong, acc, player.cockpit.wheelInfo, pv.steer, pv.pose.heaveV);
-  for (const c of !multiplayer.active && grid.length ? grid : [rival]) c.driver.update(dt, G.t, c.veh.vLong, { x: c.veh.ay, y: 0, z: -c.veh.ax }, null, c.veh.steer, 0);
   window.__ghostLap?.visual(dt);
   updateCamera(dt);
   updateRacerMarkers();
@@ -2082,6 +2098,7 @@ function step(dt, draw = true) {
   }
   ENV.U.time.value = multiplayer.active && multiplayer.lobby.startAt ? (multiplayer.now() - multiplayer.lobby.startAt) / 1000 : G.t;
   bootFrameLog('frame-visuals');
+  const cpuHud = cpuMetrics.start();
   // HUD
   let gap = NaN, pos = 1, gapUnit = 's';
   if (!multiplayer.active && G.ev && !inFreeRoam()) ({ gap, pos, gapUnit = 's' } = raceGap());
@@ -2119,7 +2136,7 @@ function step(dt, draw = true) {
   swayInput.lookYaw = look.yaw + look.back; swayInput.lookPitch = look.pitch;
   hudSway.update(dt, swayInput);
   if (st.gapUnit) $('gap').textContent = !Number.isFinite(st.gap) ? '—' : `${st.gap >= 0 ? '+' : '−'}${Math.abs(st.gap).toFixed(st.gapUnit === 'm' ? 0 : 2)} ${st.gapUnit}`;
-  for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { el.hidden = inFreeRoam(); el.style.display = inFreeRoam() ? 'none' : ''; } }
+  for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { const hidden = inFreeRoam(); if (el.hidden !== hidden) el.hidden = hidden; const display = hidden ? 'none' : ''; if (el.style.display !== display) el.style.display = display; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
   if (multiplayer.retired && !multiplayer.spectating()) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
   updateLapHud(G.run, !multiplayer.active && !isDrivingMode(G.ev?.def) && !MENU_STATES.includes(G.state));
@@ -2132,13 +2149,16 @@ function step(dt, draw = true) {
     for (const id of ['posBox', 'gapBox', 'timeBox']) { const el = $(id); if (el) { el.hidden = true; el.style.display = 'none'; } }
     if (onlineObjective) {
       const box = $('evBox'), selectedPose = watchedObjective ? remoteCars.get(watchedObjective.id)?.veh : pv;
-      box.innerHTML = drivingModeHud(objective, objectiveRoutes || [], selectedPose); box.classList.toggle('on', !!objective); notifications.dismiss('wrong-way'); objectiveNotice(objective,objectiveRoutes||[],selectedPose);
+      const content = drivingModeHud(objective, objectiveRoutes || [], selectedPose); if (box._objectiveHtml !== content || box._objectiveNode !== box.firstChild) { box.innerHTML = content; box._objectiveHtml = content; box._objectiveNode = box.firstChild; } box.classList.toggle('on', !!objective); notifications.dismiss('wrong-way'); objectiveNotice(objective,objectiveRoutes||[],selectedPose);
     }
   }
   if (G.cam === 'cockpit' && (frameN & 3) === 0) { const c = player.cockpit; hud.drawMinimap(c.navCanvas.getContext('2d'), c.navCanvas.width, c.navCanvas.height, st, 3.4, true); c.navTex.needsUpdate = true; }
+  cpuMetrics.end('hud', cpuHud);
   bootFrameLog('frame-hud');
   // audio
+  const cpuAudio = cpuMetrics.start();
   updateAudio(dt);
+  cpuMetrics.end('audio', cpuAudio);
   pv.shiftEvent = 0; rv.shiftEvent = 0; for (const c of grid) c.veh.shiftEvent = 0;
   // post FX
   const u = post.u;
@@ -2150,7 +2170,9 @@ function step(dt, draw = true) {
   const vis = sunScreen.z < 1 && Math.abs(sunScreen.x) < 1.2 && Math.abs(sunScreen.y) < 1.2 ? 1 - Math.max(Math.abs(sunScreen.x), Math.abs(sunScreen.y)) / 1.2 : 0;
   u.uSun.value.set(sunScreen.x * 0.5 + 0.5, sunScreen.y * 0.5 + 0.5, vis * 0.8);
   bootFrameLog('frame-draw');
+  const cpuRender = cpuMetrics.start();
   if (draw && (multiplayer.panel.hidden || G.resultPhotoPending)) render();
+  cpuMetrics.end('renderSubmission', cpuRender);
   bootFrameLog('frame-done');
 }
 
@@ -2300,7 +2322,7 @@ function updateRacerMarkers() {
   _markerItems.length = n;
   racerMarkers.update(_markerItems);
 }
-const networkState = v => ({ exhaustSerial: player.model.exhaustFlames?.pulse.serial || 0, exhaustKind: player.model.exhaustFlames?.pulse.kind || 0, exhaustEnabled: exhaustPopsEnabled(v.spec), ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, driver: { ...player.driver.appearance }, pursuit: police?.online ? police.pursuitCode() : 0 });
+const networkState = v => ({ exhaustSerial: player.model.exhaustFlames?.pulse.serial || 0, exhaustKind: player.model.exhaustFlames?.pulse.kind || 0, exhaustEnabled: exhaustPopsEnabled(v.spec), ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: police?.online ? police.pursuitCode() : 0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
@@ -2319,14 +2341,13 @@ function onlineMembers(members) {
     let c = remoteCars.get(p.id);
     if (!c) {
       const spec = CARS.find(c => c.id === p.car) || CARS[0];
-      if (![...remoteCars.values()].includes(rival)) { c = rival; c.spec = spec; c.veh.setSpec(spec); disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; c.driver = built.driver; }
+      if (![...remoteCars.values()].includes(rival)) { c = rival; c.spec = spec; c.veh.setSpec(spec); disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; }
       else c = { spec, veh: new Vehicle(spec, route), ...makeCar(spec, false, p.plate) };
       c.ai = c.ai || { lane: 0, cool: 0 }; c.plate = p.plate || null;
       c.veh.reset(startS, route.laneU(startS, 0)); remoteCars.set(p.id, c);
     }
-    if (c.spec.id !== p.car || c.plate !== (p.plate || null)) { const spec = CARS.find(s => s.id === p.car) || CARS[0]; disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; c.driver = built.driver; c.spec = spec; c.plate = p.plate || null; c.veh.setSpec(spec); c.veh.reset(startS, route.laneU(startS, 0)); }
+    if (c.spec.id !== p.car || c.plate !== (p.plate || null)) { const spec = CARS.find(s => s.id === p.car) || CARS[0]; disposeCar(c); const built = makeCar(spec, false, p.plate); c.model = built.model; c.spec = spec; c.plate = p.plate || null; c.veh.setSpec(spec); c.veh.reset(startS, route.laneU(startS, 0)); }
     if (p.paint && p.paint !== c.model.paintColor) setPaint(c.model, p.paint);
-    if (p.driver) c.driver?.setAppearance?.(p.driver);
     c.networkName = p.name; c.model.root.visible = ['countdown', 'race'].includes(multiplayer.lobby.status);
   }
   const first = members[0];
@@ -2334,7 +2355,7 @@ function onlineMembers(members) {
   $('rivalName').textContent = first?.name || 'WAITING';
 }
 const multiplayer = new Multiplayer(CARS, {
-  appearance: () => player ? { paint: player.model.paintColor, driver: { ...player.driver.appearance } } : {},
+  appearance: () => player ? { paint: player.model.paintColor } : {},
   inputOverlayOpen: () => menu?.screen === 'car' && !!menu.data?.onPick,
   clearInput: clearDriveInput, carIndex: () => G.carIdx,
   async mapChanged(id) { await window.__flow.switchMap(id, multiplayer.lobby?.status === 'waiting' ? 'MULTIPLAYER LOBBY' : 'MULTIPLAYER RACE · RESUMING'); if (multiplayer.active) { setCar(Math.max(0, CARS.findIndex(c => c.id === multiplayer.me?.car))); onlineWait(); } else window.__flow.quit(); },
@@ -2381,10 +2402,8 @@ const multiplayer = new Multiplayer(CARS, {
       applySpectatorState(v, p);
       c.remoteExhaust=p;
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
-      if(p.driver)c.driver?.setAppearance?.(p.driver);
       c.lastBrake = p.braking === true; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);
-      c.driver?.update?.(dt,G.t,v.vLong,{x:v.ay||0,y:0,z:-(v.ax||0)},c.cockpit?.wheelInfo,v.steer||0,0);
     }
   },
   wrecked() {

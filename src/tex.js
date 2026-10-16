@@ -8,16 +8,13 @@ const LIST = {
   asphalt: ['asphalt_02', 'diff nor arm'],
   paver: ['floor_pavement', 'diff nor arm'],
   concrete: ['concrete_floor_worn_001', 'diff nor arm'],
-  plaster: ['painted_plaster_wall', 'diff nor arm'],
   ground: ['dry_ground_01', 'diff nor'],
   grass: ['withered_grass', 'diff nor'],
   sand: ['coast_sand_01', 'diff nor'],
-  rock: ['rock_face_03', 'diff nor arm'],
-  palmbark: ['palm_tree_bark', 'diff nor'],
-  pinebark: ['pine_bark', 'diff nor'],
+  rock: ['rock_face_03', 'diff nor'],
   leather: ['fabric_leather_02', 'nor arm'],
 };
-const SINGLE = { water: 'waternormals', leafBroad: 'leaves_broad', leafNarrow: 'leaves_narrow', foliage: 'foliage_atlas', frond: 'palm_frond' };
+const SINGLE = { water: 'waternormals' };
 
 export const TX = {};
 // Anisotropic filtering level for subsequently loaded textures (lower presets use less: cheaper sampling on
@@ -50,8 +47,6 @@ export function loadTextures() {
   const jobs = [];
   for (const [key, [file, maps]] of Object.entries(LIST)) for (const m of maps.split(' ')) jobs.push(load(key + '_' + m, `${BASE}${file}_${m}.webp`, m === 'diff'));
   for (const [key, file] of Object.entries(SINGLE)) jobs.push(load(key, `${BASE}${file}.webp`, key !== 'water'));
-  TX.frond.wrapS = TX.frond.wrapT = THREE.ClampToEdgeWrapping;
-  TX.foliage.wrapS = TX.foliage.wrapT = THREE.ClampToEdgeWrapping;
   return (pending = Promise.all(jobs));
 }
 /** upload everything to the GPU before the first frame */

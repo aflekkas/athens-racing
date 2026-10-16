@@ -2,7 +2,7 @@
 // Dimensions: Mercedes C236 technical data, 2024 CLE 300 4MATIC European coupe.
 // https://media.mercedes-benz.fr/decouvrez-la-nouvelle-mercedes-benz-cle/
 // https://nd-mediagallery2-public-production.s3.amazonaws.com/215df8a0a2f426ec8e82796a0eaca795/techdata_cle_c236_806_056.pdf
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 import { tintGlass } from './glass-tint.js';
 
 export const MERCEDES_MODELS = {
@@ -126,7 +126,6 @@ export function buildMercedes(car,d,M,low,plate,H){
   surface(p,rearGlass,(u,v)=>{const x=2*u-1;return[x*mix(rw,bw,v),mix(railY(d.roofBack),suv?d.hatchGlassY:C?windowBelt(d.back):d.belt+.014,v)+.012*(1-x*x),mix(d.roofBack,d.back,v)];},22,12,'rear-glass');
   if(suv)surface(p,M.paint,(u,v)=>{const x=2*u-1,y=mix(d.hatchGlassY+.012*(1-x*x),S.top(R)+.036*(1-x*x),v);return[x*mix(bw,S.side(R,S.top(R)),v),y,mix(d.back,S.face(x*S.side(R,S.top(R)),R,S.top(R)),v)];},24,8,'boot-hatch-shoulder');
   surface(p,cla&&!C?M.black:M.paint,(u,v)=>{const x=2*v-1;return[x*rw,roof(u,x),mix(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'roof');
-  surface(p,M.cloth,(u,v)=>{const x=2*v-1;return[x*(rw-.008),roof(u,x)-.018,mix(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'headliner');
   for(const s of [-1,1]){
     const a0=[s*bw,C?windowBelt(d.cowl):d.belt+.014,d.cowl],a1=[s*rw,railY(d.header),d.header];
     const c0=[s*bw,suv?d.hatchGlassY:C?windowBelt(d.back):d.belt+.014,d.back],c1=[s*rw,railY(d.roofBack),d.roofBack];
@@ -148,9 +147,6 @@ export function buildMercedes(car,d,M,low,plate,H){
     if(!(C&&d.doors===2))patch(p,M.black,[[b0[0],b0[1],bz-half],[b1[0],b1[1],bz-half],[b1[0],b1[1],bz+half],[b0[0],b0[1],bz+half]],'solid-b-pillar');
     surface(p,M.paint,(u,v)=>{const z=mix(d.header,d.roofBack,u);return[s*rw,railY(z)-.038*v,z];},30,2,'roof-side-rail');
     const trimPoints=C?Array.from({length:13},(_,i)=>{const v=i/12;return[s*glassX(v),mix(ai0[1],ai1[1],v),mix(ai0[2],ai1[2],v)];}):[ai0,ai1];for(let i=1;i<20;i++){const z=mix(ai1[2],ci1[2],i/20);trimPoints.push([s*rw,railY(z)-.038,z]);}trimPoints.push(ci1);if(suv||C)for(let i=1;i<=12;i++){const v=1-i/12,z=quarterZ(v);trimPoints.push([s*glassX(v),mix(windowBelt(z),railY(z)-.038,v),z]);}else trimPoints.push(ci0);trimPoints.push(ai0);line(p,amg?M.black:M.chrome,trimPoints,.005);
-    box(p,M.black,[.05,.27,d.back-d.cowl-.35],[s*(W-.15),d.belt-.15,(d.cowl+d.back)/2],.022,[0,0,0],'door-card');
-    box(p,M.seat,[.035,.10,.70],[s*(W-.18),d.belt-.20,.22],.016,[0,0,0],'door-armrest');
-    box(p,M.chrome,[.016,.022,.12],[s*(W-.205),d.belt-.1,d.cowl+.45],.005,[0,0,0],'door-interior-handle');
     const z=d.cowl+.10;
     car[s<0?'mirrorL':'mirrorR']=mesh(p,new THREE.PlaneGeometry(.205,.078),M.chrome,[s*(W+.10),d.belt+.12,z+.06]);
     if(suv){const z0=d.header+.18,z1=d.roofBack-.12;line(p,M.chrome,Array.from({length:20},(_,i)=>{const z=mix(z0,z1,i/19);return[s*(rw-.035),railY(z)+.046,z];}),.016);for(const z of [z0,z1])box(p,M.black,[.035,.036,.075],[s*(rw-.035),railY(z)+.02,z],.008);}
@@ -167,7 +163,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     const g0=new THREE.ShapeGeometry(new THREE.Shape(pts.map(q=>new THREE.Vector2(...q))));
     const raw=g0.toNonIndexed(),a=raw.attributes.position,points=[];
     const triangle=(a,b,c,n)=>{if((suv||C)&&n){const edges=[[a,b,c],[b,c,a],[c,a,b]].sort((x,y)=>y[0].distanceToSquared(y[1])-x[0].distanceToSquared(x[1]));if(edges[0][0].distanceToSquared(edges[0][1])>.0081){const [a,b,c]=edges[0],m=a.clone().lerp(b,.5);triangle(a,m,c,n-1);triangle(m,b,c,n-1);return;}n=0;}if(n){const ab=a.clone().lerp(b,.5),bc=b.clone().lerp(c,.5),ca=c.clone().lerp(a,.5);triangle(a,ab,ca,n-1);triangle(ab,b,bc,n-1);triangle(ca,bc,c,n-1);triangle(ab,bc,ca,n-1);}else for(const q of [a,b,c])points.push(q.x,q.y,(part?.startsWith('light_f')?S.lightFace:S.face)(q.x,z,q.y)+Math.sign(z)*(suv?.019:.012));};
-    for(let i=0;i<a.count;i+=3)triangle(new THREE.Vector3().fromBufferAttribute(a,i),new THREE.Vector3().fromBufferAttribute(a,i+1),new THREE.Vector3().fromBufferAttribute(a,i+2),(suv||C)?10:2);
+    for(let i=0;i<a.count;i+=3)triangle(new THREE.Vector3().fromBufferAttribute(a,i),new THREE.Vector3().fromBufferAttribute(a,i+1),new THREE.Vector3().fromBufferAttribute(a,i+2),(suv||C)?3:1);
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(points.length/3*2),2));g.computeVertexNormals();g0.dispose();raw.dispose();
     const o=mesh(p,g,m,[0,0,0],[0,0,0],name);if(part)o.userData.damagePart=part;return o;
   };

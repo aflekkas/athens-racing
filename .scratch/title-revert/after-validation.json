@@ -1,0 +1,107 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "width": 1280,
+      "height": 720,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": false,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "mpJoin",
+        "mpHost",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": false,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "mpJoin",
+        "mpHost",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": false,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "mpJoin",
+        "mpHost",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 2560,
+      "height": 1440,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": false,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "mpJoin",
+        "mpHost",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": false,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "mpJoin",
+        "mpHost",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": false,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "mpJoin",
+        "mpHost",
+        "garage",
+        "settings"
+      ]
+    }
+  ],
+  "interactions": {
+    "keyboard": true,
+    "garageShortcut": true,
+    "account": true,
+    "touchPlay": true
+  }
+}

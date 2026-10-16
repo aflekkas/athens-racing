@@ -1,0 +1,1044 @@
+[
+  {
+    "id": "mini",
+    "geometryBytes": 403120,
+    "exterior": 3296,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "z4",
+    "geometryBytes": 340284,
+    "exterior": 2642,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "taxi",
+    "geometryBytes": 361772,
+    "exterior": 2874,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 294,
+    "rider": 0
+  },
+  {
+    "id": "carrera",
+    "geometryBytes": 343720,
+    "exterior": 2822,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 546,
+    "rider": 0
+  },
+  {
+    "id": "gr_yaris",
+    "geometryBytes": 398624,
+    "exterior": 3421,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "gtv",
+    "geometryBytes": 404460,
+    "exterior": 3757,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 396,
+    "rider": 0
+  },
+  {
+    "id": "golf",
+    "geometryBytes": 339336,
+    "exterior": 2670,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "corolla",
+    "geometryBytes": 339528,
+    "exterior": 2672,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "superb",
+    "geometryBytes": 367368,
+    "exterior": 2962,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "police_octavia",
+    "geometryBytes": 386632,
+    "exterior": 3154,
+    "lod1": 552,
+    "lod2": 272,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "mini_jcw",
+    "geometryBytes": 326372,
+    "exterior": 2498,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "cle",
+    "geometryBytes": 424964,
+    "exterior": 3525,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "gla",
+    "geometryBytes": 330372,
+    "exterior": 2548,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "gla45",
+    "geometryBytes": 370404,
+    "exterior": 2965,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "cla",
+    "geometryBytes": 425732,
+    "exterior": 3533,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "aventador_svj",
+    "geometryBytes": 230836,
+    "exterior": 1474,
+    "lod1": 516,
+    "lod2": 236,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "huracan",
+    "geometryBytes": 347364,
+    "exterior": 2700,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "ibiza",
+    "geometryBytes": 284516,
+    "exterior": 2062,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "panda",
+    "geometryBytes": 273380,
+    "exterior": 1946,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "yaris",
+    "geometryBytes": 268388,
+    "exterior": 1894,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "e36",
+    "geometryBytes": 286052,
+    "exterior": 2078,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 396,
+    "rider": 0
+  },
+  {
+    "id": "cle200",
+    "geometryBytes": 424964,
+    "exterior": 3525,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "cle450",
+    "geometryBytes": 428804,
+    "exterior": 3565,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      84,
+      84,
+      84,
+      84
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "cle53",
+    "geometryBytes": 346628,
+    "exterior": 2709,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "e36_m3",
+    "geometryBytes": 300260,
+    "exterior": 2226,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      84,
+      84,
+      84,
+      84
+    ],
+    "interior": 396,
+    "rider": 0
+  },
+  {
+    "id": "panda_11",
+    "geometryBytes": 273380,
+    "exterior": 1946,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "panda_100hp",
+    "geometryBytes": 285284,
+    "exterior": 2070,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "yaris_13",
+    "geometryBytes": 268388,
+    "exterior": 1894,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "yaris_ts",
+    "geometryBytes": 280292,
+    "exterior": 2018,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "ibiza_cupra",
+    "geometryBytes": 296420,
+    "exterior": 2186,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "golf_gti",
+    "geometryBytes": 357384,
+    "exterior": 2858,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "golf_gtd",
+    "geometryBytes": 357384,
+    "exterior": 2858,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "golf_r",
+    "geometryBytes": 369672,
+    "exterior": 2986,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "mini_cooper",
+    "geometryBytes": 301796,
+    "exterior": 2242,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "mini_s",
+    "geometryBytes": 322148,
+    "exterior": 2454,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "mini_cabrio_cooper",
+    "geometryBytes": 396976,
+    "exterior": 3232,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "corolla_15",
+    "geometryBytes": 339528,
+    "exterior": 2672,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "octavia_16tdi",
+    "geometryBytes": 361772,
+    "exterior": 2874,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 294,
+    "rider": 0
+  },
+  {
+    "id": "octavia_rs",
+    "geometryBytes": 377132,
+    "exterior": 3034,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "superb_15",
+    "geometryBytes": 367368,
+    "exterior": 2962,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "superb_4x4",
+    "geometryBytes": 385416,
+    "exterior": 3150,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "cla250",
+    "geometryBytes": 425732,
+    "exterior": 3533,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "cla35",
+    "geometryBytes": 437636,
+    "exterior": 3657,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "cla45s",
+    "geometryBytes": 357764,
+    "exterior": 2825,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "gla250",
+    "geometryBytes": 330372,
+    "exterior": 2548,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "z4_20i",
+    "geometryBytes": 328380,
+    "exterior": 2518,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "z4_30i",
+    "geometryBytes": 328380,
+    "exterior": 2518,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "carrera_s",
+    "geometryBytes": 374440,
+    "exterior": 3142,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 546,
+    "rider": 0
+  },
+  {
+    "id": "carrera_gts",
+    "geometryBytes": 374440,
+    "exterior": 3142,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 546,
+    "rider": 0
+  },
+  {
+    "id": "huracan_rwd",
+    "geometryBytes": 344676,
+    "exterior": 2672,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "gtv1750",
+    "geometryBytes": 404460,
+    "exterior": 3757,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 396,
+    "rider": 0
+  },
+  {
+    "id": "e36_318i",
+    "geometryBytes": 286052,
+    "exterior": 2078,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 396,
+    "rider": 0
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "geometryBytes": 415024,
+    "exterior": 3420,
+    "lod1": 486,
+    "lod2": 206,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 296,
+    "rider": 0
+  },
+  {
+    "id": "cle300e",
+    "geometryBytes": 426500,
+    "exterior": 3541,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 266,
+    "rider": 0
+  },
+  {
+    "id": "jazz",
+    "geometryBytes": 269540,
+    "exterior": 1906,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      76,
+      76,
+      76,
+      76
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "jazz_dynamic",
+    "geometryBytes": 279140,
+    "exterior": 2006,
+    "lod1": 504,
+    "lod2": 224,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "jazz_drift",
+    "geometryBytes": 286124,
+    "exterior": 2070,
+    "lod1": 516,
+    "lod2": 236,
+    "wheels": [
+      78,
+      78,
+      78,
+      78
+    ],
+    "interior": 280,
+    "rider": 0
+  },
+  {
+    "id": "aygo",
+    "geometryBytes": 193168,
+    "exterior": 2436,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "qashqai",
+    "geometryBytes": 198584,
+    "exterior": 2522,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "qashqai_dci",
+    "geometryBytes": 198584,
+    "exterior": 2522,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "dolphin",
+    "geometryBytes": 196016,
+    "exterior": 2454,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "atto3",
+    "geometryBytes": 194032,
+    "exterior": 2422,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "van",
+    "geometryBytes": 232952,
+    "exterior": 3070,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "van_150",
+    "geometryBytes": 232952,
+    "exterior": 3070,
+    "lod1": 184,
+    "lod2": 184,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "truck",
+    "geometryBytes": 183384,
+    "exterior": 2016,
+    "lod1": 198,
+    "lod2": 198,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "bus",
+    "geometryBytes": 262408,
+    "exterior": 3404,
+    "lod1": 210,
+    "lod2": 210,
+    "wheels": [
+      74,
+      74,
+      74,
+      74
+    ],
+    "interior": 16,
+    "rider": 0
+  },
+  {
+    "id": "delivery",
+    "geometryBytes": 69192,
+    "exterior": 1244,
+    "lod1": 298,
+    "lod2": 298,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 4,
+    "rider": 252
+  },
+  {
+    "id": "scooter",
+    "geometryBytes": 64152,
+    "exterior": 1172,
+    "lod1": 298,
+    "lod2": 298,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 4,
+    "rider": 252
+  },
+  {
+    "id": "moto",
+    "geometryBytes": 70180,
+    "exterior": 1230,
+    "lod1": 254,
+    "lod2": 254,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 4,
+    "rider": 252
+  },
+  {
+    "id": "police_moto",
+    "geometryBytes": 84180,
+    "exterior": 1470,
+    "lod1": 278,
+    "lod2": 278,
+    "wheels": [
+      100,
+      100
+    ],
+    "interior": 4,
+    "rider": 252
+  }
+]

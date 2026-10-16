@@ -1,0 +1,162 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "width": 1280,
+      "view": "chase",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 460,
+        "right": 820,
+        "top": 101.078125,
+        "bottom": 158.21875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 1280,
+      "view": "cockpit",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 460,
+        "right": 820,
+        "top": 272,
+        "bottom": 329.140625
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 1920,
+      "view": "chase",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 780,
+        "right": 1140,
+        "top": 146.171875,
+        "bottom": 203.3125
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 1920,
+      "view": "cockpit",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 780,
+        "right": 1140,
+        "top": 364.390625,
+        "bottom": 421.53125
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 390,
+      "view": "chase",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 15,
+        "right": 375,
+        "top": 214.1875,
+        "bottom": 270.1875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 390,
+      "view": "cockpit",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 15,
+        "right": 375,
+        "top": 286.515625,
+        "bottom": 342.515625
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 844,
+      "view": "chase",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 267,
+        "right": 577,
+        "top": 67.71875,
+        "bottom": 123.71875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    },
+    {
+      "width": 844,
+      "view": "cockpit",
+      "visible": [
+        "engine-condition"
+      ],
+      "rect": {
+        "left": 267,
+        "right": 577,
+        "top": 136.6875,
+        "bottom": 192.6875
+      },
+      "text": "ENGINE DISABLEDImpact stopped the engineR Tow and repair",
+      "placement": {
+        "count": 1,
+        "overlaps": [],
+        "outside": false
+      }
+    }
+  ],
+  "actions": {
+    "mouse": true,
+    "touch": true,
+    "gamepadFocusConfirm": true
+  }
+}

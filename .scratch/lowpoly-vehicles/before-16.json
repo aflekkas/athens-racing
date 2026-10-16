@@ -1,0 +1,110 @@
+[
+  {
+    "id": "dolphin",
+    "view": 0,
+    "triangles": 13898,
+    "drawCalls": 270,
+    "geometries": 264,
+    "textures": 2,
+    "heap": 29400000
+  },
+  {
+    "id": "dolphin",
+    "view": 1,
+    "triangles": 13898,
+    "drawCalls": 270,
+    "geometries": 264,
+    "textures": 2,
+    "heap": 29400000
+  },
+  {
+    "id": "dolphin",
+    "view": 2,
+    "triangles": 7548,
+    "drawCalls": 134,
+    "geometries": 266,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "atto3",
+    "view": 0,
+    "triangles": 13858,
+    "drawCalls": 269,
+    "geometries": 263,
+    "textures": 5,
+    "heap": 29400000
+  },
+  {
+    "id": "atto3",
+    "view": 1,
+    "triangles": 13858,
+    "drawCalls": 269,
+    "geometries": 263,
+    "textures": 5,
+    "heap": 29400000
+  },
+  {
+    "id": "atto3",
+    "view": 2,
+    "triangles": 7212,
+    "drawCalls": 127,
+    "geometries": 265,
+    "textures": 7,
+    "heap": 29400000
+  },
+  {
+    "id": "van",
+    "view": 0,
+    "triangles": 8232,
+    "drawCalls": 234,
+    "geometries": 231,
+    "textures": 9,
+    "heap": 29400000
+  },
+  {
+    "id": "van",
+    "view": 1,
+    "triangles": 8232,
+    "drawCalls": 234,
+    "geometries": 231,
+    "textures": 9,
+    "heap": 29400000
+  },
+  {
+    "id": "van",
+    "view": 2,
+    "triangles": 1926,
+    "drawCalls": 47,
+    "geometries": 233,
+    "textures": 11,
+    "heap": 29400000
+  },
+  {
+    "id": "van_150",
+    "view": 0,
+    "triangles": 8232,
+    "drawCalls": 234,
+    "geometries": 231,
+    "textures": 13,
+    "heap": 29400000
+  },
+  {
+    "id": "van_150",
+    "view": 1,
+    "triangles": 8232,
+    "drawCalls": 234,
+    "geometries": 231,
+    "textures": 13,
+    "heap": 29400000
+  },
+  {
+    "id": "van_150",
+    "view": 2,
+    "triangles": 1926,
+    "drawCalls": 47,
+    "geometries": 233,
+    "textures": 15,
+    "heap": 29400000
+  }
+]

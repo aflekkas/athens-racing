@@ -1,0 +1,258 @@
+[
+  {
+    "camera": "chase",
+    "scenario": "launch",
+    "samples": 360,
+    "speed_kmh": [
+      0.13660899495057263,
+      40.83872719030015
+    ],
+    "pitch_deg": 0.9156578012222809,
+    "roll_deg": 0.27145667380655314,
+    "heave_cm": 1.4856067301221687,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 2.2974443462326986,
+    "heading_change_deg": 1.4071592423971984
+  },
+  {
+    "camera": "chase",
+    "scenario": "cruise50",
+    "samples": 360,
+    "speed_kmh": [
+      49.573018354876886,
+      50.283804843565726
+    ],
+    "pitch_deg": 0.2858600088977256,
+    "roll_deg": 0.3466391772533291,
+    "heave_cm": 1.5982593122071727,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 1.2603910152728972,
+    "heading_change_deg": 1.57484267401324
+  },
+  {
+    "camera": "chase",
+    "scenario": "cruise80",
+    "samples": 360,
+    "speed_kmh": [
+      77.37984887345164,
+      79.99404926810821
+    ],
+    "pitch_deg": 0.18494821198300493,
+    "roll_deg": 0.5301920876017626,
+    "heave_cm": 1.703056848095105,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 1.9814132891982539,
+    "heading_change_deg": 0.3081693985711516
+  },
+  {
+    "camera": "chase",
+    "scenario": "braking",
+    "samples": 360,
+    "speed_kmh": [
+      0.07640108684842017,
+      49.635805342261946
+    ],
+    "pitch_deg": 1.8171136294887862,
+    "roll_deg": 0.3276332388991643,
+    "heave_cm": 1.05972203897354,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 7.666826722613172,
+    "heading_change_deg": -0.6237299691038658
+  },
+  {
+    "camera": "chase",
+    "scenario": "lane-change",
+    "samples": 360,
+    "speed_kmh": [
+      50.02439874299734,
+      60.67915869404537
+    ],
+    "pitch_deg": 0.3237689007181835,
+    "roll_deg": 1.4494419284674835,
+    "heave_cm": 1.8181762033120508,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 1.3190018794131317,
+    "heading_change_deg": 1.4733521125975464
+  },
+  {
+    "camera": "chase",
+    "scenario": "junction-turn",
+    "samples": 360,
+    "speed_kmh": [
+      11.002546120001977,
+      15.016659549576136
+    ],
+    "pitch_deg": 1.2279372320775441,
+    "roll_deg": 8.628609179097278,
+    "heave_cm": 3.6986419605916114,
+    "unloaded_frames": 43,
+    "longest_unloaded_seconds": 0.21666666666666667,
+    "max_compression_cm": 2.54305318850005,
+    "heading_change_deg": 100.19902745497981
+  },
+  {
+    "camera": "chase",
+    "scenario": "kerb",
+    "samples": 360,
+    "speed_kmh": [
+      23.673495834658066,
+      25.5641017951936
+    ],
+    "pitch_deg": 0.4325702346364476,
+    "roll_deg": 6.02202528713781,
+    "heave_cm": 1.8261753030782184,
+    "unloaded_frames": 1,
+    "longest_unloaded_seconds": 0.016666666666666666,
+    "max_compression_cm": 1.5867784187925977,
+    "heading_change_deg": 3.1691793791642455
+  },
+  {
+    "camera": "chase",
+    "scenario": "bump",
+    "samples": 360,
+    "speed_kmh": [
+      7.247253920247586,
+      27.55365339567738
+    ],
+    "pitch_deg": 5.515209590741794,
+    "roll_deg": 0.6158811994915967,
+    "heave_cm": 30.751601379181032,
+    "unloaded_frames": 21,
+    "longest_unloaded_seconds": 0.3,
+    "max_compression_cm": 8.371117754111964,
+    "heading_change_deg": -0.014624503888879769
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "launch",
+    "samples": 360,
+    "speed_kmh": [
+      0.13346618996272352,
+      40.83720291871557
+    ],
+    "pitch_deg": 0.9157642356515692,
+    "roll_deg": 0.2714875783743145,
+    "heave_cm": 1.485872943127622,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 2.2977814470176696,
+    "heading_change_deg": 1.4070813345192645
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "cruise50",
+    "samples": 360,
+    "speed_kmh": [
+      49.573018354876886,
+      50.283804843565726
+    ],
+    "pitch_deg": 0.2858600088977256,
+    "roll_deg": 0.3466391772533291,
+    "heave_cm": 1.5982593122071727,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 1.2603910152728972,
+    "heading_change_deg": 1.57484267401324
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "cruise80",
+    "samples": 360,
+    "speed_kmh": [
+      77.37984887345164,
+      79.99404926810821
+    ],
+    "pitch_deg": 0.18494821198300493,
+    "roll_deg": 0.5301920876017626,
+    "heave_cm": 1.703056848095105,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 1.9814132891982539,
+    "heading_change_deg": 0.3081693985711516
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "braking",
+    "samples": 360,
+    "speed_kmh": [
+      0.07640108684842017,
+      49.635805342261946
+    ],
+    "pitch_deg": 1.8171136294887862,
+    "roll_deg": 0.3276332388991643,
+    "heave_cm": 1.05972203897354,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 7.666826722613172,
+    "heading_change_deg": -0.6237299691038658
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "lane-change",
+    "samples": 360,
+    "speed_kmh": [
+      50.02439874299734,
+      60.67915869404537
+    ],
+    "pitch_deg": 0.3237689007181835,
+    "roll_deg": 1.4494419284674835,
+    "heave_cm": 1.8181762033120508,
+    "unloaded_frames": 0,
+    "longest_unloaded_seconds": 0.0,
+    "max_compression_cm": 1.3190018794131317,
+    "heading_change_deg": 1.4733521125975464
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "junction-turn",
+    "samples": 360,
+    "speed_kmh": [
+      11.002546120001977,
+      15.016659549576136
+    ],
+    "pitch_deg": 1.2279372320775441,
+    "roll_deg": 8.628609179097278,
+    "heave_cm": 3.6986419605916114,
+    "unloaded_frames": 43,
+    "longest_unloaded_seconds": 0.21666666666666667,
+    "max_compression_cm": 2.54305318850005,
+    "heading_change_deg": 100.19902745497981
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "kerb",
+    "samples": 360,
+    "speed_kmh": [
+      23.673495834658066,
+      25.5641017951936
+    ],
+    "pitch_deg": 0.4325702346364476,
+    "roll_deg": 6.02202528713781,
+    "heave_cm": 1.8261753030782184,
+    "unloaded_frames": 1,
+    "longest_unloaded_seconds": 0.016666666666666666,
+    "max_compression_cm": 1.5867784187925977,
+    "heading_change_deg": 3.1691793791642455
+  },
+  {
+    "camera": "cockpit",
+    "scenario": "bump",
+    "samples": 360,
+    "speed_kmh": [
+      7.247253920247586,
+      27.55365339567738
+    ],
+    "pitch_deg": 5.515209590741794,
+    "roll_deg": 0.6158811994915967,
+    "heave_cm": 30.751601379181032,
+    "unloaded_frames": 21,
+    "longest_unloaded_seconds": 0.3,
+    "max_compression_cm": 8.371117754111964,
+    "heading_change_deg": -0.014624503888879769
+  }
+]

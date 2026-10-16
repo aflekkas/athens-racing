@@ -1,0 +1,110 @@
+[
+  {
+    "id": "mini_cabrio_jcw",
+    "view": 0,
+    "triangles": 58530,
+    "drawCalls": 110,
+    "geometries": 104,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "view": 1,
+    "triangles": 58530,
+    "drawCalls": 110,
+    "geometries": 104,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "mini_cabrio_jcw",
+    "view": 2,
+    "triangles": 47728,
+    "drawCalls": 81,
+    "geometries": 124,
+    "textures": 7,
+    "heap": 29400000
+  },
+  {
+    "id": "cle300e",
+    "view": 0,
+    "triangles": 70384,
+    "drawCalls": 107,
+    "geometries": 100,
+    "textures": 9,
+    "heap": 29400000
+  },
+  {
+    "id": "cle300e",
+    "view": 1,
+    "triangles": 70384,
+    "drawCalls": 107,
+    "geometries": 100,
+    "textures": 9,
+    "heap": 29400000
+  },
+  {
+    "id": "cle300e",
+    "view": 2,
+    "triangles": 57184,
+    "drawCalls": 79,
+    "geometries": 125,
+    "textures": 12,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz",
+    "view": 0,
+    "triangles": 46732,
+    "drawCalls": 98,
+    "geometries": 96,
+    "textures": 14,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz",
+    "view": 1,
+    "triangles": 46732,
+    "drawCalls": 98,
+    "geometries": 96,
+    "textures": 14,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz",
+    "view": 2,
+    "triangles": 36354,
+    "drawCalls": 75,
+    "geometries": 119,
+    "textures": 16,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz_dynamic",
+    "view": 0,
+    "triangles": 47512,
+    "drawCalls": 99,
+    "geometries": 99,
+    "textures": 18,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz_dynamic",
+    "view": 1,
+    "triangles": 47512,
+    "drawCalls": 99,
+    "geometries": 99,
+    "textures": 18,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz_dynamic",
+    "view": 2,
+    "triangles": 36582,
+    "drawCalls": 76,
+    "geometries": 122,
+    "textures": 20,
+    "heap": 29400000
+  }
+]

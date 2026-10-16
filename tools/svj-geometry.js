@@ -9,6 +9,7 @@ export function checkSVJGeometry(){
  check('four wheels on 2.70m wheelbase',car.wheels.length===4&&Math.abs(car.wheels[2].pivot.position.z-car.wheels[0].pivot.position.z-2.7)<.01,car.wheels.map(w=>w.pivot.position.toArray()));
  check('high central twin hex outlets',car.exhaust.length===2&&car.exhaust.every(p=>Math.abs(p.x)<.2&&p.y>.7&&p.z>2.5),car.exhaust.map(p=>p.toArray()));
  const fx=car.exhaustFlames,s={rpm:7800,redline:8500,throttle:1,events:[{serial:1,type:'shift-start',direction:1}]};fx.update(.016,s,true,'high');check('flash on high',fx.light.visible&&fx.light.intensity>0,fx.light.intensity);
+ check('six axial noise-textured ribbons, no cone geometry',fx.flames.length===6&&fx.noiseMap.isDataTexture&&fx.flames.every(f=>f.geometry===fx.ribbonGeometry&&f.material.isShaderMaterial&&f.scale.z>.3&&f.scale.z<=.8));
  car.root.position.set(7,2,-13);car.root.rotation.set(.12,1.3,-.1);car.body.rotation.set(.08,0,.06);car.root.updateMatrixWorld(true);
  for(let i=0;i<2;i++){const expected=car.body.localToWorld(car.exhaust[i].clone()),actual=fx.group.children[i].getWorldPosition(new THREE.Vector3());check('flame attached through body pitch/roll '+i,expected.distanceTo(actual)<1e-6,expected.distanceTo(actual));}
  fx.beginMirror(car.body);fx.mirrorRoot.updateMatrixWorld(true);check('mirror proxy keeps exhaust world position',fx.mirrorRoot.children[0].getWorldPosition(new THREE.Vector3()).distanceTo(car.body.localToWorld(car.exhaust[0].clone()))<1e-6);fx.endMirror();

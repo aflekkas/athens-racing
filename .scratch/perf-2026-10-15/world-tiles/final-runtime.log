@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 1 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 12.50151
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 2 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 4.689881
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 3 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.377725
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 4 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 5.991075
+  type: 'test'
+  ...
+# Subtest: menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+ok 5 - menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+  ---
+  duration_ms: 44.742235
+  type: 'test'
+  ...
+# Subtest: stale transferred results cannot activate after movement or disposal
+ok 6 - stale transferred results cannot activate after movement or disposal
+  ---
+  duration_ms: 11.111759
+  type: 'test'
+  ...
+# Subtest: spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+ok 7 - spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+  ---
+  duration_ms: 6.686943
+  type: 'test'
+  ...
+# Subtest: activation is incremental and target is moved only after complete activation
+ok 8 - activation is incremental and target is moved only after complete activation
+  ---
+  duration_ms: 7.186664
+  type: 'test'
+  ...
+# Subtest: failed loads retry twice; reservations are released and explicit retry recovers
+ok 9 - failed loads retry twice; reservations are released and explicit retry recovers
+  ---
+  duration_ms: 6.992212
+  type: 'test'
+  ...
+# Subtest: floating origin stays on the grid over 30 km without changing logical cell IDs
+ok 10 - floating origin stays on the grid over 30 km without changing logical cell IDs
+  ---
+  duration_ms: 7.083721
+  type: 'test'
+  ...
+# Subtest: shared resources dispose once after the last owner releases
+ok 11 - shared resources dispose once after the last owner releases
+  ---
+  duration_ms: 0.774234
+  type: 'test'
+  ...
+# Subtest: layered contacts choose bridge, tunnel or ground by height and explicit layer
+ok 12 - layered contacts choose bridge, tunnel or ground by height and explicit layer
+  ---
+  duration_ms: 5.687669
+  type: 'test'
+  ...
+# Subtest: worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+ok 13 - worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+  ---
+  duration_ms: 169.691844
+  type: 'test'
+  ...
+# Subtest: twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+ok 14 - twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+  ---
+  duration_ms: 303.634442
+  type: 'test'
+  ...
+# Subtest: tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+ok 15 - tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+  ---
+  duration_ms: 11.232593
+  type: 'test'
+  ...
+# Subtest: crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+ok 16 - crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+  ---
+  duration_ms: 5.918631
+  type: 'test'
+  ...
+# Subtest: an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+ok 17 - an ahead contact tile can replace a less urgent neighbour when the safety ring fills the cap
+  ---
+  duration_ms: 8.859842
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 861.915667

@@ -8,6 +8,39 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Cockpit views put the road first, with compact readable instruments, no hands, and per-car seat height and position controls.
+
+  ![A clear Riviera cockpit view with a compact instrument band](assets/changelog/2026.10.15.3/pov-camera.webp "More road in view. Your seat position, saved for each car.")
+
+- Drive blocky cars, buses, trucks and bikes with simpler shapes, dark exterior windows and clear, hands-free cockpit views.
+  ![Blocky MINI, SVJ, Athens bus and motorcycle](assets/changelog/2026.10.15.4/lowpoly-vehicles.webp "Familiar silhouettes, fewer polygons, and an open view of the road.")
+
+- Race notices are smaller and clearer. Related warnings combine, tow actions work with touch and controllers, and alerts stay clear of the driving instruments.
+  ![One compact engine warning with a working tow and repair action](assets/changelog/2026.10.15.3/compact-race-notices.webp "One warning. One recovery action.")
+
+- Hills regain subtle earth, scrub and rock colours, while bright plaster and muted accent colours make building blocks stand out.
+  ![Varied earth colours and contrasting Riviera building blocks](assets/changelog/2026.10.15.4/world-colour.webp "Subtle landscape texture, distinct building colours.")
+
+- The Citaro bus and delivery vehicles now settle smoothly after bumps and turns, with steadier suspension for scooters and motorbikes.
+  ![The Citaro bus driving along the Riviera](assets/changelog/2026.10.15.3/bus-suspension.webp "A softer, controlled ride for the heavy fleet.")
+
+- Known terrain issue: some distant slopes still show small sky-coloured gaps; a terrain fix is being tracked separately.
+  <!-- Pre-existing in 935cc47 per terrain-owner review. Evidence: .scratch/simplify-world/after-penteli-mid-afternoon.png; .scratch/simplify-world/after-riviera-owner-candidate-afternoon.png. -->
+
+- Race through a cleaner Athens: open mountain slopes, simple building blocks and blocky roadside objects, without trees or beach furniture.
+  ![Simplified Riviera road, hills and building blocks](assets/changelog/2026.10.15.4/simple-world.webp "Clear roads, open hills and simple shapes.")
+
+- Turn dynamic resolution on or off in Video settings; the road can adapt under load while the HUD stays sharp.
+  ![Dynamic resolution enabled in the Video settings](assets/changelog/2026.10.15.3/dynamic-resolution.webp "The picture adapts. Your HUD stays sharp.")
+
+- The title screen returns to the large Play card and four menu cards, with the logo on the left. It fits smaller screens while keeping account access and version links.
+  ![The restored Athens Racing title with its five menu cards](assets/changelog/2026.10.15.3/title-night-restored.webp "The night design returns.")
+
+- Use your phone as a steering wheel: scan a code, tilt to steer, and use touch pedals in solo or online races.
+  ![Phone steering wheel with throttle and brake pedals, calibration and gear buttons](assets/changelog/2026.10.15.4/phone-wheel.webp "Tilt your phone to steer and slide up the pedals for more throttle or brake.")
+
+- SVJ exhaust pops now throw flickering blue-white and orange jets, with crisp red rear lights.
+  ![Directional SVJ exhaust jets during an upshift](assets/changelog/2026.10.15.3/svj-flames-v2.webp "A sharp ISR bang and two hot jets.")
 - Steel guardrails protect steep coastal bends on the Riviera, with openings for side roads and beach paths.
   ![Steel guardrails beside a coastal bend on the Riviera](assets/changelog/2026.10.15.3/riviera-rails.webp "Coastal bends gain guardrails while beach access stays open.")
 

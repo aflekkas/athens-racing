@@ -1,0 +1,110 @@
+[
+  {
+    "id": "jazz_drift",
+    "view": 0,
+    "triangles": 48328,
+    "drawCalls": 99,
+    "geometries": 93,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz_drift",
+    "view": 1,
+    "triangles": 48328,
+    "drawCalls": 99,
+    "geometries": 93,
+    "textures": 4,
+    "heap": 29400000
+  },
+  {
+    "id": "jazz_drift",
+    "view": 2,
+    "triangles": 36916,
+    "drawCalls": 72,
+    "geometries": 112,
+    "textures": 7,
+    "heap": 29400000
+  },
+  {
+    "id": "aygo",
+    "view": 0,
+    "triangles": 13924,
+    "drawCalls": 274,
+    "geometries": 270,
+    "textures": 8,
+    "heap": 29400000
+  },
+  {
+    "id": "aygo",
+    "view": 1,
+    "triangles": 13924,
+    "drawCalls": 274,
+    "geometries": 270,
+    "textures": 8,
+    "heap": 29400000
+  },
+  {
+    "id": "aygo",
+    "view": 2,
+    "triangles": 7446,
+    "drawCalls": 132,
+    "geometries": 272,
+    "textures": 10,
+    "heap": 29400000
+  },
+  {
+    "id": "qashqai",
+    "view": 0,
+    "triangles": 14030,
+    "drawCalls": 276,
+    "geometries": 272,
+    "textures": 11,
+    "heap": 29400000
+  },
+  {
+    "id": "qashqai",
+    "view": 1,
+    "triangles": 14030,
+    "drawCalls": 276,
+    "geometries": 272,
+    "textures": 11,
+    "heap": 29400000
+  },
+  {
+    "id": "qashqai",
+    "view": 2,
+    "triangles": 7472,
+    "drawCalls": 136,
+    "geometries": 274,
+    "textures": 13,
+    "heap": 29400000
+  },
+  {
+    "id": "qashqai_dci",
+    "view": 0,
+    "triangles": 14030,
+    "drawCalls": 276,
+    "geometries": 272,
+    "textures": 14,
+    "heap": 29400000
+  },
+  {
+    "id": "qashqai_dci",
+    "view": 1,
+    "triangles": 14030,
+    "drawCalls": 276,
+    "geometries": 272,
+    "textures": 14,
+    "heap": 29400000
+  },
+  {
+    "id": "qashqai_dci",
+    "view": 2,
+    "triangles": 7472,
+    "drawCalls": 136,
+    "geometries": 274,
+    "textures": 16,
+    "heap": 29400000
+  }
+]

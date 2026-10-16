@@ -84,7 +84,7 @@ export class Signals {
     const housing = new THREE.BoxGeometry(0.34, 1.0, 0.26);
     const back = new THREE.BoxGeometry(0.6, 1.26, 0.03); back.translate(0, 0, -0.15);
     const visors = [];
-    for (let i = 0; i < 3; i++) { const v = new THREE.CylinderGeometry(0.135, 0.135, 0.2, 12, 1, true, Math.PI / 2, Math.PI); v.rotateX(Math.PI / 2); v.translate(0, 0.32 - i * 0.32, 0.23); visors.push(v); }
+    for (let i = 0; i < 3; i++) { const v = new THREE.CylinderGeometry(0.135, 0.135, 0.2, 4, 1, true, Math.PI / 2, Math.PI); v.rotateX(Math.PI / 2); v.translate(0, 0.32 - i * 0.32, 0.23); visors.push(v); }
     const visorG = mergeGeometries(visors.map((v) => v.toNonIndexed()));
     const disc = new THREE.CircleGeometry(0.105, 18);
     const pedBox = new THREE.BoxGeometry(0.3, 0.62, 0.2);
@@ -123,7 +123,7 @@ export class Signals {
         put(L.pG, pedFace, new THREE.Matrix4().makeTranslation(0, -0.15, 0.101).premultiply(m0));
         put(L.yellow, button, new THREE.Matrix4().makeTranslation(0, -1.25, 0.08).premultiply(m0));
       };
-      const pole = (s, u, h) => { route.point(s, u, pt); const g = new THREE.CylinderGeometry(0.075, 0.1, h, 10); g.translate(0, h / 2, 0); put(L.metal, g, trs(pt.x, pt.y + ROAD.curbH(route, s), pt.z, 0)); };
+      const pole = (s, u, h) => { route.point(s, u, pt); const g = new THREE.BoxGeometry(0.075*2, h, 0.1*2); g.translate(0, h / 2, 0); put(L.metal, g, trs(pt.x, pt.y + ROAD.curbH(route, s), pt.z, 0)); };
       const curbY = (s) => ROAD.curbH(route, s);
       for (const dir of [1, -1]) {
         const sStop = dir > 0 ? j.sF : j.sO, sFar = s0 + dir * 13;

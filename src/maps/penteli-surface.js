@@ -10,33 +10,6 @@ float pf(vec2 p){return .53*pn(p)+.28*pn(p*2.03)+.13*pn(p*4.07)+.06*pn(p*8.11);}
 `;
 const rgb = hex => `vec3(${new THREE.Color(hex).toArray().map(v=>v.toFixed(5)).join(',')})`;
 
-function hillsideMaterial() {
-  // Lambert + two albedo samples retains vegetation at LOW without the full PBR splat cost.
-  const mat=new THREE.MeshLambertMaterial({color:'#ffffff'});
-  mat.customProgramCacheKey=()=> 'penteli-maquis-ground-v2';
-  mat.onBeforeCompile=sh=>{
-    sh.uniforms.pDaylight={get value(){return COND_STATE.daylight;}};
-    sh.uniforms.pGrass={value:TX.grass_diff}; sh.uniforms.pRock={value:TX.rock_diff};
-    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 pWorld; varying vec3 pNormal;')
-      .replace('#include <begin_vertex>','#include <begin_vertex>\npWorld=(modelMatrix*vec4(position,1.)).xyz; pNormal=normalize(mat3(modelMatrix)*normal);');
-    sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>\nvarying vec3 pWorld; varying vec3 pNormal; uniform sampler2D pGrass; uniform sampler2D pRock; uniform float pDaylight; ${NOISE}`)
-      .replace('#include <color_fragment>',`#include <color_fragment>
-      vec2 p=pWorld.xz; float steep=1.-abs(normalize(pNormal).y);
-      float coverPatch=pf(p*.095), scrub=pn(p*.62)*.6+pn(p*1.7)*.4;
-      float grasses=dot(texture2D(pGrass,p*.28).rgb,vec3(.333));
-      float rockTex=dot(texture2D(pRock,p*.19).rgb,vec3(.333));
-      vec3 dry=${rgb('#b6a272')}*(.72+grasses*.7);
-      vec3 olive=mix(${rgb('#626d3e')},${rgb('#87915b')},pn(p*.31));
-      vec3 phrygana=mix(dry,olive,smoothstep(.35,.66,coverPatch));
-      phrygana=mix(phrygana,${rgb('#455438')},smoothstep(.52,.70,scrub)*.7);
-      float exposed=smoothstep(.52,.79,pf(p*.22)+steep*.75);
-      vec3 limestone=${rgb('#a5a294')}*(.7+rockTex*.85);
-      diffuseColor.rgb=mix(phrygana,limestone,exposed)*(.84+.32*pn(p*3.7));`)
-      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * (.32 * pDaylight);');
-  };
-  return mat;
-}
-
 function roadMaterial() {
   const mat=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.94});
   mat.userData.uniforms={uCross:{value:new Float32Array(16).fill(-9999)},uStop:{value:new Float32Array(8).fill(-9999)},uStopO:{value:new Float32Array(8).fill(-9999)}};
@@ -63,10 +36,7 @@ function roadMaterial() {
 }
 
 export function buildPenteliSurface(scene,map,heightC) {
-  const terrain=hillsideMaterial(), replaced=new Set();
-  // Terrain's aU attribute identifies the existing DEM tiles before scenery/road are added.
-  scene.traverse(o=>{if(o.isMesh&&o.geometry?.attributes.aU){replaced.add(o.material);o.material=terrain;}});
-  for(const material of replaced)material.dispose();
+  // Common terrain owns its material and quantized-position decoder.
   const group=new THREE.Group();group.name='penteli-road';scene.add(group);
   const asphalt=roadMaterial(), route=map.route;
   for(let start=-60;start<route.length+60;start+=400){
@@ -92,5 +62,5 @@ export function buildPenteliSurface(scene,map,heightC) {
   }
   // The common refined terrain owns shoulders and wheel contact on every map.
   // A second decorative fill ribbon can cross a neighbouring hairpin leg.
-  return {group,asphalt,dispose(){group.removeFromParent();group.traverse(o=>o.geometry?.dispose());asphalt.dispose();terrain.dispose();}};
+  return {group,asphalt,dispose(){group.removeFromParent();group.traverse(o=>o.geometry?.dispose());asphalt.dispose();}};
 }

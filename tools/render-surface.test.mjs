@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { coarseTerrainSampler } from '../src/terrain-surface.js';
-import { beachBedPose } from '../src/beach-placement.js';
+import {readFileSync} from 'node:fs';
 
 test('coarse beach contacts match rendered triangles, including a lowered seam and both diagonals', () => {
   for (const heights of [[.2,2,1,.5],[2,.2,.5,1]]) {
@@ -21,17 +21,8 @@ test('coarse beach contacts match rendered triangles, including a lowered seam a
   }
 });
 
-test('sunbed base corners rest on their own sloping terrain rather than the umbrella height', () => {
-  const height=(x,z)=>.8+.16*x-.09*z;
-  for(const yaw of [0,.8,2.3]){
-    const pose=beachBedPose(height,4,6,yaw);
-    const matrix=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(pose.pitch,yaw,pose.roll,'YXZ'));
-    for(const u of [-.35,.35])for(const v of [-.95,.95]){
-      const p=new THREE.Vector3(u,0,v).applyMatrix4(matrix).add(new THREE.Vector3(4,pose.height,6));
-      // Tilting also moves the footprint horizontally by a few mm.
-      assert.ok(Math.abs(p.y-height(p.x,p.z))<.006);
-    }
-  }
+test('owner lock removes beach furniture and furniture-dependent anchors',()=>{
+ for(const p of ['../src/nature.js','../src/people.js'])assert.doesNotMatch(readFileSync(new URL(p,import.meta.url),'utf8'),/sunbeds|beachBedPose|umbrellaGeo|parasolGeo/,'Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing.');
 });
 
 test('a hole surrounded by refined vertices is not a refined contact cell', async () => {

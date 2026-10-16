@@ -1,15 +1,16 @@
+import { squarePost, signFace } from './world-prop-geometries.js';
 // Event markers in the world: start / finish arches for events that don't use the fixed gantries of the full
 // route (segments, reverse runs), and speed-camera posts for speed-trap events. Rebuilt per event, cheap.
 import * as THREE from 'three';
 
-function bannerTex(text, bg, fg) {
+export function bannerTex(text, bg, fg) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 96;
   const g = c.getContext('2d');
   g.fillStyle = bg; g.fillRect(0, 0, 512, 96);
   // chequered ends
   for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) { g.fillStyle = (i + j) % 2 ? '#111' : '#f4f4f4'; g.fillRect(i * 16, j * 32, 16, 32); g.fillRect(512 - 96 + i * 16, j * 32, 16, 32); }
   g.fillStyle = fg; g.font = 'italic 900 64px "Barlow Condensed", Arial Narrow, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(text, 256, 52);
+  g.fillText(text, 256, 52, 288);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return t;
 }
@@ -40,7 +41,7 @@ export class EventMarkers {
     const g = new THREE.Group(); g.position.set(f.x, route.y(s), f.z);
     g.rotation.y = Math.atan2(f.tx, f.tz) + (dir > 0 ? Math.PI : 0); // the banner faces oncoming racers
     const poleM = new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 });
-    const leg = new THREE.BoxGeometry(0.45, 7, 0.45); leg.translate(0, 3.5, 0);
+    const leg = squarePost(.45,7,.45,'gantry'); leg.translate(0, 3.5, 0);
     for (const sx of [-1, 1]) { const l = new THREE.Mesh(leg, poleM); l.position.x = sx * half; l.castShadow = true; g.add(l); }
     const tex = bannerTex(text, text === 'START' ? '#d8261d' : '#0c0f14', '#ffffff');
     const ban = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, half * 0.38), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
@@ -53,7 +54,7 @@ export class EventMarkers {
     const u = side * (route.edge(s) + 1.4), p = route.point(s, u);
     const g = new THREE.Group(); g.position.copy(p); g.rotation.y = Math.atan2(f.tx, f.tz) + (dir > 0 ? Math.PI : 0);
     const metal = new THREE.MeshStandardMaterial({ color: '#c9ced4', roughness: 0.4, metalness: 0.6 });
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 3.2, 8), metal); pole.position.y = 1.6; g.add(pole);
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.07*2, 3.2, 0.09*2), metal); pole.position.y = 1.6; g.add(pole);
     const box = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.7), new THREE.MeshStandardMaterial({ color: '#f2c200', roughness: 0.5 }));
     box.position.y = 3.3; g.add(box);
     const lens = new THREE.Mesh(new THREE.CircleGeometry(0.14, 16), new THREE.MeshBasicMaterial({ color: '#1a2633' })); lens.position.set(0, 3.32, -0.36); lens.rotation.y = Math.PI; g.add(lens);

@@ -1,0 +1,358 @@
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+BROWSER Failed to load resource: the server responded with a status of 404 (Not Found)
+MENU LOADED
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"as.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"as.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"as.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"as.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+STATUS {"state":"loading","body":"menu-backdrop loaded","text":"ar.\n\nRACE RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nPLAYING OFFLINE · Progress stays on this device"}
+RIVIERA LOADED
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR START mini
+BROWSER CAR SWITCHED mini
+BROWSER SCENE RENDERED mini
+BROWSER CAPTURE mini before
+BROWSER AUDIT mini before
+BROWSER CAPTURE mini after
+BROWSER AUDIT mini after
+BROWSER DONE mini
+mini {"pitch":-3.051159212877839,"eye":[-0.3713050000000635,1.220945123956028,0.25],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7484999895095825,0.9739999771118164,-0.6650000214576721],"max":[0.7484999895095825,1.3880000114440918,-0.23000000417232513]},"legacyEye":[-0.371305,1.16,0.29]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":288,"triangles":970446},"windscreenPercent":87.813671875,"openPixels":899212,"totalPixels":1024000,"width":1280,"height":800}
+Debugger listening on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR START z4
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR SWITCHED z4
+BROWSER SCENE RENDERED z4
+BROWSER CAPTURE z4 before
+BROWSER AUDIT z4 before
+BROWSER CAPTURE z4 after
+BROWSER AUDIT z4 after
+BROWSER DONE z4
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+z4 {"pitch":-3.0510606982194695,"eye":[-0.4007599999999343,1.1009451239560235,0.4299999999998363],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.8169999718666077,0.8840000033378601,-0.5049999952316284],"max":[0.8169999718666077,1.2769999504089355,0.12999999523162842]},"legacyEye":[-0.40076,1.04,0.47]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":289,"triangles":971406},"windscreenPercent":85.86533203125,"openPixels":879261,"totalPixels":1024000,"width":1280,"height":800}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR START taxi
+BROWSER CAR SWITCHED taxi
+BROWSER SCENE RENDERED taxi
+BROWSER CAPTURE taxi before
+BROWSER AUDIT taxi before
+BROWSER CAPTURE taxi after
+BROWSER AUDIT taxi after
+Debugger attached.
+BROWSER DONE taxi
+taxi {"pitch":-3.051085292113067,"eye":[-0.3932349999997199,1.2209451239560563,0.1600000000003092],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7994999885559082,0.9940000176429749,-0.9549999833106995],"max":[0.7994999885559082,1.4429999589920044,-0.3499999940395355]},"legacyEye":[-0.393235,1.16,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":289,"triangles":971396},"windscreenPercent":87.5888671875,"openPixels":896910,"totalPixels":1024000,"width":1280,"height":800}
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR START carrera
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR SWITCHED carrera
+BROWSER SCENE RENDERED carrera
+BROWSER CAPTURE carrera before
+BROWSER AUDIT carrera before
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+BROWSER CAPTURE carrera after
+BROWSER AUDIT carrera after
+BROWSER DONE carrera
+carrera {"pitch":-3.050921130089779,"eye":[-0.38871999999997786,1.0609451239560312,0.3199999999987994],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.761096259353714,"headerIntrusion":2.2058823529411766,"geometry":{"windscreen":{"min":[-0.7644613981246948,0.8940258026123047,-0.8850000500679016],"max":[0.7644613981246948,1.2769421339035034,-0.16497012972831726]},"legacyEye":[-0.38872,1,0.36]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":289,"triangles":971438},"windscreenPercent":87.2265625,"openPixels":893200,"totalPixels":1024000,"width":1280,"height":800}
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+STATUS {"state":"race","body":"loaded racing started","text":" RESULT\nVICTORY\nSELECT CAR\n1/6\n◀\nMINI COOPER S CABRIO\n▶\nENTER TAKE IT\n← → CHANGE CAR\nESC BACK\nSETTINGS\nPLAYING OFFLINE · Progress stays on this device"}
+BROWSER CAR START gr_yaris
+BROWSER CAR SWITCHED gr_yaris
+BROWSER SCENE RENDERED gr_yaris
+BROWSER CAPTURE gr_yaris before
+BROWSER AUDIT gr_yaris before
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+BROWSER CAPTURE gr_yaris after
+BROWSER AUDIT gr_yaris after
+BROWSER DONE gr_yaris
+gr_yaris {"pitch":-3.0511270218817645,"eye":[-0.3880750000000718,1.2159451239560186,0.1599999999998545],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.762499988079071,0.9940000176429749,-0.8849999904632568],"max":[0.762499988079071,1.4279999732971191,-0.3100000023841858]},"legacyEye":[-0.388075,1.155,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":288,"triangles":971382},"windscreenPercent":88.32392578125,"openPixels":904437,"totalPixels":1024000,"width":1280,"height":800}
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+BROWSER CAR START gtv
+BROWSER CAR SWITCHED gtv
+BROWSER SCENE RENDERED gtv
+BROWSER CAPTURE gtv before
+BROWSER AUDIT gtv before
+BROWSER CAPTURE gtv after
+BROWSER AUDIT gtv after
+BROWSER DONE gtv
+gtv {"pitch":-3.0511317412951033,"eye":[-0.33969999999999345,1.0759451239560462,0.1499999999996362],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0.7352941176470589,"geometry":{"windscreen":{"min":[-0.6502182483673096,0.8939999938011169,-0.8149999976158142],"max":[0.6502182483673096,1.3009999990463257,-0.27000001072883606]},"legacyEye":[-0.3397,1.015,0.19]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":289,"triangles":970990},"windscreenPercent":87.05107421875,"openPixels":891403,"totalPixels":1024000,"width":1280,"height":800}
+Debugger attached.
+BROWSER CAR START golf
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+BROWSER CAR SWITCHED golf
+BROWSER SCENE RENDERED golf
+BROWSER CAPTURE golf before
+BROWSER AUDIT golf before
+BROWSER CAPTURE golf after
+BROWSER AUDIT golf after
+BROWSER DONE golf
+golf {"pitch":-3.051101124292609,"eye":[-0.3867849999996906,1.2109451239560372,0.16000000000030923],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7444999814033508,1.0049999952316284,-0.8650000095367432],"max":[0.7444999814033508,1.4140000343322754,-0.3700000047683716]},"legacyEye":[-0.386785,1.15,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":288,"triangles":971382},"windscreenPercent":88.883984375,"openPixels":910172,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START corolla
+BROWSER CAR SWITCHED corolla
+BROWSER SCENE RENDERED corolla
+BROWSER CAPTURE corolla before
+BROWSER AUDIT corolla before
+BROWSER CAPTURE corolla after
+BROWSER AUDIT corolla after
+BROWSER DONE corolla
+corolla {"pitch":-3.051072315301707,"eye":[-0.3827000000002272,1.2039451239560464,0.16000000000030923],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7350000143051147,0.9950000047683716,-0.9049999713897705],"max":[0.7350000143051147,1.3969999551773071,-0.36000001430511475]},"legacyEye":[-0.3827,1.143,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":288,"triangles":971382},"windscreenPercent":88.3943359375,"openPixels":905158,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START superb
+BROWSER CAR SWITCHED superb
+BROWSER SCENE RENDERED superb
+BROWSER CAPTURE superb before
+BROWSER AUDIT superb before
+BROWSER CAPTURE superb after
+BROWSER AUDIT superb after
+BROWSER DONE superb
+superb {"pitch":-3.051038913999083,"eye":[-0.4007600000001048,1.2009451239560462,0.15999999999939973],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7770000100135803,1.0149999856948853,-1.0449999570846558],"max":[0.7770000100135803,1.4299999475479126,-0.4699999988079071]},"legacyEye":[-0.40076,1.14,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":290,"triangles":974990},"windscreenPercent":89.67109375,"openPixels":918232,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START police_octavia
+BROWSER CAR SWITCHED police_octavia
+BROWSER SCENE RENDERED police_octavia
+BROWSER CAPTURE police_octavia before
+BROWSER AUDIT police_octavia before
+BROWSER CAPTURE police_octavia after
+BROWSER AUDIT police_octavia after
+BROWSER DONE police_octavia
+police_octavia {"pitch":-3.0510853272680203,"eye":[-0.39323499999989064,1.2389451239560432,0.15999999999939976],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7595000267028809,1.0199999809265137,-0.9649999737739563],"max":[0.7595000267028809,1.4320000410079956,-0.38999998569488525]},"legacyEye":[-0.393235,1.178,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":289,"triangles":968780},"windscreenPercent":88.83740234375,"openPixels":909695,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START mini_jcw
+BROWSER CAR SWITCHED mini_jcw
+BROWSER SCENE RENDERED mini_jcw
+BROWSER CAPTURE mini_jcw before
+BROWSER AUDIT mini_jcw before
+BROWSER CAPTURE mini_jcw after
+BROWSER AUDIT mini_jcw after
+BROWSER DONE mini_jcw
+mini_jcw {"pitch":-3.051168709512026,"eye":[-0.37130499999972244,1.1609451239560258,0.29999999999972715],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7484999895095825,0.9739999771118164,-0.6949999928474426],"max":[0.7484999895095825,1.3869999647140503,-0.23999999463558197]},"legacyEye":[-0.371305,1.1,0.34]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":288,"triangles":965196},"windscreenPercent":88.9265625,"openPixels":910608,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START cle
+BROWSER CAR SWITCHED cle
+BROWSER SCENE RENDERED cle
+BROWSER CAPTURE cle before
+BROWSER AUDIT cle before
+BROWSER CAPTURE cle after
+BROWSER AUDIT cle after
+BROWSER DONE cle
+cle {"pitch":-3.0509965792763816,"eye":[-0.4001150000000847,1.1409451239560295,0.15999999999985445],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0.7352941176470589,"geometry":{"windscreen":{"min":[-0.8525000214576721,0.9850000143051147,-0.9850000143051147],"max":[0.8525000214576721,1.343000054359436,-0.3199999928474426]},"legacyEye":[-0.400115,1.08,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":286,"triangles":965172},"windscreenPercent":87.652734375,"openPixels":897564,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START gla
+BROWSER CAR SWITCHED gla
+BROWSER SCENE RENDERED gla
+BROWSER CAPTURE gla before
+BROWSER AUDIT gla before
+BROWSER CAPTURE gla after
+BROWSER AUDIT gla after
+BROWSER DONE gla
+gla {"pitch":-3.051080404169231,"eye":[-0.39431000000035965,1.3059451239560218,0.13999999999987267],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7820000052452087,1.0789999961853027,-0.9850000143051147],"max":[0.7820000052452087,1.5540000200271606,-0.4699999988079071]},"legacyEye":[-0.39431,1.245,0.18]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":286,"triangles":965172},"windscreenPercent":89.5970703125,"openPixels":917474,"totalPixels":1024000,"width":1280,"height":800}
+Debugger attached.
+Debugger attached.
+BROWSER CAR START cla
+BROWSER CAR SWITCHED cla
+BROWSER SCENE RENDERED cla
+BROWSER CAPTURE cla before
+BROWSER AUDIT cla before
+Debugger attached.
+BROWSER CAPTURE cla after
+BROWSER AUDIT cla after
+BROWSER DONE cla
+cla {"pitch":-3.0510633976774715,"eye":[-0.39344999999968866,1.1259451239560432,0.16999999999961798],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.8429999947547913,1.0119999647140503,-1.0149999856948853],"max":[0.8429999947547913,1.3730000257492065,-0.47999998927116394]},"legacyEye":[-0.39345,1.065,0.21]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":286,"triangles":965172},"windscreenPercent":89.7998046875,"openPixels":919550,"totalPixels":1024000,"width":1280,"height":800}
+Debugger attached.
+BROWSER CAR START aventador_svj
+BROWSER CAR SWITCHED aventador_svj
+BROWSER SCENE RENDERED aventador_svj
+BROWSER CAPTURE aventador_svj before
+BROWSER AUDIT aventador_svj before
+BROWSER CAPTURE aventador_svj after
+BROWSER AUDIT aventador_svj after
+BROWSER DONE aventador_svj
+aventador_svj {"pitch":-3.0509485923330373,"eye":[-0.45107000000007247,0.950945123956032,-0.07000000000016371],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.8399999737739563,0.7799999713897705,-1.100000023841858],"max":[0.8399999737739563,1.1160000562667847,-0.4399999976158142]},"legacyEye":[-0.45106999999999997,0.89,-0.03]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":281,"triangles":964204},"windscreenPercent":87.88896484375,"openPixels":899983,"totalPixels":1024000,"width":1280,"height":800}
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+BROWSER CAR START superb
+BROWSER CAR SWITCHED superb
+BROWSER SUPERB PROBE [{"name":"","type":"Mesh","distance":235.64773408091628,"ancestors":["Mesh","buildings","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-facade"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":8965.00555248577,"ancestors":["Mesh","Scene"],"material":[{"name":"","type":"ShaderMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[1050.2654761380059,8.471308582923918,2489.9181038424913],"scale":[1,1,1]}]
+BROWSER SUPERB PROBE [{"name":"","type":"Mesh","distance":67.84963889795266,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":68.17093657110435,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":68.25313581088339,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":69.38365677883132,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":69.49403520466157,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"scenery-impostor","type":"Mesh","distance":70.83307506553972,"ancestors":["scenery-impostor","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshLambertMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":8971.950497215486,"ancestors":["Mesh","Scene"],"material":[{"name":"","type":"ShaderMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[1050.2654761380059,8.471308582923918,2489.9181038424913],"scale":[1,1,1]}]
+BROWSER SCENE RENDERED superb
+BROWSER CAPTURE superb before
+BROWSER SUPERB PROBE [{"name":"","type":"Mesh","distance":67.5159299616541,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":67.6606360889971,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":67.91905482027998,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"scenery-impostor","type":"Mesh","distance":69.83976649661159,"ancestors":["scenery-impostor","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshLambertMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":70.58763001331397,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":70.89658300026723,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":8976.323886981767,"ancestors":["Mesh","Scene"],"material":[{"name":"","type":"ShaderMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[1050.2654761380059,8.471308582923918,2489.9181038424913],"scale":[1,1,1]}]
+BROWSER AUDIT superb before
+BROWSER CAPTURE superb after
+BROWSER SUPERB PROBE [{"name":"","type":"Mesh","distance":67.88657886497406,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":68.16157095670027,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":68.21744917219365,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":69.92002102002952,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":69.96090325018399,"ancestors":["Mesh","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshStandardMaterial","transparent":false,"opacity":1,"userData":{"wx":"wx-leaf"}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"scenery-impostor","type":"Mesh","distance":70.67267820580221,"ancestors":["scenery-impostor","nature","map-world:riviera","Scene"],"material":[{"name":"","type":"MeshLambertMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[0,0,0],"scale":[1,1,1]},{"name":"","type":"Mesh","distance":8972.163766366026,"ancestors":["Mesh","Scene"],"material":[{"name":"","type":"ShaderMaterial","transparent":false,"opacity":1,"userData":{}}],"position":[1050.2654761380059,8.471308582923918,2489.9181038424913],"scale":[1,1,1]}]
+BROWSER AUDIT superb after
+BROWSER DONE superb
+superb {"pitch":-3.051038913999083,"eye":[-0.4007600000001048,1.2009451239560462,0.15999999999939973],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7770000100135803,1.0149999856948853,-1.0449999570846558],"max":[0.7770000100135803,1.4299999475479126,-0.4699999988079071]},"legacyEye":[-0.40076,1.14,0.2]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":286,"triangles":965172},"windscreenPercent":89.67109375,"openPixels":918232,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START huracan
+BROWSER CAR SWITCHED huracan
+BROWSER SCENE RENDERED huracan
+BROWSER CAPTURE huracan before
+BROWSER AUDIT huracan before
+BROWSER CAPTURE huracan after
+BROWSER AUDIT huracan after
+BROWSER DONE huracan
+huracan {"pitch":-3.0509536613452757,"eye":[-0.41559499999982563,0.9309451239560218,-0.09999999999990905],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.800000011920929,0.7686234712600708,-1.0199999809265137],"max":[0.800000011920929,1.0795308351516724,-0.46000000834465027]},"legacyEye":[-0.415595,0.87,-0.06]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":280,"triangles":963388},"windscreenPercent":86.48330078125,"openPixels":885589,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START ibiza
+BROWSER CAR SWITCHED ibiza
+BROWSER SCENE RENDERED ibiza
+BROWSER CAPTURE ibiza before
+BROWSER AUDIT ibiza before
+BROWSER CAPTURE ibiza after
+BROWSER AUDIT ibiza after
+BROWSER DONE ibiza
+ibiza {"pitch":-3.0511790447905938,"eye":[-0.35259999999999536,1.1409451239560298,0.2299999999991087],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7049999833106995,0.9240000247955322,-0.824999988079071],"max":[0.7049999833106995,1.3869999647140503,-0.25]},"legacyEye":[-0.35259999999999997,1.08,0.27]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":288,"triangles":965180},"windscreenPercent":88.74677734375,"openPixels":908767,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START panda
+BROWSER CAR SWITCHED panda
+BROWSER SCENE RENDERED panda
+BROWSER CAPTURE panda before
+BROWSER AUDIT panda before
+BROWSER CAPTURE panda after
+BROWSER AUDIT panda after
+BROWSER DONE panda
+panda {"pitch":-3.051220997980526,"eye":[-0.33926999999994223,1.3009451239560406,0.05999999999994543],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.6740000247955322,0.984000027179718,-0.8550000190734863],"max":[0.6740000247955322,1.5130000114440918,-0.3799999952316284]},"legacyEye":[-0.33927,1.24,0.1]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":283,"triangles":964252},"windscreenPercent":87.2744140625,"openPixels":893690,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START yaris
+BROWSER CAR SWITCHED yaris
+BROWSER SCENE RENDERED yaris
+BROWSER CAPTURE yaris before
+BROWSER AUDIT yaris before
+Debugger attached.
+BROWSER CAPTURE yaris after
+BROWSER AUDIT yaris after
+BROWSER DONE yaris
+yaris {"pitch":-3.0512049589858514,"eye":[-0.35689999999988237,1.2609451239560487,0.14999999999963623],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7149999737739563,0.9639999866485596,-0.9350000023841858],"max":[0.7149999737739563,1.4730000495910645,-0.3400000035762787]},"legacyEye":[-0.3569,1.2,0.19]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":290,"triangles":969260},"windscreenPercent":88.86982421875,"openPixels":910027,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START e36
+Debugger ending on ws://127.0.0.1:9229/ef82de62-59f7-4440-a047-057ed0b4147a
+For help, see: https://nodejs.org/learn/getting-started/debugging
+BROWSER CAR SWITCHED e36
+BROWSER SCENE RENDERED e36
+BROWSER CAPTURE e36 before
+BROWSER AUDIT e36 before
+BROWSER CAPTURE e36 after
+BROWSER AUDIT e36 after
+BROWSER DONE e36
+e36 {"pitch":-3.0510066853344093,"eye":[-0.3650700000000029,1.1209451239560337,0.2199999999997999],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.734000027179718,0.9240000247955322,-0.875],"max":[0.734000027179718,1.3660000562667847,-0.3499999940395355]},"legacyEye":[-0.36507,1.06,0.26]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":291,"triangles":969828},"windscreenPercent":89.6001953125,"openPixels":917506,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START jazz
+BROWSER CAR SWITCHED jazz
+BROWSER SCENE RENDERED jazz
+BROWSER CAPTURE jazz before
+BROWSER AUDIT jazz before
+BROWSER CAPTURE jazz after
+BROWSER AUDIT jazz after
+BROWSER DONE jazz
+jazz {"pitch":-3.0511467111681854,"eye":[-0.36421000000035514,1.2909451239560352,0.060000000000400164],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7319999933242798,1.034000039100647,-1.1749999523162842],"max":[0.7319999933242798,1.5230000019073486,-0.47999998927116394]},"legacyEye":[-0.36421,1.23,0.1]},"mirrors":[{"name":"interior","inView":true,"clear":true},{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":287,"triangles":968836},"windscreenPercent":88.607421875,"openPixels":907340,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START aygo
+BROWSER CAR SWITCHED aygo
+BROWSER SCENE RENDERED aygo
+BROWSER CAPTURE aygo before
+BROWSER AUDIT aygo before
+BROWSER CAPTURE aygo after
+BROWSER AUDIT aygo after
+BROWSER DONE aygo
+aygo {"pitch":-3.051205708325981,"eye":[-0.3499999999999659,1.1389850881133299,0.12000000000034561],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.6524999737739563,0.9649999737739563,-0.8650000095367432],"max":[0.6524999737739563,1.4220000505447388,-0.38999998569488525]},"legacyEye":[-0.35,1.16,0.16]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":281,"triangles":968878},"windscreenPercent":89.41416015625,"openPixels":915601,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START qashqai
+BROWSER CAR SWITCHED qashqai
+BROWSER SCENE RENDERED qashqai
+BROWSER CAPTURE qashqai before
+BROWSER AUDIT qashqai before
+BROWSER CAPTURE qashqai after
+BROWSER AUDIT qashqai after
+BROWSER DONE qashqai
+qashqai {"pitch":-3.0510981649230535,"eye":[-0.3899999999999295,1.2689850881133395,0.15999999999939973],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7480000257492065,1.1050000190734863,-0.8949999809265137],"max":[0.7480000257492065,1.5520000457763672,-0.4000000059604645]},"legacyEye":[-0.39,1.29,0.2]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":283,"triangles":969510},"windscreenPercent":89.20546875,"openPixels":913464,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START dolphin
+BROWSER CAR SWITCHED dolphin
+BROWSER SCENE RENDERED dolphin
+BROWSER CAPTURE dolphin before
+BROWSER AUDIT dolphin before
+BROWSER CAPTURE dolphin after
+BROWSER AUDIT dolphin after
+BROWSER DONE dolphin
+dolphin {"pitch":-3.0510638737434466,"eye":[-0.3717000000001463,1.2789850881133165,0.059999999999945444],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7300000190734863,1.0750000476837158,-1.065000057220459],"max":[0.7300000190734863,1.531999945640564,-0.6100000143051147]},"legacyEye":[-0.3717,1.3,0.1]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":279,"triangles":968590},"windscreenPercent":89.29267578125,"openPixels":914357,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START atto3
+BROWSER CAR SWITCHED atto3
+BROWSER SCENE RENDERED atto3
+BROWSER CAPTURE atto3 before
+BROWSER AUDIT atto3 before
+BROWSER CAPTURE atto3 after
+BROWSER AUDIT atto3 after
+BROWSER DONE atto3
+atto3 {"pitch":-3.0510578701141955,"eye":[-0.3937499999998977,1.3239850881133322,0.05999999999994543],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.7825000286102295,1.1349999904632568,-0.9750000238418579],"max":[0.7825000286102295,1.5770000219345093,-0.4300000071525574]},"legacyEye":[-0.39375,1.345,0.1]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":279,"triangles":968590},"windscreenPercent":88.95947265625,"openPixels":910945,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START van
+BROWSER CAR SWITCHED van
+BROWSER SCENE RENDERED van
+BROWSER CAPTURE van before
+BROWSER AUDIT van before
+BROWSER CAPTURE van after
+BROWSER AUDIT van after
+BROWSER DONE van
+van {"pitch":-3.0509057952435987,"eye":[-0.4639999999998281,1.7989850881133123,-1.0600000000004002],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.925000011920929,1.309999942779541,-1.940000057220459],"max":[0.925000011920929,2.1600000858306885,-1.309999942779541]},"legacyEye":[-0.464,1.82,-1.02]},"mirrors":[{"name":"left","inView":false,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":274,"triangles":967398},"windscreenPercent":89.27119140625,"openPixels":914137,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START truck
+BROWSER CAR SWITCHED truck
+BROWSER SCENE RENDERED truck
+BROWSER CAPTURE truck before
+BROWSER AUDIT truck before
+BROWSER CAPTURE truck after
+BROWSER AUDIT truck after
+BROWSER DONE truck
+truck {"pitch":-3.0509659959341096,"eye":[-0.4560000000001878,1.9589850881132946,-1.8400000000001455],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0,"geometry":{"windscreen":{"min":[-0.9150000214576721,1.3600000143051147,-3.203000068664551],"max":[0.9150000214576721,2.190000057220459,-2.8399999141693115]},"legacyEye":[-0.456,1.98,-1.8]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":275,"triangles":963350},"windscreenPercent":85.5958984375,"openPixels":876502,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START bus
+BROWSER CAR SWITCHED bus
+BROWSER SCENE RENDERED bus
+BROWSER CAPTURE bus before
+BROWSER AUDIT bus before
+BROWSER CAPTURE bus after
+BROWSER AUDIT bus after
+BROWSER DONE bus
+bus {"pitch":-3.051150077741972,"eye":[-0.6599999999997975,1.8712400836330114,-4.920000000000072],"roadVisible":100,"clusterOcclusion":0,"rimOcclusion":0,"telltalesBlocked":0,"horizonFromTop":45.76109625935371,"headerIntrusion":0.7352941176470589,"geometry":{"windscreen":{"min":[-1.2000000476837158,1.274999976158142,-6.00600004196167],"max":[1.2000000476837158,2.625,-6.00600004196167]},"legacyEye":[-0.66,1.86,-4.88]},"mirrors":[{"name":"left","inView":true,"clear":true},{"name":"right","inView":false,"clear":true}],"nearPlaneObstructions":0,"visibleCharacters":[],"flags":[],"render":{"calls":275,"triangles":962838},"windscreenPercent":86.66494140625,"openPixels":887449,"totalPixels":1024000,"width":1280,"height":800}
+BROWSER CAR START delivery
+BROWSER CAR SWITCHED delivery
+ASTIR
+50
+RACE RESULT
+VICTORY
+SELECT CAR
+1/6
+◀
+MINI COOPER S CABRIO
+▶
+ENTER TAKE IT
+← → CHANGE CAR
+ESC BACK
+SETTINGS
+PLAYING OFFLINE · Progress stays on this device
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.evaluate: TypeError: Cannot set properties of undefined (setting 'emissiveIntensity')
+    at setCarLights (http://127.0.0.1:46765/src/vehicle-models.js:521:102)
+    at updateWeather (http://127.0.0.1:46765/src/weather.js:412:85)
+    at render (http://127.0.0.1:46765/src/main.js:2217:3)
+    at Object.render (http://127.0.0.1:46765/src/main.js:348:80)
+    at eval (eval at evaluate (:370:30), <anonymous>:4:181)
+    at async <anonymous>:396:30
+    at /tmp/pov-camera-work/tools/pov-camera-browser.mjs:19:24 {
+  log: []
+}
+
+Node.js v22.23.3

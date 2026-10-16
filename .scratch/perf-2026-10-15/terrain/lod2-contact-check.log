@@ -1,0 +1,6 @@
+{
+  map: 'megara',
+  checked: 32,
+  maxError: 1.7763568394002505e-15,
+  description: 'Queries restore only their patch before sampling, and each exact sampled triangle is present in the current active draw buffer.'
+}

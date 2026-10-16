@@ -1,0 +1,15 @@
+{
+  "base": "8940394",
+  "gates": {
+    "npm": 0,
+    "physics": 0,
+    "events": 0,
+    "syntax": 0,
+    "imports": 0,
+    "worker": 0
+  },
+  "physicsPassed": 1141,
+  "finalFocusedPassed": 22,
+  "finalFocusedFailures": 0,
+  "note": "Full suite passed; after removing the inactive shader experiment, final adapter/worker affected tests were rerun separately (22 passed). Other required checks also passed."
+}

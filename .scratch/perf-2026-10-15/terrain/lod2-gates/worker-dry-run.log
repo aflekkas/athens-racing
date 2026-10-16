@@ -1,0 +1,73 @@
+
+ ⛅️ wrangler 4.151.0
+────────────────────
+
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+[custom build] Running: ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs
+[custom build] Browser import graph checked: 221 modules.
+[custom build] 
+[custom build] Baked riviera terrain: 15198072 bytes
+[custom build] 
+[custom build] Baked riviera roads: 19689626 bytes
+[custom build] 
+[custom build] Baked riviera in 243182 ms
+[custom build] 
+[custom build] Baked megara terrain: 1044361 bytes
+[custom build] 
+[custom build] Baked megara roads: 301999 bytes
+[custom build] 
+[custom build] Baked megara in 8036 ms
+[custom build] 
+[custom build] Baked penteli terrain: 16916862 bytes
+[custom build] 
+[custom build] Baked penteli roads: 5416687 bytes
+[custom build] 
+[custom build] Baked penteli in 202211 ms
+[custom build] 
+[custom build] Bundled browser: 226 inputs, 33 ESM chunks, 2276578 bytes
+[custom build] 
+[custom build] {
+[custom build]   "assets": 1352,
+[custom build]   "bytes": 190032676,
+[custom build]   "largest": {
+[custom build]     "path": "_c/b7fd1a84944b2cd0.gz",
+[custom build]     "size": 19689626
+[custom build]   },
+[custom build]   "release": {
+[custom build]     "version": "2026.10.15.3",
+[custom build]     "sha": null,
+[custom build]     "build": "d1fa6bcf6705",
+[custom build]     "files": 652,
+[custom build]     "copies": 652,
+[custom build]     "swBytes": 47931
+[custom build]   },
+[custom build]   "maps": [
+[custom build]     {
+[custom build]       "id": "riviera",
+[custom build]       "version": "4718fbec",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1384 files from the assets directory /tmp/terrain-lod2-final-gate/.deploy/assets
+Total Upload: 631.12 KiB / gzip: 168.64 KiB
+Your Worker has access to the following bindings:
+Binding                                            Resource            
+env.GAME (GameArena)                               Durable Object      
+env.PRESENCE (FriendsPresence)                     Durable Object      
+env.WHEEL (PhoneWheelRoom)                         Durable Object      
+env.ACCOUNTS (athens-racing-accounts-staging)      D1 Database         
+env.ASSETS                                         Assets              
+
+--dry-run: exiting now.

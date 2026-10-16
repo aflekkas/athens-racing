@@ -1,0 +1,33 @@
+{
+  "baseline": "8940394",
+  "rows": [
+    {
+      "kind": "plain",
+      "workerGPUBytes": 60,
+      "before": {
+        "allocations": 3,
+        "bytes": 72,
+        "materialsAfterDispose": 0
+      },
+      "after": {
+        "allocations": 2,
+        "bytes": 60,
+        "materialsAfterDispose": 0
+      }
+    },
+    {
+      "kind": "quantized",
+      "workerGPUBytes": 52,
+      "before": {
+        "allocations": 5,
+        "bytes": 88,
+        "materialsAfterDispose": 0
+      },
+      "after": {
+        "allocations": 3,
+        "bytes": 52,
+        "materialsAfterDispose": 0
+      }
+    }
+  ]
+}

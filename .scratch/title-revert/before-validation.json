@@ -1,0 +1,167 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "width": 1280,
+      "height": 720,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": true,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "multiplayer",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": true,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "multiplayer",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": true,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "multiplayer",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 2560,
+      "height": 1440,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": true,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "multiplayer",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "clipped": [],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": true,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "multiplayer",
+        "garage",
+        "settings"
+      ]
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "clipped": [
+        {
+          "class": "title__mark",
+          "why": "outside viewport",
+          "rect": [
+            38.8125,
+            -43.96875,
+            298.8125,
+            26.46875
+          ]
+        },
+        {
+          "class": "brand-mark ",
+          "why": "outside viewport",
+          "rect": [
+            38.8125,
+            -35.640625,
+            92.578125,
+            18.125
+          ]
+        },
+        {
+          "class": "wordmark ",
+          "why": "outside viewport",
+          "rect": [
+            101.6875,
+            -43.96875,
+            257.9375,
+            26.46875
+          ]
+        },
+        {
+          "class": "mi option  ",
+          "why": "outside viewport",
+          "rect": [
+            38.8125,
+            354.65625,
+            298.8125,
+            429.65625
+          ]
+        },
+        {
+          "class": "option__ico",
+          "why": "outside viewport",
+          "rect": [
+            56.8125,
+            377.15625,
+            86.8125,
+            407.15625
+          ]
+        },
+        {
+          "class": "option__title",
+          "why": "outside viewport",
+          "rect": [
+            101.8125,
+            375.15625,
+            252.015625,
+            394.15625
+          ]
+        },
+        {
+          "class": "option__desc",
+          "why": "outside viewport",
+          "rect": [
+            101.8125,
+            397.15625,
+            252.015625,
+            409.15625
+          ]
+        }
+      ],
+      "worlds": 0,
+      "dataRequests": 0,
+      "hero": true,
+      "driverButton": "BUTTON",
+      "actions": [
+        "play",
+        "multiplayer",
+        "garage",
+        "settings"
+      ]
+    }
+  ],
+  "interactions": null
+}

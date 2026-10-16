@@ -1,0 +1,182 @@
+[
+  {
+    "frame": 0,
+    "time": 0,
+    "kind": 1,
+    "serial": 4,
+    "life": 0.06,
+    "rpm": 5131.993554313693,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 1,
+    "time": 0.016666666666666666,
+    "kind": 1,
+    "serial": 4,
+    "life": 0.043333333333333335,
+    "rpm": 5126.950610507119,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 2,
+    "time": 0.03333333333333333,
+    "kind": 1,
+    "serial": 4,
+    "life": 0.02666666666666667,
+    "rpm": 5124.6142762013515,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 3,
+    "time": 0.05,
+    "kind": 1,
+    "serial": 4,
+    "life": 0.010000000000000002,
+    "rpm": 5122.206812765901,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 4,
+    "time": 0.06666666666666667,
+    "kind": 1,
+    "serial": 4,
+    "life": 0,
+    "rpm": 5119.899918726826,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 5,
+    "time": 0.08333333333333333,
+    "kind": 1,
+    "serial": 4,
+    "life": 0,
+    "rpm": 5117.9058797923635,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 6,
+    "time": 0.1,
+    "kind": 1,
+    "serial": 4,
+    "life": 0,
+    "rpm": 5115.967806207014,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 7,
+    "time": 0.11666666666666667,
+    "kind": 1,
+    "serial": 4,
+    "life": 0,
+    "rpm": 5113.795107019798,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 8,
+    "time": 0.13333333333333333,
+    "kind": 1,
+    "serial": 4,
+    "life": 0,
+    "rpm": 5111.512763103096,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 9,
+    "time": 0.15,
+    "kind": 1,
+    "serial": 5,
+    "life": 0.06,
+    "rpm": 5109.442098547647,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 10,
+    "time": 0.16666666666666666,
+    "kind": 1,
+    "serial": 5,
+    "life": 0.043333333333333335,
+    "rpm": 5107.521433470764,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  },
+  {
+    "frame": 11,
+    "time": 0.18333333333333332,
+    "kind": 1,
+    "serial": 5,
+    "life": 0.02666666666666667,
+    "rpm": 5105.489343208512,
+    "throttle": 0,
+    "overrun": true,
+    "conditions": {
+      "time": "day",
+      "weather": "clear",
+      "hour": 14
+    }
+  }
+]

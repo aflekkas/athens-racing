@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+import {CARS} from '../src/cars.js';import {DEFAULTS} from '../src/settings.js';import {POV_MIN_WINDSCREEN} from '../src/pov-camera.js';
+import {povSourceHashes,countMaskPNG} from './pov-mask-evidence.mjs';
+const out='.scratch/pov-camera',why='Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing. Owner-locked: at least 80% windscreen at the default FOV/seat. See docs/OWNER-DECISIONS.md. Rerun tools/pov-camera-mask.mjs through tools/browser-slot.sh after geometry/camera changes.';
+test('every default vehicle cockpit has at least 80% see-through pixels in its rendered ID mask',async()=>{
+ assert.match(await fs.readFile('src/main.js','utf8'),/player\.cockpit\.setVisible\(G\.cam === 'cockpit'\)/,'POV visibility must be reapplied after per-frame damage/LOD updates. '+why);
+ const rows=JSON.parse(await fs.readFile(out+'/mask-audit.json','utf8')),sources=JSON.parse(await fs.readFile(out+'/mask-source-hashes.json','utf8'));
+ assert.deepEqual(sources,await povSourceHashes(),'Stale rendered masks. '+why);assert.deepEqual(rows.map(r=>r.id).sort(),CARS.map(c=>c.id).sort(),why);assert.equal(POV_MIN_WINDSCREEN,.8,why);
+ for(const row of rows){assert.ok(row.after.eye.every(Number.isFinite)&&Number.isFinite(row.after.pitch),row.id+' invalid camera');assert.ok(row.after.geometryAudit.clusterOcclusion<=5,row.id+' cluster must remain readable');assert.equal(row.after.geometryAudit.telltalesBlocked,0,row.id+' hidden telltales');assert.deepEqual(row.after.geometryAudit.visibleCharacters,[],row.id+' visible character geometry');assert.equal(row.fov,DEFAULTS.cockpitFov,why);assert.deepEqual(row.seat,{height:0,position:0},why);const measured=countMaskPNG(await fs.readFile(out+'/after-'+row.id+'-mask.png'));assert.equal(measured.openPixels,row.after.openPixels,row.id+' pixel-count mismatch');assert.equal(measured.totalPixels,row.after.totalPixels);assert.ok(measured.windscreenPercent>=80,row.id+': '+measured.windscreenPercent.toFixed(2)+'%. '+why);}
+});

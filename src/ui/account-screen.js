@@ -1,3 +1,4 @@
+import { notifications } from './notifications.js';
 import { privacyLink, legalLinks } from './legal-links.js';
 import * as C from "./components.js";
 import { AccountsClient } from "../accounts-client.js";
@@ -86,7 +87,8 @@ export function install(menu) {
       banner();
     },
     onInvite: () => {
-      C.ui.toast("LOBBY INVITE RECEIVED · OPEN ACCOUNT", {
+      C.ui.toast("LOBBY INVITE RECEIVED · Open Account from the pause menu", {
+        id: "lobby-invite", group: "lobby-invite",
         icon: "users-three",
         ms: 7000,
       });
@@ -94,9 +96,11 @@ export function install(menu) {
   }));
   const bypass = () =>
     new URLSearchParams(location.search).get("guest") === "1";
+  let wasOffline = false;
   const banner = () => {
     let el = document.querySelector("#accounts-offline");
     if (a.offline) {
+      if (!wasOffline) notifications.post({id:'playing-offline',title:'PLAYING OFFLINE',text:'Progress stays on this device',ms:5000,priority:10});
       if (!el) {
         el = document.createElement("div");
         el.id = "accounts-offline";
@@ -104,7 +108,8 @@ export function install(menu) {
         el.textContent = "PLAYING OFFLINE · Progress stays on this device";
         document.body.append(el);
       }
-    } else el?.remove();
+    } else { el?.remove(); notifications.dismiss('playing-offline'); }
+    wasOffline = !!a.offline;
   };
   const show = menu.show.bind(menu),
     hide = menu.hide.bind(menu),

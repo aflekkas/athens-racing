@@ -42,20 +42,14 @@ test('Penteli gravel contacts use rendered triangles and have no phantom sidewal
 });
 
 
-test('Penteli rock decoration follows ground and leaves the six-metre re-entry shoulder clear',async()=>{
+test('Penteli retains guardrails and has no decorative overlays above the re-entry shoulder',async()=>{
  const THREE=await import('three'),{buildScenery}=await import('../src/maps/penteli.js');
  const height=(x,z)=>terrain.height(x,z),scene=new THREE.Group(),world=buildScenery(scene,map,{heightC:height,assets:{network:map.roadNetwork}});
  const barriers=world.group.children.filter(m=>m.name.startsWith('Penteli barrier chunk'));
  assert.ok(barriers.length>0);
  for(const m of barriers){assert.ok(m.boundingSphere&&m.userData.lod&&m.userData.far);if(m.name.endsWith(':concrete'))assert.equal(m.material.side,THREE.DoubleSide,'both parapet faces remain visible on either road side');}
  const cut=world.group.children.find(m=>m.name.startsWith('EP5 layered natural rock cutting'));
- assert.ok(cut);const p=cut.geometry.attributes.position,ix=cut.geometry.index.array;let checked=0;
- for(const i of new Set(ix)){
-  const x=p.getX(i),z=p.getZ(i),q=route.project(x,z,null);
-  assert.ok(Math.abs(q.u)>route.edge(q.s)+5.99,'rock cut never occupies the drivable shoulder');
-  assert.ok(Math.abs(p.getY(i)-height(x,z)-.015)<.002,'decorative rock cannot float above contact terrain');checked++;
- }
- assert.ok(checked>100);world.dispose();
+ assert.equal(cut,undefined,'Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing.');world.dispose();
 });
 
 // Width, barrier placement, corridor and sliding-contact regressions.

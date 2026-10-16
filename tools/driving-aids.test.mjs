@@ -27,8 +27,8 @@ test('production flow toggles live in solo/online racing, settings subscriber ru
   const flow = source.slice(source.indexOf('function flowAction(name)'), source.indexOf('const inMenu = ()'));
   const G = { state: 'race' }, menu = { open: false, action: () => true }, notices = [];
   const controls = { toast: text => notices.push(text) };
-  const run = Function('menu', 'G', 'document', 'ui', 'multiplayer', 'window', 'MENU_STATES', 'toggleTractionControl', 'controls', flow + '; return flowAction;')(
-    menu, G, { body: { dataset: {} } }, { action: () => false }, { panel: { hidden: true } }, {}, ['menu', 'paused', 'results'], toggleTractionControl, controls);
+  const run = Function('menu', 'G', 'document', 'ui', 'multiplayer', 'window', 'MENU_STATES', 'toggleTractionControl', 'controls', 'notifications', 'activeInputDevice', flow + '; return flowAction;')(
+    menu, G, { body: { dataset: {} } }, { action: () => false }, { panel: { hidden: true } }, {}, ['menu', 'paused', 'results'], toggleTractionControl, controls, {action:()=>false}, ()=>'keyboard');
   let updates = 0;
   const original = settings.aids, unsubscribe = onSettings((s, key) => { if (key === 'aids') updates++; });
   try {

@@ -1,0 +1,35 @@
+# Owner-locked decisions
+
+These choices were made deliberately by the owner (Alexandros Lekkas). Don't change, revert or "improve" any of them without asking the owner first. Guard tests enforce several of them, and their failure messages point here. Add new entries at the bottom, dated, in the owner's words where possible.
+
+| Date | Decision | Notes |
+|---|---|---|
+| 2026-10-13 | No progression, points, XP or fines. Time is the only score. Car select, strong AI rivals. | Game design direction. |
+| 2026-10-15 | At most 2 AI rivals (default 2), solo and online. | "Rivals lag your computer (allow for 2 max)" (`ec0df39`). |
+| 2026-10-15 | The game is named **Athens Racing**, at athensracing.com. | Worker names and localStorage keys deliberately keep the old name (`272efb8`). |
+| 2026-10-15 | Accounts use **Google sign-in only**: no Discord, email codes or email sending. Sign-in is mandatory once Google is configured. | (`b585492`) |
+| 2026-10-15 | HUD motion (POV sway) defaults to **Full**. | (`1397702`) |
+| 2026-10-15 | **One graphics look:** today's Lighting OFF + Effects OFF. No Potato–Ultra presets and no lighting/effects selectors. | "I don't want it to go back." Being implemented with guard tests. |
+| 2026-10-15 | **No rear-view mirror in third-person/chase camera.** | Cockpit mirrors follow the mirrors setting. |
+| 2026-10-15 | **Simplified world:** no trees or vegetation, clean terrain (real mountains kept), buildings as clean blocks. | "We want to simplify this as much as possible." Being implemented with guard tests. |
+| 2026-10-15 | Every release's changelog (What's new) includes screenshots of the visible changes. | |
+| 2026-10-15 | **No street-photo proof rule** for any road or map. Maps are generated **bare simple** from OSM roads plus elevation: road shapes, terrain and building blocks. The goal is to build out all of Athens at minimal cost. | "I relax 100%, we don't need the photo rule for any streets." Supersedes the 2026-10-13 street-view rule. |
+
+2026-10-15: Title screen = the 2026-10-14 night design (aceb5bd), owner-chosen; don't redesign without asking.
+
+2026-10-15: Simplified world: no trees/vegetation, clean terrain, block buildings. **Blocky low-poly versions of real things; triangle budgets.** Real mountains, roads and re-entry shoulders retained. Buildings ≤40 triangles; street props ≤150; signs ≤60; pedestrians ≤400. No beach umbrellas, sun loungers or other beach furniture. Buildings have no windows, facade bands, balconies or roof details. Square lamp/gantry/post budgets live in `src/world-art-direction.js`; an 18-step beach stair flight has a documented 256-triangle ceiling. Guard: `tools/world-art-direction.test.mjs`. Ask the owner before changing.
+
+2026-10-15 owner refinement: **no trees/vegetation; terrain keeps simple colour/texture variation by area; buildings are plain boxes in colours distinct from the terrain.** Restore subtle ground, sand and rock texture tiling and broad slope/height/landuse tints, including Lighting Off + Effects Off. No vegetation meshes, painted shrub blobs or detailed buildings. This supersedes the constant-colour terrain requirement above; all object triangle budgets and beach-furniture removals remain locked.
+
+| Date | Decision | Notes |
+|---|---|---|
+| 2026-10-15 | **Blocky, recognisable vehicles with locked triangle budgets.** | “If you can scale down things in the game in terms of triangles (make things and shapes simpler), this will be optimal. Also for designing new things, they should be a blocky version of the real-life things.” See the vehicle limits below. |
+| 2026-10-15 | **No characters or hands in enclosed vehicles, anywhere.** | “I prefer if we don't have characters in the car” / “I don't want to have hands.” Player, rivals, traffic, police, online players, menu hero and garage thumbnails share empty exterior models. No driver, passenger, hand or arm rig. Shift levers and paddles may move without hands. Pedestrian ragdolls outside vehicles are unaffected. Bikes retain a minimal blocky rider silhouette only; it is hidden in the player's cockpit view. |
+| 2026-10-15 | **Exterior windows dark; cockpit windows invisible.** | “From inside appear to have no windows, from outside dark.” Exterior glazing is opaque dark glossy material. The player's own glazing meshes are hidden in cockpit view. Exterior models have no cabin furniture; the cockpit-only interior uses a thin dashboard band, with the camera pass targeting at least 80% windscreen view. |
+
+Vehicle geometry limits live in `src/vehicle-budgets.js` and are enforced for every catalogue configuration by `tools/vehicle-budgets.test.mjs`, included in `npm test`. Counts include rendered wheels and exterior attachments: player exterior at most 4,000 triangles (bus/truck 5,000), LOD1 below 1,000, LOD2 below 300, each spinning wheel below 150, cockpit below 3,000, bike rider below 600. Traffic near/far models follow the same exterior/LOD2 ceilings. Enclosed vehicle occupants and visible cockpit glass must both be zero. Existing wheel positions/radii, dimensions and exhaust anchors stay intact. The badge atlas remains decals. The guards reject nonfinite geometry and check glass visibility through repeated camera switches.
+
+Do not raise these limits or restore occupants/tinted cockpit glass without the owner's decision. Guard failures must say: **Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing.**
+
+| 2026-10-15 | **At least 80% of every default cockpit view is see-through windscreen/road.** Dash, compact readable instruments, pillars, header, mirror housing and any wheel share at most 20%. | “At least 80% of my view should be windshield.” Enforced for every config by the rendered ID-mask audit and POV guard test, at default cockpit FOV and zero seat offsets. Personal seat changes may use more of the frame. |
+| 2026-10-15 | **No driver, hands, arms or other characters in enclosed vehicles; bikes alone retain a minimal blocky rider.** A steering wheel may remain only inside the cockpit's 20% obstruction budget. | “I don't want to have hands.” Camera work must not reintroduce character geometry. |

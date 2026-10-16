@@ -411,7 +411,12 @@ export class Traffic {
       if (route.closed && this.allowClosedRoam) c.s += Math.round((ps - c.s) / route.length) * route.length;
       const ahead = (c.s - ps) * this.dir;
       if (c.cop && c.cop.keep) { if (!(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; } continue; }
-      if (!(this.onlineFoci || [ps]).some(focus => (c.s - focus) * this.dir >= -260 && (c.s - focus) * this.dir <= 1150) || !(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
+      let inFocus = ahead >= -260 && ahead <= 1150;
+      if (this.onlineFoci) {
+        inFocus = false;
+        for (let i = 0; i < this.onlineFoci.length; i++) { const d = (c.s - this.onlineFoci[i]) * this.dir; if (d >= -260 && d <= 1150) { inFocus = true; break; } }
+      }
+      if (!inFocus || !(route.closed && (this.allowClosedRoam || this.allowClosedPolice)) && (c.s < 5 || c.s > route.length - 5)) { c.active = false; c.m.root.visible = false; c.cross = null; continue; }
       if (this.onlineFoci && (ahead < -260 || ahead > 1150)) continue;
       if (c.mode === 'parked') parked++; else if (c.dir > 0) same++; else onc++;
     }

@@ -1,0 +1,170 @@
+TAP version 13
+# Bundled browser: 4 inputs, 4 ESM chunks, 613 bytes
+# Subtest: production chunks preserve source-relative resources and lazy imports while dev sources survive
+ok 1 - production chunks preserve source-relative resources and lazy imports while dev sources survive
+  ---
+  duration_ms: 336.376861
+  type: 'test'
+  ...
+# Bundled browser: 4 inputs, 5 ESM chunks, 363 bytes
+# Subtest: every map bake points to the published world worker, including Megara
+ok 2 - every map bake points to the published world worker, including Megara
+  ---
+  duration_ms: 190.52768
+  type: 'test'
+  ...
+# Subtest: catalogue-only setup resolves all tracks without reading map bundles
+ok 3 - catalogue-only setup resolves all tracks without reading map bundles
+  ---
+  duration_ms: 30.425426
+  type: 'test'
+  ...
+# Subtest: direct event URLs select their owning map before any bundle loads
+ok 4 - direct event URLs select their owning map before any bundle loads
+  ---
+  duration_ms: 1.040479
+  type: 'test'
+  ...
+# Subtest: service worker install never fetches map bundles, including an older data core list
+ok 5 - service worker install never fetches map bundles, including an older data core list
+  ---
+  duration_ms: 237.487181
+  type: 'test'
+  ...
+# Subtest: a menu-only client loads the resumed lobby track before loaded/start acknowledgements
+ok 6 - a menu-only client loads the resumed lobby track before loaded/start acknowledgements
+  ---
+  duration_ms: 113.348166
+  type: 'test'
+  ...
+# Subtest: idle saved tokens allow direct solo starts; resumed sessions identify their lobby first
+ok 7 - idle saved tokens allow direct solo starts; resumed sessions identify their lobby first
+  ---
+  duration_ms: 9.261792
+  type: 'test'
+  ...
+# Subtest: an unreachable saved session cannot block an offline direct solo URL indefinitely
+ok 8 - an unreachable saved session cannot block an offline direct solo URL indefinitely
+  ---
+  duration_ms: 9.873211
+  type: 'test'
+  ...
+# (node:3651867) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: npm test reaches every tools/server/worker test directly or through imports
+ok 9 - npm test reaches every tools/server/worker test directly or through imports
+  ---
+  duration_ms: 109.055034
+  type: 'test'
+  ...
+# Subtest: coverage guard catches an unwired test and follows imported suites and globs
+ok 10 - coverage guard catches an unwired test and follows imported suites and globs
+  ---
+  duration_ms: 10.585249
+  type: 'test'
+  ...
+# Subtest: AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+ok 11 - AWT/1 empty terrain tile is valid; unsupported revisions and malformed tables fail
+  ---
+  duration_ms: 19.418422
+  type: 'test'
+  ...
+# Subtest: canonical terrain seams reject one bit changes and missing boundary contact vertices
+ok 12 - canonical terrain seams reject one bit changes and missing boundary contact vertices
+  ---
+  duration_ms: 1.799864
+  type: 'test'
+  ...
+# Subtest: retained bytes count shared backing allocations once
+ok 13 - retained bytes count shared backing allocations once
+  ---
+  duration_ms: 0.421505
+  type: 'test'
+  ...
+# Subtest: contact indices, buildings and layer row alignment are checked before allocation
+ok 14 - contact indices, buildings and layer row alignment are checked before allocation
+  ---
+  duration_ms: 17.8027
+  type: 'test'
+  ...
+# Subtest: menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+ok 15 - menu construction is caller-owned; worker pool is lazy, rings and velocity prefetch respect byte caps
+  ---
+  duration_ms: 37.077945
+  type: 'test'
+  ...
+# Subtest: stale transferred results cannot activate after movement or disposal
+ok 16 - stale transferred results cannot activate after movement or disposal
+  ---
+  duration_ms: 4.860388
+  type: 'test'
+  ...
+# Subtest: spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+ok 17 - spawn and ref-counted tow pins survive eviction; unpinned distant cells release resources
+  ---
+  duration_ms: 7.115492
+  type: 'test'
+  ...
+# Subtest: activation is incremental and target is moved only after complete activation
+ok 18 - activation is incremental and target is moved only after complete activation
+  ---
+  duration_ms: 12.625081
+  type: 'test'
+  ...
+# Subtest: failed loads retry twice; reservations are released and explicit retry recovers
+ok 19 - failed loads retry twice; reservations are released and explicit retry recovers
+  ---
+  duration_ms: 13.70927
+  type: 'test'
+  ...
+# Subtest: floating origin stays on the grid over 30 km without changing logical cell IDs
+ok 20 - floating origin stays on the grid over 30 km without changing logical cell IDs
+  ---
+  duration_ms: 7.425039
+  type: 'test'
+  ...
+# Subtest: shared resources dispose once after the last owner releases
+ok 21 - shared resources dispose once after the last owner releases
+  ---
+  duration_ms: 3.104917
+  type: 'test'
+  ...
+# Subtest: layered contacts choose bridge, tunnel or ground by height and explicit layer
+ok 22 - layered contacts choose bridge, tunnel or ground by height and explicit layer
+  ---
+  duration_ms: 1.629196
+  type: 'test'
+  ...
+# Subtest: worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+ok 23 - worker fetch validates compressed integrity and refuses unbounded/range-ignored downloads
+  ---
+  duration_ms: 297.523115
+  type: 'test'
+  ...
+# Subtest: twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+ok 24 - twenty simulated minutes of high-speed travel and teleports plateau under hard residency cap
+  ---
+  duration_ms: 300.29435
+  type: 'test'
+  ...
+# Subtest: tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+ok 25 - tile graph preserves portal ownership, direction, restrictions, names and speed-weighted GPS routes
+  ---
+  duration_ms: 27.071215
+  type: 'test'
+  ...
+# Subtest: crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+ok 26 - crossing-feature owner dependencies gate contact readiness without deadlocking cyclic references
+  ---
+  duration_ms: 8.512024
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1311.108136

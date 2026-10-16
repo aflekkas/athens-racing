@@ -11,7 +11,7 @@ export function installTerrainRefinement(terrain, group) {
   group.traverse(mesh => {
     if (!mesh.userData.terrainRefinement) return;
     const p = mesh.geometry.attributes.position, index = mesh.geometry.index;
-    for (let k = 0; k < index.count; k += 3) {
+    for (let k = 0; k < (mesh.userData.terrainLod?.[0].count ?? index.count); k += 3) {
       const a=index.getX(k), b=index.getX(k+1), c=index.getX(k+2);
       const ix=Math.round((Math.min(p.getX(a),p.getX(b),p.getX(c))-terrain.minX)/terrain.T*n);
       const iz=Math.round((Math.min(p.getZ(a),p.getZ(b),p.getZ(c))-terrain.minZ)/terrain.T*n);
@@ -29,6 +29,7 @@ export function installTerrainRefinement(terrain, group) {
     }
   });
   const coarseHeight = coarseTerrainSampler(terrain, group);
+  terrain.contactMemory = { refinedCells: cells.size, refinedBytes: cells.size * stride * stride * 4, coarseCells: coarseHeight.cells, coarseBytes: coarseHeight.bytes };
   terrain.refinedHeight = (x, z) => {
     // Uploaded positions are Float32. At a cut/fill boundary, choose the
     // same side as those vertices rather than the unrounded DEM coordinate.

@@ -1,5 +1,5 @@
 // Police-only variants; emissive strobes have no shadow/light cost.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 import { damageSystem } from './vehicle-models.js';
 import { buildPassengerModel, passengerSideX } from './traffic-passenger-models.js';
 import { buildBikeModel } from './traffic-bike-models.js';
@@ -15,7 +15,7 @@ function strobes(car){
   return [left,right];
 }
 function sidePatch(car,m,s,z0,z1,y0,y1){
-  const d=car.shape,p=[],uv=[],idx=[],N=car.low?3:16,M=12;
+  const d=car.shape,p=[],uv=[],idx=[],N=car.low?2:6,M=1;
   // Fit the actual triangulated skin: evaluating its smooth design curve can
   // put a decal below the coarser panel between body stations.
   car.body.updateMatrixWorld(true);const panels=[];

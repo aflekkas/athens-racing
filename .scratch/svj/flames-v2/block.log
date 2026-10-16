@@ -1,0 +1,39 @@
+[browser-slot] slot 1 acquired (ticket 989, waited 0s)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CAPTURE garage
+START
+{
+  carPosition: [ -77.54078226219205, 9.510006233490948, -6.913828713924872 ],
+  s: 1995.5997991916397,
+  hits: [
+    {
+      name: '',
+      parent: 'megara-circuit',
+      point: [Array],
+      distance: 9.936299712571683,
+      car: false
+    },
+    {
+      name: '',
+      parent: 'megara-circuit',
+      point: [Array],
+      distance: 10.625071333292984,
+      car: false
+    },
+    {
+      name: 'night-sky',
+      parent: '',
+      point: [Array],
+      distance: 7944.124087082179,
+      car: false
+    },
+    {
+      name: '',
+      parent: '',
+      point: [Array],
+      distance: 8971.35140278084,
+      car: false
+    }
+  ]
+}

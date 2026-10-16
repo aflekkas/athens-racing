@@ -1,0 +1,25 @@
+{
+  "missing": 0,
+  "metrics": {
+    "loadedBytes": 120148,
+    "evictions": 183,
+    "failures": 0,
+    "peakResidentBytes": 345680,
+    "peakReservedBytes": 411937,
+    "maxActivationMs": 0.6000000238418579,
+    "activationLongTasks": 0
+  },
+  "residentBytes": 324075,
+  "origin": {
+    "x": 39424,
+    "z": 0
+  },
+  "geometry": 15,
+  "sharedMaterials": 1,
+  "afterDispose": {
+    "resident": 0,
+    "geometry": 0,
+    "materials": 0
+  },
+  "errors": []
+}

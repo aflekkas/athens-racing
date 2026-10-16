@@ -8,8 +8,10 @@ export function packGroup(group, metadata, initial = [], chooseShuffling = () =>
     return { name: m.name, material: m.userData.coarseTerrain ? 1 : 0,
       receiveShadow: m.receiveShadow, castShadow: m.castShadow, layers: m.layers.mask, renderOrder: m.renderOrder,
       userData: m.userData, meshSphere: !!m.boundingSphere,
+      bounds: m.userData.terrainDecode ? { box: [...m.geometry.boundingBox.min.toArray(), ...m.geometry.boundingBox.max.toArray()], sphere: [...m.geometry.boundingSphere.center.toArray(), m.geometry.boundingSphere.radius] } : null,
       attributes: Object.fromEntries(Object.entries(m.geometry.attributes).map(([key, a]) => [key, { array: add(a.array), itemSize: a.itemSize, normalized: a.normalized }])),
-      index: m.geometry.index ? add(m.geometry.index.array) : null };
+      drawRange: { start: m.geometry.drawRange.start, count: Number.isFinite(m.geometry.drawRange.count) ? m.geometry.drawRange.count : null },
+      index: m.geometry.index ? add(m.geometry.userData.terrainLodSource || m.geometry.index.array) : null };
   });
   const shuffled = chooseShuffling(arrays);
   return encodeGeometryPack({ ...metadata, name: group.name, meshes }, arrays, shuffled);

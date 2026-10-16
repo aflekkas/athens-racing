@@ -704,7 +704,7 @@ export function createWater(skyCube, terrain, depthTex) {
     uSky: { value: skyCube }, tRefl: { value: reflRT.texture }, uReflMat: { value: new THREE.Matrix4() }, uReflOn: { value: 0 },
     tDepth: { value: depthTex }, uGrid: { value: new THREE.Vector4(terrain.minX, terrain.minZ, (terrain.GX - 1) * terrain.T, (terrain.GZ - 1) * terrain.T) },
     uLake: { value: 0 }, tWN: { value: TX.water }, tSand: { value: TX.sand_diff }, tRock: { value: TX.rock_diff },
-    ...AP, uSunE: CU.uSunE, uSkyIrr: CU.uSkyIrr, uRain: CU.uRain,
+    ...AP, uSunE: CU.uSunE, uSkyIrr: CU.uSkyIrr, uRain: CU.uRain, uNight: CU.uNight,
   };
   const mat = new THREE.ShaderMaterial({
     uniforms,
@@ -712,7 +712,7 @@ export function createWater(skyCube, terrain, depthTex) {
       varying vec3 vWorld;
       void main(){ vec4 wp = modelMatrix * vec4(position,1.0); vWorld = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
     fragmentShader: /* glsl */`
-      uniform float uTime; uniform vec3 uSunDir; uniform samplerCube uSky;
+      uniform float uTime; uniform float uNight; uniform vec3 uSunDir; uniform samplerCube uSky;
       uniform sampler2D tRefl; uniform mat4 uReflMat; uniform float uReflOn; uniform sampler2D tDepth; uniform vec4 uGrid; uniform float uLake;
       uniform sampler2D tWN; uniform sampler2D tSand; uniform sampler2D tRock; uniform vec3 uSunE; uniform vec3 uSkyIrr; uniform float uRain;
       varying vec3 vWorld;
@@ -742,6 +742,16 @@ export function createWater(skyCube, terrain, depthTex) {
         float inGrid = step(0.0, guv.x) * step(guv.x, 1.0) * step(0.0, guv.y) * step(guv.y, 1.0);
         float depth = mix(40.0, texture2D(tDepth, guv).r * 25.5, inGrid);
         if (uLake > 0.5) depth = 7.0;
+        // Owner-locked Effects Off: calm blue water never depends on a reflection or light input.
+        if (uReflOn < 0.5) {
+          float night = clamp(uNight, 0.0, 1.0);
+          vec3 deepBlue = mix(vec3(0.045,0.29,0.43),vec3(0.025,0.115,0.20),night);
+          vec3 shallowBlue = mix(vec3(0.12,0.46,0.54),vec3(0.045,0.21,0.28),night);
+          vec3 calmBlue = mix(shallowBlue,deepBlue,smoothstep(0.0,12.0,depth));
+          vec3 horizonBlue = mix(vec3(0.20,0.41,0.54),vec3(0.055,0.14,0.23),night);
+          calmBlue = mix(calmBlue,horizonBlue,smoothstep(8000.0,26000.0,length(Vd.xz))*(1.0-uLake));
+          gl_FragColor = vec4(calmBlue,1.0); return;
+        }
         float fw = max(length(fwidth(p)), 1e-4);
         // ---- waves: long swell (analytic) + wind chop (photographic normal map, two scales)
         vec2 grad = vec2(0.0); float lost = 0.0;
@@ -886,23 +896,13 @@ let islandMat = null;
 function islandMaterial() {
   if (islandMat) return islandMat;
   islandMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, fog: true });
-  islandMat.onBeforeCompile = (sh) => {
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vIP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvIP = (modelMatrix * vec4(transformed,1.0)).xyz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vIP;
-      float ih(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-      float inz(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.-2.*f); return mix(mix(ih(i),ih(i+vec2(1,0)),u.x), mix(ih(i+vec2(0,1)),ih(i+vec2(1,1)),u.x), u.y); }`)
-      .replace('#include <color_fragment>', `#include <color_fragment>
-      { float n = inz(vIP.xz * 0.004) * 0.5 + inz(vIP.xz * 0.02) * 0.3 + inz(vIP.xz * 0.09) * 0.2;
-        diffuseColor.rgb *= 0.7 + 0.55 * n;
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.36, 0.38, 0.25), smoothstep(0.5, 0.75, inz(vIP.xz * 0.006 + 3.0)) * 0.5); }`);
-  };
+  // Owner-locked: distant relief uses the same calm earth colour, without noise patches.
   return islandMat;
 }
 function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86', profilePower = h < 200 ? 0.8 : 1.4) {
   const geo = new THREE.SphereGeometry(1, 64, 24, 0, Math.PI * 2, 0, Math.PI / 2);
   const p = geo.attributes.position;
-  const col = new Float32Array(p.count * 3), c0 = new THREE.Color(color);
+  const col = new Float32Array(p.count * 3), c0 = new THREE.Color('#b7ab95');
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
     const a = Math.atan2(z, x);
@@ -910,7 +910,7 @@ function islandMesh(cx, cz, rx, rz, h, seed, color = '#8d8f86', profilePower = h
     const ridge = 0.06 * Math.sin(a * 11 + seed * 4) * Math.sin(y * 9 + seed);
     const yy = Math.pow(Math.max(0, y), profilePower) * (0.75 + 0.35 * Math.sin(a * 2 + seed * 1.7)) * (1 + ridge);
     p.setXYZ(i, x * rx * n, yy * h - 2, z * rz * n);
-    const k = 0.85 + 0.25 * Math.sin(a * 17 + seed + y * 6);
+    const k = 1;
     col[i * 3] = c0.r * k; col[i * 3 + 1] = c0.g * k; col[i * 3 + 2] = c0.b * k;
   }
   geo.setAttribute('color', new THREE.BufferAttribute(col, 3));

@@ -26,7 +26,7 @@ central exhausts. Cabin uses shared fittings and a live SVJ digital cluster;
 logos use the shared brand badge atlas. No downloaded model or audio samples.
 
 ExhaustPulse consumes durable powertrain event serials and high-rpm overrun.
-One shared pulse drives pooled flame cones, sprites, sparks and procedural
+One shared pulse drives pooled crossed flame ribbons, tip sprites, sparks and procedural
 noise/triangle audio. Render updates allocate no geometry, arrays or vectors;
 the powertrain getter now reuses its snapshot. Potato and Low render no point
 light; Potato also omits sparks. Flames are children of the body at the exact
@@ -46,3 +46,9 @@ The geometry bench verifies matching world positions with body pitch and roll.
 The limited-production SVJ is a player/rival car (civilian traffic weight 0),
 so ambient commuter pool probabilities remain unchanged. AI rivals use the
 same physical powertrain signals and exhaust effects as the player.
+
+Flames v2: three crossed quads per tip use a shared seeded noise texture,
+animated turbulent taper and blue-white-to-orange axial gradient. Loaded ISR
+cut: 80 ms, up to 0.8 m; engagement: small lick. Lift: uneven 60 ms licks;
+limiter: medium 75 ms jets. Small blue tip halos only; SVJ rear Y signatures
+use saturated red emissive geometry without the generic weather tail halos.

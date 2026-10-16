@@ -1,6 +1,6 @@
 // Additional Greek-road player cars. Original procedural geometry, metres, nose -Z.
 // Reference photographs/specifications: tools/models-more-notes.md.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
 import { buildHuracanShell, buildHuracanCabin } from './player-huracan.js';
 export const ROAD_MODELS = {
  jazz: {L:4.028,W:1.694,H:1.550,wb:2.530,track:1.477,r:.302,rim:.1905,tyreF:.185,tyreR:.185,belt:1.02,front:.78,rear:1.03,cowl:-1.13,header:-.48,roofBack:1.32,back:1.82,seatZ:.10,eyeY:1.23,leather:'#333a43',doors:4,brand:'HONDA',stations:[[-2.014,.66,.76],[-1.65,.80,.84],[-1.13,.847,1.02],[.3,.83,1.03],[1.26,.847,1.04],[2.014,.73,1.02]]},
@@ -53,7 +53,7 @@ export function buildRoadCar(car,d,M,low,plate,H){
   if(d.blackRoof){const roof=p.getObjectByName('roof');roof.material=M.black.clone();roof.material.envMapIntensity=.10;roof.material.roughness=.88;roof.material.userData.fleetLivery=true;roof.userData.mirrorSupport=true;}
 
   // Fascia helpers retain named damage boundaries, optics and a matched Greek plate pair.
-  const face=(m,points,z,name,holes=[])=>{const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();for(const points of holes){const hole=new THREE.Path();points.forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();shape.holes.push(hole);}const base=new THREE.ShapeGeometry(shape).toNonIndexed(),a=base.attributes.position,vertices=[];const n=10;for(let i=0;i<a.count;i+=3){const A=new THREE.Vector3().fromBufferAttribute(a,i),B=new THREE.Vector3().fromBufferAttribute(a,i+1),C=new THREE.Vector3().fromBufferAttribute(a,i+2);const q=(u,v)=>A.clone().addScaledVector(B.clone().sub(A),u/n).addScaledVector(C.clone().sub(A),v/n).toArray();for(let u=0;u<n;u++)for(let v=0;v<n-u;v++){vertices.push(...q(u,v),...q(u+1,v),...q(u,v+1));if(u+v<n-1)vertices.push(...q(u+1,v),...q(u+1,v+1),...q(u,v+1));}}base.dispose();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(vertices.length/3*2),2));g.computeVertexNormals();return mesh(p,g,m,[0,0,z],[0,0,0],name);};
+  const face=(m,points,z,name,holes=[])=>{const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();for(const points of holes){const hole=new THREE.Path();points.forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();shape.holes.push(hole);}const base=new THREE.ShapeGeometry(shape).toNonIndexed(),a=base.attributes.position,vertices=[];const n=2;for(let i=0;i<a.count;i+=3){const A=new THREE.Vector3().fromBufferAttribute(a,i),B=new THREE.Vector3().fromBufferAttribute(a,i+1),C=new THREE.Vector3().fromBufferAttribute(a,i+2);const q=(u,v)=>A.clone().addScaledVector(B.clone().sub(A),u/n).addScaledVector(C.clone().sub(A),v/n).toArray();for(let u=0;u<n;u++)for(let v=0;v<n-u;v++){vertices.push(...q(u,v),...q(u+1,v),...q(u,v+1));if(u+v<n-1)vertices.push(...q(u+1,v),...q(u+1,v+1),...q(u,v+1));}}base.dispose();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(vertices.length/3*2),2));g.computeVertexNormals();return mesh(p,g,m,[0,0,z],[0,0,0],name);};
   const lamp=(s,points,rear=false)=>face(rear?M.tail:M.head,points.map(([x,y])=>[s*x,y]),rear?R+.004:F-.004,`${rear?'rear':'front'}-lamp-housing`);
   const badge=(text,w,h,y,z)=>{if(!['H','MINI','LAMBORGHINI','S','FIAT','TOYOTA','BMW'].includes(text))return;const size=text==='LAMBORGHINI'?.09:Math.max(w,h,.10);return mesh(p,new THREE.PlaneGeometry(size,size),M.badge,[0,y,z],[0,z<0?Math.PI:0,0],'brand-badge');};
   if(id==='jazz'){
@@ -111,10 +111,10 @@ export function buildRoadCar(car,d,M,low,plate,H){
     const holes=outlets.map(x=>Array.from({length:6},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return[x+exR*Math.cos(a),exY+exR*Math.sin(a)];}));
     face(M.black,[[-.74,.747],[.74,.747],[.66,.535],[.46,.505],[-.46,.505],[-.66,.535]],R+.012,'evo-rear-mesh',holes);
     const ventWires=[];
-    for(let row=0;row<8;row++)for(let col=0;col<37;col++){
-      const x=-.70+col*.039+(row%2)*.0195,y=.521+row*.028;
+    for(let row=0;row<3;row++)for(let col=0;col<13;col++){
+      const x=-.70+col*.117+(row%2)*.0195,y=.521+row*.084;
       if(Math.abs(x)>.62+(y-.53)*.48||outlets.some(cx=>Math.hypot(x-cx,y-exY)<exR+.023))continue;
-      const pts=[];for(let k=0;k<=6;k++){const a=k*Math.PI/3;pts.push([x+Math.cos(a)*.019,y+Math.sin(a)*.013,R+.018]);}for(let k=0;k<6;k++){const a=pts[k],b=pts[k+1],n=.0014/Math.hypot(b[0]-a[0],b[1]-a[1]),dx=-(b[1]-a[1])*n,dy=(b[0]-a[0])*n;
+      const pts=[];for(let k=0;k<=6;k++){const a=k*Math.PI/3;pts.push([x+Math.cos(a)*.048,y+Math.sin(a)*.035,R+.018]);}for(let k=0;k<6;k++){const a=pts[k],b=pts[k+1],n=.0014/Math.hypot(b[0]-a[0],b[1]-a[1]),dx=-(b[1]-a[1])*n,dy=(b[0]-a[0])*n;
         const A=[a[0]+dx,a[1]+dy,a[2]],B=[b[0]+dx,b[1]+dy,b[2]],C=[b[0]-dx,b[1]-dy,b[2]],D=[a[0]-dx,a[1]-dy,a[2]];ventWires.push(...A,...B,...C,...A,...C,...D);}
 
     }

@@ -1,0 +1,53 @@
+TAP version 13
+# UniformsUtils: Textures of render targets cannot be cloned via cloneUniforms() or mergeUniforms().
+# Subtest: owner lock: no vegetation pipeline or detailed building renderer
+ok 1 - owner lock: no vegetation pipeline or detailed building renderer
+  ---
+  duration_ms: 30.235071
+  type: 'test'
+  ...
+# Subtest: every mapped building remains within the 40 triangle block budget
+ok 2 - every mapped building remains within the 40 triangle block budget
+  ---
+  duration_ms: 213.711782
+  type: 'test'
+  ...
+# Subtest: near and instanced pedestrians fit the owner budget with all appearance combinations
+ok 3 - near and instanced pedestrians fit the owner budget with all appearance combinations
+  ---
+  duration_ms: 704.597645
+  type: 'test'
+  ...
+# Subtest: street models, signs, lamps, gantry primitives fit category budgets
+ok 4 - street models, signs, lamps, gantry primitives fit category budgets
+  ---
+  duration_ms: 14.735147
+  type: 'test'
+  ...
+# Subtest: Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+ok 5 - Effects Off sea stays blue without a sky cube; both water variants share the safe branch
+  ---
+  duration_ms: 4.837527
+  type: 'test'
+  ...
+# Subtest: gantry and atlas labels fit their usable panel width even with fallback fonts
+ok 6 - gantry and atlas labels fit their usable panel width even with fallback fonts
+  ---
+  duration_ms: 3.126859
+  type: 'test'
+  ...
+# Subtest: terrain keeps area textures and boxes use a separate plaster/accent palette
+ok 7 - terrain keeps area textures and boxes use a separate plaster/accent palette
+  ---
+  duration_ms: 6.440235
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1367.319993

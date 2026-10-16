@@ -1,0 +1,75 @@
+before [
+  {
+    id: 'truck',
+    type: 'drop',
+    ratios: [ 0.016458926709251715, 0.003855142768509644, 0.2926987598046848 ],
+    ok: false
+  },
+  {
+    id: 'bus',
+    type: 'drop',
+    ratios: [ 0.022644006327422025, 0.07246822688585829, 0.7951271892015992 ],
+    ok: false
+  },
+  {
+    id: 'bus',
+    type: 'step-steer',
+    roll: 3.881756077284814,
+    pitch: 0.0014597961654187184,
+    travel: 0.004145146286549245,
+    minLoad: 0.17038116896646974,
+    lastLoad: 0.8786316715729487,
+    peakAy: 2.943,
+    maxLost: 0,
+    ok: false
+  },
+  {
+    id: 'bus',
+    type: 'kerb',
+    roll: 2.9523036099460596,
+    pitch: 0.624046629520962,
+    travel: 0.022396134039545892,
+    minLoad: 0.27233669879282313,
+    lastLoad: 0.7093762431230942,
+    peakAy: 0,
+    maxLost: 0,
+    ok: false
+  },
+  {
+    id: 'delivery',
+    type: 'kerb',
+    roll: 0,
+    pitch: 11.768515777540134,
+    travel: 0.18908719158423123,
+    minLoad: 0,
+    lastLoad: 0.9999999999999998,
+    peakAy: 0,
+    maxLost: 0.733333333333332,
+    ok: false
+  },
+  {
+    id: 'scooter',
+    type: 'kerb',
+    roll: 0,
+    pitch: 10.65935262730312,
+    travel: 0.08289936637663953,
+    minLoad: 0,
+    lastLoad: 0.9999999999999998,
+    peakAy: 0,
+    maxLost: 0.5874999999999991,
+    ok: false
+  },
+  {
+    id: 'moto',
+    type: 'kerb',
+    roll: 0,
+    pitch: 7.35957433336377,
+    travel: 0.07869835055946595,
+    minLoad: 0,
+    lastLoad: 1,
+    peakAy: 0,
+    maxLost: 0.5041666666666661,
+    ok: false
+  }
+]
+after []
