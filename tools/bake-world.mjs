@@ -62,10 +62,19 @@ export async function bakeWorlds(root, out, ids) {
       meshoptViews += JSON.parse(new TextDecoder().decode(compact.subarray(12, 12 + jsonSize))).views.filter(v => v.codec === 'ATTRIBUTES').length;
       const compressed = gzipSync(compact, { level: 9 });
       legacyBytes += bytes.length; compactBytes += compressed.length;
-      if (compressed.length > 25 * 1024 * 1024) throw new Error('Meshopt asset exceeds 25 MiB');
       const digest = createHash('sha256').update(compressed).digest('hex').slice(0, 16);
       const compactName = `${id}-${kind}-${digest}.meshopt.gz`;
-      await writeFile(resolve(dir, compactName), compressed); meshopt[kind] = `./data/baked/${compactName}`;
+      if (compressed.length <= 25 * 1024 * 1024) {
+        await writeFile(resolve(dir, compactName), compressed); meshopt[kind] = `./data/baked/${compactName}`;
+      } else {
+        const parts = [];
+        for (let offset = 0; offset < compressed.length; offset += chunkSize) {
+          const part = compactName.replace('.meshopt.gz', `.part-${parts.length}.meshopt.gz`);
+          await writeFile(resolve(dir, part), compressed.subarray(offset, offset + chunkSize));
+          parts.push(`./data/baked/${part}`);
+        }
+        meshopt[kind] = parts;
+      }
       console.log(`Meshopt ${id} ${kind}: ${compressed.length} bytes`);
     }
     const path = resolve(out, bake.map.definition.dataUrl), data = JSON.parse(await readFile(path, 'utf8'));
