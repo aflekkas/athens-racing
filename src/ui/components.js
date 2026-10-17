@@ -128,7 +128,9 @@ export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kb
 /** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), and the driver chip + clock at the right.
  *  Back never shares a row with the page title, so every title lines up with the content grid below it. */
 export function statusBar({ back = true, kick = '' } = {}) {
-  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r">${buildBadge() ? `<span class="build-badge">${esc(buildBadge())}</span>` : ''}<button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
+  // Owner 2026-10-17: remove the title tagline, including its breadcrumb reuse.
+  if (/^(?:GREEK ROADS(?:\s*\/\s*PURE TIME)?|PURE TIME)$/.test(kick.replace(/<[^>]*>/g, '').trim())) kick = '';
+  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r"><button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
 }
 const clockText = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
 if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);
@@ -364,8 +366,25 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   let raf = 0; const all = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => indicators(document)); };
   addEventListener('resize', all); document.fonts?.ready?.then(all);
 }
+/** Keep deployment identity in the footer, including the locked title's custom footer.
+ *  Deployment metadata remains the source; production has no indicator. */
+export function syncFooterBadge(root) {
+  const identity = buildBadge();
+  if (!identity) return;
+  for (const footer of root.querySelectorAll('.scr__foot')) {
+    if (footer.querySelector('.build-badge')) continue;
+    const version = footer.querySelector('.title-meta [data-act="whatsNew"]');
+    const badge = document.createElement('span');
+    badge.className = 'build-badge';
+    badge.textContent = version ? identity.split(' · ')[0] + ' · ' : identity;
+    if (version) version.prepend(badge);
+    else footer.prepend(badge);
+  }
+}
 export function bindRoot(root) {
   if (root.__uiBound) return; root.__uiBound = true;
+  syncFooterBadge(root);
+  new MutationObserver(() => syncFooterBadge(root)).observe(root, { childList: true, subtree: true });
   root.addEventListener('pointerdown', (e) => {
     const track = e.target.closest?.('.field[data-kind=slider] .slider'); if (!track) return;
     const el = track.closest('[data-kind=slider]');

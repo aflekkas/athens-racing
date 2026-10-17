@@ -153,3 +153,41 @@ test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never 
     assert.match(read('src/map-select.js'), /menu\.show\('mapConfirm', \{ mapId: id, mode: 'quick' \}, true\)/);
   } finally { globalThis.document = priorDocument; globalThis.window = priorWindow; }
 });
+
+
+test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the header', async () => {
+  const { statusBar, syncFooterBadge } = await import('../src/ui/components.js');
+  for (const kick of ['GREEK ROADS <span class="acc">/</span> PURE TIME', 'PURE TIME', 'GREEK ROADS']) {
+    const html = statusBar({ back: false, kick });
+    assert.doesNotMatch(html, /hu-crumb|build-badge/);
+    assert.match(html, /data-hu-driver/);
+    assert.match(html, /data-hu-clock/);
+  }
+  assert.match(statusBar({ kick: 'OPTIONS' }), /BACK[\s\S]*OPTIONS/);
+  const priorDocument = globalThis.document;
+  try {
+    let environment = 'staging';
+    globalThis.document = {
+      querySelector: selector => ({ content: selector.includes('asr-environment') ? environment : '2026.10.15.3' }),
+      createElement: () => ({ className: '', textContent: '' }),
+    };
+    const makeFooter = withVersion => {
+      const footer = { badge: null, version: withVersion ? { prepend: badge => { footer.badge = badge; } } : null,
+        querySelector: selector => selector === '.build-badge' ? footer.badge : footer.version,
+        prepend: badge => { footer.badge = badge; } };
+      return footer;
+    };
+    const title = makeFooter(true), settings = makeFooter(false);
+    const root = { querySelectorAll: () => [title, settings] };
+    syncFooterBadge(root);
+    assert.equal(title.badge.textContent, 'STAGING · ');
+    assert.equal(settings.badge.textContent, 'STAGING · 2026.10.15.3');
+    const original = title.badge;
+    syncFooterBadge(root);
+    assert.equal(title.badge, original, 'repeated renders must not duplicate badges');
+    environment = 'production';
+    const production = makeFooter(true);
+    syncFooterBadge({ querySelectorAll: () => [production] });
+    assert.equal(production.badge, null);
+  } finally { globalThis.document = priorDocument; }
+});

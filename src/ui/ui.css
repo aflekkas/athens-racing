@@ -508,7 +508,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .hu-driver:hover { background: rgba(255,255,255,.1); color: #fff; }
 .hu-driver.focus, .hu-driver:focus-visible { background: var(--ui-row-focus); color: #fff; box-shadow: inset 0 0 0 1px var(--hu-ice); outline: none; transform: translateY(-1px); }
 .hu-driver:active { transform: none; }
-.build-badge { color: #f5d290; border-left: 2px solid #efb450; padding-left: .7rem; font: 700 .7rem var(--f-cond); letter-spacing: .1em; white-space: nowrap; }
+.build-badge { color: #f5d290; font: 700 .7rem var(--f-cond); letter-spacing: .1em; white-space: nowrap; }
 .option--tile.option { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); min-height: 0; padding: var(--s-5); border-radius: var(--r-4);
   background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair); box-shadow: var(--hu-shadow), var(--hu-edge); overflow: hidden; }
 .option--tile.option > span:nth-child(2) { margin-top: auto; }
@@ -683,3 +683,6 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .legal-link { color: var(--c-text-2); text-decoration: underline; text-decoration-color: var(--hu-hair-2); text-underline-offset: 4px; transition: color var(--dur) var(--ease); }
 .legal-link:hover { color: #fff; }
 .legal-link:focus-visible, .legal-link.focus { color: #fff; outline: 1.5px solid var(--hu-ice); outline-offset: 3px; border-radius: 2px; }
+
+/* Owner 2026-10-17: deployment identity belongs at the footer left. */
+.scr__foot > .build-badge { margin-right: auto; }
