@@ -1,80 +1,266 @@
 {
-  "floorRootCause": "HEAD removed cabin furniture/carpet; POV hides the exterior undertray. The back-face body shell is not a closed footwell. A permanent opaque foundation now seals the sills, firewall, tunnel and under-seat area, outside damage-hidden trim batches.",
+  "round": 3,
+  "testedBase": "9a7c06ca",
+  "integratedOnto": "e072d161",
+  "implementation": {
+    "exterior": "One static vertex-colour mesh of the authored cabin within 25 m, <=360-triangle mesh through 40 m, no cabin beyond 40 m (12% LOD hysteresis).",
+    "traffic": "One <=360-triangle mesh per car within 40 m; geometry shared by cabin shape across colours and near/far traffic instances.",
+    "cockpit": "Original detailed POV with sealed foundation; detached from scene traversal outside POV; exterior snapshot disabled during POV; original resources reattached for normal car disposal.",
+    "unchanged": "No occupants or hands; exterior light tint and sealed floor geometry preserved."
+  },
+  "frameCost": {
+    "method": "Real app, Megara, MINI chase, 3 AI (test-only override), 74 traffic pool, SwiftShader, 640x400 including post targets; frozen standard chase camera, 4 warmup + 12 measured frames; CPU submission excludes readPixels, completed frame includes readPixels.",
+    "baselineCommit": "5149f16d",
+    "beforeCommit": "b99589d5",
+    "baseline": {
+      "renderSize": [
+        640,
+        400
+      ],
+      "ai": 3,
+      "traffic": 74,
+      "activeTraffic": 0,
+      "cpuMedian": 8.600000023841858,
+      "cpuP95": 10.900000095367432,
+      "cpuSamples": [
+        9.799999952316284,
+        8.600000023841858,
+        7.800000071525574,
+        8.600000023841858,
+        10.900000095367432,
+        8,
+        8.099999904632568,
+        9,
+        10.800000071525574,
+        7,
+        7.199999928474426,
+        7.699999928474426
+      ],
+      "median": 767.1000000238419,
+      "samples": [
+        805.5,
+        756.3999999761581,
+        778,
+        818.3999999761581,
+        803.2000000476837,
+        733.7000000476837,
+        784.0999999046326,
+        708.1000000238419,
+        760,
+        750.2000000476837,
+        767.1000000238419,
+        755.2999999523163
+      ],
+      "calls": 409,
+      "triangles": 540371,
+      "camera": [
+        -115.43307017232219,
+        11.499022438767849,
+        4.569441214301532
+      ],
+      "quaternion": [
+        -0.02805590270686535,
+        -0.6068414384782881,
+        -0.02144164516659306,
+        0.7940381544494288
+      ]
+    },
+    "before": {
+      "renderSize": [
+        640,
+        400
+      ],
+      "ai": 3,
+      "traffic": 74,
+      "activeTraffic": 0,
+      "cpuMedian": 11.600000023841858,
+      "cpuP95": 12.700000047683716,
+      "cpuSamples": [
+        12.599999904632568,
+        12.200000047683716,
+        11.100000023841858,
+        11.5,
+        11.700000047683716,
+        12.700000047683716,
+        10.899999976158142,
+        11.299999952316284,
+        11.299999952316284,
+        10.899999976158142,
+        12.300000071525574,
+        11.600000023841858
+      ],
+      "median": 788.1999999284744,
+      "samples": [
+        883.6999999284744,
+        806.8999999761581,
+        738.3000000715256,
+        788.1999999284744,
+        753.5,
+        755.2000000476837,
+        745.7000000476837,
+        749.2999999523163,
+        807,
+        856.3999999761581,
+        774,
+        813.8000000715256
+      ],
+      "calls": 592,
+      "triangles": 547411,
+      "camera": [
+        -115.43307017232219,
+        11.499022438767849,
+        4.569441214301532
+      ],
+      "quaternion": [
+        -0.02805590270686535,
+        -0.6068414384782881,
+        -0.02144164516659306,
+        0.7940381544494288
+      ]
+    },
+    "after": {
+      "renderSize": [
+        640,
+        400
+      ],
+      "ai": 3,
+      "traffic": 74,
+      "activeTraffic": 0,
+      "cpuMedian": 8.200000047683716,
+      "cpuP95": 8.5,
+      "cpuSamples": [
+        8.5,
+        8.5,
+        8.100000023841858,
+        8.200000047683716,
+        8.200000047683716,
+        7.5,
+        7.399999976158142,
+        7.400000095367432,
+        6.799999952316284,
+        7.599999904632568,
+        8.200000047683716,
+        8.300000071525574
+      ],
+      "median": 762.2000000476837,
+      "samples": [
+        797.3999999761581,
+        811.6000000238419,
+        743.5,
+        753,
+        690.7000000476837,
+        762.5,
+        705,
+        762.2000000476837,
+        714.7000000476837,
+        754.5999999046326,
+        768,
+        782.7000000476837
+      ],
+      "calls": 413,
+      "triangles": 547379,
+      "camera": [
+        -115.43307017232219,
+        11.499022438767849,
+        4.569441214301532
+      ],
+      "quaternion": [
+        -0.02805590270686535,
+        -0.6068414384782881,
+        -0.02144164516659306,
+        0.7940381544494288
+      ]
+    },
+    "delta": {
+      "calls": 4,
+      "cpuMedian": -0.3999999761581421
+    },
+    "targets": {
+      "extraCalls": 40,
+      "extraCpuMedianMs": 1.5
+    },
+    "priorReported": {
+      "baseline": {
+        "calls": 302,
+        "cpuMedian": 10.2
+      },
+      "round2": {
+        "calls": 485,
+        "cpuMedian": 16.5
+      },
+      "note": "Prior temporary harness was removed. This replay records a fixed chase camera and settles the world LOD; absolute scene draws differ, but the round-2 overhead reproduces at +183 draws."
+    }
+  },
   "focusedTests": {
-    "passed": 160,
+    "passed": 168,
     "failed": 0,
-    "command": "node --test tools/cabin-floor.test.mjs tools/vehicle-budgets.test.mjs"
+    "command": "node --test tools/cabin-floor.test.mjs tools/vehicle-budgets.test.mjs tools/cockpit-structure.test.mjs tools/pov-owner-lock.test.mjs"
+  },
+  "npmTest": {
+    "testedBase": "9a7c06ca",
+    "unit": {
+      "passed": 1199,
+      "failed": 2,
+      "skipped": 1
+    },
+    "failures": [
+      "tools/release-data.test.mjs: CREDITS.md omits existing git authors muse and Codex. Unchanged.",
+      "tools/ui-components.test.mjs: 6 title tiles versus 5. Fixed concurrently in e072d161; cabin patch leaves this fix intact."
+    ],
+    "integrationMenuGuard": {
+      "passed": 6,
+      "failed": 0,
+      "commit": "e072d161"
+    },
+    "remainingGroupsRunSeparately": {
+      "physics": {
+        "passed": 239,
+        "failed": 0
+      },
+      "world": {
+        "passed": 25,
+        "failed": 0,
+        "skipped": 4
+      },
+      "damage": {
+        "passed": 56,
+        "failed": 0
+      }
+    }
   },
   "renderedCatalogue": {
     "configurations": 78,
-    "flags": 0,
-    "sourceHashesCurrent": true
+    "geometryFlags": 0,
+    "sourceHashesCurrent": true,
+    "evidence": "Changed masks and refreshed audit/hash manifest are in this directory; unchanged masks are read from the original .scratch/pov-camera archive. No additional evidence directories."
   },
   "appScreenshotsInspected": [
     "mini",
     "golf",
+    "f348",
     "huracan",
     "e36",
-    "f348",
     "cle"
   ],
   "screenshots": [
-    "cle-footwell.png",
-    "cle-quarter.png",
-    "cle-side.png",
-    "e36-footwell.png",
-    "e36-quarter.png",
-    "e36-side.png",
-    "f348-footwell.png",
-    "f348-quarter.png",
-    "f348-side.png",
-    "golf-footwell.png",
-    "golf-quarter.png",
-    "golf-side.png",
-    "huracan-footwell.png",
-    "huracan-quarter.png",
-    "huracan-side.png",
     "mini-footwell.png",
+    "mini-side.png",
     "mini-quarter.png",
-    "mini-side.png"
+    "golf-footwell.png",
+    "golf-side.png",
+    "golf-quarter.png",
+    "f348-footwell.png",
+    "f348-side.png",
+    "f348-quarter.png",
+    "huracan-footwell.png",
+    "huracan-side.png",
+    "huracan-quarter.png",
+    "e36-footwell.png",
+    "e36-side.png",
+    "e36-quarter.png",
+    "cle-footwell.png",
+    "cle-side.png",
+    "cle-quarter.png"
   ],
-  "preservation": "Implementation/validation in isolated HEAD checkout; shared working tree and index not modified; final commit uses a private index.",
-  "npmTest": {
-    "result": "FAIL (two failures outside cabin patch)",
-    "unit": {
-      "passed": 1197,
-      "failed": 2,
-      "skipped": 1
-    },
-    "damage": {
-      "passed": 56,
-      "failed": 0
-    },
-    "failures": [
-      "tools/release-data.test.mjs:122: CREDITS.md omits git authors muse and Codex (pre-existing; reproduced independently).",
-      "tools/ui-components.test.mjs:129: title expects 5 option tiles; concurrent leaderboard commit adds a sixth. Neither menu.js nor this guard was changed by the cabin patch."
-    ],
-    "remainingGroups": "Fail-fast stopped physics and world groups after the unit failure."
-  },
-  "integratedOnto": "5149f16d07b3a6d11efbf05c6206dc115b4f8629",
-  "integration": "Applied cabin-only patch with git apply --cached --3way; no conflicts; concurrent leaderboard changes preserved.",
-  "npmTestBeforeIntegration": {
-    "result": "FAIL (pre-existing credits guard)",
-    "unit": {
-      "passed": 1188,
-      "failed": 1,
-      "skipped": 1
-    },
-    "damage": {
-      "passed": 56,
-      "failed": 0
-    },
-    "failure": "tools/release-data.test.mjs:122: CREDITS.md omits git authors muse and Codex; neither this file nor CREDITS.md was changed. Reproduced independently.",
-    "remainingGroups": "Fail-fast stopped physics and world groups after the unit failure."
-  },
-  "integrationFocusedTests": {
-    "passed": 166,
-    "failed": 0,
-    "command": "node --test tools/cabin-floor.test.mjs tools/vehicle-budgets.test.mjs tools/cockpit-structure.test.mjs tools/pov-owner-lock.test.mjs"
-  }
+  "preservation": "Isolated checkout for implementation and validation. Private index for commit onto current prod; shared working source files and staging index are not overwritten. No push."
 }

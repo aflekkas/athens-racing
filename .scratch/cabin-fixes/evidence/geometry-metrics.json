@@ -1,1255 +1,1141 @@
 {
-  "count": 78,
-  "maxCabin": 2146,
-  "maxDistanceCabin": 360,
-  "rows": [
+  "cars": [
     {
       "id": "mini",
-      "geometryBytes": 577768,
-      "exterior": 3296,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2000,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1842,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1842,
+      "sceneGeometryBytes": 633160,
+      "detachedCockpitGeometryBytes": 158552
     },
     {
       "id": "z4",
-      "geometryBytes": 478284,
-      "exterior": 2642,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1564,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1406,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1406,
+      "sceneGeometryBytes": 523236,
+      "detachedCockpitGeometryBytes": 121904
     },
     {
       "id": "taxi",
-      "geometryBytes": 510396,
-      "exterior": 2874,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1668,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1484,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1484,
+      "sceneGeometryBytes": 560924,
+      "detachedCockpitGeometryBytes": 127488
     },
     {
       "id": "carrera",
-      "geometryBytes": 516736,
-      "exterior": 2822,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1960,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1776,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1776,
+      "sceneGeometryBytes": 574408,
+      "detachedCockpitGeometryBytes": 151880
     },
     {
       "id": "gr_yaris",
-      "geometryBytes": 552164,
-      "exterior": 3421,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1710,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1526,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1526,
+      "sceneGeometryBytes": 602312,
+      "detachedCockpitGeometryBytes": 132404
     },
     {
       "id": "gtv",
-      "geometryBytes": 584660,
-      "exterior": 3757,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2040,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1856,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1856,
+      "sceneGeometryBytes": 643788,
+      "detachedCockpitGeometryBytes": 159064
     },
     {
       "id": "golf",
-      "geometryBytes": 491028,
-      "exterior": 2670,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 541296,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "corolla",
-      "geometryBytes": 491220,
-      "exterior": 2672,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 541488,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "superb",
-      "geometryBytes": 514700,
-      "exterior": 2962,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1654,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1470,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1470,
+      "sceneGeometryBytes": 565008,
+      "detachedCockpitGeometryBytes": 126196
     },
     {
       "id": "police_octavia",
-      "geometryBytes": 533964,
-      "exterior": 3154,
-      "lod1": 552,
-      "lod2": 272,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1654,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1470,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1470,
+      "sceneGeometryBytes": 584272,
+      "detachedCockpitGeometryBytes": 126196
     },
     {
       "id": "mini_jcw",
-      "geometryBytes": 516248,
-      "exterior": 2498,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2146,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1962,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1962,
+      "sceneGeometryBytes": 577148,
+      "detachedCockpitGeometryBytes": 168740
     },
     {
       "id": "cle",
-      "geometryBytes": 619212,
-      "exterior": 3525,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 672068,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "gla",
-      "geometryBytes": 524620,
-      "exterior": 2548,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 577476,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "gla45",
-      "geometryBytes": 564652,
-      "exterior": 2965,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 617508,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "cla",
-      "geometryBytes": 621272,
-      "exterior": 3533,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2126,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1942,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1942,
+      "sceneGeometryBytes": 674348,
+      "detachedCockpitGeometryBytes": 174404
     },
     {
       "id": "aventador_svj",
-      "geometryBytes": 377424,
-      "exterior": 1474,
-      "lod1": 516,
-      "lod2": 236,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1670,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1486,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1486,
+      "sceneGeometryBytes": 422428,
+      "detachedCockpitGeometryBytes": 130492
     },
     {
       "id": "huracan",
-      "geometryBytes": 493952,
-      "exterior": 2700,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1670,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1486,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1486,
+      "sceneGeometryBytes": 538956,
+      "detachedCockpitGeometryBytes": 130492
     },
     {
       "id": "ibiza",
-      "geometryBytes": 436208,
-      "exterior": 2062,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 486476,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "panda",
-      "geometryBytes": 424880,
-      "exterior": 1946,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1692,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1508,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1508,
+      "sceneGeometryBytes": 475124,
+      "detachedCockpitGeometryBytes": 130364
     },
     {
       "id": "yaris",
-      "geometryBytes": 420920,
-      "exterior": 1894,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1706,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1522,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1522,
+      "sceneGeometryBytes": 471644,
+      "detachedCockpitGeometryBytes": 131396
     },
     {
       "id": "e36",
-      "geometryBytes": 444632,
-      "exterior": 2078,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1786,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1602,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1602,
+      "sceneGeometryBytes": 497948,
+      "detachedCockpitGeometryBytes": 137444
     },
     {
       "id": "cle200",
-      "geometryBytes": 619212,
-      "exterior": 3525,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 672068,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "cle450",
-      "geometryBytes": 623052,
-      "exterior": 3565,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        84,
-        84,
-        84,
-        84
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 675908,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "cle53",
-      "geometryBytes": 540876,
-      "exterior": 2709,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 593732,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "e36_m3",
-      "geometryBytes": 458840,
-      "exterior": 2226,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        84,
-        84,
-        84,
-        84
-      ],
-      "interior": 1786,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1602,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1602,
+      "sceneGeometryBytes": 512156,
+      "detachedCockpitGeometryBytes": 137444
     },
     {
       "id": "panda_11",
-      "geometryBytes": 424880,
-      "exterior": 1946,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1692,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1508,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1508,
+      "sceneGeometryBytes": 475124,
+      "detachedCockpitGeometryBytes": 130364
     },
     {
       "id": "panda_100hp",
-      "geometryBytes": 436784,
-      "exterior": 2070,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1692,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1508,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1508,
+      "sceneGeometryBytes": 487028,
+      "detachedCockpitGeometryBytes": 130364
     },
     {
       "id": "yaris_13",
-      "geometryBytes": 420920,
-      "exterior": 1894,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1706,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1522,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1522,
+      "sceneGeometryBytes": 471644,
+      "detachedCockpitGeometryBytes": 131396
     },
     {
       "id": "yaris_ts",
-      "geometryBytes": 432824,
-      "exterior": 2018,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1706,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1522,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1522,
+      "sceneGeometryBytes": 483548,
+      "detachedCockpitGeometryBytes": 131396
     },
     {
       "id": "ibiza_cupra",
-      "geometryBytes": 448112,
-      "exterior": 2186,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 498380,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "golf_gti",
-      "geometryBytes": 509076,
-      "exterior": 2858,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 559344,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "golf_gtd",
-      "geometryBytes": 509076,
-      "exterior": 2858,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 559344,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "golf_r",
-      "geometryBytes": 521364,
-      "exterior": 2986,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 571632,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "mini_cooper",
-      "geometryBytes": 491672,
-      "exterior": 2242,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2146,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1962,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1962,
+      "sceneGeometryBytes": 552572,
+      "detachedCockpitGeometryBytes": 168740
     },
     {
       "id": "mini_s",
-      "geometryBytes": 512024,
-      "exterior": 2454,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2146,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1962,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1962,
+      "sceneGeometryBytes": 572924,
+      "detachedCockpitGeometryBytes": 168740
     },
     {
       "id": "mini_cabrio_cooper",
-      "geometryBytes": 571624,
-      "exterior": 3232,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2000,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1842,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1842,
+      "sceneGeometryBytes": 627016,
+      "detachedCockpitGeometryBytes": 158552
     },
     {
       "id": "corolla_15",
-      "geometryBytes": 491220,
-      "exterior": 2672,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 541488,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "octavia_16tdi",
-      "geometryBytes": 510396,
-      "exterior": 2874,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1668,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1484,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1484,
+      "sceneGeometryBytes": 560924,
+      "detachedCockpitGeometryBytes": 127488
     },
     {
       "id": "octavia_rs",
-      "geometryBytes": 524464,
-      "exterior": 3034,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1654,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1470,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1470,
+      "sceneGeometryBytes": 574772,
+      "detachedCockpitGeometryBytes": 126196
     },
     {
       "id": "superb_15",
-      "geometryBytes": 514700,
-      "exterior": 2962,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1654,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1470,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1470,
+      "sceneGeometryBytes": 565008,
+      "detachedCockpitGeometryBytes": 126196
     },
     {
       "id": "superb_4x4",
-      "geometryBytes": 532748,
-      "exterior": 3150,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1654,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1470,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1470,
+      "sceneGeometryBytes": 583056,
+      "detachedCockpitGeometryBytes": 126196
     },
     {
       "id": "cla250",
-      "geometryBytes": 619980,
-      "exterior": 3533,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 672836,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "cla35",
-      "geometryBytes": 631884,
-      "exterior": 3657,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 684740,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "cla45s",
-      "geometryBytes": 552012,
-      "exterior": 2825,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 604868,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "gla250",
-      "geometryBytes": 524620,
-      "exterior": 2548,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 577476,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "z4_20i",
-      "geometryBytes": 466380,
-      "exterior": 2518,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1564,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1406,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1406,
+      "sceneGeometryBytes": 511332,
+      "detachedCockpitGeometryBytes": 121904
     },
     {
       "id": "z4_30i",
-      "geometryBytes": 466380,
-      "exterior": 2518,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1564,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1406,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1406,
+      "sceneGeometryBytes": 511332,
+      "detachedCockpitGeometryBytes": 121904
     },
     {
       "id": "carrera_s",
-      "geometryBytes": 547456,
-      "exterior": 3142,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1960,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1776,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1776,
+      "sceneGeometryBytes": 605128,
+      "detachedCockpitGeometryBytes": 151880
     },
     {
       "id": "carrera_gts",
-      "geometryBytes": 547456,
-      "exterior": 3142,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1960,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1776,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1776,
+      "sceneGeometryBytes": 605128,
+      "detachedCockpitGeometryBytes": 151880
     },
     {
       "id": "huracan_rwd",
-      "geometryBytes": 491264,
-      "exterior": 2672,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1670,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1486,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1486,
+      "sceneGeometryBytes": 536268,
+      "detachedCockpitGeometryBytes": 130492
     },
     {
       "id": "gtv1750",
-      "geometryBytes": 584660,
-      "exterior": 3757,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 2040,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1856,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1856,
+      "sceneGeometryBytes": 643788,
+      "detachedCockpitGeometryBytes": 159064
     },
     {
       "id": "e36_318i",
-      "geometryBytes": 444632,
-      "exterior": 2078,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1786,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1602,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1602,
+      "sceneGeometryBytes": 497948,
+      "detachedCockpitGeometryBytes": 137444
     },
     {
       "id": "mini_cabrio_jcw",
-      "geometryBytes": 589672,
-      "exterior": 3420,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2000,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1842,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1842,
+      "sceneGeometryBytes": 645064,
+      "detachedCockpitGeometryBytes": 158552
     },
     {
       "id": "cle300e",
-      "geometryBytes": 620748,
-      "exterior": 3541,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 2112,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1928,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1928,
+      "sceneGeometryBytes": 673604,
+      "detachedCockpitGeometryBytes": 173112
     },
     {
       "id": "jazz",
-      "geometryBytes": 421232,
-      "exterior": 1906,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        76,
-        76,
-        76,
-        76
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 471500,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "jazz_dynamic",
-      "geometryBytes": 430832,
-      "exterior": 2006,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 481100,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "jazz_drift",
-      "geometryBytes": 437816,
-      "exterior": 2070,
-      "lod1": 516,
-      "lod2": 236,
-      "wheels": [
-        78,
-        78,
-        78,
-        78
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 488084,
+      "detachedCockpitGeometryBytes": 130556
     },
     {
       "id": "aygo",
-      "geometryBytes": 264692,
-      "exterior": 2436,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 846,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 674,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 674,
+      "sceneGeometryBytes": 304840,
+      "detachedCockpitGeometryBytes": 50388
     },
     {
       "id": "qashqai",
-      "geometryBytes": 270108,
-      "exterior": 2522,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 846,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 674,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 674,
+      "sceneGeometryBytes": 310256,
+      "detachedCockpitGeometryBytes": 50388
     },
     {
       "id": "qashqai_dci",
-      "geometryBytes": 270108,
-      "exterior": 2522,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 846,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 674,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 674,
+      "sceneGeometryBytes": 310256,
+      "detachedCockpitGeometryBytes": 50388
     },
     {
       "id": "dolphin",
-      "geometryBytes": 267540,
-      "exterior": 2454,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 846,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 674,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 674,
+      "sceneGeometryBytes": 307688,
+      "detachedCockpitGeometryBytes": 50388
     },
     {
       "id": "atto3",
-      "geometryBytes": 267588,
-      "exterior": 2422,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 886,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 714,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 714,
+      "sceneGeometryBytes": 310024,
+      "detachedCockpitGeometryBytes": 52420
     },
     {
       "id": "van",
-      "geometryBytes": 304476,
-      "exterior": 3070,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 846,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 674,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 674,
+      "sceneGeometryBytes": 344624,
+      "detachedCockpitGeometryBytes": 50388
     },
     {
       "id": "van_150",
-      "geometryBytes": 304476,
-      "exterior": 3070,
-      "lod1": 184,
-      "lod2": 184,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 846,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 674,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 674,
+      "sceneGeometryBytes": 344624,
+      "detachedCockpitGeometryBytes": 50388
     },
     {
       "id": "truck",
-      "geometryBytes": 241468,
-      "exterior": 2016,
-      "lod1": 198,
-      "lod2": 198,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 726,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 554,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 554,
+      "sceneGeometryBytes": 274320,
+      "detachedCockpitGeometryBytes": 41988
     },
     {
       "id": "bus",
-      "geometryBytes": 320384,
-      "exterior": 3404,
-      "lod1": 210,
-      "lod2": 210,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 724,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 554,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 554,
+      "sceneGeometryBytes": 353344,
+      "detachedCockpitGeometryBytes": 41880
     },
     {
       "id": "a160",
-      "geometryBytes": 461408,
-      "exterior": 2260,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1786,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1602,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1602,
+      "sceneGeometryBytes": 514724,
+      "detachedCockpitGeometryBytes": 137444
     },
     {
       "id": "a190",
-      "geometryBytes": 461408,
-      "exterior": 2260,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1786,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1602,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1602,
+      "sceneGeometryBytes": 514724,
+      "detachedCockpitGeometryBytes": 137444
     },
     {
       "id": "sl400",
-      "geometryBytes": 488872,
-      "exterior": 2491,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1828,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1670,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1670,
+      "sceneGeometryBytes": 537200,
+      "detachedCockpitGeometryBytes": 147040
     },
     {
       "id": "sl500",
-      "geometryBytes": 488872,
-      "exterior": 2491,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1828,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1670,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1670,
+      "sceneGeometryBytes": 537200,
+      "detachedCockpitGeometryBytes": 147040
     },
     {
       "id": "sl63",
-      "geometryBytes": 496552,
-      "exterior": 2571,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1828,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1670,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1670,
+      "sceneGeometryBytes": 544880,
+      "detachedCockpitGeometryBytes": 147040
     },
     {
       "id": "sl65",
-      "geometryBytes": 496552,
-      "exterior": 2571,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1828,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1670,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1670,
+      "sceneGeometryBytes": 544880,
+      "detachedCockpitGeometryBytes": 147040
     },
     {
       "id": "f348",
-      "geometryBytes": 479260,
-      "exterior": 2544,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1694,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 525616,
+      "detachedCockpitGeometryBytes": 131732
     },
     {
       "id": "f348_ts",
-      "geometryBytes": 474388,
-      "exterior": 2524,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1668,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 522532,
+      "detachedCockpitGeometryBytes": 129944
     },
     {
       "id": "f348_spider",
-      "geometryBytes": 464452,
-      "exterior": 2408,
-      "lod1": 486,
-      "lod2": 206,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1668,
-      "rider": 0,
-      "distanceCabin": 288
+      "exteriorCabinTriangles": 1510,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 288,
+      "cockpitTriangles": 1510,
+      "sceneGeometryBytes": 512596,
+      "detachedCockpitGeometryBytes": 129944
     },
     {
       "id": "p928_s4",
-      "geometryBytes": 474576,
-      "exterior": 2480,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1906,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1722,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1722,
+      "sceneGeometryBytes": 529332,
+      "detachedCockpitGeometryBytes": 148964
     },
     {
       "id": "p928_gt",
-      "geometryBytes": 474576,
-      "exterior": 2480,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1906,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1722,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1722,
+      "sceneGeometryBytes": 529332,
+      "detachedCockpitGeometryBytes": 148964
     },
     {
       "id": "p928",
-      "geometryBytes": 474576,
-      "exterior": 2480,
-      "lod1": 504,
-      "lod2": 224,
-      "wheels": [
-        74,
-        74,
-        74,
-        74
-      ],
-      "interior": 1906,
-      "rider": 0,
-      "distanceCabin": 360
+      "exteriorCabinTriangles": 1722,
+      "exteriorCabinDraws": 1,
+      "distanceCabinTriangles": 360,
+      "cockpitTriangles": 1722,
+      "sceneGeometryBytes": 529332,
+      "detachedCockpitGeometryBytes": 148964
     }
-  ]
+  ],
+  "traffic": [
+    {
+      "id": "police",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "van",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "truck",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "bus",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "mini",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "z4",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "taxi",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "carrera",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "gr_yaris",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "gtv",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "golf",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "corolla",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "superb",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "mini_jcw",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cle",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "gla",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "gla45",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cla",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "aventador_svj",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "huracan",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "ibiza",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "panda",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "yaris",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "e36",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cle200",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cle450",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cle53",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "e36_m3",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "panda_11",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "panda_100hp",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "yaris_13",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "yaris_ts",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "ibiza_cupra",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "golf_gti",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "golf_gtd",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "golf_r",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "mini_cooper",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "mini_s",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "mini_cabrio_cooper",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "corolla_15",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "octavia_16tdi",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "octavia_rs",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "superb_15",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "superb_4x4",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cla250",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cla35",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cla45s",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "gla250",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "z4_20i",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "z4_30i",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "carrera_s",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "carrera_gts",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "huracan_rwd",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "gtv1750",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "e36_318i",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "mini_cabrio_jcw",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "cle300e",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "jazz",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "jazz_dynamic",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "jazz_drift",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "a160",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "a190",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "sl400",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "sl500",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "sl63",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "sl65",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "f348",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "f348_ts",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "f348_spider",
+      "triangles": 288,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "p928_s4",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "p928_gt",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    },
+    {
+      "id": "p928",
+      "triangles": 360,
+      "draws": 1,
+      "cutoff": 40
+    }
+  ],
+  "sharedTrafficGeometries": 31
 }
