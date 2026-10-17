@@ -1,6 +1,6 @@
 .scr--leaderboards .scr__body { overflow-y: auto; }
 .scr--leaderboards .scr__body > * { flex-shrink: 0; }
-.lb-layout { display: grid; grid-template-columns: minmax(18rem, 25rem) minmax(0, 1fr); gap: var(--s-5); margin-top: var(--s-5); align-items: start; }
+.lb-layout { display: grid; grid-template-columns: minmax(18rem, 28rem) minmax(0, 1fr); gap: var(--s-5); margin-top: var(--s-5); align-items: start; }
 .lb-layout aside { min-width: 0; }
 .lb-layout aside .btn { margin-top: var(--s-3); }
 .lb-results { min-width: 0; }

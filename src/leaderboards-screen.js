@@ -28,12 +28,12 @@ export function renderLeaderboards(menu, d) {
   const pick = (key, label, options) => C.select({ key, label, value: f[key] || '', options, attrs: { 'data-scope': 'leaderboard' } });
   const filters = pick('mapId', 'TRACK', MAPS.map(m => [m.id, esc(m.name)])) +
     pick('eventId', 'EVENT', [ALL, ...[...events].map(([id, label]) => [id, esc(label)])]) +
-    (routes.length ? pick('route', 'ROUTE / LAPS', [ALL, ...routes.map(([id, label]) => [id, esc(label)])]) : '') +
+    (routes.length ? pick('route', 'ROUTE', [ALL, ...routes.map(([id, label]) => [id, esc(label)])]) : '') +
     pick('car', 'CAR', [ALL, ...CARS.map(c => [c.id, esc(c.name)])]) +
     C.button({ label: d.advanced ? 'FEWER FILTERS' : 'WEATHER & ASSISTS', icon: 'sliders-horizontal', act: 'leaderboardAdvanced', block: true, size: 'sm' }) +
     (d.advanced ? pick('weather', 'WEATHER', [ALL, ...['clear', 'overcast', 'rain', 'dynamic'].map(v => [v, v.toUpperCase()])]) +
-      pick('tc', 'TRACTION CONTROL', [ALL, ['true', 'ON'], ['false', 'OFF']]) + pick('abs', 'ABS', [ALL, ['true', 'ON'], ['false', 'OFF']]) +
-      pick('steering', 'STEERING ASSIST', [ALL, ...['off', 'light', 'full'].map(v => [v, v.toUpperCase()])]) +
+      pick('tc', 'TC', [ALL, ['true', 'ON'], ['false', 'OFF']]) + pick('abs', 'ABS', [ALL, ['true', 'ON'], ['false', 'OFF']]) +
+      pick('steering', 'STEERING', [ALL, ...['off', 'light', 'full'].map(v => [v, v.toUpperCase()])]) +
       pick('gearbox', 'GEARBOX', [ALL, ['auto', 'AUTO'], ['manual', 'MANUAL']]) : '') +
     C.button({ label: 'CLEAR FILTERS', act: 'leaderboardReset', variant: 'ghost', size: 'sm', block: true });
   const rows = (d.tab === 'personal' ? local : d.entries || []).filter(r => matchesRecord(r, f));
