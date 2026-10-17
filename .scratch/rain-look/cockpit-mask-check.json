@@ -1,0 +1,12 @@
+{
+  "parent": "0413fbcdfe21553c05aa6325df7208bdebf73cef",
+  "vehicles": 78,
+  "masks": 156,
+  "exactPixelMatches": 156,
+  "byteMatches": 156,
+  "unchangedGeometryAudits": 78,
+  "changedSourceHashes": [
+    "src/cockpit-rain.js",
+    "src/weather.js#cockpit-rain"
+  ]
+}
