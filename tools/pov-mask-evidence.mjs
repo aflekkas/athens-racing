@@ -1,4 +1,10 @@
 import fs from 'node:fs/promises';import {createHash} from 'node:crypto';import {inflateSync} from 'node:zlib';
+// Cabin follow-up evidence lives together; unchanged PNGs reuse the original
+// catalogue capture instead of duplicating hundreds of binary artifacts.
+export const POV_EVIDENCE_DIR='.scratch/cabin-fixes/evidence';
+export async function readPovEvidence(name){
+ try{return await fs.readFile(POV_EVIDENCE_DIR+'/'+name);}catch(e){if(e.code!=='ENOENT')throw e;return fs.readFile('.scratch/pov-camera/'+name);}
+}
 const hash=s=>createHash('sha256').update(s).digest('hex');
 export async function povSourceHashes(){
  const names=(await fs.readdir('src')).filter(n=>/^(cars|car-catalog|vehicle-.*|glass-tint|player-.*|traffic-.*-models|police-models|cockpit.*|fleet-(cockpit|interiors|instruments)|pov-.*|seat-position)\.js$/.test(n)).map(n=>'src/'+n).sort();

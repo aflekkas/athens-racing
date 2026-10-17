@@ -1,6 +1,6 @@
-import {povSourceHashes} from './pov-mask-evidence.mjs';
+import {povSourceHashes,POV_EVIDENCE_DIR,readPovEvidence,readMaskPNG} from './pov-mask-evidence.mjs';
 import fs from 'node:fs/promises';import {createServer} from 'node:http';
-const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');const root=process.cwd(),out=root+'/.scratch/pov-camera';await fs.mkdir(out,{recursive:true});
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');const root=process.cwd(),out=root+'/'+POV_EVIDENCE_DIR;await fs.mkdir(out,{recursive:true});
 const sourceHashes=await povSourceHashes();
 const html=`<html><body style="margin:0"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><script type="module">
 import * as T from 'three';import {CARS,CarModel} from '/src/cars.js';import {Cockpit} from '/src/cockpit.js';import {renderPovMask} from '/tools/pov-mask.js';import {renderStructureMask} from '/tools/cockpit-structure-mask.js';import {auditPov} from '/tools/pov-audit.js';import {settings} from '/src/settings.js';import {setPovExteriorView} from '/src/pov-visibility.js';
@@ -13,7 +13,15 @@ const structure=renderStructureMask(renderer,model,camera);row.structure=structu
 const server=createServer(async(req,res)=>{try{if(req.url==='/fixture'){res.setHeader('Content-Type','text/html');res.end(html);return;}const path=root+decodeURIComponent(req.url.split('?')[0]);res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.svg')?'image/svg+xml':'application/octet-stream');res.end(await fs.readFile(path));}catch{res.statusCode=404;res.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 try{const page=await browser.newPage({viewport:{width:1280,height:800}});page.on('pageerror',e=>console.log('ERROR',e.stack));await page.goto('http://127.0.0.1:'+server.address().port+'/fixture');await page.waitForFunction(()=>window.ready);const rows=[];
-for(const id of process.env.CAPTURE_IDS?.split(',')||await page.evaluate(()=>ids)){const row=await page.evaluate(id=>capture(id),id);for(const phase of ['before','after'])for(const kind of ['image','mask']){await fs.writeFile(out+'/'+phase+'-'+id+'-'+kind+'.png',Buffer.from(row[phase][kind],'base64'));delete row[phase][kind];}await fs.writeFile(out+'/opaque-'+id+'-mask.png',Buffer.from(row.opaqueMask,'base64'));delete row.opaqueMask;await fs.writeFile(out+'/structure-'+id+'-mask.png',Buffer.from(row.structureImage,'base64'));delete row.structureImage;rows.push(row);await fs.writeFile(out+'/mask-audit.json',JSON.stringify(rows,null,2));console.log(id,row.before.windscreenPercent.toFixed(2),row.after.windscreenPercent.toFixed(2));}
+for(const id of process.env.CAPTURE_IDS?.split(',')||await page.evaluate(()=>ids)){
+ const row=await page.evaluate(id=>capture(id),id);
+ for(const [name,encoded]of [['after-'+id+'-mask.png',row.after.mask],['opaque-'+id+'-mask.png',row.opaqueMask],['structure-'+id+'-mask.png',row.structureImage]]){
+  const png=Buffer.from(encoded,'base64'),old=await readPovEvidence(name).catch(e=>{if(e.code!=='ENOENT')throw e;return null;});
+  if(!old||!Buffer.from(readMaskPNG(old).rgb).equals(Buffer.from(readMaskPNG(png).rgb)))await fs.writeFile(out+'/'+name,png);
+ }
+ for(const phase of ['before','after']){delete row[phase].image;delete row[phase].mask;}
+ delete row.opaqueMask;delete row.structureImage;rows.push(row);await fs.writeFile(out+'/mask-audit.json',JSON.stringify(rows,null,2));console.log(id,row.after.windscreenPercent.toFixed(2));
+}
 await fs.writeFile(out+'/mask-source-hashes.json',JSON.stringify(sourceHashes,null,2));
 if(rows.some(r=>r.after.geometryAudit.flags.length))process.exitCode=1;
 }finally{await browser.close();server.close();}

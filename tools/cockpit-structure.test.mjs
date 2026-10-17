@@ -1,10 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 import {CARS,CarModel,Cockpit} from './vehicle-budget-support.mjs';
 import {STRUCTURE_ROLES} from './cockpit-structure-mask.js';
-import {readMaskPNG} from './pov-mask-evidence.mjs';
+import {readMaskPNG,readPovEvidence} from './pov-mask-evidence.mjs';
 import {OWNER_VEHICLE_DECISION as WHY} from '../src/vehicle-budgets.js';
 import {badgeBrand,BRAND_BADGES} from '../src/brand-badges.js';
-const out='.scratch/pov-camera';
 if(!globalThis.Image)globalThis.Image=class {complete=true;naturalWidth=24;set src(value){}};
 function requireStructure(spec,roles){
  const required=['dash',...(['bus','truck'].includes(spec.nativeFleet)||['cla','huracan','jazz'].includes(spec.body)?[]:['deck']), 'pillar','door-top','wheel-rim','wheel-hub','wheel-badge'];
@@ -12,9 +11,9 @@ function requireStructure(spec,roles){
  {assert.ok(roles.dash.pixels>=15000,`${spec.id}: dashboard must have substantial visible depth. ${WHY}`);assert.ok(roles.pillar.pixels>=5000,`${spec.id}: pillar trim must be substantial. ${WHY}`);assert.ok(roles.dash.maxX-roles.dash.minX>=832,`${spec.id}: dashboard does not span the view. ${WHY}`);}
 }
 test('every rendered cockpit has visible own-car structure, including a rim, hub and badge',async()=>{
- const rows=JSON.parse(await fs.readFile(out+'/mask-audit.json'));
+ const rows=JSON.parse(await readPovEvidence('mask-audit.json'));
  assert.deepEqual(rows.map(r=>r.id).sort(),CARS.map(c=>c.id).sort(),WHY);
- for(const row of rows){const png=readMaskPNG(await fs.readFile(out+'/structure-'+row.id+'-mask.png'));
+ for(const row of rows){const png=readMaskPNG(await readPovEvidence('structure-'+row.id+'-mask.png'));
   const roles=Object.fromEntries(STRUCTURE_ROLES.map(r=>[r,{pixels:0,minX:png.width,maxX:-1,minY:png.height,maxY:-1}]));
   for(let y=0;y<png.height;y++)for(let x=0;x<png.width;x++){const i=(y*png.width+x)*3;if(png.rgb[i+1]||png.rgb[i+2])continue;const role=STRUCTURE_ROLES[png.rgb[i]-1];if(!role)continue;const v=roles[role];v.pixels++;v.minX=Math.min(v.minX,x);v.maxX=Math.max(v.maxX,x);v.minY=Math.min(v.minY,y);v.maxY=Math.max(v.maxY,y);}
   assert.deepEqual(roles,row.structure,row.id+' structure PNG recount differs. '+WHY);requireStructure(CARS.find(c=>c.id===row.id),roles);

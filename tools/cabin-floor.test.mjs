@@ -51,3 +51,27 @@ test('exterior uses one authored cabin through 25 m, then a bounded traffic-styl
  cockpit.setVisible(false);assert.ok(model.windscreen.visible);assert.ok(model.crackedGlass.parent,'Cracks stay attached to their pane');
  model.setDamage('front',0);cockpit.disposeMirrors();model.disposeDamage?.();
 });
+
+test('exterior cabin submits once, culls normally, and never overlaps the active POV',()=>{
+ const model=new CarModel(CARS.find(s=>s.id==='mini')),cockpit=model.cockpit,lod=cockpit.lod,camera=new T.PerspectiveCamera();
+ const visibleMeshes=()=>{const result=[];lod.traverseVisible(o=>{if(o.isMesh)result.push(o);});return result;};
+ for(const [distance,expected]of [[5,1],[20,1],[30,1],[50,0]]){
+  cockpit.setVisible(false);camera.position.set(0,0,distance);camera.updateMatrixWorld(true);model.root.updateMatrixWorld(true);lod.update(camera);
+  const meshes=visibleMeshes();assert.equal(meshes.length,expected);for(const mesh of meshes){assert.ok(mesh.frustumCulled);assert.ok(!Array.isArray(mesh.material));assert.equal(mesh.geometry.groups.length,0);}
+  assert.equal(cockpit.group.parent,null,'Hidden animated cockpit must not incur scene matrix traversal');
+  cockpit.setVisible(true);assert.equal(cockpit.group.parent,model.body);assert.equal(visibleMeshes().length,0,'POV must not double render its exterior snapshot');
+ }
+ cockpit.setVisible(false);cockpit.disposeMirrors();assert.equal(cockpit.group.parent,model.body,'Detached POV resources must rejoin normal car disposal');model.disposeDamage?.();
+});
+
+test('traffic cabins share geometry across colours and near/far instances, bounded at 360 triangles',async()=>{
+ const {TRAFFIC_TYPES,trafficModel}=await import('./vehicle-budget-support.mjs');const {RNG}=await import('../src/util.js');
+ for(const type of TRAFFIC_TYPES){if(type.scooter||type.moto)continue;
+  const a=trafficModel(type,'#324657',new RNG(1)),b=trafficModel(type,'#cfcaba',new RNG(2)),far=trafficModel(type,'#887755',new RNG(3),{low:true});
+  const left=a.body.getObjectByName('traffic-cabin-lod'),right=b.body.getObjectByName('traffic-cabin-lod');
+  assert.equal(left.levels[0].object.geometry,right.levels[0].object.geometry,type.id+' must share cabin geometry');
+  assert.equal(left.levels[0].object.geometry,far.body.getObjectByName('traffic-cabin-lod').levels[0].object.geometry,type.id+' near/far must share cabin geometry');
+  assert.ok(triangles(left)<=360,type.id+' cabin exceeds 360 triangles');assert.equal(left.levels[1].distance,40);
+  a.disposeDamage?.();b.disposeDamage?.();far.disposeDamage?.();
+ }
+});

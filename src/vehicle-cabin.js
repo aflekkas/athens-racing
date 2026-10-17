@@ -45,21 +45,71 @@ export function buildCabin(model,{cheap=false}={}){
  for(const [material,geometries]of bins){const mesh=new T.Mesh(mergeGeometries(geometries),material);mesh.name=material===carpet?'sealed-carpet-footwell':'empty-cabin-seats';mesh.userData.vehicleCabin=true;mesh.receiveShadow=true;group.add(mesh);geometries.forEach(g=>g.dispose());}
  return group;
 }
+// A static exterior snapshot keeps all authored furniture but submits it once.
+// POV retains its original materials, animation, instruments and damage hooks.
+const exteriorMaterial=new T.MeshStandardMaterial({vertexColors:true,roughness:.82,side:T.DoubleSide});
+const trafficCabins=new Map();
+function mergeCabin(root){
+ const geometries=[];root.updateWorldMatrix(true,true);
+ const inverse=root.matrixWorld.clone().invert(),visible=root.visible;root.visible=true;
+ root.traverseVisible(o=>{
+  if(!o.isMesh)return;
+  const source=o.geometry,materials=[].concat(o.material);
+  const g=source.index?source.toNonIndexed():source.clone();
+  g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));
+  const count=g.attributes.position.count,colors=new Float32Array(count*3);
+  const groups=source.groups.length?source.groups:[{start:0,count,materialIndex:0}];
+  for(const part of groups){
+   const m=materials[part.materialIndex]||materials[0],color=m.color?.clone()||new T.Color('#34383b');
+   // White textured instrument/mirror surfaces would become bright white cards
+   // without their map. Their small exterior-facing silhouette is dark glass.
+   if(m.map&&color.r>.8&&color.g>.8&&color.b>.8)color.set('#34383b');
+   for(let i=part.start;i<Math.min(count,part.start+part.count);i++){
+    const old=g.attributes.color;colors[i*3]=color.r*(old?.getX(i)??1);colors[i*3+1]=color.g*(old?.getY(i)??1);colors[i*3+2]=color.b*(old?.getZ(i)??1);
+   }
+  }
+  for(const key of Object.keys(g.attributes))if(!['position','normal'].includes(key))g.deleteAttribute(key);
+  if(!g.attributes.normal)g.computeVertexNormals();
+  g.setAttribute('color',new T.BufferAttribute(colors,3));g.clearGroups();geometries.push(g);
+ });root.visible=visible;
+ const geometry=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());
+ geometry.computeBoundingSphere();
+ const mesh=new T.Mesh(geometry,exteriorMaterial);mesh.name='exterior-cabin';mesh.userData.vehicleCabin=true;mesh.receiveShadow=true;
+ mesh.matrixAutoUpdate=false;return mesh;
+}
+function cheapCabin(model){
+ const source=buildCabin(model,{cheap:true}),mesh=mergeCabin(source);
+ source.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});return mesh;
+}
 export function installCabinLOD(model,cockpit){
  const near=cockpit.group;near.add(buildCabin(model));
- // The raised POV framing duplicates exterior pillars/deck and sits above the
- // roof for the high driving eye. The real body provides that framing outside.
  cockpit.structure.visible=false;
- // Keep cabin LOD independent of the 15 m exterior skin LOD.
+ const exterior=mergeCabin(near);
+ // Keep the large, animated POV tree out of scene matrix traversal altogether
+ // while driving in chase view or drawing rivals/garage cars.
  const lod=cockpit.lod||new T.LOD();model.body.add(lod);lod.name='cockpit-lod';lod.userData.vehicleCabin=true;
- if(!cockpit.lod)lod.addLevel(near,0);
- for(const level of lod.levels.slice(1))level.object.removeFromParent();lod.levels.splice(1);
- lod.addLevel(buildCabin(model,{cheap:true}),25,.12);
- lod.addLevel(new T.Group(),90,.12);cockpit.lod=lod;lod.visible=true;
- model.cockpit=cockpit;
+ for(const level of lod.levels)level.object.removeFromParent();lod.levels.length=0;
+ near.removeFromParent();
+ lod.addLevel(exterior,0);lod.addLevel(cheapCabin(model),25,.12);
+ lod.addLevel(new T.Group(),40,.12);cockpit.lod=lod;lod.visible=true;
+ const setVisible=cockpit.setVisible.bind(cockpit);
+ cockpit.setVisible=v=>{
+  setVisible(v);
+  if(v){if(near.parent!==model.body)model.body.add(near);near.visible=true;for(const level of lod.levels)level.object.visible=false;}
+  else{near.removeFromParent();if(cockpit.inPOV!==false){lod.levels.forEach((l,i)=>l.object.visible=i===0);}}
+  cockpit.inPOV=v;
+ };
+ // Rejoin the normal car resource-disposal walk before releasing this view.
+ const disposeMirrors=cockpit.disposeMirrors.bind(cockpit);
+ cockpit.disposeMirrors=()=>{disposeMirrors();if(near.parent!==model.body)model.body.add(near);};
+ cockpit.inPOV=false;model.cockpit=cockpit;
 }
 export function installTrafficCabin(model,type){
  if(type.scooter||type.moto)return;
+ // Cache by actual cabin shape/seat layout, including commercial model kind.
+ const key=JSON.stringify([cabinDimensions(model),model.dims.W,model.shape?.leather,model.shape?.seats]);
+ let template=trafficCabins.get(key);
+ if(!template){template=cheapCabin(model);template.geometry.userData.shared=true;trafficCabins.set(key,template);}
  const lod=new T.LOD();lod.name='traffic-cabin-lod';lod.userData.vehicleCabin=true;
- lod.addLevel(buildCabin(model,{cheap:true}),0);lod.addLevel(new T.Group(),90,.12);model.body.add(lod);
+ lod.addLevel(template.clone(),0);lod.addLevel(new T.Group(),40,.12);model.body.add(lod);
 }
