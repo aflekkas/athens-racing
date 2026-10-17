@@ -68,6 +68,7 @@ export function checkpointFrame(route, s, dir) {
   });
   return lanes.length ? { ...(lanes.find(l => l.direction === dir) || lanes[0]), lanes } : roadFrame(route, s);
 }
+const courseRoutes = new WeakMap();
 export function buildCourse(event, route) {
   const len = Math.abs(event.s1 - event.s0), dir = event.dir || 1;
   const distances = new Set([len]);
@@ -75,7 +76,36 @@ export function buildCourse(event, route) {
   for (const cp of event.checkpoints || []) { const d = (cp.s - event.s0) * dir; if (d > 0 && d < len) distances.add(d); }
   const gates = [...distances].sort((a, b) => a - b).map((d, i) => ({ id: `gate-${i + 1}`, d, s: event.s0 + dir * d, ...checkpointFrame(route, event.s0 + dir * d, dir) }));
   const start = roadFrame(route, event.s0);
-  return { s0: event.s0, dir, gates, passed: 0, missed: false, gateTimes: [], previous: { s: event.s0, u: 0, x: start.x, y: start.y, z: start.z }, previousTime: null };
+  const course = { s0: event.s0, dir, gates, passed: 0, missed: false, gateTimes: [], previous: { s: event.s0, u: 0, x: start.x, y: start.y, z: start.z }, previousTime: null, validProgress: 0, onRoute: true };
+  if (route) courseRoutes.set(course, route);
+  return course;
+}
+// Current position on the earned route, including legitimate backwards travel.
+// The gate cursor is a high-water mark; it must never itself rank a reversing car.
+export function courseProgress(course) {
+  return finite(course?.validProgress) ? course.validProgress : course?.gates[course.passed - 1]?.d ?? 0;
+}
+export function courseRecoveryStation(course, currentS) {
+  const anchor = course.s0 + course.dir * courseProgress(course);
+  // A local backwards excursion may retreat the anchor. A projection onto a
+  // different lap/road leg must never drag a recovery kilometres backwards.
+  return finite(currentS) && Math.abs(currentS - anchor) <= GATE_SPACING ?
+    course.dir * Math.min(course.dir * currentS, course.dir * anchor) : anchor;
+}
+export function coursePoseValid(course, pose, route) {
+  if (!finite(pose.s)) return false;
+  if (!route || !finite(pose.x) || !finite(pose.z)) return Math.abs(pose.u || 0) <= 8;
+  const length = route.length ?? (route.x?.length - 1) * route.step;
+  const station = !route.closed && finite(length) ? Math.max(0, Math.min(length, pose.s)) : pose.s;
+  const f = checkpointFrame(route, station, course.dir);
+  if (!route.closed && station !== pose.s) for (const lane of f.lanes || [f]) {
+    lane.x += (pose.s - station) * lane.tx; lane.z += (pose.s - station) * lane.tz;
+  }
+  return (f.lanes || [f]).some(lane => {
+    const dx = pose.x - lane.x, dz = pose.z - lane.z;
+    return Math.abs(dx * lane.tx + dz * lane.tz) <= 8 &&
+      Math.abs(-dx * lane.tz + dz * lane.tx) <= lane.halfWidth && Math.abs((pose.y || 0) - lane.y) <= 8;
+  });
 }
 export function courseStatus(course) {
   const gate = course.gates[course.passed];
@@ -83,12 +113,18 @@ export function courseStatus(course) {
     next: gate ? { id: gate.id, s: gate.s, x: gate.x, y: gate.y, z: gate.z, halfWidth: gate.halfWidth } : null,
     message: course.missed ? MISSED_CHECKPOINT : '' };
 }
-export function observeCourse(course, pose, now, { initialTime = 0, recovery = false } = {}) {
+export function observeCourse(course, pose, now, { initialTime = 0, recovery = false, route = courseRoutes.get(course) || null } = {}) {
   const prev = course.previous, dt = Math.max(0, Math.min(5, now - (course.previousTime ?? initialTime)));
   const d0 = progress(course, prev.s), d1 = progress(course, pose.s);
   const continuous = Math.abs(pose.s - prev.s) <= 30 + 150 * dt && (!finite(pose.x) || Math.hypot(pose.x - prev.x, pose.z - prev.z) <= 15 + 150 * dt);
+  const onRoute = coursePoseValid(course, pose, route);
+  // Rejoining a different leg/parallel street cannot buy the distance spent off
+  // course. Go back to the departure point, or recover to that earned anchor.
+  if (!recovery && (!onRoute || !continuous)) course.rejoinLimit ??= courseProgress(course) + 6;
+  const rejoined = course.rejoinLimit == null || d1 <= course.rejoinLimit;
+  if (onRoute && continuous && rejoined) delete course.rejoinLimit;
   let gate = course.gates[course.passed];
-  if (!recovery && continuous) while (gate) {
+  if (!recovery && continuous && onRoute && rejoined) while (gate) {
     let crossed = false, valid = false, crossingFraction = 1;
     // Five metres of station tolerance accommodates curved lane projection;
     // the physical crossing still decides whether the gate was actually passed.
@@ -116,7 +152,12 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
     (course.gateTimes ||= [])[course.passed] = now - dt + dt * crossingFraction;
     course.passed++; course.missed = false; gate = course.gates[course.passed];
   }
-  if (gate && d1 > gate.d + 5) course.missed = true;
+  if (gate && d1 > gate.d + 5 || !rejoined && onRoute) course.missed = true;
+  if (onRoute && continuous && rejoined && (!gate || d1 <= gate.d + 5)) {
+    course.validProgress = Math.min(d1, gate ? gate.d - .001 : course.gates.at(-1)?.d ?? d1);
+    if (!recovery) course.missed = false;
+  }
+  course.onRoute = onRoute && continuous && rejoined;
   if (!continuous && d1 > d0) course.missed = true;
   course.previous = { s: pose.s, u: pose.u, x: pose.x, y: pose.y, z: pose.z };
   course.previousTime = now;

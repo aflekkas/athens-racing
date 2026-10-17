@@ -204,3 +204,13 @@ test('race setup: defaults stay official, choices make a separate custom variant
   RS.saveSetup(sprint.id, {}, st); assert.deepEqual(RS.loadSetup(sprint.id, st), {});
   assert.deepEqual(RS.trafficLevels(0.8).map((l) => l[1]), [0, 0.5, 0.8, 1.5, 2], 'the event density is one of the choices');
 });
+
+test('Psychiko default direction keeps legacy event times separate from current local records', () => {
+  const oldKey = 'paraliaki.events.psychiko-race', saved = new Map([[oldKey, JSON.stringify({ bestTime: 100 })]]);
+  const storage = { getItem: key => saved.get(key) || null, setItem: (key, value) => saved.set(key, value) };
+  assert.deepEqual(EV.loadRecord('psychiko-race', storage), {});
+  EV.saveRecord('psychiko-race', { bestTime: 150 }, storage);
+  assert.equal(EV.loadRecord('psychiko-race', storage).bestTime, 150);
+  assert.equal(JSON.parse(saved.get(oldKey)).bestTime, 100);
+  assert.equal(EV.loadRecord('psychiko-race~rev', storage).bestTime, 100, 'old forward record remains readable for the new forward toggle');
+});

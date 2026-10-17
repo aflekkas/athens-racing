@@ -40,7 +40,7 @@ export function driverTelemetry({ member, state, event, startAt, now, ranked, pr
   return {
     member, state, pos: member.dnf ? null : index + 1,
     time: member.finish ?? Math.max(0, (now - startAt) / 1000),
-    progress: Math.max(0, raceProgress(event, state.s)),
+    progress: Math.max(0, progress(member)),
     ahead, behind, leader, aheadMetres: distance(ahead), behindMetres: distance(behind), leaderMetres: distance(leader),
     gap: timed ? member.finish - comparison.finish : distance(comparison) ?? NaN,
     gapUnit: timed ? 's' : 'm', comparison,

@@ -1,6 +1,7 @@
 // Run the existing deterministic generators in Node using exactly the browser's three.js version.
 import * as THREE from 'three';
 import { encodeMeshoptPack } from './meshopt-pack.mjs';
+import { writeWorldDownload } from './world-download-assets.mjs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -38,24 +39,13 @@ export async function bakeWorlds(root, out, ids) {
   const dir = resolve(out, 'data/baked'); await mkdir(dir, { recursive: true });
   const policy = {};
   for (const id of ids) {
-    const t = performance.now(), bake = await generateMapBake(root, id), paths = {}, meshopt = {};
+    const t = performance.now(), bake = await generateMapBake(root, id), paths = {}, meshopt = {}, assets = {}, downloadBytes = {}, meshoptDownloadBytes = {};
     let legacyBytes = 0, compactBytes = 0, meshoptViews = 0;
     for (const kind of ['terrain', 'roads']) {
       const bytes = gzipSync(new Uint8Array(bake[kind]), { level: 9 });
-      const chunkSize = 20 * 1024 * 1024;
       const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16), name = `${id}-${kind}-${hash}.bin.gz`;
-      if (bytes.length <= 25 * 1024 * 1024) {
-        await writeFile(resolve(dir, name), bytes); paths[kind] = `./data/baked/${name}`;
-      } else {
-        // Split the compressed stream without altering a single geometry byte.
-        const parts = [];
-        for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-          const part = name.replace('.bin.gz', `.part-${parts.length}.bin.gz`);
-          await writeFile(resolve(dir, part), bytes.subarray(offset, offset + chunkSize));
-          parts.push(`./data/baked/${part}`);
-        }
-        paths[kind] = parts;
-      }
+      paths[kind] = await writeWorldDownload(dir, name, bytes, assets);
+      downloadBytes[kind] = bytes.length;
       console.log(`Baked ${id} ${kind}: ${bytes.length} bytes`);
       const compact = await encodeMeshoptPack(bake[kind]);
       const jsonSize = new DataView(compact.buffer).getUint32(4, true);
@@ -64,17 +54,8 @@ export async function bakeWorlds(root, out, ids) {
       legacyBytes += bytes.length; compactBytes += compressed.length;
       const digest = createHash('sha256').update(compressed).digest('hex').slice(0, 16);
       const compactName = `${id}-${kind}-${digest}.meshopt.gz`;
-      if (compressed.length <= 25 * 1024 * 1024) {
-        await writeFile(resolve(dir, compactName), compressed); meshopt[kind] = `./data/baked/${compactName}`;
-      } else {
-        const parts = [];
-        for (let offset = 0; offset < compressed.length; offset += chunkSize) {
-          const part = compactName.replace('.meshopt.gz', `.part-${parts.length}.meshopt.gz`);
-          await writeFile(resolve(dir, part), compressed.subarray(offset, offset + chunkSize));
-          parts.push(`./data/baked/${part}`);
-        }
-        meshopt[kind] = parts;
-      }
+      meshopt[kind] = await writeWorldDownload(dir, compactName, compressed, assets);
+      meshoptDownloadBytes[kind] = compressed.length;
       console.log(`Meshopt ${id} ${kind}: ${compressed.length} bytes`);
     }
     const path = resolve(out, bake.map.definition.dataUrl), data = JSON.parse(await readFile(path, 'utf8'));
@@ -83,8 +64,8 @@ export async function bakeWorlds(root, out, ids) {
     const savedBytes = legacyBytes - compactBytes;
     const validated = ['riviera', 'penteli', 'megara'].includes(id); // New maps stay legacy until paired startup validation.
     policy[id] = { geometry: validated && savedBytes > (meshoptViews ? 32 * 1024 : 0), textures: validated && savedBytes > 1024 * 1024, savedBytes, meshoptViews };
-    meshopt.enabled = policy[id].geometry;
-    data.bakedWorld = { version: 1, compression: 'gzip', ...paths, meshopt };
+    meshopt.enabled = policy[id].geometry; meshopt.downloadBytes = meshoptDownloadBytes;
+    data.bakedWorld = { version: 1, compression: 'gzip', ...paths, meshopt, downloadBytes, assets };
     await writeFile(path, JSON.stringify(data));
     console.log(`Baked ${id} in ${Math.round(performance.now() - t)} ms`);
     bake.terrainGroup.traverse(m => m.geometry?.dispose()); bake.roadsGroup.traverse(m => m.geometry?.dispose());

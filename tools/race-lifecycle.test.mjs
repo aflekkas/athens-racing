@@ -102,3 +102,22 @@ test('objective HUD skips identical writes and restores content after another sc
  box.innerHTML='<header>A different event</header>';update();
  assert.equal(writes,3);assert.equal(value,'<span>Turn left</span>');update();assert.equal(writes,3);
 });
+
+test('production solo HUD position and gap follow current validated progress through shortcut, retreat and finish', async () => {
+  const { courseProgress } = await import('../src/checkpoints.js');
+  const EV = await import('../src/events.js');
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const earnedSource = main.slice(main.indexOf('const earnedProgress ='), main.indexOf('function advanceRivalCourses('));
+  const rankSource = main.slice(main.indexOf('const rivalDnf ='), main.indexOf("/** how: 'finish'"));
+  const player = { veh: { s: 900 } }, G = { pFinish: null, run: { course: { validProgress: 100 } } };
+  const grid = [{ name: 'AI', finish: null, veh: { s: 950 }, course: { validProgress: 90 } }];
+  const element = {};
+  const api = Function('player','G','grid','EV','courseProgress','$', earnedSource + rankSource + 'return {racePosition,raceGap};')(player,G,grid,EV,courseProgress,()=>element);
+  assert.deepEqual(api.raceGap(), {pos:1,gap:-10,gapUnit:'m'});
+  // An unvalidated AI station jump remains behind; a legal pass then changes both.
+  grid[0].veh.s = 12000; assert.equal(api.racePosition(),1);
+  grid[0].course.validProgress=120; assert.deepEqual(api.raceGap(), {pos:2,gap:20,gapUnit:'m'});
+  G.run.course.validProgress=50; assert.deepEqual(api.raceGap(), {pos:2,gap:70,gapUnit:'m'});
+  assert.equal(element.textContent,'AI');
+  G.pFinish=30;grid[0].finish=29;assert.deepEqual(api.raceGap(),{pos:2,gap:1,gapUnit:'s'});
+});

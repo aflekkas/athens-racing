@@ -400,10 +400,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
         }
         if (m.type === 'recover') {
           if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
-          const nextGate = c.course?.gates[c.course.passed], event = publicLobby(l).event;
-          // Recovery must not place the car beyond an unpassed gate.
-          if (nextGate && c.recoveryRoad && (c.recoveryRoad.s - nextGate.s) * event.dir >= 0) c.recoveryRoad = { s: nextGate.s - event.dir * 3, u: 0 };
-          const recovery = requestRecovery(c, event, l.raceId, m.motionEpoch, now);
+          const event = publicLobby(l).event;
+          const recovery = requestRecovery(c, event, l.raceId, m.motionEpoch, now, { route: maps.get(l.mapId).geometry, capture: m.capture === true });
           if (!recovery) return error('Recovery needs a current race position.');
           clearObjectiveHold(l, c.id);
           l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
@@ -425,7 +423,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           const fields = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'];
           if (!m.state || fields.some(k => !Number.isFinite(m.state[k]))) return;
           const s = m.state, event = effectiveEvent(lobbyEvent(l), l.config);
-          if (!recoveryStateAllowed(c, s, l.raceId, now)) return;
+          if (!recoveryStateAllowed(c, s, l.raceId, now, { route: maps.get(l.mapId).geometry, event })) return;
           const zones = ['front', 'rear', 'left', 'right'];
           if (s.nitro !== undefined && (!Number.isFinite(s.nitro) || s.nitro < 0 || s.nitro > 1)) return;
           if (s.damage !== undefined && (!s.damage || zones.some(k => !Number.isFinite(s.damage[k]) || s.damage[k] < 0 || s.damage[k] > 1))) return;
@@ -444,18 +442,20 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           }
           if (courseEnabled) {
             const before = JSON.stringify(courseStatus(c.course));
-            observeCourse(c.course, s, now / 1000, { initialTime: Math.max(l.startAt, c.enteredAt || 0) / 1000, recovery: recovered });
+            observeCourse(c.course, s, now / 1000, { initialTime: Math.max(l.startAt, c.enteredAt || 0) / 1000, recovery: recovered, route: maps.get(l.mapId).geometry });
             const status = courseStatus(c.course);
             if (JSON.stringify(status) !== before) send(c.ws, { type: 'checkpoint', raceId: l.raceId, generation: l.generation, ...status });
           }
           c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), driver: normalizeDriverAppearance(s.driver === undefined ? c.state?.driver : s.driver) }; c.stateAt = now; l.dirty = true;
           Object.assign(c.state, validateStateExtras(s));
           if (l.objectives && c.finish === null && !c.dnf && stepPlayerObjective(l, c.id, now, { x: s.x, y: s.y, z: s.z, vLong: s.vLong, vLat: s.vLat }).length) publish(l);
+          // Epoch authority is independent of the optional render clock. A
+          // packet without sampleTime must not erase the recovery high-water mark.
+          if (Number.isSafeInteger(s.motionEpoch) && s.motionEpoch >= 0) c.state.motionEpoch = s.motionEpoch;
           // Optional render clock only; progress checks and finishes use server receipt time.
           if (Number.isFinite(s.sampleTime) && s.sampleTime >= 0 && s.sampleTime <= 1e12) {
             c.state.sampleTime = s.sampleTime;
             c.state.sampleAge = Number.isFinite(s.sampleAge) ? Math.max(0, Math.min(1000, s.sampleAge)) : 0;
-            if (Number.isSafeInteger(s.motionEpoch) && s.motionEpoch >= 0) c.state.motionEpoch = s.motionEpoch;
           }
           rememberRecoveryRoad(c, event, l.raceId);
           // Objective modes never take the crossing finish; reversed runs keep
@@ -512,8 +512,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     // Course geometry is immutable catalogue data. Persist the accepted cursor
     // once per driver instead of duplicating every gate in the arena KV row.
     if (data.course) {
-      const { raceId, passed, missed, previousTime } = data.course;
-      data.courseCursor = { raceId, passed, missed, previousTime };
+      const { raceId, passed, missed, previousTime, validProgress, onRoute, rejoinLimit, gateTimes } = data.course;
+      data.courseCursor = { raceId, passed, missed, previousTime, validProgress, onRoute, rejoinLimit, gateTimes };
       delete data.course;
     }
     return data;

@@ -1,0 +1,47 @@
+{
+  "shortcutOutranksHonest": [
+    {
+      "id": "shortcut",
+      "checkpoint": 0,
+      "distance": 80,
+      "progress": 80,
+      "finish": null,
+      "dnf": false,
+      "position": 1
+    },
+    {
+      "id": "honest",
+      "checkpoint": 0,
+      "distance": 65,
+      "progress": 65,
+      "finish": null,
+      "dnf": false,
+      "position": 2
+    }
+  ],
+  "unsafeTow": {
+    "raceId": "r",
+    "s": 700,
+    "u": 0,
+    "until": 6000,
+    "motionEpoch": 2
+  },
+  "psychikoDefault": {
+    "dir": 1,
+    "s1": 12754.695332576326
+  },
+  "psychikoToggle": {
+    "s0": 12754.695332576326,
+    "s1": 0,
+    "dir": -1,
+    "firstCheckpoint": {
+      "id": "lap1-sector1",
+      "name": "SECTOR 1",
+      "s": 1594.3369165720408,
+      "d": 1594.3369165720408,
+      "lapEnd": false,
+      "lap": 1
+    }
+  },
+  "expected": "shortcut cannot improve rank; tow at earned <=60; responsive hold; default -1; toggle checkpoints follow its direction"
+}

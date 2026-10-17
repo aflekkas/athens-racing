@@ -53,15 +53,32 @@ async function hex16(buffer) {
 }
 // A synthesized response has no URL of its own, so a module keeps its request URL as its base (relative imports).
 const asOwn = (r) => new Response(r.body, { status: 200, statusText: 'OK', headers: r.headers });
+async function optionalStorage(operation) {
+  let timer;
+  try { return await Promise.race([Promise.resolve().then(operation).catch(() => null), new Promise(resolve => { timer = setTimeout(() => resolve(null), 300); })]); }
+  finally { clearTimeout(timer); }
+}
 
-async function fromContent(request, path) {
-  const key = contentPath(path), cache = await caches.open(CONTENT);
-  const hit = await cache.match(key);
-  if (hit) return asOwn(hit);
+async function fromContent(request, path, event) {
+  const key = contentPath(path), reload = ['reload', 'no-store'].includes(request.cache);
+  let cache;
   try {
-    const res = await fetch(key);
-    if (res.ok) { await cache.put(key, res.clone()); return asOwn(res); }
+    cache = await optionalStorage(() => caches.open(CONTENT));
+    if (cache && !reload) { const hit = await optionalStorage(() => cache.match(key)); if (hit) return asOwn(hit); }
+  } catch { /* Storage is optional: a blocked/full cache must never block the network. */ }
+  try {
+    const res = await fetch(key, { signal: request.signal, ...(reload ? { cache: 'reload' } : {}) });
+    if (res.ok) {
+      // Return the stream at headers, not after the entire body was cached.
+      // Cache writes are best effort and never cause a second download.
+      if (cache && request.cache !== 'no-store') {
+        const copy = res.clone(), write = Promise.resolve().then(() => cache.put(key, copy)).catch(() => {});
+        try { event?.waitUntil(write); } catch { /* The response still streams if event lifetime extension is unavailable. */ }
+      }
+      return asOwn(res);
+    }
   } catch { /* offline: the plain request below fails the same way */ }
+  if (request.signal?.aborted) throw request.signal.reason;
   return fetch(request); // e.g. an old worker after a deploy removed its /_c/ copy
 }
 async function fromPage(request) {
@@ -125,11 +142,11 @@ if (typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWo
     const r = e.request, route = routeOf(r.method, r.url, r.mode, r.headers.has('range'));
     // another release is loading (the network has its files), or this worker removed itself: hands off
     if (route && Date.now() < bypassUntil && (route !== 'page' || bypassUntil === Infinity)) return;
-    if (route === 'content') e.respondWith(fromContent(r, new URL(r.url).pathname));
+    if (route === 'content') e.respondWith(fromContent(r, new URL(r.url).pathname, e));
     else if (route === 'page') e.respondWith(fromPage(r));
     else if (route === 'cdn') e.respondWith(fromCdn(r));
   });
   self.addEventListener('message', (e) => { if (e.data === 'asr-build') e.source?.postMessage({ build: RELEASE.build }); });
 }
 // node tests (tools/service-worker.test.mjs) evaluate this file and call these
-self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf };
+self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf, fromContent };

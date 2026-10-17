@@ -10,7 +10,7 @@ export function resolveMap(meta, data) {
   const defs = [...(race ? [{ ...race, name: 'QUICK RACE', quick: true }] : []), freeRoam(meta.id)];
   for (const def of defs) {
     try {
-      const r = resolveEvent(def, { route, marks });
+      const r = resolveEvent({ reverse: meta.defaultReverse === true, ...def }, { route, marks });
       definitions.set(def.id, { id: def.id, mapId: meta.id, type: def.type, name: def.name, ...r, routeKey: `${r.s0}>${r.s1}`, traffic: def.traffic > 0, trafficLevel: def.traffic > 0 ? def.traffic : 0, conditions: def.conditions || null, police: def.rules?.police === true, rules: def.rules || null });
     } catch { /* Test fixtures can omit named marks. */ }
   }

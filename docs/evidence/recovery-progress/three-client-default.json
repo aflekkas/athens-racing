@@ -1,0 +1,303 @@
+{
+  "kind": "production server, real Psychiko geometry, deterministic pose replay (not driven physics)",
+  "event": {
+    "id": "psychiko-race",
+    "mapId": "psychiko",
+    "type": "sprint",
+    "name": "QUICK RACE",
+    "s0": 0,
+    "s1": -12754.695332576326,
+    "dir": -1,
+    "len": 12754.695332576326,
+    "laps": 2,
+    "lapLength": 6377.347666288163,
+    "closed": true,
+    "fromName": "DIAMANTIDOU",
+    "toName": "DIAMANTIDOU",
+    "checkpoints": [
+      {
+        "id": "lap1-sector1",
+        "name": "SECTOR 1",
+        "s": -1594.3369165720408,
+        "d": 1594.3369165720408,
+        "lapEnd": false,
+        "lap": 1
+      },
+      {
+        "id": "lap1-sector2",
+        "name": "SECTOR 2",
+        "s": -3188.6738331440815,
+        "d": 3188.6738331440815,
+        "lapEnd": false,
+        "lap": 1
+      },
+      {
+        "id": "lap1-sector3",
+        "name": "SECTOR 3",
+        "s": -4783.0107497161225,
+        "d": 4783.0107497161225,
+        "lapEnd": false,
+        "lap": 1
+      },
+      {
+        "id": "lap1-sector4",
+        "name": "LAP 1",
+        "s": -6377.347666288163,
+        "d": 6377.347666288163,
+        "lapEnd": true,
+        "lap": 1
+      },
+      {
+        "id": "lap2-sector1",
+        "name": "SECTOR 1",
+        "s": -7971.684582860204,
+        "d": 7971.684582860204,
+        "lapEnd": false,
+        "lap": 2
+      },
+      {
+        "id": "lap2-sector2",
+        "name": "SECTOR 2",
+        "s": -9566.021499432245,
+        "d": 9566.021499432245,
+        "lapEnd": false,
+        "lap": 2
+      },
+      {
+        "id": "lap2-sector3",
+        "name": "SECTOR 3",
+        "s": -11160.358416004285,
+        "d": 11160.358416004285,
+        "lapEnd": false,
+        "lap": 2
+      },
+      {
+        "id": "finish",
+        "name": "LAP 2",
+        "s": -12754.695332576326,
+        "d": 12754.695332576326,
+        "lapEnd": true,
+        "lap": 2
+      }
+    ],
+    "reverse": true,
+    "timeLimit": 0,
+    "targetTimes": null,
+    "routeKey": "0>-12754.695332576326",
+    "traffic": false,
+    "trafficLevel": 0,
+    "conditions": null,
+    "police": false,
+    "rules": null
+  },
+  "trace": [
+    {
+      "label": "Alice leads",
+      "rows": [
+        {
+          "name": "Alice",
+          "progress": 100,
+          "checkpoint": 1,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Bob",
+          "progress": 90,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Bob overtakes",
+      "rows": [
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Alice",
+          "progress": 100,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Charlie cuts adjacent streets; no rank gain",
+      "rows": [
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Alice",
+          "progress": 100,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Charlie towed to earned anchor",
+      "rows": [
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Alice",
+          "progress": 100,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Alice reverses behind Charlie",
+      "rows": [
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Alice",
+          "progress": 50,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Arena restore retains backwards position and epochs",
+      "rows": [
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Alice",
+          "progress": 50,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Alice crosses lap one",
+      "rows": [
+        {
+          "name": "Alice",
+          "progress": 6377.347666288163,
+          "checkpoint": 83,
+          "position": 1,
+          "finish": null
+        },
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    },
+    {
+      "label": "Alice finishes after all gates in both laps",
+      "rows": [
+        {
+          "name": "Alice",
+          "progress": 12754.695332576326,
+          "checkpoint": 167,
+          "position": 1,
+          "finish": 332.40740450825393
+        },
+        {
+          "name": "Bob",
+          "progress": 120,
+          "checkpoint": 1,
+          "position": 2,
+          "finish": null
+        },
+        {
+          "name": "Charlie",
+          "progress": 80,
+          "checkpoint": 1,
+          "position": 3,
+          "finish": null
+        }
+      ]
+    }
+  ]
+}

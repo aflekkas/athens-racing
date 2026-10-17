@@ -1,0 +1,2565 @@
+{
+  "date": "2026-10-16",
+  "base": "e72722c75373f7ea87ebe69e3df2530a222e7c27",
+  "uiOverlay": "6dc6452 (includes6ada01e)",
+  "method": "Native T3 preview. Exact Riviera gzip streams at aggregate625000 bytes/sec, CDN-like Range ignored200. No auth or geometry changes.",
+  "interrupted": {
+    "metric": {
+      "started": 1337.1000000238419,
+      "downloadBytes": 35902203,
+      "decodeWallMs": 1272.6000001430511,
+      "inflateFetchWallMs": 1017.9000000953674,
+      "bufferDecodeWallMs": 254.70000004768372,
+      "peakHeapBytes": 10000000,
+      "codec": "legacy",
+      "failures": [
+        {
+          "code": "network",
+          "message": "network error",
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+          "loadedBytes": 9937176,
+          "at": 16334.199999928474
+        }
+      ],
+      "source": "download",
+      "phase": "TERRAIN + ROADS READY",
+      "responseBytes": 36402195,
+      "downloadError": "network error",
+      "loadMs": 70443.5,
+      "geometryBytes": 151809686
+    },
+    "workerCalls": 0,
+    "retryMs": 44461.799999952316,
+    "phases": [
+      {
+        "at": 1339.1000000238419,
+        "text": "DOWNLOADING TERRAIN + ROADS",
+        "fraction": 0.25,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 0,
+          "totalBytes": 35902203,
+          "responseBytes": 0,
+          "elapsedMs": 2,
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 3266.1999999284744,
+        "text": "DOWNLOADING TERRAIN + ROADS · 1.1 MB",
+        "fraction": 0.25254737348568834,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 1143204,
+          "totalBytes": 35902203,
+          "responseBytes": 1143204,
+          "elapsedMs": 1929.0999999046326,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 5297.100000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS · 2.3 MB",
+        "fraction": 0.25533849134550324,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 2395795,
+          "totalBytes": 35902203,
+          "responseBytes": 2395795,
+          "elapsedMs": 3960,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 7315,
+        "text": "DOWNLOADING TERRAIN + ROADS · 3.4 MB",
+        "fraction": 0.2580308252950383,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 3604054,
+          "totalBytes": 35902203,
+          "responseBytes": 3604054,
+          "elapsedMs": 5977.899999976158,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 9329.799999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 4.6 MB",
+        "fraction": 0.26081612512747476,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 4854034,
+          "totalBytes": 35902203,
+          "responseBytes": 4854034,
+          "elapsedMs": 7992.699999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 11338.899999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 5.8 MB",
+        "fraction": 0.26356366905952816,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 6087070,
+          "totalBytes": 35902203,
+          "responseBytes": 6087070,
+          "elapsedMs": 10001.799999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 13346.899999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 7.0 MB",
+        "fraction": 0.2662937589094463,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 7312273,
+          "totalBytes": 35902203,
+          "responseBytes": 7312273,
+          "elapsedMs": 12009.799999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 15351.899999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 8.2 MB",
+        "fraction": 0.26907905874188276,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 8562253,
+          "totalBytes": 35902203,
+          "responseBytes": 8562253,
+          "elapsedMs": 14014.799999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 17364.899999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 9.3 MB",
+        "fraction": 0.27177139269141787,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 9770512,
+          "totalBytes": 35902203,
+          "responseBytes": 9770512,
+          "elapsedMs": 16027.799999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 17671.5,
+        "text": "TRACK LOAD PAUSED",
+        "fraction": 0.25,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "failed",
+          "source": "download",
+          "loadedBytes": 9937176,
+          "totalBytes": 35902203,
+          "responseBytes": 9937176,
+          "elapsedMs": 16334.399999976158,
+          "error": {
+            "code": "network",
+            "message": "network error",
+            "retryable": true
+          },
+          "retry": true,
+          "fallback": true
+        }
+      },
+      {
+        "at": 28617.799999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 9.7 MB",
+        "fraction": 0.2727462476327706,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 10208005,
+          "totalBytes": 35902203,
+          "responseBytes": 10707997,
+          "elapsedMs": 27280.699999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 30632.799999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 10.9 MB",
+        "fraction": 0.2755315474652071,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 11457985,
+          "totalBytes": 35902203,
+          "responseBytes": 11957977,
+          "elapsedMs": 29295.699999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 32647.699999928474,
+        "text": "DOWNLOADING TERRAIN + ROADS · 12.1 MB",
+        "fraction": 0.27822388141474214,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 12666244,
+          "totalBytes": 35902203,
+          "responseBytes": 13166236,
+          "elapsedMs": 31310.599999904633,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-6.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 34675.5,
+        "text": "DOWNLOADING TERRAIN + ROADS · 13.3 MB",
+        "fraction": 0.2810091812471786,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 13916224,
+          "totalBytes": 35902203,
+          "responseBytes": 14416216,
+          "elapsedMs": 33338.299999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-6.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 36691.39999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 14.5 MB",
+        "fraction": 0.2837944810796151,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 15166204,
+          "totalBytes": 35902203,
+          "responseBytes": 15666196,
+          "elapsedMs": 35354.299999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-6.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 38711.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 15.6 MB",
+        "fraction": 0.28646746245627325,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 16365778,
+          "totalBytes": 35902203,
+          "responseBytes": 16865770,
+          "elapsedMs": 37374.199999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-8.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 40727,
+        "text": "DOWNLOADING TERRAIN + ROADS · 16.8 MB",
+        "fraction": 0.28927211708986217,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 17624444,
+          "totalBytes": 35902203,
+          "responseBytes": 18124436,
+          "elapsedMs": 39389.799999952316,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-8.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 42737.10000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 18.0 MB",
+        "fraction": 0.2920264260663893,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 18860516,
+          "totalBytes": 35902203,
+          "responseBytes": 19360508,
+          "elapsedMs": 41400,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-7.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 44742.39999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 19.2 MB",
+        "fraction": 0.2947497486435582,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 20082682,
+          "totalBytes": 35902203,
+          "responseBytes": 20582674,
+          "elapsedMs": 43405.199999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-9.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 46756.60000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 20.3 MB",
+        "fraction": 0.29753504847599466,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 21332662,
+          "totalBytes": 35902203,
+          "responseBytes": 21832654,
+          "elapsedMs": 45419.5,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-9.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 48769.199999928474,
+        "text": "DOWNLOADING TERRAIN + ROADS · 21.5 MB",
+        "fraction": 0.3002273824255297,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 22540921,
+          "totalBytes": 35902203,
+          "responseBytes": 23040913,
+          "elapsedMs": 47432.09999990463,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 50786,
+        "text": "DOWNLOADING TERRAIN + ROADS · 22.7 MB",
+        "fraction": 0.3030126822579662,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 23790901,
+          "totalBytes": 35902203,
+          "responseBytes": 24290893,
+          "elapsedMs": 49448.89999997616,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 52792.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 23.9 MB",
+        "fraction": 0.30576699346276887,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 25026974,
+          "totalBytes": 35902203,
+          "responseBytes": 25526966,
+          "elapsedMs": 51455.199999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 54797.60000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 25.0 MB",
+        "fraction": 0.3084903160399377,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 26249140,
+          "totalBytes": 35902203,
+          "responseBytes": 26749132,
+          "elapsedMs": 53460.5,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 56812.10000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 26.2 MB",
+        "fraction": 0.3112756158723742,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 27499120,
+          "totalBytes": 35902203,
+          "responseBytes": 27999112,
+          "elapsedMs": 55475,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 58820.799999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 27.4 MB",
+        "fraction": 0.31396794982190923,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 28707379,
+          "totalBytes": 35902203,
+          "responseBytes": 29207371,
+          "elapsedMs": 57483.699999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 60829.199999928474,
+        "text": "DOWNLOADING TERRAIN + ROADS · 28.6 MB",
+        "fraction": 0.3167213117813411,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 29943026,
+          "totalBytes": 35902203,
+          "responseBytes": 30443018,
+          "elapsedMs": 59492.09999990463,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 62839.39999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 29.8 MB",
+        "fraction": 0.3195385494867822,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 31207339,
+          "totalBytes": 35902203,
+          "responseBytes": 31707331,
+          "elapsedMs": 61502.299999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 64848.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 30.9 MB",
+        "fraction": 0.32223088343631723,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 32415598,
+          "totalBytes": 35902203,
+          "responseBytes": 32915590,
+          "elapsedMs": 63511.799999952316,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-15.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 66859,
+        "text": "DOWNLOADING TERRAIN + ROADS · 32.1 MB",
+        "fraction": 0.3249656125558646,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 33642883,
+          "totalBytes": 35902203,
+          "responseBytes": 34142875,
+          "elapsedMs": 65521.89999997616,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-16.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 68864.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 33.3 MB",
+        "fraction": 0.3277305570914409,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 34883728,
+          "totalBytes": 35902203,
+          "responseBytes": 35383720,
+          "elapsedMs": 67527.79999995232,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-17.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 70496.10000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 34.2 MB",
+        "fraction": 0.33,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 36402195,
+          "elapsedMs": 69159,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-18.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 70498.79999995232,
+        "text": "UNPACKING TERRAIN",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "inflate",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 36402195,
+          "elapsedMs": 69161.69999992847,
+          "asset": "terrain",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 70801.79999995232,
+        "text": "PREPARING TERRAIN",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "decode",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 36402195,
+          "elapsedMs": 69464.69999992847,
+          "asset": "terrain",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 70952.79999995232,
+        "text": "UNPACKING ROADS",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "inflate",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 36402195,
+          "elapsedMs": 69615.69999992847,
+          "asset": "roads",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 71674.60000002384,
+        "text": "PREPARING ROADS",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "decode",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 36402195,
+          "elapsedMs": 70337.5,
+          "asset": "roads",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 71780.5,
+        "text": "TERRAIN + ROADS READY",
+        "fraction": 0.33,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "ready",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 36402195,
+          "elapsedMs": 70443.39999997616,
+          "error": null,
+          "retry": false,
+          "fallback": false
+        }
+      }
+    ],
+    "stats": [
+      {
+        "path": "/_c/46ae0e2e3b75bb0c.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193072611,
+        "completedAt": 1792193077763,
+        "closedAt": 1792193077764
+      },
+      {
+        "path": "/_c/f29d3178be42668d.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-0.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193072617,
+        "completedAt": 1792193077763,
+        "closedAt": 1792193077764
+      },
+      {
+        "path": "/_c/142e2cba50fd74b3.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-1.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193072626,
+        "completedAt": 1792193077763,
+        "closedAt": 1792193077764
+      },
+      {
+        "path": "/_c/328085ddd26108fb.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193077842,
+        "completedAt": 1792193082895,
+        "closedAt": 1792193082895
+      },
+      {
+        "path": "/_c/4cf2c4854a7ada1e.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-2.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193077846,
+        "completedAt": 1792193082895,
+        "closedAt": 1792193082895
+      },
+      {
+        "path": "/_c/acb447cbe3eaa51c.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-2.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193077846,
+        "completedAt": 1792193082895,
+        "closedAt": 1792193082895
+      },
+      {
+        "path": "/_c/7af1716003f30ceb.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193082960,
+        "completedAt": 1792193088018,
+        "closedAt": 1792193088018
+      },
+      {
+        "path": "/_c/ac508540c45eae58.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-3.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193082960,
+        "completedAt": 1792193088018,
+        "closedAt": 1792193088018
+      },
+      {
+        "path": "/_c/550c88a48f2d32e4.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-4.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193082960,
+        "completedAt": 1792193088018,
+        "closedAt": 1792193088018
+      },
+      {
+        "path": "/_c/1664e21bef4db9c2.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+        "range": null,
+        "bytes": 187497,
+        "offset": 187497,
+        "total": 1048576,
+        "at": 1792193088073,
+        "injectedReset": true,
+        "closedAt": 1792193088925
+      },
+      {
+        "path": "/_c/71c1b883b471cf23.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193088074,
+        "completedAt": 1792193091736,
+        "closedAt": 1792193091736
+      },
+      {
+        "path": "/_c/829fcc2043bc1822.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-5.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193088080,
+        "completedAt": 1792193091736,
+        "closedAt": 1792193091736
+      },
+      {
+        "path": "/data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+        "asset": "/data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+        "range": "bytes=166664-",
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193098586,
+        "completedAt": 1792193103702,
+        "closedAt": 1792193103703
+      },
+      {
+        "path": "/data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+        "asset": "/data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+        "range": "bytes=166664-",
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193098584,
+        "completedAt": 1792193103703,
+        "closedAt": 1792193103703
+      },
+      {
+        "path": "/data/baked/riviera-roads-8efaa41592b1c597.part-5.bin.gz",
+        "asset": "/data/baked/riviera-roads-8efaa41592b1c597.part-5.bin.gz",
+        "range": "bytes=166664-",
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193098586,
+        "completedAt": 1792193103703,
+        "closedAt": 1792193103703
+      },
+      {
+        "path": "/_c/85f6df951cc8e46b.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-6.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193103777,
+        "completedAt": 1792193108854,
+        "closedAt": 1792193108855
+      },
+      {
+        "path": "/_c/791fd4f950454a51.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-6.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193103777,
+        "completedAt": 1792193108855,
+        "closedAt": 1792193108855
+      },
+      {
+        "path": "/_c/59b59eec935b8263.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-7.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193103785,
+        "completedAt": 1792193108855,
+        "closedAt": 1792193108855
+      },
+      {
+        "path": "/_c/7ed6873aebb260e0.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-8.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193108945,
+        "completedAt": 1792193113792,
+        "closedAt": 1792193113792
+      },
+      {
+        "path": "/_c/3fc3d3d7b6cab025.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-7.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193108939,
+        "completedAt": 1792193114092,
+        "closedAt": 1792193114092
+      },
+      {
+        "path": "/_c/77f2b728a9297271.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-8.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193108953,
+        "completedAt": 1792193114092,
+        "closedAt": 1792193114092
+      },
+      {
+        "path": "/_c/a588458682bdcd38.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-9.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193113830,
+        "completedAt": 1792193118916,
+        "closedAt": 1792193118916
+      },
+      {
+        "path": "/_c/ddd8b83e45fa8720.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-9.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193114140,
+        "completedAt": 1792193119219,
+        "closedAt": 1792193119220
+      },
+      {
+        "path": "/_c/bd3d03b16b7bc55f.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-10.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193114144,
+        "completedAt": 1792193119219,
+        "closedAt": 1792193119220
+      },
+      {
+        "path": "/_c/b2b1fe0dd8dac34b.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193118951,
+        "completedAt": 1792193124047,
+        "closedAt": 1792193124047
+      },
+      {
+        "path": "/_c/6da5bb2eca37959a.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-11.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193119267,
+        "completedAt": 1792193124347,
+        "closedAt": 1792193124347
+      },
+      {
+        "path": "/_c/89709413934302ac.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-11.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193119271,
+        "completedAt": 1792193124347,
+        "closedAt": 1792193124347
+      },
+      {
+        "path": "/_c/5606dfe24f6c8f63.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193124081,
+        "completedAt": 1792193129170,
+        "closedAt": 1792193129170
+      },
+      {
+        "path": "/_c/9b3f9cbf60495ced.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-12.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193124385,
+        "completedAt": 1792193129470,
+        "closedAt": 1792193129471
+      },
+      {
+        "path": "/_c/009a0d23714b57d4.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-13.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193124389,
+        "completedAt": 1792193129471,
+        "closedAt": 1792193129471
+      },
+      {
+        "path": "/_c/cbbe96d5dcef4586.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193129206,
+        "completedAt": 1792193134294,
+        "closedAt": 1792193134295
+      },
+      {
+        "path": "/_c/eebacba4997bc96b.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-14.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193129512,
+        "completedAt": 1792193134595,
+        "closedAt": 1792193134596
+      },
+      {
+        "path": "/_c/b14c997fed7b5d09.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-14.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193129517,
+        "completedAt": 1792193134595,
+        "closedAt": 1792193134596
+      },
+      {
+        "path": "/_c/2a5062f960bd38fc.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-15.bin.gz",
+        "range": null,
+        "bytes": 402224,
+        "offset": 402224,
+        "total": 402224,
+        "at": 1792193134329,
+        "completedAt": 1792193136303,
+        "closedAt": 1792193136303
+      },
+      {
+        "path": "/_c/fa49615be461121d.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-16.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193134648,
+        "completedAt": 1792193139718,
+        "closedAt": 1792193139718
+      },
+      {
+        "path": "/_c/fdd29d64edaf7126.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-15.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193134648,
+        "completedAt": 1792193139718,
+        "closedAt": 1792193139718
+      },
+      {
+        "path": "/_c/885287d992a501bb.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-17.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193136321,
+        "completedAt": 1792193140821,
+        "closedAt": 1792193140821
+      },
+      {
+        "path": "/_c/14d43243ac352aee.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-18.bin.gz",
+        "range": null,
+        "bytes": 896971,
+        "offset": 896971,
+        "total": 896971,
+        "at": 1792193139770,
+        "completedAt": 1792193141723,
+        "closedAt": 1792193141723
+      }
+    ]
+  },
+  "fullGame": {
+    "start": 11221,
+    "eventStart": 11569,
+    "setupDone": 95435.89999997616,
+    "done": 137234.79999995232,
+    "frames": [
+      {
+        "at": 97770.89999997616,
+        "wallMs": 5954.399999976158,
+        "draws": 235,
+        "state": "race"
+      },
+      {
+        "at": 136556.70000004768,
+        "wallMs": 678.0999999046326,
+        "draws": 357,
+        "state": "race"
+      }
+    ],
+    "phases": [
+      {
+        "at": 12833.600000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS",
+        "fraction": 0.25,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 0,
+          "totalBytes": 35902203,
+          "responseBytes": 0,
+          "elapsedMs": 0.8999999761581421,
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 13018.399999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS",
+        "fraction": 0.25,
+        "detail": null
+      },
+      {
+        "at": 14390.600000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS · 0.6 MB",
+        "fraction": 0.25,
+        "detail": null
+      },
+      {
+        "at": 14646.100000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS · 1.0 MB",
+        "fraction": 0.25227466152982314,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 1020817,
+          "totalBytes": 35902203,
+          "responseBytes": 1020817,
+          "elapsedMs": 1813.2999999523163,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 16238.399999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 1.9 MB",
+        "fraction": 0.2545029013957723,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 2020801,
+          "totalBytes": 35902203,
+          "responseBytes": 2020801,
+          "elapsedMs": 3405.6999999284744,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 17812.700000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 2.8 MB",
+        "fraction": 0.2565541203697166,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 2941342,
+          "totalBytes": 35902203,
+          "responseBytes": 2941342,
+          "elapsedMs": 4980,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 19217.399999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 3.5 MB",
+        "fraction": 0.25817009251493567,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 3666554,
+          "totalBytes": 35902203,
+          "responseBytes": 3666554,
+          "elapsedMs": 6384.699999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 20781.899999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 4.4 MB",
+        "fraction": 0.26022036001523363,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 4586668,
+          "totalBytes": 35902203,
+          "responseBytes": 4586668,
+          "elapsedMs": 7949.199999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 22318.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 5.3 MB",
+        "fraction": 0.2623431712533072,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 5539338,
+          "totalBytes": 35902203,
+          "responseBytes": 5539338,
+          "elapsedMs": 9485.599999904633,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 23929,
+        "text": "DOWNLOADING TERRAIN + ROADS · 6.2 MB",
+        "fraction": 0.26448331847491363,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 6499788,
+          "totalBytes": 35902203,
+          "responseBytes": 6499788,
+          "elapsedMs": 11096.299999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 25338.200000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 7.0 MB",
+        "fraction": 0.26643397314643896,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 7375198,
+          "totalBytes": 35902203,
+          "responseBytes": 7375198,
+          "elapsedMs": 12505.5,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-3.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 26853.899999976158,
+        "text": "DOWNLOADING TERRAIN + ROADS · 7.9 MB",
+        "fraction": 0.26847558156807255,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 8291426,
+          "totalBytes": 35902203,
+          "responseBytes": 8291426,
+          "elapsedMs": 14021.099999904633,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 28388.600000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS · 8.8 MB",
+        "fraction": 0.27064962086031324,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 9267086,
+          "totalBytes": 35902203,
+          "responseBytes": 9267086,
+          "elapsedMs": 15555.899999976158,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 29756.799999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 9.6 MB",
+        "fraction": 0.2723748787783301,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 10041343,
+          "totalBytes": 35902203,
+          "responseBytes": 10041343,
+          "elapsedMs": 16924,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 31291.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 10.5 MB",
+        "fraction": 0.2744386785958511,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 10967530,
+          "totalBytes": 35902203,
+          "responseBytes": 10967530,
+          "elapsedMs": 18458.5,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 33545.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 11.7 MB",
+        "fraction": 0.2773825358293473,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 12288667,
+          "totalBytes": 35902203,
+          "responseBytes": 12288667,
+          "elapsedMs": 20712.5,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 34912.700000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 12.6 MB",
+        "fraction": 0.27938442746814174,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 13187071,
+          "totalBytes": 35902203,
+          "responseBytes": 13187071,
+          "elapsedMs": 22080,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-7.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 36612.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 13.5 MB",
+        "fraction": 0.2816590889979648,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 14207888,
+          "totalBytes": 35902203,
+          "responseBytes": 14207888,
+          "elapsedMs": 23780.199999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-6.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 38271.700000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 14.5 MB",
+        "fraction": 0.283887328863914,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 15207872,
+          "totalBytes": 35902203,
+          "responseBytes": 15207872,
+          "elapsedMs": 25439,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-6.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 39797.60000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 15.4 MB",
+        "fraction": 0.28591040248978594,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 16115782,
+          "totalBytes": 35902203,
+          "responseBytes": 16115782,
+          "elapsedMs": 26964.899999976158,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-7.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 41279.60000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 16.3 MB",
+        "fraction": 0.28803321372785956,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 17068452,
+          "totalBytes": 35902203,
+          "responseBytes": 17068452,
+          "elapsedMs": 28446.899999976158,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-7.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 42812.200000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 17.2 MB",
+        "fraction": 0.29013091898566784,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 18009855,
+          "totalBytes": 35902203,
+          "responseBytes": 18009855,
+          "elapsedMs": 29979.399999976158,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-7.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 44467.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 18.1 MB",
+        "fraction": 0.2923203913141486,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 18992441,
+          "totalBytes": 35902203,
+          "responseBytes": 18992441,
+          "elapsedMs": 31635.199999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-8.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 45964.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 19.0 MB",
+        "fraction": 0.2943783775608422,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 19916019,
+          "totalBytes": 35902203,
+          "responseBytes": 19916019,
+          "elapsedMs": 33131.59999990463,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-9.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 47604.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 19.9 MB",
+        "fraction": 0.29660661742679134,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 20916003,
+          "totalBytes": 35902203,
+          "responseBytes": 20916003,
+          "elapsedMs": 34772.09999990463,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-9.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 49096.200000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 20.8 MB",
+        "fraction": 0.29861818423788644,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 21818749,
+          "totalBytes": 35902203,
+          "responseBytes": 21818749,
+          "elapsedMs": 36263.5,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 50652.10000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 21.7 MB",
+        "fraction": 0.30066257131909147,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 22736224,
+          "totalBytes": 35902203,
+          "responseBytes": 22736224,
+          "elapsedMs": 37819.39999997616,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 52444,
+        "text": "DOWNLOADING TERRAIN + ROADS · 22.7 MB",
+        "fraction": 0.3030591083783912,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 23811736,
+          "totalBytes": 35902203,
+          "responseBytes": 23811736,
+          "elapsedMs": 39611.299999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 53882.39999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 23.6 MB",
+        "fraction": 0.3050474587868605,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 24704063,
+          "totalBytes": 35902203,
+          "responseBytes": 24704063,
+          "elapsedMs": 41049.699999928474,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-11.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 55569.39999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 24.5 MB",
+        "fraction": 0.30734040108903626,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 25733084,
+          "totalBytes": 35902203,
+          "responseBytes": 25733084,
+          "elapsedMs": 42736.59999990463,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 57180.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS · 25.5 MB",
+        "fraction": 0.3095560556548577,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 26727420,
+          "totalBytes": 35902203,
+          "responseBytes": 26727420,
+          "elapsedMs": 44347.59999990463,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 58683.60000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 26.4 MB",
+        "fraction": 0.31167020335771595,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 27676202,
+          "totalBytes": 35902203,
+          "responseBytes": 27676202,
+          "elapsedMs": 45850.89999997616,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 60174.200000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 27.2 MB",
+        "fraction": 0.31366621457741745,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 28571967,
+          "totalBytes": 35902203,
+          "responseBytes": 28571967,
+          "elapsedMs": 47341.39999997616,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-14.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 61681.200000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 28.1 MB",
+        "fraction": 0.315623636521692,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 29450414,
+          "totalBytes": 35902203,
+          "responseBytes": 29450414,
+          "elapsedMs": 48848.5,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 63038.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 28.9 MB",
+        "fraction": 0.31761205600670245,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 30342772,
+          "totalBytes": 35902203,
+          "responseBytes": 30342772,
+          "elapsedMs": 50206.199999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 64711.700000047684,
+        "text": "DOWNLOADING TERRAIN + ROADS · 29.9 MB",
+        "fraction": 0.3198093050167423,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 31328848,
+          "totalBytes": 35902203,
+          "responseBytes": 31328848,
+          "elapsedMs": 51879,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-14.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 66209.10000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 30.8 MB",
+        "fraction": 0.32187085873254073,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 32254027,
+          "totalBytes": 35902203,
+          "responseBytes": 32254027,
+          "elapsedMs": 53376.299999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-16.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 67745.89999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 31.6 MB",
+        "fraction": 0.3239163242990966,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 33171986,
+          "totalBytes": 35902203,
+          "responseBytes": 33171986,
+          "elapsedMs": 54913.199999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-15.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 69134.5,
+        "text": "DOWNLOADING TERRAIN + ROADS · 32.5 MB",
+        "fraction": 0.32583118395269506,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 34031332,
+          "totalBytes": 35902203,
+          "responseBytes": 34031332,
+          "elapsedMs": 56301.799999952316,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-15.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 70826.39999997616,
+        "text": "DOWNLOADING TERRAIN + ROADS · 33.4 MB",
+        "fraction": 0.32807093508997204,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 35036482,
+          "totalBytes": 35902203,
+          "responseBytes": 35036482,
+          "elapsedMs": 57993.699999928474,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-17.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 72249.10000002384,
+        "text": "DOWNLOADING TERRAIN + ROADS · 34.2 MB",
+        "fraction": 0.33,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 59416.39999997616,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-18.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 72338.89999997616,
+        "text": "UNPACKING TERRAIN",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "inflate",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 59506,
+          "asset": "terrain",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 73160.60000002384,
+        "text": "PREPARING TERRAIN",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "decode",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 60327.89999997616,
+          "asset": "terrain",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 73375.89999997616,
+        "text": "UNPACKING ROADS",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "inflate",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 60543.199999928474,
+          "asset": "roads",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 74197.60000002384,
+        "text": "PREPARING ROADS",
+        "fraction": 0.32,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "decode",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 61364.89999997616,
+          "asset": "roads",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 74388.29999995232,
+        "text": "TERRAIN + ROADS READY",
+        "fraction": 0.33,
+        "detail": {
+          "mapId": "riviera",
+          "phase": "ready",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 61555.59999990463,
+          "error": null,
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 75111.29999995232,
+        "text": "PAVING POSEIDONOS AVENUE",
+        "fraction": 0.4,
+        "detail": null
+      },
+      {
+        "at": 77493.89999997616,
+        "text": "RAISING VOULIAGMENI",
+        "fraction": 0.55,
+        "detail": null
+      },
+      {
+        "at": 77696.70000004768,
+        "text": "BUILDING COAST AMENITIES",
+        "fraction": 0.7,
+        "detail": null
+      },
+      {
+        "at": 81288.20000004768,
+        "text": "FUELLING THE CARS",
+        "fraction": 0.85,
+        "detail": null
+      },
+      {
+        "at": 91398.89999997616,
+        "text": "WARMING TYRES",
+        "fraction": 0.95,
+        "detail": null
+      },
+      {
+        "at": 91399.29999995232,
+        "text": "UPLOADING TEXTURES",
+        "fraction": 0.96,
+        "detail": null
+      },
+      {
+        "at": 92110.29999995232,
+        "text": "PREPARING SHADERS",
+        "fraction": 0.98,
+        "detail": null
+      }
+    ],
+    "workerCalls": [],
+    "errors": [],
+    "metric": {
+      "started": 12832.700000047684,
+      "downloadBytes": 35902203,
+      "decodeWallMs": 1953.299999833107,
+      "inflateFetchWallMs": 1557.2999999523163,
+      "bufferDecodeWallMs": 395.9999998807907,
+      "peakHeapBytes": 10000000,
+      "codec": "legacy",
+      "failures": [],
+      "source": "download",
+      "phase": "TERRAIN + ROADS READY",
+      "responseBytes": 35902203,
+      "loadMs": 61556.09999990463,
+      "geometryBytes": 151809686,
+      "firstRaceFrameMs": 90652.29999995232,
+      "gpu": {
+        "geometryBytes": 182983566,
+        "textureBytes": 72349025,
+        "gpuBytes": 255332591,
+        "note": "Scene buffer capacity; visibility-dependent residency may be lower. Excludes render targets, driver overhead and shader-uniform-only textures"
+      }
+    },
+    "runtime": {
+      "mapId": "riviera",
+      "switching": false,
+      "worlds": [
+        "map-world:riviera"
+      ],
+      "lastDisposal": null,
+      "memory": {
+        "geometries": 280,
+        "textures": 102
+      },
+      "weatherWidgets": 0
+    },
+    "gpu": {
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "perfClass": "low",
+      "lowGraphics": true,
+      "pixelRatio": 0.8,
+      "drawDistance": 1000,
+      "geometries": 280,
+      "textures": 102,
+      "fps": 16.726334224083004,
+      "renderScale": "auto"
+    },
+    "stats": [
+      {
+        "path": "/_c/46ae0e2e3b75bb0c.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-0.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193221027,
+        "completedAt": 1792193226213,
+        "closedAt": 1792193226220
+      },
+      {
+        "path": "/_c/f29d3178be42668d.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-0.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193221029,
+        "completedAt": 1792193226213,
+        "closedAt": 1792193226220
+      },
+      {
+        "path": "/_c/142e2cba50fd74b3.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-1.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193221031,
+        "completedAt": 1792193226213,
+        "closedAt": 1792193226220
+      },
+      {
+        "path": "/_c/328085ddd26108fb.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-1.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193226510,
+        "completedAt": 1792193231441,
+        "closedAt": 1792193231442
+      },
+      {
+        "path": "/_c/acb447cbe3eaa51c.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-2.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193226522,
+        "completedAt": 1792193231642,
+        "closedAt": 1792193231642
+      },
+      {
+        "path": "/_c/4cf2c4854a7ada1e.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-2.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193226542,
+        "completedAt": 1792193231642,
+        "closedAt": 1792193231642
+      },
+      {
+        "path": "/_c/ac508540c45eae58.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-3.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193231632,
+        "completedAt": 1792193236341,
+        "closedAt": 1792193236342
+      },
+      {
+        "path": "/_c/7af1716003f30ceb.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-3.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193231908,
+        "completedAt": 1792193236949,
+        "closedAt": 1792193236949
+      },
+      {
+        "path": "/_c/550c88a48f2d32e4.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-4.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193231932,
+        "completedAt": 1792193236949,
+        "closedAt": 1792193236949
+      },
+      {
+        "path": "/_c/1664e21bef4db9c2.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-4.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193236613,
+        "completedAt": 1792193241353,
+        "closedAt": 1792193241353
+      },
+      {
+        "path": "/_c/71c1b883b471cf23.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-5.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193237157,
+        "completedAt": 1792193242167,
+        "closedAt": 1792193242167
+      },
+      {
+        "path": "/_c/829fcc2043bc1822.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-5.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193237169,
+        "completedAt": 1792193242167,
+        "closedAt": 1792193242167
+      },
+      {
+        "path": "/_c/791fd4f950454a51.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-6.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193241738,
+        "completedAt": 1792193246568,
+        "closedAt": 1792193246568
+      },
+      {
+        "path": "/_c/85f6df951cc8e46b.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-6.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193242347,
+        "completedAt": 1792193247282,
+        "closedAt": 1792193247283
+      },
+      {
+        "path": "/_c/59b59eec935b8263.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-7.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193242357,
+        "completedAt": 1792193247386,
+        "closedAt": 1792193247387
+      },
+      {
+        "path": "/_c/3fc3d3d7b6cab025.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-7.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193246864,
+        "completedAt": 1792193251655,
+        "closedAt": 1792193251655
+      },
+      {
+        "path": "/_c/7ed6873aebb260e0.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-8.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193247522,
+        "completedAt": 1792193252574,
+        "closedAt": 1792193252574
+      },
+      {
+        "path": "/_c/77f2b728a9297271.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-8.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193247574,
+        "completedAt": 1792193252574,
+        "closedAt": 1792193252574
+      },
+      {
+        "path": "/_c/a588458682bdcd38.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-9.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193251879,
+        "completedAt": 1792193256854,
+        "closedAt": 1792193256854
+      },
+      {
+        "path": "/_c/ddd8b83e45fa8720.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-9.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193252744,
+        "completedAt": 1792193257770,
+        "closedAt": 1792193257771
+      },
+      {
+        "path": "/_c/bd3d03b16b7bc55f.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-10.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193252767,
+        "completedAt": 1792193257770,
+        "closedAt": 1792193257771
+      },
+      {
+        "path": "/_c/b2b1fe0dd8dac34b.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-10.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193257116,
+        "completedAt": 1792193261958,
+        "closedAt": 1792193261958
+      },
+      {
+        "path": "/_c/6da5bb2eca37959a.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-11.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193257940,
+        "completedAt": 1792193262871,
+        "closedAt": 1792193262872
+      },
+      {
+        "path": "/_c/89709413934302ac.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-11.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193257973,
+        "completedAt": 1792193262972,
+        "closedAt": 1792193262972
+      },
+      {
+        "path": "/_c/5606dfe24f6c8f63.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-12.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193262162,
+        "completedAt": 1792193267233,
+        "closedAt": 1792193267234
+      },
+      {
+        "path": "/_c/9b3f9cbf60495ced.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-12.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193263057,
+        "completedAt": 1792193267942,
+        "closedAt": 1792193267942
+      },
+      {
+        "path": "/_c/009a0d23714b57d4.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-13.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193263107,
+        "completedAt": 1792193268042,
+        "closedAt": 1792193268043
+      },
+      {
+        "path": "/_c/cbbe96d5dcef4586.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-13.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193267430,
+        "completedAt": 1792193272315,
+        "closedAt": 1792193272316
+      },
+      {
+        "path": "/_c/eebacba4997bc96b.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-14.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193268194,
+        "completedAt": 1792193273230,
+        "closedAt": 1792193273230
+      },
+      {
+        "path": "/_c/b14c997fed7b5d09.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-14.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193268287,
+        "completedAt": 1792193273334,
+        "closedAt": 1792193273335
+      },
+      {
+        "path": "/_c/2a5062f960bd38fc.gz",
+        "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-15.bin.gz",
+        "range": null,
+        "bytes": 402224,
+        "offset": 402224,
+        "total": 402224,
+        "at": 1792193272481,
+        "completedAt": 1792193273944,
+        "closedAt": 1792193273944
+      },
+      {
+        "path": "/_c/fdd29d64edaf7126.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-15.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193273525,
+        "completedAt": 1792193278502,
+        "closedAt": 1792193278502
+      },
+      {
+        "path": "/_c/fa49615be461121d.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-16.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193273620,
+        "completedAt": 1792193278502,
+        "closedAt": 1792193278502
+      },
+      {
+        "path": "/_c/885287d992a501bb.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-17.bin.gz",
+        "range": null,
+        "bytes": 1048576,
+        "offset": 1048576,
+        "total": 1048576,
+        "at": 1792193274230,
+        "completedAt": 1792193278908,
+        "closedAt": 1792193278908
+      },
+      {
+        "path": "/_c/14d43243ac352aee.gz",
+        "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-18.bin.gz",
+        "range": null,
+        "bytes": 896971,
+        "offset": 896971,
+        "total": 896971,
+        "at": 1792193278754,
+        "completedAt": 1792193280330,
+        "closedAt": 1792193280330
+      }
+    ],
+    "resourceFailures": [
+      {
+        "url": "http://localhost:8640/release.json",
+        "status": 404
+      }
+    ]
+  },
+  "warm": {
+    "start": 11691.5,
+    "mapStart": 11702.799999952316,
+    "done": 31384.399999976158,
+    "metric": {
+      "started": 12281,
+      "downloadBytes": 35902203,
+      "decodeWallMs": 1474.7000000476837,
+      "inflateFetchWallMs": 1137.5,
+      "bufferDecodeWallMs": 337.2000000476837,
+      "peakHeapBytes": 10000000,
+      "codec": "legacy",
+      "failures": [],
+      "source": "download",
+      "phase": "TERRAIN + ROADS READY",
+      "responseBytes": 35902203,
+      "loadMs": 8362.299999952316,
+      "geometryBytes": 151809686
+    },
+    "workerCalls": 0,
+    "errors": [],
+    "requestsBefore": 35,
+    "requestsAfter": 35,
+    "cacheKeys": 35,
+    "runtime": {
+      "mapId": "riviera",
+      "switching": false,
+      "worlds": [
+        "map-world:riviera"
+      ],
+      "lastDisposal": null,
+      "memory": {
+        "geometries": 23,
+        "textures": 29
+      },
+      "weatherWidgets": 0
+    },
+    "state": "menu",
+    "phases": [
+      {
+        "at": 12283.299999952316,
+        "text": "DOWNLOADING TERRAIN + ROADS",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 0,
+          "totalBytes": 35902203,
+          "responseBytes": 0,
+          "elapsedMs": 2.100000023841858,
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 12328.600000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS",
+        "detail": null
+      },
+      {
+        "at": 13062.699999928474,
+        "text": "DOWNLOADING TERRAIN + ROADS · 1.7 MB",
+        "detail": null
+      },
+      {
+        "at": 14569.5,
+        "text": "DOWNLOADING TERRAIN + ROADS · 11.3 MB",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 11796480,
+          "totalBytes": 35902203,
+          "responseBytes": 11796480,
+          "elapsedMs": 2288.5,
+          "asset": "./data/baked/riviera-terrain-7139375f643bbfc4.part-6.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 17006.100000023842,
+        "text": "DOWNLOADING TERRAIN + ROADS · 26.8 MB",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "download",
+          "source": "download",
+          "loadedBytes": 28114944,
+          "totalBytes": 35902203,
+          "responseBytes": 28114944,
+          "elapsedMs": 4725.100000023842,
+          "asset": "./data/baked/riviera-roads-8efaa41592b1c597.part-12.bin.gz",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 19090.299999952316,
+        "text": "UNPACKING TERRAIN",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "inflate",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 6809.299999952316,
+          "asset": "terrain",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 19647.100000023842,
+        "text": "PREPARING TERRAIN",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "decode",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 7366,
+          "asset": "terrain",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 19832.799999952316,
+        "text": "UNPACKING ROADS",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "inflate",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 7551.699999928474,
+          "asset": "roads",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 20488.600000023842,
+        "text": "PREPARING ROADS",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "decode",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 8207.600000023842,
+          "asset": "roads",
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 20642.5,
+        "text": "TERRAIN + ROADS READY",
+        "detail": {
+          "mapId": "riviera",
+          "phase": "ready",
+          "source": "download",
+          "loadedBytes": 35902203,
+          "totalBytes": 35902203,
+          "responseBytes": 35902203,
+          "elapsedMs": 8361.5,
+          "error": null,
+          "retry": false,
+          "fallback": false
+        }
+      },
+      {
+        "at": 21131.199999928474,
+        "text": "PAVING POSEIDONOS AVENUE",
+        "detail": null
+      },
+      {
+        "at": 22437.399999976158,
+        "text": "RAISING VOULIAGMENI",
+        "detail": null
+      },
+      {
+        "at": 22634.899999976158,
+        "text": "BUILDING COAST AMENITIES",
+        "detail": null
+      },
+      {
+        "at": 24985.299999952316,
+        "text": "FUELLING THE CARS",
+        "detail": null
+      },
+      {
+        "at": 30167.600000023842,
+        "text": "WARMING TYRES",
+        "detail": null
+      },
+      {
+        "at": 30168.100000023842,
+        "text": "UPLOADING TEXTURES",
+        "detail": null
+      },
+      {
+        "at": 30765.600000023842,
+        "text": "PREPARING SHADERS",
+        "detail": null
+      }
+    ]
+  }
+}

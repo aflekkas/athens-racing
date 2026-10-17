@@ -136,7 +136,7 @@ export class GameArena extends DurableObject {
       if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);
       if (path === '/api/leaderboard') {
-        if (request.method === 'GET') return json(this.leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, limit: url.searchParams.get('limit') }));
+        if (request.method === 'GET') return json(this.leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, reverse: url.searchParams.get('reverse') === 'true', limit: url.searchParams.get('limit') }));
         if (request.method !== 'POST') return json({ error: 'Use GET or POST.' }, 405);
         const ip = request.headers.get('CF-Connecting-IP') || 'unknown', now = Date.now();
         const sql = this.ctx.storage.sql;

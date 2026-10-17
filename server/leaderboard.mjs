@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { resultContext, validResult, resultEntry } from './leaderboard-policy.mjs';
+import { resultContext, validResult, resultEntry, leaderboardVersion } from './leaderboard-policy.mjs';
 
 export async function createLeaderboard(file, definitions, cars, version, maps) {
   let entries;
@@ -9,7 +9,7 @@ export async function createLeaderboard(file, definitions, cars, version, maps) 
   catch (e) { if (e.code !== 'ENOENT') throw e; entries = []; }
   let pending = Promise.resolve();
   const validate = r => validResult(r, resultContext(r, definitions, version, maps).event, cars);
-  const list = ({ eventId, car, traffic, mapId = 'riviera', limit = 50 } = {}) => entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === (maps ? maps.get(mapId)?.track.version : version) && (!eventId || e.eventId === eventId) && (!car || e.car === car) && (traffic === undefined || e.traffic === traffic)).sort((a, b) => a.time - b.time || a.at - b.at).slice(0, Math.max(1, Math.min(100, Number(limit) || 50))).map(({ driverId, ...e }) => e);
+  const list = ({ eventId, car, traffic, mapId = 'riviera', reverse = false, limit = 50 } = {}) => entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version, reverse) && (!eventId || e.eventId === eventId) && (!car || e.car === car) && (traffic === undefined || e.traffic === traffic)).sort((a, b) => a.time - b.time || a.at - b.at).slice(0, Math.max(1, Math.min(100, Number(limit) || 50))).map(({ driverId, ...e }) => e);
   const submit = r => {
     if (!validate(r)) return Promise.reject(Object.assign(new Error('Unknown event/car or implausible result time.'), { status: 400 }));
     const run = pending.then(async () => {

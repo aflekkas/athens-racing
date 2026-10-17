@@ -1,4 +1,5 @@
-import { buildCourse, observeCourse, courseStatus } from './checkpoints.js';
+import { MAPS } from './map-catalog.js';
+import { buildCourse, observeCourse, courseStatus, courseProgress } from './checkpoints.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
 // Pure logic, no DOM or three.js: node can import and test it (tools/events-test.mjs).
@@ -111,7 +112,7 @@ export const TYPES = {
   pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
 /** Map-local untimed session; never part of the competitive event catalogue. */
-export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
+export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', reverse: MAPS.find(m => m.id === mapId)?.defaultReverse === true, free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [
@@ -136,7 +137,7 @@ export const QUICK_RACE = { id: 'quick', name: 'QUICK RACE', blurb: 'Vouliagmeni
 const mapEvents = new Map();
 export function registerMapEvents(mapId, defs) {
   if (!Array.isArray(defs)) throw new Error('Invalid events for map ' + mapId);
-  mapEvents.set(mapId, defs.map(def => ({ ...def, mapId })));
+  mapEvents.set(mapId, defs.map(def => ({ reverse: MAPS.find(m => m.id === mapId)?.defaultReverse === true, ...def, mapId })));
 }
 export function getEvents(mapId = 'riviera') { return mapEvents.get(mapId) || (mapId === 'riviera' ? EVENTS : []); }
 export const getEvent = (id) => (isDrivingMode(id?.split(':')[0]) ? drivingModeDefinition(id.split(':')[0], id.split(':')[1]?.split('~')[0] || 'riviera') : id?.startsWith('free:') ? freeRoam(id.slice(5)) : id === 'quick' ? QUICK_RACE : EVENTS.find((e) => e.id === id) || [...mapEvents.values()].flat().find(e => e.id === id) || null);
@@ -156,7 +157,7 @@ function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
-  if (def.type === 'free') return { s0: a.s, s1: b.s, dir: 1, len: ctx.route.length, fromName: a.name, toName: b.name, checkpoints: [], reverse: false, timeLimit: 0, targetTimes: null, free: true };
+  if (def.type === 'free') return { s0: a.s, s1: b.s, dir: def.reverse ? -1 : 1, len: ctx.route.length, fromName: a.name, toName: b.name, checkpoints: [], reverse: def.reverse === true, timeLimit: 0, targetTimes: null, free: true };
   if (ctx.route.closed) {
     const laps = Math.max(1, Math.min(99, Math.floor(def.laps || 1))), lapLength = ctx.route.length;
     const dir = def.reverse ? -1 : 1, len = lapLength * laps, checkpoints = [];
@@ -208,10 +209,21 @@ export function targetLabels(def, r, fmtTime) {
 }
 
 // ------------------------------------------------------------------ saved results
-const KEY = (id) => 'paraliaki.events.' + id;
+// Keep old Psychiko forward-default records intact but separate from the new
+// direction contract (including its opposite-direction setup variants).
+const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.reverse-default-v1' : '');
 const store = () => (typeof localStorage !== 'undefined' ? localStorage : memStore);
 const memStore = { m: new Map(), getItem(k) { return this.m.has(k) ? this.m.get(k) : null; }, setItem(k, v) { this.m.set(k, String(v)); }, removeItem(k) { this.m.delete(k); } };
-export function loadRecord(id, st = store()) { try { return JSON.parse(st.getItem(KEY(id)) || 'null') || {}; } catch { return {}; } }
+export function loadRecord(id, st = store()) {
+  try {
+    let value = st.getItem(KEY(id));
+    if (!value && /^psychiko-(race|tt)(?:~|$)/.test(id)) {
+      const parts = id.split('~'), opposite = parts.includes('rev') ? parts.filter(p => p !== 'rev') : [...parts, 'rev'];
+      value = st.getItem('paraliaki.events.' + opposite.join('~'));
+    }
+    return JSON.parse(value || 'null') || {};
+  } catch { return {}; }
+}
 export function saveRecord(id, rec, st = store()) { try { st.setItem(KEY(id), JSON.stringify(rec)); } catch {} }
 /** fold a result into the saved record; returns { record, newBest, prevMedal } */
 export function recordResult(def, res, st = store()) {
@@ -293,13 +305,13 @@ export class EventRun {
     if (!this.started || this.done || this.type === 'free') return out;
     this.t = p.t;
     const prog = this.progress(p.s);
-    this.maxProg = Math.max(this.maxProg, prog);
     this.checkpointClock += dt;
     const previousStatus = this.checkpoint;
-    this.checkpoint = observeCourse(this.course, p, this.checkpointClock);
+    this.checkpoint = observeCourse(this.course, p, this.checkpointClock, { route: this.courseRoute });
     if (this.checkpoint.missed !== previousStatus.missed || this.checkpoint.passed !== previousStatus.passed) {
       const e = { kind: 'checkpoint', ...this.checkpoint }; events.emit('checkpoint', e); out.push(e);
     }
+    this.maxProg = Math.max(this.maxProg, courseProgress(this.course));
     const validated = this.course.gates[this.course.passed - 1]?.d ?? 0;
     // checkpoints (only when crossed forwards: driving back and forth across a line doesn't count twice)
     while (this.cpIdx < this.r.checkpoints.length && validated >= this.r.checkpoints[this.cpIdx].d) {

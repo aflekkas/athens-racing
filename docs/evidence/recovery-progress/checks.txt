@@ -1,0 +1,22 @@
+Baseline: e72722c. Isolated branch: fix/earned-race-recovery.
+No push, deployment or production change.
+
+Initial full npm test: CANCELLED, exit 1, 139.1 seconds. Pre-correction failures
+were identified; runner stopped its own world/physics/unit process groups while
+other owners' heavy world checks were active. Never reported as a full pass.
+Full release/world verification belongs to root's consolidated integration.
+Original complete log retained at /tmp/athens-race-recovery/.scratch/recovery-progress/npm-test.log.
+
+Working-tree focused results before final clean snapshot:
+- all server tests: final count recorded below (earlier run: 119/119 before new regressions)
+- checkpoint routes/checkpoints/session controls: 39/39
+- physics finish-flow + actual-car/Psychiko progress simulation: 33/33
+- gantry clearance: 2/2 (13,510 actual cockpit/map/event/grid combinations)
+- production tow/reset placement across four maps: 4/4
+- production solo HUD lifecycle: 10/10
+- local legacy-direction and leaderboard-version regressions: PASS
+- no full-world browser pass: actual Psychiko world stalled at 40% for127s;
+  native HUD/board screenshots are explicitly labelled three-client trace fixtures.
+- owned fixture tabs and PORT8897 server closed.
+
+Clean tracked-tree archive checks: results appended after execution.

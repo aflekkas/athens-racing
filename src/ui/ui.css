@@ -291,6 +291,9 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .progress__fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--p, 0) * 100%); border-radius: 3px; background: var(--hu-ice); transition: width .35s var(--ease); }
 .progress--indeterminate .progress__fill { width: 35%; animation: ui-indet 1.1s ease-in-out infinite; }
 @keyframes ui-indet { from { left: -35%; } to { left: 100%; } }
+.progress--bad .progress__fill { background: var(--c-bad); }
+/* reduced motion: unmeasured work reads as a steady, dimmed full track instead of a sweep that would freeze off-screen */
+@media (prefers-reduced-motion: reduce) { .progress--indeterminate .progress__fill { animation: none; left: 0; width: 100%; opacity: .45; } }
 .spinner { width: 1.4rem; height: 1.4rem; border-radius: 50%; border: 2px solid rgba(255,255,255,.16); border-top-color: var(--hu-ice); animation: ui-spin .8s linear infinite; flex: none; }
 @keyframes ui-spin { to { transform: rotate(360deg); } }
 
