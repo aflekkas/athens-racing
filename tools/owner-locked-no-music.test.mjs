@@ -26,7 +26,7 @@ async function scan(dir) {
 
 test('owner lock: no playback sources, graph, settings, controls, UI or bundled tracks', async () => {
   for (const dir of ['src/', 'server/', 'worker/', 'assets/audio/']) await scan(dir);
-  for (const file of ['index.html', 'style.css', 'package.json', 'wrangler.jsonc', 'tools/prepare-deploy.mjs', 'tools/bundle-browser.mjs', 'tools/release-cache.mjs', 'tools/release-data.mjs']) {
+  for (const file of ['assets/icons/sprite.svg', 'index.html', 'style.css', 'package.json', 'wrangler.jsonc', 'tools/prepare-deploy.mjs', 'tools/bundle-browser.mjs', 'tools/release-cache.mjs', 'tools/release-data.mjs']) {
     assert.doesNotMatch(await readFile(new URL(file, root), 'utf8'), forbidden, `${file}: ${lock}`);
   }
   assert.equal(existsSync(new URL('assets/audio/music/', root)), false, lock);

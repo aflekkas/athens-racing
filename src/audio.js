@@ -28,7 +28,7 @@ import { EngineLifecycle } from './audio/engine-lifecycle.js';
 
 const MIDI = (n) => 440 * Math.pow(2, (n - 69) / 12);
 const PLAYER_ENGINE_LEVEL = 0.75;
-// Mix controls are independent of legacy sfx (which still scales every effects bus).
+// Mix controls are independent of legacy sfx (which still scales all effects buses).
 export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
