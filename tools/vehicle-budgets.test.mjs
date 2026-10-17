@@ -8,10 +8,12 @@ import {RNG} from '../src/util.js';
 import {setCarLights} from '../src/vehicle-models.js';
 function occupants(car,bike){const bad=[];car.root.traverse(o=>{if(/^(driver|passenger|hand|hands|arm|arms|attached-rider)(?:$|[-_])/.test(o.name)&&!(bike&&o.name==='attached-rider'))bad.push(o.name);});assert.deepEqual(bad,[],locked);}
 function geometry(car){car.root.traverse(o=>{if(!o.geometry)return;for(const [name,a]of Object.entries(o.geometry.attributes))assert.ok(a.array.every(Number.isFinite),`${car.spec?.id} ${o.name} ${name}: ${locked}`);});}
-function glass(car){const panes=[];car.root.traverse(o=>{if(!o.isMesh)return;for(const m of [].concat(o.material))if(m.userData?.vehicleGlass){assert.equal(m.opacity,1,locked);assert.equal(m.transparent,false,locked);assert.ok(Math.max(m.color.r,m.color.g,m.color.b)<.03,locked);panes.push(o);}});return panes;}
+function glass(car){const panes=[];car.root.traverse(o=>{if(!o.isMesh)return;for(const m of [].concat(o.material))if(m.userData?.vehicleGlass){assert.ok(m.opacity>=.12&&m.opacity<=.28,locked);assert.equal(m.transparent,true,locked);assert.equal(m.depthWrite,false,locked);assert.ok(Math.max(m.color.r,m.color.g,m.color.b)>.2,locked);panes.push(o);}});return panes;}
 for(const spec of CARS)test(`${spec.id}: owner-locked geometry and empty-cabin policy`,()=>{
  const car=new CarModel(spec),budget=vehicleBudget(spec);geometry(car);occupants(car,false);
- car.root.traverse(o=>assert.doesNotMatch(o.name,/^(headliner|door-card|door-armrest|door-interior-handle|front-seat|rear-bench|headrest)(?:$|[-_])/,locked));
+ assert.ok(car.cockpit?.lod.visible,`${spec.id}: exterior cabin missing. ${locked}`);
+ assert.ok(car.cockpit.group.getObjectByName('empty-cabin-seats'),locked);
+ assert.ok(triangles(car.cockpit.lod.levels[1].object)<=budget.distanceCabin,locked);
  const panes=glass(car);assert.ok(panes.length,`${spec.id}: exterior windows missing. ${locked}`);
  const expected=JSON.parse(readFileSync(new URL('./fixtures/vehicle-anchors.json',import.meta.url),'utf8'))[spec.id];
  assert.deepEqual(JSON.parse(JSON.stringify({dims:car.dims,seat:car.seat.toArray(),dash:car.dash,wheels:car.wheels.map(w=>({position:w.pivot.position.toArray(),radius:w.r,front:w.front,side:w.side})),exhaust:car.exhaust?.map(t=>t.toArray())})),expected,`${spec.id}: gameplay mounts changed. ${locked}`);
@@ -41,13 +43,13 @@ for(const spec of CARS)test(`${spec.id}: owner-locked geometry and empty-cabin p
  geometry(car);car.disposeDamage?.();
 });
 test('traffic and police factories obey the same occupant and glass rules',()=>{
- for(const type of TRAFFIC_TYPES)for(const low of [false,true]){const car=trafficModel(type,'#718293',new RNG(7),{low});occupants(car,!!type.scooter||!!type.moto);glass(car);geometry(car);const n=triangles(car.root),limit=low?299:(type.bus||type.truck?5000:4000);assert.ok(n<=limit,`${type.id} traffic ${low?'far':'near'}: ${n} > ${limit}. ${locked}`);car.disposeDamage?.();}
+ for(const type of TRAFFIC_TYPES)for(const low of [false,true]){const car=trafficModel(type,'#718293',new RNG(7),{low});occupants(car,!!type.scooter||!!type.moto);glass(car);geometry(car);if(!type.scooter&&!type.moto){const cabin=car.body.getObjectByName('traffic-cabin-lod');assert.ok(cabin,locked);assert.ok(triangles(cabin)<=500,locked);}const n=triangles(car.root,0,{excludeCabin:true}),limit=low?299:(type.bus||type.truck?5000:4000);assert.ok(n<=limit,`${type.id} traffic ${low?'far':'near'}: ${n} > ${limit}. ${locked}`);car.disposeDamage?.();}
 });
 test('no retired driver rig or hand animation can return through the application',()=>{
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  assert.doesNotMatch(main,/new Driver|bindDriverToCar|player\.driver|c\.driver/,locked);
  for(const f of ['driver.js','driver-seating.js','character-driver.js'])assert.equal(existsSync(new URL('../src/'+f,import.meta.url)),false,locked);
- assert.ok(Object.values(GLASS_TINT).every(t=>t.opacity===1),locked);
+ assert.ok(Object.values(GLASS_TINT).every(t=>t.opacity>=.12&&t.opacity<=.28),locked);
  const hero=readFileSync(new URL('../src/title-hero-studio.js',import.meta.url),'utf8');
  assert.match(hero,/original\.userData\.vehicleGlass\) tintGlass\(m\)/,locked);
  assert.doesNotMatch(hero,/m\.opacity\s*=\s*\.38/,locked);

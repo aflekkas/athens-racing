@@ -15,9 +15,9 @@ export async function getLeaderboard(filters = {}) {
   return response.json();
 }
 export async function submitResult(result) {
-  if (!result?.valid || !Number.isFinite(result.time)) return { saved: false };
+  if (!(result?.leaderboardValid ?? result?.valid) || !Number.isFinite(result.time)) return { saved: false };
   try {
-    const response = await fetch('/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mapId: result.mapId || globalThis.window?.__flow?.mapId || 'riviera', eventId: result.eventId, car: result.car, time: result.time, valid: true, driverId: driverId(), name: localStorage.getItem('paraliaki.driver') || 'DRIVER' }) });
+    const response = await fetch('/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mapId: result.mapId || globalThis.window?.__flow?.mapId || 'riviera', eventId: result.setup?.event || result.eventId, car: result.car, setup: result.setup, carName: result.carName, carGeneration: result.setup?.carGeneration, carTrim: result.setup?.carTrim, time: result.time, valid: true, driverId: driverId(), name: localStorage.getItem('paraliaki.driver') || 'DRIVER' }) });
     if (!response.ok) return { saved: false, error: (await response.json()).error };
     return response.json();
   } catch { return { saved: false, error: 'Leaderboard unavailable.' }; }

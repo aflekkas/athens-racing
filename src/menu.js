@@ -1,3 +1,4 @@
+import { renderLeaderboards, renderBestRecord, leaderboardChange } from './leaderboards-screen.js';
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
 import { importWithUpdate } from './client-release.js';
 import {setExhaustPops} from './exhaust-pops.js';
@@ -239,6 +240,10 @@ export class Menu {
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'account': this.show('account', {}, true); break;
       case 'multiplayer': this.show('multiplayer', {}, true); break;
+      case 'leaderboards': this.show('leaderboards', {}, true); break;
+      case 'leaderboardAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
+      case 'leaderboardReset': this.data.filters = { mapId: this.data.filters.mapId }; this.refresh(); break;
+      case 'leaderboardRetry': this.data.requestKey = null; this.refresh(); break;
       case 'play': this.show('mode', {}, true); break;
       case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); break;
@@ -273,6 +278,7 @@ export class Menu {
   /** a component value changed (keyboard, gamepad, mouse or touch) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
+    if (scope === 'leaderboard' || key === 'leaderboardTab') { leaderboardChange(this, key, value); return; }
     if(scope==='exhaust'){setExhaustPops(CARS[this.data.index||0],value);return;}
     if (MP.isMpScreen(this.screen) && MP.change(this, { key, value, el })) return;
     if (scope === 'participants') { this.participants = value; this.refresh(); return; }
@@ -327,10 +333,11 @@ export class Menu {
       </div><footer class="scr__foot">${Release.titleExtras(this)}${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
   }
   participantChoice() { return C.segmented({ key: 'participants', label: 'PARTICIPANTS', value: this.participants, options: [['solo', 'SOLO', 'user'], ['multiplayer', 'MULTIPLAYER', 'users-three']], attrs: { 'data-scope': 'participants' } }); }
+  r_leaderboards(d) { return renderLeaderboards(this, d); }
   r_mode() {
     const tile = (act, ic, title, desc) => C.option({ icon: ic, title, desc, act, cls: 'option--tile' });
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-layout">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
+      body: `<div class="mode-layout">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('leaderboards', 'timer', 'LEADERBOARDS', 'Personal bests and global times. Filter by track, car and setup.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -496,6 +503,6 @@ export class Menu {
         ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
         <div class="res-actions">${act('retry', 'arrow-counter-clockwise', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'export', 'SHARE') : ''}${act('list', 'list', 'MAIN MENU')}</div>
-      </div><div class="res-side scroll-y">${field}${splits}</div></div>` });
+      </div><div class="res-side scroll-y">${d.result?.personalBest?.exact ? renderBestRecord(d.result.personalBest.exact, { title: `${d.result.personalBest.newBest ? 'NEW ' : ''}PERSONAL BEST · ${this.h.fmtTime(d.result.personalBest.exact.time)}` }) : ''}${field}${splits}</div></div>` });
   }
 }

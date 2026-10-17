@@ -1,0 +1,1255 @@
+{
+  "count": 78,
+  "maxCabin": 2146,
+  "maxDistanceCabin": 360,
+  "rows": [
+    {
+      "id": "mini",
+      "geometryBytes": 577768,
+      "exterior": 3296,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2000,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "z4",
+      "geometryBytes": 478284,
+      "exterior": 2642,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1564,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "taxi",
+      "geometryBytes": 510396,
+      "exterior": 2874,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1668,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "carrera",
+      "geometryBytes": 516736,
+      "exterior": 2822,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1960,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "gr_yaris",
+      "geometryBytes": 552164,
+      "exterior": 3421,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1710,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "gtv",
+      "geometryBytes": 584660,
+      "exterior": 3757,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2040,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "golf",
+      "geometryBytes": 491028,
+      "exterior": 2670,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "corolla",
+      "geometryBytes": 491220,
+      "exterior": 2672,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "superb",
+      "geometryBytes": 514700,
+      "exterior": 2962,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1654,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "police_octavia",
+      "geometryBytes": 533964,
+      "exterior": 3154,
+      "lod1": 552,
+      "lod2": 272,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1654,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "mini_jcw",
+      "geometryBytes": 516248,
+      "exterior": 2498,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2146,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cle",
+      "geometryBytes": 619212,
+      "exterior": 3525,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "gla",
+      "geometryBytes": 524620,
+      "exterior": 2548,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "gla45",
+      "geometryBytes": 564652,
+      "exterior": 2965,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cla",
+      "geometryBytes": 621272,
+      "exterior": 3533,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2126,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "aventador_svj",
+      "geometryBytes": 377424,
+      "exterior": 1474,
+      "lod1": 516,
+      "lod2": 236,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1670,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "huracan",
+      "geometryBytes": 493952,
+      "exterior": 2700,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1670,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "ibiza",
+      "geometryBytes": 436208,
+      "exterior": 2062,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "panda",
+      "geometryBytes": 424880,
+      "exterior": 1946,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1692,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "yaris",
+      "geometryBytes": 420920,
+      "exterior": 1894,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1706,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "e36",
+      "geometryBytes": 444632,
+      "exterior": 2078,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1786,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cle200",
+      "geometryBytes": 619212,
+      "exterior": 3525,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cle450",
+      "geometryBytes": 623052,
+      "exterior": 3565,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        84,
+        84,
+        84,
+        84
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cle53",
+      "geometryBytes": 540876,
+      "exterior": 2709,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "e36_m3",
+      "geometryBytes": 458840,
+      "exterior": 2226,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        84,
+        84,
+        84,
+        84
+      ],
+      "interior": 1786,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "panda_11",
+      "geometryBytes": 424880,
+      "exterior": 1946,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1692,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "panda_100hp",
+      "geometryBytes": 436784,
+      "exterior": 2070,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1692,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "yaris_13",
+      "geometryBytes": 420920,
+      "exterior": 1894,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1706,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "yaris_ts",
+      "geometryBytes": 432824,
+      "exterior": 2018,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1706,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "ibiza_cupra",
+      "geometryBytes": 448112,
+      "exterior": 2186,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "golf_gti",
+      "geometryBytes": 509076,
+      "exterior": 2858,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "golf_gtd",
+      "geometryBytes": 509076,
+      "exterior": 2858,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "golf_r",
+      "geometryBytes": 521364,
+      "exterior": 2986,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "mini_cooper",
+      "geometryBytes": 491672,
+      "exterior": 2242,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2146,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "mini_s",
+      "geometryBytes": 512024,
+      "exterior": 2454,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2146,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "mini_cabrio_cooper",
+      "geometryBytes": 571624,
+      "exterior": 3232,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2000,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "corolla_15",
+      "geometryBytes": 491220,
+      "exterior": 2672,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "octavia_16tdi",
+      "geometryBytes": 510396,
+      "exterior": 2874,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1668,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "octavia_rs",
+      "geometryBytes": 524464,
+      "exterior": 3034,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1654,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "superb_15",
+      "geometryBytes": 514700,
+      "exterior": 2962,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1654,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "superb_4x4",
+      "geometryBytes": 532748,
+      "exterior": 3150,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1654,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cla250",
+      "geometryBytes": 619980,
+      "exterior": 3533,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cla35",
+      "geometryBytes": 631884,
+      "exterior": 3657,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "cla45s",
+      "geometryBytes": 552012,
+      "exterior": 2825,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "gla250",
+      "geometryBytes": 524620,
+      "exterior": 2548,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "z4_20i",
+      "geometryBytes": 466380,
+      "exterior": 2518,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1564,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "z4_30i",
+      "geometryBytes": 466380,
+      "exterior": 2518,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1564,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "carrera_s",
+      "geometryBytes": 547456,
+      "exterior": 3142,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1960,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "carrera_gts",
+      "geometryBytes": 547456,
+      "exterior": 3142,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1960,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "huracan_rwd",
+      "geometryBytes": 491264,
+      "exterior": 2672,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1670,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "gtv1750",
+      "geometryBytes": 584660,
+      "exterior": 3757,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 2040,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "e36_318i",
+      "geometryBytes": 444632,
+      "exterior": 2078,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1786,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "mini_cabrio_jcw",
+      "geometryBytes": 589672,
+      "exterior": 3420,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2000,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "cle300e",
+      "geometryBytes": 620748,
+      "exterior": 3541,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 2112,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "jazz",
+      "geometryBytes": 421232,
+      "exterior": 1906,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        76,
+        76,
+        76,
+        76
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "jazz_dynamic",
+      "geometryBytes": 430832,
+      "exterior": 2006,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "jazz_drift",
+      "geometryBytes": 437816,
+      "exterior": 2070,
+      "lod1": 516,
+      "lod2": 236,
+      "wheels": [
+        78,
+        78,
+        78,
+        78
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "aygo",
+      "geometryBytes": 264692,
+      "exterior": 2436,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 846,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "qashqai",
+      "geometryBytes": 270108,
+      "exterior": 2522,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 846,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "qashqai_dci",
+      "geometryBytes": 270108,
+      "exterior": 2522,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 846,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "dolphin",
+      "geometryBytes": 267540,
+      "exterior": 2454,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 846,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "atto3",
+      "geometryBytes": 267588,
+      "exterior": 2422,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 886,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "van",
+      "geometryBytes": 304476,
+      "exterior": 3070,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 846,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "van_150",
+      "geometryBytes": 304476,
+      "exterior": 3070,
+      "lod1": 184,
+      "lod2": 184,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 846,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "truck",
+      "geometryBytes": 241468,
+      "exterior": 2016,
+      "lod1": 198,
+      "lod2": 198,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 726,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "bus",
+      "geometryBytes": 320384,
+      "exterior": 3404,
+      "lod1": 210,
+      "lod2": 210,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 724,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "a160",
+      "geometryBytes": 461408,
+      "exterior": 2260,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1786,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "a190",
+      "geometryBytes": 461408,
+      "exterior": 2260,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1786,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "sl400",
+      "geometryBytes": 488872,
+      "exterior": 2491,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1828,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "sl500",
+      "geometryBytes": 488872,
+      "exterior": 2491,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1828,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "sl63",
+      "geometryBytes": 496552,
+      "exterior": 2571,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1828,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "sl65",
+      "geometryBytes": 496552,
+      "exterior": 2571,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1828,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "f348",
+      "geometryBytes": 479260,
+      "exterior": 2544,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1694,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "f348_ts",
+      "geometryBytes": 474388,
+      "exterior": 2524,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1668,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "f348_spider",
+      "geometryBytes": 464452,
+      "exterior": 2408,
+      "lod1": 486,
+      "lod2": 206,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1668,
+      "rider": 0,
+      "distanceCabin": 288
+    },
+    {
+      "id": "p928_s4",
+      "geometryBytes": 474576,
+      "exterior": 2480,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1906,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "p928_gt",
+      "geometryBytes": 474576,
+      "exterior": 2480,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1906,
+      "rider": 0,
+      "distanceCabin": 360
+    },
+    {
+      "id": "p928",
+      "geometryBytes": 474576,
+      "exterior": 2480,
+      "lod1": 504,
+      "lod2": 224,
+      "wheels": [
+        74,
+        74,
+        74,
+        74
+      ],
+      "interior": 1906,
+      "rider": 0,
+      "distanceCabin": 360
+    }
+  ]
+}

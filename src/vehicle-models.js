@@ -241,7 +241,7 @@ function cabin(car,d,M,low) {
   cabinFittings(car,d,M,low);
 }
 function cabinFittings(car,d,M,low){
-  // The dedicated cockpit owns all furniture. Exterior models carry no cabin.
+  // CarModel installs the shared authored cabin after exterior damage/LOD batching.
   car.exteriorDash=new THREE.Group();car.exteriorDash.name='exterior-dashboard';
 }
 
@@ -464,7 +464,7 @@ export function buildDetailedCar(car,kind,opts={}) {
     const stripe=visual.kit==='GTI'?M.red:M.chrome;
     box(car.body,stripe,[d.W*.54,.018,.015],[0,.56,-d.L/2-.008],.003,[0,0,0],'trim-grille-stripe');
   }
-  // Owner-locked opaque exterior glazing; hidden only for the own cockpit.
+  // Light reflective exterior glazing; hidden only for the own cockpit.
   tintGlass(M.glass,d.open?'open':'cabin');
   M.glass.forceSinglePass=true;
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});

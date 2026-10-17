@@ -1,3 +1,4 @@
+import {installCabinLOD} from './vehicle-cabin.js';
 import {seatCockpitControls} from './cockpit-seating.js';
 import {buildCockpitStructure} from './cockpit-structure.js';
 import {TorusGeometry as InteriorTorus,CylinderGeometry as InteriorCylinder} from 'three';
@@ -143,6 +144,7 @@ function compactCockpit(parent,keep=new Set()){
 
 export class Cockpit {
   constructor(spec, model, mirrorTex) {
+    if(model.cockpit)return model.cockpit;
     if(spec.nativeFleet)return new FleetCockpit(spec,model);
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
@@ -432,6 +434,8 @@ export class Cockpit {
     for(const child of [...g.children])furniture.add(child);g.add(furniture);
     furniture.scale.z=.72;furniture.position.z=model.shape.cowl*.28;
     buildCockpitStructure(model,this);derivePovEye(model,this);seatCockpitControls(model,this);
+    installCabinLOD(model,this);
+    this.drawCluster({rpm:0,kmh:0,gearLabel:'N',redline:spec.redline,ignition:false,vehicle:{}});
   }
   /** steer: front wheel angle (rad) */
   update(dt, st) {
@@ -665,8 +669,7 @@ export class Cockpit {
     }finally{this.model.exhaustFlames?.endMirror();renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
   }
   disposeMirrors(){this.rearTarget?.dispose();this.rearTarget=null;if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
-  setVisible(v) { this.wheel.visible=true;this.lod.visible = v; setVehicleCockpitView(this.model,v); }
-  /** Full cabin (gauges, trim, controls) or the exterior dashboard the LOD uses beyond 15 m.
-   * Outside cockpit views the cabin is behind tinted glass ~5 m away: ~35 draws and a cluster upload per frame. */
-  setDetail(full) { if(this.detailed===full)return;this.detailed=full;this.lod.levels[1].distance=full?15:0; }
+  setVisible(v) { this.wheel.visible=true;this.structure.visible=v;this.lod.visible = true;this.lod.autoUpdate=!v;if(v)this.lod.levels.forEach((l,i)=>l.object.visible=i===0); setVehicleCockpitView(this.model,v); }
+  // The same authored cabin is visible outside; distance alone selects its LOD.
+  setDetail() {}
 }

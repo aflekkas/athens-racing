@@ -1,3 +1,4 @@
+import {installTrafficCabin} from './vehicle-cabin.js';
 import {installFleetLOD} from './vehicle-distance.js';
 // Shared geometry and distance detail for the Athens fleet. Builders author metres, nose -Z.
 import * as THREE from 'three';
@@ -172,8 +173,9 @@ export function fleetModel(type,color,rng,opts={}){
   else{car.lodLevel=1;car.setLOD=()=>{};}
   car.setLights=on=>{car.lightsOn=!!on;car.root.traverse(o=>{if(!o.isMesh||!o.userData.damagePart?.startsWith('light_f'))return;const m=o.material;if(m.userData.damageBroken)return;if(m.emissive){m.emissive.set(on?'#fff1df':'#182129');m.emissiveIntensity=on?5:0;}});};
   car.damageCheap=true;damageSystem(car);
+  installTrafficCabin(car,type);
   if(parked)car.makeNear=()=>{
-    const n=cloneTemplate(template(type,false,true),color,p.material,p.uv);n.plate=plate;n.root.position.copy(car.root.position);n.root.quaternion.copy(car.root.quaternion);n.root.scale.copy(car.root.scale);return n;
+    const n=cloneTemplate(template(type,false,true),color,p.material,p.uv);n.plate=plate;n.root.position.copy(car.root.position);n.root.quaternion.copy(car.root.quaternion);n.root.scale.copy(car.root.scale);installTrafficCabin(n,type);return n;
   };
   return car;
 }

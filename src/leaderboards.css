@@ -1,0 +1,13 @@
+.scr--leaderboards .scr__body { overflow-y: auto; }
+.scr--leaderboards .scr__body > * { flex-shrink: 0; }
+.lb-layout { display: grid; grid-template-columns: minmax(18rem, 28rem) minmax(0, 1fr); gap: var(--s-5); margin-top: var(--s-5); align-items: start; }
+.lb-layout aside { min-width: 0; }
+.lb-layout aside .btn { margin-top: var(--s-3); }
+.lb-results { min-width: 0; }
+.lb-results > .panel { margin-bottom: var(--s-4); }
+.lb-records { display: grid; gap: var(--s-4); list-style: none; padding: 0; margin: 0; }
+.lb-record { display: grid; gap: var(--s-2); overflow-wrap: anywhere; }
+.lb-entry .panel__head { flex-wrap: wrap; }
+@media (max-width: 700px) {
+  .lb-layout { grid-template-columns: minmax(0, 1fr); }
+}

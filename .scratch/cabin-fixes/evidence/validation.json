@@ -1,0 +1,80 @@
+{
+  "floorRootCause": "HEAD removed cabin furniture/carpet; POV hides the exterior undertray. The back-face body shell is not a closed footwell. A permanent opaque foundation now seals the sills, firewall, tunnel and under-seat area, outside damage-hidden trim batches.",
+  "focusedTests": {
+    "passed": 160,
+    "failed": 0,
+    "command": "node --test tools/cabin-floor.test.mjs tools/vehicle-budgets.test.mjs"
+  },
+  "renderedCatalogue": {
+    "configurations": 78,
+    "flags": 0,
+    "sourceHashesCurrent": true
+  },
+  "appScreenshotsInspected": [
+    "mini",
+    "golf",
+    "huracan",
+    "e36",
+    "f348",
+    "cle"
+  ],
+  "screenshots": [
+    "cle-footwell.png",
+    "cle-quarter.png",
+    "cle-side.png",
+    "e36-footwell.png",
+    "e36-quarter.png",
+    "e36-side.png",
+    "f348-footwell.png",
+    "f348-quarter.png",
+    "f348-side.png",
+    "golf-footwell.png",
+    "golf-quarter.png",
+    "golf-side.png",
+    "huracan-footwell.png",
+    "huracan-quarter.png",
+    "huracan-side.png",
+    "mini-footwell.png",
+    "mini-quarter.png",
+    "mini-side.png"
+  ],
+  "preservation": "Implementation/validation in isolated HEAD checkout; shared working tree and index not modified; final commit uses a private index.",
+  "npmTest": {
+    "result": "FAIL (two failures outside cabin patch)",
+    "unit": {
+      "passed": 1197,
+      "failed": 2,
+      "skipped": 1
+    },
+    "damage": {
+      "passed": 56,
+      "failed": 0
+    },
+    "failures": [
+      "tools/release-data.test.mjs:122: CREDITS.md omits git authors muse and Codex (pre-existing; reproduced independently).",
+      "tools/ui-components.test.mjs:129: title expects 5 option tiles; concurrent leaderboard commit adds a sixth. Neither menu.js nor this guard was changed by the cabin patch."
+    ],
+    "remainingGroups": "Fail-fast stopped physics and world groups after the unit failure."
+  },
+  "integratedOnto": "5149f16d07b3a6d11efbf05c6206dc115b4f8629",
+  "integration": "Applied cabin-only patch with git apply --cached --3way; no conflicts; concurrent leaderboard changes preserved.",
+  "npmTestBeforeIntegration": {
+    "result": "FAIL (pre-existing credits guard)",
+    "unit": {
+      "passed": 1188,
+      "failed": 1,
+      "skipped": 1
+    },
+    "damage": {
+      "passed": 56,
+      "failed": 0
+    },
+    "failure": "tools/release-data.test.mjs:122: CREDITS.md omits git authors muse and Codex; neither this file nor CREDITS.md was changed. Reproduced independently.",
+    "remainingGroups": "Fail-fast stopped physics and world groups after the unit failure."
+  },
+  "integrationFocusedTests": {
+    "passed": 166,
+    "failed": 0,
+    "command": "node --test tools/cabin-floor.test.mjs tools/vehicle-budgets.test.mjs tools/cockpit-structure.test.mjs tools/pov-owner-lock.test.mjs"
+  }
+}

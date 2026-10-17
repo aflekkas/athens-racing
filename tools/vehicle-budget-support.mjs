@@ -5,10 +5,11 @@ if(!globalThis.document)globalThis.document={createElement:()=>({width:0,height:
 if(!globalThis.localStorage)globalThis.localStorage={getItem:()=>null};
 export const {CARS,CarModel,TRAFFIC_TYPES,trafficModel}=await import('../src/cars.js');
 export const {Cockpit}=await import('../src/cockpit.js');
-export function triangles(root,level=0){
+export function triangles(root,level=0,{excludeCabin=false}={}){
  let count=0;
  function visit(o,force=false){
   if(!force&&!o.visible)return;
+  if(excludeCabin&&o.userData.vehicleCabin)return;
   if(o.isLOD){visit(o.levels[Math.min(level,o.levels.length-1)].object,true);return;}
   if(o.isMesh)count+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3*(o.isInstancedMesh?o.count:1);
   for(const child of o.children)visit(child);
@@ -18,7 +19,7 @@ export function triangles(root,level=0){
 export function geometryBytes(root){const seen=new Set();let bytes=0;root.traverse(o=>{if(!o.geometry)return;for(const a of [...Object.values(o.geometry.attributes),o.geometry.index].filter(Boolean)){if(!seen.has(a.array.buffer)){seen.add(a.array.buffer);bytes+=a.array.buffer.byteLength;}}});return bytes;}
 export function metrics(car){
  const bytes=geometryBytes(car.root);
- const levels=[0,1,2].map(i=>triangles(car.root,i));
+ const levels=[0,1,2].map(i=>triangles(car.root,i,{excludeCabin:true}));
  const wheels=car.wheels.map(w=>triangles(w.spin));
  const rider=triangles(car.body.getObjectByName('attached-rider'));
  const cockpit=new Cockpit(car.spec,car,null);cockpit.setVisible(true);

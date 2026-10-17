@@ -15,8 +15,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 100,
-        "triangles": 4124
+        "calls": 102,
+        "triangles": 4316
       },
       "geometryAudit": {
         "nearRoadDistance": 9.75,
@@ -88,8 +88,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 47,
-        "triangles": 1756
+        "calls": 49,
+        "triangles": 1948
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -145,16 +145,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.19765625,
-      "openPixels": 595944,
+      "windscreenPercent": 57.306640625,
+      "openPixels": 586820,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 53.78330078125
+      "unobstructedViewPercent": 52.89228515625
     },
     "structure": {
       "dash": {
-        "pixels": 86254,
+        "pixels": 77501,
         "minX": 374,
         "maxX": 1279,
         "minY": 581,
@@ -209,6 +209,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7595,
         "minX": 159,
@@ -250,20 +264,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -283,8 +283,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3120
+        "calls": 94,
+        "triangles": 3312
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -342,8 +342,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 44.95625,
-      "openPixels": 460352,
+      "windscreenPercent": 44.73076171875,
+      "openPixels": 458043,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -356,8 +356,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 43,
-        "triangles": 1298
+        "calls": 45,
+        "triangles": 1490
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -413,12 +413,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 47.90693359375,
-      "openPixels": 490567,
+      "windscreenPercent": 47.17802734375,
+      "openPixels": 483103,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 43.891796875
+      "unobstructedViewPercent": 43.162890625
     },
     "structure": {
       "dash": {
@@ -477,6 +477,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 11313,
         "minX": 149,
@@ -518,26 +532,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "taxi",
-    "name": "\u0160KODA OCTAVIA TAXI",
+    "name": "ŠKODA OCTAVIA TAXI",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -551,8 +551,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 98,
-        "triangles": 3432
+        "calls": 100,
+        "triangles": 3744
       },
       "geometryAudit": {
         "nearRoadDistance": 10.25,
@@ -611,8 +611,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 42.49296875,
-      "openPixels": 435128,
+      "windscreenPercent": 42.44443359375,
+      "openPixels": 434631,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -625,8 +625,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1310
+        "calls": 53,
+        "triangles": 1622
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -682,16 +682,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.65478515625,
-      "openPixels": 477745,
+      "windscreenPercent": 45.78642578125,
+      "openPixels": 468853,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.31884765625
+      "unobstructedViewPercent": 43.45048828125
     },
     "structure": {
       "dash": {
-        "pixels": 114406,
+        "pixels": 113400,
         "minX": 342,
         "maxX": 1279,
         "minY": 551,
@@ -746,6 +746,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5788,
         "minX": 240,
@@ -768,7 +782,7 @@
         "maxY": 692
       },
       "console": {
-        "pixels": 58033,
+        "pixels": 58021,
         "minX": 208,
         "maxX": 1220,
         "minY": 534,
@@ -787,20 +801,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 78
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -820,8 +820,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 107,
-        "triangles": 3474
+        "calls": 109,
+        "triangles": 3786
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -879,8 +879,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.0375,
-      "openPixels": 409984,
+      "windscreenPercent": 39.9998046875,
+      "openPixels": 409598,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -893,8 +893,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1536
+        "calls": 53,
+        "triangles": 1848
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -950,12 +950,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.8123046875,
-      "openPixels": 520318,
+      "windscreenPercent": 49.4197265625,
+      "openPixels": 506058,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.030859375
+      "unobstructedViewPercent": 48.63828125
     },
     "structure": {
       "dash": {
@@ -1014,6 +1014,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 8993,
         "minX": 255,
@@ -1055,20 +1069,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -1088,8 +1088,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 96,
-        "triangles": 3777
+        "calls": 98,
+        "triangles": 4089
       },
       "geometryAudit": {
         "nearRoadDistance": 11,
@@ -1162,8 +1162,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1376
+        "calls": 54,
+        "triangles": 1688
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -1219,12 +1219,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.2416015625,
-      "openPixels": 473514,
+      "windscreenPercent": 45.70546875,
+      "openPixels": 468024,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 45.3328125
+      "unobstructedViewPercent": 44.7966796875
     },
     "structure": {
       "dash": {
@@ -1283,6 +1283,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6913,
         "minX": 224,
@@ -1324,20 +1338,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 65
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -1357,8 +1357,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 111,
-        "triangles": 4773
+        "calls": 113,
+        "triangles": 5085
       },
       "geometryAudit": {
         "nearRoadDistance": 9.25,
@@ -1414,8 +1414,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.8455078125,
-      "openPixels": 469458,
+      "windscreenPercent": 45.77783203125,
+      "openPixels": 468765,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -1428,8 +1428,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 54,
-        "triangles": 1662
+        "calls": 56,
+        "triangles": 1974
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -1494,7 +1494,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 162060,
+        "pixels": 161388,
         "minX": 390,
         "maxX": 1279,
         "minY": 553,
@@ -1549,6 +1549,20 @@
         "minY": 707,
         "maxY": 750
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5224,
         "minX": 312,
@@ -1590,20 +1604,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -1623,8 +1623,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 3196
+        "calls": 95,
+        "triangles": 3508
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -1683,8 +1683,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.837109375,
-      "openPixels": 418172,
+      "windscreenPercent": 40.83583984375,
+      "openPixels": 418159,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -1697,8 +1697,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1360
+        "calls": 54,
+        "triangles": 1672
       },
       "geometryAudit": {
         "nearRoadDistance": 4.5,
@@ -1754,12 +1754,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.58173828125,
-      "openPixels": 476997,
+      "windscreenPercent": 45.31337890625,
+      "openPixels": 464009,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 42.74560546875
+      "unobstructedViewPercent": 41.47724609375
     },
     "structure": {
       "dash": {
@@ -1818,6 +1818,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -1859,20 +1873,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -1892,8 +1892,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 95,
-        "triangles": 3122
+        "calls": 97,
+        "triangles": 3434
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -1952,8 +1952,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.14775390625,
-      "openPixels": 421353,
+      "windscreenPercent": 41.145703125,
+      "openPixels": 421332,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -1966,8 +1966,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 3.5,
@@ -2023,12 +2023,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.6083984375,
-      "openPixels": 467030,
+      "windscreenPercent": 44.37685546875,
+      "openPixels": 454419,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 43.12744140625
+      "unobstructedViewPercent": 41.8958984375
     },
     "structure": {
       "dash": {
@@ -2087,6 +2087,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5749,
         "minX": 269,
@@ -2128,26 +2142,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 111
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "superb",
-    "name": "\u0160KODA SUPERB 2.0 TSI",
+    "name": "ŠKODA SUPERB 2.0 TSI",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -2161,8 +2161,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 97,
-        "triangles": 3450
+        "calls": 99,
+        "triangles": 3762
       },
       "geometryAudit": {
         "nearRoadDistance": 13.25,
@@ -2221,8 +2221,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.86025390625,
-      "openPixels": 397929,
+      "windscreenPercent": 38.84658203125,
+      "openPixels": 397789,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -2235,8 +2235,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1332
+        "calls": 55,
+        "triangles": 1644
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -2292,12 +2292,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.326953125,
-      "openPixels": 453908,
+      "windscreenPercent": 43.2734375,
+      "openPixels": 443120,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.1880859375
+      "unobstructedViewPercent": 40.1345703125
     },
     "structure": {
       "dash": {
@@ -2356,6 +2356,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4035,
         "minX": 305,
@@ -2397,26 +2411,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 119
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "police_octavia",
-    "name": "\u0160KODA OCTAVIA POLICE",
+    "name": "ŠKODA OCTAVIA POLICE",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -2430,8 +2430,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 104,
-        "triangles": 3602
+        "calls": 106,
+        "triangles": 3914
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -2490,8 +2490,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 39.8302734375,
-      "openPixels": 407862,
+      "windscreenPercent": 39.8248046875,
+      "openPixels": 407806,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -2504,8 +2504,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1320
+        "calls": 54,
+        "triangles": 1632
       },
       "geometryAudit": {
         "nearRoadDistance": 4.75,
@@ -2561,12 +2561,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.1646484375,
-      "openPixels": 452246,
+      "windscreenPercent": 43.30615234375,
+      "openPixels": 443455,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 40.73984375
+      "unobstructedViewPercent": 39.88134765625
     },
     "structure": {
       "dash": {
@@ -2625,6 +2625,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4890,
         "minX": 287,
@@ -2666,20 +2680,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 127
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -2699,8 +2699,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 99,
-        "triangles": 3560
+        "calls": 101,
+        "triangles": 3872
       },
       "geometryAudit": {
         "nearRoadDistance": 13,
@@ -2759,8 +2759,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 39.256640625,
-      "openPixels": 401988,
+      "windscreenPercent": 39.1361328125,
+      "openPixels": 400754,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -2773,8 +2773,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1794
+        "calls": 53,
+        "triangles": 2106
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -2830,12 +2830,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.84775390625,
-      "openPixels": 479721,
+      "windscreenPercent": 45.3767578125,
+      "openPixels": 464658,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 43.31396484375
+      "unobstructedViewPercent": 41.84296875
     },
     "structure": {
       "dash": {
@@ -2894,6 +2894,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6458,
         "minX": 202,
@@ -2935,20 +2949,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 91
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -2968,8 +2968,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 4544
+        "calls": 91,
+        "triangles": 4856
       },
       "geometryAudit": {
         "nearRoadDistance": 9.5,
@@ -3027,8 +3027,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.8765625,
-      "openPixels": 398096,
+      "windscreenPercent": 38.51943359375,
+      "openPixels": 394439,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -3041,8 +3041,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -3098,12 +3098,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.09892578125,
-      "openPixels": 502773,
+      "windscreenPercent": 47.1474609375,
+      "openPixels": 482790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.13251953125
+      "unobstructedViewPercent": 46.1810546875
     },
     "structure": {
       "dash": {
@@ -3162,6 +3162,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -3203,20 +3217,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -3236,8 +3236,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3428
+        "calls": 94,
+        "triangles": 3740
       },
       "geometryAudit": {
         "nearRoadDistance": 11.75,
@@ -3296,8 +3296,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 43.233984375,
-      "openPixels": 442716,
+      "windscreenPercent": 43.2330078125,
+      "openPixels": 442706,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -3310,8 +3310,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1794
+        "calls": 53,
+        "triangles": 2106
       },
       "geometryAudit": {
         "nearRoadDistance": 4.5,
@@ -3367,12 +3367,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 52.329296875,
-      "openPixels": 535852,
+      "windscreenPercent": 50.976171875,
+      "openPixels": 521996,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 49.54384765625
+      "unobstructedViewPercent": 48.19072265625
     },
     "structure": {
       "dash": {
@@ -3431,6 +3431,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5754,
         "minX": 244,
@@ -3472,20 +3486,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 63
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -3505,8 +3505,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 90,
-        "triangles": 3736
+        "calls": 92,
+        "triangles": 4048
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -3565,8 +3565,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.803515625,
-      "openPixels": 428068,
+      "windscreenPercent": 41.77412109375,
+      "openPixels": 427767,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -3579,8 +3579,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 4.25,
@@ -3636,12 +3636,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 59.89169921875,
-      "openPixels": 613291,
+      "windscreenPercent": 57.95888671875,
+      "openPixels": 593499,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 58.53525390625
+      "unobstructedViewPercent": 56.60244140625
     },
     "structure": {
       "dash": {
@@ -3700,6 +3700,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6827,
         "minX": 261,
@@ -3741,26 +3755,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "cla",
-    "name": "MERCEDES-BENZ CLA \u00b7 200",
+    "name": "MERCEDES-BENZ CLA · 200",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -3774,8 +3774,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 4596
+        "calls": 95,
+        "triangles": 4908
       },
       "geometryAudit": {
         "nearRoadDistance": 15.75,
@@ -3834,8 +3834,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 35.99111328125,
-      "openPixels": 368549,
+      "windscreenPercent": 35.87763671875,
+      "openPixels": 367387,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -3848,8 +3848,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1820
+        "calls": 55,
+        "triangles": 2132
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -3905,12 +3905,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.70107421875,
-      "openPixels": 457739,
+      "windscreenPercent": 42.5736328125,
+      "openPixels": 435954,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.6982421875
+      "unobstructedViewPercent": 42.57080078125
     },
     "structure": {
       "dash": {
@@ -3969,6 +3969,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 3680,
         "minX": 270,
@@ -4010,20 +4024,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -4043,8 +4043,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 81,
-        "triangles": 2316
+        "calls": 83,
+        "triangles": 2508
       },
       "geometryAudit": {
         "nearRoadDistance": 6.25,
@@ -4116,8 +4116,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1444
+        "calls": 54,
+        "triangles": 1636
       },
       "geometryAudit": {
         "nearRoadDistance": 2,
@@ -4173,16 +4173,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 37.00126953125,
-      "openPixels": 378893,
+      "windscreenPercent": 36.6240234375,
+      "openPixels": 375030,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 36.58984375
+      "unobstructedViewPercent": 36.21259765625
     },
     "structure": {
       "dash": {
-        "pixels": 159340,
+        "pixels": 158681,
         "minX": 385,
         "maxX": 1279,
         "minY": 515,
@@ -4237,6 +4237,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 10460,
         "minX": 166,
@@ -4278,26 +4292,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 52
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "huracan",
-    "name": "LAMBORGHINI HURAC\u00c1N EVO",
+    "name": "LAMBORGHINI HURACÁN EVO",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -4311,8 +4311,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 84,
-        "triangles": 3014
+        "calls": 86,
+        "triangles": 3206
       },
       "geometryAudit": {
         "nearRoadDistance": 9.25,
@@ -4384,8 +4384,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1432
+        "calls": 53,
+        "triangles": 1624
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -4441,16 +4441,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.8341796875,
-      "openPixels": 520542,
+      "windscreenPercent": 50.555078125,
+      "openPixels": 517684,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.833203125
+      "unobstructedViewPercent": 50.5541015625
     },
     "structure": {
       "dash": {
-        "pixels": 147540,
+        "pixels": 147464,
         "minX": 397,
         "maxX": 1279,
         "minY": 530,
@@ -4505,6 +4505,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 12315,
         "minX": 112,
@@ -4546,20 +4560,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -4579,8 +4579,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 90,
-        "triangles": 2668
+        "calls": 92,
+        "triangles": 2980
       },
       "geometryAudit": {
         "nearRoadDistance": 10,
@@ -4638,8 +4638,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 47.46484375,
-      "openPixels": 486040,
+      "windscreenPercent": 47.43662109375,
+      "openPixels": 485751,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -4652,8 +4652,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 3,
@@ -4709,12 +4709,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.91064453125,
-      "openPixels": 562285,
+      "windscreenPercent": 53.68037109375,
+      "openPixels": 549687,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.42001953125
+      "unobstructedViewPercent": 51.18974609375
     },
     "structure": {
       "dash": {
@@ -4773,6 +4773,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6821,
         "minX": 250,
@@ -4814,20 +4828,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 16
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -4847,8 +4847,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 80,
-        "triangles": 2582
+        "calls": 82,
+        "triangles": 2894
       },
       "geometryAudit": {
         "nearRoadDistance": 12.25,
@@ -4907,8 +4907,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 51.39482421875,
-      "openPixels": 526283,
+      "windscreenPercent": 51.39404296875,
+      "openPixels": 526275,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -4921,8 +4921,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1330
+        "calls": 50,
+        "triangles": 1642
       },
       "geometryAudit": {
         "nearRoadDistance": 3,
@@ -4978,16 +4978,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.3654296875,
-      "openPixels": 546462,
+      "windscreenPercent": 53.0623046875,
+      "openPixels": 543358,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.70078125
+      "unobstructedViewPercent": 52.39765625
     },
     "structure": {
       "dash": {
-        "pixels": 104022,
+        "pixels": 100847,
         "minX": 420,
         "maxX": 1279,
         "minY": 584,
@@ -5042,6 +5042,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 9315,
         "minX": 195,
@@ -5083,20 +5097,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 40
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -5116,8 +5116,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 2632
+        "calls": 88,
+        "triangles": 2944
       },
       "geometryAudit": {
         "nearRoadDistance": 11.25,
@@ -5175,8 +5175,8 @@
           "road"
         ]
       },
-      "windscreenPercent": 45.18642578125,
-      "openPixels": 462709,
+      "windscreenPercent": 45.1552734375,
+      "openPixels": 462390,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -5189,8 +5189,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -5246,12 +5246,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.48017578125,
-      "openPixels": 496437,
+      "windscreenPercent": 47.70576171875,
+      "openPixels": 488507,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.2513671875
+      "unobstructedViewPercent": 47.476953125
     },
     "structure": {
       "dash": {
@@ -5310,6 +5310,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6154,
         "minX": 260,
@@ -5351,20 +5365,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 80
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -5384,8 +5384,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 2916
+        "calls": 91,
+        "triangles": 3228
       },
       "geometryAudit": {
         "nearRoadDistance": 10,
@@ -5443,8 +5443,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 42.82578125,
-      "openPixels": 438536,
+      "windscreenPercent": 42.63583984375,
+      "openPixels": 436591,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -5457,8 +5457,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1466
+        "calls": 54,
+        "triangles": 1778
       },
       "geometryAudit": {
         "nearRoadDistance": 4,
@@ -5514,12 +5514,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.38515625,
-      "openPixels": 505704,
+      "windscreenPercent": 47.93251953125,
+      "openPixels": 490829,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 46.22998046875
+      "unobstructedViewPercent": 44.77734375
     },
     "structure": {
       "dash": {
@@ -5578,6 +5578,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5234,
         "minX": 256,
@@ -5619,20 +5633,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -5652,8 +5652,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 4544
+        "calls": 91,
+        "triangles": 4856
       },
       "geometryAudit": {
         "nearRoadDistance": 9.5,
@@ -5711,8 +5711,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.8765625,
-      "openPixels": 398096,
+      "windscreenPercent": 38.51943359375,
+      "openPixels": 394439,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -5725,8 +5725,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -5782,12 +5782,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.09892578125,
-      "openPixels": 502773,
+      "windscreenPercent": 47.1474609375,
+      "openPixels": 482790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.13251953125
+      "unobstructedViewPercent": 46.1810546875
     },
     "structure": {
       "dash": {
@@ -5846,6 +5846,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -5882,20 +5896,6 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -5920,8 +5920,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 4564
+        "calls": 91,
+        "triangles": 4876
       },
       "geometryAudit": {
         "nearRoadDistance": 9.5,
@@ -5979,8 +5979,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.8765625,
-      "openPixels": 398096,
+      "windscreenPercent": 38.51943359375,
+      "openPixels": 394439,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -5993,8 +5993,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -6050,12 +6050,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.09892578125,
-      "openPixels": 502773,
+      "windscreenPercent": 47.1474609375,
+      "openPixels": 482790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.13251953125
+      "unobstructedViewPercent": 46.1810546875
     },
     "structure": {
       "dash": {
@@ -6114,6 +6114,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -6155,20 +6169,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -6188,8 +6188,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 87,
-        "triangles": 3576
+        "calls": 89,
+        "triangles": 3888
       },
       "geometryAudit": {
         "nearRoadDistance": 9.5,
@@ -6247,8 +6247,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.4162109375,
-      "openPixels": 393382,
+      "windscreenPercent": 37.88369140625,
+      "openPixels": 387929,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -6261,8 +6261,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1794
+        "calls": 53,
+        "triangles": 2106
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -6318,12 +6318,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.511328125,
-      "openPixels": 496756,
+      "windscreenPercent": 46.49150390625,
+      "openPixels": 476073,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 47.49892578125
+      "unobstructedViewPercent": 45.4791015625
     },
     "structure": {
       "dash": {
@@ -6382,6 +6382,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7044,
         "minX": 198,
@@ -6423,20 +6437,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -6456,8 +6456,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 2960
+        "calls": 91,
+        "triangles": 3272
       },
       "geometryAudit": {
         "nearRoadDistance": 10,
@@ -6515,8 +6515,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 42.87080078125,
-      "openPixels": 438997,
+      "windscreenPercent": 42.63583984375,
+      "openPixels": 436591,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -6529,8 +6529,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1466
+        "calls": 54,
+        "triangles": 1778
       },
       "geometryAudit": {
         "nearRoadDistance": 4,
@@ -6586,12 +6586,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.38515625,
-      "openPixels": 505704,
+      "windscreenPercent": 47.93251953125,
+      "openPixels": 490829,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 46.22998046875
+      "unobstructedViewPercent": 44.77734375
     },
     "structure": {
       "dash": {
@@ -6650,6 +6650,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5234,
         "minX": 256,
@@ -6691,26 +6705,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "panda_11",
-    "name": "FIAT PANDA \u00b7 1.1",
+    "name": "FIAT PANDA · 1.1",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -6724,8 +6724,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 80,
-        "triangles": 2582
+        "calls": 82,
+        "triangles": 2894
       },
       "geometryAudit": {
         "nearRoadDistance": 12.25,
@@ -6784,8 +6784,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 51.39482421875,
-      "openPixels": 526283,
+      "windscreenPercent": 51.39404296875,
+      "openPixels": 526275,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -6798,8 +6798,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1330
+        "calls": 50,
+        "triangles": 1642
       },
       "geometryAudit": {
         "nearRoadDistance": 3,
@@ -6855,16 +6855,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.3654296875,
-      "openPixels": 546462,
+      "windscreenPercent": 53.0623046875,
+      "openPixels": 543358,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.70078125
+      "unobstructedViewPercent": 52.39765625
     },
     "structure": {
       "dash": {
-        "pixels": 104022,
+        "pixels": 100847,
         "minX": 420,
         "maxX": 1279,
         "minY": 584,
@@ -6919,6 +6919,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 9315,
         "minX": 195,
@@ -6960,26 +6974,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 40
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "panda_100hp",
-    "name": "FIAT PANDA \u00b7 100HP",
+    "name": "FIAT PANDA · 100HP",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -6993,8 +6993,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 78,
-        "triangles": 2626
+        "calls": 80,
+        "triangles": 2938
       },
       "geometryAudit": {
         "nearRoadDistance": 12.25,
@@ -7053,8 +7053,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 51.39482421875,
-      "openPixels": 526283,
+      "windscreenPercent": 51.39404296875,
+      "openPixels": 526275,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -7067,8 +7067,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1330
+        "calls": 50,
+        "triangles": 1642
       },
       "geometryAudit": {
         "nearRoadDistance": 3,
@@ -7124,16 +7124,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.3654296875,
-      "openPixels": 546462,
+      "windscreenPercent": 53.0623046875,
+      "openPixels": 543358,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.70078125
+      "unobstructedViewPercent": 52.39765625
     },
     "structure": {
       "dash": {
-        "pixels": 104022,
+        "pixels": 100847,
         "minX": 420,
         "maxX": 1279,
         "minY": 584,
@@ -7188,6 +7188,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 9315,
         "minX": 195,
@@ -7229,26 +7243,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 40
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "yaris_13",
-    "name": "TOYOTA YARIS \u00b7 1.3 VVT-i",
+    "name": "TOYOTA YARIS · 1.3 VVT-i",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -7262,8 +7262,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 2632
+        "calls": 88,
+        "triangles": 2944
       },
       "geometryAudit": {
         "nearRoadDistance": 11.25,
@@ -7321,8 +7321,8 @@
           "road"
         ]
       },
-      "windscreenPercent": 45.186328125,
-      "openPixels": 462708,
+      "windscreenPercent": 45.1552734375,
+      "openPixels": 462390,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -7335,8 +7335,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -7392,12 +7392,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.48017578125,
-      "openPixels": 496437,
+      "windscreenPercent": 47.70576171875,
+      "openPixels": 488507,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.2513671875
+      "unobstructedViewPercent": 47.476953125
     },
     "structure": {
       "dash": {
@@ -7456,6 +7456,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6154,
         "minX": 260,
@@ -7497,26 +7511,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 80
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "yaris_ts",
-    "name": "TOYOTA YARIS \u00b7 1.5 T SPORT",
+    "name": "TOYOTA YARIS · 1.5 T SPORT",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -7530,8 +7530,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 2676
+        "calls": 88,
+        "triangles": 2988
       },
       "geometryAudit": {
         "nearRoadDistance": 11.5,
@@ -7589,8 +7589,8 @@
           "road"
         ]
       },
-      "windscreenPercent": 45.186328125,
-      "openPixels": 462708,
+      "windscreenPercent": 45.1552734375,
+      "openPixels": 462390,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -7603,8 +7603,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -7660,12 +7660,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.48017578125,
-      "openPixels": 496437,
+      "windscreenPercent": 47.70576171875,
+      "openPixels": 488507,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.2513671875
+      "unobstructedViewPercent": 47.476953125
     },
     "structure": {
       "dash": {
@@ -7724,6 +7724,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6154,
         "minX": 260,
@@ -7765,26 +7779,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 80
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "ibiza_cupra",
-    "name": "SEAT IBIZA \u00b7 1.8 20VT CUPRA",
+    "name": "SEAT IBIZA · 1.8 20VT CUPRA",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -7798,8 +7798,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 90,
-        "triangles": 2712
+        "calls": 92,
+        "triangles": 3024
       },
       "geometryAudit": {
         "nearRoadDistance": 10,
@@ -7857,8 +7857,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 47.468359375,
-      "openPixels": 486076,
+      "windscreenPercent": 47.43662109375,
+      "openPixels": 485751,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -7871,8 +7871,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 3,
@@ -7928,12 +7928,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.91064453125,
-      "openPixels": 562285,
+      "windscreenPercent": 53.68037109375,
+      "openPixels": 549687,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.42001953125
+      "unobstructedViewPercent": 51.18974609375
     },
     "structure": {
       "dash": {
@@ -7992,6 +7992,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6821,
         "minX": 250,
@@ -8033,26 +8047,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 16
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "golf_gti",
-    "name": "VOLKSWAGEN GOLF \u00b7 GTI",
+    "name": "VOLKSWAGEN GOLF · GTI",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -8066,8 +8066,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 94,
-        "triangles": 3240
+        "calls": 96,
+        "triangles": 3552
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -8126,8 +8126,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.84091796875,
-      "openPixels": 418211,
+      "windscreenPercent": 40.83583984375,
+      "openPixels": 418159,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -8140,8 +8140,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1360
+        "calls": 54,
+        "triangles": 1672
       },
       "geometryAudit": {
         "nearRoadDistance": 4.5,
@@ -8197,12 +8197,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.58173828125,
-      "openPixels": 476997,
+      "windscreenPercent": 45.31337890625,
+      "openPixels": 464009,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 42.74560546875
+      "unobstructedViewPercent": 41.47724609375
     },
     "structure": {
       "dash": {
@@ -8261,6 +8261,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -8302,26 +8316,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "golf_gtd",
-    "name": "VOLKSWAGEN GOLF \u00b7 GTD",
+    "name": "VOLKSWAGEN GOLF · GTD",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -8335,8 +8335,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 3240
+        "calls": 95,
+        "triangles": 3552
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -8395,8 +8395,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.84091796875,
-      "openPixels": 418211,
+      "windscreenPercent": 40.83583984375,
+      "openPixels": 418159,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -8409,8 +8409,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1360
+        "calls": 54,
+        "triangles": 1672
       },
       "geometryAudit": {
         "nearRoadDistance": 4.5,
@@ -8466,12 +8466,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.58173828125,
-      "openPixels": 476997,
+      "windscreenPercent": 45.31337890625,
+      "openPixels": 464009,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 42.74560546875
+      "unobstructedViewPercent": 41.47724609375
     },
     "structure": {
       "dash": {
@@ -8530,6 +8530,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -8571,26 +8585,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "golf_r",
-    "name": "VOLKSWAGEN GOLF \u00b7 R 4MOTION",
+    "name": "VOLKSWAGEN GOLF · R 4MOTION",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -8604,8 +8604,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 3240
+        "calls": 95,
+        "triangles": 3552
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -8664,8 +8664,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.84091796875,
-      "openPixels": 418211,
+      "windscreenPercent": 40.83583984375,
+      "openPixels": 418159,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -8678,8 +8678,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1360
+        "calls": 54,
+        "triangles": 1672
       },
       "geometryAudit": {
         "nearRoadDistance": 4.5,
@@ -8735,12 +8735,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.58173828125,
-      "openPixels": 476997,
+      "windscreenPercent": 45.31337890625,
+      "openPixels": 464009,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 42.74560546875
+      "unobstructedViewPercent": 41.47724609375
     },
     "structure": {
       "dash": {
@@ -8799,6 +8799,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -8840,26 +8854,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "mini_cooper",
-    "name": "MINI F56 \u00b7 COOPER",
+    "name": "MINI F56 · COOPER",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -8873,8 +8873,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 97,
-        "triangles": 3448
+        "calls": 99,
+        "triangles": 3760
       },
       "geometryAudit": {
         "nearRoadDistance": 13,
@@ -8933,8 +8933,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 39.2734375,
-      "openPixels": 402160,
+      "windscreenPercent": 39.17587890625,
+      "openPixels": 401161,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -8947,8 +8947,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1794
+        "calls": 53,
+        "triangles": 2106
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -9004,12 +9004,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.84775390625,
-      "openPixels": 479721,
+      "windscreenPercent": 45.3767578125,
+      "openPixels": 464658,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 43.31396484375
+      "unobstructedViewPercent": 41.84296875
     },
     "structure": {
       "dash": {
@@ -9068,6 +9068,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6458,
         "minX": 202,
@@ -9109,26 +9123,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 91
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "mini_s",
-    "name": "MINI F56 \u00b7 COOPER S",
+    "name": "MINI F56 · COOPER S",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -9142,8 +9142,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 98,
-        "triangles": 3516
+        "calls": 100,
+        "triangles": 3828
       },
       "geometryAudit": {
         "nearRoadDistance": 13,
@@ -9202,8 +9202,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 39.256640625,
-      "openPixels": 401988,
+      "windscreenPercent": 39.1361328125,
+      "openPixels": 400754,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -9216,8 +9216,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1794
+        "calls": 53,
+        "triangles": 2106
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -9273,12 +9273,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.84775390625,
-      "openPixels": 479721,
+      "windscreenPercent": 45.3767578125,
+      "openPixels": 464658,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 43.31396484375
+      "unobstructedViewPercent": 41.84296875
     },
     "structure": {
       "dash": {
@@ -9337,6 +9337,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6458,
         "minX": 202,
@@ -9378,26 +9392,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 91
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "mini_cabrio_cooper",
-    "name": "MINI F57 \u00b7 COOPER CABRIO",
+    "name": "MINI F57 · COOPER CABRIO",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -9411,8 +9411,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 100,
-        "triangles": 4124
+        "calls": 102,
+        "triangles": 4316
       },
       "geometryAudit": {
         "nearRoadDistance": 9.75,
@@ -9484,8 +9484,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 47,
-        "triangles": 1756
+        "calls": 49,
+        "triangles": 1948
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -9541,16 +9541,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.19765625,
-      "openPixels": 595944,
+      "windscreenPercent": 57.306640625,
+      "openPixels": 586820,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 53.78330078125
+      "unobstructedViewPercent": 52.89228515625
     },
     "structure": {
       "dash": {
-        "pixels": 86254,
+        "pixels": 77501,
         "minX": 374,
         "maxX": 1279,
         "minY": 581,
@@ -9605,6 +9605,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7595,
         "minX": 159,
@@ -9646,26 +9660,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "corolla_15",
-    "name": "TOYOTA COROLLA \u00b7 1.5 DYNAMIC FORCE",
+    "name": "TOYOTA COROLLA · 1.5 DYNAMIC FORCE",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -9679,8 +9679,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 95,
-        "triangles": 3122
+        "calls": 97,
+        "triangles": 3434
       },
       "geometryAudit": {
         "nearRoadDistance": 10.5,
@@ -9739,8 +9739,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.14775390625,
-      "openPixels": 421353,
+      "windscreenPercent": 41.145703125,
+      "openPixels": 421332,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -9753,8 +9753,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1372
+        "calls": 55,
+        "triangles": 1684
       },
       "geometryAudit": {
         "nearRoadDistance": 3.5,
@@ -9810,12 +9810,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.6083984375,
-      "openPixels": 467030,
+      "windscreenPercent": 44.37685546875,
+      "openPixels": 454419,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 43.12744140625
+      "unobstructedViewPercent": 41.8958984375
     },
     "structure": {
       "dash": {
@@ -9874,6 +9874,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5749,
         "minX": 269,
@@ -9915,26 +9929,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 111
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "octavia_16tdi",
-    "name": "\u0160KODA OCTAVIA \u00b7 1.6 TDI TAXI",
+    "name": "ŠKODA OCTAVIA · 1.6 TDI TAXI",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -9948,8 +9948,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 96,
-        "triangles": 3552
+        "calls": 98,
+        "triangles": 3864
       },
       "geometryAudit": {
         "nearRoadDistance": 10.25,
@@ -10008,8 +10008,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 42.49296875,
-      "openPixels": 435128,
+      "windscreenPercent": 42.44443359375,
+      "openPixels": 434631,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -10022,8 +10022,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1310
+        "calls": 53,
+        "triangles": 1622
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -10079,16 +10079,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.65478515625,
-      "openPixels": 477745,
+      "windscreenPercent": 45.78642578125,
+      "openPixels": 468853,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.31884765625
+      "unobstructedViewPercent": 43.45048828125
     },
     "structure": {
       "dash": {
-        "pixels": 114406,
+        "pixels": 113400,
         "minX": 342,
         "maxX": 1279,
         "minY": 551,
@@ -10143,6 +10143,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5788,
         "minX": 240,
@@ -10165,7 +10179,7 @@
         "maxY": 692
       },
       "console": {
-        "pixels": 58033,
+        "pixels": 58021,
         "minX": 208,
         "maxX": 1220,
         "minY": 534,
@@ -10184,26 +10198,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 78
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "octavia_rs",
-    "name": "\u0160KODA OCTAVIA \u00b7 2.0 TSI RS",
+    "name": "ŠKODA OCTAVIA · 2.0 TSI RS",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -10217,8 +10217,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 3554
+        "calls": 95,
+        "triangles": 3866
       },
       "geometryAudit": {
         "nearRoadDistance": 10.75,
@@ -10277,8 +10277,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 42.49296875,
-      "openPixels": 435128,
+      "windscreenPercent": 42.44443359375,
+      "openPixels": 434631,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -10291,8 +10291,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 50,
-        "triangles": 1296
+        "calls": 52,
+        "triangles": 1608
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -10348,16 +10348,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 46.65478515625,
-      "openPixels": 477745,
+      "windscreenPercent": 45.78642578125,
+      "openPixels": 468853,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.31884765625
+      "unobstructedViewPercent": 43.45048828125
     },
     "structure": {
       "dash": {
-        "pixels": 117814,
+        "pixels": 116808,
         "minX": 342,
         "maxX": 1279,
         "minY": 551,
@@ -10412,6 +10412,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5788,
         "minX": 240,
@@ -10434,7 +10448,7 @@
         "maxY": 692
       },
       "console": {
-        "pixels": 54625,
+        "pixels": 54613,
         "minX": 208,
         "maxX": 1066,
         "minY": 534,
@@ -10453,26 +10467,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 78
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "superb_15",
-    "name": "\u0160KODA SUPERB \u00b7 1.5 TSI",
+    "name": "ŠKODA SUPERB · 1.5 TSI",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -10486,8 +10486,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 97,
-        "triangles": 3450
+        "calls": 99,
+        "triangles": 3762
       },
       "geometryAudit": {
         "nearRoadDistance": 13.25,
@@ -10546,8 +10546,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.86025390625,
-      "openPixels": 397929,
+      "windscreenPercent": 38.84658203125,
+      "openPixels": 397789,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -10560,8 +10560,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1332
+        "calls": 55,
+        "triangles": 1644
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -10617,12 +10617,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.326953125,
-      "openPixels": 453908,
+      "windscreenPercent": 43.2734375,
+      "openPixels": 443120,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.1880859375
+      "unobstructedViewPercent": 40.1345703125
     },
     "structure": {
       "dash": {
@@ -10681,6 +10681,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4035,
         "minX": 305,
@@ -10722,26 +10736,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 119
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "superb_4x4",
-    "name": "\u0160KODA SUPERB \u00b7 2.0 TSI 4x4",
+    "name": "ŠKODA SUPERB · 2.0 TSI 4x4",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -10755,8 +10755,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 97,
-        "triangles": 3494
+        "calls": 99,
+        "triangles": 3806
       },
       "geometryAudit": {
         "nearRoadDistance": 13.25,
@@ -10815,8 +10815,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.8828125,
-      "openPixels": 398160,
+      "windscreenPercent": 38.84658203125,
+      "openPixels": 397789,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -10829,8 +10829,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 53,
-        "triangles": 1332
+        "calls": 55,
+        "triangles": 1644
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -10886,12 +10886,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.326953125,
-      "openPixels": 453908,
+      "windscreenPercent": 43.2734375,
+      "openPixels": 443120,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.1880859375
+      "unobstructedViewPercent": 40.1345703125
     },
     "structure": {
       "dash": {
@@ -10950,6 +10950,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4035,
         "minX": 305,
@@ -10991,26 +11005,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 119
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "cla250",
-    "name": "MERCEDES-BENZ CLA \u00b7 250 4MATIC",
+    "name": "MERCEDES-BENZ CLA · 250 4MATIC",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -11024,8 +11024,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 4582
+        "calls": 94,
+        "triangles": 4894
       },
       "geometryAudit": {
         "nearRoadDistance": 15.75,
@@ -11084,8 +11084,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 35.99111328125,
-      "openPixels": 368549,
+      "windscreenPercent": 35.87763671875,
+      "openPixels": 367387,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -11098,8 +11098,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -11155,12 +11155,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.70107421875,
-      "openPixels": 457739,
+      "windscreenPercent": 42.5736328125,
+      "openPixels": 435954,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.6982421875
+      "unobstructedViewPercent": 42.57080078125
     },
     "structure": {
       "dash": {
@@ -11219,6 +11219,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 3680,
         "minX": 270,
@@ -11260,6 +11274,219 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
+      }
+    }
+  },
+  {
+    "id": "cla35",
+    "name": "MERCEDES-AMG CLA · 35 4MATIC",
+    "fov": 66,
+    "seat": {
+      "height": 0,
+      "position": 0
+    },
+    "before": {
+      "eye": [
+        -0.39345,
+        1.06,
+        0.21
+      ],
+      "pitch": -0.045,
+      "render": {
+        "calls": 94,
+        "triangles": 4938
+      },
+      "geometryAudit": {
+        "nearRoadDistance": 15.75,
+        "pitch": -0.045,
+        "eye": [
+          -0.39345,
+          1.085,
+          0.21
+        ],
+        "roadVisible": 0,
+        "clusterOcclusion": 24,
+        "rimOcclusion": 24,
+        "telltalesBlocked": 0,
+        "horizonFromTop": 46.532963265626826,
+        "headerIntrusion": 66.91176470588235,
+        "geometry": {
+          "windscreen": {
+            "min": [
+              -0.8429999947547913,
+              1.0119999647140503,
+              -1.0149999856948853
+            ],
+            "max": [
+              0.8429999947547913,
+              1.3730000257492065,
+              -0.47999998927116394
+            ]
+          },
+          "legacyEye": [
+            -0.39345,
+            1.065,
+            0.21
+          ]
+        },
+        "mirrors": [
+          {
+            "name": "interior",
+            "inView": true,
+            "clear": true
+          },
+          {
+            "name": "left",
+            "inView": true,
+            "clear": true
+          },
+          {
+            "name": "right",
+            "inView": false,
+            "clear": false
+          }
+        ],
+        "nearPlaneObstructions": 0,
+        "visibleCharacters": [],
+        "flags": [
+          "road",
+          "cluster"
+        ]
+      },
+      "windscreenPercent": 35.87763671875,
+      "openPixels": 367387,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800
+    },
+    "after": {
+      "eye": [
+        -0.39345,
+        1.19,
+        0.15999999999999998
+      ],
+      "pitch": -0.07,
+      "render": {
+        "calls": 54,
+        "triangles": 2118
+      },
+      "geometryAudit": {
+        "nearRoadDistance": 3.75,
+        "pitch": -0.07,
+        "eye": [
+          -0.39345,
+          1.2149999999999999,
+          0.15999999999999998
+        ],
+        "roadVisible": 100,
+        "clusterOcclusion": 0,
+        "rimOcclusion": 0,
+        "telltalesBlocked": 0,
+        "horizonFromTop": 44.60165244397765,
+        "headerIntrusion": 71.32352941176471,
+        "geometry": {
+          "windscreen": {
+            "min": [
+              -0.8429999947547913,
+              1.0119999647140503,
+              -1.0149999856948853
+            ],
+            "max": [
+              0.8429999947547913,
+              1.3730000257492065,
+              -0.47999998927116394
+            ]
+          },
+          "legacyEye": [
+            -0.39345,
+            1.065,
+            0.21
+          ]
+        },
+        "mirrors": [
+          {
+            "name": "interior",
+            "inView": true,
+            "clear": true
+          },
+          {
+            "name": "left",
+            "inView": true,
+            "clear": true
+          },
+          {
+            "name": "right",
+            "inView": false,
+            "clear": false
+          }
+        ],
+        "nearPlaneObstructions": 0,
+        "visibleCharacters": [],
+        "flags": []
+      },
+      "windscreenPercent": 42.5736328125,
+      "openPixels": 435954,
+      "totalPixels": 1024000,
+      "width": 1280,
+      "height": 800,
+      "unobstructedViewPercent": 42.57080078125
+    },
+    "structure": {
+      "dash": {
+        "pixels": 152347,
+        "minX": 406,
+        "maxX": 1279,
+        "minY": 478,
+        "maxY": 799
+      },
+      "deck": {
+        "pixels": 29,
+        "minX": 427,
+        "maxX": 455,
+        "minY": 483,
+        "maxY": 483
+      },
+      "pillar": {
+        "pixels": 19335,
+        "minX": 320,
+        "maxX": 414,
+        "minY": 134,
+        "maxY": 464
+      },
+      "header": {
+        "pixels": 41543,
+        "minX": 369,
+        "maxX": 1279,
+        "minY": 76,
+        "maxY": 133
+      },
+      "door-top": {
+        "pixels": 54930,
+        "minX": 0,
+        "maxX": 415,
+        "minY": 446,
+        "maxY": 785
+      },
+      "wheel-rim": {
+        "pixels": 19740,
+        "minX": 444,
+        "maxX": 835,
+        "minY": 533,
+        "maxY": 799
+      },
+      "wheel-hub": {
+        "pixels": 13232,
+        "minX": 569,
+        "maxX": 710,
+        "minY": 677,
+        "maxY": 781
+      },
+      "wheel-badge": {
+        "pixels": 1480,
+        "minX": 618,
+        "maxX": 661,
+        "minY": 706,
+        "maxY": 751
       },
       "reserved-9": {
         "pixels": 0,
@@ -11274,12 +11501,54 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
+      },
+      "mirror-mount": {
+        "pixels": 3680,
+        "minX": 270,
+        "maxX": 1004,
+        "minY": 134,
+        "maxY": 461
+      },
+      "wiper": {
+        "pixels": 3065,
+        "minX": 415,
+        "maxX": 1140,
+        "minY": 463,
+        "maxY": 472
+      },
+      "binnacle": {
+        "pixels": 20068,
+        "minX": 543,
+        "maxX": 736,
+        "minY": 572,
+        "maxY": 690
+      },
+      "console": {
+        "pixels": 99277,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 520,
+        "maxY": 799
+      },
+      "vent": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "headliner": {
+        "pixels": 72416,
+        "minX": 286,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 75
       }
     }
   },
   {
-    "id": "cla35",
-    "name": "MERCEDES-AMG CLA \u00b7 35 4MATIC",
+    "id": "cla45s",
+    "name": "MERCEDES-AMG CLA · 45 S 4MATIC+",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -11294,7 +11563,7 @@
       "pitch": -0.045,
       "render": {
         "calls": 92,
-        "triangles": 4626
+        "triangles": 3978
       },
       "geometryAudit": {
         "nearRoadDistance": 15.75,
@@ -11353,8 +11622,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 36.075,
-      "openPixels": 369408,
+      "windscreenPercent": 35.87685546875,
+      "openPixels": 367379,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -11367,8 +11636,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -11424,12 +11693,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.70107421875,
-      "openPixels": 457739,
+      "windscreenPercent": 42.5736328125,
+      "openPixels": 435954,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.6982421875
+      "unobstructedViewPercent": 42.57080078125
     },
     "structure": {
       "dash": {
@@ -11488,48 +11757,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "mirror-mount": {
-        "pixels": 3680,
-        "minX": 270,
-        "maxX": 1004,
-        "minY": 134,
-        "maxY": 461
-      },
-      "wiper": {
-        "pixels": 3065,
-        "minX": 415,
-        "maxX": 1140,
-        "minY": 463,
-        "maxY": 472
-      },
-      "binnacle": {
-        "pixels": 20068,
-        "minX": 543,
-        "maxX": 736,
-        "minY": 572,
-        "maxY": 690
-      },
-      "console": {
-        "pixels": 99277,
-        "minX": 0,
-        "maxX": 1279,
-        "minY": 520,
-        "maxY": 799
-      },
-      "vent": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "headliner": {
-        "pixels": 72416,
-        "minX": 286,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 75
-      },
       "reserved-9": {
         "pixels": 0,
         "minX": 1280,
@@ -11543,219 +11770,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      }
-    }
-  },
-  {
-    "id": "cla45s",
-    "name": "MERCEDES-AMG CLA \u00b7 45 S 4MATIC+",
-    "fov": 66,
-    "seat": {
-      "height": 0,
-      "position": 0
-    },
-    "before": {
-      "eye": [
-        -0.39345,
-        1.06,
-        0.21
-      ],
-      "pitch": -0.045,
-      "render": {
-        "calls": 90,
-        "triangles": 3666
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 15.75,
-        "pitch": -0.045,
-        "eye": [
-          -0.39345,
-          1.085,
-          0.21
-        ],
-        "roadVisible": 0,
-        "clusterOcclusion": 24,
-        "rimOcclusion": 24,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 46.532963265626826,
-        "headerIntrusion": 66.91176470588235,
-        "geometry": {
-          "windscreen": {
-            "min": [
-              -0.8429999947547913,
-              1.0119999647140503,
-              -1.0149999856948853
-            ],
-            "max": [
-              0.8429999947547913,
-              1.3730000257492065,
-              -0.47999998927116394
-            ]
-          },
-          "legacyEye": [
-            -0.39345,
-            1.065,
-            0.21
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "interior",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": false,
-            "clear": false
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": [
-          "road",
-          "cluster"
-        ]
-      },
-      "windscreenPercent": 36.17744140625,
-      "openPixels": 370457,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800
-    },
-    "after": {
-      "eye": [
-        -0.39345,
-        1.19,
-        0.15999999999999998
-      ],
-      "pitch": -0.07,
-      "render": {
-        "calls": 52,
-        "triangles": 1806
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 3.75,
-        "pitch": -0.07,
-        "eye": [
-          -0.39345,
-          1.2149999999999999,
-          0.15999999999999998
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 71.32352941176471,
-        "geometry": {
-          "windscreen": {
-            "min": [
-              -0.8429999947547913,
-              1.0119999647140503,
-              -1.0149999856948853
-            ],
-            "max": [
-              0.8429999947547913,
-              1.3730000257492065,
-              -0.47999998927116394
-            ]
-          },
-          "legacyEye": [
-            -0.39345,
-            1.065,
-            0.21
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "interior",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": false,
-            "clear": false
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 44.70107421875,
-      "openPixels": 457739,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800,
-      "unobstructedViewPercent": 44.6982421875
-    },
-    "structure": {
-      "dash": {
-        "pixels": 152347,
-        "minX": 406,
-        "maxX": 1279,
-        "minY": 478,
-        "maxY": 799
-      },
-      "deck": {
-        "pixels": 29,
-        "minX": 427,
-        "maxX": 455,
-        "minY": 483,
-        "maxY": 483
-      },
-      "pillar": {
-        "pixels": 19335,
-        "minX": 320,
-        "maxX": 414,
-        "minY": 134,
-        "maxY": 464
-      },
-      "header": {
-        "pixels": 41543,
-        "minX": 369,
-        "maxX": 1279,
-        "minY": 76,
-        "maxY": 133
-      },
-      "door-top": {
-        "pixels": 54930,
-        "minX": 0,
-        "maxX": 415,
-        "minY": 446,
-        "maxY": 785
-      },
-      "wheel-rim": {
-        "pixels": 19740,
-        "minX": 444,
-        "maxX": 835,
-        "minY": 533,
-        "maxY": 799
-      },
-      "wheel-hub": {
-        "pixels": 13232,
-        "minX": 569,
-        "maxX": 710,
-        "minY": 677,
-        "maxY": 781
-      },
-      "wheel-badge": {
-        "pixels": 1480,
-        "minX": 618,
-        "maxX": 661,
-        "minY": 706,
-        "maxY": 751
       },
       "mirror-mount": {
         "pixels": 3680,
@@ -11798,26 +11812,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "gla250",
-    "name": "MERCEDES-BENZ GLA \u00b7 250 4MATIC",
+    "name": "MERCEDES-BENZ GLA · 250 4MATIC",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -11831,8 +11831,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3428
+        "calls": 94,
+        "triangles": 3740
       },
       "geometryAudit": {
         "nearRoadDistance": 11.75,
@@ -11891,8 +11891,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 43.233984375,
-      "openPixels": 442716,
+      "windscreenPercent": 43.2330078125,
+      "openPixels": 442706,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -11905,8 +11905,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1794
+        "calls": 53,
+        "triangles": 2106
       },
       "geometryAudit": {
         "nearRoadDistance": 4.5,
@@ -11962,12 +11962,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 52.329296875,
-      "openPixels": 535852,
+      "windscreenPercent": 50.976171875,
+      "openPixels": 521996,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 49.54384765625
+      "unobstructedViewPercent": 48.19072265625
     },
     "structure": {
       "dash": {
@@ -12026,6 +12026,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5754,
         "minX": 244,
@@ -12067,26 +12081,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 63
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "z4_20i",
-    "name": "BMW Z4 \u00b7 sDrive20i",
+    "name": "BMW Z4 · sDrive20i",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -12100,8 +12100,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3076
+        "calls": 94,
+        "triangles": 3268
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -12159,8 +12159,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 45.178125,
-      "openPixels": 462624,
+      "windscreenPercent": 44.9564453125,
+      "openPixels": 460354,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12173,8 +12173,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 43,
-        "triangles": 1298
+        "calls": 45,
+        "triangles": 1490
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -12230,12 +12230,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.16611328125,
-      "openPixels": 493221,
+      "windscreenPercent": 47.43720703125,
+      "openPixels": 485757,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.1509765625
+      "unobstructedViewPercent": 43.4220703125
     },
     "structure": {
       "dash": {
@@ -12294,6 +12294,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 11322,
         "minX": 149,
@@ -12330,20 +12344,6 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -12354,7 +12354,7 @@
   },
   {
     "id": "z4_30i",
-    "name": "BMW Z4 \u00b7 sDrive30i",
+    "name": "BMW Z4 · sDrive30i",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -12368,8 +12368,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3076
+        "calls": 94,
+        "triangles": 3268
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -12427,8 +12427,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 45.178125,
-      "openPixels": 462624,
+      "windscreenPercent": 44.9564453125,
+      "openPixels": 460354,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12441,8 +12441,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 43,
-        "triangles": 1298
+        "calls": 45,
+        "triangles": 1490
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -12498,12 +12498,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.16611328125,
-      "openPixels": 493221,
+      "windscreenPercent": 47.43720703125,
+      "openPixels": 485757,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 44.1509765625
+      "unobstructedViewPercent": 43.4220703125
     },
     "structure": {
       "dash": {
@@ -12562,6 +12562,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 11322,
         "minX": 149,
@@ -12603,26 +12617,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "carrera_s",
-    "name": "PORSCHE 911 \u00b7 CARRERA S",
+    "name": "PORSCHE 911 · CARRERA S",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -12636,8 +12636,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 107,
-        "triangles": 3558
+        "calls": 109,
+        "triangles": 3870
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -12695,8 +12695,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.0375,
-      "openPixels": 409984,
+      "windscreenPercent": 39.9998046875,
+      "openPixels": 409598,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12709,8 +12709,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1536
+        "calls": 53,
+        "triangles": 1848
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -12766,12 +12766,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.8123046875,
-      "openPixels": 520318,
+      "windscreenPercent": 49.4197265625,
+      "openPixels": 506058,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.030859375
+      "unobstructedViewPercent": 48.63828125
     },
     "structure": {
       "dash": {
@@ -12830,6 +12830,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 8993,
         "minX": 255,
@@ -12866,20 +12880,6 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -12890,7 +12890,7 @@
   },
   {
     "id": "carrera_gts",
-    "name": "PORSCHE 911 \u00b7 CARRERA GTS",
+    "name": "PORSCHE 911 · CARRERA GTS",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -12904,8 +12904,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 107,
-        "triangles": 3558
+        "calls": 109,
+        "triangles": 3870
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -12963,8 +12963,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 40.0375,
-      "openPixels": 409984,
+      "windscreenPercent": 39.9998046875,
+      "openPixels": 409598,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12977,8 +12977,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1536
+        "calls": 53,
+        "triangles": 1848
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -13034,12 +13034,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.8123046875,
-      "openPixels": 520318,
+      "windscreenPercent": 49.4197265625,
+      "openPixels": 506058,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.030859375
+      "unobstructedViewPercent": 48.63828125
     },
     "structure": {
       "dash": {
@@ -13098,6 +13098,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 8993,
         "minX": 255,
@@ -13139,26 +13153,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "huracan_rwd",
-    "name": "LAMBORGHINI HURAC\u00c1N \u00b7 EVO RWD",
+    "name": "LAMBORGHINI HURACÁN · EVO RWD",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -13172,8 +13172,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 84,
-        "triangles": 2994
+        "calls": 86,
+        "triangles": 3186
       },
       "geometryAudit": {
         "nearRoadDistance": 9.25,
@@ -13245,8 +13245,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1432
+        "calls": 53,
+        "triangles": 1624
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -13302,16 +13302,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.8341796875,
-      "openPixels": 520542,
+      "windscreenPercent": 50.555078125,
+      "openPixels": 517684,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.833203125
+      "unobstructedViewPercent": 50.5541015625
     },
     "structure": {
       "dash": {
-        "pixels": 147540,
+        "pixels": 147464,
         "minX": 397,
         "maxX": 1279,
         "minY": 530,
@@ -13366,6 +13366,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 12315,
         "minX": 112,
@@ -13407,26 +13421,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "gtv1750",
-    "name": "ALFA ROMEO \u00b7 1750 GTV",
+    "name": "ALFA ROMEO · 1750 GTV",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -13440,8 +13440,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 109,
-        "triangles": 4709
+        "calls": 111,
+        "triangles": 5021
       },
       "geometryAudit": {
         "nearRoadDistance": 9.25,
@@ -13497,8 +13497,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.11767578125,
-      "openPixels": 462005,
+      "windscreenPercent": 45.05,
+      "openPixels": 461312,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -13511,8 +13511,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1634
+        "calls": 54,
+        "triangles": 1946
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -13577,7 +13577,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 162060,
+        "pixels": 161388,
         "minX": 390,
         "maxX": 1279,
         "minY": 553,
@@ -13632,6 +13632,20 @@
         "minY": 707,
         "maxY": 750
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 9323,
         "minX": 217,
@@ -13673,26 +13687,12 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "e36_318i",
-    "name": "BMW E36 \u00b7 318i",
+    "name": "BMW E36 · 318i",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -13706,8 +13706,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 2916
+        "calls": 91,
+        "triangles": 3228
       },
       "geometryAudit": {
         "nearRoadDistance": 10,
@@ -13765,8 +13765,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 42.82578125,
-      "openPixels": 438536,
+      "windscreenPercent": 42.63583984375,
+      "openPixels": 436591,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -13779,8 +13779,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1466
+        "calls": 54,
+        "triangles": 1778
       },
       "geometryAudit": {
         "nearRoadDistance": 4,
@@ -13836,12 +13836,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.38515625,
-      "openPixels": 505704,
+      "windscreenPercent": 47.93251953125,
+      "openPixels": 490829,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 46.22998046875
+      "unobstructedViewPercent": 44.77734375
     },
     "structure": {
       "dash": {
@@ -13900,6 +13900,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5234,
         "minX": 256,
@@ -13941,20 +13955,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -13974,8 +13974,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 100,
-        "triangles": 4168
+        "calls": 102,
+        "triangles": 4360
       },
       "geometryAudit": {
         "nearRoadDistance": 9.75,
@@ -14047,8 +14047,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 47,
-        "triangles": 1756
+        "calls": 49,
+        "triangles": 1948
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -14104,16 +14104,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.19765625,
-      "openPixels": 595944,
+      "windscreenPercent": 57.306640625,
+      "openPixels": 586820,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 53.78330078125
+      "unobstructedViewPercent": 52.89228515625
     },
     "structure": {
       "dash": {
-        "pixels": 86254,
+        "pixels": 77501,
         "minX": 374,
         "maxX": 1279,
         "minY": 581,
@@ -14168,6 +14168,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7595,
         "minX": 159,
@@ -14209,20 +14223,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -14242,8 +14242,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 89,
-        "triangles": 4552
+        "calls": 91,
+        "triangles": 4864
       },
       "geometryAudit": {
         "nearRoadDistance": 9.5,
@@ -14301,8 +14301,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 38.8765625,
-      "openPixels": 398096,
+      "windscreenPercent": 38.51943359375,
+      "openPixels": 394439,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -14315,8 +14315,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 52,
-        "triangles": 1806
+        "calls": 54,
+        "triangles": 2118
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -14372,12 +14372,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.09892578125,
-      "openPixels": 502773,
+      "windscreenPercent": 47.1474609375,
+      "openPixels": 482790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.13251953125
+      "unobstructedViewPercent": 46.1810546875
     },
     "structure": {
       "dash": {
@@ -14436,6 +14436,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -14477,20 +14491,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -14510,8 +14510,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 87,
-        "triangles": 2688
+        "calls": 89,
+        "triangles": 3000
       },
       "geometryAudit": {
         "nearRoadDistance": 11.75,
@@ -14570,8 +14570,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 44.98388671875,
-      "openPixels": 460635,
+      "windscreenPercent": 44.98173828125,
+      "openPixels": 460613,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -14584,8 +14584,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 54,
-        "triangles": 1388
+        "calls": 56,
+        "triangles": 1700
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -14641,17 +14641,17 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.272265625,
-      "openPixels": 494308,
+      "windscreenPercent": 47.76435546875,
+      "openPixels": 489107,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.272265625
+      "unobstructedViewPercent": 47.76435546875
     },
     "structure": {
       "dash": {
-        "pixels": 120724,
-        "minX": 364,
+        "pixels": 117371,
+        "minX": 368,
         "maxX": 1279,
         "minY": 547,
         "maxY": 799
@@ -14705,6 +14705,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4791,
         "minX": 307,
@@ -14746,20 +14760,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -14779,8 +14779,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 88,
-        "triangles": 2720
+        "calls": 90,
+        "triangles": 3032
       },
       "geometryAudit": {
         "nearRoadDistance": 11.75,
@@ -14839,8 +14839,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 44.98369140625,
-      "openPixels": 460633,
+      "windscreenPercent": 44.98173828125,
+      "openPixels": 460613,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -14853,8 +14853,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 54,
-        "triangles": 1388
+        "calls": 56,
+        "triangles": 1700
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -14910,17 +14910,17 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.272265625,
-      "openPixels": 494308,
+      "windscreenPercent": 47.76435546875,
+      "openPixels": 489107,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.272265625
+      "unobstructedViewPercent": 47.76435546875
     },
     "structure": {
       "dash": {
-        "pixels": 120724,
-        "minX": 364,
+        "pixels": 117371,
+        "minX": 368,
         "maxX": 1279,
         "minY": 547,
         "maxY": 799
@@ -14974,6 +14974,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4791,
         "minX": 307,
@@ -15015,26 +15029,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "jazz_drift",
-    "name": "HONDA JAZZ DRIFT SPEC \u2014 FANTASY BUILD",
+    "name": "HONDA JAZZ DRIFT SPEC — FANTASY BUILD",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -15048,8 +15048,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 88,
-        "triangles": 2776
+        "calls": 90,
+        "triangles": 3088
       },
       "geometryAudit": {
         "nearRoadDistance": 11.75,
@@ -15108,8 +15108,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 44.9841796875,
-      "openPixels": 460638,
+      "windscreenPercent": 44.98173828125,
+      "openPixels": 460613,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -15122,8 +15122,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 54,
-        "triangles": 1388
+        "calls": 56,
+        "triangles": 1700
       },
       "geometryAudit": {
         "nearRoadDistance": 2.75,
@@ -15179,17 +15179,17 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.272265625,
-      "openPixels": 494308,
+      "windscreenPercent": 47.76435546875,
+      "openPixels": 489107,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.272265625
+      "unobstructedViewPercent": 47.76435546875
     },
     "structure": {
       "dash": {
-        "pixels": 120724,
-        "minX": 364,
+        "pixels": 117371,
+        "minX": 368,
         "maxX": 1279,
         "minY": 547,
         "maxY": 799
@@ -15243,6 +15243,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 4791,
         "minX": 307,
@@ -15284,20 +15298,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -15317,8 +15317,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 118,
-        "triangles": 1770
+        "calls": 120,
+        "triangles": 2082
       },
       "geometryAudit": {
         "nearRoadDistance": 6.25,
@@ -15383,8 +15383,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 36,
-        "triangles": 596
+        "calls": 38,
+        "triangles": 908
       },
       "geometryAudit": {
         "nearRoadDistance": 3.75,
@@ -15435,12 +15435,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.73798828125,
-      "openPixels": 580997,
+      "windscreenPercent": 55.7580078125,
+      "openPixels": 570962,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.41416015625
+      "unobstructedViewPercent": 54.4341796875
     },
     "structure": {
       "dash": {
@@ -15499,6 +15499,20 @@
         "minY": 703,
         "maxY": 763
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 2434,
         "minX": 278,
@@ -15540,20 +15554,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 25
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -15573,8 +15573,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 118,
-        "triangles": 1728
+        "calls": 120,
+        "triangles": 2040
       },
       "geometryAudit": {
         "nearRoadDistance": 8.75,
@@ -15625,8 +15625,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 43.37490234375,
-      "openPixels": 444159,
+      "windscreenPercent": 43.37431640625,
+      "openPixels": 444153,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -15639,8 +15639,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 35,
-        "triangles": 584
+        "calls": 37,
+        "triangles": 896
       },
       "geometryAudit": {
         "nearRoadDistance": 5,
@@ -15691,12 +15691,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.12744140625,
-      "openPixels": 544025,
+      "windscreenPercent": 50.87978515625,
+      "openPixels": 521009,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.29453125
+      "unobstructedViewPercent": 48.046875
     },
     "structure": {
       "dash": {
@@ -15755,6 +15755,20 @@
         "minY": 703,
         "maxY": 763
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 2082,
         "minX": 269,
@@ -15796,20 +15810,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -15829,8 +15829,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 118,
-        "triangles": 1728
+        "calls": 120,
+        "triangles": 2040
       },
       "geometryAudit": {
         "nearRoadDistance": 8.75,
@@ -15881,8 +15881,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 43.37490234375,
-      "openPixels": 444159,
+      "windscreenPercent": 43.37431640625,
+      "openPixels": 444153,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -15895,8 +15895,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 35,
-        "triangles": 584
+        "calls": 37,
+        "triangles": 896
       },
       "geometryAudit": {
         "nearRoadDistance": 5,
@@ -15947,12 +15947,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.12744140625,
-      "openPixels": 544025,
+      "windscreenPercent": 50.87978515625,
+      "openPixels": 521009,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.29453125
+      "unobstructedViewPercent": 48.046875
     },
     "structure": {
       "dash": {
@@ -16011,6 +16011,20 @@
         "minY": 703,
         "maxY": 763
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 2082,
         "minX": 269,
@@ -16052,20 +16066,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -16085,8 +16085,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 119,
-        "triangles": 1768
+        "calls": 121,
+        "triangles": 2080
       },
       "geometryAudit": {
         "nearRoadDistance": 5.5,
@@ -16137,8 +16137,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 40.77685546875,
-      "openPixels": 417555,
+      "windscreenPercent": 40.77509765625,
+      "openPixels": 417537,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -16151,8 +16151,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 36,
-        "triangles": 596
+        "calls": 38,
+        "triangles": 908
       },
       "geometryAudit": {
         "nearRoadDistance": 4.25,
@@ -16203,12 +16203,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.5189453125,
-      "openPixels": 507074,
+      "windscreenPercent": 45.4525390625,
+      "openPixels": 465434,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 47.052734375
+      "unobstructedViewPercent": 42.986328125
     },
     "structure": {
       "dash": {
@@ -16267,6 +16267,20 @@
         "minY": 706,
         "maxY": 758
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 1825,
         "minX": 295,
@@ -16308,20 +16322,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 143
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -16341,8 +16341,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 114,
-        "triangles": 1704
+        "calls": 116,
+        "triangles": 2016
       },
       "geometryAudit": {
         "nearRoadDistance": 7,
@@ -16393,8 +16393,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 42.97978515625,
-      "openPixels": 440113,
+      "windscreenPercent": 42.97705078125,
+      "openPixels": 440085,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -16407,8 +16407,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 35,
-        "triangles": 604
+        "calls": 37,
+        "triangles": 916
       },
       "geometryAudit": {
         "nearRoadDistance": 4.75,
@@ -16459,12 +16459,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.9396484375,
-      "openPixels": 521622,
+      "windscreenPercent": 49.7447265625,
+      "openPixels": 509386,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 47.84462890625
+      "unobstructedViewPercent": 46.64970703125
     },
     "structure": {
       "dash": {
@@ -16523,6 +16523,20 @@
         "minY": 703,
         "maxY": 763
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 2160,
         "minX": 241,
@@ -16564,20 +16578,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 54
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -16597,8 +16597,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 68,
-        "triangles": 1116
+        "calls": 69,
+        "triangles": 1188
       },
       "geometryAudit": {
         "nearRoadDistance": 7,
@@ -16663,8 +16663,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 37,
-        "triangles": 604
+        "calls": 38,
+        "triangles": 676
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -16715,12 +16715,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 72.40400390625,
-      "openPixels": 741417,
+      "windscreenPercent": 71.397265625,
+      "openPixels": 731108,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 72.00302734375
+      "unobstructedViewPercent": 70.9962890625
     },
     "structure": {
       "dash": {
@@ -16779,6 +16779,20 @@
         "minY": 708,
         "maxY": 756
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 13566,
         "minX": 0,
@@ -16820,20 +16834,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 12
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -16853,8 +16853,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 68,
-        "triangles": 1116
+        "calls": 69,
+        "triangles": 1188
       },
       "geometryAudit": {
         "nearRoadDistance": 7,
@@ -16919,8 +16919,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 37,
-        "triangles": 604
+        "calls": 38,
+        "triangles": 676
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -16971,12 +16971,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 72.40400390625,
-      "openPixels": 741417,
+      "windscreenPercent": 71.397265625,
+      "openPixels": 731108,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 72.00302734375
+      "unobstructedViewPercent": 70.9962890625
     },
     "structure": {
       "dash": {
@@ -17035,6 +17035,20 @@
         "minY": 708,
         "maxY": 756
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 13566,
         "minX": 0,
@@ -17076,20 +17090,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 12
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -17109,8 +17109,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 61,
-        "triangles": 894
+        "calls": 63,
+        "triangles": 1086
       },
       "geometryAudit": {
         "nearRoadDistance": 11.5,
@@ -17163,8 +17163,8 @@
           "road"
         ]
       },
-      "windscreenPercent": 34.63173828125,
-      "openPixels": 354629,
+      "windscreenPercent": 34.59140625,
+      "openPixels": 354216,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -17177,8 +17177,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 36,
-        "triangles": 596
+        "calls": 38,
+        "triangles": 788
       },
       "geometryAudit": {
         "nearRoadDistance": 7.5,
@@ -17229,12 +17229,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 40.95166015625,
-      "openPixels": 419345,
+      "windscreenPercent": 40.21708984375,
+      "openPixels": 411823,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 40.95166015625
+      "unobstructedViewPercent": 40.21708984375
     },
     "structure": {
       "dash": {
@@ -17293,6 +17293,20 @@
         "minY": 703,
         "maxY": 762
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6788,
         "minX": 23,
@@ -17334,26 +17348,12 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 204
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
   {
     "id": "bus",
-    "name": "MERCEDES-BENZ CITARO O530 \u00b7 \u039f\u03a3\u03a5",
+    "name": "MERCEDES-BENZ CITARO O530 · ΟΣΥ",
     "fov": 66,
     "seat": {
       "height": 0,
@@ -17367,8 +17367,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 59,
-        "triangles": 1166
+        "calls": 61,
+        "triangles": 1358
       },
       "geometryAudit": {
         "nearRoadDistance": 10.75,
@@ -17435,8 +17435,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 31,
-        "triangles": 546
+        "calls": 33,
+        "triangles": 738
       },
       "geometryAudit": {
         "nearRoadDistance": 7.75,
@@ -17551,6 +17551,20 @@
         "minY": 765,
         "maxY": 799
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 19417,
         "minX": 34,
@@ -17592,20 +17606,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -17625,8 +17625,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3084
+        "calls": 94,
+        "triangles": 3396
       },
       "geometryAudit": {
         "nearRoadDistance": 12.5,
@@ -17685,8 +17685,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 46.62255859375,
-      "openPixels": 477415,
+      "windscreenPercent": 46.608984375,
+      "openPixels": 477276,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -17699,8 +17699,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 54,
-        "triangles": 1534
+        "calls": 56,
+        "triangles": 1846
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -17756,16 +17756,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.61171875,
-      "openPixels": 518264,
+      "windscreenPercent": 50.3140625,
+      "openPixels": 515216,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 49.5884765625
+      "unobstructedViewPercent": 49.2908203125
     },
     "structure": {
       "dash": {
-        "pixels": 126289,
+        "pixels": 124554,
         "minX": 367,
         "maxX": 1279,
         "minY": 570,
@@ -17819,6 +17819,20 @@
         "maxX": 661,
         "minY": 706,
         "maxY": 751
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       },
       "mirror-mount": {
         "pixels": 5947,
@@ -17861,20 +17875,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -17894,8 +17894,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 92,
-        "triangles": 3084
+        "calls": 94,
+        "triangles": 3396
       },
       "geometryAudit": {
         "nearRoadDistance": 12.5,
@@ -17954,8 +17954,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 46.61279296875,
-      "openPixels": 477315,
+      "windscreenPercent": 46.6078125,
+      "openPixels": 477264,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -17968,8 +17968,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 54,
-        "triangles": 1534
+        "calls": 56,
+        "triangles": 1846
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -18025,16 +18025,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.61142578125,
-      "openPixels": 518261,
+      "windscreenPercent": 50.31376953125,
+      "openPixels": 515213,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 49.58818359375
+      "unobstructedViewPercent": 49.29052734375
     },
     "structure": {
       "dash": {
-        "pixels": 126289,
+        "pixels": 124554,
         "minX": 367,
         "maxX": 1279,
         "minY": 570,
@@ -18089,6 +18089,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5958,
         "minX": 313,
@@ -18130,20 +18144,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -18163,8 +18163,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 95,
-        "triangles": 3363
+        "calls": 97,
+        "triangles": 3555
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -18222,8 +18222,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 36.6119140625,
-      "openPixels": 374906,
+      "windscreenPercent": 36.4294921875,
+      "openPixels": 373038,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -18236,8 +18236,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 45,
-        "triangles": 1578
+        "calls": 47,
+        "triangles": 1770
       },
       "geometryAudit": {
         "nearRoadDistance": 4.25,
@@ -18293,12 +18293,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 47.7513671875,
-      "openPixels": 488974,
+      "windscreenPercent": 46.3673828125,
+      "openPixels": 474802,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.562890625
+      "unobstructedViewPercent": 40.17890625
     },
     "structure": {
       "dash": {
@@ -18357,6 +18357,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 10727,
         "minX": 146,
@@ -18393,20 +18407,6 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -18431,8 +18431,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 95,
-        "triangles": 3363
+        "calls": 97,
+        "triangles": 3555
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -18490,8 +18490,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 36.6119140625,
-      "openPixels": 374906,
+      "windscreenPercent": 36.4294921875,
+      "openPixels": 373038,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -18504,8 +18504,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 45,
-        "triangles": 1578
+        "calls": 47,
+        "triangles": 1770
       },
       "geometryAudit": {
         "nearRoadDistance": 4.25,
@@ -18561,12 +18561,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 47.7513671875,
-      "openPixels": 488974,
+      "windscreenPercent": 46.3673828125,
+      "openPixels": 474802,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.562890625
+      "unobstructedViewPercent": 40.17890625
     },
     "structure": {
       "dash": {
@@ -18625,6 +18625,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 10727,
         "minX": 146,
@@ -18666,20 +18680,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -18699,8 +18699,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 3363
+        "calls": 95,
+        "triangles": 3555
       },
       "geometryAudit": {
         "nearRoadDistance": 8.75,
@@ -18758,8 +18758,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 36.44912109375,
-      "openPixels": 373239,
+      "windscreenPercent": 36.25703125,
+      "openPixels": 371272,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -18772,8 +18772,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 45,
-        "triangles": 1578
+        "calls": 47,
+        "triangles": 1770
       },
       "geometryAudit": {
         "nearRoadDistance": 4.25,
@@ -18829,12 +18829,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 47.5287109375,
-      "openPixels": 486694,
+      "windscreenPercent": 46.1447265625,
+      "openPixels": 472522,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.30224609375
+      "unobstructedViewPercent": 39.91826171875
     },
     "structure": {
       "dash": {
@@ -18893,6 +18893,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 10690,
         "minX": 146,
@@ -18929,20 +18943,6 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -18967,8 +18967,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 93,
-        "triangles": 3363
+        "calls": 95,
+        "triangles": 3555
       },
       "geometryAudit": {
         "nearRoadDistance": 8.75,
@@ -19026,8 +19026,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 36.44912109375,
-      "openPixels": 373239,
+      "windscreenPercent": 36.25703125,
+      "openPixels": 371272,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -19040,8 +19040,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 45,
-        "triangles": 1578
+        "calls": 47,
+        "triangles": 1770
       },
       "geometryAudit": {
         "nearRoadDistance": 4.25,
@@ -19097,12 +19097,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 47.5287109375,
-      "openPixels": 486694,
+      "windscreenPercent": 46.1447265625,
+      "openPixels": 472522,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 41.30224609375
+      "unobstructedViewPercent": 39.91826171875
     },
     "structure": {
       "dash": {
@@ -19161,6 +19161,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 10690,
         "minX": 146,
@@ -19202,20 +19216,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -19235,8 +19235,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 88,
-        "triangles": 3310
+        "calls": 90,
+        "triangles": 3502
       },
       "geometryAudit": {
         "nearRoadDistance": 8,
@@ -19294,8 +19294,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 39.5701171875,
-      "openPixels": 405198,
+      "windscreenPercent": 39.5646484375,
+      "openPixels": 405142,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -19308,8 +19308,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1420
+        "calls": 50,
+        "triangles": 1612
       },
       "geometryAudit": {
         "nearRoadDistance": 2,
@@ -19365,12 +19365,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 39.97412109375,
-      "openPixels": 409335,
+      "windscreenPercent": 38.31533203125,
+      "openPixels": 392349,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 39.8126953125
+      "unobstructedViewPercent": 38.15390625
     },
     "structure": {
       "dash": {
@@ -19429,6 +19429,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7983,
         "minX": 189,
@@ -19470,20 +19484,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 72
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -19503,8 +19503,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 3276
+        "calls": 88,
+        "triangles": 3468
       },
       "geometryAudit": {
         "nearRoadDistance": 8,
@@ -19562,8 +19562,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 46.78671875,
-      "openPixels": 479096,
+      "windscreenPercent": 46.78125,
+      "openPixels": 479040,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -19576,8 +19576,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 46,
-        "triangles": 1406
+        "calls": 48,
+        "triangles": 1598
       },
       "geometryAudit": {
         "nearRoadDistance": 2,
@@ -19633,12 +19633,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.19775390625,
-      "openPixels": 462825,
+      "windscreenPercent": 43.53896484375,
+      "openPixels": 445839,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 45.036328125
+      "unobstructedViewPercent": 43.3775390625
     },
     "structure": {
       "dash": {
@@ -19697,6 +19697,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7993,
         "minX": 189,
@@ -19738,20 +19752,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -19771,8 +19771,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 3172
+        "calls": 88,
+        "triangles": 3364
       },
       "geometryAudit": {
         "nearRoadDistance": 8,
@@ -19830,8 +19830,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 47.0560546875,
-      "openPixels": 481854,
+      "windscreenPercent": 47.0505859375,
+      "openPixels": 481798,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -19844,8 +19844,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 46,
-        "triangles": 1406
+        "calls": 48,
+        "triangles": 1598
       },
       "geometryAudit": {
         "nearRoadDistance": 2,
@@ -19901,12 +19901,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.19775390625,
-      "openPixels": 462825,
+      "windscreenPercent": 43.53896484375,
+      "openPixels": 445839,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 45.036328125
+      "unobstructedViewPercent": 43.3775390625
     },
     "structure": {
       "dash": {
@@ -19965,6 +19965,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 7993,
         "minX": 189,
@@ -20006,20 +20020,6 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -20039,8 +20039,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 110,
-        "triangles": 3332
+        "calls": 112,
+        "triangles": 3644
       },
       "geometryAudit": {
         "nearRoadDistance": 11.5,
@@ -20099,8 +20099,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 37.8427734375,
-      "openPixels": 387510,
+      "windscreenPercent": 37.7712890625,
+      "openPixels": 386778,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -20113,8 +20113,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1532
+        "calls": 50,
+        "triangles": 1844
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -20170,12 +20170,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 52.991015625,
-      "openPixels": 542628,
+      "windscreenPercent": 51.32578125,
+      "openPixels": 525576,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.7111328125
+      "unobstructedViewPercent": 49.0458984375
     },
     "structure": {
       "dash": {
@@ -20234,6 +20234,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6244,
         "minX": 239,
@@ -20275,20 +20289,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 53
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -20308,8 +20308,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 110,
-        "triangles": 3332
+        "calls": 112,
+        "triangles": 3644
       },
       "geometryAudit": {
         "nearRoadDistance": 11.5,
@@ -20368,8 +20368,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 37.8427734375,
-      "openPixels": 387510,
+      "windscreenPercent": 37.7712890625,
+      "openPixels": 386778,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -20382,8 +20382,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1532
+        "calls": 50,
+        "triangles": 1844
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -20439,12 +20439,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 52.991015625,
-      "openPixels": 542628,
+      "windscreenPercent": 51.32578125,
+      "openPixels": 525576,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.7111328125
+      "unobstructedViewPercent": 49.0458984375
     },
     "structure": {
       "dash": {
@@ -20503,6 +20503,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 6244,
         "minX": 239,
@@ -20544,20 +20558,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 53
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   },
@@ -20577,8 +20577,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 110,
-        "triangles": 3332
+        "calls": 112,
+        "triangles": 3644
       },
       "geometryAudit": {
         "nearRoadDistance": 11.5,
@@ -20637,8 +20637,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 36.87041015625,
-      "openPixels": 377553,
+      "windscreenPercent": 36.83935546875,
+      "openPixels": 377235,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -20651,8 +20651,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 48,
-        "triangles": 1532
+        "calls": 50,
+        "triangles": 1844
       },
       "geometryAudit": {
         "nearRoadDistance": 3.25,
@@ -20708,12 +20708,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 52.29716796875,
-      "openPixels": 535523,
+      "windscreenPercent": 50.59072265625,
+      "openPixels": 518049,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 49.901171875
+      "unobstructedViewPercent": 48.1947265625
     },
     "structure": {
       "dash": {
@@ -20772,6 +20772,20 @@
         "minY": 706,
         "maxY": 751
       },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
       "mirror-mount": {
         "pixels": 5696,
         "minX": 230,
@@ -20813,20 +20827,6 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 53
-      },
-      "reserved-9": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "reserved-10": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
       }
     }
   }
