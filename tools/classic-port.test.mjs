@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import * as
 import {CARS,CarModel,Cockpit} from './vehicle-budget-support.mjs';import {carModel,bodyTrim,carCategory} from '../src/car-catalog.js';import {classifyCar} from '../src/car-performance.js';import {engineProfile} from '../src/audio/engine-profiles.js';import {ENGINE_SOUND} from '../src/audio/engine-synth.js';import {validatePowertrain} from './physics-test/powertrain.mjs';import {shiftGateOffset,cockpitShiftHardware} from '../src/cockpit-controls.js';import {setCarLights} from '../src/vehicle-models.js';
 const get=id=>CARS.find(c=>c.id===id),ids=['sl400','sl500','sl63','sl65','a160','a190','f348','f348_ts','f348_spider','p928_s4','p928_gt','p928'];
 test('classic port exposes four generations, real trims and matching 348 body choices',()=>{
- for(const [id,trims]of [['sl65',ids.slice(0,4)],['a160',ids.slice(4,6)],['f348',ids.slice(6,9)],['p928',ids.slice(9)]])assert.deepEqual(carModel(id).trims,trims);
+ for(const [id,trims]of [['sl65',ids.slice(0,4)],['a160',ids.slice(4,6)],['f348',['f348_ts','f348','f348_spider']],['p928',ids.slice(9)]])assert.deepEqual(carModel(id).trims,trims);
  assert.equal(bodyTrim(carModel('f348'),'f348','targa'),'f348_ts');assert.equal(bodyTrim(carModel('f348'),'f348_ts','spider'),'f348_spider');assert.equal(bodyTrim(carModel('f348'),'f348','spider',['f348']),null);
  for(const id of ids){const c=get(id);assert.deepEqual(validatePowertrain(c),[]);assert.equal(cockpitShiftHardware(c).stick,c.powertrain.gearboxType==='manual');}
  assert.equal(carCategory(get('a190')),'city');assert.equal(carCategory(get('p928_gt')),'classic');assert.equal(carCategory(get('sl65')),'sports');
