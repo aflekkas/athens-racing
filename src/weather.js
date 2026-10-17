@@ -3,15 +3,17 @@ import {cockpitDropMaterial} from './cockpit-rain.js';
 //  - night: street lamps lit with light pools on the road (analytic, in the road / pavement shaders: no real
 //    lights), lit windows, car head / tail lamps (emissive + glow sprites; the player gets one real shadowless spot
 //    light, every tier), shaped low-beam patterns on the road for the player, the rival and the nearest traffic
-//  - rain: two scrolling streak texture layers, static wet-road and puddle tint, pooled tyre wake cards;
+//  - rain: depth-tested motion streaks, wet asphalt gloss and irregular puddles, pooled tyre wake cards;
 //    cockpit drops remain a separate overlay. Wet-grip physics is independent.
 // API: setConditions({time, weather}) / getConditions() (plain data: events and multiplayer exchange it),
 // initWeather(ctx) once the world is built (before the shaders compile), updateWeather(dt) every drawn frame.
 import * as THREE from 'three';
 import * as ENV from './env.js';
+import { settings } from './settings.js';
+import { detectPerfClass } from './graphics.js';
 import { WEATHER, advanceRoadWetness } from './wet-grip.js';
 import { setCarLights } from './vehicle-models.js';
-import { createRain, SprayCards as Spray, rainAtlas } from './rain-overlays.js';
+import { createRain, SprayCards as Spray, rainAtlas, RAIN_BUDGET } from './rain-overlays.js';
 
 export const setConditions = (c) => ENV.setConditions(c);
 export const getConditions = () => ENV.getConditions();
@@ -47,12 +49,13 @@ float wxH(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 
 float wxN(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3. - 2. * f);
   return mix(mix(wxH(i), wxH(i + vec2(1, 0)), u.x), mix(wxH(i + vec2(0, 1)), wxH(i + vec2(1, 1)), u.x), u.y); }
 float wxPuddle = 0.0;`;
-// Static texture-mask tint: no animated normals, gloss or reflection response.
+// Broad irregular wet patches, using the existing atlas and sky IBL. No reflection pass.
 const WX_WET = /* glsl */`
 if (wxWet > 0.0) {
-  float mask = texture2D(wxOverlay, vWxP.xz * 0.035).b;
+  float mask = texture2D(wxOverlay, vWxP.xz * 0.035 + vec2(wxN(vWxP.xz*.09), wxN(vWxP.zx*.07))*.6).b;
   wxPuddle = mask * smoothstep(0.3, 0.8, wxWet);
-  diffuseColor.rgb *= mix(1.0, 0.68, wxWet) * (1.0 - 0.22 * wxPuddle);
+  diffuseColor.rgb *= mix(1.0, 0.72, wxWet) * (1.0 - 0.12 * wxPuddle);
+  roughnessFactor = mix(roughnessFactor, mix(0.48, 0.23, wxPuddle), wxWet);
 }`;
 // after the scene lights: street lamps (down-lights) and car headlamps (spots), lit analytically in world space
 const WX_LIGHTS = /* glsl */`
@@ -83,7 +86,7 @@ if (wxNight > 0.0) {
     vec3 Ln = normalize(cp.xyz - vWxP);
     vec3 E = wxCarC * (cp.w * prof * lat * (0.65 + 0.45 * hot) * smoothstep(0.2, 0.6, Nw.y));
     reflectedLight.directDiffuse += E * BRDF_Lambert(material.diffuseColor);
-    reflectedLight.directSpecular += E * BRDF_GGX(Ln, Vw, Nw, material) * 0.05;
+    reflectedLight.directSpecular += E * BRDF_GGX(Ln, Vw, Nw, material) * mix(0.05, 0.45, wxWet);
   }
 }`;
 
@@ -181,6 +184,8 @@ export function initWeather(ctx) {
   const { scene } = ctx, q = ctx.quality || (ctx.low ? 'low' : 'high'), low = q === 'low', med = q === 'med';
   // per tier: analytic lamps / car lights per road pixel, rain streaks, spray particles; the spot light is HIGH only
   W = { ...ctx, q, low, nl: low ? 6 : med ? 8 : NL, nc: low ? 3 : med ? 4 : NC, lamps: [], lampMats: [], frame: 0, lastModel: null, drops: null, rainT: 0, prevCam: new THREE.Vector3(), camVel: new THREE.Vector3() };
+  const gl = ctx.renderer.getContext(), gpu = gl.getExtension('WEBGL_debug_renderer_info');
+  W.autoPerfClass = detectPerfClass(gpu ? gl.getParameter(gpu.UNMASKED_RENDERER_WEBGL) : '');
   // -- material hooks
   const seen = new Set();
   scene.traverse((o) => {
@@ -230,6 +235,7 @@ export function applyWeatherQuality(quality) {
   if (!W) return;
   const low = quality === 'low', med = quality === 'med';
   W.q = quality; W.quality = quality; W.low = low;
+  W.rainCount = low ? RAIN_BUDGET.lowStreaks : med ? 480 : RAIN_BUDGET.streaks;
   const nl = low ? 6 : med ? 8 : NL, nc = low ? 3 : med ? 4 : NC;
   if (nl !== W.nl || nc !== W.nc) {
     W.nl = nl; W.nc = nc;
@@ -345,21 +351,26 @@ export function updateWeather(dt) {
       W.spot.target.position.set(0, 0.5, -player.model.dims.L / 2 - 30).applyMatrix4(r.matrixWorld); W.spot.target.updateMatrixWorld();
     }
   }
-  // ---- rain: two scrolling texture layers and two pooled wake cards per nearby car
+  // ---- world-space streaks: relative velocity stretches them toward a moving camera
   W.spray.begin();
   if (st.rain > 0 || WEATHER.wet > .01) {
     const ru = W.rain.mat.uniforms;
     ru.uTime.value = (ru.uTime.value + dt) % 1000;
     const amb = ENV.CU.uSkyIrr.value, k = 0.16 / Math.max(st.exposure, 0.5);
-    ru.uCol.value.set(amb.x, amb.y, amb.z).multiplyScalar(k * 1.3).addScalar(st.lamps * 0.02);
-    ru.uAlpha.value = 0.42 * st.rain;
+    ru.uCol.value.set(amb.x, amb.y, amb.z).multiplyScalar(k * 2.2).addScalar(st.lamps * 0.02);
+    ru.uAlpha.value = 0.38 * st.rain;
+    W.rain.mesh.geometry.instanceCount = Math.ceil(((settings.perfClass === 'auto' ? W.autoPerfClass : settings.perfClass) === 'potato' ? 64 : W.rainCount) * st.rain);
+    ru.uVelocity.value.copy(W.camVel);
+    for (let i=0;i<16;i++) ru.uLamp.value[i]=WXU.wxLamp.value[i];
+    ru.uHead.value.set(W.spot.position.x,W.spot.position.y,W.spot.position.z,on ? 1 : 0);
+    ru.uForward.value.subVectors(W.spot.target.position,W.spot.position).normalize();
     // spray off the tyres
-    W.spray.mat.uniforms.uCol.value.copy(ru.uCol.value).multiplyScalar(1.5);
+    W.spray.mat.uniforms.uCol.value.copy(ru.uCol.value).multiplyScalar(.9);
     const sprayCar = (root, wid, len, v) => {
       if (W.online || v < 7) return;
       const e = root.matrixWorld.elements; _f.set(-e[8], 0, -e[10]).normalize();
       for (const sx of [-1, 1]) {
-        _v.set(sx * wid * 0.4, 0.4 + v * .009, len / 2 + .25 + v * .025).applyMatrix4(root.matrixWorld);
+        _v.set(sx * wid * 0.4, 0.25 + v * .006, len / 2 + .35 + v * .055).applyMatrix4(root.matrixWorld);
         const a = Math.min(0.35, (v - 7) / 40) * WEATHER.wet;
         W.spray.add(_v.x, _v.y, _v.z, v, a);
       }
@@ -387,5 +398,7 @@ export function updateWeather(dt) {
     const amb = ENV.CU.uSkyIrr.value, k = 0.22 / Math.max(st.exposure, 0.5);
     W.dropMat.uniforms.uAmb.value.set(amb.x, amb.y, amb.z).multiplyScalar(k).addScalar(st.lamps * 0.01);
     W.dropMat.uniforms.uRain.value = st.rain;
+    W.dropMat.uniforms.uSpeed.value = Math.abs(player.veh.vLong);
+    W.dropMat.uniforms.uHasWipers.value = player.model.updateCockpitWipers ? 1 : 0;
   }
 }

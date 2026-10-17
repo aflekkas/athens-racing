@@ -9,7 +9,7 @@ import { TurntableControl } from './turntable-control.js';
 import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection, bodyTrim, trimChoices, stepTrim } from './car-catalog.js';
+import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection, bodyTrim, trimChoices, stepTrim, readCarSelection } from './car-catalog.js';
 import { classifyCar } from './car-performance.js';
 import { carEligibility } from './mp-car-rules.js';
 // Why a trim is locked by lobby car rules (null without rules or when eligible).
@@ -43,7 +43,8 @@ function trimBrowser(c,model,trims,body,available) {
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
-    const list = filterCars(CARS, filters).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
+    let saved;try{saved=readCarSelection(localStorage);}catch{}
+    const list = filterCars(CARS, filters, saved).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
     const toolbar = `<div class="catalog-toolbar">${C.searchField({ name: 'car-search', label: 'Search cars', placeholder: 'SEARCH CARS', value: filters.search || '', inputAttrs: { 'data-car-search': '' } })}
       ${C.select({ key: 'category', label: 'CLASS', compact: true, value: filters.category || 'all', options: [['all', 'ALL'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
       ${C.select({ key: 'drive', label: 'DRIVE', compact: true, value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
@@ -54,15 +55,15 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       body: `<div class="car-grid scroll-y">${list.map(({ car, index: i }) => {
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
         const reason = locked && !def?.car ? ruleReason(car, rules) : null, m = carModel(car), trims = m.bodies ? m.bodies[0][2].length : m.trims.length;
-        return C.carCard({ id: car.id, name: esc(m?.name || car.name), hp: Math.round(car.power * 1.341), kg: car.mass, drive: car.drive.toUpperCase(), locked, selected: i === index,
+        return C.carCard({ id: car.id, name: esc(m?.name || car.name), hp: Math.round(car.power * 1.341), kg: car.mass, drive: car.drive.toUpperCase(), locked, selected: carModel(CARS[index])===m,
           lockLabel: def?.car ? 'EVENT CAR ONLY' : 'HOST RULES',
           line: `${classLabel(carCategory(car))} · ${trims} TRIM${m.trims.length === 1 ? '' : 'S'}${m.bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
-          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(i === index && !locked ? { 'data-default': '' } : {}) } });
+          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(carModel(CARS[index])===m && !locked ? { 'data-default': '' } : {}) } });
       }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>'}</div>` });
   }
   const available=id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id);
   const body=model?.bodies?.find(([, ,ids])=>ids.includes(c.id));
-  const trims=trimChoices(c.id,{allowedCars,def});
+  const trims=trimChoices(c.id,{allowedCars,def,cars:CARS});
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer']];
   return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
     hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
@@ -169,7 +170,7 @@ export function mountCarSelect(root, index, opts = {}) {
     const menu=window.__flow?.menu;if(menu){menu.data={...menu.data,index,detail:true};C.morph(root,renderCarSelect(menu.data));C.indicators(root);}
     renderer.render(scene,camera);return true;
   };
-  const step = direction => {const id=stepTrim(CARS[index].id,direction,rules());return id?swapTo(CARS.findIndex(c=>c.id===id)):false;};
+  const step = direction => {const id=stepTrim(CARS[index].id,direction,{...rules(),cars:CARS});return id?swapTo(CARS.findIndex(c=>c.id===id)):false;};
   const onStepClick=e=>{const act=e.target.closest('[data-act]')?.dataset.act;if(!['carTrimPrev','carTrimNext'].includes(act))return;e.preventDefault();e.stopImmediatePropagation();step(act==='carTrimNext'?1:-1);};
   const onKey=e=>{if(lite||window.__flow?.menu?.screen!=='car'||e.repeat||e.ctrlKey||e.altKey||e.metaKey||e.target.closest?.('input,textarea,[contenteditable]')||!['KeyA','KeyD'].includes(e.code))return;e.preventDefault();e.stopImmediatePropagation();step(e.code==='KeyD'?1:-1);};
   root.addEventListener('click',onStepClick,true);document.addEventListener('keydown',onKey,true);

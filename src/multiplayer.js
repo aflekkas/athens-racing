@@ -9,7 +9,7 @@ import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecyc
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 import { driverName } from './driver-name.js';
 import { presetCars } from './plate.js';
-import { inGarage } from './car-catalog.js';
+import { inGarage, sortTrims } from './car-catalog.js';
 import { defaultCarRules, describeRules } from './mp-car-rules.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
@@ -42,7 +42,7 @@ export class Multiplayer {
     this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
     this.board = document.createElement('aside'); this.board.id = 'mp-board'; this.board.hidden = true; this.board.setAttribute('aria-label', 'Race standings'); document.body.append(this.board);
     const $ = id => this.panel.querySelector('#' + id); this.$ = $;
-    for (const car of cars) { const o = document.createElement('option'); o.value = car.id; o.textContent = car.short; $('mp-room-car').append(o); }
+    for (const car of sortTrims(cars)) { const o = document.createElement('option'); o.value = car.id; o.textContent = car.short; $('mp-room-car').append(o); }
     this.button.onclick = () => this.open(); $('mp-close').onclick = () => this.close();
     $('mp-refresh').onclick = () => this.send({ type: 'discover' });
     // Double CREATE clicks used to race the first lobby join and surface a
@@ -70,7 +70,7 @@ export class Multiplayer {
   get active() { return !!this.lobby; }
   // Lobby car allow-list (host-only writes). `lobby.allowedCars` arrives
   // with every lobby message; empty/missing means the whole catalogue.
-  get allowedCars() { return this.lobby?.allowedCars?.length ? [...this.lobby.allowedCars] : this.cars.map(c => c.id); }
+  get allowedCars() { const allowed=this.lobby?.allowedCars;return sortTrims(this.cars.filter(c=>!allowed?.length||allowed.includes(c.id))).map(c=>c.id); }
   setAllowedCars(ids) {
     const list = [...new Set((ids || []).filter(id => this.cars.some(c => c.id === id)))];
     if (!list.length) { this.status('Allow at least one car.'); return false; }
@@ -106,7 +106,7 @@ export class Multiplayer {
     this.hooks.checkpoint?.(status);
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('race-checkpoint', { detail: status }));
   }
-  setAllowedPreset(preset) { return this.setAllowedCars(presetCars(this.cars.filter(inGarage), preset)); }
+  setAllowedPreset(preset) { return this.setAllowedCars(presetCars(sortTrims(this.cars.filter(inGarage)), preset)); }
   // Host car ruleset (speed-range presets + balancing). The server stays
   // authoritative: it sanitizes the patch, resolves the effective allow-list
   // and rejects invalid car picks with the reason.
@@ -502,7 +502,7 @@ export class Multiplayer {
       const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.dataset.preset = preset;
       b.onclick = () => this.setAllowedPreset(preset); box.append(b);
     }
-    for (const car of this.cars.filter(inGarage)) {
+    for (const car of sortTrims(this.cars.filter(inGarage))) {
       const label = document.createElement('label'); label.className = 'mp-car-toggle'; label.dataset.car = car.id;
       const input = document.createElement('input'); input.type = 'checkbox'; input.checked = allowed.has(car.id); input.dataset.car = car.id;
       // Deselecting the final checkbox is rejected server-side and locally

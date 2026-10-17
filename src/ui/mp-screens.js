@@ -13,7 +13,7 @@ import * as C from './components.js';
 import { notifications } from './notifications.js';
 import { TIMES, WEATHERS, TRAFFIC_LEVELS, POLICE_LEVELS } from '../race-setup.js';
 import { configFromLobby, describeMode } from '../mp-setup.js';
-import { carCategory, classLabel, inGarage, GARAGE_CLASSES } from '../car-catalog.js';
+import { carCategory, classLabel, inGarage, GARAGE_CLASSES, sortTrims } from '../car-catalog.js';
 import { classifyCar, PI_CLASSES } from '../car-performance.js';
 import { defaultCarRules, describeRules, carEligibility } from '../mp-car-rules.js';
 import { driverName } from '../driver-name.js';
@@ -224,7 +224,7 @@ export function helpText(mp, l, host) {
 const RULESET_OPTIONS = [['open', 'OPEN', 'globe'], ['same-class', 'SAME CLASS', 'flag-checkered'], ['max-pi', 'MAX PI', 'gauge'], ['category', 'CATEGORY', 'car-profile'], ['spec', 'SPEC', 'tire'], ['balanced', 'BALANCED', 'sliders-horizontal']];
 /** pace facts for every garage trim, used by the rules screen and its reasons */
 export function ruleViews(mp) {
-  return (mp?.cars || []).filter(inGarage).map((car) => {
+  return sortTrims((mp?.cars || []).filter(inGarage)).map((car) => {
     const { pi, class: cls } = classifyCar(car);
     return { car, id: car.id, name: car.short || car.name || car.id, pi, class: cls, category: carCategory(car) };
   });
@@ -396,7 +396,7 @@ export function change(menu, { key, value, el }) {
     menu.refresh(); return true;
   }
   if (scope === 'mpAllow') {
-    const garage = (mp.cars || []).filter(inGarage).map((c) => c.id), all = new Set(mp.allowedCars), allowed = new Set(garage.filter((id) => all.has(id)));
+    const garage = sortTrims((mp.cars || []).filter(inGarage)).map((c) => c.id), all = new Set(mp.allowedCars), allowed = new Set(garage.filter((id) => all.has(id)));
     if (value) allowed.add(key); else allowed.delete(key);
     if (!mp.setAllowedCars([...allowed])) C.ui.toast('KEEP AT LEAST ONE CAR', { icon: 'warning', tone: 'bad' });
     menu.refresh(); return true;
