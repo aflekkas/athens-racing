@@ -11,3 +11,14 @@
 @media (max-width: 700px) {
   .lb-layout { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Track confirmation only arranges shared panels, records and actions. */
+.scr--track .scr__body { overflow-y: auto; }
+.track-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--s-5); align-items: start; }
+.track-overview, .track-times { min-width: 0; }
+.track-times { display: grid; gap: var(--s-4); }
+.track-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); justify-content: flex-end; }
+@media (max-width: 700px) {
+  .track-layout { grid-template-columns: minmax(0, 1fr); }
+  .track-overview .setup__map { max-height: 5rem; }
+}

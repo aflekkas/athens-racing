@@ -200,7 +200,7 @@ export function mountMapSelect(root) {
     return false;
   }, dispose() { events.abort(); resize.disconnect(); stop(); cancelAnimationFrame(resizeFrame); } };
 }
-// SELECT TRACK is the only confirmation: it goes straight to race setup.
+// Quick Race confirms the track and compares times before race setup.
 export async function selectMap(menu, id) {
   if (menu.mapLoading || !isMapEnabled(id)) return;
   menu.mapLoading = true;
@@ -208,7 +208,7 @@ export async function selectMap(menu, id) {
     menu.h.selectMap(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
     if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
-    else menu.show('setup', { eventId: 'quick', mode: 'quick' }, true);
+    else menu.show('mapConfirm', { mapId: id, mode: 'quick' }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
 }

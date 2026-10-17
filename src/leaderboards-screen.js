@@ -11,7 +11,8 @@ export function lastLeaderboardMap() {
   try { const id = localStorage.getItem('paraliaki.lastPlayedMap'); if (MAPS.some(m => m.id === id)) return id; } catch {}
   return window.__flow?.mapId || 'riviera';
 }
-export function renderBestRecord(r, { rank, global = false, title } = {}) {
+export function renderBestRecord(r, { rank, global = false, title, compact = false } = {}) {
+  if (compact) return C.listRow({ title: `${rank ? `#${rank} · ` : ''}${esc(r.name || 'DRIVER')}`, desc: esc(carLabel(r, CARS)), meta: esc(formatRecordTime(r.time)), focusable: false, go: false });
   const heading = title || `#${rank} · ${formatRecordTime(r.time)}`;
   return C.panel(esc(heading), `<div class="lb-record">
     ${global ? `<b>${esc(r.name || 'DRIVER')}</b>` : ''}<b>${esc(carLabel(r, CARS))}</b>
@@ -19,11 +20,36 @@ export function renderBestRecord(r, { rank, global = false, title } = {}) {
     ${setupLabels(r).map(line => `<span>${esc(line)}</span>`).join('')}
     </div>`, { icon: 'timer', cls: 'lb-entry', right: `<span class="muted">${esc(recordDate(r))}</span>` });
 }
+// The track preview shares the full board's record presentation and filter semantics.
+export function renderTrackTimes(menu, d, filters) {
+  const best = listPersonalBests(filters)[0], state = d.trackTimes ||= { loading: true };
+  const personal = best ? renderBestRecord(best, { title: `YOUR PERSONAL BEST · ${formatRecordTime(best.time)}` }) :
+    C.panel('YOUR PERSONAL BEST', '<p>Complete a clean race on this track to set a time.</p>', { icon: 'timer' });
+  let global;
+  if (state.loading) global = C.spinner();
+  else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
+  else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p>No global times yet. Set the first clean time.</p>';
+  queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
+  return `<div class="track-times">${personal}${C.panel('GLOBAL / TOP 3', global, { icon: 'globe', attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}<p class="muted">Fastest times for this track and event, across routes and setups.</p></div>`;
+}
+async function loadTrackTimes(menu, d, state, filters) {
+  if (menu.screen !== 'mapConfirm' || menu.data !== d || d.trackTimes !== state || state.requested) return;
+  state.requested = true;
+  try {
+    const entries = await getLeaderboard({ ...filters, limit: 3 });
+    state.entries = entries.filter(r => matchesRecord(r, filters)).sort((a, b) => a.time - b.time).slice(0, 3);
+  } catch (error) { state.error = error.message; }
+  finally {
+    state.loading = false;
+    // An abandoned request cannot repaint another track, setup or the full board.
+    if (menu.screen === 'mapConfirm' && menu.data === d && d.trackTimes === state) menu.refresh();
+  }
+}
 export function renderLeaderboards(menu, d) {
   d.tab ||= 'personal'; d.filters ||= { mapId: lastLeaderboardMap() };
   const f = d.filters, local = listPersonalBests({ mapId: f.mapId });
   const known = [...local, ...(d.known || []).filter(r => (r.mapId || 'riviera') === f.mapId)];
-  const events = new Map([['quick', 'QUICK RACE'], ...getEvents(f.mapId).map(e => [e.id, e.name]), ...known.map(r => [recordEvent(r), recordEvent(r).replace(/[-_]/g, ' ').toUpperCase()])]);
+  const events = new Map([['quick', 'QUICK RACE'], ...(f.eventId ? [[f.eventId, f.eventId.replace(/[-_]/g, ' ').toUpperCase()]] : []), ...getEvents(f.mapId).map(e => [e.id, e.name]), ...known.map(r => [recordEvent(r), recordEvent(r).replace(/[-_]/g, ' ').toUpperCase()])]);
   const routes = [...new Map(known.filter(r => !f.eventId || recordEvent(r) === f.eventId).map(r => [routeId(r), routeLabel(r)])).entries()];
   const pick = (key, label, options) => C.select({ key, label, value: f[key] || '', options, attrs: { 'data-scope': 'leaderboard' } });
   const filters = pick('mapId', 'TRACK', MAPS.map(m => [m.id, esc(m.name)])) +

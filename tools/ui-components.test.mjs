@@ -49,11 +49,11 @@ const bespoke = (c) => !/^(s|scr)-/.test(c) && !SCREEN_CONTAINERS.has(c) && BESP
 const SCREEN_CONTAINERS = new Set(['home__tiles']);
 
 // screen stylesheets: every stylesheet the menus load, except the kit itself
-const SCREEN_CSS = ['src/menu.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/accounts.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css', 'src/music-settings.css'].filter(existsSync);
+const SCREEN_CSS = ['src/menu.css', 'src/leaderboards.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/accounts.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css', 'src/music-settings.css'].filter(existsSync);
 // Race HUD and in-race overlays are not menu screens (style.css owns them); rules scoped to them are out of scope here.
 const HUD_SCOPE = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#touch-controls|\.touch-|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-blocked-row|\.mp-latency|\.graphics-live-note)/;
 // screen modules: everything that renders menu markup
-const SCREEN_JS = ['src/menu.js', 'src/car-select.js', 'src/map-select.js', ...walk('src/ui', /\.js$/).filter((f) => f !== KIT_JS && !/phone-wheel|notification|notice-style|telltales|title-hero|garage-thumbnails|live-board|loading\.js$/.test(f))];
+const SCREEN_JS = ['src/menu.js', 'src/leaderboards-screen.js', 'src/car-select.js', 'src/map-select.js', ...walk('src/ui', /\.js$/).filter((f) => f !== KIT_JS && !/phone-wheel|notification|notice-style|telltales|title-hero|garage-thumbnails|live-board|loading\.js$/.test(f))];
 
 test('screen stylesheets lay out kit components but never restyle them', () => {
   const hits = [];
@@ -128,4 +128,28 @@ test('the pause-menu reference: one focus look, one type language, pause built f
   const title = menu.slice(menu.indexOf('  r_title('), menu.indexOf('  participantChoice('));
   assert.equal([...title.matchAll(/cls: 'option--tile/g)].length, 5, `${OWNER}\nthe locked title layout is the kit's option tiles (PLAY is option--hero)`);
   assert.doesNotMatch(pause, /PHONE AS WHEEL/, 'the phone-wheel feature is being removed; pause does not list it');
+});
+
+test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never a mode or title tile', async () => {
+  const { Menu } = await import('../src/menu.js');
+  const priorDocument = globalThis.document, priorWindow = globalThis.window;
+  globalThis.document = { baseURI: 'http://localhost/', querySelector: () => null, body: { classList: { contains: () => false } } };
+  globalThis.window = {};
+  try {
+    const mode = Menu.prototype.r_mode.call({ participants: 'solo', participantChoice: Menu.prototype.participantChoice });
+    assert.deepEqual([...mode.matchAll(/class="mi option[^>]+data-act="([^"]+)"/g)].map(m => m[1]), ['quick', 'free']);
+    assert.doesNotMatch(mode, /LEADERBOARD/);
+    assert.doesNotMatch(Menu.prototype.r_title.call({ h: {} }), /LEADERBOARD/);
+    const menu = { screen: 'setup', setupDef: () => ({ id: 'megara-race' }) };
+    const track = Menu.prototype.r_mapConfirm.call(menu, { mapId: 'megara', mode: 'quick' });
+    assert.match(track, /data-act="leaderboards"/);
+    assert.match(track, /YOUR PERSONAL BEST/);
+    assert.match(track, /GLOBAL \/ TOP 3/);
+    assert.match(track, /data-act="mapContinue"/);
+    const { renderLeaderboards } = await import('../src/leaderboards-screen.js');
+    const emptyBoard = renderLeaderboards({ screen: 'setup' }, { tab: 'personal', filters: { mapId: 'penteli', eventId: 'penteli-race' } });
+    assert.match(emptyBoard, /select__val">PENTELI RACE</, 'the prefiltered event remains visible before map events or records load');
+    assert.match(read('src/menu.css'), /\.mode-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+    assert.match(read('src/map-select.js'), /menu\.show\('mapConfirm', \{ mapId: id, mode: 'quick' \}, true\)/);
+  } finally { globalThis.document = priorDocument; globalThis.window = priorWindow; }
 });

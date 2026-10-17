@@ -1,4 +1,4 @@
-import { renderLeaderboards, renderBestRecord, leaderboardChange } from './leaderboards-screen.js';
+import { renderLeaderboards, renderBestRecord, renderTrackTimes, leaderboardChange } from './leaderboards-screen.js';
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
 import { importWithUpdate } from './client-release.js';
 import {setExhaustPops} from './exhaust-pops.js';
@@ -240,7 +240,9 @@ export class Menu {
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'account': this.show('account', {}, true); break;
       case 'multiplayer': this.show('multiplayer', {}, true); break;
-      case 'leaderboards': this.show('leaderboards', {}, true); break;
+      case 'leaderboards': this.show('leaderboards', { tab: 'global', filters: { mapId: this.data.mapId, eventId: this.data.eventId } }, true); break;
+      case 'trackTimesRetry': this.data.trackTimes = null; this.refresh(); break;
+      case 'mapContinue': this.show('setup', { eventId: this.data.eventId, mode: 'quick' }, true); break;
       case 'leaderboardAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
       case 'leaderboardReset': this.data.filters = { mapId: this.data.filters.mapId }; this.refresh(); break;
       case 'leaderboardRetry': this.data.requestKey = null; this.refresh(); break;
@@ -337,7 +339,7 @@ export class Menu {
   r_mode() {
     const tile = (act, ic, title, desc) => C.option({ icon: ic, title, desc, act, cls: 'option--tile' });
     return C.screen({ cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="mode-layout">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}${tile('leaderboards', 'timer', 'LEADERBOARDS', 'Personal bests and global times. Filter by track, car and setup.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
+      body: `<div class="mode-layout">${this.participantChoice()}<div class="mode-grid">${tile('quick', 'flag-checkered', 'QUICK RACE', quickBlurb())}${tile('free', 'car-profile', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.')}</div></div>`, foot: C.button({ label: 'JOIN GAME / BROWSE OPEN LOBBIES', icon: 'users-three', act: 'mp', variant: 'ghost', size: 'sm' }) });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -352,6 +354,16 @@ export class Menu {
 
   // ---------------------------------------------------------------- maps
   r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
+  r_mapConfirm(d) {
+    const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
+    d.eventId = (def.baseId || def.id).split('~')[0];
+    return C.screen({ cls: 'scr--track', kick: 'QUICK RACE / YOUR TRACK', title: esc(map.name),
+      hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
+      body: `<div class="track-layout"><div class="track-overview">${C.panel('YOUR TRACK',
+        `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}<p>${esc(map.subtitle)}</p>${C.stats([['LENGTH', fmtDist(map.length)], ['EVENT', 'QUICK RACE']])}`,
+        { icon: 'map-trifold' })}</div>${renderTrackTimes(this, d, { mapId: map.id, eventId: d.eventId })}</div>`,
+      foot: `<div class="track-actions">${C.button({ label: 'LEADERBOARD', icon: 'timer', act: 'leaderboards' })}${C.button({ label: 'RACE SETUP', icon: 'sliders-horizontal', iconRight: 'caret-right', variant: 'primary', act: 'mapContinue', attrs: { 'data-default': '' } })}</div>` });
+  }
 
   // ---------------------------------------------------------------- car
   r_car(d) { return garage.renderCarSelect(d); }
