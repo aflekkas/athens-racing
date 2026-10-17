@@ -525,6 +525,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
       const connection = { ...data };
       for (const key of ['accountSub', 'accountName', 'friendsSent']) delete connection[key];
       const c = { ...connection, name: clean(data.name, 'GR-1000', 16), plate: formatPlate(data.name || 'GR-1000'), ws, lobby: null, connected: sockets.has(data.token) };
+      // Catalogue removals must not resurrect a retired vehicle after Worker hibernation.
+      if(!CARS.has(c.car)){
+        c.car=CARS.has('mini')?'mini':[...CARS][0];c.ready=false;c.loaded=false;c.state=null;c.courseCursor=null;c.recovery=null;
+      }
       // A platform replacement can drop every socket without close callbacks.
       // Start the reservation when that loss is discovered, not at race creation.
       if (data.connected && !c.connected) c.touched = Date.now();
@@ -542,10 +546,13 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
       // Legacy saves predate car rules: normalize to open so old lobbies keep racing.
       if (!l.carRules || typeof l.carRules !== 'object') l.carRules = defaultCarRules();
       else { const rc = sanitizeCarRules(l.carRules, rulesCtx()); l.carRules = rc.rules || defaultCarRules(); }
-      if (!Array.isArray(l.advancedCars)) l.advancedCars = sanitizeCarList(l.advancedCars) || null;
+      l.advancedCars = sanitizeCarList(l.advancedCars) || null;
       l.allowedCars = effectiveCars(l.carRules, l.advancedCars);
       if (!l.allowedCars.length) { l.carRules = defaultCarRules(); l.advancedCars = null; l.allowedCars = [...CARS]; }
       for (const id of data.playerIds) { const c = byId.get(id); if (c) {
+        if(!l.allowedCars.includes(c.car)){
+          c.car=l.allowedCars[0];c.ready=false;c.loaded=false;c.state=null;c.courseCursor=null;c.recovery=null;
+        }
         l.players.set(id, c); c.lobby = l;
         if (c.courseCursor?.raceId === l.raceId) {
           const course = buildCourse(effectiveEvent(lobbyEvent(l), l.config), maps.get(l.mapId).geometry);

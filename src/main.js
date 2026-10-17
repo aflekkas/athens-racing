@@ -1777,7 +1777,6 @@ function finishCamera(dt, trackedRoot = player.model.root) {
     _blendQ.copy(camera.quaternion);
     camera.quaternion.slerpQuaternions(previousCameraQuat, _blendQ, alpha);
   }
-  if(player.spec.twoWheeler){const helmet=player.model.body.getObjectByName('helmet');if(helmet)helmet.visible=G.cam!=='cockpit';}
   camera.updateProjectionMatrix(); G.cameraReady = true;
 }
 const _qForward = new THREE.Vector3();

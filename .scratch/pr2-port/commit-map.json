@@ -1,0 +1,120 @@
+[
+  {
+    "original": "f3ea9c9a89f2715aaef622a8d72570d8f156aed1",
+    "ported": "e2148e0297e9aceb2a0fbaeced1b36f53192849a",
+    "subject": "Add Mercedes-AMG SL 65 R231 roadster with twin-turbo V12",
+    "parents": [
+      "e07700785b5137601c72c762b765f2eec17b8377"
+    ]
+  },
+  {
+    "original": "025b2868aea9ae2dbcf366248862be362bebfeab",
+    "ported": "a62a91158147e05f75ddf2a907e7eedab1cd5d42",
+    "subject": "Add Mercedes A 160 W168 with tall-body roll and ESP",
+    "parents": [
+      "e07700785b5137601c72c762b765f2eec17b8377"
+    ]
+  },
+  {
+    "original": "e64ea35a671126ce3509d9ae46ba0d7dcab4ab1a",
+    "ported": "5a79da5307b2c1202c4b25e144a1c1a1edf2f256",
+    "subject": "Merge Mercedes A 160 W168 into the classic sports cars branch",
+    "parents": [
+      "e2148e0297e9aceb2a0fbaeced1b36f53192849a",
+      "a62a91158147e05f75ddf2a907e7eedab1cd5d42"
+    ]
+  },
+  {
+    "original": "e401dfcbe6bdfdbfec4be1ab33c9ee37d5d461ed",
+    "ported": "9ecec049e8846da56a62d4ea31785404bd7836ce",
+    "subject": "Add Ferrari 348 tb with mid-engine flat-plane V8",
+    "parents": [
+      "e07700785b5137601c72c762b765f2eec17b8377"
+    ]
+  },
+  {
+    "original": "451b74429c724cf292793c73de48ee973c006845",
+    "ported": "5ec58578f486de6a3ee131d12349ccd055382ccf",
+    "subject": "Merge Ferrari 348 tb into the classic sports cars branch",
+    "parents": [
+      "5a79da5307b2c1202c4b25e144a1c1a1edf2f256",
+      "9ecec049e8846da56a62d4ea31785404bd7836ce"
+    ]
+  },
+  {
+    "original": "cf377d2a99110d5dcedea3aa93006610e14433d5",
+    "ported": "8fe8222ef1ebc8a73f0e298e2cb53c515e9b04dc",
+    "subject": "Add Porsche 928 GTS with front V8 transaxle handling",
+    "parents": [
+      "e07700785b5137601c72c762b765f2eec17b8377"
+    ]
+  },
+  {
+    "original": "d2f962c2b22c110f995f6858c5e1a66d2dfc060b",
+    "ported": "3f4f762f1aa074d0b04a9ee2a1bb1c43b9af0a0f",
+    "subject": "Merge Porsche 928 GTS and give its V8 a naturally aspirated physics profile",
+    "parents": [
+      "5ec58578f486de6a3ee131d12349ccd055382ccf",
+      "8fe8222ef1ebc8a73f0e298e2cb53c515e9b04dc"
+    ]
+  },
+  {
+    "original": "1b2e662fdb4383955d360d0324f19d86dd50d5c7",
+    "ported": "e35b2cb8d94e11c12fac41716dc66752997967c5",
+    "subject": "Refine the SL 65 R231 front, windscreen and surfacing toward reference photos",
+    "parents": [
+      "3f4f762f1aa074d0b04a9ee2a1bb1c43b9af0a0f"
+    ]
+  },
+  {
+    "original": "b2a7c6c7e1a80634e80d12f21f0a58379764b9ac",
+    "ported": "b6550f14411ee2e80e4caca2ff72384b49e18d15",
+    "subject": "Refine the A 160 W168 grille, lamps and bonnet line toward reference photos",
+    "parents": [
+      "3f4f762f1aa074d0b04a9ee2a1bb1c43b9af0a0f"
+    ]
+  },
+  {
+    "original": "caaca9ff030e2519567fdb25f659538854b64e44",
+    "ported": "8a0efdc3cdb1f4301b9345cfd3a89ba411cd5532",
+    "subject": "Merge the A 160 W168 realism pass",
+    "parents": [
+      "e35b2cb8d94e11c12fac41716dc66752997967c5",
+      "b6550f14411ee2e80e4caca2ff72384b49e18d15"
+    ]
+  },
+  {
+    "original": "7646f4793c6ec6d0cb6cbeb55d5938f3b22a09fc",
+    "ported": "ea48f75a07ca9ac0376c252ee2c4f7d8c0c8847b",
+    "subject": "Refine the 928 GTS profile, glass hatch and nose toward reference photos",
+    "parents": [
+      "3f4f762f1aa074d0b04a9ee2a1bb1c43b9af0a0f"
+    ]
+  },
+  {
+    "original": "a1548afeb00e504e6d8bfa45ad20bece2603cbe2",
+    "ported": "ea8019bd5d5ca6035a95f8abc5d172f60463b3ba",
+    "subject": "Merge the 928 GTS realism pass",
+    "parents": [
+      "8a0efdc3cdb1f4301b9345cfd3a89ba411cd5532",
+      "ea48f75a07ca9ac0376c252ee2c4f7d8c0c8847b"
+    ]
+  },
+  {
+    "original": "ddfbc86ed34ab46bfafc3ea8b8010ec6d770877b",
+    "ported": "47a680ce4258b29ddc596316c2465363ee677d93",
+    "subject": "Refine the 348 tb surfacing, nose and closed pop-up lamps toward reference photos",
+    "parents": [
+      "3f4f762f1aa074d0b04a9ee2a1bb1c43b9af0a0f"
+    ]
+  },
+  {
+    "original": "611dd612ac78008cde357983ca90926f0fe4347d",
+    "ported": "f78c68c221c4eada12bc2b5521acbb2a9e3c1474",
+    "subject": "Merge the 348 tb realism pass",
+    "parents": [
+      "ea8019bd5d5ca6035a95f8abc5d172f60463b3ba",
+      "47a680ce4258b29ddc596316c2465363ee677d93"
+    ]
+  }
+]

@@ -2,8 +2,12 @@
 // Reference photographs/specifications: tools/models-more-notes.md.
 import * as THREE from './vehicle-primitives.js';
 import { buildHuracanShell, buildHuracanCabin } from './player-huracan.js';
+import { F348_MODEL, buildF348 } from './player-f348.js';
+import { buildP928 } from './player-p928.js';
 export const ROAD_MODELS = {
  jazz: {L:4.028,W:1.694,H:1.550,wb:2.530,track:1.477,r:.302,rim:.1905,tyreF:.185,tyreR:.185,belt:1.02,front:.78,rear:1.03,cowl:-1.13,header:-.48,roofBack:1.32,back:1.82,seatZ:.10,eyeY:1.23,leather:'#333a43',doors:4,brand:'HONDA',stations:[[-2.014,.66,.76],[-1.65,.80,.84],[-1.13,.847,1.02],[.3,.83,1.03],[1.26,.847,1.04],[2.014,.73,1.02]]},
+ f348: F348_MODEL,
+ p928: {L:4.520,W:1.890,H:1.282,wb:2.500,track:1.560,r:.321,rim:.2286,tyreF:.225,tyreR:.265,belt:.855,front:.66,rear:.80,cowl:-.82,header:-.29,roofBack:.48,back:1.98,seatZ:.23,seatBase:.36,eyeY:.97,leather:'#635347',doors:2,rearLow:true,classic:true,brand:'PORSCHE'},
  e36: {L:4.433,W:1.698,H:1.393,wb:2.700,track:1.408,r:.309,rim:.1905,tyreF:.205,tyreR:.205,belt:.91,front:.77,rear:.88,cowl:-.83,header:-.35,roofBack:.81,back:1.37,seatZ:.26,eyeY:1.06,leather:'#43474c',doors:4,brand:'BMW',stations:[[-2.2165,.74,.77],[-1.75,.82,.81],[-1.35,.849,.88],[-.83,.82,.91],[.5,.82,.91],[1.35,.849,.92],[1.80,.82,.89],[2.2165,.76,.88]]},
 
  yaris: {L:3.615,W:1.660,H:1.500,wb:2.370,track:1.440,r:.282,rim:.165,tyreF:.155,tyreR:.155,belt:.95,front:.76,rear:.98,cowl:-.89,header:-.34,roofBack:1.09,back:1.63,seatZ:.19,eyeY:1.20,leather:'#526779',doors:4,brand:'TOYOTA',stations:[[-1.8075,.66,.76],[-1.40,.80,.85],[-.90,.83,.95],[.4,.80,.97],[1.19,.83,1.0],[1.8075,.72,.98]]},
@@ -18,6 +22,8 @@ export const ROAD_MODELS = {
 };
 const mix=(a,b,t)=>a+(b-a)*t;
 export function buildRoadCar(car,d,M,low,plate,H){
+  if(car.modelKind==='f348')return buildF348(car,d,M,low,plate,H);
+  if(car.modelKind==='p928')return buildP928(car,d,M,low,plate,H);
   const {surface,box,line,patch,mesh,ring,disk,cabin,wheels,makePlateMaterial,textMaterial}=H,p=car.body,id=car.modelKind;
   const F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0;
   let section=z=>{const a=d.stations;for(let i=1;i<a.length;i++)if(z<=a[i][0]){const t=Math.max(0,Math.min(1,(z-a[i-1][0])/(a[i][0]-a[i-1][0]))),q=t*t*(3-2*t);return [mix(a[i-1][1],a[i][1],q),mix(a[i-1][2],a[i][2],q)];}return a.at(-1).slice(1);};

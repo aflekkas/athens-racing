@@ -7,7 +7,7 @@ export function chaseRig(spec,speedFraction=0){
 // A bounding sphere fits the full vehicle at every turntable angle, including portrait screens.
 export function showroomRig(spec,aspect=1,fov=35,baseDistance=8.3){
  if(!spec.nativeFleet)return {distance:baseDistance,targetY:.65};
- const h=(spec.height||1.5)+(spec.twoWheeler?.6:0),r=Math.hypot(spec.length,spec.width,h)/2;
+ const h=(spec.height||1.5),r=Math.hypot(spec.length,spec.width,h)/2;
  const half=Math.atan(Math.tan(fov*Math.PI/360)*Math.min(1,aspect));
- return {distance:Math.max(baseDistance*(spec.twoWheeler?.5:1),r/Math.sin(half)*1.08),targetY:h/2};
+ return {distance:Math.max(baseDistance,r/Math.sin(half)*1.08),targetY:h/2};
 }

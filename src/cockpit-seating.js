@@ -2,7 +2,6 @@ import * as T from 'three';
 // Adjust column height and the authored binnacle once at construction. Each
 // dashboard keeps its own shapes/art; personal seat sliders never move furniture.
 export function seatCockpitControls(model,cockpit){
- if(model.spec.twoWheeler)return;
  const wheel=cockpit.wheel||cockpit.steering,cluster=cockpit.group.getObjectByName('instrument-cluster')||cockpit.display;
  if(!wheel||!cluster)return;
  model.root.updateMatrixWorld(true);

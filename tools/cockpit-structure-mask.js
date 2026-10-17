@@ -1,5 +1,6 @@
 import * as T from 'three';
-export const STRUCTURE_ROLES=['dash','deck','pillar','header','door-top','wheel-rim','wheel-hub','wheel-badge','tank','handlebars','mirror-mount','wiper','binnacle','console','vent','headliner'];
+// Mask colour IDs 9–10 stay reserved so existing car fixtures keep their encoding.
+export const STRUCTURE_ROLES=['dash','deck','pillar','header','door-top','wheel-rim','wheel-hub','wheel-badge','reserved-9','reserved-10','mirror-mount','wiper','binnacle','console','vent','headliner'];
 // One colour per semantic part, with every other vehicle surface still writing
 // depth. This catches hidden, occluded and off-screen geometry, not just names.
 export function renderStructureMask(renderer,model,camera,width=1280,height=800){

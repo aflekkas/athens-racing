@@ -146,8 +146,8 @@ export class Cockpit {
     if(spec.nativeFleet)return new FleetCockpit(spec,model);
     this.spec = spec; this.model = model;
     if (model.exteriorDash) model.exteriorDash.visible = false;
-    const isMini=spec.body==='mini'||spec.body==='mini_jcw',isBMW=spec.body==='z4',isSkoda=spec.body==='octavia'||spec.police||spec.body==='superb',isClassic=spec.body==='gtv',isPorsche=spec.body==='carrera',isYaris=spec.body==='gr_yaris';
-    const isMercedes=spec.marque==='mercedes',isMercCoupe=spec.body==='cle';
+    const isMini=spec.body==='mini'||spec.body==='mini_jcw',isBMW=spec.body==='z4',isSkoda=spec.body==='octavia'||spec.police||spec.body==='superb',isClassic=spec.body==='gtv',isPorsche=['carrera','p928'].includes(spec.body),isYaris=spec.body==='gr_yaris';
+    const isMercedes=spec.marque==='mercedes'&&!spec.oldDash,isMercCoupe=spec.body==='cle',isSL=spec.body==='sl65';
     const g=this.group=new THREE.Group();g.name='cockpit';(model.visualLOD?.levels[0].object||model.body).add(g);
     const eye=this.eye=model.seat.clone(),wheelC=this.wheelC=eye.clone().add(new THREE.Vector3(0,-.12,-.62));
     const trim=TRIM(),soft=cabinMat('#111315',{rough:.8,scale:.18,nk:.4,side:THREE.DoubleSide});
@@ -219,8 +219,8 @@ export class Cockpit {
     // Centre display: circular MINI housing, low integrated 991 PCM, raised G29/Octavia TFT.
     const ncan=this.navCanvas=document.createElement('canvas');ncan.width=256;ncan.height=160;
     this.navTex=new THREE.CanvasTexture(ncan);this.navTex.colorSpace=THREE.SRGBColorSpace;
-    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(['huracan','aventador'].includes(spec.body)?-.23:isMercCoupe?-.21:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
-    const nw=['huracan','aventador'].includes(spec.body)?.15:isMercCoupe?.225:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=['huracan','aventador'].includes(spec.body)?.24:isMercCoupe?.32:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
+    const nx=isBMW?.025:isYaris?-.005:0,ny=topY+(['huracan','aventador'].includes(spec.body)?-.23:isMercCoupe?-.21:isSL?-.10:isMini?-.065:isPorsche?-.15:isYaris?.02:.035),nz=faceZ+.137;
+    const nw=['huracan','aventador'].includes(spec.body)?.15:isMercCoupe?.225:isSL?.23:isMercedes?.34:isMini?.225:isPorsche?.245:isBMW?.285:isSkoda?.31:.265,nh=['huracan','aventador'].includes(spec.body)?.24:isMercCoupe?.32:isSL?.13:isMercedes?.18:isMini?.125:isPorsche?.135:.153;
     if(!isClassic&&!spec.oldDash){
       const bezel=box(nw+.025,nh+.025,.027,gloss,nx,ny,nz-.018,.01,-.15);
       const nav=part(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false}),nx,ny,nz,-.15,'infotainment');
@@ -250,7 +250,7 @@ export class Cockpit {
         for(let i=0;i<8;i++){const a=i*Math.PI/4,o=box(.005,.030,.006,alu,x+Math.sin(a)*.020,y+Math.cos(a)*.020,faceZ+.117,.001);o.rotation.z=-a+.35;}
       };
       for(const x of [-W/2+.105,W/2-.105])turbine(x,topY-.07);
-      for(const x of [-.115,0,.115])turbine(x,topY-(isMercCoupe?.002:.145));
+      for(const x of (isSL?[-.19,.19]:[-.115,0,.115]))turbine(x,topY-(isSL?.09:isMercCoupe?.002:.145));
       const ambient=new THREE.MeshBasicMaterial({color:'#6599e9'});
       box(W*.92,.004,.006,ambient,0,topY-.105,faceZ+.091,.001);
       if(spec.id==='cla'){box(W*.80,.22,.024,gloss,-.04,topY+.018,faceZ+.076,.018);label('MBUX   ·   MERCEDES-BENZ',.29,.035,W*.29,topY+.035,faceZ+.095,'#83bcde');}
@@ -290,10 +290,15 @@ export class Cockpit {
     const manual=shiftHw.stick&&!shiftHw.paddles;
     const lever=this.lever=part(new THREE.CylinderGeometry(.009,.012,isSkoda&&!manual?.025:manual?.13:.10,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever');
     const knob=this.knob=isSkoda&&!manual?box(.043,.027,.055,gloss,-.04,consoleY+.13,faceZ+.29,.009):manual?part(new THREE.SphereGeometry(.027,12,8),isClassic?wood:trim,-.04,consoleY+.186,faceZ+.276):box(.04,.076,.042,gloss,-.04,consoleY+.178,faceZ+.278,.012,-.20);
-    if(isMercedes){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
+    if(isMercedes&&!isSL){lever.visible=false;knob.visible=false;box(.075,.014,.023,gloss,wheelC.x+.13,wheelC.y,wheelC.z-.07,.004);label('D  N  R',.055,.015,wheelC.x+.14,wheelC.y+.012,wheelC.z-.055);}
     this.selectorX=-.04;
     this.stickLever=null;this.stickKnob=null;this.stickParts=null;this.selectorParts=null;this._prndLabel=null;
-    if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
+    if(spec.body==='f348'){
+      box(.13,.008,.14,alu,-.04,consoleY+.074,faceZ+.30,.003,0,'348-open-shift-gate');
+      for(const dx of [-.04,0,.04])box(.008,.002,.105,trim,-.04+dx,consoleY+.079,faceZ+.30,.001);
+      box(.09,.002,.008,trim,-.04,consoleY+.080,faceZ+.30,.001);
+      label('R 2 4 / 1 3 5',.075,.045,-.04,consoleY+.081,faceZ+.30,'#17191b',-Math.PI/2);
+    }else if(manual){const boot=part(new THREE.ConeGeometry(.055,.075,16),trim,-.04,consoleY+.09,faceZ+.30);boot.scale.z=.85;label(isClassic?'1 3 5\n2 4 R':isPorsche?'1 3 5 7\n2 4 6 R':'1 3 5\n2 4 6',.027,.022,-.04,consoleY+.205,faceZ+.286,'#ddd8d0',-.65);}
     else this._prndLabel=label('P R N D',.042,.075,.042,consoleY+.11,faceZ+.30,'#d5dfe7',-Math.PI/2);
     if(dual){
       const sLever=this.stickLever=part(new THREE.CylinderGeometry(.009,.012,.13,10),alu,-.04,consoleY+.12,faceZ+.29,-.18,'gear-lever-manual');
@@ -464,6 +469,7 @@ export class Cockpit {
       this.clusterAge = 0; this.clusterKey = key; this.drawCluster(display);
     }
   }
+  gateOffset(gear,gears,out){return shiftGateOffset(gear,gears,out,this.spec.body==='f348');}
   gearCount(st){return st.gearCount||this.spec?.gears?.length||6;}
   /** Serialised shift choreography: the lever strokes its H-gate, a paddle pulls, the hand follows. */
   updateShiftControls(dt,st,controls){
@@ -482,7 +488,7 @@ export class Cockpit {
       if(S.dur<=0)S.kind='none';
       // Retarget from the lever's current offset so rapid consecutive shifts never snap.
       S.fromX=this._levX;S.fromZ=this._levZ;
-      shiftGateOffset(ev.to!==undefined?ev.to:st.gear,this.gearCount(st),this._gateTmp);
+      this.gateOffset(ev.to!==undefined?ev.to:st.gear,this.gearCount(st),this._gateTmp);
       S.toX=this._gateTmp.x;S.toZ=this._gateTmp.z;
       // A fresh stroke restarts; a chained one keeps the hand at the lever.
       S.t=(S.kind!=='none'&&wasActive)?Math.min(S.t,S.dur*.3):0;
@@ -509,7 +515,7 @@ export class Cockpit {
       }else{ox=S.toX;oz=S.toZ;}
     }else if(controls.manual){
       // At rest the stick sits in its current gate; settle there instead of snapping.
-      shiftGateOffset(controls.gear,this.gearCount(st),this._gateTmp);
+      this.gateOffset(controls.gear,this.gearCount(st),this._gateTmp);
       const k=1-Math.exp(-10*h);
       ox=this._levX+(this._gateTmp.x-this._levX)*k;oz=this._levZ+(this._gateTmp.z-this._levZ)*k;
     }else{ox=this._levX;oz=this._levZ;}
@@ -536,7 +542,26 @@ export class Cockpit {
   }
   drawCluster(st){
     const g=this.clusterCanvas.getContext('2d'),W=1024,H=384,id=this.spec.body==='octavia'?'taxi':this.spec.body;g.clearRect(0,0,W,H);g.fillStyle='#090c0f';
-    if(id==='mini'||id==='mini_jcw'){
+    if(id==='a160'){
+      // W168 facelift: analogue twin dials and a small amber LCD, no MBUX.
+      g.fillRect(0,0,W,H);instrumentDial(g,{x:255,y:192,r:171,max:220,value:st.kmh,step:20,label:'km/h'});instrumentDial(g,{x:768,y:192,r:171,max:7,value:st.rpm/1000,step:1,label:'1/min ×1000',red:6.2});
+      g.fillStyle='#a98b59';g.fillRect(408,263,207,51);g.fillStyle='#25291f';g.textAlign='center';g.font='23px monospace';g.fillText('184205  '+st.gearLabel,512,296);
+    }else if(id==='f348'){
+      // Period Veglia-style analogue cluster: speedometer left, tachometer right.
+      g.fillRect(0,0,W,H);
+      instrumentDial(g,{x:290,y:192,r:165,max:300,value:st.kmh,step:30,label:'km/h'});
+      instrumentDial(g,{x:731,y:192,r:165,max:9,value:st.rpm/1000,step:1,label:'giri/min ×1000',red:this.spec.redline/1000});
+      g.fillStyle='#131619';g.fillRect(224,253,132,30);g.fillStyle='#d6d2b9';g.font='21px monospace';g.textAlign='center';g.fillText('0 4 8 3 4',290,274);
+    }else if(id==='sl65'){
+      // R231 COMAND-era AMG twin analogue dials and central driver display.
+      // https://media.mercedes-benz.fr/nouveau-sl-65-amg---maitrise-et-style-dans-la-performance/
+      g.fillRect(0,0,W,H);
+      instrumentDial(g,{x:220,y:192,r:170,max:360,value:st.kmh,step:40,label:'km/h'});
+      instrumentDial(g,{x:804,y:192,r:170,max:7,value:st.rpm/1000,step:1,label:'×1000 rpm',red:this.spec.redline/1000});
+      g.fillStyle='#e8edf0';g.textAlign='center';g.font='26px Arial';g.fillText(this.spec.visual?.amg?'AMG':'SL',512,62);
+      g.font='48px Arial';g.fillText(Math.round(st.kmh),512,176);g.font='20px Arial';g.fillText('km/h',512,210);
+      g.font='32px Arial';g.fillText(st.gearLabel,512,267);g.font='18px Arial';g.fillText(this.spec.cyl+' CYL BITURBO',512,331);
+    }else if(id==='mini'||id==='mini_jcw'){
       g.beginPath();g.roundRect(0,0,W,H,180);g.fill();
       g.strokeStyle='#8a969c';g.lineWidth=5;g.beginPath();g.roundRect(4,4,W-8,H-8,175);g.stroke();
       // 2021 F57's oval TFT: RPM crescent at left, digital speed in the centre, fuel at right.
@@ -557,6 +582,13 @@ export class Cockpit {
       instrumentDial(g,{x:273,y:195,r:173,max:8,value:st.rpm/1000,step:1,label:'GIRI / MIN ×1000',red:5.8,classic:true});
       instrumentDial(g,{x:749,y:195,r:173,max:240,value:st.kmh,step:20,label:'km / h',classic:true});
       g.fillStyle='#111';g.fillRect(700,248,97,23);g.fillStyle='#d8d0b5';g.font='18px monospace';g.textAlign='center';g.fillText('0 4 7 2 6',749,266);
+    }else if(id==='p928'){
+      // 928 analogue binnacle: large speed/tach dials and small auxiliary gauges, no navigation screen.
+      g.fillRect(0,0,W,H);
+      instrumentDial(g,{x:310,y:190,r:150,max:300,value:st.kmh,step:30,label:'km/h',classic:true});
+      instrumentDial(g,{x:710,y:190,r:150,max:8,value:st.rpm/1000,step:1,label:'1/min ×1000',red:this.spec.redline/1000,classic:true});
+      for(const [x,label,max,value]of [[72,'°C',120,90],[946,'bar',5,3]])instrumentDial(g,{x,y:205,r:60,max,value,step:max/4,label,classic:true});
+      g.fillStyle='#d5c896';g.font='22px monospace';g.textAlign='center';g.fillText('1 2 8 9 2 8',310,282);g.fillText(st.gearLabel,710,282);
     }else if(id==='carrera'){
       g.fillRect(0,0,W,H);
       // 991.1: five overlapping instruments, central tachometer and right-hand TFT.

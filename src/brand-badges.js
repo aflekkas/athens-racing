@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { loadCompressedTexture } from './compressed-textures.js';
 import { textureCodecsEnabled } from './asset-metrics.js';
 export const BRAND_BADGES = {
+  ferrari:{enabled:true,cell:17},
   alfaromeo: { enabled:true, cell:0 },
   bmw: { enabled:true, cell:1 },
   fiat: { enabled:true, cell:2 },

@@ -1,6 +1,10 @@
 // Garage entries describe a generation/body style. Trim IDs remain the wire/physics IDs,
 // so old saves, event links, traffic and remote players retain their exact drivetrain.
 export const CAR_MODELS = [
+ {id:'sl65',name:'MERCEDES-BENZ SL R231',trims:['sl400','sl500','sl63','sl65']},
+ {id:'a160',name:'MERCEDES-BENZ A-CLASS W168',trims:['a160','a190']},
+ {id:'p928',name:'PORSCHE 928 S4 / GT / GTS',trims:['p928_s4','p928_gt','p928']},
+ {id:'f348',name:'FERRARI 348',trims:['f348','f348_ts','f348_spider'],bodies:[['berlinetta','BERLINETTA',['f348']],['targa','TARGA',['f348_ts']],['spider','SPIDER',['f348_spider']]]},
   {"id": "aygo", "name": "TOYOTA AYGO II", "trims": ["aygo"]},
   {"id": "qashqai", "name": "NISSAN QASHQAI J11", "trims": ["qashqai", "qashqai_dci"]},
   {"id": "dolphin", "name": "BYD DOLPHIN", "trims": ["dolphin"]},
@@ -8,11 +12,7 @@ export const CAR_MODELS = [
   {"id": "van", "name": "FIAT DUCATO L2H2", "trims": ["van", "van_150"]},
   {"id": "truck", "name": "ISUZU NPR", "trims": ["truck"]},
   {"id": "bus", "name": "MERCEDES-BENZ CITARO O530", "trims": ["bus"]},
-  {"id": "delivery", "name": "HONDA SH150i DELIVERY", "trims": ["delivery"]},
-  {"id": "scooter", "name": "PIAGGIO BEVERLY 300", "trims": ["scooter"]},
-  {"id": "moto", "name": "YAMAHA TRACER 900", "trims": ["moto"]},
   {"id": "police_octavia", "name": "ŠKODA OCTAVIA · ΕΛ.ΑΣ.", "trims": ["police_octavia"]},
-  {"id": "police_moto", "name": "BMW R 1250 RT · ΔΙ.ΑΣ.", "trims": ["police_moto"]},
   { id:'panda', name:'FIAT PANDA 169', trims:['panda','panda_11','panda_100hp'] },
   { id:'jazz', name:'HONDA JAZZ GK', trims:['jazz','jazz_dynamic','jazz_drift'] },
   { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris','yaris_13','yaris_ts'] },
@@ -34,18 +34,17 @@ export const CAR_MODELS = [
   { id:'e36', name:'BMW 3 SERIES E36', trims:['e36','e36_318i','e36_m3'] },
 ];
 export const GARAGE_CLASSES = [
-  ['city','CITY',['panda','jazz','yaris','ibiza','golf','aygo']],
+  ['city','CITY',['a160','panda','jazz','yaris','ibiza','golf','aygo']],
   ['hot hatch','HOT HATCH',['mini','gr_yaris']],
   ['sedan/coupe','SEDAN / COUPE',['corolla','taxi','superb','cla','cle']],
   ['suv','SUV',['gla','qashqai']],
-  ['sports','SPORTS',['z4','carrera']],
+  ['sports','SPORTS',['sl65','z4','carrera']],
   ['super','SUPER',['huracan','aventador_svj']],
-  ['classic','CLASSIC',['gtv','e36']],
+  ['classic','CLASSIC',['f348','p928','gtv','e36']],
   ['electric','ELECTRIC',['dolphin','atto3']],
   ['commercial','COMMERCIAL / UTILITY',['van','truck']],
   ['public transport','PUBLIC TRANSPORT',['bus']],
-  ['motorcycle','MOTORCYCLES',['delivery','scooter','moto']],
-  ['service','PUBLIC SERVICES',['police_octavia','police_moto']],
+  ['service','PUBLIC SERVICES',['police_octavia']],
 ];
 export const CAR_CLASSES = GARAGE_CLASSES.map(([id])=>id);
 export const GARAGE_CARS = GARAGE_CLASSES.flatMap(([, ,ids])=>ids);
@@ -62,6 +61,17 @@ export function migrateCarSelection(saved) {
   const selected=model.trims.includes(trim) ? trim : model.trims.includes(model.id) ? model.id : model.trims[0];
   const body=model.bodies?.find(([, ,ids])=>ids.includes(selected))?.[0];
   return { entry:model.id, trim:selected, ...(body?{body}:{}) };
+}
+// Persist the normalized trim too, so boot, garage and online joins agree.
+export function migrateStoredCarSelection(storage) {
+  const legacy=storage.getItem('paraliaki.car'), packed=storage.getItem('paraliaki.car.selection');
+  if(!legacy&&!packed)return null;
+  let saved;try{saved=JSON.parse(packed||'null');}catch{}
+  const selection=migrateCarSelection(legacy||saved);
+  for(const [key,value]of [['paraliaki.car',selection.trim],['paraliaki.car.selection',JSON.stringify(selection)]]){
+    try{storage.setItem(key,value);}catch{} // Private browsing can allow reads but deny writes.
+  }
+  return selection;
 }
 export function filterCars(cars, filters = {}) {
   const q=String(filters.search||'').trim().toLocaleLowerCase(), list=[];

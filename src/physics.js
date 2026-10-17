@@ -39,6 +39,11 @@ const ABS_GAIN = 80;      // ABS pressure regulator: 1/s of pressure per unit of
 // torque curves: [rpm / redline, fraction of peak torque]; the power cap in torqueMax() shapes the top end.
 // lsd: locking coefficient of the stock differential, |T_left - T_right| <= lsd * |T_axle| (0 = open diff)
 const ENGINES = {
+  turbov6: {curve:[[0,.4],[.3,.8],[.6,1],[1,.8]],lag:.38,Je:.30,lsd:0},
+  turbov8: {curve:[[0,.4],[.3,.8],[.6,1],[1,.8]],lag:.38,Je:.36,lsd:.4},
+  turbov12: {curve:[[0,.4],[.3,.8],[.6,1],[1,.8]],lag:.42,Je:.42,lsd:.4},
+  v8flat: {curve:[[0,.4],[.3,.75],[.6,1],[1,.86]],lag:0,Je:.20,lsd:.4},
+  v8na: {curve:[[0,.4],[.3,.78],[.6,1],[1,.85]],lag:0,Je:.32,lsd:.4},
   turbo3: { curve: [[0,0.4],[0.25,0.58],[0.46,1],[0.65,1],[1,0.68],[1.1,0.55]], lag: 0.48, boostMin: 0.5, Je: 0.12, lsd: 0.35 },
   na4: { curve: [[0,0.4],[0.25,0.68],[0.5,0.92],[0.65,1],[0.85,0.92],[1,0.69],[1.1,0.55]], lag: 0, Je: 0.13, lsd: 0.25 },
   turbo4: { curve: [[0, 0.5], [0.2, 0.86], [0.24, 1], [0.7, 1], [1, 0.8], [1.1, 0.7]], lag: 0.55, boostMin: 0.6, Je: 0.13, lsd: 0 },
@@ -404,7 +409,7 @@ export class Vehicle {
     this.susStep = sp.rollDamping ? Math.min(1 / 960,
       0.15 * Math.sqrt(mu / (Math.max(kF, kR) * 13 + (sp.tyreK ?? 240e3) + 2 * Math.max(kbF, kbR)))) : 0;
     this.antiPitch = sp.antiPitch ?? 0.3;                              // anti-dive / anti-squat share of pitch transfer
-    // Passenger tyre default: ~200-280 N/mm; commercial/bike profiles supply their own stiffness.
+    // Passenger tyre default: ~200-280 N/mm; commercial profiles supply their own stiffness.
     const kt = this.kTyre = sp.tyreK ?? 240e3;
     this.cTyre = 2 * 0.06 * Math.sqrt(kt * mu);
     this.travel = sp.travel ?? 0.075;                                  // bump travel to the bump stop (m)

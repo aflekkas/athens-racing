@@ -27,7 +27,7 @@ export function createHeroStudio() {
     model = new CarModel(spec); setPaint(model, paint || spec.color);
     // Explicit environment maps also cover materials created with a null on-road probe.
     const clones = new Map(), interiors = new Set([model.materials?.seat]);
-    const roof = model.shape, closed = !roof?.open && !spec.twoWheeler;
+    const roof = model.shape, closed = !roof?.open;
     const planes = closed ? [new THREE.Plane(new THREE.Vector3(0,-1,0), (model.dims.H || spec.height || 1.5)-.13)] : [];
     if (closed && Number.isFinite(roof?.roofBack) && Number.isFinite(roof?.back)) {
       const slope = Math.max(0, ((roof.H-.13)-(roof.belt-.04))/Math.max(.2,roof.back-roof.roofBack));
@@ -63,7 +63,7 @@ export function createHeroStudio() {
     const token=serial, size=model.root.userData.heroSize;
     renderer.setSize(Math.min(1200,width),Math.min(600,height),false);camera.aspect=width/height;
     const direction=new THREE.Vector3(.68,.31,-.74).normalize();
-    // Fit all eight body bounds in the actual camera basis, including buses and tall bikes.
+    // Fit all eight body bounds in the actual camera basis, including buses and trucks.
     camera.position.copy(direction);camera.lookAt(0,0,0);camera.updateMatrixWorld();
     const right=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,0),up=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,1);
     const tan=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));let distance=0;

@@ -5,6 +5,11 @@
 const profile = (id, synth, sample, cylinders, turbo = false, pops = .12, gain = 1) =>
   Object.freeze({ id, synth, sample, cylinders, turbo, pops, gain, diesel: synth === 'diesel' || synth === 'bus' });
 export const ENGINE_PROFILES = Object.freeze({
+  v8flat: profile('na-flat-plane-v8','v8flat',null,8,false,.28),
+  v8na: profile('na-cross-plane-v8','v8na',null,8,false,.26),
+  turbov6: profile('sl-biturbo-v6','v6',null,6,true,.24),
+  turbov8: profile('sl-biturbo-v8','v8',null,8,true,.35),
+  turbov12: profile('sl-biturbo-v12','v12',null,12,true,.28),
   turbo3: profile('turbo-i3', 'turbo3', null, 3, true, .35),
   na3: profile('city-i3', 'na3', null, 3, false, 0, .85),
   city4: profile('city-i4', 'city4', 'mini', 4, false, 0, .8),
@@ -36,7 +41,8 @@ export function engineProfile(spec) {
   if (spec.electric || type === 'electric') key = 'electric';
   else if (spec.kind === 'bus' || type === 'bus') key = 'bus';
   else if (spec.kind === 'van') key = 'van';
-  else if (/flat|boxer/.test(layout)) key = 'flat6';
+  else if (/flat[- ]?6|boxer/.test(layout)) key = 'flat6';
+  else if (['v8flat','v8na','turbov6','turbov8','turbov12'].includes(type)) key = type;
   else if (/v8/.test(type + layout)) key = 'v8';
   else if (/v6/.test(type + layout)) key = 'v6';
   else if (type === 'na4' && /^(panda|yaris|ibiza|corolla)/.test(spec.id || '')) key = 'city4';

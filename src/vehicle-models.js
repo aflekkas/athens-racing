@@ -394,6 +394,8 @@ function specialFascia(car,d,M,low,plate){
 export function damageSystem(car) { return installDamageSystem(car); }
 export function buildDetailedCar(car,kind,opts={}) {
   car.modelKind=kind in MODEL?kind:'octavia';const visual=car.spec.visual||{}, d={...MODEL[car.modelKind],amg:car.spec.visual?.amg ?? MODEL[car.modelKind].amg},low=!!opts.low;
+  if(['sl65','a160','p928','f348'].includes(kind)){d.L=car.spec.length;d.W=car.spec.width;d.H=car.spec.height||d.H;d.r=car.spec.wheelR;d.track=car.spec.track;d.tyreF=parseInt(car.spec.tyres[0],10)/1000;d.tyreR=parseInt(car.spec.tyres[1],10)/1000;}
+  if(kind==='f348'){d.open=!!car.spec.convertible;d.spider=car.spec.bodyStyle==='spider';}
   if(visual.amg && kind==='cle'){d.W=1.936;d.track=1.663;d.trackRear=1.691;}
   if(visual.track)d.track=visual.track;
   if(visual.tyreWidth)d.tyreF=d.tyreR=visual.tyreWidth;
@@ -468,6 +470,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   car.root.traverse(o=>{if(o.isMesh){o.castShadow=!o.material.transparent;o.receiveShadow=true;}});
   finishBrandBadges(car);
   const grouped=groupPlayerParts(car,d);
+  car.finishModel?.(grouped?.keep);
   if(!grouped){
     for(const side of [-1,1]){const face=car[side<0?'mirrorL':'mirrorR'],g=new THREE.Group();g.name=side<0?'mirror_l':'mirror_r';car.body.add(g);g.attach(face);}
     seatMirrors(car);
@@ -511,6 +514,7 @@ export function animateDetailedCar(car,dt,speed,steer,brake,pose,axles=null,yawR
   }
   car.tail.emissiveIntensity=brake?2.8:car.lightsOn?1.6:.55;
   car.updateSignalLights?.(dt,speed);
+  car.updateHeadlamps?.(dt);
   if(car.steam){car.steam.visible=(car.steamAmount||0)>.01;car.steam.material.opacity=Math.min(.18,car.steamAmount||0);car.steamTime+=dt;if(car.steam.visible){const a=car.steam.geometry.attributes.position;for(let i=0;i<a.count;i++){const age=(car.steamTime*.55+i/a.count)%1;a.setXYZ(i,Math.sin(i*2.4+age*3)*(.08+age*.17),d.front+.12+age*.72,-d.L/2+.23+age*.12);}a.needsUpdate=true;}}
   car.updateDamage?.(dt);
 }
