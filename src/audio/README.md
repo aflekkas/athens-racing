@@ -1,6 +1,6 @@
 # Vehicle audio
 
-`audio.js` retains the mix, tyres, world effects and public API. Voice/music
+`audio.js` retains the mix, tyres, world effects and public API. Voice
 ownership is unchanged. Vehicle audio is split into:
 
 - `engine-profiles.js`: cached, audio-only trim/layout selection and gearbox sound
@@ -37,7 +37,7 @@ from an explicit stall starts it again. No audio event mutates vehicle physics.
 Turbo profiles get spool/air/lift-off; sport profiles allow restrained overrun
 pops. DCT cuts crack under load; torque-converter cuts stay smooth; manual shifts
 have a longer clutch interruption. The existing independent engine/traffic/
-tyres/voice/music sliders and master compressor remain in place. Cabin filtering
+tyres/voice sliders and master compressor remain in place. Cabin filtering
 reduces exhaust brightness and brings the intake layer forward.
 
 ## Cost and bounds

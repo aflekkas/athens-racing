@@ -29,7 +29,6 @@ export function noticeStyle(item = {}) {
   if (has(all, /ENGINE|OVERHEAT|STALL/)) return pick('telltale', 'engine', tone === 'bad' ? 'bad' : 'warn');
   if (has(all, /GEARBOX|MANUAL|AUTOMATIC|\bAUTO\b|SHIFT/)) return pick('telltale', 'gearbox', tone === 'bad' || tone === 'warn' ? tone : 'good');
   if (has(all, /CONTROLLER|GAMEPAD|PAD CONNECTED/)) return pick('card', 'gamepad', tone);
-  if (has(all, /MUSIC|♪|NOW PLAYING|RADIO/)) return pick('card', 'music', 'info');
   if (has(all, /\bCAM\b|CAMERA|COCKPIT|CHASE/)) return pick('hud', 'view', 'info');
   if (has(all, /WRONG WAY|TURN BACK|TURN AROUND/)) return pick('hud', 'u-turn', 'bad');
   if (has(all, /CHECKPOINT|SPLIT|FINISH|LAP\b|SESSION|FREE ROAM|QUICK RACE|SPRINT/)) return pick('hud', 'flag', tone);
@@ -40,7 +39,7 @@ export function noticeStyle(item = {}) {
   return pick('telltale', tone === 'bad' ? 'warning' : tone === 'good' ? 'check' : 'info', tone === 'bad' ? 'bad' : tone === 'good' ? 'good' : 'info');
 }
 // the infotainment card's app label
-const LABELS = { tip: 'DRIVING TIPS', music: 'MEDIA', gamepad: 'CONTROLLER', info: 'VEHICLE INFO' };
+const LABELS = { tip: 'DRIVING TIPS', gamepad: 'CONTROLLER', info: 'VEHICLE INFO' };
 
 // the lamp glyph as a CSS mask (cached): the card keeps its DOM, so adopted nodes stay its first child
 const masks = new Map();

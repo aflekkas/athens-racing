@@ -49,7 +49,7 @@ const bespoke = (c) => !/^(s|scr)-/.test(c) && !SCREEN_CONTAINERS.has(c) && BESP
 const SCREEN_CONTAINERS = new Set(['home__tiles']);
 
 // screen stylesheets: every stylesheet the menus load, except the kit itself
-const SCREEN_CSS = ['src/menu.css', 'src/leaderboards.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/accounts.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css', 'src/music-settings.css'].filter(existsSync);
+const SCREEN_CSS = ['src/menu.css', 'src/leaderboards.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/accounts.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css'].filter(existsSync);
 // Race HUD and in-race overlays are not menu screens (style.css owns them); rules scoped to them are out of scope here.
 const HUD_SCOPE = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#touch-controls|\.touch-|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-blocked-row|\.mp-latency|\.graphics-live-note)/;
 // screen modules: everything that renders menu markup

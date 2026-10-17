@@ -55,7 +55,7 @@ async function walk(root, dir = root, out = []) {
 export const findCreditFiles = async (root) => (await walk(root)).sort();
 
 const TITLES = { 'assets/audio/engines': 'Engine recordings', 'assets/audio/tyres': 'Tyre sounds', 'assets/audio/world': 'World sounds',
-  'assets/audio/world/ambience': 'Ambience', 'assets/audio/music': 'Radio music', 'assets/audio/voice': 'Greek voices', 'assets/icons': 'Icons' };
+  'assets/audio/world/ambience': 'Ambience', 'assets/audio/voice': 'Greek voices', 'assets/icons': 'Icons' };
 const humanize = (s) => s.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 function titleFor(file) {
   const dir = dirname(file), name = basename(file);

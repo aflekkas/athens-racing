@@ -57,8 +57,8 @@ test('one route-direction warning wins across checkpoint, objective and wrong-wa
  assert.deepEqual(commit(q,0).map(n=>n.id),['checkpoint']);q.dismiss('checkpoint');assert.deepEqual(commit(q,1).map(n=>n.id),['wrong-way']);
 });
 test('same copy from different producers merges visually without hiding unrelated notices',()=>{
- const q=new NotificationQueue();q.post({id:'input',title:'GAMEPAD CONNECTED',priority:40},0);q.post({id:'link',title:'GAMEPAD CONNECTED',priority:30},0);q.post({id:'music',title:'NOW PLAYING',priority:20},0);
- assert.deepEqual(commit(q,0).map(n=>n.id),['input','music']);
+ const q=new NotificationQueue();q.post({id:'input',title:'GAMEPAD CONNECTED',priority:40},0);q.post({id:'link',title:'GAMEPAD CONNECTED',priority:30},0);q.post({id:'tip',title:'DRIVING TIP',priority:20},0);
+ assert.deepEqual(commit(q,0).map(n=>n.id),['input','tip']);
 });
 test('related police callouts preempt persistent status without duplicating it as a toast',()=>{
  const q=new NotificationQueue();q.post({id:'police-status',title:'POLICE PURSUIT',slot:'banner',priority:70,persistent:true},0);q.post({title:'BUSTED',priority:98},0);assert.deepEqual(commit(q,0).map(n=>n.title),['BUSTED']);

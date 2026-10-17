@@ -8,13 +8,13 @@ export async function renderTyreRetune(save, prefix = 'after') {
     const random = Math.random; let seed = 1337;
     Math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
     try {
-      a.start({ context: ctx, recordings: true, radio: false });
+      a.start({ context: ctx, recordings: true });
       a.setEngine({ id: 'mini', engine: 'turbo4', idle: 850, redline: 6800 });
       await Promise.all([a.worldReady, a.engineReady]); a.cancelIgnition();
       if (!a.tyres.every(v => v.recording)) throw Error('Recorded tyre layer missing');
-      a.setVolumes({ ambience: 0, traffic: 0, music: 0, voice: 0, ui: 0, ...(isolated ? { engine: 0 } : {}) });
+      a.setVolumes({ ambience: 0, traffic: 0, voice: 0, ui: 0, ...(isolated ? { engine: 0 } : {}) });
       if (isolated) {
-        for (const key of ['engine', 'ambience', 'traffic', 'music', 'voice', 'ui']) {
+        for (const key of ['engine', 'ambience', 'traffic', 'voice', 'ui']) {
           a.mix.buses[key].gain.cancelScheduledValues(0); a.mix.buses[key].gain.setValueAtTime(0, 0);
         }
         for (const v of a.tyres) for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble']) v[key].disconnect();

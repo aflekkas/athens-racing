@@ -43,7 +43,6 @@ const PATHS = {
   // a tip / hint (light bulb)
   tip: `<path ${S} d="M9 17.2h6M9.8 20.4h4.4M12 3.6a6 6 0 0 0-3.6 10.8c.5.4.6.9.6 1.4v1.4h6v-1.4c0-.5.2-1 .6-1.4A6 6 0 0 0 12 3.6z"/>`,
   // media: a note
-  music: `<path ${S} d="M9 17.6V5.4l10-2v12.2"/><circle ${F} cx="6.8" cy="17.6" r="2.4"/><circle ${F} cx="16.8" cy="15.6" r="2.4"/>`,
   // controller connected
   gamepad: `<path ${S} d="M7.4 7.6h9.2a4.2 4.2 0 0 1 4 3.1l1 3.9a2.6 2.6 0 0 1-4.5 2.3L15 15.4H9l-2.1 1.5a2.6 2.6 0 0 1-4.5-2.3l1-3.9a4.2 4.2 0 0 1 4-3.1zM8 10.4v3M6.5 11.9h3"/><circle ${F} cx="15.6" cy="11" r="1"/><circle ${F} cx="17.4" cy="12.8" r="1"/>`,
   // camera view

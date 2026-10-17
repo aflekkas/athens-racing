@@ -1,7 +1,7 @@
 // SETTINGS: player preferences, persisted to localStorage['paraliaki.settings'].
 //   import { settings, setSetting, onSettings } from './settings.js';
 //   settings.units            'kmh' | 'mph'
-//   settings.master/music/sfx 0..1 volumes (audio.setVolumes)
+//   settings.master/sfx 0..1 volumes (audio.setVolumes)
 //   settings.aids             traction and stability control (TC/ESC/EDL) as fitted; false = off
 //   settings.abs              ABS as fitted; independent of the live TC/ESC toggle
 //   settings.steeringAssist    null = follow active input; otherwise 'off' | 'light' | 'full'
@@ -18,7 +18,7 @@
 //   settings.ghostEnabled     race against your best ghost (src/ghost-lap.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
-export const AUDIO_VOLUMES = ['master', 'music', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
+export const AUDIO_VOLUMES = ['master', 'sfx', 'engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui'];
 const KEY = 'paraliaki.settings';
 const PERF_CLASSES = ['auto', 'potato', 'low', 'med', 'high'];
 // removed graphics choices (owner-locked single look): ignored and dropped from saves
@@ -28,7 +28,7 @@ export const FRAME_CAPS = [30, 60, 120, 0];
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
-export const DEFAULTS = { master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', worldDetail: true, mirrors: true, ghostEnabled: true,
+export const DEFAULTS = { master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', worldDetail: true, mirrors: true, ghostEnabled: true,
   mouseSensitivity: 1, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -58,7 +58,7 @@ function load() {
       delete saved.showTyreGrip;
       try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {}
     }
-    const retired = Object.keys(saved).filter(key => /^phone.?wheel/i.test(key));
+    const retired = Object.keys(saved).filter(key => /phone.?wheel|music|youtube|playlist/i.test(key));
     for (const key of retired) delete saved[key];
     if (retired.length) { try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {} }
     Object.assign(out, saved);

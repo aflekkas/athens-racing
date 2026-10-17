@@ -197,7 +197,6 @@ function driverVoice(c, category = 'driver', options = {}) {
     const p = traffic.route.point(c.s, c.u, new THREE.Vector3()); p.y += 1.25; return p;
   }, { ...options, enclosed: category !== 'police' && !(c.windowOpen || c.spec?.convertible || c.type?.scooter || c.type?.moto) });
 }
-audio.onTrack = (t) => hud?.message(`${icon('music-notes')} <i>${t.title}</i> · ${t.artist}`, 3);
 
 // ------------------------------------------------------------------ game state
 const G = {
@@ -1158,8 +1157,6 @@ function flowAction(name) {
     case 'reset': resetCar(); return true;
     case 'restart': if (G.state === 'race' || G.state === 'countdown' || G.state === 'finished') openEvent(G.ev.def); return true;
     case 'pause': pauseGame(); return true;
-    case 'music': hud.message(audio.toggleMusic() ? 'MUSIC <i>ON</i>' : 'MUSIC <i>OFF</i>', 1.2); return true;
-    case 'nextTrack': audio.nextTrack(); return true;
     case 'garage': if (multiplayer.active) multiplayer.open(); else pauseGame(); return true; // the garage lives in the menus; mid-race G pauses
   }
   return false;

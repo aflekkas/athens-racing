@@ -179,6 +179,5 @@ and adds a fresh empty "## Unreleased" above it. -->
 - Your driver name is saved in this browser, with no accounts or sign-in.
 - Graphics quality and resolution can be changed live in Settings.
 - Pick the Athens track map drawn from the real coastline and terrain, and race on Penteli as well as the Riviera coast.
-- Play your own music files or a visible YouTube player; the music is off until you turn it on.
 - The race HUD and every menu share one glassy in-car look.
 - Greek road signs, sparse village life and roadside details make the streets feel local.

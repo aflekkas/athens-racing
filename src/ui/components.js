@@ -415,8 +415,8 @@ export function closeListbox() {
 export const listboxOpen = () => !!lb;
 
 // ------------------------------------------------------------------ <ui-select>: the dropdown for DOM other modules own
-// There are no native select elements in the game. Code that builds its own DOM (the music source,
-// the standings' spectator pick, multiplayer transport state) uses <ui-select>: the same API as a native select
+// There are no native select elements in the game. Code that builds its own DOM (the standings' spectator pick,
+// multiplayer transport state) uses <ui-select>: the same API as a native select
 // (value, selectedIndex, options, disabled, <option> children, 'input' / 'change' events, onchange) drawn as the kit's
 // Select with the animated listbox, keyboard / gamepad / touch alike. Menu screens use the select() row builder.
 // With class "mi" it is also a menu focus item: OK opens it, left / right cycle it.

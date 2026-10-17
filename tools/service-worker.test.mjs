@@ -1,4 +1,4 @@
-// The offline cache: request routing (never /ws, /api, /auth, music streams), content addressing, release build.
+// The offline cache: request routing (never /ws, /api, /auth, uploads), content addressing, release build.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, mkdir, writeFile, readdir, rm } from 'node:fs/promises';
@@ -23,7 +23,7 @@ test('routes only listed static files, the page and pinned CDN files', async () 
   assert.equal(route('https://asr.test/data/map.json'), 'content');
   assert.equal(route('https://asr.test/data/map.json', { method: 'POST' }), null);
   assert.equal(route('https://asr.test/data/map.json', { range: true }), null);
-  for (const p of ['/ws', '/api/lobbies', '/api/leaderboard', '/api/unavailable', '/auth/retired', '/health', '/assets/audio/music/a.mp3', '/src/unlisted.js'])
+  for (const p of ['/ws', '/api/lobbies', '/api/leaderboard', '/api/unavailable', '/auth/retired', '/health', '/assets/unlisted.mp3', '/src/unlisted.js'])
     assert.equal(route('https://asr.test' + p, { mode: p.startsWith('/auth') ? 'navigate' : 'cors' }), null, p);
   assert.equal(route('https://asr.test/', { mode: 'navigate' }), 'page');
   assert.equal(route('https://asr.test/index.html?quality=low', { mode: 'navigate' }), 'page');
@@ -58,7 +58,7 @@ test('navigations are checked against the worker release (skew, rollback, kill s
 test('a release publishes immutable content-addressed copies, a worker and the page hook', async () => {
   const dir = await mkdtemp(resolve(tmpdir(), 'asr-release-'));
   try {
-    for (const [p, body] of [['index.html', '<html><head></head><body></body></html>'], ['src/a.js', 'export const a = 1;'], ['src/b.js', 'export const a = 1;'], ['assets/audio/music/song.mp3', 'x'], ['data/raw/roads.json', '{}'], ['data/map.json', '{"v":1}']]) {
+    for (const [p, body] of [['index.html', '<html><head></head><body></body></html>'], ['src/a.js', 'export const a = 1;'], ['src/b.js', 'export const a = 1;'], ['data/raw/roads.json', '{}'], ['data/map.json', '{"v":1}']]) {
       await mkdir(resolve(dir, p, '..'), { recursive: true }); await writeFile(resolve(dir, p), body);
     }
     const release = await buildRelease(dir, { core: ['/src/'] });

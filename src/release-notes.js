@@ -103,7 +103,7 @@ export function parseChangelog(text) {
 
 // ---------------------------------------------------------------- the one-time "What's new" card
 /** keys that only exist once someone has actually played (not the markers settings.js writes at import) */
-const PLAY_KEYS = /^paraliaki\.(?:(?:settings|graphics|car|car\.selection|raceSetup|personalBests\.v1)$|(?:best|events|ghost|input|paint)\.|youtube)/;
+const PLAY_KEYS = /^paraliaki\.(?:(?:settings|graphics|car|car\.selection|raceSetup|personalBests\.v1)$|(?:best|events|ghost|input|paint)\.)/;
 const store = (s) => { try { return s ?? globalThis.localStorage ?? null; } catch { return null; } };
 
 /** true when this browser already holds saved play data (settings, a chosen car, records...). Call it at startup, before

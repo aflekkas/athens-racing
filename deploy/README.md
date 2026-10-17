@@ -124,23 +124,6 @@ or paid binding, and does not scan tables or schedule background work.
 Local Worker checks: start `wrangler dev --local --port 19631`, then run
 `ASR_TEST_BASE=http://127.0.0.1:19631 node --test worker/local-driver.test.mjs`.
 
-## Music sources
-
-Fresh players start with **Music Off**. Settings → Sound → MUSIC SOURCE provides
-local files/folders, optional Built-in radio and a visible **menu-only** YouTube
-stream/playlist player. Files never leave the device.
-Chromium can save chosen file/folder handles in IndexedDB; Restore may request
-read permission again. Other browsers require selecting files again next visit.
-Use J for local music mute and N for next track. L switches the gearbox mode, M opens the big map.
-See [current research and official links](../docs/music-sources.md).
-
-YouTube embeds need no Data API key. Users explicitly load an embeddable URL and
-press native Play. Preserve visible controls, ads and branding; do not enable
-hidden/audio-only or background-tab playback. The player pauses when scrolled
-away and is destroyed when Sound settings closes. It cannot share WebAudio;
-its API volume follows master × music. ERT stream endpoints are documented in
-the research but are not shipped as presets without station/rights permission.
-No music source requires a Cloudflare paid feature or a streaming proxy.
 
 ## Release notes and versions
 

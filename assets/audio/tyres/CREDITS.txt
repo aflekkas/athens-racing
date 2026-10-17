@@ -14,8 +14,8 @@ Sound v2 plays decorrelated, pitch-shifted copies per wheel, blended with
 procedural resonances; volume follows normal load and combined tyre slip.
 Full acquisition provenance and checksums: ../world/sources.json.
 
-Audition renders also contain existing engine/world/music recordings; see
-../engines/CREDITS.txt, ../world/CREDITS.txt and ../music/CREDITS.txt.
+Audition renders also contain existing engine/world recordings; see
+../engines/CREDITS.txt and ../world/CREDITS.txt.
 Reproduce locally: node tools/build_sound_audio.mjs, open http://localhost:8015.
 WAVs, spectrograms and EBU R128 measurements are written to .scratch/sound-v2/.
 

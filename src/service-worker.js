@@ -5,7 +5,7 @@
 //  - same-origin GETs of listed files: Cache Storage first, else the immutable /_c/ copy from the network
 //  - `/` and `/index.html`: network first (always the current release), the last copy when offline
 //  - the pinned CDN modules (three.js) and font files: cache first (their URLs are versioned)
-//  - everything else (the /ws socket, /api, /auth, /health, music streams, uploads) is never touched
+//  - everything else (the /ws socket, /api, /auth, /health, uploads) is never touched
 // The page registers it from the deploy-only snippet in index.html; ?nosw unregisters it and clears the caches.
 // Release skew: every navigation is checked against this worker's release (<meta name="asr-build"> in the fresh
 // index.html). A newer release bypasses the cache (the network has the matching files) until the new worker takes

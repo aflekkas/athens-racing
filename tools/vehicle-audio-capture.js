@@ -21,7 +21,7 @@ async function save(name,buffer) {
  const data=wav(buffer); await fetch('/capture/'+name+'.wav',{method:'POST',body:data.bytes});return {name,peak:data.peak,rms:data.rms,duration:buffer.duration};
 }
 function manager(Ctor=Audio,duration=9) {
- const ctx=new OfflineAudioContext(2,44100*duration,44100),a=new Ctor();a.start({context:ctx,recordings:false,radio:false});a.setVolumes({music:0,ambience:0,tyres:0});
+ const ctx=new OfflineAudioContext(2,44100*duration,44100),a=new Ctor();a.start({context:ctx,recordings:false});a.setVolumes({ambience:0,tyres:0});
  // The production primitives read this audio-time getter directly.
  a.captureTime=0; Object.defineProperty(ctx, 'currentTime', {get:()=>a.captureTime});
  return a;

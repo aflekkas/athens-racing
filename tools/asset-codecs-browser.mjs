@@ -48,7 +48,7 @@ try {
     page.on('console',m=>{if(m.type()==='error'||m.type()==='warning'&&/KTX2|Baked world/.test(m.text()))console.log('WARN',m.text());});
     page.on('request',r=>{if(/\/data\//.test(new URL(r.url()).pathname))requests.push(r.url());});
     await page.route('https://fonts.googleapis.com/**',r=>r.abort()); await page.route('https://fonts.gstatic.com/**',r=>r.abort());
-    await page.addInitScript(()=>{performance.setResourceTimingBufferSize(5000);const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>['frame','onAnimationFrame'].includes(cb.name)?0:raf(cb);localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:'high',renderScale:1,dynamicResolution:false,mirrors:false,master:0,music:0}));});
+    await page.addInitScript(()=>{performance.setResourceTimingBufferSize(5000);const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>['frame','onAnimationFrame'].includes(cb.name)?0:raf(cb);localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:'high',renderScale:1,dynamicResolution:false,mirrors:false,master:0}));});
     const prefix=side==='before'?'/before/':'/';
     console.log('NAV',side,id);
     await page.goto(`http://127.0.0.1:${server.address().port}${prefix}?menu&simhook&cam=chase&map=${id}${side==='after'?'&assetcodec=1':''}${process.env.CODEC_DOWNLOAD==='1'?'&bakedownload=1':''}`,{waitUntil:'domcontentloaded',timeout:120000});

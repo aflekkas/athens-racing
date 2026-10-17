@@ -138,7 +138,7 @@ test('data, fonts, audio and software sections come from the repo files, not fro
   assert.ok(sec('data').every((e) => !/assets\/audio/.test(e.title)), 'audio is covered by its own credits files');
   assert.match(sec('visuals').find((e) => e.id === 'fonts').title, /Barlow Condensed, Barlow/);
   const audio = sec('audio').map((e) => e.file);
-  for (const f of ['engines', 'tyres', 'music', 'world', 'world/ambience', 'voice']) assert.ok(audio.includes(`assets/audio/${f}/CREDITS.txt`), f);
+  for (const f of ['engines', 'tyres', 'world', 'world/ambience', 'voice']) assert.ok(audio.includes(`assets/audio/${f}/CREDITS.txt`), f);
   assert.ok(audio.includes('assets/audio/voice/MODELS.md'));
   const voice = sec('audio').find((e) => e.file === 'assets/audio/voice/CREDITS.txt');
   assert.match(voice.text, /Piper/); assert.ok(voice.licences.includes('Apache-2.0') && voice.licences.includes('MIT'));

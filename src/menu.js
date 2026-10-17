@@ -44,7 +44,7 @@ C.registerFormat('seatCm',v=>(v>0?'+':'')+Math.round(v*100)+' cm');
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
 C.registerFormat('laps', (v) => `${v} ${+v === 1 ? 'LAP' : 'LAPS'}`);
 C.registerFormat('deg', (v) => Math.round(v) + '°');
-const VOLUMES = { master: 'MASTER', music: 'MUSIC', sfx: 'EFFECTS', engine: 'ENGINE', tyres: 'TYRES', ambience: 'AMBIENCE', traffic: 'TRAFFIC', voice: 'VOICES', ui: 'MENU SOUNDS' };
+const VOLUMES = { master: 'MASTER', sfx: 'EFFECTS', engine: 'ENGINE', tyres: 'TYRES', ambience: 'AMBIENCE', traffic: 'TRAFFIC', voice: 'VOICES', ui: 'MENU SOUNDS' };
 const has = (k) => k in settings;
 const SET = { 'data-scope': 'setting' };
 
@@ -440,7 +440,7 @@ export class Menu {
     if (tab === 'driver') {
       body = `<div class="group"><h3 class="group__title">${icon('user')}DRIVER NAME</h3>${C.textField({ name: 'driver-name', label: 'YOUR PLATE & ONLINE NAME', value: driverName.get(), inputCls: 'plate-input', inputAttrs: { id: 'driver-name', 'data-driver-name': '', maxlength: 16, autocapitalize: 'characters' }, note: '3–16 LETTERS, NUMBERS OR HYPHENS. SAVED IN THIS BROWSER. NAMES CAN BE SHARED.' })}<div class="field-actions">${C.button({ label: 'SAVE DRIVER NAME', icon: 'check', act: 'saveDriverName', variant: 'primary', size: 'sm' })}</div></div>`;
     } else if (tab === 'audio') {
-      const keys = (S.AUDIO_VOLUMES || ['master', 'music', 'sfx']).filter(has);
+      const keys = (S.AUDIO_VOLUMES || ['master', 'sfx']).filter(has);
       body = `<div class="group"><h3 class="group__title">${icon('speaker-high')}VOLUME</h3>${keys.map((k) => C.slider({ key: k, label: VOLUMES[k] || k.toUpperCase(), value: settings[k], attrs: SET })).join('')}${C.toggle({ key: 'swearing', label: 'SWEARING', value: !settings.mildLanguage, attrs: SET })}</div>`;
     } else if (tab === 'video') {
       // Graphics: ONE fixed look (src/graphics.js RENDER, owner-locked: docs/OWNER-DECISIONS.md). Only performance

@@ -60,3 +60,5 @@ The player and nearby cars may reuse the authored cockpit, **at most 12,000 cabi
 
 
 2026-10-17 owner decision: **Leaderboards belong inside Quick Race, never as a mode or title tile.** Owner: “why is leaderboards a mode? it should be a part of quick race bro”. RACE offers only QUICK RACE and FREE ROAM. Quick Race → map select → selected track confirmation shows the track/event personal best (time, car and setup) and the top global times inline. LEADERBOARD opens the full screen filtered to that track and event; Back returns to the same track confirmation. The post-race personal-best panel stays unchanged. All controls use the shared kit and its keyboard/gamepad/touch navigation. Guarded by `tools/ui-components.test.mjs` and `tools/leaderboard-records.test.mjs`.
+
+2026-10-17 owner decision: **“No music in the game”**. Remove all music sources, playback, volume settings, controls, notices and bundled tracks. Engine, tyre, ambience, effects and voice audio remain, including police radio chatter. Decorative cockpit head units remain. Old saved music preferences are dropped on load. Guarded by `tools/owner-locked-no-music.test.mjs` in `npm test`.

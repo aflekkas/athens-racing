@@ -24,7 +24,6 @@ test('navigation and objectives are head-up cues; tips and media are infotainmen
   assert.equal(noticeStyle({ title: 'VOULIAGMENI', text: 'COAST ROAD', priority: 15 }).kind, 'hud');
   const tip = noticeStyle({ id: 'tip:brakes', text: 'Brake in a straight line before the corner.', actions: [{ label: 'GOT IT' }] });
   assert.deepEqual([tip.kind, tip.telltale, tip.label], ['card', 'tip', 'DRIVING TIPS']);
-  assert.equal(noticeStyle({ text: 'Kalimera · Artist' + ' MUSIC' }).kind, 'card');
   assert.equal(noticeStyle({ id: 'x', kind: 'telltale', telltale: 'abs', tone: 'bad' }).telltale, 'abs', 'callers may choose explicitly');
 });
 test('every tell-tale renders as an SVG and as a CSS mask', () => {
