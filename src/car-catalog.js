@@ -12,11 +12,7 @@ export const CAR_MODELS = [
   {"id": "van", "name": "FIAT DUCATO L2H2", "trims": ["van", "van_150"]},
   {"id": "truck", "name": "ISUZU NPR", "trims": ["truck"]},
   {"id": "bus", "name": "MERCEDES-BENZ CITARO O530", "trims": ["bus"]},
-  {"id": "delivery", "name": "HONDA SH150i DELIVERY", "trims": ["delivery"]},
-  {"id": "scooter", "name": "PIAGGIO BEVERLY 300", "trims": ["scooter"]},
-  {"id": "moto", "name": "YAMAHA TRACER 900", "trims": ["moto"]},
   {"id": "police_octavia", "name": "ŠKODA OCTAVIA · ΕΛ.ΑΣ.", "trims": ["police_octavia"]},
-  {"id": "police_moto", "name": "BMW R 1250 RT · ΔΙ.ΑΣ.", "trims": ["police_moto"]},
   { id:'panda', name:'FIAT PANDA 169', trims:['panda','panda_11','panda_100hp'] },
   { id:'jazz', name:'HONDA JAZZ GK', trims:['jazz','jazz_dynamic','jazz_drift'] },
   { id:'yaris', name:'TOYOTA YARIS XP10', trims:['yaris','yaris_13','yaris_ts'] },
@@ -48,8 +44,7 @@ export const GARAGE_CLASSES = [
   ['electric','ELECTRIC',['dolphin','atto3']],
   ['commercial','COMMERCIAL / UTILITY',['van','truck']],
   ['public transport','PUBLIC TRANSPORT',['bus']],
-  ['motorcycle','MOTORCYCLES',['delivery','scooter','moto']],
-  ['service','PUBLIC SERVICES',['police_octavia','police_moto']],
+  ['service','PUBLIC SERVICES',['police_octavia']],
 ];
 export const CAR_CLASSES = GARAGE_CLASSES.map(([id])=>id);
 export const GARAGE_CARS = GARAGE_CLASSES.flatMap(([, ,ids])=>ids);
@@ -66,6 +61,17 @@ export function migrateCarSelection(saved) {
   const selected=model.trims.includes(trim) ? trim : model.trims.includes(model.id) ? model.id : model.trims[0];
   const body=model.bodies?.find(([, ,ids])=>ids.includes(selected))?.[0];
   return { entry:model.id, trim:selected, ...(body?{body}:{}) };
+}
+// Persist the normalized trim too, so boot, garage and online joins agree.
+export function migrateStoredCarSelection(storage) {
+  const legacy=storage.getItem('paraliaki.car'), packed=storage.getItem('paraliaki.car.selection');
+  if(!legacy&&!packed)return null;
+  let saved;try{saved=JSON.parse(packed||'null');}catch{}
+  const selection=migrateCarSelection(legacy||saved);
+  for(const [key,value]of [['paraliaki.car',selection.trim],['paraliaki.car.selection',JSON.stringify(selection)]]){
+    try{storage.setItem(key,value);}catch{} // Private browsing can allow reads but deny writes.
+  }
+  return selection;
 }
 export function filterCars(cars, filters = {}) {
   const q=String(filters.search||'').trim().toLocaleLowerCase(), list=[];

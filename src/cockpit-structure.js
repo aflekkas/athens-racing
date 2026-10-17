@@ -11,7 +11,6 @@ export function buildCockpitStructure(model,cockpit){
  const mesh=(geo,mat,role)=>{const o=new T.Mesh(geo,mat);o.name='cockpit-'+role;o.userData.cockpitStructure=role;group.add(o);return o;};
  const beam=(a,b,w,mat,role,d=w)=>{const o=mesh(new T.BoxGeometry(w,a.distanceTo(b),d),mat,role);o.position.copy(a).add(b).multiplyScalar(.5);o.quaternion.setFromUnitVectors(v(0,1,0),b.clone().sub(a).normalize());return o;};
  const panel=(p,mat,role)=>{const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(p.flatMap(x=>x.toArray()),3));geo.setIndex([0,1,2,0,2,3]);geo.computeVertexNormals();return mesh(geo,mat,role);};
- if(spec.twoWheeler){cockpit.updateStructure=()=>{};return;}
  const glass=model.windscreen||model.body.getObjectByName('cab-windscreen-glass')||model.body.getObjectByName('panoramic-front-glass');
  model.root.updateMatrixWorld(true);
  const points=[];

@@ -9,19 +9,6 @@ export function buildFleetInterior(cockpit,model){
  const metal=new T.MeshStandardMaterial({color:'#939b9f',roughness:.55});
  const add=(geo,mat,pos,name,role=name)=>{const o=new T.Mesh(geo,mat);o.position.set(...pos);o.name='authored-'+name;o.userData.cockpitStructure=role;g.add(o);return o;};
  const box=(size,pos,mat,name,role=name)=>add(new T.BoxGeometry(...size),mat,pos,name,role);
- if(s.twoWheeler){
-  model.root.updateMatrixWorld(true);const inv=model.body.matrixWorld.clone().invert();
-  for(const source of [...model.visualLOD.levels[0].object.children,...model.root.children]){
-   if(!source.isMesh)continue;source.geometry.computeBoundingBox();const b=source.geometry.boundingBox.clone().applyMatrix4(source.matrixWorld).applyMatrix4(inv),p=b.getCenter(new T.Vector3());
-   const tank=/fuel-tank|leg-shield|handlebar-cowl|nose-fairing/.test(source.name),bar=source.userData.mirrorSupport||(p.y>1&&p.y<1.11&&p.z<-.25);
-   if(!tank&&!bar)continue;if([].concat(source.material).some(m=>m.userData?.vehicleGlass))continue;
-   const o=source.clone();o.applyMatrix4(inv.clone().multiply(source.parent.matrixWorld));o.userData={...o.userData,cockpitStructure:bar?'handlebars':'tank'};g.add(o);
-  }
-  const bars=new T.Group();bars.name='authored-handlebars';g.add(bars);g.updateMatrixWorld(true);bars.position.set(0,1.05,kind==='delivery'||kind==='scooter'?-.55:-.36);bars.updateMatrixWorld(true);
-  for(const o of [...g.children])if(o.userData.cockpitStructure==='handlebars')bars.attach(o);
-  cockpit.povSteering=bars;cockpit.updateStructure=st=>{bars.rotation.y=-st.steerInput*.45;};
-  box([.20,.10,.03],cockpit.display.position.toArray().map((x,i)=>x+(i===2?-.02:0)),dark,'bike-clocks','dash');return;
- }
  const bus=kind==='bus',truck=kind==='truck',van=kind==='van',ev=!!s.electric;
  const width=d.W-(bus?.25:.36),front=d.cowl+.06,face=bus?d.cowl+.20:truck?d.cowl+.38:van?d.cowl+.36:d.cowl+.36;
  const top=model.seat.y-.28;cockpit.instrumentFaceZ=bus?d.cowl+.10:face+.08;

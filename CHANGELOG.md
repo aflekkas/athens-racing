@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- The garage now offers cars and larger vehicles only. Saved motorcycle choices switch to the MINI; traffic bikes still share the road.
+
 - Drive the Mercedes SL and A-Class, Ferrari 348 and Porsche 928, with 12 trims, period cockpits and distinct engine sounds.
 - Choose the 348 coupe, targa or Spider, and watch the 928’s headlamps rise at night.
 

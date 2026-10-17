@@ -10,12 +10,12 @@ function occupants(car,bike){const bad=[];car.root.traverse(o=>{if(/^(driver|pas
 function geometry(car){car.root.traverse(o=>{if(!o.geometry)return;for(const [name,a]of Object.entries(o.geometry.attributes))assert.ok(a.array.every(Number.isFinite),`${car.spec?.id} ${o.name} ${name}: ${locked}`);});}
 function glass(car){const panes=[];car.root.traverse(o=>{if(!o.isMesh)return;for(const m of [].concat(o.material))if(m.userData?.vehicleGlass){assert.equal(m.opacity,1,locked);assert.equal(m.transparent,false,locked);assert.ok(Math.max(m.color.r,m.color.g,m.color.b)<.03,locked);panes.push(o);}});return panes;}
 for(const spec of CARS)test(`${spec.id}: owner-locked geometry and empty-cabin policy`,()=>{
- const car=new CarModel(spec),budget=vehicleBudget(spec);geometry(car);occupants(car,!!spec.twoWheeler);
+ const car=new CarModel(spec),budget=vehicleBudget(spec);geometry(car);occupants(car,false);
  car.root.traverse(o=>assert.doesNotMatch(o.name,/^(headliner|door-card|door-armrest|door-interior-handle|front-seat|rear-bench|headrest)(?:$|[-_])/,locked));
- const panes=glass(car);if(!spec.twoWheeler)assert.ok(panes.length,`${spec.id}: exterior windows missing. ${locked}`);
+ const panes=glass(car);assert.ok(panes.length,`${spec.id}: exterior windows missing. ${locked}`);
  const expected=JSON.parse(readFileSync(new URL('./fixtures/vehicle-anchors.json',import.meta.url),'utf8'))[spec.id];
  assert.deepEqual(JSON.parse(JSON.stringify({dims:car.dims,seat:car.seat.toArray(),dash:car.dash,wheels:car.wheels.map(w=>({position:w.pivot.position.toArray(),radius:w.r,front:w.front,side:w.side})),exhaust:car.exhaust?.map(t=>t.toArray())})),expected,`${spec.id}: gameplay mounts changed. ${locked}`);
- // Weather switches every playable model between daylight and night, including bikes without DRLs.
+ // Weather switches every playable model between daylight and night, including commercial headlights.
  for(const on of [true,false,true]){
   assert.doesNotThrow(()=>setCarLights(car,on),`${spec.id}: weather lamp transition. ${locked}`);
   assert.equal(car.lightsOn,on,locked);
@@ -29,7 +29,7 @@ for(const spec of CARS)test(`${spec.id}: owner-locked geometry and empty-cabin p
  for(const key of ['exterior','lod1','lod2'])assert.ok(m[key]<=budget[key],`${spec.id} ${key}: ${m[key]} > ${budget[key]}. ${locked}`);
  for(const n of m.wheels)assert.ok(n<=budget.wheel,`${spec.id} wheel: ${n}. ${locked}`);
  assert.ok(m.interior<=budget.cockpit,`${spec.id} cockpit: ${m.interior}. ${locked}`);
- assert.ok(m.rider<=budget.bikeRider,locked);
+ assert.equal(m.rider,0,locked);
  for(let i=0;i<3;i++){
   setVehicleCockpitView(car,true);assert.ok(panes.every(o=>!o.visible),`${spec.id} cockpit glazing visible. ${locked}`);
   setVehicleCockpitView(car,false);assert.ok(panes.every(o=>o.userData.cockpitGlassVisible===undefined),locked);

@@ -209,20 +209,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7595,
         "minX": 159,
@@ -259,6 +245,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -477,20 +477,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 11313,
         "minX": 149,
@@ -527,6 +513,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -746,20 +746,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5788,
         "minX": 240,
@@ -801,6 +787,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 78
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -1014,20 +1014,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 8993,
         "minX": 255,
@@ -1064,6 +1050,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -1283,20 +1283,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6913,
         "minX": 224,
@@ -1338,6 +1324,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 65
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -1549,20 +1549,6 @@
         "minY": 707,
         "maxY": 750
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5224,
         "minX": 312,
@@ -1599,6 +1585,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -1818,20 +1818,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -1873,6 +1859,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2087,20 +2087,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5749,
         "minX": 269,
@@ -2142,6 +2128,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 111
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2356,20 +2356,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4035,
         "minX": 305,
@@ -2411,6 +2397,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 119
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2625,20 +2625,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4890,
         "minX": 287,
@@ -2680,6 +2666,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 127
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2894,20 +2894,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6458,
         "minX": 202,
@@ -2949,6 +2935,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 91
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -3162,20 +3162,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -3212,6 +3198,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -3431,20 +3431,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5754,
         "minX": 244,
@@ -3486,6 +3472,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 63
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -3700,20 +3700,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6827,
         "minX": 261,
@@ -3750,6 +3736,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -3969,20 +3969,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 3680,
         "minX": 270,
@@ -4024,6 +4010,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -4237,20 +4237,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 10460,
         "minX": 166,
@@ -4292,6 +4278,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 52
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -4505,20 +4505,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 12315,
         "minX": 112,
@@ -4555,6 +4541,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -4773,20 +4773,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6821,
         "minX": 250,
@@ -4828,6 +4814,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 16
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -5042,20 +5042,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 9315,
         "minX": 195,
@@ -5097,6 +5083,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 40
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -5310,20 +5310,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6154,
         "minX": 260,
@@ -5365,6 +5351,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 80
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -5578,20 +5578,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5234,
         "minX": 256,
@@ -5633,6 +5619,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -5846,20 +5846,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -5896,6 +5882,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -6114,20 +6114,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -6164,6 +6150,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -6382,20 +6382,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7044,
         "minX": 198,
@@ -6432,6 +6418,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -6650,20 +6650,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5234,
         "minX": 256,
@@ -6705,6 +6691,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -6919,20 +6919,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 9315,
         "minX": 195,
@@ -6974,6 +6960,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 40
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -7188,20 +7188,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 9315,
         "minX": 195,
@@ -7243,6 +7229,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 40
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -7456,20 +7456,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6154,
         "minX": 260,
@@ -7511,6 +7497,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 80
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -7724,20 +7724,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6154,
         "minX": 260,
@@ -7779,6 +7765,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 80
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -7992,20 +7992,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6821,
         "minX": 250,
@@ -8047,6 +8033,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 16
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -8261,20 +8261,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -8316,6 +8302,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -8530,20 +8530,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -8585,6 +8571,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -8799,20 +8799,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6204,
         "minX": 246,
@@ -8854,6 +8840,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 102
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -9068,20 +9068,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6458,
         "minX": 202,
@@ -9123,6 +9109,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 91
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -9337,20 +9337,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6458,
         "minX": 202,
@@ -9392,6 +9378,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 91
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -9605,20 +9605,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7595,
         "minX": 159,
@@ -9655,6 +9641,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -9874,20 +9874,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5749,
         "minX": 269,
@@ -9929,6 +9915,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 111
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10143,20 +10143,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5788,
         "minX": 240,
@@ -10198,6 +10184,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 78
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10412,20 +10412,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5788,
         "minX": 240,
@@ -10467,6 +10453,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 78
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10681,20 +10681,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4035,
         "minX": 305,
@@ -10736,6 +10722,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 119
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10950,20 +10950,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4035,
         "minX": 305,
@@ -11005,6 +10991,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 119
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -11219,20 +11219,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 3680,
         "minX": 270,
@@ -11274,6 +11260,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -11488,20 +11488,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 3680,
         "minX": 270,
@@ -11543,6 +11529,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -11757,20 +11757,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 3680,
         "minX": 270,
@@ -11812,6 +11798,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 75
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -12026,20 +12026,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5754,
         "minX": 244,
@@ -12081,6 +12067,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 63
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -12294,20 +12294,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 11322,
         "minX": 149,
@@ -12344,6 +12330,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -12562,20 +12562,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 11322,
         "minX": 149,
@@ -12612,6 +12598,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -12830,20 +12830,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 8993,
         "minX": 255,
@@ -12880,6 +12866,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -13098,20 +13098,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 8993,
         "minX": 255,
@@ -13148,6 +13134,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -13366,20 +13366,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 12315,
         "minX": 112,
@@ -13416,6 +13402,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -13632,20 +13632,6 @@
         "minY": 707,
         "maxY": 750
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 9323,
         "minX": 217,
@@ -13682,6 +13668,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -13900,20 +13900,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5234,
         "minX": 256,
@@ -13955,6 +13941,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -14168,20 +14168,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7595,
         "minX": 159,
@@ -14218,6 +14204,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -14436,20 +14436,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6866,
         "minX": 213,
@@ -14486,6 +14472,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -14705,20 +14705,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4791,
         "minX": 307,
@@ -14760,6 +14746,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -14974,20 +14974,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4791,
         "minX": 307,
@@ -15029,6 +15015,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -15243,20 +15243,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 4791,
         "minX": 307,
@@ -15298,6 +15284,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 82
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -15499,20 +15499,6 @@
         "minY": 703,
         "maxY": 763
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 2434,
         "minX": 278,
@@ -15554,6 +15540,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 25
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -15755,20 +15755,6 @@
         "minY": 703,
         "maxY": 763
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 2082,
         "minX": 269,
@@ -15810,6 +15796,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -16011,20 +16011,6 @@
         "minY": 703,
         "maxY": 763
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 2082,
         "minX": 269,
@@ -16066,6 +16052,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -16267,20 +16267,6 @@
         "minY": 706,
         "maxY": 758
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 1825,
         "minX": 295,
@@ -16322,6 +16308,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 143
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -16523,20 +16523,6 @@
         "minY": 703,
         "maxY": 763
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 2160,
         "minX": 241,
@@ -16578,6 +16564,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 54
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -16779,20 +16779,6 @@
         "minY": 708,
         "maxY": 756
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 13566,
         "minX": 0,
@@ -16834,6 +16820,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 12
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -17035,20 +17035,6 @@
         "minY": 708,
         "maxY": 756
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 13566,
         "minX": 0,
@@ -17090,6 +17076,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 12
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -17293,20 +17293,6 @@
         "minY": 703,
         "maxY": 762
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6788,
         "minX": 23,
@@ -17348,6 +17334,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 204
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -17551,20 +17551,6 @@
         "minY": 765,
         "maxY": 799
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 19417,
         "minX": 34,
@@ -17606,981 +17592,15 @@
         "maxX": -1,
         "minY": 800,
         "maxY": -1
-      }
-    }
-  },
-  {
-    "id": "delivery",
-    "name": "HONDA SH150i DELIVERY",
-    "fov": 66,
-    "seat": {
-      "height": 0,
-      "position": 0
-    },
-    "before": {
-      "eye": [
-        0,
-        1.5390000000000001,
-        0.15
-      ],
-      "pitch": -0.045,
-      "render": {
-        "calls": 24,
-        "triangles": 474
       },
-      "geometryAudit": {
-        "nearRoadDistance": 2,
-        "pitch": -0.045,
-        "eye": [
-          0,
-          1.5390000000000001,
-          0.15
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 46.532963265626826,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": null,
-          "legacyEye": [
-            0,
-            1.5190000000000001,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 94.7244140625,
-      "openPixels": 969978,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800
-    },
-    "after": {
-      "eye": [
-        0,
-        1.469,
-        0.5
-      ],
-      "pitch": -0.12,
-      "render": {
-        "calls": 17,
-        "triangles": 332
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 4.25,
-        "pitch": -0.12,
-        "eye": [
-          0,
-          1.469,
-          0.5
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 40.716205163416355,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": null,
-          "legacyEye": [
-            0,
-            1.5190000000000001,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 93.296875,
-      "openPixels": 955360,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800,
-      "unobstructedViewPercent": 93.296875
-    },
-    "structure": {
-      "dash": {
-        "pixels": 3915,
-        "minX": 579,
-        "maxX": 700,
-        "minY": 487,
-        "maxY": 549
-      },
-      "deck": {
+      "reserved-9": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
         "minY": 800,
         "maxY": -1
       },
-      "pillar": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "door-top": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-rim": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-hub": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-badge": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "tank": {
-        "pixels": 35722,
-        "minX": 511,
-        "maxX": 768,
-        "minY": 613,
-        "maxY": 799
-      },
-      "handlebars": {
-        "pixels": 17658,
-        "minX": 455,
-        "maxX": 824,
-        "minY": 515,
-        "maxY": 619
-      },
-      "mirror-mount": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wiper": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "binnacle": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "console": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "vent": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      }
-    }
-  },
-  {
-    "id": "scooter",
-    "name": "PIAGGIO BEVERLY 300 HPE",
-    "fov": 66,
-    "seat": {
-      "height": 0,
-      "position": 0
-    },
-    "before": {
-      "eye": [
-        0,
-        1.552,
-        0.15
-      ],
-      "pitch": -0.045,
-      "render": {
-        "calls": 24,
-        "triangles": 474
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 2,
-        "pitch": -0.045,
-        "eye": [
-          0,
-          1.552,
-          0.15
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 46.532963265626826,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": null,
-          "legacyEye": [
-            0,
-            1.532,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 95.13623046875,
-      "openPixels": 974195,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800
-    },
-    "after": {
-      "eye": [
-        0,
-        1.482,
-        0.5
-      ],
-      "pitch": -0.12,
-      "render": {
-        "calls": 17,
-        "triangles": 332
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 4.25,
-        "pitch": -0.12,
-        "eye": [
-          0,
-          1.482,
-          0.5
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 40.71620516341635,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": null,
-          "legacyEye": [
-            0,
-            1.532,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 93.2830078125,
-      "openPixels": 955218,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800,
-      "unobstructedViewPercent": 93.2830078125
-    },
-    "structure": {
-      "dash": {
-        "pixels": 3915,
-        "minX": 579,
-        "maxX": 700,
-        "minY": 487,
-        "maxY": 549
-      },
-      "deck": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "pillar": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "door-top": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-rim": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-hub": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-badge": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "tank": {
-        "pixels": 33984,
-        "minX": 512,
-        "maxX": 767,
-        "minY": 619,
-        "maxY": 799
-      },
-      "handlebars": {
-        "pixels": 19545,
-        "minX": 443,
-        "maxX": 836,
-        "minY": 522,
-        "maxY": 626
-      },
-      "mirror-mount": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wiper": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "binnacle": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "console": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "vent": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      }
-    }
-  },
-  {
-    "id": "moto",
-    "name": "YAMAHA TRACER 900",
-    "fov": 66,
-    "seat": {
-      "height": 0,
-      "position": 0
-    },
-    "before": {
-      "eye": [
-        0,
-        1.5899999999999999,
-        0.15
-      ],
-      "pitch": -0.045,
-      "render": {
-        "calls": 18,
-        "triangles": 338
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 2,
-        "pitch": -0.045,
-        "eye": [
-          0,
-          1.5899999999999999,
-          0.15
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 46.532963265626826,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": {
-            "min": [
-              -0.1599999964237213,
-              1.0411589458944421,
-              -0.7153443447140543
-            ],
-            "max": [
-              0.1599999964237213,
-              1.368841054105558,
-              -0.6246556552859458
-            ]
-          },
-          "legacyEye": [
-            0,
-            1.5699999999999998,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 95.29111328125,
-      "openPixels": 975781,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800
-    },
-    "after": {
-      "eye": [
-        0,
-        1.5199999999999998,
-        0.5
-      ],
-      "pitch": -0.12,
-      "render": {
-        "calls": 16,
-        "triangles": 320
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 4.25,
-        "pitch": -0.12,
-        "eye": [
-          0,
-          1.5199999999999998,
-          0.5
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 40.71620516341635,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": {
-            "min": [
-              -0.1599999964237213,
-              1.0411589458944421,
-              -0.7153443447140543
-            ],
-            "max": [
-              0.1599999964237213,
-              1.368841054105558,
-              -0.6246556552859458
-            ]
-          },
-          "legacyEye": [
-            0,
-            1.5699999999999998,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 90.85732421875,
-      "openPixels": 930379,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800,
-      "unobstructedViewPercent": 90.85732421875
-    },
-    "structure": {
-      "dash": {
-        "pixels": 3915,
-        "minX": 579,
-        "maxX": 700,
-        "minY": 487,
-        "maxY": 549
-      },
-      "deck": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "pillar": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "door-top": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-rim": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-hub": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-badge": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "tank": {
-        "pixels": 60857,
-        "minX": 467,
-        "maxX": 812,
-        "minY": 536,
-        "maxY": 799
-      },
-      "handlebars": {
-        "pixels": 15156,
-        "minX": 389,
-        "maxX": 890,
-        "minY": 615,
-        "maxY": 658
-      },
-      "mirror-mount": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wiper": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "binnacle": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "console": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "vent": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "headliner": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      }
-    }
-  },
-  {
-    "id": "police_moto",
-    "name": "BMW R 1250 RT \u00b7 \u0394\u0399.\u0391\u03a3.",
-    "fov": 66,
-    "seat": {
-      "height": 0,
-      "position": 0
-    },
-    "before": {
-      "eye": [
-        0,
-        1.545,
-        0.15
-      ],
-      "pitch": -0.045,
-      "render": {
-        "calls": 32,
-        "triangles": 530
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 2,
-        "pitch": -0.045,
-        "eye": [
-          0,
-          1.545,
-          0.15
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 46.532963265626826,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": {
-            "min": [
-              -0.23999999463558197,
-              1.0427892538346202,
-              -0.7273472598420047
-            ],
-            "max": [
-              0.23999999463558197,
-              1.4572107461653798,
-              -0.6126527401579954
-            ]
-          },
-          "legacyEye": [
-            0,
-            1.525,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 91.58837890625,
-      "openPixels": 937865,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800
-    },
-    "after": {
-      "eye": [
-        0,
-        1.4749999999999999,
-        0.5
-      ],
-      "pitch": -0.12,
-      "render": {
-        "calls": 20,
-        "triangles": 368
-      },
-      "geometryAudit": {
-        "nearRoadDistance": 4,
-        "pitch": -0.12,
-        "eye": [
-          0,
-          1.4749999999999999,
-          0.5
-        ],
-        "roadVisible": 100,
-        "clusterOcclusion": 0,
-        "rimOcclusion": 0,
-        "telltalesBlocked": 0,
-        "horizonFromTop": 40.71620516341635,
-        "headerIntrusion": 0,
-        "geometry": {
-          "windscreen": {
-            "min": [
-              -0.23999999463558197,
-              1.0427892538346202,
-              -0.7273472598420047
-            ],
-            "max": [
-              0.23999999463558197,
-              1.4572107461653798,
-              -0.6126527401579954
-            ]
-          },
-          "legacyEye": [
-            0,
-            1.525,
-            0.15
-          ]
-        },
-        "mirrors": [
-          {
-            "name": "left",
-            "inView": true,
-            "clear": true
-          },
-          {
-            "name": "right",
-            "inView": true,
-            "clear": true
-          }
-        ],
-        "nearPlaneObstructions": 0,
-        "visibleCharacters": [],
-        "flags": []
-      },
-      "windscreenPercent": 88.18056640625,
-      "openPixels": 902969,
-      "totalPixels": 1024000,
-      "width": 1280,
-      "height": 800,
-      "unobstructedViewPercent": 88.18056640625
-    },
-    "structure": {
-      "dash": {
-        "pixels": 3915,
-        "minX": 579,
-        "maxX": 700,
-        "minY": 487,
-        "maxY": 549
-      },
-      "deck": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "pillar": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "door-top": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-rim": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-hub": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wheel-badge": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "tank": {
-        "pixels": 77522,
-        "minX": 454,
-        "maxX": 825,
-        "minY": 500,
-        "maxY": 799
-      },
-      "handlebars": {
-        "pixels": 25781,
-        "minX": 352,
-        "maxX": 927,
-        "minY": 492,
-        "maxY": 629
-      },
-      "mirror-mount": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "wiper": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "binnacle": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "console": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "vent": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "headliner": {
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -18800,20 +17820,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5947,
         "minX": 314,
@@ -18855,6 +17861,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -19069,20 +18089,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5958,
         "minX": 313,
@@ -19124,6 +18130,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 58
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -19337,20 +18357,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 10727,
         "minX": 146,
@@ -19387,6 +18393,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -19605,20 +18625,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 10727,
         "minX": 146,
@@ -19655,6 +18661,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -19873,20 +18893,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 10690,
         "minX": 146,
@@ -19923,6 +18929,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -20141,20 +19161,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 10690,
         "minX": 146,
@@ -20191,6 +19197,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -20409,20 +19429,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7983,
         "minX": 189,
@@ -20464,6 +19470,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 72
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -20677,20 +19697,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7993,
         "minX": 189,
@@ -20727,6 +19733,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -20945,20 +19965,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 7993,
         "minX": 189,
@@ -20995,6 +20001,20 @@
         "maxY": -1
       },
       "headliner": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
         "pixels": 0,
         "minX": 1280,
         "maxX": -1,
@@ -21214,20 +20234,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6244,
         "minX": 239,
@@ -21269,6 +20275,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 53
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -21483,20 +20503,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 6244,
         "minX": 239,
@@ -21538,6 +20544,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 53
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -21752,20 +20772,6 @@
         "minY": 706,
         "maxY": 751
       },
-      "tank": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
-      "handlebars": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
-      },
       "mirror-mount": {
         "pixels": 5696,
         "minX": 230,
@@ -21807,6 +20813,20 @@
         "maxX": 1279,
         "minY": 0,
         "maxY": 53
+      },
+      "reserved-9": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
+      },
+      "reserved-10": {
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   }

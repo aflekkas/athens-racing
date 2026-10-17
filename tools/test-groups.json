@@ -145,7 +145,8 @@
     "tools/road-asphalt.test.mjs",
     "tools/airborne-network.test.mjs",
     "tools/roundabouts.test.mjs",
-    "tools/classic-port.test.mjs"
+    "tools/classic-port.test.mjs",
+    "tools/player-car-lineup.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

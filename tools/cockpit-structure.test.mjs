@@ -7,11 +7,11 @@ import {badgeBrand,BRAND_BADGES} from '../src/brand-badges.js';
 const out='.scratch/pov-camera';
 if(!globalThis.Image)globalThis.Image=class {complete=true;naturalWidth=24;set src(value){}};
 function requireStructure(spec,roles){
- const required=spec.twoWheeler?['tank','handlebars','dash']:['dash',...(['bus','truck'].includes(spec.nativeFleet)||['cla','huracan','jazz'].includes(spec.body)?[]:['deck']), 'pillar','door-top','wheel-rim','wheel-hub','wheel-badge'];
+ const required=['dash',...(['bus','truck'].includes(spec.nativeFleet)||['cla','huracan','jazz'].includes(spec.body)?[]:['deck']), 'pillar','door-top','wheel-rim','wheel-hub','wheel-badge'];
  for(const role of required)assert.ok(roles[role]?.pixels>=40,`${spec.id}: no visible ${role}. ${WHY}`);
- if(!spec.twoWheeler){assert.ok(roles.dash.pixels>=15000,`${spec.id}: dashboard must have substantial visible depth. ${WHY}`);assert.ok(roles.pillar.pixels>=5000,`${spec.id}: pillar trim must be substantial. ${WHY}`);assert.ok(roles.dash.maxX-roles.dash.minX>=832,`${spec.id}: dashboard does not span the view. ${WHY}`);}
+ {assert.ok(roles.dash.pixels>=15000,`${spec.id}: dashboard must have substantial visible depth. ${WHY}`);assert.ok(roles.pillar.pixels>=5000,`${spec.id}: pillar trim must be substantial. ${WHY}`);assert.ok(roles.dash.maxX-roles.dash.minX>=832,`${spec.id}: dashboard does not span the view. ${WHY}`);}
 }
-test('every rendered cockpit has visible own-car structure, including a rim, hub and badge (bikes: tank and bars)',async()=>{
+test('every rendered cockpit has visible own-car structure, including a rim, hub and badge',async()=>{
  const rows=JSON.parse(await fs.readFile(out+'/mask-audit.json'));
  assert.deepEqual(rows.map(r=>r.id).sort(),CARS.map(c=>c.id).sort(),WHY);
  for(const row of rows){const png=readMaskPNG(await fs.readFile(out+'/structure-'+row.id+'-mask.png'));
@@ -21,16 +21,16 @@ test('every rendered cockpit has visible own-car structure, including a rim, hub
  }
 });
 test('ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected',()=>{
- const spec=CARS.find(c=>!c.twoWheeler),good=Object.fromEntries(STRUCTURE_ROLES.map(r=>[r,{pixels:20000,minX:0,maxX:1279}]));
+ const spec=CARS[0],good=Object.fromEntries(STRUCTURE_ROLES.map(r=>[r,{pixels:20000,minX:0,maxX:1279}]));
  requireStructure(spec,good);
  for(const role of ['dash','deck','pillar','door-top','wheel-rim','wheel-hub','wheel-badge'])assert.throws(()=>requireStructure(spec,{...good,[role]:{pixels:0}}),/Owner-locked decision/,WHY);
 });
-test('all 70 cockpit controls visibly rotate with steering, retain badge atlas and switch with POV',()=>{
+test('all catalogue cockpit controls visibly rotate with steering, retain badge atlas and switch with POV',()=>{
  for(const spec of CARS){const model=new CarModel(spec),cockpit=new Cockpit(spec,model);cockpit.setVisible(true);const wheel=cockpit.wheelSpin||cockpit.povSteering||cockpit.steering;assert.ok(wheel?.visible,spec.id+' missing steering. '+WHY);
   const state={ignition:true,rpm:3500,kmh:85,gearLabel:'3',steerInput:0,vehicle:{}};cockpit.update(0,state);const start=wheel.quaternion.clone();cockpit.update(.1,{...state,steerInput:.7});assert.ok(start.angleTo(wheel.quaternion)>.1,spec.id+' steering does not rotate. '+WHY);
-  assert.ok(Math.abs((spec.twoWheeler?wheel.rotation.y:wheel.rotation.z)+.7*(spec.twoWheeler?.45:2.35))<1e-8,WHY);
+  assert.ok(Math.abs(wheel.rotation.z+.7*2.35)<1e-8,WHY);
   if(spec.convertible)assert.equal(cockpit.structure.getObjectByName('cockpit-window-frame'),undefined,spec.id+' open top must not acquire roof rails. '+WHY);
-  if(!spec.twoWheeler){let badge;cockpit.group.traverse(o=>{if(o.userData.cockpitStructure==='wheel-badge')badge=o;});assert.ok(badge,spec.id+' missing badge. '+WHY);assert.equal(badge.material.userData.brandBadge,true,WHY);assert.equal(badge.material.map.name,'shared-brand-badges',WHY);assert.ok(BRAND_BADGES[badgeBrand(spec)],spec.id+' missing manufacturer badge. '+WHY);assert.ok(model.cockpitWindscreen&&!model.cockpitWindscreen.parent,WHY);
+  {let badge;cockpit.group.traverse(o=>{if(o.userData.cockpitStructure==='wheel-badge')badge=o;});assert.ok(badge,spec.id+' missing badge. '+WHY);assert.equal(badge.material.userData.brandBadge,true,WHY);assert.equal(badge.material.map.name,'shared-brand-badges',WHY);assert.ok(BRAND_BADGES[badgeBrand(spec)],spec.id+' missing manufacturer badge. '+WHY);assert.ok(model.cockpitWindscreen&&!model.cockpitWindscreen.parent,WHY);
    const pillars=[];cockpit.group.traverse(o=>{if(o.userData.cockpitStructure==='pillar')pillars.push(o);});assert.equal(pillars.length,2,WHY);assert.ok(pillars.every(o=>o.geometry.parameters.width>=.05),spec.id+' pillar trim must have real thickness. '+WHY);
    if(spec.nativeFleet!=='bus')assert.ok(cockpit.structure.getObjectByName('cockpit-deck'),spec.id+' front deck geometry missing. '+WHY);
    assert.ok(cockpit.structure.getObjectByName('cockpit-header'),spec.id+' missing windscreen header. '+WHY);

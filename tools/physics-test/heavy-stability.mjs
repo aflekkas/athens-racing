@@ -21,7 +21,7 @@ export function stabilityScenarios(specs=catalogue(),VehicleClass=Vehicle,{cruis
     const ax=type==='brake'&&t>=.5&&t<2.5?-G*.6:0;
     // A 80 mm raised kerb at 25 km/h, front then rear with the actual wheelbase delay.
     const step=t0=>t>=t0&&t<t0+.35?.08:0;
-    const road=type==='kerb'?[sp.twoWheeler?step(.5):0,step(.5),sp.twoWheeler?step(.5+sp.wheelbase/(25/3.6)):0,step(.5+sp.wheelbase/(25/3.6))]:zero;
+    const road=type==='kerb'?[0,step(.5),0,step(.5+sp.wheelbase/(25/3.6))]:zero;
     c.stepSuspension(dt,ax,ay,1,road,25/3.6);
     roll=Math.max(roll,Math.abs(c.pose.roll)*180/Math.PI);pitch=Math.max(pitch,Math.abs(c.pose.pitch)*180/Math.PI);travel=Math.max(travel,...c.sus.d.map(Math.abs));
     lostRun=c.corners.some(w=>w.Fz<=1)?lostRun+dt:0;maxLost=Math.max(maxLost,lostRun);

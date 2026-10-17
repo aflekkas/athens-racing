@@ -19,7 +19,7 @@ const capture=async(name,world=false)=>{
 try{
  await page.goto(`http://127.0.0.1:${app.server.address().port}/?menu&simhook&quality=low&fixedres&map=riviera&notraffic`,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>document.body.classList.contains('loaded'));await page.evaluate(()=>window.__holdFrame=true);console.log('MENU READY');
- for(const category of ['commercial','public transport','motorcycle','service']){
+ for(const category of ['commercial','public transport','service']){
   await page.evaluate(category=>__flow.menu.show('car',{garage:true,filters:{category}}),category);await page.waitForTimeout(400);await capture('garage-'+category.replaceAll(' ','-'));
  }
  await page.evaluate(async()=>{const {CARS}=await import('/src/cars.js');__flow.menu.show('car',{index:CARS.findIndex(c=>c.id==='bus'),detail:true,garage:true});});await page.waitForSelector('#carStage canvas');await page.waitForTimeout(600);await capture('garage-bus');

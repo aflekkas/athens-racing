@@ -409,7 +409,7 @@ export class Vehicle {
     this.susStep = sp.rollDamping ? Math.min(1 / 960,
       0.15 * Math.sqrt(mu / (Math.max(kF, kR) * 13 + (sp.tyreK ?? 240e3) + 2 * Math.max(kbF, kbR)))) : 0;
     this.antiPitch = sp.antiPitch ?? 0.3;                              // anti-dive / anti-squat share of pitch transfer
-    // Passenger tyre default: ~200-280 N/mm; commercial/bike profiles supply their own stiffness.
+    // Passenger tyre default: ~200-280 N/mm; commercial profiles supply their own stiffness.
     const kt = this.kTyre = sp.tyreK ?? 240e3;
     this.cTyre = 2 * 0.06 * Math.sqrt(kt * mu);
     this.travel = sp.travel ?? 0.075;                                  // bump travel to the bump stop (m)

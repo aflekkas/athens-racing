@@ -179,7 +179,7 @@ export function bodyContact(v,dt,y,grade,bank) {
     // Roll momentum can carry a tall vehicle over even before static tipping.
     const rollEnergy=.5*inertia(v)[2]*v.sus.phv**2;
     const barrier=v.m*G*(Math.hypot(v.hcg,v.track/2)-v.hcg);
-    const tip=!v.spec.twoWheeler&&v.speed>5&&Math.min(left,right)<v.m*G*.035&&
+    const tip=v.speed>5&&Math.min(left,right)<v.m*G*.035&&
       (moment>limit*.92||rollEnergy>barrier*.65);
     if(v._crestTime>.02||v.sus.z>.1&&v.sus.zv>.5&&v.corners.every(c=>c.Fz<1)||tip){
       startFlight(v,Number.isFinite(v._supportY)?v.vy:slope);

@@ -29,12 +29,7 @@ dampers. Commercial profiles opt into a stiffness/mass-based maximum integration
 step (including bump-stop stiffness); passenger-car force and substep arithmetic
 are unchanged. Droop stops can carry tension when the wheel hangs at full extension.
 
-The assisted bikes previously assigned 120 kg to four virtual unsprung patches:
-55% of the 220 kg delivery scooter's total mass. Representative two-wheel assembly
-mass is now shared over the four virtual patches (32/40/48/60 kg total), with
-smaller tyre stiffness and 90 mm bump travel. The 80 mm kerb test applies each
-physical wheel's height to both virtual patches on that axle. Bikes still use
-assisted balance; this change does not implement falling or a motorcycle solver.
+Motorcycles and scooters are now traffic-only; the former player bike drivetrains and suspension cases have been removed.
 The BYDs' existing mass-scaled spring/damper and tyre values pass the same audit.
 
 `tools/physics-test/heavy-stability.mjs`, called by `regress.mjs`, covers every

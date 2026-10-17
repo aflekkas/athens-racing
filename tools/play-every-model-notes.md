@@ -1,10 +1,10 @@
-# Every authored vehicle is playable
+# Playable cars and utility vehicles
 
-The garage now contains 30 generation entries / 69 selectable configurations. All passenger, commercial and bike bodies in the fleet registries are represented, plus the existing detailed player and police bodies. The Corolla, Golf, Octavia taxi and Superb taxi already had player entries; their native fleet identity stays covered by those entries. Native bodies are reused, not copied into replacement geometry. AI grids exclude utility/public-service/electric fleet additions and fantasy builds. Multiplayer and saves continue using the single `CARS` ID catalogue.
+The garage now contains 31 generation entries / 78 selectable configurations. All passenger and commercial bodies in the fleet registries are represented, plus the existing detailed player and police bodies. The Corolla, Golf, Octavia taxi and Superb taxi already had player entries; their native fleet identity stays covered by those entries. Native bodies are reused, not copied into replacement geometry. AI grids exclude utility/public-service/electric fleet additions and fantasy builds. Multiplayer and saves continue using the single `CARS` ID catalogue.
 
 ## New garage choices
 
-Power is metric kW (multiply by 1.35962 for PS). Dimensions are length × width × height in metres; wheelbase and estimated centre-of-mass height are metres. Masses for commercial vehicles and bikes are representative operating masses, as described below. Police Octavia is an existing configuration newly exposed in the garage.
+Power is metric kW (multiply by 1.35962 for PS). Dimensions are length × width × height in metres; wheelbase and estimated centre-of-mass height are metres. Masses for commercial vehicles are representative operating masses, as described below. Police Octavia is an existing configuration newly exposed in the garage.
 
 | Vehicle / trim | kW / Nm | kg | Drive / gearbox | Dimensions | WB / CoM |
 |---|---:|---:|---|---|---|
@@ -17,10 +17,6 @@ Power is metric kW (multiply by 1.35962 for PS). Dimensions are length × width 
 | Fiat Ducato X290 L2H2 2.3 Multijet 150 | 110 / 350 | 2075 | FWD / 6MT | same | 3.450 / .82 |
 | Isuzu NPR 75-190 box truck | 140 / 510 | 4200 | RWD / 6MT | 6.400 × 2.300 × 3.100 | 3.815 / 1.02 |
 | Mercedes-Benz Citaro O530 OSY | 220 / 1250 | 12000 | RWD / 4AT | 12.000 × 2.550 × 3.100 | 5.845 / 1.12 |
-| Honda SH150i delivery scooter | 11 / 13.9 | 220 | RWD / CVT approximation | 2.030 × .740 × 1.150 | 1.340 / .64 |
-| Piaggio Beverly 300 HPE | 19 / 26 | 260 | RWD / CVT approximation | 2.125 × .800 × 1.260 | 1.540 / .64 |
-| Yamaha Tracer 900 | 84.6 / 87.5 | 285 | RWD / 6MT | 2.160 × .850 × 1.375 | 1.500 / .64 |
-| BMW R 1250 RT police adaptation | 100 / 143 | 354 | RWD / 6MT | 2.222 × .990 × 1.460 | 1.485 / .64 |
 | Škoda Octavia III 1.5 TSI police | 110 / 250 | 1408 | FWD / 6MT | 4.689 × 1.829 (existing body) | 2.686 / .54 |
 
 ## Sources and approximations
@@ -31,14 +27,10 @@ Power is metric kW (multiply by 1.35962 for PS). Dimensions are length × width 
 - [Fiat Professional 2014 launch](https://www.media.stellantis.com/uk-en/fiat-professional/press/the-new-fiat-ducato-more-technology-more-efficiency-more-value), [2014 technical/price list](https://www.media.stellantis.com/uploads/uk/UK/2014/FIAT_PROF/PRICES/Fiat_Professional_NEW%20DUCATO%202014_Price_List_APR_2014.pdf): 130/150 Multijet outputs, six-speed gearbox, L2H2 dimensions. 2075 kg is representative fitted/lightly laden operating mass, not a universal brochure kerb mass. Estimated 0–100 values 17.5/15.5 s; regress measures 15.6/14.17 s.
 - [Isuzu NPR 75-190 manufacturer sheet](https://www.isuzu.com.au/Media/Isuzu_Files/Spec_Sheets/Current_spec_sheets/NPR%2075-190%20CREW_ARK1350_v02.pdf): 4HK1 140 kW, 510 Nm and six-speed ratios. Authored short box geometry and 4200 kg chassis/body/light-load operating mass are estimates; this is not the crew-cab body in that reference. 110 km/h is the game governor.
 - [LANUV technical report, engine/transmission reference](https://www.lanuv.nrw.de/fileadmin/lanuvpubl/3_fachberichte/30019.pdf): OM457 hLA 220 kW / 1250 Nm and Voith DIWA 4-speed 4.9 launch / 1.36 / 1 / .73, final drive 5.771. Report vehicle is articulated; only its shared powertrain family is used. The authored **solo** O530 is 12 m / WB 5.845 m, approximately 12 t in service. [Citaro technical information](https://wikibus.blob.core.windows.net/sources5861/The%20Citaro%20-%20technical%20information.pdf). Game governor 85 km/h; 0–100 is unavailable because it cannot reach 100. No pneumatic brake delay or passenger load changes are simulated.
-- [Honda SH150i 2017](https://hondanews.eu/eu/lt/motorcycles/media/pressreleases/83467/2017-honda-sh150i): 11 kW, 13.9 Nm, 137.3 kg wet; game adds 75 kg rider and approximately 8 kg delivery box/load.
 - [Piaggio Beverly 300 HPE](https://wlassets.piaggio.com/wlassets/piaggio/master/tech_spec/Beverly/2021/EN_NewBeverly_300/original/EN_NewBeverly_300.pdf): 19 kW / 26 Nm; 185 kg wet plus 75 kg rider.
-- [Yamaha Tracer 900 2019](https://cdn2.yamaha-motor.eu/prod/product-assets/2019/MT09TR/Factsheets/2019-MT09TR_bg-BG.pdf): 84.6 kW, 87.5 Nm, 210 kg wet plus 75 kg rider. Effective final ratio includes primary reduction and chain drive.
-- [BMW R1250RT technical data](https://www.bmw-motorrad.ie/en/models/tour/r1250rt/technicaldata.html): 100 kW / 143 Nm, 279 kg wet plus 75 kg rider. Existing Greek police paint is a game adaptation, not a claim about actual ΔΙΑΣ procurement.
 
 All CoM heights, drag areas, spring/damper frequencies and brake/grip calibration are engineering estimates; manufacturers do not provide these for this use. Bus/van/truck gentle-corner checks assert every tyre remains loaded, small roll and small sideslip. No physics engine or transmission algorithm was changed. Each added profile has class-appropriate idle, rev limit, inertia, shift timing and torque curve.
 
-Bikes are feasible as **assisted** vehicles using four virtual contact patches with a narrow support footprint; the visual has two wheels, a seated native rider and speed/yaw-based lean. There is no balance/fall simulation. Scooter CVTs use six virtual automatic ratios; they are labelled approximations, not literal six-speed scooters. Bike steering and power are tuned to remain playable under those constraints.
 
 Native fleet cabins supply actual seats and dashboards. A live speed/gear instrument is added at the driver's station, and the camera sits at a measured sensible eye position. Bike view is rider-eye. Native mirrors retain geometry but have no dynamic render-to-texture view. Chase distance and target height scale with body length/height; the bus uses a 12.2 m following distance. Garage framing uses the same body dimensions.
 
@@ -49,3 +41,5 @@ Native fleet cabins supply actual seats and dashboards. A live speed/gear instru
 SVJ follow-up: 31 generation entries, adding the independently authored
 Aventador SVJ LP770-4 rather than a Huracán paint variant. The SVJ remains a
 normal catalogue/wire ID and is eligible for the Super garage and AI grids.
+
+Motorcycles and scooters are traffic-only; their player drivetrains, cockpit rigs and garage entries were retired.

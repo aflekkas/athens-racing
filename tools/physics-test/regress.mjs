@@ -276,7 +276,7 @@ else {
   }
 }
 
-// Authored utility/bike/EV models: class-appropriate speed targets and normal-load stability.
+// Authored utility/EV models: class-appropriate speed targets and normal-load stability.
 {
  const {fleetScenarios}=await import('./fleet.mjs');
  for(const r of fleetScenarios()){

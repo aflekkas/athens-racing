@@ -15,10 +15,10 @@ export class FleetCockpit{
   this.canvas=document.createElement('canvas');this.canvas.width=1024;this.canvas.height=384;this.ctx=this.canvas.getContext('2d');
   this.texture=new THREE.CanvasTexture(this.canvas);this.texture.colorSpace=THREE.SRGBColorSpace;
   this.material=new THREE.MeshBasicMaterial({map:this.texture,toneMapped:false});
-  this.display=new THREE.Mesh(new THREE.PlaneGeometry(spec.twoWheeler?.16:.34,spec.twoWheeler?.06:.09),this.material);
+  this.display=new THREE.Mesh(new THREE.PlaneGeometry(.34,.09),this.material);
   this.display.name='fleet-instruments';this.display.position.copy(this.wheelInfo.pos).add(new THREE.Vector3(0,.03,-.20));if(spec.nativeFleet==='bus')this.display.position.y=model.seat.y-.32;group.add(this.display);
   this.navCanvas=document.createElement('canvas');this.navCanvas.width=256;this.navCanvas.height=256;this.navTex=new THREE.CanvasTexture(this.navCanvas);this.navTex.colorSpace=THREE.SRGBColorSpace;
-  this.navMaterial=new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false});this.navDisplay=new THREE.Mesh(new THREE.PlaneGeometry(spec.twoWheeler?.1:.18,spec.twoWheeler?.06:.06),this.navMaterial);this.navDisplay.name='fleet-navigation';this.navDisplay.position.copy(this.display.position).add(new THREE.Vector3(spec.twoWheeler?.14:.32,0,.01));group.add(this.navDisplay);
+  this.navMaterial=new THREE.MeshBasicMaterial({map:this.navTex,toneMapped:false});this.navDisplay=new THREE.Mesh(new THREE.PlaneGeometry(.18,.06),this.navMaterial);this.navDisplay.name='fleet-navigation';this.navDisplay.position.copy(this.display.position).add(new THREE.Vector3(.32,0,.01));group.add(this.navDisplay);
   this.lamps=new CockpitLamps();this.draw(-1,'N');group.visible=false;buildCockpitStructure(model,this);buildFleetInterior(this,model);derivePovEye(model,this);seatCockpitControls(model,this);
  }
  draw(speed,gear){const key=[Math.round(speed),gear,Math.round((this.state?.rpm||0)/50),lampArtVersion,...(this.lampState||[]).map(l=>l[1])].join('|');if(key===this.last)return;this.last=key;drawFleetInstruments(this.canvas,{...this.state,kmh:speed,gearLabel:gear},this.lampState,this.spec);this.texture.needsUpdate=true;}

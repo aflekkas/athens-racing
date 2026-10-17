@@ -8,7 +8,7 @@ const cars=[{id:'panda',name:'Fiat Panda',power:44,mass:900,drive:'fwd'},{id:'z4
 test('catalogue composes search, class, drivetrain and HP filters without losing original indices',()=>{assert.deepEqual(filterCars(cars,{search:'bmw',category:'sports',drive:'RWD',power:'high'}).map(x=>x.index),[1]);assert.equal(filterCars(cars,{category:'classic'}).length,0);assert.equal(carCategory(cars[0]),'city');assert.deepEqual(filterCars(cars,{sort:'power'}).map(x=>x.car.id),['panda','cla','z4','huracan']);});
 test('the garage lineup is grouped by class, names only real catalogue cars and leaves the rest to traffic and AI',()=>{
   const ids=new Set(CARS.map(c=>c.id));
-  assert.deepEqual(GARAGE_CLASSES.map(([id])=>id),['city','hot hatch','sedan/coupe','suv','sports','super','classic','electric','commercial','public transport','motorcycle','service']);
+  assert.deepEqual(GARAGE_CLASSES.map(([id])=>id),['city','hot hatch','sedan/coupe','suv','sports','super','classic','electric','commercial','public transport','service']);
   for(const id of GARAGE_CARS)assert(ids.has(id),id+' is in CARS');
   assert.equal(new Set(GARAGE_CARS).size,GARAGE_CARS.length);
   assert(inGarage(CARS[0]),'the default car (CARS[0]) is offered in the garage');
@@ -58,7 +58,7 @@ test('garage renders the shared trim control, torque and a selectable model when
 test('generation labels match the existing represented Panda, Ibiza and Huracán',()=>{assert.match(carModel('panda').name,/169/);assert.match(carModel('ibiza').name,/6K/);assert.match(carModel('huracan').name,/EVO/);});
 
 test('MINI body and engine choices preserve all legacy IDs and respect host restrictions',()=>{
-  const m=carModel('mini');assert.equal(CAR_MODELS.length,35);assert.equal(m.bodies.length,2);
+  const m=carModel('mini');assert.equal(CAR_MODELS.length,31);assert.equal(m.bodies.length,2);
   assert.deepEqual(migrateCarSelection('mini'),{entry:'mini',trim:'mini',body:'convertible'});
   assert.deepEqual(migrateCarSelection({entry:'mini_jcw',trim:'mini_jcw'}),{entry:'mini',trim:'mini_jcw',body:'hardtop'});
   for(let i=0;i<3;i++){
@@ -130,10 +130,10 @@ test('trim ride height survives live suspension poses while all four wheel centr
  }finally{car?.disposeDamage?.();globalThis.document=previous;}
 });
 
-test('every authored fleet body is reachable, while rivals only draw from race cars',async()=>{
- const {PASSENGER_MODELS}=await import('../src/traffic-passenger-models.js'),{COMMERCIAL_MODELS}=await import('../src/traffic-commercial-models.js'),{BIKE_SPECS}=await import('../src/traffic-bike-models.js');
+test('passenger and commercial fleet bodies are reachable, while rivals only draw from race cars',async()=>{
+ const {PASSENGER_MODELS}=await import('../src/traffic-passenger-models.js'),{COMMERCIAL_MODELS}=await import('../src/traffic-commercial-models.js');
  const represented=new Set(CARS.flatMap(c=>[c.fleet,c.nativeFleet].filter(Boolean)));
- for(const id of [...Object.keys(PASSENGER_MODELS),...Object.keys(COMMERCIAL_MODELS),...Object.keys(BIKE_SPECS)])assert(represented.has(id),id+' has a garage drivetrain');
+ for(const id of [...Object.keys(PASSENGER_MODELS),...Object.keys(COMMERCIAL_MODELS)])assert(represented.has(id),id+' has a garage drivetrain');
  for(const c of CARS){assert(inGarage(c),c.id);if(c.nativeFleet||c.police||c.fantasy)assert(!isRivalCar(c));}
  assert(CARS.filter(isRivalCar).length>20);assert.equal(carCategory('bus'),'public transport');
  const {chaseRig}=await import('../src/vehicle-camera.js');assert(chaseRig(CARS.find(c=>c.id==='bus')).back>9);assert(chaseRig(CARS.find(c=>c.id==='bus')).up>3);
@@ -147,7 +147,7 @@ test('native fleet builds finite geometry, correct wheel counts and usable cockp
   for(const spec of CARS.filter(c=>c.nativeFleet)){
    const car=new CarModel(spec),cockpit=new Cockpit(spec,car);
    assert.equal(typeof cockpit.navCanvas.getContext('2d').fillRect,'function',spec.id+' HUD navigation canvas');assert(cockpit.navTex.isTexture);
-   assert.equal(car.wheels.length,spec.twoWheeler?2:4,spec.id);assert.equal(car.dims.L,spec.length,spec.id);
+   assert.equal(car.wheels.length,4,spec.id);assert.equal(car.dims.L,spec.length,spec.id);
    assert(cockpit.eye.y>.9&&Math.abs(cockpit.eye.z)<spec.length/2,spec.id+' camera inside authored body');
    car.root.traverse(o=>{for(const n of o.geometry?.attributes.position?.array||[])assert(Number.isFinite(n),spec.id);});
    car.update(1/60,10,.05,false,{heave:0,pitch:0,roll:0},null,.1);cockpit.update(1/60,{steerInput:.1,kmh:36,gearLabel:'1'});cockpit.disposeMirrors();car.disposeDamage?.();
@@ -158,7 +158,7 @@ test('native fleet builds finite geometry, correct wheel counts and usable cockp
 test('garage cameras fit utility bodies through a complete turntable and narrow screens',async()=>{
  const {showroomRig}=await import('../src/vehicle-camera.js');
  for(const spec of CARS.filter(c=>c.nativeFleet))for(const aspect of [.5,1,2]){
-  const rig=showroomRig(spec,aspect),h=(spec.height||1.5)+(spec.twoWheeler?.6:0),radius=Math.hypot(spec.length,spec.width,h)/2;
+  const rig=showroomRig(spec,aspect),h=(spec.height||1.5),radius=Math.hypot(spec.length,spec.width,h)/2;
   const half=Math.atan(Math.tan(35*Math.PI/360)*Math.min(1,aspect));
   assert(rig.distance*Math.sin(half)>radius,spec.id+' bounding sphere fits');
  }

@@ -26,8 +26,7 @@ export function derivePovEye(model,cockpit){
  cockpit.eyePitch=-.07;
  eye.z=model.seat.z-(model.spec.nativeFleet?.03:.05);
  eye.y=model.spec.nativeFleet?model.seat.y+.06:Math.min(model.seat.y+.15,model.shape.H-.11);
- if(glass&&!model.spec.twoWheeler)eye.y=Math.min(eye.y,glass.max.y+.08);
- if(model.spec.twoWheeler){eye.copy(model.seat).add(new THREE.Vector3(0,-.05,.35));cockpit.eyePitch=-.12;}
+ if(glass)eye.y=Math.min(eye.y,glass.max.y+.08);
  cockpit.eye=eye;
  cockpit.eyeGeometry={windscreen:glass?{min:glass.min.toArray(),max:glass.max.toArray()}:null,legacyEye:model.seat.toArray()};
  return eye;
