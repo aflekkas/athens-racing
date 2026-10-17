@@ -1,3 +1,4 @@
+import { leaderboardFilters } from './leaderboard-policy.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
 import { connectionProtocol } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
@@ -42,7 +43,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
       if (path === '/api/leaderboard') {
-        if (req.method === 'GET') { json(200, leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, reverse: url.searchParams.get('reverse') === 'true', limit: url.searchParams.get('limit') })); return; }
+        if (req.method === 'GET') { json(200, leaderboard.list(leaderboardFilters(url.searchParams))); return; }
         if (req.method !== 'POST') { json(405, { error: 'Use GET or POST.' }); return; }
         if (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) { json(403, { error: 'Origin mismatch.' }); return; }
         const ip = req.socket.remoteAddress, now = Date.now(), limit = postLimits.get(ip) || { at: now, count: 0 };
@@ -50,7 +51,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
         postLimits.set(ip, limit); if (++limit.count > 12) { json(429, { error: 'Please wait before submitting more times.' }); req.resume(); return; }
         let body = '', size = 0;
         for await (const chunk of req) { size += chunk.length; if (size > 4096) { json(413, { error: 'Result too large.' }); req.resume(); return; } body += chunk; }
-        try { const r = JSON.parse(body); if (r.valid !== true) throw Object.assign(new Error('Only completed races can be submitted.'), { status: 400 }); json(200, await leaderboard.submit({ ...r, source: 'solo', traffic: undefined })); }
+        try { const r = JSON.parse(body); if (r?.valid !== true) throw Object.assign(new Error('Only completed races can be submitted.'), { status: 400 }); json(200, await leaderboard.submit({ ...r, source: 'solo' })); }
         catch (e) { json(e.status || (e instanceof SyntaxError ? 400 : 500), { error: e.status || e instanceof SyntaxError ? e.message : 'Could not save the result.' }); }
         return;
       }

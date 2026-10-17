@@ -5,6 +5,7 @@ function stationaryUnchanged(a, b) {
   if (a.air !== b.air || a.bodyDynamic !== b.bodyDynamic) return false;
   if (JSON.stringify(a.bodyQ) !== JSON.stringify(b.bodyQ)) return false;
   if(a.exhaustSerial!==b.exhaustSerial||a.exhaustEnabled!==b.exhaustEnabled)return false;
+  if (JSON.stringify(a.recordMeta || null) !== JSON.stringify(b.recordMeta || null)) return false;
   if (a.gear !== b.gear || a.reverse !== b.reverse || a.braking !== b.braking || (a.pursuit ?? 0) !== (b.pursuit ?? 0)) return false;
   if (a.paint !== b.paint || JSON.stringify(a.driver || null) !== JSON.stringify(b.driver || null)) return false;
   for (const [key, tolerance] of Object.entries(tolerances)) if (Math.abs(a[key] - b[key]) > tolerance) return false;

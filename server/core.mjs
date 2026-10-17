@@ -1,3 +1,4 @@
+import { captureRecordMeta, onlineLeaderboardResult } from './leaderboard-online.mjs';
 import { createSharedWorldRelay } from './mp-shared-world.mjs';
 import { worldOwner } from '../src/shared-world-protocol.js';
 import { arenaEnvironment } from './mp-environment.mjs';
@@ -446,8 +447,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
             const status = courseStatus(c.course);
             if (JSON.stringify(status) !== before) send(c.ws, { type: 'checkpoint', raceId: l.raceId, generation: l.generation, ...status });
           }
+          const recordMeta = captureRecordMeta(s.recordMeta, c.state?.recordMeta, l.raceId);
           c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), driver: normalizeDriverAppearance(s.driver === undefined ? c.state?.driver : s.driver) }; c.stateAt = now; l.dirty = true;
           Object.assign(c.state, validateStateExtras(s));
+          if (recordMeta) c.state.recordMeta = recordMeta;
           if (l.objectives && c.finish === null && !c.dnf && stepPlayerObjective(l, c.id, now, { x: s.x, y: s.y, z: s.z, vLong: s.vLong, vLat: s.vLat }).length) publish(l);
           // Epoch authority is independent of the optional render clock. A
           // packet without sampleTime must not erase the recovery high-water mark.
@@ -462,7 +465,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           // their time but stay off the leaderboard.
           if (c.finish === null && event.type === 'sprint' && c.course?.passed === c.course?.gates.length && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = Math.max(0, (c.course.gateTimes?.at(-1) ?? now / 1000) - l.startAt / 1000); l.racers.get(c.id).finish = c.finish; publish(l);
-            if (!l.config?.reverse) leaderboard.submit({ driverId: c.driverId || c.id, name: c.name, car: c.car, eventId: l.eventId, mapId: l.mapId, traffic: l.traffic, time: c.finish, source: 'online' }).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
+            if (!l.config?.reverse) leaderboard.submit(onlineLeaderboardResult(c, l, event)).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
             if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
           }
         }

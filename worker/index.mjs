@@ -1,3 +1,4 @@
+import { leaderboardFilters } from '../server/leaderboard-policy.mjs';
 import { canonicalHostRedirect } from './canonical-host.mjs';
 import { legalPage } from './legal-pages.mjs';
 import { arenaAccountStatus } from './account-arena.mjs';
@@ -136,7 +137,7 @@ export class GameArena extends DurableObject {
       if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);
       if (path === '/api/leaderboard') {
-        if (request.method === 'GET') return json(this.leaderboard.list({ mapId: url.searchParams.get('mapId') || 'riviera', eventId: url.searchParams.get('eventId'), car: url.searchParams.get('car'), traffic: url.searchParams.has('traffic') ? url.searchParams.get('traffic') === 'true' : undefined, reverse: url.searchParams.get('reverse') === 'true', limit: url.searchParams.get('limit') }));
+        if (request.method === 'GET') return json(this.leaderboard.list(leaderboardFilters(url.searchParams)));
         if (request.method !== 'POST') return json({ error: 'Use GET or POST.' }, 405);
         const ip = request.headers.get('CF-Connecting-IP') || 'unknown', now = Date.now();
         const sql = this.ctx.storage.sql;
@@ -155,8 +156,8 @@ export class GameArena extends DurableObject {
         try {
           const bytes = new Uint8Array(size); let offset = 0; for (const part of chunks) { bytes.set(part, offset); offset += part.length; }
           const r = JSON.parse(new TextDecoder().decode(bytes));
-          if (r.valid !== true) return json({ error: 'Only completed races can be submitted.' }, 400);
-          const out = await this.leaderboard.submit({ ...r, source: 'solo', traffic: undefined });
+          if (r?.valid !== true) return json({ error: 'Only completed races can be submitted.' }, 400);
+          const out = await this.leaderboard.submit({ ...r, source: 'solo' });
           return json(out);
         } catch (e) { return json({ error: e.status || e instanceof SyntaxError ? e.message : 'Could not save the result.' }, e.status || (e instanceof SyntaxError ? 400 : 500)); }
       }

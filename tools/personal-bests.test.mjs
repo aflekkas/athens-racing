@@ -34,3 +34,21 @@ test('lazy track setup and loaded geometry resolve identical personal-record key
   assert.equal(key(menu), key(live), id);
  }
 });
+
+test('stores the full setup and car generation/trim, isolates trim PBs and lists by track and assists', async () => {
+ const {listPersonalBests}=await import('../src/personal-bests.js'); const st=mem();
+ const s=personalBestSetup({mapId:'penteli',def:{id:'quick',traffic:1.5,rivals:2,rules:{police:true}},route:{s0:0,s1:9896,dir:1,laps:1},car:'mini',carSpec:{name:'MINI Cooper S',generation:'F57',trim:'Cooper S'},conditions:{time:'night',weather:'rain'},assists:{tc:false,abs:true,steering:'light',gearbox:'manual'}});
+ recordPersonalBest(s,{time:240,valid:true,date:'2026-10-17T12:00:00Z'},st);
+ recordPersonalBest({...s,carTrim:'JCW'},{time:230,valid:true},st);
+ recordPersonalBest({...s,map:'riviera'},{time:220,valid:true},st);
+ const rows=listPersonalBests({mapId:'penteli',weather:'rain',tc:'false',gearbox:'manual'},st);
+ assert.equal(rows.length,2);assert.equal(rows[1].setup.carGeneration,'F57');assert.equal(rows[1].setup.traffic,1.5);assert.equal(rows[1].setup.police,true);assert.equal(rows[1].date,'2026-10-17T12:00:00Z');
+ assert.equal(getPersonalBests(s,st).exact.time,240);
+ s.weather='clear';assert.equal(rows[1].setup.weather,'rain','record owns a snapshot');
+});
+test('legacy keys/records remain readable; list recovers key setup and avoids route duplicates', async () => {
+ const {listPersonalBests}=await import('../src/personal-bests.js');const st=mem(),s=setup(),record={time:60,car:s.car,date:'2026-01-01'};
+ st.setItem('paraliaki.personalBests.v1',JSON.stringify({version:1,exact:{[exactBestKey(s)]:record},routes:{}}));
+ assert.equal(getPersonalBests(s,st).exact.time,60);assert.equal(listPersonalBests({mapId:'megara'},st)[0].setup.weather,'clear');
+ recordPersonalBest({...s,weather:'rain'},{time:61,valid:true},st);assert.equal(listPersonalBests({mapId:'megara'},st).length,2);
+});

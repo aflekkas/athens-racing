@@ -147,7 +147,9 @@
     "tools/roundabouts.test.mjs",
     "tools/classic-port.test.mjs",
     "tools/player-car-lineup.test.mjs",
-    "tools/trim-order.test.mjs"
+    "tools/trim-order.test.mjs",
+    "server/leaderboard-setups.test.mjs",
+    "tools/leaderboard-records.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
