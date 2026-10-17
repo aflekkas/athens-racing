@@ -1,8 +1,9 @@
 // Gear lever and paddle motion only. Vehicles have no visible occupants.
 const SHIFT_X_TRAVEL = .022, SHIFT_X_EXTRA = .034, SHIFT_Z_TRAVEL = .026;
 /** H-pattern gate for a target gear: lateral x and fore/aft z lever offsets. R is far-right back. */
-export function shiftGateOffset(gear, gears = 6, out = null) {
+export function shiftGateOffset(gear, gears = 6, out = null, dogleg = false) {
   const r = out || { x: 0, z: 0 };
+  if(dogleg){const g=(gear==='R'||gear<=0)?0:Math.max(1,Math.min(5,gear|0));r.x=[-.022,-.022,0,0,.022,.022][g];r.z=g%2?.026:-.026;return r;}
   const n = Math.max(4, Math.min(9, gears | 0 || 6));
   if (gear === 'R' || gear === 0 || gear === -1) {
     r.x = n <= 5 ? SHIFT_X_TRAVEL : SHIFT_X_EXTRA; r.z = SHIFT_Z_TRAVEL; return r;

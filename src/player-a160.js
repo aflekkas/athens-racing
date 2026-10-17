@@ -1,6 +1,7 @@
 // W168 facelift SWB. Original metre-scale surfaces, nose -Z; no photo textures.
 // Mercedes dimensions, tyres and facelift photographs: tools/mercedes-model-notes.md.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
+import {tintGlass} from './glass-tint.js';
 const mix=THREE.MathUtils.lerp,clamp=THREE.MathUtils.clamp;
 export function buildA160(car,d,M,low,plate,H){
   const {surface,patch,box,line,mesh,ring,cabinFittings,makePlateMaterial}=H;
@@ -17,8 +18,8 @@ export function buildA160(car,d,M,low,plate,H){
   M.black.color.set('#202427');M.black.roughness=.78;
   M.head.color.set('#c3cdd1');M.head.metalness=.55;M.head.roughness=.12;
   M.glass.color.set('#30434c');M.glass.opacity=.56;
-  const sideGlass=M.glass.clone();sideGlass.opacity=.72;sideGlass.userData.playerGlass=true;
-  const rearGlass=sideGlass.clone();rearGlass.opacity=.86;
+  const sideGlass=tintGlass(M.glass.clone(),'cabin');sideGlass.userData.playerGlass=true;
+  const rearGlass=tintGlass(sideGlass.clone(),'privacy');
   const rail=z=>profile([[d.header,1.53],[.0,1.55],[1.05,1.55],[d.roofBack,1.51]],z);
   const belt=z=>profile([[d.cowl,1.055],[.2,.99],[1.0,1.08],[1.58,1.06],[d.back,1.015]],z);
   const panePoint=(z,v,s)=>[s*mix(bw,rw,v),mix(belt(z),rail(z)-.025,v),z];
@@ -123,6 +124,5 @@ export function buildA160(car,d,M,low,plate,H){
   for(const z of [F,R]){const y=z<0?.435:.635;box(p,M.black,[.535,.124,.016],[0,y,z+Math.sign(z)*.02],.005);mesh(p,new THREE.PlaneGeometry(.51,.108),M.plate,[0,y,z+Math.sign(z)*.032],[0,z<0?Math.PI:0,0],'registration');}
   car.exhaust=[new THREE.Vector3(-.49,.25,R+.03)];
   mesh(p,new THREE.CylinderGeometry(.025,.025,.10,12,1,true),M.darkAlloy,[-.49,.25,R],[Math.PI/2,0,0],'exhaust-outlet');
-  // Procedural star also replaces the generic steering-wheel and wheel-centre badge.
-  const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#171b20';ctx.fillRect(0,0,128,128);ctx.strokeStyle='#d4dbe0';ctx.lineWidth=5;ctx.beginPath();ctx.arc(64,64,53,0,Math.PI*2);ctx.stroke();for(let i=0;i<3;i++){const a=-Math.PI/2+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(64,64);ctx.lineTo(64+50*Math.cos(a),64+50*Math.sin(a));ctx.stroke();}const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;M.badge.map?.dispose();M.badge.map=tex;M.badge.needsUpdate=true;
+
 }

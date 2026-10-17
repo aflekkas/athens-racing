@@ -1,6 +1,7 @@
 // Original procedural 1992–95 Porsche 928 GTS, metres, nose -Z.
 // Porsche Classic silhouette / Cup wheels / GTS rear panel references: tools/models-more-notes.md.
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
+import {tintGlass} from './glass-tint.js';
 const mix=(a,b,t)=>a+(b-a)*t;
 const clamp=t=>Math.max(0,Math.min(1,t));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
@@ -46,10 +47,9 @@ export function buildP928(car,d,M,low,plate,H){
   const rail=z=>at(rails,z,2),width=z=>mix(rw,bw,clamp((z-d.roofBack)/(d.back-d.roofBack)));
   const roofPoint=(x,z)=>[x*width(z),rail(z)+.037*(1-x*x),z-.035*(1-x*x)*(1-clamp((z-d.header)/(d.roofBack-d.header)))];
   // Keep the side/hatch tint independent of the shared light-windscreen finish.
-  const tinted=M.glass.clone();tinted.color.set('#25383d');tinted.opacity=.73;tinted.metalness=0;tinted.roughness=.08;tinted.envMapIntensity=.55;tinted.userData.playerGlass=true;
+  const tinted=tintGlass(M.glass.clone(),'privacy');tinted.userData.playerGlass=true;
   car.windscreen=surface(p,M.glass,(u,v)=>{const x=2*u-1;return[x*mix(bw,rw,v),mix(d.belt+.014,rail(d.header),v)+.037*(1-x*x)*v,mix(d.cowl,d.header,v)-.035*(1-x*x)*v];},28,12,'windscreen');
   surface(p,M.paint,(u,v)=>roofPoint(2*v-1,mix(d.header,d.roofBack,u)),30,20,'roof');
-  surface(p,M.cloth,(u,v)=>{const q=roofPoint(2*v-1,mix(d.header,d.roofBack,u));q[1]-=.018;return q;},20,12,'headliner');
   const hatch=(u,v)=>roofPoint(2*u-1,mix(d.roofBack,d.back,v));
   surface(p,tinted,hatch,32,18,'rear-glass');
   for(const s of [-1,1]){
@@ -73,7 +73,6 @@ export function buildP928(car,d,M,low,plate,H){
   }
   for(let i=0;i<8;i++){const v=(i+1)/10,pts=[];for(let j=0;j<=24;j++){const q=hatch(.08+.84*j/24,v);q[1]-=.003;pts.push(q);}line(p,M.alloy,pts,.0012,'hatch-demister');}
   cabinFittings(car,d,M,low);
-  const badge=textMaterial('PORSCHE','#171b20','#d6b779',256,80);M.badge.map=badge.map;M.badge.needsUpdate=true;
   wheels(car,d,M,low);
 
   const popups=[];
@@ -104,7 +103,7 @@ export function buildP928(car,d,M,low,plate,H){
   for(const end of [-1,1])line(p,M.seam,[[-.68,.56,end<0?F-.005:R+.005],[0,.56,end<0?F-.005:R+.005],[.68,.56,end<0?F-.005:R+.005]],.004,'bumper-joint');
   surface(p,M.red,(u,v)=>[mix(-.52,.52,u),mix(.665,.815,v),R+.024],24,4,'gts-red-reflector-panel');
   mesh(p,new THREE.PlaneGeometry(.77,.045,32,2),textMaterial('P O R S C H E',null,'#292327'),[0,.756,R+.029],[0,0,0],'rear-badge');
-  mesh(p,new THREE.PlaneGeometry(.24,.035,16,2),textMaterial('928 GTS',null),[.45,.632,R+.017],[0,0,0],'model-badge');
+  mesh(p,new THREE.PlaneGeometry(.24,.035,16,2),textMaterial(car.spec.short,null),[.45,.632,R+.017],[0,0,0],'model-badge');
   // Body-coloured GTS bridge spoiler sits across the foot of the glass hatch.
   for(const s of [-1,1])box(p,M.paint,[.09,.075,.17],[s*.73,.91,1.95],.025,[0,0,0],'spoiler-support');
   surface(p,M.paint,(u,v)=>{const x=(2*u-1)*.83,z=mix(1.88,2.12,v);return[x,.968-.038*(x/.83)**2+.014*Math.sin(v*Math.PI),z];},32,8,'gts-rear-spoiler');
@@ -134,5 +133,5 @@ export function buildP928(car,d,M,low,plate,H){
 
   // Round both bumper corners with the same mapping for lamps, plates, shut lines and body panels.
   p.updateMatrixWorld(true);const world=new THREE.Vector3();
-  p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=clamp((Math.abs(world.z)-d.L*.34)/(d.L*.16));world.z+=Math.sign(world.z)*t*t*(.035*Math.sin(clamp((world.y-.18)/.66)*Math.PI)-(world.z<0?.23:.20)*(Math.abs(world.x)/W)**2-.14*clamp((.43-world.y)/.25)**2);world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});
+  p.traverse(o=>{if(!o.isMesh||o===car.mirrorL||o===car.mirrorR)return;const a=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert();for(let i=0;i<a.count;i++){world.fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld);const t=clamp((Math.abs(world.z)-d.L*.34)/(d.L*.16));world.z+=Math.sign(world.z)*t*t*(.035*Math.sin(clamp((world.y-.18)/.66)*Math.PI)-(world.z<0?.23:.20)*(Math.abs(world.x)/W)**2-.14*clamp((.43-world.y)/.25)**2);world.x*=d.W/1.890;world.applyMatrix4(inv);a.setXYZ(i,world.x,world.y,world.z);}a.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});
 }

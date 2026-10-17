@@ -58,7 +58,7 @@ test('garage renders the shared trim control, torque and a selectable model when
 test('generation labels match the existing represented Panda, Ibiza and Huracán',()=>{assert.match(carModel('panda').name,/169/);assert.match(carModel('ibiza').name,/6K/);assert.match(carModel('huracan').name,/EVO/);});
 
 test('MINI body and engine choices preserve all legacy IDs and respect host restrictions',()=>{
-  const m=carModel('mini');assert.equal(CAR_MODELS.length,31);assert.equal(m.bodies.length,2);
+  const m=carModel('mini');assert.equal(CAR_MODELS.length,35);assert.equal(m.bodies.length,2);
   assert.deepEqual(migrateCarSelection('mini'),{entry:'mini',trim:'mini',body:'convertible'});
   assert.deepEqual(migrateCarSelection({entry:'mini_jcw',trim:'mini_jcw'}),{entry:'mini',trim:'mini_jcw',body:'hardtop'});
   for(let i=0;i<3;i++){

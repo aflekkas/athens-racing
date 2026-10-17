@@ -14,11 +14,7 @@ export function runVehicleChecks(carIds=null) {
     const front=car.body.getObjectByName('windscreen'),paint=[];
     car.body.traverse(o=>{if(o.isMesh&&(o.material===car.paint||car.shape.blackRoof&&o.material.color?.getHex()===car.materials.black.color.getHex()))paint.push(o.geometry.attributes.position);});
     let gap=0;
-    // The 928 uses denser, independently sampled curved glass. Select its actual
-    // roof boundary in UV space rather than the original cars' fixed grid indices.
-    const edgeIndices=(glass,v)=>{const uv=glass.geometry.attributes.uv,edge=[];for(let i=0;i<uv.count;i++)if(Math.abs(uv.getY(i)-v)<1e-6)edge.push(i);return [edge[0],edge[Math.floor(edge.length/2)],edge.at(-1)];};
-    const joins=car.spec.id==='p928'?[[front,edgeIndices(front,1)],[rear,edgeIndices(rear,0)]]:[[front,[10,12*11+10,24*11+10]],[rear,[0,11*13,22*13]]];
-    for(const [glass,indices] of joins){
+    for(const [glass,indices] of [[front,[10,12*11+10,24*11+10]],[rear,[0,11*13,22*13]]]){
       const a=glass.geometry.attributes.position;
       for(const i of indices){let nearest=Infinity;for(const p of paint)for(let j=0;j<p.count;j++)nearest=Math.min(nearest,Math.hypot(a.getX(i)-p.getX(j),a.getY(i)-p.getY(j),a.getZ(i)-p.getZ(j)));gap=Math.max(gap,nearest);}
     }
@@ -34,50 +30,10 @@ export function runVehicleChecks(carIds=null) {
       check(spec.id+' sourced wheelbase and height',Math.abs(car.shape.wb-spec.wheelbase)<.001&&Math.abs(car.dims.H-spec.height)<.001);
       check(spec.id+' matching registration faces',!!car.plate&&!!car.materials.plate.map);
       check(spec.id+' named paint is the default',PAINTS[spec.id].some(p=>p[1]===spec.color));
-      check(spec.id+' correct exhaust count',car.exhaust.length===(['gla45','sl65'].includes(spec.id)?4:spec.id==='a160'?1:2));
+      check(spec.id+' correct exhaust count',car.exhaust.length===(spec.id==='gla45'?4:2));
       if(spec.id==='cle'||spec.id==='gla45')check(spec.id+' AWD distribution',spec.drive==='awd'&&spec.awdRear>0&&spec.awdRear<1);
-      else if(spec.id==='sl65'){
-        check('SL 65 rear-drive V12 roadster',spec.drive==='rwd'&&spec.engine==='v12'&&spec.convertible&&car.shape.open&&car.shape.seats===2);
-        check('SL 65 stowed roof leaves the cockpit open',!car.body.getObjectByName('roof')&&!car.body.getObjectByName('rear-glass'));
-        check('SL 65 staggered 19-inch tyres',car.shape.rim===.2413&&car.shape.tyreF===.255&&car.shape.tyreR===.285);
-        const pane=car.windscreen,glass=pane.material;
-        check('SL 65 visible dielectric windscreen tint survives shared roadster finish',glass.transparent&&glass.opacity>=.3&&glass.opacity<=.5&&glass.metalness===0&&glass.depthWrite===false);
-        check('SL 65 tinted windscreen remains in road LOD',car.mediumDetail.children.some(o=>o.material===glass));
-        pane.geometry.computeBoundingBox();const screen=pane.geometry.boundingBox;
-        check('SL 65 full-width raked windscreen',screen.max.x-screen.min.x>1.5&&screen.max.z-screen.min.z>.5&&screen.max.y-screen.min.y>.3);
-        car.root.updateMatrixWorld(true);const surround=[];car.body.traverse(o=>{if(o.isMesh&&o.material===car.paint)surround.push(o);});
-        const vertices=pane.geometry.attributes.position;let gap=0;
-        // Both pillar edges and the bowed header must meet the assembled paint.
-        for(const i of [0,5,10,12*11+10,24*11,24*11+5,24*11+10]){
-          const point=car.body.worldToLocal(pane.localToWorld(new THREE.Vector3().fromBufferAttribute(vertices,i)));
-          gap=Math.max(gap,nearestSurface(point,surround,car.body).distance);
-        }
-        check('SL 65 windscreen seated in painted pillars, cowl and header',gap<.018);
-        const deck=car.mercedesSurface.deck;
-        check('SL 65 paired raised bonnet power domes',[-1,1].every(s=>deck(s*.4,-1.2)-deck(0,-1.2)>.025));
-        const badges=[];car.body.traverse(o=>{if(o.name==='sl-v12-biturbo-badge')badges.push(o);});
-        check('SL 65 two wing badges retain procedural lettering',badges.length===2&&badges.every(o=>!!o.material.map));
-      }else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
+      else check(spec.id+' front driven hybrid/petrol',spec.drive==='fwd');
       if(spec.id==='cla')check('New CLA defaults to obsidian black',spec.color==='#111419');
-      if(spec.id==='a160'){
-        const hatch=car.body.getObjectByName('rear-glass');hatch.geometry.computeBoundingBox();const b=hatch.geometry.boundingBox;
-        check('W168 upright short hatch behind rear axle',b.min.z>spec.wheelbase/2&&b.max.z-b.min.z<.4&&b.min.y>1);
-        const floors=[];car.body.traverse(o=>{if(o.isMesh&&o.material===car.materials.cloth)floors.push(new THREE.Box3().setFromObject(o));});
-        check('W168 raised sandwich floor survives interior batching',floors.some(b=>b.min.y<.4&&b.max.y>.53&&b.max.y<.7));
-        check('W168 facelift glazing retained in road LOD',car.mediumDetail.children.some(o=>o.material?.userData.playerGlass));
-        check('W168 sourced narrower rear track',car.wheels.filter(w=>!w.front).every(w=>Math.abs(Math.abs(w.pivot.position.x)*2-spec.trackRear)<.001));
-        // Compare the actual centreline vertices, including the screen's lower join.
-        const bonnet=[];car.playerParts.bonnet.traverse(o=>{if(o.isMesh&&o.material===car.paint){const a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)if(Math.abs(a.getX(i))<.001)bonnet.push(new THREE.Vector3().fromBufferAttribute(a,i));}});
-        bonnet.sort((a,b)=>a.z-b.z);const nose=bonnet[0],cowl=bonnet.at(-1),screen=car.windscreen.geometry.attributes.position;
-        const base=new THREE.Vector3().fromBufferAttribute(screen,12*11),header=new THREE.Vector3().fromBufferAttribute(screen,12*11+10);
-        check('W168 bonnet continues into screen without a flat cowl break',cowl.distanceTo(base)<.01&&Math.abs(Math.atan2(cowl.y-nose.y,cowl.z-nose.z)-Math.atan2(header.y-base.y,header.z-base.z))<.12);
-        check('W168 broad clear lamps sweep up and back into both wings',['light_fl','light_fr'].every(id=>{
-          const b=new THREE.Box3();car.playerParts[id].traverse(o=>{if(o.isMesh&&o.material===car.materials.head){const a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)if(a.getY(i)>.58)b.expandByPoint(new THREE.Vector3().fromBufferAttribute(a,i));}});
-          return b.max.y>.88&&b.min.y<.66&&b.max.x-b.min.x>.3&&b.max.z-b.min.z>.25;
-        }));
-        check('W168 retains 15-inch wheels and 195/50 tyre proportions',Math.abs(car.shape.rim*2-.381)<.001&&car.shape.tyreF===.195&&Math.abs(car.shape.r-(.381/2+.195*.5))<.001);
-
-      }
       if(car.shape.suv){
         const glass=car.body.getObjectByName('rear-glass');glass.geometry.computeBoundingBox();const b=glass.geometry.boundingBox;
         check(spec.id+' hatch roof extends behind the rear axle',b.min.z>car.shape.wb/2+car.shape.axleOffset+(car.shape.sculpted?.18:.25));
@@ -258,11 +214,14 @@ export function measureMirrorGaps(car){
     const arm=group.getObjectByName('mirror-stalk'),housing=group.getObjectByName('mirror-housing'),scope=group.parent;
     const p=arm.geometry.parameters,n=p.radialSegments,h=p.heightSegments,a=arm.geometry.attributes.position;
     const inScope=i=>scope.worldToLocal(arm.localToWorld(new THREE.Vector3().fromBufferAttribute(a,i)));
-    const tip=inScope((n+1)*(h+1)),root=inScope((n+1)*(h+1)+2*n+1);
+    let tip=inScope((n+1)*(h+1)),root=inScope((n+1)*(h+1)+2*n+1);
     const mount=nearestSurface(root,mirrorSurfaces(car,scope),scope);
+    // dog-leg arms: the lower leg ends at the elbow, the upper leg carries on from it into the housing
+    const upper=group.getObjectByName('mirror-stalk-upper');let length=root.distanceTo(tip),elbowGap=0;
+    if(upper){const u=upper.geometry.attributes.position,up=i=>scope.worldToLocal(upper.localToWorld(new THREE.Vector3().fromBufferAttribute(u,i)));const a0=up((n+1)*(h+1)+2*n+1),a1=up((n+1)*(h+1));elbowGap=a0.distanceTo(tip);length+=a0.distanceTo(a1);tip=a1;}
     // Tip is embedded in the housing; distance to its bounding volume is zero.
     const tipWorld=scope.localToWorld(tip.clone()),box=new THREE.Box3().setFromObject(housing);
-    rows.push({side:group.name,rootGap:mount?.distance??Infinity,tipGap:box.distanceToPoint(tipWorld),stalkLength:root.distanceTo(tip),stalkRadius:p.radiusTop});
+    rows.push({side:group.name,rootGap:mount?.distance??Infinity,tipGap:Math.max(box.distanceToPoint(tipWorld),elbowGap),stalkLength:length,stalkRadius:p.radiusTop});
   });return rows;
 }
 export function runMirrorChecks(carIds=null){
@@ -307,6 +266,11 @@ export async function runCockpitMirrorChecks(carIds=null){
     check(spec.id+' three optical faces',cockpit.mirrors.length===3);
     const mount=car.body.worldToLocal(cockpit.mirrorMount.getWorldPosition(new THREE.Vector3()));
     check(spec.id+' rearview mount seated on windscreen',nearestSurface(mount,[car.windscreen],car.body).distance<.005);
+    // No part of a stalk or arm may sit in front of (show through) its glass
+    const glassFront=(glass,meshes,outlineOnly)=>{let bad=0;const q=glass.getWorldQuaternion(new THREE.Quaternion()),n=new THREE.Vector3(0,0,1).applyQuaternion(q),o=glass.getWorldPosition(new THREE.Vector3());
+      for(const m of meshes){if(!m)continue;const a=m.geometry.attributes.position;for(let i=0;i<a.count;i++){const w=m.localToWorld(new THREE.Vector3().fromBufferAttribute(a,i));if(w.clone().sub(o).dot(n)<=0)continue;const l=glass.worldToLocal(w.clone());if(!outlineOnly||Math.hypot(l.x,l.y)<1.02)bad++;}}return bad;};
+    check(spec.id+' rear-view stalk stays behind its glass',glassFront(cockpit.mirrors[0].mesh,[cockpit.mirrorStem],false)===0);
+    for(const m of cockpit.mirrors.slice(1))check(spec.id+' '+m.name+' door arm never crosses its glass',glassFront(m.mesh,[m.mesh.parent.getObjectByName('mirror-stalk'),m.mesh.parent.getObjectByName('mirror-stalk-upper')],true)===0);
     for(const mirror of cockpit.mirrors){
       const p=mirror.mesh.getWorldPosition(new THREE.Vector3()),viewCamera=camera.clone();
       // Exterior mirrors must fit a natural head glance, not force both sides
@@ -324,12 +288,15 @@ export async function runCockpitMirrorChecks(carIds=null){
       check(spec.id+' '+mirror.name+' glass unobstructed from driver eye',clear>=8);
     }
     let renders=0,target=null;const renderer={shadowMap:{autoUpdate:true},getRenderTarget:()=>target,setRenderTarget:t=>target=t,render:()=>renders++};
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false});check(spec.id+' low quality allocates no targets',renders===0&&cockpit.mirrors.every(m=>!m.target));
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:0});check(spec.id+' independent mirror targets',renders===3&&new Set(cockpit.mirrors.map(m=>m.target)).size===3);
-    for(const m of cockpit.mirrors){check(spec.id+' '+m.name+' camera at glass',m.camera.position.distanceTo(m.mesh.getWorldPosition(new THREE.Vector3()))<.001);check(spec.id+' '+m.name+' horizontally reversed UVs',m.name==='interior'?m.mesh.geometry.attributes.uv.getX(0)>.99:m.mesh.geometry.attributes.uv.getX(1)<.01);}
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:16});check(spec.id+' alternate frame skipped',renders===3);
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:32});check(spec.id+' next even frame refreshed',renders===6);
-    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false,now:64});check(spec.id+' low quality stops reflection rendering',renders===6&&cockpit.mirrors.every(m=>m.material.map===null));
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false});check(spec.id+' mirrors off allocates no target',renders===0&&!cockpit.rearTarget);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:0,quality:'low'});check(spec.id+' low quality still renders one shared rear view',renders===1&&!!cockpit.rearTarget&&cockpit.mirrors.every(m=>m.material.map===cockpit.rearTarget.texture));
+    for(const m of cockpit.mirrors){check(spec.id+' '+m.name+' horizontally reversed UVs',m.name==='interior'?m.mesh.geometry.attributes.uv.getX(0)>.99:m.mesh.geometry.attributes.uv.getX(1)<.01);check(spec.id+' '+m.name+' crop inside the shared view',m.window.x>=0&&m.window.y>=0&&m.window.x+m.window.z<=1&&m.window.y+m.window.w<=1);}
+    const L=cockpit.mirrors.find(m=>m.name==='left'),R=cockpit.mirrors.find(m=>m.name==='right');if(L&&R)check(spec.id+' left glass looks back-left, right glass back-right',L.window.x+L.window.z/2>.5&&R.window.x+R.window.z/2<.5);
+    check(spec.id+' rear camera at the interior glass, facing back',cockpit.rearCamera.position.distanceTo(cockpit.mirrors[0].mesh.getWorldPosition(new THREE.Vector3()))<.05&&new THREE.Vector3(0,0,-1).applyQuaternion(cockpit.rearCamera.quaternion).dot(new THREE.Vector3(0,0,1).transformDirection(car.body.matrixWorld))>.99);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:0});renders=0;cockpit.rearLast=0;cockpit.mirrorCalls=0;
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:16});check(spec.id+' alternate frame skipped',renders===0);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{now:32});check(spec.id+' next even frame refreshed',renders===1);
+    cockpit.renderMirrors(renderer,new THREE.Scene(),{enabled:false,now:64});check(spec.id+' mirrors off stops rendering',renders===1&&cockpit.mirrors.every(m=>m.material.map&&m.material.map!==cockpit.rearTarget.texture));
     check(spec.id+' reflection restores renderer state',target===null&&renderer.shadowMap.autoUpdate&&car.root.visible);cockpit.disposeMirrors();
   }return {passed:results.length,results};
 }

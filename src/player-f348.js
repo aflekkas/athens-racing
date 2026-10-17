@@ -2,8 +2,8 @@
 // Dimensions/design references: https://www.ferrari.com/en-EN/auto/348-tb
 // Tyres: https://www.michelinman.com/auto/manufacturers/ferrari/348-tb
 // See tools/models-more-notes.md for estimates and period colour caveats.
-import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import * as THREE from './vehicle-primitives.js';
+import { RoundedBoxGeometry } from './vehicle-primitives.js';
 import { canvasTex } from './util.js';
 
 export const F348_MODEL = {
@@ -41,13 +41,7 @@ export function buildF348(car,d,M,low,plate,H){
   const endPanel=(material,x0,x1,y0,y1,z,name)=>surface(p,material,(u,v)=>[mix(Math.min(x0,x1),Math.max(x0,x1),u),mix(y0,y1,v),z],32,2,name);
   const intakeBounds=z=>{const t=clamp((z+.72)/1.52);return [.305+.035*(1-t)**4+.02*t**8,.645-.018*(1-t)**4-.01*t**8];};
   const amber=new THREE.MeshStandardMaterial({color:'#e49632',roughness:.25,side:THREE.DoubleSide});
-  // Original tiny rearing-horse silhouette, rather than a chess-piece glyph.
-  const horse=new THREE.MeshStandardMaterial({map:canvasTex(128,160,c=>{
-    c.fillStyle='#f0cd2c';c.fillRect(0,0,128,160);c.strokeStyle='#17191b';c.lineWidth=5;c.strokeRect(3,3,122,154);
-    c.fillStyle='#17191b';const path=new Path2D('M 47 117 L 58 91 C 40 81 43 62 59 55 L 70 32 L 66 20 L 76 25 L 88 23 L 92 34 L 84 43 L 75 42 L 72 65 L 91 54 L 105 61 L 103 70 L 88 66 L 76 80 L 73 92 L 89 105 L 85 126 L 76 131 L 78 111 L 63 103 L 55 126 L 40 135 L 32 133 Z');c.fill(path);
-    c.lineWidth=6;c.beginPath();c.moveTo(48,81);c.bezierCurveTo(24,66,39,46,24,42);c.bezierCurveTo(44,42,31,65,52,65);c.stroke();
-  }),roughness:.4});
-  M.badge.map=horse.map;M.badge.color.set('#ffffff');M.badge.needsUpdate=true;
+  const horse=M.badge; // Shared atlas: no per-instance badge texture.
 
   for(const s of [-1,1]){
     const arch=d.r+.037;
@@ -92,15 +86,19 @@ export function buildF348(car,d,M,low,plate,H){
   // Short closed berlinetta cabin; vertical recessed rear window between two sail panels.
   const roofY=(u,x)=>1.145+.025*Math.sin(u*Math.PI)-.025*x*x;
   car.windscreen=surface(p,M.glass,(u,v)=>{const x=2*u-1;return[x*mix(.79,.685,v),mix(.805,roofY(0,x),v)+.012*(1-x*x)*Math.sin(v*Math.PI),mix(d.cowl,d.header,v)-(.025+.018*Math.sin(v*Math.PI))*(1-x*x)];},24,10,'windscreen');
+  if(!d.open){
   surface(p,M.paint,(u,v)=>{const x=2*v-1;return[x*.685,roofY(u,x),mix(d.header-.025*(1-x*x),d.roofBack,u)];},26,18,'roof');
-  surface(p,M.black,(u,v)=>{const x=2*v-1;return[x*.68,roofY(u,x)-.02,mix(d.header-.025*(1-x*x),d.roofBack,u)];},18,12,'348-headliner');
+  }
+  if(!d.spider){
   surface(p,M.paint,(u,v)=>{const x=2*u-1;return[x*mix(.685,.635,v),mix(roofY(1,x),1.11,v),mix(d.roofBack,.515,v)];},22,2,'348-rear-window-header');
   surface(p,M.glass,(u,v)=>[(2*u-1)*.635,mix(1.11,.83,v),mix(.515,.73,v)],22,12,'rear-glass');
+  }
   box(p,M.black,[1.32,.08,.06],[0,.81,.70],.008,[0,0,0],'348-rear-bulkhead');
   for(const s of [-1,1]){
     const A=[s*.79,.805,d.cowl],B=[s*.685,1.12,d.header],C=[s*.685,1.12,.48],D=[s*.79,.805,.62];
+    if(!d.spider){
     patch(p,M.glass,[A,B,C,D],'front-door-glass');line(p,M.black,[A,B,C,D,A],.009,'348-window-seal');
-    line(p,M.paint,[A,B],.023,'solid-a-pillar');line(p,M.paint,[B,C],.019,'solid-roof-rail');
+    line(p,M.paint,[A,B],.023,'solid-a-pillar');if(!d.open)line(p,M.paint,[B,C],.019,'solid-roof-rail');
     patch(p,M.black,[[s*.79,.805,.30],[s*.685,1.12,.30],[s*.685,1.12,.325],[s*.79,.805,.325]],'348-window-divider');
     surface(p,M.paint,(u,v)=>{
       const top=[mix(.685,.855,u),mix(1.12,.823,u)+.012*Math.sin(u*Math.PI),mix(.48,1.44,u)];
@@ -108,6 +106,7 @@ export function buildF348(car,d,M,low,plate,H){
       return[s*(mix(top[0],bottom[0],v)+.008*Math.sin(u*Math.PI)*Math.sin(v*Math.PI)),mix(top[1],bottom[1],v),mix(top[2],bottom[2],v)];
     },24,6,'348-flying-buttress');
     patch(p,M.paint,[[s*.685,1.12,.48],[s*.635,1.11,.515],[s*.66,.83,1.40],[s*.855,.823,1.44]],'348-buttress-inner');
+    }else{line(p,M.paint,[A,B],.023,'solid-a-pillar');if(s<0)box(p,M.cloth,[1.45,.08,.35],[0,.83,.79],.02,[0,0,0],'folded-roof-cover');}
     box(p,M.black,[.12,.025,.06],[s*.93,.825,-.72],.008,[0,0,0],'mirror-stalk');
     const mirrorShell=new RoundedBoxGeometry(.23,.105,.14,2,.022);
     const mp=mirrorShell.attributes.position;for(let i=0;i<mp.count;i++)mp.setY(i,mp.getY(i)-mp.getZ(i)*.10);mirrorShell.computeVertexNormals();
@@ -144,11 +143,7 @@ export function buildF348(car,d,M,low,plate,H){
   for(let j=-4;j<=4;j++)box(p,M.darkAlloy,[.006,.075,.009],[j*.073,.395,F-.028],.001);
   endPanel(M.black,-.80,.80,.20,.277,F-.014,'348-front-grille-lip');
   mesh(p,new THREE.PlaneGeometry(.044,.058),horse,[0,deck(0,F+.12)+.004,F+.12],[-Math.PI/2,0,0],'348-prancing-horse-badge');
-  const silverHorse=new THREE.MeshStandardMaterial({map:canvasTex(64,80,c=>{
-    c.drawImage(horse.map.image,0,0,64,80);const pixels=c.getImageData(0,0,64,80);
-    for(let y=0;y<80;y++)for(let x=0;x<64;x++){const i=(y*64+x)*4,solid=x>8&&x<59&&y>8&&y<72&&pixels.data[i]<85;pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=210;pixels.data[i+3]=solid?255:0;}
-    c.putImageData(pixels,0,0);
-  }),transparent:true,metalness:.6,roughness:.3,side:THREE.DoubleSide});
+  const silverHorse=M.badge;
   mesh(p,new THREE.PlaneGeometry(.025,.034),silverHorse,[0,.403,F-.038],[0,Math.PI,0],'348-front-grille-horse');
   mesh(p,new THREE.PlaneGeometry(.043,.058),silverHorse,[0,.705,R+.043],[0,0,0],'348-tail-grille-horse');
   // Closely sampled strips follow the rounded tail instead of vanishing into its centre.
@@ -159,7 +154,7 @@ export function buildF348(car,d,M,low,plate,H){
     endPanel(M.black,-.795,.795,y,y+.013,R+.036,'348-tail-grille-louvre');
     surface(p,M.darkAlloy,(u,v)=>[mix(-.795,.795,u),y+.013,mix(R+.019,R+.036,v)],32,1,'348-tail-louvre-top');
   }
-  mesh(p,new THREE.PlaneGeometry(.12,.042),textMaterial('348 tb',null,'#b9bdc0'),[.58,.845,R+.017],[0,0,0],'348-rear-script');
+  mesh(p,new THREE.PlaneGeometry(.12,.042),textMaterial(car.spec.short,null,'#b9bdc0'),[.58,.845,R+.017],[0,0,0],'348-rear-script');
   mesh(p,new THREE.PlaneGeometry(.19,.034),textMaterial('Ferrari',null,'#b9bdc0'),[0,.833,1.58],[-Math.PI/2,0,0],'348-deck-script');
   for(let j=0;j<18;j++){
     const z=.86+j*.047;

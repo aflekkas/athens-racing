@@ -5,6 +5,7 @@ export const PAINTS = {
   a160: [['Brilliant Silver','#b9bfc2'],['Polar White','#ecece4'],['Night Black','#181b20'],['Mars Red','#b72a25'],['Jaspis Blue','#274660'],['Chrysolite Green','#8d9980']],
   f348: [["Rosso Corsa","#d51b21"],["Giallo Modena","#f5ca24"],["Nero","#17191b"],["Argento Nürburgring","#b8bec2"],["Blu Tour de France","#244572"],["Bianco","#e8e6de"]],
   p928: [["Guards Red","#bd2629"],["Black","#17191c"],["Grand Prix White","#e6e6dd"],["Polar Silver Metallic","#b7c1c8"],["Amethyst Metallic","#504152"],["Midnight Blue Metallic","#242e48"],["Wimbledon Green Metallic","#315d54"]],
+  aventador_svj: [['Verde Alceo','#77b52c'],['Giallo Orion','#eabf24'],['Arancio Atlas','#e76724'],['Bianco Isi','#efefeb'],['Nero Aldebaran','#16191b'],['Grigio Telesto','#677575']],
   cla: [['Obsidian Black Metallic','#111419'],['Polar White','#eeeeeb'],['Cosmos Black','#1b2028'],['Alpine Grey','#8e9398'],['Hyper Blue','#216498'],['Patagonia Red','#922536']],
   gla45: [['Mountain Grey','#737c83'],['Night Black','#14171b'],['Polar White','#ededeb'],['Digital White','#dce1dc'],['Denim Blue','#36536d'],['Patagonia Red','#98253b']],
   e36: [["Boston Green","#455948"],["Alpine White","#e3e4da"],["Calypso Red","#683443"],["Arctic Silver","#abb4b8"],["Avus Blue","#344c83"],["Faded Hellrot","#a85048"]],
@@ -26,6 +27,14 @@ export const PAINTS = {
   superb: [['Lava Blue','#25475b'],['Moon White','#e8ebe5'],['Brilliant Silver','#bdc3c5'],['Black Magic','#1b1d23'],['Velvet Red','#982434'],['Business Grey','#6f7271']],
   police_octavia: [['Police White','#eceee9'],['Fleet Silver','#b9c1c8'],['Graphite Grey','#656c73'],['Navy Blue','#243d63'],['Black Magic','#181c24'],['Candy White','#f4f3ed']],
 };
+PAINTS.a190=PAINTS.a160;
+PAINTS.sl400=PAINTS.sl65;
+PAINTS.sl500=PAINTS.sl65;
+PAINTS.sl63=PAINTS.sl65;
+PAINTS.f348_ts=PAINTS.f348;
+PAINTS.f348_spider=PAINTS.f348;
+PAINTS.p928_s4=PAINTS.p928;
+PAINTS.p928_gt=PAINTS.p928;
 export function validPaint(color) { return typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color); }
 export function savedPaint(spec) {
   try { const c=localStorage.getItem('paraliaki.paint.'+spec.id);if(validPaint(c))return c.toLowerCase(); } catch {}

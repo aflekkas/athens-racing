@@ -262,15 +262,15 @@ export const TEXTURE_MANIFEST = {
     "enabled": false
   },
   "/assets/brand-badges/atlas.svg": {
-    "url": "/assets/tex/ktx2/atlas-e411dc0f1a1b8d57.ktx2",
-    "sourceHash": "32ff8604c9a69863b7120fe5213ca4b016792776a8e13a026666001cc25e41f5",
-    "bytes": 71830,
+    "url": "/assets/tex/ktx2/atlas-3ba43fb8a5268342.ktx2",
+    "sourceHash": "9ac7ef87c7d87cc714a3647cf2dc6cd20368973948f2ed383db601c258a2a67a",
+    "bytes": 76595,
     "mode": "uastc",
     "sharp": true,
     "average": [
-      0.5955555555555556,
-      0.5837908496732026,
-      0.5416993464052288
+      0.6061919504643962,
+      0.5826625386996903,
+      0.46253869969040246
     ],
     "enabled": true
   }

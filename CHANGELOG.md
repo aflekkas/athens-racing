@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Drive the Mercedes SL and A-Class, Ferrari 348 and Porsche 928, with 12 trims, period cockpits and distinct engine sounds.
+- Choose the 348 coupe, targa or Spider, and watch the 928’s headlamps rise at night.
+
 - Crests and hard collisions can launch, spin or roll your car. If you stop on the roof or side, recovery becomes available after a short wait.
 - Side streets share detailed asphalt. Psychiko’s roundabouts have islands and kerbs; traffic goes counter-clockwise and gives way on entry.
 

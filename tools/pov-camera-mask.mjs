@@ -1,6 +1,6 @@
 import {povSourceHashes} from './pov-mask-evidence.mjs';
 import fs from 'node:fs/promises';import {createServer} from 'node:http';
-const {chromium}=await import('/tmp/pw/node_modules/playwright/index.mjs');const root=process.cwd(),out=root+'/.scratch/pov-camera';await fs.mkdir(out,{recursive:true});
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');const root=process.cwd(),out=root+'/.scratch/pov-camera';await fs.mkdir(out,{recursive:true});
 const sourceHashes=await povSourceHashes();
 const html=`<html><body style="margin:0"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><script type="module">
 import * as T from 'three';import {CARS,CarModel} from '/src/cars.js';import {Cockpit} from '/src/cockpit.js';import {renderPovMask} from '/tools/pov-mask.js';import {renderStructureMask} from '/tools/cockpit-structure-mask.js';import {auditPov} from '/tools/pov-audit.js';import {settings} from '/src/settings.js';import {setPovExteriorView} from '/src/pov-visibility.js';
@@ -11,7 +11,7 @@ const opaque=renderPovMask(renderer,model,camera,1280,800,false);row.after.unobs
 const structure=renderStructureMask(renderer,model,camera);row.structure=structure.roles;row.structureImage=structure.image;return row;};window.ready=true;
 </script></body></html>`;
 const server=createServer(async(req,res)=>{try{if(req.url==='/fixture'){res.setHeader('Content-Type','text/html');res.end(html);return;}const path=root+decodeURIComponent(req.url.split('?')[0]);res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.svg')?'image/svg+xml':'application/octet-stream');res.end(await fs.readFile(path));}catch{res.statusCode=404;res.end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
-const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 try{const page=await browser.newPage({viewport:{width:1280,height:800}});page.on('pageerror',e=>console.log('ERROR',e.stack));await page.goto('http://127.0.0.1:'+server.address().port+'/fixture');await page.waitForFunction(()=>window.ready);const rows=[];
 for(const id of process.env.CAPTURE_IDS?.split(',')||await page.evaluate(()=>ids)){const row=await page.evaluate(id=>capture(id),id);for(const phase of ['before','after'])for(const kind of ['image','mask']){await fs.writeFile(out+'/'+phase+'-'+id+'-'+kind+'.png',Buffer.from(row[phase][kind],'base64'));delete row[phase][kind];}await fs.writeFile(out+'/opaque-'+id+'-mask.png',Buffer.from(row.opaqueMask,'base64'));delete row.opaqueMask;await fs.writeFile(out+'/structure-'+id+'-mask.png',Buffer.from(row.structureImage,'base64'));delete row.structureImage;rows.push(row);await fs.writeFile(out+'/mask-audit.json',JSON.stringify(rows,null,2));console.log(id,row.before.windscreenPercent.toFixed(2),row.after.windscreenPercent.toFixed(2));}
 await fs.writeFile(out+'/mask-source-hashes.json',JSON.stringify(sourceHashes,null,2));

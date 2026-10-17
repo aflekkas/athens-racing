@@ -2,7 +2,8 @@
 // Dimensions: Mercedes C236 technical data, 2024 CLE 300 4MATIC European coupe.
 // https://media.mercedes-benz.fr/decouvrez-la-nouvelle-mercedes-benz-cle/
 // https://nd-mediagallery2-public-production.s3.amazonaws.com/215df8a0a2f426ec8e82796a0eaca795/techdata_cle_c236_806_056.pdf
-import * as THREE from 'three';
+import * as THREE from './vehicle-primitives.js';
+import { tintGlass } from './glass-tint.js';
 import { buildA160 } from './player-a160.js';
 
 export const MERCEDES_MODELS = {
@@ -17,7 +18,7 @@ export const MERCEDES_MODELS = {
   // H247 AMG-specific width/track; manufacturer 2020 press kit and MY24 drawings.
   gla45: { mercedes:true,suv:true,amg:true,sculpted:true,L:4.443,W:1.849,H:1.590,wb:2.729,track:1.615,trackRear:1.590,axleOffset:-.065,r:.356,rim:.254,tyreF:.255,tyreR:.255,belt:1.065,front:.88,rear:1.06,cowl:-.94,header:-.37,roofBack:1.52,back:2.035,hatchGlassY:1.17,seatZ:.18,eyeY:1.165,doors:4,leather:'#292b2d' },
   // New 2025 CLA hybrid is C178, sister to electric C174. Mercedes UK technical data.
-  cla: { mercedes:true,cla:true,sculpted:true,blackRoof:true,L:4.723,W:1.855,H:1.450,wb:2.790,track:1.605,axleOffset:-.045,r:.334,rim:.241,tyreF:.225,tyreR:.255,belt:1.00,front:.74,rear:1.00,cowl:-.97,header:-.48,roofBack:1.08,back:1.84,seatZ:.21,eyeY:1.065,doors:4,leather:'#c4b5a0' },
+  cla: { mercedes:true,cla:true,cla118:true,sculpted:true,blackRoof:true,L:4.688,W:1.830,H:1.439,wb:2.729,track:1.605,axleOffset:-.045,r:.334,rim:.241,tyreF:.225,tyreR:.255,belt:1.00,front:.74,rear:1.00,cowl:-.97,header:-.48,roofBack:1.08,back:1.84,seatZ:.21,eyeY:1.065,doors:4,leather:'#c4b5a0' },
   cle: { mercedes:true,sculpted:true,mirrorSetback:.18,L:4.850,W:1.861,H:1.428,wb:2.865,track:1.605,axleOffset:-.12,r:.337,rim:.241,tyreF:.245,tyreR:.275,belt:.98,front:.75,rear:.95,cowl:-.94,header:-.32,roofBack:1.04,back:1.98,seatZ:.20,eyeY:1.080,doors:2,leather:'#875b43' },
 };
 const mix=THREE.MathUtils.lerp,clamp=THREE.MathUtils.clamp;
@@ -48,7 +49,7 @@ function sculptedContour(d){
     };
   }
   if(d.cla){
-    // C174 manufacturer side profile; C178 hybrid shares the arched glasshouse.
+    // C118 arched glasshouse; shared contour is a procedural approximation.
     // https://media.mercedes-benz.fr/download/a39ec976-adb6-4310-a492-951866f5b9e5/brochure-cla-c174-29-04-2025.pdf
     return {
       belt:z=>contour([[d.cowl,1.012],[.15,1.060],[1.38,1.095],[d.back,1.014]],z),
@@ -105,11 +106,8 @@ export function buildMercedes(car,d,M,low,plate,H){
   const p=car.body,F=-d.L/2,R=d.L/2,W=d.W/2,ax=d.axleOffset||0,S=mercedesSurface(d),C=S.contour,arch=d.r+(C?.archGap||.055);
   const suv=!!d.suv,amg=!!d.amg,cla=!!d.cla;
   car.mercedesSurface=S;
-  const rearGlass=(suv||C)?M.glass.clone():M.glass;if(suv||C){rearGlass.color.set('#182b35');rearGlass.opacity=.78;rearGlass.metalness=.02;rearGlass.envMapIntensity=.25;rearGlass.userData.playerGlass=true;}
-  // R231 roof-down glass needs its own material: the common roadster pass later
-  // makes M.glass almost invisible. Keep this pane in the damage and road LODs.
-  const screenGlass=d.sl?M.glass.clone():M.glass;
-  if(d.sl){screenGlass.color.set('#567b80');screenGlass.opacity=.36;screenGlass.metalness=0;screenGlass.roughness=.055;screenGlass.ior=1.52;screenGlass.envMapIntensity=.65;screenGlass.forceSinglePass=true;screenGlass.userData.playerGlass=true;M.head.color.set('#59666e');M.head.roughness=.16;M.head.metalness=.38;}
+  const rearGlass=(suv||C)?M.glass.clone():M.glass;if(suv||C){tintGlass(rearGlass,'privacy');rearGlass.envMapIntensity=.5;rearGlass.userData.playerGlass=true;}
+  const screenGlass=M.glass;
   const windowBelt=C?.belt||(z=>suv?sample([[d.cowl,d.belt+.024],[.35,d.belt+.038],[1.5,d.hatchGlassY-.016],[d.back,d.hatchGlassY]],z):d.belt+.024);
   for(const s of [-1,1]){
     surface(p,M.paint,(u,v)=>{const z=mix(F,R,u);let bottom=.19;for(const a of [-d.wb/2+ax,d.wb/2+ax])if(Math.abs(z-a)<arch)bottom=Math.max(bottom,d.r+Math.sqrt(arch*arch-(z-a)**2));const y=mix(bottom,S.top(z),v);const x=s*S.side(z,y);return[x,y,S.longitudinal(x,z,y)];},C?128:suv?128:160,(suv||C)?10:12,'body-side');
@@ -147,7 +145,6 @@ export function buildMercedes(car,d,M,low,plate,H){
   surface(p,rearGlass,(u,v)=>{const x=2*u-1;return[x*mix(rw,bw,v),mix(railY(d.roofBack),suv?d.hatchGlassY:C?windowBelt(d.back):d.belt+.014,v)+.012*(1-x*x),mix(d.roofBack,d.back,v)];},22,12,'rear-glass');
   if(suv)surface(p,M.paint,(u,v)=>{const x=2*u-1,y=mix(d.hatchGlassY+.012*(1-x*x),S.top(R)+.036*(1-x*x),v);return[x*mix(bw,S.side(R,S.top(R)),v),y,mix(d.back,S.face(x*S.side(R,S.top(R)),R,S.top(R)),v)];},24,8,'boot-hatch-shoulder');
   surface(p,cla&&!C?M.black:M.paint,(u,v)=>{const x=2*v-1;return[x*rw,roof(u,x),mix(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'roof');
-  surface(p,M.cloth,(u,v)=>{const x=2*v-1;return[x*(rw-.008),roof(u,x)-.018,mix(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'headliner');
   }else{
     if(d.sl){
       surface(p,M.paint,(u,v)=>{const x=2*u-1;return[x*rw,railY(d.header)+.018*(1-x*x)+.008*Math.sin(v*Math.PI),d.header-.045*(1-x*x)+mix(-.018,.065,v)];},24,3,'sl-header-rail');
@@ -188,9 +185,6 @@ export function buildMercedes(car,d,M,low,plate,H){
       }else line(p,M.paint,[[s*bw,windowBelt(d.cowl),d.cowl],[s*glassX(.5),mix(windowBelt(d.cowl),railY(d.header),.5),mix(d.cowl,d.header,.5)],[s*rw,railY(d.header),d.header]],.027);
       line(p,M.chrome,Array.from({length:25},(_,i)=>{const z=mix(d.cowl,d.back,i/24);return[s*bw,windowBelt(z)+.008,z];}),.005);
     }
-    box(p,M.black,[.05,.27,d.back-d.cowl-.35],[s*(W-.15),d.belt-.15,(d.cowl+d.back)/2],.022,[0,0,0],'door-card');
-    box(p,M.seat,[.035,.10,.70],[s*(W-.18),d.belt-.20,.22],.016,[0,0,0],'door-armrest');
-    box(p,M.chrome,[.016,.022,.12],[s*(W-.205),d.belt-.1,d.cowl+.45],.005,[0,0,0],'door-interior-handle');
     const z=d.cowl+.10;
     car[s<0?'mirrorL':'mirrorR']=mesh(p,new THREE.PlaneGeometry(.205,.078),M.chrome,[s*(W+.10),d.belt+.12,z+.06]);
     if(suv){const z0=d.header+.18,z1=d.roofBack-.12;line(p,M.chrome,Array.from({length:20},(_,i)=>{const z=mix(z0,z1,i/19);return[s*(rw-.035),railY(z)+.046,z];}),.016);for(const z of [z0,z1])box(p,M.black,[.035,.036,.075],[s*(rw-.035),railY(z)+.02,z],.008);}
@@ -199,7 +193,7 @@ export function buildMercedes(car,d,M,low,plate,H){
   cabinFittings(car,d,M,low);
   if(d.sl){
     const badgeCanvas=document.createElement('canvas');badgeCanvas.width=256;badgeCanvas.height=128;
-    const badgeContext=badgeCanvas.getContext('2d');badgeContext.fillStyle='#dce1e4';badgeContext.textAlign='center';badgeContext.font='italic bold 52px Arial';badgeContext.fillText('V12',128,55);badgeContext.font='bold 28px Arial';badgeContext.fillText('BITURBO',128,98);
+    const badgeContext=badgeCanvas.getContext('2d');badgeContext.fillStyle='#dce1e4';badgeContext.textAlign='center';badgeContext.font='italic bold 52px Arial';badgeContext.fillText('V'+car.spec.cyl,128,55);badgeContext.font='bold 28px Arial';badgeContext.fillText('BITURBO',128,98);
     const badgeTexture=new THREE.CanvasTexture(badgeCanvas);badgeTexture.colorSpace=THREE.SRGBColorSpace;
     const wingBadge=new THREE.MeshStandardMaterial({map:badgeTexture,transparent:true,alphaTest:.3,roughness:.28,metalness:.65,side:THREE.DoubleSide});
     for(const s of [-1,1]){
@@ -225,12 +219,13 @@ export function buildMercedes(car,d,M,low,plate,H){
     const g0=new THREE.ShapeGeometry(new THREE.Shape(pts.map(q=>new THREE.Vector2(...q))));
     const raw=g0.toNonIndexed(),a=raw.attributes.position,points=[];
     const triangle=(a,b,c,n)=>{if((suv||C)&&n){const edges=[[a,b,c],[b,c,a],[c,a,b]].sort((x,y)=>y[0].distanceToSquared(y[1])-x[0].distanceToSquared(x[1]));if(edges[0][0].distanceToSquared(edges[0][1])>.0081){const [a,b,c]=edges[0],m=a.clone().lerp(b,.5);triangle(a,m,c,n-1);triangle(m,b,c,n-1);return;}n=0;}if(n){const ab=a.clone().lerp(b,.5),bc=b.clone().lerp(c,.5),ca=c.clone().lerp(a,.5);triangle(a,ab,ca,n-1);triangle(ab,b,bc,n-1);triangle(ca,bc,c,n-1);triangle(ab,bc,ca,n-1);}else for(const q of [a,b,c])points.push(q.x,q.y,(part?.startsWith('light_f')?S.lightFace:S.face)(q.x,z,q.y)+Math.sign(z)*(suv?.019:.012));};
-    for(let i=0;i<a.count;i+=3)triangle(new THREE.Vector3().fromBufferAttribute(a,i),new THREE.Vector3().fromBufferAttribute(a,i+1),new THREE.Vector3().fromBufferAttribute(a,i+2),(suv||C)?10:2);
+    for(let i=0;i<a.count;i+=3)triangle(new THREE.Vector3().fromBufferAttribute(a,i),new THREE.Vector3().fromBufferAttribute(a,i+1),new THREE.Vector3().fromBufferAttribute(a,i+2),(suv||C)?3:1);
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(points.length/3*2),2));g.computeVertexNormals();g0.dispose();raw.dispose();
     const o=mesh(p,g,m,[0,0,0],[0,0,0],name);if(part)o.userData.damagePart=part;return o;
   };
   const stroke=(m,pts,z,r=.006,part)=>{if(suv||C){const dense=[pts[0]];for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/.045);for(let j=1;j<=n;j++)dense.push([mix(a[0],b[0],j/n),mix(a[1],b[1],j/n)]);}pts=dense;}const o=line(p,m,pts.map(([x,y])=>[x,y,(part?.startsWith('light_f')?S.lightFace:S.face)(x,z,y)+Math.sign(z)*(suv?.024:.014)]),r);if(part)o.userData.damagePart=part;return o;};
   const star=(x,y,z,r,m=M.chrome,part)=>{
+    if(m===M.chrome){const face=z+(z<0?-.035:.005),rotation=[0,z<0?Math.PI:0,0];mesh(p,new THREE.CircleGeometry(r,32),M.black,[x,y,face+(z<0?.001:-.001)],rotation,'brand-badge-mount');mesh(p,new THREE.PlaneGeometry(r*2.8,r*2.8),M.badge,[x,y,face],rotation,'brand-badge');return;}
     const o=mesh(p,new THREE.TorusGeometry(r,.004,4,24),m,[x,y,z]);if(part)o.userData.damagePart=part;
     for(let i=0;i<3;i++){const a=Math.PI/2+i*Math.PI*2/3;const q=line(p,m,[[x,y,z],[x+Math.cos(a)*r*.91,y+Math.sin(a)*r*.91,z]],r*.075);if(part)q.userData.damagePart=part;}
   };
@@ -249,7 +244,7 @@ export function buildMercedes(car,d,M,low,plate,H){
   }
   if(C)mesh(p,new THREE.CircleGeometry(d.sl?.130:.094,24),M.black,[0,gy,S.face(0,F,gy)-.047]);
   star(0,gy,C?S.face(0,F,gy)-.052:suv?S.face(0,F,gy)-.023:F-.023,d.sl?.125:C?.089:.101);
-  if(cla)stroke(M.led,[[-.78,.797],[0,.790],[.78,.797]],F,.006,'light_fl');
+  if(cla&&!d.cla118)stroke(M.led,[[-.78,.797],[0,.790],[.78,.797]],F,.006,'light_fl');
   front(M.black,[[-.52,d.sl?.45:.36],[.52,d.sl?.45:.36],[.63,.235],[-.63,.235]],'lower-grille','bumper_f');
   if(d.sl){stroke(M.chrome,[[-.78,.235],[-.55,.22],[0,.215],[.55,.22],[.78,.235]],F,.010,'bumper_f');}
   for(const s of [-1,1]){
@@ -257,7 +252,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     const pts=d.sl?[[.49,.755],[.64,.79],[.82,.825],[.81,.67],[.68,.62],[.51,.64]]:C&&d.doors===2?[[.46,.728],[.65,.774],[.83,.826],[.81,.714],[.59,.660],[.49,.676]]:C&&cla?[[.40,.783],[.69,.804],[.83,.835],[.80,.722],[.56,.713],[.42,.730]]:C?[[.50,.825],[.70,.846],[.84,.901],[.83,.809],[.62,.767],[.51,.783]]:cla?[[.39,fy+.045],[.82,fy+.12],[.79,fy-.04],[.58,fy-.10]]:suv?[[.48,fy+.12],[.80,fy+.13],[.80,fy-.03],[.50,fy-.06]]:[[.48,fy+.02],[.82,fy+.115],[.79,fy-.025],[.55,fy-.095]];
     front(M.head,pts.map(([x,y])=>[s*x,y]),'headlamp-housing','light_f'+side);
     stroke(M.led,d.sl?[[s*.51,.754],[s*.65,.785],[s*.80,.810],[s*.80,.756]]:C&&d.doors===2?[[s*.49,.731],[s*.64,.770],[s*.81,.808]]:C&&cla?[[s*.42,.784],[s*.68,.810],[s*.81,.820]]:C?[[s*.52,.832],[s*.69,.850],[s*.81,.882]]:[[s*pts[0][0],pts[0][1]-.014],[s*.76,pts[1][1]-.025],[s*.80,pts[1][1]-.045]],F,.009,'light_f'+side);
-    if(cla)star(s*.65,(C?.763:fy-.005),S.lightFace(s*.65,F,C?.763:fy)-.033,C?.038:.050,M.led,'light_f'+side);
+    if(cla&&!d.cla118)star(s*.65,(C?.763:fy-.005),S.lightFace(s*.65,F,C?.763:fy)-.033,C?.038:.050,M.led,'light_f'+side);
     else for(const x of [.60,.72]){const y=d.sl?(x===.60?.706:.73):C?(suv?.803:.720):fy-.025;const q=mesh(p,new THREE.CircleGeometry(d.sl?.044:.022,16),M.chrome,[s*x,y,S.lightFace(s*x,F,y)-.026]);q.userData.damagePart='light_f'+side;if(d.sl){const pupil=mesh(p,new THREE.CircleGeometry(.029,16),M.head,[s*x,y,S.lightFace(s*x,F,y)-.028]);pupil.userData.damagePart='light_f'+side;}}
     front(M.black,[[s*.56,suv?.60:d.sl?.485:.43],[s*.73,suv?.63:d.sl?.51:.46],[s*.80,suv?.56:d.sl?.48:.40],[s*.80,.29],[s*.62,.26]],'outer-intake',suv?'structure':'bumper_f');
     if(suv&&!amg){const y=.46;mesh(p,new THREE.CircleGeometry(.043,20),M.chrome,[s*.68,y,S.face(s*.68,F,y)-.022]);}
@@ -266,7 +261,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     const ry=d.rear-.12,tail=d.sl?[[.29,.715],[.54,.82],[.82,.90],[.81,.755],[.66,.715]]:C?[[.24,ry+.028],[.65,ry+.049],[.83,ry+.065],[.80,ry-.025],[.43,ry-.047],[.27,ry-.020]]:cla?[[.32,ry+.06],[.80,ry+.09],[.78,ry-.08],[.34,ry-.07]]:[[.24,ry+.035],[.80,ry+.095],[.77,ry-.06],[.43,ry-.09]];
     front(M.red,tail.map(([x,y])=>[s*x,y]),'rear-lamp-housing','light_r'+side,R);
     stroke(M.tail,[...tail,tail[0]].map(([x,y])=>[s*x,y]),R,d.sl?.006:.013,'light_r'+side);
-    if(cla)for(const x of [.44,.65])star(s*x,ry+.007,S.face(s*x,R,ry)+.035,C?.036:.049,M.tail,'light_r'+side);
+    if(cla&&!d.cla118)for(const x of [.44,.65])star(s*x,ry+.007,S.face(s*x,R,ry)+.035,C?.036:.049,M.tail,'light_r'+side);
     else stroke(M.tail,d.sl?[[s*.37,.736],[s*.62,.74],[s*.78,.77]]:[[s*.39,ry+.005],[s*.68,ry+.037],[s*.70,ry-.025],[s*.48,ry-.042]],R,d.sl?.010:C?.006:.009,'light_r'+side);
     if(d.sl){stroke(M.tail,[[s*.48,.78],[s*.65,.79],[s*.79,.82]],R,.009,'light_r'+side);stroke(M.chrome,[[s*.56,.828],[s*.68,.85],[s*.80,.875]],R,.009,'light_r'+side);}
     if(C){stroke(M.seam,[[s*.61,ry+.052],[s*.59,ry-.040]],R,.003);const wrap=[];for(let i=0;i<=12;i++){const z=mix(R-.24,R-.035,i/12),y=ry+.012;wrap.push([s*(S.side(z,y)+.004),y,S.longitudinal(s*S.side(z,y),z,y)]);}line(p,M.tail,wrap,.018).userData.damagePart='light_r'+side;}
@@ -292,9 +287,7 @@ export function buildMercedes(car,d,M,low,plate,H){
     }
     const x=s*.62+dx,z=(suv||C)?S.face(x,R,.24)-.018:R-.018;const outlet=mesh(p,new THREE.CylinderGeometry(.039,.039,.11,20,1,true),M.chrome,[x,.24,z],[Math.PI/2,0,0],'exhaust-outlet');outlet.userData.damagePart='bumper_r';mesh(p,new THREE.CircleGeometry(.031,16),M.black,[x,.24,z+.057]);car.exhaust.push(new THREE.Vector3(x,.24,z+.06));
   }
-  if(!suv&&!cla&&!d.sl)for(const s of [-1,1]){const o=ring(p,M.chrome,.055,.009,[s*.62,.245,C?S.face(s*.62,R,.245)+.04:R+.043]);o.scale.set(1.65,.65,1);}
+  if(!amg&&!suv&&!cla&&!d.sl)for(const s of [-1,1]){const o=ring(p,M.chrome,.055,.009,[s*.62,.245,C?S.face(s*.62,R,.245)+.04:R+.043]);o.scale.set(1.65,.65,1);}
   car.plate=plate;M.plate=makePlateMaterial(plate);
   for(const end of [F,R]){const y=end<0?.44:.64,z=(suv||C)?S.face(0,end,y):end;box(p,M.black,[.535,.124,.019],[0,y,z+Math.sign(z)*.012],.006);mesh(p,new THREE.PlaneGeometry(.51,.108),M.plate,[0,y,z+Math.sign(z)*.025],[0,z<0?Math.PI:0,0],'registration');}
-  // Procedural badge reused on the steering wheel; not a downloaded logo texture.
-  const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#111419';ctx.fillRect(0,0,128,128);ctx.strokeStyle='#d4dbe0';ctx.lineWidth=5;ctx.beginPath();ctx.arc(64,64,54,0,Math.PI*2);ctx.stroke();for(let i=0;i<3;i++){const a=-Math.PI/2+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(64,64);ctx.lineTo(64+50*Math.cos(a),64+50*Math.sin(a));ctx.stroke();}const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;M.badge.map?.dispose();M.badge.map=tex;M.badge.needsUpdate=true;
 }
