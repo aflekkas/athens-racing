@@ -1,0 +1,17 @@
+[
+  "src/cars.js",
+  "src/cockpit.js",
+  "src/fleet-cockpit.js",
+  "src/glass-tint.js",
+  "src/main.js",
+  "src/traffic-fleet.js",
+  "src/vehicle-budgets.js",
+  "src/vehicle-models.js",
+  "tools/cockpit-structure.test.mjs",
+  "tools/test-groups.json",
+  "tools/vehicle-budget-support.mjs",
+  "tools/vehicle-budgets.test.mjs",
+  "src/vehicle-cabin.js",
+  "tools/cabin-floor.test.mjs",
+  "docs/OWNER-DECISIONS.md"
+]

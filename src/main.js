@@ -452,7 +452,7 @@ function disposeCar(c) {
     c.far.root.traverse((o) => { for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) if (!m.userData?.shared) m.dispose?.(); });
     c.far = null;
   }
-  c.cockpit?.disposeMirrors();
+  (c.cockpit||c.model?.cockpit)?.disposeMirrors();
   c.model.disposeDamage?.();
   scene.remove(c.model.root);
   const liveMaterials = new Set(), liveTextures = new Set();
@@ -2094,7 +2094,7 @@ function step(dt, draw = true) {
   }
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
-  // The thin cabin exists only in the player cockpit view.
+  // Select own-car glass/structure visibility; the empty cabin stays visible outside.
   player.cockpit.setDetail(G.cam === 'cockpit');
   player.cockpit.setVisible(G.cam === 'cockpit');
   player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: input.handbrake && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });

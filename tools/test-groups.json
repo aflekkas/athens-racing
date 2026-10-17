@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/cabin-floor.test.mjs",
     "tools/pov-owner-lock.test.mjs",
     "tools/pov-camera.test.mjs",
     "tools/cockpit-structure.test.mjs",

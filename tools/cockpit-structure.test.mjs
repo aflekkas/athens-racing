@@ -35,7 +35,7 @@ test('all catalogue cockpit controls visibly rotate with steering, retain badge 
    if(spec.nativeFleet!=='bus')assert.ok(cockpit.structure.getObjectByName('cockpit-deck'),spec.id+' front deck geometry missing. '+WHY);
    assert.ok(cockpit.structure.getObjectByName('cockpit-header'),spec.id+' missing windscreen header. '+WHY);
   }
-  cockpit.setVisible(false);assert.equal((cockpit.lod||cockpit.group).visible,false,WHY);cockpit.setVisible(true);assert.equal((cockpit.lod||cockpit.group).visible,true,WHY);cockpit.disposeMirrors();model.disposeDamage?.();
+  cockpit.setVisible(false);assert.equal((cockpit.lod||cockpit.group).visible,true,'Empty authored cabin remains visible outside. '+WHY);cockpit.setVisible(true);assert.equal((cockpit.lod||cockpit.group).visible,true,WHY);cockpit.disposeMirrors();model.disposeDamage?.();
  }
 });
 test('rain is one shared alpha-texture overlay and blades remain on the framed windscreen',async()=>{

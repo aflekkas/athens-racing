@@ -1,14 +1,17 @@
 import {setPovExteriorView} from './pov-visibility.js';
-// Owner-locked: dark, opaque exterior windows; no glazing in the owner's POV.
-export const GLASS_TINT = Object.freeze(Object.fromEntries(['cabin','privacy','open','far'].map(k=>[k,Object.freeze({color:'#0b151b',opacity:1})])));
-export function tintGlass(m,kind='cabin') {
-  const t=GLASS_TINT[kind]||GLASS_TINT.cabin;
-  m.color.set(t.color);m.opacity=1;m.transparent=false;m.depthWrite=true;
-  m.metalness=0;m.roughness=.22;m.envMap=null;
-  if('clearcoat' in m)m.clearcoat=0;
-  if('transmission' in m)m.transmission=0;
-  m.userData.vehicleGlass=true;
-  return m;
+// 2026-10-17 owner authorization: normal lightly tinted reflective exterior glass.
+// Alpha blending avoids a transmission render pass. Own POV glazing stays hidden.
+export const GLASS_TINT=Object.freeze({
+ cabin:{color:'#a4b9b7',opacity:.20},privacy:{color:'#8ca5a8',opacity:.28},
+ open:{color:'#c4d4cf',opacity:.12},far:{color:'#a4b9b7',opacity:.20},
+});
+export function tintGlass(m,kind='cabin'){
+ const t=GLASS_TINT[kind]||GLASS_TINT.cabin;
+ m.color.set(t.color);m.opacity=t.opacity;m.transparent=true;m.depthWrite=false;
+ m.metalness=0;m.roughness=.08;m.envMapIntensity=.7;m.forceSinglePass=true;
+ if('transmission' in m)m.transmission=0;
+ m.userData.vehicleGlass=true;
+ return m;
 }
 // Called after damage/LOD updates. Only this car is affected; mirrors and other
 // cars keep their exterior glazing. Preserve prior visibility across switches.

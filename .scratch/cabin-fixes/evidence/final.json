@@ -1,0 +1,464 @@
+[
+  {
+    "id": "mini",
+    "rays": [
+      {
+        "dx": -0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0038547625851741
+      },
+      {
+        "dx": -0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7470817648646221
+      },
+      {
+        "dx": -0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7242923545790139
+      },
+      {
+        "dx": -0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7399950093529634
+      },
+      {
+        "dx": 0,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9940627400134652
+      },
+      {
+        "dx": 0,
+        "dz": -0.35,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7387251423579487
+      },
+      {
+        "dx": 0,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7156696776168077
+      },
+      {
+        "dx": 0,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7315574389108648
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0038547625851795
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7470817648646244
+      },
+      {
+        "dx": 0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7242923545790155
+      },
+      {
+        "dx": 0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7399950093529634
+      }
+    ]
+  },
+  {
+    "id": "golf",
+    "rays": [
+      {
+        "dx": -0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0103294990371499
+      },
+      {
+        "dx": -0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7525815405769463
+      },
+      {
+        "dx": -0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7294383434386473
+      },
+      {
+        "dx": -0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7453853973592709
+      },
+      {
+        "dx": 0,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0004054496669508
+      },
+      {
+        "dx": 0,
+        "dz": -0.35,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7440958705768285
+      },
+      {
+        "dx": 0,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7206802246980558
+      },
+      {
+        "dx": 0,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7368168564770747
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0103294990371516
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7525815405769465
+      },
+      {
+        "dx": 0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7294383434386486
+      },
+      {
+        "dx": 0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7453853973592726
+      }
+    ]
+  },
+  {
+    "id": "huracan",
+    "rays": [
+      {
+        "dx": -0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9518128411130979
+      },
+      {
+        "dx": -0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.8541783335821497
+      },
+      {
+        "dx": -0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6239048097209259
+      },
+      {
+        "dx": -0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6275924742901177
+      },
+      {
+        "dx": 0,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9375835931309773
+      },
+      {
+        "dx": 0,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.8382934660140176
+      },
+      {
+        "dx": 0,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6110065717068203
+      },
+      {
+        "dx": 0,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6155408629993625
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9518128411130996
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.8541783335821512
+      },
+      {
+        "dx": 0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.623904809720927
+      },
+      {
+        "dx": 0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6275924742901382
+      }
+    ]
+  },
+  {
+    "id": "e36",
+    "rays": [
+      {
+        "dx": -0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.028240154401039
+      },
+      {
+        "dx": -0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9503867309630911
+      },
+      {
+        "dx": -0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7310963984541989
+      },
+      {
+        "dx": -0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7497895653912245
+      },
+      {
+        "dx": 0,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0167550378994392
+      },
+      {
+        "dx": 0,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9379487887736362
+      },
+      {
+        "dx": 0,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7208005421909678
+      },
+      {
+        "dx": 0,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7397539254101027
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0282401544010418
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9503867309630899
+      },
+      {
+        "dx": 0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7310963984542002
+      },
+      {
+        "dx": 0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7497895653912284
+      }
+    ]
+  },
+  {
+    "id": "f348",
+    "rays": [
+      {
+        "dx": -0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9865809010086388
+      },
+      {
+        "dx": -0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.8919056334822071
+      },
+      {
+        "dx": -0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6635556700790668
+      },
+      {
+        "dx": -0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6532956314281457
+      },
+      {
+        "dx": 0,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.972741259116932
+      },
+      {
+        "dx": 0,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.8765724967112974
+      },
+      {
+        "dx": 0,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6509804258710695
+      },
+      {
+        "dx": 0,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.641726906614823
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9865809010086303
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.8919056334822066
+      },
+      {
+        "dx": 0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.663555670079067
+      },
+      {
+        "dx": 0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.6532956314281645
+      }
+    ]
+  },
+  {
+    "id": "cle",
+    "rays": [
+      {
+        "dx": -0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0238992014184574
+      },
+      {
+        "dx": -0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9486723125593687
+      },
+      {
+        "dx": -0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.730692223343676
+      },
+      {
+        "dx": -0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7487174317644901
+      },
+      {
+        "dx": 0,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0127904029645043
+      },
+      {
+        "dx": 0,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.9366717580285968
+      },
+      {
+        "dx": 0,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7207712014734329
+      },
+      {
+        "dx": 0,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7390384240663985
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.6,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 1.0238992014184594
+      },
+      {
+        "dx": 0.18,
+        "dz": -0.35,
+        "hit": "cabin-foundation/sealed-carpet-footwell",
+        "d": 0.948672312559367
+      },
+      {
+        "dx": 0.18,
+        "dz": 0,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7306922233436774
+      },
+      {
+        "dx": 0.18,
+        "dz": 0.2,
+        "hit": "cabin-foundation/empty-cabin-seats",
+        "d": 0.7487174317644922
+      }
+    ]
+  }
+]

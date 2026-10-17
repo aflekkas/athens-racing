@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import {ExhaustFlames} from './exhaust-flames.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
-import { trimMat } from './cockpit.js';
+import { trimMat, Cockpit } from './cockpit.js';
 import { buildDetailedCar, animateDetailedCar, makePlateMaterial, trafficDetailedModel } from './vehicle-models.js';
 import {buildPlayerFleet,animatePlayerFleet} from './player-fleet.js';
 import { fleetModel } from './traffic-fleet.js';
@@ -1718,6 +1718,7 @@ export class CarModel {
     setPaint(this, savedPaint(spec));
     this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     if(spec.exhaustPops)this.exhaustFlames=new ExhaustFlames(this);
+    this.cockpit = new Cockpit(spec,this);
     this.wheelSpin = 0;
     // contact shadow
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());
