@@ -1,20 +1,12 @@
-# Side-street asphalt verification
+# Side-street asphalt: retained evidence
 
-Before: production source at 492f14e. After: the two road fixes in this change.
-Native game-canvas PNGs, 960×600, fixed side-street camera positions, low preset.
-The same road sample is used on each map. All eight images were visually inspected.
+Already landed before this continuation: 7284891. Shared world-space asphalt albedo/normal detail and cheap dark edges cover drivable side roads, merged per chunk. No per-road texture allocations or extra marking meshes were added. The material is independent of optional scenery detail.
 
-The OSM network did bind the asphalt albedo, but reduced it to a narrow grey
-multiplier and omitted the normal scan; its aggregate and repairs were nearly
-invisible. The shared world-space scan now retains contrast and normal detail,
-with a cheap dark edge. The legacy Riviera strips use the same asphalt function.
-No per-road texture allocations or marking meshes were added. Network mesh counts
-before/after: Riviera 90/90, Penteli 70/70, Psychiko 73/73, Megara 9/9.
-Psychiko's route corrections alter its triangle count, not its road draw count.
+Historical fixed-camera before/after samples (baseline 492f14e):
 
-The base road treatment is independent of the optional realism detail layer;
-no graphics preset, draw distance, or owner-locked scenery setting was changed.
-Capture: `bash tools/browser-slot.sh node tools/road-fixes-capture.mjs after`.
-For before captures use `before` and set ROAD_REPOSITORY to a checkout containing
-492f14e (or override ROAD_BASELINE). The baseline road shader and Psychiko map are
-served from that commit without checking out or changing the shared worktree.
+- Riviera: [before](before-riviera.webp), [after](after-riviera.webp)
+- Penteli: [before](before-penteli.webp), [after](after-penteli.webp)
+- Psychiko: [before](before-psychiko.webp), [after](after-psychiko.webp)
+- Megara: [before](before-megara.webp), [after](after-megara.webp)
+
+Coverage: tools/road-asphalt.test.mjs, road network tests and roundabout tests. Current clean-archive gate results are recorded in the continuation report. Original PNGs remain in Git history; only these WebP comparisons are retained here.

@@ -43,7 +43,7 @@ Rendering slerps the quaternion, uses endpoint vertical velocities for a Hermite
 
 ## Evidence and reproduction
 
-`.scratch/airborne/` contains before/after JSON traces and summary logs, three GIFs, three contact sheets and 26 full-size browser frames. Baseline logs run the same controlled surfaces against 492f14e; the legacy kerb response is a damped spring kick because there was no free-body impact method. Barrier evidence calls the real `Ground._hit`. Browser evidence uses production vehicle models, Ground and Vehicle, with controlled asphalt geometry; the bus kerb contact is prescribed to isolate the CoM comparison. It is not an uncontrolled playthrough of a named map.
+`.scratch/airborne/REPORT.md` links the three retained WebP contact sheets and summarizes the controlled scenarios. Intermediate frames, raw dumps and GIFs were pruned; the original evidence remains in Git history. Regenerate it with the tools below.
 
 ```sh
 node --import ./tools/damage-test-register.mjs tools/airborne-logs.mjs after
