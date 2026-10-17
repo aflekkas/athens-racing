@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Loading stays busy while the track unpacks and builds. Pausing a download stops its connection; Retry continues from the saved parts.
+
 - Riviera keeps downloading on slow connections. After a dropped connection, retry with completed parts kept, or choose to build the track on your device.
   ![Riviera downloading with measured bytes and four loading steps](assets/changelog/2026.10.16.1/riviera-download-retry.webp "See the actual download size, with a way back to the menu.")
 

@@ -18,7 +18,7 @@ export class WorldDownloads {
     return { loadedBytes: this.files.reduce((sum, file) => sum + file.received, 0), totalBytes: declared ? Object.values(this.totals).reduce((a, b) => a + b, 0) : known ? this.files.reduce((sum, file) => sum + file.total, 0) : null, responseBytes: this.responseBytes };
   }
   reset(kind) {
-    for (const file of this.groups[kind]) Object.assign(file, { received: 0, chunks: [], blob: null, reload: true });
+    for (const file of this.groups[kind]) Object.assign(file, { received: 0, chunks: [], blob: null, total: file.expected?.bytes ?? null, reload: true });
     this.onProgress(this.snapshot());
   }
   blob(kind) { return new Blob(this.groups[kind].map(file => file.blob)); }
@@ -46,11 +46,15 @@ export class WorldDownloads {
     finally { globalThis.removeEventListener?.('offline', offline); }
   }
   async read(file, batchSignal) {
-    const controller = new AbortController(); let timer, reader;
+    const controller = new AbortController(); let timer, reader, response, cancellation;
     const abort = () => controller.abort(batchSignal.reason);
     const resetIdle = () => { clearTimeout(timer); timer = setTimeout(() => controller.abort(new WorldDownloadError('timeout', 'No world data arrived for 30 seconds', file.url)), this.idleMs); };
     batchSignal.addEventListener('abort', abort, { once: true });
-    controller.signal.addEventListener('abort', () => { void reader?.cancel(controller.signal.reason).catch(() => {}); }, { once: true });
+    const cancelBody = () => {
+      const stream = reader || response?.body;
+      if (stream) cancellation ||= stream.cancel(controller.signal.reason).catch(() => {});
+    };
+    controller.signal.addEventListener('abort', cancelBody, { once: true });
     resetIdle();
     try {
       // A sibling may fail after our last byte but before EOF. Verify locally
@@ -58,14 +62,14 @@ export class WorldDownloads {
       if (file.total !== null && file.received === file.total) { await this.finish(file); return; }
       if (globalThis.navigator?.onLine === false) throw new WorldDownloadError('offline', 'The connection is offline', file.url);
       const offset = file.received;
-      const response = await fetch(file.url, { signal: controller.signal, cache: file.reload ? 'reload' : 'default', ...(offset ? { headers: { Range: `bytes=${offset}-` } } : {}) });
+      response = await fetch(file.url, { signal: controller.signal, cache: file.reload ? 'reload' : 'default', ...(offset ? { headers: { Range: `bytes=${offset}-` } } : {}) });
       controller.signal.throwIfAborted(); resetIdle();
       if (!response.ok) throw new WorldDownloadError('http', `World data HTTP ${response.status}`, file.url);
       const range = response.headers.get('Content-Range'), size = Number(response.headers.get('Content-Length'));
       let skip = offset;
       if (response.status === 206) {
         const parsed = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(range || '');
-        if (!parsed || Number(parsed[1]) !== offset) throw new WorldDownloadError('invalid', 'Invalid world data range', file.url);
+        if (!parsed || Number(parsed[1]) !== offset || Number(parsed[2]) < offset || Number(parsed[2]) >= Number(parsed[3]) || response.headers.has('Content-Length') && size !== Number(parsed[2]) - offset + 1) throw new WorldDownloadError('invalid', 'Invalid world data range', file.url);
         file.total = Number(parsed[3]); skip = 0;
       } else if (response.headers.has('Content-Length')) file.total = size;
       if (file.expected && file.total !== null && file.total !== file.expected.bytes) throw new WorldDownloadError('invalid', 'World file length changed', file.url);
@@ -75,7 +79,7 @@ export class WorldDownloads {
       while (true) {
         const { done, value } = await reader.read(); controller.signal.throwIfAborted();
         if (done) break;
-        resetIdle(); this.responseBytes += value.byteLength;
+        if (value.byteLength) resetIdle(); this.responseBytes += value.byteLength;
         // Some CDNs ignore Range and return 200. Keep retained bytes and skip
         // the repeated prefix; new packages limit this replay to one small part.
         const ignored = Math.min(skip, value.byteLength); skip -= ignored;
@@ -87,9 +91,18 @@ export class WorldDownloads {
       await this.finish(file);
     } catch (e) {
       if (controller.signal.aborted) throw controller.signal.reason;
-      if (e.code === 'invalid') { file.chunks = []; file.received = 0; file.blob = null; file.reload = true; }
-      throw e instanceof WorldDownloadError ? e : new WorldDownloadError(globalThis.navigator?.onLine === false ? 'offline' : 'network', e.message || 'World connection failed', file.url);
-    } finally { clearTimeout(timer); batchSignal.removeEventListener('abort', abort); reader?.releaseLock(); }
+      if (e.code === 'invalid') { file.chunks = []; file.received = 0; file.blob = null; file.total = file.expected?.bytes ?? null; file.reload = true; }
+      const failure = e instanceof WorldDownloadError ? e : new WorldDownloadError(globalThis.navigator?.onLine === false ? 'offline' : 'network', e.message || 'World connection failed', file.url);
+      // Header/size validation can fail before EOF (even before a reader exists).
+      // Stop this response too: the lane's later batch abort only reaches siblings.
+      controller.abort(failure);
+      throw failure;
+    } finally {
+      clearTimeout(timer); batchSignal.removeEventListener('abort', abort);
+      // Also catch a response delivered after cancellation, before acquiring its reader.
+      if (controller.signal.aborted) { cancelBody(); await cancellation; }
+      reader?.releaseLock();
+    }
   }
 }
 export async function inflateWorldGzip(blob) {

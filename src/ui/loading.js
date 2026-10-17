@@ -39,7 +39,7 @@ const MILESTONES = [
   [/^(BUILDING|PAVING|FUELLING)/, 2, null, 'build'],
 ];
 const PHASES = {
-  download: [1, 'DOWNLOADING THE TRACK'], inflate: [1, 'UNPACKING THE TRACK'], decode: [1, 'UNPACKING THE TRACK'],
+  download: [1, 'DOWNLOADING THE TRACK'], inflate: [2, 'UNPACKING THE TRACK'], decode: [2, 'UNPACKING THE TRACK'],
   generate: [2, 'BUILDING THE TRACK ON THIS DEVICE'], ready: [2, 'BUILDING THE TRACK'],
 };
 /** Player-facing failure copy. Never names files, codecs, workers or HTTP. */
@@ -133,7 +133,7 @@ class LoadingScreen {
   }
   applyRoute() { for (const l of this.route || []) l.style.strokeDashoffset = String(1 - this.p); }
   /** Measured share of the active step, or null when the work cannot be measured. */
-  measured() { const b = this.bytes; return this.step === 1 && b && b.total > 0 ? Math.min(1, b.loaded / b.total) : null; }
+  measured() { const b = this.bytes; return this.step === 1 && this.kind === 'download' && b && b.total > 0 ? Math.min(1, b.loaded / b.total) : null; }
   progress(text, _fraction, detail) {
     const before = `${this.step}|${this.label}|${this.bytes?.loaded}`;
     if (detail && typeof detail === 'object' && detail.phase) {

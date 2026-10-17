@@ -86,6 +86,13 @@ test('download fills only from measured bytes; unknown totals show bytes and kee
   assert.match(dom.ids.lbar.getAttribute('aria-valuetext'), /Step 2 of 4: downloading the track, 13.0 of 36.0 megabytes/);
   assert.equal(dom.steps.fetch.seg.classes.has('progress--indeterminate'), false);
   assert.equal(dom.steps.fetch.seg.style['--p'], 13 / 36);
+  loading.progress('UNPACKING', .3, { phase: 'inflate' });
+  assert.equal(dom.ids.lstat.textContent, 'UNPACKING THE TRACK');
+  assert.equal(dom.steps.fetch.getAttribute('data-state'), 'done');
+  assert.equal(dom.steps.build.getAttribute('data-state'), 'active');
+  assert.ok(dom.steps.build.seg.classes.has('progress--indeterminate'), 'decode, unpack and world building share an unfinished build stage');
+  assert.ok(loading.p < 1, 'the route remains incomplete until loading hides');
+  assert.equal(dom.ids.lbar.attrs.has('aria-valuenow'), false);
   loading.progress('DOWNLOADING', .25, { phase: 'download', loadedBytes: 2 * 1048576, totalBytes: null });
   assert.equal(dom.ids.lpct.textContent, '2.0 MB');
   assert.ok(dom.steps.fetch.seg.classes.has('progress--indeterminate'));
