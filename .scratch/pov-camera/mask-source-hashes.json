@@ -2,7 +2,7 @@
   "src/car-catalog.js": "2fee6a5fc6fff90ec518b3f841e747f023420cac56908b7d861151d8e7ff6e5d",
   "src/cars.js": "bb226d1bd2a4894521feafed03be791eade08b59c050ac7ac492f7110387bebb",
   "src/cockpit-controls.js": "c4b50f4226a8152c64bc9f542f3a5c7deecbfe6d8cd889933aa4ec866c48045d",
-  "src/cockpit-rain.js": "ff2cab3c37f37b6df56dd7c0d9f18e236c6676b265ae7a4b2560d0af578045e7",
+  "src/cockpit-rain.js": "214f792b01609a805034dcfa8121bbb58806c6af0a3e7efa5197c78830214dd7",
   "src/cockpit-seating.js": "23d65abda77669a57df1662218050db3deeab37c20d3229475684c99e16c41f2",
   "src/cockpit-structure.js": "662c405e443ab816af5363b3dedba67ea321509dbdef246e2e7fab3efaa4ee90",
   "src/cockpit-telltales.js": "fe653d167559222c232b5d25ac059c95e5d792b3dc193af1b79af96ba01dd2dc",
@@ -43,6 +43,6 @@
   "src/brand-badges.js": "93d4f7affb60a2308495e1dfe050b3da0c0dfd0677ce6806ef994ddb80b12ae6",
   "assets/brand-badges/atlas.svg": "f75aa9280f71aa2c61c90ce33631b0a6519ca245fe8d07d4b384fb4fefaa6c73",
   "src/texture-manifest.js#badge": "13150f0a23d2664b09553d99316cf6b84dbd707999655548b976eec2f3185e7f",
-  "src/weather.js#cockpit-rain": "70610fbfe5181613fb5fd4410a2414a35bcc79702e8264ca9ecfefeb47df0cb5",
+  "src/weather.js#cockpit-rain": "0ecb8efe9320488ad2e3b5eeccfc99d171108499e6130a22b84ff4c84d8ccc7c",
   "src/main.js#cockpit-camera": "8e82bab526052da27ca46433a483ce45c0167bf69c4d5f139353b13013e15d5a"
 }

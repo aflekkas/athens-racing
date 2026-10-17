@@ -1,7 +1,7 @@
 // One shared, deterministic 128² RGBA atlas: streak / mist / puddle / foam.
-// No simulated drops, emitters, lights, render targets or post-processing.
+// Falling streaks are deterministic instanced quads; no per-drop CPU simulation or extra passes.
 import * as THREE from 'three';
-export const RAIN_BUDGET = Object.freeze({ layers: 2, sprayCards: 18, textureBytes: 65536 });
+export const RAIN_BUDGET = Object.freeze({ streaks: 640, lowStreaks: 320, sprayCards: 18, textureBytes: 65536 });
 let atlas;
 export function rainAtlas() {
   if (atlas) return atlas;
@@ -24,14 +24,46 @@ export function rainAtlas() {
   atlas.name='rain-overlay-atlas';atlas.userData.shared=true;return atlas;
 }
 export function createRain() {
-  const g=new THREE.PlaneGeometry(2,2), inst=new THREE.InstancedBufferGeometry();
+  const g=new THREE.PlaneGeometry(1,1), inst=new THREE.InstancedBufferGeometry();
   inst.index=g.index;inst.attributes=g.attributes;
-  inst.setAttribute('aLayer',new THREE.InstancedBufferAttribute(new Float32Array([0,1]),1));inst.instanceCount=2;
-  const mat=new THREE.ShaderMaterial({uniforms:{uMap:{value:rainAtlas()},uTime:{value:0},uCol:{value:new THREE.Vector3(.5,.5,.5)},uAlpha:{value:0}},
-    vertexShader:`attribute float aLayer; varying vec2 vUv; varying float vLayer;
-      void main(){vLayer=aLayer;vUv=uv;float d=mix(3.,9.,aLayer);gl_Position=projectionMatrix*vec4(position.x*d/projectionMatrix[0][0],position.y*d/projectionMatrix[1][1],-d,1.);}`,
-    fragmentShader:`uniform sampler2D uMap;uniform float uTime,uAlpha;uniform vec3 uCol;varying vec2 vUv;varying float vLayer;
-      void main(){vec2 p=vUv*vec2(3.+vLayer,2.+vLayer);p+=vec2(uTime*.045,uTime*(.9+vLayer*.3));float a=texture2D(uMap,p).r*uAlpha;gl_FragColor=vec4(uCol,a);}`,
+  const seeds=new Float32Array(RAIN_BUDGET.streaks*4);
+  // Stable independent positions, widths and fall rates: no repeating screen tile.
+  let seed=7193;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  for(let i=0;i<seeds.length;i++)seeds[i]=random();
+  inst.setAttribute('aSeed',new THREE.InstancedBufferAttribute(seeds,4));inst.instanceCount=RAIN_BUDGET.lowStreaks;
+  const mat=new THREE.ShaderMaterial({uniforms:{uTime:{value:0},uCol:{value:new THREE.Vector3(.5,.5,.5)},uAlpha:{value:0},
+    uVelocity:{value:new THREE.Vector3()},uLamp:{value:new Float32Array(16)},uHead:{value:new THREE.Vector4()},uForward:{value:new THREE.Vector3(0,0,-1)}},
+    vertexShader:/* glsl */`attribute vec4 aSeed;uniform float uTime;uniform vec3 uVelocity,uCol,uForward;uniform vec4 uLamp[4],uHead;
+      varying vec2 vUv;varying float vFade;varying vec3 vCol;
+      void main(){
+        vUv=uv;
+        vec3 fall=vec3(1.4,-14.-aSeed.w*5.,.6);
+        // A world-aligned volume wraps beyond the visible near field, including during turns.
+        vec3 span=vec3(32.,24.,32.);
+        vec3 rel=mod(aSeed.xyz*span+fall*uTime-cameraPosition,span)-span*.5;
+        vec3 world=cameraPosition+rel;
+        vec4 p=viewMatrix*vec4(world,1.);
+        vec3 velocity=mat3(viewMatrix)*(fall-uVelocity);
+        float exposure=.018+aSeed.w*.012;
+        vec4 tail=projectionMatrix*vec4(p.xyz-velocity*exposure,1.);
+        vec4 head=projectionMatrix*p;
+        vec2 delta=tail.xy/max(tail.w,.2)-head.xy/max(head.w,.2);
+        vec2 axis=length(delta)>.00001?normalize(delta):vec2(0.,1.);
+        vec2 side=vec2(axis.y,-axis.x); // preserve the quad winding (front-facing)
+        // Width in metres, with a subpixel floor to avoid sparkling at distance.
+        float width=max((.009+aSeed.w*.012)*projectionMatrix[1][1]/max(-p.z,1.),.00065);
+        gl_Position=mix(head,tail,uv.y);
+        gl_Position.xy+=side*position.x*width*gl_Position.w;
+        vFade=smoothstep(.7,2.5,-p.z)*(1.-smoothstep(12.,16.,length(rel.xz)))*mix(.65,1.,aSeed.w);
+        vCol=uCol;
+        vec3 hr=world-uHead.xyz;float along=dot(hr,uForward);
+        float beam=smoothstep(.82,.98,dot(normalize(hr+vec3(.0001)),uForward));
+        vCol+=vec3(.26,.25,.22)*uHead.w*beam*smoothstep(0.,3.,along)*(1.-smoothstep(12.,45.,along));
+        for(int i=0;i<4;i++){vec3 d=world-uLamp[i].xyz;vCol+=vec3(.30,.23,.14)*uLamp[i].w/(dot(d,d)+4.);}
+      }`,
+    fragmentShader:/* glsl */`uniform float uAlpha;varying vec2 vUv;varying float vFade;varying vec3 vCol;
+      void main(){float across=1.-smoothstep(.05,.5,abs(vUv.x-.5));float ends=sin(vUv.y*3.14159265);
+        gl_FragColor=vec4(vCol,uAlpha*vFade*across*ends*ends);}`,
     transparent:true,depthWrite:false});
   const mesh=new THREE.Mesh(inst,mat);mesh.name='rain-streak-overlays';mesh.frustumCulled=false;mesh.renderOrder=7;mesh.visible=false;
   return {mesh,mat};
@@ -42,15 +74,15 @@ export class SprayCards {
     this.pos=new Float32Array(18*3);this.shape=new Float32Array(18*3);this.k=0;
     g.setAttribute('aCentre',new THREE.InstancedBufferAttribute(this.pos,3).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('aShape',new THREE.InstancedBufferAttribute(this.shape,3).setUsage(THREE.DynamicDrawUsage));g.instanceCount=0;
-    this.mat=new THREE.ShaderMaterial({uniforms:{uMap:{value:rainAtlas()},uCol:{value:new THREE.Vector3(.6,.6,.6)}},
+    this.mat=new THREE.ShaderMaterial({uniforms:{uMap:{value:rainAtlas()},uTime:{value:0},uCol:{value:new THREE.Vector3(.6,.6,.6)}},
       vertexShader:`attribute vec3 aCentre,aShape;varying vec2 vUv;varying float vA;void main(){vUv=uv;vA=aShape.z;vec4 p=viewMatrix*vec4(aCentre,1.);p.xy+=position.xy*aShape.xy;gl_Position=projectionMatrix*p;}`,
-      fragmentShader:`uniform sampler2D uMap;uniform vec3 uCol;varying vec2 vUv;varying float vA;void main(){gl_FragColor=vec4(uCol,texture2D(uMap,vUv).g*vA);}`,
+      fragmentShader:`uniform sampler2D uMap;uniform float uTime;uniform vec3 uCol;varying vec2 vUv;varying float vA;void main(){float cloud=texture2D(uMap,vUv).g;float curl=.8+.2*sin(vUv.x*17.+uTime*3.)*sin(vUv.y*13.-uTime*2.);gl_FragColor=vec4(uCol,cloud*curl*vA);}`,
       transparent:true,depthWrite:false});
     this.pts=new THREE.Mesh(g,this.mat);this.pts.name='tyre-spray-cards';this.pts.frustumCulled=false;this.pts.renderOrder=5;this.pts.visible=false;scene.add(this.pts);
   }
   begin(){this.k=0;}
-  add(x,y,z,speed,alpha){if(this.k>=18)return;const i=this.k++*3;this.pos.set([x,y,z],i);this.shape.set([.7+speed*.018,.45+speed*.025,alpha],i);}
-  update(){this.g.instanceCount=this.k;this.g.attributes.aCentre.needsUpdate=true;this.g.attributes.aShape.needsUpdate=true;}
+  add(x,y,z,speed,alpha){if(this.k>=18)return;const i=this.k++*3;this.pos.set([x,y,z],i);this.shape.set([.6+speed*.04,.35+speed*.012,alpha],i);}
+  update(dt=0){this.mat.uniforms.uTime.value+=dt;this.g.instanceCount=this.k;this.g.attributes.aCentre.needsUpdate=true;this.g.attributes.aShape.needsUpdate=true;}
 }
 // Water-entry splash: one expanding mist billboard plus one flat foam decal.
 export class WaterSplash {
