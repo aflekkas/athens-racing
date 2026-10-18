@@ -945,3 +945,6 @@ body[data-ui] #mp-toggle { display: none !important; }
 @media (max-width: 860px) { .set-panel { padding: var(--s-3) var(--s-2) var(--s-4); } }
 @media (max-height: 500px) { .layout--sidebar-content-rail { grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "status status" "title title" "rail body" "foot foot"; } }
 @media (max-height: 500px) { .layout--sidebar-content-rail .scr__headr { overflow-y: auto; max-height: 100%; } }
+
+/* Route-preview image fitting belongs to the shared menu kit. */
+.setup__map { object-fit: contain; }
