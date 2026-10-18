@@ -50,3 +50,10 @@ test('reading sheets own the scroll region and media stages own their figure/cap
  const media=C.stageInspector({variant:'media',stage:'IMAGE',inspector:'CAPTION'});
  assert.match(media,/<figure[^>]+>IMAGE<figcaption data-layout-region="inspector">CAPTION<\/figcaption><\/figure>/);
 });
+
+test('profile layouts retain action slots and the sign-in exception owns its shell', () => {
+ assert.match(C.sidebarContent({variant:'balanced',nav:'PROFILE',content:'FRIENDS'}),/layout-sidebar-balanced/);
+ assert.match(C.sheetList({variant:'narrow',rows:'FORM'}),/layout-sheet-narrow/);
+ assert.match(C.dialog({fullScreen:true}),/data-layout="dialog"/);
+ assert.doesNotMatch(C.dialog(),/scr--signin/);
+});

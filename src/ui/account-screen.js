@@ -12,25 +12,25 @@ const GOOGLE_G = '<svg class="btn__logo" viewBox="0 0 48 48" aria-hidden="true" 
 /** Sign-in: the kit Dialog over the dimmed title screen (owner-approved exception, docs/OWNER-DECISIONS.md 2026-10-16). */
 export function renderSignIn(a, menu) {
   const actions = `${!a.ready ? C.spinner() : ""}${a.providers.includes("google") ? C.button({ label: "CONTINUE WITH GOOGLE", logo: GOOGLE_G, variant: "google", block: true, act: "account-oauth", attrs: { "data-default": "" } }) : C.button({ label: "RETRY CONNECTION", act: "account-retry", block: true, variant: "primary" })}`;
-  return `<div class="scr scr--signin">${C.dialog({
+  return C.dialog({ fullScreen: true,
     under: menu?.r_title?.() || "",
     kick: "ATHENS RACING",
     title: "SIGN IN TO ATHENS RACING",
     body: `<p>Sign in with Google to play. An internet connection is required.</p>${a.error ? `<p class="account-error" role="status">${esc(a.error)}</p>` : ""}`,
     actions,
     foot: `${privacyLink}<a class="mi legal-link" href="/terms" target="_blank" rel="noopener">Terms of service</a>`,
-  })}</div>`;
+  });
 }
 export function renderProfile(a) {
-  return C.screen({
+  return C.sheetList({ variant: "narrow",
     cls: "scr--account",
     back: false,
     kick: "WELCOME TO ATHENS",
     title: "PICK YOUR IDENTITY",
-    body: `<div class="account-narrow">${C.panel(
+    rows: C.panel(
       "DRIVER PROFILE",
       `<p class="group__note">Choose a unique driver name and a plate. Your local progress is already safe.</p>${field("name", "DRIVER NAME", a.user?.displayName || driverName.get(), { maxlength: 16, autocapitalize: "characters" })}${field("plate", "PLATE", a.user?.plate || driverName.get(), { maxlength: 10, autocapitalize: "characters" }, { inputCls: "plate-input" })}<div class="field-actions">${btn("SAVE & HIT THE ROAD", "account-profile", { "data-default": "" }, "primary")}</div><p role="status" class="account-error">${esc(a.error || "")}</p>`,
-    )}</div>`,
+    ),
   });
 }
 const presenceChip = (a, f) => {
@@ -63,20 +63,21 @@ export function renderAccount(a) {
     ${field("plate", "PLATE", a.user.plate || "", { maxlength: 10, autocapitalize: "characters", "data-initial": a.user.plate || "" }, { inputCls: "plate-input" })}
     <div class="field-actions">${btn("SAVE", "account-profile", {}, "primary", { size: "sm", disabled: true, cls: "account-save" })}</div><p class="account-error" role="status">${esc(a.error || "")}</p>`;
   const manage = `<h3 class="group__title">ACCOUNT</h3>${C.option({ icon: "share", title: "EXPORT MY DATA", act: "account-export" })}${C.option({ icon: "log-out", title: "SIGN OUT", act: "account-logout" })}${C.option({ icon: "trash", title: "DELETE ACCOUNT", act: "account-delete", cls: "option--danger" })}`;
-  return C.screen({
+  return C.sidebarContent({ variant: "balanced",
     cls: "scr--account",
     kick: "YOUR DRIVER ACCOUNT",
     title: "ACCOUNT",
     hints: [["select", "SELECT"], ["confirm", "OK"], ["back", "BACK"]],
-    body: `<div class="account-layout">${C.panel("PROFILE", profile + manage, { icon: "user", cls: "account-profile" })}<div class="account-side">${C.panel("FRIENDS", `${a.presenceOffline ? '<p class="group__note">Live status is reconnecting…</p>' : ""}<div class="account-friends">${friendRows}</div><div class="account-add">${C.searchField({ name: "account-friend", label: "Add a friend by driver name", placeholder: "Driver name", icon: "user-plus" })}${btn("ADD", "account-friend-request", {}, "primary", { size: "sm" })}</div>`, { icon: "users" })}${activity.length ? C.panel("ACTIVITY", activity.join(""), { icon: "menu" }) : ""}</div></div>`,
+    nav: C.panel("PROFILE", profile + manage, { icon: "user", cls: "account-profile" }),
+    content: `${C.panel("FRIENDS", `${a.presenceOffline ? '<p class="group__note">Live status is reconnecting…</p>' : ""}<div class="account-friends">${friendRows}</div><div class="account-add">${C.searchField({ name: "account-friend", label: "Add a friend by driver name", placeholder: "Driver name", icon: "user-plus" })}${btn("ADD", "account-friend-request", {}, "primary", { size: "sm" })}</div>`, { icon: "users" })}${activity.length ? C.panel("ACTIVITY", activity.join(""), { icon: "menu" }) : ""}`,
   });
 }
 export function renderPrivacy() {
-  return C.screen({
+  return C.sheetList({ variant: "flow",
     cls: "scr--account",
     kick: "PRIVACY",
     title: "YOUR DATA, YOUR CONTROL",
-    body: C.panel(
+    rows: C.panel(
       "ATHENS RACING ACCOUNTS",
       `<p>Google sign-in connects your driver account, imported progress and friends. Accepted friends can see your online status. In Account, export your data or delete your account; separate leaderboard records and device storage remain.</p><p>Read the ${privacyLink} for the full details and contact information.</p>${legalLinks}`,
     ),
@@ -159,16 +160,16 @@ export function install(menu, existing) {
   menu.r_account = () => renderAccount(a);
   menu.r_accountPrivacy = renderPrivacy;
   menu.r_accountDelete = () =>
-    C.screen({
+    C.sheetList({ variant: "narrow",
       cls: "scr--account",
       kick: "YOUR DRIVER ACCOUNT",
       title: "DELETE ACCOUNT",
       hints: [["confirm", "OK"], ["back", "CANCEL"]],
-      body: `<div class="account-narrow">${C.panel(
+      rows: C.panel(
         "PERMANENT DELETION",
         `<p class="group__note">This removes your account, sessions, friends and invites. Device progress remains on this device. Type DELETE to confirm.</p>${field("confirm", "TYPE DELETE", "", { placeholder: "DELETE", autocapitalize: "characters" })}<div class="field-actions">${btn("PERMANENTLY DELETE", "account-delete-confirm", {}, "danger")}${btn("CANCEL", "back", {}, "ghost")}</div><p role="status" class="account-error">${esc(a.error || "")}</p>`,
         { icon: "trash" },
-      )}</div>`,
+      ),
     });
   // One Save, enabled only once the name or plate differs from the saved profile.
   menu.root.addEventListener("input", (e) => { if (e.target.matches?.('[data-field="account-name"], [data-field="account-plate"]')) syncSave(); });

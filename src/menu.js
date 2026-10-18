@@ -320,7 +320,7 @@ export class Menu {
   // ---------------------------------------------------------------- title / mode
   // Account integration hook: replace r_account or supply h.account(menu) to render the full account route.
   r_account() {
-    return this.h.account?.(this) || C.screen({ title: 'Account', kick: 'YOUR DRIVER', body: '<p class="group__note">Sign-in, friends and invites are coming here.</p>', hints: [['back', 'BACK']] });
+    return this.h.account?.(this) || C.sheetList({ variant: 'flow', title: 'Account', kick: 'YOUR DRIVER', rows: '<p class="group__note">Sign-in, friends and invites are coming here.</p>', hints: [['back', 'BACK']] });
   }
   r_multiplayer() {
     return C.screen({ title: 'MULTIPLAYER', kick: 'DRIVE TOGETHER', body: C.option({ icon: 'users', title: 'JOIN GAME', desc: 'Enter a code or browse open lobbies', act: 'mpJoin', attrs: { 'data-default': '' } }) + C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Choose a road and invite your friends', act: 'mpHost' }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });

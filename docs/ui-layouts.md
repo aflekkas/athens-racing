@@ -60,3 +60,8 @@ column; short landscape restores independently scrolling columns.
 52rem with their existing scroll boundary; trailing links remain below the panel.
 `stageInspector({ variant: 'media', stage, inspector })` contains an image in the
 available height with an optional caption underneath.
+
+`sidebarContent({ variant: 'balanced', nav, content })` pairs a profile/navigation
+panel with related panels (68rem maximum, stacked at 860px).
+`sheetList` also supports `narrow` (34rem form) and `flow` (full-width rows).
+The sign-in exception uses `dialog({ fullScreen: true })`; its shell stays in the kit.

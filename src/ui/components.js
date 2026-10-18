@@ -190,7 +190,8 @@ export function heroTiles({ hero = '', tiles = '', intro = '', ...frame } = {}) 
   return layoutFrame('hero-tiles', frame, region('hero', `${intro ? region('intro', intro) : ''}${region('primary', hero)}${region('tiles', tiles)}`));
 }
 /** Category navigation beside a separately scrolling content panel. */
-export function sidebarContent({ nav = '', content = '', ...frame } = {}) {
+export function sidebarContent({ nav = '', content = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'balanced') return layoutFrame('sidebar-content', { ...frame, variant }, region('sidebar', region('nav', nav) + region('content', content, 'layout-sidebar-balanced__content'), 'layout-sidebar-balanced'));
   return layoutFrame('sidebar-content', frame, region('sidebar', region('nav', nav, 'scroll-y') + region('content', content, 'scroll-y')));
 }
 /** Filters always follow the title; the collection uses the remaining height. */
@@ -215,6 +216,8 @@ export function sheetList({ rows = '', aside = '', actions = '', variant = 'page
     return `<div class="scr scr--pause ${cls}" data-layout="sheet-list">${panel('', `${sheetHead({ kick, title, status })}<div class="pause__list" data-layout-region="rows">${rows}</div>${actions ? `<div class="pause-controls" data-layout-region="actions">${actions}</div>` : ''}`, { cls: 'pause-sheet' })}
       <footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
   }
+  if (variant === 'narrow') return layoutFrame('sheet-list', { ...frame, variant }, region('rows', rows, 'layout-sheet-narrow'));
+  if (variant === 'flow') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
   if (variant === 'reading') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
   if (variant === 'split') {
     return layoutFrame('sheet-list', { ...frame, variant }, region('sheet',
@@ -233,9 +236,9 @@ export function sheetHead({ kick = '', title = '', status = '', statusIcon = 'ti
 /** the ONE dialog (owner-approved exception to "menus are full screens": sign-in only, docs/OWNER-DECISIONS.md).
  *  A compact panel on a scrim that dims the screen rendered under it (`under`, made inert). Focus stays inside: the
  *  menu only walks focus items within [data-dialog] while it is open. */
-export function dialog({ under = '', kick = '', title = '', body = '', actions = '', foot = '', cls = '', label } = {}) {
-  return `<div class="dialog-host">${under ? `<div class="dialog-under" inert aria-hidden="true">${under}</div>` : ''}<div class="dialog-scrim" data-dialog><section class="dialog panel ${cls}" role="dialog" aria-modal="true" aria-labelledby="ui-dialog-title"${attrStr({ 'aria-label': label })}>
-    ${sheetHead({ kick, title, id: 'ui-dialog-title' })}${body ? `<div class="dialog__body">${body}</div>` : ''}${actions ? `<div class="dialog__actions">${actions}</div>` : ''}${foot ? `<footer class="dialog__foot">${foot}</footer>` : ''}</section></div></div>`;
+export function dialog({ under = '', kick = '', title = '', body = '', actions = '', foot = '', cls = '', label, fullScreen = false } = {}) {
+  return `${fullScreen ? '<div class="scr scr--signin" data-layout="dialog">' : ''}<div class="dialog-host">${under ? `<div class="dialog-under" inert aria-hidden="true">${under}</div>` : ''}<div class="dialog-scrim" data-dialog><section class="dialog panel ${cls}" role="dialog" aria-modal="true" aria-labelledby="ui-dialog-title"${attrStr({ 'aria-label': label })}>
+    ${sheetHead({ kick, title, id: 'ui-dialog-title' })}${body ? `<div class="dialog__body">${body}</div>` : ''}${actions ? `<div class="dialog__actions">${actions}</div>` : ''}${foot ? `<footer class="dialog__foot">${foot}</footer>` : ''}</section></div></div>${fullScreen ? '</div>' : ''}`;
 }
 const MANUFACTURER_ATLAS = new URL('../../assets/brand-badges/atlas.svg', import.meta.url).href;
 export function manufacturerBadge(brand, cls = '') {

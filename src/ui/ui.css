@@ -818,3 +818,18 @@ body[data-ui] #mp-toggle { display: none !important; }
 .layout-media { margin: 0; display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; min-height: 0; gap: var(--s-3); }
 .layout-media img { width: 100%; min-height: 0; flex: 1; object-fit: contain; }
 .layout-media figcaption { flex: none; text-align: center; padding-top: var(--s-2); color: var(--c-text-2); font: 500 var(--t-sm)/1.5 var(--f-sans); }
+
+/* Account screens: layouts only. Every control, row and panel is a kit component (src/ui/ui.css). */
+.layout-sidebar-balanced { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--s-5); align-items: start; width: 100%; max-width: 68rem; margin: 0 auto; }
+.layout-sheet-narrow { width: 100%; max-width: 34rem; margin: 0 auto; }
+:is(.layout--sidebar-content-balanced, .layout--sheet-list-narrow, .layout--sheet-list-flow) .scr__body { overflow-y: auto; }
+.layout-sidebar-balanced__content { display: grid; gap: var(--s-4); min-width: 0; }
+.account-id { display: flex; align-items: center; gap: var(--s-3); margin: 0 0 var(--s-3) var(--s-4); }
+.account-profile .group__title { margin-top: var(--s-5); }
+.account-friends { display: grid; gap: 2px; }
+.account-add { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-3); }
+.account-add > .search { flex: 1; }
+.account-error { margin: var(--s-2) var(--s-4) 0; font: 500 var(--t-sm) var(--f-sans); color: #ffb4a6; }
+.account-error:empty { display: none; }
+@media (max-width: 860px) { .layout-sidebar-balanced { grid-template-columns: minmax(0, 1fr); } }
+
