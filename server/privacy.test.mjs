@@ -50,7 +50,7 @@ test('Worker intercepts legal routes before assets; sitemap and in-game entry po
   assert.match(accounts, /foot: `\$\{privacyLink\}/, 'the sign-in dialog footer links the privacy policy');
   assert.match(accounts, /Read the \$\{privacyLink\}/);
   assert.match(release, /CONTRIBUTING_URL[^\n]*\$\{legalLinks\}/);
-  assert.match(release, /title: 'CREDITS'[^\n]*rows: body, actions: legalLinks/);
+  assert.match(release, /title: 'CREDITS'[\s\S]*?, legalLinks\);/, 'Credits ends with the privacy and terms links');
 });
 
 test('local HTTP transport returns HTML without a game boot', async t => {

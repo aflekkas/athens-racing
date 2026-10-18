@@ -133,6 +133,7 @@
     "tools/baked-realism.test.mjs",
     "tools/ui-components.test.mjs",
     "tools/ui-layouts.test.mjs",
+    "tools/article-scroll.test.mjs",
     "tools/settings-nav.test.mjs",
     "tools/simple-header.test.mjs",
     "tools/notice-placement.test.mjs",
