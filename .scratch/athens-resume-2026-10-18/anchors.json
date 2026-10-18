@@ -1,0 +1,41 @@
+[
+  {
+    "cell": [
+      4,
+      25
+    ],
+    "anchors": 113,
+    "bad": [],
+    "maxContactHeightError": 9.411028045747116e-07,
+    "halfLength": 7,
+    "halfWidth": 1.5,
+    "roadMargin": 0.03,
+    "passed": true
+  },
+  {
+    "cell": [
+      5,
+      25
+    ],
+    "anchors": 124,
+    "bad": [],
+    "maxContactHeightError": 1.8688960352619688e-06,
+    "halfLength": 7,
+    "halfWidth": 1.5,
+    "roadMargin": 0.03,
+    "passed": true
+  },
+  {
+    "cell": [
+      8,
+      36
+    ],
+    "anchors": 43,
+    "bad": [],
+    "maxContactHeightError": 4.4262442067122265e-07,
+    "halfLength": 7,
+    "halfWidth": 1.5,
+    "roadMargin": 0.03,
+    "passed": true
+  }
+]

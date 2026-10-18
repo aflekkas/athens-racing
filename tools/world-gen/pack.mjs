@@ -8,6 +8,7 @@ import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { encodeGeometryPack, decodeGeometryPack } from '../../src/baked-geometry.js';
+import { auditWorldSurface } from '../world-surface-audit.mjs';
 import { TILE_TABLES, validateWorldTile, tileEdgeSignatures } from '../../src/world-tile-format.js';
 const types = { Int8Array, Uint8Array, Uint16Array, Uint32Array, Float32Array };
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -50,6 +51,8 @@ export async function packTiles(path, output) {
   for await (const line of createInterface({input:createReadStream(path),crlfDelay:Infinity})) {
     if (!line.trim()) continue;
     const input=JSON.parse(line),{bytes,checked,decoded}=encodeTile(input),m=checked.metadata,key=m.cell.join(',');
+    const physical=auditWorldSurface(checked.tables);
+    if(!physical.passed)throw new Error('Physical surface acceptance failed '+key+': '+JSON.stringify(physical));
     const nextIdentity=m.world+':'+m.revision;
     if (identity && identity!==nextIdentity) throw new Error('Mixed world/revision');
     identity=nextIdentity;

@@ -10,11 +10,14 @@ from shapely.ops import unary_union,substring
 from shapely import constrained_delaunay_triangles
 
 
+KERB_WIDTH = .6  # 10 cm rise with headroom for longitudinal road grade.
+
+
 def pavement_regions(roads):
     if not roads:return Polygon(),Polygon(),Polygon()
     road=unary_union([r['polygon'] for r in roads])
-    kerb=road.buffer(.18,join_style=2).difference(road)
-    pavement=road.buffer(1.8,join_style=2).difference(road.buffer(.18,join_style=2))
+    kerb=road.buffer(KERB_WIDTH,join_style=2).difference(road)
+    pavement=road.buffer(1.8,join_style=2).difference(road.buffer(KERB_WIDTH,join_style=2))
     return road,kerb,pavement
 
 
@@ -77,12 +80,12 @@ def road_markings(roads,cell,height):
     return ps,ix
 
 
-def pavement_lift(distance,kerb_width=.18,pavement_width=1.8,rise=.10):
+def pavement_lift(distance,kerb_width=KERB_WIDTH,pavement_width=1.8,rise=.10):
     """Continuous, drivable bevel with a flat pavement and a 1 m outer blend.
 
     Distance is to the global road union, not a tile-local clipped outline.
     This gives every shared vertex one height, including centimetre slivers
-    around snapped junction boundaries. The kerb rises by 10 cm across 18 cm.
+    around snapped junction boundaries. The kerb rises by 10 cm across 60 cm.
     """
     if distance<=0 or distance>=pavement_width+1:return 0.
     return rise*min(1.,distance/kerb_width,max(0.,pavement_width+1-distance))

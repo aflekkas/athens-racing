@@ -16,7 +16,7 @@ def snap(geometry):return set_precision(geometry,.01)
 
 
 def ground_mesh(cell,roads,height,boundaries=()):
-    """4 m road/shoulder cells, 16 m elsewhere; exact 2 m border subdivisions.
+    """8 m road/shoulder cells, 16 m elsewhere; exact 2 m border subdivisions.
 
     roads: [{id, polygon, line}], already globally solved and with >=64 m halo.
     height(x,z): deterministic global surface height; never a tile-local filter.
@@ -39,9 +39,15 @@ def ground_mesh(cell,roads,height,boundaries=()):
         for x in range(ox-16,ox+528,16):
             square=box(x,z,x+16,z+16);lines.append(square.boundary)
             if near is not None and near.intersects(square):
-                for n in (4,8,12):
+                for n in (8,):
                     lines.append(LineString([(x+n,z),(x+n,z+16)]))
                     lines.append(LineString([(x,z+n),(x+16,z+n)]))
+                # Same global southwest/northeast diagonal as Field's height
+                # lattice. Clip feature faces only AFTER these plane boundaries
+                # are noded, including the full six-metre junction shoulders.
+                for dz in range(0,16,8):
+                    for dx in range(0,16,8):
+                        lines.append(LineString([(x+dx+8,z+dz),(x+dx,z+dz+8)]))
     # Preserve full global feature segments until noding. Clipping and rounding
     # their endpoints independently shifts border intersections by a centimetre.
     # A grid halo supplies identical intersection context on both sides.
