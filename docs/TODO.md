@@ -2,29 +2,40 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-18 00:55 UTC. Known red tests on prod: cockpit POV hashes + trim-order assertion (garage agent fixing).
+Last updated: 2026-10-18 04:00 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
-Production is on hold (`~/.local/state/athens-release/production-hold`). Staging keeps auto-deploying green `prod` commits. The hold lifts once everything below is done and checked on staging.
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging deployed by hand at `7d6e589f` on 2026-10-18. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
 
-- [x] Leaderboards: personal and global, with car and setup, filterable (`5149f16d`, `9a7c06ca`). Moved into the Quick Race track screen (`c9619d55`).
-- [x] Cabin floors sealed; empty interiors visible through light exterior glass; batched (`b99589d5`, `e3ad08f9`). Live on production 2026-10-17 22:19.
-- [~] Mobile playable on phones (Sol)
-- [x] Add to Home Screen invitation on phones (title-screen kit notice, manifest, iOS / Android steps, 7-day snooze); `/release.json` 404 on every local load fixed (this commit)
-- [~] Remove music entirely (Sol)
-- [~] No hover effects + no blue focus outlines; subtle surface focus for keys (Sol)
-- [~] Settings sidebar redesign (Opus, Enterprise)
-- [~] Blur behind dialogs (Sol)
-- [~] Google sign-in required, no Play offline, enforced on the server, Google button in the game font (Sol)
-- [x] Title: remove "GREEK ROADS / PURE TIME", staging badge to bottom left (`91bb033d`)
-- [x] Simple inner-screen header (Back + breadcrumb + title), clock removed everywhere (`234c94f2`, `f747c8ff`, `bd8ff407`)
-- [~] Lucide icons everywhere, no glyph arrows (Sol)
-- [~] Garage: drive pill inside card, brand logo, brand filter, filters under title, spec card redesign, hide paint when there's none, viewer without plate and centred (Sol)
-- [~] Fix broken Fiat Ducato model + audit every model for leaked cockpit parts (Astra)
-- [x] Multiplayer: one MULTIPLAYER title tile, lobby-browser screen + full-screen host setup, solo RACE with full-height cards, race-corner MULTIPLAYER button hidden over menus (Opus, Personal)
-- [~] Track picker: full-page Attica map with a floating card, no RESET, better map (Opus, Enterprise)
-- [~] Shared page-layout templates; migrate every screen; guard test (Astra)
-- [~] Athens open world resumed: fix steep road seams → connected Glyfada–Riviera behind ?map=athens → expand (Astra). Data at /home/dev/data/athens-world-cache. Hidden from players until the owner approves.
+Done and checked by the lead:
+- [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
+- [x] Cabin floors sealed; interiors through light glass; batched (`b99589d5`, `e3ad08f9`)
+- [x] Remove music (`893686df`, `a455d6c1`, `64f8d528`)
+- [x] Hover/outline removal (`d0a1e153`…`e1483668`). Owner later asked for a subtle hover back (in progress, below)
+- [x] Settings sidebar (`582e3e3b`)
+- [x] Dialog blur (`030afed1`, `21f6e0e2`, `467c6ea7`)
+- [x] Google sign-in required (`248a6837`…`e4b4864d`). Production has no GOOGLE_CLIENT_ID/SECRET yet; waiting on the owner (consent screen)
+- [x] Title cleanup (`91bb033d`), simple header and no clock (`bd8ff407`)
+- [x] Lucide icons (`5ed5152d`, `ea499482`)
+- [x] Garage cards/filters/viewer (`fdedb0f5`); Ducato dashboard (`ab85a17e`)
+- [x] Mobile playable; bodyless-car fix (`c222bc29`, `8f16ab59`); solo HUD MULTIPLAYER button removed (`854ba390`)
+- [x] Multiplayer lobby browser and solo RACE (`74611cfc`); full-page track map (`20fa3196`, `7d6e589f`)
+- [x] Credits and What's New as full-page articles (`8a5117e2`, `a220b106`)
+- [x] Release-PR versioning written (`accfaef6`, not on prod yet). Lead does the cutover after this batch
+
+Running:
+- [~] Subtle hover state + finish layout templates + italic #loading test fix (Sonnet)
+- [~] Bent cockpit beams, Porsche 928 tilt, stray shadow (Sonnet)
+- [~] No checkpoints (tow to latest on-road position) + new Psychiko route (Sonnet)
+- [~] Deploy smoke sign-in key (Sonnet); lead then installs the SMOKE_TOKEN secrets
+- [~] Add-to-home-screen prompt + unexplained 404 (Sonnet)
+- [~] Track-picker map lag (Sonnet)
+- [~] Athens open world stage 2: connected coast, R2 hosting (Sonnet)
+
+Waiting on the owner:
+- [?] Google consent screen published, then the lead installs the production Google secrets
+- [?] Lead sets GitHub prod protection (require release-check, no admin bypass) via gh at cutover?
+- [?] Delete ~2.8 GB of old .scratch (load-v1, playtest-20261014b, lazy-boot, results-flow)?
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
