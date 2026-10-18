@@ -186,7 +186,14 @@ export function mapStage({ stage = '', card = '', ...frame } = {}) {
   return layoutFrame('map-stage', frame, region('map', stage) + region('map-card', card, 'scroll-y'));
 }
 /** A readable sheet with optional supporting rows and actions. */
-export function sheetList({ rows = '', aside = '', actions = '', ...frame } = {}) {
+export function sheetList({ rows = '', aside = '', actions = '', variant = 'page', status = '', ...frame } = {}) {
+  // The owner-locked pause sheet has its own inset header and docks left. Its
+  // regions keep the established DOM so focus, blur dismissal and pixels survive.
+  if (variant === 'pause') {
+    const { cls = '', kick = '', title = '', hints = [], foot = '' } = frame;
+    return `<div class="scr scr--pause ${cls}" data-layout="sheet-list">${panel('', `${sheetHead({ kick, title, status })}<div class="pause__list" data-layout-region="rows">${rows}</div>${actions ? `<div class="pause-controls" data-layout-region="actions">${actions}</div>` : ''}`, { cls: 'pause-sheet' })}
+      <footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+  }
   return layoutFrame('sheet-list', frame, region('sheet', region('rows', rows, 'scroll-y') + (aside ? region('aside', aside, 'scroll-y') : '') + (actions ? region('actions', actions) : '')));
 }
 

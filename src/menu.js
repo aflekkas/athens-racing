@@ -488,9 +488,9 @@ export class Menu {
       d.online ? C.option({ icon: 'users-three', title: 'LOBBY & HOST CONTROLS', act: 'onlineLobby' }) : '',
       d.online && window.__multiplayer?.lobby?.status === 'race' && !window.__multiplayer?.retired && window.__multiplayer?.me?.finish == null ? C.option({ icon: 'flag-checkered', title: 'RETIRE · DNF', act: 'retire' }) : '',
       C.option({ icon: 'gear-six', title: 'SETTINGS', act: 'settings' }), C.option({ icon: 'sign-out', title: d.online ? 'BACK TO MENU' : 'QUIT TO MENU', act: 'quit' })];
-    const controls = `<div class="pause-controls">${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}</div>`;
-    return `<div class="scr scr--pause">${C.panel('', `${C.sheetHead({ kick, title: 'PAUSED', status: d.sub ? esc(d.sub) : '' })}<div class="pause__list">${rows.join('')}</div>${controls}`, { cls: 'pause-sheet' })}
-      <footer class="scr__foot">${C.keyHints([['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']])}</footer></div>`;
+    const controls = `${C.button({ label: drivingHints.enabled ? 'HIDE DRIVING CONTROLS' : 'SHOW DRIVING CONTROLS', icon: 'game-controller', act: 'drivingHints', variant: 'ghost', size: 'sm' })}${drivingHints.enabled ? controlsStrip({ device: this.h.inputDevice?.() || 'keyboard', car: this.h.carSpec?.() || window.__game?.player?.spec, manual: this.h.manual?.() ?? true }) : ''}`;
+    return C.sheetList({ variant: 'pause', kick, title: 'PAUSED', status: d.sub ? esc(d.sub) : '', rows: rows.join(''), actions: controls,
+      hints: [['updown', 'SELECT'], ['confirm', 'OK'], ['back', 'RESUME']] });
   }
 
   // Mode owner handlers; UI owner can restyle these with the rest of the pause menu.

@@ -123,7 +123,7 @@ test('the pause-menu reference: one surface focus look, one type language, pause
     assert.doesNotMatch(src, /#dcfa4c|#b8ef77|#c1ed91/i, `${OWNER}\n${f}: the round-1 lime accent is gone; the one accent is ice`);
   }
   const menu = read('src/menu.js'), pause = menu.slice(menu.indexOf('  r_pause('), menu.indexOf('  r_roamConditions('));
-  assert.match(pause, /C\.sheetHead\(/, `${OWNER}\npause uses the kit sheet header`);
+  assert.match(pause, /C\.sheetList\(\{ variant: 'pause'/, `${OWNER}\npause uses the kit layout with its inset sheet header`);
   assert.match(pause, /C\.option\(/, OWNER);
   const title = menu.slice(menu.indexOf('  r_title('), menu.indexOf('  participantChoice('));
   assert.equal([...title.matchAll(/cls: 'option--tile/g)].length, 5, `${OWNER}\nthe locked title layout is the kit's option tiles (PLAY is option--hero)`);

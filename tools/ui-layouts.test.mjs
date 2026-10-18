@@ -28,3 +28,11 @@ test('content retains its action and focus identifiers; escaped driver names sta
  assert.match(html,/data-act="retry"/);assert.match(html,/data-fid="retry-race"/);
  assert.match(html,/&lt;driver&gt;/);assert.doesNotMatch(html,/scr__back/);
 });
+
+test('pause uses the inset reference header and one shared full-screen sheet', () => {
+  const html = C.sheetList({ variant: 'pause', title: 'PAUSED', kick: 'QUICK RACE', status: '01:24.50', rows: C.option({ title: 'RESUME', act: 'resume' }), actions: C.button({ label: 'CONTROLS', act: 'controls' }), hints: [['back', 'RESUME']] });
+  assert.match(html, /data-layout="sheet-list"/); assert.match(html, /sheet-head__title[^>]*>PAUSED/);
+  assert.match(html, /sheet-head__status/); assert.match(html, /pause-sheet/);
+  assert.match(html, /data-layout-region="rows"/); assert.match(html, /data-layout-region="actions"/);
+  assert.doesNotMatch(html, /role="dialog"|hu-driver|hu-clock/);
+});
