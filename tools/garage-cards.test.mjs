@@ -38,8 +38,10 @@ test('spec panel has shared tiles, segmented trims and no unavailable paint or i
  for(const id of ['golf','van']){const html=renderCarSelect({index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});assert.match(html,/vehicle-specs panel/);assert.doesNotMatch(html,/class="car-trim-browser"/);assert.match(html,/stats--boxed/);assert.equal((html.match(/class="stat-tile /g)||[]).length,6);assert.match(html,/data-key="carTrim"/);assert.match(html,/data-act="carConfirm"/);assert.doesNotMatch(html,/Existing fleet model|Custom paint|nativeFleet|placeholder|TODO|WIP/);assert.equal(html.includes('class="car-paints"'),id==='golf');}
 });
 
-test('browser measures drive-pill containment, manufacturer options and brand selection at desktop and phone sizes', {timeout:600000}, async()=>{
+// Use the shared VPS queue allowance, plus ten minutes for the browser itself.
+const browserQueueWait = Number(process.env.BROWSER_SLOT_WAIT || 5400);
+test('browser measures drive-pill containment, manufacturer options and brand selection at desktop and phone sizes', {timeout:(browserQueueWait+610)*1000}, async()=>{
  const {execFile}=await import('node:child_process'),{promisify}=await import('node:util');
- const {stdout}=await promisify(execFile)('bash',['tools/browser-slot.sh',process.execPath,'tools/garage-cards.browser.mjs'],{timeout:570000,env:{...process.env,BROWSER_SLOT_WAIT:'480'},maxBuffer:1024*1024});
+ const {stdout}=await promisify(execFile)('bash',['tools/browser-slot.sh',process.execPath,'tools/garage-cards.browser.mjs'],{timeout:(browserQueueWait+600)*1000,env:{...process.env,BROWSER_SLOT_WAIT:String(browserQueueWait)},maxBuffer:1024*1024});
  assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 1280/);assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 390/);assert.match(stdout,/Garage viewer container and equal spec tiles PASS 390/);
 });

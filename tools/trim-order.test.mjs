@@ -20,7 +20,7 @@ test('fresh generation cards open their base trim, while saved and filtered choi
  const selection=migrateCarSelection('z4');assert.equal(filterCars(CARS,{},selection).find(x=>carModel(x.car).id==='z4').car.id,'z4');
  const old=globalThis.localStorage;try{globalThis.localStorage={getItem:()=>null};const fresh=renderCarSelect({filters:{search:'BMW Z4'}});assert.match(fresh,new RegExp(`data-car-index="${CARS.indexOf(get('z4_20i'))}"`));globalThis.localStorage={getItem:key=>key==='paraliaki.car'?'z4':null};const saved=renderCarSelect({filters:{search:'BMW Z4'}});assert.match(saved,new RegExp(`data-car-index="${CARS.indexOf(get('z4'))}"`));assert.match(renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true}),/data-trim-current="z4_30i"/);}finally{globalThis.localStorage=old;}
  assert.deepEqual(trimChoices('z4',{cars:CARS}),['z4_20i','z4_30i','z4']);assert.equal(stepTrim('z4_20i',1,{cars:CARS}),'z4_30i');assert.equal(stepTrim('z4',1,{cars:CARS}),'z4_20i');assert.deepEqual(trimChoices('z4',{cars:CARS,allowedCars:['z4','z4_30i']}),['z4_30i','z4']);
- const detail=renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true});assert.match(detail,/aria-label="Trim 2 of 3"/);
+ const detail=renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true});assert.match(detail,/data-key="carTrim" data-value="z4_30i"/);for(const id of ['z4_20i','z4_30i','z4'])assert.ok(detail.includes(`data-v="${id}"`));
 });
 test('multiplayer allowed lists and class/spec rule controls use the same generation order',()=>{
  const cars=[...CARS].reverse(),mp={cars,lobby:{allowedCars:cars.map(c=>c.id)},carRules:{preset:'spec',spec:'golf'},get allowedCars(){return Object.getOwnPropertyDescriptor(Multiplayer.prototype,'allowedCars').get.call(this);}};
