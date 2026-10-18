@@ -1,6 +1,7 @@
 import { notifications } from './ui/notifications.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
+import { tiltAxis, requestTiltPermission, enterDrivingScreen } from './mobile.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
 const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
@@ -46,7 +47,17 @@ export class Input {
     this.listen('blur', () => this.clear());
     this.listen('gamepadconnected', e => this.connect(e.gamepad));
     this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; });
-    this.listen('deviceorientation', e => { if (Number.isFinite(e.gamma)) this.tilt = clamp(e.gamma / 30, -1, 1); });
+    this.listen('deviceorientation', e => {
+      if (!this.tiltAllowed) return;
+      const value = tiltAxis(e, this.target?.screen?.orientation?.angle ?? this.target?.orientation ?? 0);
+      if (value !== null) this.tilt = value;
+    });
+    this.listen('orientationchange', () => { this.tilt = 0; });
+    this.listen('pointerdown', e => {
+      if (e.pointerType === 'touch') this.lastTouchAt = Date.now();
+      if (this.settings.touchSteering === 'tilt' && !this.tiltRequested) void this.enableTilt();
+    });
+    this.listen('gesturestart', e => { if (this.touchUI) e.preventDefault(); });
     if (document) this.mountTouch();
   }
   setNitrousEnabled(enabled) {
@@ -93,6 +104,16 @@ export class Input {
     for (const [key, lo, hi] of [['deadzone', 0, 0.45], ['sensitivity', 0.25, 2], ['linearity', 0.25, 3]]) if (Number.isFinite(+settings[key])) this.settings[key] = clamp(+settings[key], lo, hi);
     if (['screen', 'tilt'].includes(settings.touchSteering)) this.settings.touchSteering = settings.touchSteering;
     if (persist) this.save('settings', this.settings);
+  }
+  async enableTilt() {
+    this.tiltRequested = true;
+    const allowed = await requestTiltPermission(this.target);
+    this.tiltAllowed = allowed; this.tilt = undefined;
+    if (!allowed) {
+      this.configure({ touchSteering: 'screen' });
+      this.toast('Tilt unavailable; use on-screen steering');
+    }
+    return allowed;
   }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
@@ -142,6 +163,7 @@ export class Input {
     this.lookCanvas = canvas; this.lookEnabled = enabled;
     this.listen('mousemove', e => {
       if (!enabled() || e.sourceCapabilities?.firesTouchEvents || editable(e)) return;
+      if (Date.now() - (this.lastTouchAt || 0) < 1000) return;
       if (this.document?.pointerLockElement === canvas) {
         if (e.movementX || e.movementY) move(e.movementX || 0, e.movementY || 0);
       } else {
@@ -276,7 +298,7 @@ export class Input {
     const tilt = doc.createElement('button'); tilt.type = 'button'; tilt.textContent = 'Touch steering: ' + this.settings.touchSteering;
     tilt.addEventListener('click', async () => {
       if (this.settings.touchSteering === 'screen') {
-        try { if (this.target?.DeviceOrientationEvent?.requestPermission && await this.target.DeviceOrientationEvent.requestPermission() !== 'granted') { this.toast('Tilt permission unavailable; use on-screen steering'); return; } } catch { this.toast('Tilt unavailable; use on-screen steering'); return; }
+        if (!await this.enableTilt()) return;
       }
       this.configure({ touchSteering: this.settings.touchSteering === 'screen' ? 'tilt' : 'screen' }); tilt.textContent = 'Touch steering: ' + this.settings.touchSteering;
     }); panel.append(tilt);
@@ -307,7 +329,9 @@ export class Input {
     const enable = () => {
       if (this.touchUI) return;
       doc.body.classList.add('touch-driving');
-      const root = doc.createElement('div'); root.id = 'touch-controls'; root.setAttribute('aria-label', 'Touch driving controls');
+      doc.body.dataset.input = 'touch';
+      const root = doc.createElement('div'); root.id = 'touch-controls'; root.hidden = true; root.setAttribute('aria-label', 'Touch driving controls');
+      const rotate = doc.createElement('p'); rotate.className = 'touch-rotate'; rotate.textContent = 'Rotate your phone for a wider road view'; root.append(rotate);
       const steer = doc.createElement('div'); steer.className = 'touch-steer'; steer.textContent = '◀  STEER  ▶'; steer.setAttribute('role', 'group'); steer.setAttribute('aria-label', 'Drag left or right to steer');
       let pointer;
       const move = e => { if (e.pointerId !== pointer) return; const r = steer.getBoundingClientRect(); this.touch.steer = clamp((e.clientX - r.left - r.width / 2) / (r.width * 0.4), -1, 1); };
@@ -326,6 +350,11 @@ export class Input {
         (action === 'throttle' || action === 'brake' ? pedals : action === 'shiftUp' || action === 'shiftDown' ? gears : actions).append(button);
       }
       root.dataset.auxColumns = '5';
+      // Fullscreen must also start directly in a tap; unsupported Safari keeps browser mode.
+      if (doc.documentElement?.requestFullscreen) {
+        const button = doc.createElement('button'); button.type = 'button'; button.textContent = 'FULL'; button.dataset.action = 'fullscreen'; button.setAttribute('aria-label', 'Fullscreen landscape');
+        button.addEventListener('pointerdown', e => { e.preventDefault(); void enterDrivingScreen(doc, this.target?.screen); }); actions.append(button);
+      }
       aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
       this.setAidsEnabled(preferences.aids);
     };

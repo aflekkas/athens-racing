@@ -84,9 +84,7 @@ export function controlsClick(menu, e) {
 }
 export async function controlsChange(menu, key, value, el) {
   if (key === 'touchSteering' && value === 'tilt') {
-    const D = globalThis.DeviceOrientationEvent;
-    try { if (D?.requestPermission && await D.requestPermission() !== 'granted') { C.ui.toast('TILT PERMISSION UNAVAILABLE', { icon: 'warning', tone: 'bad' }); C.setValue(el, 'screen', false); return; } }
-    catch { C.ui.toast('TILT UNAVAILABLE ON THIS DEVICE', { icon: 'warning', tone: 'bad' }); C.setValue(el, 'screen', false); return; }
+    if (!await input.enableTilt()) { C.setValue(el, 'screen', false); return; }
   }
   input.configure({ [key]: value });
 }

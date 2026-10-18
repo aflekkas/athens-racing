@@ -214,10 +214,11 @@ export class Audio {
   constructor() { this.worldCadence = new AudioCadence(); this.worldMuted = null; this.ctx = null; this.started = false; this.engineSpec = null; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.lifecycle = new EngineLifecycle(this); }
 
   start({ context, recordings = true } = {}) {
-    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    if (this.ctx) { if (['suspended', 'interrupted'].includes(this.ctx.state)) this.ctx.resume().catch(() => {}); return; }
     const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
     if (!context && !AC) return;
     const ctx = this.ctx = context || new AC();
+    if (['suspended', 'interrupted'].includes(ctx.state)) ctx.resume().catch(() => {});
     this.started = true;
     const sr = ctx.sampleRate;
     this.mix = new AudioMix(ctx, this.vol);

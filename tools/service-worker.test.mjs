@@ -96,3 +96,12 @@ test('an explicit reload bypasses a bad content cache without clearing unrelated
  const sw=await loadWorker({build:'x',files:{'/data/world.gz':'a'.repeat(16)},core:[]},{caches:{open:async()=>cache},fetch:async(url,opts)=>{options=opts;return new Response('good');}});
  const result=await sw.fromContent(new Request('https://asr.test/data/world.gz',{cache:'reload'}),'/data/world.gz');assert.equal(await result.text(),'good');assert.equal(matches,0);assert.equal(options.cache,'reload');
 });
+
+for (const failure of ['open', 'match', 'put', 'blocked']) for (const kind of ['page', 'cdn']) test(`${kind} remains playable when optional cache ${failure} fails`, async () => {
+  const body=kind==='page'?'<meta name="asr-build" content="x">':'font';let requests=0;
+  const cache={match:async()=>{if(failure==='match')throw Error('unavailable');return null;},put:async()=>{if(failure==='put')throw Error('quota');}};
+  const caches={open(){if(failure==='open')throw Error('private storage');if(failure==='blocked')return new Promise(()=>{});return Promise.resolve(cache);}};
+  const sw=await loadWorker({build:'x',files:{},core:[]},{caches,fetch:async()=>{requests++;return new Response(body);}});
+  const response=await (kind==='page'?sw.fromPage:sw.fromCdn)(new Request(kind==='page'?'https://asr.test/':'https://fonts.gstatic.com/font.woff2'));
+  assert.equal(await response.text(),body);assert.equal(requests,1);
+});

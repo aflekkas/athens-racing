@@ -772,6 +772,7 @@ function restart(idx = G.carIdx) {
 
 // ------------------------------------------------------------------ input
 function requestRaceLook(action) {
+  if (G.inputDevice === 'touch') return;
   if ((menu?.screen === 'car' && action === 'carConfirm' && !menu.data.garage) || (G.state === 'paused' && action === 'resume')) {
     G.cameraStarting = true; controls.requestMouseLock();
   }
@@ -786,6 +787,8 @@ addEventListener('keydown', e => {
   G.inputDevice = 'keyboard'; audio.start();
 });
 addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch' ? 'touch' : 'keyboard'; audio.start(); });
+addEventListener('touchend', () => audio.start(), { passive: true });
+addEventListener('click', () => audio.start());
 
 function readInput(dt) {
   const inMenu = window.__flow.inMenu();

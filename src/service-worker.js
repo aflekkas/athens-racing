@@ -43,7 +43,7 @@ function verdictOf(url, html, build = RELEASE.build) {
 }
 async function removeSelf() {
   bypassUntil = Infinity;
-  for (const name of await caches.keys()) if (name.startsWith('asr-')) await caches.delete(name);
+  for (const name of await optionalStorage(() => caches.keys()) || []) if (name.startsWith('asr-')) await optionalStorage(() => caches.delete(name));
   await self.registration.unregister();
 }
 async function hex16(buffer) {
@@ -82,7 +82,7 @@ async function fromContent(request, path, event) {
   return fetch(request); // e.g. an old worker after a deploy removed its /_c/ copy
 }
 async function fromPage(request) {
-  const cache = await caches.open(PAGES);
+  const cache = await optionalStorage(() => caches.open(PAGES));
   try {
     const res = await fetch(request);
     if (!res.ok) return res;
@@ -90,19 +90,19 @@ async function fromPage(request) {
     const verdict = verdictOf(request.url, await res.clone().text());
     if (verdict === 'remove') await removeSelf();
     else if (verdict === 'newer') bypassUntil = Date.now() + 120000; // the page's update() installs the new worker (src/offline-cache.js)
-    else await cache.put('/', res.clone());
+    else if (cache) await optionalStorage(() => cache.put('/', res.clone()));
     return res;
   } catch (e) {
-    const hit = await cache.match('/');
+    const hit = cache && await optionalStorage(() => cache.match('/'));
     if (hit) return hit;
     throw e;
   }
 }
 async function fromCdn(request) {
-  const cache = await caches.open(CDN), hit = await cache.match(request);
+  const cache = await optionalStorage(() => caches.open(CDN)), hit = cache && await optionalStorage(() => cache.match(request));
   if (hit) return hit;
   const res = await fetch(request);
-  if (res.ok && res.type !== 'opaque') await cache.put(request, res.clone()); // opaque entries cost ~7 MB of quota each
+  if (cache && res.ok && res.type !== 'opaque') await optionalStorage(() => cache.put(request, res.clone())); // opaque entries cost ~7 MB of quota each
   return res;
 }
 
@@ -149,4 +149,4 @@ if (typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWo
   self.addEventListener('message', (e) => { if (e.data === 'asr-build') e.source?.postMessage({ build: RELEASE.build }); });
 }
 // node tests (tools/service-worker.test.mjs) evaluate this file and call these
-self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf, fromContent };
+self.ASR_SW = { contentPath, routeOf, hex16, releaseOf, verdictOf, fromContent, fromPage, fromCdn };
