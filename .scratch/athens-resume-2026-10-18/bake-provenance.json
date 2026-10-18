@@ -1,0 +1,87 @@
+{
+  "inputs": {
+    "code": {
+      "appearance.py": "842db931f2ac2a30c5fccc14560a07a8712f18f81c64776c7a10cc8c13bd1eb7",
+      "buildings.py": "237085e9d14a7814806fef8d49ae89678e79d583e6a90f49076ce95b092ada74",
+      "clean.py": "08ec3089d57329499be9f7624b5b104c6ce5d6d87148abe2c5234db3a4d83baa",
+      "clip.py": "83abdbe0d82ae933862db91d7435018a47aea7eb65d0d5e206892a0f26ba9ba5",
+      "crop-dem.py": "8fe19baa5268dad50be8549bef585bd708d2978e1e009eb202b06195122388ba",
+      "details.py": "2938bf15782611152e56a6c33685aba04e8048d2b2f0a46258d925029cdfc25c",
+      "elevation.py": "af04372dee2da14992b1dd2a25eca631a77dd82aa360574f936a0e4ee0fc3f75",
+      "fetch.py": "8fadcdaa6f90757d7f2053f9d85093675b5bae5f784735295d4b69591a5a144e",
+      "graph.py": "17fdd96b3ff31e361406fbe3d0166be0af5d93f4050ee02e112ffff61f46365d",
+      "influence.py": "3c7b1598ce7881586d45ef1cee88b8aa7662337bb42f052eb39d44abb195ee45",
+      "influence_test.py": "0cd79e71ebe4c62e4df1180dc9c5864ac989fa2d9908b1d742955391de07cefc",
+      "ingest.py": "effb6f8308c4117170c343ded275ce8d9edca7784bda7f722203a2e7f2767889",
+      "layout.py": "9ea239a4de64a9704e666b690a58c23174c81ae28b2e2b277b9d34c4298d0aec",
+      "model.py": "0460e6b4d68bae37d13e78cd7efc21e97ad34e0b5a3b85e5e2e79ed58c1450bd",
+      "profiles.py": "223a41d7c79685cb903d60775229ba805f701e7d2764f84e442b05b7a2fe2048",
+      "quantize.py": "394b9b7063f3d32d1dae4cf5cbc8f145649d88f317a2c597700b0e20a773e297",
+      "report.py": "84c42ed48b0937330e3826ed439ebdd008e8c1593fd5f133d2850a3aef64880c",
+      "street_details.py": "aa245bd8562670097df4802c4758cf05f3c61c1d6dc97d8537bbae8e715e7f9a",
+      "styles.py": "5b0ae1e5a9e12aafa1e209adf7741156bcb79943e9853b6abe34290f1f2cfc62",
+      "surfaces.py": "4e33abb25a64df7d5c2ddb92b773189e9309967fc95f397c24971772aa777897",
+      "test.py": "34447f41fa5c7f5734295208f16ce08aa8983eae1b3460a888dfe1bf2872c7a9",
+      "tiles.py": "3ae61762905850b0f79ea0d583c45627f86e0a906aef886b70383d9d9e1c782c",
+      "turns.py": "5d0fd1875d1d354fca048cc6359f4e2f30b68658d87858f79ada203f6c994006",
+      "vegetation-nodes.py": "0804ec81de6a2d34735bad29ab3752eab5ec25df0acbabcd2e7f32c559d61833",
+      "vegetation.py": "baeeeb05c8b8839e132e756df6f167cb808fa80172569db6fb4feb197b5d0b4c"
+    },
+    "dem": [
+      "0c6e0c971f28d4a8965af835239adc87fc205a379a09356b0814488c4329f799",
+      "593ed89479962af1ac6836d669518d5175b81b04f7fae1acbc8e70dfec3052d4"
+    ],
+    "graph": "aaab0d3427a147d3d76a7b9ed30cdef1ac6b66a2c5b13df34823a514ad67d385",
+    "profiles": "9d827f3fc108adc0df2243555bc83f08838cd9a4bbda783a33505897c17a1426",
+    "source": "dd84f9186bc625045f62d4cf78dcdc0bb498b09e62215a296337a1b49dcd4c03",
+    "turns": "aa649c1d7776a8a1a0007117116bba5465cc2a33aa20d127fd9d1b5d17b90598"
+  },
+  "revision": "069e01dea93aecd58e5caf1629d4753b753aeed9aa1374dd4b56a8853d3f4977",
+  "cells": [
+    {
+      "area": 262144.0,
+      "cell": [
+        4,
+        25
+      ],
+      "graphContactPoints": 1269,
+      "graphEdges": 141,
+      "releaseReady": false,
+      "renderContactTopIdentity": true,
+      "safeAnchors": 113,
+      "seconds": 13.204433723934926,
+      "triangles": 30729,
+      "turnRestrictions": 0
+    },
+    {
+      "area": 262144.0000000001,
+      "cell": [
+        5,
+        25
+      ],
+      "graphContactPoints": 1539,
+      "graphEdges": 169,
+      "releaseReady": false,
+      "renderContactTopIdentity": true,
+      "safeAnchors": 124,
+      "seconds": 11.171995883923955,
+      "triangles": 31607,
+      "turnRestrictions": 7
+    },
+    {
+      "area": 262144.00000000047,
+      "cell": [
+        8,
+        36
+      ],
+      "graphContactPoints": 715,
+      "graphEdges": 112,
+      "releaseReady": false,
+      "renderContactTopIdentity": true,
+      "safeAnchors": 43,
+      "seconds": 8.103051189915277,
+      "triangles": 16334,
+      "turnRestrictions": 4
+    }
+  ]
+}

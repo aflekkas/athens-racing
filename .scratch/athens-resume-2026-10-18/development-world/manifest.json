@@ -1,0 +1,143 @@
+{
+  "tileVersion": 1,
+  "world": "athens-development",
+  "revision": "069e01dea93aecd58e5caf1629d4753b753aeed9aa1374dd4b56a8853d3f4977",
+  "tileMetres": 512,
+  "projection": {
+    "lat0": 37.98,
+    "lon0": 23.73,
+    "mlat": 111320,
+    "mlon": 87745.27512677578
+  },
+  "elevation": {
+    "datum": "EGM2008",
+    "source": "Copernicus GLO-30 DSM, road-conformed; not surveyed road levels",
+    "sha256": "f3debf08c8a7e929eb62409d87eac4ee945adcabe99e89c55e174008780ca58f"
+  },
+  "defaults": {
+    "speedKph": 50
+  },
+  "palette": [
+    [
+      1,
+      1,
+      1
+    ],
+    [
+      0.052860647023180246,
+      0.06480326669290577,
+      0.07227185068231748
+    ],
+    [
+      0.9046611743911496,
+      0.9130986517934192,
+      0.8962693533742664
+    ],
+    [
+      0.7912979403326302,
+      0.8148465722161012,
+      0.8227857543962835
+    ],
+    [
+      0.6583748172794485,
+      0.6938717612919899,
+      0.7304607400903537
+    ],
+    [
+      0.5583403896342679,
+      0.6444796819705821,
+      0.7156935005064807
+    ],
+    [
+      0.5711248294648731,
+      0.665387298282272,
+      0.6239603916750761
+    ],
+    [
+      0.6866853124353135,
+      0.5972017883637634,
+      0.6375968739940326
+    ],
+    [
+      0.386429433787049,
+      0.4019777798321958,
+      0.39675523072562685
+    ],
+    [
+      0.665387298282272,
+      0.6866853124353135,
+      0.6724431569576875
+    ],
+    [
+      0.3049873140698863,
+      0.3277780980565422,
+      0.3277780980565422
+    ],
+    [
+      0.7835377915261935,
+      0.7835377915261935,
+      0.7230551289219693
+    ]
+  ],
+  "spawn": {
+    "cell": [
+      4,
+      25
+    ],
+    "anchor": "anchor:tow:osm:way:24826358:0-0:f:4:25"
+  },
+  "tiles": {
+    "4,25": {
+      "url": "./4-25-83e535bea2261d6c1cc772ff6f8f4c845f207b7b2c465ecec40d1cf2d321a4be.bin.gz",
+      "sha256": "83e535bea2261d6c1cc772ff6f8f4c845f207b7b2c465ecec40d1cf2d321a4be",
+      "bytes": 926656,
+      "decodedBytes": 12834517,
+      "dependencies": [
+        "5,25"
+      ],
+      "triangles": 35247
+    },
+    "5,25": {
+      "url": "./5-25-0ce528e2fdfedaa130aa8ff9fcc2a14854708ba3895f5e830b15c68303c8017c.bin.gz",
+      "sha256": "0ce528e2fdfedaa130aa8ff9fcc2a14854708ba3895f5e830b15c68303c8017c",
+      "bytes": 973990,
+      "decodedBytes": 13326698,
+      "dependencies": [
+        "4,25"
+      ],
+      "triangles": 36316
+    },
+    "8,36": {
+      "url": "./8-36-1f054fa93c3194c35f120c7b2b54ae28956d01462b2679e8a29c1d122dff89ae.bin.gz",
+      "sha256": "1f054fa93c3194c35f120c7b2b54ae28956d01462b2679e8a29c1d122dff89ae",
+      "bytes": 456994,
+      "decodedBytes": 6351660,
+      "dependencies": [],
+      "triangles": 17078
+    }
+  },
+  "developmentOnly": true,
+  "releaseReady": false,
+  "coverage": {
+    "cells": [
+      "4,25",
+      "5,25",
+      "8,36"
+    ],
+    "connected": false,
+    "excludedBuildingOwnerCells": [
+      "3,24",
+      "3,25",
+      "4,24",
+      "4,26",
+      "5,24",
+      "5,26",
+      "6,25"
+    ]
+  },
+  "notes": [
+    "Stage 1 physical regression fixtures only: adjacent Glyfada pair plus separate Riviera cell.",
+    "Not a connected world or a player-visible map. Coast/sea, vegetation, structures and actual game driving are stage 2 work.",
+    "Spawn and graph elevations come from the exact emitted contact surface."
+  ]
+}
