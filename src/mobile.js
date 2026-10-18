@@ -1,6 +1,10 @@
 // Device policy stays independent of rendering and works with Safari's limited navigator.
 export const mobileDevice = (ua = globalThis.navigator?.userAgent || '') => /Android|iPhone|iPad|Mobile/i.test(ua);
 
+export function showroomPixelRatio(deviceRatio, lite = false, ua = globalThis.navigator?.userAgent || '') {
+  return Math.min(deviceRatio || 1, lite || mobileDevice(ua) ? 1 : 1.5);
+}
+
 // In landscape beta becomes the lateral axis; gamma is the phone's pitch.
 export function tiltAxis({ beta, gamma }, angle = 0) {
   if (!Number.isFinite(beta) || !Number.isFinite(gamma)) return null;

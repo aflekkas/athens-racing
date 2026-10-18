@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import * as THREE from 'three';
-import { mobileDevice, tiltAxis, requestTiltPermission, enterDrivingScreen } from '../src/mobile.js';
+import { mobileDevice, showroomPixelRatio, tiltAxis, requestTiltPermission, enterDrivingScreen } from '../src/mobile.js';
 import { resolveGraphics, detectPerfClass, RENDER, RESOURCE_BUDGETS } from '../src/graphics.js';
 import { Input } from '../src/input.js';
 import { encodeGeometryPack, decodeGeometryPack } from '../src/baked-geometry.js';
@@ -12,13 +12,15 @@ const source = p => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 
 test('phone auto resolution and draw ranges are bounded without changing the owner look', () => {
   for (const ua of ['iPhone Safari Mobile', 'Android Chrome Mobile', 'iPad']) {
-    assert(mobileDevice(ua)); assert.equal(detectPerfClass('Apple GPU', ua), 'low');
+    assert(mobileDevice(ua)); assert.equal(showroomPixelRatio(3, false, ua), 1); assert.equal(detectPerfClass('Apple GPU', ua), 'low');
     for (const perfClass of ['auto', 'potato', 'low', 'med', 'high']) for (const renderScale of ['auto', .5, 1]) {
       const g = resolveGraphics({ perfClass, renderScale }, { deviceRatio: 3, userAgent: ua });
       assert(g.pixelRatio <= 1); assert(g.drawDistance <= 500); assert.equal(g.R, RENDER);
     }
     assert.equal(resolveGraphics({ drawDistance: 2000 }, { userAgent: ua }).drawDistance, 2000, 'explicit range remains available');
   }
+  assert.equal(showroomPixelRatio(3, false, 'desktop'), 1.5); assert.equal(showroomPixelRatio(3, true, 'desktop'), 1);
+  assert.match(source('src/car-select.js'),/setPixelRatio\(showroomPixelRatio\(devicePixelRatio, lite\)\)/);
   assert.equal(resolveGraphics({perfClass:'high'}, {deviceRatio:3,userAgent:'desktop'}).pixelRatio, 1.5);
 });
 

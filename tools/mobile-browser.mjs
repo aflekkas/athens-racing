@@ -14,12 +14,26 @@ const baseline = process.argv.includes('--before');
 const landscape = process.argv.includes('--landscape');
 async function screenshot(page, path) {
   if(process.argv.includes('--no-capture'))return;
-  // Hold the picture still during capture only; racing always runs its normal loop.
-  await page.evaluate(()=>{window.__mobileCapture=true;});
-  try {
-    await page.screenshot({path,scale:'css',timeout:120000,animations:'disabled'});
+  const capture=async target=>{
+    await page.evaluate(()=>{window.__mobileCapture=true;});
+    try {
+      const cdp=await page.context().newCDPSession(page);
+      try {
+        const box=await page.evaluate(()=>({width:innerWidth,height:innerHeight,ratio:devicePixelRatio}));
+        const shot=await cdp.send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false,clip:{x:0,y:0,width:box.width,height:box.height,scale:1/box.ratio}});
+        await writeFile(target,Buffer.from(shot.data,'base64'));
+      } finally { await cdp.detach(); }
+    } finally { await page.evaluate(()=>{window.__mobileCapture=false;}); }
+  };
+  await capture(path);
+  if(landscape){
+    const original=page.viewportSize(),portrait=devices[process.env.MOBILE_CURRENT_DEVICE].viewport;
+    await page.setViewportSize(portrait);
+    await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+    await capture(path.replace('-landscape-','-portrait-'));
+    await page.setViewportSize(original);
+    await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
   }
-  finally { await page.evaluate(()=>{window.__mobileCapture=false;}); }
 }
 const memoryFunction = (await readFile('src/asset-metrics.js','utf8')).split('export function estimateSceneMemory')[1];
 try {
@@ -47,6 +61,7 @@ try {
  }
  if (!process.argv.includes('--matrix')) {
  for (const device of ['iPhone 15','Pixel 8']) {
+  process.env.MOBILE_CURRENT_DEVICE=device;
   const context = await browser.newContext({...devices[device+(landscape?' landscape':'')]});
   await context.addInitScript(baseline=>localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:baseline?'med':'low'})),baseline);
   const page = await context.newPage();
@@ -64,7 +79,13 @@ try {
   console.log('TITLE',device,await page.locator('#ui').innerText());
   if(await page.locator('[data-act=dismissNews]').count())await page.locator('[data-act=dismissNews]').tap();
   await screenshot(page,resolve(out,device+(landscape?'-landscape-menu.png':'-portrait-menu.png')));
-  const tap=async selector=>{console.log('TAP',device,selector);const el=page.locator(selector).first();await el.scrollIntoViewIfNeeded({timeout:120000});await el.tap({timeout:120000});};
+  const tap=async selector=>{
+    console.log('TAP',device,selector);
+    await page.waitForFunction(selector=>!!document.querySelector(selector),selector,{timeout:120000,polling:250});
+    const point=await page.evaluate(selector=>{const el=document.querySelector(selector);el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2,width:r.width,height:r.height,viewWidth:innerWidth,viewHeight:innerHeight};},selector);
+    assert(point.width>0 && point.height>0 && point.x>=0 && point.y>=0 && point.x<point.viewWidth && point.y<point.viewHeight,'touch target must be visible: '+selector);
+    await page.touchscreen.tap(point.x,point.y);
+  };
   await tap('[data-act=play]');
   console.log('MODE',await page.locator('#ui').innerText());
   await tap('[data-act=quick]');
@@ -106,8 +127,8 @@ try {
   if (process.argv.includes('--race')) {
    // Read-only telemetry chooses a steering target. Only CDP touch events drive
    // the vehicle: no key presses, teleports, simulation steps or input injection.
-   await page.locator('#touch-controls [data-action=pause]').tap();
-   await page.locator('[data-act=resume]').tap();
+   await tap('#touch-controls [data-action=pause]');
+   await tap('[data-act=resume]');
    const start=Date.now();let lastLog=0,activePedal,started=false;
    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:2,x:steer.x+steer.width/2,y:steer.y+steer.height/2}]});
    while(Date.now()-start<720000){

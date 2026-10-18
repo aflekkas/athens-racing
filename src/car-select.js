@@ -1,3 +1,4 @@
+import { showroomPixelRatio } from './mobile.js';
 import { importWithUpdate } from './client-release.js';
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
@@ -109,7 +110,7 @@ export function mountCarSelect(root, index, opts = {}) {
   root.addEventListener('ui:change',onTrim,true); root.addEventListener('click',onConfirm,true);
   const container = opts.container || root.querySelector('.car-preview-viewport') || root.querySelector('#carStage'), lite = !!opts.lite;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1 : 1.5));
+  renderer.setPixelRatio(showroomPixelRatio(devicePixelRatio, lite));
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   container.append(renderer.domElement);
   const scene = new THREE.Scene();
