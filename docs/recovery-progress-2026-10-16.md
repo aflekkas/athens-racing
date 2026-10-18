@@ -1,5 +1,7 @@
 # Recovery, standings and Psychiko direction
 
+> **Superseded 2026-10-18.** This describes the gate/checkpoint design and the Psychiko `defaultReverse` direction contract. Both were replaced: checkpoints are gone (progress is tracked invisibly and a tow lands at the latest valid on-road pose, see `docs/OWNER-DECISIONS.md` and `docs/multiplayer-session-api.md`), and the Garden Circuit was redesigned to run in its natural direction. Read this file as history only.
+
 Implemented against production `e72722c` in isolated branch `fix/earned-race-recovery`. No deployment, push, production pointer change, map rebuild, OSM coordinate edit, vehicle tuning or authentication change is included.
 
 ## Reproduced before editing

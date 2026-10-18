@@ -3,7 +3,7 @@ export function noticeGroup(item) {
   if (item.group) return item.group;
   const id=item.id || '', text=`${item.title || ''} ${item.text || ''}`.toUpperCase();
   if (['engine-condition','tow'].includes(id)) return 'vehicle-recovery';
-  if (['checkpoint','objective-direction','wrong-way'].includes(id)) return 'route-direction';
+  if (['objective-direction','wrong-way'].includes(id)) return 'route-direction';
   if (id.startsWith('police-') || /POLICE|BUSTED|PURSUIT|PULLED OVER/.test(text)) return 'police';
   return null;
 }

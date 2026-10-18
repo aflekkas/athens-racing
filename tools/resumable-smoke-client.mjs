@@ -14,8 +14,8 @@ export function signSmokeSession(secret, nonce, now = Date.now()) {
 // SMOKE_TOKEN signs a short-lived smoke session for this client. Sign-in is required on deployed Workers.
 export function smokeClient(base, name, { build, identity, recoveryMs = 85000, smokeToken = loadSmokeToken() } = {}) {
   const inbox=[],waiters=new Set(),history=[],nonce=randomBytes(16).toString('hex');
-  let ws,token,id,failure,ready=false,closing=false,retry,attempt=0,lostAt=0,reconnects=0,checkpoint=null,lastState,action,lobby,sequence=0;
-  const emit=m=>{const w=[...waiters].find(w=>w.pred(m));if(w){waiters.delete(w);clearTimeout(w.timer);w.resolve(m);}else if(m.type!=='snapshot'&&m.type!=='checkpoint')inbox.push(m);};
+  let ws,token,id,failure,ready=false,closing=false,retry,attempt=0,lostAt=0,reconnects=0,lastState,action,lobby,sequence=0;
+  const emit=m=>{const w=[...waiters].find(w=>w.pred(m));if(w){waiters.delete(w);clearTimeout(w.timer);w.resolve(m);}else if(m.type!=='snapshot')inbox.push(m);};
   const fail=error=>{failure ||= error;ready=false;for(const w of waiters){clearTimeout(w.timer);w.reject(failure);}waiters.clear();};
   const wire=m=>{if(ws?.readyState!==WebSocket.OPEN)return false;try{ws.send(JSON.stringify(m));return true;}catch{schedule(ws);return false;}};
   const ack=m=>{
@@ -68,15 +68,14 @@ export function smokeClient(base, name, { build, identity, recoveryMs = 85000, s
       }
       if(m.type==='lobby')lobby=m.lobby;
       if(m.type==='lobby'&&m.resume){restored(m);return;}
-      if(m.type==='checkpoint'){checkpoint=m;if(m.missed)return fail(Error(`${name}: legal smoke path rejected: ${JSON.stringify({checkpoint:m,lastState})}`));}
       ack(m);emit(m);
     });
   }
   const authFailure=`${name}: ${smokeToken?'smoke session rejected; SMOKE_TOKEN must match this deployment\'s secret; see deploy/README.md':'set SMOKE_TOKEN; see deploy/README.md'}`;
   connect();
   return {
-    get ws(){return ws;},get available(){return ready&&!failure&&ws?.readyState===WebSocket.OPEN;},get reconnects(){return reconnects;},get checkpoint(){return checkpoint;},get lobby(){return lobby;},get id(){return id;},
-    next:(pred,timeout=15000)=>new Promise((resolve,reject)=>{if(failure)return reject(failure);const i=inbox.findIndex(pred);if(i>=0)return resolve(inbox.splice(i,1)[0]);const w={pred,resolve,reject,timer:null,started:Date.now()};const check=()=>{if(!ready&&Date.now()-w.started<timeout+recoveryMs){w.timer=setTimeout(check,500);return;}waiters.delete(w);reject(Error(`${name}: message timeout; checkpoint=${JSON.stringify(checkpoint)}`));};w.timer=setTimeout(check,timeout);waiters.add(w);}),
+    get ws(){return ws;},get available(){return ready&&!failure&&ws?.readyState===WebSocket.OPEN;},get reconnects(){return reconnects;},get lobby(){return lobby;},get id(){return id;},
+    next:(pred,timeout=15000)=>new Promise((resolve,reject)=>{if(failure)return reject(failure);const i=inbox.findIndex(pred);if(i>=0)return resolve(inbox.splice(i,1)[0]);const w={pred,resolve,reject,timer:null,started:Date.now()};const check=()=>{if(!ready&&Date.now()-w.started<timeout+recoveryMs){w.timer=setTimeout(check,500);return;}waiters.delete(w);reject(Error(`${name}: message timeout`));};w.timer=setTimeout(check,timeout);waiters.add(w);}),
     send:m=>{
       if(failure)throw failure;
       const packet={name,car:'mini',driverId:identity,...m};

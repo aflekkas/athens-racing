@@ -5,16 +5,16 @@ import { createGameCore } from './core.mjs';
 import { resolveMap } from './map-definitions.mjs';
 import { getMap } from '../src/map-catalog.js';
 import { effectiveEvent } from './mp-lifecycle.mjs';
-import { roadFrame, courseProgress } from '../src/checkpoints.js';
+import { roadFrame, courseProgress, courseComplete } from '../src/course.js';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 const socket = () => ({ readyState: 1, messages: [], send(data) { this.messages.push(JSON.parse(data)); }, close() {} });
-for (const reverse of [false, true]) test(`three-client Psychiko trace: ${reverse ? 'direction toggle' : 'reverse default'}, overtakes, shortcuts, tow, restore, laps and results`, t => {
+for (const reverse of [false, true]) test(`three-client Psychiko trace: ${reverse ? 'reversed' : 'forward'}, overtakes, shortcuts, tow, restore, laps and results`, t => {
   let now = 100000; t.mock.method(Date, 'now', () => now);
   const map = resolveMap(getMap('psychiko'), JSON.parse(readFileSync(new URL('../data/maps/psychiko/map.json', import.meta.url))));
   const def = [...map.definitions.values()].find(e => e.type === 'sprint');
   const event = effectiveEvent(def, { reverse });
-  assert.equal(event.dir, reverse ? 1 : -1); assert.equal(event.s0, 0);
-  assert.ok(event.checkpoints.every(cp => Math.abs((cp.s - event.s0) * event.dir - cp.d) < 1e-6));
+  assert.equal(event.dir, reverse ? -1 : 1); assert.equal(event.s0, 0);
+  assert.ok(event.sectors.every(cp => Math.abs((cp.s - event.s0) * event.dir - cp.d) < 1e-6));
   const opts = { maps: new Map([['riviera', map], ['psychiko', map]]), defaultMap: 'psychiko', cars: new Set(['mini']), leaderboard: { submit: async () => {} }, countdownMs: 0, raceLimitMs: 2000000 };
   let core = createGameCore(opts);
   const clients = [socket(), socket(), socket()], names = ['Alice', 'Bob', 'Charlie'];
@@ -39,7 +39,7 @@ for (const reverse of [false, true]) test(`three-client Psychiko trace: ${revers
     now += 250; core.tick();
     const snapshots = clients.map(ws => ws.messages.findLast(m => m.type === 'snapshot'));
     assert.ok(snapshots.every(s => s && JSON.stringify(s.standings) === JSON.stringify(snapshots[0].standings)), 'every client sees the same authoritative order');
-    const rows = snapshots[0].standings.map(row => ({ name: names[ids.indexOf(row.id)], progress: row.progress, checkpoint: row.checkpoint, position: row.position, finish: row.finish }));
+    const rows = snapshots[0].standings.map(row => ({ name: names[ids.indexOf(row.id)], progress: row.progress, position: row.position, finish: row.finish }));
     trace.push({ label, rows }); return rows;
   };
   drive(0, 0, 100); drive(1, 0, 90); drive(2, 0, 80);
@@ -53,7 +53,7 @@ for (const reverse of [false, true]) test(`three-client Psychiko trace: ${revers
   send(clients[2], { type: 'recover', raceId: lobby.raceId, motionEpoch: 3 });
   assert.equal(clients[2].messages.at(-1).until, until, 'repeat does not stack time');
   sample(2, 300, 0, 2); assert.equal(core.clientData(clients[2]).state.s, ack.s, 'old motion epoch rejected');
-  record('Charlie towed to earned anchor');
+  record('Charlie towed to his latest on-road pose');
   drive(0, 100, 50); const backwards = record('Alice reverses behind Charlie');
   assert.equal(backwards.find(r => r.name === 'Alice').position, 3);
   const before = core.clientData(clients[0]);
@@ -65,8 +65,8 @@ for (const reverse of [false, true]) test(`three-client Psychiko trace: ${revers
   drive(0, 50, event.lapLength); assert.equal(core.clientData(clients[0]).finish, null, 'one lap cannot finish a two-lap race');
   record('Alice crosses lap one');
   drive(0, event.lapLength, event.len + 1);
-  const winner = core.clientData(clients[0]); assert.ok(winner.finish > 0); assert.equal(winner.course.passed, winner.course.gates.length);
-  record('Alice finishes after all gates in both laps');
+  const winner = core.clientData(clients[0]); assert.ok(winner.finish > 0); assert.equal(courseComplete(winner.course), true);
+  record('Alice finishes after covering both laps');
   send(clients[1], { type: 'dnf', raceId: lobby.raceId, reason: 'retired' });
   send(clients[2], { type: 'dnf', raceId: lobby.raceId, reason: 'retired' });
   const results = clients[0].messages.findLast(m => m.type === 'lobby').lobby;

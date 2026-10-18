@@ -1,5 +1,5 @@
 import { recoveryPosition } from '../src/race-lifecycle.js';
-import { courseProgress, courseRecoveryStation, checkpointFrame, coursePoseValid } from '../src/checkpoints.js';
+import { courseRecoveryPose, courseFrame, coursePoseValid, restartCourseAt } from '../src/course.js';
 export const RECOVERY_MS = 250;
 export const CAPTURE_RECOVERY_MS = 5000;
 export const RECOVERY_COOLDOWN_MS = 1000;
@@ -9,9 +9,11 @@ export function resetRecovery(driver, raceId) {
 export function rememberRecoveryRoad(driver, event, raceId) {
   if (driver.recoveryRace !== raceId) resetRecovery(driver, raceId);
   if (driver.recovery?.raceId === raceId) driver.state.recoveryUntil = driver.recovery.until;
-  // A small u on a neighbouring street is not evidence of earned race progress.
+  // A small u on a neighbouring street is not evidence of earned race progress; the course keeps the
+  // latest valid on-road pose itself.
   if (driver.course) {
-    if (driver.course.onRoute) driver.recoveryRoad = { s: event.s0 + event.dir * courseProgress(driver.course), u: 0 };
+    const pose = courseRecoveryPose(driver.course);
+    if (pose && driver.course.onRoute) driver.recoveryRoad = { s: pose.s, u: 0 };
   } else if (Math.abs(driver.state.u) <= 8) driver.recoveryRoad = { s: driver.state.s, u: driver.state.u };
 }
 export function requestRecovery(driver, event, raceId, epoch, now, { route = null, capture = false } = {}) {
@@ -27,14 +29,15 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     return driver.recovery;
   }
   const road = driver.recoveryRoad || { s: event.s0, u: 0 };
-  const s = driver.course ? courseRecoveryStation(driver.course, driver.state.s) : recoveryPosition(driver.state.s, road.s, event.dir);
-  const frame = route ? checkpointFrame(route, s, event.dir) : null;
+  // Always the latest valid on-road pose (owner decision 2026-10-18), never an earlier course point.
+  const s = driver.course ? (courseRecoveryPose(driver.course)?.s ?? road.s) : recoveryPosition(driver.state.s, road.s, event.dir);
+  const frame = route ? courseFrame(route, s, event.dir) : null;
   const u = route?.closed ? 0 : route ? event.dir * ((frame.halfWidth - 2 + .12) / 2) : road.u;
   const recovery = { raceId, s, u, startedAt: now, until: now + (capture ? CAPTURE_RECOVERY_MS : RECOVERY_MS), motionEpoch: epoch };
   driver.recovery = recovery;
   const position = frame ? { x: frame.x - frame.tz * u, y: frame.y, z: frame.z + frame.tx * u } : {};
   // Receipt clock and course history reset at the anchor; neither the fade nor
-  // waiting for an acknowledgement can buy a forward crossing.
+  // waiting for an acknowledgement can buy forward progress.
   driver.state = { ...driver.state, ...position, s, u,
     ...(frame ? { yaw: Math.atan2(-frame.tx, -frame.tz) + (event.dir < 0 ? Math.PI : 0) } : {}),
     vLong: 0, vLat: 0, steer: 0, gear: 1, rpm: 900, reverse: false,
@@ -44,11 +47,7 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     engHealth: 1, engineDamage: 0, coolantTemp: 90, engineStalled: false, drivetrainBroken: false,
     engineFailureReason: null, mechanicalOverrevRpm: 0, motionEpoch: epoch, recoveryUntil: recovery.until };
   driver.stateAt = now;
-  if (driver.course) {
-    driver.course.validProgress = (s - event.s0) * event.dir;
-    driver.course.previous = { ...driver.state }; driver.course.previousTime = now / 1000;
-    driver.course.onRoute = true; driver.course.missed = false; delete driver.course.rejoinLimit;
-  }
+  if (driver.course) restartCourseAt(driver.course, driver.state, now / 1000);
   return recovery;
 }
 export function recoveryStateAllowed(driver, state, raceId, now, { route = null, event = null } = {}) {

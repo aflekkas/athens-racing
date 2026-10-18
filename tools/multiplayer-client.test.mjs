@@ -235,9 +235,9 @@ test('UI session APIs send authoritative commands; car changes are available aft
   m.lobby.raceId=null;m.setCarPickerOpen(true);m.panel.hidden=true;await m.syncLobby();assert.equal(m.panel.hidden,true);m.setCarPickerOpen(false);await m.syncLobby();assert.equal(m.panel.hidden,false);
   assert.equal(m.changeCar('z4'),true);assert.deepEqual(packets.pop(),{type:'car',car:'z4'});m.lobby.status='results';assert.equal(m.canChangeCar,true);assert.equal(m.changeCar('mini'),true);m.lobby.status='race';assert.equal(m.changeCar('z4'),false);m.lobby.host='guest';assert.equal(m.startRace({force:true}),false);assert.equal(m.kickPlayer('guest'),false);
 });
-test('checkpoint hook receives persistent warning and clear status',()=>{const {m}=lobbyClient('riviera'),statuses=[];m.hooks.checkpoint=s=>statuses.push(s);m.applyCheckpoint({missed:true,message:'MISSED CHECKPOINT — go back',next:{s:80},passed:0,total:3});assert.equal(m.checkpoint.missed,true);m.applyCheckpoint({missed:false,message:'',passed:1,total:3});assert.equal(statuses.length,2);assert.equal(m.checkpoint.message,'');});
+test('the multiplayer client keeps no checkpoint state or hook: progress is tracked invisibly by the server',()=>{const {m}=lobbyClient('riviera');assert.equal(typeof m.applyCheckpoint,'undefined');assert.equal(m.checkpoint,undefined);assert.equal('checkpoint' in m.hooks,false);});
 
-test('race updates accept legacy events without checkpoints across modes, reconnect and forced finish',()=>{
+test('race updates accept legacy events without timing sectors across modes, reconnect and forced finish',()=>{
   for(const mode of ['sprint','free','taxi','getaway'])for(const resumed of [false,true]){
     const {m,packets}=lobbyClient('riviera');m.lobby.mode=mode;m.lobby.event={type:mode,s0:0,s1:100,dir:1};m.pendingResume=resumed;m.startedRace=resumed?'race':null;m.boardAt=Infinity;
     let remoteDt;m.hooks.remote=(_peers,dt)=>remoteDt=dt;

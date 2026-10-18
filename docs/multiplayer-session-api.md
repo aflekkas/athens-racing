@@ -37,33 +37,39 @@ new joins from the same shared network; the host can unblock immediately.
 Existing members are unaffected. Blocks persist across DO hibernation; no new
 bindings, subscriptions or periodic cooldown alarms are needed on the free plan.
 
-## Checkpoint HUD hook
+## Route progress (no checkpoints)
 
-`hooks.checkpoint(status)` and the `race-checkpoint` window event receive
-`{missed,message,next,passed,total}`. `next` is null at completion or
-`{id,s,x,y,z,halfWidth}` for the next gate. `mp.checkpoint` stores the latest status,
-including after reconnect. `message` is exactly **MISSED CHECKPOINT — go back**
-when missed, otherwise empty. Clear the warning when `missed` becomes false.
-Solo `EventRun` emits `events.on('checkpoint', status)` with `kind:'checkpoint'`
-and exposes `run.checkpoint` using the same status fields.
+Owner decision 2026-10-18: there are no checkpoints. Nothing about progress is shown
+or sent: the server no longer emits `checkpoint` messages, snapshots carry no
+checkpoint status, and the client has no `applyCheckpoint`, `hooks.checkpoint` or
+`race-checkpoint` event. Standings rows are `{id, progress, finish, dnf, position}`.
 
-Race gates are no more than 80 metres apart and also include existing named
-sectors and the finish. They span the mapped tarmac plus a two-metre shoulder
-allowance. Each forward movement segment must intersect the next gate within
-its width and eight metres of road height. Twin tunnel gates follow each mapped
-carriageway independently, including transitions; land between them is excluded. World-position and progress changes
-are bounded by server receipt time (solo simulation time), with a five-second
-maximum gap for course validation. Passing beside a gate or teleporting cannot
-advance it; return behind the missing gate and cross on the road. Recovery cannot
-place a driver beyond that gate. Reverse routes and unwrapped circuit laps use
-ordered gates too. Existing finish distance/lateral, clock and leaderboard
-validation still apply. Taxi/getaway use their existing ordered objective
-reducers rather than race-course gates; free roam has no finish gates.
+`src/course.js` tracks each driver's progress along the route invisibly, in solo
+(simulation time) and on the server (receipt time):
 
-At mapped twin carriageways, crossing the other carriageway's infinite gate
-plane outside its road width leaves the checkpoint pending. The existing
-five-metre station tolerance decides when an unpassed gate becomes missed;
-only an in-width, height-valid physical crossing advances it.
+- Only **continuous, on-road** movement advances progress. Each pose must lie on
+  the mapped tarmac (a two-metre shoulder allowance, eight metres of road height;
+  twin tunnel bores are tracked per carriageway), the step must stay within the
+  speed budget (30 m + 150 m/s of elapsed time, at most five seconds), and the
+  straight chord between two consecutive poses must itself follow the road
+  (sampled every eight metres, with a five-metre allowance for bends).
+- A shortcut, teleport or cut across a block earns nothing. After leaving the route
+  the car may rejoin only as far ahead as the distance it actually drove off the
+  route (plus six metres); anything further is held until the car goes back or is
+  recovered. A brief excursion that comes straight back costs nothing.
+- A finish needs the whole route covered (`reached` >= event length; every lap on
+  circuits) and the existing finish distance/lateral, clock and leaderboard
+  validation still apply. Timing sectors (`sectors`, shown as split times) are only
+  interpolated times on that tracked progress.
+- A tow, reset or server recovery lands at the car's **latest valid on-road pose**
+  (`courseRecoveryPose`), facing race direction, never at an earlier point, and
+  never beyond what was earned. History restarts there (`restartCourseAt`).
+- Solo shows one notice if the car passes the line with part of the route skipped;
+  online the finish is simply not awarded (the wrong-way and return-to-road
+  notices are unchanged).
+
+Taxi/getaway use their existing ordered objective reducers rather than race-course
+tracking; free roam has no finish.
 
 Accepted, relayed and restored server race state ignores legacy decal
 descriptors. Paint and bounded driver appearance remain supported.
@@ -71,12 +77,12 @@ descriptors. Paint and bounded driver appearance remain supported.
 ## Verification
 
 - `npm test` includes core/Node session regressions.
-- `node --test tools/checkpoints.test.mjs tools/multiplayer-client.test.mjs`
-- `node --import ./tools/physics-test/register.mjs --test tools/checkpoint-routes.test.mjs`
+- `node --test tools/course-progress.test.mjs server/course-validation.test.mjs tools/multiplayer-client.test.mjs`
+- `node --import ./tools/physics-test/register.mjs --test tools/course-routes.test.mjs`
   sweeps every Riviera/Penteli event and seeded taxi/getaway itinerary in both
   directions, through each lane centre and inner/outer road edge, against server
-  and solo geometry. It includes paired packets, the tt-coast HUD regression,
-  shortcut rejection, and two Megara laps in both directions.
+  and solo geometry. It includes paired packets, the tt-coast tunnel-mouth regression
+  and two Megara laps in both directions.
 - `MP_WORKER_BASE=http://127.0.0.1:<private-port> node --test server/session-transport.test.mjs`
   runs the same socket contract on a local SQLite Durable Object via `wrangler dev`.
 

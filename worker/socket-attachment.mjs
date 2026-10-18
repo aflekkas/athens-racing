@@ -8,7 +8,7 @@ export function socketAttachment(data) {
   const round = value => typeof value === 'number' ? Math.round(value * 10000) / 10000
     : Array.isArray(value) ? value.map(round) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, round(v)])) : value;
   connection.state = round(data.state);
-  if (data.course) connection.courseCursor = { raceId: data.course.raceId, passed: data.course.passed, missed: data.course.missed, previousTime: data.course.previousTime };
+  if (data.course) { const { raceId, reached, validProgress, previousTime, finishedAt, lastRoad } = data.course; connection.courseCursor = round({ raceId, reached, validProgress, previousTime, finishedAt, lastRoad }); }
   const size = () => new TextEncoder().encode(JSON.stringify(connection)).byteLength;
   // Cosmetics remain in arena storage/lobby metadata. Drop them from the
   // per-socket fallback first; always retain pose, motion epoch and course.

@@ -82,7 +82,7 @@ test('new definitions resolve through existing setup/lookup without race medals/
     assert.ok(TYPES[mode]); assert.equal(getEvent(def.id).type, mode); assert.equal(rivalCount(def), 0);
     assert.ok(fields.some(f => f.key === 'police')); assert.ok(fields.some(f => f.key === 'traffic'));
     assert.equal(fields.some(f => ['laps', 'reverse', 'rivals'].includes(f.key)), false);
-    assert.deepEqual(resolve(def, ctx).checkpoints, []); assert.deepEqual(targetLabels(def, resolve(def, ctx), String), []);
+    assert.deepEqual(resolve(def, ctx).sectors, []); assert.deepEqual(targetLabels(def, resolve(def, ctx), String), []);
     assert.equal(applySetup(def, { police: true }).rules.police, true); assert.equal(applySetup(def, { police: false }).rules.police, false);
     assert.throws(() => resolveDrivingMode(def, { ...ctx, route: { ...route, closed: true } }), /public roads/);
     assert.equal(def.car, undefined); assert.equal(def.targets.gold, undefined);

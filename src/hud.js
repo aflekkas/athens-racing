@@ -255,12 +255,19 @@ export class Hud {
     g.strokeStyle = 'rgba(110,200,255,.85)'; g.lineWidth = 1.6 / sc;
     for (const c of cells) for (const s of c.c) { g.beginPath(); g.moveTo(s[0], s[1]); g.lineTo(s[2], s[3]); g.stroke(); }
     // route: done (dim) + ahead (bright)
-    const i0 = Math.max(0, Math.floor((st.s - R) / 10)), i1 = Math.min(this.rpts.length / 2 - 1, Math.ceil((st.s + R) / 10));
-    const ic = Math.round(st.s / 10), fi = Math.round(route.finish / 10);
+    // The route is drawn in the direction of travel: behind the car dim, ahead of it bright, whichever way the event runs
+    // (reverse events count s downwards) and on whichever lap of a circuit (s is unwrapped there).
+    const sw = route.closed ? route.wrap(st.s) : st.s, rev = this.r1 != null && this.r1 < this.r0, N = this.rpts.length / 2 - 1;
+    const lo = Math.floor((sw - R) / 10), hi = Math.ceil((sw + R) / 10), ic = Math.round(sw / 10);
+    // index ranges as pieces of the polyline; a circuit continues past its seam
+    const stroke = (a, b) => {
+      for (const k of route.closed ? [-1, 0, 1] : [0]) { const x = Math.max(0, a - k * N), y = Math.min(N, b - k * N); if (x <= y) { this.pathRange(g, x, y); g.stroke(); } }
+    };
+    const end = route.closed ? Infinity : rev ? Math.round(this.r1 / 10) : Math.round(route.finish / 10);
     g.lineJoin = 'round';
-    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 16 / sc + 6; this.pathRange(g, i0, i1); g.stroke();
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; this.pathRange(g, i0, Math.min(ic, i1)); g.stroke();
-    g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; this.pathRange(g, Math.max(i0, ic), Math.min(i1, fi)); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 16 / sc + 6; stroke(lo, hi);
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; if (rev) stroke(ic, hi); else stroke(lo, ic);
+    g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; if (rev) stroke(Math.max(lo, end), ic); else stroke(ic, Math.min(hi, end));
     // finish
     const sFin = this.r1 ?? route.finish;
     if (!st.objectiveMode && Math.abs(sFin - st.s) < R) {
@@ -288,7 +295,9 @@ export class Hud {
     }
     // rival
     g.fillStyle = '#29d8ff'; g.strokeStyle = '#001018'; g.lineWidth = 3 / sc;
-    for (const p of st.remotes || [{ x: st.rx, z: st.rz }]) { g.beginPath(); g.arc(p.x, p.z, 8 / sc, 0, 7); g.fill(); g.stroke(); }
+    // The spare rival is parked out of the way when nobody races (free roam, solo drives): no marker for it.
+    const marked = st.remotes || (st.rx == null ? [] : [{ x: st.rx, z: st.rz }]);
+    for (const p of marked) { g.beginPath(); g.arc(p.x, p.z, 8 / sc, 0, 7); g.fill(); g.stroke(); }
     g.restore();
     // player arrow
     g.save(); g.translate(cx, cy);
@@ -302,6 +311,7 @@ export class Hud {
       g.fillStyle = '#ff3b2f'; g.font = '800 14px "Barlow Condensed", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('N', cx + nx * rr, cy + nz * rr + 1);
     }
     // rival off-map pointer
+    if (st.rx == null && !st.remotes) return;
     const dx = st.rx - st.x, dz = st.rz - st.z;
     const px = (dx * Math.cos(rot) - dz * Math.sin(rot)) * sc, pz = (dx * Math.sin(rot) + dz * Math.cos(rot)) * sc;
     if (Math.abs(px) > cx - 10 || Math.abs(pz) > cy - 10 || pz > H - cy - 10) {

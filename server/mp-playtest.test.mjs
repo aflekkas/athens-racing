@@ -38,13 +38,13 @@ test('loading, force start, late grid joins and restart retain everyone without 
  advance();send(b,{type:'states',raceId:l.raceId,generation,states:[pose(30)]});assert.equal(core.clientData(b).state,null,'batched stale generations cannot hydrate the restarted run');
  assert.ok([...l.players.values()].every(p=>p.finish==null&&!p.course));
 });
-test('ordered checkpoint standings are identical on all clients and ignore local rendering/prediction', t => {
+test('route-progress standings are identical on all clients and ignore local rendering/prediction', t => {
  const { core,clients:[a,b,c],send,lobby:l,advance }=setup(t);
  for(const ws of [b,c])send(ws,{type:'join',code:l.code});send(a,{type:'start',force:true});advance(1000);
  send(a,{type:'state',raceId:l.raceId,state:pose(70)});send(b,{type:'state',raceId:l.raceId,state:pose(90)});send(c,{type:'state',raceId:l.raceId,state:pose(140,80)});advance();
  const packets=[a,b,c].map(ws=>ws.messages.findLast(m=>m.type==='snapshot'));
  assert.deepEqual(packets[0].standings,packets[1].standings);assert.deepEqual(packets[1].standings,packets[2].standings);
- assert.equal(packets[0].standings[0].id,core.clientData(b).id,'valid checkpoint beats unpassed off-road cursor');
+ assert.equal(packets[0].standings[0].id,core.clientData(b).id,'tracked on-road progress beats an off-road cursor');
  assert.equal(packets[0].world.state.weather,'rain');assert.equal(packets[0].world.state.wet,1);
  const publicLobby=core.publicLobby(l);assert.equal(publicLobby.traffic,true);assert.equal(publicLobby.config.traffic,2);assert.equal(publicLobby.trafficPolicy,'shared-authority');
  for(const ws of [a,b,c]) { const mp=Object.assign(Object.create(Multiplayer.prototype),{id:core.clientData(ws).id,lobby:publicLobby,peers:new Map()});assert.deepEqual(mp.ranking(9999).map(p=>p.id),packets[0].standings.map(p=>p.id)); }
@@ -68,7 +68,7 @@ test('shared traffic is host authoritative, atomically delivered, restored and a
  assert.deepEqual([...restored.lobbies.values()][0].sharedWorld,l.sharedWorld);
  core.disconnect(a);assert.equal(core.publicLobby(l).worldOwner,core.clientData(b).id);
 });
-test('attachment stays within a conservative 2KiB budget with full telemetry; restores latest checkpoint cursor',t=>{
+test('attachment stays within a conservative 2KiB budget with full telemetry; restores the latest route-progress cursor',t=>{
  const {core,clients:[a,b],send,lobby:l,opts,advance}=setup(t);send(b,{type:'join',code:l.code});send(a,{type:'start',force:true});advance(1000);
  const saved=structuredClone(core.exportState());
  send(a,{type:'state',raceId:l.raceId,state:{...pose(90),sampleTime:100.123456789,motionEpoch:2}});
@@ -82,7 +82,7 @@ test('attachment stays within a conservative 2KiB budget with full telemetry; re
  const bounded=socketAttachment(client);assert.ok(new TextEncoder().encode(JSON.stringify(bounded)).length<2048);
  const savedClient=saved.sessions.find(c=>c.id===client.id);Object.assign(savedClient,bounded);
  const restored=createGameCore(opts);restored.restore(saved,new Map([...core.clients].map(c=>[c.token,c.ws])));
- assert.equal(restored.clientData(a).course.passed,1);assert.equal(restored.clientData(a).course.previous.s,90);
+ assert.equal(restored.clientData(a).course.reached,90);assert.equal(restored.clientData(a).course.previous.s,90);
 });
 test('proxy contact uses mass share, separates sides, ignores stale peers and preserves remote authority',()=>{
  const route={project:(x,z)=>({s:-z,u:x}),length:1000,edge:()=>5,point:(s,u)=>({x:u,y:0,z:-s})};

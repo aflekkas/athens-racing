@@ -84,7 +84,7 @@ try {
           if (greeting.features?.stateBatching) c.send({ type: 'states', raceId: running.raceId, states: samples });
           else for (const state of samples) c.send({ type: 'state', raceId: running.raceId, state });
         }
-      } catch { clearInterval(interval); } // next() reports the socket/checkpoint failure.
+      } catch { clearInterval(interval); } // next() reports the socket failure.
     }, 2 * SMOKE_STEP / SMOKE_SPEED * 1000);
     try {
       await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === hello.id && p.state), 15000);
@@ -92,11 +92,7 @@ try {
       const results = await Promise.all([a, b].map(c => c.next(m => m.type === 'lobby' && m.lobby.status === 'results', timeout)));
       const result = results[0].lobby;
       assert.equal(result.results.length, 2); assert.ok(result.results.every(p => Number.isFinite(p.finish) && !p.dnf));
-      if (hello.protocol !== undefined) for (const c of [a, b]) {
-        assert.equal(c.checkpoint?.passed, drive.checkpoints);
-        assert.equal(c.checkpoint?.missed, false);
-      }
-      console.log(JSON.stringify({ proof: 'create → join → ready → start → snapshot → checkpoints → finish', base, protocol: hello.protocol ?? 0, legacy: hello.protocol === undefined, mapId, eventId: event.id, checkpoints: drive.checkpoints, raceId: running.raceId, startAt: running.startAt, reconnects: a.reconnects + b.reconnects, results: result.results.map(({ id, finish, dnf }) => ({ id, finish, dnf })) }, null, 2));
+      console.log(JSON.stringify({ proof: 'create → join → ready → start → snapshot → route progress → finish', base, protocol: hello.protocol ?? 0, legacy: hello.protocol === undefined, mapId, eventId: event.id, samples: drive.samples.length, raceId: running.raceId, startAt: running.startAt, reconnects: a.reconnects + b.reconnects, results: result.results.map(({ id, finish, dnf }) => ({ id, finish, dnf })) }, null, 2));
     } finally { clearInterval(interval); clearTimeout(resetTimer); }
     b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
   }

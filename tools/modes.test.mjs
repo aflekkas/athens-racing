@@ -6,7 +6,7 @@ const ctx = { route: { start: 10, finish: 990, length: 1000, from: 'A', to: 'B' 
 test('free roam is untimed and cannot finish at route/lap boundaries', () => {
   for (const closed of [false, true]) {
     const def = freeRoam('megara'), c = { ...ctx, route: { ...ctx.route, closed } }, r = resolve(def, c);
-    assert.deepEqual(r.checkpoints, []); assert.equal(rivalCount(def), 0); assert.deepEqual(targetLabels(def, r, String), []);
+    assert.deepEqual(r.sectors, []); assert.equal(rivalCount(def), 0); assert.deepEqual(targetLabels(def, r, String), []);
     const run = new EventRun(def, c); run.start();
     for (const s of [-1000, 999, 3000]) assert.deepEqual(run.update(20, { s, t: 5000, kmh: 160 }), []);
     assert.equal(run.t, 0); assert.equal(run.done, false); run.abort();

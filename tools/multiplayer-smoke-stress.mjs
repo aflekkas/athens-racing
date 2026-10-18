@@ -1,6 +1,6 @@
 // Repeated real-transport races, including loaded/ready publications and clean
 // shutdown. --startup-only retires after the first accepted snapshot; full mode
-// drives every checkpoint using the same route as deploy-smoke.mjs.
+// drives the whole route using the same route as deploy-smoke.mjs.
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { WebSocket } from 'ws';

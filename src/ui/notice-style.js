@@ -13,7 +13,6 @@ export function noticeStyle(item = {}) {
   if (id === 'tow') return pick('telltale', 'tow', 'warn');
   if (id === 'traction-control') return /OFF/.test(all) ? pick('telltale', 'esc-off', 'warn') : pick('telltale', 'esc', 'good');
   if (id === 'police-status' || id === 'police-callout') return pick('telltale', 'police', tone === 'good' ? 'good' : tone === 'bad' ? 'bad' : 'warn');
-  if (id === 'checkpoint') return pick('hud', 'u-turn', 'bad');
   if (id === 'objective-direction') return pick('hud', 'u-turn', 'warn');
   if (id.startsWith('tip:')) return pick('card', 'tip', 'info');
   if (item.kind || item.telltale) return pick(item.kind || 'telltale', item.telltale || 'info', tone);
@@ -31,7 +30,7 @@ export function noticeStyle(item = {}) {
   if (has(all, /CONTROLLER|GAMEPAD|PAD CONNECTED/)) return pick('card', 'gamepad', tone);
   if (has(all, /\bCAM\b|CAMERA|COCKPIT|CHASE/)) return pick('hud', 'view', 'info');
   if (has(all, /WRONG WAY|TURN BACK|TURN AROUND/)) return pick('hud', 'u-turn', 'bad');
-  if (has(all, /CHECKPOINT|SPLIT|FINISH|LAP\b|SESSION|FREE ROAM|QUICK RACE|SPRINT/)) return pick('hud', 'flag', tone);
+  if (has(all, /SPLIT|FINISH|LAP\b|SESSION|FREE ROAM|QUICK RACE|SPRINT/)) return pick('hud', 'flag', tone);
   if (has(all, /CRASHED|RIVAL|OVERTAKE/)) return pick('telltale', 'driver', 'info');
   // a slot banner without a known cause is a route / district caption
   if (item.slot === 'banner' || (item.priority ?? 0) <= 15) return pick('hud', 'ahead', tone);

@@ -7,7 +7,7 @@ const socket = () => ({ readyState: 1, messages: [], send(data) { this.messages.
 const state = (s, epoch = 1, u = 2) => ({ x: s, y: 0, z: 0, yaw: 0, s, u, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2, sampleTime: 500, motionEpoch: epoch });
 function race(t, dir = 1) {
   let now = 100000; t.mock.method(Date, 'now', () => now);
-  const event = { id: 'quick', name: 'Recovery route', type: 'sprint', s0: dir > 0 ? 0 : 200, s1: dir > 0 ? 200 : 0, dir, len: 200, checkpoints: [{ s: 100, d: 100 }, { s: dir > 0 ? 200 : 0, d: 200 }] };
+  const event = { id: 'quick', name: 'Recovery route', type: 'sprint', s0: dir > 0 ? 0 : 200, s1: dir > 0 ? 200 : 0, dir, len: 200, sectors: [{ s: 100, d: 100 }, { s: dir > 0 ? 200 : 0, d: 200 }] };
   const maps = new Map([['riviera', { track: { start: 0, finish: 200, version: 'test' }, definitions: new Map([['quick', event]]) }]]);
   const opts = { maps, cars: new Set(['mini']), leaderboard: { submit: async () => ({}) }, countdownMs: 10, raceLimitMs: 600000, reconnectGraceMs: 100 };
   const core = createGameCore(opts), a = socket(), b = socket(), c = socket();
@@ -21,11 +21,11 @@ function race(t, dir = 1) {
   return { core, opts, a, b, c, lobby, id, event, send, advance(ms) { now += ms; }, get now() { return now; } };
 }
 
-for (const dir of [1, -1]) test(`three clients recover without checkpoint/finish shortcut (${dir > 0 ? 'forward' : 'reverse'})`, t => {
+for (const dir of [1, -1]) test(`three clients recover to their latest on-road pose without a finish shortcut (${dir > 0 ? 'forward' : 'reverse'})`, t => {
   const r = race(t, dir), s = distance => r.event.s0 + dir * distance;
   r.advance(500); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(70)) });
   r.advance(100); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(90), 1, 40) });
-  // A claimed client recovery position is ignored; the last valid server road position wins.
+  // A claimed client recovery position is ignored; the latest valid on-road pose wins (owner decision 2026-10-18).
   r.send(r.a, { type: 'recover', raceId: 'old', motionEpoch: 2 }); assert.notEqual(r.a.messages.at(-1).type, 'recovered');
   r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 2, s: s(200) });
   const ack = r.a.messages.at(-1); assert.equal(ack.type, 'recovered'); assert.equal(ack.s, s(70)); assert.equal(ack.until - r.now, 250);
@@ -47,10 +47,14 @@ for (const dir of [1, -1]) test(`three clients recover without checkpoint/finish
   r.send(r.c, { type: 'leave' }); assert.equal(r.a.messages.at(-1).lobby.status, 'results'); assert.equal(r.a.messages.at(-1).lobby.results.find(p => p.id === r.id).finish, finisher.finish);
 });
 
-test('recovery cannot advance a car that reversed behind its safe position', t => {
+test('recovery lands on the latest valid on-road pose: a legal retreat moves it back, an off-road excursion never moves it', t => {
   const r = race(t); r.advance(500); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(70) });
-  r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(60, 1, 40) });
-  r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 2 }); assert.equal(r.a.messages.at(-1).s, 60);
+  r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(60) });
+  r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 2 }); assert.equal(r.a.messages.at(-1).s, 60, 'the car legally reversed to 60');
+  r.advance(1500); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(75, 2) });
+  r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(85, 2, 40) });
+  r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(95, 2, 40) });
+  r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 3 }); assert.equal(r.a.messages.at(-1).s, 75, 'driving off the road ahead buys nothing: back to the last on-road pose');
 });
 
 test('police capture retains five seconds through persisted resume; receipt time and epoch cannot buy forward progress', t => {

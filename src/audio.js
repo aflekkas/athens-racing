@@ -783,12 +783,6 @@ export class Audio {
     }
   }
   tramBell() { for (const at of [0, 0.35]) { this.tone({ f: 1250, dur: 0.6, gain: 0.05, at, pan: -0.5, bus: this.amb }); this.tone({ f: 3130, dur: 0.4, gain: 0.02, at, pan: -0.5, bus: this.amb }); } }
-  checkpoint() {
-    if (!this.ctx) return;
-    [62, 66, 69, 74, 78].forEach((n, i) => this.pluck(MIDI(n), i * 0.08, 0.16));
-    this.tone({ f: 1760, dur: 0.6, gain: 0.05, at: 0.42 });
-    setTimeout(() => this.opa(1.1), 450);
-  }
   gameOver() {
     if (!this.ctx) return;
     // sad trombone

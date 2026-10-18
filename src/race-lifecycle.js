@@ -48,11 +48,10 @@ export function driverTelemetry({ member, state, event, startAt, now, ranked, pr
   };
 }
 
-// Recovery returns at or behind both the current car and last known road position.
-export function recoveryPosition(currentS, safeS, dir = 1, nextCheckpointS = null) {
-  let s = dir * Math.min(dir * currentS, dir * safeS);
-  if (Number.isFinite(nextCheckpointS)) s = dir * Math.min(dir * s, dir * nextCheckpointS - 3);
-  return s;
+// Recovery with no tracked course (free roam, objective modes): at or behind both the current car and
+// its last known road position. Races use the course's latest valid on-road pose instead.
+export function recoveryPosition(currentS, safeS, dir = 1) {
+  return dir * Math.min(dir * currentS, dir * safeS);
 }
 
 const engineFields = ['impactMechanical', 'maxImpactEbs', 'engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm'];

@@ -2,7 +2,7 @@
 
 `src/start-placement.js` owns initial placement only. Free roam and driving modes start 20 m past the event's start station, facing along the road in the existing lane (centre on a closed circuit). Race solo starts and the first grid row start 30 m before the line; later rows retain the existing length-aware spacing and lane assignment. Multiplayer waiting cars and race grids use the same helper. Open routes clamp placements to their usable bounds; closed routes keep their unwrapped station for lap progress.
 
-The extra race approach keeps even the forward cockpit eye of a bus more than 20 m from a start post. Event resolution, timing stations, checkpoint progress, auto-tow placement and recovery logic are unchanged. This increases the initial approach distance by 26 m; it does not move the event itself.
+The extra race approach keeps even the forward cockpit eye of a bus more than 20 m from a start post. Event resolution, timing stations, route progress, auto-tow placement and recovery logic are unchanged. This increases the initial approach distance by 26 m; it does not move the event itself.
 
 `src/gantry-legs.js` shares the rendered road/event leg geometry with the clearance guard. Megara's single cantilever pier stays in its existing batch, using the shared dimensions and transform. The refactor adds no geometry, textures, draw calls or per-frame work.
 

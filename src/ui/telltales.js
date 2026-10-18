@@ -26,7 +26,7 @@ const PATHS = {
   'red-light': `<rect ${S} x="7.6" y="2.6" width="8.8" height="18.8" rx="2.6"/><circle ${F} cx="12" cy="7" r="2.2"/><circle ${S} cx="12" cy="12" r="1.8"/><circle ${S} cx="12" cy="16.9" r="1.8"/>`,
   // police: a beacon with light rays
   police: `<path ${S} d="M7.6 17.4v-4.2a4.4 4.4 0 0 1 8.8 0v4.2M5.6 17.4h12.8v2.8H5.6zM12 3.4v2.2M4.4 6.6l1.6 1.6M19.6 6.6L18 8.2M2.6 12.6h2M19.4 12.6h2"/>`,
-  // checkpoint / finish
+  // sector / finish
   flag: `<path ${S} d="M5.6 21V3.8M5.6 4.4c3.4-1.8 5.6 1.6 9 0 1.4-.6 2.6-.8 3.8-.4v8.6c-1.2-.4-2.4-.2-3.8.4-3.4 1.6-5.6-1.8-9 0"/>`,
   // navigation: turn around
   'u-turn': `<path ${S} d="M7.6 20V9.4a4.4 4.4 0 0 1 8.8 0v6.2M13.2 12.6l3.2 3.4 3.2-3.4"/>`,

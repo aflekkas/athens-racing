@@ -79,7 +79,7 @@
     "tools/audio-listener.test.mjs",
     "tools/audio-mix.test.mjs",
     "tools/catalogue.test.mjs",
-    "tools/checkpoints.test.mjs",
+    "tools/course-progress.test.mjs",
     "tools/deploy-smoke-catalogue.test.mjs",
     "tools/deploy-smoke-route.test.mjs",
     "tools/driving-aids.test.mjs",
@@ -135,7 +135,7 @@
     "tools/vehicle-audio.test.mjs",
     "tools/brand-badges.test.mjs",
     "tools/menu-copy.test.mjs",
-    "tools/checkpoint-routes.test.mjs",
+    "tools/course-routes.test.mjs",
     "worker/arena-diagnostics.test.mjs",
     "tools/world-art-direction.test.mjs",
     "tools/asset-codecs.test.mjs",
@@ -175,7 +175,10 @@
     "tools/lucide-icons.test.mjs",
     "tools/world-gen/influence.test.mjs",
     "tools/world-surface-audit.test.mjs",
-    "tools/camera-visibility.test.mjs"
+    "tools/camera-visibility.test.mjs",
+    "tools/owner-locked-no-checkpoints.test.mjs",
+    "server/course-validation.test.mjs",
+    "tools/minimap-route.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

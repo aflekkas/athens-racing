@@ -93,7 +93,7 @@ try {
   assert.equal(report.normal.enabled, true); assert.equal(report.normal.maxStars, 0); assert.ok(report.normal.distance > 100);
   await capture('01-normal-sprint-no-wanted');
   // Start the offence proof at this station through normal event setup, so
-  // moving the fixture there doesn't create a missed-checkpoint notification.
+  // moving the fixture there doesn't skip the tracked route.
   await page.evaluate(async () => {
     const site = window.__police.patrols.find(p => p.id === 'coast-speed-trap');
     window.__offenceStation = site.s - 45;

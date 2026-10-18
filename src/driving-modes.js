@@ -13,7 +13,7 @@ export class DrivingModeRun {
   reset() {
     this.state = createObjectiveState({ mode: this.type, duration: this.r.timeLimit });
     this.t = 0; this.started = false; this.done = false; this.result = null; this.best = {};
-    this.splits = []; this.lapTimes = []; this.maxProg = 0; this.cpIdx = 0;
+    this.splits = []; this.lapTimes = []; this.maxProg = 0; this.sectorIdx = 0;
   }
   get id() { return this.def.id; }
   get type() { return this.def.type; }

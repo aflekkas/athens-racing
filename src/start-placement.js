@@ -1,4 +1,4 @@
-// Only initial placements move. Event timing lines, checkpoint stations and tow targets do not.
+// Only initial placements move. Event timing lines, course stations and tow targets do not.
 export const FREE_START_CLEARANCE = 20;
 export const GRID_START_CLEARANCE = 30;
 // The reversed street-circuit approach bends towards the start gantry; keep

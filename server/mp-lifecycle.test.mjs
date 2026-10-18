@@ -40,7 +40,7 @@ test('default config follows the event; sanitize accepts shared setup keys only'
 
 test('reverse mirrors the race geometry; readiness invalidates only when needed', () => {
   assert.equal(effectiveEvent(sprint, {}), sprint);
-  assert.deepEqual(effectiveEvent(sprint, { reverse: true }), { ...sprint, s0: 15, s1: 0, dir: -1, reverse: true, checkpoints: [{id:'finish',name:'FINISH',s:0,d:15}], routeKey: '15>0' });
+  assert.deepEqual(effectiveEvent(sprint, { reverse: true }), { ...sprint, s0: 15, s1: 0, dir: -1, reverse: true, sectors: [{id:'finish',name:'FINISH',s:0,d:15}], routeKey: '15>0' });
   assert.equal(configInvalidates({}, {}), false);
   assert.equal(configInvalidates({ time: 'day' }, { time: 'night' }), false);
   assert.equal(configInvalidates({ weather: 'clear' }, { weather: 'rain' }), false);

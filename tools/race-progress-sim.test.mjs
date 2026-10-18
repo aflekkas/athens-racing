@@ -6,7 +6,7 @@ const { Vehicle } = await import('../src/physics.js');
 const { Route } = await import('../src/map.js');
 const catalogue = readFileSync(new URL('../src/cars.js', import.meta.url), 'utf8');
 const CARS = Function('return ' + catalogue.split('export const CARS = ')[1].split('\n];')[0] + '\n];')();
-import { buildCourse, observeCourse, courseProgress, courseRecoveryStation } from '../src/checkpoints.js';
+import { buildCourse, observeCourse, courseProgress, courseComplete, courseRecoveryPose } from '../src/course.js';
 import { requestRecovery } from '../server/race-recovery.mjs';
 import { rankDrivers, restoreVehicleState } from '../src/race-lifecycle.js';
 import { EventRun, registerMapEvents, getEvents, freeRoam, resolve } from '../src/events.js';
@@ -39,12 +39,12 @@ for (const dir of [1, -1]) test(`actual Vehicle acceleration/overtake/retreat an
   }
   assert.equal(changes[0].order.split(' > ')[0], 'AI');
   assert.equal(changes.at(-1).order.split(' > ')[0], 'human');
-  assert.ok(cars.every(c => courseProgress(c.course) > 80 && c.course.passed > 0));
+  assert.ok(cars.every(c => courseProgress(c.course) > 80 && c.course.reached > 0));
   const car = cars[0], earned = courseProgress(car.course), safeS = car.vehicle.s;
   // An inverted car/off-road projection onto another lap must recover nearby.
   car.vehicle.bodyDynamic = true; car.vehicle.rigid = { q: [1, 0, 0, 0] };
   car.vehicle.s -= dir * 6000;
-  const target = courseRecoveryStation(car.course, car.vehicle.s); assert.equal(target, event.s0 + dir * earned);
+  const target = courseRecoveryPose(car.course).s; assert.ok(Math.abs(target - (event.s0 + dir * earned)) < 1e-6, 'tow anchor is the latest valid on-road pose');
   const placement = roadRecoveryPose(road, car.vehicle, dir, target);
   car.vehicle.reset(placement.s, placement.u); car.vehicle.yaw = placement.yaw;
   assert.ok(Math.abs(car.vehicle.s - safeS) < .01); assert.equal(car.vehicle.bodyDynamic, false); assert.equal(car.vehicle.rigid, null); assert.equal(car.vehicle.sus.fresh, true);
@@ -62,7 +62,7 @@ for (const dir of [1, -1]) test(`actual Vehicle acceleration/overtake/retreat an
   assert.ok(resumed.vLong>1,'resume immediately after acknowledgement is upright, repaired and drivable');
   const backwardS = car.vehicle.s - dir * 40;
   observeCourse(car.course, { ...road.point(backwardS, 2), s: backwardS, u: 2 }, 23, { route: road });
-  assert.ok(courseProgress(car.course) < earned, 'gate history does not keep a reversing car ahead');
+  assert.ok(courseProgress(car.course) < earned, 'earned history does not keep a reversing car ahead');
   mkdirSync(new URL('../.scratch/recovery-progress/', import.meta.url), { recursive: true });
   writeFileSync(new URL(`../.scratch/recovery-progress/driven-${dir}.json`, import.meta.url), JSON.stringify({ kind: 'actual Vehicle.update at 60Hz on synthetic road; no pose changes before overtake', changes, earned, recoveryStation: target }, null, 2));
   t.diagnostic(JSON.stringify(changes));
@@ -72,7 +72,7 @@ registerMapEvents('psychiko', data.events);
 for (const type of ['sprint', 'timetrial']) for (const toggle of [false, true]) test(`Psychiko ${type}: default/toggle=${toggle}, full laps, grid, AI direction and guidance`, () => {
   const route = new Route(data.route), base = getEvents('psychiko').find(e => e.type === type), def = applySetup(base, { reverse: toggle }, { closed: true });
   const run = new EventRun(def, { route, marks: data.marks }, { storage: { getItem() { return null; }, setItem() {} } }); run.start();
-  const dir = toggle ? 1 : -1; assert.equal(run.r.dir, dir); assert.equal(run.r.laps, type === 'sprint' ? 2 : 1);
+  const dir = toggle ? -1 : 1; assert.equal(run.r.dir, dir); assert.equal(run.r.laps, type === 'sprint' ? 2 : 1);
   const slots = [0, 1, 2].map(i => raceGridSlot(route, run.r.s0, dir, i, spec.length));
   assert.ok(slots.every(slot => (slot.s - run.r.s0) * dir <= 0));
   const vehicle = new Vehicle(spec, route); vehicle.reset(slots[0].s, slots[0].u); vehicle.yaw = slots[0].yaw;
@@ -88,14 +88,14 @@ for (const type of ['sprint', 'timetrial']) for (const toggle of [false, true]) 
     const s = run.r.s0 + dir * d, p = route.point(s, 0), out = run.update(.05, { ...p, s, u: 0, t: (d - startD + 2) / 40 });
     finish = out.find(e => e.kind === 'finish'); if (finish) break;
   }
-  assert.ok(finish, JSON.stringify(run.checkpoint)); assert.equal(run.lapTimes.length, run.r.laps); assert.equal(run.course.passed, run.course.gates.length);
+  assert.ok(finish, 'the whole route is tracked to a finish'); assert.equal(run.lapTimes.length, run.r.laps); assert.equal(courseComplete(run.course), true);
   assert.ok(Math.abs(finish.time - (run.r.len - startD + 2) / 40) < .1);
 });
-test('Psychiko free roam spawns and guides in the new default direction without changing geometry', () => {
+test('Psychiko free roam spawns and guides along the route direction without changing geometry', () => {
   const route = new Route(data.route), resolved = resolve(freeRoam('psychiko'), { route, marks: data.marks });
-  assert.equal(resolved.dir, -1); const start = soloStartPosition(route, resolved.s0, resolved.dir, true);
-  const v = new Vehicle(spec, route); v.reset(start.s, start.u); v.yaw += Math.PI;
-  assert.equal(travelDirection(v, route), -1); const guide = new DrivingGuidance().update(v, route);
-  assert.equal(guide.available, true); assert.ok(Math.abs(guide.nodes[1].s - route.wrap(v.s - 4)) < .01);
+  assert.equal(resolved.dir, 1); const start = soloStartPosition(route, resolved.s0, resolved.dir, true);
+  const v = new Vehicle(spec, route); v.reset(start.s, start.u);
+  assert.equal(travelDirection(v, route), 1); const guide = new DrivingGuidance().update(v, route);
+  assert.equal(guide.available, true); assert.ok(Math.abs(guide.nodes[1].s - route.wrap(v.s + 4)) < .01);
   assert.equal(route.X[0], Math.fround(data.route.x[0])); assert.equal(route.Z[1], Math.fround(data.route.z[1]));
 });
