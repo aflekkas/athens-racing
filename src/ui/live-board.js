@@ -1,4 +1,4 @@
-import { morph, esc } from './components.js';
+import { morph, esc, icon } from './components.js';
 export function connectionQuality(latency) {
   const ms=Math.max(0,Math.round(Number(latency)||0));
   return {band:ms>300?'poor':ms>150?'fair':'good',label:ms>300?ms+' ms':''};
@@ -14,9 +14,9 @@ export function renderLiveBoard(mp,state) {
     board.addEventListener('change',e=>{if(!e.target.matches?.('ui-select'))return;mp.selectSpectator(e.target.value);e.target.blur();mp.boardAt=0;});}
   const title=l.status==='results'?'RESULTS':watching?'SPECTATING':mp.retired?'RETIRED':mp.me?.finish!=null?'FINISHED':'LIVE';
   let html=`<header><b>${title}</b><span class="mp-latency" data-quality="${quality.band}" aria-label="Connection ${quality.band}${quality.label?' · '+esc(quality.label):''}">${esc(quality.label)}</span></header>`;
-  if(watching)html+=`<div class="mp-watch"><button data-watch="-1" aria-label="Watch previous driver">‹</button><ui-select aria-label="Choose driver to watch">${mp.spectatorDrivers().map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</ui-select><button data-watch="1" aria-label="Watch next driver">›</button></div>`;
+  if(watching)html+=`<div class="mp-watch"><button data-watch="-1" aria-label="Watch previous driver">${icon('chevron-left')}</button><ui-select aria-label="Choose driver to watch">${mp.spectatorDrivers().map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</ui-select><button data-watch="1" aria-label="Watch next driver">${icon('chevron-right')}</button></div>`;
   const telemetry=mp.telemetry(state);
-  if(telemetry&&l.status!=='results')html+=`<div class="mp-gaps" aria-label="Ahead ${metres(telemetry.aheadMetres)}, behind ${metres(telemetry.behindMetres)}">↑ ${metres(telemetry.aheadMetres)}   ↓ ${metres(telemetry.behindMetres)}</div>`;
+  if(telemetry&&l.status!=='results')html+=`<div class="mp-gaps" aria-label="Ahead ${metres(telemetry.aheadMetres)}, behind ${metres(telemetry.behindMetres)}">${icon('arrow-up')} ${metres(telemetry.aheadMetres)}   ${icon('arrow-down')} ${metres(telemetry.behindMetres)}</div>`;
   html+=`<ol>${mp.ranking(state.s).map((p,i)=>{
     const cls=p.id===(watching?.id||mp.id)?'me':'';
     if(l.status==='results')return `<li class="${cls}">${esc(mp.objectiveMode?mp.resultRowText(p,i):`${p.dnf?'DNF':i+1}. ${p.name} · ${p.finish!=null?p.finish.toFixed(2)+' s':'DNF'}`)}</li>`;

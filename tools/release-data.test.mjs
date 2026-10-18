@@ -147,7 +147,10 @@ test('data, fonts, audio and software sections come from the repo files, not fro
   for (const name of Object.keys({ ...pkg.dependencies, ...pkg.devDependencies })) assert.ok(software.some((e) => e.id === 'pkg-' + name), name);
   assert.equal(software.find((e) => e.id === 'pkg-three').title, 'three.js');
   if (existsSync(join(root, 'node_modules/three/package.json'))) assert.match(software.find((e) => e.id === 'pkg-three').detail, /MIT/);
-  assert.match(sec('visuals').find((e) => e.file === 'assets/icons/LICENSE').title, /Phosphor Icons/);
+  const icons = sec('visuals').find(e => e.file === 'assets/icons/LICENSE');
+  assert.match(icons.title, /Lucide Icons/);
+  assert.ok(icons.licences.includes('ISC'));
+  assert.ok(icons.licences.includes('MIT'), 'retain upstream Feather attribution');
 });
 
 test('credits text is plain and readable; licences are only those the file names', () => {

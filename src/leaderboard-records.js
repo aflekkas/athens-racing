@@ -27,7 +27,7 @@ export function carLabel(r, cars = []) {
 }
 export function routeLabel(r) {
   const s = recordSetup(r);
-  const distance = s.from != null && s.to != null ? `${Math.round(s.from)} → ${Math.round(s.to)} m` : r.routeKey || 'Route details unavailable';
+  const distance = s.from != null && s.to != null ? `${Math.round(s.from)} to ${Math.round(s.to)} m` : r.routeKey || 'Route details unavailable';
   return `${distance}${s.laps != null ? ` · ${s.laps} ${s.laps === 1 ? 'lap' : 'laps'}` : ''}`;
 }
 export function recordDate(r) {

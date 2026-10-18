@@ -14,7 +14,7 @@ function style() {
   if (document.getElementById('map-select-style')) return;
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
 }
-const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'arrows-clockwise'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountains'] : ['POINT TO POINT', 'path'];
+const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'refresh-cw'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountain'] : ['POINT TO POINT', 'route'];
 const lapTime = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 function preview(map) {
   const [kind, ic] = KIND(map), pb = getMapPersonalBest(map.id);
@@ -23,7 +23,7 @@ function preview(map) {
   return `<div class="map-preview__route"><img src="${map.preview}" alt="${esc(map.name)} route outline" draggable="false"/></div>
     <div class="map-preview__info"><div class="map-kind">${icon(ic)}${kind}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p>
     <div class="map-specs"><div class="map-spec"><small>LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? '<span> / LAP</span>' : ''}</b></div>${best}</div>
-    ${C.button({ label: 'SELECT TRACK', icon: 'flag-checkered', iconRight: 'caret-right', variant: 'primary', block: true, attrs: { 'data-confirm-track': '', 'data-map-id': map.id } })}</div>`;
+    ${C.button({ label: 'SELECT TRACK', icon: 'flag', iconRight: 'chevron-right', variant: 'primary', block: true, attrs: { 'data-confirm-track': '', 'data-map-id': map.id } })}</div>`;
 }
 const count = (selectable, m) => `${selectable.indexOf(m) + 1} <span>/ ${selectable.length}</span>`;
 export function renderMapSelect(selectedId = 'riviera', mode) {
@@ -35,9 +35,9 @@ export function renderMapSelect(selectedId = 'riviera', mode) {
     hints: [['leftright', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
     body: `<div class="attica-layout"><div class="attica-map"><div class="attica-viewport" aria-label="Attica: Megara Circuit, Riviera coast and Dionysos"><div class="attica-layer"><img class="attica-art" src="assets/maps/attica.svg" alt="OpenStreetMap coastline and motorways of greater Athens, with DEM relief of Parnitha, Hymettus and Penteli" draggable="false"/><svg class="attica-routes" viewBox="0 0 ${width} ${height}" aria-hidden="true">${selectable.map(m => { const r = TRACK_ROUTES[m.id]; return `<g class="track-route ${m.id === selected.id ? 'active' : ''}" data-route-id="${m.id}" style="--route:${color(m.id)}"><path class="route-casing" d="${r.path}"/><path class="route-line" d="${r.path}"/><path class="route-trace" pathLength="100" d="${r.path}"/></g>`; }).join('')}</svg></div>
       <div class="attica-overlay"><div class="attica-labels" aria-hidden="true">${labels}</div>${pins}</div>
-      <div class="map-region"><span class="map-status-dot"></span> ATTICA <small>37.98° N / 23.73° E</small></div><div class="map-north" aria-label="North is up">N <span>↑</span></div><div class="map-scale" aria-label="Map scale"><span></span><small>5 km</small></div>
-      </div><div class="attica-footer"><div class="attica-caption"><span aria-hidden="true">DRAG TO PAN · SCROLL / PINCH TO ZOOM</span><small><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors / ODbL</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-funded Copernicus EU-DEM</a></small></div><div class="map-tools">${C.button({ label: 'RESET', icon: 'arrow-counter-clockwise', act: 'mapReset', size: 'sm', title: 'Show all tracks' })}</div></div></div>
-      <aside class="map-preview panel" data-map="${selected.id}" style="--track:${color(selected.id)}"><nav class="map-track-nav" aria-label="Browse tracks">${C.button({ icon: 'caret-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'caret-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}</nav><div class="map-preview-content" aria-live="polite">${preview(selected)}</div><div class="map-cycle-hint" aria-hidden="true">SWIPE TO BROWSE</div></aside></div>` });
+      <div class="map-region"><span class="map-status-dot"></span> ATTICA <small>37.98° N / 23.73° E</small></div><div class="map-north" aria-label="North is up">N <span>${icon('arrow-up')}</span></div><div class="map-scale" aria-label="Map scale"><span></span><small>5 km</small></div>
+      </div><div class="attica-footer"><div class="attica-caption"><span aria-hidden="true">DRAG TO PAN · SCROLL / PINCH TO ZOOM</span><small><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors / ODbL</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-funded Copernicus EU-DEM</a></small></div><div class="map-tools">${C.button({ label: 'RESET', icon: 'rotate-ccw', act: 'mapReset', size: 'sm', title: 'Show all tracks' })}</div></div></div>
+      <aside class="map-preview panel" data-map="${selected.id}" style="--track:${color(selected.id)}"><nav class="map-track-nav" aria-label="Browse tracks">${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}</nav><div class="map-preview-content" aria-live="polite">${preview(selected)}</div><div class="map-cycle-hint" aria-hidden="true">SWIPE TO BROWSE</div></aside></div>` });
 }
 // Screen rects are [left, top, right, bottom] in viewport pixels.
 const hit = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
@@ -204,6 +204,6 @@ export async function selectMap(menu, id) {
     menu.filter = menu.data.filter || menu.filter || 'all';
     if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
     else menu.show('mapConfirm', { mapId: id, mode: 'quick' }, true);
-  } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'warning', tone: 'bad' }); console.error(error); }
+  } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'triangle-alert', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
 }

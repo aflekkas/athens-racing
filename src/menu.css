@@ -418,4 +418,3 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 
 :root[data-ui-focus="navigation"] :is(.car-paints, .car-decals) .paint.focus { filter: contrast(.8) brightness(1.05); }
 
-.car-paints .paint.selected::after { content: "✓"; color: white; font: 700 1rem system-ui; text-shadow: 0 1px 3px black; }

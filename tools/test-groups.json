@@ -154,7 +154,8 @@
     "server/leaderboard-setups.test.mjs",
     "tools/leaderboard-records.test.mjs",
     "tools/garage-cards.test.mjs",
-    "tools/mobile.test.mjs"
+    "tools/mobile.test.mjs",
+    "tools/lucide-icons.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

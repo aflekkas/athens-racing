@@ -68,7 +68,7 @@ export function renderAbout(menu) {
   const tiles = C.stats([['VERSION', b.version === DEV_VERSION ? 'dev' : esc(b.version)], ['RELEASED', v ? formatDate(v.date) : 'LOCAL BUILD'], ['COMMIT', esc(b.sha || '—')], ['BUILD', esc(b.build || '—')]], 'about-stats');
   return `<div class="group"><h3 class="group__title">${icon('info')}VERSION</h3>${tiles}
       ${C.option({ icon: 'star', title: "WHAT'S NEW", desc: 'Release notes for every version', act: 'whatsNew' })}
-      ${C.option({ icon: 'users-three', title: 'CREDITS', desc: 'Team, map data, audio, fonts and open-source software', act: 'credits' })}</div>
+      ${C.option({ icon: 'users', title: 'CREDITS', desc: 'Team, map data, audio, fonts and open-source software', act: 'credits' })}</div>
     <div class="group"><h3 class="group__title">${icon('link')}OPEN SOURCE</h3>
       ${C.option({ icon: 'globe', title: 'VIEW SOURCE ON GITHUB', desc: 'aflekkas/athens-racing · opens in a new tab', act: 'openLink', attrs: { 'data-url': SOURCE_URL } })}
       ${C.option({ icon: 'wrench', title: 'CONTRIBUTE', desc: 'Pull requests go into the staging branch · read CONTRIBUTING.md', act: 'openLink', attrs: { 'data-url': CONTRIBUTING_URL } })}</div>${legalLinks}`;
@@ -120,7 +120,7 @@ export function renderCredits(menu) {
       return C.listRow({ title: esc(e.title), desc: esc(desc), go: false, cls: 'list-row--wrap' });
     };
     body = C.panel('', `
-      <div class="group"><h3 class="group__title">${icon('users-three')}TEAM</h3>${c.team.map((m) => m.url
+      <div class="group"><h3 class="group__title">${icon('users')}TEAM</h3>${c.team.map((m) => m.url
         ? C.listRow({ icon: 'user', title: esc(m.name), desc: esc(m.role), meta: '@' + esc(m.handle), act: 'openLink', attrs: { 'data-url': m.url }, go: false })
         : C.listRow({ icon: 'user', title: esc(m.name), desc: esc(m.role), go: false })).join('')}
         ${c.ai ? `<p class="group__note">${esc(c.ai)}</p>` : ''}</div>

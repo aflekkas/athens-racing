@@ -7,6 +7,6 @@ export function openSettings(menu) {
 }
 export function installSettingsAccess(menu) {
   let button=document.getElementById('race-settings');
-  if(!button){button=document.createElement('button');button.id='race-settings';button.type='button';button.innerHTML=icon('gear-six')+'<span>SETTINGS</span>';document.body.append(button);}
+  if(!button){button=document.createElement('button');button.id='race-settings';button.type='button';button.innerHTML=icon('settings')+'<span>SETTINGS</span>';document.body.append(button);}
   button.onclick=()=>openSettings(menu);
 }

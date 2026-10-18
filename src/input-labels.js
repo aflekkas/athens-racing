@@ -1,5 +1,5 @@
 // Rendering-free labels: every displayed binding comes from the current input mapping.
-const PAD = ['A','B','X','Y','LB','RB','LT','RT','VIEW','MENU','LS','RS','D ↑','D ↓','D ←','D →','HOME'];
+const PAD = ['A','B','X','Y','LB','RB','LT','RT','VIEW','MENU','LS','RS','D UP','D DOWN','D LEFT','D RIGHT','HOME'];
 const KEYS = { Space: 'SPACE', Escape: 'ESC', Enter: 'ENTER', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', Backspace: 'BKSP' };
 export function bindingLabel(bindings, action, device = 'keyboard') {
   if (device === 'touch') return ({ throttle: 'GAS', brake: 'BRAKE', handbrake: 'HB', shiftUp: 'GEAR +', shiftDown: 'GEAR −', transmission: 'MODE', tractionControl: 'TC', camera: 'CAM', pause: 'PAUSE', tow: 'TOW', reset: 'RESET', mouseLook: 'DRAG VIEW' })[action] || action.toUpperCase();
@@ -7,11 +7,11 @@ export function bindingLabel(bindings, action, device = 'keyboard') {
   const codes = (bindings || defaults)?.[device === 'gamepad' ? 'gamepad' : 'keyboard']?.[action] || [];
   if (!codes.length) return 'UNBOUND';
   return codes.slice(0,2).map(code => {
-    if(device === 'gamepad') { const b=/^b(\d+)$/.exec(code);if(b)return PAD[+b[1]] || 'B'+b[1]; const a=/^a(\d+)([+-])$/.exec(code);return a ? `${+a[1]<2?'LS':'RS'} ${+a[1]%2 ? a[2]==='+'?'↓':'↑' : a[2]==='+'?'→':'←'}` : code; }
+    if(device === 'gamepad') { const b=/^b(\d+)$/.exec(code);if(b)return PAD[+b[1]] || 'B'+b[1]; const a=/^a(\d+)([+-])$/.exec(code);return a ? `${+a[1]<2?'LS':'RS'} ${+a[1]%2 ? a[2]==='+'?'DOWN':'UP' : a[2]==='+'?'RIGHT':'LEFT'}` : code; }
     return KEYS[code] || code.replace(/^Key|^Digit/,'').replace('Arrow','').replace(/([a-z])([A-Z])/g,'$1 $2').toUpperCase();
   }).join(' / ');
 }
 export function gearboxMessage(type, manual, bindings, device = 'keyboard') {
   const up=bindingLabel(bindings,'shiftUp',device), down=bindingLabel(bindings,'shiftDown',device), mode=bindingLabel(bindings,'transmission',device);
-  return manual ? `MANUAL · ${up} ↑ / ${down} ↓ TO SHIFT · ${mode} FOR AUTO` : `AUTOMATIC · ${mode} FOR MANUAL`;
+  return manual ? `MANUAL · ${up} SHIFT UP / ${down} SHIFT DOWN · ${mode} FOR AUTO` : `AUTOMATIC · ${mode} FOR MANUAL`;
 }

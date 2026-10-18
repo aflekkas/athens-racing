@@ -45,7 +45,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       ${C.select({ key: 'category', label: 'CLASS', compact: true, value: filters.category || 'all', options: [['all', 'ALL'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
       ${C.select({ key: 'drive', label: 'DRIVE', compact: true, value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
       ${C.select({ key: 'power', label: 'POWER', compact: true, value: filters.power || 'all', options: [['all', 'ALL'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
-      ${C.select({ key: 'sort', label: 'SORT', compact: true, value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER ↓'], ['weight', 'WEIGHT ↑']], attrs })}</div>`;
+      ${C.select({ key: 'sort', label: 'SORT', compact: true, value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER', { icon: 'arrow-down' }], ['weight', 'WEIGHT', { icon: 'arrow-up' }]], attrs })}</div>`;
     const count = `${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}`;
     return C.screen({ cls: 'scr--catalog', kick: `${garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR')} · ${count}`, title: 'GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
       body: `${toolbar}<div class="car-grid scroll-y">${list.map(({ car, index: i }) => {
@@ -60,15 +60,15 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
   const available=id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id);
   const body=model?.bodies?.find(([, ,ids])=>ids.includes(c.id));
   const trims=trimChoices(c.id,{allowedCars,def,cars:CARS});
-  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer'], ['TOP SPEED', `${c.vmax} KM/H`, 'gauge']];
+  const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'zap'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'box'], ['DRIVE', c.drive.toUpperCase(), 'circle-dot'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer'], ['TOP SPEED', `${c.vmax} KM/H`, 'gauge']];
   return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
     hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
     body: `<div class="car-layout"><div class="car-stage" id="carStage" data-trim-current="${c.id}" aria-label="Rotating 3D view of ${esc(c.name)}"><div class="car-preview-viewport" data-ui-keep="preview"></div></div>
     ${C.vehicleSpecs({ brand: badgeBrand(c), name: model?.name || c.name, trim: displayTrim(c,model), transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
       choices: `${body ? C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}${trims.length > 1 ? C.segmented({key:'carTrim',label:'TRIM',value:c.id,options:trims.map(id=>{const car=CARS.find(c=>c.id===id);return [id,esc(displayTrim(car,model))];}),attrs:{'data-scope':'car-trim'}}) : ''}`,
       extra: c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{'data-scope':'exhaust'}}) : '',
-      paint: paints.length ? `<div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => `<div class="mi paint ${savedPaint(c) === color ? 'selected' : ''}" role="button" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${color}" style="--paint:${color}"></div>`).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || '')}</div></div>` : '',
-      action: `${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock-simple')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag-checkered', variant: 'primary', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}`
+      paint: paints.length ? `<div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => C.paintSwatch({ name, color, selected: savedPaint(c) === color })).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || '')}</div></div>` : '',
+      action: `${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag', variant: 'primary', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}`
     })}</div>` });
 }
 

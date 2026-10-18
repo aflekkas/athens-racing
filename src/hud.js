@@ -1,3 +1,4 @@
+import { icon } from './ui/components.js';
 import { notifications } from './ui/notifications.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
@@ -427,7 +428,7 @@ export class Hud {
     const name=document.createElement('span');name.style.cssText='flex-basis:100%;font-size:11px;color:#a6b8c4';
     const picker=document.createElement('input');picker.type='color';picker.value=savedPaint(spec);picker.setAttribute('aria-label','Custom paint colour');picker.title='Custom paint colour';picker.style.cssText='width:33px;height:28px;padding:0;border:1px solid #78858d;background:transparent;';
     const buttons=[];
-    const refresh=color=>{picker.value=color;name.textContent=PAINTS[spec.id]?.find(p=>p[1]===color)?.[0]||'Custom '+color.toUpperCase();for(const [b,hex]of buttons){const on=hex===color;b.setAttribute('aria-pressed',String(on));b.textContent=on?'✓':'';b.style.color='#fff';b.style.textShadow='0 1px 3px #000';}};
+    const refresh=color=>{picker.value=color;name.textContent=PAINTS[spec.id]?.find(p=>p[1]===color)?.[0]||'Custom '+color.toUpperCase();for(const [b,hex]of buttons){const on=hex===color;b.setAttribute('aria-pressed',String(on));b.innerHTML=on?icon('check', 'ico--paint-check'):'';b.style.color='#fff';b.style.textShadow='0 1px 3px #000';}};
     const apply=color=>{if(savePaint(spec.id,color)){refresh(color.toLowerCase());this.onPaint?.(spec.id,color);}};
     for(const [label,color]of PAINTS[spec.id]||[]){const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.style.cssText=`width:26px;height:26px;min-width:26px;padding:0;border:1px solid #87939d;border-radius:50%;background:${color};`;b.onclick=()=>{apply(color);b.blur();};buttons.push([b,color]);panel.append(b);}
     picker.addEventListener('input',()=>apply(picker.value));picker.addEventListener('change',()=>picker.blur());panel.append(picker,name);refresh(savedPaint(spec));

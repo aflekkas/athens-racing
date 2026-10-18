@@ -121,7 +121,7 @@ try {
     await page.evaluate(async () => {
       const C = await import("/src/ui/components.js");
       C.ui.toast("ELENI INVITED YOU TO A LOBBY · OPEN ACCOUNT", {
-        icon: "users-three",
+        icon: "users",
         ms: 15000,
       });
     });

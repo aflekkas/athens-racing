@@ -118,13 +118,13 @@ export async function detectPerformance({ probe = true, gpuName = '', userAgent 
   if (probe) { await new Promise(r => setTimeout(r, 0)); try { probed = gpuProbe(); } catch { probed = null; } }
   const gpu = gpuName || probed?.gpu || '';
   let perfClass = detectPerfClass(gpu, userAgent);
-  reasons.push(`gpu:${gpu || 'unknown'}→${perfClass}`);
-  if (cores <= 2 || memory <= 2) { perfClass = minClass(perfClass, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB→potato`); }
-  else if (cores <= 4 || memory <= 4) { perfClass = minClass(perfClass, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB→≤med`); }
+  reasons.push(`gpu:${gpu || 'unknown'} to ${perfClass}`);
+  if (cores <= 2 || memory <= 2) { perfClass = minClass(perfClass, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB to potato`); }
+  else if (cores <= 4 || memory <= 4) { perfClass = minClass(perfClass, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB to ≤med`); }
   const ms = probed?.msPerPass;
   if (ms != null) {
     const cap = ms > 30 ? 'potato' : ms > 14 ? 'low' : ms > 4.5 ? 'med' : 'high';
-    if (cap !== 'high') reasons.push(`probe ${ms.toFixed(1)} ms→≤${cap}`);
+    if (cap !== 'high') reasons.push(`probe ${ms.toFixed(1)} ms to ≤${cap}`);
     perfClass = minClass(perfClass, cap);
   }
   return { perfClass, reasons, gpu, cores, memory, msPerPass: ms ?? null };

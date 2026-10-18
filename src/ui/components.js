@@ -30,7 +30,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //                               window.__flow.inMenu() reports true, so driving input is zeroed while it is open.
 //   ui.toast(text, { icon, tone: 'good' | 'bad', ms })   a short notice at the top of the screen
 //
-// Icons: Phosphor Icons (bold, MIT), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
+// Icons: Lucide (lucide-static 1.59.0, ISC), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
 
 import { settings, onSettings } from '../settings.js';
 import { bindingLabel } from '../input-labels.js';
@@ -53,7 +53,17 @@ if (typeof document !== 'undefined' && typeof fetch === 'function') fetch(SPRITE
   if (document.body) put(); else document.addEventListener('DOMContentLoaded', put, { once: true });
 }).catch(() => {});
 export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hidden="true" focusable="false"><use href="${spriteInline ? '#ico-' : SPRITE + '#'}${name}"/></svg>` : '';
+export const iconLabel = (text, name) => !name ? text : `<span class="icon-label">${icon(name)}<span>${text}</span></span>`;
 export function iconEl(name, cls = '') { const t = document.createElement('template'); t.innerHTML = icon(name, cls); return t.content.firstChild; }
+
+/** Startup HTML declares icons without duplicating the shared SVG markup. */
+export function mountIconPlaceholders(root = document) {
+  for (const el of root.querySelectorAll('[data-ui-icon]')) el.replaceWith(iconEl(el.dataset.uiIcon));
+}
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => mountIconPlaceholders(), { once: true });
+  else mountIconPlaceholders();
+}
 
 // Backdrop effects exist only on mounted overlays. Low performance classes and touch devices use tint.
 if (typeof document !== 'undefined') {
@@ -84,13 +94,17 @@ export function button({ label = '', icon: ic, iconRight, logo = '', variant = '
   return `<div class="${c}" role="button"${attrStr({ 'data-act': act, title, 'aria-label': !label ? title : null, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${logo}${icon(ic)}${label ? `<span>${label}</span>` : ''}${sub ? `<span class="btn__sub">${sub}</span>` : ''}${icon(iconRight)}</div>`;
 }
 export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled } = {}) {
-  return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}</span><span class="option__go">${icon('caret-right')}</span></div>`;
+  return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}</span><span class="option__go">${icon('chevron-right')}</span>${cls.split(/\s+/).includes('option--hero') ? `<span class="option__start">START${icon('chevron-right')}</span>` : ''}</div>`;
 }
 export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
   return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
 }
 export function card({ media = '', badge = '', title = '', text = '', body = '', foot = '', act, attrs, cls = '', selected } = {}) {
-  return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div></div>`;
+  return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div>${icon('check', 'card__selected')}</div>`;
+}
+/** A selectable paint swatch with the shared Lucide selection check. */
+export function paintSwatch({ name = '', color, selected = false } = {}) {
+  return `<div class="mi paint ${selected ? 'selected' : ''}" role="button" aria-pressed="${selected}" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${esc(color)}" style="--paint:${esc(color)}">${icon('check', 'ico--paint-check ico--selection-check')}</div>`;
 }
 export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
   return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
@@ -99,7 +113,7 @@ export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map
 /** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron */
 export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true, focusable = true } = {}) {
   // focusable: false = an information row whose meta holds its own buttons (friends, invites)
-  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('caret-right', 'list-row__go') : ''}</div>`;
+  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('chevron-right', 'list-row__go') : ''}</div>`;
 }
 /** a small status pill: tone '' | 'accent' | 'good' | 'warn' | 'bad' | 'gold' */
 export const chip = (text, { tone = '', icon: ic, cls = '', attrs } = {}) => `<span class="chip ${tone ? 'chip--' + tone : ''} ${cls}"${attrStr(attrs)}>${icon(ic)}<span>${text}</span></span>`;
@@ -120,11 +134,13 @@ export function setProgress(el, v) { if (!el) return; v = clamp(+v || 0, 0, 1); 
 
 // key hints (the soft-key bar): purely informational. Never focusable, clickable or in the .mi
 // focus order; the named input actions (keys / gamepad / touch buttons) drive everything they describe.
-const KB = (k) => `<kbd class="kbd">${k}</kbd>`, PAD = (k, c = '') => `<kbd class="kbd kbd--pad ${c}">${k}</kbd>`;
+const bindingIcons = { UP: 'arrow-up', DOWN: 'arrow-down', LEFT: 'arrow-left', RIGHT: 'arrow-right' };
+const bindingMarkup = text => String(text).replace(/\b(UP|DOWN|LEFT|RIGHT)\b/g, direction => icon(bindingIcons[direction]));
+const KB = (k) => `<kbd class="kbd">${bindingMarkup(k)}</kbd>`, PAD = (k, c = '') => `<kbd class="kbd kbd--pad ${c}">${bindingMarkup(k)}</kbd>`;
 const HINT_KEYS = {
-  confirm: [KB('ENTER'), PAD('A', 'pa')], back: [KB('ESC'), PAD('B', 'pb')], select: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD('D-PAD')],
-  updown: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD(icon('caret-up')) + PAD(icon('caret-down'))],
-  leftright: [KB(icon('caret-left')) + KB(icon('caret-right')), PAD(icon('caret-left')) + PAD(icon('caret-right'))],
+  confirm: [KB('ENTER'), PAD('A', 'pa')], back: [KB('ESC'), PAD('B', 'pb')], select: [KB(icon('chevron-up')) + KB(icon('chevron-down')), PAD('D-PAD')],
+  updown: [KB(icon('chevron-up')) + KB(icon('chevron-down')), PAD(icon('chevron-up')) + PAD(icon('chevron-down'))],
+  leftright: [KB(icon('chevron-left')) + KB(icon('chevron-right')), PAD(icon('chevron-left')) + PAD(icon('chevron-right'))],
   tabs: [KB('Q') + KB('E'), PAD('LB') + PAD('RB')], restart: [KB('R'), PAD('VIEW')], garage: [KB('G'), null],
 };
 export function keyHints(list, cls = '') {
@@ -140,14 +156,14 @@ export function keyHints(list, cls = '') {
     return `<span class="hint ${pad ? '' : 'no-pad'}"><span class="hint__keys on-key">${kb}</span>${pad ? `<span class="hint__keys on-pad">${pad}</span>` : ''}${label}</span>`;
   }).join('')}</div>`;
 }
-export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kbd--pad' : ''} ${cls}">${text}</kbd>`;
+export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kbd--pad' : ''} ${cls}">${bindingMarkup(text)}</kbd>`;
 
 /** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), with an account button only when explicitly requested by the title.
  *  Back never shares a row with the page title, so every title lines up with the content grid below it. */
 export function statusBar({ back = true, kick = '', account = false } = {}) {
   // Owner 2026-10-17: remove the title tagline, including its breadcrumb reuse.
   if (/^(?:GREEK ROADS(?:\s*\/\s*PURE TIME)?|PURE TIME)$/.test(kick.replace(/<[^>]*>/g, '').trim())) kick = '';
-  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}${account ? `<div class="hu-status__r"><button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button></div>` : ''}</div>`;
+  return `<div class="hu-status">${back ? button({ icon: 'chevron-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}${account ? `<div class="hu-status__r"><button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button></div>` : ''}</div>`;
 }
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
@@ -215,19 +231,19 @@ export function manufacturerBadge(brand, cls = '') {
   const cell = BRAND_BADGES[brand]?.enabled ? BRAND_BADGES[brand].cell : 15;
   return `<svg class="manufacturer-badge ${cls}" viewBox="${cell % 4 * 128} ${Math.floor(cell / 4) * 128} 128 128" role="img" aria-label="${esc(MANUFACTURER_NAMES[brand] || 'Manufacturer')}" data-manufacturer="${esc(brand || '')}"><image href="${MANUFACTURER_ATLAS}" width="512" height="640"/></svg>`;
 }
-const selectLabel = option => option ? option[2]?.brand ? `${manufacturerBadge(option[2].brand)}<span>${option[1]}</span>` : option[1] : '';
+const selectLabel = option => option ? option[2]?.brand ? `${manufacturerBadge(option[2].brand)}<span>${option[1]}</span>` : iconLabel(option[1], option[2]?.icon) : '';
 /** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class / trims line, HP + weight, drive badge */
 export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
   return card({ cls: `card--car car-card ${locked ? 'off' : ''} ${cls}`, act, selected, attrs,
     media: `${manufacturerBadge(brand, 'car-card__brand')}<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
-    foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock-simple') : ''}` });
+    foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock') : ''}` });
 }
 /** Vehicle specifications share a single panel hierarchy in every picker. */
 export function vehicleSpecs({ brand, name, trim, transmission, specs, choices = '', paint = '', extra = '', action = '' } = {}) {
-  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:name,title:trim,status:transmission,statusIcon:'gear-six'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
+  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:name,title:trim,status:transmission,statusIcon:'settings'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
 }
 /** an inline search box (a text focus row without a label): the magnifier, the input, the kit's pill shape */
-export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'magnifying-glass', inputAttrs, cls = '' } = {}) {
+export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'search', inputAttrs, cls = '' } = {}) {
   const input = `<input class="search__input"${attrStr({ 'data-field': name, value, placeholder, type: 'search', 'aria-label': label, autocomplete: 'off', spellcheck: 'false', ...inputAttrs })}>`;
   return `<div class="mi search ${cls}" data-kind="text" data-fid="${esc(name)}">${icon(ic)}${input}</div>`;
 }
@@ -266,14 +282,14 @@ export function stepper({ key, label, value, min, max, step = 1, format = 'int',
   const shown = options ? (options.find(([v]) => String(v) === String(value))?.[1] ?? value) : fmt(format, value);
   const i = options ? options.findIndex(([v]) => String(v) === String(value)) : -1;
   const atMin = options ? i <= 0 : value <= min, atMax = options ? i >= options.length - 1 : value >= max;
-  return field(label, `<div class="stepper"><span class="stepper__btn ${atMin ? 'off' : ''}" data-step="-1" role="button" aria-label="Decrease">${icon('caret-left')}</span><b class="stepper__val">${shown}</b><span class="stepper__btn ${atMax ? 'off' : ''}" data-step="1" role="button" aria-label="Increase">${icon('caret-right')}</span></div>`,
+  return field(label, `<div class="stepper"><span class="stepper__btn ${atMin ? 'off' : ''}" data-step="-1" role="button" aria-label="Decrease">${icon('chevron-left')}</span><b class="stepper__val">${shown}</b><span class="stepper__btn ${atMax ? 'off' : ''}" data-step="1" role="button" aria-label="Increase">${icon('chevron-right')}</span></div>`,
     { icon: ic, note, noteCls, kind: 'stepper', key, type: type || (options ? null : 'num'), attrs: { 'data-value': value, 'data-min': min, 'data-max': max, 'data-step': step, 'data-fmt': format, 'data-options': list, ...attrs } });
 }
 /** a custom dropdown: confirm / click opens the list; left / right cycles it closed */
 export function select({ key, label, value, options, icon: ic, note, type, attrs, compact = false } = {}) {
   const cur = options.find(([v]) => String(v) === String(value));
   // compact: no row, just the select pill with its label inside (toolbars: the garage filters)
-  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${selectLabel(cur)}</span>${icon('caret-down')}</div>`,
+  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${selectLabel(cur)}</span>${icon('chevron-down')}</div>`,
     { icon: ic, note, kind: 'select', key, type, cls: compact ? 'field--bare' : '', attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
 /** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
@@ -542,7 +558,7 @@ if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' 
       if (!this._init) return;
       let val = this.querySelector(':scope > .select__val');
       if (!val) { // the visible parts; data-ui-keep so an in-place patch of the owner's markup leaves them alone
-        const t = document.createElement('template'); t.innerHTML = `<span class="select__val" data-ui-keep></span>${icon('caret-down')}`;
+        const t = document.createElement('template'); t.innerHTML = `<span class="select__val" data-ui-keep></span>${icon('chevron-down')}`;
         t.content.lastChild.setAttribute('data-ui-keep', ''); this.prepend(...t.content.childNodes); val = this.querySelector(':scope > .select__val');
       }
       const text = this.current()?.textContent || ''; if (val.textContent !== text) val.textContent = text;

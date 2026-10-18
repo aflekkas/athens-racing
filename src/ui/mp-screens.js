@@ -21,10 +21,10 @@ import { driverName } from '../driver-name.js';
 const { esc, icon } = C;
 export const MP_SCREENS = ['mp', 'mpLobby', 'mpCars', 'mpResults'];
 export const isMpScreen = (s) => MP_SCREENS.includes(s);
-const MODES = [['sprint', 'QUICK RACE', 'flag-checkered'], ['free', 'FREE ROAM', 'car-profile']];
+const MODES = [['sprint', 'QUICK RACE', 'flag'], ['free', 'FREE ROAM', 'car']];
 const MAX_DRIVERS = 8;
 const weatherIcon = (v) => (v === 'rain' ? 'cloud-rain' : v === 'overcast' ? 'cloud' : 'sun');
-const timeIcon = (v) => (v === 'night' ? 'moon' : v === 'sunset' || v === 'dawn' ? 'sun-horizon' : 'sun');
+const timeIcon = (v) => (v === 'night' ? 'moon' : v === 'sunset' || v === 'dawn' ? 'sunrise' : 'sun');
 const label = (list, v) => list.find(([id]) => id === v)?.[1] || String(v ?? '').toUpperCase();
 const TRAFFIC = TRAFFIC_LEVELS.map(([, v, t]) => [v, t]);
 const trafficLabel = (v) => TRAFFIC.find(([x]) => +x === +v)?.[1] || 'NORMAL';
@@ -68,7 +68,7 @@ export function setPending(key, value, now = Date.now()) { pending.set(key, { va
 const statusText = (mp) => mp?.$?.('mp-status')?.textContent || '';
 const carOf = (mp, id) => mp?.cars?.find((c) => c.id === id);
 const mapName = (mp, id) => mp?.maps?.find((m) => m.id === (id || 'riviera'))?.name || 'ATHENS RIVIERA';
-const statusChip = (mp) => C.chip(`${mp?.preparing ? C.spinner() : ''}${esc(statusText(mp) || 'Connecting…')}`, { tone: mp?.connected ? '' : 'warn', icon: mp?.preparing ? null : mp?.connected ? 'globe' : 'warning', cls: 'mp-status', attrs: { role: 'status' } });
+const statusChip = (mp) => C.chip(`${mp?.preparing ? C.spinner() : ''}${esc(statusText(mp) || 'Connecting…')}`, { tone: mp?.connected ? '' : 'warn', icon: mp?.preparing ? null : mp?.connected ? 'globe' : 'triangle-alert', cls: 'mp-status', attrs: { role: 'status' } });
 /** the car the session will use: yours in the lobby, otherwise the car you would join or host with */
 export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-car')?.value || mp?.cars?.[mp?.hooks?.carIndex?.() ?? 0]?.id; }
 
@@ -80,14 +80,14 @@ const STAGE = '<div id="carStage" class="mp-stage" data-ui-keep="stage" aria-hid
 function carPlate(mp, car, extra = '') {
   const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
   return `<div class="mp-plate"><span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc(car?.name || '—')}</b><span class="mp-plate__spec">${spec}</span>
-    <div class="mp-plate__acts">${C.button({ label: 'CHANGE CAR', icon: 'car-profile', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, attrs: { 'data-fid': 'car' } })}${extra}</div></div>`;
+    <div class="mp-plate__acts">${C.button({ label: 'CHANGE CAR', icon: 'car', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, attrs: { 'data-fid': 'car' } })}${extra}</div></div>`;
 }
 const showroom = ({ cls = '', caption, plate, side }) => `<div class="mp-show ${cls}">${STAGE}<div class="mp-show__cap">${caption}</div>${plate}<aside class="mp-side scroll-y">${side}</aside></div>`;
 
 // ---------------------------------------------------------------- Join / Host
 export function renderMp(menu, mp, d = {}) {
   const tab = form.tab = d.tab || form.tab || 'join';
-  const tabs = C.tabs({ key: 'mpTab', value: tab, options: [['join', 'JOIN', 'users-three'], ['host', 'HOST', 'plus']], cls: 'mp-tabs' });
+  const tabs = C.tabs({ key: 'mpTab', value: tab, options: [['join', 'JOIN', 'users'], ['host', 'HOST', 'plus']], cls: 'mp-tabs' });
   const caption = `${C.sheetHead({ kick: 'MULTIPLAYER', title: tab === 'host' ? 'HOST A GAME' : 'JOIN A GAME' })}
     <p class="mp-show__sub">2–${MAX_DRIVERS} drivers · player collisions on · rejoin within 90 seconds</p>`;
   return C.screen({ cls: 'scr--mp scr--showroom', kick: 'MULTIPLAYER <span class="acc">/</span> LIVE RACING',
@@ -97,12 +97,12 @@ export function renderMp(menu, mp, d = {}) {
 function joinBody(mp) {
   const ready = /^[A-Z0-9]{6}$/.test(form.code);
   const join = C.panel('JOIN BY CODE', `${C.textField({ name: 'code', label: 'LOBBY CODE', value: form.code, placeholder: 'ABC123', maxlength: 6, inputCls: 'mp-code', attrs: { 'data-default': '' }, inputAttrs: { autocapitalize: 'characters', enterkeyhint: 'go' } })}
-    <div class="mp-go">${C.button({ label: 'JOIN LOBBY', icon: 'sign-in', iconRight: 'caret-right', variant: 'primary', block: true, act: 'mpJoinCode', disabled: !ready || !mp?.connected, attrs: { 'data-fid': 'join' } })}</div>`, { icon: 'link', cls: 'mp-join' });
+    <div class="mp-go">${C.button({ label: 'JOIN LOBBY', icon: 'log-in', iconRight: 'chevron-right', variant: 'primary', block: true, act: 'mpJoinCode', disabled: !ready || !mp?.connected, attrs: { 'data-fid': 'join' } })}</div>`, { icon: 'link', cls: 'mp-join' });
   const lobbies = mp?.__lobbies || [];
   const rows = lobbies.length ? lobbies.map((l) => {
     const full = l.players.length >= l.capacity, open = l.status === 'waiting';
     return C.listRow({ title: esc(l.name), desc: `${esc(mapName(mp, l.mapId))} · ${esc(l.event?.name || 'QUICK RACE')}`, act: 'mpJoinLobby', fid: 'lobby:' + l.code, disabled: full, attrs: { 'data-code': l.code },
-      meta: C.chip(`${l.players.length}/${l.capacity}`, { icon: 'users-three' }) + C.chip(full ? 'FULL' : open ? 'OPEN' : 'RACING', { tone: open && !full ? 'accent' : '' }) });
+      meta: C.chip(`${l.players.length}/${l.capacity}`, { icon: 'users' }) + C.chip(full ? 'FULL' : open ? 'OPEN' : 'RACING', { tone: open && !full ? 'accent' : '' }) });
   }).join('') : `<p class="empty">NO OPEN LOBBIES YET · HOST ONE AND INVITE DRIVERS</p>`;
   // discovery is re-requested while this screen is up (installMpScreens), so the list stays live without a button
   const browse = C.panel('OPEN LOBBIES', `<div class="mp-lobby-list">${rows}</div>`, { icon: 'globe', cls: 'mp-browse', right: C.chip('LIVE', { tone: 'accent', cls: 'mp-live' }) });
@@ -114,14 +114,14 @@ function hostBody(mp) {
   const A = { 'data-scope': 'mpHost' }, draft = mp?.pendingDraft, cfg = draft?.config;
   const rows = [
     C.textField({ name: 'name', label: 'LOBBY NAME', value: form.name, placeholder: (driverName.get() || 'MY') + '’S RACE', maxlength: 28, inputAttrs: { enterkeyhint: 'done' } }),
-    maps.length ? C.select({ key: 'map', label: 'TRACK', icon: 'map-trifold', value: map, options: maps.map((m) => [m.id, esc(m.name)]), attrs: A }) : '',
-    C.segmented({ key: 'mode', label: 'MODE', icon: 'flag-checkered', value: form.mode, options: MODES, attrs: A }),
-    C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock-simple', value: String(form.private), type: 'bool', options: [['false', 'ANYONE'], ['true', 'INVITE ONLY']], attrs: A }),
+    maps.length ? C.select({ key: 'map', label: 'TRACK', icon: 'map', value: map, options: maps.map((m) => [m.id, esc(m.name)]), attrs: A }) : '',
+    C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: form.mode, options: MODES, attrs: A }),
+    C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock', value: String(form.private), type: 'bool', options: [['false', 'ANYONE'], ['true', 'INVITE ONLY']], attrs: A }),
   ].join('');
   const note = cfg ? `<p class="group__note">${icon('sliders-horizontal')} Uses your race setup: ${esc(label(TIMES, cfg.time))} · ${esc(label(WEATHERS, cfg.weather))} · ${esc(trafficLabel(cfg.traffic).toLowerCase())} traffic. You can change it in the lobby.</p>`
     : '<p class="group__note">Time of day, weather, traffic and police are set in the lobby. Share the code so friends can join.</p>';
   return C.panel('NEW LOBBY', `<div class="mp-fields">${rows}</div>${note}
-    <div class="mp-go">${C.button({ label: mp?.creating ? 'CREATING…' : 'CREATE LOBBY', icon: 'plus', iconRight: 'caret-right', variant: 'primary', block: true, act: 'mpCreate', disabled: !!mp?.creating || !mp?.connected, attrs: { 'data-default': '', 'data-fid': 'create' } })}</div>`, { icon: 'users-three', cls: 'mp-host' });
+    <div class="mp-go">${C.button({ label: mp?.creating ? 'CREATING…' : 'CREATE LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', block: true, act: 'mpCreate', disabled: !!mp?.creating || !mp?.connected, attrs: { 'data-default': '', 'data-fid': 'create' } })}</div>`, { icon: 'users', cls: 'mp-host' });
 }
 
 // ---------------------------------------------------------------- lobby room
@@ -136,25 +136,25 @@ export function renderLobby(menu, mp) {
     const police = shownValue('police', cfg.police === true) === true, policeLevel = shownValue('policeLevel', cfg.policeLevel || 'normal'), busted = String(shownValue('busted', cfg.busted !== false));
     const garageCars = (mp.cars || []).filter(inGarage), allowedSet = new Set(mp.allowedCars), garage = garageCars.length, allowed = garageCars.filter((c) => allowedSet.has(c.id)).length;
     session = [
-      C.select({ key: 'mapId', label: 'TRACK', icon: 'map-trifold', value: mapV, options: (mp.maps.length ? mp.maps : [{ id: mapV, name: mapName(mp, mapV) }]).map((m) => [m.id, esc(m.name)]), attrs: { ...A, ...(mp.preparing ? { 'aria-disabled': 'true' } : {}) } }),
-      C.segmented({ key: 'mode', label: 'MODE', icon: 'flag-checkered', value: modeV, options: MODES, attrs: A }),
+      C.select({ key: 'mapId', label: 'TRACK', icon: 'map', value: mapV, options: (mp.maps.length ? mp.maps : [{ id: mapV, name: mapName(mp, mapV) }]).map((m) => [m.id, esc(m.name)]), attrs: { ...A, ...(mp.preparing ? { 'aria-disabled': 'true' } : {}) } }),
+      C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: modeV, options: MODES, attrs: A }),
       C.select({ key: 'time', label: 'TIME OF DAY', icon: timeIcon(time), value: time, options: TIMES, attrs: A }),
       C.segmented({ key: 'weather', label: 'WEATHER', icon: weatherIcon(weather), value: weather, options: WEATHERS.map(([v, t]) => [v, t, weatherIcon(v)]), attrs: A }),
       C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: traffic, type: 'num', options: TRAFFIC, attrs: A }),
-      ...(modeV === 'sprint' ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrows-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
-      C.segmented({ key: 'policeMode', label: 'POLICE & LAWS', icon: 'police-car', value: police ? policeLevel : 'off', options: [['off', 'OFF'], ...POLICE_LEVELS], attrs: A }),
+      ...(modeV === 'sprint' ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrow-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
+      C.segmented({ key: 'policeMode', label: 'POLICE & LAWS', icon: 'siren', value: police ? policeLevel : 'off', options: [['off', 'OFF'], ...POLICE_LEVELS], attrs: A }),
       ...(police ? [C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: busted, type: 'bool', options: [['true', 'ON'], ['false', 'OFF']], attrs: A })] : []),
       C.listRow({ icon: 'car', title: 'CAR RULES', desc: `${esc(typeof mp?.rulesSummary === 'function' ? mp.rulesSummary() : describeRules(mp?.carRules, specNames(mp)))} · ${allowed} OF ${garage} CARS`, act: 'mpCars', fid: 'cars' }),
     ].join('');
   } else {
-    session = C.stats([['TRACK', esc(mapName(mp, l.mapId)), { icon: 'map-trifold' }], ['MODE', esc(describeMode(mode)), { icon: 'flag-checkered' }],
+    session = C.stats([['TRACK', esc(mapName(mp, l.mapId)), { icon: 'map' }], ['MODE', esc(describeMode(mode)), { icon: 'flag' }],
       ['TIME OF DAY', esc(label(TIMES, cfg.time)), { icon: timeIcon(cfg.time) }], ['WEATHER', esc(label(WEATHERS, cfg.weather)), { icon: weatherIcon(cfg.weather) }],
-      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'police-car' }],
+      ['TRAFFIC', esc(trafficLabel(cfg.traffic ?? 1)), { icon: 'traffic-cone' }], ['POLICE', esc(policeLabel(cfg)), { icon: 'siren' }],
       ['CAR RULES', esc(typeof mp?.rulesSummary === 'function' ? mp.rulesSummary() : describeRules(mp?.carRules, specNames(mp))), { icon: 'car' }]], 'mp-facts');
   }
   const rows = l.players.map((p) => {
     const r = driverRow(p, l, mp.id), c = carOf(mp, r.car);
-    const ctl = host && !r.me ? `<span class="mp-driver__ctl">${C.button({ label: 'KICK', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpKick', attrs: { 'data-id': p.id, 'data-fid': 'kick:' + p.id, 'aria-label': 'Kick ' + p.name } })}${C.button({ label: 'BLOCK', icon: 'x', variant: 'ghost', size: 'sm', act: 'mpBlock', cls: 'mp-block', attrs: { 'data-id': p.id, 'data-fid': 'block:' + p.id, 'aria-label': 'Block ' + p.name } })}</span>` : '';
+    const ctl = host && !r.me ? `<span class="mp-driver__ctl">${C.button({ label: 'KICK', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpKick', attrs: { 'data-id': p.id, 'data-fid': 'kick:' + p.id, 'aria-label': 'Kick ' + p.name } })}${C.button({ label: 'BLOCK', icon: 'x', variant: 'ghost', size: 'sm', act: 'mpBlock', cls: 'mp-block', attrs: { 'data-id': p.id, 'data-fid': 'block:' + p.id, 'aria-label': 'Block ' + p.name } })}</span>` : '';
     return `<div class="mp-driver ${r.me ? 'me' : ''}" data-player="${esc(p.id)}"><i class="mp-dot" data-state="${r.state}"></i>
       <span class="mp-driver__who"><b>${esc(r.name)}</b>${r.me ? C.chip('YOU', { tone: 'accent' }) : ''}${r.host ? C.chip('HOST', { tone: 'gold', icon: 'crown' }) : ''}</span>
       <span class="mp-driver__car">${esc(c?.short || r.car || '')}${p.balance && (p.balance.ballastKg > 0 || p.balance.powerCapKW > 0) ? ` · ${esc(p.balance.label)}` : ''}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
@@ -166,18 +166,18 @@ export function renderLobby(menu, mp) {
   // the race actions sit under the car, like PLAY on the home screen
   const acts = [];
   if (waiting) {
-    acts.push(C.button({ label: me?.ready ? 'READY · CANCEL' : 'READY TO RACE', icon: me?.ready ? 'check' : 'flag-checkered', variant: host || me?.ready ? 'secondary' : 'primary', act: 'mpReady', disabled: !mp.worldReady, cls: me?.ready ? 'is-on' : '', attrs: { 'data-default': '', 'data-fid': 'ready' } }));
+    acts.push(C.button({ label: me?.ready ? 'READY · CANCEL' : 'READY TO RACE', icon: me?.ready ? 'check' : 'flag', variant: host || me?.ready ? 'secondary' : 'primary', act: 'mpReady', disabled: !mp.worldReady, cls: me?.ready ? 'is-on' : '', attrs: { 'data-default': '', 'data-fid': 'ready' } }));
     if (host) acts.push(C.button({ label: 'START RACE', icon: 'play', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady || !allReady, attrs: { 'data-fid': 'start' } }),
       C.button({ label: 'FORCE START', variant: 'ghost', size: 'sm', act: 'mpForce', disabled: !mp.worldReady || connected < 2, attrs: { 'data-fid': 'force' } }));
   } else if (live) {
     acts.push(C.button({ label: 'BACK TO THE RACE', icon: 'play', variant: 'primary', act: 'back', attrs: { 'data-default': '', 'data-fid': 'resume' } }));
-    if (host) acts.push(C.button({ label: 'RESTART', icon: 'arrow-counter-clockwise', act: 'mpRestart', attrs: { 'data-fid': 'restart' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } }));
+    if (host) acts.push(C.button({ label: 'RESTART', icon: 'rotate-ccw', act: 'mpRestart', attrs: { 'data-fid': 'restart' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } }));
   }
   const caption = `${C.sheetHead({ kick: `LOBBY · ${live ? 'RACE IN PROGRESS' : waiting ? 'WAITING FOR DRIVERS' : 'RESULTS'}`, title: `${esc(l.name)}` })}
-    <div class="mp-show__meta">${C.chip(esc(l.code || ''), { tone: 'accent', icon: 'lock-simple', attrs: { title: 'Lobby code' } })}${C.chip(esc(mapName(mp, l.mapId)), { icon: 'map-trifold' })}${C.chip(esc(describeMode(mode)), { icon: 'flag-checkered' })}</div>`;
-  const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'gear-six', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'sign-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
+    <div class="mp-show__meta">${C.chip(esc(l.code || ''), { tone: 'accent', icon: 'lock', attrs: { title: 'Lobby code' } })}${C.chip(esc(mapName(mp, l.mapId)), { icon: 'map' })}${C.chip(esc(describeMode(mode)), { icon: 'flag' })}</div>`;
+  const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'settings', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
   const sessionPanel = C.panel('SESSION', `<div class="mp-fields">${session}</div>`, { icon: 'sliders-horizontal', cls: 'mp-session' });
-  const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users-three', cls: 'mp-drivers' });
+  const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users', cls: 'mp-drivers' });
   return C.screen({ cls: 'scr--mp scr--showroom scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`,
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'CLOSE']],
     body: showroom({ cls: 'mp-show--lobby', caption, plate: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), side: tools + drivers + sessionPanel }) });
@@ -221,7 +221,7 @@ export function helpText(mp, l, host) {
 // preset (open / same class / max PI / category / spec / balanced) and the
 // server resolves which trims may race. The per-car list survives below as an
 // Advanced override that can only narrow the field further.
-const RULESET_OPTIONS = [['open', 'OPEN', 'globe'], ['same-class', 'SAME CLASS', 'flag-checkered'], ['max-pi', 'MAX PI', 'gauge'], ['category', 'CATEGORY', 'car-profile'], ['spec', 'SPEC', 'tire'], ['balanced', 'BALANCED', 'sliders-horizontal']];
+const RULESET_OPTIONS = [['open', 'OPEN', 'globe'], ['same-class', 'SAME CLASS', 'flag'], ['max-pi', 'MAX PI', 'gauge'], ['category', 'CATEGORY', 'car'], ['spec', 'SPEC', 'circle-dot'], ['balanced', 'BALANCED', 'sliders-horizontal']];
 /** pace facts for every garage trim, used by the rules screen and its reasons */
 export function ruleViews(mp) {
   return sortTrims((mp?.cars || []).filter(inGarage)).map((car) => {
@@ -251,15 +251,15 @@ export function renderCars(menu, mp) {
   const counts = {};
   for (const v of views) counts[v.class] = (counts[v.class] || 0) + 1;
   let params = '';
-  if (['same-class', 'balanced'].includes(rules.preset)) params = C.segmented({ key: 'class', label: 'CLASS', icon: 'flag-checkered', value: rules.class || 'B', options: PI_CLASSES.map((c) => [c, `${c} · ${counts[c] || 0}`]), attrs: R });
+  if (['same-class', 'balanced'].includes(rules.preset)) params = C.segmented({ key: 'class', label: 'CLASS', icon: 'flag', value: rules.class || 'B', options: PI_CLASSES.map((c) => [c, `${c} · ${counts[c] || 0}`]), attrs: R });
   else if (rules.preset === 'max-pi') params = C.stepper({ key: 'maxPI', label: 'MAX PERFORMANCE INDEX', icon: 'gauge', value: rules.maxPI || 550, min: 150, max: 900, step: 10, format: 'int', attrs: R });
-  else if (rules.preset === 'category') params = C.select({ key: 'category', label: 'CATEGORY', icon: 'car-profile', value: rules.category || 'hot hatch', options: GARAGE_CLASSES.map(([id, label]) => [id, label]), attrs: R });
-  else if (rules.preset === 'spec') params = C.select({ key: 'spec', label: 'SPEC CAR · EVERYONE THE SAME TRIM', icon: 'tire', value: rules.spec || views[0]?.id, options: views.map((v) => [v.id, `${v.name} · PI ${v.pi} · ${v.class}`]), attrs: R });
+  else if (rules.preset === 'category') params = C.select({ key: 'category', label: 'CATEGORY', icon: 'car', value: rules.category || 'hot hatch', options: GARAGE_CLASSES.map(([id, label]) => [id, label]), attrs: R });
+  else if (rules.preset === 'spec') params = C.select({ key: 'spec', label: 'SPEC CAR · EVERYONE THE SAME TRIM', icon: 'circle-dot', value: rules.spec || views[0]?.id, options: views.map((v) => [v.id, `${v.name} · PI ${v.pi} · ${v.class}`]), attrs: R });
   const balanceRow = ['same-class', 'max-pi', 'category'].includes(rules.preset)
     ? C.toggle({ key: 'balanced', label: 'EQUALIZE PACE (BALLAST)', icon: 'sliders-horizontal', value: rules.balanced === true, note: 'The slowest car sets the pace · faster cars carry ballast or a power cap', attrs: R }) : '';
   const rows = views.map((v) => {
     const rule = carEligibility(v, { ...rules, allowedCars: null });
-    if (!rule.ok) return C.option({ icon: 'lock-simple', title: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, desc: esc(rule.reason), disabled: true });
+    if (!rule.ok) return C.option({ icon: 'lock', title: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, desc: esc(rule.reason), disabled: true });
     return C.toggle({ key: v.id, label: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, value: allowed.has(v.id), attrs: { 'data-scope': 'mpAllow' } });
   }).join('');
   return C.screen({ cls: 'scr--mp scr--mp-cars', kick: `${esc(l?.name || 'LOBBY')} <span class="acc">/</span> HOST RULES`, title: 'CAR RULES',
@@ -281,16 +281,16 @@ export function renderResults(menu, mp) {
   const complete = l.status === 'results';
   const personal = globalThis.window?.__game?.result?.personalBest;
   if (personal) tiles.push(['BEST · EXACT SETUP', personal.exact ? fmt(personal.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', personal.route ? fmt(personal.route.time) : '—']);
-  const acts = host && complete ? [C.button({ label: 'REMATCH', icon: 'arrow-counter-clockwise', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady, attrs: { 'data-default': '', 'data-fid': 'rematch' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users-three', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } })]
+  const acts = host && complete ? [C.button({ label: 'REMATCH', icon: 'rotate-ccw', variant: 'primary', act: 'mpStart', disabled: !mp.worldReady, attrs: { 'data-default': '', 'data-fid': 'rematch' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } })]
     : [];
-  if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'export', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
-  if (complete) acts.push(C.button({ label: 'CHANGE CAR', icon: 'car-profile', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }));
-  acts.push(C.button({ label: 'LEAVE LOBBY', icon: 'sign-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
+  if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'share', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
+  if (complete) acts.push(C.button({ label: 'CHANGE CAR', icon: 'car', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }));
+  acts.push(C.button({ label: 'LEAVE LOBBY', icon: 'log-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
   return C.screen({ cls: 'scr--results scr--mp scr--mp-results', title: esc(title), kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
     hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'CLOSE']],
     body: `<div class="res-layout"><div class="res-main"><p class="res-sub">${personal?.newBest ? C.badge('NEW PERSONAL BEST' + (personal.delta < 0 ? ' −' + Math.abs(personal.delta).toFixed(2) + ' s' : ''), 'good', 'timer') : ''}${esc(!complete ? 'Your clock has stopped. Live standings · waiting for the other drivers or the race timeout.' : host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
       ${tiles.length ? C.stats(tiles.map(([k, v]) => [k, v]), 'res-stats') : ''}<div class="res-actions">${acts.join('')}</div></div>
-      <div class="res-side scroll-y">${C.panel('CLASSIFICATION', `<table class="r-table">${rows}</table>`, { icon: 'flag-checkered' })}</div></div>` });
+      <div class="res-side scroll-y">${C.panel('CLASSIFICATION', `<table class="r-table">${rows}</table>`, { icon: 'flag' })}</div></div>` });
 }
 
 // ---------------------------------------------------------------- navigation
@@ -351,7 +351,7 @@ export function act(menu, el) {
     }
     case 'mpReady': mp.$('mp-ready').click(); return true;
     case 'mpStart': mp.startRace(); return true;
-    case 'mpForce': C.ui.prompt({ title: 'START WITHOUT EVERYONE READY?', body: 'Connected drivers will join this round. Drivers still loading can join when their track is ready.', icon: 'flag-checkered',
+    case 'mpForce': C.ui.prompt({ title: 'START WITHOUT EVERYONE READY?', body: 'Connected drivers will join this round. Drivers still loading can join when their track is ready.', icon: 'flag',
       actions: [{ id: 'force', label: 'FORCE START', variant: 'primary' }, { id: 'cancel', label: 'KEEP WAITING' }] }).then((c) => { if (c === 'force') mp.startRace({ force: true }); }); return true;
     case 'mpRestart': mp.restart(); return true;
     case 'mpToLobby': mp.returnToLobby(); return true;
@@ -398,14 +398,14 @@ export function change(menu, { key, value, el }) {
   if (scope === 'mpAllow') {
     const garage = sortTrims((mp.cars || []).filter(inGarage)).map((c) => c.id), all = new Set(mp.allowedCars), allowed = new Set(garage.filter((id) => all.has(id)));
     if (value) allowed.add(key); else allowed.delete(key);
-    if (!mp.setAllowedCars([...allowed])) C.ui.toast('KEEP AT LEAST ONE CAR', { icon: 'warning', tone: 'bad' });
+    if (!mp.setAllowedCars([...allowed])) C.ui.toast('KEEP AT LEAST ONE CAR', { icon: 'triangle-alert', tone: 'bad' });
     menu.refresh(); return true;
   }
   if (scope === 'mpRules') {
     // Preset switches seed sensible parameters from the host's own car; every
     // other control patches one field. The server echo re-renders the screen.
     const patch = key === 'preset' ? rulesDefaults(mp, value) : { [key]: key === 'maxPI' ? Math.round(Number(value)) : value };
-    if (mp.setCarRules(patch) === false) C.ui.toast('ONLY THE HOST CAN CHANGE THE CAR RULES', { icon: 'warning', tone: 'bad' });
+    if (mp.setCarRules(patch) === false) C.ui.toast('ONLY THE HOST CAN CHANGE THE CAR RULES', { icon: 'triangle-alert', tone: 'bad' });
     menu.refresh(); return true;
   }
   return false;

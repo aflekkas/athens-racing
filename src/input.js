@@ -1,3 +1,4 @@
+import { icon } from './ui/components.js';
 import { notifications } from './ui/notifications.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
@@ -334,7 +335,7 @@ export class Input {
       doc.body.dataset.input = 'touch';
       const root = doc.createElement('div'); root.id = 'touch-controls'; root.hidden = true; root.setAttribute('aria-label', 'Touch driving controls');
       const rotate = doc.createElement('p'); rotate.className = 'touch-rotate'; rotate.textContent = 'Rotate your phone for a wider road view'; root.append(rotate);
-      const steer = doc.createElement('div'); steer.className = 'touch-steer'; steer.textContent = '◀  STEER  ▶'; steer.setAttribute('role', 'group'); steer.setAttribute('aria-label', 'Drag left or right to steer');
+      const steer = doc.createElement('div'); steer.className = 'touch-steer'; steer.innerHTML = icon('chevron-left') + ' STEER ' + icon('chevron-right'); steer.setAttribute('role', 'group'); steer.setAttribute('aria-label', 'Drag left or right to steer');
       let pointer;
       const move = e => { if (e.pointerId !== pointer) return; const r = steer.getBoundingClientRect(); this.touch.steer = clamp((e.clientX - r.left - r.width / 2) / (r.width * 0.4), -1, 1); };
       steer.addEventListener('pointerdown', e => { e.preventDefault(); if (pointer !== undefined) return; pointer = e.pointerId; steer.setPointerCapture(pointer); move(e); });
@@ -344,8 +345,8 @@ export class Input {
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
       const actions = doc.createElement('div'); actions.className = 'touch-actions';
       const gears = doc.createElement('div'); gears.className = 'touch-gears'; gears.setAttribute('role', 'group'); gears.setAttribute('aria-label', 'Gear shifts');
-      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
-        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
+      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'PAUSE']]) {
+        const button = doc.createElement('button'); button.type = 'button'; button.innerHTML = action === 'pause' ? icon('pause') : label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });

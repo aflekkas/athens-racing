@@ -55,20 +55,20 @@ export function renderAccount(a) {
   const activity = [
     ...requests.map((f) => C.listRow({ icon: "user-plus", title: esc(f.display_name), desc: f.recipient === a.user.id ? "WANTS TO BE FRIENDS" : "REQUEST SENT", focusable: false, go: false,
       meta: f.recipient === a.user.id ? sm("ACCEPT", "account-friend-accept", { "data-name": f.display_name }, "primary") + sm("DECLINE", "account-friend-decline", { "data-name": f.display_name }, "ghost") : sm("BLOCK", "account-friend-block", { "data-name": f.display_name }, "ghost") })),
-    ...a.invites.map((i) => C.listRow({ icon: "flag-checkered", title: esc(i.display_name), desc: `LOBBY ${esc(i.lobby)} · EXPIRES IN 2 MIN`, focusable: false, go: false,
+    ...a.invites.map((i) => C.listRow({ icon: "flag", title: esc(i.display_name), desc: `LOBBY ${esc(i.lobby)} · EXPIRES IN 2 MIN`, focusable: false, go: false,
       meta: sm("JOIN", "account-join", { "data-id": i.id }, "primary") + sm("DECLINE", "account-decline", { "data-id": i.id }, "ghost") })),
   ];
   const profile = `<div class="account-id">${C.plate(a.user.plate || a.user.displayName || "")}</div>
     ${field("name", "DRIVER NAME", a.user.displayName || "", { maxlength: 16, autocapitalize: "characters", "data-initial": a.user.displayName || "" })}
     ${field("plate", "PLATE", a.user.plate || "", { maxlength: 10, autocapitalize: "characters", "data-initial": a.user.plate || "" }, { inputCls: "plate-input" })}
     <div class="field-actions">${btn("SAVE", "account-profile", {}, "primary", { size: "sm", disabled: true, cls: "account-save" })}</div><p class="account-error" role="status">${esc(a.error || "")}</p>`;
-  const manage = `<h3 class="group__title">ACCOUNT</h3>${C.option({ icon: "export", title: "EXPORT MY DATA", act: "account-export" })}${C.option({ icon: "sign-out", title: "SIGN OUT", act: "account-logout" })}${C.option({ icon: "trash", title: "DELETE ACCOUNT", act: "account-delete", cls: "option--danger" })}`;
+  const manage = `<h3 class="group__title">ACCOUNT</h3>${C.option({ icon: "share", title: "EXPORT MY DATA", act: "account-export" })}${C.option({ icon: "log-out", title: "SIGN OUT", act: "account-logout" })}${C.option({ icon: "trash", title: "DELETE ACCOUNT", act: "account-delete", cls: "option--danger" })}`;
   return C.screen({
     cls: "scr--account",
     kick: "YOUR DRIVER ACCOUNT",
     title: "ACCOUNT",
     hints: [["select", "SELECT"], ["confirm", "OK"], ["back", "BACK"]],
-    body: `<div class="account-layout">${C.panel("PROFILE", profile + manage, { icon: "user", cls: "account-profile" })}<div class="account-side">${C.panel("FRIENDS", `${a.presenceOffline ? '<p class="group__note">Live status is reconnecting…</p>' : ""}<div class="account-friends">${friendRows}</div><div class="account-add">${C.searchField({ name: "account-friend", label: "Add a friend by driver name", placeholder: "Driver name", icon: "user-plus" })}${btn("ADD", "account-friend-request", {}, "primary", { size: "sm" })}</div>`, { icon: "users-three" })}${activity.length ? C.panel("ACTIVITY", activity.join(""), { icon: "list" }) : ""}</div></div>`,
+    body: `<div class="account-layout">${C.panel("PROFILE", profile + manage, { icon: "user", cls: "account-profile" })}<div class="account-side">${C.panel("FRIENDS", `${a.presenceOffline ? '<p class="group__note">Live status is reconnecting…</p>' : ""}<div class="account-friends">${friendRows}</div><div class="account-add">${C.searchField({ name: "account-friend", label: "Add a friend by driver name", placeholder: "Driver name", icon: "user-plus" })}${btn("ADD", "account-friend-request", {}, "primary", { size: "sm" })}</div>`, { icon: "users" })}${activity.length ? C.panel("ACTIVITY", activity.join(""), { icon: "menu" }) : ""}</div></div>`,
   });
 }
 export function renderPrivacy() {
@@ -105,7 +105,7 @@ export function install(menu, existing) {
     onInvite: () => {
       C.ui.toast("LOBBY INVITE RECEIVED · Open Account from the pause menu", {
         id: "lobby-invite", group: "lobby-invite",
-        icon: "users-three",
+        icon: "users",
         ms: 7000,
       });
     },
@@ -267,7 +267,7 @@ export function install(menu, existing) {
         menu.show("signIn");
         return;
       }
-      if (kind === "export") {
+      if (kind === "share") {
         const data = await a.api("/api/account/export");
         const link = document.createElement("a");
         link.href = URL.createObjectURL(

@@ -590,7 +590,7 @@ function offerTow() {
   if (towOffer.element || towOffer.cooldown > 0) return;
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
-  const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? ' → ' + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
+  const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? icon('chevron-right') + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
   el.innerHTML = '<strong>NEED A TOW?</strong><p>' + (inFreeRoam() ? 'Return to the road and repair your car.' : 'Return to your earned route position and repair your car.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
@@ -745,7 +745,7 @@ function startCountdown() {
       document.body.classList.remove('counting'); document.body.classList.add('racing', 'started');
       hud.banner('FREE ROAM', map.definition?.name || map.id); return;
     }
-    const r = G.ev.r; hud.banner(G.ev.def.name, map.id === 'psychiko' && r.closed ? `CIRCUIT · ${r.laps} LAPS · ${fmtDist(r.len)}` : `${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
+    const r = G.ev.r; hud.banner(G.ev.def.name, map.id === 'psychiko' && r.closed ? `CIRCUIT · ${r.laps} LAPS · ${fmtDist(r.len)}` : `${r.fromName} TO ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
   }
 }
 
@@ -844,7 +844,7 @@ async function shareResult() {
   if (!G.resultPhoto) { G.resultPhotoPending = true; render(); }
   const r = G.ev.r;
   try { ui.toast(await shareResultCard({ screenshot: G.resultPhoto, mapName: map.definition?.name,
-    routeName: r.closed ? `${r.laps} LAPS · ${r.reverse ? 'REVERSE' : 'FORWARD'}` : `${r.fromName} → ${r.toName}`,
+    routeName: r.closed ? `${r.laps} LAPS · ${r.reverse ? 'REVERSE' : 'FORWARD'}` : `${r.fromName} TO ${r.toName}`,
     carName: res.carName || player.spec.name, time: res.time, position: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === multiplayer.id) + 1 : res.position,
     field: multiplayer.active ? multiplayer.lobby.players.length : res.field, pb: res.personalBest, date: res.date, url: new URL(document.querySelector('link[rel="canonical"]')?.href || location.href).host })); }
   catch (error) { ui.toast(error.message, { tone: 'bad' }); }
@@ -1026,7 +1026,7 @@ async function startEvent(id, opts = {}) {
   } catch (error) {
     console.error('[map] start failed', error); showTitle();
     if (loading.open) loading.fail({ retry: () => startEvent(id, opts) });
-    else ui.toast('COULD NOT LOAD THIS TRACK · PLEASE TRY AGAIN', { icon: 'warning', tone: 'bad' });
+    else ui.toast('COULD NOT LOAD THIS TRACK · PLEASE TRY AGAIN', { icon: 'triangle-alert', tone: 'bad' });
   }
 }
 function openEvent(id, index = G.carIdx) {
@@ -1320,7 +1320,7 @@ function showResults() {
   const avgKmh = res.time ? (G.run?.maxProg || 0) / res.time * 3.6 : 0, avg = res.time ? fmtSpeed(avgKmh) : '—';
   // the vehicle keeps its own top speed too; a teleported test car never moves, so never show a top below the average
   const topKmh = Math.max(G.topSpeed || 0, player.veh.topSpeed || 0), top = topKmh >= avgKmh && topKmh > 0 ? fmtSpeed(topKmh) : '—';
-  const kick = r.closed ? `${map.definition?.name || def.name} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'} · ${fmtDist(r.len)}` : `${def.name} · ${r.fromName} ${r.reverse ? '◀' : '▶'} ${r.toName} · ${fmtDist(r.len)}`;
+  const kick = r.closed ? `${map.definition?.name || def.name} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'} · ${fmtDist(r.len)}` : `${def.name} · ${r.fromName} TO ${r.toName} · ${fmtDist(r.len)}`;
   const splits = run.splits.map((t, i) => { const b = prev.bestSplits?.[i]; const cp = r.checkpoints[i]; return { name: cp.name, time: fmtTime(t), delta: b != null ? sign(t - b) : '', cls: b == null ? '' : t <= b ? 'good' : 'bad' }; });
   const best = res.record?.bestTime ?? prev.bestTime;
   const info = [['TOP SPEED', top], ['AVG SPEED', avg], ['CRASHES', G.crashes]];

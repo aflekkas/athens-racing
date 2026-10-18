@@ -14,7 +14,7 @@ export function quickMapEvent(id) {
 }
 export function menuMapContext(id) {
   const map = getMap(id), closed = map.type === 'circuit';
-  const [from, to] = map.subtitle.split(' → ');
+  const [from, to] = map.subtitle.split(' to ');
   return { mapId: id, marks: [], events: [quickMapEvent(id)],
     route: { start: map.routeStart ?? 0, finish: map.routeFinish ?? map.length, length: map.routeLength ?? map.length, closed,
       from: closed ? 'START / FINISH' : from, to: closed ? 'START / FINISH' : to || from } };

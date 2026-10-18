@@ -65,7 +65,7 @@ function titleFor(file) {
 const sectionFor = (file) => file.startsWith('assets/audio/') ? 'audio' : file.startsWith('assets/') ? 'visuals' : 'more';
 
 const LICENCES = [['SIL OFL 1.1', /SIL Open Font License(?:,? Version)? 1\.1/i], ['CC0', /\bCC0\b|publicdomain\/zero/i], ['CC BY 4.0', /CC[ -]BY[ -]4\.0|licenses\/by\/4\.0|By Attribution 4\.0/i], ['CC BY 3.0', /CC[ -]BY[ -]3\.0|licenses\/by\/3\.0/i],
-  ['CC BY 2.0', /CC[ -]BY[ -]2\.0|licenses\/by\/2\.0/i], ['MIT', /\bMIT\b/], ['Apache-2.0', /Apache[ -]2\.0/i], ['ODbL', /\bODbL\b/]];
+  ['CC BY 2.0', /CC[ -]BY[ -]2\.0|licenses\/by\/2\.0/i], ['ISC', /\bISC License\b/i], ['MIT', /\bMIT\b/], ['Apache-2.0', /Apache[ -]2\.0/i], ['ODbL', /\bODbL\b/]];
 /** licence names a credits file mentions (not for model-evaluation notes, which also name rejected, unshipped licences) */
 export const detectLicences = (body) => LICENCES.filter(([, re]) => re.test(body)).map(([name]) => name);
 

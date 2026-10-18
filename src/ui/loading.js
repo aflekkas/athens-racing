@@ -190,8 +190,8 @@ class LoadingScreen {
     const code = online() ? f.code : 'offline', [what, body] = FAILURES[code] || FAILURES.unknown;
     $('ldIssueWhat').textContent = what; $('ldIssueBody').textContent = body;
     const actions = $('ldActions'); actions.innerHTML = '';
-    const primary = wireButton(actions, { label: 'TRY AGAIN', variant: 'primary', icon: 'arrows-clockwise' }, () => this.resume(f.retry));
-    if (f.fallback) wireButton(actions, { label: 'BUILD ON THIS DEVICE', variant: 'secondary', icon: 'cube', sub: 'NO DOWNLOAD · ABOUT A MINUTE' }, () => this.resume(f.fallback));
+    const primary = wireButton(actions, { label: 'TRY AGAIN', variant: 'primary', icon: 'refresh-cw' }, () => this.resume(f.retry));
+    if (f.fallback) wireButton(actions, { label: 'BUILD ON THIS DEVICE', variant: 'secondary', icon: 'box', sub: 'NO DOWNLOAD · ABOUT A MINUTE' }, () => this.resume(f.fallback));
     wireButton(actions, { label: 'RETURN TO MENU', variant: 'ghost', icon: 'arrow-left' }, () => this.cancel());
     box.hidden = false;
     const recovery = $('ldRecovery'); if (recovery) recovery.hidden = true;
