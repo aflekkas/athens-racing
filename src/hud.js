@@ -3,6 +3,7 @@ import { notifications } from './ui/notifications.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
+import { layoutRacerMarkers } from './racer-marker-layout.js';
 import { gearFeedback } from './transmission.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 
@@ -18,7 +19,7 @@ export class RacerMarkers {
     this.root.setAttribute('aria-hidden', 'true'); document.body.append(this.root);
     const style = document.createElement('style'); style.textContent = `
       #racer-markers { position:fixed; inset:0; z-index:22; pointer-events:none; overflow:hidden; }
-      .racer-marker { position:absolute; color:var(--racer-color); font:700 13px system-ui; text-align:center; white-space:nowrap; transform-origin:center; }
+      .racer-marker { position:absolute; color:var(--racer-color); font:700 13px system-ui; text-align:center; white-space:nowrap; transform-origin:center bottom; }
       .racer-marker .racer-name { display:block; color:white; background:#09131ee0; padding:5px 10px; border:1px solid var(--racer-color); border-radius:5px; box-shadow:0 2px 10px #0008; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
       .racer-marker .racer-chevron { display:block; font-size:24px; line-height:20px; text-shadow:0 2px 5px #000; }
       .racer-marker.ai .racer-name { font-size:11px; padding:3px 7px; border-color:#ffffff50; }
@@ -35,7 +36,7 @@ export class RacerMarkers {
     `; document.head.append(style);
   }
   update(racers) {
-    const present = new Set();
+    const present = new Set(), markers = [];
     for (const r of racers) {
       if (!Number.isFinite(r.x + r.y + r.distance) || r.distance > 350) continue;
       const offscreen = r.behind || Math.abs(r.x) > 0.92 || Math.abs(r.y) > 0.88;
@@ -51,10 +52,10 @@ export class RacerMarkers {
       }
       const { el, name, chevron } = item;
       const nm = r.name || 'DRIVER';
-      if (item._nm !== nm) { item._nm = nm; name.textContent = nm; }
+      if (item._nm !== nm) { item._nm = nm; name.textContent = nm; item.sizeDirty = true; }
       if (item._pid !== r.id) { item._pid = r.id; el.dataset.playerId = r.id; }
       const cls = 'racer-marker' + (r.player ? '' : ' ai') + (offscreen ? ' edge' : '');
-      if (item._cls !== cls) { item._cls = cls; el.className = cls; }
+      if (item._cls !== cls) { item._cls = cls; el.className = cls; item.sizeDirty = true; }
       let x = r.x, y = -r.y;
       if (offscreen) {
         if (r.behind) { x = r.viewX; y = -r.viewY; if (Math.abs(x) + Math.abs(y) < 0.01) x = 1; }
@@ -63,15 +64,24 @@ export class RacerMarkers {
         const rot = `rotate(${Math.atan2(y * innerHeight, x * innerWidth)}rad)`;
         if (item._rot !== rot) { item._rot = rot; chevron.style.transform = rot; }
       } else if (item._ch !== 'main') { item._ch = 'main'; chevron.textContent = '⌄'; chevron.style.transform = ''; item._rot = null; }
-      // quantise to 0.05% (~0.5 px): sub-pixel marker writes never move anything on screen
-      const left = `${Math.round((x + 1) * 1000) / 20}%`, top = `${Math.round((y + 1) * 1000) / 20}%`;
-      if (item._left !== left) { item._left = left; el.style.left = left; }
-      if (item._top !== top) { item._top = top; el.style.top = top; }
       const op = String(Math.round((r.behind ? 0.45 : 1) * clamp((350 - r.distance) / 150, 0, 1) * 100) / 100);
       if (item._op !== op) { item._op = op; el.style.opacity = op; }
       const scale = offscreen ? 0.9 : clamp(1.1 - r.distance / 400, 0.7, 1.05);
-      const tr = `translate(-50%, -100%) scale(${Math.round(scale * 200) / 200})`;
+      const roundedScale = Math.round(scale * 200) / 200;
+      const tr = `translate(-50%, -100%) scale(${roundedScale})`;
       if (item._tr !== tr) { item._tr = tr; el.style.transform = tr; }
+      markers.push({ id: r.id, item, x: (x + 1) * innerWidth / 2, y: (y + 1) * innerHeight / 2, scale: roundedScale });
+    }
+    // Measure only changed labels, after all content writes, then place the whole field together.
+    for (const marker of markers) {
+      const item = marker.item;
+      if (item.sizeDirty) { item.width = item.el.offsetWidth; item.height = item.el.offsetHeight; item.sizeDirty = false; }
+      marker.width = item.width * marker.scale; marker.height = item.height * marker.scale;
+    }
+    for (const marker of layoutRacerMarkers(markers, innerWidth, innerHeight)) {
+      const item = marker.item, left = `${marker.x.toFixed(1)}px`, top = `${marker.y.toFixed(1)}px`;
+      if (item._left !== left) { item._left = left; item.el.style.left = left; }
+      if (item._top !== top) { item._top = top; item.el.style.top = top; }
     }
     for (const [id, item] of this.items) if (!present.has(id)) { item.el.remove(); this.items.delete(id); }
   }

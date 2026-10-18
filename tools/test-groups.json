@@ -48,6 +48,7 @@
     "tools/settings.test.mjs",
     "tools/hud-sway.test.mjs",
     "tools/hud-limit.test.mjs",
+    "tools/solo-hud.test.mjs",
     "tools/rival-racecraft.test.mjs",
     "tools/tyre-walls.test.mjs",
     "tools/car-catalog.test.mjs",

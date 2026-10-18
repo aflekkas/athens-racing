@@ -40,7 +40,7 @@ export class Multiplayer {
       <div id="mp-room" hidden><div class="mp-section"><h3 id="mp-room-name"></h3><b id="mp-room-code"></b></div><p id="mp-room-help"></p><div class="mp-fields"><label>YOUR CAR<ui-select id="mp-room-car"></ui-select></label><label>TRACK<ui-select id="mp-map"></ui-select></label><label>MODE<ui-select id="mp-event"></ui-select></label><label class="mp-toggle-field"><input id="mp-traffic" type="checkbox"> TRAFFIC ON</label></div><div id="mp-car-toggles" data-hook="allowed-cars" hidden></div><div id="mp-members"></div><div class="mp-actions"><button id="mp-ready">READY</button><button id="mp-start">START RACE</button><button id="mp-restart">RESTART</button><button id="mp-tolobby">LOBBY</button><button id="mp-copy">COPY INVITE</button><button id="mp-leave">LEAVE LOBBY</button></div><div id="mp-results"></div></div>
       <button id="mp-leaderboard">VIEW BEST TIMES</button><div id="mp-times" hidden></div><p class="mp-note">2–8 drivers · Player collisions on · Shared traffic off · 10-minute race limit · Rejoin within 90 seconds after a disconnect</p></div>`;
     document.body.append(this.panel);
-    this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; document.body.append(this.button);
+    this.button = document.createElement('button'); this.button.id = 'mp-toggle'; this.button.textContent = 'MULTIPLAYER'; this.syncSessionControls(); document.body.append(this.button);
     this.board = document.createElement('aside'); this.board.id = 'mp-board'; this.board.hidden = true; this.board.setAttribute('aria-label', 'Race standings'); document.body.append(this.board);
     const $ = id => this.panel.querySelector('#' + id); this.$ = $;
     for (const car of sortTrims(cars)) { const o = document.createElement('option'); o.value = car.id; o.textContent = car.short; $('mp-room-car').append(o); }
@@ -69,6 +69,7 @@ export class Multiplayer {
     if (this.pendingCode) { $('mp-code').value = this.pendingCode; this.open(); }
   }
   get active() { return !!this.lobby; }
+  syncSessionControls() { this.button.hidden = !this.active; }
   // Lobby car allow-list (host-only writes). `lobby.allowedCars` arrives
   // with every lobby message; empty/missing means the whole catalogue.
   get allowedCars() { const allowed=this.lobby?.allowedCars;return sortTrims(this.cars.filter(c=>!allowed?.length||allowed.includes(c.id))).map(c=>c.id); }
@@ -314,7 +315,7 @@ export class Multiplayer {
       else if (m.type === 'checkpoint') { if (m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.applyCheckpoint(m); }
       else if (m.type === 'lobby') {
         this.creating = false; if (this.$) this.$('mp-create').disabled = false;
-        const joined = !this.lobby, previousCar = this.me?.car, previousBalance = JSON.stringify(this.me?.balance || null), previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby;
+        const joined = !this.lobby, previousCar = this.me?.car, previousBalance = JSON.stringify(this.me?.balance || null), previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby; this.syncSessionControls();
         if (previousRace !== m.lobby.raceId) { this.reconnectHistory?.clear(); this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
         for (const member of m.lobby.players) {
           const prior = previousMembers?.find(p => p.id === member.id), peer = this.peers.get(member.id);
@@ -415,7 +416,7 @@ export class Multiplayer {
     return Promise.resolve();
   }
   saveToken(token) { this.token = token; try { if (token) sessionStorage.setItem('paraliaki.session', token); else sessionStorage.removeItem('paraliaki.session'); } catch {} }
-  left() { this.connectionState(false); this.reconnectHistory?.clear(); this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.carPickerOpen = false; this.cancelRecovery(); this.selection?.reset(); this.retiredRace = null; this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.stateSender.reset(); this.wreckedRace = null; this.wreckSent = false; this.resumeState = null; this.pendingResume = false; this.failedMap = null; this.loadedKey = this.appearanceKey = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
+  left() { this.connectionState(false); this.reconnectHistory?.clear(); this.applyCheckpoint({ missed: false, message: '', next: null, passed: 0, total: 0 }); this.carPickerOpen = false; this.cancelRecovery(); this.selection?.reset(); this.retiredRace = null; this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.stateSender.reset(); this.wreckedRace = null; this.wreckSent = false; this.resumeState = null; this.pendingResume = false; this.failedMap = null; this.loadedKey = this.appearanceKey = null; if (this.lobby) { this.lobby = null; this.startedRace = null; this.peers.clear(); this.hooks.leave(); } this.syncSessionControls(); this.board.hidden = true; this.$('mp-browser').hidden = false; this.$('mp-room').hidden = true; this.status('Find a lobby or create your own.'); const u = new URL(location.href); u.searchParams.delete('lobby'); history.replaceState(null, '', u); }
   renderDiscovery(lobbies) {
     const list = this.$('mp-list'); list.replaceChildren();
     if (!lobbies.length) { const p = document.createElement('p'); p.textContent = 'No public lobbies yet. Create one and invite other drivers.'; list.append(p); }

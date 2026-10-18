@@ -270,7 +270,7 @@ function protocolClient(t) {
   replaceGlobal('location', { href: 'https://game.test/?map=penteli', protocol: 'https:', reload() { reloads++; } });
   replaceGlobal('document', { querySelector: () => ({ content: 'tab-build' }), createElement: element, body: { append(node) { nodes.push(node); } } });
   const m = Object.create(Multiplayer.prototype), controls = new Map();
-  Object.assign(m, { connected: false, loaded: false, token: null, hooks: { clearInput() {} }, peers: new Map(), stateSender: { reset() {} },
+  Object.assign(m, { button: { hidden: true }, connected: false, loaded: false, token: null, hooks: { clearInput() {} }, peers: new Map(), stateSender: { reset() {} },
     status(text) { this.lastStatus = text; }, cancelRecovery() {}, renderEvents() {}, saveToken(token) { this.token = token; }, authSession() {},
     $(id) { if (!controls.has(id)) controls.set(id, element('select')); return controls.get(id); } });
   m.connect(); m.ws.onopen();

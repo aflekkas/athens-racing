@@ -1220,3 +1220,6 @@ body[data-ui] #mp-toggle { display: none !important; }
 /* Equal-height artwork choices (HeroTiles). */
 .mode-grid { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: var(--s-4); min-height: 0; }
 @media (max-width: 560px) { .mode-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--s-3); } }
+
+/* The race shortcut belongs only to an existing multiplayer session. */
+body #mp-toggle[hidden] { display: none !important; }
