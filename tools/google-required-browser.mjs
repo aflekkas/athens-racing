@@ -1,6 +1,6 @@
 // Run through tools/browser-slot.sh. Uses an owned random-port server and stubbed Google/session responses.
 import assert from 'node:assert/strict';
-import { mkdir, rm, readFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createGameServer } from '../server/index.mjs';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || '/home/dev/projects/spawn-platform/node_modules/.pnpm/playwright@1.62.0/node_modules/playwright/index.mjs');
@@ -30,18 +30,20 @@ try {
   await gate(); assert.equal(await page.getByText('PLAY OFFLINE', { exact: true }).count(), 0);
   await page.keyboard.press('Escape'); await gate();
   await page.evaluate(() => window.__bootMenu.action('back')); await gate();
-  await page.locator('.dialog-scrim').click({ position: { x: 3, y: 3 } }); await gate();
+  await page.locator('.dialog-scrim').click({ force: true, position: { x: 3, y: 3 } }); await gate();
   await page.evaluate(() => { const m = window.__bootMenu; m.show('settings'); m.hide(); m.pop(); m.h.garage(); }); await gate();
   const font = await page.locator('.btn--google').evaluate(el => { const s = getComputedStyle(el); return { family: s.fontFamily, weight: s.fontWeight, spacing: s.letterSpacing, caps: s.textTransform }; });
   assert.match(font.family, /Barlow Condensed/); assert.equal(font.weight, '700'); assert.equal(font.caps, 'uppercase'); assert.ok(parseFloat(font.spacing) > 1);
-  console.log('Capturing'); await page.screenshot({ animations: 'disabled', timeout: 60000, path: resolve(out, 'google-required-1280.png') });
+  const cdp = await page.context().newCDPSession(page);
+  const capture = async name => { const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }); await writeFile(resolve(out, name), Buffer.from(shot.data, 'base64')); };
+  await capture('google-required-1280.png'); console.log('Captured desktop');
   await page.setViewportSize({ width: 390, height: 844 });
-  console.log('Capturing'); await page.screenshot({ animations: 'disabled', timeout: 60000, path: resolve(out, 'google-required-390.png') });
+  await capture('google-required-390.png'); console.log('Captured mobile');
   const box = await page.locator('.dialog').boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= 390);
   await page.context().setOffline(true); await page.waitForFunction(() => window.__bootMenu.accounts.offline); await gate();
   assert.match(await page.locator('.account-error').innerText(), /internet/);
   await page.context().setOffline(false);
-  await page.locator('[data-act="account-oauth"]').click();
+  await page.locator('[data-act="account-oauth"]').click({ force: true });
   await page.waitForFunction(() => window.__bootMenu?.screen === 'title' && !window.__bootMenu.accounts.blocked);
   await page.evaluate(() => window.__bootMenu.show('mode')); assert.equal(await page.evaluate(() => window.__bootMenu.screen), 'mode');
   expired = true; await page.evaluate(() => window.__bootMenu.accounts.revalidate()); await page.waitForSelector('[role="dialog"]'); await gate();

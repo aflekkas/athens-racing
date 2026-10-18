@@ -719,6 +719,9 @@ test('configured game policy rejects anonymous/invalid/expired sessions and bind
   for (const cookie of [null, 'ar_session=invalid']) assert.equal((await authorizeGame(request(cookie), f.env)).response.status, 401);
   const auth = await authorizeGame(request(a.cookie), f.env);
   assert.ok(auth.identity); assert.equal(await identityActive(auth.identity, f.env), true);
+  const { onlineLeaderboardResult } = await import('./leaderboard-online.mjs');
+  const online = onlineLeaderboardResult({ identity: auth.identity, driverId: 'spoof-123', name: 'DUPLICATE-2' }, {}, {});
+  assert.equal(online.name, auth.identity.name); assert.equal(online.driverId, auth.identity.userId);
   assert.equal(accountResult({ name: 'SPOOF', driverId: 'spoof-123' }, auth.identity).driverId, auth.identity.userId);
   assert.equal(accountResult({ name: 'SPOOF' }, auth.identity).name, auth.identity.name);
   f.sqlite.exec('DELETE FROM sessions');

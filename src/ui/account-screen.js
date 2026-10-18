@@ -85,6 +85,7 @@ export function renderPrivacy() {
 export function install(menu, existing) {
   const callbacks = {
     onChange: () => {
+      if (a.blocked) { C.ui.closePrompt(); C.ui.closeListbox(); }
       if (a.user?.displayName)
         try {
           driverName.set(a.user.displayName);
