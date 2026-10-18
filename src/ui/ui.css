@@ -222,7 +222,7 @@ body[data-input=touch] .hints { visibility: hidden; }
 .listbox__opt .ico { visibility: hidden; color: var(--hu-ice); }
 .listbox__opt.sel  { color: #fff; }
 .listbox__opt.sel .ico  { visibility: visible; }
-.listbox__opt.hi { background: rgba(255,255,255,.08); color: #fff; }
+:root[data-ui-focus="navigation"] .listbox__opt.hi { background: rgba(255,255,255,.08); color: #fff; }
 .listbox__opt.dis { opacity: .35; pointer-events: none; }
 .listbox.is-closing { animation: ui-fold .14s var(--ease) both; }
 @keyframes ui-fold { to { opacity: 0; } }
@@ -310,7 +310,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 /* ---------------------------------------------------------------- scroll areas */
 .scroll-y { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.2) transparent; }
-/* focus scrolls an item in with room for its 4px ring, so a scroll container never cuts the ring or border */
+/* Keep a little breathing room when keyboard focus scrolls an item into view. */
 :where(.scroll-y, .scroll-x, .mode-grid, .scr__body) .mi { scroll-margin: 8px; }
 .scroll-y::-webkit-scrollbar, .scroll-x::-webkit-scrollbar { width: 6px; height: 6px; }
 .scroll-y::-webkit-scrollbar-thumb, .scroll-x::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 3px; }
@@ -683,3 +683,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 :root[data-ui-focus="navigation"] :is(.btn, .tabs, .hu-driver).focus { background: var(--ui-row-focus); }
 :root[data-ui-focus="navigation"] :is(.option, .card, .field, .list-row).focus { background: var(--ui-surface-hi); }
 :root[data-ui-focus="navigation"] :is(.option, .list-row).focus :is(.option__ico, .list-row__ico) { background: var(--hu-lit); color: var(--hu-lit-fg); }
+
+:root[data-ui-focus="navigation"] :is(.btn--primary, .btn--google).focus,
+:root[data-ui-focus="navigation"] :is(.btn--primary, .btn--google):focus-visible { background: #ced6dc; color: var(--hu-lit-fg); }
+:root[data-ui-focus="navigation"] :is(.input-bindings button, #race-settings, .tow-actions button):focus-visible { background: #35414b; }

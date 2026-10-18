@@ -33,8 +33,8 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .track-pin > span { padding: .55rem .65rem; text-align: left; font-size: clamp(9px, .72vw, 12px); font-weight: 650; letter-spacing: .06em; white-space: nowrap; border: 1px solid #809cac40; border-radius: 6px; background: #0d1b25e8; box-shadow: 0 4px 15px #0003; color: #c5d6dc; transition: color .25s, border-color .25s; }
 #ui.s-maps .track-pin.active > .track-pin__dot { background: var(--pin); color: #10222e; }
 #ui.s-maps .track-pin.active > span { color: #eef9ff;  }
-#ui.s-maps .track-pin__pulse { position: absolute; left: 0; width: 32px; height: 32px; border: 1px solid var(--pin); border-radius: 50%; opacity: 0; pointer-events: none; }
-#ui.s-maps .track-pin.active .track-pin__pulse { animation: pin-pulse 2.4s ease-out infinite; }
+#ui.s-maps .track-pin__pulse { display: none; }
+
 @keyframes pin-pulse { 0% { transform: scale(1); opacity: .5; } 80%,100% { transform: scale(1.8); opacity: 0; } }
 #ui.s-maps .map-region { position: absolute; left: 1.25rem; top: 1.2rem; display: flex; align-items: center; gap: .6rem; color: #d3e5ec; font: 650 12px var(--f-sans, sans-serif); letter-spacing: .15em; pointer-events: none; }
 #ui.s-maps .map-region small { color: #7294a4; letter-spacing: .06em; font-size: 10px; margin-left: .5rem; }
@@ -94,7 +94,7 @@ body.ui-open #lapTiming { display: none; }
   #ui.s-maps .map-preview .btn { min-height: 38px; }
   #ui.s-maps .map-cycle-hint { padding: .45rem; font-size: 8px; }
   #ui.s-maps .track-pin { gap: .3rem; }
-  #ui.s-maps .track-pin__dot, #ui.s-maps .track-pin__pulse { width: 24px; height: 24px; font-size: 10px; }
+
   #ui.s-maps .track-pin > span { padding: .4rem; font-size: 8px; letter-spacing: .02em; }
   #ui.s-maps .map-region { left: .8rem; top: .8rem; font-size: 10px; }
   #ui.s-maps .map-region small { display: none; }
@@ -119,11 +119,11 @@ body.ui-open #lapTiming { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   #ui.s-maps .track-route.active .route-trace { animation: none; stroke-dashoffset: 0; }
-  #ui.s-maps .track-pin.active .track-pin__pulse { animation: none; }
+
   #ui.s-maps .track-route path, #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot { transition: none; }
 }
 #ui.s-maps .track-pin[data-map-id="penteli"] { flex-direction: row-reverse; }
-#ui.s-maps .track-pin[data-map-id="penteli"] .track-pin__pulse { left: auto; right: 0; }
+
 #ui.s-maps .map-track-nav small, #ui.s-maps .map-kind, #ui.s-maps .map-spec small, #ui.s-maps .map-cycle-hint { font-family: var(--f-cond, "Barlow Condensed", sans-serif); font-size: .75rem; font-weight: 600; font-style: normal; letter-spacing: .18em; }
 /* Map labels: real OSM places and summits at constant screen size; the selector hides any that collide. */
 #ui.s-maps .map-label { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; transition: opacity .22s cubic-bezier(.2,.8,.2,1); will-change: transform; pointer-events: none; }

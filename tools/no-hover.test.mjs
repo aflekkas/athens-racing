@@ -57,7 +57,7 @@ test('focus and selection use surfaces, never outlines, rings or border changes'
     for (const [, selector, declarations] of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
       for (const [, property, value] of declarations.matchAll(/(?:^|;)\s*([\w-]+)\s*:\s*([^;]+)/g)) {
         if (property === 'outline' && !/^(none|0)(?:\s*!important)?\s*$/.test(value.trim())) hits.push(`${file}: ${selector.trim().slice(-100)} outline`);
-        if (!/(?:\.focus\b|:focus(?:-visible|-within)?\b|\.(?:selected|sel|on)\b)/.test(selector)) continue;
+        if (!/(?:\.focus\b|:focus(?:-visible|-within)?\b|\.(?:selected|sel|on|hi)\b)/.test(selector)) continue;
         if ((property === 'box-shadow' && value.trim() !== 'none') || /^(?:border|border-(?:color|width|style|top|right|bottom|left))$/.test(property)) hits.push(`${file}: ${selector.trim().slice(-100)} ${property}`);
       }
     }
