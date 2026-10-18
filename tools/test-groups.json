@@ -31,6 +31,8 @@
     "server/multiplayer-protocol.test.mjs",
     "server/canonical-host.test.mjs",
     "server/mp-playtest.test.mjs",
+    "server/mp-black-screen.test.mjs",
+    "tools/black-screen-guard.test.mjs",
     "server/mp-lifecycle.test.mjs",
     "server/session-controls.test.mjs",
     "server/accounts.test.mjs",

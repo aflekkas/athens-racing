@@ -1263,7 +1263,7 @@ body[data-ui] #mp-toggle { display: none !important; }
 .mp-driver__who { min-width: 0; display: flex; align-items: center; gap: var(--s-2); }
 .mp-driver__who b { min-width: 0; font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mp-driver__who .chip { height: 1.5rem; }
-.mp-driver__car { grid-column: 2; grid-row: 2; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); text-transform: uppercase; white-space: nowrap; }
+.mp-driver__car { grid-column: 2; grid-row: 2; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); text-transform: uppercase; white-space: nowrap;  overflow: hidden; text-overflow: ellipsis; min-width: 0;}
 .mp-driver__state { grid-column: 3; grid-row: 1 / 3; text-align: right; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); white-space: nowrap; transition: color var(--dur); }
 .mp-driver__state[data-state=ready] { color: var(--tt-green, #38e07b); }
 .mp-driver__state[data-state=load] { color: var(--hu-ice); }

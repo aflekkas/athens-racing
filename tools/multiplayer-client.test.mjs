@@ -339,3 +339,25 @@ test('bounded reconnect breadcrumbs replay at a safe rate and discard accepted p
   assert.deepEqual(sent.flatMap(p=>p.states.map(s=>s.s)),[996,997,998,999]);assert.ok(sent.every(p=>p.generation===2));assert.equal(h.replaying,false);
   h.record({raceId:'next',state:{sampleTime:2001}});assert.equal(h.frames.length,1);
 });
+
+test('a denied recovery fails at once, or retries once past the epoch the server has already seen', async () => {
+  const { m, packets } = lobbyClient('riviera'); m.send = p => packets.push(p); m.lobby.generation = 0;
+  const first = m.recover(); const sent = packets.filter(p => p.type === 'recover'); assert.equal(sent.length, 1);
+  m.denyRecovery({ raceId: 'other-race', motionEpoch: sent[0].motionEpoch, message: 'ignored' }); assert.ok(m.recoveryPending, 'a denial for another race is ignored');
+  m.denyRecovery({ raceId: 'race', motionEpoch: sent[0].motionEpoch, message: 'Behind.', epoch: sent[0].motionEpoch + 4 });
+  const again = packets.filter(p => p.type === 'recover'); assert.equal(again.length, 2); assert.ok(again[1].motionEpoch > sent[0].motionEpoch + 4);
+  m.denyRecovery({ raceId: 'race', motionEpoch: again[1].motionEpoch, message: 'Behind.', epoch: again[1].motionEpoch + 4 });
+  await assert.rejects(first, /Behind\./); assert.equal(m.recoveryPending, null, 'the tow screen is released');
+  const next = m.recover(); m.denyRecovery({ raceId: 'race', motionEpoch: m.recoveryPending.motionEpoch, message: 'Recovery is unavailable.' });
+  await assert.rejects(next, /unavailable/);
+});
+
+test('an expired session while racing returns to the menu with a fresh token instead of retrying the dead one', t => {
+  const { m, timers, packets } = protocolClient(t); const left = [];
+  Object.assign(m, { lobby: { code: 'ABCDEF', raceId: 'r', status: 'race', players: [{ id: 'me' }] }, id: 'me', token: 'dead-token', startedRace: 'r', board: { hidden: false },
+    hooks: { clearInput() {}, leave: () => left.push(1) }, panel: { hidden: true, querySelector: () => null }, connectionState() {}, syncSessionControls() {} });
+  Object.defineProperty(globalThis, 'history', { configurable: true, writable: true, value: { replaceState() {} } }); t.after(() => { delete globalThis.history; });
+  m.ws.onmessage({ data: JSON.stringify({ type: 'session', id: 'new', token: 'fresh-token', resumed: false }) });
+  assert.equal(m.lobby, null); assert.equal(left.length, 1); assert.equal(m.token, 'fresh-token'); assert.equal(m.connected, true);
+  assert.equal(timers.length, 0, 'no retry loop on a socket that is open'); assert.match(m.lastStatus, /too long|expired/);
+});

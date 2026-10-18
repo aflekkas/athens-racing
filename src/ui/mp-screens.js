@@ -71,6 +71,8 @@ export function setPending(key, value, now = Date.now()) { pending.set(key, { va
 
 const statusText = (mp) => mp?.$?.('mp-status')?.textContent || '';
 const carOf = (mp, id) => mp?.cars?.find((c) => c.id === id);
+// A trim's short name is just the trim ("1.1"): the lobby names the whole car so changing trim is legible.
+const carTitle = (c, fallback = '') => c?.name || c?.short || fallback;
 const mapName = (mp, id) => mp?.maps?.find((m) => m.id === (id || 'riviera'))?.name || 'ATHENS RIVIERA';
 const statusChip = (mp) => C.chip(`${mp?.preparing ? C.spinner() : ''}${esc(statusText(mp) || 'Connecting…')}`, { tone: mp?.connected ? '' : 'warn', icon: mp?.preparing ? null : mp?.connected ? 'globe' : 'triangle-alert', cls: 'mp-status', attrs: { role: 'status' } });
 /** the car the session will use: yours in the lobby, otherwise the car you would join or host with */
@@ -188,7 +190,7 @@ export function renderLobby(menu, mp) {
     const ctl = host && !r.me ? `<span class="mp-driver__ctl">${C.button({ label: 'KICK', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpKick', attrs: { 'data-id': p.id, 'data-fid': 'kick:' + p.id, 'aria-label': 'Kick ' + p.name } })}${C.button({ label: 'BLOCK', icon: 'x', variant: 'ghost', size: 'sm', act: 'mpBlock', cls: 'mp-block', attrs: { 'data-id': p.id, 'data-fid': 'block:' + p.id, 'aria-label': 'Block ' + p.name } })}</span>` : '';
     return `<div class="mp-driver ${r.me ? 'me' : ''}" data-player="${esc(p.id)}"><i class="mp-dot" data-state="${r.state}"></i>
       <span class="mp-driver__who"><b>${esc(r.name)}</b>${r.me ? C.chip('YOU', { tone: 'accent' }) : ''}${r.host ? C.chip('HOST', { tone: 'gold', icon: 'crown' }) : ''}</span>
-      <span class="mp-driver__car">${esc(c?.short || r.car || '')}${p.balance && (p.balance.ballastKg > 0 || p.balance.powerCapKW > 0) ? ` · ${esc(p.balance.label)}` : ''}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
+      <span class="mp-driver__car">${esc(carTitle(c, r.car))}${p.balance && (p.balance.ballastKg > 0 || p.balance.powerCapKW > 0) ? ` · ${esc(p.balance.label)}` : ''}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
   }).join('');
   const blocked = host ? (l.blockedPlayers || []) : [];
   const blockedList = blocked.length ? `<div class="mp-blocked"><h4 class="mp-sub">${icon('x')}BLOCKED</h4>${blocked.map((p) => `<div class="mp-driver mp-driver--blocked"><span class="mp-driver__who"><b>${esc(p.name)}</b></span>${C.button({ label: 'UNBLOCK', variant: 'ghost', size: 'sm', act: 'mpUnblock', attrs: { 'data-id': p.id, 'data-fid': 'unblock:' + p.id } })}</div>`).join('')}</div>` : '';
@@ -308,7 +310,7 @@ export function renderResults(menu, mp) {
   const objective = mp.objectiveMode;
   const title = objective ? `${objective.toUpperCase()} RESULTS` : me?.finish != null ? `P${mine + 1}` : me ? 'DNF' : 'RESULTS';
   const tiles = objective ? [] : [['TIME', me?.finish != null ? fmt(me.finish) : '—'], ['POSITION', me?.finish != null ? `${mine + 1} / ${ranked.length}` : 'DNF'], ['DRIVERS', String(ranked.length)]];
-  const rows = ranked.map((p, i) => `<tr class="${p.id === mp.id ? 'me' : ''}"><td class="r-pos">${p.finish != null || objective ? 'P' + (i + 1) : '—'}</td><td>${esc(p.name)}<small>${esc(carOf(mp, p.car)?.short || '')}</small></td><td class="tnum">${objective ? esc(mp.resultRowText(p, i).split(' · ').slice(2).join(' · ')) : p.finish != null ? fmt(p.finish) : p.dnf === 'wrecked' ? 'WRECKED' : p.dnf ? 'DNF' : l.status === 'results' ? 'DNF' : 'RACING'}</td></tr>`).join('');
+  const rows = ranked.map((p, i) => `<tr class="${p.id === mp.id ? 'me' : ''}"><td class="r-pos">${p.finish != null || objective ? 'P' + (i + 1) : '—'}</td><td>${esc(p.name)}<small>${esc(carTitle(carOf(mp, p.car)))}</small></td><td class="tnum">${objective ? esc(mp.resultRowText(p, i).split(' · ').slice(2).join(' · ')) : p.finish != null ? fmt(p.finish) : p.dnf === 'wrecked' ? 'WRECKED' : p.dnf ? 'DNF' : l.status === 'results' ? 'DNF' : 'RACING'}</td></tr>`).join('');
   const complete = l.status === 'results';
   const personal = globalThis.window?.__game?.result?.personalBest;
   if (personal) tiles.push(['BEST · EXACT SETUP', personal.exact ? fmt(personal.exact.time) : '—'], ['ROUTE BEST · ANY CAR / SETUP', personal.route ? fmt(personal.route.time) : '—']);
