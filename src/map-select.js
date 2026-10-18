@@ -4,6 +4,7 @@ import { MAPS } from './map-catalog.js';
 import { getPlayableMaps, isMapEnabled } from './enabled-maps.js';
 import { MAP_VIEW, MAP_ASSETS, TRACK_ROUTES, MAP_LABELS } from './attica-map-data.js';
 import { coverScale, routeBounds, fitTracks, focusTrack, clampCamera, flight, MAX_SCALE } from './map-select-camera.js';
+import { createMapRenderer } from './map-select-render.js';
 import { fmtDist } from './settings.js';
 import * as C from './ui/components.js';
 import { getMapPersonalBest } from './personal-bests.js';
@@ -73,24 +74,14 @@ function parseVectors(buffer) {
 const loadAssets = () => assets ||= Promise.all([image(MAP_ASSETS.land), image(MAP_ASSETS.sea), fetch(MAP_ASSETS.vectors).then(r => { if (!r.ok) throw new Error('map vectors ' + r.status); return r.arrayBuffer(); })])
   .then(([land, sea, buffer]) => ({ land, sea, layers: parseVectors(buffer),
     // Close-up relief and building fabric per track; they arrive after the region art and fade in with zoom.
-    detail: MAP_ASSETS.detail.map(d => { const entry = { ...d, img: null }; image(d.src).then(img => { entry.img = img; }, () => {}); return entry; }) }))
+    detail: MAP_ASSETS.detail.map(d => { const entry = { ...d, img: null }; entry.ready = image(d.src).then(img => { entry.img = img; }, () => {}); return entry; }) }))
   .catch(error => { assets = null; throw error; });
 
-// Roads: calm and few at region scale; the street hierarchy fades in only as the camera closes on a track.
-// [layer, width px at region scale, width px close up, colour, opacity, zoom (px/unit) where it starts and is fully in]
-const ROADS = [
-  ['street', .5, 1, '#9aa8b0', .12, 6, 11],
-  ['tertiary', .6, 1.1, '#9aa8b0', .09, 4.5, 9],
-  ['secondary', .7, 1.4, '#9aa8b0', .14, 3, 6.5],
-  ['primary', .8, 2, '#a7b2b8', .26, 1.8, 4],
-  ['trunk', .8, 2.2, '#b3aa9a', .3, 1.2, 2.2],
-  ['motorway', 1, 2.8, '#c2b49c', .42, 0, 0],
-];
-const smooth = (a, b, x) => { if (b <= a) return 1; const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 // Screen rects are [left, top, right, bottom] in viewport pixels.
 const hit = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+const PIXEL_BUDGET = 5.5e6;
 const PLACES = { c: [-.5, -.5, 0, 0], r: [0, -.5, 8, 0], l: [-1, -.5, -8, 0], t: [-.5, -1, 0, -6], b: [-.5, 0, 0, 6] };
 
 export function mountMapSelect(root) {
@@ -100,7 +91,7 @@ export function mountMapSelect(root) {
   const selectable = playable(), events = new AbortController(), { signal } = events;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const { width: W, height: H } = MAP_VIEW;
-  let selected = card.dataset.map, camera, view, safe, dpr = 1, layers = null, art = null, drag, pinch, swipe, frame = 0, resizeFrame = 0, motion = null, last = 0, reveal = null, intro = true;
+  let selected = card.dataset.map, camera, view, safe, dpr = 1, layers = null, art = null, base = null, drag, pinch, swipe, frame = 0, resizeFrame = 0, motion = null, last = 0, reveal = null, intro = true, dirty = false, settling = false, onScreen = true, panning = false, moving = false, shown = null;
   const bounds = routeBounds(selectable.map(m => TRACK_ROUTES[m.id]));
   const routes = Object.fromEntries(selectable.map(m => { const r = TRACK_ROUTES[m.id], path = new Path2D(r.path);
     // Sample points (every half unit) let labels avoid the line itself rather than its whole bounding box.
@@ -134,29 +125,14 @@ export function mountMapSelect(root) {
   const cameraFor = (scale, [wx, wy], px = 0, py = 0) => ({ scale, x: px - (wx - W / 2) * scale, y: py - (wy - H / 2) * scale });
   const minScale = () => coverScale(view, MAP_VIEW);
 
-  // ---------------------------------------------------------------- canvas: sea, land clipped by the vector coast, roads, routes
+  // ---------------------------------------------------------------- canvas: cached sea/land/coast/roads (map-select-render.js) under the live routes
   const draw = now => {
     if (!view || !camera) return;
     const k = camera.scale * dpr, ox = (view.width / 2 + camera.x - W / 2 * camera.scale) * dpr, oy = (view.height / 2 + camera.y - H / 2 * camera.scale) * dpr;
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#060b10'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (!art) return;
-    ctx.setTransform(k, 0, 0, k, ox, oy); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(art.sea, 0, 0, W, H);
-    const px = 1 / camera.scale, vis = [-ox / k, -oy / k, (canvas.width - ox) / k, (canvas.height - oy) / k];
-    ctx.save(); ctx.clip(layers.land, 'evenodd'); ctx.drawImage(art.land, 0, 0, W, H);
-    const closeUp = smooth(2.4, 5, camera.scale);
-    if (closeUp > 0) for (const d of art.detail) if (d.img && hit(d.box, vis)) { ctx.globalAlpha = closeUp; ctx.drawImage(d.img, d.box[0], d.box[1], d.box[2] - d.box[0], d.box[3] - d.box[1]); }
-    ctx.globalAlpha = 1; ctx.restore();
-    const near = smooth(1.5, 12, camera.scale);
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    const stroke = (cells, width, colour, alpha) => {
-      if (alpha < .01) return; ctx.globalAlpha = alpha; ctx.strokeStyle = colour; ctx.lineWidth = width * px;
-      for (const cell of cells) if (hit(cell.box, vis)) ctx.stroke(cell.path);
-    };
-    stroke(layers.coast, 2.6 + near * 2, '#1d3a48', .55);
-    stroke(layers.coast, .9 + near * .5, '#86a9b8', .62);
-    for (const [id, w0, w1, colour, alpha, z0, z1] of ROADS) stroke(layers[id], w0 + (w1 - w0) * near, colour, alpha * smooth(z0, z1, camera.scale));
-    ctx.globalAlpha = 1;
+    if (!base) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#060b10'; ctx.fillRect(0, 0, canvas.width, canvas.height); return; }
+    base.paint(camera, now);
+    ctx.setTransform(k, 0, 0, k, ox, oy); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const px = 1 / camera.scale;
     // Other tracks stay muted; the selected route is cased, glows faintly and traces itself in after a change.
     for (const m of selectable) {
       const r = routes[m.id]; if (m.id === selected) continue;
@@ -212,17 +188,23 @@ export function mountMapSelect(root) {
     if (!camera || !view) return;
     camera = clampCamera(camera, view, MAP_VIEW);
     draw(now);
-    // Pins and labels live in screen space: constant UI size, positioned from the same camera.
+    // Pins and labels live in screen space: constant UI size, positioned from the same camera. A frame that only advanced
+    // background painting (same camera) leaves them where they are.
+    const still = shown && shown.scale === camera.scale && shown.x === camera.x && shown.y === camera.y; shown = { ...camera };
+    if (still && !settle) return;
     for (const p of pins) { const [sx, sy] = toScreen(...p.at); p.el.style.transform = `translate(${(sx - anchor(p)).toFixed(1)}px,${(sy - p.h / 2).toFixed(1)}px)`; }
     for (const l of labels) { const [sx, sy] = toScreen(l.x, l.y); l.el.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px)`; }
     // Labels re-place a few times a second in flight (fades cover the steps) and exactly once when the camera rests.
     if (settle || now - placed > 120) { placed = now; placeLabels(); }
   };
-  // One frame loop drives every camera move and the route trace, so a new gesture always starts from the camera on screen.
+  // One frame loop drives every camera move, the route trace and the base layer's background painting. It only runs while one
+  // of them has work (a gesture marks the frame dirty instead of drawing from the event handler), so a resting map costs nothing.
+  // While the camera moves the card trades its live backdrop blur (re-run on every composited frame) for a near-opaque tint.
+  const tint = () => { if (!!(motion || reveal || panning) !== moving) card.classList.toggle('map-moving', moving = !moving); };
   const run = now => {
     frame = 0; const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
-    if (!view) return;
-    let settle = false;
+    if (!view || !onScreen || document.hidden) return;
+    let settle = settling; const wasDirty = dirty; dirty = settling = false;
     if (motion?.type === 'fly') {
       const t = reduced.matches ? 1 : Math.min(1, (now - motion.start) / motion.duration);
       camera = t >= 1 ? { ...motion.to } : motion.path.at(easeInOut(t)); if (t >= 1) { motion = null; settle = true; }
@@ -230,14 +212,21 @@ export function mountMapSelect(root) {
       const k = reduced.matches ? 1 : 1 - Math.exp(-dt / .09), log = Math.log(camera.scale) + (motion.log - Math.log(camera.scale)) * k;
       camera = cameraFor(Math.exp(log), motion.world, ...motion.anchor); if (Math.abs(log - motion.log) < 1e-3) { camera = cameraFor(Math.exp(motion.log), motion.world, ...motion.anchor); motion = null; settle = true; }
     }
-    sync(now, settle); if (motion || reveal) frame = requestAnimationFrame(run);
+    tint();
+    if (wasDirty || motion || reveal || settle || base?.busy) sync(now, settle);
+    base?.pump(now); tint();
+    if (motion || reveal || base?.busy) frame = requestAnimationFrame(run);
   };
-  const start = () => { if (!frame) { last = 0; frame = requestAnimationFrame(run); } };
-  const stop = () => { motion = null; cancelAnimationFrame(frame); frame = 0; };
+  const start = () => { if (!frame && onScreen && !document.hidden) { last = 0; frame = requestAnimationFrame(run); } };
+  const want = (settle = false) => { dirty = true; settling ||= settle; start(); };
+  const stop = () => { motion = null; base?.cancelPrepare(); cancelAnimationFrame(frame); frame = 0; };
   const flyTo = target => {
     if (!camera || !view) return;
     const to = clampCamera(target, view, MAP_VIEW), from = { ...camera }, path = flight(from, to, view, MAP_VIEW);
-    motion = { type: 'fly', to, path, start: performance.now(), duration: path.duration }; start();
+    motion = { type: 'fly', to, path, start: performance.now(), duration: path.duration };
+    // The tiles along the way and the exact view of the destination are painted while the camera is in the air.
+    if (base) { if (reduced.matches) base.prime(to); else base.prepare([.2, .4, .6, .8].map(e => path.at(e)).concat(to), to); }
+    start();
   };
   const zoomAt = (factor, px, py) => {
     if (!camera || !view) return;
@@ -287,12 +276,12 @@ export function mountMapSelect(root) {
     if (pointers.size > 1) {
       // Pinch zooms about the fingers' midpoint and pans with it, in one camera update.
       const [a, b] = [...pointers.values()], mid = [(a[0] + b[0]) / 2 - view.width / 2, (a[1] + b[1]) / 2 - view.height / 2], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-      if (pinch) { const scale = Math.max(minScale(), Math.min(MAX_SCALE, camera.scale * d / pinch.d)); camera = cameraFor(scale, worldAt(camera, ...pinch.mid), ...mid); sync(); }
+      if (pinch) { const scale = Math.max(minScale(), Math.min(MAX_SCALE, camera.scale * d / pinch.d)); camera = cameraFor(scale, worldAt(camera, ...pinch.mid), ...mid); panning = true; want(); }
       pinch = { d, mid }; drag = null; return;
     }
-    if (drag && !pinch) { const [x, y] = local(e); camera.x += x - drag[0]; camera.y += y - drag[1]; sync(); drag = [x, y]; }
+    if (drag && !pinch) { const [x, y] = local(e); camera.x += x - drag[0]; camera.y += y - drag[1]; panning = true; want(); drag = [x, y]; }
   }, { signal });
-  const up = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; drag = pointers.size ? [...pointers.values()][0] : null; if (!pointers.size) { map.classList.remove('dragging'); sync(performance.now(), true); } };
+  const up = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; drag = pointers.size ? [...pointers.values()][0] : null; if (!pointers.size) { map.classList.remove('dragging'); panning = false; want(true); } };
   map.addEventListener('pointerup', up, { signal }); map.addEventListener('pointercancel', up, { signal });
   card.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') { swipe = [e.clientX, e.clientY, e.pointerId]; } }, { signal });
   card.addEventListener('pointerup', e => { if (!swipe || swipe[2] !== e.pointerId) return; const dx = e.clientX - swipe[0], dy = e.clientY - swipe[1]; swipe = null; if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) cycle(dx < 0 ? 1 : -1); }, { signal });
@@ -303,21 +292,30 @@ export function mountMapSelect(root) {
     const rect = map.getBoundingClientRect(), next = { width: rect.width, height: rect.height };
     if (!next.width || !next.height) return;
     const old = view && camera && { centre: worldAt(camera, 0, 0), zoom: camera.scale / coverScale(view, MAP_VIEW) };
-    view = next; dpr = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.round(view.width * dpr); canvas.height = Math.round(view.height * dpr);
+    // Capped at 2x, and below that on very large windows: the canvas stays under a fixed pixel budget.
+    view = next; dpr = Math.min(2, window.devicePixelRatio || 1, Math.sqrt(PIXEL_BUDGET / (view.width * view.height)));
+    canvas.width = Math.round(view.width * dpr); canvas.height = Math.round(view.height * dpr); base?.resize(view, dpr);
     measure();
     if (!old) {
       // Arrive on the region with every track in view, then fly in to the selected one once the art is ready.
-      camera = fitTracks(view, MAP_VIEW, bounds, safe);
+      camera = fitTracks(view, MAP_VIEW, bounds, safe); base?.prime(camera);
     } else if (motion?.type === 'fly' || !motion) { stop(); camera = framing(); }
     else camera = cameraFor(coverScale(view, MAP_VIEW) * old.zoom, old.centre);
-    sync(performance.now(), true); maybeIntro();
+    sync(performance.now(), true); maybeIntro(); start();
   };
   const resize = new ResizeObserver(() => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(relayout); }); resize.observe(map);
   loadAssets().then(a => {
     if (signal.aborted) return; art = a; layers = a.layers; map.classList.add('ready');
-    sync(performance.now(), true); maybeIntro();
+    base = createMapRenderer({ ctx, data: { art, layers, size: MAP_VIEW }, makeCanvas: (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h }) }); if (view) { base.resize(view, dpr); if (camera) base.prime(camera); }
+    // Close-up relief arrives after the region art; the base layer repaints once it has.
+    Promise.all(a.detail.map(d => d.ready)).then(() => { if (!signal.aborted) want(true); });
+    sync(performance.now(), true); maybeIntro(); start();
   }, error => { if (!signal.aborted) { map.classList.add('ready', 'failed'); console.error(error); } });
+  // Off screen (another screen, the menu closed, a hidden tab): no frames, no painting; one repaint when it is back.
+  const away = () => { cancelAnimationFrame(frame); frame = 0; };
+  const back = () => { if (view && onScreen && !document.hidden) want(true); };
+  document.addEventListener('visibilitychange', () => { document.hidden ? away() : back(); }, { signal });
+  const seen = new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; onScreen ? back() : away(); }); seen.observe(map);
   document.fonts?.ready.then(() => { if (!signal.aborted && view) { measure(); sync(performance.now(), true); } });
 
   return { preview: show, action(name) {
@@ -325,7 +323,7 @@ export function mountMapSelect(root) {
     if (['right', 'shiftUp', 'mapNext'].includes(name)) { cycle(1); return true; }
     if (name === 'mapZoomIn' || name === 'mapZoomOut') { if (view) zoomAt(name === 'mapZoomIn' ? 1.35 : 1 / 1.35, (safe.left + safe.right) / 2, (safe.top + safe.bottom) / 2); return true; }
     return false;
-  }, dispose() { events.abort(); resize.disconnect(); stop(); cancelAnimationFrame(resizeFrame); } };
+  }, dispose() { events.abort(); resize.disconnect(); seen.disconnect(); stop(); cancelAnimationFrame(resizeFrame); base?.dispose(); base = null; } };
 }
 // Quick Race confirms the track and compares times before race setup.
 export async function selectMap(menu, id) {

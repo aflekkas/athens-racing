@@ -64,6 +64,11 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .map-label--peak > b { color: #8ba196; font-size: 9px; }
 #ui.s-maps .map-label--water > b { color: #4d7a8e; font-size: 11px; font-weight: 500; letter-spacing: .55em; text-shadow: none; }
 
+/* While the map moves the card swaps its live backdrop blur (re-run on every composited frame) for a near-opaque tint, and
+   blurs again, fading in, once the map rests. */
+#ui.s-maps .map-preview { transition: background-color .2s ease; }
+#ui.s-maps .map-preview.map-moving { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: rgba(9, 13, 18, .94); }
+
 /* The floating track card: right of the free area on wide screens, a bottom sheet on phones (still the full screen). */
 
 @media (max-width: 700px) and (min-height: 501px) {
@@ -85,6 +90,6 @@ body.ui-open #lapTiming { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot, #ui.s-maps .map-label, #ui.s-maps .attica-overlay, #ui.s-maps .attica-canvas { transition: none; }
+  #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot, #ui.s-maps .map-label, #ui.s-maps .attica-overlay, #ui.s-maps .attica-canvas, #ui.s-maps .map-preview { transition: none; }
   
 }

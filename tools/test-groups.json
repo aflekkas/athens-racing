@@ -97,6 +97,7 @@
     "tools/pointer-hover.test.mjs",
     "tools/owner-locked-track-map.test.mjs",
     "tools/map-select-camera.test.mjs",
+    "tools/map-select-perf.test.mjs",
     "tools/mirror-cadence.test.mjs",
     "tools/modes.test.mjs",
     "tools/nitrous-input.test.mjs",
