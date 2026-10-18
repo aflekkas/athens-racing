@@ -5,7 +5,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 const read = path => readFileSync(path, 'utf8');
 const walk = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]);
-const shipped = [...walk('src').filter(f => /\.(css|js)$/.test(f)), 'style.css', 'index.html'];
+const shipped = [...walk('src').filter(f => /\.(css|js)$/.test(f)),
+  ...['server', 'worker'].flatMap(walk).filter(f => /\.mjs$/.test(f) && !f.endsWith('.test.mjs')), 'style.css', 'index.html'];
 const owner = '2026-10-17 owner decision: no hover effects; keep keyboard/gamepad and click focus. See docs/OWNER-DECISIONS.md.';
 
 test('all shipped styles, including inline styles, have no hover rules or custom interaction cursors', () => {
@@ -29,7 +30,7 @@ const movement = [
 ];
 test('passive mouse/pointer movement cannot move UI focus or highlights', () => {
   const hits = [];
-  for (const file of shipped.filter(f => /\.(js|html)$/.test(f))) {
+  for (const file of shipped.filter(f => /\.(m?js|html)$/.test(f))) {
     let source = read(file);
     // Gesture callbacks cannot call UI focus/selection helpers either.
     if (file === 'src/map-select.js') {
