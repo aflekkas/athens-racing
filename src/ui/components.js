@@ -415,7 +415,6 @@ function openListbox(anchorEl, { options, value, onPick, anchor } = {}) {
   else { box.style.bottom = (vh - a.top + 4) + 'px'; box.style.maxHeight = Math.max(120, above) + 'px'; }
   const sel = anchorEl.querySelector('.select') || anchorEl; sel.classList.add('open'); sel.setAttribute('aria-expanded', 'true');
   lb = { el: anchorEl, sel, scrim, box, opts, hi: Math.max(0, opts.findIndex(([v]) => String(v) === cur)), onPick: onPick || ((v) => setValue(anchorEl, v)) };
-  box.addEventListener('pointermove', (e) => { const o = e.target.closest('.listbox__opt'); if (o) hilite(+o.dataset.i); });
   box.addEventListener('click', (e) => { const o = e.target.closest('.listbox__opt'); if (o) pick(+o.dataset.i); });
   hilite(lb.hi);
 }
@@ -511,7 +510,6 @@ function prompt({ title = '', body = '', icon: ic = 'info', actions = [{ id: 'ok
       <div class="modal__actions">${actions.map((a, i) => button({ label: esc(a.label), icon: a.icon, variant: a.variant || (i === 0 ? 'primary' : 'secondary'), focusable: false, attrs: { 'data-i': i } })).join('')}</div>
       ${hints ? `<div class="modal__foot">${keyHints([['leftright', 'CHOOSE'], ['confirm', 'OK'], ...(dismissible ? [['back', 'CANCEL']] : [])])}</div>` : ''}</div>`;
     root.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) closePrompt(actions[+b.dataset.i].id); else if (dismissible && e.target === root) closePrompt(null); });
-    root.addEventListener('pointermove', (e) => { const b = e.target.closest('[data-i]'); if (b && modal) { modal.focus = +b.dataset.i; renderModalFocus(); } });
     layer().append(root);
     const buttons = [...root.querySelectorAll('[data-i]')];
     modal = { root, buttons, actions, focus: Math.max(0, actions.findIndex((a) => a.default)), resolve, dismissible };

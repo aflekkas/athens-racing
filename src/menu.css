@@ -5,7 +5,6 @@
 body.ui-open #ui { display: block; }
 body.ui-open #hud { opacity: 0 !important; }
 body.ui-open #keys, body.ui-open #credit { opacity: 0; }
-#ui .mi { cursor: pointer; }
 /* the screen sits on the live road view: dimmed, with a cool vignette like a screen bezel */
 #ui.s-mode, #ui.s-maps, #ui.s-mapConfirm, #ui.s-leaderboards, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
 #ui.s-pause { background: linear-gradient(90deg, rgba(3,5,7,.78), rgba(3,5,7,.35) 46%, rgba(3,5,7,.1)); }
@@ -56,7 +55,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .scr--settings .scr__headr { grid-area: rail; align-self: start; justify-content: stretch; min-height: 0; }
 .scr--settings [data-menu-feedback] { grid-area: title; justify-self: end; align-self: center; margin: 0; }
 .scr--settings .tabs__hint { display: none; }
-/* hover only brightens the label; the one selected item is the glass indicator that slides along the rail */
+/* The selected item is the glass indicator that slides along the rail. */
 .scr--settings .scr__body { align-items: stretch; }
 .set-panel { width: min(56rem, 100%); min-height: 0; padding: var(--s-4) var(--s-4) var(--s-5); }
 @keyframes bindBlink { 50% { opacity: .4; } }
@@ -232,7 +231,6 @@ body .tow-prompt p { margin: var(--s-2) 0 var(--s-3); color: var(--c-text-2); }
 body .tow-actions { gap: var(--s-2); }
 body .tow-actions button { flex: 1 1 auto; min-height: 2.6rem; padding: 0 var(--s-4); border: 1px solid var(--c-line-2); border-radius: var(--r-2); background: var(--c-surface-3); color: #fff; font: 800 var(--t-md)/1 var(--f-cond); letter-spacing: .08em; }
 body .tow-actions button:first-child { background: var(--c-gold); border-color: transparent; color: var(--c-bg); }
-body .tow-actions button:hover { filter: brightness(1.12); }
 body .tow-actions button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* racer tags (hud.js RacerMarkers): a readable pill with the player's colour, an icon chevron. hud.js scales the tag with
    distance (0.7 .. 1.05); the base size keeps the far end at a legible ~13 px */
@@ -298,10 +296,9 @@ body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32p
 }
 /* Keep district captions inside the touch minimap's bottom-left cut corner. */
 body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; padding: 2px 0; font-size: 9px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.car-stage { touch-action: none; cursor: grab; }
-.car-stage.dragging { cursor: grabbing; }
+.car-stage { touch-action: none; }
 .car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; cursor: default; color: var(--c-text-3); font: 600 .7rem var(--f-cond); letter-spacing: .16em; }
-#race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); cursor: pointer; }
+#race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); }
 #race-settings .ico { width: 18px; height: 18px; }
 #race-settings:focus-visible { outline: 2px solid #ffc21a; }
 body:not(.racing):not(.counting) #race-settings, body.ui-open #race-settings, body:has(#multiplayer:not([hidden])) #race-settings { display: none; }
@@ -405,7 +402,7 @@ body:has(#accounts-offline) .scr--title { bottom:calc(16px + .7rem) }
 .mode-layout { flex: 1; display: flex; flex-direction: column; gap: var(--s-4); min-height: 0; }
 .mode-layout > .field { flex: none; align-self: flex-start; width: min(34rem, 100%); }
 .mode-grid { flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(12rem, auto); gap: var(--s-4); min-height: 0; overflow-y: auto; }
-@media (max-width: 560px) { .mode-grid { flex: none; grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: var(--s-2); max-height: none; }  }
+@media (max-width: 560px) { .mode-grid { flex: none; grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: var(--s-2); max-height: none; } }
 /* race setup: the route summary beside the setup form */
 .setup__map { display: block; width: 100%; max-height: 11rem; object-fit: contain; margin-bottom: var(--s-4); }
 .setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }

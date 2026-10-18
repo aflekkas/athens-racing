@@ -10,7 +10,7 @@ function covers(camera,view) {
   assert.ok(left<=.001 && top<=.001 && right>=view.width-.001 && bottom>=view.height-.001, 'Geographic image must cover the entire viewport');
 }
 for(const [name,view] of Object.entries({desktop:{width:1210,height:780},laptop:{width:795,height:475},phone:{width:349,height:293}})) {
-  test(`${name}: default and hover cameras keep all routes padded without exposing asset edges`,()=>{
+  test(`${name}: default and selected-track cameras keep all routes padded without exposing asset edges`,()=>{
     const home=fitTracks(view,MAP_VIEW,bounds);
     for(const [camera,padding] of [[home,.079],...Object.values(TRACK_ROUTES).map(route=>[focusTrack(view,MAP_VIEW,bounds,home,route.pin),.059])]) {
       covers(camera,view);

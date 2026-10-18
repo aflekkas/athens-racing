@@ -1,7 +1,7 @@
 /* Multiplayer. The Join / Host, lobby, allowed-car and results screens are menu screens (src/ui/mp-screens.js via
    src/menu.js) and share the head-unit frame with every other menu; they are styled at the end of this file. The native
    #multiplayer panel of src/multiplayer.js stays in the DOM as transport state only and is never drawn. */
-#mp-toggle { position:fixed;right:22px;top:90px;z-index:30;display:inline-flex;align-items:center;gap:8px;background:var(--c-accent,#ff3b2f);color:#fff;border:0;border-radius:4px;padding:10px 16px;font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;cursor:pointer }
+#mp-toggle { position:fixed;right:22px;top:90px;z-index:30;display:inline-flex;align-items:center;gap:8px;background:var(--c-accent,#ff3b2f);color:#fff;border:0;border-radius:4px;padding:10px 16px;font:800 17px 'Barlow Condensed',sans-serif;letter-spacing:.08em;}
 #multiplayer, #multiplayer:not([hidden]) { display:none!important }
 #mp-board[hidden] { display:none!important }
 #mp-board { position:fixed;top:145px;right:22px;z-index:25;min-width:175px;padding:12px 16px;border-radius:4px;border-left:3px solid var(--c-cyan,#29d8ff);background:rgba(8,10,14,.82);color:#fff;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.06em;pointer-events:none }
@@ -64,7 +64,7 @@
 }
 /* Persistent update action; independent of whether the lobby/menu is open. */
 .mp-update-notice { position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:16px;max-width:calc(100vw - 32px);padding:10px 14px;background:#101a21;color:#fff;border:1px solid #4ccce4;border-radius:8px;font:14px system-ui;box-shadow:0 4px 20px #0008 }
-.mp-update-notice button { border:1px solid #4ccce4;border-radius:4px;background:#153541;color:#fff;padding:7px 12px;font:inherit;cursor:pointer }
+.mp-update-notice button { border:1px solid #4ccce4;border-radius:4px;background:#153541;color:#fff;padding:7px 12px;font:inherit;}
 .mp-connection-chip { position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:90;padding:6px 12px;border-radius:14px;background:#182126dc;color:#ffd176;font:600 12px system-ui;pointer-events:none }
 .mp-connection-chip[hidden] { display:none }
 /* ---------------------------------------------------------------- multiplayer screens */

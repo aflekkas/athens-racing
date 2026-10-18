@@ -149,11 +149,6 @@ export function mountMapSelect(root) {
     dirty = false; highlight(id);
   };
   const cycle = delta => { const index = selectable.findIndex(m => m.id === selected); show(selectable[(index + delta + selectable.length) % selectable.length].id); card.querySelector('[data-confirm-track]').focus({ preventScroll: true }); };
-  root.addEventListener('pointerover', e => { const pin = e.target.closest('.track-pin'); if (pin && e.pointerType !== 'touch') highlight(pin.dataset.mapId); }, { signal });
-  map.addEventListener('pointerleave', () => highlight(selected), { signal });
-  map.addEventListener('pointermove', e => { if (!pointers.size && (e.movementX || e.movementY) && !e.target.closest('.track-pin')) highlight(selected); }, { signal });
-  // Keep the menu's spatial pointer focus from turning hover into an accidental selection.
-  root.addEventListener('pointermove', e => { if (e.target.closest('.track-pin')) e.stopPropagation(); }, { capture: true, signal });
   root.addEventListener('focusin', e => { const pin = e.target.closest('.track-pin'); if (pin) show(pin.dataset.mapId); }, { signal });
   root.addEventListener('click', e => { const pin = e.target.closest('.track-pin'); if (pin) { e.stopPropagation(); show(pin.dataset.mapId); } }, { capture: true, signal });
   root.addEventListener('keydown', e => { if (e.target.closest('input,textarea,select,[contenteditable]')) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(e.key === 'ArrowRight' ? 1 : -1); } }, { capture: true, signal });

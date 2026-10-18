@@ -85,6 +85,7 @@
     "tools/loading-lifecycle.test.mjs",
     "tools/lobby-ui.test.mjs",
     "tools/ui-rules.test.mjs",
+    "tools/no-hover.test.mjs",
     "tools/map-select-camera.test.mjs",
     "tools/mirror-cadence.test.mjs",
     "tools/modes.test.mjs",
