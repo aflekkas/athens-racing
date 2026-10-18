@@ -10,6 +10,7 @@ Many agents work in this checkout at once, on a shared 145 GB VPS. Worktrees, te
 - **Evidence (`.scratch/<task>/`):** keep only what the final report links to, usually a few screenshots or contact sheets and a README. Delete intermediate frames, duplicate captures, videos and raw dumps. Prefer `.webp`/`.jpg` over `.png` for screenshots.
 - **Caches and downloads:** remove raw OSM/DEM/model downloads once a reduced copy exists. Never keep more than one copy of a large artifact.
 - **Processes:** stop every dev server, wrangler instance and headless browser you started. Use one browser job at a time via `tools/browser-slot.sh`. Never `pkill` broad patterns; stop only your own PIDs.
+- **Killing processes:** only ever signal a PID you started yourself and recorded at launch (for example `$!` saved to a file). Never kill by name, pattern or a PID you looked up afterwards, and never signal `systemd`, `systemd --user`, the release train, wrangler or browser-slot processes you didn't start. On 2026-10-18 an agent's `kill -INT` hit `systemd --user` and silently stopped the release train for 15 hours.
 - **Others' work:** never delete another agent's or the user's worktree, `.scratch/<task>` or temp dir. Ask the lead instead.
 - **Final report:** list what you cleaned up, plus anything large you left on purpose (path and size), and `df -h /` before and after.
 
