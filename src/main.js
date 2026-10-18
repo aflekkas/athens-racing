@@ -3,6 +3,7 @@ import { soloStartPosition, raceGridSlot } from './start-placement.js';
 import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
+import { FrameLimiter, dynamicBudgetMs } from './frame-pacing.js';
 import { importWithUpdate } from './client-release.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
@@ -122,7 +123,7 @@ const R = RENDER, quality = R.exhaust, sceneryQuality = R.scenery, lowGraphics =
 setAnisotropy(R.anisotropy);
 window.__renderInfo = () => ({ gpu: gpuName, perfClass: GFX.perfClass, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
-const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2) }));
+const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2), limit: settings.frameCap }));
 perfOverlay.setVisible(settings.perfOverlay === true);
 onSettings((st, key) => { if (key === 'perfOverlay' || !key) perfOverlay.setVisible(st.perfOverlay === true); });
 addEventListener('keydown', (e) => {
@@ -133,7 +134,7 @@ let pixelRatio = GFX.pixelRatio;
 let dynamicScale = makeDynamicScale();
 function makeDynamicScale() {
   const floor = { potato: .83, low: .75, med: .65, high: .6 }[GFX.perfClass];
-  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: 1200 / (settings.frameCap || 60) });
+  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: dynamicBudgetMs(settings.frameCap) });
 }
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
@@ -1883,6 +1884,7 @@ const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
 
 // ------------------------------------------------------------------ main loop
 let last = 0, frameN = 0;
+const frameLimiter = new FrameLimiter();
 const events = [];
 const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
 const sunScreen = new THREE.Vector3();
@@ -1892,9 +1894,10 @@ function frame(now) {
   // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
   if (multiplayer.active && (document.hidden || now < last)) return;
   // Frame rate limit (Settings > Graphics, default 60): skip vsync callbacks that arrive early, so a 120 Hz laptop
-  // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery).
-  const cap = settings.frameCap;
-  if (cap > 0 && !Q.has('fixeddt') && now >= last && now - last < 800 / cap) return;
+  // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery). NO LIMIT (0) never skips:
+  // every requestAnimationFrame callback, at the display's refresh, simulates and draws.
+  perfOverlay.tick();
+  if (!Q.has('fixeddt') && !frameLimiter.allow(now, settings.frameCap)) return;
   const cpuFrameStart = cpuMetrics.start();
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;

@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Frame rate limit: NO LIMIT now draws at your screen's full refresh rate everywhere, including the online car showroom that stayed at 30. The overlay shows your limit.
+
 - Phones and tablets get a small card on the title screen to add ATHENS RACING to your home screen. Android installs in one tap, iPhone shows the steps.
   ![Title screen on a phone with a slim card showing the two Add to Home Screen steps](assets/changelog/2026.10.16.1/home-screen-prompt.webp "The card sits under the tiles, never over the race.")
 
