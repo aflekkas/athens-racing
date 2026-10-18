@@ -151,7 +151,8 @@
     "tools/player-car-lineup.test.mjs",
     "tools/trim-order.test.mjs",
     "server/leaderboard-setups.test.mjs",
-    "tools/leaderboard-records.test.mjs"
+    "tools/leaderboard-records.test.mjs",
+    "tools/garage-cards.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

@@ -1,3 +1,4 @@
+import { createVehicleFraming, frameVehicle } from './ui/vehicle-framing.js';
 import {tintGlass} from './glass-tint.js';
 // A single, static studio view of the real selected vehicle. No map/world dependencies are constructed.
 import * as THREE from 'three';
@@ -16,7 +17,7 @@ export function createHeroStudio() {
   for (const [color, power, x,y,z] of [['#fff1d9',3.1,-3,5,-5],['#83c8d4',1.3,4,3,2]]) {
     const light = new THREE.DirectionalLight(color,power);light.position.set(x,y,z);scene.add(light);
   }
-  let model, ownedMaterials = new Set(), ownedGeometry = new Set(), ownedTextures = new Set(), stopped = false, serial = 0;
+  let model, ownedMaterials = new Set(), ownedGeometry = new Set(), ownedTextures = new Set(), stopped = false, serial = 0, framing;
   const releaseVehicle = () => {
     model?.root.removeFromParent(); model?.disposeDamage?.();
     ownedGeometry.forEach(g=>g.dispose()); ownedMaterials.forEach(m=>m.dispose()); ownedTextures.forEach(t=>t.dispose());
@@ -52,26 +53,17 @@ export function createHeroStudio() {
     });
     scene.add(model.root); model.root.updateMatrixWorld(true);
     const bounds = new THREE.Box3().setFromObject(model.root), size = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
-    model.root.position.sub(center); model.root.position.y += size.y*.04;
+    model.root.position.sub(center); 
     model.root.updateMatrixWorld(true); planes.forEach(p=>p.applyMatrix4(model.root.matrixWorld));
-    model.root.userData.heroSize = size;
+    framing=createVehicleFraming(model.root);
     renderer.domElement.dataset.carId = spec.id; renderer.domElement.dataset.paint = (paint || spec.color).toLowerCase();
     renderer.domElement.setAttribute('aria-label', `${spec.name} · ${paint || spec.color}`);
   };
   const draw = async (width=800,height=380) => {
     if (stopped || !model || width<1 || height<1) return;
-    const token=serial, size=model.root.userData.heroSize;
-    renderer.setSize(Math.min(1200,width),Math.min(600,height),false);camera.aspect=width/height;
-    const direction=new THREE.Vector3(.68,.31,-.74).normalize();
-    // Fit all eight body bounds in the actual camera basis, including buses and trucks.
-    camera.position.copy(direction);camera.lookAt(0,0,0);camera.updateMatrixWorld();
-    const right=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,0),up=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,1);
-    const tan=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));let distance=0;
-    for(const x of [-1,1])for(const y of [-1,1])for(const z of [-1,1]) {
-      const p=new THREE.Vector3(x*size.x/2,y*size.y/2,z*size.z/2);
-      distance=Math.max(distance,p.dot(direction)+Math.max(Math.abs(p.dot(up))/tan,Math.abs(p.dot(right))/(tan*camera.aspect)));
-    }
-    camera.position.copy(direction).multiplyScalar(distance*1.10);camera.lookAt(0,0,0);camera.updateProjectionMatrix();
+    const token=serial;
+    renderer.setSize(Math.min(1200,width),Math.min(600,height),false);
+    frameVehicle(camera,model.root,framing,width,height,{viewDirection:new THREE.Vector3(.68,.31,-.74).normalize()});
     await renderer.compileAsync(scene,camera);
     if (!stopped && token===serial) renderer.render(scene,camera);
   };

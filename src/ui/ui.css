@@ -548,10 +548,10 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .btn--google { --btn-bg: #fff; --btn-fg: #1f1f1f; --btn-bd: #747775; font-weight: 700; }
 .btn__logo { flex: none; width: 1.25rem; height: 1.25rem; }
 
-.card--car .card__media { flex: none; aspect-ratio: 2; background: radial-gradient(90% 90% at 50% 75%, #1d2731, #10161d 80%); }
+.card--car .card__media { position: relative; overflow: visible; flex: none; aspect-ratio: 2; background: radial-gradient(90% 90% at 50% 75%, #1d2731, #10161d 80%); }
 .card--car .card__media img { object-fit: contain; }
 .card--car .card__title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card--car .card__body { padding: var(--s-3) var(--s-4); }
+.card--car .card__body { padding: calc(var(--s-3) + 1rem) var(--s-4) var(--s-3); }
 .card--car .card__foot { justify-content: space-between; }
 .car-card__spec { display: flex; gap: var(--s-4); }
 .car-card__spec b { font-weight: 600; color: #fff; }
@@ -690,3 +690,28 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 /* Menu screens own navigation; floating race actions must not occupy their header. */
 body[data-ui] #mp-toggle { display: none !important; }
+
+
+/* Shared manufacturer marks and vehicle specification panel. Atlas artwork stays vector at every DPR. */
+.manufacturer-badge { display: inline-block; flex: none; width: 2rem; height: 2rem; vertical-align: middle; overflow: hidden; }
+.car-card__brand { position: absolute; z-index: 1; left: var(--s-4); bottom: -.65rem; width: 2.5rem; height: 2.5rem; padding: .18rem; border-radius: var(--r-2); background: var(--ui-surface); box-shadow: 0 0 0 1px var(--ui-line); }
+.card--car .card__badge { inset: .75rem .75rem auto auto; z-index: 1; max-width: calc(100% - 1.5rem); }
+.card--car .card__badge .badge { display: block; }
+.select__val, .listbox__label { display: flex; align-items: center; gap: .5rem; }
+.select__val > span { overflow: hidden; text-overflow: ellipsis; }
+.select__val .manufacturer-badge, .listbox__label .manufacturer-badge { width: 1.5rem; height: 1.5rem; }
+.vehicle-specs { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-5); }
+.vehicle-specs__head { display: flex; align-items: center; gap: var(--s-3); }
+.vehicle-specs__head > .manufacturer-badge { width: 2.75rem; height: 2.75rem; }
+.vehicle-specs .sheet-head { min-width: 0; gap: .4rem; }
+.vehicle-specs .sheet-head__title { font-size: var(--t-lg); letter-spacing: .04em; overflow-wrap: anywhere; }
+.vehicle-specs .sheet-head__status { color: var(--c-text-3); font-size: var(--t-xs); }
+.stats--boxed { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--s-2); }
+.stats--boxed .stat-tile { min-width: 0; padding: var(--s-3); border: 1px solid var(--ui-line); border-radius: var(--r-2); background: rgba(255,255,255,.025); }
+.stats--boxed .stat-tile__k { min-height: 1.2em; }
+.stats--boxed .stat-tile__v { margin-top: .5rem; font-size: var(--t-xl); }
+.vehicle-specs__action { margin-top: auto; }
+.vehicle-specs .field { flex-direction: column; align-items: stretch; gap: var(--s-2); }
+.vehicle-specs .field__ctl { width: 100%; }
+.vehicle-specs .seg { width: 100%; flex-wrap: wrap; }
+.vehicle-specs .seg__opt { flex: 1 1 auto; min-width: 0; justify-content: center; white-space: normal; overflow-wrap: anywhere; padding: .5rem .75rem; }

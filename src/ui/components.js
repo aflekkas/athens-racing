@@ -1,3 +1,4 @@
+import { BRAND_BADGES, MANUFACTURER_NAMES } from '../manufacturers.js';
 import { buildBadge } from '../build-environment.js';
 import { notifications, raceNotificationsActive } from './notifications.js';
 // UI COMPONENTS: the ATHENS RACING kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
@@ -168,11 +169,21 @@ export function dialog({ under = '', kick = '', title = '', body = '', actions =
   return `<div class="dialog-host">${under ? `<div class="dialog-under" inert aria-hidden="true">${under}</div>` : ''}<div class="dialog-scrim" data-dialog><section class="dialog panel ${cls}" role="dialog" aria-modal="true" aria-labelledby="ui-dialog-title"${attrStr({ 'aria-label': label })}>
     ${sheetHead({ kick, title, id: 'ui-dialog-title' })}${body ? `<div class="dialog__body">${body}</div>` : ''}${actions ? `<div class="dialog__actions">${actions}</div>` : ''}${foot ? `<footer class="dialog__foot">${foot}</footer>` : ''}</section></div></div>`;
 }
+const MANUFACTURER_ATLAS = new URL('../../assets/brand-badges/atlas.svg', import.meta.url).href;
+export function manufacturerBadge(brand, cls = '') {
+  const cell = BRAND_BADGES[brand]?.enabled ? BRAND_BADGES[brand].cell : 15;
+  return `<svg class="manufacturer-badge ${cls}" viewBox="${cell % 4 * 128} ${Math.floor(cell / 4) * 128} 128 128" role="img" aria-label="${esc(MANUFACTURER_NAMES[brand] || 'Manufacturer')}" data-manufacturer="${esc(brand || '')}"><image href="${MANUFACTURER_ATLAS}" width="512" height="640"/></svg>`;
+}
+const selectLabel = option => option ? option[2]?.brand ? `${manufacturerBadge(option[2].brand)}<span>${option[1]}</span>` : option[1] : '';
 /** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class / trims line, HP + weight, drive badge */
-export function carCard({ id, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
+export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
   return card({ cls: `card--car car-card ${locked ? 'off' : ''} ${cls}`, act, selected, attrs,
-    media: `<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
+    media: `${manufacturerBadge(brand, 'car-card__brand')}<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
     foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock-simple') : ''}` });
+}
+/** Vehicle specifications share a single panel hierarchy in every picker. */
+export function vehicleSpecs({ brand, name, trim, transmission, specs, choices = '', paint = '', extra = '', action = '' } = {}) {
+  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:name,title:trim,status:transmission,statusIcon:'gear-six'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
 }
 /** an inline search box (a text focus row without a label): the magnifier, the input, the kit's pill shape */
 export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'magnifying-glass', inputAttrs, cls = '' } = {}) {
@@ -221,7 +232,7 @@ export function stepper({ key, label, value, min, max, step = 1, format = 'int',
 export function select({ key, label, value, options, icon: ic, note, type, attrs, compact = false } = {}) {
   const cur = options.find(([v]) => String(v) === String(value));
   // compact: no row, just the select pill with its label inside (toolbars: the garage filters)
-  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${cur ? cur[1] : ''}</span>${icon('caret-down')}</div>`,
+  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${selectLabel(cur)}</span>${icon('caret-down')}</div>`,
     { icon: ic, note, kind: 'select', key, type, cls: compact ? 'field--bare' : '', attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
 /** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
@@ -268,7 +279,7 @@ export function setValue(el, v, doEmit = true) {
     else { v = clamp(+v, +el.dataset.min, +el.dataset.max); if (val) val.textContent = fmt(el.dataset.fmt, v); atMin = v <= +el.dataset.min; atMax = v >= +el.dataset.max; }
     const [a, b] = el.querySelectorAll('.stepper__btn'); a?.classList.toggle('off', atMin); b?.classList.toggle('off', atMax);
   } else if (kind === 'select') {
-    const cur = optionsOf(el).find(([x]) => String(x) === String(v)); const val = el.querySelector('.select__val'); if (val && cur) val.textContent = cur[1];
+    const cur = optionsOf(el).find(([x]) => String(x) === String(v)); const val = el.querySelector('.select__val'); if (val && cur) val.innerHTML = selectLabel(cur);
   }
   const changed = el.dataset.value !== String(v);
   el.dataset.value = String(v);
@@ -417,7 +428,7 @@ function openListbox(anchorEl, { options, value, onPick, anchor } = {}) {
   closeListbox();
   const opts = options || optionsOf(anchorEl), cur = String(value ?? anchorEl.dataset.value);
   const box = document.createElement('div'); box.className = 'listbox'; box.setAttribute('role', 'listbox');
-  box.innerHTML = opts.map(([v, l, o], i) => `<div class="listbox__opt ${String(v) === cur ? 'sel' : ''} ${o?.disabled ? 'dis' : ''}" role="option" data-i="${i}" aria-selected="${String(v) === cur}"><span>${l}</span>${icon('check')}</div>`).join('');
+  box.innerHTML = opts.map(([v, l, o], i) => `<div class="listbox__opt ${String(v) === cur ? 'sel' : ''} ${o?.disabled ? 'dis' : ''}" role="option" data-i="${i}" aria-selected="${String(v) === cur}"><span class="listbox__label">${selectLabel([v,l,o])}</span>${icon('check')}</div>`).join('');
   const scrim = document.createElement('div'); scrim.style.cssText = 'position:fixed;inset:0;pointer-events:auto';
   scrim.addEventListener('pointerdown', (e) => { if (!box.contains(e.target)) { e.preventDefault(); closeListbox(); } });
   scrim.append(box); layer().append(scrim);
