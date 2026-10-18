@@ -207,13 +207,16 @@ export function sidebarContent({ nav = '', content = '', variant = 'page', ...fr
   return layoutFrame('sidebar-content', frame, region('sidebar', region('nav', nav, 'scroll-y') + region('content', content, 'scroll-y')));
 }
 /** Filters always follow the title; the collection uses the remaining height. */
-export function browseGrid({ filters = '', items = '', list = false, aside = '', busy = false, variant = 'page', ...frame } = {}) {
+export function browseGrid({ filters = '', items = '', list = false, aside = '', busy = false, join = '', identity = '', actions = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'lobby') return layoutFrame('browse-grid', { ...frame, cls: `layout--browse-grid-lobby ${frame.cls || ''}` }, region('filters', `<div class="mp-bar"><div class="mp-bar__join">${join}</div><div class="mp-bar__you">${identity}</div>${actions}</div>`) + region('items', items, 'scroll-y layout__items--list'));
   if (variant === 'catalog') return layoutFrame('browse-grid', { ...frame, variant }, `<div class="catalog-toolbar" data-layout-region="filters">${filters}</div><div class="car-grid scroll-y" data-layout-region="items">${items}</div>`);
   if (variant === 'filtered') return layoutFrame('browse-grid', { ...frame, variant }, filters + `<div class="layout-browse-filtered" data-layout-region="collection"><aside class="layout-browse-filtered__aside" data-layout-region="filters">${aside}</aside><div class="layout-browse-filtered__items" data-layout-region="items" aria-live="polite" aria-busy="${!!busy}">${items}</div></div>`);
   return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
 }
 /** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
-export function stageInspector({ stage = '', inspector = '', actions = '', stageAttrs = {}, variant = 'page', ...frame } = {}) {
+export function stageInspector({ stage = '', inspector = '', actions = '', stageAttrs = {}, caption = '', summary = '', collection = true, variant = 'page', ...frame } = {}) {
+  if (variant === 'tracks') return layoutFrame('stage-inspector', { ...frame, cls: `layout--stage-inspector-tracks ${frame.cls || ''}` }, region('stage-inspector', region('stage', collection ? `<div class="mp-tracks scroll-y" data-layout-region="collection">${stage}</div>` : stage) + region('inspector', inspector, 'scroll-y')));
+  if (variant === 'showroom') return layoutFrame('stage-inspector', { ...frame, variant }, `<div class="mp-show mp-show--lobby" data-layout-region="stage-inspector"><div id="carStage" class="mp-stage" data-ui-keep="stage" aria-hidden="true" data-layout-region="stage">${stage}</div><div class="mp-show__cap" data-layout-region="caption">${caption}</div><div class="mp-plate" data-layout-region="summary">${summary}</div><aside class="mp-side scroll-y" data-layout-region="inspector">${inspector}</aside></div>`);
   if (variant === 'vehicle') return layoutFrame('stage-inspector', { ...frame, variant }, `<div class="car-layout" data-layout-region="stage-inspector"><div class="car-stage" data-layout-region="stage"${attrStr(stageAttrs)}>${stage}</div>${inspector}</div>`);
   if (variant === 'overview') return layoutFrame('stage-inspector', { ...frame, variant, foot: region('actions', actions, 'layout-overview__actions') }, region('stage-inspector', region('stage', stage, 'layout-overview__stage') + region('inspector', inspector, 'layout-overview__inspector'), 'layout-overview'));
   if (variant === 'media') return layoutFrame('stage-inspector', { ...frame, variant }, `<figure class="layout-media" data-layout-region="stage">${stage}${inspector ? `<figcaption data-layout-region="inspector">${inspector}</figcaption>` : ''}</figure>`);
@@ -233,6 +236,7 @@ export function sheetList({ rows = '', aside = '', actions = '', variant = 'page
     return `<div class="scr scr--pause ${cls}" data-layout="sheet-list">${panel('', `${sheetHead({ kick, title, status })}<div class="pause__list" data-layout-region="rows">${rows}</div>${actions ? `<div class="pause-controls" data-layout-region="actions">${actions}</div>` : ''}`, { cls: 'pause-sheet' })}
       <footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
   }
+  if (variant === 'form') return layoutFrame('sheet-list', { ...frame, variant }, `<div class="set-panel panel scroll-y" data-layout-region="rows">${rows}${actions}</div>`);
   if (variant === 'narrow') return layoutFrame('sheet-list', { ...frame, variant }, region('rows', rows, 'layout-sheet-narrow'));
   if (variant === 'flow') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
   if (variant === 'reading') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');

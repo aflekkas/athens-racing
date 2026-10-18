@@ -1,6 +1,6 @@
 import { importWithUpdate } from '../client-release.js';
 // MULTIPLAYER SCREENS: the lobby browser, host setup, the lobby room, allowed cars and results, rendered by src/menu.js as ordinary head-unit
-// screens (C.screen: the same status bar, Back, focus / gamepad navigation, slide-in and soft-key bar as every other menu).
+// screens (shared page templates: the same status bar, Back, focus / gamepad navigation, slide-in and soft-key bar as every other menu).
 // src/multiplayer.js keeps transport, lobby state and its native #multiplayer panel. That panel stays in the DOM, never
 // shown, as the source of truth tools can drive; its `hidden` flag still means "the multiplayer UI is up" for main.js.
 // This module:
@@ -80,13 +80,11 @@ export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-ca
 // The selected car stands large in the middle as a live studio render (car-select.js mountCarSelect, lite); a slim
 // right-hand column of head-unit panels floats beside it. No map world is needed. #carStage is data-ui-keep="stage",
 // so in-place refreshes never touch the canvas; afterRender() mounts, keeps or swaps the studio.
-const STAGE = '<div id="carStage" class="mp-stage" data-ui-keep="stage" aria-hidden="true"></div>';
 function carPlate(mp, car, extra = '') {
   const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
-  return `<div class="mp-plate"><span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc(car?.name || '—')}</b><span class="mp-plate__spec">${spec}</span>
-    <div class="mp-plate__acts">${C.button({ label: 'CHANGE CAR', icon: 'car', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, attrs: { 'data-fid': 'car' } })}${extra}</div></div>`;
+  return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc(car?.name || '—')}</b><span class="mp-plate__spec">${spec}</span>
+    <div class="mp-plate__acts">${C.button({ label: 'CHANGE CAR', icon: 'car', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, attrs: { 'data-fid': 'car' } })}${extra}</div>`;
 }
-const showroom = ({ cls = '', caption, plate, side }) => `<div class="mp-show ${cls}">${STAGE}<div class="mp-show__cap">${caption}</div>${plate}<aside class="mp-side scroll-y">${side}</aside></div>`;
 
 // ---------------------------------------------------------------- the lobby browser (owner 2026-10-18)
 // One MULTIPLAYER screen: open lobbies are the hero and fill the page (track art, name, host, track and mode, conditions,
@@ -116,9 +114,7 @@ export function renderMp(menu, mp) {
   const ready = /^[A-Z0-9]{6}$/.test(form.code), car = carOf(mp, showroomCar(mp));
   const status = C.chip(live ? `ONLINE · ${esc(driverName.get())}` : net === 'connecting' ? 'CONNECTING…' : net === 'reload' ? 'UPDATE REQUIRED' : 'OFFLINE',
     { tone: live ? 'good' : net === 'connecting' ? '' : 'bad', icon: live ? 'globe' : net === 'connecting' ? null : 'triangle-alert', cls: 'mp-net', attrs: { role: 'status' } });
-  const bar = `<div class="mp-bar"><div class="mp-bar__join">${C.searchField({ name: 'code', label: 'Lobby code', value: form.code, placeholder: 'LOBBY CODE', icon: 'link', cls: 'search--code', inputAttrs: { type: 'text', maxlength: 6, autocapitalize: 'characters', enterkeyhint: 'go' } })}${C.button({ label: form.pending === 'join' ? 'JOINING…' : 'JOIN', iconRight: 'chevron-right', variant: ready ? 'primary' : 'secondary', act: 'mpJoinCode', disabled: !ready || !live || !!form.pending, attrs: { 'data-fid': 'join' } })}</div>
-    <div class="mp-bar__you">${status}${C.button({ label: esc(car?.name || car?.short || 'CHOOSE CAR'), icon: 'car', iconRight: 'chevron-right', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, title: 'Your car', attrs: { 'data-fid': 'car' } })}</div>
-    ${C.button({ label: 'HOST A LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', size: 'lg', act: 'mpHost', disabled: !live, cls: 'mp-bar__host', attrs: { 'data-fid': 'host', ...(joinable ? {} : { 'data-default': '' }) } })}</div>`;
+  const join = `${C.searchField({ name: 'code', label: 'Lobby code', value: form.code, placeholder: 'LOBBY CODE', icon: 'link', cls: 'search--code', inputAttrs: { type: 'text', maxlength: 6, autocapitalize: 'characters', enterkeyhint: 'go' } })}${C.button({ label: form.pending === 'join' ? 'JOINING…' : 'JOIN', iconRight: 'chevron-right', variant: ready ? 'primary' : 'secondary', act: 'mpJoinCode', disabled: !ready || !live || !!form.pending, attrs: { 'data-fid': 'join' } })}`, identity = `${status}${C.button({ label: esc(car?.name || car?.short || 'CHOOSE CAR'), icon: 'car', iconRight: 'chevron-right', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, title: 'Your car', attrs: { 'data-fid': 'car' } })}`, hostAction = `${C.button({ label: 'HOST A LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', size: 'lg', act: 'mpHost', disabled: !live, cls: 'mp-bar__host', attrs: { 'data-fid': 'host', ...(joinable ? {} : { 'data-default': '' }) } })}`;
   let items;
   if (net === 'connecting') items = C.emptyState({ busy: true, title: 'CONNECTING TO THE LOBBY SERVER', text: 'Open lobbies appear here as soon as you are online.' });
   else if (net === 'reload') items = C.emptyState({ icon: 'refresh-cw', tone: 'warn', title: 'GAME UPDATED', text: 'Reload to get the latest version and race online again.', action: C.button({ label: 'RELOAD', icon: 'refresh-cw', variant: 'primary', act: 'mpReload', attrs: { 'data-default': '' } }) });
@@ -129,7 +125,7 @@ export function renderMp(menu, mp) {
     if (first >= 0) rows[first] = rows[first].replace(' role="button"', ' role="button" data-default=""');
     items = C.listHead([[`${lobbies.length} OPEN ${lobbies.length === 1 ? 'LOBBY' : 'LOBBIES'}`, 2], 'TRACK', 'CONDITIONS', 'DRIVERS', ['STATUS', 2]]) + rows.join('');
   }
-  return C.browseGrid({ cls: 'scr--mp scr--mp-browse', kick: 'LIVE RACING <span class="acc">/</span> 2–8 DRIVERS', title: 'MULTIPLAYER', filters: bar, items, list: true,
+  return C.browseGrid({ variant: 'lobby', cls: 'scr--mp scr--mp-browse', kick: 'LIVE RACING <span class="acc">/</span> 2–8 DRIVERS', title: 'MULTIPLAYER', join, identity, actions: hostAction, items, list: true,
     hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });
 }
 
@@ -141,11 +137,11 @@ export function renderHost(menu, mp) {
   const map = maps.some((m) => m.id === form.map) ? form.map : maps.some((m) => m.id === mp?.mapId) ? mp.mapId : maps[0]?.id;
   form.map = map || form.map;
   const A = { 'data-scope': 'mpHost' }, car = carOf(mp, showroomCar(mp));
-  const tracks = maps.length ? `<div class="mp-tracks scroll-y">${maps.map((m) => {
+  const tracks = maps.length ? maps.map((m) => {
     const cat = MAPS.find((x) => x.id === m.id);
     return C.card({ media: trackArt(m.id), badge: m.id === map ? C.badge('SELECTED', 'accent', 'check') : '', title: esc(m.name), text: esc(cat?.subtitle || ''), act: 'mpTrack',
       foot: cat ? `<span>${esc(fmtDist(cat.length))}</span><span>${cat.type === 'circuit' ? 'CIRCUIT' : 'POINT TO POINT'}</span>` : '', attrs: { 'data-map': m.id, 'data-fid': 'track:' + m.id } });
-  }).join('')}</div>` : C.emptyState({ busy: !live, icon: 'triangle-alert', title: live ? 'NO TRACKS AVAILABLE' : 'CONNECTING TO THE LOBBY SERVER', text: 'Tracks load from the lobby server.' });
+  }).join('') : C.emptyState({ busy: !live, icon: 'triangle-alert', title: live ? 'NO TRACKS AVAILABLE' : 'CONNECTING TO THE LOBBY SERVER', text: 'Tracks load from the lobby server.' });
   const fields = [
     C.textField({ name: 'name', label: 'LOBBY NAME', value: form.name, placeholder: (driverName.get() || 'MY') + '’S RACE', maxlength: 28, inputAttrs: { enterkeyhint: 'done' } }),
     C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: form.mode, options: MODES, attrs: A }),
@@ -155,14 +151,14 @@ export function renderHost(menu, mp) {
   ].join('');
   const inspector = C.panel('LOBBY', `<div class="mp-fields">${fields}</div><p class="group__note">Time of day, weather, traffic, police and car rules are set in the lobby. 2–8 drivers, rejoin within 90 seconds.</p>
     <div class="mp-go">${C.button({ label: mp?.creating ? 'CREATING…' : 'CREATE LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', size: 'lg', block: true, act: 'mpCreate', disabled: !!mp?.creating || !live || !map, attrs: { 'data-default': '', 'data-fid': 'create' } })}</div>`, { icon: 'users', cls: 'mp-host' });
-  return C.stageInspector({ cls: 'scr--mp scr--mp-host', kick: 'MULTIPLAYER <span class="acc">/</span> HOST A LOBBY', title: 'CHOOSE A TRACK', stage: tracks, inspector,
+  return C.stageInspector({ variant: 'tracks', collection: !!maps.length, cls: 'scr--mp scr--mp-host', kick: 'MULTIPLAYER <span class="acc">/</span> HOST A LOBBY', title: 'CHOOSE A TRACK', stage: tracks, inspector,
     hints: [['select', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']] });
 }
 
 // ---------------------------------------------------------------- lobby room
 export function renderLobby(menu, mp) {
   const l = mp?.lobby;
-  if (!l) return C.screen({ cls: 'scr--mp', kick: 'MULTIPLAYER', title: 'LOBBY', body: statusChip(mp), hints: [['back', 'BACK']] });
+  if (!l) return C.sheetList({ variant: 'flow', cls: 'scr--mp', kick: 'MULTIPLAYER', title: 'LOBBY', rows: statusChip(mp), hints: [['back', 'BACK']] });
   const host = l.host === mp.id, waiting = l.status === 'waiting', me = mp.me, cfg = configFromLobby(l), mode = l.mode || l.event?.type || 'sprint';
   const A = { 'data-scope': 'mpCfg' }, live = ['countdown', 'race'].includes(l.status);
   let session;
@@ -213,9 +209,9 @@ export function renderLobby(menu, mp) {
   const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'settings', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
   const sessionPanel = C.panel('SESSION', `<div class="mp-fields">${session}</div>`, { icon: 'sliders-horizontal', cls: 'mp-session' });
   const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users', cls: 'mp-drivers' });
-  return C.screen({ cls: 'scr--mp scr--showroom scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`,
+  return C.stageInspector({ variant: 'showroom', cls: 'scr--mp scr--showroom scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`,
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'CLOSE']],
-    body: showroom({ cls: 'mp-show--lobby', caption, plate: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), side: tools + drivers + sessionPanel }) });
+    caption, summary: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), inspector: tools + drivers + sessionPanel });
 }
 
 // ---------------------------------------------------------------- the live studio behind the showroom screens
@@ -297,11 +293,11 @@ export function renderCars(menu, mp) {
     if (!rule.ok) return C.option({ icon: 'lock', title: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, desc: esc(rule.reason), disabled: true });
     return C.toggle({ key: v.id, label: `${esc(v.name)} <small>CLASS ${v.class} · PI ${v.pi}</small>`, value: allowed.has(v.id), attrs: { 'data-scope': 'mpAllow' } });
   }).join('');
-  return C.screen({ cls: 'scr--mp scr--mp-cars', kick: `${esc(l?.name || 'LOBBY')} <span class="acc">/</span> HOST RULES`, title: 'CAR RULES',
+  return C.sheetList({ variant: 'form', cls: 'scr--mp scr--mp-cars', kick: `${esc(l?.name || 'LOBBY')} <span class="acc">/</span> HOST RULES`, title: 'CAR RULES',
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['back', 'BACK']],
-    body: `<div class="set-panel panel scroll-y"><div class="group"><h3 class="group__title">${icon('sliders-horizontal')}RULESET · ${esc(summary)} · ${eligible.length} OF ${views.length} PASS</h3>
+    rows: `<div class="group"><h3 class="group__title">${icon('sliders-horizontal')}RULESET · ${esc(summary)} · ${eligible.length} OF ${views.length} PASS</h3>
       ${C.segmented({ key: 'preset', label: 'RULESET', icon: 'sliders-horizontal', value: rules.preset, options: RULESET_OPTIONS, attrs: R })}${params}${balanceRow}</div>
-      <div class="group"><h3 class="group__title">${icon('car')}ADVANCED · PER-CAR OVERRIDE · ${views.filter((v) => allowed.has(v.id)).length} OF ${views.length} ALLOWED</h3>${rows}</div></div>` });
+      <div class="group"><h3 class="group__title">${icon('car')}ADVANCED · PER-CAR OVERRIDE · ${views.filter((v) => allowed.has(v.id)).length} OF ${views.length} ALLOWED</h3>${rows}</div>` });
 }
 
 // ---------------------------------------------------------------- results
@@ -321,11 +317,11 @@ export function renderResults(menu, mp) {
   if (me?.finish != null) acts.push(C.button({ label: 'SHARE', icon: 'share', act: 'shareResult', attrs: { 'data-fid': 'share' } }));
   if (complete) acts.push(C.button({ label: 'CHANGE CAR', icon: 'car', act: 'mpCar', attrs: { 'data-fid': 'car', ...(host ? {} : { 'data-default': '' }) } }));
   acts.push(C.button({ label: 'LEAVE LOBBY', icon: 'log-out', variant: 'ghost', act: 'mpLeave', attrs: { 'data-fid': 'leave' } }));
-  return C.screen({ cls: 'scr--results scr--mp scr--mp-results', title: esc(title), kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
+  return C.sheetList({ variant: 'split', cls: 'scr--results scr--mp scr--mp-results', title: esc(title), kick: `${esc(l.name)} <span class="acc">/</span> ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(l.mode || l.event?.type))}`,
     hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'CLOSE']],
-    body: `<div class="res-layout"><div class="res-main"><p class="res-sub">${personal?.newBest ? C.badge('NEW PERSONAL BEST' + (personal.delta < 0 ? ' −' + Math.abs(personal.delta).toFixed(2) + ' s' : ''), 'good', 'timer') : ''}${esc(!complete ? 'Your clock has stopped. Live standings · waiting for the other drivers or the race timeout.' : host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
-      ${tiles.length ? C.stats(tiles.map(([k, v]) => [k, v]), 'res-stats') : ''}<div class="res-actions">${acts.join('')}</div></div>
-      <div class="res-side scroll-y">${C.panel('CLASSIFICATION', `<table class="r-table">${rows}</table>`, { icon: 'flag' })}</div></div>` });
+    rows: `<p class="res-sub">${personal?.newBest ? C.badge('NEW PERSONAL BEST' + (personal.delta < 0 ? ' −' + Math.abs(personal.delta).toFixed(2) + ' s' : ''), 'good', 'timer') : ''}${esc(!complete ? 'Your clock has stopped. Live standings · waiting for the other drivers or the race timeout.' : host ? 'Start a rematch or take everyone back to the lobby.' : 'Waiting for the host to start a rematch.')}</p>
+      ${tiles.length ? C.stats(tiles.map(([k, v]) => [k, v]), 'res-stats') : ''}`, actions: acts.join(''),
+      aside: C.panel('CLASSIFICATION', `<table class="r-table">${rows}</table>`, { icon: 'flag' }) });
 }
 
 // ---------------------------------------------------------------- navigation

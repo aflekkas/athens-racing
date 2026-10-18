@@ -90,3 +90,13 @@ test('floating maps own the stage, navigation and live scrolling card', () => {
  assert.match(html,/aria-live="polite" data-layout-region="content">DETAILS/);
  assert.doesNotMatch(html,/role="dialog"/);
 });
+
+test('lobby, track and showroom profiles own their page regions and renderer mount', () => {
+ const lobby=C.browseGrid({variant:'lobby',join:'CODE',identity:'DRIVER',actions:'HOST',items:'LOBBIES'});
+ assert.ok(lobby.indexOf('CODE')<lobby.indexOf('DRIVER')&&lobby.indexOf('DRIVER')<lobby.indexOf('HOST'));
+ assert.match(lobby,/layout--browse-grid layout--browse-grid-lobby/);
+ assert.match(C.stageInspector({variant:'tracks',stage:'TRACKS'}),/class="mp-tracks scroll-y" data-layout-region="collection">TRACKS/);
+ assert.doesNotMatch(C.stageInspector({variant:'tracks',stage:'EMPTY',collection:false}),/class="mp-tracks/);
+ assert.match(C.stageInspector({variant:'showroom',summary:'CAR'}),/id="carStage" class="mp-stage" data-ui-keep="stage"/);
+ assert.match(C.sheetList({variant:'form',rows:'RULES'}),/data-layout-region="rows">RULES/);
+});

@@ -89,3 +89,10 @@ places the map behind the header/footer and a glass card on the right. Portrait
 phones below 700px use a bottom sheet; short landscape screens keep a compact
 right card. The template owns positioning, safe regions and card scrolling; the
 map module owns only canvas drawing, geographic labels, pins and attribution.
+
+Lobby browsers use `browseGrid({variant:'lobby', join, identity, actions, items})`: the
+kit places code entry, identity and host action over the list. Track-based setup uses
+`stageInspector({variant:'tracks', stage, collection, inspector})`; track cards scroll
+horizontally on phones. `variant:'showroom'` takes `caption`, `summary`, `inspector`
+and optional `stage` content while owning the persistent 3D mount. Compact rules/forms
+use `sheetList({variant:'form', rows})`; multiplayer results reuse `variant:'split'`.
