@@ -2,7 +2,7 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-18 04:00 UTC.
+Last updated: 2026-10-18 20:40 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
 Production is on hold (`~/.local/state/athens-release/production-hold`). Staging deployed by hand at `7d6e589f` on 2026-10-18. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
@@ -23,19 +23,25 @@ Done and checked by the lead:
 - [x] Credits and What's New as full-page articles (`8a5117e2`, `a220b106`)
 - [x] Release-PR versioning written (`accfaef6`, not on prod yet). Lead does the cutover after this batch
 
-Running:
-- [~] Subtle hover state + finish layout templates + italic #loading test fix (Sonnet)
-- [~] Bent cockpit beams, Porsche 928 tilt, stray shadow (Sonnet)
-- [~] No checkpoints (tow to latest on-road position) + new Psychiko route (Sonnet)
-- [~] Deploy smoke sign-in key (Sonnet); lead then installs the SMOKE_TOKEN secrets
-- [~] Add-to-home-screen prompt + unexplained 404 (Sonnet)
-- [~] Track-picker map lag (Sonnet)
-- [~] Athens open world stage 2: connected coast, R2 hosting (Sonnet)
+Also done since 2026-10-18 04:00 (checked by the lead):
+- [x] Subtle pointer hover (`56ab1c46`); layout templates finished with a guard (`dbb85c2a`)
+- [x] Cockpit pillars, wrong-way pitch, ground patch (`7938f245`); windscreen view won back (`41e4e0f5`); thin header band on closed cars (`2477f047`, report pending)
+- [x] Smoke sign-in key (`6a3c70d3`); SMOKE_TOKEN installed on staging and production; train exports it
+- [x] Add-to-home-screen card + 404 fix (`85d2a087`, `06dc8fb9`); track map perf (`7014e69a`, `6ef60940`)
+- [x] No checkpoints (`c5ed9d83`); new Psychiko route (`a5fb7d19`); clean free roam (`fb42cca7`)
+- [x] Flaky world-detail timing test made robust (`449dba78`); train timer gets OnCalendar */10; staging live at `449dba78`
+- [x] Lead playbook (`752f212f`); AGENTS.md PID rule (`b91e761c`); 2.8 GB of old .scratch deleted
+
+Running (Sonnet/Haiku):
+- [~] Tow = nearest road, not back along the route
+- [~] Exhaust-pop lag spike
+- [~] Frame cap ignored at "no maximum"
+- [~] Faster deploys (build once, test cache, parallel groups, one retry for flakes)
+- [~] Athens open world stage 2 (connected coast, R2)
+- [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
 - [?] Google consent screen published, then the lead installs the production Google secrets
-- [?] Lead sets GitHub prod protection (require release-check, no admin bypass) via gh at cutover?
-- [?] Delete ~2.8 GB of old .scratch (load-v1, playtest-20261014b, lazy-boot, results-flow)?
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
