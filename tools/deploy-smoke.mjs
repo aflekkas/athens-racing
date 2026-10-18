@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { smokeClient } from './resumable-smoke-client.mjs';
+import { loadSmokeToken } from './smoke-token.mjs';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { getMap } from '../src/map-catalog.js';
 import { verifySessionCatalogueWithRetry } from './deploy-smoke-catalogue.mjs';
@@ -9,6 +10,10 @@ import { smokeDrive, SMOKE_SPEED, SMOKE_STEP } from './deploy-smoke-route.mjs';
 const base = (process.argv[2] || '').replace(/\/$/, '');
 if (!/^https?:\/\//.test(base)) throw new Error('Usage: node tools/deploy-smoke.mjs https://worker.workers.dev [--race] [--map=riviera|megara|penteli|psychiko]');
 const raceProof = process.argv.includes('--race'), mapId = process.argv.find(v => v.startsWith('--map='))?.slice(6) || 'riviera';
+// Deployed Workers require Google sign-in; the smoke session credential is the only non-account path.
+const smokeToken = loadSmokeToken();
+const signIn = await fetch(base + '/api/auth/config', { signal: AbortSignal.timeout(15000) }).then(r => r.json()).catch(() => ({ required: false }));
+if (signIn.required && !smokeToken) { console.error('Deployment smoke: sign-in is required here; set SMOKE_TOKEN; see deploy/README.md'); process.exit(2); }
 const { build, entry } = await checkDeployedEntry(base);
 const preview = await fetch(base + getMap(mapId).preview.replace(/^\./, ''), { signal: AbortSignal.timeout(15000) });
 assert.equal(preview.status, 200, `Map preview HTTP ${preview.status}`);
@@ -17,7 +22,7 @@ for (const path of ['/server/core.mjs', '/tools/prepare-deploy.mjs', '/package.j
 const healthResponse = await fetch(base + '/health', { signal: AbortSignal.timeout(15000) });
 assert.equal(healthResponse.status, 200);
 console.log(JSON.stringify({ proof: 'health', base, entry, build: build || null, health: await healthResponse.json() }));
-function client(name) { return smokeClient(base, name, { build, identity: `smoke-${randomUUID()}` }); }
+function client(name) { return smokeClient(base, name, { build, identity: `smoke-${randomUUID()}`, smokeToken }); }
 const clients = [];
 async function connect(name) {
   const c = client(name); clients.push(c);

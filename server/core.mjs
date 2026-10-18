@@ -1,4 +1,5 @@
 import { captureRecordMeta, onlineLeaderboardResult } from './leaderboard-online.mjs';
+import { canSaveResults } from './smoke-session.mjs';
 import { createSharedWorldRelay } from './mp-shared-world.mjs';
 import { worldOwner } from '../src/shared-world-protocol.js';
 import { arenaEnvironment } from './mp-environment.mjs';
@@ -79,7 +80,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     const trips = manifest && isObjectiveMode(event?.type) ? (maps.get(l.mapId).trips || {})[event.type] || null : null;
     return { standings: raceStandings(l, event), world: arenaEnvironment(l, event, Date.now()), code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => { const pace = haveSpecs ? paceEntry(p.car) : null; return { id: p.id, name: p.name, car: p.car, paint: p.paint || null, driver: p.driver || null, gridSlot: p.gridSlot, loaded: p.loaded === true, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, pi: pace?.pi ?? null, class: pace?.class ?? null, balance: p.balance || null, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null }; }), blockedPlayers: manifest ? (l.blocks || []).filter(b => b.until > Date.now()).map(({ id, name, until }) => ({ id, name, until })) : undefined, eventId: l.eventId, traffic: (l.config?.traffic || 0) > 0, trafficPolicy: 'shared-authority', worldOwner: worldOwner(l), event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)], carRules: { ...(l.carRules || defaultCarRules()) }, balance: l.balance || null };
   };
-  const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId)).map(l => publicLobby(l, false)) });
+  // Smoke-hosted lobbies are deployment tests, not public races.
+  const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId) && !l.players.get(l.host)?.identity?.smoke).map(l => publicLobby(l, false)) });
   const publish = (l) => { l.touched = Date.now(); const lobby = publicLobby(l); for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
   const results = (l) => {
     if (l.status === 'results') return;
@@ -468,7 +470,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           // their time but stay off the leaderboard.
           if (c.finish === null && event.type === 'sprint' && c.course?.passed === c.course?.gates.length && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = Math.max(0, (c.course.gateTimes?.at(-1) ?? now / 1000) - l.startAt / 1000); l.racers.get(c.id).finish = c.finish; publish(l);
-            if (!l.config?.reverse) leaderboard.submit(onlineLeaderboardResult(c, l, event)).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
+            if (!l.config?.reverse && canSaveResults(c.identity)) leaderboard.submit(onlineLeaderboardResult(c, l, event)).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
             if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
           }
         }

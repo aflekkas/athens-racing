@@ -4,6 +4,7 @@ import { legalPage } from './legal-pages.mjs';
 import { arenaAccountStatus } from './account-arena.mjs';
 import { accounts } from './accounts.mjs';
 import { authorizeGame, protectedPath, accountResult, identityActive } from '../server/auth-policy.mjs';
+import { canSaveResults } from '../server/smoke-session.mjs';
 export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
@@ -144,6 +145,7 @@ export class GameArena extends DurableObject {
       if (path === '/api/leaderboard') {
         if (request.method === 'GET') return json(this.leaderboard.list(leaderboardFilters(url.searchParams)));
         if (request.method !== 'POST') return json({ error: 'Use GET or POST.' }, 405);
+        if (!canSaveResults(auth.identity)) return json({ error: 'Smoke sessions cannot save results.' }, 403);
         const ip = request.headers.get('CF-Connecting-IP') || 'unknown', now = Date.now();
         const sql = this.ctx.storage.sql;
         const old = [...sql.exec('SELECT at, count FROM post_limits WHERE ip = ?', ip)][0];

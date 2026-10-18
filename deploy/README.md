@@ -64,6 +64,44 @@ This assumes `npm ci` has installed the committed lockfile. If deploying another
 
 The existing VPS service on port 8000 is independent. Deploying Workers does not restart or stop it.
 
+## Deployment smoke credential (SMOKE_TOKEN)
+
+Deployed Workers require Google sign-in, so the live smoke test needs its own credential. `SMOKE_TOKEN` is a shared secret that signs short-lived smoke sessions. It is not a player account and it does not weaken the sign-in gate:
+
+- The Worker and the Node server accept a smoke session only while `SMOKE_TOKEN` is set to at least 32 characters. Unset, empty or short values disable the path completely.
+- A smoke session lasts at most 10 minutes, gets a fixed `SMOKE-<n>` name, and reaches live play and public discovery only. It cannot reach account, friends or presence routes, cannot save leaderboard records, and lobbies it hosts are not listed publicly.
+- `tools/deploy-smoke.mjs` and `tools/resumable-smoke-client.mjs` read `SMOKE_TOKEN` from the environment, else from `~/.config/athens-racing/smoke-token`. When sign-in is required and no token is set, the smoke exits at once with `set SMOKE_TOKEN; see deploy/README.md` instead of retrying until it times out.
+
+Generate one value and use the same value in every environment:
+
+```sh
+openssl rand -hex 32
+```
+
+Install it in each Worker environment. Wrangler prompts for the value, so paste it there rather than putting it in a command argument:
+
+```sh
+CLOUDFLARE_ACCOUNT_ID=d6f3d2dc5817687a91d74ccd257bad9e npx wrangler secret put SMOKE_TOKEN --env staging
+CLOUDFLARE_ACCOUNT_ID=d6f3d2dc5817687a91d74ccd257bad9e npx wrangler secret put SMOKE_TOKEN --env production
+```
+
+Store the same value for the release train to export before the live smoke runs:
+
+```sh
+mkdir -p ~/.config/athens-racing && chmod 700 ~/.config/athens-racing
+(umask 077; cat > ~/.config/athens-racing/smoke-token)   # paste the value, then press Ctrl-D
+chmod 600 ~/.config/athens-racing/smoke-token
+```
+
+Run the smoke with the token exported:
+
+```sh
+export SMOKE_TOKEN="$(cat ~/.config/athens-racing/smoke-token)"
+node tools/deploy-smoke.mjs https://staging.athensracing.com --race
+```
+
+Replacing the value means generating a new one, running both `secret put` commands, and updating the local file. Until the new secret is live, the old value still authenticates. The release train must export `SMOKE_TOKEN` from that file before it calls `tools/deploy-smoke.mjs`.
+
 ## GitHub Actions and the required API token
 
 The CI workflow runs on PRs and pushes to prod/staging. It installs from the lockfile, runs all four required test gates, checks syntax and the full browser import graph, then dry-runs the Worker bundle. Pushes deploy staging from `staging` and production from `prod`, then fetch HTML/module/asset and complete a `/ws` create-lobby round trip. Deploys require a passing test job. Without an API token the workflow reports a notice and skips deployment; a green test run alone does **not** mean GitHub deployed a Worker. The first staging deployment used the VPS OAuth login.

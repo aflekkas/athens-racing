@@ -1,5 +1,6 @@
 import { accounts } from '../worker/accounts.mjs';
 import { authorizeGame, protectedPath, accountResult, identityActive } from './auth-policy.mjs';
+import { canSaveResults } from './smoke-session.mjs';
 import { leaderboardFilters } from './leaderboard-policy.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
 import { connectionProtocol } from '../src/multiplayer-protocol.js';
@@ -54,6 +55,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       if (path === '/api/leaderboard') {
         if (req.method === 'GET') { json(200, leaderboard.list(leaderboardFilters(url.searchParams))); return; }
         if (req.method !== 'POST') { json(405, { error: 'Use GET or POST.' }); return; }
+        if (!canSaveResults(auth.identity)) { json(403, { error: 'Smoke sessions cannot save results.' }); req.resume(); return; }
         if (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) { json(403, { error: 'Origin mismatch.' }); return; }
         const ip = req.socket.remoteAddress, now = Date.now(), limit = postLimits.get(ip) || { at: now, count: 0 };
         if (now - limit.at > 60000) { limit.at = now; limit.count = 0; }

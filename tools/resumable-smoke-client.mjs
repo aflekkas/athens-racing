@@ -1,10 +1,19 @@
 import { WebSocket } from 'ws';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { reconnectDelay } from '../src/reconnect-history.js';
+import { createHmac, randomBytes } from 'node:crypto';
+import { loadSmokeToken } from './smoke-token.mjs';
+import { SMOKE_CLIENT_TTL_MS, SMOKE_HEADER, smokePayload } from '../server/smoke-session.mjs';
+// Same payload and HMAC-SHA256 base64url as server/smoke-session.mjs. Node-only and synchronous so reconnects stay immediate.
+export function signSmokeSession(secret, nonce, now = Date.now()) {
+  const payload = smokePayload(nonce, now + SMOKE_CLIENT_TTL_MS);
+  return payload + '.' + createHmac('sha256', secret).update(payload).digest('base64url');
+}
 // Actual transport failures retain the token, waiters and last unacknowledged
 // command. A resumed lobby is the acknowledgement, not a fabricated success.
-export function smokeClient(base, name, { build, identity, recoveryMs = 85000 } = {}) {
-  const inbox=[],waiters=new Set(),history=[];
+// SMOKE_TOKEN signs a short-lived smoke session for this client. Sign-in is required on deployed Workers.
+export function smokeClient(base, name, { build, identity, recoveryMs = 85000, smokeToken = loadSmokeToken() } = {}) {
+  const inbox=[],waiters=new Set(),history=[],nonce=randomBytes(16).toString('hex');
   let ws,token,id,failure,ready=false,closing=false,retry,attempt=0,lostAt=0,reconnects=0,checkpoint=null,lastState,action,lobby,sequence=0;
   const emit=m=>{const w=[...waiters].find(w=>w.pred(m));if(w){waiters.delete(w);clearTimeout(w.timer);w.resolve(m);}else if(m.type!=='snapshot'&&m.type!=='checkpoint')inbox.push(m);};
   const fail=error=>{failure ||= error;ready=false;for(const w of waiters){clearTimeout(w.timer);w.reject(failure);}waiters.clear();};
@@ -37,9 +46,11 @@ export function smokeClient(base, name, { build, identity, recoveryMs = 85000 } 
   }
   function connect(){
     const url=new URL('/ws',base.replace(/^http/,'ws'));url.searchParams.set('protocol',MULTIPLAYER_PROTOCOL);if(build)url.searchParams.set('build',build);
-    const socket=ws=new WebSocket(url,{origin:base});
+    const headers=smokeToken?{[SMOKE_HEADER]:signSmokeSession(smokeToken,nonce)}:undefined;
+    const socket=ws=new WebSocket(url,{origin:base,...(headers?{headers}:{})});
     socket.on('error',()=>schedule(socket));
-    socket.on('close',(code,reason)=>{if(socket!==ws||closing)return;if(code===4001)return fail(Error(`${name}: protocol update ${reason}`));schedule(socket);});
+    socket.on('unexpected-response',(request,response)=>{if(socket!==ws||closing)return;response.resume();if(response.statusCode===401)return fail(Error(authFailure));schedule(socket);});
+    socket.on('close',(code,reason)=>{if(socket!==ws||closing)return;if(code===4001)return fail(Error(`${name}: ${reason==='Sign in with Google'?'session ended; sign-in or SMOKE_TOKEN was rejected; see deploy/README.md':'protocol update '+reason}`));schedule(socket);});
     socket.on('message',bytes=>{
       if(socket!==ws||closing||String(bytes)==='alive')return;
       let m;try{m=JSON.parse(bytes);}catch{return fail(Error(`${name}: invalid JSON`));}
@@ -61,6 +72,7 @@ export function smokeClient(base, name, { build, identity, recoveryMs = 85000 } 
       ack(m);emit(m);
     });
   }
+  const authFailure=`${name}: ${smokeToken?'smoke session rejected; SMOKE_TOKEN must match this deployment\'s secret; see deploy/README.md':'set SMOKE_TOKEN; see deploy/README.md'}`;
   connect();
   return {
     get ws(){return ws;},get available(){return ready&&!failure&&ws?.readyState===WebSocket.OPEN;},get reconnects(){return reconnects;},get checkpoint(){return checkpoint;},get lobby(){return lobby;},get id(){return id;},
@@ -72,7 +84,7 @@ export function smokeClient(base, name, { build, identity, recoveryMs = 85000 } 
       if(m.state||m.states){const states=(m.states||[m.state]).map(s=>({...s,sampleTime:++sequence}));for(const state of states)history.push({raceId:m.raceId,state});if(history.length>160)history.splice(0,history.length-160);lastState=states.at(-1);if(m.states)packet.states=states;else packet.state=states[0];}
       if(ready)wire(packet);
     },
-    forceReset:()=>ws.terminate(),
+    forceReset:()=>ws?.terminate(),
     close:async()=>{closing=true;clearTimeout(retry);for(const w of waiters)clearTimeout(w.timer);waiters.clear();if(!ws||ws.readyState===WebSocket.CLOSED)return;await new Promise(resolve=>{const timer=setTimeout(()=>{ws.terminate();resolve();},3000);ws.once('close',()=>{clearTimeout(timer);resolve();});ws.close(1000,'Smoke complete');});}
   };
 }
