@@ -214,7 +214,8 @@ test('required Google gate has no offline path and uses game button typography',
   const google = cssRules(read(KIT_CSS)).find(r => r.selector === '.btn--google');
   assert.ok(google); assert.match(google.body, /font-weight:\s*700/);
   assert.doesNotMatch(google.body, /font-family|letter-spacing|text-transform/);
-  assert.doesNotMatch(read(KIT_CSS), /\.btn--google:hover/);
+  // Hover (2026-10-18) lifts the Google button's surface only; it never restyles the typography or the G mark.
+  for (const r of cssRules(read(KIT_CSS)).filter((r) => /\.btn--google:hover/.test(r.selector))) assert.deepEqual(r.decls.filter((d) => !/^(background|color)$/.test(d)), [], `${OWNER}\nGoogle hover is a surface change only`);
 });
 
 test('sign-in backdrop samples the whole title without an animated opacity ancestor', () => {

@@ -1,7 +1,7 @@
 // OWNER DECISION (docs/OWNER-DECISIONS.md, 2026-10-17): "sidebar needs better UI here". The Settings sidebar is the
 // kit's shared section nav (C.nav in src/ui/components.js, looks in src/ui/ui.css): pause-menu rows (icon plate, bold
 // spaced-caps label, chevron) in a panel, exactly one selected (lit) row whose surface slides between rows, the calm
-// keyboard / gamepad focus surface (2026-10-18: no outlines), no hover look. Screens use the component, never restyle it.
+// keyboard / gamepad focus surface (2026-10-18: no outlines) and a calm pointer-only hover surface. Screens use the component, never restyle it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -36,7 +36,7 @@ test('the nav renders pause-menu rows with exactly one selected item and one sli
   assert.equal(html.match(/class="nav__go"/g)?.length, 3, 'every row has the pause-menu chevron');
 });
 
-test('the nav look lives in the kit: a panel surface, an animated lit selection, a focus surface and no hover', () => {
+test('the nav look lives in the kit: a panel surface, an animated lit selection, a focus surface and a calm pointer-only hover', () => {
   const rules = cssRules(read('src/ui/ui.css')).filter((r) => /\.nav\b/.test(r.selector));
   const find = (sel) => rules.find((r) => r.selector === sel);
   assert.ok(find('.nav')?.decls.includes('background') && find('.nav').decls.includes('border'), 'the nav sits in a panel on the panel surface');
@@ -45,7 +45,9 @@ test('the nav look lives in the kit: a panel surface, an animated lit selection,
   assert.ok(rules.every((r) => !/transition:\s*none|animation:\s*none/.test(r.body)), `${OWNER}\nThe nav may not switch off the glide.`);
   assert.match(find('.nav > .sel-ind')?.body || '', /background:\s*var\(--hu-lit\)/, `${OWNER}\nThe one selected row is the lit fill, clearly stronger than focus.`);
   assert.match(find(':root[data-ui-focus="navigation"] .nav.focus')?.body || '', /background:/, 'keyboard / gamepad focus is the lighter surface, only while navigating');
-  assert.deepEqual(rules.filter((r) => /:hover/.test(r.selector)).map((r) => r.selector), [], `${OWNER}\nOwner, 2026-10-17: "i dont like hover effects". Hover must not change the nav.`);
+  const hover = cssRules(read('src/ui/ui.css')).filter((r) => /\.nav(?:__\w+)?\b/.test(r.selector) && /:hover/.test(r.selector));
+  assert.ok(hover.length, `${OWNER}\nOwner, 2026-10-18: "there is no hover state now at all, we need one".`);
+  assert.ok(hover.every((r) => /\.nav__item:not\(\.on\)/.test(r.selector) && !r.decls.some((d) => /^(outline|box-shadow|border|border-color|transform)$/.test(d))), `${OWNER}\nNav hover is a surface on the unselected rows only: no outline, edge or movement, and the lit selection is untouched.`);
   for (const f of SCREEN_CSS) {
     let src; try { src = read(f); } catch { continue; }
     const hits = cssRules(src).filter((r) => /\.nav(__[\w-]+)?\b/.test(r.selector)).map((r) => `${f}:${r.line} ${r.selector}`);

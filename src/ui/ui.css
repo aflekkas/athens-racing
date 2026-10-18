@@ -1327,11 +1327,10 @@ body #mp-toggle[hidden] { display: none !important; }
 #loading .ld-map { align-self: center; max-width: min(36rem, 100%); }
 #loading .ld-map .kick { display: flex; align-items: center; gap: .6em; }
 #loading .ld-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); }
-#loading h1 { margin: .4rem 0 0; font-style: italic; font-weight: 900; font-size: min(5.2rem, 14vw, 16vh); line-height: .9; letter-spacing: .005em; }
 #loading #ldSub { margin: .6rem 0 0; font-family: var(--sans); font-weight: 600; font-size: 1.15rem; color: #c7ced6; }
 #loading .ld-foot { display: grid; gap: .55rem; max-width: 60rem; }
 #loading .ld-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-weight: 800; letter-spacing: .24em; font-size: .875rem; color: #c7ced6; }
-#loading #lpct { font-style: italic; font-size: 1.25rem; letter-spacing: .04em; color: #fff; font-variant-numeric: tabular-nums; }
+#loading #lpct { font-size: 1.25rem; letter-spacing: .04em; color: #fff; font-variant-numeric: tabular-nums; }
 #loading .ld-bar { height: 5px; }
 #loading .ld-tip { display: flex; align-items: baseline; gap: .8rem; margin: .5rem 0 0; min-height: 2.6em; font-family: var(--sans); font-weight: 600; font-size: 1rem; line-height: 1.35; color: #e3e8ee; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
 #loading .ld-tip__k { flex: none; padding: .15em .5em; border-radius: 2px; background: var(--red); font-family: var(--cond); font-weight: 800; font-size: .75rem; letter-spacing: .2em; color: #fff; }
@@ -1432,3 +1431,62 @@ body:has(#loading.open) :is(#hud,#mp-board,#racer-markers,#drivingHints,#driving
 @media(max-height:500px) { .scr--title .scr__foot { flex-wrap:nowrap;gap:6px } }
 @media(max-height:500px) { .scr--title .scr__foot .hints { gap:8px } }
 @media(max-height:500px) { .scr--title .hu-status { min-height:28px } }
+
+/* ---------------------------------------------------------------- pointer hover (owner 2026-10-18: "there is no hover state now at all, we need one")
+   A calm surface hover for real mouse pointers only: the same lighter surface as keyboard / gamepad focus, a quiet plate
+   brighten, one short ease. Never an outline, ring, glow, coloured border or scale. Hover is purely visual: it never moves
+   keyboard focus or the selection, and selected / checked controls keep their own lit look. Touch never sticks a hover. */
+@media (hover: hover) and (pointer: fine) {
+  :root { --ui-hover-dur: .14s; --ui-hover-plate: rgba(255,255,255,.12); }
+  /* clickable things say so; typing fields keep the text cursor */
+  :is(.mi, .btn, .seg__opt, .tab, .nav__item, .stepper__btn, .listbox__opt, .bind__chip, .paint, .legal-link, #race-settings, .tow-actions button):not(.off, .dis, .na, :disabled, [aria-disabled="true"]) { cursor: pointer; }
+  :is(.search, .field[data-kind="text"], .text-field__input, .textfield, .ui-text) { cursor: text; }
+
+  /* rows, cards and tiles: the focus surface */
+  :root :is(.option, .field, .list-row, .card).mi { transition-duration: var(--ui-hover-dur); }
+  :root :is(.option, .field, .list-row, .card).mi:hover:not(.off) { background: var(--ui-surface-hi); }
+  :root .list-row--card.mi:hover:not(.off) { background: rgba(32, 41, 52, .96); }
+  :root :is(.option, .list-row).mi:hover:not(.off) :is(.option__ico, .list-row__ico) { background: var(--ui-hover-plate); }
+  :root .option--tile.option--tile.option.mi:hover:not(.off) .option__ico { background: var(--ui-hover-plate); }
+  :root :is(.option, .list-row).mi:hover:not(.off) :is(.option__go, .list-row__go) { color: var(--c-text-2); }
+  :root .list-row.mi:hover:not(.off) .list-row__media img { opacity: 1; }
+  :root .option--feature.mi:hover:not(.off) .option__media img { opacity: .82; }
+  :root .field.mi:hover:not(.off) + .field::before, :root .field.mi:hover:not(.off)::before { opacity: 0; }
+  :root .field--bare.mi:hover:not(.off) { background: none; }
+
+  /* buttons: a quiet lift of the pill's own surface */
+  .btn { transition-duration: var(--ui-hover-dur); }
+  :root .btn:hover:not(.btn--primary, .btn--google, .btn--ghost, .btn--danger) { background: rgba(255,255,255,.12); }
+  :root .btn--ghost:hover { background: rgba(255,255,255,.07); color: var(--c-text); }
+  :root .btn--danger:hover { background: rgba(255,255,255,.06); }
+  :root .btn--primary:hover, :root .btn--google:hover { background: #ced6dc; color: var(--hu-lit-fg); }
+  .hu-status .scr__back:hover .ico { background: var(--ui-hover-plate); }
+  .hu-driver:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+  /* selects, steppers, fields */
+  .select { transition: background var(--ui-hover-dur) var(--ease); }
+  .select:hover { background: rgba(255,255,255,.09); }
+  .stepper__btn { transition-duration: var(--ui-hover-dur); }
+  .stepper__btn:not(.off):hover { background: rgba(255,255,255,.14); color: #fff; }
+  .search, .text-field__input, .textfield, .ui-text { transition: border-color var(--dur), box-shadow var(--dur), background var(--ui-hover-dur) var(--ease); }
+  :is(.search, .text-field__input, .textfield, .ui-text):not(.plate-input):hover { background: rgba(255,255,255,.07); }
+  .listbox__opt:not(.dis, .hi):hover { background: rgba(255,255,255,.08); color: #fff; }
+  .bind__chip { transition: background var(--ui-hover-dur) var(--ease); }
+  .bind__chip:not(.na, .wait):hover { background: rgba(255,255,255,.1); }
+  .legal-link:hover { color: #fff; }
+  .article-link:hover { background: var(--ui-row-focus); color: #fff; }
+
+  /* segmented options, tabs and the section nav: the lit selection is untouched */
+  .seg__opt:not(.on):hover { background: rgba(255,255,255,.08); color: var(--c-text); }
+  .tab:not(.on):hover { background: rgba(255,255,255,.07); color: var(--c-text); }
+  .nav__item { transition: color .28s var(--ease), background var(--ui-hover-dur) var(--ease); }
+  .nav__item:not(.on):hover { background: var(--ui-row-focus); }
+  .nav__item:not(.on):hover .nav__ico { background: var(--ui-hover-plate); }
+  .nav__item:not(.on):hover .nav__go { color: var(--c-text-3); }
+  .paint:hover { filter: contrast(.8) brightness(1.05); }
+
+  /* the in-race native controls mirror their keyboard tone */
+  button:not(.btn, .hu-driver, .scr__back):hover { filter: contrast(.8) brightness(1.05); }
+  :is(#touch-controls, .touch-pedals, .touch-buttons) button:hover { filter: none; }
+  :is(#race-settings, .tow-actions button):hover { background: #35414b; }
+}

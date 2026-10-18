@@ -94,7 +94,7 @@
     "tools/lobby-ui.test.mjs",
     "tools/owner-locked-multiplayer-ui.test.mjs",
     "tools/ui-rules.test.mjs",
-    "tools/no-hover.test.mjs",
+    "tools/pointer-hover.test.mjs",
     "tools/owner-locked-track-map.test.mjs",
     "tools/map-select-camera.test.mjs",
     "tools/mirror-cadence.test.mjs",

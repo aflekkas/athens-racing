@@ -39,6 +39,12 @@ body.ui-open #lapTiming { display: none; }
 :root[data-ui-focus="navigation"] #ui.s-maps .track-pin.focus > span { background: rgba(44,54,64,.96); color: var(--hu-text, #f1f5f8); }
 :root[data-ui-focus="navigation"] #ui.s-maps .track-pin.focus:not(.selected) .track-pin__dot { background: #4a5864; }
 
+/* Pointer hover: the same lifted chip surface; the pin never moves or grows. */
+@media (hover: hover) and (pointer: fine) {
+  #ui.s-maps .track-pin:hover > span { background: rgba(44,54,64,.96); color: var(--hu-text, #f1f5f8); }
+  #ui.s-maps .track-pin:not(.selected):hover .track-pin__dot { background: #4a5864; }
+}
+
 /* Map labels: real OSM places and summits at constant screen size; zoom tiers and collisions decide which show. */
 #ui.s-maps .map-label { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; transition: opacity .25s cubic-bezier(.2,.8,.2,1); will-change: transform; pointer-events: none; }
 #ui.s-maps .map-label.on { opacity: 1; }

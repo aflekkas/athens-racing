@@ -122,3 +122,8 @@ lives in `src/ui/loading-content.js`, while loading.js owns progress and recover
 `heroTiles({variant:'title', intro, tiles, foot, hints})` preserves the locked home
 composition. Its title-only status bar owns the account entry; inner templates
 continue to expose only Back, breadcrumb and title.
+
+Pointer hover is a kit concern too: one `@media (hover: hover) and (pointer: fine)` block at the
+end of `src/ui/ui.css` lights an item with the keyboard-focus surface. Never add `:hover` to a
+screen stylesheet or an outline, ring, glow or scale to any state (`tools/pointer-hover.test.mjs`).
+
