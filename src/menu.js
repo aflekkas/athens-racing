@@ -496,10 +496,10 @@ export class Menu {
   // Mode owner handlers; UI owner can restyle these with the rest of the pause menu.
   r_roamConditions() {
     const c = window.__conditions(), attrs = { 'data-scope': 'roam' };
-    return C.screen({ title: 'TIME & WEATHER', body: C.select({ key: 'time', label: 'TIME OF DAY', value: c.time, attrs, options: TIMES }) + C.segmented({ key: 'weather', label: 'WEATHER', value: c.weather, attrs, options: WEATHERS }), hints: [['back', 'BACK']] });
+    return C.sheetList({ variant: 'flow', title: 'TIME & WEATHER', rows: C.select({ key: 'time', label: 'TIME OF DAY', value: c.time, attrs, options: TIMES }) + C.segmented({ key: 'weather', label: 'WEATHER', value: c.weather, attrs, options: WEATHERS }), hints: [['back', 'BACK']] });
   }
   r_roamLandmarks(d) {
-    return C.screen({ title: 'TELEPORT TO LANDMARK', body: d.landmarks.map(m => C.option({ icon: 'map-pin', title: esc(m.name), attrs: { 'data-landmark': m.id } })).join(''), hints: [['back', 'BACK']] });
+    return C.sheetList({ variant: 'flow', title: 'TELEPORT TO LANDMARK', rows: d.landmarks.map(m => C.option({ icon: 'map-pin', title: esc(m.name), attrs: { 'data-landmark': m.id } })).join(''), hints: [['back', 'BACK']] });
   }
 
   // ---------------------------------------------------------------- results
