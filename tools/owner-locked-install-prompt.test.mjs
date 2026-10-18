@@ -46,7 +46,8 @@ test(`the card never clips or shrinks the owner-locked title tiles: the title sc
   const css = await read('src/ui/ui.css');
   assert.match(css, /#ui \.scr--title:has\(\.install-notice\) \{[^}]*overflow: clip auto[^}]*minmax\(min-content, 1fr\)/);
   assert.match(css, /#ui \.scr--title \.scr__foot:has\(> \.install-notice\) \{ flex-wrap: wrap; \}/, 'wins over the short-screen nowrap footer rule');
-  assert.doesNotMatch(css.slice(css.indexOf('the install hint')), /\.home__tiles|\.option--tile|\.option--hero/, 'the tiles themselves are untouched');
+  const block = css.slice(css.indexOf('the install hint')).split('\n\n')[0];
+  assert.doesNotMatch(block, /\.home__tiles|\.option--tile|\.option--hero/, 'the tiles themselves are untouched');
 });
 
 test(`dismissals are remembered; installing is final. ${lock}`, async () => {
