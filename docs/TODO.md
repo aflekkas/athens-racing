@@ -2,7 +2,28 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-15 23:50 UTC.
+Last updated: 2026-10-18 00:20 UTC.
+
+## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging keeps auto-deploying green `prod` commits. The hold lifts once everything below is done and checked on staging.
+
+- [x] Leaderboards: personal and global, with car and setup, filterable (`5149f16d`, `9a7c06ca`). Moved into the Quick Race track screen (`c9619d55`).
+- [x] Cabin floors sealed; empty interiors visible through light exterior glass; batched (`b99589d5`, `e3ad08f9`). Live on production 2026-10-17 22:19.
+- [~] Mobile playable on phones (Sol)
+- [~] Remove music entirely (Sol)
+- [~] No hover effects + no blue focus outlines; subtle surface focus for keys (Sol)
+- [~] Settings sidebar redesign (Opus, Enterprise)
+- [~] Blur behind dialogs (Sol)
+- [~] Google sign-in required, no Play offline, enforced on the server, Google button in the game font (Sol)
+- [~] Title: remove "GREEK ROADS / PURE TIME", staging badge to bottom left (Sol)
+- [~] Simple inner-screen header (Back + breadcrumb + title), clock removed everywhere (Sol)
+- [~] Lucide icons everywhere, no glyph arrows (Sol)
+- [~] Garage: drive pill inside card, brand logo, brand filter, filters under title, spec card redesign, hide paint when there's none, viewer without plate and centred (Sol)
+- [~] Fix broken Fiat Ducato model + audit every model for leaked cockpit parts (Astra)
+- [~] Multiplayer: one MULTIPLAYER title tile, lobby-browser screen, RACE cards fill the height, tooltip layering (Opus, Personal)
+- [~] Track picker: full-page Attica map with a floating card, no RESET, better map (Opus, Enterprise)
+- [~] Shared page-layout templates; migrate every screen; guard test (Astra)
+- [~] Athens open world resumed: fix steep road seams → connected Glyfada–Riviera behind ?map=athens → expand (Astra). Data at /home/dev/data/athens-world-cache. Hidden from players until the owner approves.
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).
