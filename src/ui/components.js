@@ -152,10 +152,44 @@ export function statusBar({ back = true, kick = '', account = false } = {}) {
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
  *  key hints. Every menu screen is built with this one frame (docs/OWNER-DECISIONS.md: one shared component set). */
-export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '' } = {}) {
-  return `<div class="scr ${cls}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
+export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', layout = '' } = {}) {
+  return `<div class="scr ${cls}"${attrStr({ 'data-layout': layout || null })}>${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
     <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
+// ------------------------------------------------------------------ page layouts
+// Screens pass kit content into named regions; the template owns all page geometry.
+// Slot values are trusted HTML, like panel()/screen(). Escape user text with esc().
+// See docs/ui-layouts.md. screen() remains a low-level compatibility primitive during migration.
+function layoutFrame(name, options, body) {
+  const { cls = '', kick = '', title = '', back = true, hints = [], foot = '' } = options;
+  return screen({ cls: `layout layout--${name} ${cls}`, layout: name, kick, title, back, hints, foot, body });
+}
+const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
+/** Primary tile beside secondary tiles; all tiles share the available height. */
+export function heroTiles({ hero = '', tiles = '', intro = '', ...frame } = {}) {
+  return layoutFrame('hero-tiles', frame, region('hero', `${intro ? region('intro', intro) : ''}${region('primary', hero)}${region('tiles', tiles)}`));
+}
+/** Category navigation beside a separately scrolling content panel. */
+export function sidebarContent({ nav = '', content = '', ...frame } = {}) {
+  return layoutFrame('sidebar-content', frame, region('sidebar', region('nav', nav, 'scroll-y') + region('content', content, 'scroll-y')));
+}
+/** Filters always follow the title; the collection uses the remaining height. */
+export function browseGrid({ filters = '', items = '', list = false, ...frame } = {}) {
+  return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
+}
+/** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
+export function stageInspector({ stage = '', inspector = '', ...frame } = {}) {
+  return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
+}
+/** Full-bleed map/canvas behind the frame with a floating, independently scrolling card. */
+export function mapStage({ stage = '', card = '', ...frame } = {}) {
+  return layoutFrame('map-stage', frame, region('map', stage) + region('map-card', card, 'scroll-y'));
+}
+/** A readable sheet with optional supporting rows and actions. */
+export function sheetList({ rows = '', aside = '', actions = '', ...frame } = {}) {
+  return layoutFrame('sheet-list', frame, region('sheet', region('rows', rows, 'scroll-y') + (aside ? region('aside', aside, 'scroll-y') : '') + (actions ? region('actions', actions) : '')));
+}
+
 /** the reference sheet header (the pause menu, owner-chosen 2026-10-16): a spaced-caps breadcrumb, a large light spaced
  *  title and an optional accent status line (the amber timer). Used by pause, the sign-in dialog and every panel that
  *  introduces a destination. */
