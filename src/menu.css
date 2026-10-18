@@ -423,21 +423,11 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
   .car-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--s-2); }
 }
 .car-info, .vehicle-specs { align-self: stretch; min-width: 0; max-height: 100%; overflow-y: auto; }
-/* car detail: the trim browser floats over the studio */
-.car-trim-browser { position: absolute; z-index: 4; top: 14px; left: 16px; right: 16px; display: flex; align-items: center; gap: 12px; }
-.car-trim-browser__copy { flex: 1; min-width: 0; text-align: center; }
-.car-trim-browser__name { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
-.car-trim-browser strong { font: 500 var(--t-lg) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; }
-.car-trim-browser small { display: block; margin-top: 7px; font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); }
-.car-trim-pips { display: flex; gap: 7px; justify-content: center; margin-top: 10px; }
-.car-trim-pips i { height: 5px; width: 5px; border-radius: 50%; background: currentColor; opacity: .25; transition: opacity 160ms linear; }
-.car-trim-pips i.on  { opacity: 1; }
-.car-preview-viewport { position: absolute; inset: 112px 0 0; touch-action: pan-y; }
-.car-stage:has([data-key=carBody]) .car-preview-viewport { top: 134px; }
-@media (max-width: 600px) { .car-trim-browser { left: 8px; right: 8px; gap: 5px; } .car-trim-browser__name { gap: 7px; } }
-
-.car-paints .paint.selected::after { content: "✓"; color: white; font: 700 1rem system-ui; text-shadow: 0 1px 3px black; }
+/* The full stage is the viewer; trim and body controls live in the specification panel. */
+.car-preview-viewport { position: absolute; inset: 0; touch-action: pan-y; }
 
 @media (max-width: 800px) and (orientation: portrait) { .vehicle-specs { max-height: none; overflow: visible; } }
 
 :root[data-ui-focus="navigation"] :is(.car-paints, .car-decals) .paint.focus { filter: contrast(.8) brightness(1.05); }
+
+.car-paints .paint.selected::after { content: "✓"; color: white; font: 700 1rem system-ui; text-shadow: 0 1px 3px black; }

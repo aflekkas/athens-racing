@@ -35,16 +35,6 @@ function displayTrim(c, model = carModel(c)) {
   const label = c.trimLabel || c.short || c.name, prefix = model?.name || '';
   return prefix && label.toUpperCase().startsWith(prefix.toUpperCase()) ? label.slice(prefix.length).trim() || label : label;
 }
-function trimBrowser(c,model,trims,body,available) {
-  const at=trims.indexOf(c.id),acc=c.zeroTo100 || ACCELERATION[c.id];
-  return `<div class="car-trim-browser" data-trim-current="${c.id}" aria-label="Engine and trim">
-  ${C.button({icon:'caret-left',act:'carTrimPrev',variant:'ghost',disabled:trims.length<2,attrs:{'aria-label':'Previous trim',title:'Previous trim · A / LB'}})}
-  <div class="car-trim-browser__copy"><div class="car-trim-browser__name"><strong aria-live="polite">${esc(displayTrim(c,model))}</strong>
-  </div>
-  <small>${Math.round(c.power*1.341)} HP · ${acc?.toFixed(1) || '—'} S 0–100 · ${c.drive.toUpperCase()}</small>
-  <div class="car-trim-pips" role="img" aria-label="Trim ${at+1} of ${trims.length}">${trims.map((id,i)=>`<i class="${i===at?'on':''}"></i>`).join('')}</div></div>
-  ${C.button({icon:'caret-right',act:'carTrimNext',variant:'ghost',disabled:trims.length<2,attrs:{'aria-label':'Next trim',title:'Next trim · D / RB'}})}</div>`;
-}
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
@@ -73,7 +63,7 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'lightning'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'cube'], ['DRIVE', c.drive.toUpperCase(), 'tire'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer'], ['TOP SPEED', `${c.vmax} KM/H`, 'gauge']];
   return C.screen({ cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
     hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
-    body: `<div class="car-layout"><div class="car-stage" id="carStage" aria-label="Rotating 3D view of ${esc(c.name)}">${trimBrowser(c,model,trims,body,available)}<div class="car-preview-viewport" data-ui-keep="preview"></div></div>
+    body: `<div class="car-layout"><div class="car-stage" id="carStage" data-trim-current="${c.id}" aria-label="Rotating 3D view of ${esc(c.name)}"><div class="car-preview-viewport" data-ui-keep="preview"></div></div>
     ${C.vehicleSpecs({ brand: badgeBrand(c), name: model?.name || c.name, trim: displayTrim(c,model), transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
       choices: `${body ? C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}${trims.length > 1 ? C.segmented({key:'carTrim',label:'TRIM',value:c.id,options:trims.map(id=>{const car=CARS.find(c=>c.id===id);return [id,esc(displayTrim(car,model))];}),attrs:{'data-scope':'car-trim'}}) : ''}`,
       extra: c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{'data-scope':'exhaust'}}) : '',
