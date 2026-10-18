@@ -75,3 +75,5 @@ body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw -
   .touch-actions button { flex-basis: calc((100% - (var(--touch-columns) - 2) * 6px) / (var(--touch-columns) - 1)); }
   .touch-gears { flex-basis: calc((100% - (var(--touch-columns) - 1) * 6px) / var(--touch-columns)); }
 }
+
+:root[data-ui-focus="navigation"] .input-bindings button:focus-visible { background: #35414b; }
