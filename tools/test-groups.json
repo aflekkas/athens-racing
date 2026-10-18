@@ -178,7 +178,8 @@
     "tools/camera-visibility.test.mjs",
     "tools/owner-locked-no-checkpoints.test.mjs",
     "server/course-validation.test.mjs",
-    "tools/minimap-route.test.mjs"
+    "tools/minimap-route.test.mjs",
+    "tools/owner-locked-free-roam-clean.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

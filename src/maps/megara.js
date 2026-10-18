@@ -95,6 +95,9 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   const steel=flat(STEEL,{metalness:.48,roughness:.52}),black=flat(TYRE),glass=flat(0x38525d,{metalness:.25,roughness:.28});
   const canopy=flat(0x286762,{side:THREE.DoubleSide}),roof=flat(0xc4c9c6),timber=flat(0x65533c);
   const batch=batches(group);
+  // Start gantry, timing booth, start stripe and grid boxes: hidden in free roam (owner decision 2026-10-18).
+  const timingGroup=new THREE.Group();timingGroup.name='timing-start';group.add(timingGroup);(route.timingMarks||=[]).push(timingGroup);
+  const timing=batches(timingGroup);
   const proj=data.proj||{}, mlat=proj.mlat||111320,mlon=proj.mlon||111320*Math.cos(37.987*Math.PI/180);
   const pixel=(x,z)=>[(23.359+x/1600*.01-(proj.lon0??23.364))*mlon,-(37.992-z/1600*.01-(proj.lat0??37.987))*mlat];
   const pp=list=>list.map(([x,z])=>pixel(x,z));
@@ -215,24 +218,24 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   shelter(345,966,8,57,-.16);shelter(154,943,16,46,-.2);shelter(710,727,53,8,-.13);
   // START gantry at the timing line. Photographed asymmetrical cantilever and checkerboard pier.
   const startS=circuit.startS??0, frame=route.frame(startS,{}),gantryY=frame.y;
-  function gantryBox(u,h,s,w,d,hh,mat){const p=route.point(startS+s,u);batch.box(p.x,gantryY+h,p.z,w,hh,d,mat,Math.atan2(-frame.tx,-frame.tz));}
+  function gantryBox(u,h,s,w,d,hh,mat){const p=route.point(startS+s,u);timing.box(p.x,gantryY+h,p.z,w,hh,d,mat,Math.atan2(-frame.tx,-frame.tz));}
   const support=-route.edge(startS)-1.2;
   const pier=megaraGantryPier(route, startS);
-  batch.box(pier.x,pier.y,pier.z,pier.width,pier.height,pier.depth,white,pier.yaw);gantryBox(support+5.3,6.3,0,12.1,.7,1.6,white);
+  timing.box(pier.x,pier.y,pier.z,pier.width,pier.height,pier.depth,white,pier.yaw);gantryBox(support+5.3,6.3,0,12.1,.7,1.6,white);
   for(let row=0;row<8;row++)for(let col=0;col<2;col++)if((row+col)%2===0)gantryBox(support+(col-.5)*.72,.55+row*.72,-.325,.70,.02,.70,black);
   gantryBox(support+7,4.98,0,3.5,.48,.7,black);
   gantryBox(support+7,4.98,-.26,2.9,.035,.36,red);
-  if(assets.makeLabel)group.add(megaraGantryLabels(route,startS,assets.makeLabel));
+  if(assets.makeLabel)timingGroup.add(megaraGantryLabels(route,startS,assets.makeLabel));
   // Timing booth alongside the gantry and a narrow painted start stripe.
-  const booth=route.point(startS+3,support-3);batch.box(booth.x,booth.y+1.45,booth.z,2,2.9,2.1,white,route.heading(startS));
-  const window=route.point(startS+1.91,support-3);batch.box(window.x,window.y+1.8,window.z,1.35,.95,.08,glass,route.heading(startS));
-  strip(route,startS-.12,startS+.12,s=>-route.edge(s),s=>route.edge(s),.071,white,roadGroup,.12);
+  const booth=route.point(startS+3,support-3);timing.box(booth.x,booth.y+1.45,booth.z,2,2.9,2.1,white,route.heading(startS));
+  const window=route.point(startS+1.91,support-3);timing.box(window.x,window.y+1.8,window.z,1.35,.95,.08,glass,route.heading(startS));
+  strip(route,startS-.12,startS+.12,s=>-route.edge(s),s=>route.edge(s),.071,white,timingGroup,.12);
   // White grid boxes are only on the start straight, as shown in track/onboard imagery.
   for(let row=0;row<7;row++)for(const side of [-1,1]){
     const s=startS-10-row*8-(side<0?4:0),u=side*2.6;
-    strip(route,s,s+.12,u-1,u+1,.073,white,roadGroup);
-    strip(route,s,s+2,u-.99,u-.88,.073,white,roadGroup);
-    strip(route,s,s+2,u+.88,u+.99,.073,white,roadGroup);
+    strip(route,s,s+.12,u-1,u+1,.073,white,timingGroup);
+    strip(route,s,s+2,u-.99,u-.88,.073,white,timingGroup);
+    strip(route,s,s+2,u+.88,u+.99,.073,white,timingGroup);
   }
   // Georeferenced rural access paths, outside the raceway perimeter.
   worldPath(pp([[9,1152],[100,1084],[277,1055],[576,1042],[833,1032],[927,1110],[1018,1201]]),4.5,dirt);
@@ -285,8 +288,8 @@ export function buildScenery(scene, map, {heightC,assets={}}={}) {
   distantBodies.frustumCulled=false;distantGlass.frustumCulled=false;group.add(distantBodies,distantGlass);
   // The isolated southeast agricultural warehouse is visible in the satellite.
   shed(1460,1367,47,42,.17);
-  batch.flush();
-  mergeSurfaces(roadGroup);mergeSurfaces(group);
+  batch.flush();timing.flush();
+  mergeSurfaces(roadGroup);mergeSurfaces(timingGroup);mergeSurfaces(group);
   group.userData.reference='tools/maps/megara/SOURCES.md';
   // Every material, geometry and label remains below group for map-world disposal.
   return {group,obstacles,tyreWalls,assets:{},road:{group:roadGroup,asphalt}};

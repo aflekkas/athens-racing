@@ -923,6 +923,8 @@ function prepareEvent(e) {
   world?.roadworks?.setEvent(def);
   traffic.allowClosedRoam = def.type === 'free';
   markers.group.visible = def.type !== 'free' && !isDrivingMode(def);
+  // Free roam has no start or finish (owner decision 2026-10-18): the map's timing gantries and start stripes hide too.
+  for (const mark of route.timingMarks || []) mark.visible = def.type !== 'free';
   if (def.type !== 'free' && !isDrivingMode(def)) markers.build(r, { start: map.id === 'riviera' ? route.start : NaN, finish: map.id === 'riviera' ? route.finish : NaN });
   document.body.dataset.mode = def.type;
   // time of day / weather (the conditions system, when it is there)
@@ -2131,7 +2133,7 @@ function step(dt, draw = true) {
   const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp >= ENGINE_HOT_C ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', aidsOff: !settings.aids, tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
     manual: pv.manual, limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
-    x: pv.x, z: pv.z, yaw: pv.yaw, rx: grid.length || multiplayer.active ? rv.x : null, rz: grid.length || multiplayer.active ? rv.z : null, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
+    free: inFreeRoam(), x: pv.x, z: pv.z, yaw: pv.yaw, rx: grid.length || multiplayer.active ? rv.x : null, rz: grid.length || multiplayer.active ? rv.z : null, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
   st.gapUnit = gapUnit;
   if (multiplayer.active) {
     const telemetry = multiplayer.telemetry(pv), watching = multiplayer.spectating(), selected = watching ? remoteCars.get(watching.id) : player;

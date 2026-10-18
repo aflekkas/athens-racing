@@ -439,15 +439,18 @@ export function buildFurniture(map, group, heightC, assets) {
     }
   }
   // start / finish gantries
+  // Free roam has no start or finish (owner decision 2026-10-18): these arches live in one group the game hides there.
+  const timing = new THREE.Group(); timing.name = 'timing-gantries'; group.add(timing); (route.timingMarks ||= []).push(timing);
   const gantry = (s, key, tint) => {
     const wHalf = route.edge(s) + 1.2;
-    const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); group.add(g);
+    const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); timing.add(g);
     const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
     const banner2 = banner.clone(); banner2.rotation.set(0, 0, 0); banner2.position.z = signFaceOffset(.5); g.add(banner2);
   };
   gantry(route.start, 'start', '#ff3d2e');
   if (route.closed) route.fixedGantries = [route.start];
   else gantry(route.finish, 'finish', '#f2f2f2');
+  timing.traverse(o => { if (o.isMesh) o.userData.dynamic = true; }); // never merged into the static batches: it must stay hideable
 }
 
 function addBusStop(group, route, f, regions, signMat, assets) {
