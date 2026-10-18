@@ -715,3 +715,6 @@ body[data-ui] #mp-toggle { display: none !important; }
 .vehicle-specs .field__ctl { width: 100%; }
 .vehicle-specs .seg { width: 100%; flex-wrap: wrap; }
 .vehicle-specs .seg__opt { flex: 1 1 auto; min-width: 0; justify-content: center; white-space: normal; overflow-wrap: anywhere; padding: .5rem .75rem; }
+
+/* Native HUD controls keep their authored paint/surface while keyboard focus gently changes its tone. */
+:root[data-ui-focus="navigation"] button:not(.btn):focus-visible { filter: contrast(.8) brightness(1.05); }
