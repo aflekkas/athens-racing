@@ -13,7 +13,7 @@ export async function renderSoundComparison(save,prefix='after'){
   // Seed both variants identically, including stochastic transients.
   const random=Math.random;let seed=1337;Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
   try{
-   a.start({context:ctx,recordings:false,radio:false});a.setEngine(spec);await a.engineReady;
+   a.start({context:ctx,recordings:false});a.setEngine(spec);await a.engineReady;
    let wait=ctx.suspend(0),render=ctx.startRendering();
    for(let i=0;i<280;i++){
     await wait;const t=ctx.currentTime;

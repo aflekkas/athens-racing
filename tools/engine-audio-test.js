@@ -23,7 +23,6 @@ function manager(seconds = 1) {
   const a = new Audio(), ctx = new OfflineAudioContext(1, 44100*seconds, 44100);
   a.ctx = ctx; a.eng = ctx.createGain(); a.ext = ctx.createGain();
   a.mk = { filt: (type, f, q) => { const n=ctx.createBiquadFilter();n.type=type;n.frequency.value=f;n.Q.value=q;return n; } };
-  // Radio is independently owned; this fixture isolates engine restart behavior.
   return a;
 }
 export async function runAudioTests() {
