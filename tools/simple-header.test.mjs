@@ -20,12 +20,17 @@ test('inner headers omit identity, even on screens without a Back button', () =>
 
 test('only the title opts into the account button, retaining the account and sign-out route', async () => {
   const { Menu } = await import('../src/menu.js');
-  const title = Menu.prototype.r_title.call({ h: {} });
+  const priorDocument = globalThis.document, priorWindow = globalThis.window;
+  globalThis.document = { baseURI: 'http://localhost/', querySelector: () => null, body: { classList: { contains: () => false } } };
+  globalThis.window = {};
+  let title;
+  try { title = Menu.prototype.r_title.call({ h: {} }); }
+  finally { globalThis.document = priorDocument; globalThis.window = priorWindow; }
   assert.match(title, /<button[^>]*data-act="account"[^>]*aria-label="Account"/);
   assert.doesNotMatch(title, /<time|hu-clock/);
   const menu = read('src/menu.js');
   assert.match(menu, /case 'account': this.show\('account'/);
-  assert.match(read('src/ui/account-screen.js'), /act: 'account-logout'/);
+  assert.match(read('src/ui/account-screen.js'), /act: ['"]account-logout['"]/);
   // A new status bar caller must not silently opt an inner screen into account UI.
   for (const path of readdirSync('src', { recursive: true }).filter(p => p.endsWith('.js'))) {
     const src = read('src/' + path);
