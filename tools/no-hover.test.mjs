@@ -46,3 +46,30 @@ test('passive mouse/pointer movement cannot move UI focus or highlights', () => 
   }
   assert.deepEqual(hits, [], owner);
 });
+
+// Includes CSS emitted by JS/server modules. Reject the decoration itself so a
+// later selector refactor cannot quietly bring back the browser-root frame.
+test('focus and selection use surfaces, never outlines, rings or border changes', () => {
+  const hits = [];
+  for (const file of shipped) {
+    const source = read(file).replace(/\/\*[\s\S]*?\*\//g, '');
+    if (/--focus-ring\s*:|\.style\.(?:outline|boxShadow)\s*=/.test(source)) hits.push(`${file}: scripted focus edge`);
+    for (const [, selector, declarations] of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      for (const [, property, value] of declarations.matchAll(/(?:^|;)\s*([\w-]+)\s*:\s*([^;]+)/g)) {
+        if (property === 'outline' && !/^(none|0)(?:\s*!important)?\s*$/.test(value.trim())) hits.push(`${file}: ${selector.trim().slice(-100)} outline`);
+        if (!/(?:\.focus\b|:focus(?:-visible|-within)?\b|\.(?:selected|sel|on)\b)/.test(selector)) continue;
+        if ((property === 'box-shadow' && value.trim() !== 'none') || /^(?:border|border-(?:color|width|style|top|right|bottom|left))$/.test(property)) hits.push(`${file}: ${selector.trim().slice(-100)} ${property}`);
+      }
+    }
+  }
+  assert.deepEqual(hits, [], '2026-10-18: subtle keyboard/gamepad surfaces only; no focus or selection edges.');
+});
+
+test('pointer activation hides surface focus; keyboard and named gamepad navigation enable it', () => {
+  const kit = read('src/ui/components.js'), menu = read('src/menu.js'), css = read('src/ui/ui.css');
+  assert.match(kit, /pointerdown[\s\S]*?dataset\.uiFocus = 'pointer'/);
+  assert.match(kit, /keydown[^\n]*navigationFocus\(\)/);
+  assert.match(menu, /action\(name\)\s*\{[\s\S]*?C\.navigationFocus\(\)/);
+  assert.match(css, /:root\[data-ui-focus="navigation"\][^{}]*\.focus\s*\{[^}]*background:/);
+  assert.match(css, /:where\(html, body, #ui, #c, \.scr\):focus\s*\{\s*outline: none; box-shadow: none;/);
+});

@@ -112,10 +112,10 @@ test('the kit provides the shared Dialog and Car card; a Dialog is used for sign
 
 // The pause menu is THE reference style (docs/OWNER-DECISIONS.md, 2026-10-16): every row kind shares its focus, the kit
 // carries no second visual language (italics, lime, glows), and pause itself is built from the kit it defines.
-test('the pause-menu reference: one focus look, one type language, pause built from the kit', () => {
+test('the pause-menu reference: one surface focus look, one type language, pause built from the kit', () => {
   const css = read(KIT_CSS);
   const focus = cssRules(css).find((r) => /\.option\.focus/.test(r.selector) && /\.field\.focus/.test(r.selector) && /\.list-row\.focus/.test(r.selector) && /\.card\.focus/.test(r.selector));
-  assert.ok(focus && focus.decls.includes('border-color') && focus.decls.includes('transform'), `${OWNER}\noption, field, list row and card share the reference focus (ice outline + slight lift)`);
+  assert.ok(focus && focus.decls.includes('background') && !focus.decls.includes('border-color') && !focus.decls.includes('outline') && !focus.decls.includes('box-shadow'), `${OWNER}\noption, field, list row and card share the reference focus (keyboard/gamepad surface only, no outline/ring)`);
   for (const f of [KIT_CSS, ...SCREEN_CSS, 'src/ui/notifications.css', 'style.css']) {
     const rules = cssRules(read(f)).filter((r) => !/wordmark|title__mark|#hud|#posBox|#evBox|#count|#lapTiming|#wrongWay|#gearboxHud|#routeBox|#engineHud|#mapBox|#dialBox|objective-|tow-|racer-marker/.test(r.selector));
     const src = read(f);

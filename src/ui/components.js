@@ -537,6 +537,7 @@ function toast(text, options = {}) {
 }
 /** a named input action (main.js flowAction / src/menu.js). true = an overlay used it */
 function action(name) {
+  navigationFocus();
   if (lb) {
     if (name === 'up' || name === 'left') hilite(lb.hi - 1);
     else if (name === 'down' || name === 'right') hilite(lb.hi + 1);
@@ -552,11 +553,13 @@ function action(name) {
   else if ((name === 'back' || name === 'pause') && modal.dismissible) closePrompt(null);
   return true; // a modal swallows everything else
 }
+// Keyboard/gamepad focus is a surface only; pointer activation adds no focus decoration.
+export function navigationFocus() { if (typeof document !== 'undefined') document.documentElement.dataset.uiFocus = 'navigation'; }
 // which hints to show: a touch tap since the last key press means touch (main.js passes the gamepad / keyboard device)
 let lastPointer = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches ? 'touch' : null;
 if (typeof window !== 'undefined') {
-  window.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType === 'touch' ? 'touch' : null; }, true);
-  window.addEventListener('keydown', () => { lastPointer = null; }, true);
+  window.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType === 'touch' ? 'touch' : null; document.documentElement.dataset.uiFocus = 'pointer'; }, true);
+  window.addEventListener('keydown', () => { lastPointer = null; navigationFocus(); }, true);
 }
 /** the device the key hints should be drawn for: 'gamepad' wins, then a recent touch, else the given device */
 const hintDevice = (device = 'keyboard') => device === 'gamepad' ? 'gamepad' : lastPointer || device;

@@ -183,6 +183,7 @@ export class Menu {
   /** a named input action; true if the menu used it */
   action(name) {
     if (!this.screen) return false;
+    C.navigationFocus();
     if (C.ui.action(name)) return true;
     if (this.screen === 'maps' && this.mapView?.action(name)) return true;
     const cur = this.items()[this.focus];

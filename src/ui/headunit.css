@@ -50,7 +50,6 @@
 /* ---------------------------------------------------------------- race corner buttons (settings / multiplayer) */
 :root #race-settings, :root body #mp-toggle { border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: var(--hu-sheen), rgba(10,14,19,.78); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
   color: #fff; font: 600 12px var(--f-cond); letter-spacing: .14em; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
-:root #race-settings:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* ---------------------------------------------------------------- race HUD: the cluster readouts and the nav screen.
    Base rules live in style.css, menu.css and gearbox-hud.js (which injects its own <style>, hence :root). Sizes and

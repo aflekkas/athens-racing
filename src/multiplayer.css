@@ -137,7 +137,7 @@
 /* phones: the car shrinks to the top, the panels stack below it and the page scrolls */
 @media (max-width: 860px) {
   .scr--showroom .scr__body { overflow-y: auto; overscroll-behavior: contain; margin: -6px; }
-  /* room for focus rings */
+  /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
   .mp-show { display: flex; flex-direction: column; flex: none; gap: var(--s-3); }
   .mp-stage { flex: none; height: max(12rem, 30vh); margin: 0 calc(var(--pad-screen-x) * -1 - 6px); }
   .mp-show__cap { position: absolute; left: 0; right: 0; top: 0; }

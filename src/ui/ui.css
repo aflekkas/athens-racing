@@ -1,7 +1,7 @@
 /* ATHENS RACING UI kit: the "head unit" design language (design spec: the in-car infotainment / cluster screens).
    Design tokens + components; src/ui/components.js builds the markup, src/menu.css lays out the menu screens.
    Sizes are rem so the whole UI scales with the viewport (html font-size below); the race HUD (style.css) stays px.
-   Palette: flat piano-black surfaces, cool blue-grey type, ONE accent (ice) used sparingly: the focus edge, the
+   Palette: flat piano-black surfaces, cool blue-grey type, ONE accent (ice) used sparingly: the focus surface, the
    selected mark and value fills. No glows, halos or gradient fills on controls. Red is a warning colour (redline,
    destructive) and the brand mark; the primary action is a flat white pill. */
 :root {
@@ -41,8 +41,7 @@
   --notch: 0px;
   /* motion */
   --ease: cubic-bezier(.3, 0, .2, 1); --dur: .18s; /* a calm ease-in-out: no overshoot, no spring */
-  /* focus: one crisp ice edge with a slight lift, never a glow (the pause-menu reference). */
-  --focus-ring: 0 0 0 1.5px var(--hu-ice);
+  /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
   --pad-screen-x: clamp(1rem, 4.6vw, 6rem); --pad-screen-y: clamp(.5rem, 2.4vh, 2rem);
 }
 /* 1rem: 14px at 1280x720, 19px at 1920x1080, 22px at 2560x1440, 12px on phones */
@@ -77,8 +76,6 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .btn--block { display: flex; width: 100%; }
 .btn--icon { padding: 0; width: 2.75rem; }
 .btn--icon.btn--sm { width: 2.25rem; }
-/* focus: a crisp ice outline standing 2px off the pill, the same on every button */
-.btn.focus, .btn:focus-visible { outline: 1.5px solid var(--hu-ice); outline-offset: 2px; }
 .btn:active { transform: scale(.98); }
 .btn.off, .btn:disabled, .btn[aria-disabled=true] { opacity: .38; pointer-events: none; }
 .btn__sub { font-family: var(--f-cond); font-style: normal; font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-caps); color: inherit; opacity: .7; }
@@ -87,9 +84,7 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .option__ico, .modal__ico { display: grid; place-items: center; border-radius: 30%; color: var(--c-text);
   background: rgba(255,255,255,.07); transition: background var(--dur), color var(--dur); }
 
-/* THE REFERENCE ROW (owner, 2026-10-16: the pause-menu style is the single reference UI style, docs/OWNER-DECISIONS.md):
-   a full-width row with a rounded-square icon plate, a bold spaced-caps label and a right chevron, on the panel surface.
-   Focus on every row kind (option, field, list row, card) is the same crisp ice outline with a slight lift. */
+/* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 .option { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s-4); padding: var(--s-2) var(--s-5) var(--s-2) var(--s-3); min-height: 3.25rem;
   background: transparent; border: 1px solid transparent; border-radius: var(--r-3); transition: background var(--dur), border-color var(--dur), transform var(--dur); }
 .option__ico { width: 2.2rem; height: 2.2rem; }
@@ -97,11 +92,11 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .option__title { display: block; font-family: var(--f-sans); font-weight: 600; font-size: var(--t-md); line-height: 1.1; letter-spacing: .1em; text-transform: uppercase; }
 .option__desc { display: block; margin-top: .2rem; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-sm); color: var(--c-text-3); }
 .option__go { color: var(--c-text-4); transition: transform var(--dur) var(--ease), color var(--dur); }
-.option.focus, .field.focus, .list-row.focus, .card.focus { background: var(--ui-row-focus); border-color: var(--hu-ice); transform: translateY(-1px); }
+:root[data-ui-focus="navigation"] .option.focus, :root[data-ui-focus="navigation"] .field.focus, :root[data-ui-focus="navigation"] .list-row.focus, :root[data-ui-focus="navigation"] .card.focus { background: var(--ui-row-focus);   }
 .option, .field, .list-row, .card { transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
-.option.focus .option__ico { color: var(--hu-ice); }
-.option.focus .option__desc { color: var(--c-text-2); }
-.option.focus .option__go { color: #fff; transform: translateX(3px); }
+:root[data-ui-focus="navigation"] .option.focus .option__ico { color: var(--c-text); }
+:root[data-ui-focus="navigation"] .option.focus .option__desc { color: var(--c-text-2); }
+:root[data-ui-focus="navigation"] .option.focus .option__go { color: #fff;  }
 .option.off { opacity: .38; pointer-events: none; }
 
 /* ---------------------------------------------------------------- panel / card */
@@ -120,9 +115,9 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .card__title { margin: 0; font-family: var(--f-sans); font-weight: 600; font-size: var(--t-md); line-height: 1.15; letter-spacing: .08em; text-transform: uppercase; }
 .card__text { margin: 0; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
 .card__foot { margin-top: auto; padding-top: var(--s-2); display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-sm); letter-spacing: .06em; color: var(--c-text-2); }
-.card::after { content: ""; position: absolute; left: 50%; bottom: .4rem; width: 1.6rem; height: 3px; margin-left: -.8rem; border-radius: 3px; background: var(--hu-ice);
+.card::after { content: "✓"; position: absolute; left: 50%; bottom: .4rem; width: 1.6rem; height: 3px; margin-left: -.8rem; border-radius: 3px; background: none; color: var(--c-text);
   opacity: 0; transform: scaleX(.2); transition: opacity var(--dur) var(--ease), transform .24s var(--ease); pointer-events: none; }
-.card.selected::after { opacity: 1; transform: none; }
+.card.selected::after  { opacity: 1; transform: none; }
 
 /* ---------------------------------------------------------------- badge / chip / keycap */
 .badge { display: inline-flex; align-items: center; gap: .35em; padding: .3em .7em; border-radius: var(--r-pill); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-caps); line-height: 1.1;
@@ -146,8 +141,8 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .hint { display: inline-flex; align-items: center; gap: var(--s-2); white-space: nowrap; pointer-events: none; cursor: default; }
 .hint__keys { display: inline-flex; gap: .2em; }
 .hint .kbd { font-size: var(--t-xs); }
-.hint .on-pad { display: none; }
-body[data-input=gamepad] .hint .on-key { display: none; } body[data-input=gamepad] .hint .on-pad { display: inline-flex; }
+.hint .on-pad  { display: none; }
+body[data-input=gamepad] .hint .on-key  { display: none; } body[data-input=gamepad] .hint .on-pad  { display: inline-flex; }
 body[data-input=gamepad] .hint.no-pad { display: none; }
 body[data-input=touch] .hints { visibility: hidden; }
 
@@ -156,7 +151,7 @@ body[data-input=touch] .hints { visibility: hidden; }
   background: transparent; border: 1px solid transparent; border-radius: var(--r-3); transition: background var(--dur), border-color var(--dur), transform var(--dur); }
 .field + .field::before { content: ""; position: absolute; left: var(--s-4); right: var(--s-4); top: -2px; height: 1px; background: var(--hu-hair); pointer-events: none; }
 .field + .field { margin-top: 2px; }
-.field.focus::before, .field.focus + .field::before { opacity: 0; }
+:root[data-ui-focus="navigation"] .field.focus::before, :root[data-ui-focus="navigation"] .field.focus + .field::before { opacity: 0; }
 .field__label { display: flex; align-items: center; gap: var(--s-3); min-width: 0; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-md); letter-spacing: .06em; text-transform: uppercase; color: var(--c-text); }
 .field__label > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .field__label .ico { color: var(--c-text-3); }
@@ -164,8 +159,8 @@ body[data-input=touch] .hints { visibility: hidden; }
 .field__note.warn { color: var(--c-warn); }
 .field__note .ico { vertical-align: -.15em; }
 .field__ctl { display: flex; align-items: center; justify-content: flex-end; min-width: 0; }
-/* focus on a row: the reference outline (see .option.focus); no side bar, no glow */
-.field.focus .field__label .ico { color: var(--hu-ice); }
+:root[data-ui-focus="navigation"] /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
+.field.focus .field__label .ico { color: var(--c-text); }
 .field.locked { opacity: .42; pointer-events: none; }
 .field--stack { grid-template-columns: 1fr; }
 .field--stack .field__ctl { justify-content: stretch; }
@@ -181,18 +176,16 @@ body[data-input=touch] .hints { visibility: hidden; }
 .slider__thumb { position: absolute; top: 50%; left: calc(var(--v) * 100%); width: 1.25rem; height: 1.25rem; margin: -.625rem 0 0 -.625rem; border-radius: 50%; background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,.6); transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
 .slider__val { min-width: 3.2em; text-align: right; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-lg); letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--c-text); }
-.focus .slider__thumb, .slider:focus-visible .slider__thumb, .slider.dragging .slider__thumb { transform: scale(1.08); box-shadow: 0 0 0 1.5px var(--hu-ice), 0 2px 6px rgba(0,0,0,.5); }
-.slider:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--r-2); }
+:root[data-ui-focus="navigation"] .slider:focus-visible {  border-radius: var(--r-2); }
 
 /* ---------------------------------------------------------------- toggle / switch */
 .switch { display: inline-flex; align-items: center; gap: var(--s-3); outline: none; }
 .switch__track { position: relative; width: 3.1rem; height: 1.75rem; border-radius: var(--r-pill); background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px var(--hu-hair); transition: background var(--dur), box-shadow var(--dur); flex: none; }
 .switch__knob { position: absolute; top: .2rem; left: .2rem; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); transition: transform .22s var(--ease); }
 .switch__txt { min-width: 2.4em; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-sm); letter-spacing: var(--track-caps); color: var(--c-text-3); }
-.switch.on .switch__track { background: var(--hu-ice-d); box-shadow: none; }
-.switch.on .switch__knob { transform: translateX(1.35rem); }
-.switch.on .switch__txt { color: var(--c-text); }
-.switch:focus-visible .switch__track { box-shadow: var(--focus-ring); }
+.switch.on .switch__track  { background: var(--hu-ice-d);  }
+.switch.on .switch__knob  { transform: translateX(1.35rem); }
+.switch.on .switch__txt  { color: var(--c-text); }
 
 /* ---------------------------------------------------------------- segmented control (pill group; the choice is lit white) */
 .seg { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px; padding: 3px; border-radius: var(--r-pill); background: rgba(0,0,0,.32); box-shadow: inset 0 0 0 1px var(--hu-hair); max-width: 100%; }
@@ -201,11 +194,11 @@ body[data-input=touch] .hints { visibility: hidden; }
 .seg { position: relative; isolation: isolate; }
 .seg__opt { position: relative; z-index: 1; }
 
-.seg__opt.on { color: var(--hu-lit-fg); }
+.seg__opt.on  { color: var(--hu-lit-fg); }
 /* selection: one lit pill slides to the chosen option (components.js indicators) */
-.sel-ind { position: absolute; left: 0; top: 0; z-index: 0; width: 0; height: 0; opacity: 0; pointer-events: none; border-radius: var(--r-pill);
+.sel-ind  { position: absolute; left: 0; top: 0; z-index: 0; width: 0; height: 0; opacity: 0; pointer-events: none; border-radius: var(--r-pill);
   transition: transform .28s var(--ease), width .28s var(--ease), height .28s var(--ease), opacity .18s, background var(--dur), box-shadow var(--dur); }
-.seg > .sel-ind { background: var(--hu-lit); }
+.seg > .sel-ind  { background: var(--hu-lit); }
 .seg__opt .ico { width: 1em; height: 1em; }
 .seg__opt.dflt::after { content: ""; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .5; margin-left: .15em; }
 
@@ -214,7 +207,7 @@ body[data-input=touch] .hints { visibility: hidden; }
 .stepper__btn { display: grid; place-items: center; width: 2.15rem; height: 2.15rem; border-radius: 50%; background: rgba(255,255,255,.07); color: var(--c-text-2); transition: background var(--dur), color var(--dur); }
 .stepper__btn.off { opacity: .25; pointer-events: none; }
 .stepper__val { min-width: 6.5rem; padding: 0 var(--s-2); text-align: center; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-lg); letter-spacing: .06em; font-variant-numeric: tabular-nums; white-space: nowrap; text-transform: uppercase; }
-.focus .stepper__btn { background: rgba(255,255,255,.12); color: #fff; }
+:root[data-ui-focus="navigation"] .focus .stepper__btn { background: rgba(255,255,255,.12); color: #fff; }
 
 /* ---------------------------------------------------------------- select (custom dropdown) */
 .select { position: relative; display: inline-flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-width: 11rem; max-width: 100%; min-height: 2.5rem; padding: 0 var(--s-3) 0 var(--s-4);
@@ -222,15 +215,13 @@ body[data-input=touch] .hints { visibility: hidden; }
 .select__val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .select .ico { color: var(--c-text-3); transition: transform var(--dur); }
 .select.open .ico { transform: rotate(180deg); }
-.focus .select, .select:focus-visible { border-color: var(--hu-ice); }
-.select:focus-visible { box-shadow: var(--focus-ring); }
 .listbox { position: fixed; z-index: 140; min-width: 10rem; max-height: min(22rem, 60vh); overflow-y: auto; padding: var(--s-1); border-radius: var(--r-3);
   background: rgba(16, 22, 29, .98); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair-2); box-shadow: 0 .8rem 2rem rgba(0,0,0,.5);
   font-family: var(--f-cond); font-weight: 600; font-size: var(--t-sm); letter-spacing: .12em; color: var(--c-text-2); text-transform: uppercase; animation: ui-pop .16s var(--ease) both; }
 .listbox__opt { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); min-height: 2.4rem; padding: 0 var(--s-3); border-radius: var(--r-2); white-space: nowrap; }
 .listbox__opt .ico { visibility: hidden; color: var(--hu-ice); }
-.listbox__opt.sel { color: #fff; }
-.listbox__opt.sel .ico { visibility: visible; }
+.listbox__opt.sel  { color: #fff; }
+.listbox__opt.sel .ico  { visibility: visible; }
 .listbox__opt.hi { background: rgba(255,255,255,.08); color: #fff; }
 .listbox__opt.dis { opacity: .35; pointer-events: none; }
 .listbox.is-closing { animation: ui-fold .14s var(--ease) both; }
@@ -243,7 +234,6 @@ ui-select.off { opacity: .45; pointer-events: none; }
 .textfield, .ui-text { box-sizing: border-box; width: 100%; min-height: 2.75rem; padding: 0 var(--s-4); border-radius: var(--r-2); border: 1px solid var(--hu-hair-2); background: rgba(0,0,0,.35); color: #fff;
   font: 500 var(--t-md) var(--f-sans); letter-spacing: .04em; outline: none; transition: border-color var(--dur), box-shadow var(--dur); appearance: none; -webkit-appearance: none; }
 .textfield::placeholder, .ui-text::placeholder { color: var(--c-text-4); }
-.textfield:focus, .ui-text:focus { border-color: var(--hu-ice); }
 
 /* ---------------------------------------------------------------- tabs (a pill bar; menu.css turns Settings' into a rail) */
 .tabs { display: flex; gap: var(--s-1); padding: 3px; border-radius: var(--r-pill); background: rgba(0,0,0,.32); box-shadow: inset 0 0 0 1px var(--hu-hair); overflow-x: auto; scrollbar-width: none; max-width: 100%; }
@@ -251,14 +241,13 @@ ui-select.off { opacity: .45; pointer-events: none; }
 .tab { position: relative; display: inline-flex; align-items: center; gap: var(--s-2); min-height: 2.4rem; padding: 0 var(--s-4); border-radius: var(--r-pill); font-family: var(--f-sans); font-weight: 600; font-size: var(--t-sm); letter-spacing: .08em;
   color: var(--c-text-3); white-space: nowrap; text-transform: uppercase; transition: background var(--dur), color var(--dur); }
 
-.tab.on { color: #fff; }
+.tab.on  { color: #fff; }
 .tabs { position: relative; isolation: isolate; } .tab { z-index: 1; }
-.tabs > .sel-ind { background: rgba(255,255,255,.1); }
-.tabs.focus > .sel-ind { background: rgba(255,255,255,.16); }
-.tab.on .ico { color: var(--hu-ice); }
-.tabs.focus { box-shadow: inset 0 0 0 1.5px var(--hu-ice); }
+.tabs > .sel-ind  { background: rgba(255,255,255,.1); }
+:root[data-ui-focus="navigation"] .tabs.focus > .sel-ind { background: rgba(255,255,255,.16); }
+.tab.on .ico  { color: var(--hu-ice); }
 .tabs__hint { display: inline-flex; align-items: center; color: var(--c-text-4); padding: 0 var(--s-1); pointer-events: none; cursor: default; }
-body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad, body:not([data-input]) .tabs__hint.on-pad, body[data-input=gamepad] .tabs__hint.on-key { display: none; }
+body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad, body:not([data-input]) .tabs__hint.on-pad, body[data-input=gamepad] .tabs__hint.on-key  { display: none; }
 
 /* ---------------------------------------------------------------- stat tile (a cluster readout) */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: var(--s-3) var(--s-5); }
@@ -339,13 +328,13 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 .list-row.off { opacity: .45; pointer-events: none; }
 .list-row__ico .ico { width: 1.2rem; height: 1.2rem; color: var(--c-text-3); }
-.list-row.focus .list-row__ico .ico { color: var(--hu-ice); }
+:root[data-ui-focus="navigation"] .list-row.focus .list-row__ico .ico { color: var(--c-text); }
 .list-row__main { min-width: 0; display: grid; gap: .15rem; }
 .list-row__main b { font: 500 var(--t-lg) var(--f-sans); letter-spacing: .06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list-row__main span { font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list-row__meta { display: flex; gap: var(--s-1); }
 .list-row__go { color: var(--c-text-4, #5d6773); transition: transform var(--dur) var(--ease), color var(--dur); }
-.list-row.focus .list-row__go { color: #fff; transform: translateX(3px); }
+:root[data-ui-focus="navigation"] .list-row.focus .list-row__go { color: #fff;  }
 .chip { display: inline-flex; align-items: center; gap: .4em; height: 1.9rem; padding: 0 .85em; border-radius: var(--r-pill); background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--hu-hair);
   font: 600 var(--t-xs) var(--f-cond); letter-spacing: .14em; text-transform: uppercase; color: var(--c-text-2); white-space: nowrap; transition: background var(--dur), color var(--dur), box-shadow var(--dur); }
 .chip .ico { width: .95em; height: .95em; }
@@ -354,7 +343,6 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .text-field .field__ctl { flex: 1 1 auto; }
 .text-field__input { box-sizing: border-box; width: min(18rem, 100%); min-height: 2.6rem; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: rgba(0,0,0,.35);
   color: var(--hu-text); font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; outline: none; appearance: none; transition: border-color var(--dur), box-shadow var(--dur); }
-.text-field__input:focus { border-color: var(--hu-ice); }
 .text-field__input::placeholder { color: var(--c-text-4, #5d6773); }
 
 /* ---------------------------------------------------------------- screen frame: status bar · screen header · body · soft-key bar
@@ -412,12 +400,11 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .tabs--rail .tab { justify-content: flex-start; gap: var(--s-3); min-height: 3rem; padding: 0 var(--s-4); border-radius: var(--r-3); font-size: var(--t-md); letter-spacing: .08em; color: var(--c-text-2); }
 .tabs--rail .tab .ico { width: 1.25rem; height: 1.25rem; color: var(--c-text-3); }
 
-.tabs--rail .tab.on { color: #fff; }
-.tabs--rail.tabs > .sel-ind { border-radius: var(--r-3); background: rgba(255,255,255,.06); }
-.tabs--rail .tab.on .ico { color: var(--c-text); }
-.tabs--rail.tabs.focus { box-shadow: none; }
-.tabs--rail.tabs.focus > .sel-ind { background: var(--ui-row-focus); box-shadow: inset 0 0 0 1px var(--hu-ice); }
-.tabs--rail.tabs.focus .tab.on .ico { color: var(--hu-ice); }
+.tabs--rail .tab.on  { color: #fff; }
+.tabs--rail.tabs > .sel-ind  { border-radius: var(--r-3); background: rgba(255,255,255,.06); }
+.tabs--rail .tab.on .ico  { color: var(--c-text); }
+:root[data-ui-focus="navigation"] .tabs--rail.tabs.focus > .sel-ind { background: var(--ui-row-focus);  }
+:root[data-ui-focus="navigation"] .tabs--rail.tabs.focus .tab.on .ico { color: var(--c-text); }
 .bind-head { display: grid; grid-template-columns: minmax(0, 1fr) 9rem 9rem; gap: var(--s-3); margin: var(--s-5) 0 calc(var(--s-3) * -1); padding: 0 var(--s-4); font: 600 var(--t-xs) var(--f-cond); letter-spacing: .18em; color: var(--c-text-3); }
 .bind-head span { display: flex; align-items: center; justify-content: center; gap: var(--s-2); }
 .bind__cols { display: grid; grid-template-columns: 9rem 9rem; gap: var(--s-3); }
@@ -425,7 +412,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .bind__chip.na { cursor: default; background: transparent; box-shadow: none; }
 .bind__chip em { font-style: normal; font-weight: 600; font-size: var(--t-xs); letter-spacing: .14em; color: var(--tt-amber); animation: bindBlink 1s steps(2) infinite; }
 .bind__chip.wait { border-color: var(--tt-amber); }
-#ui[data-bindcol="0"] .bind.focus [data-bind=keyboard], #ui[data-bindcol="1"] .bind.focus [data-bind=gamepad] { border-color: var(--hu-ice); background: rgba(255,255,255,.06); }
+:root[data-ui-focus="navigation"] #ui[data-bindcol="0"] .bind.focus [data-bind=keyboard], :root[data-ui-focus="navigation"] #ui[data-bindcol="1"] .bind.focus [data-bind=gamepad] {  background: rgba(255,255,255,.06); }
 .bind .field__label { font-size: var(--t-md); }
 .r-table { width: 100%; border-collapse: collapse; font: 500 var(--t-md) var(--f-sans); letter-spacing: .03em; }
 .r-table td { padding: .55rem .35rem; border-bottom: 1px solid var(--hu-hair); vertical-align: baseline; }
@@ -444,7 +431,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
   .scr__headr { justify-content: flex-start; }
   .tabs--rail.tabs { flex-direction: row; overflow-x: auto; gap: var(--s-1); }
   .tabs--rail .tab { flex: none; min-height: 2.5rem; border-radius: var(--r-pill); font-size: var(--t-sm); }
-  .tabs--rail.tabs > .sel-ind { border-radius: var(--r-pill); }
+  .tabs--rail.tabs > .sel-ind  { border-radius: var(--r-pill); }
 }
 @media (max-width: 560px) {
   .scr__back span { display: none; }
@@ -484,13 +471,13 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
   .field { min-height: 2.6rem; }
   .tabs--rail.tabs { flex-direction: column; overflow: visible; }
   .tabs--rail .tab { min-height: 2.3rem; border-radius: var(--r-2); }
-  .tabs--rail.tabs > .sel-ind { border-radius: var(--r-2); }
+  .tabs--rail.tabs > .sel-ind  { border-radius: var(--r-2); }
 }
 @media (prefers-reduced-transparency: reduce) {
   .option--tile.option { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: var(--hu-glass-solid); }
 }
 .hu-driver { border: 0; transition: background .18s, box-shadow .18s, transform .18s; }
-.hu-driver.focus, .hu-driver:focus-visible { background: var(--ui-row-focus); color: #fff; box-shadow: inset 0 0 0 1px var(--hu-ice); outline: none; transform: translateY(-1px); }
+:root[data-ui-focus="navigation"] .hu-driver.focus, :root[data-ui-focus="navigation"] .hu-driver:focus-visible { background: var(--ui-row-focus); color: #fff;    }
 .hu-driver:active { transform: none; }
 .build-badge { color: #f5d290; font: 700 .7rem var(--f-cond); letter-spacing: .1em; white-space: nowrap; }
 .option--tile.option { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--s-1); min-height: 0; padding: var(--s-5); border-radius: var(--r-4);
@@ -501,22 +488,21 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .option--tile .option__title { font-size: var(--t-lg); letter-spacing: .08em; }
 .option--tile .option__desc { font-size: var(--t-xs); line-height: 1.4; }
 .option--tile .option__go { display: none; }
-.option--tile.option.focus { border-color: rgba(111,208,255,.8); box-shadow: 0 0 0 4px rgba(111,208,255,.14), 0 1.4rem 3rem rgba(0,0,0,.5), var(--hu-edge); background: linear-gradient(180deg, rgba(111,208,255,.15), rgba(111,208,255,.02) 60%), var(--hu-glass-hi); transform: translateY(-2px); }
+:root[data-ui-focus="navigation"] .option--tile.option.focus {   background: var(--ui-row-focus);  }
 .option--tile.option { transition: transform .22s var(--ease), border-color .22s, box-shadow .22s, background .22s; }
 .option--hero.option--tile.option { grid-row: 1 / 3; padding: var(--s-6); }
 .option--hero.option--tile.option::before { content: ""; position: absolute; inset: 8% -12% 30% 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'%3E%3Cpath d='M10 175C55 160 66 112 108 102s62 18 84-22 54-46 98-52' fill='none' stroke='%236fd0ff' stroke-opacity='.22' stroke-width='12' stroke-linecap='round'/%3E%3Cpath d='M10 175C55 160 66 112 108 102s62 18 84-22 54-46 98-52' fill='none' stroke='%236fd0ff' stroke-width='2.6' stroke-linecap='round'/%3E%3Ccircle cx='10' cy='175' r='6' fill='%23fff'/%3E%3Ccircle cx='290' cy='28' r='6' fill='none' stroke='%23fff' stroke-width='2.6'/%3E%3C/svg%3E") center / contain no-repeat; opacity: .55; pointer-events: none; transition: opacity .22s; }
-.option--hero.option--tile.option.focus::before { opacity: 1; filter: drop-shadow(0 0 6px rgba(111,208,255,.6)); }
+:root[data-ui-focus="navigation"] .option--hero.option--tile.option.focus::before { opacity: 1;  }
 .option--hero.option--tile.option .option__title { font-weight: 400; font-size: var(--t-3xl); letter-spacing: .1em; }
 .option--hero.option--tile.option .option__desc { font-size: var(--t-sm); }
 .option--hero.option--tile.option::after { content: "START ›"; display: inline-flex; align-items: center; height: 2.6rem; margin-top: var(--s-4); padding: 0 var(--s-5); border-radius: var(--r-pill); white-space: pre;
   background: var(--hu-lit); color: var(--hu-lit-fg); font: 700 var(--t-sm) var(--f-cond); letter-spacing: .18em; box-shadow: 0 .4rem 1.6rem rgba(111,208,255,.22); }
-.option--tile.option.focus .option__ico { background: linear-gradient(180deg, #9ae0ff, var(--hu-ice-d)); color: var(--hu-lit-fg); }
+:root[data-ui-focus="navigation"] .option--tile.option.focus .option__ico { background: var(--ui-row-focus); color: var(--hu-lit-fg); }
 .option--tile.option--tile.option { position:relative;background:var(--ui-surface);box-shadow:none;border:1px solid var(--ui-line);backdrop-filter:none;-webkit-backdrop-filter:none;transform:none;min-width:0 }
-.option--tile.option--tile.option.focus { background:var(--ui-surface-hi);box-shadow:none;transform:translateY(-1px) }
-.option--tile.option--tile.option.focus { border-color:var(--hu-ice);outline:1px solid var(--hu-ice);outline-offset:-1px }
+:root[data-ui-focus="navigation"] .option--tile.option--tile.option.focus { background:var(--ui-surface-hi);}
 .option--hero.option--tile.option::before { filter:none }
 .option--hero.option--tile.option::after { box-shadow:none;background:var(--hu-lit) }
-.option--tile.option--tile.option.focus .option__ico { background:var(--hu-lit);box-shadow:none }
+:root[data-ui-focus="navigation"] .option--tile.option--tile.option.focus .option__ico { background:var(--hu-lit);}
 .option--tile.option--tile .option__title { white-space:normal;overflow-wrap:normal }
 @media(max-width:560px) and (min-height:501px) {
   .option--tile.option--tile.option { padding:14px;min-height:0 }
@@ -540,9 +526,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 }
 .option--hero.option--tile.option::before { right:0 }
 
-/* ---------------------------------------------------------------- sheet header · dialog · car card · search · bare select · plate
-   All derived from the pause-menu reference: spaced-caps kicker, a large light spaced title, an accent status line,
-   calm dark surfaces, the one ice outline for focus. */
+/* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 .sheet-head { display: grid; gap: var(--s-2); min-width: 0; }
 .sheet-head > .kick { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sheet-head__title { margin: 0; font-family: var(--f-sans); font-weight: 400; font-size: var(--t-2xl); line-height: 1.1; letter-spacing: .14em; text-transform: uppercase; color: var(--c-text); }
@@ -575,7 +559,6 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 .search { box-sizing: border-box; display: flex; align-items: center; gap: var(--s-2); min-height: 2.5rem; padding: 0 var(--s-4); border: 1px solid var(--hu-hair-2); border-radius: var(--r-pill);
   background: rgba(0,0,0,.25); color: var(--c-text-3); cursor: text; transition: border-color var(--dur) var(--ease); }
-.search.focus, .search:focus-within { border-color: var(--hu-ice); }
 .search__input { flex: 1; min-width: 0; appearance: none; border: 0; background: transparent; color: var(--hu-text); font: 500 var(--t-sm) var(--f-sans); letter-spacing: .08em; text-transform: uppercase; outline: none; }
 .search__input::placeholder { color: var(--c-text-3); }
 .search__input::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); }
@@ -583,8 +566,8 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .field--bare { display: block; min-height: 0; padding: 0; border: 0; background: none; }
 .field--bare > .field__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .field--bare .field__ctl { display: block; }
-.field--bare .select { width: 100%; min-width: 0; } .field--bare.focus { background: none; transform: none; }
-.field--bare.focus .select { border-color: var(--hu-ice); }
+.field--bare .select { width: 100%; min-width: 0; }
+:root[data-ui-focus="navigation"] .field--bare.focus { background: none;  }
 .field--bare + .field::before, .field + .field--bare::before { display: none; }
 .field + .field--bare, .field--bare + .field { margin-top: 0; }
 .select__k { flex: none; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: var(--track-kick); color: var(--c-text-3); }
@@ -595,7 +578,6 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 /* a plate you can type in (textField inputCls 'plate-input') */
 .text-field__input.plate-input { border: 0; border-radius: 6px; padding-left: 2.1rem; background: linear-gradient(90deg, #1f47b3 0 1.3rem, #f4f6f8 1.3rem); box-shadow: inset 0 0 0 2px #10161c;
   color: #0b0f14; font: 700 1.2rem var(--f-cond); letter-spacing: .12em; text-transform: uppercase; }
-.text-field__input.plate-input:focus { box-shadow: inset 0 0 0 2px #10161c, 0 0 0 2px var(--hu-ice); }
 .list-row--static { cursor: default; }
 .list-row + .list-row { margin-top: 2px; }
 .list-row__meta .btn { min-height: 2.25rem; }
@@ -627,7 +609,6 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 #notification-lane :is(.race-notice, #engineHud, #tow-prompt) button { pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; 
   border: 1px solid var(--hu-hair-2); border-radius: var(--r-pill); background: rgba(255,255,255,.07); color: var(--c-text); font: 600 11px var(--f-cond); letter-spacing: .14em; text-transform: uppercase;
   transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
-#notification-lane :is(.race-notice, #engineHud, #tow-prompt) button:focus { outline: 1.5px solid var(--hu-ice); outline-offset: 2px; }
 #notification-lane #tow-prompt, #notification-lane #engineHud { position: static !important; inset: auto !important; transform: none !important; width: auto !important; max-width: none !important; padding: 0 !important;
   border: 0 !important; box-shadow: none !important; background: none !important; font: inherit !important; color: inherit; overflow: visible !important; display: block; }
 #notification-lane #tow-prompt strong, #notification-lane #engineHud b { display: block; font: 600 13px/1.2 var(--f-sans); letter-spacing: .1em; text-transform: uppercase; }
@@ -655,10 +636,10 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 @media (prefers-reduced-motion: reduce) { .race-notice { animation: none; } }
 @media (max-width: 560px) { .list-row--static { grid-template-columns: auto minmax(0, 1fr); } .list-row--static:not(:has(.list-row__ico)) { grid-template-columns: minmax(0, 1fr); }
   .list-row--static .list-row__meta { grid-column: 1 / -1; justify-content: flex-end; flex-wrap: wrap; } }
-/* privacy / terms links (src/ui/legal-links.js): quiet text links, the one ice focus edge */
+/* privacy / terms links (src/ui/legal-links.js): quiet text links, the one surface focus surface */
 .legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2) var(--s-5); padding: var(--s-4); font: 500 var(--t-xs) var(--f-sans); }
 .legal-link { color: var(--c-text-2); text-decoration: underline; text-decoration-color: var(--hu-hair-2); text-underline-offset: 4px; transition: color var(--dur) var(--ease); }
-.legal-link:focus-visible, .legal-link.focus { color: #fff; outline: 1.5px solid var(--hu-ice); outline-offset: 3px; border-radius: 2px; }
+:root[data-ui-focus="navigation"] .legal-link:focus-visible, :root[data-ui-focus="navigation"] .legal-link.focus { color: #fff;   border-radius: 2px; }
 
 /* Owner 2026-10-17: deployment identity belongs at the footer left. */
 .scr__foot > .build-badge { margin-right: auto; }
@@ -693,3 +674,12 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 /* An opacity-animated ancestor becomes a backdrop root and keeps title text sharp in Chromium.
    Only the scrim and panel animate; the backdrop source stays static. */
 #ui.is-entering .scr--signin { animation: none; }
+
+/* Owner 2026-10-18: no focus outlines, including the browser's menu-root frame.
+   Pointer clicks keep the navigation position without drawing focus. */
+:where(*):focus { outline: none; }
+:where(html, body, #ui, #c, .scr):focus { outline: none; box-shadow: none; }
+:root[data-ui-focus="navigation"] :is(.btn, .slider, .switch, .select, .textfield, .ui-text, .text-field__input, .search, .legal-link, .hu-driver):focus-visible,
+:root[data-ui-focus="navigation"] :is(.btn, .tabs, .hu-driver).focus { background: var(--ui-row-focus); }
+:root[data-ui-focus="navigation"] :is(.option, .card, .field, .list-row).focus { background: var(--ui-surface-hi); }
+:root[data-ui-focus="navigation"] :is(.option, .list-row).focus :is(.option__ico, .list-row__ico) { background: var(--hu-lit); color: var(--hu-lit-fg); }

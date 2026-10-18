@@ -20,7 +20,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .title__tag { margin: var(--s-4) 0 0; max-width: 24rem; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-md); line-height: 1.5; color: var(--c-text-2); }
 .title__menu { display: grid; gap: var(--s-3); }
 /* ---------------------------------------------------------------- mode select: two app cards */
-/* room inside the scroll box for the focus ring: a lit tile is never cropped */
+/* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 /* the session summary (race setup): a navigation destination card */
 .evs__top { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; min-height: 1.6rem; }
 .evs__kick { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-kick); color: var(--hu-ice); text-transform: uppercase; }
@@ -63,7 +63,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 /* ---------------------------------------------------------------- results: the trip computer */
 .res-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(17rem, .85fr); gap: var(--s-6); min-height: 0; }
 .res-main { min-height: 0; overflow-y: auto; align-self: start; padding: var(--s-2) 6px 6px; margin-inline: -6px; }
-/* room for focus outlines */
+/* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 .res-sub { margin: var(--s-3) 0 0; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-lg); letter-spacing: .02em; color: var(--c-text-2); }
 .res-sub b { color: #fff; font-weight: 600; }
 .res-stats { margin-top: var(--s-5); grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); }
@@ -79,8 +79,6 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .car-paints { margin-top: var(--s-5); }
 .car-paints__row { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-3); }
 .car-paints .paint { width: 2rem; height: 2rem; border-radius: 50%; background: var(--paint); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,255,255,.25), 0 0 0 1px rgba(255,255,255,.2); transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
-.car-paints .paint.selected { box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 4px #fff; }
-.car-paints .paint.focus, .car-decals .paint.focus { transform: scale(1.12); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 3.5px var(--hu-ice); }
 .car-paint-name { margin-top: var(--s-2); min-height: 1.2em; font-family: var(--f-sans); font-size: var(--t-xs); color: var(--c-text-3); }
 .car-actions { margin-top: var(--s-5); display: grid; gap: var(--s-2); }
 /* ---------------------------------------------------------------- responsive */
@@ -92,7 +90,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 @media (max-width: 860px) {
   .setup-layout, .res-layout, .car-layout { grid-template-columns: minmax(0, 1fr); }
   .scr--setup .scr__body, .scr--results .scr__body, .scr--car .scr__body { overflow-y: auto; margin: -6px; }
-  /* room for focus rings */
+  /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
   .setup-layout, .res-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
   .setup__event, .setup__form .setup__fields, .res-main, .res-side, .car-info { max-height: none; overflow: visible; }
   .setup__event { box-sizing: border-box; width: 100%; }
@@ -142,7 +140,7 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 }
 /* ---------------------------------------------------------------- event HUD */
 #evBox { position: absolute; right: 28px; top: 130px; min-width: 190px; padding: 10px 16px 10px; background: var(--panel); border-right: 4px solid var(--cyan); font-family: var(--cond); text-align: right; opacity: 0; transition: opacity .3s; }
-#evBox.on { opacity: 1; }
+#evBox.on  { opacity: 1; }
 #evBox .e-k { font-weight: 700; font-size: 13px; letter-spacing: .2em; color: #8f99a6; }
 #evBox b { display: block; font-style: italic; font-weight: 900; font-size: 34px; line-height: 1.05; font-variant-numeric: tabular-nums; }
 #evBox b.good { color: #5dff8a; }
@@ -156,7 +154,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
 .pop.split.good small { color: #5dff8a; }
 .pop.split.bad small { color: #ff6b61; }
 #wrongWay { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-family: var(--cond); opacity: 0; pointer-events: none; }
-#wrongWay.on { opacity: 1; animation: wwBlink .7s steps(2) infinite; }
+#wrongWay.on  { opacity: 1; animation: wwBlink .7s steps(2) infinite; }
 #wrongWay b { display: block; font-style: italic; font-weight: 900; font-size: 84px; line-height: 1; color: #fff; background: var(--red); padding: 4px 34px; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
 #wrongWay span { display: block; margin-top: 6px; font-weight: 800; letter-spacing: .3em; font-size: 16px; text-shadow: 0 2px 6px #000; }
 @keyframes wwBlink { 50% { opacity: .35; } }
@@ -231,7 +229,6 @@ body .tow-prompt p { margin: var(--s-2) 0 var(--s-3); color: var(--c-text-2); }
 body .tow-actions { gap: var(--s-2); }
 body .tow-actions button { flex: 1 1 auto; min-height: 2.6rem; padding: 0 var(--s-4); border: 1px solid var(--c-line-2); border-radius: var(--r-2); background: var(--c-surface-3); color: #fff; font: 800 var(--t-md)/1 var(--f-cond); letter-spacing: .08em; }
 body .tow-actions button:first-child { background: var(--c-gold); border-color: transparent; color: var(--c-bg); }
-body .tow-actions button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* racer tags (hud.js RacerMarkers): a readable pill with the player's colour, an icon chevron. hud.js scales the tag with
    distance (0.7 .. 1.05); the base size keeps the far end at a legible ~13 px */
 body .racer-marker { font: 800 19px var(--f-cond); letter-spacing: .06em; filter: drop-shadow(0 2px 6px rgba(0,0,0,.55)); }
@@ -300,7 +297,6 @@ body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; paddin
 .car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; cursor: default; color: var(--c-text-3); font: 600 .7rem var(--f-cond); letter-spacing: .16em; }
 #race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); }
 #race-settings .ico { width: 18px; height: 18px; }
-#race-settings:focus-visible { outline: 2px solid #ffc21a; }
 body:not(.racing):not(.counting) #race-settings, body.ui-open #race-settings, body:has(#multiplayer:not([hidden])) #race-settings { display: none; }
 body #mp-toggle { right: 118px; top: 14px; }
 body.racing #hud #routeBox { right: 285px; }
@@ -432,7 +428,9 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 .car-trim-browser small { display: block; margin-top: 7px; font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); }
 .car-trim-pips { display: flex; gap: 7px; justify-content: center; margin-top: 10px; }
 .car-trim-pips i { height: 5px; width: 5px; border-radius: 50%; background: currentColor; opacity: .25; transition: opacity 160ms linear; }
-.car-trim-pips i.on { opacity: 1; }
+.car-trim-pips i.on  { opacity: 1; }
 .car-preview-viewport { position: absolute; inset: 112px 0 0; touch-action: pan-y; }
 .car-stage:has([data-key=carBody]) .car-preview-viewport { top: 134px; }
 @media (max-width: 600px) { .car-trim-browser { left: 8px; right: 8px; gap: 5px; } .car-trim-browser__name { gap: 7px; } }
+
+.car-paints .paint.selected::after { content: "✓"; color: white; font: 700 1rem system-ui; text-shadow: 0 1px 3px black; }

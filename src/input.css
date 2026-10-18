@@ -6,7 +6,6 @@
 .input-bindings table { width: 100%; border-collapse: collapse; margin: 16px 0; }
 .input-bindings th, .input-bindings td { text-align: left; padding: 6px; border-bottom: 1px solid #ffffff20; }
 .input-bindings button { color: #fff; background: #172231; border: 1px solid #ffffff40; border-radius: 6px; padding: 9px 12px; font: inherit; }
-.input-bindings button:focus-visible { outline: 2px solid #ffcf2a; }
 .input-bindings label { display: flex; align-items: center; gap: 12px; margin: 12px 0; flex-wrap: wrap; }
 .input-bindings input[type=range] { flex: 1; min-width: 100px; }
 #touch-controls { position: fixed; z-index: 25; inset: auto 0 0; height: 128px; padding-bottom: env(safe-area-inset-bottom); pointer-events: none; user-select: none; }
