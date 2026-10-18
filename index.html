@@ -98,18 +98,12 @@
 
 <!-- Map loading appears only after choosing a session: src/ui/loading.js -->
 <div id="menu-backdrop" aria-hidden="true"></div>
-<div id="loading" role="region" aria-labelledby="ldName" aria-hidden="true" inert data-state="active">
-  <div class="ld-art" id="ldArt"></div>
-  <div class="ld-shade"></div>
-  <div class="ld-wrap">
-    <div class="ld-brand"><img class="brand-mark" src="assets/icon.svg" alt="" /><span class="wordmark wordmark--sm"><b>ATHENS</b><b>RACING</b></span></div>
-    <div class="ld-map">
+<!-- ui-layout:loading:start -->
+<div id="loading" class="layout--map-stage-loading" data-layout="map-stage" role="region" aria-labelledby="ldName" aria-hidden="true" inert data-state="active"><div class="ld-art" id="ldArt" data-layout-region="stage"></div><div class="ld-shade"></div><div class="ld-wrap"><div class="ld-brand" data-layout-region="intro"><img class="brand-mark" src="assets/icon.svg" alt="" /><span class="wordmark wordmark--sm"><b>ATHENS</b><b>RACING</b></span></div><div class="ld-map" data-layout-region="content">
       <div class="kick"><span id="ldKind">POINT TO POINT</span> <span class="ld-dot"></span> <span id="ldLen">10.3 KM</span></div>
       <p class="kick" id="ldContext"></p>
       <h1 id="ldName">ATHENS RIVIERA</h1>
-      <p id="ldSub">Vouliagmeni to Lomvarda</p>
-    </div>
-    <div class="ld-foot">
+      <p id="ldSub">Vouliagmeni to Lomvarda</p></div><div class="ld-foot" data-layout-region="progress">
       <div class="ld-row"><span id="lstat">LOADING MAP DATA</span><b id="lpct"></b></div>
       <ol class="ld-steps" id="lbar" role="progressbar" aria-label="Loading the track" aria-valuetext="Step 1 of 4: loading map data">
         <li class="ld-step" data-step="data" data-state="active"><div class="progress progress--indeterminate" aria-hidden="true" style="--p:0"><i class="progress__fill"></i></div><span class="ld-step__name">MAP DATA</span></li>
@@ -121,11 +115,8 @@
       <div class="ld-issue" id="ldIssue" role="alert" hidden><p class="ld-issue__what" id="ldIssueWhat"></p><p class="ld-issue__body" id="ldIssueBody"></p><div class="ld-actions" id="ldActions"></div></div>
       <p class="ld-tip"><span class="ld-tip__k">TIP</span><span id="ldTip" class="in">Running a red light adds a time penalty.</span></p>
       <div class="ld-recovery" id="ldRecovery" hidden><div id="ldReturn"></div></div>
-      <p class="sr-only" id="ldLive" role="status" aria-live="polite"></p>
-    </div>
-  </div>
-  <canvas id="overview" width="560" height="640" hidden></canvas>
-</div>
+      <p class="sr-only" id="ldLive" role="status" aria-live="polite"></p></div></div><canvas id="overview" width="560" height="640" hidden></canvas></div>
+<!-- ui-layout:loading:end -->
 
 <!-- results / garage -->
 <div id="menu">

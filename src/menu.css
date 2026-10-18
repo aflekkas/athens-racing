@@ -15,8 +15,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .home { display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1.5fr); gap: var(--s-6); align-items: center; min-height: 0; }
 .home__brand { align-self: center; min-width: 0; }
 .title__mark { display: flex; align-items: center; gap: .16em; margin: 0; font-size: min(5rem, 15vw, 13vh); line-height: 1; }
-.ld-brand { display: flex; align-items: center; gap: .6rem; }
-.ld-brand .brand-mark { width: 2.6rem; height: 2.6rem; }
+
+
 .title__tag { margin: var(--s-4) 0 0; max-width: 24rem; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-md); line-height: 1.5; color: var(--c-text-2); }
 .title__menu { display: grid; gap: var(--s-3); }
 /* ---------------------------------------------------------------- mode select: two app cards */
@@ -219,7 +219,7 @@ body .racer-marker .racer-chevron { width: 1.2em; height: 1.2em; margin: .05em a
 body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/chevron-right.svg); mask-image: url(../assets/icons/chevron-right.svg); }
 /* the floating multiplayer button never shows over the loading or title screens */
 /* The race-corner MULTIPLAYER button is HUD only: it never floats over a menu screen or its header (owner 2026-10-18). */
-#loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle, body.ui-open #mp-toggle { display: none !important; }
+body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle, body.ui-open #mp-toggle { display: none !important; }
 /* The garage catalogue: a scrollable grid with one renderer shared by its thumbnails. */
 /* focusing a card keeps its class header in view */
 
@@ -300,7 +300,7 @@ body[data-mode="taxi"] #hud #routeBox, body[data-mode="getaway"] #hud #routeBox 
   body[data-mode="taxi"] #input-toast, body[data-mode="getaway"] #input-toast { top: 316px; }
 }
 /* Every detached race widget follows the same menu visibility policy as the main HUD. */
-body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#multiplayer:not([hidden])) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#loading.open) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
+body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#multiplayer:not([hidden])) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
 #checkpoint-banner { position:absolute;top:94px;left:50%;transform:translateX(-50%);width:330px;padding:9px 14px;background:#311d16ed;border-left:3px solid #ffb277;box-sizing:border-box;color:#fff;font-family:var(--font-ui,sans-serif);pointer-events:none }
 #checkpoint-banner b { display:block;font-size:16px;letter-spacing:.08em;color:#ffb277 }
 #checkpoint-banner span { font-size:11px;letter-spacing:.07em }

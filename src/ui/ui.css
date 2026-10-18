@@ -1256,3 +1256,75 @@ body #mp-toggle[hidden] { display: none !important; }
 .setup__map { display: block; width: 100%; max-height: 11rem; margin-bottom: var(--s-4); }
 .setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }
 .setup__fields > .btn { margin: var(--s-2) 0; }
+
+/* Loading MapStage: style.css */
+#loading { position: fixed; inset: 0; z-index: 40; overflow: hidden; background: radial-gradient(110% 90% at 72% 42%, #13212c 0%, #080b0f 62%); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .45s ease, visibility .45s; font-family: var(--cond); color: #fff; }
+#loading.open { opacity: 1; visibility: visible; pointer-events: auto; }
+#loading .ld-art { position: absolute; top: 4vh; bottom: 4vh; right: 2vw; width: min(62vw, 150vh); display: grid; place-items: center; opacity: .9; }
+#loading .ld-art svg { width: 100%; height: 100%; }
+#loading .ld-route { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .5s cubic-bezier(.2,.9,.3,1); filter: drop-shadow(0 0 6px rgba(255,59,47,.6)); }
+#loading .ld-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,11,15,.96) 0%, rgba(8,11,15,.75) 34%, rgba(8,11,15,0) 62%), linear-gradient(0deg, rgba(8,11,15,.95), rgba(8,11,15,0) 32%); }
+#loading .ld-wrap { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(1rem, 5vh, 3.5rem) clamp(1rem, 5vw, 6rem) clamp(1rem, 4vh, 3rem); }
+#loading .ld-map { align-self: center; max-width: min(36rem, 100%); }
+#loading .ld-map .kick { display: flex; align-items: center; gap: .6em; }
+#loading .ld-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); }
+#loading h1 { margin: .4rem 0 0; font-style: italic; font-weight: 900; font-size: min(5.2rem, 14vw, 16vh); line-height: .9; letter-spacing: .005em; }
+#loading #ldSub { margin: .6rem 0 0; font-family: var(--sans); font-weight: 600; font-size: 1.15rem; color: #c7ced6; }
+#loading .ld-foot { display: grid; gap: .55rem; max-width: 60rem; }
+#loading .ld-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-weight: 800; letter-spacing: .24em; font-size: .875rem; color: #c7ced6; }
+#loading #lpct { font-style: italic; font-size: 1.25rem; letter-spacing: .04em; color: #fff; font-variant-numeric: tabular-nums; }
+#loading .ld-bar { height: 5px; }
+#loading .ld-tip { display: flex; align-items: baseline; gap: .8rem; margin: .5rem 0 0; min-height: 2.6em; font-family: var(--sans); font-weight: 600; font-size: 1rem; line-height: 1.35; color: #e3e8ee; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+#loading .ld-tip__k { flex: none; padding: .15em .5em; border-radius: 2px; background: var(--red); font-family: var(--cond); font-weight: 800; font-size: .75rem; letter-spacing: .2em; color: #fff; }
+@media (max-aspect-ratio: 1/1) { #loading .ld-art { top: 16vh; bottom: auto; left: 0; right: 0; width: 100%; height: 42vh; } }
+@media (max-aspect-ratio: 1/1) { #loading .ld-shade { background: linear-gradient(0deg, rgba(8,11,15,.97) 30%, rgba(8,11,15,0) 60%), linear-gradient(180deg, rgba(8,11,15,.8), rgba(8,11,15,0) 22%); } }
+@media (max-aspect-ratio: 1/1) { #loading .ld-wrap { grid-template-rows: auto 1fr auto auto; } }
+@media (max-aspect-ratio: 1/1) { #loading .ld-map { grid-row: 3; margin-bottom: 1.5rem; } }
+@media (max-aspect-ratio: 1/1) { #loading .ld-foot { grid-row: 4; } }
+@media (max-aspect-ratio: 1/1) { #loading .ld-brand { grid-row: 1; } }
+@media (max-height: 500px) { #loading .ld-tip { min-height: 0; } }
+@media (max-height: 500px) { #loading .ld-art { width: 55vw; } }
+
+/* Loading MapStage: src/menu.css */
+.ld-brand { display: flex; align-items: center; gap: .6rem; }
+.ld-brand .brand-mark { width: 2.6rem; height: 2.6rem; }
+#loading.open ~ #mp-toggle { display: none !important; }
+body:has(#loading.open) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
+
+/* Loading MapStage: src/ui/headunit.css */
+:root #loading { background: radial-gradient(110% 90% at 70% 42%, #102029 0%, #05080b 62%); font-family: var(--f-sans); }
+:root #loading .ld-shade { background: linear-gradient(90deg, rgba(5,8,11,.97) 0%, rgba(5,8,11,.78) 34%, rgba(5,8,11,0) 62%), linear-gradient(0deg, rgba(5,8,11,.95), rgba(5,8,11,0) 34%); }
+:root #loading .ld-route { filter: drop-shadow(0 0 6px rgba(255,90,70,.55)); }
+:root #loading .ld-map .kick { font-size: var(--t-xs); }
+:root #loading .ld-dot { background: var(--hu-ice); box-shadow: 0 0 6px var(--hu-ice); }
+:root #loading h1 { margin: .5rem 0 0; font-family: var(--f-sans); font-style: normal; font-weight: 300; font-size: min(4.2rem, 11vw, 13vh); line-height: 1; letter-spacing: .1em; text-transform: uppercase; }
+:root #loading #ldSub { font-weight: 500; font-size: var(--t-lg); letter-spacing: .02em; color: var(--hu-text-2); }
+:root #loading .ld-foot { gap: .7rem; max-width: 56rem; }
+:root #loading .ld-row { align-items: baseline; min-height: 1.5rem; font: 600 var(--t-sm) var(--f-cond); letter-spacing: .2em; color: var(--hu-text); }
+:root #loading #lstat { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:root #loading #lpct { flex: none; font: 500 var(--t-md) var(--f-sans); letter-spacing: .02em; color: var(--hu-text-2); font-variant-numeric: tabular-nums; }
+:root #loading .ld-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin: 0; padding: 0; list-style: none; }
+:root #loading .ld-step { display: grid; gap: .5rem; min-width: 0; }
+:root #loading .ld-step .progress { height: 3px; }
+:root #loading .ld-step__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .2em; color: var(--hu-text-4); transition: color var(--dur) var(--ease); }
+:root #loading .ld-step[data-state="done"] .ld-step__name { color: var(--hu-text-3); }
+:root #loading .ld-step[data-state="active"] .ld-step__name { color: var(--hu-ice); }
+:root #loading .ld-step[data-state="failed"] .ld-step__name { color: var(--c-bad); }
+:root #loading .ld-note { display: flex; align-items: baseline; gap: .6rem; margin: .1rem 0 0; font: 500 var(--t-sm)/1.45 var(--f-sans); color: var(--hu-text-2); animation: ui-fade .3s var(--ease) both; }
+:root #loading .ld-note::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--hu-ice); transform: translateY(-1px); }
+:root #loading .ld-note[hidden], :root #loading .ld-issue[hidden], :root #loading .ld-recovery[hidden], :root #loading .ld-tip[hidden] { display: none; }
+:root #loading .ld-issue { display: grid; gap: .35rem; max-width: 38rem; margin-top: .4rem; padding: 1rem 1.15rem 1.1rem; border-radius: var(--r-3);
+  background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair); box-shadow: var(--hu-shadow); animation: ui-fade .25s var(--ease) both; }
+:root #loading .ld-issue__what { margin: 0; font: 600 var(--t-sm) var(--f-cond); letter-spacing: .2em; color: var(--tt-amber); }
+:root #loading .ld-issue__body { margin: 0; font: 500 var(--t-md)/1.45 var(--f-sans); color: var(--hu-text); }
+:root #loading .ld-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .6rem; }
+:root #loading .ld-recovery { display: flex; margin-top: .2rem; }
+:root #loading .ld-tip { align-items: center; gap: .9rem; width: fit-content; max-width: 100%; margin-top: .9rem; min-height: 0; padding: .7rem 1.2rem .7rem .7rem; border-radius: var(--r-3);
+  background: var(--hu-sheen), var(--hu-glass); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--hu-hair); box-shadow: var(--hu-shadow);
+  font: 500 var(--t-sm)/1.45 var(--f-sans); color: var(--hu-text); text-shadow: none; }
+:root #loading .ld-tip__k { padding: .35em .7em; border-radius: var(--r-pill); background: var(--hu-ice-tint); box-shadow: inset 0 0 0 1px rgba(111,208,255,.35); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .2em; color: var(--hu-ice); }
+@media (max-width: 560px) { :root #loading .ld-row { font-size: var(--t-xs); letter-spacing: .16em; } }
+@media (max-width: 560px) { :root #loading .ld-steps { gap: .35rem; } }
+@media (max-width: 560px) { :root #loading .ld-step__name { letter-spacing: .12em; } }
+@media (max-width: 560px) { :root #loading .ld-actions > * { flex: 1 1 100%; } }
+@media (max-width: 560px) { :root #loading .ld-tip { display: none; } }
