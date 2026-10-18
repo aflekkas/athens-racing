@@ -2,7 +2,7 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-18 00:20 UTC.
+Last updated: 2026-10-18 00:55 UTC. Known red tests on prod: cockpit POV hashes + trim-order assertion (garage agent fixing).
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
 Production is on hold (`~/.local/state/athens-release/production-hold`). Staging keeps auto-deploying green `prod` commits. The hold lifts once everything below is done and checked on staging.
@@ -15,8 +15,8 @@ Production is on hold (`~/.local/state/athens-release/production-hold`). Staging
 - [~] Settings sidebar redesign (Opus, Enterprise)
 - [~] Blur behind dialogs (Sol)
 - [~] Google sign-in required, no Play offline, enforced on the server, Google button in the game font (Sol)
-- [~] Title: remove "GREEK ROADS / PURE TIME", staging badge to bottom left (Sol)
-- [~] Simple inner-screen header (Back + breadcrumb + title), clock removed everywhere (Sol)
+- [x] Title: remove "GREEK ROADS / PURE TIME", staging badge to bottom left (`91bb033d`)
+- [x] Simple inner-screen header (Back + breadcrumb + title), clock removed everywhere (`234c94f2`, `f747c8ff`, `bd8ff407`)
 - [~] Lucide icons everywhere, no glyph arrows (Sol)
 - [~] Garage: drive pill inside card, brand logo, brand filter, filters under title, spec card redesign, hide paint when there's none, viewer without plate and centred (Sol)
 - [~] Fix broken Fiat Ducato model + audit every model for leaked cockpit parts (Astra)
