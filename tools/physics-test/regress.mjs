@@ -36,6 +36,33 @@ const results = [];
 function check(name, ok, info = '') { (ok ? passes++ : fails++); results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}${info ? '  [' + info + ']' : ''}`); }
 const f3 = (x) => (+x).toFixed(3), f2 = (x) => (+x).toFixed(2), f1 = (x) => (+x).toFixed(1);
 
+// REGRESS_PART splits this file for the release gate (tools/release-fast.mjs), which runs the parts side by side:
+//   unset            everything (CI, local runs)
+//   rest             everything except the heavy suspension-stability runs (about three quarters of the CPU time)
+//   stab:K/N         only the heavy suspension-stability runs for catalogue entries K, K+N, K+2N ...
+const part = (() => {
+  const raw = process.env.REGRESS_PART || '';
+  if (!raw) return { kind: 'all' };
+  if (raw === 'rest') return { kind: 'rest' };
+  const m = /^stab:(\d+)\/(\d+)$/.exec(raw);
+  if (!m || +m[1] >= +m[2]) throw new Error(`REGRESS_PART must be rest or stab:K/N, got ${raw}`);
+  return { kind: 'stab', k: +m[1], n: +m[2] };
+})();
+async function heavyStability(specs) {
+  const {stabilityScenarios}=await import('./heavy-stability.mjs');
+  for(const r of stabilityScenarios(specs)){
+    const {id,type,ok,...metrics}=r;
+    check(`suspension stability ${id}: ${type}`,ok,JSON.stringify(metrics));
+  }
+}
+function finish() {
+  console.log(results.join('\n'));
+  console.log(`\n${passes} passed, ${fails} failed`);
+  process.exitCode = fails ? 1 : 0;
+}
+if (part.kind === 'stab') { await heavyStability(catalogue().filter((_, index) => index % part.n === part.k)); finish(); process.exit(process.exitCode); }
+if (part.kind === 'rest') console.log('(REGRESS_PART=rest: the heavy suspension-stability runs are covered by the stab shards)');
+
 /** settle into a steady corner on constant steer and part throttle, then apply phase 2 inputs */
 function corner(drive, phase2, o = {}) {
   const v = mk({ drive, ...o }); v.reset(0, 0, o.v0 ?? 60 / 3.6); v.gear = o.gear ?? 2;
@@ -288,13 +315,7 @@ else {
 }
 
 // Vertical stability on every catalogue configuration, including heavy and assisted fleet.
-{
- const {stabilityScenarios}=await import('./heavy-stability.mjs');
- for(const r of stabilityScenarios()){
-  const {id,type,ok,...metrics}=r;
-  check(`suspension stability ${id}: ${type}`,ok,JSON.stringify(metrics));
- }
-}
+if (part.kind === 'all') await heavyStability(catalogue());
 
 // Representative real-trim performance: tighter than the catalogue-wide sanity envelope.
 // 120s allows stock power/aero to approach terminal speed; 12% sprint / 3% top tolerances.
@@ -382,6 +403,4 @@ for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','avent
   }
 }
 
-console.log(results.join('\n'));
-console.log(`\n${passes} passed, ${fails} failed`);
-process.exitCode = fails ? 1 : 0;
+finish();

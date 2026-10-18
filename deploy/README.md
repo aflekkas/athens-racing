@@ -206,8 +206,7 @@ Wrangler's `staging` and `production` environments explicitly set `ASR_BUILD_ENV
 
 ## Automatic releases (VPS release train)
 
-The pre-deploy suite command remains **`npm test`**. It invokes the bounded,
-fail-fast `tools/run-tests.mjs` runner and prints per-group wall times. Keep the
+The pre-deploy suite command remains **`npm test`**. It runs `tools/run-tests.mjs`, which starts every test file in its own process from one work pool (see "Fast release path" below), reports every failure, and reruns a failed file once, alone. Keep the
 train calling the npm command so repository scripts remain the source of truth;
 do not duplicate loader flags or file lists in the train. Schedule
 `npm run test:full` separately for nightly Penteli bake equality, Penteli/Megara rendered-terrain
@@ -227,3 +226,50 @@ A failing commit is recorded and skipped until a newer commit arrives. State and
 - `touch ~/.local/state/athens-release/production-hold`: deploy staging only. Remove the file and delete `deployed` to promote the current commit.
 - When the repository has a `CLOUDFLARE_API_TOKEN` Actions secret, the train only pushes and GitHub Actions deploys.
 - `systemctl --user start athens-release.service`: run now. `journalctl --user -u athens-release`: service output.
+
+## Fast release path (`tools/release-fast.mjs`)
+
+`npm install` was never the slow part (`npm ci` runs only when `package-lock.json` changes, about 19 s). Time went on the gates running one after another, a 9-40 minute test run in which one failing group killed the others, and baking every map three times (dry run, staging, production, about 5 CPU-minutes each). The train, and the staging-lane script in `accfaef6` (patch below), now call `node tools/release-fast.mjs`, so the policy lives in one place. Commits that predate the tool fall back to the old sequential gates.
+
+**`gates`** runs everything at once on the unpacked commit, then reports every failure:
+
+| check | what it runs |
+|---|---|
+| `tests` | `npm test` (`tools/run-tests.mjs`): one process per test file, as wide as the machine (`ASR_TEST_JOBS`, default min(CPUs, 8)), heaviest first (`tools/test-weights.json`), group limits for the memory-heavy world files |
+| `regress-rest`, `regress-stab-K-4` | `tools/physics-test/regress.mjs` split with `REGRESS_PART` (`rest`, `stab:0/4` ... `stab:3/4`); the parts cover exactly the runs of the unsharded script (1261 checks), which still works for CI and local runs |
+| `events`, `ghost-lap`, `syntax`, `browser-imports` | the other CI gates, unchanged |
+| `build-<env>` | in a private copy of the commit (`<archive>.fast/<env>`): `tools/prepare-deploy.mjs` for that environment, then `wrangler deploy --dry-run` on the finished bundle |
+
+`deploy` uploads the bundle `gates` built, using a copy of `wrangler.jsonc` with its `build` steps removed (`wrangler.prebuilt.jsonc`), so nothing is built twice. Without a prebuilt bundle it builds first.
+
+**Measured (2026-10-18, 8 CPUs, host load 15-30 from other agents, so wall times are inflated 2-4x against an idle box):**
+
+| step | before | after |
+|---|---|---|
+| `npm test` | 9 min idle, 15-40 min loaded; one failing group killed the rest | 3.9-4.6 min, in parallel with everything else below; all failures reported, flaky files retried alone |
+| standalone physics regression | 232 s wall (184 CPU-s), after `npm test` | 147 s wall as 5 parts beside the tests (about 60 CPU-s on the longest part) |
+| events, ghost lap, syntax, browser imports | about 20 s, in sequence | in parallel, off the critical path |
+| `prepare-deploy` (map bake) | 535 s wall / 320 CPU-s, run 3 times (dry run, staging, production) | cold bake 172 s wall (maps in parallel), only after map code or data changed; otherwise 9-15 s, once per environment |
+| `wrangler deploy` | build + upload | upload only, 10-13 s |
+| live smoke | 20 s sleep + 94 s | 5 s sleep + 94 s (the race is real-time: 86 s at the server's 120 m/s speed cap) |
+| commit to staging | 24 min good runs, 42 min today (`b91e761`), 15-40 min lost per flaky failure | about 4.5 min of gates + 12 s deploy + 100 s smoke when the bake is cached; 9 min on a cold bake |
+| staging to production (same tree) | 8.1 min (bake and tests partly rerun) | about 2.3 min: gates 20 s (proven on the tree), build 15 s, deploy 11 s, smoke 100 s |
+
+The timer still fires every 10 minutes, so add up to 10 minutes of waiting to a commit.
+
+**Same tree, no rerun.** A passing check is recorded in `~/.cache/athens-release/gates/<node major>-<git tree hash>/<check>-<hash of its command>.json`. A re-deploy, a retry after a deploy or smoke failure, the sync-merge commit pushed to `staging` and a release merge commit whose tree equals the tested `staging` tree all skip the checks that already passed on that tree. Only passes are recorded; a failure always reruns. Delete the directory (or run with `--no-cache`) to force a full run. Builds are never cached as results (they are the deploy artifact), but they are cheap, see the bake cache.
+
+**Bake cache** (`tools/bake-cache.mjs`, used by `tools/bake-world.mjs`): the world bake is nearly all of `prepare-deploy`. Each map's output (the `data/baked/*` downloads, its data file with the `bakedWorld` field, its codec policy) is stored under `~/.cache/athens-release/bake/<key>/`. The key hashes:
+- every local source file `tools/bake-world.mjs` imports, found with an esbuild metafile (so terrain, road, pack or catalogue changes miss, and a UI-only change cannot), except `src/asset-codec-policy.js`, which is the bake's own output;
+- the map's data and terrain files, the only files the bake reads at run time. The bake fails if it ever reads another file, so a hidden input cannot make the cache stale;
+- the three.js and Node/zlib versions and a `CACHE_VERSION` constant.
+
+A hit installs byte-identical files (the whole `.deploy/assets` tree hashes the same cold and warm). Misses bake in parallel child processes (`ASR_BAKE_JOBS`, default min(3, CPUs)). Entries are published by atomic rename, so trains and agents can share the cache. It is capped (`ASR_CACHE_MAX_BYTES`, default 3 GB; least recently used first; the newest four and anything under ten minutes old are kept) and `release-fast.mjs prune` also deletes gate records older than 30 days and stray `/tmp/athens-release-*.fast` dirs older than six hours. `ASR_BAKE_CACHE=off` bypasses it; `ASR_CACHE_DIR` moves it.
+
+**Flaky tests.** A test file that fails is rerun once, alone, after the pool drains (the machine is then quiet). If it passes, the run passes, and the first attempt's output is printed under `[flaky]`, listed in the `[summary]`, appended as JSON lines to `$ASR_TEST_FLAKY_LOG` and written by the train to `train.log` as `<sha> flaky test <file>: failed under load (...), passed alone on retry (...)`. GitHub Actions also gets a `::warning`. A file that fails twice fails the run, so a deterministic failure is never masked. If more than 12 files fail it is a breakage, not flakiness, and nothing is retried. `--no-retry` (or `ASR_TEST_RETRY=0`) turns retry off. Grep `flaky test` in `train.log` to see which tests need de-flaking.
+
+**Browser tests** (for example `tools/garage-cards.test.mjs`) go through `tools/browser-slot.sh`. The train's tests use their own pool (`BROWSER_SLOT_POOL=release`, two slots), so they no longer queue behind other agents' browsers (one such test waited 590 s). Other agents' pool is unchanged.
+
+**Train integration.** `~/.local/bin/athens-release-train` calls `gates --envs staging[,production]` (production is skipped while `production-hold` exists), `deploy --env <env>`, then its own smoke test (with the `SMOKE_TOKEN` export); `prune` runs after the gates. The release-by-PR train from `accfaef6` needs the same few edits: `deploy/release-fast-newflow.patch` applies to `deploy/athens-release-train.sh` as it is in that commit (`git apply deploy/release-fast-newflow.patch`). The patch also adds the `SMOKE_TOKEN` export to that script's `smoke()`, which that commit predates.
+
+Stage logs: `<archive>.fast/logs/*.log` during a run (removed with the archive); failures are copied to `~/.local/state/athens-release/last-failure.log` as before. `train.log` gains `gates passed in N s; ... slowest: ...` and `wrangler deploy <env> finished in N s` lines.

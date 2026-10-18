@@ -180,7 +180,10 @@
     "tools/owner-locked-no-checkpoints.test.mjs",
     "server/course-validation.test.mjs",
     "tools/minimap-route.test.mjs",
-    "tools/owner-locked-free-roam-clean.test.mjs"
+    "tools/owner-locked-free-roam-clean.test.mjs",
+    "tools/run-tests.test.mjs",
+    "tools/bake-cache.test.mjs",
+    "tools/release-fast.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
@@ -208,6 +211,7 @@
   ],
   "world": [
     "tools/world-tests.test.mjs",
+    "tools/world-tests-psychiko.test.mjs",
     "tools/world-gen/pack.test.mjs",
     "tools/world-gen/conformance.test.mjs"
   ]

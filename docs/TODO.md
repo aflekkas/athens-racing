@@ -48,6 +48,8 @@ Waiting on the owner:
 - [x] Production live at athensracing.com with `bf99234` (menu redesign, accounts code, every vehicle, dash and badges, beach fix).
 - [~] Next train round: hero fix, flat UI, release photos, HUD-motion Full default, render fixes.
 - [ ] GitHub Actions deploy (optional): needs a `CLOUDFLARE_API_TOKEN` repo secret. The train switches to push-only automatically once it exists.
+- [x] Fast release path: gates run in parallel, per-map bake cache, same-tree gate memory, one-shot flaky-file retry, prebuilt bundle deploys (`tools/release-fast.mjs`, `deploy/README.md` "Fast release path"). Cut `deploy/release-fast-newflow.patch` into `deploy/athens-release-train.sh` when `accfaef6` lands.
+- [ ] Release-speed follow-ups: nightly check that a cached bake equals a fresh bake; split the Riviera half of `tools/world-tests.test.mjs` further; Actions CI could reuse `tools/release-fast.mjs gates`.
 
 ## Accounts (Google sign-in only)
 - [x] Accounts, friends, presence and invites; Google only; the gate turns on only when configured (`d134110`…`b585492`).
