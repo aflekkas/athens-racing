@@ -191,3 +191,16 @@ test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the h
     assert.equal(production.badge, null);
   } finally { globalThis.document = priorDocument; }
 });
+
+test('dialog, confirm and pause share an animated blurred backdrop with a tinted fallback', () => {
+  const css = read(KIT_CSS), kit = read(KIT_JS), menu = read('src/menu.js');
+  assert.match(css, /\.dialog-scrim, \.modal-scrim, \.scr--pause::before\s*\{[^}]*-webkit-backdrop-filter: blur\(var\(--overlay-blur\)\); backdrop-filter: blur\(var\(--overlay-blur\)\)/);
+  assert.match(css, /--overlay-blur: 12px; background: rgba\(3,5,7,\.66\)/);
+  assert.match(css, /@supports \(\(backdrop-filter: blur\(12px\)\)/);
+  assert.match(css, /@media \(pointer: coarse\), \(prefers-reduced-transparency: reduce\)/);
+  assert.match(css, /data-ui-backdrop=tint/);
+  assert.match(css, /@keyframes ui-overlay-out/);
+  assert.match(kit, /\['potato', 'low'\]\.includes\(settings.perfClass\)/);
+  assert.match(kit, /m\.root\.classList\.add\('is-closing'\)/);
+  assert.match(menu, /if \(entering\) C\.exitBackdrop\(this\.root\)/);
+});

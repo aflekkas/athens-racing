@@ -31,6 +31,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //
 // Icons: Phosphor Icons (bold, MIT), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
 
+import { settings, onSettings } from '../settings.js';
 import { bindingLabel } from '../input-labels.js';
 import { driverName } from '../driver-name.js';
 export let hintBindings = null;
@@ -52,6 +53,21 @@ if (typeof document !== 'undefined' && typeof fetch === 'function') fetch(SPRITE
 }).catch(() => {});
 export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hidden="true" focusable="false"><use href="${spriteInline ? '#ico-' : SPRITE + '#'}${name}"/></svg>` : '';
 export function iconEl(name, cls = '') { const t = document.createElement('template'); t.innerHTML = icon(name, cls); return t.content.firstChild; }
+
+// Backdrop effects exist only on mounted overlays. Low performance classes and touch devices use tint.
+if (typeof document !== 'undefined') {
+  const syncBackdrop = () => { document.documentElement.dataset.uiBackdrop = ['potato', 'low'].includes(settings.perfClass) ? 'tint' : 'blur'; };
+  syncBackdrop(); onSettings(syncBackdrop);
+}
+/** Keep the outgoing overlay alive for its short fade after menu navigation replaces the screen. */
+export function exitBackdrop(root) {
+  const overlay = root.querySelector('.dialog-scrim, .scr--pause');
+  if (!overlay) return;
+  const rect = root.getBoundingClientRect();
+  overlay.style.cssText = `position:fixed;inset:auto;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;box-sizing:border-box`;
+  overlay.inert = true; overlay.setAttribute('aria-hidden', 'true'); overlay.classList.add('is-closing');
+  layer().append(overlay); setTimeout(() => overlay.remove(), 180);
+}
 
 // ------------------------------------------------------------------ value formats (sliders / steppers)
 const FORMATS = {
@@ -499,7 +515,8 @@ let modal = null; // { root, actions, focus, resolve, dismissible, timer }
 function renderModalFocus() { modal?.buttons.forEach((b, i) => b.classList.toggle('focus', i === modal.focus)); }
 function closePrompt(result = null) {
   if (!modal) return; const m = modal; modal = null;
-  clearTimeout(m.timer); m.root.remove(); m.resolve(result);
+  clearTimeout(m.timer); m.root.inert = true; m.root.classList.add('is-closing');
+  setTimeout(() => m.root.remove(), 180); m.resolve(result);
 }
 function prompt({ title = '', body = '', icon: ic = 'info', actions = [{ id: 'ok', label: 'OK', variant: 'primary' }], dismissible = true, timeout = 0, timeoutId = null, hints = true } = {}) {
   if (modal) closePrompt(null);

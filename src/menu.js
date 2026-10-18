@@ -93,12 +93,14 @@ export class Menu {
   }
   hide() {
     this.leaving(); this.mapView?.dispose(); this.mapView = null;
+    C.exitBackdrop(this.root);
     this.screen = this.shown = null; this.stack.length = 0; MP.afterRender(this); this.root.innerHTML = '';
     document.body.classList.remove('ui-open'); delete document.body.dataset.ui; MP.syncFlag(null);
   }
   /** morph: patch the current screen in place (refresh, tab switch, search) instead of rebuilding it */
   render({ morph = false } = {}) {
     const entering = this.screen !== this.shown;
+    if (entering) C.exitBackdrop(this.root);
     if (morph && !entering && this.root.firstElementChild && this.screen !== 'maps' && !(this.screen === 'car' && this.data.detail)) return this.patch();
     const keepCar = this.screen === 'car' && this.data.detail && this.carView?.index === (this.data.index || 0);
     const stage = keepCar ? this.root.querySelector('#carStage') : null;

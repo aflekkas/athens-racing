@@ -291,7 +291,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 /* ---------------------------------------------------------------- modal / prompt: a glass sheet */
 #ui-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
-.modal-scrim { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); background: rgba(3,5,7,.55); pointer-events: auto; animation: ui-fade .18s ease both; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.modal-scrim { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); pointer-events: auto; }
 .modal { width: min(30rem, 100%); max-height: calc(100% - 2rem); overflow-y: auto; padding: var(--s-5); border-radius: var(--r-4);
   background: rgba(14, 19, 26, .97); border: 1px solid var(--ui-line-2);
   box-shadow: 0 1.5rem 4rem rgba(0,0,0,.55); animation: ui-pop .24s var(--ease) both; font-family: var(--f-sans); color: #fff; }
@@ -552,8 +552,8 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .sheet-head__status .ico { width: 1.2em; height: 1.2em; }
 
 .dialog-host { position: absolute; inset: 0; }
-.dialog-under { position: absolute; inset: 0; }
-.dialog-scrim { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: var(--s-4); background: rgba(3,5,7,.66); animation: ui-fade .18s ease both; }
+.dialog-under { position: absolute; inset: 0; z-index: 0; isolation: isolate; }
+.dialog-scrim { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: var(--s-4);  }
 .dialog { box-sizing: border-box; display: grid; gap: var(--s-4); width: min(27rem, 100%); max-height: calc(100% - 2rem); overflow-y: auto; padding: var(--s-6) var(--s-5) var(--s-5);
   background: var(--hu-glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--hu-shadow); animation: ui-pop .18s ease both; }
 .dialog .sheet-head__title { font-size: var(--t-xl); letter-spacing: .1em; }
@@ -664,3 +664,32 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 
 /* Owner 2026-10-17: deployment identity belongs at the footer left. */
 .scr__foot > .build-badge { margin-right: auto; }
+
+/* One static backdrop for dialogs, confirm prompts and the pause sheet. No filter on the racing canvas.
+   Fade the composited scrim (including its blur) together with the panel; no per-frame filter animation. */
+.dialog-scrim, .modal-scrim, .scr--pause::before {
+  --overlay-blur: 0px;
+  background: rgba(3,5,7,.86);
+  -webkit-backdrop-filter: blur(var(--overlay-blur)); backdrop-filter: blur(var(--overlay-blur));
+  animation: ui-fade .18s ease both;
+}
+.scr--pause { position: relative; isolation: isolate; }
+.scr--pause::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+@supports ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+  .dialog-scrim, .modal-scrim, .scr--pause::before { --overlay-blur: 12px; background: rgba(3,5,7,.66); }
+}
+/* Touch devices avoid a full-viewport backdrop pass; reduced transparency and low tiers do too. */
+@media (pointer: coarse), (prefers-reduced-transparency: reduce) {
+  .dialog-scrim, .modal-scrim, .scr--pause::before { --overlay-blur: 0px; -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(3,5,7,.86); }
+}
+:root[data-ui-backdrop=tint] .dialog-scrim, :root[data-ui-backdrop=tint] .modal-scrim, :root[data-ui-backdrop=tint] .scr--pause::before {
+  --overlay-blur: 0px; -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(3,5,7,.86);
+}
+.dialog-scrim.is-closing, .modal-scrim.is-closing, .scr--pause.is-closing { pointer-events: none; animation: ui-overlay-out .18s ease both; }
+.is-closing > :is(.dialog, .modal), .scr--pause.is-closing::before { animation: none; }
+@keyframes ui-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+
+#ui.is-entering .scr--pause { animation: none; }
+.scr--pause > * { animation: ui-fade .18s ease both; }
+/* The inert screen is a single stable backdrop, not a second entering screen. */
+#ui.is-entering .dialog-under .scr { animation: none; }
