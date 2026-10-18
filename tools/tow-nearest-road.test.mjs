@@ -105,7 +105,7 @@ test('race: the route wins within 40 m, otherwise the nearest road; never before
   assert.equal(away.kind, 'road'); assert.ok(away.distance < far.g.hw + 3);
   // Never before the latest valid on-road pose: a floor ahead of the nearest route point moves the placement forward.
   for (const dir of [1, -1]) {
-    const ref = dir > 0 ? q.s : -q.s, floor = Math.max(0, dir * ref) + 60;
+    const ref = dir > 0 ? q.s : q.s - P.route.length, floor = Math.max(0, dir * ref) + 60;
     const held = planTow({ x: near.x, z: near.z, yaw, route: P.server, index: P.index, dir, course: { s0: 0, dir, floor, ref } });
     assert.equal(held.kind, 'route'); assert.ok(held.s * dir >= floor - 1e-6, `placed at ${held.s}, floor ${floor}`);
   }

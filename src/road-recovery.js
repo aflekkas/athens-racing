@@ -37,7 +37,7 @@ export function roadRecoveryPose(route,vehicle,dir=1,station=null,retreat=dir,fl
 export function routeTowAdapter(route) {
   return {
     closed: route.closed, length: route.length,
-    project: (x, z) => route.project(x, z, null),
+    project: (x, z, hint = null, range = 120) => route.closed && Number.isFinite(hint) ? route.project(x, z, hint, Math.ceil(range / route.step)) : route.project(x, z, null),
     edge: s => route.edge(s),
     centre: s => route.frame(s, {}),
     pose(s, d, retreat = d, floor = null) {
