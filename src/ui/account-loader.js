@@ -17,9 +17,10 @@ export function install(menu) {
   const show = menu.show.bind(menu), hide = menu.hide.bind(menu), activate = menu.activate.bind(menu), back = menu.back.bind(menu), pop = menu.pop.bind(menu);
   menu.r_signIn = () => ''; // Replaced by the lazy dialog before any controls become available.
   menu.show = (screen, ...args) => {
+    const requestedScreen = screen;
     if (client.blocked) screen = client.user && !client.offline ? 'accountName' : 'signIn';
     if (!installed && /^(account|signIn)/.test(screen)) {
-      void ensure().then(() => menu.show(screen, ...args)); return show('signIn');
+      void ensure().then(() => menu.show(client.blocked ? screen : requestedScreen, ...args)); return show('signIn');
     }
     return show(screen, ...args);
   };

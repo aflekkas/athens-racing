@@ -47,6 +47,7 @@ export class AccountsClient {
     this.checking = true;
     try {
       const s = await this.api("/api/auth/session");
+      if (!s.user) this.disconnect();
       this.user = s.user; this.csrf = s.csrf; this.offline = false;
       this.error = s.user ? "" : "Your session expired. Sign in with Google to continue.";
       this.onChange();

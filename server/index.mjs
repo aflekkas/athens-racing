@@ -45,7 +45,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
       const request = new Request(new URL(req.url, 'http://' + (req.headers.host || 'localhost')), { method: req.method, headers: req.headers, ...(!['GET', 'HEAD'].includes(req.method) ? { body: req, duplex: 'half' } : {}) });
-      if (path.startsWith('/api/auth/')) {
+      if (/^\/api\/auth\/(config|session|logout|google\/(start|callback))$/.test(path) || path.startsWith('/api/account/') && accountEnv.ACCOUNTS) {
         const result = await accounts(request, accountEnv);
         res.writeHead(result.status, Object.fromEntries(result.headers)); res.end(Buffer.from(await result.arrayBuffer())); return;
       }

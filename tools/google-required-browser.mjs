@@ -34,9 +34,9 @@ try {
   await page.evaluate(() => { const m = window.__bootMenu; m.show('settings'); m.hide(); m.pop(); m.h.garage(); }); await gate();
   const font = await page.locator('.btn--google').evaluate(el => { const s = getComputedStyle(el); return { family: s.fontFamily, weight: s.fontWeight, spacing: s.letterSpacing, caps: s.textTransform }; });
   assert.match(font.family, /Barlow Condensed/); assert.equal(font.weight, '700'); assert.equal(font.caps, 'uppercase'); assert.ok(parseFloat(font.spacing) > 1);
-  await page.screenshot({ path: resolve(out, 'google-required-1280.png') });
+  console.log('Capturing'); await page.screenshot({ animations: 'disabled', timeout: 60000, path: resolve(out, 'google-required-1280.png') });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: resolve(out, 'google-required-390.png') });
+  console.log('Capturing'); await page.screenshot({ animations: 'disabled', timeout: 60000, path: resolve(out, 'google-required-390.png') });
   const box = await page.locator('.dialog').boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= 390);
   await page.context().setOffline(true); await page.waitForFunction(() => window.__bootMenu.accounts.offline); await gate();
   assert.match(await page.locator('.account-error').innerText(), /internet/);

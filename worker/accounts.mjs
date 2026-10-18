@@ -157,10 +157,7 @@ export async function accounts(request, env, fetcher = fetch) {
       });
     }
     if (!db || !env.SESSION_SECRET)
-      return json(
-        { error: "Sign-in is temporarily unavailable. Please retry shortly." },
-        503,
-      );
+      fail("Sign-in is temporarily unavailable. Please retry shortly.", 503);
     if (!["GET", "POST"].includes(request.method))
       return json({ error: "Method not allowed" }, 405);
     if (
@@ -491,7 +488,7 @@ export async function accounts(request, env, fetcher = fetch) {
     return json({ error: "Not found" }, 404);
   } catch (e) {
     // Always return OAuth errors to the gate, including provider cancellation.
-    if (/^\/api\/auth\/google\/callback$/.test(new URL(request.url).pathname))
+    if (/^\/api\/auth\/google\/(start|callback)$/.test(new URL(request.url).pathname))
       return new Response(null, { status: 302, headers: { Location: "/?signin_error=1", "Cache-Control": "no-store", "Set-Cookie": cookie("ar_oauth", "", 0) } });
     return json(
       { error: e.status ? e.message : "Accounts are temporarily unavailable." },

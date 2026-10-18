@@ -698,11 +698,10 @@ test("Google login attempts are rate limited and SESSION_SECRET rotation revokes
       ).status,
       302,
     );
-  assert.equal(
-    (await f.call("/api/auth/google/start", undefined, { ip: "fixed-rate-ip" }))
-      .status,
-    429,
-  );
+  const limited = await f.call("/api/auth/google/start", undefined, { ip: "fixed-rate-ip" });
+  assert.equal(limited.status, 302);
+  assert.equal(limited.headers.get("location"), "/?signin_error=1");
+  assert.equal(f.sqlite.prepare("SELECT count FROM limits WHERE id LIKE 'oauth:%' ORDER BY count DESC").get().count, 21);
   f.env.SESSION_SECRET = "rotated-test-secret-32-random-test-bytes";
   assert.equal((await f.call("/api/account/export", undefined, a)).status, 401);
   f.env.SESSION_SECRET = "";
