@@ -8,7 +8,7 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
-- Towing and reset put you straight back on the road nearest to where you are, facing the way you were heading, in a lane and clear of traffic. In a race you stay on the route when it is close, and a tow never counts as progress.
+- Towing and reset put you back on the road nearest to where you are, facing the way you were heading. In a race a tow never counts as progress.
 
 - Frame rate limit: NO LIMIT now draws at your screen's full refresh rate everywhere, including the online car showroom that stayed at 30. The overlay shows your limit.
 
