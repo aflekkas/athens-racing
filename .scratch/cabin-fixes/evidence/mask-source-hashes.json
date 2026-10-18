@@ -1,5 +1,5 @@
 {
-  "src/car-catalog.js": "2fee6a5fc6fff90ec518b3f841e747f023420cac56908b7d861151d8e7ff6e5d",
+  "src/car-catalog.js": "1ceab1faa03238bea153f615645e81d25d8fce92b5ca33952dab81d25b8c16bb",
   "src/cars.js": "1d0b04da3c842512ed51cff7fb8769dd97171f85d3f1036c8c18521a9857ac83",
   "src/cockpit-controls.js": "c4b50f4226a8152c64bc9f542f3a5c7deecbfe6d8cd889933aa4ec866c48045d",
   "src/cockpit-rain.js": "214f792b01609a805034dcfa8121bbb58806c6af0a3e7efa5197c78830214dd7",
@@ -41,7 +41,7 @@
   "tools/pov-mask.js": "0788bb13256a2ec95bab28e58d50c1b40c762e022f0a972380134cfd3c206b6f",
   "tools/cockpit-structure-mask.js": "5bf46484e818e49a6081a2a936a85667d1a9c40b251bc4cde689d5409cb87e6b",
   "tools/pov-audit.js": "75bd7b0f5ff6cdf48179a3ae38916509640878998ad0b3ffff7f6ba07d07b02c",
-  "src/brand-badges.js": "93d4f7affb60a2308495e1dfe050b3da0c0dfd0677ce6806ef994ddb80b12ae6",
+  "src/brand-badges.js": "199566ada0cb749161c1a485ac107cd16d8a0f26338eced7e59d8a218dbf24b9",
   "assets/brand-badges/atlas.svg": "f75aa9280f71aa2c61c90ce33631b0a6519ca245fe8d07d4b384fb4fefaa6c73",
   "src/texture-manifest.js#badge": "13150f0a23d2664b09553d99316cf6b84dbd707999655548b976eec2f3185e7f",
   "src/weather.js#cockpit-rain": "0ecb8efe9320488ad2e3b5eeccfc99d171108499e6130a22b84ff4c84d8ccc7c",
