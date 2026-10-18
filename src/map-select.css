@@ -13,18 +13,11 @@ body.ui-open #lapTiming { display: none; }
 /* Track select (owner 2026-10-18): the Attica map is the whole page. The header, the key-hint footer and the floating
    track card sit over it; the map is a canvas rendered from the pre-built OSM/DEM art (tools/build-attica-map.py). */
 /* clip, not hidden: focusing an off-screen pin (scrollIntoView) must never scroll the map layer sideways */
-#ui.s-maps .scr { overflow: clip; }
-#ui.s-maps .hu-status, #ui.s-maps .scr__head, #ui.s-maps .scr__foot { position: relative; z-index: 2; pointer-events: none; }
-#ui.s-maps .hu-status .btn { pointer-events: auto; }
-#ui.s-maps .scr__body { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; overflow: visible; pointer-events: none; }
-#ui.s-maps .attica-map { position: absolute; inset: 0; z-index: 0; overflow: clip; background: #060b10; touch-action: none; pointer-events: auto; }
+
 #ui.s-maps .attica-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .45s ease; }
 #ui.s-maps .attica-map.ready .attica-canvas { opacity: 1; }
 /* Contrast for the overlaid header and footer, and a soft vignette that settles the eye on the free area. */
-#ui.s-maps .attica-map::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(180deg, rgba(4,7,10,.86), rgba(4,7,10,.55) 7.5rem, rgba(4,7,10,0) 13rem),
-    linear-gradient(0deg, rgba(4,7,10,.8), rgba(4,7,10,0) 6rem),
-    radial-gradient(130% 100% at 42% 55%, rgba(3,5,8,0) 52%, rgba(3,5,8,.5)); }
+
 #ui.s-maps .attica-overlay { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s ease .15s; }
 #ui.s-maps .attica-map.ready .attica-overlay { opacity: 1; }
 #ui.s-maps .attica-labels { position: absolute; inset: 0; }
@@ -66,44 +59,17 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .map-label--water > b { color: #4d7a8e; font-size: 11px; font-weight: 500; letter-spacing: .55em; text-shadow: none; }
 
 /* The floating track card: right of the free area on wide screens, a bottom sheet on phones (still the full screen). */
-#ui.s-maps .map-preview { grid-column: 2; position: relative; z-index: 2; pointer-events: auto; touch-action: pan-y; display: flex; flex-direction: column; width: clamp(19rem, 26vw, 23rem); max-height: 100%; padding: 0; overflow: hidden; border-radius: var(--r-4, 12px); }
-#ui.s-maps .map-track-nav { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: .5rem; padding: .75rem 1rem; border-bottom: 1px solid var(--c-line, #ffffff12); }
-#ui.s-maps .map-track-nav > div { display: flex; justify-content: center; align-items: center; gap: .8rem; font: 500 12px var(--f-sans, sans-serif); letter-spacing: .16em; }
-#ui.s-maps .map-track-count { color: var(--hu-text, var(--c-text, #e4effa)); font-size: 16px; font-variant-numeric: tabular-nums; }
-#ui.s-maps .map-track-count span { color: var(--hu-text-3, var(--c-text-3, #7e93a5)); font-weight: 400; font-size: 12px; }
-#ui.s-maps .map-preview-content { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; touch-action: pan-y; }
-#ui.s-maps .map-preview-content.swap > * { animation: map-card-in .28s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes map-card-in { from { opacity: 0; transform: translateY(6px); } }
-#ui.s-maps .map-preview__info { display: grid; gap: .55rem; padding: 1.4rem 1.5rem 1.5rem; }
-#ui.s-maps .map-kind { display: flex; align-items: center; gap: .45rem; color: var(--track); transition: color .3s; }
-#ui.s-maps .map-kind .ico { width: 15px; height: 15px; }
-#ui.s-maps .map-preview h3 { font: 400 clamp(22px, 2vw, 30px)/1.12 var(--f-sans, "Barlow", sans-serif); font-style: normal; text-transform: uppercase; letter-spacing: .1em; margin: 0; color: var(--hu-text, var(--c-text, #e4effa)); }
-#ui.s-maps .map-preview p { color: var(--hu-text-2, var(--c-text-2, #aec1d2)); font: 400 13px/1.4 var(--f-sans, sans-serif); margin: 0; }
-#ui.s-maps .map-specs { display: flex; gap: 2rem; margin: .5rem 0 .9rem; padding-top: .9rem; border-top: 1px solid var(--hu-hair, #bfd8eb1a); }
-#ui.s-maps .map-spec { display: grid; gap: .2rem; min-width: 0; }
-#ui.s-maps .map-spec small { display: flex; align-items: center; gap: .35rem; color: var(--hu-text-3, var(--c-text-3, #869cad)); }
-#ui.s-maps .map-spec small .ico { width: 12px; height: 12px; }
-#ui.s-maps .map-spec b { color: var(--track); font: 300 27px/1.1 var(--f-sans, sans-serif); font-variant-numeric: tabular-nums; letter-spacing: -.01em; white-space: nowrap; }
-#ui.s-maps .map-spec b span { font-size: 13px; color: var(--hu-text-3, #869cad); letter-spacing: .1em; }
-#ui.s-maps .map-spec--best b { color: var(--hu-text, #e4effa); }
-#ui.s-maps .map-spec--best > span { color: var(--hu-text-3, #869cad); font: 500 11px var(--f-sans, sans-serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#ui.s-maps .map-preview .btn { width: 100%; justify-content: center; }
-#ui.s-maps .map-cycle-hint { display: none; padding: .6rem 1rem; text-align: center; color: var(--hu-text-3, var(--c-text-3, #7e93a5)); border-top: 1px solid var(--c-line, #ffffff12); pointer-events: none; cursor: default; }
-#ui.s-maps .map-track-nav small, #ui.s-maps .map-kind, #ui.s-maps .map-spec small, #ui.s-maps .map-cycle-hint { font-family: var(--f-cond, "Barlow Condensed", sans-serif); font-size: .75rem; font-weight: 600; font-style: normal; letter-spacing: .18em; }
-#ui.s-maps .map-track-nav small { color: var(--hu-text-3, var(--c-text-3, #7e93a5)); }
-@media (pointer: coarse) {
-  #ui.s-maps .map-cycle-hint { display: block; }
-}
+
 @media (max-width: 700px) and (min-height: 501px) {
-  #ui.s-maps .scr__body { grid-template-columns: minmax(0, 1fr); align-items: end; }
-  #ui.s-maps .map-preview { grid-column: 1; width: auto; max-height: none; }
-  #ui.s-maps .map-track-nav { padding: .3rem .6rem; grid-template-columns: 40px 1fr 40px; }
-  #ui.s-maps .map-preview__info { padding: .8rem 1.1rem 1rem; gap: .3rem; }
-  #ui.s-maps .map-preview h3 { font-size: 21px; }
-  #ui.s-maps .map-preview p { font-size: 12px; }
-  #ui.s-maps .map-specs { gap: 1.4rem; margin: .25rem 0 .55rem; padding-top: .5rem; }
-  #ui.s-maps .map-spec b { font-size: 21px; }
-  #ui.s-maps .map-cycle-hint { padding: .4rem; }
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #ui.s-maps .track-pin > span { padding: .28rem .45rem; font-size: 9px; letter-spacing: .08em; }
   #ui.s-maps .track-pin__dot { width: 22px; height: 22px; font-size: 10px; }
   #ui.s-maps .map-label--city > b { font-size: 14px; letter-spacing: .4em; }
@@ -111,17 +77,8 @@ body.ui-open #lapTiming { display: none; }
   #ui.s-maps .map-label > b { font-size: 9px; }
   #ui.s-maps .map-label--suburb > b { font-size: 8px; }
 }
-@media (max-height: 500px) {
-  #ui.s-maps .map-preview { width: clamp(15rem, 34vw, 20rem); }
-  #ui.s-maps .map-track-nav { padding: .2rem .6rem; }
-  #ui.s-maps .map-preview__info { padding: .7rem 1rem .9rem; gap: .3rem; }
-  #ui.s-maps .map-preview h3 { font-size: 19px; }
-  #ui.s-maps .map-specs { margin: .2rem 0 .4rem; padding-top: .45rem; }
-  #ui.s-maps .map-spec b { font-size: 19px; }
-  #ui.s-maps .map-preview .btn { min-height: 34px; }
-  #ui.s-maps .map-cycle-hint { display: none; }
-}
+
 @media (prefers-reduced-motion: reduce) {
   #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot, #ui.s-maps .map-label, #ui.s-maps .attica-overlay, #ui.s-maps .attica-canvas { transition: none; }
-  #ui.s-maps .map-preview-content.swap > * { animation: none; }
+  
 }

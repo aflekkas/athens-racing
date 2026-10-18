@@ -82,3 +82,11 @@ test('rail layout owns section navigation and the scrolling content panel', () =
  assert.match(html,/class="set-panel panel scroll-y" data-layout-region="content">CONTENT/);
  assert.equal((html.match(/data-layout="sidebar-content"/g)||[]).length,1);
 });
+
+test('floating maps own the stage, navigation and live scrolling card', () => {
+ const html=C.mapStage({variant:'floating',stage:'CANVAS',stageAttrs:{role:'img','aria-label':'Map & routes'},nav:'PREV NEXT',card:'DETAILS',cardAttrs:{'data-map':'riviera'},cardHint:'SWIPE'});
+ assert.match(html,/data-layout-region="map" role="img" aria-label="Map &amp; routes"/);
+ assert.match(html,/data-layout-region="map-card" data-map="riviera"/);
+ assert.match(html,/aria-live="polite" data-layout-region="content">DETAILS/);
+ assert.doesNotMatch(html,/role="dialog"/);
+});

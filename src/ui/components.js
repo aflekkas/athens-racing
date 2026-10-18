@@ -220,7 +220,8 @@ export function stageInspector({ stage = '', inspector = '', actions = '', stage
   return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
 }
 /** Full-bleed map/canvas behind the frame with a floating, independently scrolling card. */
-export function mapStage({ stage = '', card = '', ...frame } = {}) {
+export function mapStage({ stage = '', card = '', nav = '', cardHint = '', stageAttrs = {}, cardAttrs = {}, variant = 'page', ...frame } = {}) {
+  if (variant === 'floating') return layoutFrame('map-stage', { ...frame, variant }, `<div class="attica-map layout-map-stage__map" data-layout-region="map"${attrStr(stageAttrs)}>${stage}</div><aside class="map-preview panel panel--float" data-layout-region="map-card"${attrStr(cardAttrs)}>${nav ? `<nav class="map-track-nav" aria-label="Browse tracks" data-layout-region="nav">${nav}</nav>` : ''}<div class="map-preview-content" aria-live="polite" data-layout-region="content">${card}</div>${cardHint ? `<div class="map-cycle-hint" aria-hidden="true">${cardHint}</div>` : ''}</aside>`);
   return layoutFrame('map-stage', frame, region('map', stage) + region('map-card', card, 'scroll-y'));
 }
 /** A readable sheet with optional supporting rows and actions. */

@@ -83,3 +83,9 @@ panel in `inspector`; the kit owns the full viewer bounds and mobile stacking.
 rail beside a scrolling panel. Below 860px the rail becomes a horizontal strip;
 short landscape screens restore a compact sidebar. Header, navigation and content
 remain separate named regions. The About section uses this same frame.
+
+`mapStage({ variant: 'floating', stage, stageAttrs, nav, card, cardAttrs, cardHint })`
+places the map behind the header/footer and a glass card on the right. Portrait
+phones below 700px use a bottom sheet; short landscape screens keep a compact
+right card. The template owns positioning, safe regions and card scrolling; the
+map module owns only canvas drawing, geographic labels, pins and attribution.

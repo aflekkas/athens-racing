@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const read = path => readFileSync(path, 'utf8');
 const owner = 'Owner-locked decision (2026-10-18: full-page track map, no reset control), see docs/OWNER-DECISIONS.md. Ask the owner before changing.';
-const js = read('src/map-select.js'), css = read('src/map-select.css').replace(/\/\*[\s\S]*?\*\//g, '');
+const js = read('src/map-select.js'), css = (read('src/ui/ui.css') + read('src/map-select.css')).replace(/\/\*[\s\S]*?\*\//g, '');
 const rule = sel => [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(m => m[1].split(',').some(s => s.trim() === sel)).map(m => m[2]).join(';');
 
 test('the track picker has no reset control or reset action', () => {
@@ -19,17 +19,17 @@ test('the track picker has no reset control or reset action', () => {
 
 test('the Attica map fills the whole page and the track card floats over it as part of the screen', () => {
   // One full-screen frame: no dialog, no framed map panel beside the card.
-  assert.match(js, /C\.screen\(\{ cls: 'scr--maps'/, owner);
+  assert.match(js, /C\.mapStage\(\{ variant: 'floating', cls: 'scr--maps'/, owner);
   assert.doesNotMatch(js, /C\.dialog\(|role="dialog"|attica-layout|attica-footer|attica-viewport/, owner);
-  const map = rule('#ui.s-maps .attica-map');
+  const map = rule('#ui .layout--map-stage-floating .layout-map-stage__map');
   assert.match(map, /position:\s*absolute/, owner); assert.match(map, /inset:\s*0/, owner);
   assert.doesNotMatch(map, /border(?:-radius)?:/, `the map is edge to edge, not a framed panel. ${owner}`);
   // Focus moving to an off-screen pin (scrollIntoView) must not slide the full-page map.
   assert.match(map, /overflow:\s*clip/, owner);
   assert.match(rule('#ui.s-maps .attica-canvas'), /inset:\s*0/, owner);
   // The header and footer sit above the map; the card is the shared panel in its floating variant.
-  assert.match(rule('#ui.s-maps .hu-status'), /z-index:\s*2/, owner);
-  assert.match(js, /<aside class="map-preview panel panel--float"/, owner);
+  assert.match(rule('#ui .layout--map-stage-floating .hu-status'), /z-index:\s*2/, owner);
+  assert.match(read('src/ui/components.js'), /<aside class="map-preview panel panel--float"/, owner);
   assert.match(read('src/ui/ui.css'), /\.panel--float \{[^}]*backdrop-filter: blur\(/, `the floating card blurs the map under it (shared kit). ${owner}`);
 });
 
