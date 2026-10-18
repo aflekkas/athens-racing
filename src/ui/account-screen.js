@@ -93,12 +93,7 @@ export function install(menu, existing) {
       if (!a.blocked && ["signIn", "accountName"].includes(menu.screen)) menu.show("title");
       if (["signIn", "account", "accountName"].includes(menu.screen))
         menu.refresh();
-      if (
-        a.ready &&
-        a.required &&
-        (!a.user || !a.user.displayName) &&
-        menu.screen !== "accountPrivacy"
-      )
+      if (a.blocked)
         menu.show(a.user && !a.offline ? "accountName" : "signIn");
 
     },
@@ -150,7 +145,7 @@ export function install(menu, existing) {
         !["signIn", "accountName"].includes(
           screen,
         )
-        ? a.user
+        ? a.user && !a.offline
           ? "accountName"
           : "signIn"
         : screen,
