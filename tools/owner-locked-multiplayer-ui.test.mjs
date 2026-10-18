@@ -32,7 +32,7 @@ test('the title has one MULTIPLAYER tile beside PLAY, GARAGE and SETTINGS, and i
   const menu = read('src/menu.js');
   assert.match(menu, /case 'multiplayer':[^\n]*MP\.openEntry\(this, 'join'\)/, OWNER);
   assert.doesNotMatch(menu, /r_multiplayer\(/, `${OWNER}\nthe old JOIN / HOST chooser screen is gone`);
-  assert.match(read('src/menu.css'), /\.scr--title \.home__tiles > \[data-act=multiplayer\] \{ grid-column: span 2; \}/, OWNER);
+  assert.match(read('src/ui/ui.css'), /\.scr--title \.home__tiles > \[data-act=multiplayer\] \{ grid-column: span 2; \}/, OWNER);
 });
 
 test('RACE is solo: QUICK RACE and FREE ROAM are artwork cards that fill the height, with no multiplayer controls', async () => {

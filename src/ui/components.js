@@ -198,6 +198,7 @@ function layoutFrame(name, options, body, bodyRegion = '', nav = '') {
 const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
 /** Primary tile beside secondary tiles; all tiles share the available height. */
 export function heroTiles({ hero = '', tiles = '', intro = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'title') return `<div class="scr scr--title layout--hero-tiles-title" data-layout="hero-tiles">${statusBar({back:false,account:true,kick:frame.kick})}<div class="home" data-layout-region="hero"><div class="home__brand" data-layout-region="intro">${intro}</div><div class="title__menu home__tiles" data-layout-region="tiles">${hero}${tiles}</div></div><footer class="scr__foot">${frame.foot || ''}${keyHints(frame.hints || [])}</footer></div>`;
   if (variant === 'choices') return layoutFrame('hero-tiles', { ...frame, variant }, `<div class="mode-grid" data-layout-region="tiles">${hero}${tiles}</div>`);
   return layoutFrame('hero-tiles', frame, region('hero', `${intro ? region('intro', intro) : ''}${region('primary', hero)}${region('tiles', tiles)}`));
 }

@@ -320,14 +320,11 @@ export class Menu {
     return this.h.account?.(this) || C.sheetList({ variant: 'flow', title: 'Account', kick: 'YOUR DRIVER', rows: '<p class="group__note">Sign-in, friends and invites are coming here.</p>', hints: [['back', 'BACK']] });
   }
   r_title() {
-    return `<div class="scr scr--title">${C.statusBar({ back: false, account: true, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
-      <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
-      <div class="title__menu home__tiles">${C.option({ icon: 'flag', title: 'PLAY', desc: 'Quick Race or Free Roam against the clock', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
+    return C.heroTiles({ variant: 'title', kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME', intro: `<h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
+      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>`, tiles: `${C.option({ icon: 'flag', title: 'PLAY', desc: 'Quick Race or Free Roam against the clock', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users', title: 'MULTIPLAYER', desc: 'Browse open lobbies, join with a code or host your own', act: 'multiplayer', cls: 'option--tile' })}
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
-        ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}</div>
-      </div><footer class="scr__foot">${Release.titleExtras(this)}${C.keyHints([['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']])}</footer></div>`;
+        ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
