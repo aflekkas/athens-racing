@@ -65,3 +65,7 @@ available height with an optional caption underneath.
 panel with related panels (68rem maximum, stacked at 860px).
 `sheetList` also supports `narrow` (34rem form) and `flow` (full-width rows).
 The sign-in exception uses `dialog({ fullScreen: true })`; its shell stays in the kit.
+
+`browseGrid({ variant: 'filtered', filters, aside, items, busy })` places tabs below
+the title and a filter rail beside ranked results; it stacks below 700px. The kit
+owns the live-results region and its busy state.

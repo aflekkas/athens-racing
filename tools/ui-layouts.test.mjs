@@ -57,3 +57,9 @@ test('profile layouts retain action slots and the sign-in exception owns its she
  assert.match(C.dialog({fullScreen:true}),/data-layout="dialog"/);
  assert.doesNotMatch(C.dialog(),/scr--signin/);
 });
+
+test('filtered browsers keep categories before the filter rail and announce result loading', () => {
+ const html=C.browseGrid({variant:'filtered',filters:'TABS',aside:'FILTERS',items:'RESULTS',busy:true});
+ assert.ok(html.indexOf('TABS')<html.indexOf('FILTERS'));
+ assert.match(html,/aria-live="polite" aria-busy="true"/);
+});

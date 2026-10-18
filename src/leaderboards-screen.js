@@ -69,9 +69,9 @@ export function renderLeaderboards(menu, d) {
   else content = rows.length ? `<ol class="lb-records" aria-label="Ranked times">${rows.map((r, i) => `<li>${renderBestRecord(r, { rank: i + 1, global: d.tab === 'global' })}</li>`).join('')}</ol>` : C.panel('NO TIMES YET', '<p>No records match these filters. Try another setup or complete a race on this track.</p>', { attrs: { role: 'status' } });
   // A render schedules one request per filter key. Responses from an abandoned screen are ignored.
   if (d.tab === 'global') queueMicrotask(() => loadGlobal(menu, d));
-  return C.screen({ title: 'LEADERBOARDS', kick: 'PURE TIME', cls: 'scr--leaderboards', hints: [['select', 'SELECT'], ['leftright', 'FILTER'], ['tabs', 'TAB'], ['back', 'BACK']], body:
-    C.tabs({ key: 'leaderboardTab', value: d.tab, options: [['personal', 'PERSONAL BESTS', 'timer'], ['global', 'GLOBAL', 'globe']] }) +
-    `<div class="lb-layout"><aside>${C.panel('FILTER TIMES', filters)}</aside><div class="lb-results" aria-live="polite" aria-busy="${d.tab === 'global' && !!d.loading}">${C.panel('COMPARE TIMES', `<p>${d.tab === 'personal' ? 'Your fastest clean run for each setup · saved on this device.' : 'Fastest runs from all drivers · up to 100 matching times.'} Different routes and setups are ranked together unless filtered.</p>`)}${content}</div></div>` });
+  return C.browseGrid({ variant: 'filtered', title: 'LEADERBOARDS', kick: 'PURE TIME', cls: 'scr--leaderboards', hints: [['select', 'SELECT'], ['leftright', 'FILTER'], ['tabs', 'TAB'], ['back', 'BACK']], filters:
+    C.tabs({ key: 'leaderboardTab', value: d.tab, options: [['personal', 'PERSONAL BESTS', 'timer'], ['global', 'GLOBAL', 'globe']] }), aside: C.panel('FILTER TIMES', filters), busy: d.tab === 'global' && !!d.loading,
+    items: `${C.panel('COMPARE TIMES', `<p>${d.tab === 'personal' ? 'Your fastest clean run for each setup · saved on this device.' : 'Fastest runs from all drivers · up to 100 matching times.'} Different routes and setups are ranked together unless filtered.</p>`)}${content}` });
 }
 async function loadGlobal(menu, d) {
   if (menu.screen !== 'leaderboards' || menu.data !== d) return;

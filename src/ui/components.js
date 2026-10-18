@@ -195,7 +195,8 @@ export function sidebarContent({ nav = '', content = '', variant = 'page', ...fr
   return layoutFrame('sidebar-content', frame, region('sidebar', region('nav', nav, 'scroll-y') + region('content', content, 'scroll-y')));
 }
 /** Filters always follow the title; the collection uses the remaining height. */
-export function browseGrid({ filters = '', items = '', list = false, ...frame } = {}) {
+export function browseGrid({ filters = '', items = '', list = false, aside = '', busy = false, variant = 'page', ...frame } = {}) {
+  if (variant === 'filtered') return layoutFrame('browse-grid', { ...frame, variant }, filters + `<div class="layout-browse-filtered" data-layout-region="collection"><aside class="layout-browse-filtered__aside" data-layout-region="filters">${aside}</aside><div class="layout-browse-filtered__items" data-layout-region="items" aria-live="polite" aria-busy="${!!busy}">${items}</div></div>`);
   return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
 }
 /** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
