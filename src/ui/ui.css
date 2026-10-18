@@ -108,6 +108,11 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
   box-shadow: 0 1.4rem 3.2rem rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .panel--float { background: var(--ui-surface); } }
 @media (prefers-reduced-transparency: reduce) { .panel--float { background: var(--ui-surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+/* a floating panel over a scene that is moving (the track map mid-pan or mid-flight): the live blur would be re-run on every
+   composited frame, so it is swapped for a near-opaque tint while the scene moves and fades back to glass when it rests */
+.panel--float { transition: background-color .2s ease; }
+.panel--float.panel--moving { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: rgba(9, 13, 18, .94); }
+@media (prefers-reduced-motion: reduce) { .panel--float { transition: none; } }
 :root[data-ui-backdrop=tint] .panel--float { background: var(--ui-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
 /* a notice (C.notice): a small dismissible card over a screen; it fades and rises in, and fades out with data-leaving */
 .notice { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); box-sizing: border-box; animation: notice-card-in .32s var(--ease) .5s backwards; }

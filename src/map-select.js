@@ -200,7 +200,7 @@ export function mountMapSelect(root) {
   // One frame loop drives every camera move, the route trace and the base layer's background painting. It only runs while one
   // of them has work (a gesture marks the frame dirty instead of drawing from the event handler), so a resting map costs nothing.
   // While the camera moves the card trades its live backdrop blur (re-run on every composited frame) for a near-opaque tint.
-  const tint = () => { if (!!(motion || reveal || panning) !== moving) card.classList.toggle('map-moving', moving = !moving); };
+  const tint = () => { if (!!(motion || reveal || panning) !== moving) card.classList.toggle('panel--moving', moving = !moving); };
   const run = now => {
     frame = 0; const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
     if (!view || !onScreen || document.hidden) return;

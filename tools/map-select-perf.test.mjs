@@ -156,7 +156,7 @@ test('leaving the screen and changing display density drop what no longer fits',
 });
 
 test('src/map-select.js draws on demand: no polling, no drawing from gesture handlers, off-screen means no frames', () => {
-  const js = read('src/map-select.js'), render = read('src/map-select-render.js'), css = read('src/map-select.css');
+  const js = read('src/map-select.js'), render = read('src/map-select-render.js');
   assert.doesNotMatch(js + render, /setInterval|setTimeout\(/, `no timers: the map is driven by animation frames only while it has work. ${owner}`);
   assert.doesNotMatch(js + render, /shadowBlur|ctx\.filter\s*=/, `no per-frame blur or filter on the canvas. ${owner}`);
   assert.doesNotMatch(js, /ctx\.(clip|drawImage)\(/, `the base layer (images, clip, roads) is painted by map-select-render.js only. ${owner}`);
@@ -173,6 +173,7 @@ test('src/map-select.js draws on demand: no polling, no drawing from gesture han
   assert.match(js, /if \(!view \|\| !onScreen \|\| document\.hidden\) return;/, owner);
   assert.match(js, /seen\.disconnect\(\)/, 'the observer is released with the screen');
   // The card keeps its glass at rest (shared kit) and swaps the live blur for a tint only while the camera moves.
-  assert.match(css, /\.map-preview\.map-moving \{[^}]*backdrop-filter: none/, owner);
+  assert.match(read('src/ui/ui.css'), /\.panel--float\.panel--moving \{[^}]*backdrop-filter: none/, owner);
+  assert.match(js, /card\.classList\.toggle\('panel--moving'/, owner);
   assert.match(read('src/ui/ui.css'), /\.panel--float \{[^}]*backdrop-filter: blur\(/, owner);
 });
