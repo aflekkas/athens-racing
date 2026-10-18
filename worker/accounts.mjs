@@ -150,7 +150,7 @@ export async function accounts(request, env, fetcher = fetch) {
       db = env.ACCOUNTS,
       now = Date.now();
     if (p === "/api/auth/config" && request.method === "GET") {
-      const enabled = db && env.SESSION_SECRET ? providers(env, url) : [];
+      const enabled = providers(env);
       return json({
         providers: enabled,
         required: enabled.length > 0,
@@ -158,7 +158,7 @@ export async function accounts(request, env, fetcher = fetch) {
     }
     if (!db || !env.SESSION_SECRET)
       return json(
-        { error: "Accounts are temporarily unavailable. Play offline." },
+        { error: "Sign-in is temporarily unavailable. Please retry shortly." },
         503,
       );
     if (!["GET", "POST"].includes(request.method))
@@ -490,6 +490,9 @@ export async function accounts(request, env, fetcher = fetch) {
       return await inviteRoute(request, env, s, url, fetcher);
     return json({ error: "Not found" }, 404);
   } catch (e) {
+    // Always return OAuth errors to the gate, including provider cancellation.
+    if (/^\/api\/auth\/google\/callback$/.test(new URL(request.url).pathname))
+      return new Response(null, { status: 302, headers: { Location: "/?signin_error=1", "Cache-Control": "no-store", "Set-Cookie": cookie("ar_oauth", "", 0) } });
     return json(
       { error: e.status ? e.message : "Accounts are temporarily unavailable." },
       e.status || 503,

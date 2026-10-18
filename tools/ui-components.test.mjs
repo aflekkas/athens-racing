@@ -204,3 +204,14 @@ test('dialog, confirm and pause share an animated blurred backdrop with a tinted
   assert.match(kit, /m\.root\.classList\.add\('is-closing'\)/);
   assert.match(menu, /if \(entering\) C\.exitBackdrop\(this\.root\)/);
 });
+
+// Owner 2026-10-17: supersedes the offline/escape clauses of the original Dialog decision.
+test('required Google gate has no offline path and uses game button typography', () => {
+  const src = read('src/ui/account-screen.js'), loader = read('src/ui/account-loader.js');
+  assert.match(src, /label: "CONTINUE WITH GOOGLE"/);
+  assert.doesNotMatch(src + loader, /account-offline|PLAY OFFLINE|playing-offline|bypass|searchParams.*guest/);
+  const google = cssRules(read(KIT_CSS)).find(r => r.selector === '.btn--google');
+  assert.ok(google); assert.match(google.body, /font-weight:\s*700/);
+  assert.doesNotMatch(google.body, /font-family|letter-spacing|text-transform/);
+  assert.doesNotMatch(read(KIT_CSS), /\.btn--google:hover/);
+});

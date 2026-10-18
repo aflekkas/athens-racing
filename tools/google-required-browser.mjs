@@ -1,0 +1,53 @@
+// Run through tools/browser-slot.sh. Uses an owned random-port server and stubbed Google/session responses.
+import assert from 'node:assert/strict';
+import { mkdir, rm, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { createGameServer } from '../server/index.mjs';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || '/home/dev/projects/spawn-platform/node_modules/.pnpm/playwright@1.62.0/node_modules/playwright/index.mjs');
+const out = resolve(process.env.GOOGLE_GATE_EVIDENCE || '.scratch/google-required-evidence');
+await mkdir(out, { recursive: true });
+const dataDir = resolve(out, 'server-data');
+const app = await createGameServer({ dataDir, accountEnv: {} });
+await new Promise(r => app.server.listen(0, '127.0.0.1', r));
+const base = 'http://127.0.0.1:' + app.server.address().port;
+const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN || '/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome', headless: true, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+try {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const errors = []; page.on('pageerror', e => { errors.push(String(e)); console.log('PAGEERROR', String(e)); });
+  page.setDefaultTimeout(30000);
+  let configured = true, signedIn = false, expired = false;
+  // Production uses boot.js. Exercise that same real title/Menu entry without starting a world bake.
+  await page.route('**/src/main.js', r => r.fulfill({ contentType: 'text/javascript', body: "import './boot.js';" }));
+  await page.route('**/api/auth/config', r => r.fulfill({ json: { providers: configured ? ['google'] : [], required: configured } }));
+  await page.route('**/api/auth/session', r => r.fulfill({ json: { user: signedIn && !expired ? { id: 'stub-driver-123', displayName: 'ATHENA', plate: 'ATHENA' } : null, csrf: 'stub', migrated: true, progress: {} } }));
+  await page.route('**/api/account/friends', r => r.fulfill({ json: [] }));
+  await page.route('**/api/account/invites', r => r.fulfill({ json: [] }));
+  await page.route('**/api/auth/google/start', async r => { signedIn = true; await r.fulfill({ status: 302, headers: { location: '/?account=1' } }); });
+  console.log('Opening', base); await page.goto(base + '/?guest=1', { waitUntil: 'domcontentloaded' }); console.log('DOM ready');
+  await page.waitForSelector('[data-act="account-oauth"]'); console.log('Gate ready');
+  await page.evaluate(() => document.fonts.ready);
+  const gate = async () => assert.equal(await page.locator('[role="dialog"]').count(), 1);
+  await gate(); assert.equal(await page.getByText('PLAY OFFLINE', { exact: true }).count(), 0);
+  await page.keyboard.press('Escape'); await gate();
+  await page.evaluate(() => window.__bootMenu.action('back')); await gate();
+  await page.locator('.dialog-scrim').click({ position: { x: 3, y: 3 } }); await gate();
+  await page.evaluate(() => { const m = window.__bootMenu; m.show('settings'); m.hide(); m.pop(); m.h.garage(); }); await gate();
+  const font = await page.locator('.btn--google').evaluate(el => { const s = getComputedStyle(el); return { family: s.fontFamily, weight: s.fontWeight, spacing: s.letterSpacing, caps: s.textTransform }; });
+  assert.match(font.family, /Barlow Condensed/); assert.equal(font.weight, '700'); assert.equal(font.caps, 'uppercase'); assert.ok(parseFloat(font.spacing) > 1);
+  await page.screenshot({ path: resolve(out, 'google-required-1280.png') });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: resolve(out, 'google-required-390.png') });
+  const box = await page.locator('.dialog').boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= 390);
+  await page.context().setOffline(true); await page.waitForFunction(() => window.__bootMenu.accounts.offline); await gate();
+  assert.match(await page.locator('.account-error').innerText(), /internet/);
+  await page.context().setOffline(false);
+  await page.locator('[data-act="account-oauth"]').click();
+  await page.waitForFunction(() => window.__bootMenu?.screen === 'title' && !window.__bootMenu.accounts.blocked);
+  await page.evaluate(() => window.__bootMenu.show('mode')); assert.equal(await page.evaluate(() => window.__bootMenu.screen), 'mode');
+  expired = true; await page.evaluate(() => window.__bootMenu.accounts.revalidate()); await page.waitForSelector('[role="dialog"]'); await gate();
+  signedIn = false; await page.goto(base + '/?signin_error=1', { waitUntil: 'domcontentloaded' }); await page.waitForSelector('[role="dialog"]'); assert.match(await page.locator('.account-error').innerText(), /cancelled or failed/);
+  configured = false; await page.goto(base, { waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => window.__bootMenu?.screen === 'title' && !window.__bootMenu.accounts.blocked);
+  await page.evaluate(() => window.__bootMenu.show('mode')); assert.equal(await page.evaluate(() => window.__bootMenu.screen), 'mode');
+  assert.deepEqual(errors, []);
+  console.log(JSON.stringify({ gate: 'Esc, B, backdrop, guest URL, show/hide/pop/garage blocked', font, signedIn: 'title and mode usable', expired: 'gate restored', offline: 'connection message', cancelled: 'retry message', unconfigured: 'title and mode usable', screenshots: out }));
+} finally { await browser.close(); await app.close(); await rm(dataDir, { recursive: true, force: true }); }

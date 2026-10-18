@@ -29,12 +29,29 @@ export class AccountsClient {
     this.user = null;
     this.csrf = null;
     this.providers = [];
-    this.required = false;
+    this.required = true; // Unknown config fails closed; only explicit unconfigured config permits local play.
     this.friends = [];
     this.invites = [];
     this.presence = {};
     this.offline = false;
     this.ready = false;
+  }
+  get blocked() { return this.required && (!this.ready || this.offline || !this.user || !this.user.displayName); }
+  connectionLost() {
+    this.offline = true;
+    this.error = "Connect to the internet to sign in with Google, then try again.";
+    this.onChange();
+  }
+  async revalidate() {
+    if (!this.required || this.checking) return;
+    this.checking = true;
+    try {
+      const s = await this.api("/api/auth/session");
+      this.user = s.user; this.csrf = s.csrf; this.offline = false;
+      this.error = s.user ? "" : "Your session expired. Sign in with Google to continue.";
+      this.onChange();
+    } catch (e) { this.connectionLost(); }
+    finally { this.checking = false; }
   }
   async api(path, data) {
     const r = await this.fetcher(path, {
@@ -52,6 +69,11 @@ export class AccountsClient {
           }),
     });
     const b = await r.json();
+    if (r.status === 401 && !path.includes("/google/")) {
+      this.disconnect();
+      this.error = "Your session expired. Sign in with Google to continue.";
+      this.onChange();
+    }
     if (!r.ok)
       throw Object.assign(new Error(b.error || "Request failed"), {
         status: r.status,
@@ -60,8 +82,10 @@ export class AccountsClient {
   }
   async init() {
     this.offline = false;
+    this.error = new URLSearchParams(globalThis.location?.search || "").has("signin_error") ? "Google sign-in was cancelled or failed. Please try again." : "";
     try {
       const config = await this.api("/api/auth/config");
+      if (!Array.isArray(config.providers) || typeof config.required !== "boolean") throw new Error("Could not verify sign-in configuration. Please retry.");
       this.providers = config.providers;
       this.required = config.required === true;
       if (!this.providers.length) {
@@ -82,7 +106,7 @@ export class AccountsClient {
         this.connect();
       }
     } catch (e) {
-      if (offlineAllowed(e, navigator.onLine)) this.offline = true;
+      if (offlineAllowed(e, globalThis.navigator?.onLine !== false)) this.connectionLost();
       else this.error = e.message;
     } finally {
       this.ready = true;

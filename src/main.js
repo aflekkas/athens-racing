@@ -533,7 +533,6 @@ function resetRace() {
 function resetEvent() {
   world?.tyreWalls?.reset();
   notifications.clear();
-  if (menu?.accounts?.offline) notifications.post({id:'playing-offline',title:'PLAYING OFFLINE',text:'Progress stays on this device',ms:5000,priority:10});
   const { def, r } = G.ev, dir = r.dir;
   buildGrid();
   traffic.disabled = Q.has('notraffic') || !((def.traffic ?? 1) > 0); G.trafficMul = def.traffic ?? 1;
@@ -1136,6 +1135,7 @@ function openGarage() {
 /** every named input action lands here (src/input.js -> readInput -> window.__flow.action) */
 function flowAction(name) {
   if (!menu || G.state === 'loading' && !menu.open && multiplayer.panel.hidden) return false;
+  if (menu.accounts?.blocked) { menu.action(name); return true; }
   if (ui.action(name)) return true; // an open prompt / dropdown (src/ui/components.js) takes the input first
   if (!multiplayer.panel.hidden) return window.__lobbyUiAction?.(name) ?? true;
   if (name === 'garage' && G.state === 'menu' && (menu.screen === 'title' || menu.screen === 'events')) { audio.ui(true); openGarage(); return true; }
@@ -1914,6 +1914,7 @@ function frame(now) {
 function step(dt, draw = true) {
   // A queued first frame can predate boot's clock reset. Integrators require a positive timestep.
   if (!(dt > 0) || mapSwitch) return;
+  if (menu?.accounts?.blocked) { readInput(dt); return; }
   if (!world || !player || G.state === 'menu') { readInput(dt); return; }
   G.t += dt; frameN++;
   bootFrameLog('first-frame');

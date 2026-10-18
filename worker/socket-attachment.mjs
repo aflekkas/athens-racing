@@ -3,7 +3,7 @@
 export function socketAttachment(data) {
   // Keep a conservative 2KiB budget within the 16KiB attachment limit. Enforcement claims,
   // recovery caches, courses and long numeric telemetry grow during a race.
-  const keys = ['id', 'token', 'protocol', 'lobbyCode', 'stateAt', 'messages', 'window', 'finish', 'dnf', 'loaded'];
+  const keys = ['identity', 'id', 'token', 'protocol', 'lobbyCode', 'stateAt', 'messages', 'window', 'finish', 'dnf', 'loaded'];
   const connection = Object.fromEntries(keys.filter(k => data[k] !== undefined).map(k => [k, data[k]]));
   const round = value => typeof value === 'number' ? Math.round(value * 10000) / 10000
     : Array.isArray(value) ? value.map(round) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, round(v)])) : value;

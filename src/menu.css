@@ -394,8 +394,6 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
   .scr--title .scr__foot .hints { gap:8px }
   .scr--title .hu-status { min-height:28px }
 }
-/* Offline status is a separate account surface; leave its footer-height strip clear on the title only. */
-body:has(#accounts-offline) .scr--title { bottom:calc(16px + .7rem) }
 
 /* ---------------------------------------------------------------- one component set: screen layouts only (looks live in the kit) */
 /* mode select: the participants choice over two kit option tiles */

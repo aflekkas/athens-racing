@@ -1,3 +1,5 @@
+import { accounts } from '../worker/accounts.mjs';
+import { authorizeGame, protectedPath, accountResult, identityActive } from './auth-policy.mjs';
 import { leaderboardFilters } from './leaderboard-policy.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
 import { connectionProtocol } from '../src/multiplayer-protocol.js';
@@ -18,7 +20,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.bin': 'application/octet-stream', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8' };
 
-export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, dataDir = resolve(root, '.data') } = {}) {
+export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, accountEnv = process.env, dataDir = resolve(root, '.data') } = {}) {
   const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8').catch(() => readFile(resolve(ROOT, 'src/cars.js'), 'utf8'));
   const capabilities = readCarCapabilities(catalogue);
   const CARS = new Set(capabilities.cars), nitrousCars = new Set(capabilities.nitrousCars), carSpecs = capabilities.specs || {};
@@ -42,6 +44,13 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const url = new URL(req.url, 'http://localhost');
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
+      const request = new Request(new URL(req.url, 'http://' + (req.headers.host || 'localhost')), { method: req.method, headers: req.headers, ...(!['GET', 'HEAD'].includes(req.method) ? { body: req, duplex: 'half' } : {}) });
+      if (path.startsWith('/api/auth/')) {
+        const result = await accounts(request, accountEnv);
+        res.writeHead(result.status, Object.fromEntries(result.headers)); res.end(Buffer.from(await result.arrayBuffer())); return;
+      }
+      const auth = protectedPath(path) ? await authorizeGame(request, accountEnv) : {};
+      if (auth.response) { json(auth.response.status, await auth.response.json()); req.resume(); return; }
       if (path === '/api/leaderboard') {
         if (req.method === 'GET') { json(200, leaderboard.list(leaderboardFilters(url.searchParams))); return; }
         if (req.method !== 'POST') { json(405, { error: 'Use GET or POST.' }); return; }
@@ -51,7 +60,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
         postLimits.set(ip, limit); if (++limit.count > 12) { json(429, { error: 'Please wait before submitting more times.' }); req.resume(); return; }
         let body = '', size = 0;
         for await (const chunk of req) { size += chunk.length; if (size > 4096) { json(413, { error: 'Result too large.' }); req.resume(); return; } body += chunk; }
-        try { const r = JSON.parse(body); if (r?.valid !== true) throw Object.assign(new Error('Only completed races can be submitted.'), { status: 400 }); json(200, await leaderboard.submit({ ...r, source: 'solo' })); }
+        try { const r = JSON.parse(body); if (r?.valid !== true) throw Object.assign(new Error('Only completed races can be submitted.'), { status: 400 }); json(200, await leaderboard.submit({ ...accountResult(r, auth.identity), source: 'solo' })); }
         catch (e) { json(e.status || (e instanceof SyntaxError ? 400 : 500), { error: e.status || e instanceof SyntaxError ? e.message : 'Could not save the result.' }); }
         return;
       }
@@ -68,16 +77,22 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     } catch { res.writeHead(404, headers); res.end('Not found'); }
   });
   const wss = new WebSocketServer({ noServer: true, maxPayload: 16384 });
-  server.on('upgrade', (req, socket, head) => {
+  server.on('upgrade', async (req, socket, head) => {
     try {
       if (new URL(req.url, 'http://localhost').pathname !== '/ws' || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) || clients.size >= 256) { socket.destroy(); return; }
+      const auth = await authorizeGame(new Request(new URL(req.url, 'http://' + req.headers.host), { headers: req.headers }), accountEnv);
+      if (auth.response) { socket.end('HTTP/1.1 ' + auth.response.status + ' Unauthorized\r\nConnection: close\r\n\r\n'); return; }
+      req.accountIdentity = auth.identity;
       wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req));
     } catch { socket.destroy(); }
   });
   wss.on('connection', (ws, req) => {
-    if (!core.connect(ws, req.socket.remoteAddress, connectionProtocol(new URL(req.url, 'http://localhost')))) return;
+    if (!core.connect(ws, req.socket.remoteAddress, { ...connectionProtocol(new URL(req.url, 'http://localhost')), identity: req.accountIdentity })) return;
     ws.on('pong', () => core.pong(ws));
-    ws.on('message', bytes => core.message(ws, bytes));
+    ws.on('message', async bytes => {
+      try { if (!await identityActive(core.clientData(ws)?.identity, accountEnv)) { ws.close(4001, 'Sign in with Google'); core.disconnect(ws); return; } core.message(ws, bytes); }
+      catch { ws.close(1011, 'Sign-in unavailable'); }
+    });
     ws.on('close', () => core.disconnect(ws));
     ws.on('error', () => ws.close());
   });

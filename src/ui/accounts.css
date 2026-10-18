@@ -10,18 +10,4 @@
 .account-add > .search { flex: 1; }
 .account-error { margin: var(--s-2) var(--s-4) 0; font: 500 var(--t-sm) var(--f-sans); color: #ffb4a6; }
 .account-error:empty { display: none; }
-#accounts-offline {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.35rem 0.75rem;
-  background: #5b411c;
-  color: #fff1cf;
-  text-align: center;
-  z-index: 15000;
-  font: 600 11px system-ui;
-  letter-spacing: 0.06em;
-  pointer-events: none;
-}
 @media (max-width: 860px) { .account-layout { grid-template-columns: minmax(0, 1fr); } }

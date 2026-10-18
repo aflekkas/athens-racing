@@ -27,12 +27,12 @@ test('account: one Activity list for requests and invites, only when non-empty',
   assert.match(html, /data-act="account-friend-accept"/); assert.match(html, /data-act="account-join"/);
 });
 
-test('sign-in is the kit Dialog over the title screen with the Google button and Play offline', () => {
+test('sign-in is the kit Dialog over the title screen with required Google sign-in', () => {
   const menu = { r_title: () => '<div class="scr scr--title">TITLE</div>' };
   const html = renderSignIn({ ...base(), user: null }, menu);
   assert.match(html, /class="dialog-under" inert/); assert.match(html, /TITLE/);
   assert.match(html, /role="dialog" aria-modal="true"/); assert.match(html, /SIGN IN TO ATHENS RACING/);
-  assert.match(html, /btn--google[^>]*>\s*<svg class="btn__logo"[\s\S]*#EA4335[\s\S]*#4285F4[\s\S]*#FBBC05[\s\S]*#34A853[\s\S]*Continue with Google/, 'the multicolour G sits left of the standard label');
-  assert.match(html, /data-act="account-offline"[\s\S]*PLAY OFFLINE/); assert.match(html, /href="\/privacy"/); assert.match(html, /href="\/terms"/);
+  assert.match(html, /btn--google[^>]*>\s*<svg class="btn__logo"[\s\S]*#EA4335[\s\S]*#4285F4[\s\S]*#FBBC05[\s\S]*#34A853[\s\S]*CONTINUE WITH GOOGLE/, 'the multicolour G sits left of the standard label');
+  assert.doesNotMatch(html, /account-offline|PLAY OFFLINE|data-act="back"/); assert.match(html, /href="\/privacy"/); assert.match(html, /href="\/terms"/);
   assert.doesNotMatch(html, /YOUR PLACE ON THE GRID|One driver\. Every road\./, 'the old full sign-in page is gone');
 });

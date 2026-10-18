@@ -121,7 +121,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     if (protocol !== MULTIPLAYER_PROTOCOL) { reload(ws); return false; }
     if ([...clients].filter(c => c.ip === ip).length >= 24) { ws.close(1013, 'Too many connections'); return; }
     const defaultName = 'GR-' + (1000 + Math.floor(Math.random() * 9000));
-    let c = { ws, ip, protocol, build: clean(connection.build, null, 80), token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: defaultName, car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), plate: defaultName };
+    let c = { ws, ip, identity: connection.identity, protocol, build: clean(connection.build, null, 80), token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: defaultName, car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), plate: defaultName };
     sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
     bind(c, ws, ip); return true;
   };
@@ -144,6 +144,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
       };
       try {
         const m = JSON.parse(bytes); if (!m || typeof m !== 'object') return;
+        if (c.identity && ['name', 'create', 'join'].includes(m.type)) { m.name = c.identity.name; m.driverId = c.identity.userId; }
         if (m.type === 'hello') {
           if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { reload(ws); leave(c); clients.delete(c); sessions.delete(c.token); c.connected = false; return; }
           c.build = clean(m.build, c.build, 80); return;
@@ -159,6 +160,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           if (c.lobby) return error('Leave your current lobby before resuming another session.');
           const prior = sessions.get(m.token);
           if (!prior || prior === c || (!prior.connected && Date.now() - prior.touched > reconnectGraceMs)) { send(ws, { type: 'session', id: c.id, token: c.token, resumed: false }); return; }
+          if ((c.identity?.userId || prior.identity?.userId) && c.identity?.userId !== prior.identity?.userId) return error('Sign in to the same driver account to resume.');
+          if (c.identity) prior.identity = c.identity;
           sessions.delete(c.token); clients.delete(c);
           const previousWs = prior.ws, protocol = c.protocol, build = c.build; c = prior; c.protocol = protocol; c.build = build; c.ws = ws; c.ip = ip; c.connected = true; c.alive = true; c.messages = 0; c.window = now; c.touched = now;
           clients.add(c); if (previousWs !== ws) previousWs.close(1000, 'Session resumed elsewhere');

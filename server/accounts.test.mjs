@@ -260,7 +260,7 @@ test("OAuth state browser binding, PKCE exchange, nonce validation, replay and c
   assert.equal(
     (await f.call("/api/auth/google/callback?state=" + state + "&code=x"))
       .status,
-    403,
+    302,
   );
   let calls = 0;
   const fetcher = async (url, options) => {
@@ -291,7 +291,7 @@ test("OAuth state browser binding, PKCE exchange, nonce validation, replay and c
   assert.ok([2, 3].includes(calls));
   assert.equal(
     (await f.call(cb, undefined, { cookie }, undefined, fetcher)).status,
-    400,
+    302,
   );
   const bad = await f.call("/api/auth/google/start"),
     badState = new URL(bad.headers.get("location")).searchParams.get("state");
@@ -305,7 +305,8 @@ test("OAuth state browser binding, PKCE exchange, nonce validation, replay and c
         id_token: "x." + btoa(JSON.stringify({ nonce: "wrong" })) + ".x",
       }),
   );
-  assert.equal(badResponse.status, 401);
+  assert.equal(badResponse.status, 302);
+  assert.equal(badResponse.headers.get("location"), "/?signin_error=1");
 });
 test("friendship state machine, block and invite to existing lobby join code", async () => {
   const f = fixture(),
@@ -527,6 +528,7 @@ test("guest migration is idempotent, retains local data and excludes credentials
   });
   await client.init();
   assert.equal(client.offline, true);
+  assert.equal(client.blocked, true);
   assert.equal(client.ready, true);
   assert.equal(offlineAllowed({ status: 401 }, true), false);
 });
@@ -705,7 +707,81 @@ test("Google login attempts are rate limited and SESSION_SECRET rotation revokes
   assert.equal((await f.call("/api/account/export", undefined, a)).status, 401);
   f.env.SESSION_SECRET = "";
   assert.deepEqual(await (await f.call("/api/auth/config")).json(), {
-    providers: [],
-    required: false,
+    providers: ["google"],
+    required: true,
   });
+});
+
+
+test('configured game policy rejects anonymous/invalid/expired sessions and binds leaderboard identity', async () => {
+  const { authorizeGame, accountResult, identityActive } = await import('./auth-policy.mjs');
+  const f = fixture(), a = await f.login('policy-driver');
+  const request = cookie => new Request('https://staging.athensracing.com/api/leaderboard', { headers: cookie ? { Cookie: cookie } : {} });
+  for (const cookie of [null, 'ar_session=invalid']) assert.equal((await authorizeGame(request(cookie), f.env)).response.status, 401);
+  const auth = await authorizeGame(request(a.cookie), f.env);
+  assert.ok(auth.identity); assert.equal(await identityActive(auth.identity, f.env), true);
+  assert.equal(accountResult({ name: 'SPOOF', driverId: 'spoof-123' }, auth.identity).driverId, auth.identity.userId);
+  assert.equal(accountResult({ name: 'SPOOF' }, auth.identity).name, auth.identity.name);
+  f.sqlite.exec('DELETE FROM sessions');
+  assert.equal(await identityActive(auth.identity, f.env), false);
+  assert.equal((await authorizeGame(request(a.cookie), f.env)).response.status, 401);
+  assert.equal((await authorizeGame(request(), {})).response, undefined);
+});
+
+test('Node configured OAuth rejects gameplay APIs and websocket upgrades; unconfigured local play stays enabled', async t => {
+  const { createGameServer } = await import('./index.mjs');
+  const { mkdtemp, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { WebSocket } = await import('ws');
+  const dataDir = await mkdtemp(join(tmpdir(), 'google-required-test-'));
+  const env = { GOOGLE_CLIENT_ID: 'test', GOOGLE_CLIENT_SECRET: 'test' };
+  const app = await createGameServer({ accountEnv: env, dataDir });
+  t.after(async () => { await app.close(); await rm(dataDir, { recursive: true, force: true }); });
+  await new Promise(r => app.server.listen(0, '127.0.0.1', r));
+  const base = 'http://127.0.0.1:' + app.server.address().port;
+  for (const path of ['/api/lobbies', '/api/leaderboard', '/api/account/export']) {
+    const response = await fetch(base + path); assert.equal(response.status, 401, path);
+  }
+  assert.equal((await fetch(base + '/api/leaderboard', { method: 'POST', body: '{}' })).status, 401);
+  assert.equal((await (await fetch(base + '/api/auth/config')).json()).required, true);
+  await new Promise((resolve, reject) => {
+    const ws = new WebSocket(base.replace('http:', 'ws:') + '/ws');
+    ws.on('unexpected-response', (_, response) => { try { assert.equal(response.statusCode, 401); response.resume(); ws.terminate(); resolve(); } catch (e) { reject(e); } });
+    ws.on('open', () => { ws.terminate(); reject(Error('Anonymous upgrade accepted')); }); ws.on('error', () => {});
+  });
+  delete env.GOOGLE_CLIENT_ID; delete env.GOOGLE_CLIENT_SECRET;
+  assert.equal((await fetch(base + '/api/lobbies')).status, 200);
+  assert.equal((await (await fetch(base + '/api/auth/config')).json()).required, false);
+});
+
+test('client gate reappears on session expiry and connection loss, and clears after a retry', async () => {
+  let signedIn = true;
+  const client = new AccountsClient({ storage: null, fetcher: async () => Response.json({ user: signedIn ? { id: 'driver', displayName: 'ATHENA' } : null }) });
+  client.ready = true;
+  await client.revalidate(); assert.equal(client.blocked, false);
+  signedIn = false; await client.revalidate(); assert.equal(client.blocked, true); assert.match(client.error, /expired/);
+  signedIn = true; await client.revalidate(); assert.equal(client.blocked, false);
+  client.connectionLost(); assert.equal(client.blocked, true); assert.match(client.error, /internet/);
+  await client.revalidate(); assert.equal(client.blocked, false);
+});
+
+test('public Worker denies anonymous gameplay before forwarding to the arena', async () => {
+  const { build } = await import('esbuild');
+  const bundled = await build({ entryPoints: ['worker/index.mjs'], bundle: true, write: false, format: 'esm', platform: 'node', plugins: [{ name: 'worker-test-bindings', setup(b) {
+    b.onResolve({ filter: /^cloudflare:workers$/ }, () => ({ path: 'cloudflare', namespace: 'stub' }));
+    b.onResolve({ filter: /\.deploy\/catalogue\.json$/ }, () => ({ path: 'catalogue', namespace: 'stub' }));
+    b.onLoad({ filter: /.*/, namespace: 'stub' }, args => ({ contents: args.path === 'cloudflare' ? 'export class DurableObject {}' : 'export default {maps:[],cars:[]}', loader: 'js' }));
+  } }] });
+  const worker = (await import('data:text/javascript;base64,' + Buffer.from(bundled.outputFiles[0].text).toString('base64'))).default;
+  let forwarded = 0;
+  const env = { GOOGLE_CLIENT_ID: 'test', GOOGLE_CLIENT_SECRET: 'test', GAME: { idFromName: x => x, get: () => ({ fetch: () => { forwarded++; return Response.json([]); } }) } };
+  for (const path of ['/ws', '/api/lobbies', '/api/leaderboard', '/api/account/presence', '/api/account/export']) {
+    const response = await worker.fetch(new Request('https://staging.athensracing.com' + path), env); assert.equal(response.status, 401, path);
+  }
+  assert.equal((await worker.fetch(new Request('https://staging.athensracing.com/api/leaderboard', { method: 'POST', body: '{}' }), env)).status, 401);
+  assert.equal(forwarded, 0);
+  delete env.GOOGLE_CLIENT_ID;
+  assert.equal((await worker.fetch(new Request('https://staging.athensracing.com/api/lobbies'), env)).status, 200);
+  assert.equal(forwarded, 1);
 });

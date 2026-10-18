@@ -1,36 +1,36 @@
 import { importWithUpdate } from '../client-release.js';
-// The auth policy and session stay eager. Full account screens load only when needed.
 import { AccountsClient } from '../accounts-client.js';
 import { driverName } from '../driver-name.js';
+// Policy is eager: no menu, URL parameter or lazy import may skip pending auth.
 export function install(menu) {
   let pending, installed = false;
   const ensure = () => pending ||= importWithUpdate(() => import('./account-screen.js')).then(module => {
-    module.install(menu, client); installed = true;
-    return module;
+    module.install(menu, client); installed = true; return module;
   }).catch(error => { pending = null; throw error; });
   const client = menu.accounts = new AccountsClient({ onChange() {
     if (client.user?.displayName) { try { driverName.set(client.user.displayName); } catch {} }
-    if (client.required || client.user) void ensure().then(() => {
-      if (client.required && !client.offline && (!client.user || !client.user.displayName)) menu.show(client.user ? 'accountName' : 'signIn');
+    if (client.blocked || client.user) void ensure().then(() => {
+      if (client.blocked) menu.show(client.user && !client.offline ? 'accountName' : 'signIn');
+      else if (['signIn', 'accountName'].includes(menu.screen)) menu.show('title');
     });
-    let banner = document.querySelector('#accounts-offline');
-    if (client.offline && !banner) {
-      banner = document.createElement('div'); banner.id = 'accounts-offline'; banner.role = 'status';
-      banner.textContent = 'PLAYING OFFLINE · Progress stays on this device'; document.body.append(banner);
-    } else if (!client.offline) banner?.remove();
   } });
-  const show = menu.show.bind(menu);
+  const show = menu.show.bind(menu), hide = menu.hide.bind(menu), activate = menu.activate.bind(menu), back = menu.back.bind(menu), pop = menu.pop.bind(menu);
+  menu.r_signIn = () => ''; // Replaced by the lazy dialog before any controls become available.
   menu.show = (screen, ...args) => {
+    if (client.blocked) screen = client.user && !client.offline ? 'accountName' : 'signIn';
     if (!installed && /^(account|signIn)/.test(screen)) {
-      const from = menu.screen;
-      void ensure().then(() => { if (menu.screen === from) menu.show(screen, ...args); }); return;
+      void ensure().then(() => menu.show(screen, ...args)); return show('signIn');
     }
     return show(screen, ...args);
   };
-  if (new URLSearchParams(location.search).get('guest') === '1') {
-    client.offline = client.ready = true; client.onChange();
-  } else void client.init();
-  if (new URLSearchParams(location.search).has('privacy')) queueMicrotask(() => menu.show('accountPrivacy'));
-  window.addEventListener('online', () => { if (!installed) void client.init(); });
-  window.addEventListener('offline', () => { if (!installed) { client.offline = true; client.onChange(); } });
+  menu.hide = () => client.blocked ? menu.show('signIn') : hide();
+  menu.activate = el => { if (!client.blocked) return activate(el); };
+  menu.back = () => { if (!client.blocked) return back(); };
+  menu.pop = () => client.blocked ? false : pop();
+  void client.init();
+  window.addEventListener('online', () => void client.init());
+  window.addEventListener('offline', () => client.connectionLost());
+  window.addEventListener('focus', () => void client.revalidate());
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) void client.revalidate(); });
+  setInterval(() => void client.revalidate(), 30000);
 }
