@@ -22,10 +22,11 @@ export function createVehicleFraming(root) {
 }
 
 const direction = new THREE.Vector3(.64,.32,.69).normalize();
-export function frameVehicle(camera, root, framing, width, height, { margin=1.10, viewDirection=direction } = {}) {
+export function frameVehicle(camera, root, framing, width, height, { margin=1.10, viewDirection=direction, fit='sphere' } = {}) {
   if (!width || !height) return;
   root.updateWorldMatrix(true, false);
   camera.aspect = width / height;
+  camera.zoom = 1;
   camera.clearViewOffset();
   const halfAngle = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*Math.min(1,camera.aspect));
   const distance = framing.radius / Math.sin(halfAngle) * margin;
@@ -39,6 +40,12 @@ export function frameVehicle(camera, root, framing, width, height, { margin=1.10
   for (const point of framing.points) {
     p.copy(point).applyMatrix4(root.matrixWorld).project(camera);
     minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);
+  }
+  // Static thumbnails can fill their image; rotating viewers keep a stable sphere fit.
+  if (fit==='bounds') {
+    const zoom=2/(Math.max(maxX-minX,maxY-minY)*margin);
+    camera.zoom=zoom;camera.updateProjectionMatrix();
+    minX*=zoom;maxX*=zoom;minY*=zoom;maxY*=zoom;
   }
   // A lens shift centres perspective bounds exactly without changing angle, scale or the ground plane.
   const cx=(minX+maxX)/2,cy=(minY+maxY)/2;

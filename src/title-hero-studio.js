@@ -63,7 +63,7 @@ export function createHeroStudio() {
     if (stopped || !model || width<1 || height<1) return;
     const token=serial;
     renderer.setSize(Math.min(1200,width),Math.min(600,height),false);
-    frameVehicle(camera,model.root,framing,width,height,{viewDirection:new THREE.Vector3(.68,.31,-.74).normalize()});
+    frameVehicle(camera,model.root,framing,width,height,{fit:'bounds',viewDirection:new THREE.Vector3(.68,.31,-.74).normalize()});
     await renderer.compileAsync(scene,camera);
     if (!stopped && token===serial) renderer.render(scene,camera);
   };

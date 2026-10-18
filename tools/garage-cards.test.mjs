@@ -37,6 +37,17 @@ test('actual city, sports, van and bus vertices stay centred within half a pixel
  const why=`${id}, ${width}x${height}, ${a}`;assert.ok(Math.abs(minX+maxX)*width/4<.5,why+' horizontal');assert.ok(Math.abs(minY+maxY)*height/4<.5,why+' vertical');assert.ok(Math.max(Math.abs(minX),Math.abs(maxX),Math.abs(minY),Math.abs(maxY))<.94,why+' margins');
  }model.disposeDamage?.();}
 });
+test('static thumbnails fill their image bounds with consistent margins',()=>{
+ for(const id of ['a160','panda','golf','carrera','huracan','van','bus']){
+  const model=new CarModel(CARS.find(c=>c.id===id)),framing=createVehicleFraming(model.root),camera=new THREE.PerspectiveCamera(31);
+  for(const [width,height] of [[480,240],[390,220],[800,380]]){
+   frameVehicle(camera,model.root,framing,width,height,{fit:'bounds',viewDirection:new THREE.Vector3(.68,.31,-.74).normalize()});
+   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+   model.root.traverseVisible(o=>{if(!o.isMesh)return;const pos=o.geometry.attributes.position;for(let i=0;i<pos.count;i++){const p=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(o.matrixWorld).project(camera);minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}});
+   const why=id+' '+width+'x'+height;assert.ok(Math.abs(minX+maxX)*width/4<.5,why);assert.ok(Math.abs(minY+maxY)*height/4<.5,why);const span=Math.max(maxX-minX,maxY-minY);assert.ok(span>1.80&&span<1.83,why+' fills one axis with ten percent margins');
+  }model.disposeDamage?.();
+ }
+});
 test('spec panel has shared tiles, segmented trims and no unavailable paint or internal copy',async()=>{
  const doc=globalThis.document;delete globalThis.document;const {renderCarSelect}=await import('../src/car-select.js');globalThis.document=doc;
  for(const id of ['golf','van']){const html=renderCarSelect({index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});assert.match(html,/vehicle-specs panel/);assert.doesNotMatch(html,/class="car-trim-browser"/);assert.match(html,/stats--boxed/);assert.equal((html.match(/class="stat-tile /g)||[]).length,6);assert.match(html,/data-key="carTrim"/);assert.match(html,/data-act="carConfirm"/);assert.doesNotMatch(html,/Existing fleet model|Custom paint|nativeFleet|placeholder|TODO|WIP/);assert.equal(html.includes('class="car-paints"'),id==='golf');}
