@@ -11,7 +11,7 @@ import { input as controls } from './input.js';
 import { Audio } from './audio.js';
 const query = new URLSearchParams(location.search);
 const direct = !query.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some(key => query.has(key));
-if (direct || query.has('lobby')) {
+if (query.get('map')==='athens' || direct || query.has('lobby')) {
   await (await importWithUpdate(() => import('./main.js'))).gameReady;
 } else {
   let mapId = initialMapId(query), car = 0, runtime;

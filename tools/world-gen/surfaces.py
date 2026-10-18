@@ -9,23 +9,37 @@ from shapely import constrained_delaunay_triangles, set_precision, union_all
 from shapely.geometry import LineString, Point, box
 from shapely.ops import polygonize, unary_union
 from shapely.strtree import STRtree
+from border_nodes import split_borders,canonical_polygon
 
 
 def f32(value):return struct.unpack('<f',struct.pack('<f',value))[0]
-def snap(geometry):return set_precision(geometry,.01)
+def snap(geometry):return set_precision(geometry,.02)
 
+
+def border_nodes(geometry):
+    """Insert exact two-centimetre intersections with every GLOBAL 512 m border.
+
+    Snap-rounding a long segment against a clipped border can choose either
+    neighbouring centimetre depending on the side's noding context. Explicit
+    integer-rational intersections give both tiles the very same input vertex.
+    """
+    if geometry.is_empty:return []
+    if geometry.geom_type not in ('LineString','LinearRing'):
+        return [line for part in getattr(geometry,'geoms',[]) for line in border_nodes(part)]
+    points=split_borders(list(geometry.coords))
+    return [LineString(points)]
 
 def ground_mesh(cell,roads,height,boundaries=()):
     """8 m road/shoulder cells, 16 m elsewhere; exact 2 m border subdivisions.
 
     roads: [{id, polygon, line}], already globally solved and with >=64 m halo.
     height(x,z): deterministic global surface height; never a tile-local filter.
-    XZ uses centimetres (a subset of the required global millimetre lattice).
+    XZ uses two centimetres (a subset of the required global millimetre lattice).
     Returned triangles partition the tile: no duplicated contact ownership.
     """
     ox,oz=cell[0]*512,cell[1]*512;bounds=box(ox,oz,ox+512,oz+512)
     ordered=sorted(roads,key=lambda r:r['id'])
-    polygons=[snap(r['polygon']) for r in ordered]
+    polygons=[canonical_polygon(r['polygon']) for r in ordered]
     tree=STRtree(polygons)
     union=unary_union(polygons) if polygons else None
     near=union.buffer(8,quad_segs=1) if union is not None else None
@@ -57,12 +71,13 @@ def ground_mesh(cell,roads,height,boundaries=()):
     for boundary in boundaries:
         clipped=snap(boundary)
         if not clipped.is_empty:lines.append(clipped)
-    noded=union_all(lines,grid_size=.01)
+    lines=[part for line in lines for part in border_nodes(line)]
+    noded=union_all(lines,grid_size=.02)
     positions=[];triangles=[];owners=[];keys={}
     def vertex(p):
-        key=(round(p[0]*100),round(p[1]*100))
+        key=(round(p[0]*50),round(p[1]*50))
         if key not in keys:
-            x,z=key[0]/100,key[1]/100
+            x,z=key[0]/50,key[1]/50
             keys[key]=len(positions)//3
             positions.extend([f32(x-ox),f32(height(x,z)),f32(z-oz)])
         return keys[key]

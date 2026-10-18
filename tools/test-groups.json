@@ -189,7 +189,13 @@
     "tools/owner-locked-free-roam-clean.test.mjs",
     "tools/run-tests.test.mjs",
     "tools/bake-cache.test.mjs",
-    "tools/release-fast.test.mjs"
+    "tools/release-fast.test.mjs",
+    "tools/world-bridge-audit.test.mjs",
+    "tools/world-gen/bridge-policy.test.mjs",
+    "worker/world-assets.test.mjs",
+    "tools/world-r2.test.mjs",
+    "tools/world-tile-obstacles.test.mjs",
+    "tools/world-connectivity-audit.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
@@ -210,7 +216,8 @@
     "tools/traffic-race.test.mjs",
     "tools/damage-mechanics.test.mjs",
     "tools/rivals-test.mjs",
-    "tools/physics-test/airborne.test.mjs"
+    "tools/physics-test/airborne.test.mjs",
+    "tools/world-tile-barriers.test.mjs"
   ],
   "damage": [
     "tools/damage-geometry.test.mjs",

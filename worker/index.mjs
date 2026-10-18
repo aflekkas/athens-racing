@@ -1,3 +1,4 @@
+import { worldAssets } from './world-assets.mjs';
 import { leaderboardFilters } from '../server/leaderboard-policy.mjs';
 import { canonicalHostRedirect } from './canonical-host.mjs';
 import { legalPage } from './legal-pages.mjs';
@@ -33,11 +34,13 @@ export default {
     const now=Date.now();
     await env.ACCOUNTS.batch(['sessions','challenges','limits','invites'].map(table=>env.ACCOUNTS.prepare(`DELETE FROM ${table} WHERE expires<?`).bind(now)));
   },
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const canonical = canonicalHostRedirect(request);
     if (canonical) return canonical;
     const legal = legalPage(request);
     if (legal) return legal;
+    const world = await worldAssets(request, env, ctx);
+    if (world) return world;
     const url = new URL(request.url);
     if (protectedPath(url.pathname)) { const auth = await authorizeGame(request, env); if (auth.response) return auth.response; }
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);

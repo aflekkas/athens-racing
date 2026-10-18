@@ -4,10 +4,11 @@ Rendering helpers only: contact integration and stage conformance remain the
 caller's responsibility. No trees, street props, furniture or runtime lights.
 """
 import math
+from border_nodes import canonical_polygon
 from collections import defaultdict
 from shapely.geometry import Point,Polygon,box
 from shapely.ops import unary_union,substring
-from shapely import constrained_delaunay_triangles
+from shapely import constrained_delaunay_triangles,set_precision
 
 
 KERB_WIDTH = .6  # 10 cm rise with headroom for longitudinal road grade.
@@ -15,9 +16,14 @@ KERB_WIDTH = .6  # 10 cm rise with headroom for longitudinal road grade.
 
 def pavement_regions(roads):
     if not roads:return Polygon(),Polygon(),Polygon()
-    road=unary_union([r['polygon'] for r in roads])
-    kerb=road.buffer(KERB_WIDTH,join_style=2).difference(road)
-    pavement=road.buffer(1.8,join_style=2).difference(road.buffer(KERB_WIDTH,join_style=2))
+    # Snap each global source outline before unioning it. Otherwise the raw
+    # kerb's inner ring and the contact road union round to two different lines
+    # at a tile border, leaving a centimetre sliver on only one side.
+    road=unary_union([canonical_polygon(r['polygon']) for r in roads])
+    kerb_outer=unary_union([canonical_polygon(r['polygon'].buffer(KERB_WIDTH,join_style=2)) for r in roads])
+    outer=unary_union([canonical_polygon(r['polygon'].buffer(1.8,join_style=2)) for r in roads])
+    kerb=kerb_outer.difference(road)
+    pavement=outer.difference(kerb_outer)
     return road,kerb,pavement
 
 

@@ -90,6 +90,10 @@ import { gearboxMessage, bindingLabel } from './input-labels.js';
 import { aidSpec, applyVehicleAids, toggleTractionControl } from './driving-aids.js';
 
 import { towCondition, recoveryHeld, TOW_PROMPT_SECONDS, TOW_PROMPT_COOLDOWN } from './recovery-policy.js';
+export let gameReady;
+if(new URLSearchParams(location.search).get('map')==='athens'){
+  gameReady=importWithUpdate(()=>import('./athens-world.js')).then(m=>m.bootAthens());
+}else{
 const recoveryStyle = document.createElement('link'); recoveryStyle.rel = 'stylesheet'; recoveryStyle.href = new URL('./recovery-prompt.css', import.meta.url).href; document.head.append(recoveryStyle);
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
@@ -2494,4 +2498,6 @@ document.addEventListener('visibilitychange', () => {
 });
 if (Q.has('debug')) { window.__vehicle = () => player?.veh; window.__onlineCars = () => [...remoteCars].map(([id, c]) => ({ id, car: c.spec.id, visible: c.model.root.visible, s: c.veh.s })); }
 
-export const gameReady = boot().catch(error => { fail(error); throw error; });
+gameReady = boot().catch(error => { fail(error); throw error; });
+
+}
