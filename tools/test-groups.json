@@ -128,6 +128,7 @@
     "tools/psychiko-world.test.mjs",
     "tools/baked-realism.test.mjs",
     "tools/ui-components.test.mjs",
+    "tools/simple-header.test.mjs",
     "tools/notice-placement.test.mjs",
     "tools/account-screen.test.mjs",
     "tools/gantry-clearance.test.mjs",

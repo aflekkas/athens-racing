@@ -325,7 +325,7 @@ export class Menu {
     return C.screen({ title: 'MULTIPLAYER', kick: 'DRIVE TOGETHER', body: C.option({ icon: 'users-three', title: 'JOIN GAME', desc: 'Enter a code or browse open lobbies', act: 'mpJoin', attrs: { 'data-default': '' } }) + C.option({ icon: 'plus', title: 'HOST / CREATE GAME', desc: 'Choose a road and invite your friends', act: 'mpHost' }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });
   }
   r_title() {
-    return `<div class="scr scr--title">${C.statusBar({ back: false, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
+    return `<div class="scr scr--title">${C.statusBar({ back: false, account: true, kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME' })}<div class="home">
       <div class="home__brand"><h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
       <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p></div>
       <div class="title__menu home__tiles">${C.option({ icon: 'flag-checkered', title: 'PLAY', desc: 'Quick Race or Free Roam · solo or multiplayer', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}

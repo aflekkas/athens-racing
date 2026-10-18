@@ -158,10 +158,10 @@ test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never 
 test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the header', async () => {
   const { statusBar, syncFooterBadge } = await import('../src/ui/components.js');
   for (const kick of ['GREEK ROADS <span class="acc">/</span> PURE TIME', 'PURE TIME', 'GREEK ROADS']) {
-    const html = statusBar({ back: false, kick });
+    const html = statusBar({ back: false, account: true, kick });
     assert.doesNotMatch(html, /hu-crumb|build-badge/);
     assert.match(html, /data-hu-driver/);
-    assert.match(html, /data-hu-clock/);
+    assert.doesNotMatch(html, /data-hu-clock/);
   }
   assert.match(statusBar({ kick: 'OPTIONS' }), /BACK[\s\S]*OPTIONS/);
   const priorDocument = globalThis.document;

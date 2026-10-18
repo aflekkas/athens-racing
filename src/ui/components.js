@@ -141,15 +141,13 @@ export function keyHints(list, cls = '') {
 }
 export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kbd--pad' : ''} ${cls}">${text}</kbd>`;
 
-/** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), and the driver chip + clock at the right.
+/** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), with an account button only when explicitly requested by the title.
  *  Back never shares a row with the page title, so every title lines up with the content grid below it. */
-export function statusBar({ back = true, kick = '' } = {}) {
+export function statusBar({ back = true, kick = '', account = false } = {}) {
   // Owner 2026-10-17: remove the title tagline, including its breadcrumb reuse.
   if (/^(?:GREEK ROADS(?:\s*\/\s*PURE TIME)?|PURE TIME)$/.test(kick.replace(/<[^>]*>/g, '').trim())) kick = '';
-  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r"><button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
+  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}${account ? `<div class="hu-status__r"><button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button></div>` : ''}</div>`;
 }
-const clockText = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
-if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
  *  key hints. Every menu screen is built with this one frame (docs/OWNER-DECISIONS.md: one shared component set). */
