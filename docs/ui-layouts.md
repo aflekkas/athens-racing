@@ -55,3 +55,8 @@ full screen, not a dialog. The pause screen supplies only option rows and contro
 `sheetList({ variant: 'split', rows, actions, aside })` puts actions after the
 summary and supporting panels alongside it. At 860px the body scrolls as one
 column; short landscape restores independently scrolling columns.
+
+`sheetList({ variant: 'reading', rows, actions })` centres readable panels at
+52rem with their existing scroll boundary; trailing links remain below the panel.
+`stageInspector({ variant: 'media', stage, inspector })` contains an image in the
+available height with an optional caption underneath.

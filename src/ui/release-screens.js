@@ -88,8 +88,8 @@ function gallery(release, images = release.images || []) {
 export function renderImage(menu) {
   const release = state.release?.notes?.find(n => n.version === menu.data.version);
   const image = release?.images?.[menu.data.image];
-  const body = image ? `<figure class="release-image"><img src="${esc(image.src)}" alt="${esc(image.alt)}" decoding="async" /><figcaption>${esc(image.caption)}</figcaption></figure>` : empty('PHOTO NOT AVAILABLE');
-  return C.screen({ ...head(menu, "WHAT'S NEW"), cls: 'scr--info scr--release-image', title: 'PHOTO', body });
+  const frame = { ...head(menu, "WHAT'S NEW"), cls: 'scr--info scr--release-image', title: 'PHOTO' };
+  return image ? C.stageInspector({ ...frame, variant: 'media', stage: `<img src="${esc(image.src)}" alt="${esc(image.alt)}" decoding="async" />`, inspector: esc(image.caption) }) : C.sheetList({ ...frame, variant: 'reading', rows: empty('PHOTO NOT AVAILABLE') });
 }
 
 /** the What's new screen: every release, newest first */
@@ -102,7 +102,7 @@ export function renderWhatsNew(menu) {
   else body = C.panel('', r.notes.map((n, i) => C.card({ cls: 'release', title: esc(versionLabel(n.version)), attrs: { role: 'listitem', 'aria-label': versionLabel(n.version) },
       text: `${esc(formatDate(n.date))}${n.version === now ? ' · THIS VERSION' : i === 0 ? ' · LATEST' : ''}`,
       body: `${gallery(n, (n.images || []).filter(image => image.item == null))}<ul class="release__items">${n.items.map((t, j) => `<li>${esc(t)}${gallery(n, (n.images || []).filter(image => image.item === j))}</li>`).join('')}</ul>` })).join(''), { cls: 'scroll-y release-list', attrs: { role: 'list' } });
-  return C.screen({ ...head(menu, 'ABOUT'), title: "WHAT'S NEW", body });
+  return C.sheetList({ ...head(menu, 'ABOUT'), variant: 'reading', title: "WHAT'S NEW", rows: body });
 }
 
 /** the Credits screen: team, then every generated section; entries with text open as a sheet */
@@ -126,14 +126,14 @@ export function renderCredits(menu) {
         ${c.ai ? `<p class="group__note">${esc(c.ai)}</p>` : ''}</div>
       ${c.sections.map((s) => `<div class="group"><h3 class="group__title">${esc(s.title.toUpperCase())}</h3>${s.entries.map(row).join('')}</div>`).join('')}`, { cls: 'scroll-y credits' });
   }
-  return C.screen({ ...head(menu, 'ABOUT'), title: 'CREDITS', hints: [['updown', 'SELECT'], ['confirm', 'OPEN'], ['back', 'BACK']], body: body + legalLinks });
+  return C.sheetList({ ...head(menu, 'ABOUT'), variant: 'reading', title: 'CREDITS', hints: [['updown', 'SELECT'], ['confirm', 'OPEN'], ['back', 'BACK']], rows: body, actions: legalLinks });
 }
 
 /** one credits / licence file, as readable paragraphs (each focusable, so keys and pads scroll it) */
 export function renderCreditFile(menu) {
   const entry = state.credits?.sections?.flatMap((s) => s.entries).find((e) => e.id === menu.data.id);
   const body = entry ? C.panel('', paragraphs(entry.text), { cls: 'scroll-y credit-sheet', attrs: { role: 'list' } }) : empty('NOT AVAILABLE');
-  return C.screen({ ...head(menu, 'CREDITS'), title: esc((entry?.title || 'CREDITS').toUpperCase()), body });
+  return C.sheetList({ ...head(menu, 'CREDITS'), variant: 'reading', title: esc((entry?.title || 'CREDITS').toUpperCase()), rows: body });
 }
 
 // ---------------------------------------------------------------- title screen: version corner + one-time card

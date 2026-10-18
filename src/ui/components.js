@@ -172,17 +172,17 @@ export function statusBar({ back = true, kick = '', account = false } = {}) {
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
  *  key hints. Every menu screen is built with this one frame (docs/OWNER-DECISIONS.md: one shared component set). */
-export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', layout = '' } = {}) {
+export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', layout = '', bodyRegion = '' } = {}) {
   return `<div class="scr ${cls}"${attrStr({ 'data-layout': layout || null })}>${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
-    <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+    <div class="scr__body"${attrStr({ 'data-layout-region': bodyRegion || null })}>${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
 // ------------------------------------------------------------------ page layouts
 // Screens pass kit content into named regions; the template owns all page geometry.
 // Slot values are trusted HTML, like panel()/screen(). Escape user text with esc().
 // See docs/ui-layouts.md. screen() remains a low-level compatibility primitive during migration.
-function layoutFrame(name, options, body) {
+function layoutFrame(name, options, body, bodyRegion = '') {
   const { cls = '', kick = '', title = '', back = true, hints = [], foot = '', variant = 'page' } = options;
-  return screen({ cls: `${variant === 'page' ? 'layout' : ''} layout--${name}${variant === 'page' ? '' : '-' + variant} ${cls}`, layout: name, kick, title, back, hints, foot, body });
+  return screen({ cls: `${variant === 'page' ? 'layout' : ''} layout--${name}${variant === 'page' ? '' : '-' + variant} ${cls}`, layout: name, kick, title, back, hints, foot, body, bodyRegion });
 }
 const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
 /** Primary tile beside secondary tiles; all tiles share the available height. */
@@ -198,7 +198,8 @@ export function browseGrid({ filters = '', items = '', list = false, ...frame } 
   return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
 }
 /** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
-export function stageInspector({ stage = '', inspector = '', ...frame } = {}) {
+export function stageInspector({ stage = '', inspector = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'media') return layoutFrame('stage-inspector', { ...frame, variant }, `<figure class="layout-media" data-layout-region="stage">${stage}${inspector ? `<figcaption data-layout-region="inspector">${inspector}</figcaption>` : ''}</figure>`);
   return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
 }
 /** Full-bleed map/canvas behind the frame with a floating, independently scrolling card. */
@@ -214,6 +215,7 @@ export function sheetList({ rows = '', aside = '', actions = '', variant = 'page
     return `<div class="scr scr--pause ${cls}" data-layout="sheet-list">${panel('', `${sheetHead({ kick, title, status })}<div class="pause__list" data-layout-region="rows">${rows}</div>${actions ? `<div class="pause-controls" data-layout-region="actions">${actions}</div>` : ''}`, { cls: 'pause-sheet' })}
       <footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
   }
+  if (variant === 'reading') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
   if (variant === 'split') {
     return layoutFrame('sheet-list', { ...frame, variant }, region('sheet',
       region('rows', rows + (actions ? region('actions', actions, 'layout-sheet-split__actions') : ''), 'layout-sheet-split__rows') +

@@ -44,3 +44,9 @@ test('split sheets keep actions with the summary and supporting panels in an asi
  assert.ok(html.indexOf('RETRY') < html.indexOf('SPLITS'));
  for (const slot of ['rows','actions','aside']) assert.match(html,new RegExp('data-layout-region="'+slot+'"'));
 });
+
+test('reading sheets own the scroll region and media stages own their figure/caption', () => {
+ assert.match(C.sheetList({variant:'reading',rows:C.panel('', 'READ')}),/scr__body" data-layout-region="rows"/);
+ const media=C.stageInspector({variant:'media',stage:'IMAGE',inspector:'CAPTION'});
+ assert.match(media,/<figure[^>]+>IMAGE<figcaption data-layout-region="inspector">CAPTION<\/figcaption><\/figure>/);
+});
