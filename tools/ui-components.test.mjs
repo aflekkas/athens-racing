@@ -215,3 +215,10 @@ test('required Google gate has no offline path and uses game button typography',
   assert.doesNotMatch(google.body, /font-family|letter-spacing|text-transform/);
   assert.doesNotMatch(read(KIT_CSS), /\.btn--google:hover/);
 });
+
+test('sign-in backdrop samples the whole title without an animated opacity ancestor', () => {
+  const css = read(KIT_CSS);
+  assert.match(css, /#ui\.is-entering \.scr--signin\s*\{ animation: none;/);
+  assert.match(css, /#ui\.is-entering \.dialog-under \.scr\s*\{ animation: none;/);
+  assert.match(css, /animation: ui-fade \.18s ease backwards/);
+});

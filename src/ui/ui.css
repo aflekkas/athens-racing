@@ -669,7 +669,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
   --overlay-blur: 0px;
   background: rgba(3,5,7,.86);
   -webkit-backdrop-filter: blur(var(--overlay-blur)); backdrop-filter: blur(var(--overlay-blur));
-  animation: ui-fade .18s ease both;
+  animation: ui-fade .18s ease backwards;
 }
 .scr--pause { position: relative; isolation: isolate; }
 .scr--pause::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
@@ -691,3 +691,7 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .scr--pause > * { animation: ui-fade .18s ease both; }
 /* The inert screen is a single stable backdrop, not a second entering screen. */
 #ui.is-entering .dialog-under .scr { animation: none; }
+
+/* An opacity-animated ancestor becomes a backdrop root and keeps title text sharp in Chromium.
+   Only the scrim and panel animate; the backdrop source stays static. */
+#ui.is-entering .scr--signin { animation: none; }
