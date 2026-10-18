@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { ConvexHull } from 'three/addons/math/ConvexHull.js';
 
 export function createVehicleFraming(root) {
+  // CarModel's on-road contact plane is not part of the vehicle silhouette.
+  // Studio views supply their own feathered patch; never fit or draw the road blob.
+  for (const object of root.children) if (object.isMesh && object.geometry?.type==='PlaneGeometry' && object.renderOrder===1 && !object.castShadow && object.material?.transparent) object.visible=false;
   root.updateWorldMatrix(true, true);
   const inverse = root.matrixWorld.clone().invert(), points = [], p = new THREE.Vector3();
   root.traverseVisible(object => {
@@ -41,4 +44,15 @@ export function frameVehicle(camera, root, framing, width, height, { margin=1.10
   const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
   camera.setViewOffset(width,height,cx*width/2,-cy*height/2,width,height);
   return { minX:minX-cx,maxX:maxX-cx,minY:minY-cy,maxY:maxY-cy,distance };
+}
+
+/** A feathered contact patch, never an opaque floor or a sharp cast-shadow platform. */
+export function createVehicleContactShadow() {
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+  const context=canvas.getContext('2d'),gradient=context.createRadialGradient(64,64,4,64,64,64);
+  gradient.addColorStop(0,'rgba(0,0,0,.65)');gradient.addColorStop(.5,'rgba(0,0,0,.4)');gradient.addColorStop(1,'rgba(0,0,0,0)');
+  context.fillStyle=gradient;context.fillRect(0,0,128,128);
+  const map=new THREE.CanvasTexture(canvas);
+  const shadow=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map,transparent:true,opacity:.65,depthWrite:false,toneMapped:false}));
+  shadow.name='vehicle-contact-shadow';return shadow;
 }

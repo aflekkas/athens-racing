@@ -2,7 +2,7 @@ import { importWithUpdate } from './client-release.js';
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
 import {exhaustPopsEnabled} from './exhaust-pops.js';
-import { createVehicleFraming, frameVehicle } from './ui/vehicle-framing.js';
+import { createVehicleFraming, frameVehicle, createVehicleContactShadow } from './ui/vehicle-framing.js';
 import { badgeBrand, manufacturerOptions } from './manufacturers.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CARS, CarModel, setPaint } from './cars.js';
@@ -88,7 +88,7 @@ export function openCarPicker(options = {}) {
   return true;
 }
 /** opts (all optional): container (default #carStage under root), lite (the multiplayer showroom: pixel ratio 1, a
- *  small shadow map, 30 fps, no hint; it sits behind menu panels, so it stays light on the GPU) */
+ *  soft contact shadow, 30 fps, no hint; it sits behind menu panels, so it stays light on the GPU) */
 export function mountCarSelect(root, index, opts = {}) {
   // Keep trim events inside this component; the shared menu owns navigation/layout.
   const onTrim = e => {
@@ -110,7 +110,6 @@ export function mountCarSelect(root, index, opts = {}) {
   const container = opts.container || root.querySelector('.car-preview-viewport') || root.querySelector('#carStage'), lite = !!opts.lite;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1 : 1.5));
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   container.append(renderer.domElement);
   const scene = new THREE.Scene();
@@ -133,21 +132,23 @@ export function mountCarSelect(root, index, opts = {}) {
   model.materials.black = cloneMaterial(model.materials.black);
   };studioMaterials(model);
   scene.add(new THREE.HemisphereLight('#dceaff', '#303038', 2.2));
-  for (const [x,y,z,intensity] of [[-4,6,-3,3],[4,3,5,2]]) { const light = new THREE.DirectionalLight('#ffffff',intensity); light.position.set(x,y,z); if (x < 0) { light.castShadow=true; light.shadow.mapSize.set(lite ? 512 : 1024, lite ? 512 : 1024); Object.assign(light.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:20}); light.shadow.normalBias=.025; } scene.add(light); }
-  // Transparent ground receives a soft contact shadow; no visible plinth or turntable disc.
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.ShadowMaterial({opacity:.22}));
-  floor.receiveShadow=true;scene.add(floor);
+  for (const [x,y,z,intensity] of [[-4,6,-3,3],[4,3,5,2]]) { const light = new THREE.DirectionalLight('#ffffff',intensity); light.position.set(x,y,z);scene.add(light); }
+  const floor=createVehicleContactShadow();scene.add(floor);
   const camera = new THREE.PerspectiveCamera(35,1,.05,100);
   const prepareFraming = () => {
     model.root.traverse(o=>{if(o.isLOD){o.autoUpdate=false;o.levels.forEach((l,i)=>{l.object.visible=i===0;});}});
     return createVehicleFraming(model.root);
   };
   let framing=prepareFraming();
-  const frame = () => frameVehicle(camera,model.root,framing,container.clientWidth,container.clientHeight,{margin:lite?1.18:1.10});
+  const frame = () => {
+    const fit=frameVehicle(camera,model.root,framing,container.clientWidth,container.clientHeight,{margin:lite?1.18:1.10});
+    const center=framing.center.clone().applyMatrix4(model.root.matrixWorld);
+    floor.position.set(center.x,framing.bounds.min.y-.015,center.z);floor.rotation.y=model.root.rotation.y;
+    return fit;
+  };
   const resize = () => {
     const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;
-    renderer.setSize(w,h);floor.position.y=framing.bounds.min.y-.015;floor.scale.setScalar(framing.radius*6);
-    scene.traverse(o=>{if(o.isDirectionalLight&&o.castShadow){const radius=framing.radius*1.5;Object.assign(o.shadow.camera,{left:-radius,right:radius,top:radius,bottom:-radius,far:Math.max(20,radius*6)});o.shadow.camera.updateProjectionMatrix();}});
+    renderer.setSize(w,h);const size=framing.bounds.getSize(new THREE.Vector3());floor.scale.set(size.x*1.6,1,size.z*1.3);
     frame();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();

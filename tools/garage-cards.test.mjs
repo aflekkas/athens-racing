@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import {CARS,CarModel} from './vehicle-budget-support.mjs';
 import {filterCars,carModel} from '../src/car-catalog.js';
 import {badgeBrand,manufacturerOptions,BRAND_BADGES} from '../src/manufacturers.js';
-import {createVehicleFraming,frameVehicle} from '../src/ui/vehicle-framing.js';
+import {createVehicleFraming,frameVehicle,createVehicleContactShadow} from '../src/ui/vehicle-framing.js';
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 test('every garage trim has the manufacturer artwork and drive pill inside its card media',async()=>{
  const doc=globalThis.document;delete globalThis.document;const C=await import('../src/ui/components.js');globalThis.document=doc;
@@ -20,12 +20,16 @@ test('brand filter covers every manufacturer and combines with the other filters
  const source=read('src/car-select.js');assert.match(source,/key: 'brand', label: 'BRAND'/);assert.match(source,/body: `\$\{toolbar\}<div class="car-grid/);
 });
 test('showroom has a transparent soft shadow receiver and no turntable disc',()=>{
- const source=read('src/car-select.js');assert.doesNotMatch(source,/CircleGeometry/);assert.match(source,/PlaneGeometry\(1,1\)[\s\S]*ShadowMaterial\(\{opacity:\.22\}/);assert.match(source,/frame\(\);renderer.render\(scene, camera\)/);
+ const source=read('src/car-select.js');assert.doesNotMatch(source,/CircleGeometry|castShadow=true/);assert.match(source,/createVehicleContactShadow\(\)/);
+ const shadow=createVehicleContactShadow();assert.equal(shadow.material.transparent,true);assert.equal(shadow.material.depthWrite,false);assert.ok(shadow.material.map.isCanvasTexture);assert.ok(shadow.material.opacity>0&&shadow.material.opacity<1);
+ shadow.geometry.dispose();shadow.material.map.dispose();shadow.material.dispose();
+ assert.match(source,/frame\(\);renderer.render\(scene, camera\)/);
 });
 test('actual city, sports, van and bus vertices stay centred within half a pixel through full revolutions',()=>{
  for(const id of ['a160','panda','golf','carrera','huracan','van','bus']){
  const model=new CarModel(CARS.find(c=>c.id===id));model.root.traverse(o=>{if(o.isLOD){o.autoUpdate=false;o.levels.forEach((l,i)=>l.object.visible=i===0);}});
  const framing=createVehicleFraming(model.root),camera=new THREE.PerspectiveCamera(35);
+ assert.ok(model.root.children.filter(o=>o.geometry?.type==='PlaneGeometry'&&o.renderOrder===1).every(o=>!o.visible),id+' on-road shadow is excluded from the studio silhouette');
  for(const [width,height] of [[800,600],[390,220],[320,600]])for(let a=0;a<Math.PI*2;a+=Math.PI/6){
  model.root.rotation.y=a;frameVehicle(camera,model.root,framing,width,height);let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
  model.root.updateMatrixWorld(true);camera.updateMatrixWorld(true);
