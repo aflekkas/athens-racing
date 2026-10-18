@@ -3,6 +3,7 @@ import { soloStartPosition, raceGridSlot } from './start-placement.js';
 import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
+import { FrameLimiter, dynamicBudgetMs } from './frame-pacing.js';
 import { importWithUpdate } from './client-release.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
@@ -55,10 +56,11 @@ import { Multiplayer } from './multiplayer.js';
 import { applyRemotePose } from './remote-timeline.js';
 import { personalBestSetup, getPersonalBests, recordPersonalBest, exactBestKey } from './personal-bests.js';
 import { captureResultFrame, shareResultCard } from './result-share.js';
-import { recoveryPosition, spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
+import { spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
 import { DrivableCorridor, corridorRecovery } from './drivable-corridor.js';
-import { buildCourse, observeCourse, courseProgress, courseComplete, courseRecoveryPose, restartCourseAt } from './course.js';
-import { roadRecoveryPose } from './road-recovery.js';
+import { buildCourse, observeCourse, courseProgress, courseComplete, courseTowLimits, towCourseTo } from './course.js';
+import { routeTowAdapter } from './road-recovery.js';
+import { planTow, RoadIndex } from './tow-placement.js';
 import { DrivingFeedback } from './driving-feedback.js';
 import { driverName } from './driver-name.js';
 import * as EV from './events.js';
@@ -122,7 +124,7 @@ const R = RENDER, quality = R.exhaust, sceneryQuality = R.scenery, lowGraphics =
 setAnisotropy(R.anisotropy);
 window.__renderInfo = () => ({ gpu: gpuName, perfClass: GFX.perfClass, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
-const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2) }));
+const perfOverlay = new PerfOverlay(() => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, scale: pixelRatio / Math.min(window.devicePixelRatio || 1, 2), limit: settings.frameCap }));
 perfOverlay.setVisible(settings.perfOverlay === true);
 onSettings((st, key) => { if (key === 'perfOverlay' || !key) perfOverlay.setVisible(st.perfOverlay === true); });
 addEventListener('keydown', (e) => {
@@ -133,7 +135,7 @@ let pixelRatio = GFX.pixelRatio;
 let dynamicScale = makeDynamicScale();
 function makeDynamicScale() {
   const floor = { potato: .83, low: .75, med: .65, high: .6 }[GFX.perfClass];
-  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: 1200 / (settings.frameCap || 60) });
+  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: dynamicBudgetMs(settings.frameCap) });
 }
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(innerWidth, innerHeight);
@@ -592,7 +594,7 @@ function offerTow() {
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
   const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? icon('chevron-right') + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + (inFreeRoam() ? 'Return to the road and repair your car.' : 'Return to your earned route position and repair your car.') + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + 'Return to the road and repair your car.' + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
   if (!inFreeRoam() && !multiplayer.active) {
@@ -616,24 +618,40 @@ function seaCheck(pv, dt) {
   }
   if (pv.water <= 0.05) G.sinkT = 0;
 }
+// Tow, reset and automatic recovery put the car on the nearest road (owner decision 2026-10-18, src/tow-placement.js).
+// Online the server's pose is authoritative; offline it is planned here from the car as it is right now.
+const towKit = { route: null, adapter: null, network: null, index: null };
+function towRoadKit() {
+  if (towKit.route !== route) { towKit.route = route; towKit.adapter = routeTowAdapter(route); }
+  if (towKit.network !== ground.network) { towKit.network = ground.network; towKit.index = ground.network?.segments?.length ? new RoadIndex(ground.network.segments) : null; }
+  return towKit;
+}
+// A spot is clear when no building, parked car, traffic car or rival is on the car's footprint.
+function towClearance(pv) {
+  const w = {}, r = pv.halfW + .05, spot = {}, others = [...traffic.cars.filter(c => c.active && !c.crash).map(c => traffic.point(c, spot) && { x: spot.x, z: spot.z }), ...grid.map(c => c.veh)];
+  return pose => {
+    const fx = -Math.sin(pose.yaw), fz = -Math.cos(pose.yaw);
+    for (const k of [pv.halfL - r, -(pv.halfL - r)]) if (ground.walls(pose.x + fx * k, pose.z + fz * k, r + .5, w)) return false;
+    return !others.some(o => Math.hypot(o.x - pose.x, o.z - pose.z) < pv.halfL + 3.2);
+  };
+}
 function backOnRoad(pv, recovery = null, { reset = false } = {}) {
   const online = multiplayer.active, dir = online ? multiplayer.lobby.event?.dir || 1 : G.dir || 1;
-  const sf = towOffer.safe || pv.safe || { s: G.ev.r.s0, u: 0 };
-  // Road projection gives the nearest point on all maps, including unwrapped circuit laps.
-  // Recovery puts the car at its latest valid on-road pose along the course (owner decision 2026-10-18):
-  // never an earlier point of the route, an off-road projection or a forward jump. Online keeps the server's anchor.
-  const course = !online && G.run?.course;
-  let s = recovery?.s ?? (course ? (courseRecoveryPose(course)?.s ?? sf.s) :
-    inFreeRoam() ? roadRecoveryPose(route, pv, dir).s : recoveryPosition(pv.s, sf.s, dir));
-  if (!route.closed) s = clamp(s, 0, route.length);
-  const placement = roadRecoveryPose(route, pv, dir, s);
-  s = placement.s; // The helper also repairs non-finite or out-of-range anchors.
-  const u = placement.u;
+  const kit = towRoadKit(), course = !online && !inFreeRoam() && G.run?.course;
+  let plan;
+  if (Number.isFinite(recovery?.s) && Number.isFinite(recovery.u)) {
+    // The server's road pose is used as it is; its route pose is re-derived so the first physics projection keeps its leg.
+    const f = Number.isFinite(recovery.yaw) ? kit.adapter.centre(route.closed ? route.wrap(recovery.s) : clamp(recovery.s, 0, route.length)) : null;
+    const d = f ? (-Math.sin(recovery.yaw) * f.tx - Math.cos(recovery.yaw) * f.tz >= 0 ? 1 : -1) : dir;
+    plan = recovery.kind === 'road' && Number.isFinite(recovery.x) && Number.isFinite(recovery.z) ? { kind: 'road', ...recovery } : { kind: 'route', ...kit.adapter.pose(recovery.s, d, dir) };
+  } else plan = planTow({ x: pv.x, z: pv.z, yaw: pv.yaw, route: kit.adapter, index: kit.index, dir, course: course ? courseTowLimits(course) : null, clear: towClearance(pv) });
   const nitro = pv.nitro; beginCameraBlend();
-  pv.reset(s, u, 0); pv.yaw = placement.yaw;
+  pv.reset(plan.s, plan.kind === 'road' ? 0 : plan.u, 0); pv.yaw = plan.yaw;
+  // A side street is not on the route: the car sits on that street's own surface.
+  if (plan.kind === 'road') { pv.x = plan.x; pv.z = plan.z; pv.y = ground.network.height(plan.x, plan.z); pv.u = plan.u; pv._network = true; }
   if (online && !recovery) multiplayer.stateSender.discontinuity();
-  pv.nitro = nitro; pv.safe = { s, u }; towOffer.safe = { s, u };
-  if (course) restartCourseAt(course, { s, u, x: pv.x, y: pv.y, z: pv.z }, G.run.courseClock);
+  pv.nitro = nitro; pv.safe = { s: plan.s, u: plan.u }; towOffer.safe = { s: plan.s, u: plan.u };
+  if (G.run?.course) towCourseTo(G.run.course, { s: plan.s, u: plan.u, x: pv.x, y: pv.y, z: pv.z, kind: plan.kind }, G.run.courseClock);
   // reset() clears contact history and marks the suspension fresh; the next update settles each wheel.
   G.sinkT = 0; G.sinkFade = false; look.yaw = look.pitch = look.targetYaw = look.targetPitch = look.yawV = look.pitchV = 0;
   syncCar(player, 0); updateCamera(0, true);
@@ -694,7 +712,7 @@ function tow(pv, { reset = false, automatic = false, capture = false } = {}) {
     if (!current()) return;
     G.towing = false;
     if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
-    // Both controls use the latest valid on-road pose; online keeps the server's anchor.
+    // Both controls put the car on the nearest road; online keeps the server's pose.
     backOnRoad(pv, recovery, { reset });
     towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 0;
     towOffer.recovering = towOffer.hold > 0; towOffer.rearm = .8;
@@ -1249,7 +1267,7 @@ function raceTiming(dt) {
   // that was never driven back), say so once instead of silently withholding the finish.
   if (!G.routeHint && prog(pv.s) >= G.ev.r.len + 5 && !courseComplete(G.run.course)) {
     G.routeHint = true;
-    notifications.toast('Part of the route was skipped. Drive back to where you left it, or tow', { id: 'route-incomplete', kind: 'card', label: 'ROUTE', tone: 'bad', ms: 7000 });
+    notifications.toast('Part of the route was skipped. Drive back to where you left it', { id: 'route-incomplete', kind: 'card', label: 'ROUTE', tone: 'bad', ms: 7000 });
   }
   // district banners, in the direction of travel
   const marks = G.marksDir;
@@ -1883,6 +1901,7 @@ const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
 
 // ------------------------------------------------------------------ main loop
 let last = 0, frameN = 0;
+const frameLimiter = new FrameLimiter();
 const events = [];
 const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
 const sunScreen = new THREE.Vector3();
@@ -1892,9 +1911,10 @@ function frame(now) {
   // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
   if (multiplayer.active && (document.hidden || now < last)) return;
   // Frame rate limit (Settings > Graphics, default 60): skip vsync callbacks that arrive early, so a 120 Hz laptop
-  // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery).
-  const cap = settings.frameCap;
-  if (cap > 0 && !Q.has('fixeddt') && now >= last && now - last < 800 / cap) return;
+  // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery). NO LIMIT (0) never skips:
+  // every requestAnimationFrame callback, at the display's refresh, simulates and draws.
+  perfOverlay.tick();
+  if (!Q.has('fixeddt') && !frameLimiter.allow(now, settings.frameCap)) return;
   const cpuFrameStart = cpuMetrics.start();
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;

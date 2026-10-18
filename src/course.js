@@ -1,7 +1,8 @@
 import { LocalCarriageways } from './local-carriageways.js';
 // Shared course rule (owner decision 2026-10-18: no checkpoints). Progress along the route is tracked
 // invisibly: only continuous, on-road movement advances it, a shortcut off the route buys nothing, and a
-// finish needs the whole route covered. The latest valid on-road pose is also the tow/recovery anchor.
+// finish needs the whole route covered. A tow puts the car on the nearest road (owner decision 2026-10-18: "we just
+// want to tow back onto the road", src/tow-placement.js); this module only bounds where on the route that may be.
 // No DOM, timers or network. The Worker uses receipt time; solo uses simulation time.
 // Station spacing for the dense on-road check between two consecutive poses (metres).
 export const PATH_SAMPLE = 8;
@@ -92,13 +93,12 @@ export function courseProgress(course) {
 export const courseComplete = course => course?.finishedAt != null;
 // True while progress is held because the car left the route and rejoined further on than it drove.
 export const courseHeld = course => course?.rejoinLimit != null;
-// Tow / recovery anchor: the latest valid on-road pose along the course, never an earlier checkpoint.
-export function courseRecoveryPose(course) {
+// Where on the route a tow may land, in route progress: never before the latest valid on-road pose, so a tow never
+// moves a car back along the course. Nothing caps it above: a car towed onto a later stretch than it earned stays
+// held by the rejoin rule below, so the placement itself grants no progress.
+export function courseTowLimits(course) {
   const pose = course?.lastRoad;
-  return pose && finite(pose.s) ? pose : null;
-}
-export function courseRecoveryStation(course, fallback = null) {
-  return courseRecoveryPose(course)?.s ?? fallback ?? course?.s0 ?? 0;
+  return { s0: course.s0, dir: course.dir, floor: courseProgress(course), ref: pose && finite(pose.s) ? pose.s : course.s0 };
 }
 function laneContains(lane, pose, margin = 0) {
   const dx = pose.x - lane.x, dz = pose.z - lane.z;
@@ -163,10 +163,10 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
   course.previousTime = now;
   return course;
 }
-// A recovery places the car on the latest valid pose: history restarts there so the placement itself is
-// neither progress nor a discontinuity.
-export function restartCourseAt(course, pose, now) {
-  course.validProgress = progress(course, pose.s);
+// A tow places the car on the nearest road: history restarts at the placement, so neither the placement nor the
+// drive to it is a discontinuity. Earned progress (`validProgress`, `reached`, the rejoin limit and the latest valid
+// on-road pose) is untouched: only driving moves it, and a tow never grants any.
+export function towCourseTo(course, pose, now) {
   course.previous = { s: pose.s, u: pose.u, x: pose.x, y: pose.y, z: pose.z }; course.previousTime = now;
-  course.lastRoad = { ...course.previous }; course.onRoute = true; delete course.rejoinLimit;
+  course.onRoute = pose.kind !== 'road';
 }

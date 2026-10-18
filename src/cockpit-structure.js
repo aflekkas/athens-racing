@@ -1,8 +1,15 @@
 import {attachCockpitWipers} from './cockpit-rain.js';
 import * as T from 'three';
+import {DEFAULTS} from './settings.js';
+import {derivePovEye} from './pov-camera.js';
 
 // The glass the frame is built on, found the same way for every body family (and by pov-camera's windscreenBounds).
 export const windscreenGlass=model=>model.windscreen||model.body.getObjectByName('windscreen-glass')||model.body.getObjectByName('cab-windscreen-glass')||model.body.getObjectByName('panoramic-front-glass');
+
+// A closed car has a roof: its header (and headliner edge) must show across the top of the default POV frame.
+export const closedCockpit=model=>!model.spec.convertible&&!model.shape?.open;
+// Where the header's lower edge lands on screen (NDC y, 1 = top of frame) in the default POV (shared with the guard).
+export const HEADER_BAND_NDC=.95;
 
 // Only the inner windscreen frame, cowl and mirror attachments are shared.
 // Dashboard, console, instruments and steering retain their authored layouts.
@@ -31,16 +38,31 @@ export function buildCockpitStructure(model,cockpit){
  const [bl,br]=frame?[frame[0],frame[1]]:[v(-half,sh.belt,sh.cowl),v(half,sh.belt,sh.cowl)];
  const [tl,tr]=frame?[frame[2],frame[3]]:[v(-half,sh.H-.08,sh.header),v(half,sh.H-.08,sh.header)];
  // Pillars carry on along the glass edge past the corner (the sealed frame), never off towards another point.
- // Cars carry the pillars up to the body's roof line (shape.H) at most .18 m beyond the glass corner; commercial
+ // Cars carry the pillars up to the body's roof line (shape.H) at most .22 m beyond the glass corner; commercial
  // bodies keep their short fixed frame.
- const exts=[[bl,tl],[br,tr]].map(([b,t])=>{const d=t.clone().sub(b).normalize();return spec.nativeFleet||!frame?.08:Math.min(.18,Math.max(.05,(sh.H+.025-t.y)/Math.max(d.y,.2)));});
- for(const [i,[b,t]]of [[bl,tl],[br,tr]].entries()){const d=t.clone().sub(b).normalize();t.add(d.multiplyScalar(exts[i]));}
+ const commercial=['van','truck','bus'].includes(spec.nativeFleet);
+ const dirs=[[bl,tl],[br,tr]].map(([b,t])=>t.clone().sub(b).normalize());
+ let exts=[[bl,tl],[br,tr]].map(([b,t],i)=>commercial||!frame?.08:Math.min(.22,Math.max(.05,(sh.H+.025-t.y)/Math.max(dirs[i].y,.2))));
+ if(frame&&closedCockpit(model)&&!commercial){
+  // Closed cars keep a thin header band in view: the pillars carry on (at most .22 m past the glass) until the header's
+  // lower edge sits at the top of the default frame. (Van / truck / bus windscreens are taller than the frame.)
+  const eye=derivePovEye(model,cockpit),cam=new T.PerspectiveCamera(DEFAULTS.cockpitFov,1.6,.035,100);
+  cam.position.copy(eye);cam.rotation.set(cockpit.eyePitch,0,0);cam.updateMatrixWorld(true);
+  const lowerEdge=e=>{
+   const p=[tl,tr].map((t,i)=>t.clone().addScaledVector(dirs[i],e)),y=(p[0].y+p[1].y)/2,z=(p[0].z+p[1].z)/2+.012;
+   const lift=Math.max(0,bounds.max.y+e*.5-y);
+   return v(0,y+lift-.013,z).project(cam).y;
+  };
+  let best=0;for(let e=0;e<=.22+1e-9;e+=.005)if(lowerEdge(e)<=HEADER_BAND_NDC)best=e;
+  exts=exts.map(()=>best);
+ }
+ for(const [i,[b,t]]of [[bl,tl],[br,tr]].entries())t.addScaledVector(dirs[i],exts[i]);
  const ext=(exts[0]+exts[1])/2;
  for(const p of [bl,br,tl,tr])p.z+=.012;
  // The header is straight but the glass top edge bows up at the centre: lift it so no frame crosses the aperture.
  const bow=frame?Math.max(0,bounds.max.y+ext*.5-(tl.y+tr.y)/2):0,headerL=tl.clone().add(v(0,bow,0)),headerR=tr.clone().add(v(0,bow,0));
  const thickness=spec.nativeFleet==='bus'?.105:spec.nativeFleet==='truck'?.08:spec.convertible?.055:.05;
- const fleet=!!spec.nativeFleet;
+ const fleet=commercial;
  beam(headerL,headerR,fleet?.045:.026,trim,'header',fleet?.075:.04);
  if(!spec.convertible&&!sh.open)panel([headerL,headerR,v(half,headerR.y+(fleet?.06:.05),fleet?model.seat.z+.4:headerR.z+.07),v(-half,headerL.y+(fleet?.06:.05),fleet?model.seat.z+.4:headerL.z+.07)],trim,'headliner');
  beam(headerL.clone().add(v(0,-.026,.018)),headerR.clone().add(v(0,-.026,.018)),.009,trim,'visor-edge');

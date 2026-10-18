@@ -2,6 +2,8 @@ import { RIVIERA_TUNNELS } from '../src/maps/riviera-tunnels.js';
 import { trackVersion } from '../src/network-track.js';
 import { QUICK_RACE, freeRoam, resolve as resolveEvent } from '../src/events.js';
 // No filesystem, DOM or three.js: both transports validate exactly the loaded map.
+// The surrounding street network (tenth-of-a-metre polylines) lets the server tow a car onto the nearest road.
+const streets = data => (data.roadNetwork?.roads || []).map(r => ({ p: r.p.map(v => Math.round(v * 10) / 10), w: r.w, ...(r.oneway ? { oneway: true } : {}) }));
 export function resolveMap(meta, data) {
   const { route, marks = [] } = data;
   const track = { start: route.start, finish: route.finish, version: trackVersion(route) };
@@ -16,5 +18,5 @@ export function resolveMap(meta, data) {
   }
   if (![...definitions.values()].some(e => e.type === 'sprint')) throw new Error(`Map ${meta.id} has no Quick Race route`);
   const trips = { taxi: null, getaway: null }; // Legacy storage shape; objective modes are dormant.
-  return { id: meta.id, name: meta.name, track, geometry: { ...route, corridors: meta.id === 'riviera' ? RIVIERA_TUNNELS : [] }, closed: route.closed === true, trips, definitions };
+  return { id: meta.id, name: meta.name, track, geometry: { ...route, corridors: meta.id === 'riviera' ? RIVIERA_TUNNELS : [], network: streets(data) }, closed: route.closed === true, trips, definitions };
 }

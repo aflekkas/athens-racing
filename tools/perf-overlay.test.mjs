@@ -51,6 +51,17 @@ test('PerfOverlay shows fps/ms/draws at 2 Hz and hides', async () => {
   assert.match(overlay.el.textContent, /750 DRAWS/);
   assert.match(overlay.el.textContent, /2\.50M TRIS/);
   assert.match(overlay.el.textContent, /68% SCALE/);
+  assert.doesNotMatch(overlay.el.textContent, /HZ|LIMIT/, 'no limit info when the stats carry none');
+  // under a limit the overlay also shows how fast the browser is calling back; under no limit every callback draws
+  const limited = new PerfOverlay(() => ({ limit: 60 })); limited.setVisible(true);
+  for (let i = 0; i < 60; i++) limited.tick();
+  limited.frame(.5);
+  assert.match(limited.el.textContent, /· 120 HZ · LIMIT 60 ·/);
+  const free = new PerfOverlay(() => ({ limit: 0 })); free.setVisible(true);
+  for (let i = 0; i < 8; i++) { free.tick(); free.frame(.0625); }
+  assert.match(free.el.textContent, /· NO LIMIT ·/);
+  assert.doesNotMatch(free.el.textContent, /HZ/);
+  limited.dispose(); free.dispose();
   overlay.setVisible(false);
   assert.equal(overlay.el.style.display, 'none');
   overlay.frame(1);

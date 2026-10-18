@@ -641,7 +641,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 52.94117647058823,
+        "headerIntrusion": 30.88235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -682,12 +682,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.52265625,
-      "openPixels": 558312,
+      "windscreenPercent": 59.2546875,
+      "openPixels": 606768,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.1861328125
+      "unobstructedViewPercent": 56.9181640625
     },
     "structure": {
       "dash": {
@@ -705,18 +705,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 31155,
-        "minX": 110,
+        "pixels": 36051,
+        "minX": 82,
         "maxX": 404,
-        "minY": 53,
+        "minY": 1,
         "maxY": 537
       },
       "header": {
-        "pixels": 63836,
-        "minX": 185,
+        "pixels": 23001,
+        "minX": 177,
         "maxX": 1279,
-        "minY": 8,
-        "maxY": 66
+        "minY": 0,
+        "maxY": 20
       },
       "door-top": {
         "pixels": 38211,
@@ -796,11 +796,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 8815,
-        "minX": 173,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 7
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -909,7 +909,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 21.323529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -950,12 +950,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.49453125,
-      "openPixels": 598984,
+      "windscreenPercent": 56.52705078125,
+      "openPixels": 578837,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 57.71142578125
+      "unobstructedViewPercent": 55.7439453125
     },
     "structure": {
       "dash": {
@@ -973,18 +973,18 @@
         "maxY": 508
       },
       "pillar": {
-        "pixels": 33327,
-        "minX": 118,
+        "pixels": 31241,
+        "minX": 129,
         "maxX": 1279,
-        "minY": 14,
+        "minY": 34,
         "maxY": 490
       },
       "header": {
-        "pixels": 2090,
-        "minX": 234,
+        "pixels": 24142,
+        "minX": 221,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 1
+        "maxY": 22
       },
       "door-top": {
         "pixels": 47948,
@@ -1178,7 +1178,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 54.411764705882355,
+        "headerIntrusion": 30.88235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -1219,12 +1219,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.7533203125,
-      "openPixels": 570914,
+      "windscreenPercent": 59.608984375,
+      "openPixels": 610396,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 54.84453125
+      "unobstructedViewPercent": 58.7001953125
     },
     "structure": {
       "dash": {
@@ -1242,18 +1242,18 @@
         "maxY": 560
       },
       "pillar": {
-        "pixels": 36778,
-        "minX": 37,
+        "pixels": 41158,
+        "minX": 10,
         "maxX": 407,
-        "minY": 40,
+        "minY": 0,
         "maxY": 547
       },
       "header": {
-        "pixels": 63016,
-        "minX": 126,
+        "pixels": 19688,
+        "minX": 111,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 54
+        "maxY": 16
       },
       "door-top": {
         "pixels": 33421,
@@ -1444,7 +1444,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 15.441176470588236,
+        "headerIntrusion": 37.5,
         "geometry": {
           "windscreen": {
             "min": [
@@ -1485,12 +1485,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 65.4357421875,
-      "openPixels": 670062,
+      "windscreenPercent": 60.61875,
+      "openPixels": 620736,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 61.59609375
+      "unobstructedViewPercent": 56.7791015625
     },
     "structure": {
       "dash": {
@@ -1508,18 +1508,18 @@
         "maxY": 552
       },
       "pillar": {
-        "pixels": 45176,
-        "minX": 90,
+        "pixels": 40861,
+        "minX": 100,
         "maxX": 429,
-        "minY": 0,
+        "minY": 8,
         "maxY": 544
       },
       "header": {
-        "pixels": 2127,
-        "minX": 216,
+        "pixels": 22325,
+        "minX": 207,
         "maxX": 1279,
-        "minY": 1,
-        "maxY": 2
+        "minY": 0,
+        "maxY": 20
       },
       "door-top": {
         "pixels": 39299,
@@ -1713,7 +1713,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -1754,12 +1754,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.63427734375,
-      "openPixels": 559455,
+      "windscreenPercent": 61.00439453125,
+      "openPixels": 624685,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.78974609375
+      "unobstructedViewPercent": 57.15986328125
     },
     "structure": {
       "dash": {
@@ -1777,18 +1777,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 28585,
-        "minX": 215,
+        "pixels": 35532,
+        "minX": 186,
         "maxX": 424,
-        "minY": 69,
+        "minY": 0,
         "maxY": 533
       },
       "header": {
-        "pixels": 56625,
-        "minX": 294,
+        "pixels": 17844,
+        "minX": 280,
         "maxX": 1279,
-        "minY": 29,
-        "maxY": 86
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 35479,
@@ -1868,11 +1868,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 29236,
-        "minX": 251,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 28
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -1982,7 +1982,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 60.294117647058826,
+        "headerIntrusion": 30.147058823529413,
         "geometry": {
           "windscreen": {
             "min": [
@@ -2023,12 +2023,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.39228515625,
-      "openPixels": 567217,
+      "windscreenPercent": 60.53427734375,
+      "openPixels": 619871,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.9037109375
+      "unobstructedViewPercent": 58.045703125
     },
     "structure": {
       "dash": {
@@ -2046,18 +2046,18 @@
         "maxY": 545
       },
       "pillar": {
-        "pixels": 29005,
-        "minX": 231,
+        "pixels": 34756,
+        "minX": 209,
         "maxX": 435,
-        "minY": 69,
+        "minY": 9,
         "maxY": 529
       },
       "header": {
-        "pixels": 58482,
-        "minX": 305,
+        "pixels": 21169,
+        "minX": 309,
         "maxX": 1279,
-        "minY": 16,
-        "maxY": 76
+        "minY": 0,
+        "maxY": 21
       },
       "door-top": {
         "pixels": 35171,
@@ -2137,11 +2137,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 15886,
-        "minX": 277,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 19
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2251,7 +2251,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 56.61764705882353,
+        "headerIntrusion": 16.176470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -2292,12 +2292,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.5447265625,
-      "openPixels": 548298,
+      "windscreenPercent": 60.4287109375,
+      "openPixels": 618790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.39912109375
+      "unobstructedViewPercent": 57.28310546875
     },
     "structure": {
       "dash": {
@@ -2315,18 +2315,18 @@
         "maxY": 512
       },
       "pillar": {
-        "pixels": 21262,
-        "minX": 278,
+        "pixels": 27359,
+        "minX": 251,
         "maxX": 1279,
-        "minY": 84,
+        "minY": 4,
         "maxY": 496
       },
       "header": {
-        "pixels": 43765,
-        "minX": 335,
+        "pixels": 16957,
+        "minX": 332,
         "maxX": 1279,
-        "minY": 45,
-        "maxY": 91
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 46060,
@@ -2406,11 +2406,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 44077,
-        "minX": 270,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 47
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2520,7 +2520,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -2561,12 +2561,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.775,
-      "openPixels": 560896,
+      "windscreenPercent": 62.388671875,
+      "openPixels": 638860,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.3419921875
+      "unobstructedViewPercent": 58.9556640625
     },
     "structure": {
       "dash": {
@@ -2584,18 +2584,18 @@
         "maxY": 540
       },
       "pillar": {
-        "pixels": 25846,
-        "minX": 235,
+        "pixels": 33734,
+        "minX": 202,
         "maxX": 438,
-        "minY": 90,
+        "minY": 4,
         "maxY": 525
       },
       "header": {
-        "pixels": 54817,
-        "minX": 303,
+        "pixels": 14567,
+        "minX": 300,
         "maxX": 1279,
-        "minY": 38,
-        "maxY": 94
+        "minY": 0,
+        "maxY": 14
       },
       "door-top": {
         "pixels": 35855,
@@ -2675,11 +2675,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 38598,
-        "minX": 236,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 43
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -2789,7 +2789,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 70.58823529411765,
+        "headerIntrusion": 26.470588235294116,
         "geometry": {
           "windscreen": {
             "min": [
@@ -2830,12 +2830,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.99482421875,
-      "openPixels": 532427,
+      "windscreenPercent": 60.22919921875,
+      "openPixels": 616747,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.45458984375
+      "unobstructedViewPercent": 56.68896484375
     },
     "structure": {
       "dash": {
@@ -2853,18 +2853,18 @@
         "maxY": 553
       },
       "pillar": {
-        "pixels": 26686,
-        "minX": 214,
+        "pixels": 34123,
+        "minX": 187,
         "maxX": 394,
-        "minY": 79,
+        "minY": 0,
         "maxY": 531
       },
       "header": {
-        "pixels": 51079,
-        "minX": 292,
+        "pixels": 18967,
+        "minX": 276,
         "maxX": 1279,
-        "minY": 53,
-        "maxY": 104
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 41291,
@@ -2944,11 +2944,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 53991,
-        "minX": 225,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 52
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -3057,7 +3057,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 8.823529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -3098,12 +3098,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 57.889453125,
-      "openPixels": 592788,
+      "windscreenPercent": 52.6927734375,
+      "openPixels": 539574,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.9212890625
+      "unobstructedViewPercent": 51.724609375
     },
     "structure": {
       "dash": {
@@ -3121,18 +3121,18 @@
         "maxY": 510
       },
       "pillar": {
-        "pixels": 39836,
-        "minX": 31,
+        "pixels": 32561,
+        "minX": 59,
         "maxX": 383,
-        "minY": 0,
+        "minY": 39,
         "maxY": 492
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 21184,
+        "minX": 154,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 44834,
@@ -3326,7 +3326,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 39.705882352941174,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -3367,12 +3367,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.8138671875,
-      "openPixels": 602254,
+      "windscreenPercent": 61.803515625,
+      "openPixels": 632868,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.02177734375
+      "unobstructedViewPercent": 59.01142578125
     },
     "structure": {
       "dash": {
@@ -3390,18 +3390,18 @@
         "maxY": 552
       },
       "pillar": {
-        "pixels": 27612,
-        "minX": 175,
+        "pixels": 30131,
+        "minX": 162,
         "maxX": 417,
-        "minY": 31,
+        "minY": 0,
         "maxY": 533
       },
       "header": {
-        "pixels": 49408,
-        "minX": 246,
+        "pixels": 22797,
+        "minX": 239,
         "maxX": 1279,
-        "minY": 5,
-        "maxY": 52
+        "minY": 0,
+        "maxY": 21
       },
       "door-top": {
         "pixels": 34691,
@@ -3481,11 +3481,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 5175,
-        "minX": 244,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 4
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -3595,7 +3595,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 14.705882352941176,
+        "headerIntrusion": 36.76470588235294,
         "geometry": {
           "windscreen": {
             "min": [
@@ -3636,12 +3636,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 59.18466796875,
-      "openPixels": 606051,
+      "windscreenPercent": 54.91396484375,
+      "openPixels": 562319,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 57.82529296875
+      "unobstructedViewPercent": 53.55458984375
     },
     "structure": {
       "dash": {
@@ -3659,18 +3659,18 @@
         "maxY": 521
       },
       "pillar": {
-        "pixels": 36054,
-        "minX": 123,
+        "pixels": 32207,
+        "minX": 131,
         "maxX": 391,
-        "minY": 0,
+        "minY": 11,
         "maxY": 502
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 16756,
+        "minX": 224,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 15
       },
       "door-top": {
         "pixels": 44575,
@@ -3864,7 +3864,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 34.55882352941177,
+        "headerIntrusion": 15.441176470588236,
         "geometry": {
           "windscreen": {
             "min": [
@@ -3905,12 +3905,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.5439453125,
-      "openPixels": 527810,
+      "windscreenPercent": 53.83017578125,
+      "openPixels": 551221,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.54111328125
+      "unobstructedViewPercent": 53.82734375
     },
     "structure": {
       "dash": {
@@ -3928,18 +3928,18 @@
         "maxY": 483
       },
       "pillar": {
-        "pixels": 22469,
-        "minX": 277,
+        "pixels": 24546,
+        "minX": 272,
         "maxX": 395,
-        "minY": 30,
+        "minY": 1,
         "maxY": 461
       },
       "header": {
-        "pixels": 40822,
-        "minX": 344,
+        "pixels": 16657,
+        "minX": 350,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 43
+        "maxY": 17
       },
       "door-top": {
         "pixels": 44523,
@@ -4173,12 +4173,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 49.6888671875,
-      "openPixels": 508814,
+      "windscreenPercent": 50.82333984375,
+      "openPixels": 520431,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 49.2765625
+      "unobstructedViewPercent": 50.41103515625
     },
     "structure": {
       "dash": {
@@ -4196,18 +4196,18 @@
         "maxY": 521
       },
       "pillar": {
-        "pixels": 41295,
+        "pixels": 42313,
         "minX": 0,
         "maxX": 403,
-        "minY": 52,
+        "minY": 46,
         "maxY": 505
       },
       "header": {
-        "pixels": 42450,
-        "minX": 48,
+        "pixels": 29114,
+        "minX": 45,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 34
+        "maxY": 23
       },
       "door-top": {
         "pixels": 64519,
@@ -4311,8 +4311,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 85,
-        "triangles": 3204
+        "calls": 84,
+        "triangles": 3192
       },
       "geometryAudit": {
         "nearRoadDistance": 9.25,
@@ -4384,8 +4384,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1600
+        "calls": 52,
+        "triangles": 1612
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -4400,7 +4400,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 0,
+        "headerIntrusion": 25,
         "geometry": {
           "windscreen": {
             "min": [
@@ -4441,12 +4441,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.07080078125,
-      "openPixels": 615125,
+      "windscreenPercent": 53.19580078125,
+      "openPixels": 544725,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 60.06982421875
+      "unobstructedViewPercent": 53.19482421875
     },
     "structure": {
       "dash": {
@@ -4471,11 +4471,11 @@
         "maxY": 525
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 12800,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 9
       },
       "door-top": {
         "pixels": 64761,
@@ -4668,7 +4668,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 22.058823529411764,
+        "headerIntrusion": 32.35294117647059,
         "geometry": {
           "windscreen": {
             "min": [
@@ -4709,12 +4709,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 62.87421875,
-      "openPixels": 643832,
+      "windscreenPercent": 62.0013671875,
+      "openPixels": 634894,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 60.3771484375
+      "unobstructedViewPercent": 59.504296875
     },
     "structure": {
       "dash": {
@@ -4732,18 +4732,18 @@
         "maxY": 559
       },
       "pillar": {
-        "pixels": 36661,
-        "minX": 169,
+        "pixels": 35941,
+        "minX": 171,
         "maxX": 424,
         "minY": 0,
         "maxY": 541
       },
       "header": {
-        "pixels": 8021,
-        "minX": 273,
+        "pixels": 18083,
+        "minX": 268,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 7
+        "maxY": 17
       },
       "door-top": {
         "pixels": 34636,
@@ -4937,7 +4937,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 50,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -4978,12 +4978,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.36923828125,
-      "openPixels": 618181,
+      "windscreenPercent": 64.74560546875,
+      "openPixels": 662995,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 59.70185546875
+      "unobstructedViewPercent": 64.07822265625
     },
     "structure": {
       "dash": {
@@ -5001,18 +5001,18 @@
         "maxY": 658
       },
       "pillar": {
-        "pixels": 43129,
-        "minX": 175,
+        "pixels": 47941,
+        "minX": 163,
         "maxX": 404,
-        "minY": 35,
+        "minY": 0,
         "maxY": 640
       },
       "header": {
-        "pixels": 65084,
-        "minX": 271,
+        "pixels": 18090,
+        "minX": 267,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 64
+        "maxY": 17
       },
       "door-top": {
         "pixels": 15499,
@@ -5205,7 +5205,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 30.147058823529413,
         "geometry": {
           "windscreen": {
             "min": [
@@ -5246,12 +5246,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.344140625,
-      "openPixels": 566724,
+      "windscreenPercent": 61.99189453125,
+      "openPixels": 634797,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.11533203125
+      "unobstructedViewPercent": 61.7630859375
     },
     "structure": {
       "dash": {
@@ -5269,18 +5269,18 @@
         "maxY": 572
       },
       "pillar": {
-        "pixels": 33121,
-        "minX": 177,
+        "pixels": 40120,
+        "minX": 147,
         "maxX": 427,
-        "minY": 63,
+        "minY": 0,
         "maxY": 583
       },
       "header": {
-        "pixels": 60550,
-        "minX": 263,
+        "pixels": 17453,
+        "minX": 245,
         "maxX": 1279,
-        "minY": 28,
-        "maxY": 87
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
         "pixels": 21027,
@@ -5360,11 +5360,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 28874,
-        "minX": 230,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 27
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -5473,7 +5473,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 58.088235294117645,
+        "headerIntrusion": 18.38235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -5514,12 +5514,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.87373046875,
-      "openPixels": 561907,
+      "windscreenPercent": 61.30166015625,
+      "openPixels": 627729,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.710546875
+      "unobstructedViewPercent": 58.1384765625
     },
     "structure": {
       "dash": {
@@ -5537,18 +5537,18 @@
         "maxY": 541
       },
       "pillar": {
-        "pixels": 25035,
-        "minX": 245,
+        "pixels": 30853,
+        "minX": 222,
         "maxX": 422,
-        "minY": 65,
+        "minY": 0,
         "maxY": 521
       },
       "header": {
-        "pixels": 46821,
-        "minX": 319,
+        "pixels": 16459,
+        "minX": 307,
         "maxX": 1279,
-        "minY": 39,
-        "maxY": 87
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
         "pixels": 40436,
@@ -5628,11 +5628,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 38300,
-        "minX": 274,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 38
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -5741,7 +5741,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 8.823529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -5782,12 +5782,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 57.889453125,
-      "openPixels": 592788,
+      "windscreenPercent": 52.6927734375,
+      "openPixels": 539574,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.9212890625
+      "unobstructedViewPercent": 51.724609375
     },
     "structure": {
       "dash": {
@@ -5805,18 +5805,18 @@
         "maxY": 510
       },
       "pillar": {
-        "pixels": 39836,
-        "minX": 31,
+        "pixels": 32561,
+        "minX": 59,
         "maxX": 383,
-        "minY": 0,
+        "minY": 39,
         "maxY": 492
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 21184,
+        "minX": 154,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 44834,
@@ -6009,7 +6009,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 8.823529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -6050,12 +6050,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 57.889453125,
-      "openPixels": 592788,
+      "windscreenPercent": 52.6927734375,
+      "openPixels": 539574,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.9212890625
+      "unobstructedViewPercent": 51.724609375
     },
     "structure": {
       "dash": {
@@ -6073,18 +6073,18 @@
         "maxY": 510
       },
       "pillar": {
-        "pixels": 39836,
-        "minX": 31,
+        "pixels": 32561,
+        "minX": 59,
         "maxX": 383,
-        "minY": 0,
+        "minY": 39,
         "maxY": 492
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 21184,
+        "minX": 154,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 44834,
@@ -6277,7 +6277,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 6.617647058823529,
+        "headerIntrusion": 30.88235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -6318,12 +6318,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 57.57216796875,
-      "openPixels": 589539,
+      "windscreenPercent": 52.2685546875,
+      "openPixels": 535230,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.558203125
+      "unobstructedViewPercent": 51.25458984375
     },
     "structure": {
       "dash": {
@@ -6341,18 +6341,18 @@
         "maxY": 510
       },
       "pillar": {
-        "pixels": 40262,
-        "minX": 0,
+        "pixels": 32901,
+        "minX": 17,
         "maxX": 371,
-        "minY": 0,
+        "minY": 41,
         "maxY": 492
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 21999,
+        "minX": 110,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 42646,
@@ -6397,7 +6397,7 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 5355,
+        "pixels": 5354,
         "minX": 200,
         "maxX": 1125,
         "minY": 160,
@@ -6545,7 +6545,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 58.088235294117645,
+        "headerIntrusion": 18.38235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -6586,12 +6586,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.87373046875,
-      "openPixels": 561907,
+      "windscreenPercent": 61.30166015625,
+      "openPixels": 627729,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.710546875
+      "unobstructedViewPercent": 58.1384765625
     },
     "structure": {
       "dash": {
@@ -6609,18 +6609,18 @@
         "maxY": 541
       },
       "pillar": {
-        "pixels": 25035,
-        "minX": 245,
+        "pixels": 30853,
+        "minX": 222,
         "maxX": 422,
-        "minY": 65,
+        "minY": 0,
         "maxY": 521
       },
       "header": {
-        "pixels": 46821,
-        "minX": 319,
+        "pixels": 16459,
+        "minX": 307,
         "maxX": 1279,
-        "minY": 39,
-        "maxY": 87
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
         "pixels": 40436,
@@ -6700,11 +6700,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 38300,
-        "minX": 274,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 38
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -6814,7 +6814,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 50,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -6855,12 +6855,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.36923828125,
-      "openPixels": 618181,
+      "windscreenPercent": 64.74560546875,
+      "openPixels": 662995,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 59.70185546875
+      "unobstructedViewPercent": 64.07822265625
     },
     "structure": {
       "dash": {
@@ -6878,18 +6878,18 @@
         "maxY": 658
       },
       "pillar": {
-        "pixels": 43129,
-        "minX": 175,
+        "pixels": 47941,
+        "minX": 163,
         "maxX": 404,
-        "minY": 35,
+        "minY": 0,
         "maxY": 640
       },
       "header": {
-        "pixels": 65084,
-        "minX": 271,
+        "pixels": 18090,
+        "minX": 267,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 64
+        "maxY": 17
       },
       "door-top": {
         "pixels": 15499,
@@ -7083,7 +7083,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 50,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -7124,12 +7124,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.36923828125,
-      "openPixels": 618181,
+      "windscreenPercent": 64.74560546875,
+      "openPixels": 662995,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 59.70185546875
+      "unobstructedViewPercent": 64.07822265625
     },
     "structure": {
       "dash": {
@@ -7147,18 +7147,18 @@
         "maxY": 658
       },
       "pillar": {
-        "pixels": 43129,
-        "minX": 175,
+        "pixels": 47941,
+        "minX": 163,
         "maxX": 404,
-        "minY": 35,
+        "minY": 0,
         "maxY": 640
       },
       "header": {
-        "pixels": 65084,
-        "minX": 271,
+        "pixels": 18090,
+        "minX": 267,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 64
+        "maxY": 17
       },
       "door-top": {
         "pixels": 15499,
@@ -7351,7 +7351,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 30.147058823529413,
         "geometry": {
           "windscreen": {
             "min": [
@@ -7392,12 +7392,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.344140625,
-      "openPixels": 566724,
+      "windscreenPercent": 61.99189453125,
+      "openPixels": 634797,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.11533203125
+      "unobstructedViewPercent": 61.7630859375
     },
     "structure": {
       "dash": {
@@ -7415,18 +7415,18 @@
         "maxY": 572
       },
       "pillar": {
-        "pixels": 33121,
-        "minX": 177,
+        "pixels": 40120,
+        "minX": 147,
         "maxX": 427,
-        "minY": 63,
+        "minY": 0,
         "maxY": 583
       },
       "header": {
-        "pixels": 60550,
-        "minX": 263,
+        "pixels": 17453,
+        "minX": 245,
         "maxX": 1279,
-        "minY": 28,
-        "maxY": 87
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
         "pixels": 21027,
@@ -7506,11 +7506,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 28874,
-        "minX": 230,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 27
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -7619,7 +7619,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 30.147058823529413,
         "geometry": {
           "windscreen": {
             "min": [
@@ -7660,12 +7660,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.344140625,
-      "openPixels": 566724,
+      "windscreenPercent": 61.99189453125,
+      "openPixels": 634797,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.11533203125
+      "unobstructedViewPercent": 61.7630859375
     },
     "structure": {
       "dash": {
@@ -7683,18 +7683,18 @@
         "maxY": 572
       },
       "pillar": {
-        "pixels": 33121,
-        "minX": 177,
+        "pixels": 40120,
+        "minX": 147,
         "maxX": 427,
-        "minY": 63,
+        "minY": 0,
         "maxY": 583
       },
       "header": {
-        "pixels": 60550,
-        "minX": 263,
+        "pixels": 17453,
+        "minX": 245,
         "maxX": 1279,
-        "minY": 28,
-        "maxY": 87
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
         "pixels": 21027,
@@ -7774,11 +7774,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 28874,
-        "minX": 230,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 27
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -7887,7 +7887,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 22.058823529411764,
+        "headerIntrusion": 32.35294117647059,
         "geometry": {
           "windscreen": {
             "min": [
@@ -7928,12 +7928,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 62.87421875,
-      "openPixels": 643832,
+      "windscreenPercent": 62.0013671875,
+      "openPixels": 634894,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 60.3771484375
+      "unobstructedViewPercent": 59.504296875
     },
     "structure": {
       "dash": {
@@ -7951,18 +7951,18 @@
         "maxY": 559
       },
       "pillar": {
-        "pixels": 36661,
-        "minX": 169,
+        "pixels": 35941,
+        "minX": 171,
         "maxX": 424,
         "minY": 0,
         "maxY": 541
       },
       "header": {
-        "pixels": 8021,
-        "minX": 273,
+        "pixels": 18083,
+        "minX": 268,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 7
+        "maxY": 17
       },
       "door-top": {
         "pixels": 34636,
@@ -8156,7 +8156,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -8197,12 +8197,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.63427734375,
-      "openPixels": 559455,
+      "windscreenPercent": 61.00439453125,
+      "openPixels": 624685,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.78974609375
+      "unobstructedViewPercent": 57.15986328125
     },
     "structure": {
       "dash": {
@@ -8220,18 +8220,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 28585,
-        "minX": 215,
+        "pixels": 35532,
+        "minX": 186,
         "maxX": 424,
-        "minY": 69,
+        "minY": 0,
         "maxY": 533
       },
       "header": {
-        "pixels": 56625,
-        "minX": 294,
+        "pixels": 17844,
+        "minX": 280,
         "maxX": 1279,
-        "minY": 29,
-        "maxY": 86
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 35479,
@@ -8311,11 +8311,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 29236,
-        "minX": 251,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 28
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -8425,7 +8425,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -8466,12 +8466,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.63427734375,
-      "openPixels": 559455,
+      "windscreenPercent": 61.00439453125,
+      "openPixels": 624685,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.78974609375
+      "unobstructedViewPercent": 57.15986328125
     },
     "structure": {
       "dash": {
@@ -8489,18 +8489,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 28585,
-        "minX": 215,
+        "pixels": 35532,
+        "minX": 186,
         "maxX": 424,
-        "minY": 69,
+        "minY": 0,
         "maxY": 533
       },
       "header": {
-        "pixels": 56625,
-        "minX": 294,
+        "pixels": 17844,
+        "minX": 280,
         "maxX": 1279,
-        "minY": 29,
-        "maxY": 86
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 35479,
@@ -8580,11 +8580,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 29236,
-        "minX": 251,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 28
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -8694,7 +8694,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 61.76470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -8735,12 +8735,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.63427734375,
-      "openPixels": 559455,
+      "windscreenPercent": 61.00439453125,
+      "openPixels": 624685,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.78974609375
+      "unobstructedViewPercent": 57.15986328125
     },
     "structure": {
       "dash": {
@@ -8758,18 +8758,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 28585,
-        "minX": 215,
+        "pixels": 35532,
+        "minX": 186,
         "maxX": 424,
-        "minY": 69,
+        "minY": 0,
         "maxY": 533
       },
       "header": {
-        "pixels": 56625,
-        "minX": 294,
+        "pixels": 17844,
+        "minX": 280,
         "maxX": 1279,
-        "minY": 29,
-        "maxY": 86
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 35479,
@@ -8849,11 +8849,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 29236,
-        "minX": 251,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 28
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -8963,7 +8963,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 70.58823529411765,
+        "headerIntrusion": 26.470588235294116,
         "geometry": {
           "windscreen": {
             "min": [
@@ -9004,12 +9004,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.99482421875,
-      "openPixels": 532427,
+      "windscreenPercent": 60.22919921875,
+      "openPixels": 616747,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.45458984375
+      "unobstructedViewPercent": 56.68896484375
     },
     "structure": {
       "dash": {
@@ -9027,18 +9027,18 @@
         "maxY": 553
       },
       "pillar": {
-        "pixels": 26686,
-        "minX": 214,
+        "pixels": 34123,
+        "minX": 187,
         "maxX": 394,
-        "minY": 79,
+        "minY": 0,
         "maxY": 531
       },
       "header": {
-        "pixels": 51079,
-        "minX": 292,
+        "pixels": 18967,
+        "minX": 276,
         "maxX": 1279,
-        "minY": 53,
-        "maxY": 104
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 41291,
@@ -9118,11 +9118,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 53991,
-        "minX": 225,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 52
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -9232,7 +9232,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 70.58823529411765,
+        "headerIntrusion": 26.470588235294116,
         "geometry": {
           "windscreen": {
             "min": [
@@ -9273,12 +9273,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.99482421875,
-      "openPixels": 532427,
+      "windscreenPercent": 60.22919921875,
+      "openPixels": 616747,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 48.45458984375
+      "unobstructedViewPercent": 56.68896484375
     },
     "structure": {
       "dash": {
@@ -9296,18 +9296,18 @@
         "maxY": 553
       },
       "pillar": {
-        "pixels": 26686,
-        "minX": 214,
+        "pixels": 34123,
+        "minX": 187,
         "maxX": 394,
-        "minY": 79,
+        "minY": 0,
         "maxY": 531
       },
       "header": {
-        "pixels": 51079,
-        "minX": 292,
+        "pixels": 18967,
+        "minX": 276,
         "maxX": 1279,
-        "minY": 53,
-        "maxY": 104
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 41291,
@@ -9387,11 +9387,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 53991,
-        "minX": 225,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 52
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -9769,7 +9769,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 60.294117647058826,
+        "headerIntrusion": 30.147058823529413,
         "geometry": {
           "windscreen": {
             "min": [
@@ -9810,12 +9810,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.39228515625,
-      "openPixels": 567217,
+      "windscreenPercent": 60.53427734375,
+      "openPixels": 619871,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.9037109375
+      "unobstructedViewPercent": 58.045703125
     },
     "structure": {
       "dash": {
@@ -9833,18 +9833,18 @@
         "maxY": 545
       },
       "pillar": {
-        "pixels": 29005,
-        "minX": 231,
+        "pixels": 34756,
+        "minX": 209,
         "maxX": 435,
-        "minY": 69,
+        "minY": 9,
         "maxY": 529
       },
       "header": {
-        "pixels": 58482,
-        "minX": 305,
+        "pixels": 21169,
+        "minX": 309,
         "maxX": 1279,
-        "minY": 16,
-        "maxY": 76
+        "minY": 0,
+        "maxY": 21
       },
       "door-top": {
         "pixels": 35171,
@@ -9924,11 +9924,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 15886,
-        "minX": 277,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 19
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10038,7 +10038,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 52.94117647058823,
+        "headerIntrusion": 30.88235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -10079,12 +10079,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.52265625,
-      "openPixels": 558312,
+      "windscreenPercent": 59.2546875,
+      "openPixels": 606768,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.1861328125
+      "unobstructedViewPercent": 56.9181640625
     },
     "structure": {
       "dash": {
@@ -10102,18 +10102,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 31155,
-        "minX": 110,
+        "pixels": 36051,
+        "minX": 82,
         "maxX": 404,
-        "minY": 53,
+        "minY": 1,
         "maxY": 537
       },
       "header": {
-        "pixels": 63836,
-        "minX": 185,
+        "pixels": 23001,
+        "minX": 177,
         "maxX": 1279,
-        "minY": 8,
-        "maxY": 66
+        "minY": 0,
+        "maxY": 20
       },
       "door-top": {
         "pixels": 38211,
@@ -10193,11 +10193,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 8815,
-        "minX": 173,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 7
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10307,7 +10307,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 52.94117647058823,
+        "headerIntrusion": 30.88235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -10348,12 +10348,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.52265625,
-      "openPixels": 558312,
+      "windscreenPercent": 59.2546875,
+      "openPixels": 606768,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.1861328125
+      "unobstructedViewPercent": 56.9181640625
     },
     "structure": {
       "dash": {
@@ -10371,18 +10371,18 @@
         "maxY": 550
       },
       "pillar": {
-        "pixels": 31155,
-        "minX": 110,
+        "pixels": 36051,
+        "minX": 82,
         "maxX": 404,
-        "minY": 53,
+        "minY": 1,
         "maxY": 537
       },
       "header": {
-        "pixels": 63836,
-        "minX": 185,
+        "pixels": 23001,
+        "minX": 177,
         "maxX": 1279,
-        "minY": 8,
-        "maxY": 66
+        "minY": 0,
+        "maxY": 20
       },
       "door-top": {
         "pixels": 38211,
@@ -10462,11 +10462,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 8815,
-        "minX": 173,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 7
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10576,7 +10576,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 56.61764705882353,
+        "headerIntrusion": 16.176470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -10617,12 +10617,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.5447265625,
-      "openPixels": 548298,
+      "windscreenPercent": 60.4287109375,
+      "openPixels": 618790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.39912109375
+      "unobstructedViewPercent": 57.28310546875
     },
     "structure": {
       "dash": {
@@ -10640,18 +10640,18 @@
         "maxY": 512
       },
       "pillar": {
-        "pixels": 21262,
-        "minX": 278,
+        "pixels": 27359,
+        "minX": 251,
         "maxX": 1279,
-        "minY": 84,
+        "minY": 4,
         "maxY": 496
       },
       "header": {
-        "pixels": 43765,
-        "minX": 335,
+        "pixels": 16957,
+        "minX": 332,
         "maxX": 1279,
-        "minY": 45,
-        "maxY": 91
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 46060,
@@ -10731,11 +10731,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 44077,
-        "minX": 270,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 47
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -10845,7 +10845,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 56.61764705882353,
+        "headerIntrusion": 16.176470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -10886,12 +10886,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 53.5447265625,
-      "openPixels": 548298,
+      "windscreenPercent": 60.4287109375,
+      "openPixels": 618790,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.39912109375
+      "unobstructedViewPercent": 57.28310546875
     },
     "structure": {
       "dash": {
@@ -10909,18 +10909,18 @@
         "maxY": 512
       },
       "pillar": {
-        "pixels": 21262,
-        "minX": 278,
+        "pixels": 27359,
+        "minX": 251,
         "maxX": 1279,
-        "minY": 84,
+        "minY": 4,
         "maxY": 496
       },
       "header": {
-        "pixels": 43765,
-        "minX": 335,
+        "pixels": 16957,
+        "minX": 332,
         "maxX": 1279,
-        "minY": 45,
-        "maxY": 91
+        "minY": 0,
+        "maxY": 17
       },
       "door-top": {
         "pixels": 46060,
@@ -11000,11 +11000,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 44077,
-        "minX": 270,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 47
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -11114,7 +11114,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 34.55882352941177,
+        "headerIntrusion": 15.441176470588236,
         "geometry": {
           "windscreen": {
             "min": [
@@ -11155,12 +11155,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.5439453125,
-      "openPixels": 527810,
+      "windscreenPercent": 53.83017578125,
+      "openPixels": 551221,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.54111328125
+      "unobstructedViewPercent": 53.82734375
     },
     "structure": {
       "dash": {
@@ -11178,18 +11178,18 @@
         "maxY": 483
       },
       "pillar": {
-        "pixels": 22469,
-        "minX": 277,
+        "pixels": 24546,
+        "minX": 272,
         "maxX": 395,
-        "minY": 30,
+        "minY": 1,
         "maxY": 461
       },
       "header": {
-        "pixels": 40822,
-        "minX": 344,
+        "pixels": 16657,
+        "minX": 350,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 43
+        "maxY": 17
       },
       "door-top": {
         "pixels": 44523,
@@ -11383,7 +11383,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 34.55882352941177,
+        "headerIntrusion": 15.441176470588236,
         "geometry": {
           "windscreen": {
             "min": [
@@ -11424,12 +11424,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.5439453125,
-      "openPixels": 527810,
+      "windscreenPercent": 53.83017578125,
+      "openPixels": 551221,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.54111328125
+      "unobstructedViewPercent": 53.82734375
     },
     "structure": {
       "dash": {
@@ -11447,18 +11447,18 @@
         "maxY": 483
       },
       "pillar": {
-        "pixels": 22469,
-        "minX": 277,
+        "pixels": 24546,
+        "minX": 272,
         "maxX": 395,
-        "minY": 30,
+        "minY": 1,
         "maxY": 461
       },
       "header": {
-        "pixels": 40822,
-        "minX": 344,
+        "pixels": 16657,
+        "minX": 350,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 43
+        "maxY": 17
       },
       "door-top": {
         "pixels": 44523,
@@ -11652,7 +11652,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 34.55882352941177,
+        "headerIntrusion": 15.441176470588236,
         "geometry": {
           "windscreen": {
             "min": [
@@ -11693,12 +11693,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.5439453125,
-      "openPixels": 527810,
+      "windscreenPercent": 53.83017578125,
+      "openPixels": 551221,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.54111328125
+      "unobstructedViewPercent": 53.82734375
     },
     "structure": {
       "dash": {
@@ -11716,18 +11716,18 @@
         "maxY": 483
       },
       "pillar": {
-        "pixels": 22469,
-        "minX": 277,
+        "pixels": 24546,
+        "minX": 272,
         "maxX": 395,
-        "minY": 30,
+        "minY": 1,
         "maxY": 461
       },
       "header": {
-        "pixels": 40822,
-        "minX": 344,
+        "pixels": 16657,
+        "minX": 350,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 43
+        "maxY": 17
       },
       "door-top": {
         "pixels": 44523,
@@ -11921,7 +11921,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 39.705882352941174,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -11962,12 +11962,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.8138671875,
-      "openPixels": 602254,
+      "windscreenPercent": 61.803515625,
+      "openPixels": 632868,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.02177734375
+      "unobstructedViewPercent": 59.01142578125
     },
     "structure": {
       "dash": {
@@ -11985,18 +11985,18 @@
         "maxY": 552
       },
       "pillar": {
-        "pixels": 27612,
-        "minX": 175,
+        "pixels": 30131,
+        "minX": 162,
         "maxX": 417,
-        "minY": 31,
+        "minY": 0,
         "maxY": 533
       },
       "header": {
-        "pixels": 49408,
-        "minX": 246,
+        "pixels": 22797,
+        "minX": 239,
         "maxX": 1279,
-        "minY": 5,
-        "maxY": 52
+        "minY": 0,
+        "maxY": 21
       },
       "door-top": {
         "pixels": 34691,
@@ -12076,11 +12076,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 5175,
-        "minX": 244,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 4
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -12725,7 +12725,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 21.323529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -12766,12 +12766,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.49453125,
-      "openPixels": 598984,
+      "windscreenPercent": 56.52705078125,
+      "openPixels": 578837,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 57.71142578125
+      "unobstructedViewPercent": 55.7439453125
     },
     "structure": {
       "dash": {
@@ -12789,18 +12789,18 @@
         "maxY": 508
       },
       "pillar": {
-        "pixels": 33327,
-        "minX": 118,
+        "pixels": 31241,
+        "minX": 129,
         "maxX": 1279,
-        "minY": 14,
+        "minY": 34,
         "maxY": 490
       },
       "header": {
-        "pixels": 2090,
-        "minX": 234,
+        "pixels": 24142,
+        "minX": 221,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 1
+        "maxY": 22
       },
       "door-top": {
         "pixels": 47948,
@@ -12993,7 +12993,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 21.323529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -13034,12 +13034,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.49453125,
-      "openPixels": 598984,
+      "windscreenPercent": 56.52705078125,
+      "openPixels": 578837,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 57.71142578125
+      "unobstructedViewPercent": 55.7439453125
     },
     "structure": {
       "dash": {
@@ -13057,18 +13057,18 @@
         "maxY": 508
       },
       "pillar": {
-        "pixels": 33327,
-        "minX": 118,
+        "pixels": 31241,
+        "minX": 129,
         "maxX": 1279,
-        "minY": 14,
+        "minY": 34,
         "maxY": 490
       },
       "header": {
-        "pixels": 2090,
-        "minX": 234,
+        "pixels": 24142,
+        "minX": 221,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 1
+        "maxY": 22
       },
       "door-top": {
         "pixels": 47948,
@@ -13172,8 +13172,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 85,
-        "triangles": 3184
+        "calls": 84,
+        "triangles": 3172
       },
       "geometryAudit": {
         "nearRoadDistance": 9.25,
@@ -13245,8 +13245,8 @@
       ],
       "pitch": -0.07,
       "render": {
-        "calls": 51,
-        "triangles": 1600
+        "calls": 52,
+        "triangles": 1612
       },
       "geometryAudit": {
         "nearRoadDistance": 1.75,
@@ -13261,7 +13261,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 0,
+        "headerIntrusion": 25,
         "geometry": {
           "windscreen": {
             "min": [
@@ -13302,12 +13302,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.07080078125,
-      "openPixels": 615125,
+      "windscreenPercent": 53.19580078125,
+      "openPixels": 544725,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 60.06982421875
+      "unobstructedViewPercent": 53.19482421875
     },
     "structure": {
       "dash": {
@@ -13332,11 +13332,11 @@
         "maxY": 525
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 12800,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 9
       },
       "door-top": {
         "pixels": 64761,
@@ -13527,7 +13527,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 15.441176470588236,
+        "headerIntrusion": 37.5,
         "geometry": {
           "windscreen": {
             "min": [
@@ -13568,12 +13568,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 64.0794921875,
-      "openPixels": 656174,
+      "windscreenPercent": 59.2625,
+      "openPixels": 606848,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 60.23984375
+      "unobstructedViewPercent": 55.4228515625
     },
     "structure": {
       "dash": {
@@ -13591,18 +13591,18 @@
         "maxY": 552
       },
       "pillar": {
-        "pixels": 45103,
-        "minX": 90,
+        "pixels": 40788,
+        "minX": 100,
         "maxX": 429,
-        "minY": 0,
+        "minY": 8,
         "maxY": 538
       },
       "header": {
-        "pixels": 2127,
-        "minX": 216,
+        "pixels": 22325,
+        "minX": 207,
         "maxX": 1279,
-        "minY": 1,
-        "maxY": 2
+        "minY": 0,
+        "maxY": 20
       },
       "door-top": {
         "pixels": 39299,
@@ -13795,7 +13795,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 58.088235294117645,
+        "headerIntrusion": 18.38235294117647,
         "geometry": {
           "windscreen": {
             "min": [
@@ -13836,12 +13836,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.87373046875,
-      "openPixels": 561907,
+      "windscreenPercent": 61.30166015625,
+      "openPixels": 627729,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.710546875
+      "unobstructedViewPercent": 58.1384765625
     },
     "structure": {
       "dash": {
@@ -13859,18 +13859,18 @@
         "maxY": 541
       },
       "pillar": {
-        "pixels": 25035,
-        "minX": 245,
+        "pixels": 30853,
+        "minX": 222,
         "maxX": 422,
-        "minY": 65,
+        "minY": 0,
         "maxY": 521
       },
       "header": {
-        "pixels": 46821,
-        "minX": 319,
+        "pixels": 16459,
+        "minX": 307,
         "maxX": 1279,
-        "minY": 39,
-        "maxY": 87
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
         "pixels": 40436,
@@ -13950,11 +13950,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 38300,
-        "minX": 274,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 38
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -14331,7 +14331,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 8.823529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -14372,12 +14372,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 57.889453125,
-      "openPixels": 592788,
+      "windscreenPercent": 52.6927734375,
+      "openPixels": 539574,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.9212890625
+      "unobstructedViewPercent": 51.724609375
     },
     "structure": {
       "dash": {
@@ -14395,18 +14395,18 @@
         "maxY": 510
       },
       "pillar": {
-        "pixels": 39836,
-        "minX": 31,
+        "pixels": 32561,
+        "minX": 59,
         "maxX": 383,
-        "minY": 0,
+        "minY": 39,
         "maxY": 492
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 21184,
+        "minX": 154,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 44834,
@@ -14600,7 +14600,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 49.26470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -14641,12 +14641,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.7501953125,
-      "openPixels": 581122,
+      "windscreenPercent": 61.00595703125,
+      "openPixels": 624701,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.7501953125
+      "unobstructedViewPercent": 61.00595703125
     },
     "structure": {
       "dash": {
@@ -14664,18 +14664,18 @@
         "maxY": -1
       },
       "pillar": {
-        "pixels": 29501,
-        "minX": 199,
+        "pixels": 33859,
+        "minX": 176,
         "maxX": 1279,
-        "minY": 53,
+        "minY": 3,
         "maxY": 535
       },
       "header": {
-        "pixels": 54860,
-        "minX": 269,
+        "pixels": 20149,
+        "minX": 266,
         "maxX": 1279,
-        "minY": 10,
-        "maxY": 64
+        "minY": 0,
+        "maxY": 19
       },
       "door-top": {
         "pixels": 45570,
@@ -14755,11 +14755,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 10187,
-        "minX": 255,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 9
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -14869,7 +14869,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 49.26470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -14910,12 +14910,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.7501953125,
-      "openPixels": 581122,
+      "windscreenPercent": 61.00595703125,
+      "openPixels": 624701,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.7501953125
+      "unobstructedViewPercent": 61.00595703125
     },
     "structure": {
       "dash": {
@@ -14933,18 +14933,18 @@
         "maxY": -1
       },
       "pillar": {
-        "pixels": 29501,
-        "minX": 199,
+        "pixels": 33859,
+        "minX": 176,
         "maxX": 1279,
-        "minY": 53,
+        "minY": 3,
         "maxY": 535
       },
       "header": {
-        "pixels": 54860,
-        "minX": 269,
+        "pixels": 20149,
+        "minX": 266,
         "maxX": 1279,
-        "minY": 10,
-        "maxY": 64
+        "minY": 0,
+        "maxY": 19
       },
       "door-top": {
         "pixels": 45570,
@@ -15024,11 +15024,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 10187,
-        "minX": 255,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 9
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -15138,7 +15138,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 49.26470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -15179,12 +15179,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.7501953125,
-      "openPixels": 581122,
+      "windscreenPercent": 61.00595703125,
+      "openPixels": 624701,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 56.7501953125
+      "unobstructedViewPercent": 61.00595703125
     },
     "structure": {
       "dash": {
@@ -15202,18 +15202,18 @@
         "maxY": -1
       },
       "pillar": {
-        "pixels": 29501,
-        "minX": 199,
+        "pixels": 33859,
+        "minX": 176,
         "maxX": 1279,
-        "minY": 53,
+        "minY": 3,
         "maxY": 535
       },
       "header": {
-        "pixels": 54860,
-        "minX": 269,
+        "pixels": 20149,
+        "minX": 266,
         "maxX": 1279,
-        "minY": 10,
-        "maxY": 64
+        "minY": 0,
+        "maxY": 19
       },
       "door-top": {
         "pixels": 45570,
@@ -15293,11 +15293,11 @@
         "maxY": -1
       },
       "headliner": {
-        "pixels": 10187,
-        "minX": 255,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 9
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -15369,8 +15369,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 51.60703125,
-      "openPixels": 528456,
+      "windscreenPercent": 53.3505859375,
+      "openPixels": 546310,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -15399,7 +15399,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 36.76470588235294,
+        "headerIntrusion": 17.647058823529413,
         "geometry": {
           "windscreen": {
             "min": [
@@ -15435,12 +15435,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.48369140625,
-      "openPixels": 619353,
+      "windscreenPercent": 65.98740234375,
+      "openPixels": 675711,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 59.0466796875
+      "unobstructedViewPercent": 64.543359375
     },
     "structure": {
       "dash": {
@@ -15451,31 +15451,31 @@
         "maxY": 799
       },
       "deck": {
-        "pixels": 14715,
-        "minX": 477,
-        "maxX": 1233,
+        "pixels": 14787,
+        "minX": 460,
+        "maxX": 1235,
         "minY": 493,
         "maxY": 530
       },
       "pillar": {
-        "pixels": 23678,
-        "minX": 308,
-        "maxX": 1279,
-        "minY": 70,
-        "maxY": 497
-      },
-      "header": {
-        "pixels": 43531,
-        "minX": 392,
+        "pixels": 29201,
+        "minX": 293,
         "maxX": 1279,
         "minY": 0,
-        "maxY": 68
+        "maxY": 509
+      },
+      "header": {
+        "pixels": 17085,
+        "minX": 376,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
-        "pixels": 61643,
-        "minX": 0,
+        "pixels": 27337,
+        "minX": 39,
         "maxX": 1279,
-        "minY": 488,
+        "minY": 502,
         "maxY": 799
       },
       "wheel-rim": {
@@ -15514,15 +15514,15 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 1631,
+        "pixels": 2263,
         "minX": 283,
-        "maxX": 413,
+        "maxX": 1265,
         "minY": 489,
-        "maxY": 520
+        "maxY": 523
       },
       "wiper": {
-        "pixels": 2549,
-        "minX": 476,
+        "pixels": 2603,
+        "minX": 465,
         "maxX": 1108,
         "minY": 508,
         "maxY": 520
@@ -15625,8 +15625,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.583203125,
-      "openPixels": 466772,
+      "windscreenPercent": 46.92216796875,
+      "openPixels": 480483,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -15655,7 +15655,7 @@
         "rimOcclusion": 2,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 49.26470588235294,
+        "headerIntrusion": 15.441176470588236,
         "geometry": {
           "windscreen": {
             "min": [
@@ -15691,12 +15691,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.48818359375,
-      "openPixels": 568199,
+      "windscreenPercent": 64.50322265625,
+      "openPixels": 660513,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.66181640625
+      "unobstructedViewPercent": 61.66884765625
     },
     "structure": {
       "dash": {
@@ -15707,31 +15707,31 @@
         "maxY": 790
       },
       "deck": {
-        "pixels": 28942,
-        "minX": 455,
-        "maxX": 1273,
+        "pixels": 29024,
+        "minX": 439,
+        "maxX": 1278,
         "minY": 459,
         "maxY": 514
       },
       "pillar": {
-        "pixels": 19278,
-        "minX": 300,
-        "maxX": 431,
-        "minY": 105,
-        "maxY": 482
+        "pixels": 26820,
+        "minX": 275,
+        "maxX": 433,
+        "minY": 0,
+        "maxY": 493
       },
       "header": {
-        "pixels": 57484,
-        "minX": 367,
+        "pixels": 15672,
+        "minX": 353,
         "maxX": 1279,
-        "minY": 16,
-        "maxY": 95
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
-        "pixels": 60519,
+        "pixels": 29231,
         "minX": 0,
-        "maxX": 1279,
-        "minY": 474,
+        "maxX": 442,
+        "minY": 487,
         "maxY": 799
       },
       "wheel-rim": {
@@ -15770,15 +15770,15 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 1350,
+        "pixels": 1955,
         "minX": 273,
-        "maxX": 393,
+        "maxX": 411,
         "minY": 473,
-        "maxY": 502
+        "maxY": 505
       },
       "wiper": {
-        "pixels": 3259,
-        "minX": 454,
+        "pixels": 3302,
+        "minX": 446,
         "maxX": 1134,
         "minY": 493,
         "maxY": 503
@@ -15805,11 +15805,11 @@
         "maxY": 726
       },
       "headliner": {
-        "pixels": 14745,
-        "minX": 350,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 15
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -15881,8 +15881,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 45.583203125,
-      "openPixels": 466772,
+      "windscreenPercent": 46.92216796875,
+      "openPixels": 480483,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -15911,7 +15911,7 @@
         "rimOcclusion": 2,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 49.26470588235294,
+        "headerIntrusion": 15.441176470588236,
         "geometry": {
           "windscreen": {
             "min": [
@@ -15947,12 +15947,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 55.48818359375,
-      "openPixels": 568199,
+      "windscreenPercent": 64.50322265625,
+      "openPixels": 660513,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 52.66181640625
+      "unobstructedViewPercent": 61.66884765625
     },
     "structure": {
       "dash": {
@@ -15963,31 +15963,31 @@
         "maxY": 790
       },
       "deck": {
-        "pixels": 28942,
-        "minX": 455,
-        "maxX": 1273,
+        "pixels": 29024,
+        "minX": 439,
+        "maxX": 1278,
         "minY": 459,
         "maxY": 514
       },
       "pillar": {
-        "pixels": 19278,
-        "minX": 300,
-        "maxX": 431,
-        "minY": 105,
-        "maxY": 482
+        "pixels": 26820,
+        "minX": 275,
+        "maxX": 433,
+        "minY": 0,
+        "maxY": 493
       },
       "header": {
-        "pixels": 57484,
-        "minX": 367,
+        "pixels": 15672,
+        "minX": 353,
         "maxX": 1279,
-        "minY": 16,
-        "maxY": 95
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
-        "pixels": 60519,
+        "pixels": 29231,
         "minX": 0,
-        "maxX": 1279,
-        "minY": 474,
+        "maxX": 442,
+        "minY": 487,
         "maxY": 799
       },
       "wheel-rim": {
@@ -16026,15 +16026,15 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 1350,
+        "pixels": 1955,
         "minX": 273,
-        "maxX": 393,
+        "maxX": 411,
         "minY": 473,
-        "maxY": 502
+        "maxY": 505
       },
       "wiper": {
-        "pixels": 3259,
-        "minX": 454,
+        "pixels": 3302,
+        "minX": 446,
         "maxX": 1134,
         "minY": 493,
         "maxY": 503
@@ -16061,11 +16061,11 @@
         "maxY": 726
       },
       "headliner": {
-        "pixels": 14745,
-        "minX": 350,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 15
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -16137,8 +16137,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 42.51083984375,
-      "openPixels": 435311,
+      "windscreenPercent": 44.00283203125,
+      "openPixels": 450589,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -16167,7 +16167,7 @@
         "rimOcclusion": 2,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 92.6470588235294,
+        "headerIntrusion": 14.705882352941176,
         "geometry": {
           "windscreen": {
             "min": [
@@ -16203,12 +16203,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 48.66162109375,
-      "openPixels": 498295,
+      "windscreenPercent": 66.18916015625,
+      "openPixels": 677777,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 46.18916015625
+      "unobstructedViewPercent": 63.71005859375
     },
     "structure": {
       "dash": {
@@ -16219,31 +16219,31 @@
         "maxY": 752
       },
       "deck": {
-        "pixels": 25318,
-        "minX": 467,
-        "maxX": 1213,
+        "pixels": 25386,
+        "minX": 452,
+        "maxX": 1217,
         "minY": 478,
         "maxY": 525
       },
       "pillar": {
-        "pixels": 14125,
-        "minX": 360,
+        "pixels": 25785,
+        "minX": 328,
         "maxX": 1279,
-        "minY": 182,
-        "maxY": 495
+        "minY": 0,
+        "maxY": 506
       },
       "header": {
-        "pixels": 34042,
-        "minX": 422,
+        "pixels": 14970,
+        "minX": 394,
         "maxX": 1279,
-        "minY": 120,
-        "maxY": 171
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
-        "pixels": 57133,
-        "minX": 0,
+        "pixels": 25934,
+        "minX": 15,
         "maxX": 1279,
-        "minY": 488,
+        "minY": 500,
         "maxY": 799
       },
       "wheel-rim": {
@@ -16282,15 +16282,15 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 1206,
+        "pixels": 1744,
         "minX": 299,
-        "maxX": 410,
+        "maxX": 1279,
         "minY": 489,
-        "maxY": 515
+        "maxY": 518
       },
       "wiper": {
-        "pixels": 2673,
-        "minX": 466,
+        "pixels": 2705,
+        "minX": 458,
         "maxX": 1086,
         "minY": 506,
         "maxY": 516
@@ -16317,11 +16317,11 @@
         "maxY": 693
       },
       "headliner": {
-        "pixels": 111747,
-        "minX": 276,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 119
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -16393,8 +16393,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 44.90888671875,
-      "openPixels": 459867,
+      "windscreenPercent": 46.09931640625,
+      "openPixels": 472057,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -16423,7 +16423,7 @@
         "rimOcclusion": 4,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 54.411764705882355,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -16459,12 +16459,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 54.460546875,
-      "openPixels": 557676,
+      "windscreenPercent": 63.81552734375,
+      "openPixels": 653471,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 51.34384765625
+      "unobstructedViewPercent": 60.691796875
     },
     "structure": {
       "dash": {
@@ -16475,31 +16475,31 @@
         "maxY": 799
       },
       "deck": {
-        "pixels": 31915,
-        "minX": 434,
+        "pixels": 31987,
+        "minX": 418,
         "maxX": 1279,
         "minY": 469,
         "maxY": 531
       },
       "pillar": {
-        "pixels": 22691,
-        "minX": 213,
-        "maxX": 408,
-        "minY": 115,
-        "maxY": 501
+        "pixels": 31464,
+        "minX": 169,
+        "maxX": 411,
+        "minY": 8,
+        "maxY": 512
       },
       "header": {
-        "pixels": 74302,
-        "minX": 269,
+        "pixels": 17298,
+        "minX": 255,
         "maxX": 1279,
-        "minY": 1,
-        "maxY": 95
+        "minY": 0,
+        "maxY": 16
       },
       "door-top": {
-        "pixels": 54226,
+        "pixels": 26175,
         "minX": 0,
-        "maxX": 434,
-        "minY": 491,
+        "maxX": 421,
+        "minY": 504,
         "maxY": 799
       },
       "wheel-rim": {
@@ -16538,15 +16538,15 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 1467,
+        "pixels": 2060,
         "minX": 245,
-        "maxX": 371,
+        "maxX": 387,
         "minY": 492,
-        "maxY": 520
+        "maxY": 523
       },
       "wiper": {
-        "pixels": 2672,
-        "minX": 433,
+        "pixels": 2712,
+        "minX": 425,
         "maxX": 1157,
         "minY": 510,
         "maxY": 521
@@ -16573,11 +16573,11 @@
         "maxY": 738
       },
       "headliner": {
-        "pixels": 1012,
-        "minX": 268,
-        "maxX": 1279,
-        "minY": 0,
-        "maxY": 0
+        "pixels": 0,
+        "minX": 1280,
+        "maxX": -1,
+        "minY": 800,
+        "maxY": -1
       }
     }
   },
@@ -17715,7 +17715,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 3.676470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -17756,12 +17756,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 68.90712890625,
-      "openPixels": 705609,
+      "windscreenPercent": 63.2541015625,
+      "openPixels": 647722,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 67.874609375
+      "unobstructedViewPercent": 62.22158203125
     },
     "structure": {
       "dash": {
@@ -17779,18 +17779,18 @@
         "maxY": 569
       },
       "pillar": {
-        "pixels": 42587,
+        "pixels": 38174,
         "minX": 0,
         "maxX": 1279,
-        "minY": 17,
+        "minY": 60,
         "maxY": 538
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 22905,
+        "minX": 62,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 21166,
@@ -17984,7 +17984,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 3.676470588235294,
+        "headerIntrusion": 28.676470588235293,
         "geometry": {
           "windscreen": {
             "min": [
@@ -18025,12 +18025,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 68.90712890625,
-      "openPixels": 705609,
+      "windscreenPercent": 63.2541015625,
+      "openPixels": 647722,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 67.874609375
+      "unobstructedViewPercent": 62.22158203125
     },
     "structure": {
       "dash": {
@@ -18048,18 +18048,18 @@
         "maxY": 569
       },
       "pillar": {
-        "pixels": 42587,
+        "pixels": 38174,
         "minX": 0,
         "maxX": 1279,
-        "minY": 17,
+        "minY": 60,
         "maxY": 538
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 22905,
+        "minX": 62,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 18
       },
       "door-top": {
         "pixels": 21166,
@@ -19324,7 +19324,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 0,
+        "headerIntrusion": 25,
         "geometry": {
           "windscreen": {
             "min": [
@@ -19365,12 +19365,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.7345703125,
-      "openPixels": 621922,
+      "windscreenPercent": 54.12275390625,
+      "openPixels": 554217,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 60.57314453125
+      "unobstructedViewPercent": 53.961328125
     },
     "structure": {
       "dash": {
@@ -19388,18 +19388,18 @@
         "maxY": 538
       },
       "pillar": {
-        "pixels": 40335,
+        "pixels": 38579,
         "minX": 0,
         "maxX": 390,
-        "minY": 28,
+        "minY": 74,
         "maxY": 521
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 20444,
+        "minX": 0,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 15
       },
       "door-top": {
         "pixels": 44044,
@@ -20129,7 +20129,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 8.823529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -20170,12 +20170,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.5947265625,
-      "openPixels": 620490,
+      "windscreenPercent": 55.95546875,
+      "openPixels": 572984,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 58.31044921875
+      "unobstructedViewPercent": 53.67119140625
     },
     "structure": {
       "dash": {
@@ -20193,18 +20193,18 @@
         "maxY": 527
       },
       "pillar": {
-        "pixels": 42140,
-        "minX": 28,
+        "pixels": 33310,
+        "minX": 68,
         "maxX": 401,
-        "minY": 0,
+        "minY": 56,
         "maxY": 509
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 14545,
+        "minX": 151,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 12
       },
       "door-top": {
         "pixels": 46032,
@@ -20398,7 +20398,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 8.823529411764707,
+        "headerIntrusion": 33.088235294117645,
         "geometry": {
           "windscreen": {
             "min": [
@@ -20439,12 +20439,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.5947265625,
-      "openPixels": 620490,
+      "windscreenPercent": 55.95546875,
+      "openPixels": 572984,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 58.31044921875
+      "unobstructedViewPercent": 53.67119140625
     },
     "structure": {
       "dash": {
@@ -20462,18 +20462,18 @@
         "maxY": 527
       },
       "pillar": {
-        "pixels": 42140,
-        "minX": 28,
+        "pixels": 33310,
+        "minX": 68,
         "maxX": 401,
-        "minY": 0,
+        "minY": 56,
         "maxY": 509
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 14545,
+        "minX": 151,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 12
       },
       "door-top": {
         "pixels": 46032,
@@ -20667,7 +20667,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 3.676470588235294,
+        "headerIntrusion": 29.41176470588235,
         "geometry": {
           "windscreen": {
             "min": [
@@ -20708,12 +20708,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 60.44345703125,
-      "openPixels": 618941,
+      "windscreenPercent": 55.68759765625,
+      "openPixels": 570241,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 58.044140625
+      "unobstructedViewPercent": 53.28828125
     },
     "structure": {
       "dash": {
@@ -20731,18 +20731,18 @@
         "maxY": 527
       },
       "pillar": {
-        "pixels": 41839,
-        "minX": 0,
+        "pixels": 33988,
+        "minX": 2,
         "maxX": 377,
-        "minY": 0,
+        "minY": 57,
         "maxY": 509
       },
       "header": {
-        "pixels": 0,
-        "minX": 1280,
-        "maxX": -1,
-        "minY": 800,
-        "maxY": -1
+        "pixels": 15426,
+        "minX": 82,
+        "maxX": 1279,
+        "minY": 0,
+        "maxY": 12
       },
       "door-top": {
         "pixels": 45433,

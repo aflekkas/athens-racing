@@ -1,0 +1,90 @@
+diff --git a/deploy/athens-release-train.sh b/deploy/athens-release-train.sh
+index 8799086..f30747c 100644
+--- a/deploy/athens-release-train.sh
++++ b/deploy/athens-release-train.sh
+@@ -10,6 +10,9 @@
+ # Baseline: $STATE/production-deployed holds "<version> <sha>" of the release live on production. Seed it at cutover,
+ # or production is never deployed (so the first run cannot redeploy an old commit or roll production back).
+ # A commit that fails or is refused is written to $STATE/staging-failed or $STATE/production-stopped; delete that file to retry.
++# Speed (deploy/README.md, "Fast release path"): gates and deploys go through tools/release-fast.mjs when the commit has it. Every gate runs at
++# once, the deploy bundle is built during the tests from the bake cache, a gate that already passed on the same git tree is not rerun (so the
++# release merge commit, whose tree is the tested staging tree, goes straight to deploy) and deploys upload the prebuilt bundle.
+ set -uo pipefail
+ REPO=/home/dev/projects/paraliaki-racing
+ STATE=$HOME/.local/state/athens-release
+@@ -30,13 +33,20 @@ unpack() {
+   if cmp -s <(g show "$1:package-lock.json") "$REPO/package-lock.json"; then
+     ln -s "$REPO/node_modules" "$D/node_modules"
+   else
+-    (cd "$D" && npm ci --no-audit --no-fund > "$STATE/npm-ci.log" 2>&1) || { log "$2 npm ci failed"; return 1; }
++    (cd "$D" && npm ci --no-audit --no-fund --prefer-offline > "$STATE/npm-ci.log" 2>&1) || { log "$2 npm ci failed"; return 1; }
+   fi
+ }
+ 
+-# gates: every CI gate, in $D. The failing command's output is kept in last-failure.log.
++# gates <sha7> <tree> <env>: every CI gate, in $D, plus the deploy bundle for <env>. The failing check's output is kept in last-failure.log.
+ gates() {
+   local cmd
++  if [ -f "$D/tools/release-fast.mjs" ]; then
++    (cd "$D" && timeout 7200 node tools/release-fast.mjs gates --dir "$D" --tree "$2" --sha "$1" --envs "$3" --log "$D/gate.log" --train-log "$LOG") > "$D/gates.out" 2>&1 || {
++      [ -s "$D/gate.log" ] || cp "$D/gates.out" "$D/gate.log"
++      log "$1 FAILED: gates ($(grep -o '^===== [^ ]* FAILED' "$D/gate.log" | cut -d' ' -f2 | paste -sd, -)) (see $STATE/last-failure.log)"; cp "$D/gate.log" "$STATE/last-failure.log"; return 1; }
++    (cd "$D" && node tools/release-fast.mjs prune >> "$LOG" 2>&1) || true
++    return 0
++  fi
+   for cmd in "npm test" \
+     "node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs" \
+     "node tools/events-test.mjs" "node tools/ghost-lap.test.mjs" "node tools/check-syntax.mjs" \
+@@ -48,13 +58,23 @@ gates() {
+ 
+ # deploy <env> <url> <sha7> <label>: wrangler from $D with ASR_GIT_SHA, a pause for propagation, then the live race smoke test.
+ deploy() {
+-  (cd "$D" && ASR_GIT_SHA="$3" timeout 2700 node_modules/.bin/wrangler deploy --env "$1" > "$D/deploy.log" 2>&1) || {
+-    log "$4 deploy $1 FAILED (see $STATE/last-failure.log)"; cp "$D/deploy.log" "$STATE/last-failure.log"; return 1; }
+-  sleep 20
++  if [ -f "$D/tools/release-fast.mjs" ]; then
++    (cd "$D" && timeout 2800 node tools/release-fast.mjs deploy --dir "$D" --env "$1" --sha "$3" --log "$D/deploy.log" --train-log "$LOG" > "$D/deploy.out" 2>&1) || {
++      [ -s "$D/deploy.log" ] || cp "$D/deploy.out" "$D/deploy.log"
++      log "$4 deploy $1 FAILED (see $STATE/last-failure.log)"; cp "$D/deploy.log" "$STATE/last-failure.log"; return 1; }
++  else
++    (cd "$D" && ASR_GIT_SHA="$3" timeout 2700 node_modules/.bin/wrangler deploy --env "$1" > "$D/deploy.log" 2>&1) || {
++      log "$4 deploy $1 FAILED (see $STATE/last-failure.log)"; cp "$D/deploy.log" "$STATE/last-failure.log"; return 1; }
++  fi
++  sleep 5
+   smoke "$2" || { log "$4 smoke $1 FAILED (see $STATE/last-failure.log)"; cp "$D/smoke.log" "$STATE/last-failure.log"; return 1; }
+   log "$4 live on $1"
+ }
++# Deployed Workers require Google sign-in: the smoke test signs in with SMOKE_TOKEN (deploy/README.md, "Deployment smoke credential").
+ smoke() {
++  local file="$HOME/.config/athens-racing/smoke-token"
++  [ -s "$file" ] || { echo "ABORT: $file missing; see deploy/README.md" > "$D/smoke.log"; return 1; }
++  export SMOKE_TOKEN="$(cat "$file")"
+   (cd "$D" && timeout 600 node tools/deploy-smoke.mjs "$1" --race --map=riviera > smoke.log 2>&1) && return 0
+   sleep 30
+   (cd "$D" && timeout 600 node tools/deploy-smoke.mjs "$1" --race --map=riviera > smoke.log 2>&1)
+@@ -68,7 +88,7 @@ staging_lane() {
+   [ "$c" = "$(cat "$STATE/staging-failed" 2>/dev/null)" ] && return 0
+   g merge-base --is-ancestor origin/staging "$c" || { log "$short does not fast-forward origin/staging; skipped"; echo "$c" > "$STATE/staging-failed"; return 1; }
+   log "$short testing (staging)"
+-  unpack "$c" "staging-$short" && gates "$short" || { echo "$c" > "$STATE/staging-failed"; return 1; }
++  unpack "$c" "staging-$short" && gates "$short" "$(g rev-parse "$c^{tree}")" staging || { echo "$c" > "$STATE/staging-failed"; return 1; }
+   if [ "$(g rev-parse origin/staging)" != "$c" ]; then
+     g push -q origin "$c:refs/heads/staging" 2> "$D/push.log" || { log "$short push staging FAILED"; cp "$D/push.log" "$STATE/last-failure.log"; echo "$c" > "$STATE/staging-failed"; return 1; }
+   fi
+@@ -91,7 +111,7 @@ production_lane() {
+   (cd "$D" && node --input-type=module -e 'import { compareVersions } from "./src/release-notes.js"; process.exitCode = compareVersions(process.argv[1], process.argv[2]) > 0 ? 0 : 1' "$version" "$DEPLOYED_VERSION") \
+     || { stop "$version is not newer than the live $DEPLOYED_VERSION (no rollbacks by merge)"; return 1; }
+   log "$short ($version) testing (production)"
+-  gates "$short" || { stop "gates failed"; return 1; }
++  gates "$short" "$(g rev-parse "$p^{tree}")" production || { stop "gates failed"; return 1; }
+   tag="v$version"
+   local_tag=$(g rev-parse -q --verify "refs/tags/$tag^{commit}" || true)
+   remote_tag=$(g ls-remote --tags origin "refs/tags/$tag" | awk '{print $1}')
+@@ -106,5 +126,5 @@ production_lane() {
+ }
+ 
+ # Each lane runs in its own subshell so its archive is removed when the lane ends, and a failure in one lane leaves the other to run.
+-( D=; trap '[ -n "$D" ] && rm -rf -- "$D"' EXIT; staging_lane )
+-( D=; trap '[ -n "$D" ] && rm -rf -- "$D"' EXIT; production_lane )
++( D=; trap '[ -n "$D" ] && rm -rf -- "$D" "$D.fast"' EXIT; staging_lane )
++( D=; trap '[ -n "$D" ] && rm -rf -- "$D" "$D.fast"' EXIT; production_lane )

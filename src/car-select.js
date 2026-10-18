@@ -1,4 +1,6 @@
 import { showroomPixelRatio } from './mobile.js';
+import { settings } from './settings.js';
+import { FrameLimiter } from './frame-pacing.js';
 import { importWithUpdate } from './client-release.js';
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
@@ -90,7 +92,7 @@ export function openCarPicker(options = {}) {
   return true;
 }
 /** opts (all optional): container (default #carStage under root), lite (the multiplayer showroom: pixel ratio 1, a
- *  soft contact shadow, 30 fps, no hint; it sits behind menu panels, so it stays light on the GPU) */
+ *  soft contact shadow, at most 30 fps under a frame rate limit, no hint; it sits behind menu panels, so it stays light on the GPU) */
 export function mountCarSelect(root, index, opts = {}) {
   // Keep trim events inside this component; the shared menu owns navigation/layout.
   const onTrim = e => {
@@ -180,11 +182,15 @@ export function mountCarSelect(root, index, opts = {}) {
   root.addEventListener('click',onStepClick,true);document.addEventListener('keydown',onKey,true);
   let previousShoulders=[false,false],padFrame;
   const pollPad=()=>{const pads=navigator.getGamepads?.()||[];const buttons=[...pads].filter(Boolean).reduce((a,p)=>[a[0]||!!p.buttons[4]?.pressed,a[1]||!!p.buttons[5]?.pressed],[false,false]);for(let i=0;i<2;i++)if(!lite&&window.__flow?.menu?.screen==='car'&&buttons[i]&&!previousShoulders[i])step(i?1:-1);previousShoulders=buttons;padFrame=requestAnimationFrame(pollPad);};padFrame=requestAnimationFrame(pollPad);
-  let drawn = 0, showroomVisible = true, showroomRunning = false;
+  const limiter = new FrameLimiter();
+  // The showroom follows Settings > Graphics > FRAME RATE LIMIT like the race does (NO LIMIT: every display refresh).
+  // The multiplayer lobby's light variant also stays at or under 30 fps while a limit is set.
+  const showroomCap = () => lite && settings.frameCap > 0 ? Math.min(30, settings.frameCap) : settings.frameCap;
+  let showroomVisible = true, showroomRunning = false;
   // The turntable keeps redrawing even when the menu is hidden behind the race or another screen: pause it
   // while the stage is not visible (or the tab is), and render one frame on return so it never looks stale.
   const showroomDraw = now => {
-    if (lite && now - drawn < 32) return; drawn = now;
+    if (!limiter.allow(now, showroomCap())) return;
     model.root.rotation.y = turntable.advance((now - last) / 1000); last = now;
     frame();renderer.render(scene, camera);
   };

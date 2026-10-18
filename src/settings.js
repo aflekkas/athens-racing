@@ -25,6 +25,22 @@ const PERF_CLASSES = ['auto', 'potato', 'low', 'med', 'high'];
 const LEGACY_GRAPHICS_KEYS = ['graphics', 'lighting', 'effects', 'motionBlur'];
 const LEGACY_GRAPHICS_STORAGE = 'paraliaki.graphics';
 export const FRAME_CAPS = [30, 60, 120, 0];
+/** Any saved or incoming frame limit as one of FRAME_CAPS (0 = no limit). Unlimited has been written as 0, as null
+ *  (JSON.stringify(Infinity)) and as words; a number above 120 means "faster than the highest limit"; other numbers
+ *  snap to the nearest limit. Anything unreadable gives `fallback`. */
+export function frameCapValue(value, fallback = DEFAULTS.frameCap) {
+  if (value === null || value === Infinity || value === false) return 0;
+  if (value === true) return fallback;
+  if (typeof value === 'string') {
+    const word = value.trim().toLowerCase();
+    if (/^(unlimited|none|off|max|maximum|no[ _-]?limit|uncapped|inf|infinity)$/.test(word)) return 0;
+    if (!word) return fallback;
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return fallback;
+  if (n === 0 || n > 120) return 0;
+  return [30, 60, 120].reduce((a, b) => Math.abs(b - n) < Math.abs(a - n) ? b : a);
+}
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
@@ -105,7 +121,7 @@ function load() {
   if (![null, 'off', 'light', 'full'].includes(out.steeringAssist)) out.steeringAssist = null;
   if (!PERF_CLASSES.includes(out.perfClass)) out.perfClass = 'auto';
   out.renderScale = resolutionValue(out.renderScale);
-  out.frameCap = FRAME_CAPS.includes(+out.frameCap) ? +out.frameCap : DEFAULTS.frameCap;
+  out.frameCap = frameCapValue(out.frameCap);
   out.pixelRatioCap = pixelRatioCapValue(out.pixelRatioCap);
   out.aids = out.aids !== false;
   out.abs = out.abs !== false;
@@ -127,7 +143,7 @@ export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
   if (key === 'perfClass' && !PERF_CLASSES.includes(value)) return;
   if (key === 'renderScale') value = resolutionValue(value);
-  if (key === 'frameCap') { value = +value; if (!FRAME_CAPS.includes(value)) return; }
+  if (key === 'frameCap') { value = frameCapValue(value, null); if (value === null) return; }
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
   if (key === 'worldDetail' || key === 'dynamicResolution' || key === 'mildLanguage' || key === 'aids' || key === 'abs') value = value === true;
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);

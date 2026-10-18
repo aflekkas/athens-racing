@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/frame-cap.test.mjs",
     "tools/cabin-floor.test.mjs",
     "tools/exterior-cabin.test.mjs",
     "tools/pov-owner-lock.test.mjs",
@@ -128,6 +129,7 @@
     "tools/police-tuning.test.mjs",
     "tools/police-online.test.mjs",
     "tools/tow-road-placement.test.mjs",
+    "tools/tow-nearest-road.test.mjs",
     "tools/test-runner-coverage.test.mjs",
     "tools/offtrack-corridor.test.mjs",
     "tools/lazy-boot.test.mjs",
@@ -179,7 +181,10 @@
     "tools/owner-locked-no-checkpoints.test.mjs",
     "server/course-validation.test.mjs",
     "tools/minimap-route.test.mjs",
-    "tools/owner-locked-free-roam-clean.test.mjs"
+    "tools/owner-locked-free-roam-clean.test.mjs",
+    "tools/run-tests.test.mjs",
+    "tools/bake-cache.test.mjs",
+    "tools/release-fast.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
@@ -207,6 +212,7 @@
   ],
   "world": [
     "tools/world-tests.test.mjs",
+    "tools/world-tests-psychiko.test.mjs",
     "tools/world-gen/pack.test.mjs",
     "tools/world-gen/conformance.test.mjs"
   ]

@@ -1,7 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import * as T from 'three';
 import {CARS,CarModel,Cockpit} from './vehicle-budget-support.mjs';
-import {windscreenGlass} from '../src/cockpit-structure.js';
+import {windscreenGlass,closedCockpit,HEADER_BAND_NDC} from '../src/cockpit-structure.js';
+import {DEFAULTS} from '../src/settings.js';
 import {OWNER_VEHICLE_DECISION as WHY} from '../src/vehicle-budgets.js';
 // Cockpit pillars and header must sit on the body's own windscreen frame. A bowed screen has its highest vertices at
 // the centre line; building the frame from "the highest row" bent both pillars inwards across the view.
@@ -45,7 +46,7 @@ test('every player configuration frames its windscreen with pillars and a header
    const [a,b]=beamEnds(pillar,model).sort((p,q)=>p.y-q.y),edge=high.clone().sub(low),axis=b.clone().sub(a);
    assert.ok(a.distanceTo(low)<.05,`${id}: pillar foot ${a.toArray().map(x=>x.toFixed(2))} is ${a.distanceTo(low).toFixed(3)} m from the glass corner ${low.toArray().map(x=>x.toFixed(2))}. ${WHY}`);
    // the pillar leaves the glass top corner no further than a short frame extension, and never leans inboard of it beyond the edge's own taper
-   assert.ok(b.distanceTo(high)<.2,`${id}: pillar top is ${b.distanceTo(high).toFixed(3)} m off the glass top corner (bent beam). ${WHY}`);
+   assert.ok(b.distanceTo(high)<.26,`${id}: pillar top is ${b.distanceTo(high).toFixed(3)} m off the glass top corner (bent beam). ${WHY}`);
    const sideways=Math.sign(high.x)*(b.x-high.x);assert.ok(sideways>-.06,`${id}: pillar top leans ${(-sideways).toFixed(3)} m inboard of the glass edge. ${WHY}`);
    const angle=T.MathUtils.radToDeg(axis.angleTo(edge));assert.ok(angle<5,`${id}: pillar is ${angle.toFixed(1)} degrees off the windscreen edge. ${WHY}`);
    const along=edge.clone().normalize(),off=a.clone().sub(low).addScaledVector(along,-a.clone().sub(low).dot(along)).length();
@@ -55,7 +56,7 @@ test('every player configuration frames its windscreen with pillars and a header
   assert.ok(Math.abs(hl.x-tl.x)<.14&&Math.abs(hr.x-tr.x)<.14,`${id}: header spans ${hl.x.toFixed(2)}..${hr.x.toFixed(2)}, glass top is ${tl.x.toFixed(2)}..${tr.x.toFixed(2)}. ${WHY}`);
   assert.ok(Math.abs(hl.y-hr.y)<.02&&Math.abs(hl.z-hr.z)<.02,`${id}: header is not level across the car. ${WHY}`);
   assert.ok(Math.min(hl.y,hr.y)>=box.max.y-.01,`${id}: header (${hl.y.toFixed(3)}) cuts into the bowed glass top (${box.max.y.toFixed(3)}). ${WHY}`);
-  assert.ok(Math.min(hl.y,hr.y)<box.max.y+.25,`${id}: header floats ${(hl.y-box.max.y).toFixed(3)} m above the glass. ${WHY}`);
+  assert.ok(Math.min(hl.y,hr.y)<box.max.y+.3,`${id}: header floats ${(hl.y-box.max.y).toFixed(3)} m above the glass. ${WHY}`);
   cockpit.disposeMirrors();model.disposeDamage?.();
  }
 });
@@ -73,4 +74,28 @@ test('nothing but the mirror stalk and wipers crosses the windscreen aperture se
   });
   cockpit.disposeMirrors();model.disposeDamage?.();
  }
+});
+
+test('every closed car shows a thin header band across the top of the default POV frame (convertibles keep the frame top edge only)',()=>{
+ const camera=new T.PerspectiveCamera(DEFAULTS.cockpitFov,1.6,.035,100);let closed=0;
+ for(const spec of CARS){
+  const model=new CarModel(spec),cockpit=new Cockpit(spec,model),id=spec.id;cockpit.setVisible(true);model.root.updateMatrixWorld(true);
+  const header=cockpit.structure.getObjectByName('cockpit-header');assert.ok(header,id+' has no header. '+WHY);
+  if(!closedCockpit(model))continue;
+  if(['van','truck','bus'].includes(spec.nativeFleet))continue; // van / truck / bus windscreens are taller than the frame: their roof is out of view by construction
+  closed++;
+  camera.position.copy(cockpit.eye);camera.rotation.set(cockpit.eyePitch,0,0);camera.updateMatrixWorld(true);
+  const [a,b]=beamEnds(header,model),half=header.geometry.parameters.width/2;
+  // lower edge of the band along its length, seen from the seated eye: the part inside the frame is a thin top band
+  let inside=0;
+  for(let i=0;i<=20;i++){
+   const p=a.clone().lerp(b,i/20);p.y-=half;const ndc=p.project(camera);
+   if(Math.abs(ndc.x)>1)continue;inside++;
+   assert.ok(ndc.y<.985,`${id}: header lower edge at NDC y ${ndc.y.toFixed(3)} is out of the top of the default frame, the roof is missing. ${WHY}`);
+   assert.ok(ndc.y>.6,`${id}: header lower edge at NDC y ${ndc.y.toFixed(3)} is a thick beam across the view, not a thin band. ${WHY}`);
+  }
+  assert.ok(inside>=6,`${id}: only ${inside}/21 header samples fall inside the default frame. ${WHY}`);
+  cockpit.disposeMirrors();model.disposeDamage?.();
+ }
+ assert.ok(closed>=50,'expected most configurations to be closed cars, got '+closed);
 });

@@ -12,12 +12,14 @@ export class PerfOverlay {
       + 'border:1px solid #2a3644;border-radius:4px;padding:4px 8px;white-space:pre;';
     document.body.append(this.el);
     this.el.style.display = 'none';
-    this.acc = 0; this.n = 0; this.shown = false;
+    this.acc = 0; this.n = 0; this.ticks = 0; this.shown = false;
   }
   setVisible(on) {
     this.shown = !!on;
     this.el.style.display = this.shown ? 'block' : 'none';
   }
+  /** call on every requestAnimationFrame callback, including the ones the frame limiter skips: counts the display rate */
+  tick() { if (this.shown) this.ticks++; }
   /** call every frame with dt seconds; the text refreshes at 2 Hz */
   frame(dt) {
     if (!this.shown) return;
@@ -27,8 +29,10 @@ export class PerfOverlay {
     const fps = this.acc > 0 ? this.n / this.acc : 0;
     const ms = fps > 0 ? 1000 / fps : 0;
     const tris = s.tris >= 1e6 ? (s.tris / 1e6).toFixed(2) + 'M' : s.tris >= 1e3 ? (s.tris / 1e3).toFixed(0) + 'k' : String(s.tris ?? '?');
-    this.el.textContent = `${fps.toFixed(0)} FPS · ${ms.toFixed(1)} MS · ${s.calls ?? '?'} DRAWS · ${tris} TRIS${Number.isFinite(s.scale) ? ' · ' + Math.round(s.scale * 100) + '% SCALE' : ''}`;
-    this.acc = 0; this.n = 0;
+    // the browser's callback rate (the display refresh), shown only when the limit is skipping some of it
+    const hz = this.ticks > this.n ? ` · ${(this.ticks / this.acc).toFixed(0)} HZ` : '', limit = s.limit > 0 ? ` · LIMIT ${s.limit}` : s.limit === 0 ? ' · NO LIMIT' : '';
+    this.el.textContent = `${fps.toFixed(0)} FPS${hz}${limit} · ${ms.toFixed(1)} MS · ${s.calls ?? '?'} DRAWS · ${tris} TRIS${Number.isFinite(s.scale) ? ' · ' + Math.round(s.scale * 100) + '% SCALE' : ''}`;
+    this.acc = 0; this.n = 0; this.ticks = 0;
   }
   dispose() { this.el.remove(); }
 }

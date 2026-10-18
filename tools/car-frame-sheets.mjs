@@ -39,9 +39,10 @@ try{
  for(const id of ids)for(const view of views){const row=await page.evaluate(([id,view])=>capture(id,view),[id,view]);tiles.set(id+'/'+view,Buffer.from(row.image,'base64'));if(process.env.FULL)await fs.writeFile(`${out}/${id}-${view}.jpg`,tiles.get(id+'/'+view));poses[id]=row.pose;console.log(id,view);}
 }finally{await browser.close();server.close();}
 await fs.writeFile(out+'/rest-poses.json',JSON.stringify(poses,null,1));
-const ids=[...new Set([...tiles.keys()].map(k=>k.split('/')[0]))],tw=480,th=300,cols=4;
+const ids=[...new Set([...tiles.keys()].map(k=>k.split('/')[0]))],tw=480,th=300,lh=24,cols=4;
 for(const view of process.env.VIEWS?.split(',')||['cockpit','side'])for(let s=0;s*per<ids.length;s++){
  const chunk=ids.slice(s*per,(s+1)*per),rows=Math.ceil(chunk.length/cols);
- const composite=await Promise.all(chunk.map(async(id,i)=>({input:await sharp(tiles.get(id+'/'+view)).resize(tw,th).composite([{input:Buffer.from(`<svg width="${tw}" height="26"><rect width="${tw}" height="26" fill="#000a"/><text x="8" y="19" font-family="monospace" font-size="17" fill="#fff">${id}</text></svg>`),top:0,left:0}]).toBuffer(),left:(i%cols)*tw,top:Math.floor(i/cols)*th})));
- await sharp({create:{width:cols*tw,height:rows*th,channels:3,background:'#000'}}).composite(composite).webp({quality:82}).toFile(`${out}/${view}-sheet-${String(s+1).padStart(2,'0')}.webp`);
+ // the label sits in its own strip above each tile so it never hides the top of the frame
+ const composite=await Promise.all(chunk.map(async(id,i)=>({input:await sharp({create:{width:tw,height:th+lh,channels:3,background:'#000'}}).composite([{input:await sharp(tiles.get(id+'/'+view)).resize(tw,th).toBuffer(),top:lh,left:0},{input:Buffer.from(`<svg width="${tw}" height="${lh}"><text x="8" y="18" font-family="monospace" font-size="17" fill="#fff">${id}</text></svg>`),top:0,left:0}]).png().toBuffer(),left:(i%cols)*tw,top:Math.floor(i/cols)*(th+lh)})));
+ await sharp({create:{width:cols*tw,height:rows*(th+lh),channels:3,background:'#000'}}).composite(composite).webp({quality:82}).toFile(`${out}/${view}-sheet-${String(s+1).padStart(2,'0')}.webp`);
 }

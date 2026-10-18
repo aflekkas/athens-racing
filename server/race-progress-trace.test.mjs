@@ -48,12 +48,13 @@ for (const reverse of [false, true]) test(`three-client Psychiko trace: ${revers
   sample(2, 90, 40); now += 3000; sample(2, 400);
   assert.equal(record('Charlie cuts adjacent streets; no rank gain').find(r => r.name === 'Charlie').progress, 80);
   send(clients[2], { type: 'recover', raceId: lobby.raceId, generation: lobby.generation, motionEpoch: 2, s: event.s1 });
-  const ack = clients[2].messages.at(-1); assert.equal(ack.type, 'recovered'); assert.equal(ack.s, event.dir * 80); assert.equal(ack.until - now, 250);
-  sample(2, 80, 0, 2, true); const until = ack.until;
+  const ack = clients[2].messages.at(-1); assert.equal(ack.type, 'recovered'); assert.ok(Math.abs(ack.s - event.dir * 400) < 1e-6, 'the tow puts him on the nearest road, where he is'); assert.equal(ack.until - now, 250);
+  assert.equal(core.clientData(clients[2]).course.validProgress, 80, 'the tow itself granted no progress'); assert.equal(core.clientData(clients[2]).course.reached, 80);
+  sample(2, 400, 0, 2, true); const until = ack.until;
   send(clients[2], { type: 'recover', raceId: lobby.raceId, motionEpoch: 3 });
   assert.equal(clients[2].messages.at(-1).until, until, 'repeat does not stack time');
-  sample(2, 300, 0, 2); assert.equal(core.clientData(clients[2]).state.s, ack.s, 'old motion epoch rejected');
-  record('Charlie towed to his latest on-road pose');
+  sample(2, 300, 0, 2); assert.ok(Math.abs(core.clientData(clients[2]).state.s - ack.s) < 1e-6, 'old motion epoch rejected');
+  record('Charlie towed onto the road where he is');
   drive(0, 100, 50); const backwards = record('Alice reverses behind Charlie');
   assert.equal(backwards.find(r => r.name === 'Alice').position, 3);
   const before = core.clientData(clients[0]);

@@ -61,9 +61,13 @@ checkpoint status, and the client has no `applyCheckpoint`, `hooks.checkpoint` o
   circuits) and the existing finish distance/lateral, clock and leaderboard
   validation still apply. Timing sectors (`sectors`, shown as split times) are only
   interpolated times on that tracked progress.
-- A tow, reset or server recovery lands at the car's **latest valid on-road pose**
-  (`courseRecoveryPose`), facing race direction, never at an earlier point, and
-  never beyond what was earned. History restarts there (`restartCourseAt`).
+- A tow, reset or server recovery puts the car on the **nearest road** to its last accepted
+  pose (`planTow`, `src/tow-placement.js`): lane-centred, facing the direction closest to its
+  heading. A race prefers its own route within 40 m, and never lands before the car's latest valid
+  on-road pose. The `recovered` reply carries `kind` (`route` or `road` for a side street), `s`,
+  `u`, `x`, `z`, `yaw` and `until`; the client's claimed position is never used. A tow leaves
+  `reached`, the earned progress and the rejoin rule untouched (`towCourseTo`), so it grants no
+  progress; a car placed on a side street is held there for the recovery window.
 - Solo shows one notice if the car passes the line with part of the route skipped;
   online the finish is simply not awarded (the wrong-way and return-to-road
   notices are unchanged).
