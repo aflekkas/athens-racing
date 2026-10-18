@@ -36,7 +36,7 @@ return C.browseGrid({
 });
 return C.sidebarContent({
   title: 'SETTINGS', kick: 'OPTIONS',
-  nav: C.tabs({ key: 'category', value: category, options, vertical: true }),
+  nav: C.nav({ key: 'category', value: category, options }),
   content: C.panel('DRIVING', controls), hints: [['back', 'BACK']],
 });
 ```

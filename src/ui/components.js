@@ -5,7 +5,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
-//      segmented(), stepper(), select({ compact }), tabs({ vertical }), option(), listRow(), textField(), searchField(), card(),
+//      segmented(), stepper(), select({ compact }), tabs(), nav(), option(), listRow(), textField(), searchField(), card(),
 //      carCard(), panel(), sheetHead(), dialog() (sign-in only), plate(), stat(), chip(), table(), keyHints(), progress(), spinner(),
 //      medal(), icon(name). Interactive builders emit a `.mi` row (the menu's focus item) carrying data-kind / data-key.
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
@@ -308,12 +308,22 @@ export function select({ key, label, value, options, icon: ic, note, type, attrs
   return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${selectLabel(cur)}</span>${icon('chevron-down')}</div>`,
     { icon: ic, note, kind: 'select', key, type, cls: compact ? 'field--bare' : '', attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
-/** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
+/** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch. vertical: the section nav below */
 export function tabs({ key, value, options, cls = '', hint = true, vertical = false } = {}) {
-  if (vertical) cls += ' tabs--rail';
+  if (vertical) return nav({ key, value, options, cls });
   const h = hint ? `<span class="tabs__hint on-key" aria-hidden="true">${kbd('Q')}</span><span class="tabs__hint on-pad" aria-hidden="true">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key" aria-hidden="true">${kbd('E')}</span><span class="tabs__hint on-pad" aria-hidden="true">${kbd('RB', true)}</span>` : '';
   return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
+}
+/** a section nav (the Settings sidebar): a panel of pause-menu style rows (icon plate, bold spaced-caps label,
+ *  chevron). One focus item, like tabs: up / down (when vertical), Q / E · LB / RB, tap or click switch. The one
+ *  selected surface slides between rows (indicators()); under 860 px wide it becomes a scrolling strip.
+ *  options: [[value, label, icon]] */
+export function nav({ key, value, options, cls = '', label } = {}) {
+  return `<div class="mi nav ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist"${attrStr({ 'aria-label': label })}>${IND}${options.map(([v, l, ic]) => {
+    const on = String(v) === String(value);
+    return `<span class="nav__item ${on ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${on}"><span class="nav__ico">${icon(ic)}</span><b class="nav__label">${l}</b><span class="nav__go">${icon('chevron-right')}</span></span>`;
+  }).join('')}</div>`;
 }
 
 // ------------------------------------------------------------------ values
@@ -448,7 +458,7 @@ function patchAttrs(old, n) {
  *  glide (ui.css .sel-ind), because the indicator node survives in-place refreshes (morph keeps data-ui-keep="ind"). */
 export function indicators(root) {
   if (!root?.querySelectorAll) return;
-  const bars = root.matches?.('.tabs, .seg') ? [root] : root.querySelectorAll('.tabs, .seg');
+  const bars = root.matches?.('.tabs, .seg, .nav') ? [root] : root.querySelectorAll('.tabs, .seg, .nav');
   for (const bar of bars) {
     const ind = bar.querySelector(':scope > .sel-ind'); if (!ind) continue;
     const on = bar.querySelector(':scope > .on, :scope > [data-v].on');
@@ -458,6 +468,8 @@ export function indicators(root) {
     if (first) ind.style.transition = 'none';
     ind.style.transform = `translate(${x}px, ${y}px)`; ind.style.width = w + 'px'; ind.style.height = h + 'px'; ind.style.opacity = '1';
     if (first) { void ind.offsetWidth; ind.style.transition = ''; ind.dataset.placed = '1'; }
+    // a nav strip (narrow screens) keeps the chosen item in view; it scrolls, never jumps, after the first placement
+    if (bar.classList.contains('nav') && bar.scrollWidth > bar.clientWidth + 1) bar.scrollTo({ left: x - (bar.clientWidth - w) / 2, behavior: first ? 'instant' : 'smooth' });
   }
 }
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
